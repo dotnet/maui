@@ -134,6 +134,30 @@
         <Parameter Name="launchMode" Type="Xamarin.Essentials.BrowserLaunchMode" />
       </Parameters>
       <Docs>
+        <param name="uri">To be added.</param>
+        <param name="launchMode">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OpenAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (Uri uri, Xamarin.Essentials.BrowserLaunchMode launchMode);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(class System.Uri uri, valuetype Xamarin.Essentials.BrowserLaunchMode launchMode) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri,Xamarin.Essentials.BrowserLaunchMode)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="uri" Type="System.Uri" />
+        <Parameter Name="launchMode" Type="Xamarin.Essentials.BrowserLaunchMode" />
+      </Parameters>
+      <Docs>
         <param name="uri">Uri to launch.</param>
         <param name="launchMode">How to launch the browser.</param>
         <summary>Open the browser to specified uri.</summary>

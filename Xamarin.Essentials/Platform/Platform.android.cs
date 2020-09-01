@@ -12,6 +12,9 @@ using Android.Locations;
 using Android.Net;
 using Android.Net.Wifi;
 using Android.OS;
+using Android.Provider;
+using Android.Views;
+
 using AndroidUri = Android.Net.Uri;
 
 namespace Xamarin.Essentials
@@ -26,7 +29,22 @@ namespace Xamarin.Essentials
 
         public static event EventHandler<ActivityStateChangedEventArgs> ActivityStateChanged;
 
+        internal const int requestCodeFilePicker = 11001;
+        internal const int requestCodeMediaPicker = 11002;
+        internal const int requestCodeMediaCapture = 11003;
         internal const int requestCodePickContact = 11004;
+
+        internal const int requestCodeStart = 12000;
+
+        static int requestCode = requestCodeStart;
+
+        internal static int NextRequestCode()
+        {
+            if (++requestCode >= 12999)
+                requestCode = requestCodeStart;
+
+            return requestCode;
+        }
 
         internal static void OnActivityStateChanged(Activity activity, ActivityState ev)
             => ActivityStateChanged?.Invoke(null, new ActivityStateChangedEventArgs(activity, ev));
@@ -226,6 +244,9 @@ namespace Xamarin.Essentials
         internal static PowerManager PowerManager =>
             AppContext.GetSystemService(Context.PowerService) as PowerManager;
 
+        internal static IWindowManager WindowManager =>
+            AppContext.GetSystemService(Context.WindowService) as IWindowManager;
+
         internal static Java.Util.Locale GetLocale()
         {
             var resources = AppContext.Resources;
@@ -336,6 +357,9 @@ namespace Xamarin.Essentials
         const string actualIntentExtra = "actual_intent";
         const string guidExtra = "guid";
         const string requestCodeExtra = "request_code";
+        const string outputExtra = "output";
+
+        internal const string OutputUriExtra = "output_uri";
 
         static readonly ConcurrentDictionary<string, TaskCompletionSource<Intent>> pendingTasks =
             new ConcurrentDictionary<string, TaskCompletionSource<Intent>>();
@@ -344,6 +368,8 @@ namespace Xamarin.Essentials
         Intent actualIntent;
         string guid;
         int requestCode;
+        string output;
+        global::Android.Net.Uri outputUri;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -356,6 +382,15 @@ namespace Xamarin.Essentials
             actualIntent = extras.GetParcelable(actualIntentExtra) as Intent;
             guid = extras.GetString(guidExtra);
             requestCode = extras.GetInt(requestCodeExtra, -1);
+            output = extras.GetString(outputExtra, null);
+
+            if (!string.IsNullOrEmpty(output))
+            {
+                var javaFile = new Java.IO.File(output);
+                var providerAuthority = Platform.AppContext.PackageName + ".fileProvider";
+                outputUri = FileProvider.GetUriForFile(Platform.AppContext, providerAuthority, javaFile);
+                actualIntent.PutExtra(MediaStore.ExtraOutput, outputUri);
+            }
 
             // if this is the first time, lauch the real activity
             if (!launched)
@@ -371,6 +406,7 @@ namespace Xamarin.Essentials
             outState.PutParcelable(actualIntentExtra, actualIntent);
             outState.PutString(guidExtra, guid);
             outState.PutInt(requestCodeExtra, requestCode);
+            outState.PutString(outputExtra, output);
 
             base.OnSaveInstanceState(outState);
         }
@@ -383,16 +419,23 @@ namespace Xamarin.Essentials
             if (!string.IsNullOrEmpty(guid) && pendingTasks.TryRemove(guid, out var tcs) && tcs != null)
             {
                 if (resultCode == Result.Canceled)
+                {
                     tcs.TrySetCanceled();
+                }
                 else
+                {
+                    if (outputUri != null)
+                        data.PutExtra(OutputUriExtra, outputUri);
+
                     tcs.TrySetResult(data);
+                }
             }
 
             // close the intermediate activity
             Finish();
         }
 
-        public static Task<Intent> StartAsync(Intent intent, int requestCode)
+        public static Task<Intent> StartAsync(Intent intent, int requestCode, Java.IO.File extraOutput = null)
         {
             // make sure we have the activity
             var activity = Platform.GetCurrentActivity(true);
@@ -408,6 +451,9 @@ namespace Xamarin.Essentials
             intermediateIntent.PutExtra(actualIntentExtra, intent);
             intermediateIntent.PutExtra(guidExtra, guid);
             intermediateIntent.PutExtra(requestCodeExtra, requestCode);
+
+            if (extraOutput != null)
+                intermediateIntent.PutExtra(outputExtra, extraOutput.AbsolutePath);
 
             // start the intermediate activity
             activity.StartActivityForResult(intermediateIntent, requestCode);

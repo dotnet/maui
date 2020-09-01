@@ -43,8 +43,9 @@ namespace Xamarin.Essentials
     public partial class FileBase
     {
         internal FileBase(NSUrl file)
-            : this(NSFileManager.DefaultManager.DisplayName(file?.Path))
+            : this(file?.Path)
         {
+            FileName = NSFileManager.DefaultManager.DisplayName(file?.Path);
         }
 
         internal static string PlatformGetContentType(string extension)
@@ -60,5 +61,8 @@ namespace Xamarin.Essentials
         internal void PlatformInit(FileBase file)
         {
         }
+
+        internal virtual Task<Stream> PlatformOpenReadAsync() =>
+            Task.FromResult((Stream)File.OpenRead(FullPath));
     }
 }
