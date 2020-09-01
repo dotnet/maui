@@ -52,6 +52,14 @@ namespace Samples
 
         void AppActions_OnAppAction(object sender, AppActionEventArgs e)
         {
+            // Don't handle events fired for old application instances
+            // and cleanup the old instance's event handler
+            if (Application.Current != this && Application.Current is App app)
+            {
+                AppActions.OnAppAction -= app.AppActions_OnAppAction;
+                return;
+            }
+
             Device.BeginInvokeOnMainThread(async () =>
             {
                 var page = e.AppAction.Id switch
@@ -63,8 +71,8 @@ namespace Samples
 
                 if (page != null)
                 {
-                    await Xamarin.Forms.Application.Current.MainPage.Navigation.PopToRootAsync();
-                    await Xamarin.Forms.Application.Current.MainPage.Navigation.PushAsync(page);
+                    await Application.Current.MainPage.Navigation.PopToRootAsync();
+                    await Application.Current.MainPage.Navigation.PushAsync(page);
                 }
             });
         }
