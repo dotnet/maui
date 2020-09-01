@@ -23,6 +23,9 @@ namespace Samples
         {
             InitializeComponent();
 
+            // Enable currently experimental features
+            Device.SetFlags(new string[] { "MediaElement_Experimental" });
+
             VersionTracking.Track();
 
             MainPage = new NavigationPage(new HomePage());

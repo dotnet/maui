@@ -31,6 +31,7 @@ namespace Samples.ViewModel
         public override void OnAppearing()
         {
             base.OnAppearing();
+
             DeviceDisplay.MainDisplayInfoChanged += OnScreenMetricsChanged;
             ScreenMetrics = DeviceDisplay.MainDisplayInfo;
         }

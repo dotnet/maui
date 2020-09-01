@@ -76,6 +76,23 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="MediaPicker">
+      <MemberSignature Language="C#" Value="public const string MediaPicker;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string MediaPicker" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ExperimentalFeatures.MediaPicker" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="OpenFileRequest">
       <MemberSignature Language="C#" Value="public const string OpenFileRequest;" />
       <MemberSignature Language="ILAsm" Value=".field public static literal string OpenFileRequest" />

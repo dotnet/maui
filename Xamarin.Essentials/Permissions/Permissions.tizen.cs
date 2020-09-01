@@ -106,10 +106,14 @@ namespace Xamarin.Essentials
 
         public partial class ContactsRead : BasePlatformPermission
         {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[] { ("http://tizen.org/privilege/contact.read", true) };
         }
 
         public partial class ContactsWrite : BasePlatformPermission
         {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[] { ("http://tizen.org/privilege/contact.write", true) };
         }
 
         public partial class Flashlight : BasePlatformPermission

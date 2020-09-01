@@ -80,7 +80,7 @@ namespace Xamarin.Essentials
             }
             catch (Exception e)
             {
-                tcsInitialize.SetException(e);
+                tcsInitialize.TrySetException(e);
             }
 
             return tcsInitialize.Task;

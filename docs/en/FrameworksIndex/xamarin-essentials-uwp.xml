@@ -323,6 +323,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.ExperimentalFeatures" Id="T:Xamarin.Essentials.ExperimentalFeatures">
       <Member Id="F:Xamarin.Essentials.ExperimentalFeatures.EmailAttachments" />
+      <Member Id="F:Xamarin.Essentials.ExperimentalFeatures.MediaPicker" />
       <Member Id="F:Xamarin.Essentials.ExperimentalFeatures.OpenFileRequest" />
       <Member Id="F:Xamarin.Essentials.ExperimentalFeatures.ShareFileRequest" />
       <Member Id="M:Xamarin.Essentials.ExperimentalFeatures.Enable(System.String[])" />
@@ -339,6 +340,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.FileBase" Id="T:Xamarin.Essentials.FileBase">
       <Member Id="M:Xamarin.Essentials.FileBase.#ctor(Xamarin.Essentials.FileBase)" />
+      <Member Id="M:Xamarin.Essentials.FileBase.OpenReadAsync" />
       <Member Id="P:Xamarin.Essentials.FileBase.ContentType" />
       <Member Id="P:Xamarin.Essentials.FileBase.FileName" />
       <Member Id="P:Xamarin.Essentials.FileBase.FullPath" />
@@ -350,15 +352,19 @@
     <Type Name="Xamarin.Essentials.FilePickerFileType" Id="T:Xamarin.Essentials.FilePickerFileType">
       <Member Id="F:Xamarin.Essentials.FilePickerFileType.Images" />
       <Member Id="F:Xamarin.Essentials.FilePickerFileType.Png" />
+      <Member Id="F:Xamarin.Essentials.FilePickerFileType.Videos" />
       <Member Id="M:Xamarin.Essentials.FilePickerFileType.#ctor" />
       <Member Id="M:Xamarin.Essentials.FilePickerFileType.#ctor(System.Collections.Generic.IDictionary{Xamarin.Essentials.DevicePlatform,System.Collections.Generic.IEnumerable{System.String}})" />
       <Member Id="M:Xamarin.Essentials.FilePickerFileType.GetPlatformFileType(Xamarin.Essentials.DevicePlatform)" />
       <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformImageFileType" />
       <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformPngFileType" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformVideoFileType" />
       <Member Id="P:Xamarin.Essentials.FilePickerFileType.Value" />
     </Type>
-    <Type Name="Xamarin.Essentials.FilePickerResult" Id="T:Xamarin.Essentials.FilePickerResult">
-      <Member Id="M:Xamarin.Essentials.FilePickerResult.OpenReadStreamAsync" />
+    <Type Name="Xamarin.Essentials.FileResult" Id="T:Xamarin.Essentials.FileResult">
+      <Member Id="M:Xamarin.Essentials.FileResult.#ctor(System.String)" />
+      <Member Id="M:Xamarin.Essentials.FileResult.#ctor(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.FileResult.#ctor(Xamarin.Essentials.FileBase)" />
     </Type>
     <Type Name="Xamarin.Essentials.FileSystem" Id="T:Xamarin.Essentials.FileSystem">
       <Member Id="M:Xamarin.Essentials.FileSystem.OpenAppPackageFileAsync(System.String)" />
@@ -508,6 +514,17 @@
       <Member Id="M:Xamarin.Essentials.MapLaunchOptions.#ctor" />
       <Member Id="P:Xamarin.Essentials.MapLaunchOptions.Name" />
       <Member Id="P:Xamarin.Essentials.MapLaunchOptions.NavigationMode" />
+    </Type>
+    <Type Name="Xamarin.Essentials.MediaPicker" Id="T:Xamarin.Essentials.MediaPicker">
+      <Member Id="M:Xamarin.Essentials.MediaPicker.CapturePhotoAsync(Xamarin.Essentials.MediaPickerOptions)" />
+      <Member Id="M:Xamarin.Essentials.MediaPicker.CaptureVideoAsync(Xamarin.Essentials.MediaPickerOptions)" />
+      <Member Id="M:Xamarin.Essentials.MediaPicker.PickPhotoAsync(Xamarin.Essentials.MediaPickerOptions)" />
+      <Member Id="M:Xamarin.Essentials.MediaPicker.PickVideoAsync(Xamarin.Essentials.MediaPickerOptions)" />
+      <Member Id="P:Xamarin.Essentials.MediaPicker.IsCaptureAvailable" />
+    </Type>
+    <Type Name="Xamarin.Essentials.MediaPickerOptions" Id="T:Xamarin.Essentials.MediaPickerOptions">
+      <Member Id="M:Xamarin.Essentials.MediaPickerOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.MediaPickerOptions.Title" />
     </Type>
     <Type Name="Xamarin.Essentials.NavigationMode" Id="T:Xamarin.Essentials.NavigationMode">
       <Member Id="F:Xamarin.Essentials.NavigationMode.Bicycling" />
@@ -748,6 +765,19 @@
     <Type Name="Xamarin.Essentials.RectangleExtensions" Id="T:Xamarin.Essentials.RectangleExtensions">
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(Windows.Foundation.Rect)" />
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(Windows.Foundation.Rect)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Screenshot" Id="T:Xamarin.Essentials.Screenshot">
+      <Member Id="M:Xamarin.Essentials.Screenshot.CaptureAsync" />
+      <Member Id="P:Xamarin.Essentials.Screenshot.IsCaptureAvailable" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ScreenshotFormat" Id="T:Xamarin.Essentials.ScreenshotFormat">
+      <Member Id="F:Xamarin.Essentials.ScreenshotFormat.Jpeg" />
+      <Member Id="F:Xamarin.Essentials.ScreenshotFormat.Png" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ScreenshotResult" Id="T:Xamarin.Essentials.ScreenshotResult">
+      <Member Id="M:Xamarin.Essentials.ScreenshotResult.OpenReadAsync(Xamarin.Essentials.ScreenshotFormat)" />
+      <Member Id="P:Xamarin.Essentials.ScreenshotResult.Height" />
+      <Member Id="P:Xamarin.Essentials.ScreenshotResult.Width" />
     </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
       <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />

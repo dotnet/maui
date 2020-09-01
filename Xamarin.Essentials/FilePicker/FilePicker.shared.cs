@@ -8,10 +8,10 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        public static async Task<FilePickerResult> PickAsync(PickOptions options = null) =>
+        public static async Task<FileResult> PickAsync(PickOptions options = null) =>
             (await PlatformPickAsync(options))?.FirstOrDefault();
 
-        public static Task<IEnumerable<FilePickerResult>> PickMultipleAsync(PickOptions options = null) =>
+        public static Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions options = null) =>
             PlatformPickAsync(options ?? PickOptions.Default, true);
     }
 
@@ -19,6 +19,7 @@ namespace Xamarin.Essentials
     {
         public static readonly FilePickerFileType Images = PlatformImageFileType();
         public static readonly FilePickerFileType Png = PlatformPngFileType();
+        public static readonly FilePickerFileType Videos = PlatformVideoFileType();
 
         readonly IDictionary<DevicePlatform, IEnumerable<string>> fileTypes;
 
@@ -57,11 +58,5 @@ namespace Xamarin.Essentials
         public string PickerTitle { get; set; }
 
         public FilePickerFileType FileTypes { get; set; }
-    }
-
-    public partial class FilePickerResult : FileBase
-    {
-        public Task<Stream> OpenReadStreamAsync()
-            => PlatformOpenReadStreamAsync();
     }
 }

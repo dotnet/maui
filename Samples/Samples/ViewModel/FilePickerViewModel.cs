@@ -99,7 +99,7 @@ namespace Samples.ViewModel
             // copy it locally
             var copyPath = Path.Combine(FileSystem.CacheDirectory, result.FileName);
             using (var destination = File.Create(copyPath))
-            using (var source = await result.OpenReadStreamAsync())
+            using (var source = await result.OpenReadAsync())
                 await source.CopyToAsync(destination);
 
             // send it via an email
@@ -114,7 +114,7 @@ namespace Samples.ViewModel
             });
         }
 
-        async Task<FilePickerResult> PickAndShow(PickOptions options)
+        async Task<FileResult> PickAndShow(PickOptions options)
         {
             try
             {
@@ -127,7 +127,7 @@ namespace Samples.ViewModel
                     if (result.FileName.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) ||
                         result.FileName.EndsWith("png", StringComparison.OrdinalIgnoreCase))
                     {
-                        var stream = await result.OpenReadStreamAsync();
+                        var stream = await result.OpenReadAsync();
                         Image = ImageSource.FromStream(() => stream);
                         IsImageVisible = true;
                     }
@@ -167,7 +167,7 @@ namespace Samples.ViewModel
                     if (firstResult.FileName.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) ||
                         firstResult.FileName.EndsWith("png", StringComparison.OrdinalIgnoreCase))
                     {
-                        var stream = await firstResult.OpenReadStreamAsync();
+                        var stream = await firstResult.OpenReadAsync();
                         Image = ImageSource.FromStream(() => stream);
                         IsImageVisible = true;
                     }

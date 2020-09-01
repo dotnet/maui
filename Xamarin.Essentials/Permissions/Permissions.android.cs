@@ -35,7 +35,7 @@ namespace Xamarin.Essentials
                    new Dictionary<string, (int, TaskCompletionSource<PermissionStatus>)>();
 
             static readonly object locker = new object();
-            static int requestCode = 0;
+            static int requestCode;
 
             public virtual (string androidPermission, bool isRuntime)[] RequiredPermissions { get; }
 
@@ -103,9 +103,7 @@ namespace Xamarin.Essentials
                     {
                         tcs = new TaskCompletionSource<PermissionStatus>();
 
-                        // Get new request code and wrap it around for next use if it's going to reach max
-                        if (++requestCode >= int.MaxValue)
-                            requestCode = 1;
+                        requestCode = Platform.NextRequestCode();
 
                         requests.Add(permissionId, (requestCode, tcs));
                     }

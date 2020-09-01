@@ -16,8 +16,8 @@
   </Docs>
   <Members>
     <Member MemberName="PickAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.FilePickerResult&gt; PickAsync (Xamarin.Essentials.PickOptions options = null);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Xamarin.Essentials.FilePickerResult&gt; PickAsync(class Xamarin.Essentials.PickOptions options) cil managed" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.FileResult&gt; PickAsync (Xamarin.Essentials.PickOptions options = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Xamarin.Essentials.FileResult&gt; PickAsync(class Xamarin.Essentials.PickOptions options) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePicker.PickAsync(Xamarin.Essentials.PickOptions)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
@@ -25,7 +25,7 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.FilePickerResult&gt;</ReturnType>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.FileResult&gt;</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="options" Type="Xamarin.Essentials.PickOptions" />
@@ -44,8 +44,8 @@
       </Docs>
     </Member>
     <Member MemberName="PickMultipleAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FilePickerResult&gt;&gt; PickMultipleAsync (Xamarin.Essentials.PickOptions options = null);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.FilePickerResult&gt;&gt; PickMultipleAsync(class Xamarin.Essentials.PickOptions options) cil managed" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FileResult&gt;&gt; PickMultipleAsync (Xamarin.Essentials.PickOptions options = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.FileResult&gt;&gt; PickMultipleAsync(class Xamarin.Essentials.PickOptions options) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePicker.PickMultipleAsync(Xamarin.Essentials.PickOptions)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
@@ -53,7 +53,7 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FilePickerResult&gt;&gt;</ReturnType>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FileResult&gt;&gt;</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="options" Type="Xamarin.Essentials.PickOptions" />
