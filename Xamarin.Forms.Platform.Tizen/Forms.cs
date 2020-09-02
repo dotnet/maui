@@ -97,8 +97,19 @@ namespace Xamarin.Forms
 
 		static Lazy<double> s_elmScale = new Lazy<double>(() =>
 		{
-			// 72.0 is from EFL which is using fixed DPI value (72.0) to determine font size internally. Thus, we are restoring the size by deviding the DPI by 72.0 here.
-			return s_dpi.Value / 72.0 / Elementary.GetScale();
+			return s_deviceScale.Value / Elementary.GetScale();
+		});
+
+		static Lazy<string> s_deviceType = new Lazy<string>(() =>
+		{
+			TSystemInfo.TryGetValue("http://tizen.org/system/device_type", out string deviceType);
+			return deviceType;
+		});
+
+		static Lazy<double> s_deviceScale = new Lazy<double>(() =>
+		{
+			// This is the base scale value and varies from profile
+			return ThemeManager.GetBaseScale(s_deviceType.Value);
 		});
 
 		class TizenDeviceInfo : DeviceInfo
@@ -572,7 +583,7 @@ namespace Xamarin.Forms
 		/// <returns></returns>
 		public static int ConvertToEflFontPoint(double sp)
 		{
-			return (int)Math.Round(sp * s_elmScale.Value);
+			return (int)Math.Round(ConvertToScaledPixel(sp) * s_elmScale.Value);
 		}
 
 		/// <summary>
@@ -582,7 +593,7 @@ namespace Xamarin.Forms
 		/// <returns></returns>
 		public static double ConvertToDPFont(int eflPt)
 		{
-			return eflPt / s_elmScale.Value;
+			return ConvertToScaledDP(eflPt / s_elmScale.Value);
 		}
 
 		/// <summary>
@@ -592,6 +603,11 @@ namespace Xamarin.Forms
 		public static string GetProfile()
 		{
 			return s_profile.Value;
+		}
+
+		public static string GetDeviceType()
+		{
+			return s_deviceType.Value;
 		}
 
 		// for internal use only
