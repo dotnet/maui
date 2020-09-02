@@ -49,6 +49,7 @@
         <reference file="Xamarin.Forms.Core.dll" />
         <reference file="Xamarin.Forms.Platform.dll" />
         <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="Xamarin.Forms.Platform.iOS.dll" />
       </group>
       <group targetFramework="MonoAndroid10.0">
         <reference file="Xamarin.Forms.Core.dll" />
@@ -73,6 +74,7 @@
         <reference file="Xamarin.Forms.Core.dll" />
         <reference file="Xamarin.Forms.Platform.dll" />
         <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="Xamarin.Forms.Platform.macOS.dll" />
       </group>
       <group targetFramework="tizen40">
         <reference file="Xamarin.Forms.Core.dll" />
@@ -178,10 +180,9 @@
     
     <!--Android 10-->
     <file src="proguard.cfg" target="build\MonoAndroid10\proguard.cfg" />
-
     <file src="proguard.cfg" target="buildTransitive\MonoAndroid10\proguard.cfg" />
     
-    <!--Android 100-->
+    <!--Android 10-->
     <file src="..\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid10.0\Xamarin.Forms.Platform.Android.dll" target="lib\MonoAndroid10.0" />
     <file src="..\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid10.0\Xamarin.Forms.Platform.Android.*pdb" target="lib\MonoAndroid10.0" />
     <file src="..\Xamarin.Forms.Platform.Android.FormsViewGroup\bin\$Configuration$\FormsViewGroup.dll" target="lib\MonoAndroid10.0" />
