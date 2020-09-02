@@ -118,6 +118,13 @@ steps:
       TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhoneSimulator/XamarinFormsControlGalleryiOS.app/'
       CleanTargetFolder: false
       flattenFolders: false
+  
+  - task: MSBuild@1
+    displayName: 'Build Android Tests'
+    inputs:
+      solution: 'Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj'
+      configuration: $(buildConfiguration)
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/android-uitests.binlog
 
   - task: CopyFiles@2
     displayName: 'Copy test-cloud.exe'
