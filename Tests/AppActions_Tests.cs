@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Xamarin.Essentials;
 using Xunit;
 
@@ -10,11 +8,11 @@ namespace Tests
     {
         [Fact]
         public void AppActions_SetActions() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => AppActions.Actions = new List<AppAction>());
+            Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => AppActions.SetAsync(new List<AppAction>()));
 
         [Fact]
         public void AppActions_GetActions() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => AppActions.Actions);
+            Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => AppActions.GetAsync());
 
         [Fact]
         public void AppActions_IsSupported() =>

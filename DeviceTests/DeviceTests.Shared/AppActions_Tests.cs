@@ -26,18 +26,22 @@ namespace DeviceTests
 
 #if __ANDROID_25__ || __IOS__
         [Fact]
-        public void GetSetItems()
+        public async Task GetSetItems()
         {
-            if (AppActions.IsSupported)
-            {
-                AppActions.Actions = new List<AppAction>
-                {
-                    new AppAction("TEST1", "Test 1", "This is a test", new System.Uri("myapp://test1")),
-                    new AppAction("TEST2", "Test 2", "This is a test 2", new System.Uri("myapp://test2")),
-                };
+            if (!AppActions.IsSupported)
+                return;
 
-                Assert.Contains(AppActions.Actions, a => a.ActionType == "TEST1");
-            }
+            var actions = new List<AppAction>
+            {
+                new AppAction("TEST1", "Test 1", "This is a test", "myapp://test1"),
+                new AppAction("TEST2", "Test 2", "This is a test 2", "myapp://test2"),
+            };
+
+            await AppActions.SetAsync(actions);
+
+            var get = await AppActions.GetAsync();
+
+            Assert.Contains(get, a => a.Id == "TEST1");
         }
 #endif
     }

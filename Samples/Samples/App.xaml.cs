@@ -49,8 +49,8 @@ namespace Samples
             }
 
             await AppActions.SetAsync(
-                new AppAction("App Info", id: "app_info", icon: "app_info_action_icon"),
-                new AppAction("Battery Info", id: "battery_info"));
+                new AppAction("app_info", "App Info", icon: "app_info_action_icon"),
+                new AppAction("battery_info", "Battery Info"));
         }
 
         void AppActions_OnAppAction(object sender, AppActionEventArgs e)

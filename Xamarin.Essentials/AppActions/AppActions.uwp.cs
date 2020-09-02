@@ -68,7 +68,7 @@ namespace Xamarin.Essentials
         }
 
         static AppAction ToAction(this JumpListItem item)
-            => new AppAction(item.DisplayName, ArgumentsToId(item.Arguments), item.Description);
+            => new AppAction(ArgumentsToId(item.Arguments), item.DisplayName, item.Description);
 
         static string ArgumentsToId(string arguments)
         {
