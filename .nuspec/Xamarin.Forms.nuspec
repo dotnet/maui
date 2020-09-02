@@ -34,7 +34,7 @@
         <dependency id="Tizen.NET" version="4.0.0"/>
       </group>
     </dependencies>
-    
+
     <!-- DO NOT DELETE THESE REFERENCES -->
     <!-- IF YOU DELETE THESE REFERENCES THE PACKAGE WILL NOT WORK ON MAC -->
     <!-- https://github.com/xamarin/Xamarin.Forms/pull/2575 -->
@@ -92,11 +92,11 @@
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Core.dll" target="lib\netstandard1.0" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Core.*pdb" target="lib\netstandard1.0" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Core.*mdb" target="lib\netstandard1.0" />
-    <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\netstandard1.0" />
+    <file src="..\build\docs\Xamarin.Forms.Core.xml" target="lib\netstandard1.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Xaml.dll" target="lib\netstandard1.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Xaml.*pdb" target="lib\netstandard1.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Xaml.*mdb" target="lib\netstandard1.0" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\netstandard1.0" />
+    <file src="..\build\docs\Xamarin.Forms.Xaml.xml" target="lib\netstandard1.0" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Platform.dll" target="lib\netstandard1.0" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Platform.*pdb" target="lib\netstandard1.0" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Platform.*mdb" target="lib\netstandard1.0" />
@@ -105,10 +105,10 @@
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*mdb" target="lib\netstandard2.0" />
-    <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\netstandard2.0" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\netstandard2.0" />
-    <file src="..\docs\**\Xamarin.Forms.Core.xml" target="lib\netstandard2.0" />
-    <file src="..\docs\**\Xamarin.Forms.Xaml.xml" target="lib\netstandard2.0" />
+    <file src="..\build\docs\Xamarin.Forms.Core.xml" target="lib\netstandard2.0" />
+    <file src="..\build\docs\Xamarin.Forms.Xaml.xml" target="lib\netstandard2.0" />
+    <file src="..\build\docs\**\Xamarin.Forms.Core.xml" target="lib\netstandard2.0" />
+    <file src="..\build\docs\**\Xamarin.Forms.Xaml.xml" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*mdb" target="lib\netstandard2.0" />
@@ -128,7 +128,7 @@
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Mdb.dll" target="build\netstandard2.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Pdb.dll" target="build\netstandard2.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Rocks.dll" target="build\netstandard2.0" />
-    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\System.CodeDom.dll" target="build\netstandard2.0" />   
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\System.CodeDom.dll" target="build\netstandard2.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Xamarin.Forms.Build.Tasks.dll" target="build\net46" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Xamarin.Forms.Core.dll" target="build\net46" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Xamarin.Forms.Xaml.dll" target="build\net46" />
@@ -150,7 +150,7 @@
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Mdb.dll" target="buildTransitive\netstandard2.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Pdb.dll" target="buildTransitive\netstandard2.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Rocks.dll" target="buildTransitive\netstandard2.0" />
-    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\System.CodeDom.dll" target="buildTransitive\netstandard2.0" />   
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\System.CodeDom.dll" target="buildTransitive\netstandard2.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Xamarin.Forms.Build.Tasks.dll" target="buildTransitive\net46" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Xamarin.Forms.Core.dll" target="buildTransitive\net46" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Xamarin.Forms.Xaml.dll" target="buildTransitive\net46" />
@@ -167,17 +167,17 @@
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\netstandard1.0\Design" />
     <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\MonoAndroid10.0\Design" />
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\MonoAndroid10.0\Design" />
-    <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\Xamarin.iOS10\Design" /> 
-    <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\Xamarin.iOS10\Design" /> 
+    <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\Xamarin.iOS10\Design" />
+    <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\Xamarin.iOS10\Design" />
     <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\uap10.0.14393\Design" />
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\uap10.0.14393\Design" />
     <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\uap10.0.16299\Design" />
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\uap10.0.16299\Design" />
-    <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\Xamarin.Mac\Design" />   
-    <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\Xamarin.Mac\Design" />   
-    <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\tizen40\Design" />   
+    <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\Xamarin.Mac\Design" />
+    <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\Xamarin.Mac\Design" />
+    <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\tizen40\Design" />
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\tizen40\Design" />
-    
+
     <!--Android 10-->
     <file src="proguard.cfg" target="build\MonoAndroid10\proguard.cfg" />
     <file src="proguard.cfg" target="buildTransitive\MonoAndroid10\proguard.cfg" />
@@ -189,10 +189,10 @@
     <file src="..\Xamarin.Forms.Platform.Android.FormsViewGroup\bin\$Configuration$\FormsViewGroup.*pdb" target="lib\MonoAndroid10.0" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\MonoAndroid10.0" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\MonoAndroid10.0" />
-    <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\MonoAndroid10.0" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\MonoAndroid10.0" />
-    <file src="..\docs\**\Xamarin.Forms.Core.xml" target="lib\MonoAndroid10.0" />
-    <file src="..\docs\**\Xamarin.Forms.Xaml.xml" target="lib\MonoAndroid10.0" />
+    <file src="..\build\docs\Xamarin.Forms.Core.xml" target="lib\MonoAndroid10.0" />
+    <file src="..\build\docs\Xamarin.Forms.Xaml.xml" target="lib\MonoAndroid10.0" />
+    <file src="..\build\docs\**\Xamarin.Forms.Core.xml" target="lib\MonoAndroid10.0" />
+    <file src="..\build\docs\**\Xamarin.Forms.Xaml.xml" target="lib\MonoAndroid10.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\MonoAndroid10.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\MonoAndroid10.0" />
     <file src="..\Stubs\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid10.0\Xamarin.Forms.Platform.dll" target="lib\MonoAndroid10.0" />
@@ -204,10 +204,10 @@
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*mdb" target="lib\Xamarin.iOS10" />
-    <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\Xamarin.iOS10" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\Xamarin.iOS10" />
-    <file src="..\docs\**\Xamarin.Forms.Core.xml" target="lib\Xamarin.iOS10" />
-    <file src="..\docs\**\Xamarin.Forms.Xaml.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\build\docs\Xamarin.Forms.Core.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\build\docs\Xamarin.Forms.Xaml.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\build\docs\**\Xamarin.Forms.Core.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\build\docs\**\Xamarin.Forms.Xaml.xml" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*mdb" target="lib\Xamarin.iOS10" />
@@ -223,10 +223,10 @@
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP.pri" target="lib\uap10.0.14393" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Core.dll" target="lib\uap10.0.14393" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Core.*pdb" target="lib\uap10.0.14393" />
-    <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\uap10.0.14393" />
+    <file src="..\build\docs\Xamarin.Forms.Core.xml" target="lib\uap10.0.14393" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Xaml.dll" target="lib\uap10.0.14393" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Xaml.*pdb" target="lib\uap10.0.14393" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\uap10.0.14393" />
+    <file src="..\build\docs\Xamarin.Forms.Xaml.xml" target="lib\uap10.0.14393" />
 
     <!--UWP 16299-->
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.16299\Xamarin.Forms.Platform.UAP.dll" target="lib\uap10.0.16299" />
@@ -238,10 +238,10 @@
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.16299\Xamarin.Forms.Platform.UAP.pri" target="lib\uap10.0.16299" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\uap10.0.16299" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\uap10.0.16299" />
-    <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\uap10.0.16299" />
+    <file src="..\build\docs\Xamarin.Forms.Core.xml" target="lib\uap10.0.16299" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\uap10.0.16299" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\uap10.0.16299" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\uap10.0.16299" />
+    <file src="..\build\docs\Xamarin.Forms.Xaml.xml" target="lib\uap10.0.16299" />
 
 
     <!-- VS 2017 needs these-->
@@ -299,10 +299,10 @@
     <file src="..\Stubs\Xamarin.Forms.Platform.Tizen\bin\$Configuration$\tizen40\Xamarin.Forms.Platform.dll" target="lib\tizen40" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\tizen40" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\tizen40" />
-    <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\tizen40" />
+    <file src="..\build\docs\Xamarin.Forms.Core.xml" target="lib\tizen40" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\tizen40" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\tizen40" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\tizen40" />
+    <file src="..\build\docs\Xamarin.Forms.Xaml.xml" target="lib\tizen40" />
 
   </files>
 
