@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var textFormat = new CanvasTextFormat
 			{
-				FontFamily = fontsource.FontFamily,
+				FontFamily = fontsource.FontFamily.ToFontFamily().Source,
 				FontSize = (float)fontsource.Size,
 				HorizontalAlignment = CanvasHorizontalAlignment.Center,
 				VerticalAlignment = CanvasVerticalAlignment.Center,
@@ -65,8 +65,10 @@ namespace Xamarin.Forms.Platform.UWP
 					Foreground = fontImageSource.Color.ToBrush()
 				};
 
-				if (!string.IsNullOrEmpty(fontImageSource.FontFamily))
-					((WFontIconSource)image).FontFamily = new FontFamily(fontImageSource.FontFamily);
+				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily().Source;
+
+				if (!string.IsNullOrEmpty(uwpFontFamily))
+					((WFontIconSource)image).FontFamily = new FontFamily(uwpFontFamily);
 			}
 
 			return Task.FromResult(image);
@@ -85,8 +87,10 @@ namespace Xamarin.Forms.Platform.UWP
 					Foreground = fontImageSource.Color.ToBrush()
 				};
 
-				if (!string.IsNullOrEmpty(fontImageSource.FontFamily))
-					((FontIcon)image).FontFamily = new FontFamily(fontImageSource.FontFamily);
+				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily().Source;
+
+				if (!string.IsNullOrEmpty(uwpFontFamily))
+					((FontIcon)image).FontFamily = new FontFamily(uwpFontFamily);
 			}
 
 			return Task.FromResult(image);

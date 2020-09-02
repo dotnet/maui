@@ -974,7 +974,7 @@ namespace Xamarin.Forms
 					return;
 
 				if (_flyoutHeaderView != null)
-					OnChildRemoved(_flyoutHeaderView);
+					OnChildRemoved(_flyoutHeaderView, -1);
 				_flyoutHeaderView = value;
 				if (_flyoutHeaderView != null)
 					OnChildAdded(_flyoutHeaderView);
