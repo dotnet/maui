@@ -37,15 +37,35 @@ namespace Xamarin.Essentials
             if (shortcutItem.UserInfo.TryGetValue((NSString)"id", out var idObj))
                 id = idObj?.ToString();
 
-            return new AppAction(shortcutItem.Type, id, shortcutItem.LocalizedTitle, shortcutItem.LocalizedSubtitle);
+            string icon = null;
+            if (shortcutItem.UserInfo.TryGetValue((NSString)"icon", out var iconObj))
+                icon = iconObj?.ToString();
+
+            return new AppAction(id, shortcutItem.LocalizedTitle, shortcutItem.LocalizedSubtitle, icon);
         }
 
-        static UIApplicationShortcutItem ToShortcutItem(this AppAction action) =>
-            new UIApplicationShortcutItem(
+        static UIApplicationShortcutItem ToShortcutItem(this AppAction action)
+        {
+            var keys = new List<NSString>();
+            var values = new List<NSObject>();
+
+            // id
+            keys.Add((NSString)"id");
+            values.Add((NSString)action.Id);
+
+            // icon
+            if (!string.IsNullOrEmpty(action.Icon))
+            {
+                keys.Add((NSString)"icon");
+                values.Add((NSString)action.Icon);
+            }
+
+            return new UIApplicationShortcutItem(
                 AppActions.Type,
                 action.Title,
                 action.Subtitle,
                 action.Icon != null ? UIApplicationShortcutIcon.FromTemplateImageName(action.Icon) : null,
-                new NSDictionary<NSString, NSObject>((NSString)"id", (NSString)action.Id.ToString()));
+                new NSDictionary<NSString, NSObject>(keys.ToArray(), values.ToArray()));
+        }
     }
 }

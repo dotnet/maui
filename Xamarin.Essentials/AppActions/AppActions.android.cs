@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.PM;
-using Android.Content.Res;
 using Android.Graphics.Drawables;
-using AndroidUri = Android.Net.Uri;
 
 namespace Xamarin.Essentials
 {
@@ -39,7 +36,7 @@ namespace Xamarin.Essentials
         }
 
         static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
-            new AppAction(shortcutInfo.ShortLabel, shortcutInfo.LongLabel, shortcutInfo.Id);
+            new AppAction(shortcutInfo.Id, shortcutInfo.ShortLabel, shortcutInfo.LongLabel);
 
         const string extraAppActionId = "EXTRA_XE_APP_ACTION_ID";
         const string extraAppActionTitle = "EXTRA_XE_APP_ACTION_TITLE";
@@ -48,8 +45,8 @@ namespace Xamarin.Essentials
 
         internal static AppAction ToAppAction(this Intent intent)
             => new AppAction(
-                intent.GetStringExtra(extraAppActionTitle),
                 intent.GetStringExtra(extraAppActionId),
+                intent.GetStringExtra(extraAppActionTitle),
                 intent.GetStringExtra(extraAppActionSubtitle),
                 intent.GetStringExtra(extraAppActionIcon));
 
