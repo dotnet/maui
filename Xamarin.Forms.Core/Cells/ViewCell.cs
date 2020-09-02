@@ -22,7 +22,7 @@ namespace Xamarin.Forms
 
 				if (_view != null)
 				{
-					OnChildRemoved(_view);
+					OnChildRemoved(_view, 0);
 					_view.ComputedConstraint = LayoutConstraint.None;
 				}
 

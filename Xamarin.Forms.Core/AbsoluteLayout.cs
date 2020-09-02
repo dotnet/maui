@@ -76,10 +76,13 @@ namespace Xamarin.Forms
 			child.PropertyChanged += ChildOnPropertyChanged;
 		}
 
-		protected override void OnChildRemoved(Element child)
+		[Obsolete("OnChildRemoved(Element) is obsolete as of version 4.8.0. Please use OnChildRemoved(Element, int) instead.")]
+		protected override void OnChildRemoved(Element child) => OnChildRemoved(child, -1);
+
+		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			child.PropertyChanged -= ChildOnPropertyChanged;
-			base.OnChildRemoved(child);
+			base.OnChildRemoved(child, oldLogicalIndex);
 		}
 
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]

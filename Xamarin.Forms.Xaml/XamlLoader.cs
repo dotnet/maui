@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Xaml
 						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null
 					}, useDesignProperties);
 
-					VisualDiagnostics.SendVisualTreeChanged(null, view);
+					VisualDiagnostics.OnChildAdded(null, view as Element);
 
 					break;
 				}
@@ -143,7 +143,7 @@ namespace Xamarin.Forms.Xaml
 					visitorContext.RootElement = inflatedView as BindableObject;
 
 					Visit(rootnode, visitorContext, useDesignProperties);
-					VisualDiagnostics.SendVisualTreeChanged(null, inflatedView);
+					VisualDiagnostics.OnChildAdded(null, inflatedView as Element);
 					break;
 				}
 			}

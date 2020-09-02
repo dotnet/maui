@@ -8,41 +8,36 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	[ContentProperty("Children")]
+	[ContentProperty(nameof(Children))]
 	public abstract class Layout<T> : Layout, IViewContainer<T> where T : View
 	{
 		readonly ElementCollection<T> _children;
 
-		protected Layout()
-		{
-			_children = new ElementCollection<T>(InternalChildren);
-		}
+		protected Layout() => _children = new ElementCollection<T>(InternalChildren);
 
-		public new IList<T> Children
-		{
-			get { return _children; }
-		}
-
-		protected virtual void OnAdded(T view)
-		{
-		}
+		public new IList<T> Children => _children;
 
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
 
-			var typedChild = child as T;
-			if (typedChild != null)
+			if (child is T typedChild)
 				OnAdded(typedChild);
 		}
 
-		protected override void OnChildRemoved(Element child)
-		{
-			base.OnChildRemoved(child);
+		[Obsolete("OnChildRemoved(Element) is obsolete as of version 4.8.0. Please use OnChildRemoved(Element, int) instead.")]
+		protected override void OnChildRemoved(Element child) => OnChildRemoved(child, -1);
 
-			var typedChild = child as T;
-			if (typedChild != null)
+		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
+		{
+			base.OnChildRemoved(child, oldLogicalIndex);
+
+			if (child is T typedChild)
 				OnRemoved(typedChild);
+		}
+
+		protected virtual void OnAdded(T view)
+		{
 		}
 
 		protected virtual void OnRemoved(T view)
@@ -52,10 +47,11 @@ namespace Xamarin.Forms
 
 	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement
 	{
-		public static readonly BindableProperty IsClippedToBoundsProperty = BindableProperty.Create("IsClippedToBounds", typeof(bool), typeof(Layout), false);
+		public static readonly BindableProperty IsClippedToBoundsProperty =
+			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false);
 
-		public static readonly BindableProperty CascadeInputTransparentProperty = BindableProperty.Create(
-			nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
+		public static readonly BindableProperty CascadeInputTransparentProperty =
+			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
 
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
@@ -79,51 +75,36 @@ namespace Xamarin.Forms
 
 		public bool IsClippedToBounds
 		{
-			get { return (bool)GetValue(IsClippedToBoundsProperty); }
-			set { SetValue(IsClippedToBoundsProperty, value); }
+			get => (bool)GetValue(IsClippedToBoundsProperty);
+			set => SetValue(IsClippedToBoundsProperty, value);
 		}
 
 		public Thickness Padding
 		{
-			get { return (Thickness)GetValue(PaddingElement.PaddingProperty); }
-			set { SetValue(PaddingElement.PaddingProperty, value); }
+			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
+			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
 
 		public bool CascadeInputTransparent
 		{
-			get { return (bool)GetValue(CascadeInputTransparentProperty); }
-			set { SetValue(CascadeInputTransparentProperty, value); }
+			get => (bool)GetValue(CascadeInputTransparentProperty);
+			set => SetValue(CascadeInputTransparentProperty, value);
 		}
 
-		Thickness IPaddingElement.PaddingDefaultValueCreator()
-		{
-			return default(Thickness);
-		}
+		Thickness IPaddingElement.PaddingDefaultValueCreator() => default(Thickness);
 
-		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
-		{
-			InvalidateLayout();
-		}
+		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue) => InvalidateLayout();
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal
-		{
-			get { return _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren)); }
-		}
+		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
 
 		public event EventHandler LayoutChanged;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public IReadOnlyList<Element> Children
-		{
-			get { return InternalChildren; }
-		}
+		public IReadOnlyList<Element> Children => InternalChildren;
 
-		public void ForceLayout()
-		{
-			SizeAllocated(Width, Height);
-		}
+		public void ForceLayout() => SizeAllocated(Width, Height);
 
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -136,13 +117,11 @@ namespace Xamarin.Forms
 
 		public static void LayoutChildIntoBoundingRegion(VisualElement child, Rectangle region)
 		{
-			var parent = child.Parent as IFlowDirectionController;
 			bool isRightToLeft = false;
-			if (parent != null && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
+			if (child.Parent is IFlowDirectionController parent && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
 				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
 
-			var view = child as View;
-			if (view == null)
+			if (!(child is View view))
 			{
 				child.Layout(region);
 				return;
@@ -224,15 +203,9 @@ namespace Xamarin.Forms
 			UpdateChildrenLayout();
 		}
 
-		protected virtual bool ShouldInvalidateOnChildAdded(View child)
-		{
-			return true;
-		}
+		protected virtual bool ShouldInvalidateOnChildAdded(View child) => true;
 
-		protected virtual bool ShouldInvalidateOnChildRemoved(View child)
-		{
-			return true;
-		}
+		protected virtual bool ShouldInvalidateOnChildRemoved(View child) => true;
 
 		protected void UpdateChildrenLayout()
 		{
@@ -279,9 +252,8 @@ namespace Xamarin.Forms
 
 		internal static void LayoutChildIntoBoundingRegion(View child, Rectangle region, SizeRequest childSizeRequest)
 		{
-			var parent = child.Parent as IFlowDirectionController;
 			bool isRightToLeft = false;
-			if (parent != null && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
+			if (child.Parent is IFlowDirectionController parent && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
 				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
 
 			if (region.Size != childSizeRequest.Request)
@@ -325,13 +297,11 @@ namespace Xamarin.Forms
 			int count = children.Count;
 			for (var index = 0; index < count; index++)
 			{
-				var v = LogicalChildrenInternal[index] as VisualElement;
-				if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsNativeStateConsistent))
+				if (LogicalChildrenInternal[index] is VisualElement v && v.IsVisible && (!v.IsPlatformEnabled || !v.IsNativeStateConsistent))
 					return;
 			}
 
-			var view = child as View;
-			if (view != null)
+			if (child is View view)
 			{
 				// we can ignore the request if we are either fully constrained or when the size request changes and we were already fully constrainted
 				if ((trigger == InvalidationTrigger.MeasureChanged && view.Constraint == LayoutConstraint.Fixed) ||
@@ -433,7 +403,7 @@ namespace Xamarin.Forms
 					if (v == null)
 						continue;
 
-					OnInternalRemoved(v);
+					OnInternalRemoved(v, e.OldStartingIndex + i);
 				}
 			}
 
@@ -466,11 +436,11 @@ namespace Xamarin.Forms
 			view.MeasureInvalidated += OnChildMeasureInvalidated;
 		}
 
-		void OnInternalRemoved(View view)
+		void OnInternalRemoved(View view, int oldIndex)
 		{
 			view.MeasureInvalidated -= OnChildMeasureInvalidated;
 
-			OnChildRemoved(view);
+			OnChildRemoved(view, oldIndex);
 			if (ShouldInvalidateOnChildRemoved(view))
 				InvalidateLayout();
 		}

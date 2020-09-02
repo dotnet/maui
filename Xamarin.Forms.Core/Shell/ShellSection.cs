@@ -529,8 +529,11 @@ namespace Xamarin.Forms
 			base.OnChildAdded(child);
 			OnVisibleChildAdded(child);
 		}
-				
-		protected override void OnChildRemoved(Element child)
+
+		[Obsolete("OnChildRemoved(Element) is obsolete as of version 4.8.0. Please use OnChildRemoved(Element, int) instead.")]
+		protected override void OnChildRemoved(Element child) => OnChildRemoved(child, -1);
+
+		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			if(child is IShellContentController sc && sc.Page.IsPlatformEnabled)
 			{
@@ -538,12 +541,12 @@ namespace Xamarin.Forms
 				void WaitForRendererToGetRemoved(object s, EventArgs p)
 				{
 					sc.Page.PlatformEnabledChanged -= WaitForRendererToGetRemoved;
-					base.OnChildRemoved(child);
+					base.OnChildRemoved(child, oldLogicalIndex);
 				};
 			}
 			else
 			{
-				base.OnChildRemoved(child);
+				base.OnChildRemoved(child, oldLogicalIndex);
 			}
 
 			OnVisibleChildRemoved(child);
@@ -878,15 +881,21 @@ namespace Xamarin.Forms
 
 			if (e.OldItems != null)
 			{
-				foreach (Element element in e.OldItems)
-					OnChildRemoved(element);
+				for (var i = 0; i < e.OldItems.Count; i++)
+				{
+					var element = (Element)e.OldItems[i];
+					OnChildRemoved(element, e.OldStartingIndex + i);
+				}
 			}
 		}
 
 		void RemovePage(Page page)
 		{
-			if (_logicalChildren.Remove(page))
-				OnChildRemoved(page);
+			if (!_logicalChildren.Contains(page))
+				return;
+			var index = _logicalChildren.IndexOf(page);
+			_logicalChildren.Remove(page);
+			OnChildRemoved(page, index);
 		}
 
 		void SendAppearanceChanged() => ((IShellController)Parent?.Parent)?.AppearanceChanged(this, false);

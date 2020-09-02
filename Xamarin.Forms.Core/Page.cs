@@ -472,12 +472,12 @@ namespace Xamarin.Forms
 		{
 			if (e.OldItems != null)
 			{
-				foreach (Element item in e.OldItems)
+				for (var i = 0; i < e.OldItems.Count; i++)
 				{
+					var item = (Element)e.OldItems[i];
 					if (item is VisualElement visual)
-						OnInternalRemoved(visual);
-					else
-						OnChildRemoved(item);
+						visual.MeasureInvalidated -= OnChildMeasureInvalidated;
+					OnChildRemoved(item, e.OldStartingIndex + i);
 				}
 			}
 
@@ -499,13 +499,6 @@ namespace Xamarin.Forms
 
 			OnChildAdded(view);
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
-
-		void OnInternalRemoved(VisualElement view)
-		{
-			view.MeasureInvalidated -= OnChildMeasureInvalidated;
-
-			OnChildRemoved(view);
 		}
 
 		void OnPageBusyChanged()
