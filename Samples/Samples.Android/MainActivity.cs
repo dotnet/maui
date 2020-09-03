@@ -14,6 +14,8 @@ namespace Samples.Droid
         Categories = new[] { Intent.CategoryDefault })]
     public class MainActivity : Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
+        static App formsApp;
+
         protected override void OnCreate(Bundle bundle)
         {
             TabLayoutResource = Resource.Layout.Tabbar;
@@ -27,7 +29,7 @@ namespace Samples.Droid
 
             Xamarin.Essentials.Platform.ActivityStateChanged += Platform_ActivityStateChanged;
 
-            LoadApplication(new App());
+            LoadApplication(formsApp ??= new App());
         }
 
         protected override void OnResume()

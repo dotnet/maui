@@ -5,11 +5,13 @@ namespace Samples.Tizen
 {
     class Program : FormsApplication
     {
+        static App formsApp;
+
         protected override void OnCreate()
         {
             base.OnCreate();
 
-            LoadApplication(new App());
+            LoadApplication(formsApp ??= new App());
         }
 
         static void Main(string[] args)

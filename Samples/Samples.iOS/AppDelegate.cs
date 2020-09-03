@@ -9,13 +9,15 @@ namespace Samples.iOS
     [Register(nameof(AppDelegate))]
     public partial class AppDelegate : Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
     {
+        static App formsApp;
+
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             Xamarin.Forms.Forms.Init();
             Xamarin.Forms.FormsMaterial.Init();
 
             Distribute.DontCheckForUpdatesInDebug();
-            LoadApplication(new App());
+            LoadApplication(formsApp ??= new App());
 
             return base.FinishedLaunching(app, options);
         }

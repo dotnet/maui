@@ -9,6 +9,8 @@ namespace Samples.Mac
     [Register(nameof(AppDelegate))]
     public class AppDelegate : FormsApplicationDelegate
     {
+        static App formsApp;
+
         NSWindow window;
 
         public AppDelegate()
@@ -32,7 +34,7 @@ namespace Samples.Mac
         {
             Forms.Init();
 
-            LoadApplication(new App());
+            LoadApplication(formsApp ??= new App());
 
             base.DidFinishLaunching(notification);
         }
