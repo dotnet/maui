@@ -18,7 +18,7 @@ namespace DeviceTests.Droid
             Xamarin.Essentials.Platform.Init(this, bundle);
 
             var hostIp = Intent.Extras?.GetString("HOST_IP", null);
-            var hostPort = Intent.Extras?.GetInt("HOST_PORT", 10578) ?? 10578;
+            var hostPort = Intent.Extras?.GetInt("HOST_PORT", 63559) ?? 63559;
 
             if (!string.IsNullOrEmpty(hostIp))
             {
