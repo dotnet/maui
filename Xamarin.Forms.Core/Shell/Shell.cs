@@ -802,7 +802,7 @@ namespace Xamarin.Forms
 					try
 					{
 						var location = CurrentState.Location;
-						var navRequest = ShellUriHandler.GetNavigationRequest(this, ((ShellNavigationState)location).FullLocation, false);
+						var navRequest = ShellUriHandler.GetNavigationRequest(this, ((ShellNavigationState)location).FullLocation, false, false);
 
 						if (navRequest != null)
 						{

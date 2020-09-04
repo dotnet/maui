@@ -109,7 +109,8 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			_currentShellItemRenderer.ViewController.View.Frame = View.Bounds;
+			if(_currentShellItemRenderer != null)
+				_currentShellItemRenderer.ViewController.View.Frame = View.Bounds;
 
 			SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
 		}
@@ -284,7 +285,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (Shell.CurrentItem == null)
 			{
-				throw new InvalidOperationException("Shell CurrentItem should not be null");
+				return;
 			}
 			else if (_currentShellItemRenderer == null)
 			{

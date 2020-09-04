@@ -259,6 +259,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateToolBar()
 		{
+			if (SelectedItem == null)
+				return;
+
 			if(_shell.Navigation.NavigationStack.Count > 1)
 			{
 				IsBackEnabled = true;
