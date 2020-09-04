@@ -31,6 +31,8 @@ var TCP_LISTEN_HOST = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName())
     .AddressList.First(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
     .ToString();
 
+var OUTPUT_PATH = MakeAbsolute((DirectoryPath)"../output/");
+
 var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME");
 
 System.Environment.SetEnvironmentVariable("PATH",
@@ -105,21 +107,18 @@ Task("build-ios")
     // Setup the test listener config to be built into the app
     FileWriteText((new FilePath(IOS_PROJ)).GetDirectory().CombineWithFilePath("tests.cfg"), $"{TCP_LISTEN_HOST}:{TCP_LISTEN_PORT}");
 
-    // Nuget restore
     MSBuild(IOS_PROJ, c => {
         c.Configuration = "Release";
-        c.Targets.Clear();
-        c.Targets.Add("Restore");
-    });
-
-    // Build the project(with ipa)
-    MSBuild(IOS_PROJ, c => {
-        c.Configuration = "Release";
+        c.Restore = true;
         c.Properties["Platform"] = new List<string> { "iPhoneSimulator" };
         c.Properties["BuildIpa"] = new List<string> { "true" };
         c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
         c.Targets.Clear();
         c.Targets.Add("Rebuild");
+        c.BinaryLogger = new MSBuildBinaryLogSettings {
+            Enabled = true,
+            FileName = OUTPUT_PATH.CombineWithFilePath("binlogs/device-tests-ios-build.binlog").FullPath,
+        };
     });
 });
 
@@ -180,20 +179,18 @@ Task("test-ios-emu")
 Task("build-android")
     .Does(() =>
 {
-    // Nuget restore
-    MSBuild(ANDROID_PROJ, c => {
-        c.Configuration = "Debug";
-        c.Targets.Clear();
-        c.Targets.Add("Restore");
-    });
-
     // Build the app in debug mode
     // needs to be debug so unit tests get discovered
     MSBuild(ANDROID_PROJ, c => {
         c.Configuration = "Debug";
+        c.Restore = true;
         c.Properties["ContinuousIntegrationBuild"]  = new List<string> { "false" };
         c.Targets.Clear();
         c.Targets.Add("Rebuild");
+        c.BinaryLogger = new MSBuildBinaryLogSettings {
+            Enabled = true,
+            FileName = OUTPUT_PATH.CombineWithFilePath("binlogs/device-tests-android-build.binlog").FullPath,
+        };
     });
 });
 
@@ -258,6 +255,10 @@ Task("test-android-emu")
         c.Properties["AdbTarget"] = new List<string> { "-s " + emuSerial };
         c.Targets.Clear();
         c.Targets.Add("Install");
+        c.BinaryLogger = new MSBuildBinaryLogSettings {
+            Enabled = true,
+            FileName = OUTPUT_PATH.CombineWithFilePath("binlogs/device-tests-android-install.binlog").FullPath,
+        };
     });
 
     // Start the TCP Test results listener
@@ -299,20 +300,18 @@ Task("test-android-emu")
 Task("build-uwp")
     .Does(() =>
 {
-    // Nuget restore
-    MSBuild(UWP_PROJ, c => {
-        c.Targets.Clear();
-        c.Targets.Add("Restore");
-    });
-
-    // Build the project(with ipa)
     MSBuild(UWP_PROJ, c => {
         c.Configuration = "Debug";
+        c.Restore = true;
         c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
         c.Properties["AppxBundlePlatforms"] = new List<string> { "x86" };
         c.Properties["AppxBundle"] = new List<string> { "Always" };
         c.Targets.Clear();
         c.Targets.Add("Rebuild");
+        c.BinaryLogger = new MSBuildBinaryLogSettings {
+            Enabled = true,
+            FileName = OUTPUT_PATH.CombineWithFilePath("binlogs/device-tests-uwp-build.binlog").FullPath,
+        };
     });
 });
 
