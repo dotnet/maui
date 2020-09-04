@@ -168,8 +168,10 @@ namespace Xamarin.Forms
 		{
 			if (Background != null)
 			{
-				Background.PropertyChanging += OnBackgroundChanging;
 				Background.PropertyChanged += OnBackgroundChanged;
+
+				if (Background is GradientBrush gradientBrush)
+					gradientBrush.InvalidateGradientBrushRequested += InvalidateGradientBrushRequested;
 			}
 		}
 
@@ -178,16 +180,18 @@ namespace Xamarin.Forms
 			if (Background != null)
 			{
 				Background.PropertyChanged -= OnBackgroundChanged;
-				Background.PropertyChanging -= OnBackgroundChanging;
+
+				if (Background is GradientBrush gradientBrush)
+					gradientBrush.InvalidateGradientBrushRequested -= InvalidateGradientBrushRequested;
 			}
 		}
 
-		void OnBackgroundChanging(object sender, PropertyChangingEventArgs e)
+		void OnBackgroundChanged(object sender, PropertyChangedEventArgs e)
 		{
-			OnPropertyChanging(nameof(Background));
+			OnPropertyChanged(nameof(Background));
 		}
 
-		void OnBackgroundChanged(object sender, PropertyChangedEventArgs e)
+		void InvalidateGradientBrushRequested(object sender, EventArgs e)
 		{
 			OnPropertyChanged(nameof(Background));
 		}
