@@ -34,12 +34,11 @@ namespace Xamarin.Forms.Internals
 
 		[Obsolete("Can't touch this")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static bool CanProvideContentFor(ResourceLoadingQuery rlq)
-		{
-			if (_resourceProvider2 == null)
-				return false;
-			return _resourceProvider2(rlq) != null;
-		}
+		public static bool IsEnabled => _resourceProvider2 != null;
+
+		[Obsolete("Can't touch this")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static bool CanProvideContentFor(ResourceLoadingQuery rlq) => _resourceProvider2?.Invoke(rlq) != null;
 
 		public class ResourceLoadingQuery
 		{

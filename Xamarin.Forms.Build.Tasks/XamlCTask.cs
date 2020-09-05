@@ -282,6 +282,10 @@ namespace Xamarin.Forms.Build.Tasks
 					//First using the ResourceLoader
 					var nop = Instruction.Create(Nop);
 
+					// if (ResourceLoader.IsEnabled && ...
+					il.Emit(Call, module.ImportPropertyGetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader"), "IsEnabled", isStatic: true));
+					il.Emit(Brfalse, nop);
+
 					il.Emit(Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), 0));
 
 					//AssemblyName
