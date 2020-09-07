@@ -337,6 +337,9 @@ namespace Xamarin.Forms.Platform.iOS
 				if (Subviews.Length > 0)
 					_contentView = Subviews[0];
 			}
+
+			if (_contentView != null)
+				BringSubviewToFront(_contentView);
 		}
 
 		void HandleTap()
