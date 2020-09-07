@@ -102,7 +102,7 @@ steps:
       TargetFolder: '$(build.artifactstagingdirectory)/ios'
       CleanTargetFolder: true
       flattenFolders: true
-      
+
   - task: CopyFiles@2
     displayName: 'Copy iOS dSYM'
     inputs:
@@ -110,7 +110,7 @@ steps:
       TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhone/XamarinFormsControlGalleryiOS.app.dSYM/'
       CleanTargetFolder: false
       flattenFolders: false
-      
+
   - task: CopyFiles@2
     displayName: 'Copy iOS App'
     inputs:
@@ -118,7 +118,7 @@ steps:
       TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhoneSimulator/XamarinFormsControlGalleryiOS.app/'
       CleanTargetFolder: false
       flattenFolders: false
-  
+
   - task: MSBuild@1
     displayName: 'Build Android Tests'
     inputs:

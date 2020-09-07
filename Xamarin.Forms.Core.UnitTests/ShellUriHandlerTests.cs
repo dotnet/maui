@@ -379,7 +379,6 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		}
 
-
 		[Test]
 		public async Task ConvertToStandardFormat()
 		{

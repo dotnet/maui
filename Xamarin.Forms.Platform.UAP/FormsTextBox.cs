@@ -163,6 +163,7 @@ namespace Xamarin.Forms.Platform.UWP
 				_DeleteButtonVisibleStateGroups = stateGroups.SingleOrDefault(sg => sg.Name == "ButtonStates");
 				if (_DeleteButtonVisibleStateGroups != null)
 					_DeleteButtonVisibleState = _DeleteButtonVisibleStateGroups.States.SingleOrDefault(s => s.Name == "ButtonVisible");
+				UpdateClearButtonVisible();
 			}
 
 			_scrollViewer= GetTemplateChild("ContentElement") as ScrollViewer;
@@ -387,19 +388,24 @@ namespace Xamarin.Forms.Platform.UWP
 			SelectionStart = base.Text.Length;
 		}
 
-		static void ClearButtonVisibleChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+		void UpdateClearButtonVisible()
 		{
-			var textBox = (FormsTextBox)dependencyObject;
-			var visibleState = textBox._DeleteButtonVisibleState;
-			var states = textBox._DeleteButtonVisibleStateGroups?.States;
+			var visibleState = _DeleteButtonVisibleState;
+			var states = _DeleteButtonVisibleStateGroups?.States;
 
 			if (states != null && visibleState != null)
 			{
-				if (textBox.ClearButtonVisible && !states.Contains(visibleState))
+				if (ClearButtonVisible && !states.Contains(visibleState))
 					states.Add(visibleState);
 				else
 					states.Remove(visibleState);
 			}
+		}
+
+		static void ClearButtonVisibleChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+		{
+			var textBox = (FormsTextBox)dependencyObject;
+			textBox.UpdateClearButtonVisible();
 		}
 
 		static void TextPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)

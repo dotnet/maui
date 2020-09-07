@@ -98,6 +98,10 @@ namespace Xamarin.Forms.Platform.UWP
 		internal void NavigateToShellItem(ShellItem newItem, bool animate)
 		{
 			UnhookEvents(ShellItem);
+
+			if (newItem?.CurrentItem?.CurrentItem == null)
+				return;
+
 			ShellItem = newItem;
 
 			if (newItem.CurrentItem == null)
