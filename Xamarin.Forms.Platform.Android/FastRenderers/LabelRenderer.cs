@@ -383,6 +383,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		void UpdateMaxLines()
 		{
 			this.SetMaxLines(Element);
+			_lastSizeRequest = null;
 		}
 
 		void UpdateText()
