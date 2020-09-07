@@ -12,11 +12,12 @@ namespace Xamarin.Forms.Controls.Issues
 			var stack = new StackLayout();
 
 			stack.Children.Add(new Label {Text = "Click the button to toggle the clear button visibility."});
+			stack.Children.Add(new Label { Text = "The default state when this page loaded is NEVER.  The clear button should not be visible until you click toggle." });
 
 			Entry = new Entry
 			{
-				Text = "Clear Button: While Editing",
-				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+				Text = "Clear Button: Never",
+				ClearButtonVisibility = ClearButtonVisibility.Never
 			};
 			stack.Children.Add(Entry);
 
