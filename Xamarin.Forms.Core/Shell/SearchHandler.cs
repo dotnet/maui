@@ -50,7 +50,7 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsFocused(bool value)
 		{
-			SetValueCore(IsFocusedPropertyKey.BindableProperty, value);
+			SetValueCore(IsFocusedPropertyKey, value);
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
