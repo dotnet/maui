@@ -37,7 +37,8 @@ namespace Xamarin.Forms.Controls.Issues
 				ItemsSource = ItemSourceUnderTest,
 				ItemTemplate = GetCarouselTemplate(),
 				CurrentItem = _currentItem,
-				AutomationId = "carouseView"
+				AutomationId = "carouseView",
+				Loop = false
 			};
 			CarouselViewUnderTest.CurrentItemChanged += CarouselViewUnderTestCurrentItemChanged;
 			CarouselViewUnderTest.PositionChanged += CarouselViewUnderTest_PositionChanged;
@@ -129,7 +130,6 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement(q => q.Marked($"Item Position - 4"));
 			var rect = RunningApp.Query("carouseView")[0].Rect;
-			RunningApp.WaitForElement(q => q.Marked($"Item Position - 4"));
 			SwipePreviousItem(rect);
 			RunningApp.WaitForElement(q => q.Marked($"Item Position - 4"));
 			SwipePreviousItem(rect);

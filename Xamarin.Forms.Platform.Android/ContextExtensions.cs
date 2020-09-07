@@ -6,15 +6,9 @@ using Android.Views.InputMethods;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AActivity = Android.App.Activity;
 
-#if __ANDROID_29__
 using AndroidX.Fragment.App;
 using AndroidX.AppCompat.App;
 using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
-#else
-using AFragmentManager = Android.Support.V4.App.FragmentManager;
-using Android.Support.V4.App;
-using Android.Support.V7.App;
-#endif
 
 namespace Xamarin.Forms.Platform.Android
 {

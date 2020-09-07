@@ -28,7 +28,7 @@ namespace Xamarin.Forms
 			var accent = (WSolidColorBrush)Windows.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			Color.SetAccent(accent.ToFormsColor());
 
-#if UWP_14393
+#if !UWP_16299
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
 #else
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));

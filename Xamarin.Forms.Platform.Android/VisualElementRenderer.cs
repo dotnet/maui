@@ -9,11 +9,7 @@ using Xamarin.Forms.Platform.Android.FastRenderers;
 using Android.Runtime;
 using Android.Content.Res;
 using Android.Graphics;
-#if __ANDROID_29__
 using AndroidX.Core.View;
-#else
-using Android.Support.V4.View;
-#endif
 
 
 namespace Xamarin.Forms.Platform.Android

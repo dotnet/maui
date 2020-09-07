@@ -1,5 +1,5 @@
 
-<img src="banner.png" alt="Xamarin.Forms banner" height="145" >
+<img src="Assets/banner.png" alt="Xamarin.Forms banner" height="145" >
 
 # Xamarin.Forms #
 

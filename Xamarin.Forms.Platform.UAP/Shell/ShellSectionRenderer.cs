@@ -44,7 +44,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnShellSectionRendererSizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
 		{
-			Page.ContainerArea = new Rectangle(0, 0, e.NewSize.Width, e.NewSize.Height);
+			if(Page != null)
+				Page.ContainerArea = new Rectangle(0, 0, e.NewSize.Width, e.NewSize.Height);
 		}
 
 		void OnMenuItemInvoked(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)

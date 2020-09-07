@@ -32,7 +32,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 						GalleryBuilder.NavButton("CarouselView (Code, Vertical)", () =>
 							new CarouselCodeGallery(ItemsLayoutOrientation.Vertical), Navigation),
 						GalleryBuilder.NavButton("CarouselView (XAML, Horizontal)", () =>
-							new CarouselXamlGallery(), Navigation),
+							new CarouselXamlGallery(false), Navigation),
+						GalleryBuilder.NavButton("CarouselView (XAML, Horizontal, Loop)", () =>
+							new CarouselXamlGallery(true), Navigation),
 						GalleryBuilder.NavButton("CarouselView (Indicators Forms)", () =>
 							new CarouselItemsGallery(), Navigation),
 						GalleryBuilder.NavButton("CarouselView (Indicators Default (Native))", () =>
@@ -51,8 +53,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 							new CarouselItemsGallery(useNativeIndicators: true, setPositionOnConstructor: true), Navigation),
 						GalleryBuilder.NavButton("CarouselView SetPosition Appearing", () =>
 							new CarouselItemsGallery(useNativeIndicators: true, setPositionOnAppearing: true), Navigation),
-						GalleryBuilder.NavButton("CarouselView SetPosition Ctor No Animation", () =>
-							new CarouselItemsGallery(useNativeIndicators: true, setPositionOnConstructor: true, useScrollAnimated: false), Navigation),
+						GalleryBuilder.NavButton("CarouselView loop", () =>
+							new CarouselXamlGallery(true), Navigation),
 					}
 				}
 			};

@@ -1,17 +1,9 @@
 ﻿using Android.OS;
 using Android.Runtime;
-#if __ANDROID_29__
 using AndroidX.Fragment.App;
-using AndroidX.Core.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using Google.Android.Material.AppBar;
-#else
-using Android.Support.V4.App;
-using Android.Support.Design.Widget;
-using Android.Support.V7.Widget;
-using Android.Support.V4.Widget;
-#endif
 using Android.Views;
 using Android.Views.Animations;
 using System;

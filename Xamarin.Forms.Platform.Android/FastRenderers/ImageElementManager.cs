@@ -5,11 +5,7 @@ using AScaleType = Android.Widget.ImageView.ScaleType;
 using ARect = Android.Graphics.Rect;
 using System;
 using Xamarin.Forms.Internals;
-#if __ANDROID_29__
 using AViewCompat = AndroidX.Core.View.ViewCompat;
-#else
-using AViewCompat = Android.Support.V4.View.ViewCompat;
-#endif
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {

@@ -1,14 +1,9 @@
 using System;
 using Android.Content;
-using Android.Graphics;
 using Android.Views;
 using Android.Widget;
 using System.ComponentModel;
-#if __ANDROID_29__
 using AndroidX.Core.Graphics.Drawable;
-#else
-using Android.Support.V4.Graphics.Drawable;
-#endif
 using ARect = Android.Graphics.Rect;
 
 namespace Xamarin.Forms.Platform.Android

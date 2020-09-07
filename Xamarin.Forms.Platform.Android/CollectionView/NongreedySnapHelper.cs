@@ -1,10 +1,4 @@
-﻿#if __ANDROID_29__
-using AndroidX.AppCompat.Widget;
-using AndroidX.RecyclerView.Widget;
-#else
-using System;
-using Android.Support.V7.Widget;
-#endif
+﻿using AndroidX.RecyclerView.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {

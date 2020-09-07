@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	internal static class TemplatedItemSourceFactory
 	{
-		internal static object Create(IEnumerable itemsSource, DataTemplate itemTemplate, BindableObject container, 
+		internal static object Create(IEnumerable itemsSource, DataTemplate itemTemplate, BindableObject container,
 			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null)
 		{
 			switch (itemsSource)
@@ -19,10 +19,12 @@ namespace Xamarin.Forms.Platform.UWP
 			return new ItemTemplateContextEnumerable(itemsSource, itemTemplate, container, itemHeight, itemWidth, itemSpacing);
 		}
 
-		internal static object CreateGrouped(IEnumerable itemsSource, DataTemplate itemTemplate, 
+		internal static object CreateGrouped(IEnumerable itemsSource, DataTemplate itemTemplate,
 			DataTemplate groupHeaderTemplate, DataTemplate groupFooterTemplate, BindableObject container)
 		{
 			return new GroupedItemTemplateCollection(itemsSource, itemTemplate, groupHeaderTemplate, groupFooterTemplate, container);
 		}
 	}
 }
+
+

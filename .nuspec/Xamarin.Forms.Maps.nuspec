@@ -27,11 +27,6 @@
         <dependency id="Xamarin.Forms" version="$version$"/>
         <dependency id="Xamarin.Android.Support.v4" version="28.0.0.3"/>
       </group>
-      <group targetFramework="MonoAndroid90">
-        <dependency id="Xamarin.GooglePlayServices.Maps" version="71.1610.0"/>
-        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0.3"/>
-        <dependency id="Xamarin.Forms" version="$version$"/>
-      </group>
       <group targetFramework="tizen40">
         <dependency id="Tizen.NET" version="4.0.0"/>
       </group>
@@ -41,22 +36,18 @@
     <!--Icon-->
     <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Maps.dll" target="lib\netstandard1.0" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard1.0" />
+    <file src="..\build\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard1.0" />
 
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\netstandard2.0" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard2.0" />
-
-    <file src="..\Xamarin.Forms.Maps.Android\bin\$Configuration$\MonoAndroid90\Xamarin.Forms.Maps.Android.dll" target="lib\MonoAndroid90" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\MonoAndroid90" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\MonoAndroid90" />
+    <file src="..\build\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard2.0" />
 
     <file src="..\Xamarin.Forms.Maps.Android\bin\$Configuration$\MonoAndroid10.0\Xamarin.Forms.Maps.Android.dll" target="lib\MonoAndroid10.0" />
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\MonoAndroid10.0" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\MonoAndroid10.0" />
+    <file src="..\build\docs\Xamarin.Forms.Maps.xml" target="lib\MonoAndroid10.0" />
 
     <file src="..\Xamarin.Forms.Maps.iOS\bin\iPhoneSimulator\$Configuration$\Xamarin.Forms.Maps.iOS.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\Xamarin.iOS10" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\build\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.iOS10" />
 
     <file src="..\Xamarin.Forms.Maps.UWP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Maps.UWP.dll" target="lib\uap10.0.14393" />
     <file src="..\Xamarin.Forms.Maps.UWP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Maps.UWP.pri" target="lib\uap10.0.14393" />
@@ -68,11 +59,11 @@
 
     <file src="..\Xamarin.Forms.Maps.MacOS\bin\$Configuration$\Xamarin.Forms.Maps.macOS.dll" target="lib\Xamarin.Mac" />
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\Xamarin.Mac" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.Mac" />
+    <file src="..\build\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.Mac" />
 
     <file src="..\Xamarin.Forms.Maps.Tizen\bin\$Configuration$\tizen40\Xamarin.Forms.Maps.Tizen.dll" target="lib\tizen40" />
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\tizen40" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\tizen40" />
+    <file src="..\build\docs\Xamarin.Forms.Maps.xml" target="lib\tizen40" />
 
   </files>
 </package>

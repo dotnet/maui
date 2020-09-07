@@ -7,7 +7,6 @@ parameters:
   includeUwp: 'true'
   includeAndroid: 'true'
   includeNonUwpAndNonAndroid: 'true'
-  includePages: 'false'
 
 
 steps:
@@ -48,16 +47,6 @@ steps:
   - script: build.cmd -Target BuildForNuget -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"','-Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
     name: winbuild
     displayName: 'Build Projects For Nuget'
-    condition: ne(${{ parameters.includePages }}, 'true')
-
-  - task: MSBuild@1
-    displayName: 'Build solution ${{ parameters.slnPath }}'
-    name: winslnbuild
-    condition: eq(${{ parameters.includePages }}, 'true')
-    inputs:
-      solution: ${{ parameters.slnPath }}
-      configuration: '$(BuildConfiguration)'
-      msbuildArguments: ${{ parameters.msbuildExtraArguments }} /bl:$(Build.ArtifactStagingDirectory)\win-$(BuildConfiguration).binlog
 
   - task: VSTest@2
     displayName: 'Unit Tests'
@@ -65,7 +54,6 @@ steps:
       testAssemblyVer2: |
         **/bin/$(BuildConfiguration)/Xamarin.Forms.Core.UnitTests.dll
         **/bin/$(BuildConfiguration)/**/Xamarin.Forms.DualScreen.UnitTests.dll
-        **/bin/$(BuildConfiguration)/Xamarin.Forms.Pages.UnitTests.dll
         **/bin/$(BuildConfiguration)/**/Xamarin.Forms.Xaml.UnitTests.dll
       searchFolder: ${{ parameters.nunitTestFolder }}
       codeCoverageEnabled: true
@@ -193,12 +181,12 @@ steps:
       TargetFolder: ${{ parameters.artifactsTargetFolder }}
   
   - script: build.cmd -Target cg-uwp-build-tests  -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"'
-    condition: and(eq(variables['BuildConfiguration'], 'Release'), ne('${{ parameters.includePages }}', true))
+    condition: eq(variables['BuildConfiguration'], 'Release')
     displayName: 'Build Tests and APPX'
 
   - task: CopyFiles@2
     displayName: 'Copy Appx Packages'
-    condition: and(eq(variables['BuildConfiguration'], 'Release'), ne('${{ parameters.includePages }}', true))
+    condition: eq(variables['BuildConfiguration'], 'Release')
     inputs:
       Contents: |
         Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/*
@@ -220,7 +208,7 @@ steps:
 
   - task: CopyFiles@2
     displayName: 'Copy UITest Files'
-    condition: and(eq(variables['BuildConfiguration'], 'Release'), ne('${{ parameters.includePages }}', true))
+    condition: eq(variables['BuildConfiguration'], 'Release')
     inputs:
       SourceFolder: Xamarin.Forms.Core.Windows.UITests/bin/Debug/
       TargetFolder: '$(build.artifactstagingdirectory)/UITests'
@@ -234,21 +222,6 @@ steps:
       TargetFolder: '$(build.artifactstagingdirectory)'
       CleanTargetFolder: false
       flattenFolders: false
-
-  - task: CopyFiles@2
-    displayName: 'Copy Pages Files dlls'
-    condition: eq('${{ parameters.includePages }}', true)
-    inputs:
-      Contents: |
-        Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Pages.Azure/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Pages.Azure/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Pages.Azure/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Pages.UnitTests/bin/$(BuildConfiguration)/**/*.dll
-
-      TargetFolder: ${{ parameters.artifactsTargetFolder }}
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: ${{ parameters.artifactsName }}'

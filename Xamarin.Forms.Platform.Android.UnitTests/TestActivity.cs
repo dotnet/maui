@@ -8,14 +8,8 @@ using Android.Views;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.UnitTests;
 using System.Threading;
-
-#if __ANDROID_29__
 using AndroidX.AppCompat.App;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
-#else
-using Android.Support.V7.App;
-using AToolbar = Android.Support.V7.Widget.Toolbar;
-#endif
 
 [assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
 namespace Xamarin.Forms.Platform.Android.UnitTests

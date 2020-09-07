@@ -13,7 +13,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Xamarin.Forms.Platform.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <!-- 
+    <!--
         This is needed for non SDK style project so the IDE will pick the correct LangVersion.
         Once this is an SDK style project it will pick this up from the Directory.Build.Props file correctly
      -->
@@ -38,13 +38,6 @@
     <ConsolePause>false</ConsolePause>
     <NoWarn>
     </NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Use2017)' == 'true' ">
-    <DefineConstants>$(DefineConstants);__XCODE10__</DefineConstants>
-    <OutputPath>$(OutputPath)\2017</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Use2017)' != 'true' ">
-    <DefineConstants>$(DefineConstants);__XCODE11__</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -273,7 +266,6 @@
     <Compile Include="Extensions\DoubleCollectionExtensions.cs" />
     <Compile Include="Extensions\TransformExtensions.cs" />
     <Compile Include="Extensions\UIApplicationExtensions.cs" />
-    <Compile Include="Extensions\UICollectionViewExtensions.cs" />
     <Compile Include="Shapes\ShapeRenderer.cs" />
     <Compile Include="Shapes\PathRenderer.cs" />
     <Compile Include="Extensions\PointCollectionExtensions.cs" />
@@ -283,6 +275,9 @@
     <Compile Include="Shapes\PolylineRenderer.cs" />
     <Compile Include="Shapes\RectangleRenderer.cs" />
     <Compile Include="Extensions\BrushExtensions.cs" />
+    <Compile Include="CollectionView\LoopObservableItemsSource.cs" />
+    <Compile Include="CollectionView\LoopListSource.cs" />
+    <Compile Include="CollectionView\ILoopItemsViewSource.cs" />
     <Compile Include="Renderers\IDisconnectable.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -334,11 +329,4 @@
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup Condition="'$(Use2017)' == 'true'">
-    <Reference Include="netstandard" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Condition="'$(CI)' == 'true'" Include="Xamarin.Build.TypeRedirector" Version="0.1.2-preview" PrivateAssets="all" />
-  </ItemGroup>
-  <ItemGroup />
 </Project>

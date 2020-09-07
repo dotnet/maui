@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Core.UITests
 		public const string ButtonGallery = "* marked:'Button Gallery'";
 		public const string CheckBoxGallery = "* marked:'CheckBox Gallery'";
 		public const string CollectionViewGallery = "* marked:'CollectionView Gallery'";
+		public const string CarouselViewGallery = "* marked:'CarouselView Gallery'";
 		public const string ContextActionsListGallery = "* marked:'ContextActions List Gallery'";
 		public const string ContextActionsTableGallery = "* marked:'ContextActions Table Gallery'";
 		public const string DatePickerGallery = "* marked:'DatePicker Gallery'";

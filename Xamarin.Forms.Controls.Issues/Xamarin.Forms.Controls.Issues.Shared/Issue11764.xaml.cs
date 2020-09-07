@@ -44,14 +44,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 			BindingContext = this;
 #endif
-        }
+		}
 
-        public ObservableCollection<string> Data { get; } = new ObservableCollection<string>();
-        public ICommand TapCommand { get; }
-        public ICommand PinCommand { get; }
-        public ICommand DeleteCommand { get; }
+		public ObservableCollection<string> Data { get; } = new ObservableCollection<string>();
+		public ICommand TapCommand { get; }
+		public ICommand PinCommand { get; }
+		public ICommand DeleteCommand { get; }
 
-        protected override void Init()
+		protected override void Init()
 		{
 
 		}

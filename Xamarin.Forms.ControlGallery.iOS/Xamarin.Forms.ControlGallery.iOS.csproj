@@ -14,7 +14,6 @@
     <AssemblyName>XamarinFormsControlGalleryiOS</AssemblyName>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <DefineConstants Condition="'$(Use2017)' != 'true'">__XCODE11__;$(DefineConstants);</DefineConstants>
     <MtouchExtraArgs>--nolinkaway --optimize=experimental-xforms-product-type</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">

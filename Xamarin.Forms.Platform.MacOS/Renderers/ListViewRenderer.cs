@@ -492,12 +492,10 @@ namespace Xamarin.Forms.Platform.MacOS
 					(Source as ListViewDataSource)?.OnRowClicked();
 			}
 
-#if __XCODE11__
 			public override bool ValidateProposedFirstResponder(NSResponder responder, NSEvent forEvent)
 			{
 				return true;
 			}
-#endif
 
 		}
 	}

@@ -1,22 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Android.Content;
-using Android.Support.Design.Widget;
 using Android.Views;
-using Android.Widget;
 using NUnit.Framework;
 using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Platform.Android.UnitTests;
+using Google.Android.Material.BottomNavigation;
 
-#if __ANDROID_29__
-using AndroidX.AppCompat.App;
-using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
-#else
-#endif
 
 [assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
 namespace Xamarin.Forms.Platform.Android.UnitTests

@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Android.Support.V4.App;
+using AndroidX.Fragment.App;
 using NUnit.Framework;
 
 namespace Xamarin.Forms.Platform.Android.UnitTests

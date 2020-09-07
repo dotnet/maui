@@ -73,9 +73,22 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			// If the height of a TextBlock is shorter than Editfield, use the minimun height of the Editfield.
 			// Or add the height of the EditField to the TextBlock
 			if (textBlockSize.Height < _editfieldLayout.MinimumHeight)
-				textBlockSize.Height = _editfieldLayout.MinimumHeight;
+			{
+				if (Device.Idiom == TargetIdiom.TV || Device.Idiom == TargetIdiom.Watch)
+				{
+					textBlockSize.Height = _editfieldLayout.MinimumHeight;
+				}
+				else
+				{
+					// Since the minimum height of EditFieldLayout too large, adjust it to an appropriate height.
+					var adjustedMinHeight = _editfieldLayout.MinimumHeight - (_editfieldLayout.MinimumHeight - _heightPadding) / 2;
+					textBlockSize.Height = textBlockSize.Height < adjustedMinHeight ? adjustedMinHeight : _editfieldLayout.MinimumHeight;
+				}
+			}
 			else
+			{
 				textBlockSize.Height += _heightPadding;
+			}
 
 			return textBlockSize;
 		}

@@ -17,12 +17,10 @@
     <AndroidApplication>true</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <AndroidTargetFrameworkVersion Condition="'$(AndroidTargetFrameworkVersion)' == '' AND '$(Use2017)' == 'true'">v9.0</AndroidTargetFrameworkVersion>
     <AndroidTargetFrameworkVersion Condition="'$(AndroidTargetFrameworkVersion)' == ''">v10.0</AndroidTargetFrameworkVersion>
     <TargetFrameworkVersion>$(AndroidTargetFrameworkVersion)</TargetFrameworkVersion>
     <AndroidManifest Condition="$(AndroidTargetFrameworkVersion) == 'v10.0.99'">Properties\AndroidManifest30.xml</AndroidManifest>
     <AndroidManifest Condition="$(AndroidTargetFrameworkVersion) == 'v10.0'">Properties\AndroidManifest.xml</AndroidManifest>
-    <AndroidManifest Condition="$(AndroidTargetFrameworkVersion) == 'v9.0'">Properties\AndroidManifest28.xml</AndroidManifest>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <NuGetPackageImportStamp>
@@ -69,10 +67,9 @@
     <AndroidLinkMode>SdkOnly</AndroidLinkMode>
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <AndroidDexTool Condition="'$(Use2017)' != 'true'">d8</AndroidDexTool>
-    <AndroidLinkTool Condition="'$(Use2017)' != 'true'">r8</AndroidLinkTool>
-    <AndroidEnableMultiDex Condition="'$(Use2017)' != 'true'">false</AndroidEnableMultiDex>
-    <AndroidEnableMultiDex Condition="'$(Use2017)' == 'true'">true</AndroidEnableMultiDex>
+    <AndroidDexTool>d8</AndroidDexTool>
+    <AndroidLinkTool>r8</AndroidLinkTool>
+    <AndroidEnableMultiDex>false</AndroidEnableMultiDex>
   </PropertyGroup>
   <PropertyGroup Condition="'$(CI)' == 'true'">
     <AndroidLinkMode>Full</AndroidLinkMode>
@@ -248,7 +245,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\AndroidManifest.xml" />
-    <None Include="Properties\AndroidManifest28.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\error.xml" />

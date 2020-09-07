@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Foundation;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -6,6 +7,7 @@ namespace Xamarin.Forms.Platform.iOS
 	public class CarouselViewRenderer : ItemsViewRenderer<CarouselView, CarouselViewController>
 	{
 		CarouselView Carousel => Element;
+		ItemsViewLayout _layout;
 
 		[Preserve(Conditional = true)]
 		public CarouselViewRenderer()
@@ -18,13 +20,28 @@ namespace Xamarin.Forms.Platform.iOS
 			return new CarouselViewController(newElement, layout);
 		}
 
+		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
+		{
+			if (Carousel?.Loop == true)
+			{
+				var goToIndexPath = Controller.GetScrollToIndexPath(args.Index);
+				Controller.CollectionView.ScrollToItem(goToIndexPath,
+					args.ScrollToPosition.ToCollectionViewScrollPosition(_layout.ScrollDirection),
+					args.IsAnimated);
+			}
+			else
+			{
+				base.ScrollToRequested(sender, args);
+			}
+		}
+
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
 
 			if (changedProperty.Is(CarouselView.PeekAreaInsetsProperty))
 			{
-				(Controller.Layout as CarouselViewLayout).UpdateConstraints(Frame.Size);
+				(Controller.Layout as CarouselViewLayout)?.UpdateConstraints(Frame.Size);
 				Controller.Layout.InvalidateLayout();
 			}
 			else if (changedProperty.Is(CarouselView.IsSwipeEnabledProperty))
@@ -33,10 +50,9 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateIsBounceEnabled();
 		}
 
-		protected override ItemsViewLayout SelectLayout()
-		{
-			return new CarouselViewLayout(Carousel.ItemsLayout, Carousel);
-		}
+		protected override ItemsViewLayout SelectLayout() =>
+				_layout = new CarouselViewLayout(Carousel.ItemsLayout, Carousel);
+
 
 		protected override void SetUpNewElement(CarouselView newElement)
 		{

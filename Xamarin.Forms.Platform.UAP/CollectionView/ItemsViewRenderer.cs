@@ -4,11 +4,13 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Xamarin.Forms.Internals;
 using UwpApp = Windows.UI.Xaml.Application;
 using UwpDataTemplate = Windows.UI.Xaml.DataTemplate;
 using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
+using WRect = Windows.Foundation.Rect;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -23,8 +25,8 @@ namespace Xamarin.Forms.Platform.UWP
 		View _formsEmptyView; 
 		bool _emptyViewDisplayed;
 		ScrollViewer _scrollViewer;
-		internal double _previousHorizontalOffset;
-		internal double _previousVerticalOffset;
+		double _previousHorizontalOffset;
+		double _previousVerticalOffset;
 
 		protected ListViewBase ListViewBase { get; private set; }
 		protected UwpDataTemplate ViewTemplate => (UwpDataTemplate)UwpApp.Current.Resources["View"];
@@ -83,7 +85,6 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-
 			CleanUpCollectionViewSource();
 
 			if (Element.ItemsSource == null)
@@ -98,9 +99,14 @@ namespace Xamarin.Forms.Platform.UWP
 				incc.CollectionChanged += ItemsChanged;
 			}
 
-			ListViewBase.ItemsSource = CollectionViewSource.View;
-
+			ListViewBase.ItemsSource = GetCollectionView(CollectionViewSource);
+			
 			UpdateEmptyViewVisibility();
+		}
+
+		protected virtual ICollectionView GetCollectionView(CollectionViewSource collectionViewSource) 
+		{
+			return collectionViewSource.View;
 		}
 
 		protected virtual void CleanUpCollectionViewSource()
@@ -273,14 +279,13 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		protected virtual void FindScrollViewer(ListViewBase listView)
+		void FindScrollViewer(ListViewBase listView)
 		{
 			var scrollViewer = listView.GetFirstDescendant<ScrollViewer>();
 
 			if (scrollViewer != null)
 			{
-				_scrollViewer = scrollViewer;
-				_scrollViewer.ViewChanged += OnScrollViewChanged;
+				OnScrollViewerFound(scrollViewer);
 				return;
 			}
 
@@ -292,6 +297,12 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			listView.Loaded += ListViewLoaded;
+		}
+
+		protected virtual void OnScrollViewerFound(ScrollViewer scrollViewer) 
+		{
+			_scrollViewer = scrollViewer;
+			_scrollViewer.ViewChanged += OnScrollViewChanged;
 		}
 
 		protected virtual async Task ScrollTo(ScrollToRequestEventArgs args)
@@ -328,12 +339,12 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (args.Mode == ScrollToMode.Position)
 			{
-				if (args.Index >= CollectionViewSource.View.Count)
+				if (args.Index >= ItemCount)
 				{
 					return null;
 				}
 
-				return CollectionViewSource.View[args.Index];
+				return GetItem(args.Index);
 			}
 
 			if (Element.ItemTemplate == null)
@@ -341,7 +352,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return args.Item;
 			}
 
-			for (int n = 0; n < CollectionViewSource.View.Count; n++)
+			for (int n = 0; n < ItemCount; n++)
 			{
 				if (CollectionViewSource.View[n] is ItemTemplateContext pair)
 				{
@@ -495,33 +506,106 @@ namespace Xamarin.Forms.Platform.UWP
 			_previousVerticalOffset = scrollViewer.VerticalOffset;
 
 			var layoutOrientaton = ItemsLayoutOrientation.Vertical;
-			bool goingNext = true;
+			bool advancing = true;
 			switch (Layout)
 			{
 				case LinearItemsLayout linearItemsLayout:
 					layoutOrientaton = linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal ? ItemsLayoutOrientation.Horizontal : ItemsLayoutOrientation.Vertical;
-					goingNext = itemsViewScrolledEventArgs.HorizontalDelta > 0;
+					advancing = itemsViewScrolledEventArgs.HorizontalDelta > 0;
 					break;
 				case GridItemsLayout gridItemsLayout:
 					layoutOrientaton = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal ? ItemsLayoutOrientation.Horizontal : ItemsLayoutOrientation.Vertical;
-					goingNext = itemsViewScrolledEventArgs.VerticalDelta > 0;
+					advancing = itemsViewScrolledEventArgs.VerticalDelta > 0;
 					break;
 				default:
 					break;
 			}
 
-			var visibleIndexes = ListViewBase.GetVisibleIndexes(layoutOrientaton, goingNext);
-
-			itemsViewScrolledEventArgs.FirstVisibleItemIndex = visibleIndexes.firstVisibleItemIndex;
-			itemsViewScrolledEventArgs.CenterItemIndex = visibleIndexes.centerItemIndex;
-			itemsViewScrolledEventArgs.LastVisibleItemIndex = visibleIndexes.lastVisibleItemIndex;
+			itemsViewScrolledEventArgs = ComputeVisibleIndexes(itemsViewScrolledEventArgs, layoutOrientaton, advancing);
 
 			Element.SendScrolled(itemsViewScrolledEventArgs);
+		}
+
+		protected virtual ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, ItemsLayoutOrientation orientation, bool advancing) 
+		{
+			var (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex) = GetVisibleIndexes(orientation, advancing);
+
+			args.FirstVisibleItemIndex = firstVisibleItemIndex;
+			args.CenterItemIndex = centerItemIndex;
+			args.LastVisibleItemIndex = lastVisibleItemIndex;
+
+			return args;
+		}
+
+		(int firstVisibleItemIndex, int lastVisibleItemIndex, int centerItemIndex) GetVisibleIndexes(ItemsLayoutOrientation itemsLayoutOrientation, bool advancing) 
+		{
+			int firstVisibleItemIndex = -1;
+			int lastVisibleItemIndex = -1;
+
+			if (ListViewBase.ItemsPanelRoot is ItemsStackPanel itemsPanel)
+			{
+				firstVisibleItemIndex = itemsPanel.FirstVisibleIndex;
+				lastVisibleItemIndex = itemsPanel.LastVisibleIndex;
+			}
+			else
+			{
+				var presenters = ListViewBase.GetChildren<ListViewItemPresenter>();
+
+				if (presenters != null && _scrollViewer != null)
+				{
+					int count = 0;
+					foreach (ListViewItemPresenter presenter in presenters)
+					{
+						if (IsElementVisibleInContainer(presenter, _scrollViewer, itemsLayoutOrientation))
+						{
+							if (firstVisibleItemIndex == -1)
+								firstVisibleItemIndex = count;
+
+							lastVisibleItemIndex = count;
+						}
+
+						count++;
+					}
+				}
+			}
+
+			double center = (lastVisibleItemIndex + firstVisibleItemIndex) / 2.0;
+			int centerItemIndex = advancing ? (int)Math.Ceiling(center) : (int)Math.Floor(center);
+
+			return (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex);
+		}
+
+		bool IsElementVisibleInContainer(FrameworkElement element, FrameworkElement container, ItemsLayoutOrientation itemsLayoutOrientation)
+		{
+			if (element == null || container == null)
+				return false;
+
+			if (element.Visibility != Visibility.Visible)
+				return false;
+
+			var elementBounds = element.TransformToVisual(container).TransformBounds(new WRect(0, 0, element.ActualWidth, element.ActualHeight));
+			var containerBounds = new WRect(0, 0, container.ActualWidth, container.ActualHeight);
+
+			switch (itemsLayoutOrientation)
+			{
+				case ItemsLayoutOrientation.Vertical:
+					return elementBounds.Top < containerBounds.Bottom && elementBounds.Bottom > containerBounds.Top;
+
+				default:
+					return elementBounds.Left < containerBounds.Right && elementBounds.Right > containerBounds.Left;
+			};
 		}
 
 		void OnScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
 			HandleScroll(_scrollViewer);
+		}
+
+		protected virtual int ItemCount => CollectionViewSource.View.Count;
+
+		protected virtual object GetItem(int index) 
+		{
+			return CollectionViewSource.View[index];
 		}
 	}
 }

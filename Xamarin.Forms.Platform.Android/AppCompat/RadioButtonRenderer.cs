@@ -2,13 +2,8 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
-#if __ANDROID_29__
 using AndroidX.Core.View;
 using AndroidX.AppCompat.Widget;
-#else
-using Android.Support.V7.Widget;
-using Android.Support.V4.View;
-#endif
 using Android.Util;
 using Android.Views;
 using Xamarin.Forms.Internals;
@@ -16,7 +11,6 @@ using Xamarin.Forms.Platform.Android.FastRenderers;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
-using Android.Graphics.Drawables;
 using Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android

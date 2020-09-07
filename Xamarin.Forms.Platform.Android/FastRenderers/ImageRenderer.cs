@@ -7,11 +7,7 @@ using AImageView = Android.Widget.ImageView;
 using AView = Android.Views.View;
 using Android.Views;
 using Xamarin.Forms.Internals;
-#if __ANDROID_29__
 using AndroidX.Core.View;
-#else
-using Android.Support.V4.View;
-#endif
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {

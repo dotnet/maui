@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
+using Windows.Media.PlayTo;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using UWPPoint = Windows.Foundation.Point;
@@ -137,6 +140,13 @@ namespace Xamarin.Forms.Platform.UWP
 
 			try
 			{
+				if (scrollViewer.HorizontalOffset == targetHorizontalOffset
+					&& scrollViewer.VerticalOffset == targetVerticalOffset)
+				{
+					// We're already centered, no need to adjust
+					tcs.TrySetResult(null);
+				}
+
 				scrollViewer.ViewChanged += ViewChanged;
 				scrollViewer.ChangeView(targetHorizontalOffset, targetVerticalOffset, null, true);
 				await tcs.Task;
@@ -169,6 +179,21 @@ namespace Xamarin.Forms.Platform.UWP
 			return transform.TransformPoint(Zero);
 		}
 
+		internal static void JumpToIndexAsync(ListViewBase list, int index, ScrollToPosition scrollToPosition) 
+		{
+			var scrollViewer = list.GetFirstDescendant<ScrollViewer>();
+			var con = list.ContainerFromIndex(index);
+			if (con is UIElement uIElement)
+			{
+				var width = uIElement.DesiredSize.Width;
+
+				var current = scrollViewer.HorizontalOffset;
+				var delta = (index * width) - current;
+
+				scrollViewer.ChangeView(current + delta, scrollViewer.VerticalOffset, scrollViewer.ZoomFactor, true);
+			}
+		}
+
 		public static async Task JumpToItemAsync(ListViewBase list, object targetItem, ScrollToPosition scrollToPosition)
 		{
 			var scrollViewer = list.GetFirstDescendant<ScrollViewer>();
@@ -193,7 +218,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				tcs.TrySetResult(null);
 			}
-
+			
 			try
 			{
 				scrollViewer.ViewChanged += ViewChanged;

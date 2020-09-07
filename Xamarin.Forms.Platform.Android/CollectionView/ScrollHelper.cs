@@ -1,12 +1,6 @@
 using System;
-using Android.Graphics;
 using ARect = Android.Graphics.Rect;
-#if __ANDROID_29__
-using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
-#else
-using Android.Support.V7.Widget;
-#endif
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -65,7 +59,7 @@ namespace Xamarin.Forms.Platform.Android
 				};
 
 				// And kick off the scroll operation
-				_recyclerView.GetLayoutManager().StartSmoothScroll(smoothScroller);
+				_recyclerView.GetLayoutManager()?.StartSmoothScroll(smoothScroller);
 			}
 		}
 

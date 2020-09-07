@@ -1,15 +1,8 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using Android.Graphics;
-#if __ANDROID_29__
-using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
-#else
-using Android.Support.V7.Widget;
-using AViewCompat = Android.Support.V4.View.ViewCompat;
-#endif
 using Android.Views;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.CollectionView;
@@ -61,7 +54,7 @@ namespace Xamarin.Forms.Platform.Android
 			HorizontalScrollBarEnabled = false;
 		}
 
-		ScrollHelper ScrollHelper => _scrollHelper = _scrollHelper ?? new ScrollHelper(this);
+		internal ScrollHelper ScrollHelper => _scrollHelper = _scrollHelper ?? new ScrollHelper(this);
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
@@ -609,6 +602,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void ScrollTo(ScrollToRequestEventArgs args)
 		{
+			if (ItemsView == null)
+				return;
+
 			var position = DetermineTargetPosition(args);
 
 			if (args.IsAnimated)

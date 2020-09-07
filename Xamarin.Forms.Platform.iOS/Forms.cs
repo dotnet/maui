@@ -312,7 +312,7 @@ namespace Xamarin.Forms
 
 			public Color GetNamedColor(string name)
 			{
-#if __XCODE11__ && __IOS__
+#if __IOS__
 				UIColor resultColor = null;
 
 				// If not iOS 13, but 11+ we can only get the named colors
@@ -713,7 +713,6 @@ namespace Xamarin.Forms
 #if __IOS__ || __TVOS__
 					if (!IsiOS13OrNewer)
 						return OSAppTheme.Unspecified;
-#if __XCODE11__
 					var uiStyle = GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
 						UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
 
@@ -726,9 +725,6 @@ namespace Xamarin.Forms
 						default:
 							return OSAppTheme.Unspecified;
 					};
-#else
-					return OSAppTheme.Unspecified;
-#endif
 #else
                     return AppearanceIsDark(NSApplication.SharedApplication.EffectiveAppearance) ? OSAppTheme.Dark : OSAppTheme.Light;
 #endif

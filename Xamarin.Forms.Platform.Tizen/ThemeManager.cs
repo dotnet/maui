@@ -818,5 +818,32 @@ namespace Xamarin.Forms.Platform.Tizen
 		}
 		#endregion
 
+		#region BaseScale
+		public static double GetBaseScale(string deviceType)
+		{
+			if (deviceType.StartsWith("Mobile"))
+			{
+				return ThemeConstants.Common.Resource.Mobile.BaseScale;
+			}
+			else if (deviceType.StartsWith("TV"))
+			{
+				return ThemeConstants.Common.Resource.TV.BaseScale;
+			}
+			else if (deviceType.StartsWith("Wearable"))
+			{
+				return ThemeConstants.Common.Resource.Watch.BaseScale;
+			}
+			else if (deviceType.StartsWith("Refrigerator"))
+			{
+				return ThemeConstants.Common.Resource.Refrigerator.BaseScale;
+			}
+			else if (deviceType.StartsWith("TizenIOT"))
+			{
+				return ThemeConstants.Common.Resource.Iot.BaseScale;
+			}
+			return 1.0;
+		}
+		#endregion
+
 	}
 }

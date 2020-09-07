@@ -1,10 +1,5 @@
 ﻿using Android.Content;
-#if __ANDROID_29__
-using AndroidX.Core.Widget;
 using AndroidX.DrawerLayout.Widget;
-#else
-using Android.Support.V4.Widget;
-#endif
 using Android.Util;
 using Android.Views;
 using System;
@@ -12,7 +7,6 @@ using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
-using AColor = Android.Graphics.Color;
 using Android.Graphics;
 
 namespace Xamarin.Forms.Platform.Android

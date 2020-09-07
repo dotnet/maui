@@ -53,17 +53,9 @@ namespace Xamarin.Forms.Build.Tasks
 			using (var fallbackResolver = DefaultAssemblyResolver == null ? new XamlCAssemblyResolver() : null) {
 				var resolver = DefaultAssemblyResolver ?? fallbackResolver;
 				if (resolver is XamlCAssemblyResolver xamlCResolver) {
-					if (!string.IsNullOrEmpty(DependencyPaths)) {
-						foreach (var dep in DependencyPaths.Split(';').Distinct()) {
-							LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Adding searchpath {dep}");
-							xamlCResolver.AddSearchDirectory(dep);
-						}
-					}
-
-					if (!string.IsNullOrEmpty(ReferencePath)) {
-						var paths = ReferencePath.Replace("//", "/").Split(';').Distinct();
-						foreach (var p in paths) {
-							var searchpath = IOPath.GetDirectoryName(p);
+					if (ReferencePath != null) {
+						var paths = ReferencePath.Select (p => IOPath.GetDirectoryName(p.Replace("//", "/"))).Distinct();
+						foreach (var searchpath in paths) {
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Adding searchpath {searchpath}");
 							xamlCResolver.AddSearchDirectory(searchpath);
 						}
@@ -281,6 +273,10 @@ namespace Xamarin.Forms.Build.Tasks
 
 					//First using the ResourceLoader
 					var nop = Instruction.Create(Nop);
+
+					// if (ResourceLoader.IsEnabled && ...
+					il.Emit(Call, module.ImportPropertyGetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader"), "IsEnabled", isStatic: true));
+					il.Emit(Brfalse, nop);
 
 					il.Emit(Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), 0));
 

@@ -17,7 +17,7 @@ using NUnit.Framework;
 using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Platform.Android.UnitTests;
-using AToolBar = Android.Support.V7.Widget.Toolbar;
+using AToolBar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]

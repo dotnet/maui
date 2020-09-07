@@ -2,14 +2,9 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
-#if __ANDROID_29__
 using AndroidX.Core.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.DrawerLayout.Widget;
-#else
-using Android.Support.V4.Widget;
-using Android.Support.V4.App;
-#endif
 using Android.Views;
 using AView = Android.Views.View;
 using Android.OS;

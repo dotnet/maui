@@ -73,10 +73,7 @@ namespace Xamarin.Forms
 			set { SetValue(VisualProperty, value); }
 		}
 
-		internal static void SetDefaultVisual(IVisual visual)
-		{
-			_defaultVisual = visual;
-		}
+		internal static void SetDefaultVisual(IVisual visual) => _defaultVisual = visual;
 
 		IVisual IVisualController.EffectiveVisual
 		{
@@ -171,8 +168,10 @@ namespace Xamarin.Forms
 		{
 			if (Background != null)
 			{
-				Background.PropertyChanging += OnBackgroundChanging;
 				Background.PropertyChanged += OnBackgroundChanged;
+
+				if (Background is GradientBrush gradientBrush)
+					gradientBrush.InvalidateGradientBrushRequested += InvalidateGradientBrushRequested;
 			}
 		}
 
@@ -181,16 +180,18 @@ namespace Xamarin.Forms
 			if (Background != null)
 			{
 				Background.PropertyChanged -= OnBackgroundChanged;
-				Background.PropertyChanging -= OnBackgroundChanging;
+
+				if (Background is GradientBrush gradientBrush)
+					gradientBrush.InvalidateGradientBrushRequested -= InvalidateGradientBrushRequested;
 			}
 		}
 
-		void OnBackgroundChanging(object sender, PropertyChangingEventArgs e)
+		void OnBackgroundChanged(object sender, PropertyChangedEventArgs e)
 		{
-			OnPropertyChanging(nameof(Background));
+			OnPropertyChanged(nameof(Background));
 		}
 
-		void OnBackgroundChanged(object sender, PropertyChangedEventArgs e)
+		void InvalidateGradientBrushRequested(object sender, EventArgs e)
 		{
 			OnPropertyChanged(nameof(Background));
 		}
@@ -271,11 +272,8 @@ namespace Xamarin.Forms
 		EffectiveFlowDirection _effectiveFlowDirection = default(EffectiveFlowDirection);
 		EffectiveFlowDirection IFlowDirectionController.EffectiveFlowDirection
 		{
-			get { return _effectiveFlowDirection; }
-			set
-			{
-				SetEffectiveFlowDirection(value, true);
-			}
+			get => _effectiveFlowDirection;
+			set => SetEffectiveFlowDirection(value, true);
 		}
 
 		void SetEffectiveFlowDirection(EffectiveFlowDirection value, bool fireFlowDirectionPropertyChanged)
@@ -389,10 +387,7 @@ namespace Xamarin.Forms
 			set { SetValue(IsEnabledProperty, value); }
 		}
 
-		public bool IsFocused
-		{
-			get { return (bool)GetValue(IsFocusedProperty); }
-		}
+		public bool IsFocused => (bool)GetValue(IsFocusedProperty);
 
 		[TypeConverter(typeof(VisibilityConverter))]
 		public bool IsVisible
@@ -487,10 +482,7 @@ namespace Xamarin.Forms
 			set { SetValue(TranslationYProperty, value); }
 		}
 
-		public IList<TriggerBase> Triggers
-		{
-			get { return (IList<TriggerBase>)GetValue(TriggersProperty); }
-		}
+		public IList<TriggerBase> Triggers => (IList<TriggerBase>)GetValue(TriggersProperty);
 
 		public double Width
 		{
@@ -524,10 +516,7 @@ namespace Xamarin.Forms
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool Batched
-		{
-			get { return _batched > 0; }
-		}
+		public bool Batched => _batched > 0;
 
 		internal LayoutConstraint ComputedConstraint
 		{
@@ -545,10 +534,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal LayoutConstraint Constraint
-		{
-			get { return ComputedConstraint | SelfConstraint; }
-		}
+		internal LayoutConstraint Constraint => ComputedConstraint | SelfConstraint;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool DisableLayout { get; set; }
@@ -629,10 +615,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		public void BatchBegin()
-		{
-			_batched++;
-		}
+		public void BatchBegin() => _batched++;
 
 		public void BatchCommit()
 		{
@@ -670,10 +653,7 @@ namespace Xamarin.Forms
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void NativeSizeChanged()
-		{
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
+		public void NativeSizeChanged() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		public event EventHandler ChildrenReordered;
 
@@ -696,12 +676,9 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public virtual SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
 		{
-			SizeRequest cachedResult;
 			var constraintSize = new Size(widthConstraint, heightConstraint);
-			if (_measureCache.TryGetValue(constraintSize, out cachedResult))
-			{
+			if (_measureCache.TryGetValue(constraintSize, out SizeRequest cachedResult))
 				return cachedResult;
-			}
 
 			double widthRequest = WidthRequest;
 			double heightRequest = HeightRequest;
@@ -743,17 +720,12 @@ namespace Xamarin.Forms
 			var r = new SizeRequest(request, minimum);
 
 			if (r.Request.Width > 0 && r.Request.Height > 0)
-			{
 				_measureCache[constraintSize] = r;
-			}
 
 			return r;
 		}
 
-		public void Layout(Rectangle bounds)
-		{
-			Bounds = bounds;
-		}
+		public void Layout(Rectangle bounds) => Bounds = bounds;
 
 		public SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
@@ -761,8 +733,7 @@ namespace Xamarin.Forms
 			Thickness margin = default(Thickness);
 			if (includeMargins)
 			{
-				var view = this as View;
-				if (view != null)
+				if (this is View view)
 					margin = view.Margin;
 				widthConstraint = Math.Max(0, widthConstraint - margin.HorizontalThickness);
 				heightConstraint = Math.Max(0, heightConstraint - margin.VerticalThickness);
@@ -771,13 +742,10 @@ namespace Xamarin.Forms
 			SizeRequest result = GetSizeRequest(widthConstraint, heightConstraint);
 #pragma warning restore 0618
 
-			if (includeMargins)
+			if (includeMargins && !margin.IsEmpty)
 			{
-				if (!margin.IsEmpty)
-				{
-					result.Minimum = new Size(result.Minimum.Width + margin.HorizontalThickness, result.Minimum.Height + margin.VerticalThickness);
-					result.Request = new Size(result.Request.Width + margin.HorizontalThickness, result.Request.Height + margin.VerticalThickness);
-				}
+				result.Minimum = new Size(result.Minimum.Width + margin.HorizontalThickness, result.Minimum.Height + margin.VerticalThickness);
+				result.Request = new Size(result.Request.Width + margin.HorizontalThickness, result.Request.Height + margin.VerticalThickness);
 			}
 
 			return result;
@@ -792,19 +760,12 @@ namespace Xamarin.Forms
 			if (!IsFocused)
 				return;
 
-			EventHandler<FocusRequestArgs> unfocus = FocusChangeRequested;
-			if (unfocus != null)
-			{
-				unfocus(this, new FocusRequestArgs());
-			}
+			FocusChangeRequested?.Invoke(this, new FocusRequestArgs());
 		}
 
 		public event EventHandler<FocusEventArgs> Unfocused;
 
-		protected virtual void InvalidateMeasure()
-		{
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
+		protected virtual void InvalidateMeasure() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		protected override void OnBindingContextChanged()
 		{
@@ -820,11 +781,13 @@ namespace Xamarin.Forms
 				ComputeConstraintForView(view);
 		}
 
-		protected override void OnChildRemoved(Element child)
+		[Obsolete("OnChildRemoved(Element) is obsolete as of version 4.8.0. Please use OnChildRemoved(Element, int) instead.")]
+		protected override void OnChildRemoved(Element child) => OnChildRemoved(child, -1);
+
+		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
-			base.OnChildRemoved(child);
-			var view = child as View;
-			if (view != null)
+			base.OnChildRemoved(child, oldLogicalIndex);
+			if (child is View view)
 				view.ComputedConstraint = LayoutConstraint.None;
 		}
 
@@ -847,17 +810,12 @@ namespace Xamarin.Forms
 		protected virtual SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
 		{
 			if (!IsPlatformEnabled)
-			{
 				return new SizeRequest(new Size(-1, -1));
-			}
 
 			return Device.PlatformServices.GetNativeSize(this, widthConstraint, heightConstraint);
 		}
 
-		protected void SizeAllocated(double width, double height)
-		{
-			OnSizeAllocated(width, height);
-		}
+		protected void SizeAllocated(double width, double height) => OnSizeAllocated(width, height);
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<EventArg<VisualElement>> BatchCommitted;
@@ -866,16 +824,12 @@ namespace Xamarin.Forms
 		{
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 			{
-				var child = LogicalChildrenInternal[i] as View;
-				if (child != null)
+				if (LogicalChildrenInternal[i] is View child)
 					ComputeConstraintForView(child);
 			}
 		}
 
-		internal virtual void ComputeConstraintForView(View view)
-		{
-			view.ComputedConstraint = LayoutConstraint.None;
-		}
+		internal virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
@@ -891,10 +845,7 @@ namespace Xamarin.Forms
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
 		}
 
-		void IVisualElementController.InvalidateMeasure(InvalidationTrigger trigger)
-		{
-			InvalidateMeasureInternal(trigger);
-		}
+		void IVisualElementController.InvalidateMeasure(InvalidationTrigger trigger) => InvalidateMeasureInternal(trigger);
 
 		internal void InvalidateStateTriggers(bool attach)
 		{
@@ -929,19 +880,13 @@ namespace Xamarin.Forms
 #endif
 		}
 
-		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint)
-		{
-			ComputeConstrainsForChildren();
-		}
+		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint) => ComputeConstrainsForChildren();
 
 		internal virtual void OnIsPlatformEnabledChanged()
 		{
 		}
 
-		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
-		{
-			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
-		}
+		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue) => InvalidateMeasureInternal(InvalidationTrigger.Undefined);
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 		{
@@ -973,10 +918,7 @@ namespace Xamarin.Forms
 				OnResourcesChanged(changedResources);
 		}
 
-		internal void UnmockBounds()
-		{
-			_mockX = _mockY = _mockWidth = _mockHeight = -1;
-		}
+		internal void UnmockBounds() => _mockX = _mockY = _mockWidth = _mockHeight = -1;
 
 		void PropagateBindingContextToStateTriggers()
 		{
@@ -991,30 +933,18 @@ namespace Xamarin.Forms
 						SetInheritedBindingContext(stateTrigger, BindingContext);
 		}
 
-		void OnFocused()
-		{
-			EventHandler<FocusEventArgs> focus = Focused;
-			if (focus != null)
-				focus(this, new FocusEventArgs(this, true));
-		}
+		void OnFocused() => Focused?.Invoke(this, new FocusEventArgs(this, true));
 
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
-
 
 		protected internal virtual void ChangeVisualState()
 		{
 			if (!IsEnabled)
-			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
-			}
 			else if (IsFocused)
-			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Focused);
-			}
 			else
-			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
-			}
 		}
 
 		static void OnVisualChanged(BindableObject bindable, object oldValue, object newValue)
@@ -1056,11 +986,7 @@ namespace Xamarin.Forms
 			var element = (VisualElement)bindable;
 
 			if (element == null)
-			{
 				return;
-			}
-
-			var isEnabled = (bool)newValue;
 
 			element.ChangeVisualState();
 		}
@@ -1104,15 +1030,9 @@ namespace Xamarin.Forms
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);
 		}
 
-		void OnUnfocus()
-		{
-			EventHandler<FocusEventArgs> unFocus = Unfocused;
-			if (unFocus != null)
-				unFocus(this, new FocusEventArgs(this, false));
-		}
+		void OnUnfocus() => Unfocused?.Invoke(this, new FocusEventArgs(this, false));
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
-
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
@@ -1145,19 +1065,18 @@ namespace Xamarin.Forms
 				value = value?.Trim();
 				if (!string.IsNullOrEmpty(value))
 				{
-					if (value.Equals(Boolean.TrueString, StringComparison.OrdinalIgnoreCase))
+					if (value.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
 						return true;
 					if (value.Equals("visible", StringComparison.OrdinalIgnoreCase))
 						return true;
-					if (value.Equals(Boolean.FalseString, StringComparison.OrdinalIgnoreCase))
+					if (value.Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
 						return false;
 					if (value.Equals("hidden", StringComparison.OrdinalIgnoreCase))
 						return false;
 					if (value.Equals("collapse", StringComparison.OrdinalIgnoreCase))
 						return false;
 				}
-				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(bool)));
-
+				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}.", value, typeof(bool)));
 			}
 		}
 	}

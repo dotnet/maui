@@ -257,9 +257,12 @@ namespace Xamarin.Forms
 			OnVisibleChildAdded(child);
 		}
 
-		protected override void OnChildRemoved(Element child)
+		[Obsolete("OnChildRemoved(Element) is obsolete as of version 4.8.0. Please use OnChildRemoved(Element, int) instead.")]
+		protected override void OnChildRemoved(Element child) => OnChildRemoved(child, -1);
+
+		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
-			base.OnChildRemoved(child);
+			base.OnChildRemoved(child, oldLogicalIndex);
 			OnVisibleChildRemoved(child);
 		}
 
@@ -317,8 +320,11 @@ namespace Xamarin.Forms
 
 			if (e.OldItems != null)
 			{
-				foreach (Element element in e.OldItems)
-					OnChildRemoved(element);
+				for (var i = 0; i < e.OldItems.Count; i++)
+				{
+					var element = (Element)e.OldItems[i];
+					OnChildRemoved(element, e.OldStartingIndex + i);
+				}
 			}
 		}
 

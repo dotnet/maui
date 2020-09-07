@@ -1,8 +1,4 @@
-﻿#if __ANDROID_29__
-using AndroidX.Fragment.App;
-#else
-using Android.Support.V4.App;
-#endif
+﻿using AndroidX.Fragment.App;
 using System;
 
 namespace Xamarin.Forms.Platform.Android

@@ -804,7 +804,7 @@ namespace Xamarin.Forms
 					try
 					{
 						var location = CurrentState.Location;
-						var navRequest = ShellUriHandler.GetNavigationRequest(this, ((ShellNavigationState)location).FullLocation, false);
+						var navRequest = ShellUriHandler.GetNavigationRequest(this, ((ShellNavigationState)location).FullLocation, false, false);
 
 						if (navRequest != null)
 						{
@@ -974,7 +974,7 @@ namespace Xamarin.Forms
 					return;
 
 				if (_flyoutHeaderView != null)
-					OnChildRemoved(_flyoutHeaderView);
+					OnChildRemoved(_flyoutHeaderView, -1);
 				_flyoutHeaderView = value;
 				if (_flyoutHeaderView != null)
 					OnChildAdded(_flyoutHeaderView);

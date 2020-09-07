@@ -7,12 +7,6 @@ variables:
   value: Xamarin.Forms.sln
 - name: BuildVersion
   value: $[counter('nuget-counter', 126)]
-- name: BuildVersion42
-  value: $[counter('xf-nuget-counter', 992000)]
-- name: BuildVersion43
-  value: $[counter('xf-nuget-counter', 992000)]
-- name: BuildVersion44
-  value: $[counter('xf-nuget-counter', 992000)]
 - name: NUGET_VERSION
   value: 5.6.0
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
@@ -82,38 +76,13 @@ stages:
           - template: build/steps/build-windows.yml
             parameters:
               provisionatorPath : 'build/provisioning/provisioning.csx'
-      - job: pages_hosted
-        condition: eq(variables['vs2019VmPool'], 'Azure Pipelines')
-        workspace:
-          clean: all
-        displayName: Build Pages Phase
-        timeoutInMinutes: 120
-        pool:
-          name: $(vs2019VmPool)
-          vmImage: $(vs2019VmImage)
-          demands:
-            msbuild
-        strategy:
-          matrix:
-            debug:
-              BuildConfiguration:  'Debug'
-            release:
-              BuildConfiguration:  'Release'
-        steps:
-          - template: build/steps/build-windows.yml
-            parameters:
-              slnPath: build/Xamarin.Forms.Pages.sln
-              includeUwp: false
-              includeAndroid: false
-              includeNonUwpAndNonAndroid: false
-              includePages: true
+     
       - job: nuget_pack_hosted
         workspace:
           clean: all
         displayName: Nuget Phase
         dependsOn:
         - win_hosted
-        - pages_hosted
         condition: succeeded()
         pool:
           name: $(vs2019VmPool)
@@ -148,39 +117,12 @@ stages:
           - template: build/steps/build-windows.yml
             parameters:
               provisionatorPath : 'build/provisioning/provisioning.csx'
-      - job: pages_bots
-        condition: ne(variables['vs2019VmPool'], 'Azure Pipelines')
-        workspace:
-          clean: all
-        displayName: Build Pages Phase
-        timeoutInMinutes: 120
-        pool:
-          name: $(vs2019VmPool)
-          vmImage: $(vs2019VmImage)
-          demands:
-            - Agent.OS -equals Windows_NT
-            - msbuild
-        strategy:
-          matrix:
-            debug:
-              BuildConfiguration:  'Debug'
-            release:
-              BuildConfiguration:  'Release'
-        steps:
-          - template: build/steps/build-windows.yml
-            parameters:
-              slnPath: build/Xamarin.Forms.Pages.sln
-              includeUwp: false
-              includeAndroid: false
-              includeNonUwpAndNonAndroid: false
-              includePages: true
       - job: nuget_pack_bots
         workspace:
           clean: all
         displayName: Nuget Phase
         dependsOn:
         - win_bots
-        - pages_bots
         condition: succeeded()
         pool:
           name: $(vs2019VmPool)
@@ -207,23 +149,9 @@ stages:
           vmPool: $[coalesce(variables.macAndroid2019VmPool, 'Azure Pipelines')]
           vmImage: $[coalesce(variables.macAndroid2019VmImage, 'macOS-10.15')]
           provisionatorPath : 'build/provisioning/provisioning.csx'
-          buildForVS2017: false
           buildConfiguration: $(DefaultBuildConfiguration)
           ${{ if ne(variables['MSBuildArguments_cg_android'], '') }}:
             MSBuildArguments_cg_android: $(MSBuildArguments_cg_android)
-
-  - stage: android_2017
-    displayName: Build Android 2017
-    condition: and(succeeded(), eq(variables['System.TeamProject'], 'devdiv'))
-    dependsOn: windows
-    jobs:
-      - template: build/steps/build-android.yml
-        parameters:
-          vmPool: $[coalesce(variables.macAndroid2017VmPool, 'Azure Pipelines')]
-          vmImage: 'macOS-10.14'
-          provisionatorPath : 'build/provisioning/provisioning.csx'
-          buildForVS2017: true
-          buildConfiguration: $(DefaultBuildConfiguration)
 
   - stage: build_osx
     displayName: Build OSX
@@ -248,34 +176,6 @@ stages:
           buildConfiguration: $(DefaultBuildConfiguration)
           iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
           iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
-          buildForVS2017: 'false'
-        steps:
-          - template: build/steps/build-osx.yml
-
-  - stage: build_osx_2017
-    displayName: Build OSX 2017
-    ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-      dependsOn: windows
-    ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      dependsOn: []
-    jobs:
-      - job: osx
-        workspace:
-          clean: all
-        displayName: OSX Phase 2017
-        pool:
-          name:  $(osx2017VmPool)
-          vmImage: 'macOS-10.14'
-          demands:
-            - sh
-            - Xamarin.iOS
-        variables:
-          provisionator.osxPath : 'build/provisioning/provisioning.csx'
-          buildConfiguration: $(DefaultBuildConfiguration)
-          slnPath: $(SolutionFile)
-          iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
-          iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
-          buildForVS2017: 'true'
         steps:
           - template: build/steps/build-osx.yml
 

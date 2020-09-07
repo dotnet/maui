@@ -1,10 +1,6 @@
 using System.ComponentModel;
 using Android.Views;
-#if __ANDROID_29__
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
-#else
-using AToolbar = Android.Support.V7.Widget.Toolbar;
-#endif
 using ATextView = global::Android.Widget.TextView;
 using Android.Content;
 using Android.Graphics;

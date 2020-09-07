@@ -3,16 +3,9 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms;
-using Xamarin.Forms.Material.Android;
 using Xamarin.Forms.Platform.Android;
 using AButton = Android.Widget.Button;
-#if __ANDROID_29__
 using MButton = Google.Android.Material.Button.MaterialButton;
-#else
-using MButton = Android.Support.Design.Button.MaterialButton;
-#endif
-
 
 namespace Xamarin.Forms.Material.Android
 {

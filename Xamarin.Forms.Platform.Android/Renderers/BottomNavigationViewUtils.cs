@@ -12,17 +12,9 @@ using Typeface = Android.Graphics.Typeface;
 using TypefaceStyle = Android.Graphics.TypefaceStyle;
 using Android.Graphics.Drawables;
 using System.Threading.Tasks;
-using Android.Content.Res;
-
-#if __ANDROID_29__
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using ALabelVisibilityMode = Google.Android.Material.BottomNavigation.LabelVisibilityMode;
-#else
-using ALabelVisibilityMode = Android.Support.Design.BottomNavigation.LabelVisibilityMode;
-using Android.Support.Design.Widget;
-using Android.Support.Design.Internal;
-#endif
 
 namespace Xamarin.Forms.Platform.Android
 {

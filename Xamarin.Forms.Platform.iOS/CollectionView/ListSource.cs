@@ -5,7 +5,7 @@ using Foundation;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	sealed class ListSource : List<object>, IItemsViewSource
+	class ListSource : List<object>, IItemsViewSource
 	{
 		public ListSource()
 		{

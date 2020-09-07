@@ -1,14 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.IO;
-#if __ANDROID_29__
-using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
-#else
-using Android.Support.V7.Widget;
-#endif
 
 namespace Xamarin.Forms.Platform.Android
 {

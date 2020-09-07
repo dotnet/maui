@@ -196,7 +196,8 @@ namespace Xamarin.Forms.Platform.Android
 
         public ShapeView(Context context) : base(context)
         {
-            _drawable = new ShapeDrawable(null);
+			_drawable = new ShapeDrawable(null);
+            _drawable.Paint.AntiAlias = true;
 
             _density = Resources.DisplayMetrics.Density;
 

@@ -10,7 +10,6 @@
     <RootNamespace>Embedding.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
     <AssemblyName>Embedding.iOS</AssemblyName>
-    <DefineConstants Condition="'$(Use2017)' != 'true'">__XCODE11__;$(DefineConstants);</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
@@ -88,7 +87,7 @@
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
-    <ProjectReference Condition="'$(Use2017)' != 'true'" Include="..\..\Xamarin.Forms.Material.iOS\Xamarin.Forms.Material.iOS.csproj">
+    <ProjectReference Include="..\..\Xamarin.Forms.Material.iOS\Xamarin.Forms.Material.iOS.csproj">
       <Project>{8a75b1dc-ceed-4b1b-8675-a7dffd1e6de4}</Project>
       <Name>Xamarin.Forms.Material.iOS</Name>
       <IsAppExtension>false</IsAppExtension>

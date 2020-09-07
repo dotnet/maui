@@ -1,21 +1,15 @@
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Android.App;
 using Android.Content;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
 using AListView = Android.Widget.ListView;
-using Android.Graphics.Drawables;
-#if __ANDROID_29__
 using AActionMode = global::AndroidX.AppCompat.View.ActionMode;
 using AndroidX.AppCompat.App;
-#else
-using AActionMode = global::Android.Support.V7.View.ActionMode;
-using Android.Support.V7.App;
-#endif
+
 namespace Xamarin.Forms.Platform.Android
 {
 	public abstract class CellAdapter : BaseAdapter<object>, AdapterView.IOnItemLongClickListener, ActionMode.ICallback, AdapterView.IOnItemClickListener, AActionMode.ICallback

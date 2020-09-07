@@ -352,11 +352,9 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
-#if __XCODE11__
 			// Make sure the control adheres to changes in UI theme
 			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				UpdateBackgroundColor();
-#endif
 		}
 
 		ParentingViewController CreateViewControllerForPage(Page page)
@@ -494,7 +492,6 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_defaultNavBarShadowImage == null)
 				_defaultNavBarShadowImage = NavigationBar.ShadowImage;
 
-#if __XCODE11__
 			if (Forms.IsiOS13OrNewer)
 			{
 				if (shouldHide)
@@ -511,7 +508,6 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 			}
 			else
-#endif
 			{
 				if (shouldHide)
 					NavigationBar.ShadowImage = new UIImage();
@@ -658,7 +654,6 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var barBackgroundColor = NavPage.BarBackgroundColor;
 
-#if __XCODE11__
 			if (Forms.IsiOS13OrNewer)
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
@@ -686,7 +681,6 @@ namespace Xamarin.Forms.Platform.iOS
 				NavigationBar.ScrollEdgeAppearance = navigationBarAppearance;
 			}
 			else
-#endif
 			{
 				// Set navigation bar background color
 				NavigationBar.BarTintColor = barBackgroundColor == Color.Default
@@ -724,7 +718,6 @@ namespace Xamarin.Forms.Platform.iOS
 				};
 			}
 
-#if __XCODE11__
 			if (Forms.IsiOS13OrNewer)
 			{
 				NavigationBar.CompactAppearance.TitleTextAttributes = titleTextAttributes;
@@ -737,7 +730,6 @@ namespace Xamarin.Forms.Platform.iOS
 				NavigationBar.ScrollEdgeAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
 			}
 			else
-#endif
 			{
 				NavigationBar.TitleTextAttributes = titleTextAttributes;
 
@@ -762,14 +754,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor.Luminosity <= 0.5)
 			{
-#if __XCODE11__
 				// Use dark text color for status bar
 				if (Forms.IsiOS13OrNewer)
 				{
 					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.DarkContent;
 				}
 				else
-#endif
 				{
 					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.Default;
 				}
@@ -1174,8 +1164,6 @@ namespace Xamarin.Forms.Platform.iOS
 				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
 					return;
 
-#if __XCODE11__
-
 				// We will use UINavigationBar.Appareance to infer settings that
 				// were already set to navigation bar in older versions of
 				// iOS.
@@ -1215,7 +1203,6 @@ namespace Xamarin.Forms.Platform.iOS
 				navBar.CompactAppearance.SetBackIndicatorImage(backIndicatorImage, backIndicatorTransitionMaskImage);
 				navBar.StandardAppearance.SetBackIndicatorImage(backIndicatorImage, backIndicatorTransitionMaskImage);
 				navBar.ScrollEdgeAppearance.SetBackIndicatorImage(backIndicatorImage, backIndicatorTransitionMaskImage);
-#endif
 			}
 
 			UIImage GetEmptyBackIndicatorImage()
