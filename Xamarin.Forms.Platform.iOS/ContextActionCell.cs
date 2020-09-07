@@ -485,7 +485,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnContextItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			var parentListView = _cell.RealParent as ListView;
+			var parentListView = _cell?.RealParent as ListView;
 			var recycling = parentListView != null && 
 				((parentListView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0);
 			if (recycling)
