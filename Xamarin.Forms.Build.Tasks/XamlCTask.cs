@@ -53,17 +53,9 @@ namespace Xamarin.Forms.Build.Tasks
 			using (var fallbackResolver = DefaultAssemblyResolver == null ? new XamlCAssemblyResolver() : null) {
 				var resolver = DefaultAssemblyResolver ?? fallbackResolver;
 				if (resolver is XamlCAssemblyResolver xamlCResolver) {
-					if (!string.IsNullOrEmpty(DependencyPaths)) {
-						foreach (var dep in DependencyPaths.Split(';').Distinct()) {
-							LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Adding searchpath {dep}");
-							xamlCResolver.AddSearchDirectory(dep);
-						}
-					}
-
-					if (!string.IsNullOrEmpty(ReferencePath)) {
-						var paths = ReferencePath.Replace("//", "/").Split(';').Distinct();
-						foreach (var p in paths) {
-							var searchpath = IOPath.GetDirectoryName(p);
+					if (ReferencePath != null) {
+						var paths = ReferencePath.Select (p => IOPath.GetDirectoryName(p.Replace("//", "/"))).Distinct();
+						foreach (var searchpath in paths) {
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Adding searchpath {searchpath}");
 							xamlCResolver.AddSearchDirectory(searchpath);
 						}

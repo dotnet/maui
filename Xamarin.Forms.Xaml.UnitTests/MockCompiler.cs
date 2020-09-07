@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			var xamlc = new XamlCTask {
 				Assembly = assembly,
-				ReferencePath = string.Join(";", refs),
+				ReferencePath = refs.ToArray(),
 				KeepXamlResources = true,
 				OptimizeIL = true,
 				DebugSymbols = false,

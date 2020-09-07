@@ -22,8 +22,7 @@ namespace Xamarin.Forms.Build.Tasks
 	{
 		[Required]
 		public string Assembly { get; set; }
-		public string DependencyPaths { get; set; }
-		public string ReferencePath { get; set; }
+		public string[] ReferencePath { get; set; }
 		[Obsolete("this is no longer used")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int Verbosity { get; set; }
