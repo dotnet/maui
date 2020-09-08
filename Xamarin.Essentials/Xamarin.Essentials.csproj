@@ -15,7 +15,7 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
     <Version>1.0.0</Version>
-    <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
+    <PackageVersion>1.0.0</PackageVersion>
     <Authors>Microsoft</Authors>
     <Owners>microsoft,Xamarin,XamarinNuGet</Owners>
     <NeutralLanguage>en</NeutralLanguage>
