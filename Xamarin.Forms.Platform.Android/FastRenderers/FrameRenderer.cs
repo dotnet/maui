@@ -246,7 +246,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				return;
 			}
 
-
 			if (e.PropertyName == Frame.HasShadowProperty.PropertyName)
 				UpdateShadow();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
@@ -263,7 +262,10 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateClippedToBounds()
 		{
-			this.SetClipToOutline(Element.IsClippedToBounds, Element);
+			var shouldClip = Element.IsSet(Xamarin.Forms.Layout.IsClippedToBoundsProperty)
+					? Element.IsClippedToBounds : Element.CornerRadius > 0f;
+
+			this.SetClipToOutline(shouldClip);
 		}
 
 		void UpdateBackgroundColor()
