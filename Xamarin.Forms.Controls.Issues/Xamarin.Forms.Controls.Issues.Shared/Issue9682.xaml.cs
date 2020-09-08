@@ -50,15 +50,17 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				var images = RunningApp.WaitForElement("MonkeyImages");
 
-				if (images[0].Rect.Height < 50 || images[0].Rect.Width < 50)
+				if (images[0].Rect.Height < 20 || images[0].Rect.Width < 20)
 					return null;
 
 				return images;
 			});
 
+			monkeyImages = monkeyImages ?? RunningApp.WaitForElement("MonkeyImages");
+
 			Assert.IsNotNull(monkeyImages);
-			Assert.GreaterOrEqual(monkeyImages[0].Rect.Height, 50);
-			Assert.GreaterOrEqual(monkeyImages[0].Rect.Width, 50);
+			Assert.GreaterOrEqual(monkeyImages[0].Rect.Height, 20);
+			Assert.GreaterOrEqual(monkeyImages[0].Rect.Width, 20);
 		}
 #endif
 	}
@@ -133,8 +135,46 @@ namespace Xamarin.Forms.Controls.Issues
 			try
 			{
 				IsBusy = true;
-				var json = await Client.GetStringAsync("https://montemagno.com/monkeys.json");
-				Monkey[] monkeys = Monkey.FromJson(json);
+				await Task.Delay(500);
+				Monkey[] monkeys = new[]
+				{
+					new Monkey()
+					{
+						Details = "Climbs high buildings and enjoys swatting at planes",
+						Latitude = 42,
+						Longitude = 42,
+						Location = "Empire State Building",
+						Name = "King Kong",
+						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/Fruits.jpg?raw=true"
+					},
+					new Monkey()
+					{
+						Details = "Monkeys aren't donkeys, Quit messing with my head!",
+						Latitude = 42,
+						Longitude = 42,
+						Location = "The 90s",
+						Name = "Donkey Kong",
+						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/FlowerBuds.jpg?raw=true"
+					},
+					new Monkey()
+					{
+						Details = "Grape Ape, Grape Ape! Grape Ape, Grape Ape! Grape Ape, Grape Ape! Grape Ape, Grape Ape!",
+						Latitude = 42,
+						Longitude = 42,
+						Location = "Sunday Mornings",
+						Name = "Grape Ape",
+						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/games.png?raw=true"
+					},
+					new Monkey()
+					{
+						Details = "Pretty but easily persuaded into doing others biddings",
+						Latitude = 42,
+						Longitude = 42,
+						Location = "The Sky",
+						Name = "Flying Monkey",
+						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/gear.png?raw=true"
+					},
+				};
 
 				Monkeys.Clear();
 				foreach (var monkey in monkeys)
