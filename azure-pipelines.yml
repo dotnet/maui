@@ -109,6 +109,7 @@ stages:
           displayName: Android API 23
           windowsImage: ''
           macosImage: 'macos-10.14'
+          xcode: '11.3.1'
           areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
           verbosity: diagnostic
           cakeFile: DeviceTests/build.cake
@@ -125,6 +126,7 @@ stages:
           displayName: Android API 26
           windowsImage: ''
           macosImage: 'macos-10.14'
+          xcode: '11.3.1'
           areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
           verbosity: diagnostic
           cakeFile: DeviceTests/build.cake
@@ -141,6 +143,7 @@ stages:
           displayName: Android API 29
           windowsImage: ''
           macosImage: 'macos-10.14'
+          xcode: '11.3.1'
           areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
           verbosity: diagnostic
           cakeFile: DeviceTests/build.cake
