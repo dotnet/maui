@@ -131,6 +131,14 @@ namespace Xamarin.Forms.Build.Tasks
 				unboxValueTypes);
 		}
 
+		static T TryFormat<T>(Func<string, T> func, IXmlLineInfo lineInfo, string str)
+		{
+			try {
+				return func(str);
+			} catch (FormatException fex) {
+				throw new BuildException(BuildExceptionCode.Conversion, lineInfo, fex, str, typeof(T));
+			}
+		}
 		public static IEnumerable<Instruction> PushConvertedValue(this ValueNode node, ILContext context,
 			TypeReference targetTypeRef, TypeReference typeConverter, IEnumerable<Instruction> pushServiceProvider,
 			bool boxValueTypes, bool unboxValueTypes)
@@ -208,39 +216,39 @@ namespace Xamarin.Forms.Build.Tasks
 			if (targetTypeRef.ResolveCached().BaseType != null && targetTypeRef.ResolveCached().BaseType.FullName == "System.Enum")
 				yield return PushParsedEnum(targetTypeRef, str, node);
 			else if (targetTypeRef.FullName == "System.Char")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)Char.Parse(str)));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(Char.Parse, node, str)));
 			else if (targetTypeRef.FullName == "System.SByte")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)SByte.Parse(str, CultureInfo.InvariantCulture)));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => SByte.Parse(s,CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.Int16")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)Int16.Parse(str, CultureInfo.InvariantCulture)));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => Int16.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.Int32")
-				yield return Instruction.Create(OpCodes.Ldc_I4, Int32.Parse(str, CultureInfo.InvariantCulture));
+				yield return Instruction.Create(OpCodes.Ldc_I4, TryFormat(s => Int32.Parse(s, CultureInfo.InvariantCulture), node, str));
 			else if (targetTypeRef.FullName == "System.Int64")
-				yield return Instruction.Create(OpCodes.Ldc_I8, Int64.Parse(str, CultureInfo.InvariantCulture));
+				yield return Instruction.Create(OpCodes.Ldc_I8, TryFormat(s => Int64.Parse(s, CultureInfo.InvariantCulture), node, str));
 			else if (targetTypeRef.FullName == "System.Byte")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)Byte.Parse(str, CultureInfo.InvariantCulture)));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => Byte.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.UInt16")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)UInt16.Parse(str, CultureInfo.InvariantCulture)));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => UInt16.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.UInt32")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)UInt32.Parse(str, CultureInfo.InvariantCulture)));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => UInt32.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.UInt64")
-				yield return Instruction.Create(OpCodes.Ldc_I8, unchecked((long)UInt64.Parse(str, CultureInfo.InvariantCulture)));
+				yield return Instruction.Create(OpCodes.Ldc_I8, unchecked((long)TryFormat(s => UInt64.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.Single")
-				yield return Instruction.Create(OpCodes.Ldc_R4, Single.Parse(str, CultureInfo.InvariantCulture));
+				yield return Instruction.Create(OpCodes.Ldc_R4, TryFormat(s => Single.Parse(str, CultureInfo.InvariantCulture), node, str));
 			else if (targetTypeRef.FullName == "System.Double")
-				yield return Instruction.Create(OpCodes.Ldc_R8, Double.Parse(str, CultureInfo.InvariantCulture));
+				yield return Instruction.Create(OpCodes.Ldc_R8, TryFormat(s => Double.Parse(str, CultureInfo.InvariantCulture), node, str));
 			else if (targetTypeRef.FullName == "System.Boolean") {
-				if (Boolean.Parse(str))
+				if (TryFormat(Boolean.Parse, node, str))
 					yield return Instruction.Create(OpCodes.Ldc_I4_1);
 				else
 					yield return Instruction.Create(OpCodes.Ldc_I4_0);
 			} else if (targetTypeRef.FullName == "System.TimeSpan") {
-				var ts = TimeSpan.Parse(str, CultureInfo.InvariantCulture);
+				var ts = TryFormat(s => TimeSpan.Parse(s, CultureInfo.InvariantCulture), node, str);
 				var ticks = ts.Ticks;
 				yield return Instruction.Create(OpCodes.Ldc_I8, ticks);
 				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("mscorlib", "System", "TimeSpan"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
 			} else if (targetTypeRef.FullName == "System.DateTime") {
-				var dt = DateTime.Parse(str, CultureInfo.InvariantCulture);
+				var dt = TryFormat(s => DateTime.Parse(s, CultureInfo.InvariantCulture), node, str);
 				var ticks = dt.Ticks;
 				yield return Instruction.Create(OpCodes.Ldc_I8, ticks);
 				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("mscorlib", "System", "DateTime"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
