@@ -19,6 +19,7 @@ steps:
       jenkinsEndpoint: Xamarin Code Signing Jenkins
       jenkinsJob: sign-from-vsts
       artifactHost: 'https://dl.internalx.com/vsts-devdiv'
+      CodeSignOverride: true
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: nuget signed'
