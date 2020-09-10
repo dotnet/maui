@@ -273,32 +273,41 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			Cell cell;
-			int position;
+			int scrollPosition;
 			var scrollArgs = (ITemplatedItemsListScrollToRequestedEventArgs)e;
 
 			var templatedItems = TemplatedItemsView.TemplatedItems;
 			if (Element.IsGroupingEnabled)
 			{
 				var results = templatedItems.GetGroupAndIndexOfItem(scrollArgs.Group, scrollArgs.Item);
-				if (results.Item1 == -1 || results.Item2 == -1)
+				int indexOfGroup = results.Item1;
+				int indexOfItem = results.Item2;
+				
+				if (indexOfGroup == -1)
 					return;
 
-				var group = templatedItems.GetGroup(results.Item1);
-				cell = group[results.Item2];
+				int itemIndex = indexOfItem == -1 ? 0 : indexOfItem;
 
-				position = templatedItems.GetGlobalIndexForGroup(group) + results.Item2 + 1;
+				var group = templatedItems.GetGroup(indexOfGroup);
+				if (group.Count == 0)
+					cell = group.HeaderContent;
+				else
+					cell = group[itemIndex];
+
+				//Increment Scroll Position by 1 when Grouping is enabled. Android offsets position of cells when using header.
+				scrollPosition = templatedItems.GetGlobalIndexForGroup(group) + itemIndex + 1;
 			}
 			else
 			{
-				position = templatedItems.GetGlobalIndexOfItem(scrollArgs.Item);
-				if (position == -1)
+				scrollPosition = templatedItems.GetGlobalIndexOfItem(scrollArgs.Item);
+				if (scrollPosition == -1)
 					return;
 
-				cell = templatedItems[position];
+				cell = templatedItems[scrollPosition];
 			}
 
 			//Android offsets position of cells when using header
-			int realPositionWithHeader = position + 1;
+			int realPositionWithHeader = scrollPosition + 1;
 
 			if (e.Position == ScrollToPosition.MakeVisible)
 			{
@@ -314,11 +323,11 @@ namespace Xamarin.Forms.Platform.Android
 			if (cellHeight == -1)
 			{
 				int first = Control.FirstVisiblePosition;
-				if (first <= position && position <= Control.LastVisiblePosition)
-					cellHeight = Control.GetChildAt(position - first).Height;
+				if (first <= scrollPosition && scrollPosition <= Control.LastVisiblePosition)
+					cellHeight = Control.GetChildAt(scrollPosition - first).Height;
 				else
 				{
-					AView view = _adapter.GetView(position, null, null);
+					AView view = _adapter.GetView(scrollPosition, null, null);
 					view.Measure(MeasureSpecFactory.MakeMeasureSpec(Control.Width, MeasureSpecMode.AtMost), MeasureSpecFactory.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
 					cellHeight = view.MeasuredHeight;
 				}
