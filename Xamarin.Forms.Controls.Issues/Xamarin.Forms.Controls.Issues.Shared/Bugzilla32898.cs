@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Controls.Issues
 		Label _result;
 		const string Success = "Success";
 		const string Fail = "Fail";
-		const int Timeout = 10000;
+		const int Timeout = 20000;
 
 		protected override void Init()
 		{
@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issu32898Test()
 		{
-			var timeout = Timeout + 5000; // Give this a little slop to set the result text
+			var timeout = Timeout; // Give this a little slop to set the result text
 			RunningApp.WaitForElement(Success, timeout: TimeSpan.FromMilliseconds(timeout));
 		}
 #endif
