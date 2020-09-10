@@ -74,3 +74,13 @@ using Rectangle = Xamarin.Forms.Shapes.Rectangle;
 [assembly: Xamarin.Forms.Dependency(typeof(Deserializer))]
 
 [assembly: AssemblyVersion("2.0.0.0")]
+[assembly: AssemblyFileVersion(ThisAssembly.Git.BaseVersion.Major + "."
+			+ ThisAssembly.Git.BaseVersion.Minor + "."
+			+ ThisAssembly.Git.BaseVersion.Patch + "."
+			+ ThisAssembly.Git.Commits)]
+[assembly: AssemblyInformationalVersion(ThisAssembly.Git.SemVer.Major + "."
+			+ ThisAssembly.Git.SemVer.Minor + "."
+			+ ThisAssembly.Git.SemVer.Patch
+			+ ThisAssembly.Git.SemVer.DashLabel + "+"
+			+ ThisAssembly.Git.Commits + "-sha."
+			+ ThisAssembly.Git.Commit)]

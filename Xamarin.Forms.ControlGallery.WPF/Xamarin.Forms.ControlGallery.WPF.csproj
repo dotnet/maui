@@ -7,8 +7,8 @@
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>    
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>  
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup>
     <NoWarn>$(NoWarn);NU1701</NoWarn>
