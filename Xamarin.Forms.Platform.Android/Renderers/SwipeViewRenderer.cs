@@ -50,8 +50,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		public SwipeViewRenderer(Context context) : base(context)
 		{
-			SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));
-
 			_context = context;
 
 			_swipeItems = new Dictionary<ISwipeItem, object>();

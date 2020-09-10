@@ -47,8 +47,6 @@ namespace Xamarin.Forms.Platform.iOS
 		[Internals.Preserve(Conditional = true)]
 		public SwipeViewRenderer()
 		{
-			SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));
-
 			_swipeItems = new Dictionary<ISwipeItem, object>();
 			_isScrollEnabled = true;
 

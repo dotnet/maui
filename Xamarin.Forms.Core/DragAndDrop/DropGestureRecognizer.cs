@@ -25,7 +25,6 @@ namespace Xamarin.Forms
 		
 		public DropGestureRecognizer()
 		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(DropGestureRecognizer), ExperimentalFlags.DragAndDropExperimental);
 		}
 
 		public event EventHandler<DragEventArgs> DragLeave;

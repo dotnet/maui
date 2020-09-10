@@ -8,8 +8,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-
-			Device.SetFlags(new[] { ExperimentalFlags.BrushExperimental });
 		}
 
 		[Test]

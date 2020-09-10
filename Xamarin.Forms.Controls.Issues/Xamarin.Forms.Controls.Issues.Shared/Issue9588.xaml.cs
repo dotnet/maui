@@ -18,12 +18,8 @@ namespace Xamarin.Forms.Controls.Issues
 			InitializeComponent();
 #endif
 		}
-
 		protected override void Init()
 		{
-#if APP
-			Device.SetFlags(new List<string> { ExperimentalFlags.SwipeViewExperimental });
-#endif
 		}
 	}
 }

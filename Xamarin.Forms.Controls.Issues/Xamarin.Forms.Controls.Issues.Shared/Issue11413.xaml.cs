@@ -17,7 +17,6 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue11413()
 		{
 #if APP
-			Device.SetFlags(new List<string> { ExperimentalFlags.ShapesExperimental });
 			InitializeComponent();
 #endif
 		}

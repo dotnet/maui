@@ -24,7 +24,6 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public CarouselViewRenderer()
 		{
-			CarouselView.VerifyCarouselViewFlagEnabled(nameof(Xamarin.Forms.CarouselView));
 		}
 
 		protected CarouselView CarouselView => Element;

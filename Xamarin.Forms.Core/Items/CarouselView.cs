@@ -196,28 +196,11 @@ namespace Xamarin.Forms
 
 		public CarouselView()
 		{
-			VerifyCarouselViewFlagEnabled(constructorHint: nameof(CarouselView));
 			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
 			{
 				SnapPointsType = SnapPointsType.MandatorySingle,
 				SnapPointsAlignment = SnapPointsAlignment.Center
 			};
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void VerifyCarouselViewFlagEnabled(
-			string constructorHint = null,
-			[CallerMemberName] string memberName = "")
-		{
-			try
-			{
-				ExperimentalFlags.VerifyFlagEnabled(nameof(CollectionView), ExperimentalFlags.CarouselViewExperimental,
-					constructorHint, memberName);
-			}
-			catch (InvalidOperationException)
-			{
-
-			}
 		}
 
 		protected virtual void OnPositionChanged(PositionChangedEventArgs args)

@@ -23,7 +23,6 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue11333()
 		{
 #if APP
-			Device.SetFlags(new List<string> { ExperimentalFlags.SwipeViewExperimental });
 			InitializeComponent();
 #endif
 		}

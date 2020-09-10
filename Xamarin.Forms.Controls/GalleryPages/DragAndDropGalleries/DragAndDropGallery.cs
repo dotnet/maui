@@ -8,7 +8,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries
 	{
 		public DragAndDropGallery()
 		{
-			Device.SetFlags(new List<string> { ExperimentalFlags.DragAndDropExperimental, ExperimentalFlags.ShellUWPExperimental, ExperimentalFlags.ShapesExperimental });
 			Items.Add(new EnablingAndDisablingGestureTests());
 			Items.Add(new VariousDragAndDropPermutations());
 			Items.Add(new DragAndDropBetweenLayouts());

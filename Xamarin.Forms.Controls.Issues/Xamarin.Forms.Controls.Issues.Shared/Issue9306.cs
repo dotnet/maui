@@ -28,8 +28,6 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			Device.SetFlags(new List<string> { ExperimentalFlags.SwipeViewExperimental });
-
 			Title = PageTitle;
 
 			_leftSwipeCountLabel = new Label

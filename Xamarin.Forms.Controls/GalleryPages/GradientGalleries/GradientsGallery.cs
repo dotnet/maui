@@ -9,13 +9,6 @@
 			var descriptionLabel =
 				new Label { Text = "Brushes Galleries", Margin = new Thickness(2, 2, 2, 2) };
 
-			var button = new Button
-			{
-				Text = "Enable Brushes",
-				AutomationId = "EnableBrushes"
-			};
-			button.Clicked += ButtonClicked;
-
 			var navigationBarButton = new Button
 			{
 				FontSize = 10,
@@ -45,7 +38,6 @@
 				Children =
 				{
 					descriptionLabel,
-					button,
 					GalleryBuilder.NavButton("Gradient Views", () =>
 						new GradientViewsGallery(), Navigation),
 					GalleryBuilder.NavButton("SolidColorBrush Converter Gallery", () =>
@@ -83,17 +75,6 @@
 			{
 				Content = layout
 			};
-		}
-		
-		void ButtonClicked(object sender, System.EventArgs e)
-		{
-			var button = sender as Button;
-
-			button.Text = "Brushes Enabled!";
-			button.TextColor = Color.Black;
-			button.IsEnabled = false;
-
-			Device.SetFlags(new[] { ExperimentalFlags.BrushExperimental, ExperimentalFlags.ShapesExperimental, ExperimentalFlags.SwipeViewExperimental });
 		}
 	}
 }

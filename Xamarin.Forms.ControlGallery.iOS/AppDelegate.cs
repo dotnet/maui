@@ -151,7 +151,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			App.IOSVersion = int.Parse(versionPart[0]);
 
 			Xamarin.Calabash.Start();
-			Forms.SetFlags("SwipeView_Experimental");
+
 			Forms.Init();
 			FormsMaps.Init();
 			FormsMaterial.Init();

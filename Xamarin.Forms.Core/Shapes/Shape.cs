@@ -4,7 +4,6 @@
     {
         public Shape()
         {
-            ExperimentalFlags.VerifyFlagEnabled(nameof(Shape), ExperimentalFlags.ShapesExperimental);
         }
 
         public static readonly BindableProperty FillProperty =

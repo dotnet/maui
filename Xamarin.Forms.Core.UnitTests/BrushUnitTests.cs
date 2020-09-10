@@ -11,8 +11,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void SetUp()
 		{
 			_converter = new BrushTypeConverter();
-
-			Device.SetFlags(new[] { ExperimentalFlags.BrushExperimental });
 		}
 
 		[Test]

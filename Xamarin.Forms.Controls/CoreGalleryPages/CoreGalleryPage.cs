@@ -21,8 +21,6 @@ namespace Xamarin.Forms.Controls
 
 		internal CoreGalleryPage()
 		{
-			Device.SetFlags(new[] { ExperimentalFlags.BrushExperimental });
-
 			Layout = new StackLayout
 			{
 				Padding = new Thickness(20)

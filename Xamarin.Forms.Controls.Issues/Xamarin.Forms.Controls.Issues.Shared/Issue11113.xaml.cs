@@ -20,7 +20,6 @@ namespace Xamarin.Forms.Controls
 		public Issue11113()
 		{
 #if APP
-			Device.SetFlags(new List<string> { ExperimentalFlags.ShapesExperimental });
 			InitializeComponent();
 #endif
 		}

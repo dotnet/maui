@@ -30,7 +30,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		public CarouselViewRenderer(Context context) : base(context)
 		{
-			FormsCarouselView.VerifyCarouselViewFlagEnabled(nameof(CarouselViewRenderer));
 			_oldViews = new List<View>();
 			_carouselViewLoopManager = new CarouselViewLoopManager();
 		}

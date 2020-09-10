@@ -21,8 +21,7 @@ namespace Xamarin.Forms.Controls.Issues
         public Issue11050()
         {
 #if APP
-            Device.SetFlags(new List<string> { ExperimentalFlags.ShapesExperimental });
-
+     
             InitializeComponent();
 
             Device.StartTimer(TimeSpan.FromMilliseconds(15), () =>

@@ -7,21 +7,13 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 	{
 		public SwipeViewGallery()
 		{
-			var button = new Button
-			{
-				Text = "Enable SwipeView",
-				AutomationId = "EnableSwipeView"
-			};
-			button.Clicked += ButtonClicked;
-
 			Content = new ScrollView
 			{
 				Content = new StackLayout
 				{
 					Children =
 					{
-	 					button,
-						GalleryBuilder.NavButton("Basic SwipeView Gallery", () => new BasicSwipeGallery(), Navigation),
+	 					GalleryBuilder.NavButton("Basic SwipeView Gallery", () => new BasicSwipeGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeView Events Gallery", () => new SwipeViewEventsGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeItems from Resource Gallery", () => new ResourceSwipeItemsGallery(), Navigation),
 						GalleryBuilder.NavButton("BindableLayout Gallery", () => new SwipeBindableLayoutGallery(), Navigation),
@@ -45,17 +37,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 					}
 				}
 			};
-		}
-
-		void ButtonClicked(object sender, System.EventArgs e)
-		{
-			var button = sender as Button;
-
-			button.Text = "SwipeView Enabled!";
-			button.TextColor = Color.Black;
-			button.IsEnabled = false;
-
-			Device.SetFlags(new[] { ExperimentalFlags.SwipeViewExperimental, ExperimentalFlags.CarouselViewExperimental });
 		}
 	}
 }

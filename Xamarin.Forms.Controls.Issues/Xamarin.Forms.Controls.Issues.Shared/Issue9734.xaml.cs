@@ -24,7 +24,6 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue9734()
 		{
 #if APP
-			Device.SetFlags(new List<string> { ExperimentalFlags.SwipeViewExperimental });
 			InitializeComponent();
 			BindingContext = new Issue9734ViewModel();
 #endif
