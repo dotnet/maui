@@ -187,16 +187,16 @@ namespace Xamarin.Forms.Platform.Android
 				Shape = new RectShape()
 			};
 
+			gradientStrokeDrawable.SetStroke(0, Color.Default.ToAndroid());
+
 			if (brush is SolidColorBrush solidColorBrush)
 			{
 				var color = solidColorBrush.Color.IsDefault ? Color.Default.ToAndroid() : solidColorBrush.Color.ToAndroid();
 				gradientStrokeDrawable.SetColor(color);
 			}
 			else
-			{
-				gradientStrokeDrawable.SetStroke(0, Color.Default.ToAndroid());
 				gradientStrokeDrawable.SetGradient(brush);
-			}
+
 			view.Background?.Dispose();
 			view.Background = gradientStrokeDrawable;
 		}
