@@ -24,7 +24,6 @@ namespace Xamarin.Forms.Markup
 			{ "Xamarin.Forms.Entry", Entry.TextProperty },
 			{ "Xamarin.Forms.EntryCell", EntryCell.TextProperty },
 			{ "Xamarin.Forms.FileImageSource", FileImageSource.FileProperty },
-			{ "Xamarin.Forms.FileMediaSource", FileMediaSource.FileProperty },
 			{ "Xamarin.Forms.HtmlWebViewSource", HtmlWebViewSource.HtmlProperty },
 			{ "Xamarin.Forms.Image", Image.SourceProperty },
 			{ "Xamarin.Forms.ImageButton", ImageButton.CommandProperty },
@@ -33,7 +32,6 @@ namespace Xamarin.Forms.Markup
 			{ "Xamarin.Forms.Label", Label.TextProperty },
 			{ "Xamarin.Forms.ListView", ListView.ItemsSourceProperty },
 			{ "Xamarin.Forms.MasterDetailPage", Page.TitleProperty },
-			{ "Xamarin.Forms.MediaElement", MediaElement.SourceProperty },
 			{ "Xamarin.Forms.MenuItem", MenuItem.CommandProperty },
 			{ "Xamarin.Forms.MultiPage", Page.TitleProperty },
 			{ "Xamarin.Forms.NavigationPage", Page.TitleProperty },
@@ -62,7 +60,6 @@ namespace Xamarin.Forms.Markup
 			{ "Xamarin.Forms.TimePicker", TimePicker.TimeProperty },
 			{ "Xamarin.Forms.ToolbarItem", ToolbarItem.CommandProperty },
 			{ "Xamarin.Forms.UriImageSource", UriImageSource.UriProperty },
-			{ "Xamarin.Forms.UriMediaSource", UriMediaSource.UriProperty },
 			{ "Xamarin.Forms.UrlWebViewSource", UrlWebViewSource.UrlProperty },
 			{ "Xamarin.Forms.WebView", WebView.SourceProperty }
 		};

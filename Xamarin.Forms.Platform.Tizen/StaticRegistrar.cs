@@ -102,7 +102,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			Registered.Register(typeof(CarouselView), () => new CarouselViewRenderer());
 			Registered.Register(typeof(SwipeView), () => new SwipeViewRenderer());
 			Registered.Register(typeof(RefreshView), () => new RefreshViewRenderer());
-			Registered.Register(typeof(MediaElement), () => new MediaElementRenderer());
 			Registered.Register(typeof(IndicatorView), () => new IndicatorViewRenderer());
 			Registered.Register(typeof(RadioButton), () => new RadioButtonRenderer());
 
@@ -135,7 +134,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			DependencyService.Register<IDeserializer, Deserializer>();
 			DependencyService.Register<INativeBindingService, NativeBindingService>();
 			DependencyService.Register<INativeValueConverterService, NativeValueConverterService>();
-			DependencyService.Register<IPlatformMediaPlayer, MediaPlayerImpl>();
 
 			//Custom Handlers
 			if (customHandlers != null)

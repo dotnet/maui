@@ -12,7 +12,6 @@ namespace Xamarin.Forms
 		internal const string ShellUWPExperimental = "Shell_UWP_Experimental";
 		internal const string CarouselViewExperimental = "CarouselView_Experimental";
 		internal const string SwipeViewExperimental = "SwipeView_Experimental";
-		internal const string MediaElementExperimental = "MediaElement_Experimental";
 		internal const string MarkupExperimental = "Markup_Experimental";
 		internal const string RadioButtonExperimental = "RadioButton_Experimental";
 		internal const string ShapesExperimental = "Shapes_Experimental";

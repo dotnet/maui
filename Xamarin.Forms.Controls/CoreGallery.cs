@@ -415,7 +415,6 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new ListViewDemoPage(), "ListView Demo Gallery - Legacy"),
 				new GalleryPageFactory(() => new MapGallery(), "Map Gallery - Legacy"),
 				new GalleryPageFactory(() => new MapWithItemsSourceGallery(), "Map With ItemsSource Gallery - Legacy"),
-				new GalleryPageFactory(() => new MediaElementDemoPage(), "MediaElement"),
 				new GalleryPageFactory(() => new MapElementsGallery(), "Map Elements Gallery - Legacy"),
 				new GalleryPageFactory(() => new MinimumSizeGallery(), "MinimumSize Gallery - Legacy"),
 				new GalleryPageFactory(() => new MultiGallery(), "Multi Gallery - Legacy"),

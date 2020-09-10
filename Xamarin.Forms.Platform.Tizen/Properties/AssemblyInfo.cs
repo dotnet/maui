@@ -1,12 +1,10 @@
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Tizen;
-using MediaPlayerImpl = Xamarin.Forms.Platform.Tizen.Native.MediaPlayerImpl;
 
 [assembly: Dependency(typeof(ResourcesProvider))]
 [assembly: Dependency(typeof(Deserializer))]
 [assembly: Dependency(typeof(NativeBindingService))]
 [assembly: Dependency(typeof(NativeValueConverterService))]
-[assembly: Dependency(typeof(MediaPlayerImpl))]
 
 [assembly: ExportRenderer(typeof(Layout), typeof(LayoutRenderer))]
 [assembly: ExportRenderer(typeof(ScrollView), typeof(ScrollViewRenderer))]
@@ -44,7 +42,6 @@ using MediaPlayerImpl = Xamarin.Forms.Platform.Tizen.Native.MediaPlayerImpl;
 [assembly: ExportRenderer(typeof(CarouselView), typeof(CarouselViewRenderer))]
 [assembly: ExportRenderer(typeof(SwipeView), typeof(SwipeViewRenderer))]
 [assembly: ExportRenderer(typeof(RefreshView), typeof(RefreshViewRenderer))]
-[assembly: ExportRenderer(typeof(MediaElement), typeof(MediaElementRenderer))]
 [assembly: ExportRenderer(typeof(IndicatorView), typeof(IndicatorViewRenderer))]
 [assembly: ExportRenderer(typeof(RadioButton), typeof(RadioButtonRenderer))]
 
