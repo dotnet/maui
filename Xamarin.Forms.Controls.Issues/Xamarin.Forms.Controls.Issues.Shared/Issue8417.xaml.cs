@@ -19,7 +19,6 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue8417()
 		{
 #if APP
-			Device.SetFlags(new List<string> { ExperimentalFlags.CarouselViewExperimental });
 			InitializeComponent();
 			BindingContext = new Issue8417ViewModel();
 #endif

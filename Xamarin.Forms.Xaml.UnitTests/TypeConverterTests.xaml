@@ -8,9 +8,5 @@
 				<UriImageSource Uri="https://xamarin.com/content/images/pages/branding/assets/xamagon.png" x:Name="imageSource"/>
 			</Image.Source>
 		</Image>
-		<Expander x:Name="expander"
-				  ExpandAnimationEasing="CubicInOut"
-				  CollapseAnimationEasing="Easing.sininout">
-		</Expander>
 	</StackLayout>
 </ContentPage>

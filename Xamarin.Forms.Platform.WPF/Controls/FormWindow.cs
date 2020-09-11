@@ -199,7 +199,8 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 				ClearValue(TitleBarTextColorProperty);
 			}
 
-			hamburgerButton.Visibility = CurrentMasterDetailPage != null ? Visibility.Visible : Visibility.Collapsed;
+			if (hamburgerButton != null)
+				hamburgerButton.Visibility = CurrentMasterDetailPage != null ? Visibility.Visible : Visibility.Collapsed;
 
 			if (CurrentNavigationPage != null)
 			{

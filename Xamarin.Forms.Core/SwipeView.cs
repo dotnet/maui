@@ -16,14 +16,6 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SwipeView>>(() => new PlatformConfigurationRegistry<SwipeView>(this));
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void VerifySwipeViewFlagEnabled(
-			string constructorHint = null,
-			[CallerMemberName] string memberName = "")
-		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(SwipeView), ExperimentalFlags.SwipeViewExperimental, memberName: memberName);
-		}
-
 		public static readonly BindableProperty LeftItemsProperty =
 			BindableProperty.Create(nameof(LeftItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
 				propertyChanged: OnSwipeItemsChanged);

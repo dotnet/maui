@@ -5,14 +5,6 @@ namespace Xamarin.Forms.Core.UnitTests
 	[TestFixture]
 	public class SwipeViewTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-
-			Device.SetFlags(new[] { ExperimentalFlags.SwipeViewExperimental });
-		}
-
 		[Test]
 		public void TestConstructor()
 		{

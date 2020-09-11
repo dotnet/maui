@@ -7,14 +7,6 @@ namespace Xamarin.Forms.Core.UnitTests
 	[TestFixture]
 	public class GeometryTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-
-			Device.SetFlags(new[] { ExperimentalFlags.ShapesExperimental });
-		}
-
 		[TestCase(0, true)]
 		[TestCase(0, false)]
 		[TestCase(45, true)]

@@ -19,7 +19,6 @@ namespace Xamarin.Forms.Controls.Issues
 		public VisualControlsPage()
 		{
 #if APP
-			Device.SetFlags(new List<string> { ExperimentalFlags.BrushExperimental, ExperimentalFlags.ShapesExperimental });
 			InitializeComponent();
 #endif
 		}

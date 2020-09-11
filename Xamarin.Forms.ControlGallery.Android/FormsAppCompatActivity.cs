@@ -45,7 +45,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 #if TEST_EXPERIMENTAL_RENDERERS
 #else
-			Forms.SetFlags("UseLegacyRenderers", "SwipeView_Experimental", "MediaElement_Experimental");
+			Forms.SetFlags("UseLegacyRenderers");
 #endif
 			Forms.Init(this, bundle);
 

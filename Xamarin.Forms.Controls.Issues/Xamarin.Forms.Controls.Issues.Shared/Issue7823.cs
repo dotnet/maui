@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			var frameClippedToBouds = new Frame
+			var frameClippedToBounds = new Frame
 			{
 				AutomationId = SecondaryFrame,
 				CornerRadius = 10,
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 						CornerRadius = 5,
 						BackgroundColor = Color.Red,
 						Padding = 10,
-						Content = frameClippedToBouds
+						Content = frameClippedToBounds
 					},
 					new Button
 					{
@@ -61,8 +61,8 @@ namespace Xamarin.Forms.Controls.Issues
 						Text = "Manually set Frame.IsClippedToBounds = false",
 						Command = new Command(()=>
 						{
-							frameClippedToBouds.IsClippedToBounds = false;
-							frameClippedToBouds.CornerRadius = 11;
+							frameClippedToBounds.IsClippedToBounds = false;
+							frameClippedToBounds.CornerRadius = 11;
 						})
 					}
 				}

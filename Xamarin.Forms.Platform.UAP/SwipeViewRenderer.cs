@@ -21,7 +21,6 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public SwipeViewRenderer()
 		{
-			Xamarin.Forms.SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));
 			AutoPackage = false;
 		}
 

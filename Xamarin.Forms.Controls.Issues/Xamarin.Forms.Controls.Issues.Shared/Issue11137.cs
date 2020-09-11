@@ -22,8 +22,6 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init()
 		{
-			Device.SetFlags(new List<string> { ExperimentalFlags.ShapesExperimental });
-
 			Title = "Issue 11137";
 
 			var grid = new Grid();

@@ -35,7 +35,6 @@ using Rectangle = Xamarin.Forms.Shapes.Rectangle;
 [assembly: ExportRenderer(typeof(CheckBox), typeof(CheckBoxRenderer))]
 [assembly: ExportRenderer(typeof(TableView), typeof(TableViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer))]
-[assembly: ExportRenderer(typeof(MediaElement), typeof(MediaElementRenderer))]
 [assembly: ExportRenderer(typeof(RefreshView), typeof(RefreshViewRenderer))]
 [assembly: ExportRenderer(typeof(Shell), typeof(ShellRenderer))]
 [assembly: ExportRenderer(typeof(Path), typeof(PathRenderer))]

@@ -101,9 +101,6 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-#if APP
-			Device.SetFlags(new List<string>(Device.Flags ?? new List<string>()) { "SwipeView_Experimental" });
-#endif
 		}
 	}
 

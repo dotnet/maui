@@ -97,53 +97,6 @@ namespace Xamarin.Forms.Platform.Android
 			view.ClipToOutline = value;
 		}
 
-		public static void SetClipToOutline(this AView view, bool value, VisualElement element)
-		{
-			if (view.IsDisposed())
-				return;
-
-			var shouldClip = value;
-			if (element is Frame frame)
-			{
-				shouldClip = frame.IsSet(Layout.IsClippedToBoundsProperty)
-					? frame.IsClippedToBounds : frame.CornerRadius > 0f;
-			}
-
-			if (view is FastRenderers.FrameRenderer && Forms.IsLollipopOrNewer)
-			{
-				view.SetClipToOutline(shouldClip);
-				return;
-			}
-
-			// setClipBounds is only available in API 18 +
-			if ((int)Build.VERSION.SdkInt >= 18)
-			{
-				if (!(view is ViewGroup viewGroup))
-				{
-					return;
-				}
-
-				// Forms layouts should not impose clipping on their children
-				viewGroup.SetClipChildren(false);
-
-				// But if IsClippedToBounds is true, they _should_ enforce clipping at their own edges
-				viewGroup.ClipBounds = shouldClip ? new ARect(0, 0, viewGroup.Width, viewGroup.Height) : null;
-			}
-			else
-			{
-				// For everything in 17 and below, use the setClipChildren method
-				if (!(view.Parent is ViewGroup parent))
-					return;
-
-				if ((int)Build.VERSION.SdkInt >= 18 && parent.ClipChildren == shouldClip)
-					return;
-
-				parent.SetClipChildren(shouldClip);
-				parent.Invalidate();
-			}
-		}
-
-
 		public static bool SetElevation(this AView view, float value)
 		{
 			if (view.IsDisposed() || !Forms.IsLollipopOrNewer)

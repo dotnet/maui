@@ -233,7 +233,6 @@
     <Compile Include="Renderers\ButtonElementManager.cs" />
     <Compile Include="Renderers\IImageVisualElementRenderer.cs" />
     <Compile Include="Renderers\ImageButtonRenderer.cs" />
-    <Compile Include="Renderers\MediaElementRenderer.cs" />
     <Compile Include="Resources\StringResources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

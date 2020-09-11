@@ -23,7 +23,6 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue7678Ios()
 		{
 #if APP
-			Device.SetFlags(new List<string> { ExperimentalFlags.CarouselViewExperimental });
 			Title = "Issue 7678";
 			BindingContext = new Issue7678IosViewModel();
 #endif
@@ -149,7 +148,6 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue7678Droid()
 		{
 #if APP
-			Device.SetFlags(new List<string> { ExperimentalFlags.CarouselViewExperimental });
 			Title = "Issue 7678";
 			BindingContext = new Issue7678DroidViewModel();
 #endif

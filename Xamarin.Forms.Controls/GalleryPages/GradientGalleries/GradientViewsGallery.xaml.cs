@@ -61,7 +61,6 @@
 			DatePicker.BackgroundColor = backgroundColor;
 			Editor.BackgroundColor = backgroundColor;
 			Entry.BackgroundColor = backgroundColor;
-			Expander.BackgroundColor = backgroundColor;
 			Frame.BackgroundColor = backgroundColor;
 			Grid.BackgroundColor = backgroundColor;
 			ImageButton.BackgroundColor = backgroundColor;
@@ -89,7 +88,6 @@
 			DatePicker.Background = background;
 			Editor.Background = background;
 			Entry.Background = background;
-			Expander.Background = background;
 			Frame.Background = background;
 			Grid.Background = background;
 			ImageButton.Background = background;

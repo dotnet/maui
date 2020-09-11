@@ -128,17 +128,6 @@
                     <Entry
                         x:Name="Entry"
                         Text="Entry"/>
-                    <Expander
-                        x:Name="Expander">
-                        <Expander.Header>
-                            <Label
-                                Text="Expander Header" />
-                        </Expander.Header>
-                        <Grid>
-                            <Label
-                                Text="Expander Content" />
-                        </Grid>
-                    </Expander>
                     <Frame
                         x:Name="Frame"
                         CornerRadius="12"

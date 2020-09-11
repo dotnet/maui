@@ -5,14 +5,6 @@ namespace Xamarin.Forms.Core.UnitTests
 {
 	public class LineTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-
-			Device.SetFlags(new[] { ExperimentalFlags.ShapesExperimental });
-		}
-
 		[Test]
 		public void XPointCanBeSetFromStyle()
 		{

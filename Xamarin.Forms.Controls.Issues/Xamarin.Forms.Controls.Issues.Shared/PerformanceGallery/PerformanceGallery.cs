@@ -192,7 +192,7 @@ namespace Xamarin.Forms.Controls.Issues
 			ViewModel.RunTest(_TestCases[_TestNumber++]);
 		}
 
-#if UITEST
+#if false && UITEST
 
 		double TopThreshold => 1 + Threshold;
 		double BottomThreshold => 1 - Threshold;

@@ -11,7 +11,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			base.Setup();
 
-			Device.SetFlags(new[] { ExperimentalFlags.ShapesExperimental });
 		}
 
 		[Test]

@@ -20,6 +20,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
+      ref: refs/heads/main # still defaults to master even though main is the main branch
 
 trigger:
   branches:

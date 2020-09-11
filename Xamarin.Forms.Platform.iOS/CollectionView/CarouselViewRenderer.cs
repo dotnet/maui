@@ -12,7 +12,6 @@ namespace Xamarin.Forms.Platform.iOS
 		[Preserve(Conditional = true)]
 		public CarouselViewRenderer()
 		{
-			CarouselView.VerifyCarouselViewFlagEnabled(nameof(CarouselViewRenderer));
 		}
 
 		protected override CarouselViewController CreateController(CarouselView newElement, ItemsViewLayout layout)

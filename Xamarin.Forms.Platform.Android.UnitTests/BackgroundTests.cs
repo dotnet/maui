@@ -25,14 +25,6 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 			}
 		}
 
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-
-			Device.SetFlags(new[] { "Brush_Experimental" });
-		}
-
 		[Test, Category("Background"), Category("Frame")]
 		[Description("Frame background should match renderer background")]
 		public async Task FrameLinearGradientBrushConsistent()

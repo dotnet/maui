@@ -7,7 +7,7 @@
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>    
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup>

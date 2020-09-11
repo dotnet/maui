@@ -48,7 +48,6 @@ namespace Xamarin.Forms.Markup.UnitTests
 				{ typeof(InputView), na },
 				{ typeof(ItemsLayout), na },
 				{ typeof(LinearItemsLayout), na },
-				{ typeof(MediaSource), na },
 				{ typeof(Menu), na },
 				{ typeof(MultiTrigger), na },
 				{ typeof(NavigableElement), na },
