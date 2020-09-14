@@ -16,14 +16,6 @@ namespace Xamarin.Forms
 	{
 		readonly List<Element> _logicalChildren = new List<Element>();
 
-#if NETSTANDARD1_0
-		ReadOnlyCollection<Element> _readOnlyLogicalChildren;
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _readOnlyLogicalChildren ?? 
-			(_readOnlyLogicalChildren = new ReadOnlyCollection<Element>(_logicalChildren));
-#else
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildren.AsReadOnly();
-#endif
-
 		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create("IsPullToRefreshEnabled", typeof(bool), typeof(ListView), false);
 
 		public static readonly BindableProperty IsRefreshingProperty = BindableProperty.Create("IsRefreshing", typeof(bool), typeof(ListView), false, BindingMode.TwoWay);
@@ -59,7 +51,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty SeparatorColorProperty = BindableProperty.Create("SeparatorColor", typeof(Color), typeof(ListView), Color.Default);
 
 		public static readonly BindableProperty RefreshControlColorProperty = BindableProperty.Create(nameof(RefreshControlColor), typeof(Color), typeof(ListView), Color.Default);
-	
+
 		public static readonly BindableProperty HorizontalScrollBarVisibilityProperty = BindableProperty.Create(nameof(HorizontalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ListView), ScrollBarVisibility.Default);
 
 		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ListView), ScrollBarVisibility.Default);
@@ -407,7 +399,7 @@ namespace Xamarin.Forms
 			if (content == null || !_logicalChildren.Contains(content))
 				return;
 			var index = _logicalChildren.IndexOf(content);
-				_logicalChildren.Remove(content);
+			_logicalChildren.Remove(content);
 			content.Parent = null;
 			VisualDiagnostics.OnChildRemoved(this, content, index);
 

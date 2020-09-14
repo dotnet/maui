@@ -10,4 +10,8 @@
     <attr name="collectionViewStyle" format="reference"/>
   </declare-styleable>
 
+  <declare-styleable name="ScrollViewRendererTheme">
+    <attr name="scrollViewStyle" format="reference"/>
+  </declare-styleable>
+
 </resources>
