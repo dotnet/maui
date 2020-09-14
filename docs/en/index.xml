@@ -99,7 +99,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.Mac,Version=v2.0", FrameworkDisplayName="Xamarin.Mac")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+2524e04723e5feabe2c96f3152d6395a03925b90")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+6b1458c63590079add4a65e9d16709182e2bacd4")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -114,6 +114,9 @@
       <Type Name="ActivityState" Kind="Enumeration" />
       <Type Name="ActivityStateChangedEventArgs" Kind="Class" />
       <Type Name="AltitudeReferenceSystem" Kind="Enumeration" />
+      <Type Name="AppAction" Kind="Class" />
+      <Type Name="AppActionEventArgs" Kind="Class" />
+      <Type Name="AppActions" Kind="Class" />
       <Type Name="AppInfo" Kind="Class" />
       <Type Name="AppleSignInAuthenticator" Kind="Class" />
       <Type Name="AppleSignInAuthenticator+Options" Kind="Class" />
@@ -139,6 +142,11 @@
       <Type Name="ConnectionProfile" Kind="Enumeration" />
       <Type Name="Connectivity" Kind="Class" />
       <Type Name="ConnectivityChangedEventArgs" Kind="Class" />
+      <Type Name="Contact" Kind="Class" />
+      <Type Name="ContactEmail" Kind="Class" />
+      <Type Name="ContactPhone" Kind="Class" />
+      <Type Name="Contacts" Kind="Class" />
+      <Type Name="ContactType" Kind="Enumeration" />
       <Type Name="DeviceDisplay" Kind="Class" />
       <Type Name="DeviceIdiom" Kind="Structure" />
       <Type Name="DeviceInfo" Kind="Class" />
@@ -228,6 +236,7 @@
       <Type Name="Placemark" Kind="Class" />
       <Type Name="PlacemarkExtensions" Kind="Class" />
       <Type Name="Platform" Kind="Class" />
+      <Type Name="Platform+Intent" Kind="Class" />
       <Type Name="PointExtensions" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />
       <Type Name="ReadOnlyFile" Kind="Class" />

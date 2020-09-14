@@ -32,6 +32,22 @@
       <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Terrain" />
       <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Unspecified" />
     </Type>
+    <Type Name="Xamarin.Essentials.AppAction" Id="T:Xamarin.Essentials.AppAction">
+      <Member Id="M:Xamarin.Essentials.AppAction.#ctor(System.String,System.String,System.String,System.String)" />
+      <Member Id="P:Xamarin.Essentials.AppAction.Id" />
+      <Member Id="P:Xamarin.Essentials.AppAction.Subtitle" />
+      <Member Id="P:Xamarin.Essentials.AppAction.Title" />
+    </Type>
+    <Type Name="Xamarin.Essentials.AppActionEventArgs" Id="T:Xamarin.Essentials.AppActionEventArgs">
+      <Member Id="M:Xamarin.Essentials.AppActionEventArgs.#ctor(Xamarin.Essentials.AppAction)" />
+      <Member Id="P:Xamarin.Essentials.AppActionEventArgs.AppAction" />
+    </Type>
+    <Type Name="Xamarin.Essentials.AppActions" Id="T:Xamarin.Essentials.AppActions">
+      <Member Id="E:Xamarin.Essentials.AppActions.OnAppAction" />
+      <Member Id="M:Xamarin.Essentials.AppActions.GetAsync" />
+      <Member Id="M:Xamarin.Essentials.AppActions.SetAsync(System.Collections.Generic.IEnumerable{Xamarin.Essentials.AppAction})" />
+      <Member Id="M:Xamarin.Essentials.AppActions.SetAsync(Xamarin.Essentials.AppAction[])" />
+    </Type>
     <Type Name="Xamarin.Essentials.AppInfo" Id="T:Xamarin.Essentials.AppInfo">
       <Member Id="M:Xamarin.Essentials.AppInfo.ShowSettingsUI" />
       <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
@@ -200,6 +216,28 @@
       <Member Id="M:Xamarin.Essentials.ConnectivityChangedEventArgs.ToString" />
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.ConnectionProfiles" />
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Contact" Id="T:Xamarin.Essentials.Contact">
+      <Member Id="P:Xamarin.Essentials.Contact.ContactType" />
+      <Member Id="P:Xamarin.Essentials.Contact.Emails" />
+      <Member Id="P:Xamarin.Essentials.Contact.Name" />
+      <Member Id="P:Xamarin.Essentials.Contact.Numbers" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ContactEmail" Id="T:Xamarin.Essentials.ContactEmail">
+      <Member Id="P:Xamarin.Essentials.ContactEmail.ContactType" />
+      <Member Id="P:Xamarin.Essentials.ContactEmail.EmailAddress" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ContactPhone" Id="T:Xamarin.Essentials.ContactPhone">
+      <Member Id="P:Xamarin.Essentials.ContactPhone.ContactType" />
+      <Member Id="P:Xamarin.Essentials.ContactPhone.PhoneNumber" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Contacts" Id="T:Xamarin.Essentials.Contacts">
+      <Member Id="M:Xamarin.Essentials.Contacts.PickContactAsync" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ContactType" Id="T:Xamarin.Essentials.ContactType">
+      <Member Id="F:Xamarin.Essentials.ContactType.Personal" />
+      <Member Id="F:Xamarin.Essentials.ContactType.Unknown" />
+      <Member Id="F:Xamarin.Essentials.ContactType.Work" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceDisplay" Id="T:Xamarin.Essentials.DeviceDisplay">
       <Member Id="E:Xamarin.Essentials.DeviceDisplay.MainDisplayInfoChanged" />
@@ -521,7 +559,7 @@
       <Member Id="M:Xamarin.Essentials.MediaPicker.CaptureVideoAsync(Xamarin.Essentials.MediaPickerOptions)" />
       <Member Id="M:Xamarin.Essentials.MediaPicker.PickPhotoAsync(Xamarin.Essentials.MediaPickerOptions)" />
       <Member Id="M:Xamarin.Essentials.MediaPicker.PickVideoAsync(Xamarin.Essentials.MediaPickerOptions)" />
-      <Member Id="P:Xamarin.Essentials.MediaPicker.IsCaptureAvailable" />
+      <Member Id="P:Xamarin.Essentials.MediaPicker.IsCaptureSupported" />
     </Type>
     <Type Name="Xamarin.Essentials.MediaPickerOptions" Id="T:Xamarin.Essentials.MediaPickerOptions">
       <Member Id="M:Xamarin.Essentials.MediaPickerOptions.#ctor" />
@@ -749,6 +787,7 @@
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
       <Member Id="M:Xamarin.Essentials.Platform.GetCurrentUIViewController" />
       <Member Id="M:Xamarin.Essentials.Platform.OpenUrl(UIKit.UIApplication,Foundation.NSUrl,Foundation.NSDictionary)" />
+      <Member Id="M:Xamarin.Essentials.Platform.PerformActionForShortcutItem(UIKit.UIApplication,UIKit.UIApplicationShortcutItem,UIKit.UIOperationHandler)" />
     </Type>
     <Type Name="Xamarin.Essentials.PointExtensions" Id="T:Xamarin.Essentials.PointExtensions">
       <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(CoreGraphics.CGPoint)" />
@@ -801,7 +840,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.Screenshot" Id="T:Xamarin.Essentials.Screenshot">
       <Member Id="M:Xamarin.Essentials.Screenshot.CaptureAsync" />
-      <Member Id="P:Xamarin.Essentials.Screenshot.IsCaptureAvailable" />
+      <Member Id="P:Xamarin.Essentials.Screenshot.IsCaptureSupported" />
     </Type>
     <Type Name="Xamarin.Essentials.ScreenshotFormat" Id="T:Xamarin.Essentials.ScreenshotFormat">
       <Member Id="F:Xamarin.Essentials.ScreenshotFormat.Jpeg" />
