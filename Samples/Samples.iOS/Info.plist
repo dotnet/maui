@@ -88,5 +88,7 @@
 	<string>Pick Photos</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Catpure Video</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Contacts</string>
 </dict>
 </plist>

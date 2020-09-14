@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Contacts;
 using ContactsUI;
@@ -73,33 +70,33 @@ namespace Xamarin.Essentials
             CNContactType.Organization => ContactType.Work,
             _ => ContactType.Unknown,
         };
-    }
 
-    public class ContactPickerDelegate : CNContactPickerDelegate
-    {
-        public ContactPickerDelegate(Action<CNContact> didSelectContactHandler) =>
-            DidSelectContactHandler = didSelectContactHandler;
-
-        public ContactPickerDelegate(IntPtr handle)
-            : base(handle)
+        class ContactPickerDelegate : CNContactPickerDelegate
         {
+            public ContactPickerDelegate(Action<CNContact> didSelectContactHandler) =>
+                DidSelectContactHandler = didSelectContactHandler;
+
+            public ContactPickerDelegate(IntPtr handle)
+                : base(handle)
+            {
+            }
+
+            public Action<CNContact> DidSelectContactHandler { get; }
+
+            public override void ContactPickerDidCancel(CNContactPickerViewController picker)
+            {
+                DidSelectContactHandler?.Invoke(default);
+                picker.DismissModalViewController(true);
+            }
+
+            public override void DidSelectContact(CNContactPickerViewController picker, CNContact contact)
+            {
+                DidSelectContactHandler?.Invoke(contact);
+                picker.DismissModalViewController(true);
+            }
+
+            public override void DidSelectContactProperty(CNContactPickerViewController picker, CNContactProperty contactProperty) =>
+                picker.DismissModalViewController(true);
         }
-
-        public Action<CNContact> DidSelectContactHandler { get; }
-
-        public override void ContactPickerDidCancel(CNContactPickerViewController picker)
-        {
-            DidSelectContactHandler?.Invoke(default);
-            picker.DismissModalViewController(true);
-        }
-
-        public override void DidSelectContact(CNContactPickerViewController picker, CNContact contact)
-        {
-            DidSelectContactHandler?.Invoke(contact);
-            picker.DismissModalViewController(true);
-        }
-
-        public override void DidSelectContactProperty(CNContactPickerViewController picker, CNContactProperty contactProperty) =>
-            picker.DismissModalViewController(true);
     }
 }
