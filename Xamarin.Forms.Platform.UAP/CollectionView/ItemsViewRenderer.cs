@@ -117,21 +117,18 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					observableItemTemplateCollection.CleanUp();
 				}
-			}
 
-			if (Element?.ItemsSource == null)
-			{
-				if (CollectionViewSource?.Source is INotifyCollectionChanged incc)
+				if (CollectionViewSource.Source is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged -= ItemsChanged;
 				}
 
-				if (CollectionViewSource != null)
-				{
-					CollectionViewSource.Source = null;
-				}
-
+				CollectionViewSource.Source = null;		
 				CollectionViewSource = null;
+			}
+
+			if (Element?.ItemsSource == null)
+			{
 				ListViewBase.ItemsSource = null;
 				return;
 			}

@@ -7,7 +7,7 @@ using static System.String;
 
 namespace Xamarin.Forms
 {
-	class WeakEventManager
+	public class WeakEventManager
 	{
 		readonly Dictionary<string, List<Subscription>> _eventHandlers = new Dictionary<string, List<Subscription>>();
 
