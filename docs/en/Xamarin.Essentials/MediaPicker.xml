@@ -59,10 +59,10 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="IsCaptureAvailable">
-      <MemberSignature Language="C#" Value="public static bool IsCaptureAvailable { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property bool IsCaptureAvailable" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MediaPicker.IsCaptureAvailable" />
+    <Member MemberName="IsCaptureSupported">
+      <MemberSignature Language="C#" Value="public static bool IsCaptureSupported { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsCaptureSupported" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MediaPicker.IsCaptureSupported" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>

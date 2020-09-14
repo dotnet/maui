@@ -163,6 +163,48 @@
         <remarks>Needed only for UWP and can be generated from Bing Maps.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="OnLaunched">
+      <MemberSignature Language="C#" Value="public static void OnLaunched (Windows.ApplicationModel.Activation.LaunchActivatedEventArgs e);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OnLaunched(class Windows.ApplicationModel.Activation.LaunchActivatedEventArgs e) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.OnLaunched(Windows.ApplicationModel.Activation.LaunchActivatedEventArgs)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="e" Type="Windows.ApplicationModel.Activation.LaunchActivatedEventArgs" Index="0" FrameworkAlternate="xamarin-essentials-uwp" />
+      </Parameters>
+      <Docs>
+        <param name="e">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OnNewIntent">
+      <MemberSignature Language="C#" Value="public static void OnNewIntent (Android.Content.Intent intent);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OnNewIntent(class Android.Content.Intent intent) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.OnNewIntent(Android.Content.Intent)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="intent" Type="Android.Content.Intent" Index="0" FrameworkAlternate="xamarin-essentials-android" />
+      </Parameters>
+      <Docs>
+        <param name="intent">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="OnRequestPermissionsResult">
       <MemberSignature Language="C#" Value="public static void OnRequestPermissionsResult (int requestCode, string[] permissions, Android.Content.PM.Permission[] grantResults);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OnRequestPermissionsResult(int32 requestCode, string[] permissions, valuetype Android.Content.PM.Permission[] grantResults) cil managed" />
@@ -191,9 +233,9 @@
       </Docs>
     </Member>
     <Member MemberName="OnResume">
-      <MemberSignature Language="C#" Value="public static void OnResume ();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OnResume() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.OnResume" />
+      <MemberSignature Language="C#" Value="public static void OnResume (Android.App.Activity activity = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OnResume(class Android.App.Activity activity) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.OnResume(Android.App.Activity)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -202,9 +244,12 @@
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
-      <Parameters />
+      <Parameters>
+        <Parameter Name="activity" Type="Android.App.Activity" Index="0" FrameworkAlternate="xamarin-essentials-android" />
+      </Parameters>
       <Docs>
-        <summary>Pass Resume lifecycle events of your main activity to be used for internal API handling.</summary>
+        <param name="activity">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -231,6 +276,31 @@
         <param name="options">To be added.</param>
         <summary>Passes the OpenUrl callback of your app to be used for internal API handling.</summary>
         <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PerformActionForShortcutItem">
+      <MemberSignature Language="C#" Value="public static void PerformActionForShortcutItem (UIKit.UIApplication application, UIKit.UIApplicationShortcutItem shortcutItem, UIKit.UIOperationHandler completionHandler);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void PerformActionForShortcutItem(class UIKit.UIApplication application, class UIKit.UIApplicationShortcutItem shortcutItem, class UIKit.UIOperationHandler completionHandler) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.PerformActionForShortcutItem(UIKit.UIApplication,UIKit.UIApplicationShortcutItem,UIKit.UIOperationHandler)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="application" Type="UIKit.UIApplication" Index="0" FrameworkAlternate="xamarin-essentials-ios" />
+        <Parameter Name="shortcutItem" Type="UIKit.UIApplicationShortcutItem" Index="1" FrameworkAlternate="xamarin-essentials-ios" />
+        <Parameter Name="completionHandler" Type="UIKit.UIOperationHandler" Index="2" FrameworkAlternate="xamarin-essentials-ios" />
+      </Parameters>
+      <Docs>
+        <param name="application">To be added.</param>
+        <param name="shortcutItem">To be added.</param>
+        <param name="completionHandler">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
