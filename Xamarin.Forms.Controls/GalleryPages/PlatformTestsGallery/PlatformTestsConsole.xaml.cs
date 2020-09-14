@@ -71,7 +71,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
 		protected override async void OnAppearing()
 		{
 			base.OnAppearing();
-			await Run().ConfigureAwait(false);
+			
+			if (_testsRunCount == 0)
+			{
+				await Run().ConfigureAwait(false);
+			}
 		}
 
 		async Task Run() 
