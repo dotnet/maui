@@ -62,7 +62,12 @@ stages:
       - template: .ci/build.yml@components
         parameters:
           areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
-      - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - stage: signing
+      displayName: Sign Artifacts
+      dependsOn: [ 'build' ]
+      jobs:
         - template: sign-artifacts/jobs/v1.yml@internal-templates
           parameters:
             additionalConditions: eq(variables['Build.SourceBranch'], 'refs/heads/main')
