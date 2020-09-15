@@ -14,6 +14,9 @@ namespace Xamarin.Essentials
 
             public override void EnsureDeclared() =>
                 throw ExceptionUtils.NotSupportedOrImplementedException;
+
+            public override bool ShouldShowRationale() =>
+                throw ExceptionUtils.NotSupportedOrImplementedException;
         }
 
         public partial class Battery : BasePlatformPermission

@@ -79,6 +79,12 @@ namespace Samples.ViewModel
                     "Check connectivity state and detect changes.",
                     new[] { "connectivity", "internet", "wifi" }),
                 new SampleItem(
+                    "👶",
+                    "Contacts",
+                    typeof(ContactsPage),
+                    "Get and add contacts in your device.",
+                    new[] { "contacts", "people", "device" }),
+                new SampleItem(
                     "📱",
                     "Device Info",
                     typeof(DeviceInfoPage),
@@ -90,6 +96,12 @@ namespace Samples.ViewModel
                     typeof(EmailPage),
                     "Easily send email messages.",
                     new[] { "email", "share", "communication", "message" }),
+                new SampleItem(
+                    "📁",
+                    "File Picker",
+                    typeof(FilePickerPage),
+                    "Easily pick files from storage.",
+                    new[] { "files", "picking", "filesystem", "storage" }),
                 new SampleItem(
                     "📁",
                     "File System",
@@ -151,6 +163,12 @@ namespace Samples.ViewModel
                     "Retrieve orientation of the device in 3D space.",
                     new[] { "orientation", "sensors", "hardware", "device" }),
                 new SampleItem(
+                    "📷",
+                    "Media Picker",
+                    typeof(MediaPickerPage),
+                    "Pick or capture a photo or video.",
+                    new[] { "media", "picker", "video", "picture", "photo", "image", "movie" }),
+                new SampleItem(
                     "🔒",
                     "Permissions",
                     typeof(PermissionsPage),
@@ -168,6 +186,12 @@ namespace Samples.ViewModel
                     typeof(PreferencesPage),
                     "Quickly and easily add persistent preferences.",
                     new[] { "settings", "preferences", "prefs", "storage" }),
+                new SampleItem(
+                    "📷",
+                    "Screenshot",
+                    typeof(ScreenshotPage),
+                    "Quickly and easily take screenshots of your app.",
+                    new[] { "screenshot", "picture", "media", "display" }),
                 new SampleItem(
                     "🔒",
                     "Secure Storage",
@@ -204,6 +228,12 @@ namespace Samples.ViewModel
                     typeof(VibrationPage),
                     "Quickly and easily make the device vibrate.",
                     new[] { "vibration", "vibrate", "hardware", "device" }),
+                new SampleItem(
+                    "📳",
+                    "Haptic Feedback",
+                    typeof(HapticFeedbackPage),
+                    "Quickly and easily make the device provide haptic feedback",
+                    new[] { "haptic", "feedback", "hardware", "device" }),
                 new SampleItem(
                     "🔓",
                     "Web Authenticator",

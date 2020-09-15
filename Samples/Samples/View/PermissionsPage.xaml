@@ -15,12 +15,13 @@
     </views:BasePage.BindingContext>
 
     <StackLayout>
-        <ListView ItemsSource="{Binding PermissionItems}">
+        <ListView HasUnevenRows="True" ItemsSource="{Binding PermissionItems}">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
                         <Grid Padding="8,0,8,0" RowSpacing="0">
                             <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
@@ -32,9 +33,12 @@
                             
                             <Label Text="{Binding Title}" FontAttributes="Bold" VerticalOptions="Center" Grid.Row="0" Grid.Column="0"/>
                             <Label Text="{Binding Status, Mode=OneWay}" VerticalOptions="Center" Grid.Row="1" Grid.Column="0"/>
+                            <Label Text="{Binding Rationale, Mode=OneWay}" VerticalOptions="Center" Grid.Row="2" Grid.Column="0"/>
 
-                            <Button Text="Check" Command="{Binding CheckStatusCommand}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" />
-                            <Button Text="Request" Command="{Binding RequestCommand}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" />
+                            <Button Text="Check" Command="{Binding CheckStatusCommand}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" VerticalOptions="Center" />
+                            <Button Text="Request" Command="{Binding RequestCommand}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" VerticalOptions="Center" />
+                            
+                            <Button Text="Show Rationale" Command="{Binding ShouldShowRationaleCommand}" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" VerticalOptions="Center" />
 
                         </Grid>
                     </ViewCell>

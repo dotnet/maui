@@ -4,7 +4,7 @@ Xamarin.Essentials gives developers essential cross-platform APIs for their mobi
 
 iOS, Android, and UWP offer unique operating system and platform APIs that developers have access to, all in C# leveraging Xamarin. It is great that developers have 100% API access in C# with Xamarin, but these APIs are different per platform. This means developers have to learn three different APIs to access platform-specific features. With Xamarin.Essentials, developers have a single cross-platform API that works with any iOS, Android, or UWP application that can be accessed from shared code no matter how the user interface is created.
 
-[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/xamarin/Essentials)
+[![Discord](https://img.shields.io/discord/732297728826277939?label=discord&style=plastic)](https://discord.com/invite/Y8828kE)
 
 ## Build Status
 

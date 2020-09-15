@@ -35,7 +35,7 @@ namespace Xamarin.Essentials
                    new Dictionary<string, (int, TaskCompletionSource<PermissionStatus>)>();
 
             static readonly object locker = new object();
-            static int requestCode = 0;
+            static int requestCode;
 
             public virtual (string androidPermission, bool isRuntime)[] RequiredPermissions { get; }
 
@@ -103,9 +103,7 @@ namespace Xamarin.Essentials
                     {
                         tcs = new TaskCompletionSource<PermissionStatus>();
 
-                        // Get new request code and wrap it around for next use if it's going to reach max
-                        if (++requestCode >= int.MaxValue)
-                            requestCode = 1;
+                        requestCode = Platform.NextRequestCode();
 
                         requests.Add(permissionId, (requestCode, tcs));
                     }
@@ -129,12 +127,30 @@ namespace Xamarin.Essentials
 
             public override void EnsureDeclared()
             {
+                if (RequiredPermissions == null || RequiredPermissions.Length <= 0)
+                    return;
+
                 foreach (var (androidPermission, isRuntime) in RequiredPermissions)
                 {
                     var ap = androidPermission;
                     if (!IsDeclaredInManifest(ap))
                         throw new PermissionException($"You need to declare using the permission: `{androidPermission}` in your AndroidManifest.xml");
                 }
+            }
+
+            public override bool ShouldShowRationale()
+            {
+                if (RequiredPermissions == null || RequiredPermissions.Length <= 0)
+                    return false;
+
+                var activity = Platform.GetCurrentActivity(true);
+                foreach (var (androidPermission, isRuntime) in RequiredPermissions)
+                {
+                    if (isRuntime && ActivityCompat.ShouldShowRequestPermissionRationale(activity, androidPermission))
+                        return true;
+                }
+
+                return false;
             }
 
             internal static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
@@ -300,6 +316,14 @@ namespace Xamarin.Essentials
                         permissions.Add((Manifest.Permission.AddVoicemail, true));
                     if (IsDeclaredInManifest(Manifest.Permission.UseSip))
                         permissions.Add((Manifest.Permission.UseSip, true));
+
+#if __ANDROID_26__
+                    if (Platform.HasApiLevelO)
+                    {
+                        if (IsDeclaredInManifest(Manifest.Permission.AnswerPhoneCalls))
+                            permissions.Add((Manifest.Permission.AnswerPhoneCalls, true));
+                    }
+#endif
 
 #pragma warning disable CS0618 // Type or member is obsolete
                     if (IsDeclaredInManifest(Manifest.Permission.ProcessOutgoingCalls))

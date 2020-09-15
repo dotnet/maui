@@ -1,0 +1,37 @@
+﻿<view:BasePage x:Class="Samples.View.ContactsPage"
+               xmlns="http://xamarin.com/schemas/2014/forms"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:view="clr-namespace:Samples.View"
+               xmlns:viewmodel="clr-namespace:Samples.ViewModel"
+               Title="Contacts">
+
+    <view:BasePage.BindingContext>
+        <viewmodel:ContactsViewModel />
+    </view:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Get and add contacts in your device." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+
+                <Label FontAttributes="Bold" Text="Name:" />
+                <Label Text="{Binding Name}" />
+
+                <Label FontAttributes="Bold" Text="Numbers:" />
+                <Label Text="{Binding Phones}" />
+
+                <Label FontAttributes="Bold" Text="Emails:" />
+                <Label Text="{Binding Emails}" />
+
+                <Label FontAttributes="Bold" Text="Contact Type:" />
+
+                <Label Text="{Binding ContactType}" />
+
+                <Button Command="{Binding GetContactCommand}" Text="Get Contact" />
+
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+</view:BasePage>

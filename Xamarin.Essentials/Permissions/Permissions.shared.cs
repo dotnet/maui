@@ -12,6 +12,10 @@ namespace Xamarin.Essentials
             where TPermission : BasePermission, new() =>
                 new TPermission().RequestAsync();
 
+        public static void ShouldShowRationale<TPermission>()
+            where TPermission : BasePermission, new() =>
+                new TPermission().ShouldShowRationale();
+
         internal static void EnsureDeclared<TPermission>()
             where TPermission : BasePermission, new() =>
                 new TPermission().EnsureDeclared();
@@ -37,6 +41,8 @@ namespace Xamarin.Essentials
             public abstract Task<PermissionStatus> RequestAsync();
 
             public abstract void EnsureDeclared();
+
+            public abstract bool ShouldShowRationale();
         }
 
         public partial class Battery

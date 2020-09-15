@@ -40,6 +40,11 @@ namespace Xamarin.Essentials
 
         public static Task OpenAsync(OpenFileRequest request)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+            if (request.File == null)
+                throw new ArgumentNullException(nameof(request.File));
+
             return PlatformOpenAsync(request);
         }
 

@@ -1,272 +1,154 @@
+trigger:
+  - main
+  - develop
+  - refs/tags/*
+
+pr:
+  - main
+  - develop
 
 variables:
-  CurrentSemanticVersionBase: '1.5.3'
-  PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
-  CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
-  NugetPackageVersion: '$(CurrentSemanticVersion)'
-  MONO_VERSION: 6_4_0
-  XCODE_VERSION: 11.1
-  NETCORE_VERSION: '3.1.x'
-  NETCORE_TEST_VERSION: '2.2.x'
-  IOS_SIM_NAME: 'iPhone 11'
-  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-13-3'
-  ANDROID_EMU_TARGET: 'system-images;android-26;google_apis;x86'
-  ANDROID_EMU_DEVICE: 'Nexus 5X'
-  RunPoliCheck: 'false'
+  BASE_VERSION: 1.6.0
+  PREVIEW_LABEL: 'ci'
+  BUILD_NUMBER: $[counter(format('{0}_{1}_{2}', variables['BASE_VERSION'], variables['PREVIEW_LABEL'], variables['Build.SourceBranch']), 1)]
+  NUGET_VERSION: $[format('{0}-{1}.{2}', variables['BASE_VERSION'], variables['PREVIEW_LABEL'], variables['BUILD_NUMBER'])]
+  GIT_SHA: $(Build.SourceVersion)
+  GIT_BRANCH_NAME: $(Build.SourceBranchName)
 
 resources:
   repositories:
-    - repository: xamarin-templates
+    - repository: internal-templates
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
+    - repository: components
+      type: github
+      name: xamarin/XamarinComponents
+      endpoint: xamarin
 
-jobs:
+stages:
+  - stage: prepare
+    displayName: Prepare Variables
+    jobs:
+      - job: prepare
+        displayName: Prepare Build
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: none
+          - pwsh: |
+              $pr = "pr." + $env:SYSTEM_PULLREQUEST_PULLREQUESTNUMBER
+              $nuget = $env:BASE_VERSION + "-" + $pr + "." + $env:BUILD_NUMBER
+              Write-Host "Preview label: $pr"
+              Write-Host "NuGet version: $nuget"
+              Write-Host "##vso[task.setvariable variable=PREVIEW_LABEL]$pr"
+              Write-Host "##vso[task.setvariable variable=NUGET_VERSION]$nuget"
+            displayName: Use a special preview label for PRs
+            condition: eq(variables['Build.Reason'], 'PullRequest')
+          - pwsh: |
+              $tagVersion = $env:BUILD_SOURCEBRANCHNAME
+              Write-Host "Tag version: $tagVersion"
+              Write-Host "##vso[task.setvariable variable=NUGET_VERSION]$tagVersion"
+            displayName: Override version for tags
+            condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+          - pwsh: |
+              Write-Host "##vso[build.updatebuildnumber]$env:NUGET_VERSION"
+            displayName: Update the build number with a more readable one
 
-  - job: build_windows
-    displayName: Build Windows Library
-    pool:
-      vmImage: windows-2019
-    steps:
-      # if this is a tagged build, then update the version number
-      - powershell: |
-          $buildSourceBranch = "$(Build.SourceBranch)"
-          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
-          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
-          Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
-        displayName: Set NuGet Version to Tag Number
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-      # restore, build and pack the packages
-      - task: MSBuild@1
-        displayName: Build Solution
-        inputs:
-          solution: Xamarin.Essentials/Xamarin.Essentials.csproj
-          configuration: Release
-          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
-      - task: MSBuild@1
-        displayName: Pack NuGets
-        inputs:
-          solution: Xamarin.Essentials/Xamarin.Essentials.csproj
-          configuration: Release
-          msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
-#      - task: DotNetCoreCLI@2
-#        displayName: Publish to GitHub NuGet Packages
-#        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/main'))
-#        inputs:
-#          command: 'custom'
-#          custom: 'nuget'
-#          arguments: 'push --source https://nuget.pkg.github.com/xamarin/index.json --api-key $(GitHub.NuGet.Token) "$(Build.ArtifactStagingDirectory)\nuget\*.nupkg"'
-      - task: DotNetCoreCLI@2
-        displayName: Run Tests
-        inputs:
-          command: test
-          projects: 'Tests/Tests.csproj'
-          arguments: '--configuration Release'
-      # publish the packages
-      - task: PublishBuildArtifacts@1
-        displayName: 'Publish Unsigned NuGets'
-        inputs:
-          artifactName: nuget
-          pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
-      # make sure we are following the rules, but only on the main build
+  - stage: build
+    displayName: Build Library
+    dependsOn: [ 'prepare' ]
+    jobs:
+      - template: .ci/build.yml@components
+        parameters:
+          areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
       - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-        - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-          condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-          displayName: Component Detection - Log
-          inputs:
-            scanType: LogOnly
-        - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-          condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-          displayName: Component Detection - Report
-        - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
-          condition: eq(variables['RunPoliCheck'], 'true')
-          displayName: 'PoliCheck'
-          inputs:
-            targetType: F
-
-  - job: build_macos
-    displayName: Build macOS Library
-    pool:
-      vmImage: macos-10.14
-    steps:
-      # if this is a tagged build, then update the version number
-      - powershell: |
-          $buildSourceBranch = "$(Build.SourceBranch)"
-          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
-          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
-          Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
-        displayName: Set NuGet Version to Tag Number
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-      # make sure to select the correct Xamarin and mono
-      - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
-        displayName: Switch to the latest Xamarin SDK
-      - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
-        displayName: Switch to the latest Xcode
-      # restore, build and pack the packages
-      - task: UseDotNet@2
-        displayName: 'Use .Net Core sdk'
-        inputs:
-          version: $(NETCORE_VERSION)
-          includePreviewVersions: false
-      - task: UseDotNet@2
-        displayName: 'Use .Net Core sdk'
-        inputs:
-          version: $(NETCORE_TEST_VERSION)
-          includePreviewVersions: false
-      - task: MSBuild@1
-        displayName: Build Solution
-        inputs:
-          solution: Xamarin.Essentials/Xamarin.Essentials.csproj
-          configuration: Release
-          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
-      - task: MSBuild@1
-        displayName: Pack NuGets
-        inputs:
-          solution: Xamarin.Essentials/Xamarin.Essentials.csproj
-          configuration: Release
-          msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
-      - task: DotNetCoreCLI@2
-        displayName: Run Tests
-        inputs:
-          command: test
-          projects: 'Tests/Tests.csproj'
-          arguments: '--configuration Release'
-
-  - job: build_samples
-    displayName: Build Samples
-    pool:
-      vmImage: windows-2019
-    steps:
-      # restore, build and pack the packages
-      - task: MSBuild@1
-        displayName: Build Solution
-        inputs:
-          solution: Xamarin.Essentials.sln
-          configuration: Release
-          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
-
-  - job: devicetests_uwp
-    displayName: Run UWP Device Tests
-    dependsOn:
-      - build_windows
-      - build_macos
-    # skip for now
-    condition: and(succeeded(), not(succeeded()))
-    pool:
-      vmImage: windows-2019
-    steps:
-      - script: 'certutil -importpfx $(Build.SourcesDirectory)\DeviceTests\DeviceTests.UWP\DeviceTests.UWP_TemporaryKey.pfx'
-        displayName: 'Run certutil'
-      - powershell: |
-          cd DeviceTests
-          .\build.ps1 --target=test-uwp-emu --settings_skipverification=true --verbosity=diagnostic
-        displayName: 'Run Device Tests - UWP'
-      - task: PublishTestResults@2
-        displayName: 'Publish Test Results'
-        inputs:
-          testResultsFormat: XUnit
-          testResultsFiles: '**/xunit-*.xml'
-          testRunTitle: 'Device Tests - UWP'
-
-  - job: devicetests_ios
-    displayName: Run iOS Device Tests
-    dependsOn:
-      - build_windows
-      - build_macos
-    pool:
-      vmImage: macos-10.14
-    steps:
-      - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
-        displayName: Switch to the latest Xamarin SDK
-      - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
-        displayName: Switch to the latest Xcode
-      - task: UseDotNet@2
-        displayName: 'Use .Net Core sdk'
-        inputs:
-          version: $(NETCORE_VERSION)
-          includePreviewVersions: false
-      - task: UseDotNet@2
-        displayName: 'Use .Net Core sdk'
-        inputs:
-          version: $(NETCORE_TEST_VERSION)
-          includePreviewVersions: false
-      - task: InstallAppleCertificate@2
-        displayName: 'Install an Apple certificate'
-        inputs:
-          certSecureFile: 'Components iOS Certificate.p12'
-      - task: InstallAppleProvisioningProfile@1
-        displayName: 'Install an Apple provisioning profile'
-        inputs:
-          provProfileSecureFile: 'Components iOS Provisioning.mobileprovision'
-      - bash: |
-          cd DeviceTests
-          dotnet tool install -g cake.tool --version 0.36.0
-          dotnet cake --target=test-ios-emu --settings_skipverification=true --verbosity=diagnostic
-        displayName: 'Run Device Tests - iOS'
-      - task: PublishTestResults@2
-        displayName: 'Publish Test Results'
-        inputs:
-          testResultsFormat: XUnit
-          testResultsFiles: '**/xunit-*.xml'
-          testRunTitle: 'Device Tests - iOS'
-
-  - job: devicetests_android
-    displayName: Run Android Device Tests
-    dependsOn:
-      - build_windows
-      - build_macos
-    pool:
-      vmImage: macos-10.14
-    steps:
-      - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
-        displayName: Switch to the latest Xamarin SDK
-      - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
-        displayName: Switch to the latest Xcode
-      - task: UseDotNet@2
-        displayName: 'Use .Net Core sdk'
-        inputs:
-          version: $(NETCORE_VERSION)
-          includePreviewVersions: false
-      - task: UseDotNet@2
-        displayName: 'Use .Net Core sdk'
-        inputs:
-          version: $(NETCORE_TEST_VERSION)
-          includePreviewVersions: false
-      - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"$ANDROID_EMU_TARGET\""
-        displayName: Install the Android emulators
-      - bash: |
-          PATH="$ANDROID_HOME/tools/bin:$PATH"
-          PATH="$ANDROID_HOME/emulator:$PATH"
-          cd DeviceTests
-          dotnet tool install -g cake.tool --version 0.36.0
-          dotnet cake --target=test-android-emu --settings_skipverification=true --verbosity=diagnostic
-        displayName: 'Run Device Tests - Android'
-      - task: PublishTestResults@2
-        displayName: 'Publish Test Results'
-        inputs:
-          testResultsFormat: XUnit
-          testResultsFiles: '**/xunit-*.xml'
-          testRunTitle: 'Device Tests - Android'
-
-  # only sign the packages when running on Windows, and using the private server which has the certificates
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - job: signing
-      displayName: Signing NuGets
-      dependsOn: build_windows
-      pool:
-        name: VSEng-XamarinCustom
-        demands:
-          - corpnet
-      condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-      steps:
-        # don't checkout code and sign the packages
-        - checkout: none
-        - template: sign-artifacts.yml@xamarin-templates
+        - template: sign-artifacts/jobs/v1.yml@internal-templates
           parameters:
-            targetFolder: '$(Build.ArtifactStagingDirectory)/signed'
-        # publish the signed packages
-        - task: PublishBuildArtifacts@1
-          displayName: 'Publish Signed NuGets'
-          inputs:
-            artifactName: nuget-signed
-            pathToPublish: '$(Build.ArtifactStagingDirectory)/signed'
+            additionalConditions: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+
+  - stage: devicetests
+    displayName: Device Tests
+    dependsOn: [ 'prepare' ]
+    jobs:
+      - job: devicetests_uwp
+        displayName: UWP
+        # skip for now
+        condition: and(succeeded(), not(succeeded()))
+        pool:
+          vmImage: windows-2019
+        steps:
+          - script: 'certutil -importpfx $(Build.SourcesDirectory)\DeviceTests\DeviceTests.UWP\DeviceTests.UWP_TemporaryKey.pfx'
+            displayName: 'Run certutil'
+          - powershell: |
+              cd DeviceTests
+              .\build.ps1 --target=test-uwp-emu --settings_skipverification=true --verbosity=diagnostic
+            displayName: 'Run Device Tests - UWP'
+          - task: PublishTestResults@2
+            displayName: 'Publish Test Results'
+            inputs:
+              testResultsFormat: XUnit
+              testResultsFiles: '**/xunit-*.xml'
+              testRunTitle: 'Device Tests - UWP'
+
+      - template: .ci/build.yml@components
+        parameters:
+          name: devicetests_ios
+          runChecks: false
+          displayName: iOS
+          windowsImage: ''
+          areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
+          verbosity: diagnostic
+          cakeFile: DeviceTests/build.cake
+          cakeTarget: test-ios-emu
+
+      - template: .ci/build.yml@components
+        parameters:
+          name: devicetests_android_api_23
+          runChecks: false
+          displayName: Android API 23
+          windowsImage: ''
+          macosImage: 'macos-10.14'
+          xcode: '11.3.1'
+          areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
+          verbosity: diagnostic
+          cakeFile: DeviceTests/build.cake
+          cakeTarget: test-android-emu
+          cakeExtraArgs: --avd-target="`"system-images;android-23;google_apis;x86`""
+          preBuildSteps:
+            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-23;google_apis;x86\""
+              displayName: Install the Android emulators
+
+      - template: .ci/build.yml@components
+        parameters:
+          name: devicetests_android_api_26
+          runChecks: false
+          displayName: Android API 26
+          windowsImage: ''
+          macosImage: 'macos-10.14'
+          xcode: '11.3.1'
+          areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
+          verbosity: diagnostic
+          cakeFile: DeviceTests/build.cake
+          cakeTarget: test-android-emu
+          cakeExtraArgs: --avd-target="`"system-images;android-26;google_apis;x86`""
+          preBuildSteps:
+            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-26;google_apis;x86\""
+              displayName: Install the Android emulators
+
+      - template: .ci/build.yml@components
+        parameters:
+          name: devicetests_android_api_29
+          runChecks: false
+          displayName: Android API 29
+          windowsImage: ''
+          macosImage: 'macos-10.14'
+          xcode: '11.3.1'
+          areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
+          verbosity: diagnostic
+          cakeFile: DeviceTests/build.cake
+          cakeTarget: test-android-emu
+          cakeExtraArgs: --avd-target="`"system-images;android-29;google_apis_playstore;x86`""
+          preBuildSteps:
+            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-29;google_apis_playstore;x86\""
+              displayName: Install the Android emulators

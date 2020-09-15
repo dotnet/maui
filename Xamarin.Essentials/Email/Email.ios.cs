@@ -9,19 +9,9 @@ namespace Xamarin.Essentials
 {
     public static partial class Email
     {
-        internal static bool IsComposeSupported
-        {
-            get
-            {
-                var can = MFMailComposeViewController.CanSendMail;
-                if (!can)
-                {
-                    var url = NSUrl.FromString("mailto:");
-                    NSRunLoop.Main.InvokeOnMainThread(() => can = UIApplication.SharedApplication.CanOpenUrl(url));
-                }
-                return can;
-            }
-        }
+        internal static bool IsComposeSupported =>
+            MFMailComposeViewController.CanSendMail ||
+            MainThread.InvokeOnMainThread(() => UIApplication.SharedApplication.CanOpenUrl(NSUrl.FromString("mailto:")));
 
         static Task PlatformComposeAsync(EmailMessage message)
         {
@@ -54,7 +44,7 @@ namespace Xamarin.Essentials
                 foreach (var attachment in message.Attachments)
                 {
                     var data = NSData.FromFile(attachment.FullPath);
-                    controller.AddAttachmentData(data, attachment.ContentType, attachment.AttachmentName);
+                    controller.AddAttachmentData(data, attachment.ContentType, attachment.FileName);
                 }
             }
 
@@ -63,7 +53,7 @@ namespace Xamarin.Essentials
             controller.Finished += (sender, e) =>
             {
                 controller.DismissViewController(true, null);
-                tcs.SetResult(e.Result == MFMailComposeResult.Sent);
+                tcs.TrySetResult(e.Result == MFMailComposeResult.Sent);
             };
             parentController.PresentViewController(controller, true, null);
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -17,18 +19,27 @@ namespace Xamarin.Essentials
             if (!IsUriProtocolDeclared(callbackUrl.Scheme))
                 throw new InvalidOperationException($"You need to declare the windows.protocol usage of the protocol/scheme `{callbackUrl.Scheme}` in your AppxManifest.xml file");
 
-            var r = await WebAuthenticationBroker.AuthenticateAsync(WebAuthenticationOptions.None, url, callbackUrl);
-
-            switch (r.ResponseStatus)
+            try
             {
-                case WebAuthenticationStatus.Success:
-                    // For GET requests this is a URI:
-                    var resultUri = new Uri(r.ResponseData.ToString());
-                    return new WebAuthenticatorResult(resultUri);
-                case WebAuthenticationStatus.ErrorHttp:
-                    throw new UnauthorizedAccessException();
-                default:
-                    throw new Exception(r.ResponseData.ToString());
+                var r = await WebAuthenticationBroker.AuthenticateAsync(WebAuthenticationOptions.None, url, callbackUrl);
+
+                switch (r.ResponseStatus)
+                {
+                    case WebAuthenticationStatus.Success:
+                        // For GET requests this is a URI:
+                        var resultUri = new Uri(r.ResponseData.ToString());
+                        return new WebAuthenticatorResult(resultUri);
+                    case WebAuthenticationStatus.UserCancel:
+                        throw new TaskCanceledException();
+                    case WebAuthenticationStatus.ErrorHttp:
+                        throw new HttpRequestException("Error: " + r.ResponseErrorDetail);
+                    default:
+                        throw new Exception("Response: " + r.ResponseData.ToString() + "\nStatus: " + r.ResponseStatus);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                throw new TaskCanceledException();
             }
         }
 

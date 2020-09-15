@@ -34,12 +34,24 @@ namespace Samples.ViewModel
 
         public override void OnAppearing()
         {
-            Clipboard.ClipboardContentChanged += OnClipboardContentChanged;
+            try
+            {
+                Clipboard.ClipboardContentChanged += OnClipboardContentChanged;
+            }
+            catch (FeatureNotSupportedException)
+            {
+            }
         }
 
         public override void OnDisappearing()
         {
-            Clipboard.ClipboardContentChanged -= OnClipboardContentChanged;
+            try
+            {
+                Clipboard.ClipboardContentChanged -= OnClipboardContentChanged;
+            }
+            catch (FeatureNotSupportedException)
+            {
+            }
         }
 
         void OnClipboardContentChanged(object sender, EventArgs args)
@@ -47,7 +59,10 @@ namespace Samples.ViewModel
             LastCopied = $"Last copied text at {DateTime.UtcNow:T}";
         }
 
-        async void OnCopy() => await Clipboard.SetTextAsync(FieldValue);
+        async void OnCopy()
+        {
+            await Clipboard.SetTextAsync(FieldValue);
+        }
 
         async void OnPaste()
         {

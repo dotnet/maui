@@ -9,5 +9,8 @@ namespace Xamarin.Essentials
         internal const string AppManifestUapXmlns = "http://schemas.microsoft.com/appx/manifest/uap/windows10";
 
         public static string MapServiceToken { get; set; }
+
+        public static async void OnLaunched(LaunchActivatedEventArgs e)
+            => await AppActions.OnLaunched(e);
     }
 }

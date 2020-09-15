@@ -25,6 +25,6 @@ namespace Tests
 
         [Fact]
         public async Task Open_File_NetStandard() =>
-            await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Launcher.OpenAsync(new OpenFileRequest()));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => Launcher.OpenAsync(new OpenFileRequest()));
     }
 }
