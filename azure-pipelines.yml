@@ -27,41 +27,31 @@ resources:
       endpoint: xamarin
 
 stages:
-  - stage: prepare
-    displayName: Prepare Variables
-    jobs:
-      - job: prepare
-        displayName: Prepare Build
-        pool:
-          vmImage: ubuntu-latest
-        steps:
-          - checkout: none
-          - pwsh: |
-              $pr = "pr." + $env:SYSTEM_PULLREQUEST_PULLREQUESTNUMBER
-              $nuget = $env:BASE_VERSION + "-" + $pr + "." + $env:BUILD_NUMBER
-              Write-Host "Preview label: $pr"
-              Write-Host "NuGet version: $nuget"
-              Write-Host "##vso[task.setvariable variable=PREVIEW_LABEL]$pr"
-              Write-Host "##vso[task.setvariable variable=NUGET_VERSION]$nuget"
-            displayName: Use a special preview label for PRs
-            condition: eq(variables['Build.Reason'], 'PullRequest')
-          - pwsh: |
-              $tagVersion = $env:BUILD_SOURCEBRANCHNAME
-              Write-Host "Tag version: $tagVersion"
-              Write-Host "##vso[task.setvariable variable=NUGET_VERSION]$tagVersion"
-            displayName: Override version for tags
-            condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-          - pwsh: |
-              Write-Host "##vso[build.updatebuildnumber]$env:NUGET_VERSION"
-            displayName: Update the build number with a more readable one
-
   - stage: build
     displayName: Build Library
-    dependsOn: [ 'prepare' ]
     jobs:
       - template: .ci/build.yml@components
         parameters:
           areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
+          preBuildSteps:
+            - pwsh: |
+                $pr = "pr." + $env:SYSTEM_PULLREQUEST_PULLREQUESTNUMBER
+                $nuget = $env:BASE_VERSION + "-" + $pr + "." + $env:BUILD_NUMBER
+                Write-Host "Preview label: $pr"
+                Write-Host "NuGet version: $nuget"
+                Write-Host "##vso[task.setvariable variable=PREVIEW_LABEL]$pr"
+                Write-Host "##vso[task.setvariable variable=NUGET_VERSION]$nuget"
+              displayName: Use a special preview label for PRs
+              condition: eq(variables['Build.Reason'], 'PullRequest')
+            - pwsh: |
+                $tagVersion = $env:BUILD_SOURCEBRANCHNAME
+                Write-Host "Tag version: $tagVersion"
+                Write-Host "##vso[task.setvariable variable=NUGET_VERSION]$tagVersion"
+              displayName: Override version for tags
+              condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+            - pwsh: |
+                Write-Host "##vso[build.updatebuildnumber]$env:NUGET_VERSION"
+              displayName: Update the build number with a more readable one
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - stage: signing
@@ -74,7 +64,6 @@ stages:
 
   - stage: devicetests
     displayName: Device Tests
-    dependsOn: [ 'prepare' ]
     jobs:
       - job: devicetests_uwp
         displayName: UWP
