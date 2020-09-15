@@ -33,6 +33,7 @@ stages:
       - template: .ci/build.yml@components
         parameters:
           areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
+          masterBranchName: 'main'
           preBuildSteps:
             - pwsh: |
                 $pr = "pr." + $env:SYSTEM_PULLREQUEST_PULLREQUESTNUMBER
