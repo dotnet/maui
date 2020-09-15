@@ -1,4 +1,4 @@
-Bug report best practices: [Submitting Issues](https://github.com/xamarin/Essentials/blob/master/SUBMITTING-ISSUES.md)
+Bug report best practices: [Submitting Issues](https://github.com/xamarin/Essentials/blob/main/SUBMITTING-ISSUES.md)
 
 ### Description
 

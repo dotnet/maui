@@ -39,6 +39,6 @@ Describe any non-bug related behavioral changes that may change how users app be
 
 - [ ] Has tests (if omitted, state reason in description)
 - [ ] Has samples (if omitted, state reason in description)
-- [ ] Rebased on top of master at time of PR
+- [ ] Rebased on top of `main` at time of PR
 - [ ] Changes adhere to coding standard
 - [ ] Updated documentation ([see walkthrough](https://github.com/xamarin/Essentials/wiki/Documenting-your-code-with-mdoc))
