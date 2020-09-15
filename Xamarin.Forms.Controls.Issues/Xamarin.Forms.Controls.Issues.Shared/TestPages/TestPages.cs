@@ -681,34 +681,22 @@ namespace Xamarin.Forms.Controls
 			return page;
 		}
 
-		public ContentPage AddFlyoutItem(string title)
+		public ContentPage CreateContentPage<TShellItem>(string title)
+			where TShellItem : ShellItem
 		{
 			ContentPage page = new ContentPage() { Title = title };
-			AddFlyoutItem(page, title);
+			AddContentPage<TShellItem, Tab>(page, title);
 			return page;
+		}
+
+		public FlyoutItem AddFlyoutItem(string title)
+		{
+			return AddContentPage<FlyoutItem, Tab>(new ContentPage(), title);
 		}
 
 		public FlyoutItem AddFlyoutItem(ContentPage page, string title)
 		{
-			var item = new FlyoutItem
-			{
-				Title = title,
-				Items =
-				{
-					new Tab
-					{
-						Title = title,
-						Items =
-						{
-							page
-						}
-					}
-				}
-			};
-
-			Items.Add(item);
-
-			return item;
+			return AddContentPage<FlyoutItem, Tab>(page, title);
 		}
 
 		public ContentPage CreateContentPage(string shellItemTitle = null)

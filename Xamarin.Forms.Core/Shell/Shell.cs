@@ -210,41 +210,43 @@ namespace Xamarin.Forms
 		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
 
+
+		internal static BindableObject GetBindableObjectWithFlyoutItemTemplate(BindableObject bo)
+		{
+			if (bo is IMenuItemController)
+			{
+				if (bo is MenuItem mi && mi.Parent != null && mi.Parent.IsSet(MenuItemTemplateProperty))
+					return mi.Parent;
+				else if (bo is MenuShellItem msi && msi.MenuItem != null && msi.MenuItem.IsSet(MenuItemTemplateProperty))
+					return msi.MenuItem;
+			}
+
+			return bo;
+		}
+
 		DataTemplate IShellController.GetFlyoutItemDataTemplate(BindableObject bo)
 		{
 			BindableProperty bp = null;
 			string textBinding;
 			string iconBinding;
-			IStyleSelectable styleClassSource = null;
+			var bindableObjectWithTemplate = GetBindableObjectWithFlyoutItemTemplate(bo);
 
 			if (bo is IMenuItemController)
 			{
 				bp = MenuItemTemplateProperty;
-
-				if (bo is MenuItem mi && mi.Parent != null && mi.Parent.IsSet(bp))
-					bo = mi.Parent;
-				else if (bo is MenuShellItem msi && msi.MenuItem != null && msi.MenuItem.IsSet(bp))
-					bo = msi.MenuItem;
-
-				if (bo is MenuItem myStyle)
-					styleClassSource = myStyle;
-				else if (bo is MenuShellItem msiStyle)
-					styleClassSource = msiStyle.MenuItem;
-
 				textBinding = "Text";
 				iconBinding = "Icon";
 			}
 			else
 			{
-				styleClassSource = bo as IStyleSelectable;
 				bp = ItemTemplateProperty;
 				textBinding = "Title";
 				iconBinding = "FlyoutIcon";
 			}
 
-			if (bo.IsSet(bp))
+			if (bindableObjectWithTemplate.IsSet(bp))
 			{
-				return (DataTemplate)bo.GetValue(bp);
+				return (DataTemplate)bindableObjectWithTemplate.GetValue(bp);
 			}
 
 			if (IsSet(bp))
@@ -252,7 +254,7 @@ namespace Xamarin.Forms
 				return (DataTemplate)GetValue(bp);
 			}
 
-			return BaseShellItem.CreateDefaultFlyoutItemCell(styleClassSource, textBinding, iconBinding);
+			return BaseShellItem.CreateDefaultFlyoutItemCell(textBinding, iconBinding);
 		}
 
 		event EventHandler IShellController.StructureChanged
@@ -1036,7 +1038,17 @@ namespace Xamarin.Forms
 						else
 						{
 							if (!(shellSection.Parent is TabBar))
-								currentGroup.Add(shellSection);
+							{
+								if (Routing.IsImplicit(shellSection) && shellSection.Items.Count == 1)
+								{
+									if (!FlyoutItem.GetIsVisible(shellSection.Items[0]))
+										continue;
+
+									currentGroup.Add(shellSection.Items[0]);
+								}
+								else
+									currentGroup.Add(shellSection);
+							}
 
 							// If we have only a single child we will also show the items menu items
 							if ((shellSection as IShellSectionController).GetItems().Count == 1 && shellSection == shellItem.CurrentItem)

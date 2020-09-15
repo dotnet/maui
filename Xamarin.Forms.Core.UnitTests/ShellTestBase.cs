@@ -302,5 +302,27 @@ namespace Xamarin.Forms.Core.UnitTests
 				Assert.AreEqual(count, NavigatedCount, $"NavigatedCount: {message}");
 			}
 		}
+
+
+		public class TestShellViewModel : INotifyPropertyChanged
+		{
+			private string _text;
+
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			public TestShellViewModel SubViewModel { get; set; }
+
+			public TestShellViewModel SubViewModel2 { get; set; }
+
+			public string Text
+			{
+				get => _text;
+				set
+				{
+					_text = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
+				}
+			}
+		}
 	}
 }
