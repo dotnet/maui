@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Core.UITests
 		public static readonly string Switch = "UISwitch";
 		public static readonly string TableView = "UITableView";
 		public static readonly string TimePicker = "UITextField";
-		public static readonly string WebView = "UIWebView";
+		public static readonly string WebView = "WKWebView";
 #elif __ANDROID__ || __WINDOWS__
 		public static readonly string ActivityIndicator = "android.widget.ProgressBar";
 		public static readonly string BoxView = "xamarin.forms.platform.android.BoxRenderer";
