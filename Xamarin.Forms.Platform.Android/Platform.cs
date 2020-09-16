@@ -1335,8 +1335,12 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Performance.Start(out string reference);
 
-			// FIXME: potential crash
 			IVisualElementRenderer visualElementRenderer = GetRenderer(view);
+
+			if (visualElementRenderer == null || visualElementRenderer.View.IsDisposed())
+			{
+				return new SizeRequest(Size.Zero, Size.Zero);
+			}
 
 			var context = visualElementRenderer.View.Context;
 
