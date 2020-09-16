@@ -15,7 +15,7 @@ namespace Xamarin.Forms
 			SetBinding(IconProperty, new Binding(nameof(MenuItem.IconImageSource), BindingMode.OneWay, source: menuItem));
 			SetBinding(FlyoutIconProperty, new Binding(nameof(MenuItem.IconImageSource), BindingMode.OneWay, source: menuItem));
 			SetBinding(AutomationIdProperty, new Binding(nameof(MenuItem.AutomationId), BindingMode.OneWay, source: menuItem));
-
+			
 			MenuItem.PropertyChanged += OnMenuItemPropertyChanged;
 		}
 
@@ -29,6 +29,13 @@ namespace Xamarin.Forms
 				Shell.SetMenuItemTemplate(this, Shell.GetMenuItemTemplate(MenuItem));
 			else if (e.PropertyName == TitleProperty.PropertyName)
 				OnPropertyChanged(MenuItem.TextProperty.PropertyName);
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (propertyName == nameof(Title))
+				OnPropertyChanged(nameof(Text));
 		}
 
 		public MenuItem MenuItem { get; }

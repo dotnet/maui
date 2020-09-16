@@ -205,9 +205,16 @@ namespace Xamarin.Forms.Platform.iOS
 					_headerUIView.Frame = new CoreGraphics.CGRect(0, -headerHeight, CollectionView.Frame.Width, headerHeight);
 				}
 
-				if (_footerUIView != null && (_footerUIView.Frame.Y != ItemsViewLayout.CollectionViewContentSize.Height || emptyHeight > 0))
+				nfloat height = 0;
+
+				if (IsViewLoaded && View.Window != null)
 				{
-					_footerUIView.Frame = new CoreGraphics.CGRect(0, ItemsViewLayout.CollectionViewContentSize.Height + emptyHeight, CollectionView.Frame.Width, footerHeight);
+					height = ItemsViewLayout.CollectionViewContentSize.Height;
+				}
+
+				if (_footerUIView != null && (_footerUIView.Frame.Y != height || emptyHeight > 0))
+				{
+					_footerUIView.Frame = new CoreGraphics.CGRect(0, height + emptyHeight, CollectionView.Frame.Width, footerHeight);
 				}
 			}
 		}

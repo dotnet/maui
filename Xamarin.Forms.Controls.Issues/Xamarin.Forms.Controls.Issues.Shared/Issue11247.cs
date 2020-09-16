@@ -23,8 +23,8 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init()
 		{
-			var page = AddFlyoutItem("FlyoutItem 1");
-			AddFlyoutItem("FlyoutItem 2");
+			var page = CreateContentPage<FlyoutItem>("FlyoutItem 1");
+			CreateContentPage<FlyoutItem>("FlyoutItem 2");
 
 			Items.Add(new MenuItem()
 			{

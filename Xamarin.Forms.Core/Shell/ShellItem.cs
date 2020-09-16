@@ -225,21 +225,6 @@ namespace Xamarin.Forms
 			return CreateFromShellSection(shellSection);
 		}
 
-		internal static ShellItem GetShellItemFromRouteName(string route)
-		{
-			var shellContent = new ShellContent { Route = route, Content = Routing.GetOrCreateContent(route) };
-			var result = new ShellItem();
-			var shellSection = new ShellSection();
-			shellSection.Items.Add(shellContent);
-			result.Route = Routing.GenerateImplicitRoute(shellSection.Route);
-			result.Items.Add(shellSection);
-			result.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: shellSection));
-			result.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellSection));
-			result.SetBinding(FlyoutDisplayOptionsProperty, new Binding(nameof(FlyoutDisplayOptions), BindingMode.OneTime, source: shellSection));
-			result.SetBinding(FlyoutIconProperty, new Binding(nameof(FlyoutIcon), BindingMode.OneWay, source: shellSection));
-			return result;
-		}
-
 		public static implicit operator ShellItem(ShellContent shellContent) => (ShellSection)shellContent;
 
 		public static implicit operator ShellItem(TemplatedPage page) => (ShellSection)(ShellContent)page;

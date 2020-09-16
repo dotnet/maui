@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void AddPage(string title)
 		{
-			var page = AddFlyoutItem(title);
+			var page = CreateContentPage<FlyoutItem>(title);
 
 			page.Content = new Grid()
 			{

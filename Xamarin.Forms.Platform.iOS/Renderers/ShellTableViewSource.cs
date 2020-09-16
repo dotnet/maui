@@ -102,9 +102,11 @@ namespace Xamarin.Forms.Platform.iOS
 			if (cell == null)
 			{
 				var view = (View)template.CreateContent(context, _context.Shell);
-				view.Parent = _context.Shell;
 				cell = new UIContainerCell(cellId, view);
+				
+				// Set Parent after binding context so parent binding context doesn't propagate to view
 				cell.BindingContext = context;
+				view.Parent = _context.Shell;
 			}
 			else
 			{

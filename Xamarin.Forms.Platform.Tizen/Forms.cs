@@ -104,7 +104,27 @@ namespace Xamarin.Forms
 
 		static Lazy<string> s_deviceType = new Lazy<string>(() =>
 		{
-			TSystemInfo.TryGetValue("http://tizen.org/system/device_type", out string deviceType);
+			if (!TSystemInfo.TryGetValue("http://tizen.org/system/device_type", out string deviceType))
+			{
+				// Since, above key("http://tizen.org/system/device_type") is not available on Tizen 4.0, we uses profile to decide the type of device on 4.0.
+				var profile = GetProfile();
+				if (profile == "mobile")
+				{
+					deviceType = "Mobile";
+				}
+				else if (profile == "tv")
+				{
+					deviceType = "TV";
+				}
+				else if (profile == "wearable")
+				{
+					deviceType = "Wearable";
+				}
+				else
+				{
+					deviceType = "Unknown";
+				}
+			}
 			return deviceType;
 		});
 
@@ -484,6 +504,8 @@ namespace Xamarin.Forms
 						}
 						else
 						{
+							// The assembly of the executing application and referenced assemblies of it are added into the list here.
+							TizenPlatformServices.AppDomain.CurrentDomain.RegisterAssemblyRecursively(application.GetType().GetTypeInfo().Assembly);
 							Registrar.RegisterAll(new Type[]
 							{
 								typeof(ExportRendererAttribute),

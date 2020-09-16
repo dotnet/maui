@@ -308,7 +308,7 @@ namespace Xamarin.Forms
 				.StyleClass = bindableObjectStyle;
 		}
 
-		internal static DataTemplate CreateDefaultFlyoutItemCell(IStyleSelectable styleSelectable, string textBinding, string iconBinding)
+		internal static DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
 		{
 			return new DataTemplate(() =>
 			{
@@ -438,7 +438,16 @@ namespace Xamarin.Forms
 				nameScope.RegisterName("FlyoutItemImage", image);
 				nameScope.RegisterName("FlyoutItemLabel", label);
 
-				UpdateFlyoutItemStyles(grid, styleSelectable);
+				grid.BindingContextChanged += (sender, __) =>
+				{
+					if (sender is Grid g)
+					{
+						var bo = g.BindingContext as BindableObject;
+						var styleClassSource = Shell.GetBindableObjectWithFlyoutItemTemplate(bo) as IStyleSelectable;
+						UpdateFlyoutItemStyles(g, styleClassSource);
+					}
+				};
+
 				grid.Resources = new ResourceDictionary() { defaultGridClass, defaultLabelClass, defaultImageClass };
 				return grid;
 			});

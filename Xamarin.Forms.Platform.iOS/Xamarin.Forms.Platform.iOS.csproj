@@ -108,7 +108,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\TableViewRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\TabletMasterDetailRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\TimePickerRenderer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Renderers\WebViewRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CellExtensions.cs" />
     <Compile Include="..\Xamarin.Forms.Core\Crc64.cs">

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using Xamarin.Forms;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -29,9 +30,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void BehaviorAndStaticResource(bool useCompiledXaml)
+			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
+			[TearDown] public void TearDown() => Device.PlatformServices = null;
+
+			[Test]
+			public void BehaviorAndStaticResource([Values(false, true)] bool useCompiledXaml)
 			{
 				var page = new Bz47950(useCompiledXaml);
 			}
