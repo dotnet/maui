@@ -89,10 +89,10 @@
     <PackageReference Include="OpenTK" Version="3.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\System.Maui.controls\gallerypages\openglgalleries\AdvancedOpenGLGallery.cs">
+    <Compile Include="..\System.Maui.Controls\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs">
       <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
     </Compile>
-    <Compile Include="..\System.Maui.controls\gallerypages\openglgalleries\BasicOpenGLGallery.cs">
+    <Compile Include="..\System.Maui.Controls\GalleryPages\OpenGLGalleries\BasicOpenGLGallery.cs">
       <Link>GalleryPages\BasicOpenGLGallery.cs</Link>
     </Compile>
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
