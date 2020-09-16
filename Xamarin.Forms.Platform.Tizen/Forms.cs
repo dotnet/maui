@@ -484,6 +484,8 @@ namespace Xamarin.Forms
 						}
 						else
 						{
+							// The assembly of the executing application and referenced assemblies of it are added into the list here.
+							TizenPlatformServices.AppDomain.CurrentDomain.RegisterAssemblyRecursively(application.GetType().GetTypeInfo().Assembly);
 							Registrar.RegisterAll(new Type[]
 							{
 								typeof(ExportRendererAttribute),
