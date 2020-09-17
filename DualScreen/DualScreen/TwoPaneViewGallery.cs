@@ -40,7 +40,6 @@ namespace DualScreen
 				Children =
 				{
 					NavButton("Nested TwoPaneView Split Across Hinge", () => new NestedTwoPaneViewSplitAcrossHinge(), Navigation),
-					NavButton("Open Picture in Picture Window", () => new OpenCompactWindow(), Navigation),
 					NavButton("DualScreenInfo with non TwoPaneView", () => new GridUsingDualScreenInfo(), Navigation),
 					NavButton("eReader Samples", () => new TwoPage(), Navigation),
 					NavButton("Dual Screen Info Samples", () => new DualScreenInfoGallery(), Navigation),

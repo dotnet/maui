@@ -74,8 +74,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.CustomAttributes", "Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj", "{A204BBC8-F83B-4E43-9032-2E97899EC474}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Xamarin.Flex", "Xamarin.Flex\Xamarin.Flex.shproj", "{A6703C7D-D362-452A-A7A5-73771194D38C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DualScreen", "DualScreen\DualScreen\DualScreen.csproj", "{FF1E07E3-8756-48CB-ABF8-421907028B82}"
 	ProjectSection(ProjectDependencies) = postProject
 		{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7} = {96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}
@@ -90,10 +88,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DualScreen.Mac", "DualScreen\DualScreen.Mac\DualScreen.Mac.csproj", "{A5CD7A70-C48B-4E69-8172-5525AC7C6E11}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Xamarin.Flex\Xamarin.Flex.projitems*{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}*SharedItemsImports = 5
-		Xamarin.Flex\Xamarin.Flex.projitems*{a6703c7d-d362-452a-a7a5-73771194d38c}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM
@@ -840,7 +834,6 @@ Global
 		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
 		{39B3457F-01D8-43D0-8E84-D8C4F73CF48E} = {5A2DADBC-9510-4DD1-BE58-01501F2DF65D}
 		{A204BBC8-F83B-4E43-9032-2E97899EC474} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
-		{A6703C7D-D362-452A-A7A5-73771194D38C} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {650AE971-2F29-46A8-822C-FB4FCDC6A9A0}
