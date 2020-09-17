@@ -1,70 +1,54 @@
-﻿using System;
+﻿using ElmSharp;
+using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
-using ElmSharp;
+using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using EToolbarItem = ElmSharp.ToolbarItem;
-using Xamarin.Forms.Platform.Tizen.Native;
-using System.Collections.Specialized;
-using System.Linq;
+using EImage = ElmSharp.Image;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ShellItemRenderer : IAppearanceObserver, IDisposable
 	{
-		IShellTabs _tabs = null;
-		IFlyoutController _flyoutController = null;
-		ShellItem _shellItem = null;
-
-		Native.Box _box = null;
-		Panel _drawer = null;
-		ShellMoreToolbar _more = null;
-		EToolbarItem _moreToolbarItem = null;
-		ShellSectionNavigation _currentSection = null;
-
-		Dictionary<EToolbarItem, ShellSection> _itemToSection = new Dictionary<EToolbarItem, ShellSection>();
-		Dictionary<ShellSection, EToolbarItem> _sectionToitem = new Dictionary<ShellSection, EToolbarItem>();
-		Dictionary<ShellSection, ShellSectionNavigation> _sectionToPage = new Dictionary<ShellSection, ShellSectionNavigation>();
-		LinkedList<EToolbarItem> _toolbarItemList = new LinkedList<EToolbarItem>();
-
-		bool _disposed = false;
-		EColor _backgroudColor = ShellRenderer.DefaultBackgroundColor.ToNative();
+		// The source of icon resources is https://materialdesignicons.com/
 		const string _dotsIcon = ThemeConstants.Shell.Resources.DotsIcon;
 
-		public ShellItemRenderer(IFlyoutController flyoutController, ShellItem item)
+		IShellTabs _tabs = null;
+
+		EBox _mainLayout = null;
+		EBox _contentHolder = null;
+		Panel _moreItemsDrawer = null;
+		ShellMoreToolbar _moreItemsList = null;
+		EToolbarItem _moreTabItem = null;
+		ShellSectionStack _currentStack = null;
+
+		Dictionary<EToolbarItem, ShellSection> _sectionsTable = new Dictionary<EToolbarItem, ShellSection>();
+		Dictionary<ShellSection, EToolbarItem> _tabItemsTable = new Dictionary<ShellSection, EToolbarItem>();
+		Dictionary<ShellSection, ShellSectionStack> _shellSectionStackCache = new Dictionary<ShellSection, ShellSectionStack>();
+		List<EToolbarItem> _tabsItems = new List<EToolbarItem>();
+
+		bool _disposed = false;
+		EColor _tabBarBackgroudColor = ShellRenderer.DefaultBackgroundColor.ToNative();
+		EColor _tabBarTitleColor = ShellRenderer.DefaultTitleColor.ToNative();
+
+		public ShellItemRenderer(ShellItem item)
 		{
-			_flyoutController = flyoutController;
-			_shellItem = item;
-			_shellItem.PropertyChanged += OnShellItemPropertyChanged;
-			(_shellItem.Items as INotifyCollectionChanged).CollectionChanged += OnShellItemsCollectionChanged;
+			Initialize();
+			ShellItem = item;
 
-			_box = new Native.Box(Forms.NativeParent);
-			_box.LayoutUpdated += OnLayoutUpdated;
-			_box.Show();
+			ShellItem.PropertyChanged += OnShellItemPropertyChanged;
+			if (ShellItem.Items is INotifyCollectionChanged notifyCollectionChanged)
+			{
+				notifyCollectionChanged.CollectionChanged += OnShellItemsCollectionChanged;
+			}
+			ShellController.AddAppearanceObserver(this, ShellItem);
 
-			// Create Tabs
-			_tabs = CreateTabs();
-			_tabs.TargetView.Show();
-			Control.PackEnd(_tabs as EvasObject);
-			InitializeTabs();
-
-			// Create More Tabs
-			_more = CreateMoreToolbar();
-			_more.Show();
-
-			_drawer = CreateDrawer();
-			_drawer.Show();
-			Control.PackEnd(_drawer);
-			InitialzeDrawer(_more);
-
-			ResetToolbarItems();
-
-			UpdateCurrentShellSection(_shellItem.CurrentItem);
-			if (_drawer != null)
-				_currentSection?.StackBelow(_drawer);
-
-			((IShellController)_shellItem.Parent).AddAppearanceObserver(this, _shellItem);
+			UpdateTabsItems();
+			UpdateCurrentItem(ShellItem.CurrentItem);
 		}
 
 		~ShellItemRenderer()
@@ -72,59 +56,46 @@ namespace Xamarin.Forms.Platform.Tizen
 			Dispose(false);
 		}
 
+		public EvasObject NativeView
+		{
+			get
+			{
+				return _mainLayout;
+			}
+		}
+
+		public EColor TabBarBackgroundColor
+		{
+			get
+			{
+				return _tabBarBackgroudColor;
+			}
+			set
+			{
+				_tabBarBackgroudColor = value;
+				UpdateTabsBackgroudColor(_tabBarBackgroudColor);
+			}
+		}
+
+		public EColor TabBarTitleColor
+		{
+			get => _tabBarTitleColor;
+			set
+			{
+				_tabBarTitleColor = value;
+				UpdateTabBarTitleColor(value);
+			}
+		}
+
+		ShellItem ShellItem { get; }
+		IShellController ShellController => Shell.Current;
+		bool HasMoreItems => _moreItemsDrawer != null;
+		bool HasTabs => _tabs != null;
+
 		public void Dispose()
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
-		}
-
-		public Native.Box Control
-		{
-			get
-			{
-				return _box;
-			}
-		}
-
-		public EColor BackgroundColor
-		{
-			get
-			{
-				return _backgroudColor;
-			}
-			set
-			{
-				_backgroudColor = value;
-				UpdateToolbarBackgroudColor(_backgroudColor);
-			}
-		}
-
-		public void UpdateCurrentItem(ShellSection section)
-		{
-			UpdateCurrentShellSection(section);
-
-			if (_drawer != null)
-				_currentSection?.StackBelow(_drawer);
-
-			if (_sectionToitem.ContainsKey(section))
-			{
-				_sectionToitem[section].IsSelected = true;
-			}
-			else if(section != null)
-			{
-				_drawer.IsOpen = false;
-				var more = _toolbarItemList.Last() as EToolbarItem;
-				more.IsSelected = true;
-			}
-			UpdateLayout();
-		}
-
-		public void SetCurrentItem(ShellSection section)
-		{
-			if (_shellItem.CurrentItem != section)
-			{
-				_shellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, section);
-			}
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -134,266 +105,287 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (disposing)
 			{
-				if (_shellItem != null)
+				ShellController.RemoveAppearanceObserver(this);
+				if (ShellItem != null)
 				{
-					Control.LayoutUpdated -= OnLayoutUpdated;
-					((IShellController)_shellItem.Parent).RemoveAppearanceObserver(this);
-					_shellItem.PropertyChanged -= OnShellItemPropertyChanged;
-					(_shellItem.Items as INotifyCollectionChanged).CollectionChanged -= OnShellItemsCollectionChanged;
-					_shellItem = null;
-
-					foreach (var pair in _sectionToPage)
+					ShellItem.PropertyChanged -= OnShellItemPropertyChanged;
+					if (ShellItem.Items is INotifyCollectionChanged notifyCollectionChanged)
 					{
-						var navi = pair.Value as ShellSectionNavigation;
-						navi.Dispose();
+						notifyCollectionChanged.CollectionChanged -= OnShellItemsCollectionChanged;
 					}
 
-					if (_tabs != null)
+					foreach (var stack in _shellSectionStackCache.Values)
 					{
-						_tabs.Selected -= OnTabsSelected;
+						stack.Dispose();
 					}
-					_itemToSection.Clear();
-					_sectionToitem.Clear();
-					_sectionToPage.Clear();
-					_toolbarItemList.Clear();
+
+					DestroyMoreItems();
+					DeinitializeTabs();
+
+					_sectionsTable.Clear();
+					_tabItemsTable.Clear();
+					_shellSectionStackCache.Clear();
+					_tabsItems.Clear();
 				}
-				Control.Unrealize();
+				NativeView.Unrealize();
 			}
 			_disposed = true;
 		}
 
 		protected virtual IShellTabs CreateTabs()
-		{ 
+		{
 			return new ShellTabs(Forms.NativeParent);
 		}
 
-		protected virtual ShellSectionNavigation CreateShellSectionNavigation(IFlyoutController flyoutController, ShellSection section)
+		protected virtual ShellSectionStack CreateShellSectionStack(ShellSection section)
 		{
-			return new ShellSectionNavigation(flyoutController, section);
+			return new ShellSectionStack(section);
+		}
+
+		bool _disableMoreItemOpen;
+
+		void UpdateCurrentItem(ShellSection section)
+		{
+			UpdateCurrentShellSection(section);
+
+			if (HasTabs)
+			{
+				if (_tabItemsTable.ContainsKey(section))
+				{
+					_tabItemsTable[section].IsSelected = true;
+				}
+				else if (HasMoreItems)
+				{
+					_disableMoreItemOpen = true;
+					_moreTabItem.IsSelected = true;
+					_disableMoreItemOpen = false;
+				}
+
+				if (HasMoreItems)
+				{
+					_moreItemsDrawer.IsOpen = false;
+				}
+			}
+		}
+
+		void UpdateCurrentItemFromUI(ShellSection section)
+		{
+			if (ShellItem.CurrentItem != section)
+			{
+				ShellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, section);
+			}
+			if (HasMoreItems)
+			{
+				_moreItemsDrawer.IsOpen = false;
+			}
+		}
+
+		void Initialize()
+		{
+			_mainLayout = new EBox(Forms.NativeParent);
+			_mainLayout.SetLayoutCallback(OnLayout);
+			_mainLayout.Show();
+			_contentHolder = new EBox(Forms.NativeParent);
+			_contentHolder.Show();
+			_mainLayout.PackEnd(_contentHolder);
+		}
+
+		void InitializeTabs()
+		{
+			if (_tabs != null)
+				return;
+
+			// Create Tabs
+			_tabs = CreateTabs();
+			_tabs.NativeView.Show();
+			_tabs.BackgroundColor = _tabBarBackgroudColor;
+			_tabs.Scrollable = ShellTabsType.Fixed;
+			_tabs.Selected += OnTabsSelected;
+			_mainLayout.PackEnd(_tabs.NativeView);
+		}
+
+		void DeinitializeTabs()
+		{
+			if (_tabs == null)
+				return;
+			_mainLayout.UnPack(_tabs.NativeView);
+			_tabs.Selected -= OnTabsSelected;
+			_tabs.NativeView.Unrealize();
+			_tabs = null;
+		}
+
+		void CreateMoreItems()
+		{
+			if (_moreItemsDrawer != null)
+				return;
+
+			// Create More Tabs
+			_moreItemsList = new ShellMoreToolbar(Forms.NativeParent);
+			_moreItemsList.Show();
+			_moreItemsList.ItemSelected += OnMoreItemSelected;
+
+			_moreItemsDrawer = new Panel(Forms.NativeParent);
+			_moreItemsDrawer.Show();
+
+			_moreItemsDrawer.SetScrollable(true);
+			_moreItemsDrawer.SetScrollableArea(1.0);
+			_moreItemsDrawer.Direction = PanelDirection.Bottom;
+			_moreItemsDrawer.IsOpen = false;
+			_moreItemsDrawer.SetContent(_moreItemsList, true);
+			_mainLayout.PackEnd(_moreItemsDrawer);
+		}
+
+		void DestroyMoreItems()
+		{
+			if (_moreItemsDrawer == null)
+				return;
+
+			_mainLayout.UnPack(_moreItemsDrawer);
+
+			_moreItemsList.Unrealize();
+			_moreItemsDrawer.Unrealize();
+
+			_moreItemsList = null;
+			_moreItemsDrawer = null;
+		}
+
+		void OnMoreItemSelected(object sender, GenListItemEventArgs e)
+		{
+			ShellSection section = e.Item.Data as ShellSection;
+			UpdateCurrentItemFromUI(section);
 		}
 
 		void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == "CurrentItem")
+			if (e.PropertyName == nameof(ShellItem.CurrentItem))
 			{
-				UpdateCurrentItem(_shellItem.CurrentItem);
+				UpdateCurrentItem(ShellItem.CurrentItem);
 			}
 		}
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
-			if (appearance == null)
-				return;
-
-			_backgroudColor = appearance.BackgroundColor.ToNative();
-			UpdateToolbarBackgroudColor(appearance.BackgroundColor.ToNative());
+			var tabBarBackgroudColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor ?? Color.Default;
+			var tabBarTitleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor ?? Color.Default;
+			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault ? ShellRenderer.DefaultBackgroundColor.ToNative() : tabBarBackgroudColor.ToNative();
+			TabBarTitleColor = tabBarTitleColor.IsDefault ? ShellRenderer.DefaultTitleColor.ToNative() : tabBarTitleColor.ToNative();
 		}
 
-		void UpdateToolbarBackgroudColor(EColor color)
+		void UpdateTabsBackgroudColor(EColor color)
 		{
-			foreach (EToolbarItem item in _toolbarItemList)
+			foreach (EToolbarItem item in _tabsItems)
 			{
 				item.SetBackgroundColor(color);
 			}
 		}
 
-		Panel CreateDrawer()
+		void UpdateTabBarTitleColor(EColor color)
 		{
-			return new Panel(Forms.NativeParent);
-		}
-
-		void InitialzeDrawer(EvasObject content)
-		{
-			_drawer.SetScrollable(true);
-			_drawer.SetScrollableArea(1.0);
-			_drawer.Direction = PanelDirection.Bottom;
-			_drawer.IsOpen = false;
-			_drawer.SetContent(content, true);
-		}
-
-		ShellMoreToolbar CreateMoreToolbar()
-		{
-			return new ShellMoreToolbar(this);
-		}
-
-		void InitializeTabs()
-		{
-			_tabs.BackgroundColor = _backgroudColor;
-			_tabs.Type = ShellTabsType.Fixed;
-			_tabs.Selected += OnTabsSelected;
-		}
-
-		void ResetToolbarItems()
-		{
-			foreach (ShellSection section in _shellItem.Items)
+			foreach (EToolbarItem item in _tabsItems)
 			{
-				InsertToolbarItem(section);
+				item.SetTextColor(color);
 			}
 		}
 
-		void AddToolbarItems(NotifyCollectionChangedEventArgs e)
+		void UpdateTabsItems()
 		{
-			foreach (var item in e.NewItems)
+			ResetTabs();
+			if (ShellItem.Items.Count > 1)
 			{
-				InsertToolbarItem(item as ShellSection);
+				InitializeTabs();
+				foreach (ShellSection section in ShellItem.Items)
+				{
+					AddTabsItem(section);
+				}
 			}
-			UpdateLayout();
+			else
+			{
+				DeinitializeTabs();
+			}
 		}
 
-		void RemoveToolbarItems(NotifyCollectionChangedEventArgs e)
+		void ResetTabs()
 		{
-			foreach (var item in e.OldItems)
+			if (!HasTabs)
+				return;
+
+			foreach (var item in _tabsItems)
 			{
-				RemoveToolbarItem(item as ShellSection);
+				item.Delete();
 			}
-			UpdateLayout();
+			_tabsItems.Clear();
+			DestroyMoreItems();
+			_moreTabItem = null;
 		}
 
 		void OnShellItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			switch (e.Action)
-			{
-				case NotifyCollectionChangedAction.Add:
-					AddToolbarItems(e);
-					break;
-
-				case NotifyCollectionChangedAction.Remove:
-					RemoveToolbarItems(e);
-					break;
-
-				default:
-					break;
-			}
+			UpdateTabsItems();
 		}
 
-		string GetIconPath(ImageSource src)
+		void AddTabsItem(ShellSection section)
 		{
-			if (src is FileImageSource fis)
+			if (_tabsItems.Count < 5)
 			{
-				return ResourcePath.GetPath(fis.File);
+				var item = AppendTabsItem(section.Title, section.Icon);
+				_sectionsTable.Add(item, section);
+				_tabItemsTable.Add(section, item);
+				_tabsItems.Add(item);
 			}
-			else
+			else if (!HasMoreItems)
 			{
-				return null;
-			}
-		}
+				CreateMoreItems();
 
-		void RemoveToolbarItem(ShellSection section)
-		{
-			if (_sectionToitem.ContainsKey(section))
-			{
-				var del = _sectionToitem[section];
-				_toolbarItemList.Remove(del);
-				_itemToSection.Remove(del);
-				_sectionToitem.Remove(section);
-				del.Delete();
+				var last = _tabsItems.Last();
+				var lastSection = _sectionsTable[last];
 
-				if (_moreToolbarItem != null)
-				{
-					ShellSection move = _more.RemoveFirst();
-					InsertToolbarItem(move);
-				}
-			}
-			else
-			{
-				_more.RemoveItem(section);
-			}
-
-			if (_more.Count == 1)
-			{
-				_toolbarItemList.Remove(_moreToolbarItem);
-				_moreToolbarItem.Delete();
-				_moreToolbarItem = null;
-
-				ShellSection move = _more.RemoveFirst();
-				InsertToolbarItem(move);
-			}
-		}
-
-		void InsertToolbarItem(ShellSection section)
-		{
-			if (_toolbarItemList.Count < 5)
-			{
-				EToolbarItem item = null;
-				if (_moreToolbarItem == null)
-					item = _tabs.Append(section.Title, GetIconPath(section.Icon));
-				else
-					item = _tabs.InsertBefore(_moreToolbarItem, section.Title, GetIconPath(section.Icon));
-
-				if (item != null)
-				{
-					item.SetBackgroundColor(_backgroudColor);
-					item.DeleteUnderlineColor();
-
-					_toolbarItemList.AddLast(item);
-					_itemToSection.Add(item, section);
-					_sectionToitem.Add(section, item);
-				}
-			}
-			else if (_moreToolbarItem == null && _toolbarItemList.Count == 5)
-			{
-				var last = _toolbarItemList.Last() as EToolbarItem;
-				var lastSection = _itemToSection[last];
-
-				_toolbarItemList.RemoveLast();
-				_itemToSection.Remove(last);
-				_sectionToitem.Remove(lastSection);
+				_tabsItems.Remove(last);
+				_sectionsTable.Remove(last);
+				_tabItemsTable.Remove(lastSection);
 				last.Delete();
 
-				_moreToolbarItem = CreateTabsItem("More");
-				_toolbarItemList.AddLast(_moreToolbarItem);
-				InitializeTabsItem(_moreToolbarItem, _dotsIcon);
+				//The source of icon resources is https://materialdesignicons.com/
+				var assembly = typeof(ShellItemRenderer).GetTypeInfo().Assembly;
+				var assemblyName = assembly.GetName().Name;
+				_moreTabItem = AppendTabsItem("More", ImageSource.FromResource(assemblyName + "." + _dotsIcon, assembly));
+				_tabsItems.Add(_moreTabItem);
 
-				_more.AddItem(lastSection);
-				_more.AddItem(section);
+				_moreItemsList.AddItem(lastSection);
+				_moreItemsList.AddItem(section);
 			}
 			else
 			{
-				_more.AddItem(section);
+				_moreItemsList.AddItem(section);
 			}
-		}
-
-		void InitializeTabsItem(EToolbarItem item, string resource)
-		{
-			//The source of icon resources is https://materialdesignicons.com/
-			ImageSource src = ImageSource.FromResource(resource, typeof(ShellItemRenderer).GetTypeInfo().Assembly);
-			Native.Image icon = new Native.Image(Forms.NativeParent);
-			var task = icon.LoadFromImageSourceAsync(src);
-
-			item.SetIconPart(icon);
-			item.SetBackgroundColor(_backgroudColor);
-			item.DeleteUnderlineColor();
-		}
-
-		EToolbarItem CreateTabsItem(string text)
-		{
-			return _tabs.Append(text, null);
 		}
 
 		void UpdateCurrentShellSection(ShellSection section)
 		{
-			_currentSection?.Hide();
+			if (_currentStack != null)
+			{
+				_currentStack.Hide();
+				_contentHolder.UnPack(_currentStack);
+			}
+			_currentStack = null;
 
 			if (section == null)
 			{
-				_currentSection = null;
 				return;
 			}
 
-			ShellSectionNavigation native = null;
-			if (_sectionToPage.ContainsKey(section))
+			ShellSectionStack native;
+			if (_shellSectionStackCache.ContainsKey(section))
 			{
-				native = _sectionToPage[section] as ShellSectionNavigation;
+				native = _shellSectionStackCache[section];
 			}
 			else
 			{
-				native = CreateShellSectionNavigation(_flyoutController, section);
-				_sectionToPage[section] = native;
-				Control.PackEnd(native);
+				native = CreateShellSectionStack(section);
+				_shellSectionStackCache[section] = native;
 			}
-			_currentSection = native;
-			_currentSection.Show();
-			return;
+			_currentStack = native;
+			_currentStack.Show();
+			_contentHolder.PackEnd(_currentStack);
 		}
 
 		void OnTabsSelected(object sender, ToolbarItemEventArgs e)
@@ -401,46 +393,61 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (_tabs.SelectedItem == null)
 				return;
 
-			if (e.Item == _moreToolbarItem)
+			if (HasMoreItems && e.Item == _moreTabItem)
 			{
-				_drawer.IsOpen = true;
+				if (!_disableMoreItemOpen)
+				{
+					_moreItemsDrawer.IsOpen = !_moreItemsDrawer.IsOpen;
+				}
 			}
 			else
 			{
-				ShellSection section = _itemToSection[_tabs.SelectedItem];
-				SetCurrentItem(section);
+				UpdateCurrentItemFromUI(_sectionsTable[_tabs.SelectedItem]);
 			}
 		}
 
-		void UpdateLayout()
+		void OnLayout()
 		{
-			OnLayoutUpdated(this, new LayoutEventArgs() { Geometry = Control.Geometry });
-		}
+			if (NativeView.Geometry.Height == 0 || NativeView.Geometry.Width == 0)
+				return;
 
-		void OnLayoutUpdated(object sender, LayoutEventArgs e)
-		{
-			int toolbarHeight = _tabs.TargetView.MinimumHeight;
-			if (_shellItem.Items.Count <= 1)
+			int tabsHeight = 0;
+			var bound = _mainLayout.Geometry;
+			if (HasTabs)
 			{
-				toolbarHeight = 0;
-				_tabs?.TargetView.Hide();
-				_drawer?.Hide();
-			}
-
-			_currentSection?.Move(e.Geometry.X, e.Geometry.Y);
-			_currentSection?.Resize(e.Geometry.Width, e.Geometry.Height - toolbarHeight);
-			if (_shellItem.Items.Count > 1)
-			{
-				_tabs.TargetView.Show();
-				_tabs.TargetView.Move(e.Geometry.X, e.Geometry.Y + e.Geometry.Height - toolbarHeight);
-				_tabs.TargetView.Resize(e.Geometry.Width, toolbarHeight);
-				if (_drawer != null)
+				tabsHeight = _tabs.NativeView.MinimumHeight;
+				var tabsBound = bound;
+				tabsBound.Y += (bound.Height - tabsHeight);
+				tabsBound.Height = tabsHeight;
+				_tabs.NativeView.Geometry = tabsBound;
+				if (HasMoreItems)
 				{
-					_drawer.Show();
-					_drawer.Move(e.Geometry.X, e.Geometry.Y + e.Geometry.Height - _more.Height);
-					_drawer.Resize(e.Geometry.Width, _more.Height);
+					int moreItemListHeight = _moreItemsList.HeightRequest;
+					moreItemListHeight = Math.Min(moreItemListHeight, bound.Height - tabsHeight);
+					var moreItemDrawerBound = bound;
+					moreItemDrawerBound.Y += (bound.Height - tabsHeight - moreItemListHeight );
+					moreItemDrawerBound.Height = moreItemListHeight;
+					_moreItemsDrawer.Geometry = moreItemDrawerBound;
 				}
 			}
+			bound.Height -= tabsHeight;
+			_contentHolder.Geometry = bound;
+		}
+
+		EToolbarItem AppendTabsItem(string text, ImageSource icon)
+		{
+			var item = _tabs.Append(text);
+			if (icon != null)
+			{
+				EImage image = new EImage(Forms.NativeParent);
+				_ = image.LoadFromImageSourceAsync(icon);
+				item.SetIconPart(image);
+			}
+			item.SetBackgroundColor(_tabBarBackgroudColor);
+			item.SetUnderlineColor(EColor.Transparent);
+			item.SetTextColor(_tabBarTitleColor);
+
+			return item;
 		}
 	}
 }

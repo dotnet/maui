@@ -7,6 +7,8 @@ namespace Xamarin.Forms.Platform.Tizen
 	{
 		event EventHandler Toggled;
 
+		EvasObject TargetView { get; }
+
 		EvasObject NavigationView { get; set; }
 
 		EvasObject Main { get; set; }

@@ -160,6 +160,8 @@ namespace Xamarin.Forms
 				}
 			}
 
+			public Size PhysicalScreenSize { get; }
+
 			public override double ScalingFactor
 			{
 				get
@@ -184,6 +186,9 @@ namespace Xamarin.Forms
 				TSystemInfo.TryGetValue("http://tizen.org/feature/screen.width", out width);
 				TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out height);
 
+				var physicalScale = s_dpi.Value / 160.0;
+				PhysicalScreenSize = new Size(width / physicalScale, height / physicalScale);
+
 				scalingFactor = 1.0;  // scaling is disabled, we're using pixels as Xamarin's geometry units
 				if (DisplayResolutionUnit.UseVP && DisplayResolutionUnit.ViewportWidth > 0)
 				{
@@ -198,9 +203,7 @@ namespace Xamarin.Forms
 
 					if (DisplayResolutionUnit.UseDeviceScale)
 					{
-						var physicalScale = s_dpi.Value / 160.0;
-
-						var portraitSize = (Math.Min(width, height)) / physicalScale;
+						var portraitSize = Math.Min(PhysicalScreenSize.Width, PhysicalScreenSize.Height);
 						if (portraitSize > 2000)
 						{
 							scalingFactor *= 4;
@@ -265,6 +268,10 @@ namespace Xamarin.Forms
 		public static bool UseMessagingCenter => s_useMessagingCenter;
 
 		public static DisplayResolutionUnit DisplayResolutionUnit { get; private set; }
+
+		public static int ScreenDPI => s_dpi.Value;
+
+		public static Size PhysicalScreenSize => (Device.info as TizenDeviceInfo).PhysicalScreenSize;
 
 		internal static TizenTitleBarVisibility TitleBarVisibility
 		{

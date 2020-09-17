@@ -4,27 +4,24 @@ using EBox = ElmSharp.Box;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class NavigationDrawer : Native.Box, INavigationDrawer
+	public class NavigationDrawer : EBox, INavigationDrawer
 	{
 		EvasObject _navigationView;
-		Box _mainContainer;
-		Box _dimArea;
+		EBox _mainContainer;
+		EBox _dimArea;
 		EvasObject _main;
 		Panel _drawer;
 
-		bool _isLock = false;
 		double _navigationViewRatio = 0.85;
 
 		public NavigationDrawer(EvasObject parent) : base(parent)
 		{
 			Initialize(parent);
-			LayoutUpdated += (s, e) =>
-			{
-				UpdateChildGeometry();
-			};
 		}
 
 		public event EventHandler Toggled;
+
+		public EvasObject TargetView => this;
 
 		public EvasObject NavigationView
 		{
@@ -52,87 +49,87 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			set
 			{
-				_drawer.IsOpen = value;
-			}
-		}
+				if (!_drawer.IsOpen && value)
+				{
+					_drawer.SetScrollableArea(_navigationViewRatio);
+				}
 
-		public bool IsLock
-		{
-			get
-			{
-				return _isLock;
-			}
-			set
-			{
-				_isLock = value;
-				_drawer.SetScrollable(!_isLock);
+				_drawer.IsOpen = value;
+
+				if (!_drawer.IsOpen)
+				{
+					_drawer.SetScrollableArea(0);
+				}
 			}
 		}
 
 		void Initialize(EvasObject parent)
 		{
-			_mainContainer = new Box(parent)
-			{
-				AlignmentX = -1,
-				AlignmentY = -1,
-				WeightX = 1,
-				WeightY = 1,
-			};
+			/**
+			 *  /----------------/
+			 *  /     drawer     /
+			 *  / /------------/ /
+			 *  / /   content  / /
+			 *  / /------------/ /
+			 *  /----------------/
+			 *  /----------------/
+			 *  /     dim        /
+			 *  /----------------/
+			 *  /----------------/
+			 *  /      main      /
+			 *  /-------------- -/
+			 * 
+			 */
+
+			SetLayoutCallback(OnLayout);
+
+			_mainContainer = new EBox(parent);
 			_mainContainer.Show();
 			PackEnd(_mainContainer);
 
-			_dimArea = new Box(parent)
+			_dimArea = new EBox(parent)
 			{
-				AlignmentX = -1,
-				AlignmentY = -1,
-				WeightX = 1,
-				WeightY = 1,
 				BackgroundColor = ThemeConstants.Shell.ColorClass.DefaultDrawerDimBackgroundColor
 			};
-
 			PackEnd(_dimArea);
 
 			_drawer = new Panel(parent);
 
-			_drawer.SetScrollable(!_isLock);
-			_drawer.SetScrollableArea(_navigationViewRatio);
+			_drawer.SetScrollable(true);
+			_drawer.SetScrollableArea(0);
 			_drawer.Direction = PanelDirection.Left;
+
 			_drawer.Toggled += (s, e) =>
 			{
 				UpdateDimArea();
-
 				Toggled?.Invoke(this, e);
+				if (!_drawer.IsOpen)
+				{
+					Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+					{
+						if (!_drawer.IsOpen)
+							_drawer.SetScrollableArea(0);
+						return false;
+					});
+				}
 			};
-
+			_drawer.IsOpen = false;
 			_drawer.Show();
 			PackEnd(_drawer);
 		}
 
 		void UpdateNavigationView(EvasObject navigationView)
 		{
-			if (_navigationView != null)
-			{
-				_navigationView.Hide();
-			}
-
+			_navigationView?.Hide();
 			_navigationView = navigationView;
 
 			if (_navigationView != null)
 			{
 				_navigationView.SetAlignment(-1, -1);
 				_navigationView.SetWeight(1, 1);
-				if (!_navigationView.IsVisible)
-				{
-					_navigationView.Show();
-				}
-				_drawer.SetContent(_navigationView, true);
-				UpdateDimArea();
-				UpdateNavigationViewGeometry();
+				_navigationView.Show();
 			}
-			else
-			{
-				_drawer.SetContent(null, true);
-			}
+			_drawer.SetContent(_navigationView);
 		}
 
 		void UpdateMain(EvasObject main)
@@ -147,10 +144,9 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (_main != null)
 			{
-				if (!_main.IsVisible)
-				{
-					_main.Show();
-				}
+				_main.SetAlignment(-1, -1);
+				_main.SetWeight(1, 1);
+				_main.Show();
 				_mainContainer.PackEnd(_main);
 			}
 		}
@@ -167,23 +163,14 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		void UpdateChildGeometry()
+		void OnLayout()
 		{
-			if (_main != null)
-			{
-				_mainContainer.Geometry = Geometry;
-			}
+			if (Geometry.Width == 0 || Geometry.Height == 0)
+				return;
 
-			UpdateNavigationViewGeometry();
-		}
-
-		void UpdateNavigationViewGeometry()
-		{
-			if (_navigationView != null)
-			{
-				_drawer.Geometry = Geometry;
-				_dimArea.Geometry = Geometry;
-			}
+			_mainContainer.Geometry = Geometry;
+			_dimArea.Geometry = Geometry;
+			_drawer.Geometry = Geometry;
 		}
 	}
 }
