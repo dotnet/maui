@@ -119,6 +119,7 @@
     <Compile Include="**\*.macos.*.cs" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
+    <Reference Include="OpenTK-1.0" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="mdoc.targets" />
