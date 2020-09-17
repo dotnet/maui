@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 30835, "Navigating to and from the Carousel page with MasterDetail page creates an Out of memory exception")]
-	public class Bugzilla30835 : TestMasterDetailPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla30835 : TestFlyoutPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			menuPage.Menu.ItemSelected += (sender, e) => NavigateTo(e.SelectedItem as MenuItem);
 
-			Master = menuPage;
+			Flyout = menuPage;
 			Detail = new NavigationPage(new HolderCarouselPages());
 		}
 

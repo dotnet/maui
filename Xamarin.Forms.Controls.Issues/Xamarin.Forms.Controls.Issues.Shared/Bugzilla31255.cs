@@ -15,8 +15,8 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 31255, "Master's page Icon cause memory leak after MasterDetailPage is popped out by holding on page")]
-	public class Bugzilla31255 : TestContentPage // or TestMasterDetailPage, etc ...
+	[Issue(IssueTracker.Bugzilla, 31255, "Flyout's page Icon cause memory leak after FlyoutPage is popped out by holding on page")]
+	public class Bugzilla31255 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{
@@ -67,13 +67,13 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Preserve(AllMembers = true)]
-		public class Page2 : MasterDetailPage
+		public class Page2 : FlyoutPage
 		{
 			public Page2()
 			{
-				Master = new Page()
+				Flyout = new Page()
 				{
-					Title = "Master",
+					Title = "Flyout",
 					IconImageSource = "Icon.png"
 				};
 				Detail = new Page() { Title = "Detail" };

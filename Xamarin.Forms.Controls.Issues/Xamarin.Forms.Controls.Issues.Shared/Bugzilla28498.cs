@@ -13,8 +13,8 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 28498, "App crashes when switching between NavigationPages on a MasterDetailPage when In-Call Status Bar is visible")]
-	public class Bugzilla28498 : TestMasterDetailPage
+	[Issue(IssueTracker.Bugzilla, 28498, "App crashes when switching between NavigationPages on a FlyoutPage when In-Call Status Bar is visible")]
+	public class Bugzilla28498 : TestFlyoutPage
 	{
 		protected override void Init()
 		{
@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var other = new NavigationPage(otherPage);
 			Detail = carousel;
 
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
 				Title = "Menu",
 				Content = new StackLayout

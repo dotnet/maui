@@ -33,24 +33,24 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override async void Init()
 		{
-			await Navigation.PushModalAsync(new Issue1461Page(MasterBehavior.Popover, false));
+			await Navigation.PushModalAsync(new Issue1461Page(FlyoutLayoutBehavior.Popover, false));
 		}
 
 		//#if UITEST
 		//		[Test]
-		//		[UiTest (typeof (MasterDetailPage), "IsPresented")]
-		//		[UiTest (typeof (MasterDetailPage), "Master")]
+		//		[UiTest (typeof (FlyoutPage), "IsPresented")]
+		//		[UiTest (typeof (FlyoutPage), "Flyout")]
 		//		public void Test1 ()
 		//		{
 		//			if (Issue1461Helpers.ShouldRunTest (RunningApp)) {
 		//				RunningApp.SetOrientationLandscape ();
 		//				var query = RunningApp.Query (q => q.Marked ("Master_Label"));
-		//				Assert.IsTrue (!query.Any (), "Master should not present");
-		//				RunningApp.Screenshot ("Master should not present");
+		//				Assert.IsTrue (!query.Any (), "Flyout should not present");
+		//				RunningApp.Screenshot ("Flyout should not present");
 		//				RunningApp.SetOrientationPortrait ();
 		//				query = RunningApp.Query (q => q.Marked ("Master_Label"));
-		//				Assert.IsTrue (!query.Any (), "Master should not present");
-		//				RunningApp.Screenshot ("Master should not present");
+		//				Assert.IsTrue (!query.Any (), "Flyout should not present");
+		//				RunningApp.Screenshot ("Flyout should not present");
 		//				RunningApp.Tap (q => q.Marked ("Go Back"));
 		//			} else {
 		//				Assert.Inconclusive ("Only run on iOS Tablet");
@@ -65,24 +65,24 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override async void Init()
 		{
-			await Navigation.PushModalAsync(new Issue1461Page(MasterBehavior.Default, null));
+			await Navigation.PushModalAsync(new Issue1461Page(FlyoutLayoutBehavior.Default, null));
 		}
 
 		//#if UITEST
 		//		[Test]
-		//		[UiTest (typeof (MasterDetailPage), "IsPresented")]
-		//		[UiTest (typeof (MasterDetailPage), "Master")]
+		//		[UiTest (typeof (FlyoutPage), "IsPresented")]
+		//		[UiTest (typeof (FlyoutPage), "Flyout")]
 		//		public void Test2 ()
 		//		{
 		//			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
 		//				RunningApp.SetOrientationLandscape ();
 		//				var query = RunningApp.Query (q => q.Marked ("Master_Label"));
-		//				Assert.IsTrue (query.Any (), "Master should be present");
-		//				RunningApp.Screenshot ("Master should not present");
+		//				Assert.IsTrue (query.Any (), "Flyout should be present");
+		//				RunningApp.Screenshot ("Flyout should not present");
 		//				RunningApp.SetOrientationPortrait ();
 		//				query = RunningApp.Query (q => q.Marked ("Master_Label"));
-		//				Assert.IsTrue (!query.Any (), "Master should not present");
-		//				RunningApp.Screenshot ("Master should not present");
+		//				Assert.IsTrue (!query.Any (), "Flyout should not present");
+		//				RunningApp.Screenshot ("Flyout should not present");
 		//				RunningApp.Tap (q => q.Marked ("Go Back"));
 		//			} else {
 		//				Assert.Inconclusive ("Only run on iOS Tablet");
@@ -91,7 +91,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		//		#if UITEST
 		//		[Test]
-		//		[UiTest (typeof (MasterDetailPage), "Button")]
+		//		[UiTest (typeof (FlyoutPage), "Button")]
 		//		public void TestButton ()
 		//		{
 		//			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
@@ -113,24 +113,24 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override async void Init()
 		{
-			await Navigation.PushModalAsync(new Issue1461Page(MasterBehavior.SplitOnLandscape, null));
+			await Navigation.PushModalAsync(new Issue1461Page(FlyoutLayoutBehavior.SplitOnLandscape, null));
 		}
 
 		//#if UITEST
 		//		[Test]
-		//		[UiTest (typeof (MasterDetailPage), "IsPresented")]
-		//		[UiTest (typeof (MasterDetailPage), "Master")]
+		//		[UiTest (typeof (FlyoutPage), "IsPresented")]
+		//		[UiTest (typeof (FlyoutPage), "Flyout")]
 		//		public void Test3 ()
 		//		{
 		//			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
 		//				RunningApp.SetOrientationLandscape ();
 		//				var query = RunningApp.Query (q => q.Marked ("Master_Label"));
-		//				Assert.IsTrue (query.Any (), "Master should be present");
-		//				RunningApp.Screenshot ("Master should not present");
+		//				Assert.IsTrue (query.Any (), "Flyout should be present");
+		//				RunningApp.Screenshot ("Flyout should not present");
 		//				RunningApp.SetOrientationPortrait ();
 		//				query = RunningApp.Query (q => q.Marked ("Master_Label"));
-		//				Assert.IsTrue (!query.Any (), "Master should not present");
-		//				RunningApp.Screenshot ("Master should not present");
+		//				Assert.IsTrue (!query.Any (), "Flyout should not present");
+		//				RunningApp.Screenshot ("Flyout should not present");
 		//				RunningApp.Tap (q => q.Marked ("Go Back"));
 		//			} else {
 		//				Assert.Inconclusive ("Only run on iOS Tablet");
@@ -145,25 +145,25 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override async void Init()
 		{
-			await Navigation.PushModalAsync(new Issue1461Page(MasterBehavior.SplitOnPortrait, null));
+			await Navigation.PushModalAsync(new Issue1461Page(FlyoutLayoutBehavior.SplitOnPortrait, null));
 		}
 
 		//#if UITEST
 		//		[Test]
-		//		[UiTest (typeof (MasterDetailPage), "IsPresented")]
-		//		[UiTest (typeof (MasterDetailPage), "Master")]
+		//		[UiTest (typeof (FlyoutPage), "IsPresented")]
+		//		[UiTest (typeof (FlyoutPage), "Flyout")]
 		//		public void Test4 ()
 		//		{
 		//			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
 		//				RunningApp.SetOrientationPortrait ();
 		//				var s = RunningApp.Query (q => q.Marked ("Master_Label"));
-		//				Assert.IsTrue (s.Any (), "Master should be present");
-		//				RunningApp.Screenshot ("Master should  present");
+		//				Assert.IsTrue (s.Any (), "Flyout should be present");
+		//				RunningApp.Screenshot ("Flyout should  present");
 
 		//				RunningApp.SetOrientationLandscape ();
 		//				s = RunningApp.Query (q => q.Marked ("Master_Label"));
-		//				Assert.IsTrue (!s.Any (), "Master should not present on landscape");
-		//				RunningApp.Screenshot ("Master should not present");
+		//				Assert.IsTrue (!s.Any (), "Flyout should not present on landscape");
+		//				RunningApp.Screenshot ("Flyout should not present");
 		//				RunningApp.Tap (q => q.Marked ("Go Back"));
 		//			} else {
 		//				Assert.Inconclusive ("Only run on iOS Tablet");
@@ -178,26 +178,26 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override async void Init()
 		{
-			await Navigation.PushModalAsync(new Issue1461Page(MasterBehavior.Split, null));
+			await Navigation.PushModalAsync(new Issue1461Page(FlyoutLayoutBehavior.Split, null));
 		}
 
 		//#if UITEST
 		//		[Test]
-		//		[UiTest (typeof (MasterDetailPage), "IsPresented")]
-		//		[UiTest (typeof (MasterDetailPage), "Master")]
+		//		[UiTest (typeof (FlyoutPage), "IsPresented")]
+		//		[UiTest (typeof (FlyoutPage), "Flyout")]
 		//		public void Test5 ()
 		//		{
 		//			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
 		//				RunningApp.SetOrientationPortrait ();
 		//				var s = RunningApp.Query (q => q.Marked ("Master_Label"));
-		//				Assert.IsTrue (s.Any (), "Master should be present");
-		//				RunningApp.Screenshot ("Master should be present");
+		//				Assert.IsTrue (s.Any (), "Flyout should be present");
+		//				RunningApp.Screenshot ("Flyout should be present");
 
 		//				RunningApp.SetOrientationLandscape ();
 		//				s = RunningApp.Query (q => q.Marked ("Master_Label"));
 
-		//				Assert.IsTrue (s.Any (), "Master should  be present");
-		//				RunningApp.Screenshot ("Master should be present");
+		//				Assert.IsTrue (s.Any (), "Flyout should  be present");
+		//				RunningApp.Screenshot ("Flyout should be present");
 		//				RunningApp.Tap (q => q.Marked ("Go Back"));
 		//			} else {
 		//				Assert.Inconclusive ("Only run on iOS Tablet");
@@ -206,21 +206,21 @@ namespace Xamarin.Forms.Controls.Issues
 		//#endif
 	}
 
-	internal sealed class Issue1461Page : MasterDetailPage
+	internal sealed class Issue1461Page : FlyoutPage
 	{
 		public Issue1461Page()
-			: this(MasterBehavior.Default, null)
+			: this(FlyoutLayoutBehavior.Default, null)
 		{ }
 
 		bool? _showButton;
-		public Issue1461Page(MasterBehavior state, bool? initState)
+		public Issue1461Page(FlyoutLayoutBehavior state, bool? initState)
 		{
 
 			var btn = new Button { Text = "hide me" };
 			btn.Clicked += bnToggle_Clicked;
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
-				Title = string.Format("Master sample for {0}", state),
+				Title = string.Format("Flyout sample for {0}", state),
 				IconImageSource = "bank.png",
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(5, 60, 5, 5) : new Thickness(5),
 				Content =
@@ -228,7 +228,7 @@ namespace Xamarin.Forms.Controls.Issues
 					{
 						Children = {
 						new Label {
-							Text = "Master Label",
+							Text = "Flyout Label",
 							AutomationId = "Master_Label",
 							BackgroundColor = Color.Gray
 						},
@@ -268,7 +268,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Content = new StackLayout { Spacing = 10, Children = { lbl, bnToggle, bnGoBack } }
 			});
 
-			MasterBehavior = state;
+			FlyoutLayoutBehavior = state;
 		}
 
 		public override bool ShouldShowToolbarButton()

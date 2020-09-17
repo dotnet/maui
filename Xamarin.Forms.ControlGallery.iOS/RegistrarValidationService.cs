@@ -21,8 +21,8 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 			if (renderer == null 
 				|| renderer.GetType().Name == "DefaultRenderer"
-				|| (element is MasterDetailPage && Device.Idiom == TargetIdiom.Tablet && !(renderer is TabletMasterDetailRenderer))
-				|| (element is MasterDetailPage && Device.Idiom == TargetIdiom.Phone && !(renderer is PhoneMasterDetailRenderer))
+				|| (element is FlyoutPage && Device.Idiom == TargetIdiom.Tablet && !(renderer is TabletMasterDetailRenderer))
+				|| (element is FlyoutPage && Device.Idiom == TargetIdiom.Phone && !(renderer is PhoneMasterDetailRenderer))
 				)
 			{
 				message = $"Failed to load proper iOS renderer for {element.GetType().Name}";

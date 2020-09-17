@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		static readonly string s_defaultDrawerIdOpenSuffix = "_open";
 		static readonly string s_defaultDrawerIdCloseSuffix = "_close";
 
-		internal static void GetDrawerAccessibilityResources(global::Android.Content.Context context, MasterDetailPage page, out int resourceIdOpen, out int resourceIdClose)
+		internal static void GetDrawerAccessibilityResources(global::Android.Content.Context context, FlyoutPage page, out int resourceIdOpen, out int resourceIdClose)
 		{
 			resourceIdOpen = 0;
 			resourceIdClose = 0;
@@ -20,9 +20,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				return;
 
 			var automationIdParent = s_defaultDrawerId;
-			var icon = page.Master?.IconImageSource;
+			var icon = page.Flyout?.IconImageSource;
 			if (icon != null && !icon.IsEmpty)
-				automationIdParent = page.Master.IconImageSource.AutomationId;
+				automationIdParent = page.Flyout.IconImageSource.AutomationId;
 			else if (!string.IsNullOrEmpty(page.AutomationId))
 				automationIdParent = page.AutomationId;
 

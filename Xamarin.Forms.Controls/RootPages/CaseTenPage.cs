@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Controls
 {
 	// May not behave
 	// NavigationPage with multiple tabbed pages	
-	public class CaseTenPage : MasterDetailPage 
+	public class CaseTenPage : FlyoutPage 
 	{
 		public CaseTenPage () 
 		{
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls
 
 			NavigationPage.SetHasNavigationBar (detail, false);
 			
-			Master = new ListPage (){Title = "Master"};
+			Flyout = new ListPage (){Title = "Flyout"};
 			Detail = detail;
 		}
 	}

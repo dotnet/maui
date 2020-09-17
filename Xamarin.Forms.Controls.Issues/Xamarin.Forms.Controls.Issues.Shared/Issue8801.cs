@@ -266,7 +266,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			private ContentPage GetRootPage(Page page)
 			{
-				if (page is MasterDetailPage mdPage)
+				if (page is FlyoutPage mdPage)
 				{
 					return GetRootPage(mdPage.Detail);
 				}

@@ -11,7 +11,9 @@ using Xamarin.Forms.Platform.Tizen;
 [assembly: ExportRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer))]
 [assembly: ExportRenderer(typeof(Page), typeof(PageRenderer))]
 [assembly: ExportRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer))]
+#pragma warning disable CS0618 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer))]
+#pragma warning restore CS0618 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer))]
 [assembly: ExportRenderer(typeof(Shell), typeof(ShellRenderer))]
 

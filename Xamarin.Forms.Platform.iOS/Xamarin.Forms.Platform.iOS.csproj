@@ -95,7 +95,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\NavigationRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\OpenGLViewRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\PageRenderer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Renderers\PhoneMasterDetailRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\PickerRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\ProgressBarRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\ScrollViewRenderer.cs" />
@@ -106,7 +105,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\TabbedRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\TableViewModelRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\TableViewRenderer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Renderers\TabletMasterDetailRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\TimePickerRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CellExtensions.cs" />
@@ -192,8 +190,10 @@
     <Compile Include="Renderers\IShellSectionRootHeader.cs" />
     <Compile Include="Renderers\PageContainer.cs" />
     <Compile Include="Renderers\CheckBoxRendererBase.cs" />
+    <Compile Include="Renderers\PhoneFlyoutPageRenderer.cs" />
     <Compile Include="Renderers\RadioButtonCALayer.cs" />
     <Compile Include="Renderers\RadioButtonRenderer.cs" />
+    <Compile Include="Renderers\TabletFlyoutPageRenderer.cs" />
     <Compile Include="Renderers\WkWebViewRenderer.cs" />
     <Compile Include="Renderers\ElementSelectedEventArgs.cs" />
     <Compile Include="Renderers\IShellContext.cs" />

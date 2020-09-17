@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 28953, "Device.StartTimer (still) behaves differently on different platforms", PlatformAffected.All)]
-	public class Bugzilla28953 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla28953 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		int count = 0, count2 = 0;
 		Label label2, label3;

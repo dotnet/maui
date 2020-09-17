@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -16,14 +17,14 @@ namespace Xamarin.Forms.Platform.iOS
 
 	internal class EventedViewController : ChildViewController
 	{
-		MasterView _masterView;
+		FlyoutView _flyoutView;
 
 		event EventHandler _didAppear;
 		event EventHandler _willDisappear;
 
 		public EventedViewController()
 		{
-			_masterView = new MasterView();
+			_flyoutView = new FlyoutView();
 		}
 
 
@@ -31,12 +32,12 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			add
 			{
-				_masterView.DidAppear += value;
+				_flyoutView.DidAppear += value;
 				_didAppear += value;
 			}
 			remove
 			{
-				_masterView.DidAppear -= value;
+				_flyoutView.DidAppear -= value;
 				_didAppear -= value;
 			}
 		}
@@ -45,12 +46,12 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			add
 			{
-				_masterView.WillDisappear += value;
+				_flyoutView.WillDisappear += value;
 				_willDisappear += value;
 			}
 			remove
 			{
-				_masterView.WillDisappear -= value;
+				_flyoutView.WillDisappear -= value;
 				_willDisappear -= value;
 			}
 		}
@@ -75,10 +76,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void LoadView()
 		{
-			View = _masterView;
+			View = _flyoutView;
 		}
 
-		public class MasterView : UIView
+		public class FlyoutView : UIView
 		{
 			public bool IsCollapsed => Center.X <= 0;
 			bool _previousIsCollapsed = true;
@@ -110,29 +111,29 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 	}
 
-	public class TabletMasterDetailRenderer : UISplitViewController, IVisualElementRenderer, IEffectControlProvider
+	public class TabletFlyoutPageRenderer : UISplitViewController, IVisualElementRenderer, IEffectControlProvider
 	{
 		UIViewController _detailController;
 
 		bool _disposed;
 		EventTracker _events;
 		InnerDelegate _innerDelegate;
-		nfloat _masterWidth = 0;
-		EventedViewController _masterController;
-		MasterDetailPage _masterDetailPage;
+		nfloat _flyoutWidth = 0;
+		EventedViewController _flyoutController;
+		FlyoutPage _flyoutPage;
 		VisualElementTracker _tracker;
 		CGSize _previousSize = CGSize.Empty;
 		CGSize _previousViewDidLayoutSize = CGSize.Empty;
-		UISplitViewControllerDisplayMode _previousDisplayMode  = UISplitViewControllerDisplayMode.Automatic;
+		UISplitViewControllerDisplayMode _previousDisplayMode = UISplitViewControllerDisplayMode.Automatic;
 
 		Page PageController => Element as Page;
 		Element ElementController => Element as Element;
-		bool IsMasterVisible => !(_masterController?.View as EventedViewController.MasterView).IsCollapsed;
+		bool IsFlyoutVisible => !(_flyoutController?.View as EventedViewController.FlyoutView).IsCollapsed;
 
-		protected MasterDetailPage MasterDetailPage => _masterDetailPage ?? (_masterDetailPage = (MasterDetailPage)Element);
+		protected FlyoutPage FlyoutPage => _flyoutPage ?? (_flyoutPage = (FlyoutPage)Element);
 
 		[Internals.Preserve(Conditional = true)]
-		public TabletMasterDetailRenderer()
+		public TabletFlyoutPageRenderer()
 		{
 
 		}
@@ -153,9 +154,9 @@ namespace Xamarin.Forms.Platform.iOS
 					PageController.SendDisappearing();
 					Element.PropertyChanged -= HandlePropertyChanged;
 
-					if (MasterDetailPage?.Master != null)
+					if (FlyoutPage?.Flyout != null)
 					{
-						MasterDetailPage.Master.PropertyChanged -= HandleMasterPropertyChanged;
+						FlyoutPage.Flyout.PropertyChanged -= HandleFlyoutPropertyChanged;
 					}
 
 					Element = null;
@@ -173,10 +174,10 @@ namespace Xamarin.Forms.Platform.iOS
 					_events = null;
 				}
 
-				if (_masterController != null)
+				if (_flyoutController != null)
 				{
-					_masterController.DidAppear -= MasterControllerDidAppear;
-					_masterController.WillDisappear -= MasterControllerWillDisappear;
+					_flyoutController.DidAppear -= FlyoutControllerDidAppear;
+					_flyoutController.WillDisappear -= FlyoutControllerWillDisappear;
 				}
 
 				ClearControllers();
@@ -204,17 +205,17 @@ namespace Xamarin.Forms.Platform.iOS
 			var oldElement = Element;
 			Element = element;
 
-			ViewControllers = new[] { _masterController = new EventedViewController(), _detailController = new ChildViewController() };
-			
+			ViewControllers = new[] { _flyoutController = new EventedViewController(), _detailController = new ChildViewController() };
+
 			if (!Forms.IsiOS9OrNewer)
-				Delegate = _innerDelegate = new InnerDelegate(MasterDetailPage.MasterBehavior);
+				Delegate = _innerDelegate = new InnerDelegate(FlyoutPage.FlyoutLayoutBehavior);
 
 			UpdateControllers();
 
-			_masterController.DidAppear += MasterControllerDidAppear;
-			_masterController.WillDisappear += MasterControllerWillDisappear;
+			_flyoutController.DidAppear += FlyoutControllerDidAppear;
+			_flyoutController.WillDisappear += FlyoutControllerWillDisappear;
 
-			PresentsWithGesture = MasterDetailPage.IsGestureEnabled;
+			PresentsWithGesture = FlyoutPage.IsGestureEnabled;
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
@@ -237,7 +238,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			PageController.SendAppearing();
 			base.ViewDidAppear(animated);
-			ToggleMaster();
+			ToggleFlyout();
 		}
 
 		public override void ViewDidDisappear(bool animated)
@@ -251,12 +252,12 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLayoutSubviews();
 
-			bool layoutMaster = false;
+			bool layoutFlyout = false;
 			bool layoutDetails = false;
 
 			if (Forms.IsiOS13OrNewer)
 			{
-				layoutMaster = _masterController?.View?.Superview != null;
+				layoutFlyout = _flyoutController?.View?.Superview != null;
 				layoutDetails = _detailController?.View?.Superview != null;
 			}
 			else if (View.Subviews.Length < 2)
@@ -265,28 +266,28 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			else
 			{
-				layoutMaster = true;
+				layoutFlyout = true;
 				layoutDetails = true;
 			}
 
-			if (layoutMaster)
+			if (layoutFlyout)
 			{
-				var masterBounds = _masterController.View.Frame;
+				var flyoutBounds = _flyoutController.View.Frame;
 
 				if (Forms.IsiOS13OrNewer)
-					_masterWidth = masterBounds.Width;
+					_flyoutWidth = flyoutBounds.Width;
 				else
-					_masterWidth = (nfloat)Math.Max(_masterWidth, masterBounds.Width);
+					_flyoutWidth = (nfloat)Math.Max(_flyoutWidth, flyoutBounds.Width);
 
-				if (!masterBounds.IsEmpty)
-					MasterDetailPage.MasterBounds = new Rectangle(0, 0, _masterWidth, masterBounds.Height);
+				if (!flyoutBounds.IsEmpty)
+					FlyoutPage.FlyoutBounds = new Rectangle(0, 0, _flyoutWidth, flyoutBounds.Height);
 			}
 
 			if (layoutDetails)
 			{
 				var detailsBounds = _detailController.View.Frame;
 				if (!detailsBounds.IsEmpty)
-					MasterDetailPage.DetailBounds = new Rectangle(0, 0, detailsBounds.Width, detailsBounds.Height);
+					FlyoutPage.DetailBounds = new Rectangle(0, 0, detailsBounds.Width, detailsBounds.Height);
 			}
 
 			if (_previousViewDidLayoutSize == CGSize.Empty)
@@ -297,18 +298,18 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				_previousViewDidLayoutSize = View.Bounds.Size;
 
-				// make sure IsPresented matches state of Master View
-				if (MasterDetailPage.CanChangeIsPresented && MasterDetailPage.IsPresented != IsMasterVisible)
-					ElementController.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, IsMasterVisible);
+				// make sure IsPresented matches state of Flyout View
+				if (FlyoutPage.CanChangeIsPresented && FlyoutPage.IsPresented != IsFlyoutVisible)
+					ElementController.SetValueFromRenderer(Xamarin.Forms.FlyoutPage.IsPresentedProperty, IsFlyoutVisible);
 			}
 
-			if(_previousDisplayMode != PreferredDisplayMode)
+			if (_previousDisplayMode != PreferredDisplayMode)
 			{
 				_previousDisplayMode = PreferredDisplayMode;
 
-				// make sure IsPresented matches state of Master View
-				if (MasterDetailPage.CanChangeIsPresented && MasterDetailPage.IsPresented != IsMasterVisible)
-					ElementController.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, IsMasterVisible);
+				// make sure IsPresented matches state of Flyout View
+				if (FlyoutPage.CanChangeIsPresented && FlyoutPage.IsPresented != IsFlyoutVisible)
+					ElementController.SetValueFromRenderer(Xamarin.Forms.FlyoutPage.IsPresentedProperty, IsFlyoutVisible);
 			}
 		}
 
@@ -317,34 +318,34 @@ namespace Xamarin.Forms.Platform.iOS
 			base.ViewDidLoad();
 			UpdateBackground();
 			UpdateFlowDirection();
-			UpdateMasterBehavior(View.Bounds.Size);
+			UpdateFlyoutLayoutBehavior(View.Bounds.Size);
 			_tracker = new VisualElementTracker(this);
 			_events = new EventTracker(this);
 			_events.LoadEvents(NativeView);
 		}
 
-		void UpdateMasterBehavior(CGSize newBounds)
+		void UpdateFlyoutLayoutBehavior(CGSize newBounds)
 		{
-			MasterDetailPage masterDetailPage = _masterDetailPage ?? Element as MasterDetailPage;
+			FlyoutPage flyoutDetailPage = _flyoutPage ?? Element as FlyoutPage;
 
-			if (masterDetailPage == null)
+			if (flyoutDetailPage == null)
 				return;
 
 			bool isPortrait = newBounds.Height > newBounds.Width;
 			var previous = PreferredDisplayMode;
 
-			switch (masterDetailPage.MasterBehavior)
+			switch (flyoutDetailPage.FlyoutLayoutBehavior)
 			{
-				case MasterBehavior.Split:
+				case FlyoutLayoutBehavior.Split:
 					PreferredDisplayMode = UISplitViewControllerDisplayMode.AllVisible;
 					break;
-				case MasterBehavior.Popover:
+				case FlyoutLayoutBehavior.Popover:
 					PreferredDisplayMode = UISplitViewControllerDisplayMode.PrimaryHidden;
 					break;
-				case MasterBehavior.SplitOnPortrait:
+				case FlyoutLayoutBehavior.SplitOnPortrait:
 					PreferredDisplayMode = (isPortrait) ? UISplitViewControllerDisplayMode.AllVisible : UISplitViewControllerDisplayMode.PrimaryHidden;
 					break;
-				case MasterBehavior.SplitOnLandscape:
+				case FlyoutLayoutBehavior.SplitOnLandscape:
 					PreferredDisplayMode = (!isPortrait) ? UISplitViewControllerDisplayMode.AllVisible : UISplitViewControllerDisplayMode.PrimaryHidden;
 					break;
 				default:
@@ -355,15 +356,15 @@ namespace Xamarin.Forms.Platform.iOS
 			if (previous == PreferredDisplayMode)
 				return;
 
-			if (!MasterDetailPage.ShouldShowSplitMode)
-				MasterDetailPage.CanChangeIsPresented = true;
+			if (!FlyoutPage.ShouldShowSplitMode)
+				FlyoutPage.CanChangeIsPresented = true;
 
-			MasterDetailPage.UpdateMasterBehavior();
+			FlyoutPage.UpdateFlyoutLayoutBehavior();
 		}
 
 		public override void ViewWillDisappear(bool animated)
 		{
-			if (IsMasterVisible && !MasterDetailPage.ShouldShowSplitMode)
+			if (IsFlyoutVisible && !FlyoutPage.ShouldShowSplitMode)
 				PerformButtonSelector();
 
 			base.ViewWillDisappear(animated);
@@ -372,7 +373,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
-			_masterController.View.BackgroundColor = ColorExtensions.BackgroundColor;
+			_flyoutController.View.BackgroundColor = ColorExtensions.BackgroundColor;
 		}
 
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
@@ -380,14 +381,14 @@ namespace Xamarin.Forms.Platform.iOS
 			// I tested this code on iOS9+ and it's never called
 			if (!Forms.IsiOS9OrNewer)
 			{
-				if (!MasterDetailPage.ShouldShowSplitMode && IsMasterVisible)
+				if (!FlyoutPage.ShouldShowSplitMode && IsFlyoutVisible)
 				{
-					MasterDetailPage.CanChangeIsPresented = true;
+					FlyoutPage.CanChangeIsPresented = true;
 					PreferredDisplayMode = UISplitViewControllerDisplayMode.PrimaryHidden;
 					PreferredDisplayMode = UISplitViewControllerDisplayMode.Automatic;
 				}
 
-				MasterDetailPage.UpdateMasterBehavior();
+				FlyoutPage.UpdateFlyoutLayoutBehavior();
 				MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
 			}
 
@@ -396,8 +397,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
-			if (((MasterDetailPage)Element).Detail != null)
-				return (UIViewController)Platform.GetRenderer(((MasterDetailPage)Element).Detail);
+			if (((FlyoutPage)Element).Detail != null)
+				return (UIViewController)Platform.GetRenderer(((FlyoutPage)Element).Detail);
 			else
 				return base.ChildViewControllerForStatusBarHidden();
 		}
@@ -406,8 +407,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			get
 			{
-				if (((MasterDetailPage)Element).Detail != null)
-					return (UIViewController)Platform.GetRenderer(((MasterDetailPage)Element).Detail);
+				if (((FlyoutPage)Element).Detail != null)
+					return (UIViewController)Platform.GetRenderer(((FlyoutPage)Element).Detail);
 				else
 					return base.ChildViewControllerForHomeIndicatorAutoHidden;
 			}
@@ -425,12 +426,12 @@ namespace Xamarin.Forms.Platform.iOS
 			if (changed != null)
 				changed(this, e);
 
-			_masterWidth = 0;
+			_flyoutWidth = 0;
 		}
 
 		void ClearControllers()
 		{
-			foreach (var controller in _masterController.ChildViewControllers)
+			foreach (var controller in _flyoutController.ChildViewControllers)
 			{
 				controller.View.RemoveFromSuperview();
 				controller.RemoveFromParentViewController();
@@ -443,7 +444,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		void HandleMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
 				MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
@@ -454,18 +455,18 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_tracker == null)
 				return;
 
-			if (e.PropertyName == "Master" || e.PropertyName == "Detail")
+			if (e.PropertyName == "Flyout" || e.PropertyName == "Detail")
 				UpdateControllers();
-			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsPresentedProperty.PropertyName)
-				ToggleMaster();
-			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsGestureEnabledProperty.PropertyName)
-				base.PresentsWithGesture = this.MasterDetailPage.IsGestureEnabled;
+			else if (e.PropertyName == Xamarin.Forms.FlyoutPage.IsPresentedProperty.PropertyName)
+				ToggleFlyout();
+			else if (e.PropertyName == Xamarin.Forms.FlyoutPage.IsGestureEnabledProperty.PropertyName)
+				base.PresentsWithGesture = this.FlyoutPage.IsGestureEnabled;
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 				UpdateBackground();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
-			else if (e.Is(MasterDetailPage.MasterBehaviorProperty))
-				UpdateMasterBehavior(View.Bounds.Size);
+			else if (e.Is(Xamarin.Forms.FlyoutPage.FlyoutLayoutBehaviorProperty))
+				UpdateFlyoutLayoutBehavior(base.View.Bounds.Size);
 
 			MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
 		}
@@ -477,20 +478,20 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_previousSize != toSize)
 			{
 				_previousSize = toSize;
-				UpdateMasterBehavior(toSize);
+				UpdateFlyoutLayoutBehavior(toSize);
 			}
 		}
 
-		void MasterControllerDidAppear(object sender, EventArgs e)
+		void FlyoutControllerDidAppear(object sender, EventArgs e)
 		{
-			if (MasterDetailPage.CanChangeIsPresented && IsMasterVisible)
-				ElementController.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, true);
+			if (FlyoutPage.CanChangeIsPresented && IsFlyoutVisible)
+				ElementController.SetValueFromRenderer(Xamarin.Forms.FlyoutPage.IsPresentedProperty, true);
 		}
 
-		void MasterControllerWillDisappear(object sender, EventArgs e)
+		void FlyoutControllerWillDisappear(object sender, EventArgs e)
 		{
-			if (MasterDetailPage.CanChangeIsPresented && !IsMasterVisible)
-				ElementController.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, false);
+			if (FlyoutPage.CanChangeIsPresented && !IsFlyoutVisible)
+				ElementController.SetValueFromRenderer(Xamarin.Forms.FlyoutPage.IsPresentedProperty, false);
 		}
 
 		void PerformButtonSelector()
@@ -498,9 +499,9 @@ namespace Xamarin.Forms.Platform.iOS
 			DisplayModeButtonItem.Target.PerformSelector(DisplayModeButtonItem.Action, DisplayModeButtonItem, 0);
 		}
 
-		void ToggleMaster()
+		void ToggleFlyout()
 		{
-			if (IsMasterVisible == MasterDetailPage.IsPresented || MasterDetailPage.ShouldShowSplitMode)
+			if (IsFlyoutVisible == FlyoutPage.IsPresented || FlyoutPage.ShouldShowSplitMode)
 				return;
 
 			PerformButtonSelector();
@@ -531,22 +532,22 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateControllers()
 		{
-			MasterDetailPage.Master.PropertyChanged -= HandleMasterPropertyChanged;
+			FlyoutPage.Flyout.PropertyChanged -= HandleFlyoutPropertyChanged;
 
-			if (Platform.GetRenderer(MasterDetailPage.Master) == null)
-				Platform.SetRenderer(MasterDetailPage.Master, Platform.CreateRenderer(MasterDetailPage.Master));
-			if (Platform.GetRenderer(MasterDetailPage.Detail) == null)
-				Platform.SetRenderer(MasterDetailPage.Detail, Platform.CreateRenderer(MasterDetailPage.Detail));
+			if (Platform.GetRenderer(FlyoutPage.Flyout) == null)
+				Platform.SetRenderer(FlyoutPage.Flyout, Platform.CreateRenderer(FlyoutPage.Flyout));
+			if (Platform.GetRenderer(FlyoutPage.Detail) == null)
+				Platform.SetRenderer(FlyoutPage.Detail, Platform.CreateRenderer(FlyoutPage.Detail));
 
 			ClearControllers();
 
-			MasterDetailPage.Master.PropertyChanged += HandleMasterPropertyChanged;
+			FlyoutPage.Flyout.PropertyChanged += HandleFlyoutPropertyChanged;
 
-			var master = Platform.GetRenderer(MasterDetailPage.Master).ViewController;
-			var detail = Platform.GetRenderer(MasterDetailPage.Detail).ViewController;
+			var flyout = Platform.GetRenderer(FlyoutPage.Flyout).ViewController;
+			var detail = Platform.GetRenderer(FlyoutPage.Detail).ViewController;
 
-			_masterController.View.AddSubview(master.View);
-			_masterController.AddChildViewController(master);
+			_flyoutController.View.AddSubview(flyout.View);
+			_flyoutController.AddChildViewController(flyout);
 
 			_detailController.View.AddSubview(detail.View);
 			_detailController.AddChildViewController(detail);
@@ -554,7 +555,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateFlowDirection()
 		{
-			if(NativeView.UpdateFlowDirection(Element) && Forms.IsiOS13OrNewer && NativeView.Superview != null)
+			if (NativeView.UpdateFlowDirection(Element) && Forms.IsiOS13OrNewer && NativeView.Superview != null)
 			{
 				var view = NativeView.Superview;
 				NativeView.RemoveFromSuperview();
@@ -564,25 +565,25 @@ namespace Xamarin.Forms.Platform.iOS
 
 		class InnerDelegate : UISplitViewControllerDelegate
 		{
-			readonly MasterBehavior _masterPresentedDefaultState;
+			readonly FlyoutLayoutBehavior _flyoutPresentedDefaultState;
 
-			public InnerDelegate(MasterBehavior masterPresentedDefaultState)
+			public InnerDelegate(FlyoutLayoutBehavior flyoutPresentedDefaultState)
 			{
-				_masterPresentedDefaultState = masterPresentedDefaultState;
+				_flyoutPresentedDefaultState = flyoutPresentedDefaultState;
 			}
 
 			public override bool ShouldHideViewController(UISplitViewController svc, UIViewController viewController, UIInterfaceOrientation inOrientation)
-			{		
+			{
 				bool willHideViewController;
-				switch (_masterPresentedDefaultState)
+				switch (_flyoutPresentedDefaultState)
 				{
-					case MasterBehavior.Split:
+					case FlyoutLayoutBehavior.Split:
 						willHideViewController = false;
 						break;
-					case MasterBehavior.Popover:
+					case FlyoutLayoutBehavior.Popover:
 						willHideViewController = true;
 						break;
-					case MasterBehavior.SplitOnPortrait:
+					case FlyoutLayoutBehavior.SplitOnPortrait:
 						willHideViewController = !(inOrientation == UIInterfaceOrientation.Portrait || inOrientation == UIInterfaceOrientation.PortraitUpsideDown);
 						break;
 					default:
@@ -597,5 +598,17 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);
 		}
+	}
+
+	public class TabletMasterDetailRenderer : TabletFlyoutPageRenderer
+	{
+		[Preserve(Conditional = true)]
+		public TabletMasterDetailRenderer()
+		{
+		}
+
+		[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
+		protected MasterDetailPage MasterDetailPage => (MasterDetailPage)base.FlyoutPage;
+
 	}
 }

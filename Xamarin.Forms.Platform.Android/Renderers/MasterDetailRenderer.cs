@@ -11,6 +11,7 @@ using Xamarin.Forms.Platform.Android.FastRenderers;
 namespace Xamarin.Forms.Platform.Android
 {
 
+	[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
 	public class MasterDetailRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener
 	{
 		//from Android source code
@@ -278,7 +279,7 @@ namespace Xamarin.Forms.Platform.Android
 		void HandleMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.TitleProperty.PropertyName || e.PropertyName == Page.IconImageSourceProperty.PropertyName)
-				Platform?.UpdateMasterDetailToggle(true);
+				Platform?.UpdateFlyoutPageToggle(true);
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -428,7 +429,8 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					SetScrimColor(isShowingSplit ? Color.Transparent.ToAndroid() : (int)DefaultScrimColor);
 				}
-				Platform?.UpdateMasterDetailToggle();
+
+				Platform?.UpdateFlyoutPageToggle();
 			}
 		}
 	}

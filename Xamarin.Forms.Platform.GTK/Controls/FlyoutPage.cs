@@ -1,86 +1,87 @@
 ﻿using Gdk;
 using Gtk;
 using System;
+using System.Windows.Markup;
 using Xamarin.Forms.Platform.GTK.Animations;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
 {
-	public enum MasterBehaviorType
+	public enum FlyoutLayoutBehaviorType
 	{
 		Default = 0,
 		Popover,
 		Split
 	}
 
-	public class MasterDetailPage : Fixed
+	public class FlyoutPage : Fixed
 	{
-		private const int DefaultMasterWidth = 300;
+		private const int DefaultFlyoutWidth = 300;
 		private const int IsPresentedAnimationMilliseconds = 300;
 
 		private Gdk.Rectangle _lastAllocation;
 		private bool _isPresented;
-		private MasterDetailMasterTitleContainer _titleContainer;
-		private EventBox _masterContainerWrapper;
-		private VBox _masterContainer;
-		private Widget _master;
+		private FlyoutPageFlyoutTitleContainer _titleContainer;
+		private EventBox _flyoutContainerWrapper;
+		private VBox _flyoutContainer;
+		private Widget _flyout;
 		private Widget _detail;
-		private MasterBehaviorType _masterBehaviorType;
+		private FlyoutLayoutBehaviorType _flyoutBehaviorType;
 		private static Pixbuf _hamburgerPixBuf;
 		private bool _displayTitle;
 		private bool _animationsEnabled;
 
-		public MasterDetailPage()
+		public FlyoutPage()
 		{
 			_animationsEnabled = false;
-			_masterBehaviorType = MasterBehaviorType.Default;
+			_flyoutBehaviorType = FlyoutLayoutBehaviorType.Default;
 
-			// Master Stuff
-			_masterContainerWrapper = new EventBox();
-			_masterContainer = new VBox(false, 0);
-			_titleContainer = new MasterDetailMasterTitleContainer();
+			// Flyout Stuff
+			_flyoutContainerWrapper = new EventBox();
+			_flyoutContainer = new VBox(false, 0);
+			_titleContainer = new FlyoutPageFlyoutTitleContainer();
 			_titleContainer.HamburguerClicked += OnHamburgerClicked;
 			_titleContainer.HeightRequest = GtkToolbarConstants.ToolbarHeight;
-			_masterContainer.PackStart(_titleContainer, false, true, 0);
+			_flyoutContainer.PackStart(_titleContainer, false, true, 0);
 
-			_master = new EventBox();
-			_masterContainer.PackEnd(_master, false, true, 0);
-			_masterContainerWrapper.Add(_masterContainer);
+			_flyout = new EventBox();
+			_flyoutContainer.PackEnd(_flyout, false, true, 0);
+			_flyoutContainerWrapper.Add(_flyoutContainer);
 
 			// Detail Stuff
 			_detail = new EventBox();
 
 			Add(_detail);
-			Add(_masterContainerWrapper);
+			Add(_flyoutContainerWrapper);
 		}
 
-		public MasterBehaviorType MasterBehaviorType
+		public FlyoutLayoutBehaviorType FlyoutLayoutBehaviorType
 		{
 			get
 			{
-				return _masterBehaviorType;
+				return _flyoutBehaviorType;
 			}
 
 			set
 			{
-				if (_masterBehaviorType != value)
+				if (_flyoutBehaviorType != value)
 				{
-					_masterBehaviorType = value;
-					RefreshMasterBehavior(_masterBehaviorType);
+					_flyoutBehaviorType = value;
+					RefreshFlyoutLayoutBehavior(_flyoutBehaviorType);
 				}
 			}
 		}
 
-		public Widget Master
+		public Widget Flyout
 		{
 			get
 			{
-				return _master;
+				return _flyout;
 			}
 
 			set
 			{
-				RefreshMaster(value);
+				RefreshFlyout(value);
 			}
 		}
 
@@ -111,7 +112,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 		}
 
-		public string MasterTitle
+		public string FlyoutTitle
 		{
 			get
 			{
@@ -198,9 +199,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				_lastAllocation = allocation;
 			}
 
-			_master.WidthRequest = DefaultMasterWidth;
-			_master.HeightRequest = _detail.HeightRequest = allocation.Height;
-			RefreshMasterBehavior(_masterBehaviorType);
+			_flyout.WidthRequest = DefaultFlyoutWidth;
+			_flyout.HeightRequest = _detail.HeightRequest = allocation.Height;
+			RefreshFlyoutLayoutBehavior(_flyoutBehaviorType);
 		}
 
 		protected override void OnShown()
@@ -211,19 +212,19 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		}
 
 
-		private void RefreshMasterBehavior(MasterBehaviorType masterBehaviorType)
+		private void RefreshFlyoutLayoutBehavior(FlyoutLayoutBehaviorType flyoutBehaviorType)
 		{
 			int detailWidthRequest = 0;
 			Gdk.Point point = default(Gdk.Point);
 
-			switch (_masterBehaviorType)
+			switch (_flyoutBehaviorType)
 			{
-				case MasterBehaviorType.Split:
-					detailWidthRequest = _lastAllocation.Width - DefaultMasterWidth;
-					point = new Gdk.Point(_master.WidthRequest, 0);
+				case FlyoutLayoutBehaviorType.Split:
+					detailWidthRequest = _lastAllocation.Width - DefaultFlyoutWidth;
+					point = new Gdk.Point(_flyout.WidthRequest, 0);
 					break;
-				case MasterBehaviorType.Default:
-				case MasterBehaviorType.Popover:
+				case FlyoutLayoutBehaviorType.Default:
+				case FlyoutLayoutBehaviorType.Popover:
 					detailWidthRequest = _lastAllocation.Width;
 					point = new Gdk.Point(0, 0);
 					break;
@@ -236,17 +237,17 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 		}
 
-		private void RefreshMaster(Widget newMaster)
+		private void RefreshFlyout(Widget newFlyout)
 		{
-			if (_master != null)
+			if (_flyout != null)
 			{
-				_masterContainer.RemoveFromContainer(_master);
+				_flyoutContainer.RemoveFromContainer(_flyout);
 			}
 
 			UpdateHamburguerIcon(HamburgerPixBuf);
-			_master = newMaster;
-			_masterContainer.PackEnd(newMaster, false, true, 0);
-			_master.ShowAll();
+			_flyout = newFlyout;
+			_flyoutContainer.PackEnd(newFlyout, false, true, 0);
+			_flyout.ShowAll();
 		}
 
 		private void RefreshDetail(Widget newDetail)
@@ -260,35 +261,35 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 			Add(_detail);
 
-			Remove(_masterContainerWrapper);
-			Add(_masterContainerWrapper);
+			Remove(_flyoutContainerWrapper);
+			Add(_flyoutContainerWrapper);
 
 			_detail.ShowAll();
-			_masterContainerWrapper.GdkWindow?.Raise(); // Forcing Master to be on top
+			_flyoutContainerWrapper.GdkWindow?.Raise(); // Forcing Flyout to be on top
 		}
 
 		private async void RefreshPresented(bool isPresented)
 		{
 			_isPresented = isPresented;
 
-			if (_masterBehaviorType == MasterBehaviorType.Split) return;
+			if (_flyoutBehaviorType == FlyoutLayoutBehaviorType.Split) return;
 
 			if (_animationsEnabled)
 			{
-				var from = (_isPresented) ? -DefaultMasterWidth : 0;
-				var to = (_isPresented) ? 0 : -DefaultMasterWidth;
+				var from = (_isPresented) ? -DefaultFlyoutWidth : 0;
+				var to = (_isPresented) ? 0 : -DefaultFlyoutWidth;
 
 				await new FloatAnimation(from, to, TimeSpan.FromMilliseconds(IsPresentedAnimationMilliseconds), true, (f) =>
 				{
 					Gtk.Application.Invoke(delegate
 					{
-						_masterContainerWrapper.MoveTo(f, 0);
+						_flyoutContainerWrapper.MoveTo(f, 0);
 					});
 				}).Run();
 			}
 			else
 			{
-				_masterContainerWrapper.MoveTo(_isPresented ? 0 : -DefaultMasterWidth, 0);
+				_flyoutContainerWrapper.MoveTo(_isPresented ? 0 : -DefaultFlyoutWidth, 0);
 			}
 		}
 
@@ -296,11 +297,11 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		{
 			_displayTitle = value;
 
-			_masterContainer.RemoveFromContainer(_titleContainer);
+			_flyoutContainer.RemoveFromContainer(_titleContainer);
 
 			if (_displayTitle)
 			{
-				_masterContainer.PackStart(_titleContainer, false, true, 0);
+				_flyoutContainer.PackStart(_titleContainer, false, true, 0);
 			}
 		}
 
@@ -314,7 +315,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			IsPresentedChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		private class MasterDetailMasterTitleContainer : EventBox
+		private class FlyoutPageFlyoutTitleContainer : EventBox
 		{
 			private HBox _root;
 			private ToolButton _hamburguerButton;
@@ -323,7 +324,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			private Gdk.Color _defaultTextColor;
 			private Gdk.Color _defaultBackgroundColor;
 
-			public MasterDetailMasterTitleContainer()
+			public FlyoutPageFlyoutTitleContainer()
 			{
 				_defaultBackgroundColor = Style.Backgrounds[(int)StateType.Normal];
 
@@ -336,7 +337,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				}
 				catch (Exception ex)
 				{
-					Internals.Log.Warning("MasterDetailPage HamburguerIcon", "Could not load hamburguer icon: {0}", ex);
+					Internals.Log.Warning("FlyoutPage HamburguerIcon", "Could not load hamburguer icon: {0}", ex);
 				}
 
 				_hamburguerButton = new ToolButton(_hamburguerIcon, string.Empty);
@@ -419,6 +420,17 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			{
 				HamburguerClicked?.Invoke(this, EventArgs.Empty);
 			}
+		}
+	}
+
+	public class MasterDetailPage : FlyoutPage 
+	{
+
+		public string MasterTitle
+		{
+			get => base.FlyoutTitle;
+
+			set => base.FlyoutTitle = value;
 		}
 	}
 }

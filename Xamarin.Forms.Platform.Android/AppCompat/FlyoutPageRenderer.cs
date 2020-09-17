@@ -9,9 +9,11 @@ using Android.Views;
 using AView = Android.Views.View;
 using Android.OS;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace Xamarin.Forms.Platform.Android
 {
-	public class MasterDetailPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments, ILifeCycleState
+	using Xamarin.Forms.Platform.Android.AppCompat;
+
+	public class FlyoutPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments, ILifeCycleState
 	{
 		#region Statics
 
@@ -21,8 +23,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		#endregion
 
 		int _currentLockMode = -1;
-		MasterDetailContainer _detailLayout;
-		MasterDetailContainer _masterLayout;
+		FlyoutPageContainer _detailLayout;
+		FlyoutPageContainer _flyoutLayout;
 		bool _disposed;
 		bool _isPresentingFromCore;
 		bool _presented;
@@ -31,19 +33,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		string _defaultContentDescription;
 		string _defaultHint;
 
-		public MasterDetailPageRenderer(Context context) : base(context)
+		public FlyoutPageRenderer(Context context) : base(context)
 		{
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use MasterDetailPageRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public MasterDetailPageRenderer() : base(Forms.Context)
-		{
-		}
+		FlyoutPage Element { get; set; }
 
-		MasterDetailPage Element { get; set; }
-
-		IMasterDetailPageController MasterDetailPageController => Element as IMasterDetailPageController;
+		IFlyoutPageController FlyoutPageController => Element as IFlyoutPageController;
 
 		bool Presented
 		{
@@ -54,16 +50,16 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					return;
 				UpdateSplitViewLayout();
 				_presented = value;
-				if (Element.MasterBehavior == MasterBehavior.Default && MasterDetailPageController.ShouldShowSplitMode)
+				if (Element.FlyoutLayoutBehavior == FlyoutLayoutBehavior.Default && FlyoutPageController.ShouldShowSplitMode)
 					return;
 				if (_presented)
-					OpenDrawer(_masterLayout);
+					OpenDrawer(_flyoutLayout);
 				else
-					CloseDrawer(_masterLayout);
+					CloseDrawer(_flyoutLayout);
 			}
 		}
 
-		IPageController MasterPageController => Element.Master as IPageController;
+		IPageController FlyoutPagePageController => Element.Flyout as IPageController;
 		IPageController DetailPageController => Element.Detail as IPageController;
 		IPageController PageController => Element as IPageController;
 
@@ -81,7 +77,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void IDrawerListener.OnDrawerStateChanged(int newState)
 		{
-			_presented = IsDrawerVisible(_masterLayout);
+			_presented = IsDrawerVisible(_flyoutLayout);
 			UpdateIsPresented();
 		}
 
@@ -113,29 +109,29 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void IVisualElementRenderer.SetElement(VisualElement element)
 		{
-			MasterDetailPage oldElement = Element;
-			MasterDetailPage newElement = Element = element as MasterDetailPage;
+			FlyoutPage oldElement = Element;
+			FlyoutPage newElement = Element = element as FlyoutPage;
 
 			if (oldElement != null)
 			{
 				Device.Info.PropertyChanged -= DeviceInfoPropertyChanged;
 
-				((IMasterDetailPageController)oldElement).BackButtonPressed -= OnBackButtonPressed;
+				((IFlyoutPageController)oldElement).BackButtonPressed -= OnBackButtonPressed;
 
 				oldElement.PropertyChanged -= HandlePropertyChanged;
-				oldElement.Appearing -= MasterDetailPageAppearing;
-				oldElement.Disappearing -= MasterDetailPageDisappearing;
+				oldElement.Appearing -= FlyoutPageAppearing;
+				oldElement.Disappearing -= FlyoutPageDisappearing;
 
 				RemoveDrawerListener(this);
-			
+
 				if (_detailLayout != null)
 				{
 					RemoveView(_detailLayout);
 				}
 
-				if (_masterLayout != null)
+				if (_flyoutLayout != null)
 				{
-					RemoveView(_masterLayout);
+					RemoveView(_flyoutLayout);
 				}
 			}
 
@@ -143,12 +139,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				if (_detailLayout == null)
 				{
-					_detailLayout = new MasterDetailContainer(newElement, false, Context)
+					_detailLayout = new FlyoutPageContainer(newElement, false, Context)
 					{
 						LayoutParameters = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent)
 					};
 
-					_masterLayout = new MasterDetailContainer(newElement, true, Context)
+					_flyoutLayout = new FlyoutPageContainer(newElement, true, Context)
 					{
 						LayoutParameters = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent) { Gravity = (int)GravityFlags.Start }
 					};
@@ -156,11 +152,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					if (_fragmentManager != null)
 					{
 						_detailLayout.SetFragmentManager(_fragmentManager);
-						_masterLayout.SetFragmentManager(_fragmentManager);
+						_flyoutLayout.SetFragmentManager(_fragmentManager);
 					}
 
 					AddView(_detailLayout);
-					AddView(_masterLayout);
+					AddView(_flyoutLayout);
 
 					Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
 
@@ -170,15 +166,15 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateBackgroundColor(newElement);
 				UpdateBackgroundImage(newElement);
 
-				UpdateMaster();
+				UpdateFlyout();
 				UpdateDetail();
 
 				UpdateFlowDirection();
 
-				((IMasterDetailPageController)newElement).BackButtonPressed += OnBackButtonPressed;
+				((IFlyoutPageController)newElement).BackButtonPressed += OnBackButtonPressed;
 				newElement.PropertyChanged += HandlePropertyChanged;
-				newElement.Appearing += MasterDetailPageAppearing;
-				newElement.Disappearing += MasterDetailPageDisappearing;
+				newElement.Appearing += FlyoutPageAppearing;
+				newElement.Disappearing += FlyoutPageDisappearing;
 
 				SetGestureState();
 
@@ -231,14 +227,14 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				if (Element != null)
 				{
-					MasterDetailPageController.BackButtonPressed -= OnBackButtonPressed;
+					FlyoutPageController.BackButtonPressed -= OnBackButtonPressed;
 					Element.PropertyChanged -= HandlePropertyChanged;
-					Element.Appearing -= MasterDetailPageAppearing;
-					Element.Disappearing -= MasterDetailPageDisappearing;
+					Element.Appearing -= FlyoutPageAppearing;
+					Element.Disappearing -= FlyoutPageDisappearing;
 				}
 
-				if (_masterLayout?.ChildView != null)
-					_masterLayout.ChildView.PropertyChanged -= HandleMasterPropertyChanged;
+				if (_flyoutLayout?.ChildView != null)
+					_flyoutLayout.ChildView.PropertyChanged -= HandleFlyoutPropertyChanged;
 
 				if (!this.IsDisposed())
 					RemoveDrawerListener(this);
@@ -256,11 +252,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					_detailLayout = null;
 				}
 
-				if (_masterLayout != null)
+				if (_flyoutLayout != null)
 				{
-					RemoveView(_masterLayout);
-					_masterLayout.Dispose();
-					_masterLayout = null;
+					RemoveView(_flyoutLayout);
+					_flyoutLayout.Dispose();
+					_flyoutLayout = null;
 				}
 
 				if (Element != null)
@@ -294,20 +290,20 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			base.OnLayout(changed, l, t, r, b);
 			//hack to make the split layout handle touches the full width
-			if (MasterDetailPageController.ShouldShowSplitMode && _masterLayout != null)
-				_masterLayout.Right = r;
+			if (FlyoutPageController.ShouldShowSplitMode && _flyoutLayout != null)
+				_flyoutLayout.Right = r;
 		}
 
 		async void DeviceInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (nameof(Device.Info.CurrentOrientation) == e.PropertyName)
 			{
-				if (!MasterDetailPageController.ShouldShowSplitMode && Presented)
+				if (!FlyoutPageController.ShouldShowSplitMode && Presented)
 				{
-					MasterDetailPageController.CanChangeIsPresented = true;
-					//hack : when the orientation changes and we try to close the Master on Android		
+					FlyoutPageController.CanChangeIsPresented = true;
+					//hack : when the orientation changes and we try to close the Flyout on Android		
 					//sometimes Android picks the width of the screen previous to the rotation 		
-					//this leaves a little of the master visible, the hack is to delay for 100ms closing the drawer
+					//this leaves a little of the flyout visible, the hack is to delay for 100ms closing the drawer
 					await Task.Delay(100);
 
 					//Renderer may have been disposed during the delay
@@ -316,7 +312,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 						return;
 					}
 
-					CloseDrawer(_masterLayout);
+					CloseDrawer(_flyoutLayout);
 				}
 
 				UpdateSplitViewLayout();
@@ -336,20 +332,20 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return HasAncestorNavigationPage(element.Parent);
 		}
 
-		void HandleMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			ElementPropertyChanged?.Invoke(this, e);
-			if (e.PropertyName == "Master")
-				UpdateMaster();
+			if (e.PropertyName == "Flyout")
+				UpdateFlyout();
 			else if (e.PropertyName == "Detail")
 				UpdateDetail();
-			else if (e.PropertyName == MasterDetailPage.IsGestureEnabledProperty.PropertyName)
+			else if (e.PropertyName == FlyoutPage.IsGestureEnabledProperty.PropertyName)
 				SetGestureState();
-			else if (e.PropertyName == MasterDetailPage.IsPresentedProperty.PropertyName)
+			else if (e.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName)
 			{
 				_isPresentingFromCore = true;
 				Presented = Element.IsPresented;
@@ -363,15 +359,15 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateFlowDirection();
 		}
 
-		void MasterDetailPageAppearing(object sender, EventArgs e)
+		void FlyoutPageAppearing(object sender, EventArgs e)
 		{
-			MasterPageController?.SendAppearing();
+			FlyoutPagePageController?.SendAppearing();
 			DetailPageController?.SendAppearing();
 		}
 
-		void MasterDetailPageDisappearing(object sender, EventArgs e)
+		void FlyoutPageDisappearing(object sender, EventArgs e)
 		{
-			MasterPageController?.SendDisappearing();
+			FlyoutPagePageController?.SendDisappearing();
 			DetailPageController?.SendDisappearing();
 		}
 
@@ -443,12 +439,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (_isPresentingFromCore)
 				return;
 			if (Presented != Element.IsPresented)
-				((IElementController)Element).SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, Presented);
+				((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, Presented);
 		}
 
-		void UpdateMaster()
+		void UpdateFlyout()
 		{
-			if (_masterLayout.ChildView == null)
+			if (_flyoutLayout.ChildView == null)
 				Update();
 			else
 				// Queue up disposal of the previous renderers after the current layout updates have finished
@@ -456,16 +452,16 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			void Update()
 			{
-				if (_masterLayout == null || _masterLayout.IsDisposed())
+				if (_flyoutLayout == null || _flyoutLayout.IsDisposed())
 					return;
 
-				if (_masterLayout.ChildView != null)
-					_masterLayout.ChildView.PropertyChanged -= HandleMasterPropertyChanged;
+				if (_flyoutLayout.ChildView != null)
+					_flyoutLayout.ChildView.PropertyChanged -= HandleFlyoutPropertyChanged;
 
-				_masterLayout.ChildView = Element.Master;
+				_flyoutLayout.ChildView = Element.Flyout;
 
-				if (_masterLayout.ChildView != null)
-					_masterLayout.ChildView.PropertyChanged += HandleMasterPropertyChanged;
+				if (_flyoutLayout.ChildView != null)
+					_flyoutLayout.ChildView.PropertyChanged += HandleFlyoutPropertyChanged;
 			}
 		}
 
@@ -473,13 +469,30 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			if (Device.Idiom == TargetIdiom.Tablet)
 			{
-				bool isShowingSplit = MasterDetailPageController.ShouldShowSplitMode || (MasterDetailPageController.ShouldShowSplitMode && Element.MasterBehavior != MasterBehavior.Default && Element.IsPresented);
+				bool isShowingSplit = FlyoutPageController.ShouldShowSplitMode || (FlyoutPageController.ShouldShowSplitMode && Element.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Default && Element.IsPresented);
 				SetLockMode(isShowingSplit ? LockModeLockedOpen : LockModeUnlocked);
 				unchecked
 				{
 					SetScrimColor(isShowingSplit ? Color.Transparent.ToAndroid() : (int)DefaultScrimColor);
 				}
 			}
+		}
+	}
+}
+
+namespace Xamarin.Forms.Platform.Android.AppCompat
+{
+	public class MasterDetailPageRenderer : FlyoutPageRenderer
+	{
+		public MasterDetailPageRenderer(Context context) : base(context)
+		{
+		}
+
+
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use FlyoutPageRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public MasterDetailPageRenderer() : base(Forms.Context)
+		{
 		}
 	}
 }

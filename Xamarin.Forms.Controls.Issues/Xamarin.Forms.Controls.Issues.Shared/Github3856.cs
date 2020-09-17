@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3856, "[Android] MaxLines on Label not working with FastRenderers 3.3.0-pre1", PlatformAffected.Android)]
-	public class Github3856 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Github3856 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 36788, "Truncation Issues with Relative Layouts")]
-	public class Bugzilla36788 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla36788 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		Label _resultLabel;
 		Label _testLabel;

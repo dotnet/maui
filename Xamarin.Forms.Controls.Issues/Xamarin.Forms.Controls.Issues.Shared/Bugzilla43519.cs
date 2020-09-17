@@ -45,12 +45,12 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			var mdp = new MasterDetailPage
+			var mdp = new FlyoutPage
 			{
 				Title = "Page 1",
-				Master = new ContentPage
+				Flyout = new ContentPage
 				{
-					Title = "Master",
+					Title = "Flyout",
 					Content = new StackLayout()
 				},
 				Detail = new ContentPage

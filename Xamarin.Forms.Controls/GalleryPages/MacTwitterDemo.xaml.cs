@@ -5,7 +5,7 @@ using Xamarin.Forms;
 
 namespace Xamarin.Forms.Controls
 {
-	public partial class MacTwitterDemo : MasterDetailPage
+	public partial class MacTwitterDemo : FlyoutPage
 	{
 		public MacTwitterDemo()
 		{

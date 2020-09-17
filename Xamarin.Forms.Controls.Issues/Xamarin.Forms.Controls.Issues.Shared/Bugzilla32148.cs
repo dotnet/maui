@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 32148, " Pull to refresh hides the first item on a list view")]
-	public class Bugzilla32148 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla32148 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		Button _searchBtn;
 		ListView _contactsListView;

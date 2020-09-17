@@ -14,21 +14,21 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(UITestCategories.MasterDetailPage)]
+	[NUnit.Framework.Category(UITestCategories.FlyoutPage)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 31602, "not possible to programmatically open master page after iPad landscape -> portrait rotation, also tests 31664")]
-	public class Bugzilla31602 : TestMasterDetailPage
+	public class Bugzilla31602 : TestFlyoutPage
 	{
 		protected override void Init()
 		{
 			BindingContext = new MasterViewModel1();
 			((MasterViewModel1)BindingContext).MasterPage = this;
 
-			Master = new SidemenuPage();
-			Detail = new NavigationPage(new DetailPage1(Master as SidemenuPage));
+			Flyout = new SidemenuPage();
+			Detail = new NavigationPage(new DetailPage1(Flyout as SidemenuPage));
 		}
 
 		public class SidemenuPage : ContentPage
@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Preserve(AllMembers = true)]
 		public class MasterViewModel1 : INotifyPropertyChanged
 		{
-			public MasterDetailPage MasterPage;
+			public FlyoutPage MasterPage;
 
 			public event PropertyChangedEventHandler PropertyChanged = delegate { };
 

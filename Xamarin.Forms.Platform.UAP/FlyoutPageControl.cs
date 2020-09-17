@@ -8,55 +8,55 @@ using WImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class MasterDetailControl : Control, IToolbarProvider, ITitleViewRendererController
+	public class FlyoutPageControl : Control, IToolbarProvider, ITitleViewRendererController
 	{
-		public static readonly DependencyProperty MasterProperty = DependencyProperty.Register("Master", typeof(FrameworkElement), typeof(MasterDetailControl),
+		public static readonly DependencyProperty FlyoutProperty = DependencyProperty.Register(nameof(Flyout), typeof(FrameworkElement), typeof(FlyoutPageControl),
 			new PropertyMetadata(default(FrameworkElement)));
 
-		public static readonly DependencyProperty MasterTitleProperty = DependencyProperty.Register("MasterTitle", typeof(string), typeof(MasterDetailControl), new PropertyMetadata(default(string)));
+		public static readonly DependencyProperty FlyoutTitleProperty = DependencyProperty.Register(nameof(FlyoutTitle), typeof(string), typeof(FlyoutPageControl), new PropertyMetadata(default(string)));
 
-		public static readonly DependencyProperty DetailProperty = DependencyProperty.Register("Detail", typeof(FrameworkElement), typeof(MasterDetailControl),
+		public static readonly DependencyProperty DetailProperty = DependencyProperty.Register("Detail", typeof(FrameworkElement), typeof(FlyoutPageControl),
 			new PropertyMetadata(default(FrameworkElement)));
 
-		public static readonly DependencyProperty IsPaneOpenProperty = DependencyProperty.Register("IsPaneOpen", typeof(bool), typeof(MasterDetailControl), new PropertyMetadata(default(bool)));
+		public static readonly DependencyProperty IsPaneOpenProperty = DependencyProperty.Register("IsPaneOpen", typeof(bool), typeof(FlyoutPageControl), new PropertyMetadata(default(bool)));
 
-		public static readonly DependencyProperty ShouldShowSplitModeProperty = DependencyProperty.Register(nameof(ShouldShowSplitMode), typeof(bool), typeof(MasterDetailControl),
+		public static readonly DependencyProperty ShouldShowSplitModeProperty = DependencyProperty.Register(nameof(ShouldShowSplitMode), typeof(bool), typeof(FlyoutPageControl),
 			new PropertyMetadata(default(bool), OnShouldShowSplitModeChanged));
 
-		public static readonly DependencyProperty ShouldShowNavigationBarProperty = DependencyProperty.Register(nameof(ShouldShowNavigationBar), typeof(bool), typeof(MasterDetailControl),
+		public static readonly DependencyProperty ShouldShowNavigationBarProperty = DependencyProperty.Register(nameof(ShouldShowNavigationBar), typeof(bool), typeof(FlyoutPageControl),
 		new PropertyMetadata(true, OnShouldShowSplitModeChanged));
 
 		public static readonly DependencyProperty CollapseStyleProperty = DependencyProperty.Register(nameof(CollapseStyle), typeof(CollapseStyle),
-			typeof(MasterDetailControl), new PropertyMetadata(CollapseStyle.Full, CollapseStyleChanged));
+			typeof(FlyoutPageControl), new PropertyMetadata(CollapseStyle.Full, CollapseStyleChanged));
 
-		public static readonly DependencyProperty CollapsedPaneWidthProperty = DependencyProperty.Register(nameof(CollapsedPaneWidth), typeof(double), typeof(MasterDetailControl),
+		public static readonly DependencyProperty CollapsedPaneWidthProperty = DependencyProperty.Register(nameof(CollapsedPaneWidth), typeof(double), typeof(FlyoutPageControl),
 			new PropertyMetadata(48d, CollapsedPaneWidthChanged));
 
-		public static readonly DependencyProperty DetailTitleProperty = DependencyProperty.Register("DetailTitle", typeof(string), typeof(MasterDetailControl), new PropertyMetadata(default(string)));
+		public static readonly DependencyProperty DetailTitleProperty = DependencyProperty.Register("DetailTitle", typeof(string), typeof(FlyoutPageControl), new PropertyMetadata(default(string)));
 
-		public static readonly DependencyProperty DetailTitleIconProperty = DependencyProperty.Register(nameof(DetailTitleIcon), typeof(WImageSource), typeof(MasterDetailControl), new PropertyMetadata(default(WImageSource)));
+		public static readonly DependencyProperty DetailTitleIconProperty = DependencyProperty.Register(nameof(DetailTitleIcon), typeof(WImageSource), typeof(FlyoutPageControl), new PropertyMetadata(default(WImageSource)));
 
-		public static readonly DependencyProperty DetailTitleViewProperty = DependencyProperty.Register(nameof(DetailTitleView), typeof(View), typeof(MasterDetailControl), new PropertyMetadata(default(View), OnTitleViewPropertyChanged));
+		public static readonly DependencyProperty DetailTitleViewProperty = DependencyProperty.Register(nameof(DetailTitleView), typeof(View), typeof(FlyoutPageControl), new PropertyMetadata(default(View), OnTitleViewPropertyChanged));
 
-		public static readonly DependencyProperty ToolbarForegroundProperty = DependencyProperty.Register("ToolbarForeground", typeof(WBrush), typeof(MasterDetailControl),
+		public static readonly DependencyProperty ToolbarForegroundProperty = DependencyProperty.Register("ToolbarForeground", typeof(WBrush), typeof(FlyoutPageControl),
 			new PropertyMetadata(default(WBrush)));
 
-		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register("ToolbarBackground", typeof(WBrush), typeof(MasterDetailControl),
+		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register("ToolbarBackground", typeof(WBrush), typeof(FlyoutPageControl),
 			new PropertyMetadata(default(WBrush)));
 
-		public static readonly DependencyProperty MasterTitleVisibilityProperty = DependencyProperty.Register("MasterTitleVisibility", typeof(Visibility), typeof(MasterDetailControl),
+		public static readonly DependencyProperty FlyoutTitleVisibilityProperty = DependencyProperty.Register(nameof(FlyoutTitleVisibility), typeof(Visibility), typeof(FlyoutPageControl),
 			new PropertyMetadata(default(Visibility)));
 
-		public static readonly DependencyProperty DetailTitleVisibilityProperty = DependencyProperty.Register("DetailTitleVisibility", typeof(Visibility), typeof(MasterDetailControl),
+		public static readonly DependencyProperty DetailTitleVisibilityProperty = DependencyProperty.Register("DetailTitleVisibility", typeof(Visibility), typeof(FlyoutPageControl),
 			new PropertyMetadata(default(Visibility)));
 
-		public static readonly DependencyProperty DetailTitleViewVisibilityProperty = DependencyProperty.Register(nameof(DetailTitleViewVisibility), typeof(Visibility), typeof(MasterDetailControl),
+		public static readonly DependencyProperty DetailTitleViewVisibilityProperty = DependencyProperty.Register(nameof(DetailTitleViewVisibility), typeof(Visibility), typeof(FlyoutPageControl),
 			new PropertyMetadata(default(Visibility)));
 
-		public static readonly DependencyProperty MasterToolbarVisibilityProperty = DependencyProperty.Register("MasterToolbarVisibility", typeof(Visibility), typeof(MasterDetailControl),
+		public static readonly DependencyProperty FlyoutToolbarVisibilityProperty = DependencyProperty.Register(nameof(FlyoutToolbarVisibility), typeof(Visibility), typeof(FlyoutPageControl),
 			new PropertyMetadata(default(Visibility)));
 
-		public static readonly DependencyProperty ContentTogglePaneButtonVisibilityProperty = DependencyProperty.Register(nameof(ContentTogglePaneButtonVisibility), typeof(Visibility), typeof(MasterDetailControl),
+		public static readonly DependencyProperty ContentTogglePaneButtonVisibilityProperty = DependencyProperty.Register(nameof(ContentTogglePaneButtonVisibility), typeof(Visibility), typeof(FlyoutPageControl),
 			new PropertyMetadata(default(Visibility)));
 
 		CommandBar _commandBar;
@@ -70,17 +70,17 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 		TaskCompletionSource<CommandBar> _commandBarTcs;
-		FrameworkElement _masterPresenter;
+		FrameworkElement _flyoutPresenter;
 		FrameworkElement _detailPresenter;
 		SplitView _split;
 	    ToolbarPlacement _toolbarPlacement;
 		bool _toolbarDynamicOverflowEnabled = true;
 		FrameworkElement _titleViewPresenter;
 		TitleViewManager _titleViewManager;
-
-		public MasterDetailControl()
+		private protected virtual string FlyoutPresenterTemplateName => "FlyoutPresenter";
+		public FlyoutPageControl()
 		{
-			DefaultStyleKey = typeof(MasterDetailControl);
+			DefaultStyleKey = typeof(FlyoutPageControl);
 
 			DetailTitleVisibility = Visibility.Collapsed;
 
@@ -108,7 +108,7 @@ namespace Xamarin.Forms.Platform.UWP
 					if (_split != null)
 						width -= _split.OpenPaneLength;
 					else if (_detailPresenter != null)
-						width -= _masterPresenter.ActualWidth;
+						width -= _flyoutPresenter.ActualWidth;
 				}
 
 				return new Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
@@ -151,13 +151,13 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(IsPaneOpenProperty, value); }
 		}
 
-		public FrameworkElement Master
+		public FrameworkElement Flyout
 		{
-			get { return (FrameworkElement)GetValue(MasterProperty); }
-			set { SetValue(MasterProperty, value); }
+			get { return (FrameworkElement)GetValue(FlyoutProperty); }
+			set { SetValue(FlyoutProperty, value); }
 		}
 
-		public Windows.Foundation.Size MasterSize
+		public Windows.Foundation.Size FlyoutSize
 		{
 			get
 			{
@@ -174,29 +174,29 @@ namespace Xamarin.Forms.Platform.UWP
 
 				if (_split != null)
 					width = _split.OpenPaneLength;
-				else if (_masterPresenter != null)
-					width = _masterPresenter.ActualWidth;
+				else if (_flyoutPresenter != null)
+					width = _flyoutPresenter.ActualWidth;
 
 				return new Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
 			}
 		}
 
-		public string MasterTitle
+		public string FlyoutTitle
 		{
-			get { return (string)GetValue(MasterTitleProperty); }
-			set { SetValue(MasterTitleProperty, value); }
+			get { return (string)GetValue(FlyoutTitleProperty); }
+			set { SetValue(FlyoutTitleProperty, value); }
 		}
 
-		public Visibility MasterTitleVisibility
+		public Visibility FlyoutTitleVisibility
 		{
-			get { return (Visibility)GetValue(MasterTitleVisibilityProperty); }
-			set { SetValue(MasterTitleVisibilityProperty, value); }
+			get { return (Visibility)GetValue(FlyoutTitleVisibilityProperty); }
+			set { SetValue(FlyoutTitleVisibilityProperty, value); }
 		}
 
-		public Visibility MasterToolbarVisibility
+		public Visibility FlyoutToolbarVisibility
 		{
-			get { return (Visibility)GetValue(MasterToolbarVisibilityProperty); }
-			set { SetValue(MasterToolbarVisibilityProperty, value); }
+			get { return (Visibility)GetValue(FlyoutToolbarVisibilityProperty); }
+			set { SetValue(FlyoutToolbarVisibilityProperty, value); }
 		}
 
 		public bool ShouldShowSplitMode
@@ -291,7 +291,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (contentToggle != null)
 				contentToggle.Click += OnToggleClicked;
 
-			_masterPresenter = GetTemplateChild("MasterPresenter") as FrameworkElement;
+			_flyoutPresenter = GetTemplateChild(FlyoutPresenterTemplateName) as FrameworkElement;
 			_detailPresenter = GetTemplateChild("DetailPresenter") as FrameworkElement;
 			_titleViewPresenter = GetTemplateChild("TitleViewPresenter") as FrameworkElement;
 
@@ -309,22 +309,22 @@ namespace Xamarin.Forms.Platform.UWP
 
 		static void OnShouldShowSplitModeChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
 		{
-			((MasterDetailControl)dependencyObject).UpdateMode();
+			((FlyoutPageControl)dependencyObject).UpdateMode();
 		}
 
 		static void CollapseStyleChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
-			((MasterDetailControl)dependencyObject).UpdateMode();
+			((FlyoutPageControl)dependencyObject).UpdateMode();
 		}
 
 		static void CollapsedPaneWidthChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
 		{
-			((MasterDetailControl)dependencyObject).UpdateMode();
+			((FlyoutPageControl)dependencyObject).UpdateMode();
 		}
 
 		static void OnTitleViewPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
 		{
-			((MasterDetailControl)dependencyObject)._titleViewManager?.OnTitleViewPropertyChanged();
+			((FlyoutPageControl)dependencyObject)._titleViewManager?.OnTitleViewPropertyChanged();
 		}
 
 		void OnToggleClicked(object sender, RoutedEventArgs args)
@@ -349,7 +349,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				// If we've determined that the pane will always be open, then there's no
 				// reason to display the show/hide pane button in the master
-				MasterToolbarVisibility = Visibility.Collapsed;
+				FlyoutToolbarVisibility = Visibility.Collapsed;
 			}
 
 			// If we're in compact mode or the pane is always open,
@@ -386,4 +386,37 @@ namespace Xamarin.Forms.Platform.UWP
         }
 
     }
+
+	public class MasterDetailControl : FlyoutPageControl
+	{
+		public FrameworkElement Master
+		{
+			get => Flyout;
+			set => Flyout = value;
+		}
+
+		public string MasterTitle
+		{
+			get => FlyoutTitle;
+			set => FlyoutTitle = value;
+		}
+
+		public Visibility MasterTitleVisibility
+		{
+			get => FlyoutTitleVisibility;
+			set => FlyoutTitleVisibility = value;
+		}
+
+		public Visibility MasterToolbarVisibility
+		{
+			get => FlyoutToolbarVisibility;
+			set => FlyoutToolbarVisibility = value;
+		}
+
+		public Windows.Foundation.Size MasterSize => FlyoutSize;
+
+		private protected override string FlyoutPresenterTemplateName => "MasterPresenter";
+
+	}
+
 }

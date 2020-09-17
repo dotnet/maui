@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 47923, "Vectors don\'t work in Images, and work badly in Buttons", PlatformAffected.Android)]
-	public class Bugzilla47923 : TestNavigationPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla47923 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

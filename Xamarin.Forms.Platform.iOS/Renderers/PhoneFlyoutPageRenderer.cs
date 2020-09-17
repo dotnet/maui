@@ -8,7 +8,7 @@ using PointF = CoreGraphics.CGPoint;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class PhoneMasterDetailRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider
+	public class PhoneFlyoutPageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider
 	{
 		UIView _clickOffView;
 		UIViewController _detailController;
@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _disposed;
 		EventTracker _events;
 
-		UIViewController _masterController;
+		UIViewController _flyoutController;
 
 		UIPanGestureRecognizer _panGesture;
 
@@ -30,11 +30,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 
 		[Preserve(Conditional = true)]
-		public PhoneMasterDetailRenderer()
+		public PhoneFlyoutPageRenderer()
 		{
 		}
 
-		MasterDetailPage MasterDetailPage => Element as MasterDetailPage;
+		FlyoutPage FlyoutPage => Element as FlyoutPage;
 
 		bool Presented
 		{
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				ToggleAccessibilityElementsHidden();
 
-				((IElementController)Element).SetValueFromRenderer(Xamarin.Forms.MasterDetailPage.IsPresentedProperty, value);
+				((IElementController)Element).SetValueFromRenderer(Xamarin.Forms.FlyoutPage.IsPresentedProperty, value);
 			}
 		}
 
@@ -77,13 +77,13 @@ namespace Xamarin.Forms.Platform.iOS
 			Element = element;
 			Element.SizeChanged += PageOnSizeChanged;
 
-			_masterController = new ChildViewController();
+			_flyoutController = new ChildViewController();
 			_detailController = new ChildViewController();
 
 			_clickOffView = new UIView();
 			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToUIColor();
 
-			Presented = ((MasterDetailPage)Element).IsPresented;
+			Presented = ((FlyoutPage)Element).IsPresented;
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_events = new EventTracker(this);
 			_events.LoadEvents(View);
 
-			((MasterDetailPage)Element).PropertyChanged += HandlePropertyChanged;
+			((FlyoutPage)Element).PropertyChanged += HandlePropertyChanged;
 
 			_tapGesture = new UITapGestureRecognizer(() =>
 			{
@@ -140,18 +140,18 @@ namespace Xamarin.Forms.Platform.iOS
 			_clickOffView.AddGestureRecognizer(_tapGesture);
 
 			PackContainers();
-			UpdateMasterDetailContainers();
+			UpdateFlyoutPageContainers();
 
 			UpdateBackground();
 
 			UpdatePanGesture();
-			UpdateApplyShadow(((MasterDetailPage)Element).OnThisPlatform().GetApplyShadow());
+			UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
 
 		}
 
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
-			if (!MasterDetailPage.ShouldShowSplitMode && _presented)
+			if (!FlyoutPage.ShouldShowSplitMode && _presented)
 				Presented = false;
 
 			base.WillRotate(toInterfaceOrientation, duration);
@@ -217,14 +217,14 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void EmptyContainers()
 		{
-			foreach (var child in _detailController.View.Subviews.Concat(_masterController.View.Subviews))
+			foreach (var child in _detailController.View.Subviews.Concat(_flyoutController.View.Subviews))
 				child.RemoveFromSuperview();
 
-			foreach (var vc in _detailController.ChildViewControllers.Concat(_masterController.ChildViewControllers))
+			foreach (var vc in _detailController.ChildViewControllers.Concat(_flyoutController.ChildViewControllers))
 				vc.RemoveFromParentViewController();
 		}
 
-		void HandleMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
 				UpdateLeftBarButton();
@@ -232,27 +232,27 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == "Master" || e.PropertyName == "Detail")
-				UpdateMasterDetailContainers();
-			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsPresentedProperty.PropertyName)
-				Presented = ((MasterDetailPage)Element).IsPresented;
-			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsGestureEnabledProperty.PropertyName)
+			if (e.PropertyName == "Flyout" || e.PropertyName == "Detail")
+				UpdateFlyoutPageContainers();
+			else if (e.PropertyName == Xamarin.Forms.FlyoutPage.IsPresentedProperty.PropertyName)
+				Presented = ((FlyoutPage)Element).IsPresented;
+			else if (e.PropertyName == Xamarin.Forms.FlyoutPage.IsGestureEnabledProperty.PropertyName)
 				UpdatePanGesture();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 				UpdateBackground();
 			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
 				UpdateBackground();
-			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.MasterDetailPage.ApplyShadowProperty.PropertyName)
-				UpdateApplyShadow(((MasterDetailPage)Element).OnThisPlatform().GetApplyShadow());
+			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.FlyoutPage.ApplyShadowProperty.PropertyName)
+				UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
 		}
 
 		void LayoutChildren(bool animated)
 		{
 			var frame = Element.Bounds.ToRectangleF();
-			var masterFrame = frame;
+			var flyoutFrame = frame;
 			nfloat opacity = 1;
-			masterFrame.Width = (int)(Math.Min(masterFrame.Width, masterFrame.Height) * 0.8);
-			var detailRenderer = Platform.GetRenderer(MasterDetailPage.Detail);
+			flyoutFrame.Width = (int)(Math.Min(flyoutFrame.Width, flyoutFrame.Height) * 0.8);
+			var detailRenderer = Platform.GetRenderer(FlyoutPage.Detail);
 			if (detailRenderer == null)
 				return;
 			var detailView = detailRenderer.ViewController.View;
@@ -260,15 +260,15 @@ namespace Xamarin.Forms.Platform.iOS
 			var isRTL = (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;
 			if (isRTL)
 			{
-				masterFrame.X = (int)(masterFrame.Width * .25);
+				flyoutFrame.X = (int)(flyoutFrame.Width * .25);
 			}
 
-			_masterController.View.Frame = masterFrame;
+			_flyoutController.View.Frame = flyoutFrame;
 
 			var target = frame;
 			if (Presented)
 			{
-				target.X += masterFrame.Width;
+				target.X += flyoutFrame.Width;
 				if (_applyShadow)
 					opacity = 0.5f;
 			}
@@ -294,8 +294,8 @@ namespace Xamarin.Forms.Platform.iOS
 				detailView.Layer.Opacity = (float)opacity;
 			}
 
-			MasterDetailPage.MasterBounds = new Rectangle(masterFrame.X, 0, masterFrame.Width, masterFrame.Height);
-			MasterDetailPage.DetailBounds = new Rectangle(0, 0, frame.Width, frame.Height);
+			FlyoutPage.FlyoutBounds = new Rectangle(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
+			FlyoutPage.DetailBounds = new Rectangle(0, 0, frame.Width, frame.Height);
 
 			if (Presented)
 				_clickOffView.Frame = _detailController.View.Frame;
@@ -304,10 +304,10 @@ namespace Xamarin.Forms.Platform.iOS
 		void PackContainers()
 		{
 			_detailController.View.BackgroundColor = new UIColor(1, 1, 1, 1);
-			View.AddSubview(_masterController.View);
+			View.AddSubview(_flyoutController.View);
 			View.AddSubview(_detailController.View);
 
-			AddChildViewController(_masterController);
+			AddChildViewController(_flyoutController);
 			AddChildViewController(_detailController);
 		}
 
@@ -344,26 +344,26 @@ namespace Xamarin.Forms.Platform.iOS
 			});
 		}
 
-		void UpdateMasterDetailContainers()
+		void UpdateFlyoutPageContainers()
 		{
-			((MasterDetailPage)Element).Master.PropertyChanged -= HandleMasterPropertyChanged;
+			((FlyoutPage)Element).Flyout.PropertyChanged -= HandleFlyoutPropertyChanged;
 
 			EmptyContainers();
 
-			if (Platform.GetRenderer(((MasterDetailPage)Element).Master) == null)
-				Platform.SetRenderer(((MasterDetailPage)Element).Master, Platform.CreateRenderer(((MasterDetailPage)Element).Master));
-			if (Platform.GetRenderer(((MasterDetailPage)Element).Detail) == null)
-				Platform.SetRenderer(((MasterDetailPage)Element).Detail, Platform.CreateRenderer(((MasterDetailPage)Element).Detail));
+			if (Platform.GetRenderer(((FlyoutPage)Element).Flyout) == null)
+				Platform.SetRenderer(((FlyoutPage)Element).Flyout, Platform.CreateRenderer(((FlyoutPage)Element).Flyout));
+			if (Platform.GetRenderer(((FlyoutPage)Element).Detail) == null)
+				Platform.SetRenderer(((FlyoutPage)Element).Detail, Platform.CreateRenderer(((FlyoutPage)Element).Detail));
 
-			var masterRenderer = Platform.GetRenderer(((MasterDetailPage)Element).Master);
-			var detailRenderer = Platform.GetRenderer(((MasterDetailPage)Element).Detail);
+			var flyoutRenderer = Platform.GetRenderer(((FlyoutPage)Element).Flyout);
+			var detailRenderer = Platform.GetRenderer(((FlyoutPage)Element).Detail);
 
-			((MasterDetailPage)Element).Master.PropertyChanged += HandleMasterPropertyChanged;
+			((FlyoutPage)Element).Flyout.PropertyChanged += HandleFlyoutPropertyChanged;
 
-			UIView masterView = masterRenderer.NativeView;
+			UIView flyoutView = flyoutRenderer.NativeView;
 
-			_masterController.View.AddSubview(masterView);
-			_masterController.AddChildViewController(masterRenderer.ViewController);
+			_flyoutController.View.AddSubview(flyoutView);
+			_flyoutController.AddChildViewController(flyoutRenderer.ViewController);
 
 			UIView detailView = detailRenderer.NativeView;
 
@@ -381,15 +381,15 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateLeftBarButton()
 		{
-			var masterDetailPage = Element as MasterDetailPage;
-			if (!(masterDetailPage?.Detail is NavigationPage))
+			var FlyoutPage = Element as FlyoutPage;
+			if (!(FlyoutPage?.Detail is NavigationPage))
 				return;
 
-			var detailRenderer = Platform.GetRenderer(masterDetailPage.Detail) as UINavigationController;
+			var detailRenderer = Platform.GetRenderer(FlyoutPage.Detail) as UINavigationController;
 
 			UIViewController firstPage = detailRenderer?.ViewControllers.FirstOrDefault();
 			if (firstPage != null)
-				NavigationRenderer.SetMasterLeftBarButton(firstPage, masterDetailPage);
+				NavigationRenderer.SetFlyoutLeftBarButton(firstPage, FlyoutPage);
 		}
 
 		void UpdateApplyShadow(bool value)
@@ -399,8 +399,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
-			if (((MasterDetailPage)Element).Detail != null)
-				return (UIViewController)Platform.GetRenderer(((MasterDetailPage)Element).Detail);
+			if (((FlyoutPage)Element).Detail != null)
+				return (UIViewController)Platform.GetRenderer(((FlyoutPage)Element).Detail);
 			else
 				return base.ChildViewControllerForStatusBarHidden();
 		}
@@ -409,8 +409,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			get
 			{
-				if (((MasterDetailPage)Element).Detail != null)
-					return (UIViewController)Platform.GetRenderer(((MasterDetailPage)Element).Detail);
+				if (((FlyoutPage)Element).Detail != null)
+					return (UIViewController)Platform.GetRenderer(((FlyoutPage)Element).Detail);
 				else
 					return base.ChildViewControllerForStatusBarHidden();
 			}
@@ -418,9 +418,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void ToggleAccessibilityElementsHidden()
 		{
-			var masterView = _masterController?.View;
-			if (masterView != null)
-				masterView.AccessibilityElementsHidden = !Presented;
+			var flyoutView = _flyoutController?.View;
+			if (flyoutView != null)
+				flyoutView.AccessibilityElementsHidden = !Presented;
 
 			var detailView = _detailController?.View;
 			if (detailView != null)
@@ -429,7 +429,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdatePanGesture()
 		{
-			var model = (MasterDetailPage)Element;
+			var model = (FlyoutPage)Element;
 			if (!model.IsGestureEnabled)
 			{
 				if (_panGesture != null)
@@ -469,14 +469,14 @@ namespace Xamarin.Forms.Platform.iOS
 						var detailView = _detailController.View;
 						var targetFrame = detailView.Frame;
 						if (Presented)
-							targetFrame.X = (nfloat)Math.Max(0, _masterController.View.Frame.Width + Math.Min(0, motion));
+							targetFrame.X = (nfloat)Math.Max(0, _flyoutController.View.Frame.Width + Math.Min(0, motion));
 						else
-							targetFrame.X = (nfloat)Math.Min(_masterController.View.Frame.Width, Math.Max(0, motion));
+							targetFrame.X = (nfloat)Math.Min(_flyoutController.View.Frame.Width, Math.Max(0, motion));
 
 						targetFrame.X = targetFrame.X * directionModifier;
 						if (_applyShadow)
 						{
-							var openProgress = targetFrame.X / _masterController.View.Frame.Width;
+							var openProgress = targetFrame.X / _flyoutController.View.Frame.Width;
 							ApplyDetailShadow((nfloat)openProgress);
 						}
 
@@ -484,17 +484,17 @@ namespace Xamarin.Forms.Platform.iOS
 						break;
 					case UIGestureRecognizerState.Ended:
 						var detailFrame = _detailController.View.Frame;
-						var masterFrame = _masterController.View.Frame;
+						var flyoutFrame = _flyoutController.View.Frame;
 						if (Presented)
 						{
-							if (detailFrame.X * directionModifier < masterFrame.Width * .75)
+							if (detailFrame.X * directionModifier < flyoutFrame.Width * .75)
 								Presented = false;
 							else
 								LayoutChildren(true);
 						}
 						else
 						{
-							if (detailFrame.X * directionModifier > masterFrame.Width * .25)
+							if (detailFrame.X * directionModifier > flyoutFrame.Width * .25)
 								Presented = true;
 							else
 								LayoutChildren(true);
@@ -535,9 +535,15 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void ApplyDetailShadow(nfloat percent)
 		{
-			var detailView = Platform.GetRenderer(MasterDetailPage.Detail).ViewController.View;
+			var detailView = Platform.GetRenderer(FlyoutPage.Detail).ViewController.View;
 			var opacity = (nfloat)(0.5 + (0.5 * (1 - percent)));
 			detailView.Layer.Opacity = (float)opacity;
 		}
+	}
+
+
+	public class PhoneMasterDetailRenderer : PhoneFlyoutPageRenderer
+	{
+
 	}
 }

@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.GTK
 		private NavigationPage _navigation;
 		private string _backButton;
 
-		private MasterDetailPage _parentMasterDetailPage;
+		private FlyoutPage _parentFlyoutPage;
 
 		public GtkToolbarTracker()
 		{
@@ -293,11 +293,11 @@ namespace Xamarin.Forms.Platform.GTK
 					await NavigateBackFromBackButton();
 				};
 			}
-			else if (_parentMasterDetailPage != null && _parentMasterDetailPage.ShouldShowToolbarButton())
+			else if (_parentFlyoutPage != null && _parentFlyoutPage.ShouldShowToolbarButton())
 			{
 				ToolButton hamburguerButton = new ToolButton(null, string.Empty);
 
-				var hamburgerPixBuf = Controls.MasterDetailPage.HamburgerPixBuf;
+				var hamburgerPixBuf = Controls.FlyoutPage.HamburgerPixBuf;
 				if (hamburgerPixBuf != null)
 				{
 					var image = new Gtk.Image(hamburgerPixBuf);
@@ -310,7 +310,7 @@ namespace Xamarin.Forms.Platform.GTK
 
 				hamburguerButton.Clicked += (sender, args) =>
 				{
-					_parentMasterDetailPage.IsPresented = !_parentMasterDetailPage.IsPresented;
+					_parentFlyoutPage.IsPresented = !_parentFlyoutPage.IsPresented;
 				};
 			}
 		}
@@ -331,14 +331,14 @@ namespace Xamarin.Forms.Platform.GTK
 				await popAsyncInner;
 		}
 
-		private void FindParentMasterDetail()
+		private void FindParentFlyoutPage()
 		{
-			var masterDetailPage = _navigation.GetParentsPath()
-										  .OfType<MasterDetailPage>()
+			var FlyoutPage = _navigation.GetParentsPath()
+										  .OfType<FlyoutPage>()
 										  .Where(md => md.Detail == _navigation)
 										  .FirstOrDefault();
 
-			_parentMasterDetailPage = masterDetailPage;
+			_parentFlyoutPage = FlyoutPage;
 		}
 
 		internal void UpdateBackButton(string backButton)
@@ -377,7 +377,7 @@ namespace Xamarin.Forms.Platform.GTK
 					_toolbarTitleSection.PackEnd(_toolbarTitle, true, true, 0);
 				}
 
-				FindParentMasterDetail();
+				FindParentFlyoutPage();
 
 				UpdateNavigationItems();
 				UpdateTitle();

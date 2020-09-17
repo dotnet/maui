@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 	// this doesn't fail on Uwp but it leaves a browser window open and breaks later tests
 	[Category(UITestCategories.UwpIgnore)]
 #endif
-	public partial class Issue2357 : MasterDetailPage
+	public partial class Issue2357 : FlyoutPage
 	{
 		public Issue2357 ()
 		{

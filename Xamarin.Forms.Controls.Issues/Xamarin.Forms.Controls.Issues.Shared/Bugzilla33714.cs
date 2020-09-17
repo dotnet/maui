@@ -8,12 +8,12 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
-	[Issue(IssueTracker.Bugzilla, 33714, "[WP] Navigating Back Within MasterDetailPage.Detail Causes Crash", NavigationBehavior.PushModalAsync)]
-	public class Bugzilla33714 : MasterDetailPage
+	[Issue(IssueTracker.Bugzilla, 33714, "[WP] Navigating Back Within FlyoutPage.Detail Causes Crash", NavigationBehavior.PushModalAsync)]
+	public class Bugzilla33714 : FlyoutPage
 	{
 		public Bugzilla33714()
 		{
-			Master = new MasterPage(this);
+			Flyout = new MasterPage(this);
 			Detail = new NavigationPage(new ContentPage
 			{
 				Title = "Home",
@@ -58,10 +58,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public class MasterPage : ContentPage
 		{
-			readonly MasterDetailPage _masterPage;
+			readonly FlyoutPage _masterPage;
 			List<string> _items;
 
-			public MasterPage(MasterDetailPage masterPage)
+			public MasterPage(FlyoutPage masterPage)
 			{
 				_masterPage = masterPage;
 				Title = "Menu";

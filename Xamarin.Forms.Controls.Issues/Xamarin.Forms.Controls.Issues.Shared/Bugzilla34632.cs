@@ -15,21 +15,21 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 34632, "Can't change IsPresented when setting SplitOnLandscape ")]
-	public class Bugzilla34632 : TestMasterDetailPage
+	public class Bugzilla34632 : TestFlyoutPage
 	{
 		protected override void Init()
 		{
 			if (Device.RuntimePlatform == Device.UWP)
-				MasterBehavior = MasterBehavior.Split;
+				FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
 			else
-				MasterBehavior = MasterBehavior.SplitOnLandscape;
+				FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnLandscape;
 
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
 				Title = "Main Page",
 				Content = new Button
 				{
-					Text = "Master",
+					Text = "Flyout",
 					AutomationId = "btnMaster",
 					Command = new Command(() =>
 					{

@@ -5,7 +5,7 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Controls
 {
 	[Preserve(AllMembers = true)]
-	public class MemoryLeakGallery : MasterDetailPage
+	public class MemoryLeakGallery : FlyoutPage
 	{
 		List<WeakReference> wref = new List<WeakReference>();
 
@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Controls
 				})
 			};
 
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
 				Title = "menu",
 				Content = new ScrollView

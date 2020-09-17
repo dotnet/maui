@@ -16,13 +16,13 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5376, "Call unfocus entry crashes app", PlatformAffected.Android)]
-	public class Issue5376 : TestMasterDetailPage
+	public class Issue5376 : TestFlyoutPage
 	{
 		protected async override void Init()
 		{
-			MasterBehavior = MasterBehavior.Popover;
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
 			IsPresented = false;
-			Master = new ContentPage { Title = "test 5376" };
+			Flyout = new ContentPage { Title = "test 5376" };
 			var entryPage = new EntryPage() { Title = $"Test page" };
 			var testPage = new NavigationPage(entryPage);
 			Detail = testPage;

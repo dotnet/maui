@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 32801, "Memory Leak in TabbedPage + NavigationPage")]
-	public class Bugzilla32801 : TestTabbedPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla32801 : TestTabbedPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

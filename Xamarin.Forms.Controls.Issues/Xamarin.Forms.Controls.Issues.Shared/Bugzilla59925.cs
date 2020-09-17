@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 59925, "Font size does not change vertical height of Entry on iOS", PlatformAffected.Default)]
-	public class Bugzilla59925 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla59925 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		const int Delta = 1;
 		Entry _entry;

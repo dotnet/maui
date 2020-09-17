@@ -10,11 +10,11 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Issue(IssueTracker.Bugzilla, 32776, "MasterDetail page - page title not showing for Windows Phone 8.1 (any orientation) or in Windows 8.1 (portrait orientation).", PlatformAffected.WinRT, NavigationBehavior.PushModalAsync)]
 	public class Bugzilla32776
-		: MasterDetailPage
+		: FlyoutPage
 	{
 		public Bugzilla32776()
 		{
-			Master = new ContentPage { Title = "Content page" };
+			Flyout = new ContentPage { Title = "Content page" };
 			Detail = new NavigationPage(new ContentPage
 			{
 				Title = "Test"

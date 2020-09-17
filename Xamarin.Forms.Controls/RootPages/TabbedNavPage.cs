@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Xamarin.Forms.Controls
 {
 	// TabbedPage -> NavigationPage
-	public class TabbedNavPage : MasterDetailPage 
+	public class TabbedNavPage : FlyoutPage 
 	{
 		public TabbedNavPage () 
 		{

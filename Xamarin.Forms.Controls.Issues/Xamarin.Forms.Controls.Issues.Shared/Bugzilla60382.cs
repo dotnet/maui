@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 60123, "Rui's issue", PlatformAffected.Default)]
-	public class Bugzilla60123 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla60123 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

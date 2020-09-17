@@ -9,13 +9,13 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 54036, "[UWP] MasterPage - Bad Rendering", PlatformAffected.UWP)]
-	public class Bugzilla54036 : TestMasterDetailPage
+	public class Bugzilla54036 : TestFlyoutPage
 	{
 		class MasterPage : ContentPage
 		{
 			public MasterPage()
 			{
-				Title = "Master";
+				Title = "Flyout";
 				var grid = new Grid
 				{
 					RowDefinitions =
@@ -27,8 +27,8 @@ namespace Xamarin.Forms.Controls.Issues
 					}
 				};
 
-				var label1 = new Label { Text = "On UWP, the very last Label will be visible until the Master is hidden and presented again." };
-				var label2 = new Label { Text = "If you do not see a Label that says Success at the bottom of the Master" };
+				var label1 = new Label { Text = "On UWP, the very last Label will be visible until the Flyout is hidden and presented again." };
+				var label2 = new Label { Text = "If you do not see a Label that says Success at the bottom of the Flyout" };
 				var label3 = new Label { Text = "then this test has failed." };
 				var label4 = new Label { Text = "Success" };
 
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			Master = new MasterPage();
+			Flyout = new MasterPage();
 			Detail = new ContentPage();
 
 			IsPresented = true;

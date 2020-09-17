@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1760, "Content set after an await is not visible", PlatformAffected.Android)]
-	public class Issue1760 : TestMasterDetailPage
+	public class Issue1760 : TestFlyoutPage
 	{
 		public const string Before = "Before";
 		public const string After = "After";
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			Master = new _1760Master(true);
+			Flyout = new _1760Master(true);
 			Detail = new _1760TestPage(true);
 			IsPresented = true;
 		}
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			void OnMenuClicked(object sender, SelectedItemChangedEventArgs e)
 			{
-				var mainPage = (MasterDetailPage)Parent;
+				var mainPage = (FlyoutPage)Parent;
 				mainPage.Detail = new _1760TestPage(_scrollEnabled);
 				mainPage.IsPresented = false;
 			}

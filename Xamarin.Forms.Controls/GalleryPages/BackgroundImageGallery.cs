@@ -74,8 +74,8 @@ namespace Xamarin.Forms.Controls
 
 			var master = new Button { Text = "MasterDetail" };
 			master.Clicked += async (sender, args) => {
-				await Navigation.PushModalAsync (new MasterDetailPage {
-					Master = new ContentPage { Title = "Master" },
+				await Navigation.PushModalAsync (new FlyoutPage {
+					Flyout = new ContentPage { Title = "Flyout" },
 					Detail = new ContentPage(),
 					BackgroundImageSource = "crimson.jpg",
 				});

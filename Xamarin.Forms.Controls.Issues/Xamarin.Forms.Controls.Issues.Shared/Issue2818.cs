@@ -14,15 +14,15 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2818, "Right-to-Left MasterDetail in Xamarin.Forms Hamburger icon issue", PlatformAffected.Android)]
-	public class Issue2818 : TestMasterDetailPage
+	public class Issue2818 : TestFlyoutPage
 	{
 
 		protected override void Init()
 		{
 			FlowDirection = FlowDirection.RightToLeft;
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
-				Title = "Master",
+				Title = "Flyout",
 				BackgroundColor = Color.SkyBlue,
 				IconImageSource = "menuIcon",
 				Content = new StackLayout()
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 					Children = {
 						new Label
 						{
-							Text = "The page must be with RightToLeft FlowDirection. Hamburger icon in main page must be going to right side. There should be visible text inside the Master View"
+							Text = "The page must be with RightToLeft FlowDirection. Hamburger icon in main page must be going to right side. There should be visible text inside the Flyout View"
 						},
 						new Button
 						{
@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Controls.Issues
 						},
 						new Button
 						{
-							Text = "Open Master View",
+							Text = "Open Flyout View",
 							Command = new Command(() => IsPresented = true),
 							AutomationId = "OpenMasterView"
 						},
@@ -109,8 +109,8 @@ namespace Xamarin.Forms.Controls.Issues
 				return null;
 			});
 
-			Assert.IsNotNull(results, "Master View Did not change flow direction correctly");
-			Assert.AreEqual(1, results.Length, "Master View Did not change flow direction correctly");
+			Assert.IsNotNull(results, "Flyout View Did not change flow direction correctly");
+			Assert.AreEqual(1, results.Length, "Flyout View Did not change flow direction correctly");
 
 		}
 

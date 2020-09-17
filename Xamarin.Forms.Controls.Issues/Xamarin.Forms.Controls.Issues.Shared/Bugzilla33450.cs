@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 33450, "[iOS] Cell with ContextAction has a different layout")]
-	public class Bugzilla33450 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla33450 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

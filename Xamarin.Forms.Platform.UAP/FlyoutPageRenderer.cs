@@ -12,7 +12,7 @@ using WImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class MasterDetailPageRenderer : IVisualElementRenderer, IToolbarProvider, ITitleProvider, ITitleIconProvider, ITitleViewProvider, IToolBarForegroundBinder
+	public class FlyoutPageRenderer : IVisualElementRenderer, IToolbarProvider, ITitleProvider, ITitleIconProvider, ITitleViewProvider, IToolBarForegroundBinder
 	{
 		Page _master;
 		Page _detail;
@@ -25,9 +25,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 		VisualElementTracker<Page, FrameworkElement> _tracker;
 
-		public MasterDetailControl Control { get; private set; }
+		public FlyoutPageControl Control { get; private set; }
 
-		public MasterDetailPage Element { get; private set; }
+		public FlyoutPage Element { get; private set; }
 
 		protected VisualElementTracker<Page, FrameworkElement> Tracker
 		{
@@ -142,14 +142,14 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public void SetElement(VisualElement element)
 		{
-			MasterDetailPage old = Element;
-			Element = (MasterDetailPage)element;
+			FlyoutPage old = Element;
+			Element = (FlyoutPage)element;
 
 			if (element != old)
-				OnElementChanged(new ElementChangedEventArgs<MasterDetailPage>(old, Element));
+				OnElementChanged(new ElementChangedEventArgs<FlyoutPage>(old, Element));
 		}
 
-		protected virtual void OnElementChanged(ElementChangedEventArgs<MasterDetailPage> e)
+		protected virtual void OnElementChanged(ElementChangedEventArgs<FlyoutPage> e)
 		{
 			if (e.OldElement != null)
 				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
@@ -158,12 +158,12 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					Control = new MasterDetailControl();
+					Control = new FlyoutPageControl();
 					Control.Loaded += OnControlLoaded;
 					Control.Unloaded += OnControlUnloaded;
 					Control.SizeChanged += OnNativeSizeChanged;
 
-					Control.RegisterPropertyChangedCallback(MasterDetailControl.IsPaneOpenProperty, OnIsPaneOpenChanged);
+					Control.RegisterPropertyChangedCallback(FlyoutPageControl.IsPaneOpenProperty, OnIsPaneOpenChanged);
 
 					Tracker = new VisualElementTracker<Page, FrameworkElement> { Container = Control, Element = Element };
 				}
@@ -190,13 +190,13 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == MasterDetailPage.IsPresentedProperty.PropertyName || e.PropertyName == MasterDetailPage.MasterBehaviorProperty.PropertyName)
+			if (e.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName || e.PropertyName == FlyoutPage.FlyoutLayoutBehaviorProperty.PropertyName)
 				UpdateIsPresented();
 			else if (e.PropertyName == "Master")
 				UpdateMaster();
 			else if (e.PropertyName == "Detail")
 				UpdateDetail();
-			else if (e.PropertyName == nameof(MasterDetailControl.ShouldShowSplitMode)
+			else if (e.PropertyName == nameof(FlyoutPageControl.ShouldShowSplitMode)
 					 || e.PropertyName == Specifics.CollapseStyleProperty.PropertyName
 					 || e.PropertyName == Specifics.CollapsedPaneWidthProperty.PropertyName)
 				UpdateMode();
@@ -282,14 +282,14 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnIsPaneOpenChanged(DependencyObject sender, DependencyProperty dp)
 		{
-			((IElementController)Element).SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, Control.IsPaneOpen);
+			((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, Control.IsPaneOpen);
 			UpdateBounds();
 		}
 
 		void OnMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.TitleProperty.PropertyName)
-				Control.MasterTitle = _master?.Title;
+				Control.FlyoutTitle = _master?.Title;
 		}
 
 		void OnNativeSizeChanged(object sender, SizeChangedEventArgs e)
@@ -299,10 +299,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateBounds()
 		{
-			Windows.Foundation.Size masterSize = Control.MasterSize;
+			Windows.Foundation.Size masterSize = Control.FlyoutSize;
 			Windows.Foundation.Size detailSize = Control.DetailSize;
 
-			Element.MasterBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
+			Element.FlyoutBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
 			Element.DetailBounds = new Rectangle(0, 0, detailSize.Width, detailSize.Height);
 		}
 
@@ -335,7 +335,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 
 			Control.DetailTitle = GetCurrentPage().Title ?? Element?.Title;
-			(this as ITitleProvider).ShowTitle = !string.IsNullOrEmpty(Control.DetailTitle) || Element.MasterBehavior == MasterBehavior.Popover;
+			(this as ITitleProvider).ShowTitle = !string.IsNullOrEmpty(Control.DetailTitle) || Element.FlyoutLayoutBehavior == FlyoutLayoutBehavior.Popover;
 		}
 
 		async void UpdateDetailTitleIcon()
@@ -365,7 +365,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			// Ignore the IsPresented value being set to false for Split mode on desktop and allow the master
 			// view to be made initially visible
-			if (Device.Idiom == TargetIdiom.Desktop && Control.IsPaneOpen && Element.MasterBehavior != MasterBehavior.Popover)
+			if (Device.Idiom == TargetIdiom.Desktop && Control.IsPaneOpen && Element.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Popover)
 				return;
 
 			Control.IsPaneOpen = Element.IsPresented;
@@ -376,7 +376,7 @@ namespace Xamarin.Forms.Platform.UWP
 			ClearMaster();
 
 			FrameworkElement element = null;
-			_master = Element.Master;
+			_master = Element.Flyout;
 			if (_master != null)
 			{
 				_master.PropertyChanged += OnMasterPropertyChanged;
@@ -385,8 +385,8 @@ namespace Xamarin.Forms.Platform.UWP
 				element = renderer.ContainerElement;
 			}
 
-			Control.Master = element;
-			Control.MasterTitle = _master?.Title;
+			Control.Flyout = element;
+			Control.FlyoutTitle = _master?.Title;
 
 			UpdateToolbarVisibility();
 		}
@@ -443,5 +443,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 			return _detail;
 		}
+	}
+
+	public class MasterDetailPageRenderer : FlyoutPageRenderer
+	{
+
 	}
 }

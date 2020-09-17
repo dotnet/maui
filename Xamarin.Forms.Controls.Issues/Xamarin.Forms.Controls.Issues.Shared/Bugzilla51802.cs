@@ -14,13 +14,13 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 51802, "[UWP] Detail Page Has Navigation Bar Even When Not Inside a NavigationPage", PlatformAffected.WinRT)]
-	public class Bugzilla51802 : TestMasterDetailPage
+	public class Bugzilla51802 : TestFlyoutPage
 	{
 		protected override void Init()
 		{
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
-				Title = "Master",
+				Title = "Flyout",
 				BackgroundColor = Color.Red
 			};
 

@@ -23,12 +23,12 @@ namespace Xamarin.Forms.Controls.Issues
 
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 973, "ActionBar doesn't immediately update when nested TabbedPage is changed", PlatformAffected.Android)]
-	public class Issue973 : TestMasterDetailPage
+	public class Issue973 : TestFlyoutPage
 	{
 		protected override void Init ()
 		{
 			var cells = new [] {
-				new PageNameObject ("Close Master"),
+				new PageNameObject ("Close Flyout"),
 				new PageNameObject ("Page 1"),
 				new PageNameObject ("Page 2"),
 				new PageNameObject ("Page 3"),
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 				var cellName = ((PageNameObject)e.Item).PageName;
 
-				if (cellName == "Close Master") {
+				if (cellName == "Close Flyout") {
 					IsPresented = false;
 				} else {
 					var d = new CustomDetailPage (cellName) {
@@ -70,11 +70,11 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var master = new ContentPage {
 				Padding = new Thickness (0, 20, 0, 0),
-				Title = "Master",
+				Title = "Flyout",
 				Content = listView
 			};
 
-			Master = master;
+			Flyout = master;
 
 			var detail = new CustomDetailPage ("Initial Page") {
 				Title = "Detail"
@@ -101,12 +101,12 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement (q => q.Marked ("Initial Page Right aligned"));
 			RunningApp.Screenshot ("Tab 2 showing");
 
-			RunningApp.Tap (q => q.Marked ("Present Master"));
+			RunningApp.Tap (q => q.Marked ("Present Flyout"));
 
 			RunningApp.Tap (q => q.Marked ("Page 4"));
 			RunningApp.Screenshot ("Change detail page");
 
-			RunningApp.Tap (q => q.Marked ("Close Master"));
+			RunningApp.Tap (q => q.Marked ("Close Flyout"));
 
 			RunningApp.WaitForElement (q => q.Marked ("Page 4 Left aligned"));
 			RunningApp.Screenshot ("Tab 1 Showing and tab 1 should be selected");
@@ -150,7 +150,7 @@ namespace Xamarin.Forms.Controls.Issues
 							Text = pageName + " Right aligned"
 						},
 						new Button {
-							Text = "Present Master",
+							Text = "Present Flyout",
 							Command = new Command (() => {
 								var handler = PresentMaster;
 								if (handler != null)

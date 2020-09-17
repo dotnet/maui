@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 30317, "https://bugzilla.xamarin.com/show_bug.cgi?id=30137")]
-	public class Bugzilla30317 : TestNavigationPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla30317 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		[Preserve(AllMembers = true)]
 		public class Bugzilla30317ListItem

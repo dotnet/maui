@@ -5,20 +5,30 @@ using WBrush = System.Windows.Media.Brush;
 
 namespace Xamarin.Forms.Platform.WPF.Controls
 {
-	public class FormsMasterDetailPage : FormsPage
+	public class FormsMasterDetailPage : FormsFlyoutPage
 	{
-		FormsContentControl lightMasterContentControl;
-		FormsContentControl lightDetailContentControl;
-
-		public static readonly DependencyProperty MasterPageProperty = DependencyProperty.Register("MasterPage", typeof(object), typeof(FormsMasterDetailPage));
-		public static readonly DependencyProperty DetailPageProperty = DependencyProperty.Register("DetailPage", typeof(object), typeof(FormsMasterDetailPage));
-		public static readonly DependencyProperty ContentLoaderProperty = DependencyProperty.Register("ContentLoader", typeof(IContentLoader), typeof(FormsMasterDetailPage), new PropertyMetadata(new DefaultContentLoader()));
-		public static readonly DependencyProperty IsPresentedProperty = DependencyProperty.Register("IsPresented", typeof(bool), typeof(FormsMasterDetailPage));
-
 		public object MasterPage
 		{
-			get { return (object)GetValue(MasterPageProperty); }
-			set { SetValue(MasterPageProperty, value); }
+			get => base.FlyoutPage;
+			set => base.FlyoutPage = value;
+		}
+
+	}
+
+	public class FormsFlyoutPage : FormsPage
+	{
+		FormsContentControl lightFlyoutContentControl;
+		FormsContentControl lightDetailContentControl;
+
+		public static readonly DependencyProperty FlyoutPageProperty = DependencyProperty.Register(nameof(FlyoutPage), typeof(object), typeof(FormsFlyoutPage));
+		public static readonly DependencyProperty DetailPageProperty = DependencyProperty.Register("DetailPage", typeof(object), typeof(FormsFlyoutPage));
+		public static readonly DependencyProperty ContentLoaderProperty = DependencyProperty.Register("ContentLoader", typeof(IContentLoader), typeof(FormsFlyoutPage), new PropertyMetadata(new DefaultContentLoader()));
+		public static readonly DependencyProperty IsPresentedProperty = DependencyProperty.Register("IsPresented", typeof(bool), typeof(FormsFlyoutPage));
+
+		public object FlyoutPage
+		{
+			get { return (object)GetValue(FlyoutPageProperty); }
+			set { SetValue(FlyoutPageProperty, value); }
 		}
 
 		public object DetailPage
@@ -39,15 +49,15 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			set { SetValue(ContentLoaderProperty, value); }
 		}
 
-		public FormsMasterDetailPage()
+		public FormsFlyoutPage()
 		{
-			this.DefaultStyleKey = typeof(FormsMasterDetailPage);
+			this.DefaultStyleKey = typeof(FormsFlyoutPage);
 		}
 
 		public override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
-			lightMasterContentControl = Template.FindName("PART_Master", this) as FormsContentControl;
+			lightFlyoutContentControl = Template.FindName("PART_Master", this) as FormsContentControl;
 			lightDetailContentControl = Template.FindName("PART_Detail_Content", this) as FormsContentControl;
 		}
 
@@ -83,9 +93,9 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			List<FrameworkElement> frameworkElements = new List<FrameworkElement>();
 			frameworkElements.AddRange(this.PrimaryTopBarCommands);
 
-			if (lightMasterContentControl != null && lightMasterContentControl.Content is FormsPage masterPage)
+			if (lightFlyoutContentControl != null && lightFlyoutContentControl.Content is FormsPage flyoutPage)
 			{
-				frameworkElements.AddRange(masterPage.GetPrimaryTopBarCommands());
+				frameworkElements.AddRange(flyoutPage.GetPrimaryTopBarCommands());
 			}
 
 			if (lightDetailContentControl != null && lightDetailContentControl.Content is FormsPage page)
@@ -101,9 +111,9 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			List<FrameworkElement> frameworkElements = new List<FrameworkElement>();
 			frameworkElements.AddRange(this.SecondaryTopBarCommands);
 
-			if (lightMasterContentControl != null && lightMasterContentControl.Content is FormsPage masterPage)
+			if (lightFlyoutContentControl != null && lightFlyoutContentControl.Content is FormsPage flyoutPage)
 			{
-				frameworkElements.AddRange(masterPage.GetSecondaryTopBarCommands());
+				frameworkElements.AddRange(flyoutPage.GetSecondaryTopBarCommands());
 			}
 
 			if (lightDetailContentControl != null && lightDetailContentControl.Content is FormsPage page)
@@ -119,9 +129,9 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			List<FrameworkElement> frameworkElements = new List<FrameworkElement>();
 			frameworkElements.AddRange(this.PrimaryBottomBarCommands);
 
-			if (lightMasterContentControl != null && lightMasterContentControl.Content is FormsPage masterPage)
+			if (lightFlyoutContentControl != null && lightFlyoutContentControl.Content is FormsPage flyoutPage)
 			{
-				frameworkElements.AddRange(masterPage.GetPrimaryBottomBarCommands());
+				frameworkElements.AddRange(flyoutPage.GetPrimaryBottomBarCommands());
 			}
 
 			if (lightDetailContentControl != null && lightDetailContentControl.Content is FormsPage page)
@@ -137,9 +147,9 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			List<FrameworkElement> frameworkElements = new List<FrameworkElement>();
 			frameworkElements.AddRange(this.SecondaryBottomBarCommands);
 
-			if (lightMasterContentControl != null && lightMasterContentControl.Content is FormsPage masterPage)
+			if (lightFlyoutContentControl != null && lightFlyoutContentControl.Content is FormsPage flyoutPage)
 			{
-				frameworkElements.AddRange(masterPage.GetSecondaryBottomBarCommands());
+				frameworkElements.AddRange(flyoutPage.GetSecondaryBottomBarCommands());
 			}
 
 			if (lightDetailContentControl != null && lightDetailContentControl.Content is FormsPage page)

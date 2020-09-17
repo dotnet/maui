@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41029, "Slider default hitbox is larger than the control")]
-	public class Bugzilla41029 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla41029 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

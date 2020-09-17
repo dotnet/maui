@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4891, "[Android] WebView Navigating Cancel property not working with custom scheme", PlatformAffected.Android)]
-	public class Issue4891 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue4891 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		Button _back;
 		WebView _myWebView;

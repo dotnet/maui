@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 10222, "[CollectionView] ObjectDisposedException if the page is closed during scrolling", PlatformAffected.iOS)]
-	public class Issue10222 : TestNavigationPage // or TestMasterDetailPage, etc ...
+	public class Issue10222 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

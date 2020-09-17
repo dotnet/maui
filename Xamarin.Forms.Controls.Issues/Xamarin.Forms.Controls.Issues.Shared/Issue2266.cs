@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(UITestCategories.Navigation)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 2266, "Setting a different Detail page from a MasterDetailPage after 2nd time on MainPage", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Github, 2266, "Setting a different Detail page from a FlyoutPage after 2nd time on MainPage", PlatformAffected.iOS)]
 	public class Issue2266 : TestContentPage
 	{
 		protected override void Init()
@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 
 	[Preserve(AllMembers = true)]
-	public class MasterDetailNavigation : MasterDetailPage
+	public class MasterDetailNavigation : FlyoutPage
 	{
 		List<NavigationPage> _pages;
 
@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 			menuList.ItemTemplate.SetBinding(TextCell.TextProperty, "Title");
 
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
 				BackgroundColor = Color.FromHex("363636"),
 				Title = "Menu",
@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					Children = {
 						new Label { Text = "Select a menu item" },
-						new Button {Command = new Command(() => this.IsPresented = true), AutomationId = "OpenMaster", Text = "Open Master"}
+						new Button {Command = new Command(() => this.IsPresented = true), AutomationId = "OpenMaster", Text = "Open Flyout"}
 					}
 				}
 			});

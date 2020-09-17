@@ -54,11 +54,11 @@ namespace Xamarin.Forms.Controls
 	}
 
 	[Preserve(AllMembers = true)]
-	internal class CoreMasterDetailPage : MasterDetailPage
+	internal class CoreFlyoutPage : FlyoutPage
 	{
-		public CoreMasterDetailPage()
+		public CoreFlyoutPage()
 		{
-			AutomationId = "MasterDetailPageRoot";
+			AutomationId = "FlyoutPageRoot";
 
 			var toCrashButton = new Button { Text = "Crash Me" };
 
@@ -76,7 +76,7 @@ namespace Xamarin.Forms.Controls
 				toggle = !toggle;
 			};
 
-			Master = masterPage;
+			Flyout = masterPage;
 			Detail = detailPage;
 		}
 	}
@@ -230,7 +230,7 @@ namespace Xamarin.Forms.Controls
 				new CoreViewContainer ("SwapRoot - Tests", typeof(PlatformTestsConsole)),
 				new CoreViewContainer ("SwapRoot - CarouselPage", typeof(CoreCarouselPage)),
 				new CoreViewContainer ("SwapRoot - ContentPage", typeof(CoreContentPage)),
-				new CoreViewContainer ("SwapRoot - MasterDetailPage", typeof(CoreMasterDetailPage)),
+				new CoreViewContainer ("SwapRoot - FlyoutPage", typeof(CoreFlyoutPage)),
 				new CoreViewContainer ("SwapRoot - NavigationPage", typeof(CoreNavigationPage)),
 				new CoreViewContainer ("SwapRoot - TabbedPage", typeof(CoreTabbedPage)),
 				new CoreViewContainer ("SwapRoot - BottomNavigation TabbedPage", typeof(CoreTabbedPageAsBottomNavigation)),
@@ -383,7 +383,7 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new AppThemeGallery(), "AppTheme Gallery"),
 				//pages
  				new GalleryPageFactory(() => new RootContentPage ("Content"), "RootPages Gallery"),
-				new GalleryPageFactory(() => new MasterDetailPageTabletPage(), "MasterDetailPage Tablet Page"),
+				new GalleryPageFactory(() => new FlyoutPageTabletPage(), "FlyoutPage Tablet Page"),
 				// legacy galleries
 				new GalleryPageFactory(() => new AbsoluteLayoutGallery(), "AbsoluteLayout Gallery - Legacy"),
 				new GalleryPageFactory(() => new BoundContentPage(), "BoundPage Gallery - Legacy"),

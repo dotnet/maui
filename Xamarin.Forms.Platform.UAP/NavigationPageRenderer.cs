@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		bool _disposed;
 
-		MasterDetailPage _parentMasterDetailPage;
+		FlyoutPage _parentFlyoutPage;
 		TabbedPage _parentTabbedPage;
 		bool _showTitle = true;
 		WImageSource _titleIcon;
@@ -214,7 +214,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTitleView();
 
 				// Enforce consistency rules on toolbar (show toolbar if top-level page is Navigation Page)
-				_container.ShouldShowToolbar = _parentMasterDetailPage == null && _parentTabbedPage == null;
+				_container.ShouldShowToolbar = _parentFlyoutPage == null && _parentTabbedPage == null;
 				if (_parentTabbedPage != null)
 					Element.Appearing += OnElementAppearing;
 
@@ -258,8 +258,8 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_parentTabbedPage != null)
 				_parentTabbedPage.PropertyChanged -= MultiPagePropertyChanged;
 
-			if (_parentMasterDetailPage != null)
-				_parentMasterDetailPage.PropertyChanged -= MultiPagePropertyChanged;
+			if (_parentFlyoutPage != null)
+				_parentFlyoutPage.PropertyChanged -= MultiPagePropertyChanged;
 
 			if (_navManager != null)
 			{
@@ -316,19 +316,19 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (_parentTabbedPage != null)
 				_parentTabbedPage.PropertyChanged -= MultiPagePropertyChanged;
-			if (_parentMasterDetailPage != null)
-				_parentMasterDetailPage.PropertyChanged -= MultiPagePropertyChanged;
+			if (_parentFlyoutPage != null)
+				_parentFlyoutPage.PropertyChanged -= MultiPagePropertyChanged;
 
 			foreach (Page parentPage in parentPages)
 			{
 				_parentTabbedPage = parentPage as TabbedPage;
-				_parentMasterDetailPage = parentPage as MasterDetailPage;
+				_parentFlyoutPage = parentPage as FlyoutPage;
 			}
 
 			if (_parentTabbedPage != null)
 				_parentTabbedPage.PropertyChanged += MultiPagePropertyChanged;
-			if (_parentMasterDetailPage != null)
-				_parentMasterDetailPage.PropertyChanged += MultiPagePropertyChanged;
+			if (_parentFlyoutPage != null)
+				_parentFlyoutPage.PropertyChanged += MultiPagePropertyChanged;
 
 			UpdateShowTitle();
 			UpdateTitleOnParents();
@@ -407,7 +407,7 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateBackButton();
 			UpdateTitleOnParents();
 
-			if (_parentMasterDetailPage != null)
+			if (_parentFlyoutPage != null)
 			{
 				UpdateTitleView();
 				UpdateTitleIcon();
@@ -576,7 +576,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_container.TitleIcon = _titleIcon;
 
-			if (_parentMasterDetailPage != null && Platform.GetRenderer(_parentMasterDetailPage) is ITitleIconProvider parent)
+			if (_parentFlyoutPage != null && Platform.GetRenderer(_parentFlyoutPage) is ITitleIconProvider parent)
 				parent.TitleIcon = _titleIcon;
 
 			_container.UpdateLayout();
@@ -585,19 +585,19 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateTitleView()
 		{
-			// if the life cycle hasn't reached the point where _parentMasterDetailPage gets wired up then 
+			// if the life cycle hasn't reached the point where _parentFlyoutPage gets wired up then 
 			// don't update the title view
 			if (_currentPage == null || !_parentsLookedUp)
 				return;
 
-			// If the container TitleView gets initialized before the MDP TitleView it causes the 
-			// MDP TitleView to not render correctly
-			if (_parentMasterDetailPage != null)
+			// If the container TitleView gets initialized before the FP TitleView it causes the 
+			// FP TitleView to not render correctly
+			if (_parentFlyoutPage != null)
 			{
-				if (Platform.GetRenderer(_parentMasterDetailPage) is ITitleViewProvider parent)
+				if (Platform.GetRenderer(_parentFlyoutPage) is ITitleViewProvider parent)
 					parent.TitleView = TitleView;
 			}
-			else if (_parentMasterDetailPage == null)
+			else if (_parentFlyoutPage == null)
 				_container.TitleView = TitleView;
 
 		}
@@ -643,7 +643,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateShowTitle()
 		{
-			((ITitleProvider)this).ShowTitle = _parentTabbedPage == null && _parentMasterDetailPage == null;
+			((ITitleProvider)this).ShowTitle = _parentTabbedPage == null && _parentFlyoutPage == null;
 		}
 
 		static object GetDefaultColor()
@@ -676,11 +676,11 @@ namespace Xamarin.Forms.Platform.UWP
 					render.ShowTitle = (_parentTabbedPage.CurrentPage == Element) && NavigationPage.GetHasNavigationBar(_currentPage);
 			}
 
-			if (_parentMasterDetailPage != null)
+			if (_parentFlyoutPage != null)
 			{
-				render = Platform.GetRenderer(_parentMasterDetailPage) as ITitleProvider;
+				render = Platform.GetRenderer(_parentFlyoutPage) as ITitleProvider;
 				if (render != null)
-					render.ShowTitle = (_parentMasterDetailPage.Detail == Element) && NavigationPage.GetHasNavigationBar(_currentPage);
+					render.ShowTitle = (_parentFlyoutPage.Detail == Element) && NavigationPage.GetHasNavigationBar(_currentPage);
 			}
 
 			if (render != null && render.ShowTitle)

@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Issue(IssueTracker.Bugzilla, 29017, "Pin clicked does not work on iOS maps")]
-	public class Issue29017 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue29017 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		Label _lbl;
 

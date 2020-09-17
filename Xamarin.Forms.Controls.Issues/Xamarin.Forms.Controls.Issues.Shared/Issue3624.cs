@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 3624, "Layout Compression causes the app to crash when scrolling a ListView with ListViewCachingStrategy.RetainElement")]
-	public class Issue3624 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue3624 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init ()
 		{

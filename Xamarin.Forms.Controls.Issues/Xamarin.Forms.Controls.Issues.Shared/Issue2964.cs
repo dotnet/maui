@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2964, "TabbedPage toolbar item crash")]
-	public class Issue2964 : TestMasterDetailPage
+	public class Issue2964 : TestFlyoutPage
 	{
 		public class ModalPage : ContentPage
 		{
@@ -70,9 +70,9 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			Title = "Test";
 
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
-				Title = "Master",
+				Title = "Flyout",
 				Content = new Button
 				{
 					AutomationId = "MasterButton",

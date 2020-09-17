@@ -8,12 +8,12 @@ using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Renderers
 {
-	public class MasterDetailPageRenderer : AbstractPageRenderer<Controls.MasterDetailPage, MasterDetailPage>
+	public class FlyoutPageRenderer : AbstractPageRenderer<Controls.FlyoutPage, FlyoutPage>
 	{
-		Page _currentMaster;
+		Page _currentFlyout;
 		Page _currentDetail;
 
-		public MasterDetailPageRenderer()
+		public FlyoutPageRenderer()
 		{
 			MessagingCenter.Subscribe(this, Forms.BarTextColor, (NavigationPage sender, Color color) =>
 			{
@@ -56,9 +56,9 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				MessagingCenter.Unsubscribe<NavigationPage, Color>(this, Forms.BarTextColor);
 				MessagingCenter.Unsubscribe<NavigationPage, Color>(this, Forms.BarBackgroundColor);
 
-				if (Page?.Master != null)
+				if (Page?.Flyout != null)
 				{
-					Page.Master.PropertyChanged -= HandleMasterPropertyChanged;
+					Page.Flyout.PropertyChanged -= HandleFlyoutPropertyChanged;
 				}
 			}
 
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				{
 					// There is nothing similar in Gtk. 
 					// Custom control has been created that simulates the expected behavior.
-					Widget = new Controls.MasterDetailPage();
+					Widget = new Controls.FlyoutPage();
 					var eventBox = new GtkFormsContainer();
 					eventBox.Add(Widget);
 
@@ -83,8 +83,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 					Widget.IsPresentedChanged += OnIsPresentedChanged;
 
-					UpdateMasterDetail();
-					UpdateMasterBehavior();
+					UpdateFlyoutPage();
+					UpdateFlyoutLayoutBehavior();
 					UpdateIsPresented();
 					UpdateBarTextColor();
 					UpdateBarBackgroundColor();
@@ -103,41 +103,41 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName.Equals(nameof(MasterDetailPage.Master)) || e.PropertyName.Equals(nameof(MasterDetailPage.Detail)))
+			if (e.PropertyName.Equals(nameof(FlyoutPage.Flyout)) || e.PropertyName.Equals(nameof(FlyoutPage.Detail)))
 			{
-				UpdateMasterDetail();
-				UpdateMasterBehavior();
+				UpdateFlyoutPage();
+				UpdateFlyoutLayoutBehavior();
 				UpdateIsPresented();
 			}
-			else if (e.PropertyName == MasterDetailPage.IsPresentedProperty.PropertyName)
+			else if (e.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName)
 				UpdateIsPresented();
-			else if (e.PropertyName == MasterDetailPage.MasterBehaviorProperty.PropertyName)
-				UpdateMasterBehavior();
+			else if (e.PropertyName == FlyoutPage.FlyoutLayoutBehaviorProperty.PropertyName)
+				UpdateFlyoutLayoutBehavior();
 		}
 
-		private async void HandleMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
+		private async void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Xamarin.Forms.Page.IconImageSourceProperty.PropertyName)
 				await UpdateHamburguerIconAsync();
 		}
 
-		private void UpdateMasterDetail()
+		private void UpdateFlyoutPage()
 		{
 			Gtk.Application.Invoke(async delegate
 			{
 				await UpdateHamburguerIconAsync();
-				if (Page.Master != _currentMaster)
+				if (Page.Flyout != _currentFlyout)
 				{
-					if (_currentMaster != null)
+					if (_currentFlyout != null)
 					{
-						_currentMaster.PropertyChanged -= HandleMasterPropertyChanged;
+						_currentFlyout.PropertyChanged -= HandleFlyoutPropertyChanged;
 					}
-					if (Platform.GetRenderer(Page.Master) == null)
-						Platform.SetRenderer(Page.Master, Platform.CreateRenderer(Page.Master));
-					Widget.Master = Platform.GetRenderer(Page.Master).Container;
-					Widget.MasterTitle = Page.Master?.Title ?? string.Empty;
-					Page.Master.PropertyChanged += HandleMasterPropertyChanged;
-					_currentMaster = Page.Master;
+					if (Platform.GetRenderer(Page.Flyout) == null)
+						Platform.SetRenderer(Page.Flyout, Platform.CreateRenderer(Page.Flyout));
+					Widget.Flyout = Platform.GetRenderer(Page.Flyout).Container;
+					Widget.FlyoutTitle = Page.Flyout?.Title ?? string.Empty;
+					Page.Flyout.PropertyChanged += HandleFlyoutPropertyChanged;
+					_currentFlyout = Page.Flyout;
 				}
 				if (Page.Detail != _currentDetail)
 				{
@@ -156,20 +156,20 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			Widget.IsPresented = Page.IsPresented;
 		}
 
-		private void UpdateMasterBehavior()
+		private void UpdateFlyoutLayoutBehavior()
 		{
 			if (Page.Detail is NavigationPage)
 			{
-				Widget.MasterBehaviorType = GetMasterBehavior(Page.MasterBehavior);
+				Widget.FlyoutLayoutBehaviorType = GetFlyoutLayoutBehavior(Page.FlyoutLayoutBehavior);
 			}
 			else
 			{
-				// The only way to display Master page is from a toolbar. If we have not access to one,
+				// The only way to display Flyout page is from a toolbar. If we have not access to one,
 				// we should force split mode to display menu (as no gestures are implemented).
-				Widget.MasterBehaviorType = MasterBehaviorType.Split;
+				Widget.FlyoutLayoutBehaviorType = FlyoutLayoutBehaviorType.Split;
 			}
 
-			Widget.DisplayTitle = Widget.MasterBehaviorType != MasterBehaviorType.Split;
+			Widget.DisplayTitle = Widget.FlyoutLayoutBehaviorType != FlyoutLayoutBehaviorType.Split;
 		}
 
 		private void UpdateBarTextColor()
@@ -197,7 +197,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		private Task UpdateHamburguerIconAsync()
 		{
-			return Page.Master.ApplyNativeImageAsync(Xamarin.Forms.Page.IconImageSourceProperty, image =>
+			return Page.Flyout.ApplyNativeImageAsync(Xamarin.Forms.Page.IconImageSourceProperty, image =>
 			{
 				Widget.UpdateHamburguerIcon(image);
 
@@ -209,26 +209,31 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			});
 		}
 
-		private MasterBehaviorType GetMasterBehavior(MasterBehavior masterBehavior)
+		private FlyoutLayoutBehaviorType GetFlyoutLayoutBehavior(FlyoutLayoutBehavior flyoutBehavior)
 		{
-			switch (masterBehavior)
+			switch (flyoutBehavior)
 			{
-				case MasterBehavior.Split:
-				case MasterBehavior.SplitOnLandscape:
-				case MasterBehavior.SplitOnPortrait:
-					return MasterBehaviorType.Split;
-				case MasterBehavior.Popover:
-					return MasterBehaviorType.Popover;
-				case MasterBehavior.Default:
-					return MasterBehaviorType.Default;
+				case FlyoutLayoutBehavior.Split:
+				case FlyoutLayoutBehavior.SplitOnLandscape:
+				case FlyoutLayoutBehavior.SplitOnPortrait:
+					return FlyoutLayoutBehaviorType.Split;
+				case FlyoutLayoutBehavior.Popover:
+					return FlyoutLayoutBehaviorType.Popover;
+				case FlyoutLayoutBehavior.Default:
+					return FlyoutLayoutBehaviorType.Default;
 				default:
-					throw new ArgumentOutOfRangeException(nameof(masterBehavior));
+					throw new ArgumentOutOfRangeException(nameof(flyoutBehavior));
 			}
 		}
 
 		private void OnIsPresentedChanged(object sender, EventArgs e)
 		{
-			ElementController.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, Widget.IsPresented);
+			ElementController.SetValueFromRenderer(FlyoutPage.IsPresentedProperty, Widget.IsPresented);
 		}
+	}
+
+	public class MasterDetailPageRenderer : FlyoutPageRenderer
+	{
+
 	}
 }

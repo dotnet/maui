@@ -31,6 +31,7 @@ namespace Xamarin.Forms.Markup
 			{ "Xamarin.Forms.ItemsView", ItemsView.ItemsSourceProperty },
 			{ "Xamarin.Forms.Label", Label.TextProperty },
 			{ "Xamarin.Forms.ListView", ListView.ItemsSourceProperty },
+			{ "Xamarin.Forms.FlyoutPage", Page.TitleProperty },
 			{ "Xamarin.Forms.MasterDetailPage", Page.TitleProperty },
 			{ "Xamarin.Forms.MenuItem", MenuItem.CommandProperty },
 			{ "Xamarin.Forms.MultiPage", Page.TitleProperty },

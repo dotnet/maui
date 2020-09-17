@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40251, "Cannot style Buttons natively using UIButton.Appearance", PlatformAffected.iOS)]
-	public class Bugzilla40251 : TestNavigationPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla40251 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

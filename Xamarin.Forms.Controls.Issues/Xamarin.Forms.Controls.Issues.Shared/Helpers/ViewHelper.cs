@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.Issues.Helpers
 		{
 			var controls = new List<Page>
 			{
-				new MasterDetailPage { Master = new Page { Title = "Master" }, Detail = new Page() },
+				new FlyoutPage { Flyout = new Page { Title = "Flyout" }, Detail = new Page() },
 				new NavigationPage(new Page()),
 				new Page(),
 				new ContentPage(),

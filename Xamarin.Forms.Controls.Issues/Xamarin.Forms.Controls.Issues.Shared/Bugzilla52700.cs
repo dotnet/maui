@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 52700, "[iOS] Recycled cell should respect selection style set to none", PlatformAffected.iOS)]
-	public class Bugzilla52700 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla52700 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		const string Instructions = "On iOS, all three of the following ListViews should not change background color upon selection. If the background of the row changes color, this test fails.";
 		const string ListView1 = "Custom Cell with Context Actions";

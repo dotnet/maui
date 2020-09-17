@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5168, "Incorrect increments in stepper with small increments... - Droid", PlatformAffected.Android)]
-	public class Issue5168 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue5168 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

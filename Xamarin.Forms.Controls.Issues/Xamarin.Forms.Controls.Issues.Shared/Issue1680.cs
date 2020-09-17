@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = root;
 		}
 
-		public class XamarinListViewBug : MasterDetailPage
+		public class XamarinListViewBug : FlyoutPage
 		{
 			bool _flag;
 
@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Controls.Issues
 					}
 				};
 
-				Master = new ContentPage { Title = "Master" };
+				Flyout = new ContentPage { Title = "Flyout" };
 				Detail = new ContentPage
 				{
 					Title = "Detail",

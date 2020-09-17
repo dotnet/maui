@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4933, "Grid size incorrect when using with Image", PlatformAffected.All)]
-	public class Issue4493 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue4493 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

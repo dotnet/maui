@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 38658, "Rotation causes app containing CarouselPage to freeze", PlatformAffected.iOS)]
-	public class Bugzilla38658 : TestTabbedPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla38658 : TestTabbedPage // or TestFlyoutPage, etc ...
 	{
 		public class TestCarouselPage : CarouselPage
 		{

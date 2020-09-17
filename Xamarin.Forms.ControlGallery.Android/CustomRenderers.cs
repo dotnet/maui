@@ -55,7 +55,7 @@ using IOPath = System.IO.Path;
 #if PRE_APPLICATION_CLASS
 #elif FORMS_APPLICATION_ACTIVITY
 #else
-[assembly: ExportRenderer(typeof(MasterDetailPage), typeof(NativeDroidMasterDetail))]
+[assembly: ExportRenderer(typeof(FlyoutPage), typeof(NativeDroidFlyoutPage))]
 #endif
 namespace Xamarin.Forms.ControlGallery.Android
 {
@@ -159,13 +159,13 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 
-	public class NativeDroidMasterDetail : Xamarin.Forms.Platform.Android.AppCompat.MasterDetailPageRenderer
+	public class NativeDroidFlyoutPage : Xamarin.Forms.Platform.Android.AppCompat.MasterDetailPageRenderer
 	{
-		MasterDetailPage _page;
+		FlyoutPage _page;
 		bool _disposed;
 
 #pragma warning disable 618
-		public NativeDroidMasterDetail()
+		public NativeDroidFlyoutPage()
 #pragma warning restore 618
 		{
 			System.Diagnostics.Debug.WriteLine($">>>>> NativeDroidMasterDetail NativeDroidMasterDetail 53: This is the obsolete constructor being selected");
@@ -180,7 +180,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 				return;
 			}
 
-			_page = newElement as MasterDetailPage;
+			_page = newElement as FlyoutPage;
 			_page.PropertyChanged += Page_PropertyChanged;
 			_page.LayoutChanged += Page_LayoutChanged;
 		}

@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 10307, "Embedded Fonts not working", PlatformAffected.UWP)]
-	public class Issue10307 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue10307 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

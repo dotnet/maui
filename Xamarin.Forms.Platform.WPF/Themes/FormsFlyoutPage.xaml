@@ -23,7 +23,7 @@
                             </Grid.ColumnDefinitions>
 
                             <controls:FormsContentControl Grid.Column="0" x:Name="PART_Master"
-                                      ContentLoader="{TemplateBinding ContentLoader}" Source="{TemplateBinding MasterPage}" />
+                                      ContentLoader="{TemplateBinding ContentLoader}" Source="{TemplateBinding FlyoutPage}" />
 
                             <controls:FormsContentControl Grid.Column="1" x:Name="PART_Detail_Content"
                                       ContentLoader="{TemplateBinding ContentLoader}" Source="{TemplateBinding DetailPage}" />

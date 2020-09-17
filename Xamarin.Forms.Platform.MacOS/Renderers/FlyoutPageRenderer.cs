@@ -6,12 +6,18 @@ using CoreGraphics;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
-	public class MasterDetailPageRenderer : NSSplitViewController, IVisualElementRenderer, IEffectControlProvider
+	[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
+	public class MasterDetailPageRenderer : FlyoutPageRenderer
+	{
+		public MasterDetailPage MasterDetailPage => (MasterDetailPage)base.FlyoutPage;
+	}
+
+	public class FlyoutPageRenderer : NSSplitViewController, IVisualElementRenderer, IEffectControlProvider
 	{
 		bool _disposed;
 		EventTracker _events;
 		VisualElementTracker _tracker;
-		MasterDetailPage _masterDetailPage;
+		FlyoutPage _flyoutPage;
 
 		Page Page => Element as Page;
 
@@ -22,7 +28,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				platformEffect.SetContainer(View);
 		}
 
-		protected MasterDetailPage MasterDetailPage => _masterDetailPage ?? (_masterDetailPage = (MasterDetailPage)Element);
+		protected FlyoutPage FlyoutPage => _flyoutPage ?? (_flyoutPage = (FlyoutPage)Element);
 
 		protected override void Dispose(bool disposing)
 		{
@@ -131,13 +137,13 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (e.PropertyName == "Master" || e.PropertyName == "Detail")
 				UpdateControllers();
-			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsPresentedProperty.PropertyName)
+			else if (e.PropertyName == Xamarin.Forms.FlyoutPage.IsPresentedProperty.PropertyName)
 				UpdateIsPresented();
 		}
 
 		void UpdateIsPresented()
 		{
-			if (MasterDetailPage == null || SplitView == null)
+			if (FlyoutPage == null || SplitView == null)
 				return;
 
 			NSView view = SplitView.Subviews.FirstOrDefault();
@@ -146,12 +152,12 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			// Ignore the IsPresented value being set to false for Split mode on desktop
 			// and allow the master view to be made initially visible
-            if (Device.Idiom == TargetIdiom.Desktop && !view.Hidden && MasterDetailPage.MasterBehavior != MasterBehavior.Popover)
+            if (Device.Idiom == TargetIdiom.Desktop && !view.Hidden && FlyoutPage.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Popover)
 				return;
 
-			if (MasterDetailPage.IsPresented && view.Hidden)
+			if (FlyoutPage.IsPresented && view.Hidden)
 				view.Hidden = false;
-			else if (!MasterDetailPage.IsPresented && !view.Hidden)
+			else if (!FlyoutPage.IsPresented && !view.Hidden)
 				view.Hidden = true;
 		}
 
@@ -161,17 +167,17 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			ClearControllers();
 
-			if (Platform.GetRenderer(MasterDetailPage.Master) == null)
-				Platform.SetRenderer(MasterDetailPage.Master, Platform.CreateRenderer(MasterDetailPage.Master));
-			if (Platform.GetRenderer(MasterDetailPage.Detail) == null)
-				Platform.SetRenderer(MasterDetailPage.Detail, Platform.CreateRenderer(MasterDetailPage.Detail));
+			if (Platform.GetRenderer(FlyoutPage.Flyout) == null)
+				Platform.SetRenderer(FlyoutPage.Flyout, Platform.CreateRenderer(FlyoutPage.Flyout));
+			if (Platform.GetRenderer(FlyoutPage.Detail) == null)
+				Platform.SetRenderer(FlyoutPage.Detail, Platform.CreateRenderer(FlyoutPage.Detail));
 
-			ViewControllerWrapper masterController = new ViewControllerWrapper(Platform.GetRenderer(MasterDetailPage.Master));
+			ViewControllerWrapper masterController = new ViewControllerWrapper(Platform.GetRenderer(FlyoutPage.Flyout));
 			masterController.WillAppear -= MasterController_WillAppear;
 			masterController.WillAppear += MasterController_WillAppear;
 			masterController.WillDisappear -= MasterController_WillDisappear;
 			masterController.WillDisappear += MasterController_WillDisappear;
-			ViewControllerWrapper detailController = new ViewControllerWrapper(Platform.GetRenderer(MasterDetailPage.Detail));
+			ViewControllerWrapper detailController = new ViewControllerWrapper(Platform.GetRenderer(FlyoutPage.Detail));
 
 			AddSplitViewItem(new NSSplitViewItem
 			{
@@ -212,20 +218,20 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		private void MasterController_WillDisappear(object sender, EventArgs e)
 		{
-			if (Element == null || MasterDetailPage == null)
+			if (Element == null || FlyoutPage == null)
 				return;
 
-			if (MasterDetailPage.CanChangeIsPresented && MasterDetailPage.IsPresented)
-				Element.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, false);
+			if (FlyoutPage.CanChangeIsPresented && FlyoutPage.IsPresented)
+				Element.SetValueFromRenderer(FlyoutPage.IsPresentedProperty, false);
 		}
 
 		private void MasterController_WillAppear(object sender, EventArgs e)
 		{
-			if (Element == null || MasterDetailPage == null)
+			if (Element == null || FlyoutPage == null)
 				return;
 
-			if (MasterDetailPage.CanChangeIsPresented && !MasterDetailPage.IsPresented)
-				Element.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, true);
+			if (FlyoutPage.CanChangeIsPresented && !FlyoutPage.IsPresented)
+				Element.SetValueFromRenderer(FlyoutPage.IsPresentedProperty, true);
 		}
 
 		sealed class ViewControllerWrapper : NSViewController

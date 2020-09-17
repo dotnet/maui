@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 10699, "RefreshView IsEnabled Binding not updating", PlatformAffected.iOS)]
-	public class Issue10699 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue10699 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

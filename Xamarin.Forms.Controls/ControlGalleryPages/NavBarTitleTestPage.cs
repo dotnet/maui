@@ -28,10 +28,10 @@ namespace Xamarin.Forms.Controls
 			var btn4 = new Button {
 				Text = "mdp", Command = new Command (async () => {
 					var newNav = new NavigationPage { Title = "Hello 1 nav", BarBackgroundColor = Color.Pink, BarTextColor = Color.Blue };
-					var mdp = new MasterDetailPage ();
+					var mdp = new FlyoutPage ();
 					await newNav.PushAsync (GetPage (newNav));
-					mdp.Master = new ContentPage {
-						Title = "Master", BackgroundColor = Color.Red, Content = new Button {
+					mdp.Flyout = new ContentPage {
+						Title = "Flyout", BackgroundColor = Color.Red, Content = new Button {
 							Text = "new", Command = new Command (() => {
 								mdp.Detail = new ContactsPage { Title = "hello 3" };
 								mdp.IsPresented = false;

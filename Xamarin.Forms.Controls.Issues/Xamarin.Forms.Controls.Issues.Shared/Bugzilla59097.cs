@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 59097, "[Android] Calling PopAsync via TapGestureRecognizer causes an application crash", PlatformAffected.Android)]
-	public class Bugzilla59097 : TestNavigationPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla59097 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

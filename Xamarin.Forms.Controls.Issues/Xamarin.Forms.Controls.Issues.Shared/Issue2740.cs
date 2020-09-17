@@ -15,14 +15,14 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2740, "System.NotSupportedException: Unable to activate instance of type Xamarin.Forms.Platform.Android.PageContainer from native handle", PlatformAffected.Android)]
-	public class Issue2740 : TestMasterDetailPage // or TestMasterDetailPage, etc ...
+	public class Issue2740 : TestFlyoutPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{
 			var page = new AddressListView();
 
 			// Initialize ui here instead of ctor
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
 				Content = new Label
 				{
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Controls.Issues
 			async void MapAddressSwitch()
 			{
 				await Navigation.PopAsync(false);
-				(Application.Current.MainPage as MasterDetailPage).Detail = new NavigationPage(new AddressListView());
+				(Application.Current.MainPage as FlyoutPage).Detail = new NavigationPage(new AddressListView());
 			}
 		}
 

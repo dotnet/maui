@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6021, "[macOS] ListView does not handle transparent backgrounds correctly", PlatformAffected.macOS)]
-	public class Github6201 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Github6201 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

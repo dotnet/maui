@@ -4,17 +4,22 @@ using Xamarin.Forms.Platform.WPF.Controls;
 
 namespace Xamarin.Forms.Platform.WPF
 {
-	public class MasterDetailPageRenderer : VisualPageRenderer<MasterDetailPage, FormsMasterDetailPage>
+	public class MasterDetailPageRenderer : FlyoutPageRenderer
 	{
-		protected override void OnElementChanged(ElementChangedEventArgs<MasterDetailPage> e)
+
+	}
+
+	public class FlyoutPageRenderer : VisualPageRenderer<FlyoutPage, FormsFlyoutPage>
+	{
+		protected override void OnElementChanged(ElementChangedEventArgs<FlyoutPage> e)
 		{
 			if (e.NewElement != null)
 			{
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
-					SetNativeControl(new FormsMasterDetailPage() { ContentLoader = new FormsContentLoader() });
+					SetNativeControl(new FormsFlyoutPage() { ContentLoader = new FormsContentLoader() });
 
-					DependencyPropertyDescriptor.FromProperty(FormsMasterDetailPage.IsPresentedProperty, typeof(FormsMasterDetailPage)).AddValueChanged(Control, OnIsPresentedChanged);
+					DependencyPropertyDescriptor.FromProperty(FormsFlyoutPage.IsPresentedProperty, typeof(FormsFlyoutPage)).AddValueChanged(Control, OnIsPresentedChanged);
 				}
 			}
 
@@ -25,7 +30,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == MasterDetailPage.IsPresentedProperty.PropertyName) // || e.PropertyName == MasterDetailPage.MasterBehaviorProperty.PropertyName)
+			if (e.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName) // || e.PropertyName == FlyoutPage.FlyoutLayoutBehaviorProperty.PropertyName)
 				UpdateIsPresented();
 			else if (e.PropertyName == "Master")
 				UpdateMasterPage();
@@ -48,7 +53,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void UpdateMasterPage()
 		{
-			Control.MasterPage = Element.Master;
+			Control.FlyoutPage = Element.Flyout;
 		}
 
 		void UpdateDetailPage()
@@ -58,7 +63,7 @@ namespace Xamarin.Forms.Platform.WPF
 		
 		private void OnIsPresentedChanged(object sender, EventArgs arg)
 		{
-			((IElementController)Element).SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, Control.IsPresented);
+			((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, Control.IsPresented);
 		}
 
 		bool _isDisposed;
@@ -72,7 +77,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (Control != null)
 				{
-					DependencyPropertyDescriptor.FromProperty(FormsMasterDetailPage.IsPresentedProperty, typeof(FormsMasterDetailPage))
+					DependencyPropertyDescriptor.FromProperty(FormsFlyoutPage.IsPresentedProperty, typeof(FormsFlyoutPage))
 						.RemoveValueChanged(Control, OnIsPresentedChanged);
 				}
 			}

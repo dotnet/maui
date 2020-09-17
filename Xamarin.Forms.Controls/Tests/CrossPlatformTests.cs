@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Controls.Tests
 		[Description("isPresentedChanged raises multiple times")]
 		public void Bugzilla32230()
 		{
-			var mdp = new MasterDetailPage();
+			var mdp = new FlyoutPage();
 			var count = 0;
 			mdp.IsPresentedChanged += (sender, args) => { count += 1; };
 

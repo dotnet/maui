@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8964, "Adding an item to the beginning of the bound ItemSource causes the carousel to skip sometimes", PlatformAffected.Android)]
-	public class Issue8964 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue8964 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		object _currentItem;
 		int _counter;

@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 50787, "Can\'t animate Fragment transition when it\'s being removed from the stack", PlatformAffected.Android)]
-	public class Bugzilla50787 : TestNavigationPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla50787 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

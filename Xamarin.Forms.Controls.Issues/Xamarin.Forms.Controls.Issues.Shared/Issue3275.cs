@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3275, "For ListView in Recycle mode ScrollTo causes cell leak and in some cases NRE", PlatformAffected.iOS)]
-	public class Issue3275 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue3275 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		static readonly string _btnLeakId = "btnLeak";
 		static readonly string _btnScrollToId = "btnScrollTo";
