@@ -54,8 +54,10 @@ namespace Xamarin.Forms.Platform
 	[RenderWith(typeof(ImageButtonRenderer))]
 	internal class _ImageButtonRenderer { }
 
+#if !__IOS__
 	[RenderWith(typeof(RadioButtonRenderer))]
 	internal class _RadioButtonRenderer { }
+#endif
 
 	[RenderWith (typeof (TableViewRenderer))]
 	internal class _TableViewRenderer { }

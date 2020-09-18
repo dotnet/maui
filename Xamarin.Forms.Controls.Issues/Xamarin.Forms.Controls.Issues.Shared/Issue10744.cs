@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -36,7 +37,10 @@ namespace Xamarin.Forms.Controls.Issues
 			_webView = new WebView()
 			{
 				Source = "https://dotnet.microsoft.com/apps/xamarin",
-				Cookies = new System.Net.CookieContainer()
+				Cookies = new System.Net.CookieContainer(),
+				HorizontalOptions = LayoutOptions.Fill,
+				VerticalOptions = LayoutOptions.Fill,
+				HeightRequest = 600
 			};
 
 			_webView.Navigating += (_, __) =>

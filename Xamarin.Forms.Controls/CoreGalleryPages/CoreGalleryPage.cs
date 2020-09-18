@@ -21,6 +21,8 @@ namespace Xamarin.Forms.Controls
 
 		internal CoreGalleryPage()
 		{
+			Initialize();
+
 			Layout = new StackLayout
 			{
 				Padding = new Thickness(20)
@@ -54,6 +56,8 @@ namespace Xamarin.Forms.Controls
 				Content = content;
 			}
 		}
+
+		protected virtual void Initialize() { }
 
 		protected virtual void InitializeElement(T element) { }
 

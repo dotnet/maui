@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;

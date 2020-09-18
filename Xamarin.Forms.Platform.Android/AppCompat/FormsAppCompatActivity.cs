@@ -139,6 +139,8 @@ namespace Xamarin.Forms.Platform.Android
 				RegisterHandler(typeof(Image), typeof(FastRenderers.ImageRenderer), typeof(ImageRenderer));
 				RegisterHandler(typeof(Frame), typeof(FastRenderers.FrameRenderer), typeof(FrameRenderer));
 			}
+
+			Registrar.Registered.Register(typeof(RadioButton), typeof(RadioButtonRenderer));
 		}
 
 		protected void LoadApplication(Application application)

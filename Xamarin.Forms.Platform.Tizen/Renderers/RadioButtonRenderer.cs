@@ -11,9 +11,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		public RadioButtonRenderer()
 		{
 			RegisterPropertyHandler(RadioButton.IsCheckedProperty, UpdateIsChecked);
-			RegisterPropertyHandler(RadioButton.TextProperty, UpdateText);
+			RegisterPropertyHandler(RadioButton.ContentProperty, UpdateText);
 			RegisterPropertyHandler(RadioButton.TextColorProperty, UpdateTextColor);
-			RegisterPropertyHandler(RadioButton.FontProperty, UpdateFont);
+			RegisterPropertyHandler(RadioButton.FontFamilyProperty, UpdateFont);
+			RegisterPropertyHandler(RadioButton.FontAttributesProperty, UpdateFont);
+			RegisterPropertyHandler(RadioButton.FontSizeProperty, UpdateFont);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<RadioButton> e)
@@ -69,7 +71,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateText(bool isInitialized)
 		{
-			_span.Text = Element.Text;
+			_span.Text = Element.ContentAsString();
 			if (!isInitialized)
 				ApplyTextAndStyle();
 		}
