@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.StyleSheets;
 
 namespace Xamarin.Forms
@@ -13,7 +12,6 @@ namespace Xamarin.Forms
 	{
 		DisableCss = 1 << 0
 	}
-
 
 	// Previewer uses reflection to bind to this method; Removal or modification of visibility will break previewer.
 	internal static class Registrar

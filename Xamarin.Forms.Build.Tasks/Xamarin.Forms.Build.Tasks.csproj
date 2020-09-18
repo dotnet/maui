@@ -9,7 +9,7 @@
 	    <_DisableStrongNamer Condition=" '$(_DisableStrongNamer)' != 'True' ">False</_DisableStrongNamer>
 	    <AssemblyName>Xamarin.Forms.Build.Tasks</AssemblyName>
       <Description>Xamarin Forms Build Task</Description>
-	    <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
+	    <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
 	    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	    <SignAssembly Condition=" '$(_DisableStrongNamer)' != 'True' ">True</SignAssembly>
 	    <DisableStrongNamer Condition=" '$(_DisableStrongNamer)' == 'True' ">True</DisableStrongNamer>

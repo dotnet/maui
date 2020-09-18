@@ -143,10 +143,10 @@
 	{
 	}
 
-	internal class _PathRenderer	
+	internal class _PathRenderer
 	{
 	}
-	
+
 	internal class _EllipseRenderer
 	{
 	}

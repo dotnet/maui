@@ -66,10 +66,6 @@
       <Project>{4DCD0420-1168-4B77-86DB-6196EE4BD491}</Project>
       <Name>Xamarin.Forms.CustomAttributes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
-      <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
-      <Name>Xamarin.Forms.Maps</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
       <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>
       <Name>Xamarin.Forms.Platform</Name>

@@ -11,7 +11,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	public class LabelRenderer : FormsTextView, IVisualElementRenderer, IViewRenderer, ITabStop
+	public class LabelRenderer : FormsTextView, IVisualElementRenderer, IViewHandler, ITabStop
 	{
 		int? _defaultLabelFor;
 		bool _disposed;
@@ -178,7 +178,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			tracker?.UpdateLayout();
 		}
 
-		void IViewRenderer.MeasureExactly()
+		void IViewHandler.MeasureExactly()
 		{
 			ViewRenderer.MeasureExactly(this, Element, Context);
 		}

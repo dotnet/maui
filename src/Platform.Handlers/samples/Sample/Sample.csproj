@@ -1,0 +1,18 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;Xamarin.iOS10;MonoAndroid10.0</TargetFrameworks>
+  </PropertyGroup>  
+  <Import Project="..\..\..\..\.nuspec\Xamarin.Forms.MultiTargeting.targets" />
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) == true ">
+    <ProjectReference Include="..\..\..\..\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj" />
+    <ProjectReference Include="..\..\..\..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Platform.cs">
+      <SubType></SubType>
+    </Compile>
+  </ItemGroup>
+</Project>

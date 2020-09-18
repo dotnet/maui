@@ -190,10 +190,6 @@
       <Project>{4dcd0420-1168-4b77-86db-6196ee4bd491}</Project>
       <Name>Xamarin.Forms.CustomAttributes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.Android.UnitTests\Xamarin.Forms.Platform.Android.UnitTests.csproj">
-      <Project>{a4c57790-71d1-467c-a69e-2bd84cb6666c}</Project>
-      <Name>Xamarin.Forms.Platform.Android.UnitTests</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="$(FromSource) == 'true'">
     <ProguardConfiguration Include="..\.nuspec\proguard.cfg">
@@ -202,14 +198,6 @@
     <ProjectReference Include="..\Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android (Forwarders).csproj">
       <Project>{6e53feb1-1100-46ae-8013-17bba35cc197}</Project>
       <Name>Xamarin.Forms.Platform.Android (Forwarders)</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps.Android\Xamarin.Forms.Maps.Android.csproj">
-      <Project>{bd50b39a-ebc5-408f-9c5e-923a8ebae473}</Project>
-      <Name>Xamarin.Forms.Maps.Android</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
-      <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
-      <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform.Android.AppLinks\Xamarin.Forms.Platform.Android.AppLinks.csproj">
       <Project>{42db052e-0909-45d2-8240-187f99f393fb}</Project>
@@ -226,10 +214,6 @@
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
       <Name>Xamarin.Forms.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Material.Android\Xamarin.Forms.Material.Android.csproj">
-      <Project>{e1586ce6-8eac-4388-a15a-1aabf108b5f8}</Project>
-      <Name>Xamarin.Forms.Material.Android</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

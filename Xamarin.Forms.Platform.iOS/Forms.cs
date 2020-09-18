@@ -166,7 +166,7 @@ namespace Xamarin.Forms
 				var aquaAppearance = NSAppearance.GetAppearance(interfaceStyle == "Dark" ? NSAppearance.NameDarkAqua : NSAppearance.NameAqua);
 				NSApplication.SharedApplication.Appearance = aquaAppearance;
 
-				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(interfaceStyle == "Dark" ? OSAppTheme.Dark : OSAppTheme.Light));
+				//Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(interfaceStyle == "Dark" ? OSAppTheme.Dark : OSAppTheme.Light));
 			});
 
 			Device.SetIdiom(TargetIdiom.Desktop);

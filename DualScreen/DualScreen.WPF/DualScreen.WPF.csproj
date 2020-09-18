@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netcoreapp3.1</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">net461;</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">net462;</TargetFrameworks>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 

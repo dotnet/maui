@@ -4,14 +4,6 @@ using System.Text;
 
 namespace Xamarin.Forms
 {
-	[Flags]
-	[TypeConverter(typeof(TextDecorationConverter))]
-	public enum TextDecorations
-	{
-		None = 0,
-		Underline = 1 << 0,
-		Strikethrough = 1 << 1,
-	}
 	static class DecorableTextElement
 	{
 		public static readonly BindableProperty TextDecorationsProperty = BindableProperty.Create(nameof(IDecorableTextElement.TextDecorations), typeof(TextDecorations), typeof(IDecorableTextElement), TextDecorations.None);

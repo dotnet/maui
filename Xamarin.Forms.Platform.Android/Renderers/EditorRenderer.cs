@@ -232,7 +232,7 @@ namespace Xamarin.Forms.Platform.Android
 			var keyboard = model.Keyboard;
 
 			edit.InputType = keyboard.ToInputType() | InputTypes.TextFlagMultiLine;
-			if (!(keyboard is Internals.CustomKeyboard))
+			if (!(keyboard is CustomKeyboard))
 			{
 				if (model.IsSet(InputView.IsSpellCheckEnabledProperty))
 				{

@@ -3,11 +3,10 @@
     <TargetFrameworks>$(UwpMinTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(UwpMinTargetFrameworks)' == '' ">
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">uap10.0.14393;uap10.0.16299</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">uap10.0.16299</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard2.0</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetPlatformVersion Condition="'$(TargetFramework)' == 'uap10.0.14393'">10.0.19041.0</TargetPlatformVersion>
     <TargetPlatformVersion Condition="'$(TargetFramework)' == 'uap10.0.16299'">10.0.19041.0</TargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">

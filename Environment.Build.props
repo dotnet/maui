@@ -29,7 +29,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <LangVersion Condition="'$(LangVersion)' == ''">7.3</LangVersion>
+    <LangVersion Condition="'$(LangVersion)' == ''">8.0</LangVersion>
   </PropertyGroup>
 
   <!-- This is used by the libraries -->

@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Android
             }
             else if (geometry is RectangleGeometry)
             {
-                FormsRectangle rect = (geometry as RectangleGeometry).Rect;
+                var rect = (geometry as RectangleGeometry).Rect;
 
                 path.AddRect(
                     density * (float)rect.Left,

@@ -9,7 +9,7 @@ using Xamarin.Forms.Platform.Android.FastRenderers;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public interface IViewRenderer
+	public interface IViewHandler
 	{
 		void MeasureExactly();
 	}
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 	}
 
-	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, IViewRenderer, ITabStop, AView.IOnFocusChangeListener where TView : View where TNativeView : AView
+	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, IViewHandler, ITabStop, AView.IOnFocusChangeListener where TView : View where TNativeView : AView
 	{
 		protected ViewRenderer(Context context) : base(context)
 		{
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		AView ITabStop.TabStop => Control;
 
-		void IViewRenderer.MeasureExactly()
+		void IViewHandler.MeasureExactly()
 		{
 			MeasureExactly(Control, Element, Context);
 		}

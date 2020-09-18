@@ -117,10 +117,4 @@ namespace Xamarin.Forms
 			return TextTransformUtilites.GetTransformedText(original, transform);
 		}
 	}
-
-	public enum ClearButtonVisibility
-	{
-		Never,
-		WhileEditing
-	}
 }

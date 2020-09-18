@@ -308,7 +308,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var keyboard = Element.Keyboard;
 			TextView.ApplyKeyboard(keyboard);
-			if (!(keyboard is Internals.CustomKeyboard))
+			if (!(keyboard is CustomKeyboard))
 			{
 				if (Element.IsSet(Xamarin.Forms.InputView.IsSpellCheckEnabledProperty))
 				{

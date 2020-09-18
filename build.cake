@@ -797,14 +797,14 @@ Task("BuildForNuget")
                         .WithTarget("rebuild"));
 
 
-        msbuildSettings = GetMSBuildSettings();
-        msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.Platform.UAP/Xamarin.Forms.Platform.UAP.csproj",
-                    msbuildSettings
-                        .WithTarget("rebuild")
-                        .WithProperty("DisableEmbeddedXbf", "false")
-                        .WithProperty("EnableTypeInfoReflection", "false"));
+        // msbuildSettings = GetMSBuildSettings();
+        // msbuildSettings.BinaryLogger = binaryLogger;
+        // binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}-csproj.binlog";
+        // MSBuild("./Xamarin.Forms.Platform.UAP/Xamarin.Forms.Platform.UAP.csproj",
+        //             msbuildSettings
+        //                 .WithTarget("rebuild")
+        //                 .WithProperty("DisableEmbeddedXbf", "false")
+        //                 .WithProperty("EnableTypeInfoReflection", "false"));
 
         msbuildSettings = GetMSBuildSettings();
         msbuildSettings.BinaryLogger = binaryLogger;
@@ -813,12 +813,12 @@ Task("BuildForNuget")
                     msbuildSettings
                         .WithTarget("rebuild"));
 
-        msbuildSettings = GetMSBuildSettings();
-        msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/macos-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.Platform.MacOS/Xamarin.Forms.Platform.MacOS.csproj",
-                    msbuildSettings
-                        .WithTarget("rebuild"));
+        // msbuildSettings = GetMSBuildSettings();
+        // msbuildSettings.BinaryLogger = binaryLogger;
+        // binaryLogger.FileName = $"{artifactStagingDirectory}/macos-{configuration}-csproj.binlog";
+        // MSBuild("./Xamarin.Forms.Platform.MacOS/Xamarin.Forms.Platform.MacOS.csproj",
+        //             msbuildSettings
+        //                 .WithTarget("rebuild"));
 
     }
     catch(Exception)

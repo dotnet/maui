@@ -2,19 +2,9 @@ using System;
 
 namespace Xamarin.Forms
 {
-	[Flags]
-	[TypeConverter(typeof(FontAttributesConverter))]
-	public enum FontAttributes
-	{
-		None = 0,
-		Bold = 1 << 0,
-		Italic = 1 << 1
-	}
-
 	[Xaml.TypeConversion(typeof(FontAttributes))]
 	public sealed class FontAttributesConverter : TypeConverter
 	{
-
 		public override object ConvertFromInvariantString(string value)
 		{
 			if (string.IsNullOrEmpty(value))

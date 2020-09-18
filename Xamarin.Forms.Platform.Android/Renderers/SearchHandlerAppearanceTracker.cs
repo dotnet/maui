@@ -186,7 +186,7 @@ namespace Xamarin.Forms.Platform.Android
 			bool isSpellCheckEnableSet = false;
 			bool isSpellCheckEnable = false;
 			// model.IsSet(InputView.IsSpellCheckEnabledProperty)
-			if (!(keyboard is Internals.CustomKeyboard))
+			if (!(keyboard is CustomKeyboard))
 			{
 				if (isSpellCheckEnableSet)
 				{

@@ -356,6 +356,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		/*
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
@@ -363,6 +364,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (Forms.IsiOS13OrNewer && previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme));
 		}
+		*/
 
 		bool ShouldUseSafeArea()
 		{

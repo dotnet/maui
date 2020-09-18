@@ -2,14 +2,6 @@ using System;
 
 namespace Xamarin.Forms
 {
-	[TypeConverter(typeof(TextAlignmentConverter))]
-	public enum TextAlignment
-	{
-		Start,
-		Center,
-		End
-	}
-
 	[Xaml.TypeConversion(typeof(TextAlignment))]
 	public class TextAlignmentConverter : TypeConverter
 	{

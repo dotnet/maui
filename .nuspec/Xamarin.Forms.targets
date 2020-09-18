@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<_XFBuildTasksLocation Condition="'$(_XFBuildTasksLocation)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)netstandard2.0\</_XFBuildTasksLocation>
-		<_XFBuildTasksLocation Condition="'$(_XFBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory)net46\</_XFBuildTasksLocation>
+		<_XFBuildTasksLocation Condition="'$(_XFBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory)net462\</_XFBuildTasksLocation>
 	</PropertyGroup>
 	
 	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="$(_XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll" />

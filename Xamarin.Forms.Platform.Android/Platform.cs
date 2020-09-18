@@ -1363,7 +1363,7 @@ namespace Xamarin.Forms.Platform.Android
 				|| (heightConstrained && result.Request.Height < heightConstraint))
 			{
 				// Do a final exact measurement in case the native control needs to fill the container
-				(visualElementRenderer as IViewRenderer)?.MeasureExactly();
+				(visualElementRenderer as IViewHandler)?.MeasureExactly();
 			}
 
 			Performance.Stop(reference);
