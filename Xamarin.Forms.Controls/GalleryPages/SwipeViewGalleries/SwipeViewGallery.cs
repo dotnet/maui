@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 					Children =
 					{
 	 					GalleryBuilder.NavButton("Basic SwipeView Gallery", () => new BasicSwipeGallery(), Navigation),
+						GalleryBuilder.NavButton("SwipeView Threshold Gallery", () => new SwipeThresholdGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeView Events Gallery", () => new SwipeViewEventsGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeItems from Resource Gallery", () => new ResourceSwipeItemsGallery(), Navigation),
 						GalleryBuilder.NavButton("BindableLayout Gallery", () => new SwipeBindableLayoutGallery(), Navigation),
