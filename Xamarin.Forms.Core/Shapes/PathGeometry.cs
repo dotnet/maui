@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Xamarin.Forms.Shapes
+﻿namespace Xamarin.Forms.Shapes
 {
     [ContentProperty("Figures")]
     public sealed class PathGeometry : Geometry
@@ -8,6 +6,17 @@ namespace Xamarin.Forms.Shapes
         public PathGeometry()
         {
             Figures = new PathFigureCollection();
+        }
+
+        public PathGeometry(PathFigureCollection figures)
+        {
+            Figures = figures;
+        }
+
+        public PathGeometry(PathFigureCollection figures, FillRule fillRule)
+        {
+            Figures = figures;
+            FillRule = fillRule;
         }
 
         public static readonly BindableProperty FiguresProperty =

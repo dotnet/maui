@@ -58,7 +58,49 @@ namespace Xamarin.Forms
 
 		internal static readonly BindableProperty TransformProperty = BindableProperty.Create("Transform", typeof(string), typeof(VisualElement), null, propertyChanged: OnTransformChanged);
 
-		public static readonly BindableProperty ClipProperty = BindableProperty.Create(nameof(Clip), typeof(Geometry), typeof(VisualElement), null);
+		public static readonly BindableProperty ClipProperty = BindableProperty.Create(nameof(Clip), typeof(Geometry), typeof(VisualElement), null,
+			propertyChanging: (bindable, oldvalue, newvalue) =>
+			{
+				if (oldvalue != null)
+					(bindable as VisualElement)?.StopNotifyingClipChanges();
+			},
+			propertyChanged: (bindable, oldvalue, newvalue) =>
+			{
+				if (newvalue != null)
+					(bindable as VisualElement)?.NotifyClipChanges();
+			});
+
+		void NotifyClipChanges()
+		{
+			if (Clip != null)
+			{
+				Clip.PropertyChanged += OnClipChanged;
+
+				if (Clip is GeometryGroup geometryGroup)
+					geometryGroup.InvalidateGeometryRequested += InvalidateGeometryRequested;
+			}
+		}
+
+		void StopNotifyingClipChanges()
+		{
+			if (Clip != null)
+			{
+				Clip.PropertyChanged -= OnClipChanged;
+
+				if(Clip is GeometryGroup geometryGroup)
+					geometryGroup.InvalidateGeometryRequested -= InvalidateGeometryRequested;
+			}
+		}
+
+		void OnClipChanged(object sender, PropertyChangedEventArgs e)
+		{
+			OnPropertyChanged(nameof(Clip));
+		}
+
+		void InvalidateGeometryRequested(object sender, EventArgs e)
+		{
+			OnPropertyChanged(nameof(Clip));
+		}
 
 		public static readonly BindableProperty VisualProperty =
 			BindableProperty.Create(nameof(Visual), typeof(IVisual), typeof(VisualElement), Forms.VisualMarker.MatchParent,
