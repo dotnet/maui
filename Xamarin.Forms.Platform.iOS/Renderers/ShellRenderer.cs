@@ -133,11 +133,6 @@ namespace Xamarin.Forms.Platform.iOS
 				return new DesignerFlyoutRenderer(this);
 			}
 
-			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
-			{
-				return new TabletShellFlyoutRenderer();
-			}
-
 			return new ShellFlyoutRenderer()
 			{
 				FlyoutTransition = new SlideFlyoutTransition()

@@ -11,7 +11,13 @@ namespace Xamarin.Forms.Platform.iOS
 			if (behavior == FlyoutBehavior.Locked)
 				openPercent = 1;
 
-			nfloat flyoutWidth = (nfloat)(Math.Min(bounds.Width, bounds.Height) * 0.8);
+			nfloat flyoutWidth;
+
+			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+				flyoutWidth = 320;
+			else
+				flyoutWidth = (nfloat)(Math.Min(bounds.Width, bounds.Height) * 0.8);
+
 			nfloat openLimit = flyoutWidth;
 			nfloat openPixels = openLimit * openPercent;
 
