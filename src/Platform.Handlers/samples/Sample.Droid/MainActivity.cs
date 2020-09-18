@@ -12,7 +12,7 @@ namespace Sample.Droid
 	[Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
 	public class MainActivity : AppCompatActivity
 	{
-		NestedScrollView _page;
+		ViewGroup _page;
 
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
@@ -25,7 +25,7 @@ namespace Sample.Droid
 			AndroidX.AppCompat.Widget.Toolbar toolbar = FindViewById<AndroidX.AppCompat.Widget.Toolbar>(Resource.Id.toolbar);
 			SetSupportActionBar(toolbar);
 
-			_page = FindViewById<NestedScrollView>(Resource.Id.Page);
+			_page = FindViewById<ViewGroup>(Resource.Id.pageLayout);
 
 			var app = new MyApp();
 			Add(app.CreateView());

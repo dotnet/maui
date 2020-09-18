@@ -12,7 +12,7 @@ namespace Sample
 
 		public IView CreateView()
 		{
-			return new Button();
+			return new Button() { Text = "Hello I'm a button" };
 		}
 	}
 }
