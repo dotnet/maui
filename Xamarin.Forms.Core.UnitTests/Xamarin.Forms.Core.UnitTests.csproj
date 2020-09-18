@@ -110,6 +110,7 @@
     <Compile Include="ShellElementCollectionTests.cs" />
     <Compile Include="ShellFlyoutItemTemplateTests.cs" />
     <Compile Include="ShellModalTests.cs" />
+    <Compile Include="ShellNavigatingTests.cs" />
     <Compile Include="ShellTestBase.cs" />
     <Compile Include="ShellLifeCycleTests.cs" />
     <Compile Include="ShellUriHandlerTests.cs" />

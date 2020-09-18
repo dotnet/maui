@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Xamarin.Forms
@@ -8,25 +9,74 @@ namespace Xamarin.Forms
 	{
 		static int s_routeCount = 0;
 		static Dictionary<string, RouteFactory> s_routes = new Dictionary<string, RouteFactory>();
+		static Dictionary<string, Page> s_implicitPageRoutes = new Dictionary<string, Page>();
 
 		const string ImplicitPrefix = "IMPL_";
 		const string DefaultPrefix = "D_FAULT_";
-		const string _pathSeparator = "/";
+		internal const string PathSeparator = "/";
+
+		// We only need these while a navigation is happening 
+		internal static void ClearImplicitPageRoutes()
+		{
+			s_implicitPageRoutes.Clear();
+		}
+
+		internal static void RegisterImplicitPageRoute(Page page)
+		{
+			var route = GetRoute(page);
+			if (!IsUserDefined(route))
+				s_implicitPageRoutes[route] = page;
+		}
+
+		// Shell works much better if the entire nav stack can be represented by a string
+		// If the users pushes pages without using routes we want these page keys tracked
+		internal static void RegisterImplicitPageRoutes(Shell shell)
+		{
+			foreach (var item in shell.Items)
+			{
+				foreach (var section in item.Items)
+				{
+					var navigationStackCount = section.Navigation.NavigationStack.Count;
+					for (int i = 1; i < navigationStackCount; i++)
+					{
+						RegisterImplicitPageRoute(section.Navigation.NavigationStack[i]);
+					}
+					var navigationModalStackCount = section.Navigation.ModalStack.Count;
+					for (int i = 0; i < navigationModalStackCount; i++)
+					{
+						var page = section.Navigation.ModalStack[i];
+						RegisterImplicitPageRoute(page);
+
+						if (page is NavigationPage np)
+						{
+							foreach (var npPages in np.Pages)
+							{
+								RegisterImplicitPageRoute(npPages);
+							}
+						}
+					}
+				}
+			}
+		}
 
 		internal static string GenerateImplicitRoute(string source)
 		{
 			if (IsImplicit(source))
 				return source;
+
 			return String.Concat(ImplicitPrefix, source);
 		}
+
 		internal static bool IsImplicit(string source)
 		{
 			return source.StartsWith(ImplicitPrefix, StringComparison.Ordinal);
 		}
+
 		internal static bool IsImplicit(BindableObject source)
 		{
 			return IsImplicit(GetRoute(source));
 		}
+
 		internal static bool IsDefault(string source)
 		{
 			return source.StartsWith(DefaultPrefix, StringComparison.Ordinal);
@@ -42,7 +92,15 @@ namespace Xamarin.Forms
 			if (source == null)
 				return false;
 
-			return !(IsDefault(source) || IsImplicit(source));
+			return IsUserDefined(GetRoute(source));
+		}
+
+		internal static bool IsUserDefined(string route)
+		{
+			if (route == null)
+				return false;
+
+			return !(IsDefault(route) || IsImplicit(route));
 		}
 
 		internal static void Clear()
@@ -61,14 +119,20 @@ namespace Xamarin.Forms
 
 		internal static string[] GetRouteKeys()
 		{
-			string[] keys = new string[s_routes.Count];
+			string[] keys = new string[s_routes.Count + s_implicitPageRoutes.Count];
 			s_routes.Keys.CopyTo(keys, 0);
+			s_implicitPageRoutes.Keys.CopyTo(keys, s_routes.Count);
 			return keys;
 		}
 
 		public static Element GetOrCreateContent(string route)
 		{
 			Element result = null;
+
+			if (s_implicitPageRoutes.TryGetValue(route, out var page))
+			{
+				return page;
+			}
 
 			if (s_routes.TryGetValue(route, out var content))
 				result = content.GetOrCreate();
@@ -101,43 +165,9 @@ namespace Xamarin.Forms
 			return $"{source}/";
 		}
 
-		internal static Uri Remove(Uri uri, bool implicitRoutes, bool defaultRoutes)
-		{
-			uri = ShellUriHandler.FormatUri(uri, null);
-
-			string[] parts = uri.OriginalString.TrimEnd(_pathSeparator[0]).Split(_pathSeparator[0]);
-
-			bool userDefinedRouteAdded = false;
-			List<string> toKeep = new List<string>();
-			for (int i = 0; i < parts.Length; i++)
-			{
-				// This means there are no routes defined on the shell but the user has navigated to a global route
-				// so we need to attach the final route where the user left the shell
-				if (s_routes.ContainsKey(parts[i]) && !userDefinedRouteAdded && i > 0)
-				{
-					toKeep.Add(parts[i - 1]);
-				}
-
-				if (!(IsDefault(parts[i]) && defaultRoutes) && !(IsImplicit(parts[i]) && implicitRoutes))
-				{
-					if (!String.IsNullOrWhiteSpace(parts[i]))
-						userDefinedRouteAdded = true;
-
-					toKeep.Add(parts[i]);
-				}
-			}
-
-			if(!userDefinedRouteAdded && parts.Length > 0)
-			{
-				toKeep.Add(parts[parts.Length - 1]);
-			}
-
-			return new Uri(string.Join(_pathSeparator, toKeep), UriKind.Relative);
-		}
-
 		public static string FormatRoute(List<string> segments)
 		{
-			var route = FormatRoute(String.Join(_pathSeparator, segments));
+			var route = FormatRoute(String.Join(PathSeparator, segments));
 			return route;
 		}
 
@@ -188,7 +218,7 @@ namespace Xamarin.Forms
 			}
 
 			RouteFactory existingRegistration = null;
-			if(s_routes.TryGetValue(route, out existingRegistration) && !existingRegistration.Equals(routeFactory))
+			if (s_routes.TryGetValue(route, out existingRegistration) && !existingRegistration.Equals(routeFactory))
 				throw new ArgumentException($"Duplicated Route: \"{route}\"");
 		}
 
