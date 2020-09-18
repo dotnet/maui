@@ -173,7 +173,9 @@ namespace Xamarin.Forms.Platform
 	internal class _FlyoutPageRenderer { }
 
 #if !__IOS__ && !TIZEN4_0
-	[RenderWith(typeof(Android.AppCompat.MasterDetailPageRenderer))]
+#pragma warning disable CS0618 // Type or member is obsolete
+	[RenderWith(typeof(MasterDetailRenderer))]
+#pragma warning restore CS0618 // Type or member is obsolete
 #elif TIZEN4_0
 #pragma warning disable CS0618 // Type or member is obsolete
 	[RenderWith (typeof(MasterDetailPageRenderer))]

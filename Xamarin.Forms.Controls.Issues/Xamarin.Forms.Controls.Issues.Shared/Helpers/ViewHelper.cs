@@ -43,6 +43,9 @@ namespace Xamarin.Forms.Controls.Issues.Helpers
 		{
 			var controls = new List<Page>
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				new MasterDetailPage { Master = new Page { Title = "Flyout" }, Detail = new Page() },
+#pragma warning restore CS0618 // Type or member is obsolete
 				new FlyoutPage { Flyout = new Page { Title = "Flyout" }, Detail = new Page() },
 				new NavigationPage(new Page()),
 				new Page(),

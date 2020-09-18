@@ -544,6 +544,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 	public class PhoneMasterDetailRenderer : PhoneFlyoutPageRenderer
 	{
-
+		[Preserve(Conditional = true)]
+		public PhoneMasterDetailRenderer()
+		{
+		}
 	}
 }
