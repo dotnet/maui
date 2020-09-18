@@ -12,13 +12,13 @@ using AShapeType = Android.Graphics.Drawables.ShapeType;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class IndicatorViewRenderer : LinearLayout, IVisualElementRenderer, IViewHandler, ITabStop
+	public class IndicatorViewRenderer : LinearLayout, IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		VisualElementTracker _visualElementTracker;
 		readonly VisualElementRenderer _visualElementRenderer;
 		const int DefaultPadding = 4;
 
-		void IViewHandler.MeasureExactly()
+		void IViewRenderer.MeasureExactly()
 		{
 			ViewRenderer.MeasureExactly(this, Element, Context);
 		}

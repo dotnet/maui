@@ -14,7 +14,7 @@ using AView = Android.Views.View;
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
 	public class ButtonRenderer : AppCompatButton,
-		IBorderVisualElementRenderer, IButtonLayoutRenderer, IVisualElementRenderer, IViewHandler, ITabStop,
+		IBorderVisualElementRenderer, IButtonLayoutRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
 		AView.IOnAttachStateChangeListener, AView.IOnFocusChangeListener, AView.IOnClickListener, AView.IOnTouchListener
 	{
 		float _defaultFontSize;
@@ -143,7 +143,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void IVisualElementRenderer.UpdateLayout() => _tracker?.UpdateLayout();
 
-		void IViewHandler.MeasureExactly()
+		void IViewRenderer.MeasureExactly()
 		{
 			ViewRenderer.MeasureExactly(this, Element, Context);
 		}

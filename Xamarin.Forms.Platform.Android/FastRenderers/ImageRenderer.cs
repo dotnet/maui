@@ -11,7 +11,7 @@ using AndroidX.Core.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	public class ImageRenderer : AImageView, IVisualElementRenderer, IImageRendererController, IViewHandler, ITabStop,
+	public class ImageRenderer : AImageView, IVisualElementRenderer, IImageRendererController, IViewRenderer, ITabStop,
 		ILayoutChanges
 	{
 		bool _hasLayoutOccurred;
@@ -168,7 +168,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void IVisualElementRenderer.UpdateLayout() => _visualElementTracker?.UpdateLayout();
 
-		void IViewHandler.MeasureExactly()
+		void IViewRenderer.MeasureExactly()
 		{
 			ViewRenderer.MeasureExactly(this, ((IVisualElementRenderer)this).Element, Context);
 		}

@@ -11,7 +11,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	public class FrameRenderer : CardView, IVisualElementRenderer, IViewHandler, ITabStop
+	public class FrameRenderer : CardView, IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		float _defaultElevation = -1f;
 		float _defaultCornerRadius = -1f;
@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			tracker?.UpdateLayout();
 		}
 
-		void IViewHandler.MeasureExactly()
+		void IViewRenderer.MeasureExactly()
 		{
 			ViewRenderer.MeasureExactly(this, Element, Context);
 		}

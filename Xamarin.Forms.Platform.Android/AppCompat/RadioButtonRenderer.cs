@@ -16,7 +16,7 @@ using Android.Widget;
 namespace Xamarin.Forms.Platform.Android
 {
 	public class RadioButtonRenderer : AppCompatRadioButton,
-		IBorderVisualElementRenderer, IButtonLayoutRenderer, IVisualElementRenderer, IViewHandler, ITabStop,
+		IBorderVisualElementRenderer, IButtonLayoutRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
 		AView.IOnAttachStateChangeListener, AView.IOnFocusChangeListener, AView.IOnClickListener, AView.IOnTouchListener,
 		CompoundButton.IOnCheckedChangeListener
 	{
@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void IVisualElementRenderer.UpdateLayout() => _tracker?.UpdateLayout();
 
-		void IViewHandler.MeasureExactly()
+		void IViewRenderer.MeasureExactly()
 		{
 			ViewRenderer.MeasureExactly(this, Element, Context);
 		}
