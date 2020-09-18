@@ -238,8 +238,18 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			TapoffView.UpdateBackground(_backdropBrush);
+
 			if (Brush.IsNullOrEmpty(_backdropBrush))
-				TapoffView.BackgroundColor = ColorExtensions.BackgroundColor.ColorWithAlpha(0.5f);
+			{
+				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+				{
+					TapoffView.BackgroundColor = UIColor.Clear;
+				}
+				else
+				{
+					TapoffView.BackgroundColor = ColorExtensions.BackgroundColor.ColorWithAlpha(0.5f);
+				}
+			}
 		}
 
 		void AddTapoffView()

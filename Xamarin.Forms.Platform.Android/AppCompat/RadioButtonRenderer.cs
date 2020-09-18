@@ -8,7 +8,6 @@ using Android.Util;
 using Android.Views;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.FastRenderers;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using Android.Widget;
@@ -16,8 +15,8 @@ using Android.Widget;
 namespace Xamarin.Forms.Platform.Android
 {
 	public class RadioButtonRenderer : AppCompatRadioButton,
-		IBorderVisualElementRenderer, IButtonLayoutRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
-		AView.IOnAttachStateChangeListener, AView.IOnFocusChangeListener, AView.IOnClickListener, AView.IOnTouchListener,
+		IBorderVisualElementRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
+		AView.IOnFocusChangeListener, 
 		CompoundButton.IOnCheckedChangeListener
 	{
 		float _defaultFontSize;
@@ -30,9 +29,7 @@ namespace Xamarin.Forms.Platform.Android
 		VisualElementTracker _tracker;
 		VisualElementRenderer _visualElementRenderer;
 		BorderBackgroundManager _backgroundTracker;
-		ButtonLayoutManager _buttonLayoutManager;
-		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> _platformElementConfiguration;
-		Button _button;
+		IPlatformElementConfiguration<PlatformConfiguration.Android, RadioButton> _platformElementConfiguration;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -42,7 +39,7 @@ namespace Xamarin.Forms.Platform.Android
 			Initialize();
 		}
 
-		protected Button Element => Button;
+		protected RadioButton Element { get; set; }
 		protected AppCompatRadioButton Control => this;
 
 		VisualElement IBorderVisualElementRenderer.Element => Element;
@@ -52,36 +49,17 @@ namespace Xamarin.Forms.Platform.Android
 		ViewGroup IVisualElementRenderer.ViewGroup => null;
 		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
 
-		Button Button
-		{
-			get => _button;
-			set
-			{
-				_button = value;
-				_platformElementConfiguration = null;
-			}
-		}
-
 		AView ITabStop.TabStop => this;
-
-		void IOnClickListener.OnClick(AView v) => ButtonElementManager.OnClick(Button, Button, v);
-
-		bool IOnTouchListener.OnTouch(AView v, MotionEvent e) => ButtonElementManager.OnTouch(Button, Button, v, e);
-
-		void IOnAttachStateChangeListener.OnViewAttachedToWindow(AView attachedView) =>
-			_buttonLayoutManager.OnViewAttachedToWindow(attachedView);
-
-		void IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView) =>
-			_buttonLayoutManager.OnViewDetachedFromWindow(detachedView);
 
 		void IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus)
 		{
-			((IElementController)Button).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, hasFocus);
+			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, hasFocus);
 		}
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
-			return _buttonLayoutManager.GetDesiredSize(widthConstraint, heightConstraint);
+			Measure(widthConstraint, heightConstraint);
+			return new SizeRequest(new Size(MeasuredWidth, MeasuredHeight));
 		}
 
 		void IVisualElementRenderer.SetElement(VisualElement element)
@@ -91,13 +69,13 @@ namespace Xamarin.Forms.Platform.Android
 				throw new ArgumentNullException(nameof(element));
 			}
 
-			if (!(element is Button))
+			if (!(element is RadioButton))
 			{
-				throw new ArgumentException($"{nameof(element)} must be of type {nameof(Button)}");
+				throw new ArgumentException($"{nameof(element)} must be of type {nameof(RadioButton)}");
 			}
 
-			VisualElement oldElement = Button;
-			Button = (Button)element;
+			RadioButton oldElement = Element;
+			Element = (RadioButton)element;
 
 			Performance.Start(out string reference);
 
@@ -105,7 +83,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 			}
-
 
 			element.PropertyChanged += OnElementPropertyChanged;
 
@@ -119,7 +96,7 @@ namespace Xamarin.Forms.Platform.Android
 				_visualElementRenderer = new VisualElementRenderer(this);
 			}
 
-			OnElementChanged(new ElementChangedEventArgs<Button>(oldElement as Button, Button));
+			OnElementChanged(new ElementChangedEventArgs<RadioButton>(oldElement, Element));
 
 			SendVisualElementInitialized(element, this);
 
@@ -156,7 +133,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				SetOnClickListener(null);
 				SetOnTouchListener(null);
-				RemoveOnAttachStateChangeListener(this);
 				OnFocusChangeListener = null;
 				SetOnCheckedChangeListener(null);
 
@@ -170,8 +146,6 @@ namespace Xamarin.Forms.Platform.Android
 				_visualElementRenderer?.Dispose();
 				_backgroundTracker?.Dispose();
 				_backgroundTracker = null;
-				_buttonLayoutManager?.Dispose();
-				_buttonLayoutManager = null;
 
 				if (Element != null)
 				{
@@ -191,7 +165,7 @@ namespace Xamarin.Forms.Platform.Android
 			return base.OnTouchEvent(e);
 		}
 
-		protected virtual void OnElementChanged(ElementChangedEventArgs<Button> e)
+		protected virtual void OnElementChanged(ElementChangedEventArgs<RadioButton> e)
 		{
 			if (e.NewElement != null && !_isDisposed)
 			{
@@ -204,9 +178,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateTextColor();
 				UpdateInputTransparent();
 				UpdateBackgroundColor();
-				_buttonLayoutManager?.Update();
-				//UpdateButtonImage(true);
 				UpdateIsChecked();
+				UpdateContent();
 				ElevationHelper.SetElevation(this, e.NewElement);
 			}
 
@@ -215,11 +188,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Button.TextColorProperty.PropertyName)
+			if (e.PropertyName == RadioButton.TextColorProperty.PropertyName)
 			{
 				UpdateTextColor();
 			}
-			else if (e.PropertyName == Button.FontProperty.PropertyName)
+			else if (e.IsOneOf(RadioButton.FontAttributesProperty, RadioButton.FontFamilyProperty, RadioButton.FontSizeProperty))
 			{
 				UpdateFont();
 			}
@@ -231,18 +204,12 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateIsChecked();
 			}
-			//else if (e.PropertyName == RadioButton.ButtonSourceProperty.PropertyName)
-			//{
-			//	UpdateButtonImage(false);
-			//}
+			else if (e.PropertyName == RadioButton.ContentProperty.PropertyName)
+			{
+				UpdateContent();
+			}
 
 			ElementPropertyChanged?.Invoke(this, e);
-		}
-
-		protected override void OnLayout(bool changed, int l, int t, int r, int b)
-		{
-			_buttonLayoutManager?.OnLayout(changed, l, t, r, b);
-			base.OnLayout(changed, l, t, r, b);
 		}
 
 		void SetTracker(VisualElementTracker tracker)
@@ -267,13 +234,9 @@ namespace Xamarin.Forms.Platform.Android
 		void Initialize()
 		{
 			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
-			_buttonLayoutManager = new ButtonLayoutManager(this);
 			_backgroundTracker = new BorderBackgroundManager(this);
 
 			SoundEffectsEnabled = false;
-			SetOnClickListener(this);
-			SetOnTouchListener(this);
-			AddOnAttachStateChangeListener(this);
 			OnFocusChangeListener = this;
 			SetOnCheckedChangeListener(this);
 
@@ -287,7 +250,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			Font font = Button.Font;
+			Font font = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
 
 			if (font == Font.Default && _defaultFontSize == 0f)
 			{
@@ -329,32 +292,8 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			_textColorSwitcher.Value.UpdateTextColor(this, Button.TextColor);
+			_textColorSwitcher.Value.UpdateTextColor(this, Element.TextColor);
 		}
-
-		// TODO Needs implementations beyond Android
-		//void UpdateButtonImage(bool isInitializing)
-		//{
-		//	if (Element == null || _isDisposed)
-		//		return;
-
-		//	ImageSource buttonSource = ((RadioButton)Element).ButtonSource;
-		//	if (buttonSource != null && !buttonSource.IsEmpty)
-		//	{
-		//		Drawable currButtonImage = Control.ButtonDrawable;
-
-		//		this.ApplyDrawableAsync(RadioButton.ButtonSourceProperty, Context, image =>
-		//		{
-		//			if (image == currButtonImage)
-		//				return;
-		//			Control.SetButtonDrawable(image);
-
-		//			Element.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
-		//		});
-		//	}
-		//	else if(!isInitializing)
-		//		Control.SetButtonDrawable(null);
-		//}
 
 		void UpdateIsChecked()
 		{
@@ -362,6 +301,16 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			Checked = ((RadioButton)Element).IsChecked;
+		}
+
+		void UpdateContent()
+		{
+			if (Element == null || Control == null)
+			{
+				return;
+			}
+
+			Control.Text = Element.ContentAsString();
 		}
 
 		void IOnCheckedChangeListener.OnCheckedChanged(CompoundButton buttonView, bool isChecked)
@@ -373,22 +322,18 @@ namespace Xamarin.Forms.Platform.Android
 		float IBorderVisualElementRenderer.ShadowDx => ShadowDx;
 		float IBorderVisualElementRenderer.ShadowDy => ShadowDy;
 		AColor IBorderVisualElementRenderer.ShadowColor => ShadowColor;
-		bool IBorderVisualElementRenderer.UseDefaultPadding() => OnThisPlatform().UseDefaultPadding();
-		bool IBorderVisualElementRenderer.UseDefaultShadow() => OnThisPlatform().UseDefaultShadow();
 		bool IBorderVisualElementRenderer.IsShadowEnabled() => true;
 		AView IBorderVisualElementRenderer.View => this;
 
-		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> OnThisPlatform()
+		IPlatformElementConfiguration<PlatformConfiguration.Android, RadioButton> OnThisPlatform()
 		{
 			if (_platformElementConfiguration == null)
-				_platformElementConfiguration = Button.OnThisPlatform();
+				_platformElementConfiguration = Element.OnThisPlatform();
 
 			return _platformElementConfiguration;
 		}
 
-		AppCompatButton IButtonLayoutRenderer.View => null;
-
-		Button IButtonLayoutRenderer.Element => this.Element;
-
+		bool IBorderVisualElementRenderer.UseDefaultPadding() => true;
+		bool IBorderVisualElementRenderer.UseDefaultShadow() => true;
 	}
 }

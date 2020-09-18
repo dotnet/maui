@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android;
+using static Xamarin.Forms.Platform.Android.Platform;
 
 // These renderers are now registered via the RenderWithAttribute in the Android Forwarders project.
 // Note that AppCompat and FastRenderers are also registered conditionally in FormsAppCompatActivity.LoadApplication

@@ -368,6 +368,18 @@ namespace Xamarin.Forms.Core.UnitTests
 			*/
 		}
 
+
+		[Test]
+		public async Task DotDotAdheresToAnimationParameter()
+		{
+			Routing.RegisterRoute(nameof(DotDotAdheresToAnimationParameter), typeof(ContentPage));
+			var shellContent = new ShellContent();
+			var shell = new TestShell(new TestFlyoutItem(new TestShellSection(shellContent)));
+			await shell.GoToAsync(nameof(DotDotAdheresToAnimationParameter));
+			await shell.GoToAsync("..", true);
+			Assert.IsTrue(shell.LastPopWasAnimated);
+		}
+
 		[Test]
 		public async Task DefaultRoutesMaintainedIfThatsAllThereIs()
 		{
@@ -594,40 +606,6 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			await shell.GoToAsync(new ShellNavigationState($"//two/tabfour/content?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
 			Assert.AreEqual("1234", (two.CurrentItem.CurrentItem.Content as ShellTestPage).SomeQueryParameter);
-		}
-
-		[Test]
-		public void CancelNavigation()
-		{
-			var shell = new Shell();
-
-			var one = new ShellItem { Route = "one" };
-			var two = new ShellItem { Route = "two" };
-
-			var tabone = MakeSimpleShellSection("tabone", "content");
-			var tabtwo = MakeSimpleShellSection("tabtwo", "content");
-			var tabthree = MakeSimpleShellSection("tabthree", "content");
-			var tabfour = MakeSimpleShellSection("tabfour", "content");
-
-			one.Items.Add(tabone);
-			one.Items.Add(tabtwo);
-
-			two.Items.Add(tabthree);
-			two.Items.Add(tabfour);
-
-			shell.Items.Add(one);
-			shell.Items.Add(two);
-
-			Assume.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//one/tabone/content"));
-
-			shell.Navigating += (s, e) =>
-			{
-				e.Cancel();
-			};
-
-			shell.GoToAsync(new ShellNavigationState("//two/tabfour/"));
-
-			Assume.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//one/tabone/content"));
 		}
 
 		[Test]

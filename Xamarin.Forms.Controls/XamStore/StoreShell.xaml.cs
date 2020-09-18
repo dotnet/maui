@@ -47,6 +47,34 @@ namespace Xamarin.Forms.Controls.XamStore
 			Routing.RegisterRoute("demo/demo", typeof(DemoShellPage));
 		}
 
+		bool _defernavigationWithAlert;
+		private void OnToggleNavigatingDeferral(object sender, System.EventArgs e)
+		{
+			_defernavigationWithAlert = !_defernavigationWithAlert;
+			FlyoutIsPresented = false;
+		}
+
+		protected override async void OnNavigating(ShellNavigatingEventArgs args)
+		{
+			base.OnNavigating(args);
+
+			if(_defernavigationWithAlert)
+			{
+				var token = args.GetDeferral();
+
+				var result  = await DisplayActionSheet(
+					"Are you sure?",
+					"cancel",
+					"destruction",
+					"Yes", "No");
+
+				if (result != "Yes")
+					args.Cancel();
+
+				token.Complete();
+			}
+		}
+
 
 
 		//bool allow = false;

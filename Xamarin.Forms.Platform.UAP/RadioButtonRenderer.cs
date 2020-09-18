@@ -1,6 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using Windows.Devices.Radios;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
+using static Xamarin.Forms.Platform.UWP.ViewToRendererConverter;
 using WBrush = Windows.UI.Xaml.Media.Brush;
 using WThickness = Windows.UI.Xaml.Thickness;
 
@@ -20,8 +23,6 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					var button = new FormsRadioButton();
 
-					button.Click += OnButtonClick;
-					button.AddHandler(PointerPressedEvent, new PointerEventHandler(OnPointerPressed), true);
 					button.Loaded += ButtonOnLoaded;
 					button.Checked += OnRadioButtonCheckedOrUnchecked;
 					button.Unchecked += OnRadioButtonCheckedOrUnchecked;
@@ -79,7 +80,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == RadioButton.TextProperty.PropertyName || e.PropertyName == Button.ImageSourceProperty.PropertyName)
+			if (e.PropertyName == RadioButton.ContentProperty.PropertyName || e.PropertyName == Button.ImageSourceProperty.PropertyName)
 			{
 				UpdateContent();
 			}
@@ -91,7 +92,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateTextColor();
 			}
-			else if (e.PropertyName == RadioButton.FontProperty.PropertyName)
+			else if (e.IsOneOf(RadioButton.FontFamilyProperty, RadioButton.FontSizeProperty, RadioButton.FontAttributesProperty))
 			{
 				UpdateFont();
 			}
@@ -132,17 +133,6 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
 
-		void OnButtonClick(object sender, RoutedEventArgs e)
-		{
-			((IButtonController)Element)?.SendReleased();
-			((IButtonController)Element)?.SendClicked();
-		}
-
-		void OnPointerPressed(object sender, RoutedEventArgs e)
-		{
-			((IButtonController)Element)?.SendPressed();
-		}
-
 		void OnRadioButtonCheckedOrUnchecked(object sender, RoutedEventArgs e)
 		{
 			if (Element == null || Control == null)
@@ -178,8 +168,15 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateContent()
 		{
-			var text = Element.Text;
-			Control.Content = text;
+			var content = Element?.Content;
+
+			if (content is View view)
+			{
+				Control.Content = new WrapperControl(view);
+				return;
+			}
+
+			Control.Content = content?.ToString();
 		}
 
 		void UpdateFont()
@@ -187,10 +184,12 @@ namespace Xamarin.Forms.Platform.UWP
 			if (Control == null || Element == null)
 				return;
 
-			if (Element.Font == Font.Default && !_fontApplied)
+			Font font = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
+
+			if (font == Font.Default && !_fontApplied)
 				return;
 
-			Font fontToApply = Element.Font == Font.Default ? Font.SystemFontOfSize(NamedSize.Medium) : Element.Font;
+			Font fontToApply = font == Font.Default ? Font.SystemFontOfSize(NamedSize.Medium) : font;
 
 			Control.ApplyFont(fontToApply);
 			_fontApplied = true;

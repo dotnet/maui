@@ -130,4 +130,8 @@
 		</ShellSection>
     </ShellItem>
     <MenuItem Shell.MenuItemTemplate="{StaticResource MenuItemTemplateWithHeight}" Text="Height 200"/>
+
+    <MenuItem Clicked="OnToggleNavigatingDeferral" Text="Toggle Navigating Deferral">
+        
+    </MenuItem>
 </localTest:TestShell>
