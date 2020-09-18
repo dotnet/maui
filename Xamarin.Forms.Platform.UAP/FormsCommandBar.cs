@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.UWP
 		// Set by the container if the container is a valid place to show a toolbar.
 		// This exists to provide consistency with the other platforms; we've got 
 		// rules in place that limit toolbars to Navigation Page and to Tabbed 
-		// and Master-Detail Pages when they're currently displaying a Navigation Page
+		// and Flyout-Detail Pages when they're currently displaying a Navigation Page
 		public bool IsInValidLocation
 		{
 			get { return _isInValidLocation; }

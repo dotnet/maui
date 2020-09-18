@@ -14,14 +14,14 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1722, "MasterDetailPage crashes when assigning a NavigationPage to Detail with no children pushed", PlatformAffected.iOS)]
-	public class Issue1722 : MasterDetailPage
+	[Issue (IssueTracker.Github, 1722, "FlyoutPage crashes when assigning a NavigationPage to Detail with no children pushed", PlatformAffected.iOS)]
+	public class Issue1722 : FlyoutPage
 	{
 		public Issue1722 ()
 		{
-			Master = new ContentPage {
-				Title = "Master",
-				Content = new Label { Text = "Master" }
+			Flyout = new ContentPage {
+				Title = "Flyout",
+				Content = new Label { Text = "Flyout" }
 			};
 
 			Detail = new NavigationPage ();

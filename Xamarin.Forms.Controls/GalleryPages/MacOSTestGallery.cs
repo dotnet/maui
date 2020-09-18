@@ -182,7 +182,7 @@ namespace Xamarin.Forms.Controls
 
 			var tp = new TabbedPage { BarTextColor = Color.Red, BarBackgroundColor = Color.Yellow };
 
-			var master = new ContentPage { IconImageSource = "bank.png", BackgroundColor = Color.Red, Title = "Master", Content = lyout };
+			var master = new ContentPage { IconImageSource = "bank.png", BackgroundColor = Color.Red, Title = "Flyout", Content = lyout };
 
 			var detail = new ContentPage { IconImageSource = "bank.png", BackgroundColor = Color.Blue, Title = "Detail", Content = new Label { Text = "This is Detail Page" } };
 
@@ -209,15 +209,15 @@ namespace Xamarin.Forms.Controls
 			return tp;
 		}
 
-		public static MasterDetailPage MacDemoMasterDetailPage()
+		public static FlyoutPage MacDemoFlyoutPage()
 		{
-			var mdp = new MasterDetailPage();
+			var mdp = new FlyoutPage();
 
-			var master = new ContentPage { BackgroundColor = Color.Red, Title = "Master", Content = new Label { Text = "This is Master Page" } };
+			var master = new ContentPage { BackgroundColor = Color.Red, Title = "Flyout", Content = new Label { Text = "This is Flyout Page" } };
 
 			var detail = new ContentPage { BackgroundColor = Color.Blue, Title = "Detail", Content = new Label { Text = "This is Detail Page" } };
 
-			mdp.Master = master;
+			mdp.Flyout = master;
 			mdp.Detail = detail;
 
 			return mdp;

@@ -2,27 +2,27 @@
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:uwp="using:Xamarin.Forms.Platform.UWP">
-	<Style TargetType="uwp:MasterDetailControl">
-		<Setter Property="ToolbarForeground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
+    <Style TargetType="uwp:FlyoutPageControl">
+        <Setter Property="ToolbarForeground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
 		<Setter Property="Template">
 			<Setter.Value>
-				<ControlTemplate TargetType="uwp:MasterDetailControl">
-					<SplitView x:Name="SplitView" IsPaneOpen="{Binding IsPaneOpen,RelativeSource={RelativeSource TemplatedParent},Mode=TwoWay}" DisplayMode="Overlay">
+                <ControlTemplate TargetType="uwp:MasterDetailControl">
+                    <SplitView x:Name="SplitView" IsPaneOpen="{Binding IsPaneOpen,RelativeSource={RelativeSource TemplatedParent},Mode=TwoWay}" DisplayMode="Overlay">
 						<SplitView.Pane>
 							<Grid>
 								<Grid.RowDefinitions>
 									<RowDefinition Height="Auto" />
 									<RowDefinition Height="*" />
 								</Grid.RowDefinitions>
-								<StackPanel Grid.Row="0" Orientation="Horizontal" Visibility="{TemplateBinding MasterToolbarVisibility}"  Background="{TemplateBinding ToolbarBackground}">
+								<StackPanel Grid.Row="0" Orientation="Horizontal" Visibility="{TemplateBinding FlyoutToolbarVisibility}"  Background="{TemplateBinding ToolbarBackground}">
 									<Button Name="PaneTogglePane" Style="{ThemeResource PaneButton}" Foreground="{TemplateBinding ToolbarForeground}"
 											AutomationProperties.Name="{Binding Path=(AutomationProperties.Name), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"  
 											AutomationProperties.HelpText="{Binding Path=(AutomationProperties.HelpText), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"  
 											AutomationProperties.LabeledBy="{Binding Path=(AutomationProperties.LabeledBy), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"  
 											AutomationProperties.AccessibilityView="{Binding Path=(AutomationProperties.AccessibilityView), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"  />
-									<TextBlock Margin="10,0,0,0" Style="{ThemeResource TitleTextBlockStyle}" VerticalAlignment="Center" Text="{TemplateBinding MasterTitle}" Visibility="{TemplateBinding MasterTitleVisibility}" Foreground="{TemplateBinding ToolbarForeground}"/>
+									<TextBlock Margin="10,0,0,0" Style="{ThemeResource TitleTextBlockStyle}" VerticalAlignment="Center" Text="{TemplateBinding FlyoutTitle}" Visibility="{TemplateBinding FlyoutTitleVisibility}" Foreground="{TemplateBinding ToolbarForeground}"/>
 								</StackPanel>
-								<ContentPresenter x:Name="MasterPresenter" Grid.Row="1" Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Master}" />
+								<ContentPresenter x:Name="MasterPresenter" Grid.Row="1" Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Flyout}" />
 							</Grid>
 						</SplitView.Pane>
 						<SplitView.Content>

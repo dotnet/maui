@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 45027, "App crashes when double tapping on ToolbarItem or MenuItem very quickly", PlatformAffected.Android)]
-	public class Bugzilla45027 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla45027 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		const string BUTTON_ACTION_TEXT = "Action";
 		const string BUTTON_DELETE_TEXT = "Delete";

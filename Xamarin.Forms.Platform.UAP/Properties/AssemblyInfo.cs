@@ -56,7 +56,10 @@ using Rectangle = Xamarin.Forms.Shapes.Rectangle;
 
 [assembly: ExportRenderer(typeof(Page), typeof(PageRenderer))]
 [assembly: ExportRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer))]
+[assembly: ExportRenderer(typeof(FlyoutPage), typeof(FlyoutPageRenderer))]
+#pragma warning disable CS0618 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer))]
+#pragma warning restore CS0618 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer))]
 
 // Cells

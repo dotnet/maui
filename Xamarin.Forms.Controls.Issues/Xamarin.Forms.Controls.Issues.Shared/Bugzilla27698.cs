@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Issue(IssueTracker.Bugzilla, 27698, "[iOS] DisplayAlert and DisplayActionSheet are shown below master page ")]
-	public class Bugzilla27698 : TestMasterDetailPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla27698 : TestFlyoutPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{
@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var master = new ContentPage
 			{
-				Title = "Master",
+				Title = "Flyout",
 				Content = new StackLayout
 				{
 					VerticalOptions = LayoutOptions.Center,
@@ -34,9 +34,9 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			Master = master;
+			Flyout = master;
 
-			MasterBehavior = MasterBehavior.Popover;
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
 
 			Detail = new ContentPage
 			{

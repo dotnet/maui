@@ -132,8 +132,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void SendLifecycleEvent(bool isAppearing)
 		{
-			var masterDetailPage = Application.Current.MainPage as MasterDetailPage;
-			var pageContainer = (masterDetailPage != null ? masterDetailPage.Detail : Application.Current.MainPage) as IPageContainer<Page>;
+			var flyoutPage = Application.Current.MainPage as FlyoutPage;
+			var pageContainer = (flyoutPage != null ? flyoutPage.Detail : Application.Current.MainPage) as IPageContainer<Page>;
 			Page currentPage = pageContainer?.CurrentPage;
 
 			if(!(currentPage == null || currentPage == PageController))

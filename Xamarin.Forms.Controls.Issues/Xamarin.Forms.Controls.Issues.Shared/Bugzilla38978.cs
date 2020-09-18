@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 38978, "Cell.ForceUpdateSize issues with row selection/deselection (ViewCell)", PlatformAffected.Android)]
-	public class Bugzilla38978 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla38978 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		[Preserve (AllMembers = true)]
 		public class MyViewCell : ViewCell

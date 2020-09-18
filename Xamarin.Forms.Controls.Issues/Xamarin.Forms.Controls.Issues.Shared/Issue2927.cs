@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2927, "ListView item tapped not firing multiple times")]
-	public class Issue2927 : TestContentPage // or TestMasterDetailPage, etc .
+	public class Issue2927 : TestContentPage // or TestFlyoutPage, etc .
 	{
 		[Preserve(AllMembers = true)]
 		public class Issue2927Cell : TextCell, INotifyPropertyChanged

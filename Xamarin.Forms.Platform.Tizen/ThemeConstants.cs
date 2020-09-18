@@ -549,9 +549,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			public class Resources
 			{
 				// The source of icon resources is https://materialdesignicons.com/
-				public const string MenuIcon = "Xamarin.Forms.Platform.Tizen.Resource.menu.png";
-				public const string BackIcon = "Xamarin.Forms.Platform.Tizen.Resource.arrow_left.png";
-				public const string DotsIcon = "Xamarin.Forms.Platform.Tizen.Resource.dots_horizontal.png";
+				public const string MenuIcon = "Resource.menu.png";
+				public const string BackIcon = "Resource.arrow_left.png";
+				public const string DotsIcon = "Resource.dots_horizontal.png";
 
 				public class Watch
 				{

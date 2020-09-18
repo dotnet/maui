@@ -7,9 +7,9 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public interface IShellTabs
 	{
-		ShellTabsType Type { get; set; }
+		ShellTabsType Scrollable { get; set; }
 
-		EvasObject TargetView { get; }
+		EvasObject NativeView { get; }
 
 		EColor BackgroundColor { get; set; }
 
@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		event EventHandler<ToolbarItemEventArgs> Selected;
 
 		EToolbarItem Append(string label, string icon);
+		EToolbarItem Append(string label);
 
 		EToolbarItem InsertBefore(EToolbarItem before, string label, string icon);
 	}

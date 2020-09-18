@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 		public static readonly DependencyProperty HasNavigationBarProperty = DependencyProperty.Register("HasNavigationBar", typeof(bool), typeof(FormsWindow));
 		public static readonly DependencyProperty BackButtonTitleProperty = DependencyProperty.Register("BackButtonTitle", typeof(string), typeof(FormsWindow));
 		public static readonly DependencyProperty CurrentNavigationPageProperty = DependencyProperty.Register("CurrentNavigationPage", typeof(FormsNavigationPage), typeof(FormsWindow));
-		public static readonly DependencyProperty CurrentMasterDetailPageProperty = DependencyProperty.Register("CurrentMasterDetailPage", typeof(FormsMasterDetailPage), typeof(FormsWindow));
+		public static readonly DependencyProperty CurrentFlyoutPageProperty = DependencyProperty.Register("CurrentFlyoutPage", typeof(FormsFlyoutPage), typeof(FormsWindow));
 		public static readonly DependencyProperty CurrentContentDialogProperty = DependencyProperty.Register("CurrentContentDialog", typeof(FormsContentDialog), typeof(FormsWindow));
 		public static readonly DependencyProperty TitleBarBackgroundColorProperty = DependencyProperty.Register("TitleBarBackgroundColor", typeof(WBrush), typeof(FormsWindow));
 		public static readonly DependencyProperty TitleBarTextColorProperty = DependencyProperty.Register("TitleBarTextColor", typeof(WBrush), typeof(FormsWindow));
@@ -70,10 +70,10 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			private set { SetValue(CurrentNavigationPageProperty, value); }
 		}
 
-		public FormsMasterDetailPage CurrentMasterDetailPage
+		public FormsFlyoutPage CurrentFlyoutPage
 		{
-			get { return (FormsMasterDetailPage)GetValue(CurrentMasterDetailPageProperty); }
-			private set { SetValue(CurrentMasterDetailPageProperty, value); }
+			get { return (FormsFlyoutPage)GetValue(CurrentFlyoutPageProperty); }
+			private set { SetValue(CurrentFlyoutPageProperty, value); }
 		}
 
 		public bool HasBackButton
@@ -159,9 +159,9 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 
 		private void HamburgerButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (CurrentMasterDetailPage != null)
+			if (CurrentFlyoutPage != null)
 			{
-				CurrentMasterDetailPage.IsPresented = !CurrentMasterDetailPage.IsPresented;
+				CurrentFlyoutPage.IsPresented = !CurrentFlyoutPage.IsPresented;
 			}
 		}
 
@@ -186,7 +186,7 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			CurrentTitle = childrens.FirstOrDefault()?.GetTitle();
 			HasNavigationBar = childrens.FirstOrDefault()?.GetHasNavigationBar() ?? false;
 			CurrentNavigationPage = childrens.OfType<FormsNavigationPage>()?.FirstOrDefault();
-			CurrentMasterDetailPage = childrens.OfType<FormsMasterDetailPage>()?.FirstOrDefault();
+			CurrentFlyoutPage = childrens.OfType<FormsFlyoutPage>()?.FirstOrDefault();
 			var page = childrens.FirstOrDefault();
 			if (page != null)
 			{
@@ -200,7 +200,7 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			}
 
 			if (hamburgerButton != null)
-				hamburgerButton.Visibility = CurrentMasterDetailPage != null ? Visibility.Visible : Visibility.Collapsed;
+			  hamburgerButton.Visibility = CurrentFlyoutPage != null ? Visibility.Visible : Visibility.Collapsed;
 
 			if (CurrentNavigationPage != null)
 			{

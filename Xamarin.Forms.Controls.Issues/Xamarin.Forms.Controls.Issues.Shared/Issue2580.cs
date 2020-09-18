@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2580, "Adding accessibility tags to a label seems to cause the renderer to need more space", PlatformAffected.Android)]
-	public class Issue2580 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue2580 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

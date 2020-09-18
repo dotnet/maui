@@ -7,7 +7,12 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public interface INavigationView
 	{
-		EvasObject Header { get; set; }
+
+		EvasObject NativeView { get; }
+
+		FlyoutHeaderBehavior HeaderBehavior { get; set; }
+
+		View Header { get; set; }
 
 		EColor BackgroundColor { get; set; }
 

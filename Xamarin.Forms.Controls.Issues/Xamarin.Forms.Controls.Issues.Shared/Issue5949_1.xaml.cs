@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 #endif
 	[Preserve(AllMembers = true)]
-	public partial class Issue5949_1 : MasterDetailPage
+	public partial class Issue5949_1 : FlyoutPage
 	{
 		public Issue5949_1()
 		{

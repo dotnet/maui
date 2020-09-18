@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<MasterDetailPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Controls.Issues.Issue2357" IsBusy="{Binding IsBusy}">
-	<MasterDetailPage.Master>
+<FlyoutPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Controls.Issues.Issue2357" IsBusy="{Binding IsBusy}">
+	<FlyoutPage.Flyout>
 		<ContentPage Title="Menu" Icon="menuIcon.png">
 			<StackLayout Spacing="0">
 				<ContentView Padding="10,36,0,5" BackgroundColor="Transparent">
@@ -17,5 +17,5 @@
 				</ListView>
 			</StackLayout>
 		</ContentPage>
-	</MasterDetailPage.Master>
-</MasterDetailPage>
+	</FlyoutPage.Flyout>
+</FlyoutPage>

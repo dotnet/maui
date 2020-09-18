@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 60001, "[UWP] Inconsistency with DatePicker ", PlatformAffected.UWP)]
-	public class Bugzilla60001 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla60001 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

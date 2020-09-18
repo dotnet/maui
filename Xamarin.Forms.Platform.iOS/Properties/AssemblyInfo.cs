@@ -35,12 +35,17 @@ using UIKit;
 [assembly: ExportRenderer(typeof(NavigationPage), typeof(NavigationRenderer))]
 [assembly: ExportRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer))]
 [assembly: ExportRenderer(typeof(Page), typeof(PageRenderer))]
+[assembly: ExportRenderer(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer), UIUserInterfaceIdiom.Phone)]
 [assembly: ExportRenderer(typeof(MasterDetailPage), typeof(PhoneMasterDetailRenderer), UIUserInterfaceIdiom.Phone)]
+
 [assembly: ExportRenderer(typeof(RefreshView), typeof(RefreshViewRenderer))]
 [assembly: ExportRenderer(typeof(Path), typeof(PathRenderer))]
 #endif
 
+#pragma warning disable CS0618 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(MasterDetailPage), typeof(TabletMasterDetailRenderer), UIUserInterfaceIdiom.Pad)]
+#pragma warning restore CS0618 // Type or member is obsolete
+[assembly: ExportRenderer(typeof(FlyoutPage), typeof(TabletFlyoutPageRenderer), UIUserInterfaceIdiom.Pad)]
 [assembly: ExportRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer))]
 [assembly: ExportRenderer(typeof(Shell), typeof(ShellRenderer))]
 [assembly: ExportCell(typeof(Cell), typeof(CellRenderer))]

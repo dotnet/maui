@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4919, "Webview Navigation cancel not working", PlatformAffected.Android)]
-	public class Issue4919 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue4919 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

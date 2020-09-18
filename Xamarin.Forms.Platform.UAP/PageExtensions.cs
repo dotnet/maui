@@ -101,8 +101,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		internal static Page GetCurrentPage(this Page currentPage)
 		{
-			if (currentPage is MasterDetailPage mdp)
-				return GetCurrentPage(mdp.Detail);
+			if (currentPage is FlyoutPage fp)
+				return GetCurrentPage(fp.Detail);
 			else if (currentPage is IPageContainer<Page> pc)
 				return GetCurrentPage(pc.CurrentPage);
 			else

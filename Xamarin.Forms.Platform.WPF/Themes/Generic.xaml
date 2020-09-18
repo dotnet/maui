@@ -8,7 +8,8 @@
         <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsTabbedPage.xaml" />
         <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsNavigationPage.xaml" />
         <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsCarouselPage.xaml" />
-        <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsMasterDetailPage.xaml" /> 
+        <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsFlyoutPage.xaml" />
+        <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsMasterDetailPage.xaml" />
 
         <!-- Windows -->
         <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsWindow.xaml" />

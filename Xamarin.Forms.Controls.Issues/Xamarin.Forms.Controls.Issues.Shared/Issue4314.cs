@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4314, "When ListView items is removed and it is empty, Xamarin Forms crash", PlatformAffected.iOS)]
-	public class Issue4314 : TestNavigationPage // or TestMasterDetailPage, etc ...
+	public class Issue4314 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		const string Success = "Success";
 #if !UITEST

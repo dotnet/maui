@@ -13,11 +13,11 @@ using Xamarin.UITest.iOS;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
-	[Category(Core.UITests.UITestCategories.MasterDetailPage)]
+	[Category(Core.UITests.UITestCategories.FlyoutPage)]
 	[Category(Core.UITests.UITestCategories.Navigation)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 5412, "5412 - (NavigationBar disappears on MasterDetailPage)", PlatformAffected.UWP)]
+	[Issue(IssueTracker.Github, 5412, "5412 - (NavigationBar disappears on FlyoutPage)", PlatformAffected.UWP)]
 	public class Issue5412 : TestContentPage
 	{
 		protected override async void Init()
@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	}
 
-	public class Issue5412MainPage : MasterDetailPage
+	public class Issue5412MainPage : FlyoutPage
 	{
 		public Issue5412MainPage()
 		{
@@ -58,13 +58,13 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 			menuBtn.Clicked += (sender, e) =>
 			{
-				var mdp = ((sender as Button).Parent.Parent as MasterDetailPage);
+				var mdp = ((sender as Button).Parent.Parent as FlyoutPage);
 				mdp.Detail.Navigation.PushAsync(new Issue5412SettingPage());
 				mdp.IsPresented = false;
 			};
 
-			MasterBehavior = MasterBehavior.Popover;
-			Master = new ContentPage
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
+			Flyout = new ContentPage
 			{
 				Content = menuBtn,
 				Title = "Menu title"

@@ -48,14 +48,14 @@ namespace Xamarin.Forms.Controls
 		async Task TestBugzilla44596()
 		{
 			await Task.Delay(50);
-			// verify that there is no gray screen displayed between the blue splash and red MasterDetailPage.
+			// verify that there is no gray screen displayed between the blue splash and red FlyoutPage.
 			SetMainPage(new Bugzilla44596SplashPage(async () =>
 			{
 				var newTabbedPage = new TabbedPage();
 				newTabbedPage.Children.Add(new ContentPage { BackgroundColor = Color.Red, Content = new Label { Text = "Success" } });
-				MainPage = new MasterDetailPage
+				MainPage = new FlyoutPage
 				{
-					Master = new ContentPage { Title = "Master", BackgroundColor = Color.Red },
+					Flyout = new ContentPage { Title = "Flyout", BackgroundColor = Color.Red },
 					Detail = newTabbedPage
 				};
 
@@ -80,14 +80,14 @@ namespace Xamarin.Forms.Controls
 			view.Navigated += (s, e) => MainPage.DisplayAlert("Navigated", $"If this popup appears multiple times, this test has failed", "ok"); ;
 
 			MainPage.Navigation.PushAsync(new ContentPage { Content = view, Title = "Issue 2393" });
-			//// Uncomment to verify that there is no gray screen displayed between the blue splash and red MasterDetailPage.
+			//// Uncomment to verify that there is no gray screen displayed between the blue splash and red FlyoutPage.
 			//SetMainPage(new Bugzilla44596SplashPage(() =>
 			//{
 			//	var newTabbedPage = new TabbedPage();
 			//	newTabbedPage.Children.Add(new ContentPage { BackgroundColor = Color.Red, Content = new Label { Text = "yay" } });
-			//	MainPage = new MasterDetailPage
+			//	MainPage = new FlyoutPage
 			//	{
-			//		Master = new ContentPage { Title = "Master", BackgroundColor = Color.Red },
+			//		Flyout = new ContentPage { Title = "Flyout", BackgroundColor = Color.Red },
 			//		Detail = newTabbedPage
 			//	};
 			//}));
@@ -110,19 +110,19 @@ namespace Xamarin.Forms.Controls
 		{
 			var layout = new StackLayout { BackgroundColor = Color.Red };
 			layout.Children.Add(new Label { Text = "This is master Page" });
-			var master = new ContentPage { Title = "Master", Content = layout, BackgroundColor = Color.SkyBlue, IconImageSource ="menuIcon" };
+			var master = new ContentPage { Title = "Flyout", Content = layout, BackgroundColor = Color.SkyBlue, IconImageSource ="menuIcon" };
 			master.On<iOS>().SetUseSafeArea(true);
-			var mdp = new MasterDetailPage
+			var mdp = new FlyoutPage
 			{
 				AutomationId = DefaultMainPageId,
-				Master = master,
+				Flyout = master,
 				Detail = CoreGallery.GetMainPage()
 			};
 			master.IconImageSource.AutomationId = "btnMDPAutomationID";
 			mdp.SetAutomationPropertiesName("Main page");
 			mdp.SetAutomationPropertiesHelpText("Main page help text");
-			mdp.Master.IconImageSource.SetAutomationPropertiesHelpText("This as MDP icon");
-			mdp.Master.IconImageSource.SetAutomationPropertiesName("MDPICON");
+			mdp.Flyout.IconImageSource.SetAutomationPropertiesHelpText("This as MDP icon");
+			mdp.Flyout.IconImageSource.SetAutomationPropertiesName("MDPICON");
 			return mdp;
 			//return new XamStore.StoreShell();
 		}
@@ -148,7 +148,7 @@ namespace Xamarin.Forms.Controls
 					if (pageForms is AppLinkPageGallery appLinkPageGallery)
 					{
 						appLinkPageGallery.ShowLabel = true;
-						(MainPage as MasterDetailPage)?.Detail.Navigation.PushAsync((pageForms as Page));
+						(MainPage as FlyoutPage)?.Detail.Navigation.PushAsync((pageForms as Page));
 					}
 				}
 			}

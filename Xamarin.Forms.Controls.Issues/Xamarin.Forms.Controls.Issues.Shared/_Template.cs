@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1, "Issue Description", PlatformAffected.Default)]
-	public class Issue1 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue1 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

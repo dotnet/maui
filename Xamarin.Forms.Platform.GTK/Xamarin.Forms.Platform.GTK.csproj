@@ -125,6 +125,7 @@
     <Compile Include="Controls\CustomFrame.cs" />
     <Compile Include="Controls\DatePicker.cs" />
     <Compile Include="Controls\EntryWrapper.cs" />
+    <Compile Include="Controls\FlyoutPage.cs" />
     <Compile Include="Controls\GLWidget\GLWidget.cs" />
     <Compile Include="Controls\GLWidget\OSX\OSXWindowInfoInitializer.cs" />
     <Compile Include="Controls\GLWidget\Win\WinWindowsInfoInitializer.cs" />
@@ -132,7 +133,6 @@
     <Compile Include="Controls\ImageButton.cs" />
     <Compile Include="Controls\ImageControl.cs" />
     <Compile Include="Controls\ListView.cs" />
-    <Compile Include="Controls\MasterDetailPage.cs" />
     <Compile Include="Controls\NavigationChildPage.cs" />
     <Compile Include="Controls\NotebookWrapper.cs" />
     <Compile Include="Controls\OpenGLView.cs" />
@@ -194,6 +194,7 @@
     <Compile Include="Renderers\DatePickerRenderer.cs" />
     <Compile Include="Renderers\EditorRenderer.cs" />
     <Compile Include="Renderers\EntryRenderer.cs" />
+    <Compile Include="Renderers\FlyoutPageRenderer.cs" />
     <Compile Include="Renderers\FrameRenderer.cs" />
     <Compile Include="Renderers\ImageRenderer.cs" />
     <Compile Include="Renderers\IPageControl.cs" />
@@ -201,7 +202,6 @@
     <Compile Include="Renderers\LabelRenderer.cs" />
     <Compile Include="Renderers\LayoutRenderer.cs" />
     <Compile Include="Renderers\ListViewRenderer.cs" />
-    <Compile Include="Renderers\MasterDetailPageRenderer.cs" />
     <Compile Include="Renderers\NavigationPageRenderer.cs" />
     <Compile Include="Renderers\OpenGLViewRenderer.cs" />
     <Compile Include="Renderers\PageRenderer.cs" />

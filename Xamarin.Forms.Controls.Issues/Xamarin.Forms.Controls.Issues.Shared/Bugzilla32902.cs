@@ -15,12 +15,12 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 32902, "[iOS | iPad] App Crashes (without debug log) when Master Detail isPresented and navigation being popped")]
-	public class Bugzilla32902 : TestContentPage // or TestMasterDetailPage, etc ...
+	[Issue(IssueTracker.Bugzilla, 32902, "[iOS | iPad] App Crashes (without debug log) when Flyout Detail isPresented and navigation being popped")]
+	public class Bugzilla32902 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		ContentPage FirstContentPage { get; set; }
 
-		MasterDetailPage HomePage { get; set; }
+		FlyoutPage HomePage { get; set; }
 
 		NavigationPage DetailPage { get; set; }
 
@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 			//MASTER PAGE
 			MasterPage = new ContentPage()
 			{
-				Title = "Master",
+				Title = "Flyout",
 				BackgroundColor = Color.FromHex("#1abc9c")
 			};
 			var masterPageLayout = new StackLayout();
@@ -87,9 +87,9 @@ namespace Xamarin.Forms.Controls.Issues
 			});
 
 			//MASTERDETAIL PAGE
-			HomePage = new MasterDetailPage()
+			HomePage = new FlyoutPage()
 			{
-				Master = MasterPage,
+				Flyout = MasterPage,
 				Detail = DetailPage
 			};
 
@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var firstContentPageLayout = new StackLayout();
 			var firstContentPageButton = new Button()
 			{
-				Text = "Push Modal To Master-Detail Page",
+				Text = "Push Modal To Flyout-Detail Page",
 				AutomationId = "btnPushModal",
 				BackgroundColor = Color.FromHex("#ecf0f1"),
 				TextColor = Color.Black
@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				RunningApp.Tap(q => q.Marked("btnNext"));
 				RunningApp.Tap(q => q.Marked("btnPushModal"));
-				RunningApp.Tap(q => q.Marked("Master"));
+				RunningApp.Tap(q => q.Marked("Flyout"));
 				RunningApp.Tap(q => q.Marked("btnPop"));
 			}
 		}

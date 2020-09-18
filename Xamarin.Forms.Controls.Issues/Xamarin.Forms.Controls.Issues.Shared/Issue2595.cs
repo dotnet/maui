@@ -8,11 +8,11 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2595, "ScrollView.Content is not re-layouted on Android", PlatformAffected.Android)]
-	public class Issue2595 : TestMasterDetailPage
+	public class Issue2595 : TestFlyoutPage
 	{
 		protected override void Init()
 		{
-			Master = new _2595Master();
+			Flyout = new _2595Master();
 			Detail = new _2595ScrollPage();
 			IsPresented = true;
 		}
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			void OnMenuClicked(object sender, SelectedItemChangedEventArgs e)
 			{
-				var mainPage = (MasterDetailPage)Parent;
+				var mainPage = (FlyoutPage)Parent;
 				mainPage.Detail = new _2595ScrollPage ();
 				mainPage.IsPresented = false;
 			}

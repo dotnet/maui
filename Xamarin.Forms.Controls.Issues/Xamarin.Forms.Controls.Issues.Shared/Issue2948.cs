@@ -18,10 +18,10 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 2948, "MasterDetailPage Detail is interactive even when Master is open when in Landscape")]
-	public class Issue2948 : TestMasterDetailPage
+	[Issue(IssueTracker.Github, 2948, "FlyoutPage Detail is interactive even when Flyout is open when in Landscape")]
+	public class Issue2948 : TestFlyoutPage
 	{
-		static MasterDetailPage s_mdp;
+		static FlyoutPage s_mdp;
 
 		protected override void Init()
 		{
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			menuPage.Menu.ItemSelected += (sender, e) => NavigateTo(e.SelectedItem as MenuItem);
 
-			Master = menuPage;
+			Flyout = menuPage;
 			Detail = new NavigationPage(new ContractsPage());
 		}
 
@@ -101,7 +101,7 @@ namespace Xamarin.Forms.Controls.Issues
 				var showMasterButton = new Button
 				{
 					AutomationId = "ShowMasterBtn",
-					Text = "Show Master"
+					Text = "Show Flyout"
 				};
 				showMasterButton.Clicked += (sender, e) =>
 				{

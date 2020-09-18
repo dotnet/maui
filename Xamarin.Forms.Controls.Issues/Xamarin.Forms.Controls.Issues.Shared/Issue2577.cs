@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2577, "Hamburger icon not shown when using FormsAppCompatActivity", PlatformAffected.Android)]
-	public class Issue2577 : TestMasterDetailPage
+	public class Issue2577 : TestFlyoutPage
 	{
 		const string NavButton = "NavigateButton";
 		const string ToggleBackButton = "ToggleBackButton";
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
 				Title = "master page",
 				Content = new ListView { AutomationId = MasterList }

@@ -245,8 +245,8 @@ Task("Clean")
     .Description("Deletes all the obj/bin directories")
     .Does(() =>
 {
-    CleanDirectories("./**/obj", (fsi)=> !fsi.Path.FullPath.Contains("XFCorePostProcessor") && !fsi.Path.FullPath.StartsWith("tools"));
-    CleanDirectories("./**/bin", (fsi)=> !fsi.Path.FullPath.Contains("XFCorePostProcessor") && !fsi.Path.FullPath.StartsWith("tools"));
+    CleanDirectories("./**/obj", (fsi)=> !fsi.Path.FullPath.StartsWith("tools"));
+    CleanDirectories("./**/bin", (fsi)=> !fsi.Path.FullPath.StartsWith("tools"));
 });
 
 Task("provision-macsdk")

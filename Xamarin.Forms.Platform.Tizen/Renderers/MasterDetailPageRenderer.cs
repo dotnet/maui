@@ -3,6 +3,7 @@ using Xamarin.Forms.Platform.Tizen.Renderers;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class MasterDetailPageRenderer : VisualElementRenderer<MasterDetailPage>
 	{
 		Native.MasterDetailPage _mdpage;
@@ -154,4 +155,5 @@ namespace Xamarin.Forms.Platform.Tizen
 			_mdpage.IsGestureEnabled = Element.IsGestureEnabled;
 		}
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 }

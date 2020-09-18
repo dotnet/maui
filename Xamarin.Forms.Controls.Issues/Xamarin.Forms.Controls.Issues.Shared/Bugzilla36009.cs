@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 36009, "Children of Layouts with data bound IsVisible are not displayed")]
-	public class Bugzilla36009 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla36009 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		[Preserve (AllMembers = true)]
 		public class SampleViewModel: ViewModelBase

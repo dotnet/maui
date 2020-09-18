@@ -41,9 +41,11 @@ namespace Xamarin.Forms.Platform.WPF
 					Control.LayoutUpdated += NativeLayoutUpdated;
 				}
 
-				// Update control property 
-				UpdateOrientation();
+				// Update control properties
 				LoadContent();
+				UpdateOrientation();
+				UpdateHorizontalScrollBarVisibility();
+				UpdateVerticalScrollBarVisibility();
 
 				// Suscribe element event
 				Controller.ScrollToRequested += OnScrollToRequested;

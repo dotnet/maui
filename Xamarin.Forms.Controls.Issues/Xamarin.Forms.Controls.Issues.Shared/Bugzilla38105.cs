@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 38105, "RemovePage does not cause back arrow to go away on Android", PlatformAffected.Android, navigationBehavior: NavigationBehavior.PushModalAsync)]
-	public class Bugzilla38105 : TestMasterDetailPage
+	public class Bugzilla38105 : TestFlyoutPage
 	{
 		protected override void Init ()
 		{
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 				IsPresented = false;
 			};
 
-			Master = new ContentPage () {
+			Flyout = new ContentPage () {
 				Title = "test",
 				Content = button
 			};

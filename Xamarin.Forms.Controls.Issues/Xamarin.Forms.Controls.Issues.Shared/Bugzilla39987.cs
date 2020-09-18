@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 39987, "Bug 39987 - MapView not working correctly on iOS 9.3")]
-	public class Bugzilla39987 : TestTabbedPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla39987 : TestTabbedPage // or TestFlyoutPage, etc ...
 	{
 		const string TabTitle = "Test";
 		const string TestMap = "Map";

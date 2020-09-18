@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44453, "[UWP] ToolbarItem Text hard to see when BarTextColor is light", PlatformAffected.WinRT)]
-	public class Bugzilla44453 : TestMasterDetailPage
+	public class Bugzilla44453 : TestFlyoutPage
 	{
 		protected override void Init()
 		{
@@ -35,10 +35,10 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			MasterBehavior = MasterBehavior.Popover;
-			Master = new ContentPage
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
+			Flyout = new ContentPage
 			{
-				Title = "Master"
+				Title = "Flyout"
 			};
 			Detail = new NavigationPage(content)
 			{

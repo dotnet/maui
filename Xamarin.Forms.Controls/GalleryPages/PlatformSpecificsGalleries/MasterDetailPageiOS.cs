@@ -5,13 +5,13 @@ using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 {
-	public class MasterDetailPageiOS : MasterDetailPage
+	public class FlyoutPageiOS : FlyoutPage
 	{
-		public MasterDetailPageiOS(ICommand restore)
+		public FlyoutPageiOS(ICommand restore)
 		{
-			MasterBehavior = MasterBehavior.Popover;
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
 
-			var master = new ContentPage { Title = "Master Detail Page" };
+			var master = new ContentPage { Title = "Flyout Detail Page" };
 			var masterContent = new StackLayout { Spacing = 10, Margin = new Thickness(0, 10, 5, 0) };
 			var detail = new ContentPage
 			{
@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 
 			detail.Content = detailContent;
 
-			Master = master;
+			Flyout = master;
 
 			detail.On<iOS>().SetPrefersStatusBarHidden(StatusBarHiddenMode.True);
 

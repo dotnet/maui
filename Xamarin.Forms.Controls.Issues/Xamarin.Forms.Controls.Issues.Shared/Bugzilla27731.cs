@@ -12,14 +12,14 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 27731, "[Android] Action Bar can not be controlled reliably on MasterDetailPage", PlatformAffected.Android)]
-	public class Bugzilla27731 : TestMasterDetailPage
+	[Issue(IssueTracker.Bugzilla, 27731, "[Android] Action Bar can not be controlled reliably on FlyoutPage", PlatformAffected.Android)]
+	public class Bugzilla27731 : TestFlyoutPage
 	{
 		string _pageTitle = "PageTitle";
 		protected override void Init()
 		{
 			// Initialize ui here instead of ctor
-			Master = new ContentPage { Content = new Label { Text = "Menu Item" }, Title = "Menu" };
+			Flyout = new ContentPage { Content = new Label { Text = "Menu Item" }, Title = "Menu" };
 			Detail = new NavigationPage(new Page2(_pageTitle));
 		}
 

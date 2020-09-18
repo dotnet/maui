@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 43867, "Numeric keyboard shows text / default keyboard when back button is hit", PlatformAffected.Android)]
-	public class Bugzilla43867 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla43867 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

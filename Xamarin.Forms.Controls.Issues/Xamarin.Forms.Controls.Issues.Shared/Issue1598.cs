@@ -3,15 +3,15 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	public class MasterDetailToolbarBug : MasterDetailPage
+	public class MasterDetailToolbarBug : FlyoutPage
 	{
 		public MasterDetailToolbarBug()
 		{
 			Title = "MasterDetailToolbarBug";
 
-			Master = new ContentPage()
+			Flyout = new ContentPage()
 			{
-				Title = "Master"
+				Title = "Flyout"
 			};
 			Detail = new ContentPage()
 			{

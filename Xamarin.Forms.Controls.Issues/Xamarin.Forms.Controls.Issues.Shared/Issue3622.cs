@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3622, "Android TalkBack reads elements behind modal pages", PlatformAffected.Android, NavigationBehavior.PushModalAsync)]
-	public class Issue3622 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue3622 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		[Preserve(AllMembers = true)]
 		public class Contact

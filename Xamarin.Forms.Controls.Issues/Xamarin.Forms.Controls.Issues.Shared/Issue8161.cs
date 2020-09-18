@@ -6,11 +6,11 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8161, "On WPF ToolbarItem.IsEnabled = false does nothing", PlatformAffected.WPF, navigationBehavior: NavigationBehavior.SetApplicationRoot)]
-	public class Issue8161 : TestMasterDetailPage
+	public class Issue8161 : TestFlyoutPage
 	{
 		protected override void Init()
 		{
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
 				Title = "8161"
 			};

@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1666, "Use WKWebView on iOS", PlatformAffected.iOS)]
-	public class Issue1666 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue1666 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

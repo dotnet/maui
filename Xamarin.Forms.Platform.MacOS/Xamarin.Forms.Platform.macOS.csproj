@@ -120,6 +120,7 @@
       <Link>EffectUtilities.cs</Link>
     </Compile>
     <Compile Include="Renderers\FlippedClipView.cs" />
+    <Compile Include="Renderers\FlyoutPageRenderer.cs" />
     <Compile Include="Renderers\PageRenderer.cs" />
     <Compile Include="Renderers\DefaultRenderer.cs" />
     <Compile Include="Extensions\AlignmentExtensions.cs" />
@@ -163,7 +164,6 @@
     <Compile Include="Renderers\CarouselPageRenderer.cs" />
     <Compile Include="Extensions\NSScrollViewExtensions.cs" />
     <Compile Include="Controls\ScrollViewScrollChangedEventArgs.cs" />
-    <Compile Include="Renderers\MasterDetailPageRenderer.cs" />
     <Compile Include="Renderers\TabbedPageRenderer.cs" />
     <Compile Include="Renderers\NavigationPageRenderer.cs" />
     <Compile Include="Controls\FormsPageControllerDelegate.cs" />
@@ -315,7 +315,5 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
   <Target Name="_VerifyBuildSignature" />
-  <ItemGroup>
-    <Folder Include="Shapes\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

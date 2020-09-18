@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 53909, "XML drawables cannot be used as ToolbarItem.Icon ", PlatformAffected.Default)]
-	public class Bugzilla53909 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla53909 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

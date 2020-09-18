@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 55555, "Header problem")]
-	public class Issue55555 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue55555 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

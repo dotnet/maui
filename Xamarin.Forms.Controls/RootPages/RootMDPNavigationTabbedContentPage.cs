@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Controls
 {
-	// MasterDetailPage -> NavigationPage -> TabbedPage -> ContentPage
-	public class RootMDPNavigationTabbedContentPage : MasterDetailPage {
+	// FlyoutPage -> NavigationPage -> TabbedPage -> ContentPage
+	public class RootMDPNavigationTabbedContentPage : FlyoutPage {
 
 		public RootMDPNavigationTabbedContentPage (string hierarchy)
 		{
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Controls
 			NavigationPage.SetHasNavigationBar (firstTab, false);
 
 			Detail = new NavigationPage (tabbedPage);
-			Master = new NavigationPage (new ContentPage {
+			Flyout = new NavigationPage (new ContentPage {
 				Title = "Testing 345",
 				Content = new StackLayout {
 					Children = {

@@ -14,20 +14,20 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 8366, "[Bug] UWP CollectionView Floating Row and Toolbar clipped")]
-	public class Issue8366 : TestMasterDetailPage
+	public class Issue8366 : TestFlyoutPage
 	{
 		NavigationPage _items;
 		NavigationPage _other;
 
 		protected override void Init()
 		{
-			MasterBehavior = MasterBehavior.Split;
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
 
 			_items = new NavigationPage(Items());
 			_other = new NavigationPage(Other());
 
 			Detail = _items;
-			Master = MasterPage();
+			Flyout = MasterPage();
 		}
 
 		ContentPage MasterPage() 
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 			menu.Children.Add(buttonItems);
 			menu.Children.Add(buttonOther);
 
-			page.Title = "8366 Master";
+			page.Title = "8366 Flyout";
 
 			return page;
 		}

@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 32040, "EntryCell.Tapped or SwitchCell.Tapped does not fire when within a TableView ")]
-	public class Bugzilla32040 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla32040 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

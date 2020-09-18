@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Controls
 		{
 
 			var np = new Button { Text = "Try NavigationPage", Command = new Command(() => { PushNavigationPage(DeviceDirection); }) };
-			var mdp = new Button { Text = "Try MasterDetailPage", Command = new Command(() => { PushMasterDetailPage(DeviceDirection); }) };
+			var mdp = new Button { Text = "Try FlyoutPage", Command = new Command(() => { PushFlyoutPage(DeviceDirection); }) };
 			var crp = new Button { Text = "Try CarouselPage", Command = new Command(() => { PushCarouselPage(DeviceDirection); }) };
 			var tp = new Button { Text = "Try TabbedPage", Command = new Command(() => { PushTabbedPage(DeviceDirection); }) };
 			var cp = new Button { Text = "Try ContentPage", Command = new Command(() => { PushContentPage(DeviceDirection); }) };
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Controls
 			((App)Application.Current).SetMainPage(new FlowDirectionGalleryNP(direction));
 		}
 
-		public static void PushMasterDetailPage(FlowDirection direction)
+		public static void PushFlyoutPage(FlowDirection direction)
 		{
 			((App)Application.Current).SetMainPage(new FlowDirectionGalleryMDP(direction));
 		}
@@ -69,12 +69,12 @@ namespace Xamarin.Forms.Controls
 		}
 	}
 
-	public class FlowDirectionGalleryMDP : MasterDetailPage
+	public class FlowDirectionGalleryMDP : FlyoutPage
 	{
 		public FlowDirectionGalleryMDP(FlowDirection direction)
 		{
 			FlowDirection = direction;
-			Master = new FlowDirectionGalleryCP(direction) { Title = "Master", BackgroundColor = Color.Red };
+			Flyout = new FlowDirectionGalleryCP(direction) { Title = "Flyout", BackgroundColor = Color.Red };
 			Detail = new NavigationPage(new FlowDirectionGalleryCP(direction) { Title = "Detail" });
 			IsPresented = true;
 		}
@@ -206,7 +206,7 @@ namespace Xamarin.Forms.Controls
 				switch (parentType)
 				{
 					case "Xamarin.Forms.Controls.FlowDirectionGalleryMDP":
-						FlowDirectionGalleryLandingPage.PushMasterDetailPage(newDirection);
+						FlowDirectionGalleryLandingPage.PushFlyoutPage(newDirection);
 						break;
 					case "Xamarin.Forms.Controls.FlowDirectionGalleryCarP":
 						FlowDirectionGalleryLandingPage.PushCarouselPage(newDirection);

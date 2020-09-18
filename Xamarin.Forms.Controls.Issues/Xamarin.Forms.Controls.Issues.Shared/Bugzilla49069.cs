@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 49069, "Java.Lang.ArrayIndexOutOfBoundsException when rendering long Label on Android", PlatformAffected.Default)]
-	public class Bugzilla49069 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla49069 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

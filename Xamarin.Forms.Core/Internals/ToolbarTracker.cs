@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Internals
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ToolbarTracker
 	{
-		int _masterDetails;
+		int _flyoutDetails;
 		Page _target;
 		ToolBarItemComparer _toolBarItemComparer;
 		public ToolbarTracker()
@@ -20,12 +20,23 @@ namespace Xamarin.Forms.Internals
 
 		public IEnumerable<Page> AdditionalTargets { get; set; }
 
-		public bool HaveMasterDetail
+		public bool HaveFlyoutPage
 		{
-			get { return _masterDetails > 0; }
+			get { return _flyoutDetails > 0; }
 		}
 
-		public bool SeparateMasterDetail { get; set; }
+		public bool SeparateFlyoutPage { get; set; }
+
+
+		[Obsolete("MASTERDETAILPAGE")]
+		public bool HaveMasterDetail => SeparateFlyoutPage;
+
+		[Obsolete("MASTERDETAILPAGE")]
+		public bool SeparateMasterDetail 
+		{
+			get => SeparateFlyoutPage;
+			set => SeparateFlyoutPage = value;
+		}
 
 		public Page Target
 		{
@@ -76,28 +87,28 @@ namespace Xamarin.Forms.Internals
 			var result = new List<ToolbarItem>();
 			result.AddRange(page.ToolbarItems);
 
-			if (page is MasterDetailPage)
+			if (page is FlyoutPage)
 			{
-				var masterDetail = (MasterDetailPage)page;
-				if (SeparateMasterDetail)
+				var flyoutDetail = (FlyoutPage)page;
+				if (SeparateFlyoutPage)
 				{
-					if (masterDetail.IsPresented)
+					if (flyoutDetail.IsPresented)
 					{
-						if (masterDetail.Master != null)
-							result.AddRange(GetCurrentToolbarItems(masterDetail.Master));
+						if (flyoutDetail.Flyout != null)
+							result.AddRange(GetCurrentToolbarItems(flyoutDetail.Flyout));
 					}
 					else
 					{
-						if (masterDetail.Detail != null)
-							result.AddRange(GetCurrentToolbarItems(masterDetail.Detail));
+						if (flyoutDetail.Detail != null)
+							result.AddRange(GetCurrentToolbarItems(flyoutDetail.Detail));
 					}
 				}
 				else
 				{
-					if (masterDetail.Master != null)
-						result.AddRange(GetCurrentToolbarItems(masterDetail.Master));
-					if (masterDetail.Detail != null)
-						result.AddRange(GetCurrentToolbarItems(masterDetail.Detail));
+					if (flyoutDetail.Flyout != null)
+						result.AddRange(GetCurrentToolbarItems(flyoutDetail.Flyout));
+					if (flyoutDetail.Detail != null)
+						result.AddRange(GetCurrentToolbarItems(flyoutDetail.Detail));
 				}
 			}
 			else if (page is IPageContainer<Page>)
@@ -135,8 +146,8 @@ namespace Xamarin.Forms.Internals
 
 		void OnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
 		{
-			if (propertyChangedEventArgs.PropertyName == NavigationPage.CurrentPageProperty.PropertyName || propertyChangedEventArgs.PropertyName == MasterDetailPage.IsPresentedProperty.PropertyName ||
-				propertyChangedEventArgs.PropertyName == "Detail" || propertyChangedEventArgs.PropertyName == "Master")
+			if (propertyChangedEventArgs.PropertyName == NavigationPage.CurrentPageProperty.PropertyName || propertyChangedEventArgs.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName ||
+				propertyChangedEventArgs.PropertyName == "Detail" || propertyChangedEventArgs.PropertyName == "Flyout")
 			{
 				EmitCollectionChanged();
 			}
@@ -144,8 +155,8 @@ namespace Xamarin.Forms.Internals
 
 		void RegisterChildPage(Page page)
 		{
-			if (page is MasterDetailPage)
-				_masterDetails++;
+			if (page is FlyoutPage)
+				_flyoutDetails++;
 
 			((ObservableCollection<ToolbarItem>)page.ToolbarItems).CollectionChanged += OnCollectionChanged;
 			page.PropertyChanged += OnPropertyChanged;
@@ -156,8 +167,8 @@ namespace Xamarin.Forms.Internals
 			if (page == null)
 				return;
 
-			if (page is MasterDetailPage)
-				_masterDetails++;
+			if (page is FlyoutPage)
+				_flyoutDetails++;
 
 			((ObservableCollection<ToolbarItem>)page.ToolbarItems).CollectionChanged += OnCollectionChanged;
 			page.Descendants().OfType<Page>().ForEach(RegisterChildPage);
@@ -169,8 +180,8 @@ namespace Xamarin.Forms.Internals
 
 		void UnregisterChildPage(Page page)
 		{
-			if (page is MasterDetailPage)
-				_masterDetails--;
+			if (page is FlyoutPage)
+				_flyoutDetails--;
 
 			((ObservableCollection<ToolbarItem>)page.ToolbarItems).CollectionChanged -= OnCollectionChanged;
 			page.PropertyChanged -= OnPropertyChanged;
@@ -181,8 +192,8 @@ namespace Xamarin.Forms.Internals
 			if (page == null)
 				return;
 
-			if (page is MasterDetailPage)
-				_masterDetails--;
+			if (page is FlyoutPage)
+				_flyoutDetails--;
 
 			((ObservableCollection<ToolbarItem>)page.ToolbarItems).CollectionChanged -= OnCollectionChanged;
 			page.Descendants().OfType<Page>().ForEach(UnregisterChildPage);

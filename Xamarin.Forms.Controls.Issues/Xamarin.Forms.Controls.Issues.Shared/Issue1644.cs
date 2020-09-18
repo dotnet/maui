@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 	}
 
-	public class Issue1644Menu : MasterDetailPage
+	public class Issue1644Menu : FlyoutPage
 	{
 		Issue1644 _secondPage = new Issue1644();
 
@@ -64,8 +64,8 @@ namespace Xamarin.Forms.Controls.Issues
 				Navigation.PushAsync(_secondPage);
 			};
 
-			Master = new ContentPage() {
-				Title = "Master"
+			Flyout = new ContentPage() {
+				Title = "Flyout"
 			};
 
 			Detail = new ContentPage() {

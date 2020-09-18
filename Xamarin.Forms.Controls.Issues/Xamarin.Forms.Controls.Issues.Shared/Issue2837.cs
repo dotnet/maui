@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2837, " Exception thrown during NavigationPage.Navigation.PopAsync", PlatformAffected.Android)]
-	public class Issue2837 : TestNavigationPage // or TestMasterDetailPage, etc ...
+	public class Issue2837 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		string _labelText = "worked";
 		protected override async void Init()

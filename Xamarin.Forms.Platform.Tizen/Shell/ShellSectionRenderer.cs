@@ -5,45 +5,108 @@ using System.Collections.Specialized;
 using ElmSharp;
 using EToolbarItem = ElmSharp.ToolbarItem;
 using EColor = ElmSharp.Color;
-using Xamarin.Forms.Platform.Tizen.Native;
+using EBox = ElmSharp.Box;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class ShellSectionRenderer : IAppearanceObserver
+	public class ShellSectionRenderer : IAppearanceObserver, IDisposable
 	{
-		Native.Box _box = null;
+		EBox _mainLayout = null;
+		EBox _contentArea = null;
 		IShellTabs _tabs = null;
-		Native.Page _currentContent = null;
-		ShellSection _section = null;
+		EvasObject _currentContent = null;
+		Page _displayedPage;
 
-		Dictionary<ShellContent, Native.Page> _contentToPage = new Dictionary<ShellContent, Native.Page>();
-		Dictionary<ShellContent, EToolbarItem> _contentToItem = new Dictionary<ShellContent, EToolbarItem>();
+		Dictionary<ShellContent, EvasObject> _contentCache = new Dictionary<ShellContent, EvasObject>();
+		Dictionary<ShellContent, EToolbarItem> _contentToTabsItem = new Dictionary<ShellContent, EToolbarItem>();
 		Dictionary<EToolbarItem, ShellContent> _itemToContent = new Dictionary<EToolbarItem, ShellContent>();
-		LinkedList<EToolbarItem> _toolbarItemList = new LinkedList<EToolbarItem>();
+		List<EToolbarItem> _tabsItems = new List<EToolbarItem>();
 
 		EColor _backgroundColor = ShellRenderer.DefaultBackgroundColor.ToNative();
-		EColor _foregroundCollor = ShellRenderer.DefaultForegroundColor.ToNative();
+		EColor _foregroundColor = ShellRenderer.DefaultForegroundColor.ToNative();
 
 		bool _disposed = false;
 
 		public ShellSectionRenderer(ShellSection section)
 		{
-			_section = section;
-			_section.PropertyChanged += OnSectionPropertyChanged;
-			(_section.Items as INotifyCollectionChanged).CollectionChanged += OnShellSectionCollectionChanged;
+			ShellSection = section;
+			ShellSection.PropertyChanged += OnSectionPropertyChanged;
+			(ShellSection.Items as INotifyCollectionChanged).CollectionChanged += OnShellSectionCollectionChanged;
 
-			_box = new Native.Box(Forms.NativeParent);
-			_box.LayoutUpdated += OnLayoutUpdated;
+			_mainLayout = new EBox(Forms.NativeParent);
+			_mainLayout.SetLayoutCallback(OnLayout);
 
-			_tabs = CreateToolbar();
-			_tabs.TargetView.Show();
-			Control.PackEnd(_tabs as EvasObject);
-			InitializeTabs();
+			_contentArea = new EBox(Forms.NativeParent);
+			_contentArea.Show();
+			_mainLayout.PackEnd(_contentArea);
 
-			ResetToolbarItem();
-			UpdateCurrentShellContent(_section.CurrentItem);
+			UpdateTabsItem();
+			UpdateCurrentItem(ShellSection.CurrentItem);
 
-			((IShellController)_section.Parent.Parent).AddAppearanceObserver(this, _section);
+			((IShellController)Shell.Current).AddAppearanceObserver(this, ShellSection);
+			(ShellSection as IShellSectionController).AddDisplayedPageObserver(this, UpdateDisplayedPage);
+		}
+
+		bool HasTabs => _tabs != null;
+
+		bool _tabBarIsVisible = true;
+
+		bool TabBarIsVisible
+		{
+			get => _tabBarIsVisible;
+			set
+			{
+				if (_tabBarIsVisible != value)
+				{
+					_tabBarIsVisible = value;
+					_mainLayout.MarkChanged();
+
+					if (value)
+					{
+						_tabs?.NativeView.Show();
+					}
+					else
+					{
+						_tabs?.NativeView.Hide();
+					}
+				}
+			}
+		}
+
+		public ShellSection ShellSection { get; }
+
+		public EvasObject NativeView
+		{
+			get
+			{
+				return _mainLayout;
+			}
+		}
+
+		public EColor ToolbarBackgroundColor
+		{
+			get
+			{
+				return _backgroundColor;
+			}
+			set
+			{
+				_backgroundColor = value;
+				UpdateToolbarBackgroudColor(_backgroundColor);
+			}
+		}
+
+		public EColor ToolbarForegroundColor
+		{
+			get
+			{
+				return _foregroundColor;
+			}
+			set
+			{
+				_foregroundColor = value;
+				UpdateToolbarForegroundColor(_foregroundColor);
+			}
 		}
 
 		~ShellSectionRenderer()
@@ -57,37 +120,36 @@ namespace Xamarin.Forms.Platform.Tizen
 			GC.SuppressFinalize(this);
 		}
 
-		public Native.Box Control
+		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
-			get
-			{
-				return _box;
-			}
+			var backgroundColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor ?? Color.Default;
+			var foregroundColor = appearance?.ForegroundColor ?? Color.Default;
+			ToolbarBackgroundColor = backgroundColor.IsDefault ? ShellRenderer.DefaultBackgroundColor.ToNative() : backgroundColor.ToNative();
+			ToolbarForegroundColor = foregroundColor.IsDefault ? ShellRenderer.DefaultForegroundColor.ToNative() : foregroundColor.ToNative();
 		}
 
-		public EColor BackgroundColor
+		void UpdateDisplayedPage(Page page)
 		{
-			get
+			if (_displayedPage != null)
 			{
-				return _backgroundColor;
+				_displayedPage.PropertyChanged -= OnDisplayedPagePropertyChanged;
 			}
-			set
+
+			if (page == null)
 			{
-				_backgroundColor = value;
-				UpdateToolbarBackgroudColor(_backgroundColor);
+				TabBarIsVisible = true;
+				return;
 			}
+			_displayedPage = page;
+			_displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
+			TabBarIsVisible = Shell.GetTabBarIsVisible(page);
 		}
 
-		public EColor ForegroundColor
+		void OnDisplayedPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			get
+			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 			{
-				return _foregroundCollor;
-			}
-			set
-			{
-				_foregroundCollor = value;
-				UpdateToolbarForegroundColor(_foregroundCollor);
+				TabBarIsVisible = Shell.GetTabBarIsVisible(_displayedPage);
 			}
 		}
 
@@ -98,29 +160,22 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (disposing)
 			{
-				if (_section != null)
+				((IShellController)Shell.Current).RemoveAppearanceObserver(this);
+				if (ShellSection != null)
 				{
-					Control.LayoutUpdated -= OnLayoutUpdated;
-					((IShellController)_section.Parent.Parent).RemoveAppearanceObserver(this);
-					_section.PropertyChanged -= OnSectionPropertyChanged;
-					_section = null;
+					(ShellSection as IShellSectionController).RemoveDisplayedPageObserver(this);
+					ShellSection.PropertyChanged -= OnSectionPropertyChanged;
+					DeinitializeTabs();
 
-					foreach (var pair in _contentToPage)
+					foreach (var native in _contentCache.Values)
 					{
-						var content = pair.Value as Native.Page;
-						content.Unrealize();
+						native.Unrealize();
 					}
-
-					if (_tabs != null)
-					{
-						_tabs.Selected -= OnTabsSelected;
-					}
-					_contentToPage.Clear();
-					_contentToItem.Clear();
+					_contentCache.Clear();
+					_contentToTabsItem.Clear();
 					_itemToContent.Clear();
-					_toolbarItemList.Clear();
 				}
-				Control.Unrealize();
+				NativeView.Unrealize();
 			}
 			_disposed = true;
 		}
@@ -132,56 +187,63 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void InitializeTabs()
 		{
+			if (_tabs != null)
+			{
+				return;
+			}
+			_tabs = CreateToolbar();
+			_tabs.NativeView.Show();
 			_tabs.BackgroundColor = _backgroundColor;
-			_tabs.Type = ShellTabsType.Fixed;
+			_tabs.Scrollable = ShellTabsType.Fixed;
 			_tabs.Selected += OnTabsSelected;
+			_mainLayout.PackEnd(_tabs.NativeView);
+		}
+
+		void ClearTabsItem()
+		{
+			if (!HasTabs)
+				return;
+
+			foreach (var item in _tabsItems)
+			{
+				item.Delete();
+			}
+			_tabsItems.Clear();
+			_contentToTabsItem.Clear();
+			_itemToContent.Clear();
+		}
+
+		void DeinitializeTabs()
+		{
+			if (_tabs == null)
+			{
+				return;
+			}
+			ClearTabsItem();
+			_tabs.NativeView.Unrealize();
+			_tabs = null;
 		}
 
 		void OnSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "CurrentItem")
 			{
-				UpdateCurrentItem(_section.CurrentItem);
+				UpdateCurrentItem(ShellSection.CurrentItem);
 			}
 		}
 
 		void UpdateCurrentItem(ShellContent content)
 		{
 			UpdateCurrentShellContent(content);
-			if (_contentToItem.ContainsKey(content))
+			if (_contentToTabsItem.ContainsKey(content))
 			{
-				_contentToItem[content].IsSelected = true;
-			}
-			UpdateLayout();
-		}
-
-		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
-		{
-			if (appearance == null)
-				return;
-
-			if (!appearance.BackgroundColor.IsDefault)
-			{
-				BackgroundColor = appearance.BackgroundColor.ToNative();
-			}
-			else
-			{
-				BackgroundColor = ShellRenderer.DefaultBackgroundColor.ToNative();
-			}
-
-			if (!appearance.ForegroundColor.IsDefault)
-			{
-				ForegroundColor = appearance.ForegroundColor.ToNative();
-			}
-			else
-			{
-				ForegroundColor = ShellRenderer.DefaultForegroundColor.ToNative();
+				_contentToTabsItem[content].IsSelected = true;
 			}
 		}
 
 		void UpdateToolbarBackgroudColor(EColor color)
 		{
-			foreach (EToolbarItem item in _toolbarItemList)
+			foreach (EToolbarItem item in _tabsItems)
 			{
 				item.SetBackgroundColor(color);
 			}
@@ -189,86 +251,44 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateToolbarForegroundColor(EColor color)
 		{
-			foreach (EToolbarItem item in _toolbarItemList)
+			foreach (EToolbarItem item in _tabsItems)
 			{
-				if (item != _tabs.SelectedItem)
-				{
-					item.DeleteUnderlineColor();
-				}
-				else
-				{
-					item.SetUnderlineColor(color);
-				}
+				item.SetUnderlineColor(color);
 			}
 		}
 
-		void ResetToolbarItem()
+		void UpdateTabsItem()
 		{
-			foreach (ShellContent content in _section.Items)
+			if (ShellSection.Items.Count <= 1)
 			{
-				InsertToolbarItem(content);
+				DeinitializeTabs();
+				return;
 			}
-			if (_section.Items.Count > 3)
+
+			InitializeTabs();
+			ClearTabsItem();
+			foreach (ShellContent content in ShellSection.Items)
 			{
-				_tabs.Type = ShellTabsType.Scrollable;
+				InsertTabsItem(content);
 			}
+			_tabs.Scrollable = ShellSection.Items.Count > 3 ? ShellTabsType.Scrollable : ShellTabsType.Fixed;
 		}
 
-		EToolbarItem InsertToolbarItem(ShellContent content)
+		EToolbarItem InsertTabsItem(ShellContent content)
 		{
 			EToolbarItem item = _tabs.Append(content.Title, null);
 			item.SetBackgroundColor(_backgroundColor);
-			_toolbarItemList.AddLast(item);
-			_itemToContent.Add(item, content);
-			_contentToItem.Add(content, item);
-			return item;
-		}
+			item.SetUnderlineColor(_foregroundColor);
 
-		void RemoveToolbarItem(ShellContent section)
-		{
-			if (_contentToItem.ContainsKey(section))
-			{
-				var del = _contentToItem[section];
-				_toolbarItemList.Remove(del);
-				_itemToContent.Remove(del);
-				_contentToItem.Remove(section);
-				del.Delete();
-			}
+			_tabsItems.Add(item);
+			_itemToContent[item] = content;
+			_contentToTabsItem[content] = item;
+			return item;
 		}
 
 		void OnShellSectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			switch (e.Action)
-			{
-				case NotifyCollectionChangedAction.Add:
-					AddToolbarItems(e);
-					break;
-
-				case NotifyCollectionChangedAction.Remove:
-					RemoveToolbarItems(e);
-					break;
-
-				default:
-					break;
-			}
-		}
-
-		void AddToolbarItems(NotifyCollectionChangedEventArgs e)
-		{
-			foreach (var item in e.NewItems)
-			{
-				InsertToolbarItem(item as ShellContent);
-			}
-			UpdateLayout();
-		}
-
-		void RemoveToolbarItems(NotifyCollectionChangedEventArgs e)
-		{
-			foreach (var item in e.OldItems)
-			{
-				RemoveToolbarItem(item as ShellContent);
-			}
-			UpdateLayout();
+			UpdateTabsItem();
 		}
 
 		void OnTabsSelected(object sender, ToolbarItemEventArgs e)
@@ -279,66 +299,67 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 
 			ShellContent content = _itemToContent[_tabs.SelectedItem];
-			if (_section.CurrentItem != content)
+			if (ShellSection.CurrentItem != content)
 			{
-				_section.SetValueFromRenderer(ShellSection.CurrentItemProperty, content);
+				ShellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, content);
 			}
 		}
 
 		void UpdateCurrentShellContent(ShellContent content)
 		{
-			_currentContent?.Hide();
+			if (_currentContent != null)
+			{
+				_currentContent.Hide();
+				_contentArea.UnPack(_currentContent);
+				_currentContent = null;
+			}
 
 			if (content == null)
 			{
-				_currentContent = null;
 				return;
 			}
 
-			Native.Page native = null;
-			if (_contentToPage.ContainsKey(content))
+			if (!_contentCache.ContainsKey(content))
 			{
-				native = _contentToPage[content];
+				var native = CreateShellContent(content);
+				native.SetAlignment(-1, -1);
+				native.SetWeight(1, 1);
+				_contentCache[content] = native;
 			}
-			else
-			{
-				native = CreateShellContent(content);
-				Control.PackEnd(native);
-				_contentToPage.Add(content, native);
-			}
-			_currentContent = native;
+			_currentContent = _contentCache[content];
 			_currentContent.Show();
-			return;
+			_contentArea.PackEnd(_currentContent);
 		}
 
-		Native.Page CreateShellContent(ShellContent content)
+		EvasObject CreateShellContent(ShellContent content)
 		{
 			Page xpage = ((IShellContentController)content).GetOrCreateContent();
-			Native.Page page = Platform.GetOrCreateRenderer(xpage).NativeView as Native.Page;
-			page.BackgroundColor = (xpage.BackgroundColor != Color.Default ? xpage.BackgroundColor.ToNative() : EColor.White);
-			return page;
+			return Platform.GetOrCreateRenderer(xpage).NativeView;
 		}
 
-		void UpdateLayout()
+		void OnLayout()
 		{
-			OnLayoutUpdated(this, new LayoutEventArgs() { Geometry = Control.Geometry });
-		}
+			if (NativeView.Geometry.Width == 0 || NativeView.Geometry.Height == 0)
+				return;
+			var bound = NativeView.Geometry;
 
-		void OnLayoutUpdated(object sender, LayoutEventArgs e)
-		{
-			int toolbarHeight = 0;
-			if (_section.Items.Count <= 1)
+			int tabsHeight;
+			if (HasTabs && TabBarIsVisible)
 			{
-				toolbarHeight = 0;
+				var tabsBound = bound;
+				tabsHeight = _tabs.NativeView.MinimumHeight;
+				tabsBound.Height = tabsHeight;
+				_tabs.NativeView.Geometry = tabsBound;
 			}
 			else
 			{
-				toolbarHeight = _tabs.TargetView.MinimumHeight;
+				tabsHeight = 0;
 			}
-			_tabs.TargetView.Move(e.Geometry.X, e.Geometry.Y);
-			_tabs.TargetView.Resize(e.Geometry.Width, toolbarHeight);
-			_currentContent?.Move(e.Geometry.X, e.Geometry.Y + toolbarHeight);
-			_currentContent?.Resize(e.Geometry.Width, e.Geometry.Height - toolbarHeight);
+
+			var contentBound = bound;
+			contentBound.Y += tabsHeight;
+			contentBound.Height -= tabsHeight;
+			_contentArea.Geometry = contentBound;
 		}
 	}
 }

@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{ "Main Page right after settings Details to Content Page", typeof(Issue2338_MasterDetailsPage_ContentPage)},
 			{ "Change Page in Constructor of Page Currently being set to Main Page", typeof(Issue2338_Ctor)},
 			{ "Change Page in Constructor with some added additional changes", typeof(Issue2338_Ctor_MultipleChanges)},
-			{ "Basic change Main Page when previous page is Master Details", typeof(Issue2338_MasterDetailsPage)},
+			{ "Basic change Main Page when previous page is Flyout Details", typeof(Issue2338_MasterDetailsPage)},
 			{ "Swap Main Page during OnAppearing", typeof(Issue2338_SwapMainPageDuringAppearing)},
 			{ "Swap out Tabbed Page", typeof(Issue2338_TabbedPage)},
 		};
@@ -283,12 +283,12 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 
 			[Preserve(AllMembers = true)]
-			class InternalMasterDetailsPage : MasterDetailPage
+			class InternalMasterDetailsPage : FlyoutPage
 			{
 				public InternalMasterDetailsPage()
 				{
 					Detail = new NavigationPage(new ContentPage() { Title = "Details" });
-					Master = new ContentPage() { Title = "Master" };
+					Flyout = new ContentPage() { Title = "Flyout" };
 				}
 
 				protected override async void OnAppearing()
@@ -324,12 +324,12 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 
 			[Preserve(AllMembers = true)]
-			class InternalMasterDetailsPage : MasterDetailPage
+			class InternalMasterDetailsPage : FlyoutPage
 			{
 				public InternalMasterDetailsPage()
 				{
 					Detail = new NavigationPage(new ContentPage() { Title = "Details" });
-					Master = new ContentPage() { Title = "Master" };
+					Flyout = new ContentPage() { Title = "Flyout" };
 				}
 
 				protected override async void OnAppearing()
@@ -342,7 +342,7 @@ namespace Xamarin.Forms.Controls.Issues
 					{
 						var navPage = new NavigationPage(new ContentPage() { Title = "Details" });
 						Detail = navPage;
-						Master = new ContentPage() { Title = "Master" };
+						Flyout = new ContentPage() { Title = "Flyout" };
 
 						Application.Current.MainPage = Issue2338TestHelper.CreateSuccessPage(nameof(Issue2338_MasterDetailsPage_NavigationPage));
 
@@ -370,19 +370,19 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 
 			[Preserve(AllMembers = true)]
-			class InternalMasterDetailsPage : MasterDetailPage
+			class InternalMasterDetailsPage : FlyoutPage
 			{
 				public InternalMasterDetailsPage()
 				{
 					Detail = new ContentPage() { Title = "Details" };
-					Master = new ContentPage() { Title = "Master" };
+					Flyout = new ContentPage() { Title = "Flyout" };
 					Detail.Appearing += DetailAppearing;
 				}
 
 				private void DetailAppearing(object sender, EventArgs e)
 				{
 					Detail = new ContentPage() { Title = "Details" };
-					Master = new ContentPage() { Title = "Master" };
+					Flyout = new ContentPage() { Title = "Flyout" };
 
 					Application.Current.MainPage = Issue2338TestHelper.CreateSuccessPage(nameof(Issue2338_MasterDetailsPage_ContentPage));
 				}
