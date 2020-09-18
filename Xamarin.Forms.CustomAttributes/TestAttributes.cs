@@ -657,7 +657,7 @@ namespace Xamarin.Forms.CustomAttributes
 			Detail,
 			IsGestureEnabled,
 			IsPresented,
-			MasterBehavior
+			FlyoutLayoutBehavior
 		}
 
 		public enum OpenGlView

@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Issue(IssueTracker.Bugzilla, 27085, "EntryCell has no possibility to hide keyboard on iOS")]
-	public class Bugzilla27085 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla27085 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

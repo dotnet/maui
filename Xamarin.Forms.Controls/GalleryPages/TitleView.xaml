@@ -11,7 +11,7 @@
 	</NavigationPage.TitleView>
 	<ScrollView>
 		<StackLayout BackgroundColor="Pink">
-			<Button Clicked="masterDetailsPage_Clicked" Text="Master Details Page"></Button>
+			<Button Clicked="masterDetailsPage_Clicked" Text="Flyout Details Page"></Button>
 			<Button Clicked="masterDetailsPageIcon_Clicked" Text="Toggle MDP Icon"></Button>
 			<Button Clicked="tabbedPage_Clicked" Text="Tabbed Page"></Button>
 			<Button Clicked="navigationPage_Clicked" Text="Navigation Page"></Button>

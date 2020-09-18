@@ -305,7 +305,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				return false;
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (parentPage is MasterDetailPage mdPage && mdPage.Master == parent && !mdPage.IsPresented)
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 				return false;
 			}

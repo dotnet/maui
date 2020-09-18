@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 33578, "TableView EntryCell shows DefaultKeyboard, but after scrolling down and back a NumericKeyboard (")]
-	public class Bugzilla33578 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla33578 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

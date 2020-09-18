@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 27642, "[Windows Phone] Adding a ScrollView control to a ContentView, remove it and re-add it will cause an exception on Windows Phone")]
-	public class Bugzilla27642 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla27642 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		ContentView _mainContent;
 		protected override void Init()

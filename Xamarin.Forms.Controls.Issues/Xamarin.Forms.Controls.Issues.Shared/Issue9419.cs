@@ -18,13 +18,13 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 9419, "Crash when toolbar item removed then page changed", PlatformAffected.Android)]
-	public class Issue9419 : TestMasterDetailPage
+	public class Issue9419 : TestFlyoutPage
 	{
 		const string OkResult = "Ok";
 
 		protected override async void Init()
 		{
-			Master = new ContentPage { Title = "Title" };
+			Flyout = new ContentPage { Title = "Title" };
 			Detail = new NavigationPage(new Issue9419Page());
 
 			await Task.Delay(TimeSpan.FromSeconds(3));

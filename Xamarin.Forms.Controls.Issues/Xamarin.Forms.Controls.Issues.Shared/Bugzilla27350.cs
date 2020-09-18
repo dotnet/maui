@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 27350, "Binding throws Null Pointer Exception when Updating Tab")]
-	public class Bugzilla27350 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla27350 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

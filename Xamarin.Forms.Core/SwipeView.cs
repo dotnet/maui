@@ -16,6 +16,9 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SwipeView>>(() => new PlatformConfigurationRegistry<SwipeView>(this));
 		}
 
+		public static readonly BindableProperty ThresholdProperty =
+			BindableProperty.Create(nameof(Threshold), typeof(double), typeof(SwipeView), default(double));
+
 		public static readonly BindableProperty LeftItemsProperty =
 			BindableProperty.Create(nameof(LeftItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
 				propertyChanged: OnSwipeItemsChanged);
@@ -31,6 +34,12 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty BottomItemsProperty =
 			BindableProperty.Create(nameof(BottomItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
 				propertyChanged: OnSwipeItemsChanged);
+
+		public double Threshold
+		{
+			get { return (double)GetValue(ThresholdProperty); }
+			set { SetValue(ThresholdProperty, value); }
+		}
 
 		public SwipeItems LeftItems
 		{
@@ -106,7 +115,7 @@ namespace Xamarin.Forms
 			if (BottomItems != null)
 				SetInheritedBindingContext(BottomItems, bc);
 		}
-  
+
 		SwipeItems SwipeItemsDefaultValueCreator() => new SwipeItems();
 
 		static object SwipeItemsDefaultValueCreator(BindableObject bindable)

@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5172, "ImageCell does not load image from URI - Android", PlatformAffected.Android)]
-	public class Issue5172 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue5172 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

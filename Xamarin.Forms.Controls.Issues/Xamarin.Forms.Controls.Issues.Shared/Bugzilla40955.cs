@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(UITestCategories.Performance)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
-	public class Bugzilla40955 : TestMasterDetailPage
+	public class Bugzilla40955 : TestFlyoutPage
 	{
 		const string DestructorMessage = "NavigationPageEx Destructor called";
 		const string Page1Title = "Page1";
@@ -30,12 +30,12 @@ namespace Xamarin.Forms.Controls.Issues
 		static string LabelPage3 = $"The console should have displayed the text '{DestructorMessage}' at least once. If not, this test has failed.";
 		static string Success = string.Empty;
 
-		static MasterDetailPage Reference;
+		static FlyoutPage Reference;
 
 		protected override void Init()
 		{
 			var masterPage = new MasterPage();
-			Master = masterPage;
+			Flyout = masterPage;
 			masterPage.ListView.ItemSelected += (sender, e) =>
 			{
 				var item = e.SelectedItem as MasterPageItem;

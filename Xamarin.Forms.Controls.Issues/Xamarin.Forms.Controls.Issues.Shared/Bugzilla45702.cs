@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init()
 		{
-			Navigation.PushAsync(new NavigationPage(new MasterDetailPage() { Master = new ContentPage() { Title = "Master" }, Detail = new DetailPage45702() }));
+			Navigation.PushAsync(new NavigationPage(new FlyoutPage() { Flyout = new ContentPage() { Title = "Flyout" }, Detail = new DetailPage45702() }));
 
 			MessagingCenter.Subscribe<DetailPage45702>(this, "switch", SwitchControl);
 		}

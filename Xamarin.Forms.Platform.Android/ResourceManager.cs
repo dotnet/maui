@@ -379,9 +379,9 @@ namespace Xamarin.Forms.Platform.Android
 			return IdFromTitle(name, StyleClass, "style", context);
 		}
 
-		public static void Init(Assembly masterAssembly)
+		public static void Init(Assembly mainAssembly)
 		{
-			_assembly = masterAssembly;
+			_assembly = mainAssembly;
 		}
 
 		static int IdFromTitle(string title, Type type)

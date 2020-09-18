@@ -30,14 +30,14 @@ namespace Xamarin.Forms.Controls
 		public int Id { get; set; }
 	}
 
-	public class RootPage : MasterDetailPage
+	public class RootPage : FlyoutPage
 	{
 		public static bool IsUWPDesktop { get; set; }
 		Dictionary<HMenuType, NavigationPage> Pages { get; set; }
 		public RootPage()
 		{
 			Pages = new Dictionary<HMenuType, NavigationPage>();
-			Master = new MenuPage1(this);
+			Flyout = new MenuPage1(this);
 
 			BindingContext = new HBaseViewModel
 			{
@@ -90,7 +90,7 @@ namespace Xamarin.Forms.Controls
 		List<HomeMenuItem> menuItems;
 		public MenuPage1(RootPage page)
 		{
-			Title = "Master";
+			Title = "Flyout";
 			mdp = page;
 			ListViewMenu = new ListView(ListViewCachingStrategy.RecycleElement)
 			{

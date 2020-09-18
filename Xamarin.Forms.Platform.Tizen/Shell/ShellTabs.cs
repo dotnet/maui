@@ -1,17 +1,18 @@
-﻿using System;
-using ElmSharp;
+﻿using ElmSharp;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ShellTabs : Toolbar, IShellTabs
 	{
+
 		ShellTabsType _type;
 		public ShellTabs(EvasObject parent) : base(parent)
 		{
 			Style = ThemeConstants.Toolbar.Styles.Material;
+			SelectionMode = ToolbarSelectionMode.Always;
 		}
 
-		public ShellTabsType Type
+		public ShellTabsType Scrollable
 		{
 			get => _type;
 			set
@@ -29,7 +30,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		public EvasObject TargetView
+		public EvasObject NativeView
 		{
 			get
 			{

@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 60699, "ListView Bindings fire multiple times on Android SDK 24+", PlatformAffected.Android)]
-	public class Bugzilla60699 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla60699 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		[Preserve(AllMembers = true)]
 		public class DebugConverter : IValueConverter

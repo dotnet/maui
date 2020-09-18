@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4303, "[Android] TabbedPage's child is appearing before it should be", PlatformAffected.Android)]
-	public class Issue4303 : TestTabbedPage // or TestMasterDetailPage, etc ...
+	public class Issue4303 : TestTabbedPage // or TestFlyoutPage, etc ...
 	{
 		bool appeared = false;
 		bool childAppeared = false;

@@ -9,6 +9,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
+	[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
 	internal class MasterDetailContainer : ViewGroup
 	{
 		const int DefaultMasterSize = 320;
@@ -43,7 +44,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (_childView == null)
 					return;
-				
+
 				AddChildView(_childView);
 			}
 		}

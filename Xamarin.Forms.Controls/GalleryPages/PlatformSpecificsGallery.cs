@@ -12,8 +12,8 @@ namespace Xamarin.Forms.Controls
 		{
 
 			Title = "PlatformSpecificsGallery";
-			var mdpiOSButton = new Button { Text = "MasterDetailPage (iOS)" };
-			var mdpWindowsButton = new Button { Text = "MasterDetailPage (Windows)" };
+			var mdpiOSButton = new Button { Text = "FlyoutPage (iOS)" };
+			var mdpWindowsButton = new Button { Text = "FlyoutPage (Windows)" };
 			var npiOSButton = new Button() { Text = "NavigationPage (iOS)" };
 			var npWindowsButton = new Button { Text = "NavigationPage (Windows)" };
 			var tbiOSButton = new Button { Text = "TabbedPage (iOS)" };
@@ -30,8 +30,8 @@ namespace Xamarin.Forms.Controls
 			var refreshWindowsButton = new Button { Text = "RefreshView (Windows)" };
 			var searchBariOSButton = new Button { Text = "SearchBar (iOS)" };
 
-			mdpiOSButton.Clicked += (sender, args) => { SetRoot(new MasterDetailPageiOS(new Command(RestoreOriginal))); };
-			mdpWindowsButton.Clicked += (sender, args) => { SetRoot(new MasterDetailPageWindows(new Command(RestoreOriginal))); };
+			mdpiOSButton.Clicked += (sender, args) => { SetRoot(new FlyoutPageiOS(new Command(RestoreOriginal))); };
+			mdpWindowsButton.Clicked += (sender, args) => { SetRoot(new FlyoutPageWindows(new Command(RestoreOriginal))); };
 			npiOSButton.Clicked += (sender, args) => { SetRoot(NavigationPageiOS.Create(new Command(RestoreOriginal))); };
 			npWindowsButton.Clicked += (sender, args) => { SetRoot(new NavigationPageWindows(new Command(RestoreOriginal))); };
 			tbiOSButton.Clicked += (sender, args) => { SetRoot(new TabbedPageiOS(new Command(RestoreOriginal))); };

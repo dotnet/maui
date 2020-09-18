@@ -10,7 +10,7 @@ using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-	public partial class PlatformSpecific : MasterDetailPage
+	public partial class PlatformSpecific : FlyoutPage
 	{
 		public PlatformSpecific()
 		{

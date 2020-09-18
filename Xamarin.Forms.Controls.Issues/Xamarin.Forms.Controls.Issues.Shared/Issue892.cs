@@ -22,13 +22,13 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 
 	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 892, "NavigationPages as details in MasterDetailPage don't work as expected", PlatformAffected.Android)]
-	public class Issue892 : TestMasterDetailPage
+	[Issue (IssueTracker.Github, 892, "NavigationPages as details in FlyoutPage don't work as expected", PlatformAffected.Android)]
+	public class Issue892 : TestFlyoutPage
 	{
 		protected override void Init ()
 		{
 			var cells = new [] {
-				new NavPageNameObject ("Close Master"),
+				new NavPageNameObject ("Close Flyout"),
 				new NavPageNameObject ("Page 1"),
 				new NavPageNameObject ("Page 3"),
 				new NavPageNameObject ("Page 4"),
@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			listView.ItemTapped += (sender, e) => {
 				var cellName = ((NavPageNameObject)e.Item).PageName;
-				if (cellName == "Close Master") {
+				if (cellName == "Close Flyout") {
 					IsPresented = false;
 				} else {
 					Detail = new CustomNavDetailPage (cellName);
@@ -59,11 +59,11 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var master = new ContentPage {
 				Padding = new Thickness(0, 20, 0, 0),
-				Title = "Master",
+				Title = "Flyout",
 				Content = listView
 			};
 				
-			Master = master;
+			Flyout = master;
 			Detail = new CustomNavDetailPage ("Initial Page");
 
 			MessagingCenter.Subscribe<NestedNavPageRootView> (this, "PresentMaster", (sender) => {
@@ -76,18 +76,18 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		[Description ("Change pages in the Master ListView, and navigate to the end and back")]
-		[UiTest (typeof(MasterDetailPage))]
+		[Description ("Change pages in the Flyout ListView, and navigate to the end and back")]
+		[UiTest (typeof(FlyoutPage))]
 		[UiTest (typeof(NavigationPage))]
 		public void Issue892TestsNavigateChangePagesNavigate ()
 		{
 			NavigateToEndAndBack ();
 
-			RunningApp.Tap (q => q.Marked ("Present Master"));
+			RunningApp.Tap (q => q.Marked ("Present Flyout"));
 			
 			RunningApp.Tap (q => q.Marked ("Page 5"));
 
-			RunningApp.Tap (q => q.Marked ("Close Master"));
+			RunningApp.Tap (q => q.Marked ("Close Flyout"));
 
 			RunningApp.Screenshot ("Select new detail navigation");
 
@@ -156,7 +156,7 @@ namespace Xamarin.Forms.Controls.Issues
 						Command = new Command (() => Navigation.PushAsync (new NestedNavPageOneLevel ()))
 					},
 					new Button {
-						Text = "Present Master",
+						Text = "Present Flyout",
 						Command = new Command (() => {
 							MessagingCenter.Send<NestedNavPageRootView> (this, "PresentMaster");
 						})

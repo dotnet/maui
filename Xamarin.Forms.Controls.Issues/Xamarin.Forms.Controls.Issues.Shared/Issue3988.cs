@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var buttonNav = new Button() { Text = "Test navigation page" };
 			buttonNav.Clicked += (s, e) => Application.Current.MainPage = new Issue3988NavigationPageTest();
 			var buttonMaster = new Button() { Text = "Test master detail page" };
-			buttonMaster.Clicked += (s, e) => Application.Current.MainPage = new Issue3988MasterDetailPageTest();
+			buttonMaster.Clicked += (s, e) => Application.Current.MainPage = new Issue3988FlyoutPageTest();
 			var buttonTabbed = new Button() { Text = "Test tabbed page" };
 			buttonTabbed.Clicked += (s, e) => Application.Current.MainPage = new Issue3988TabbedPageTest();
 			var text = new Label()
@@ -53,13 +53,13 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 	}
 
-	public class Issue3988MasterDetailPageTest : MasterDetailPage
+	public class Issue3988FlyoutPageTest : FlyoutPage
 	{
-		public Issue3988MasterDetailPageTest()
+		public Issue3988FlyoutPageTest()
 		{
 			var page = Issue3988PageSetup.CreateTogglePage(this);
 			page.Title = "Test page";
-			Master = new ContentPage() { Title = "master" };
+			Flyout = new ContentPage() { Title = "master" };
 			Detail = new NavigationPage(page);
 			Issue3988PageSetup.AddToolbarItems(this);
 		}

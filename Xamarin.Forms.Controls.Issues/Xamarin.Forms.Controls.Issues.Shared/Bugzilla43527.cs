@@ -14,13 +14,13 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 43527, "[UWP] Detail title does not update when wrapped in a NavigationPage", PlatformAffected.WinRT)]
-	public class Bugzilla43527 : TestMasterDetailPage
+	public class Bugzilla43527 : TestFlyoutPage
 	{
 		protected override void Init()
 		{
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
-				Title = "Master",
+				Title = "Flyout",
 				BackgroundColor = Color.Red
 			};
 

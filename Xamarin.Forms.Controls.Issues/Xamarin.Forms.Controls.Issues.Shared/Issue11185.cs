@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 11185, "ScrollViewRenderer HorizontalFadingEdgeEnabled ignored on horizontal ScrollView orientation", PlatformAffected.Android)]
-	public class Issue11185 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue11185 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

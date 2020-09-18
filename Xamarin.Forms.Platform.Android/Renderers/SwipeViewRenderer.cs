@@ -5,11 +5,11 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
-using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using Android.Views;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.AppCompat;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using APointF = Android.Graphics.PointF;
 using ATextAlignment = Android.Views.TextAlignment;
 using AView = Android.Views.View;
@@ -168,7 +168,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (Control != null && Control.Parent != null && _viewPagerParent == null)
 				_viewPagerParent = Control.Parent.GetParentOfType<FormsViewPager>();
-		
+
 			if (Element != null && _scrollParent == null)
 			{
 				_scrollParent = Element.FindParentOfType<ScrollView>();
@@ -1148,6 +1148,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		float GetSwipeThreshold(SwipeItems swipeItems)
 		{
+			double threshold = Element.Threshold;
+
+			if (threshold > 0)
+				return (float)threshold;
+
 			float swipeThreshold = 0;
 
 			bool isHorizontal = IsHorizontalSwipe();
@@ -1219,24 +1224,31 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			bool isHorizontal = IsHorizontalSwipe();
 			var items = GetSwipeItemsByDirection();
-			var contentHeight = _context.FromPixels(_contentView.Height);
-			var contentWidth = _context.FromPixels(_contentView.Width);
+
+			double threshold = Element.Threshold;
+			double contentHeight = _context.FromPixels(_contentView.Height);
+			double contentWidth = _context.FromPixels(_contentView.Width);
 
 			if (isHorizontal)
 			{
 				if (swipeItem is SwipeItem)
-					return new Size(items.Mode == SwipeMode.Execute ? contentWidth / items.Count : SwipeItemWidth, contentHeight);
+				{
+					return new Size(items.Mode == SwipeMode.Execute ? (threshold > 0 ? threshold : contentWidth) / items.Count : (threshold < SwipeItemWidth ? SwipeItemWidth : threshold), contentHeight);
+				}
 
 				if (swipeItem is SwipeItemView horizontalSwipeItemView)
 				{
 					var swipeItemViewSizeRequest = horizontalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-					return new Size(swipeItemViewSizeRequest.Request.Width > 0 ? (float)swipeItemViewSizeRequest.Request.Width : SwipeItemWidth, contentHeight);
+					return new Size(swipeItemViewSizeRequest.Request.Width > 0 ? (float)swipeItemViewSizeRequest.Request.Width : ((threshold > 0 && threshold < SwipeItemWidth) ? SwipeItemWidth : threshold), contentHeight);
 				}
 			}
 			else
 			{
 				if (swipeItem is SwipeItem)
-					return new Size(contentWidth / items.Count, GetSwipeItemHeight());
+				{
+					var swipeItemHeight = GetSwipeItemHeight();
+					return new Size(contentWidth / items.Count, (threshold > 0 && threshold < swipeItemHeight) ? threshold : swipeItemHeight);
+				}
 
 				if (swipeItem is SwipeItemView horizontalSwipeItemView)
 				{

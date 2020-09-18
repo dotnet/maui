@@ -32,12 +32,12 @@ namespace Xamarin.Forms.Controls.Issues
 		static internal NavigationPage settingsPage = new NavigationPage(new SettingsView());
 		static internal NavigationPage addressesPage = new NavigationPage(new AddressListView());
 		static internal NavigationPage associationsPage = new NavigationPage(new ContentPage());
-		static MasterDetailPage RootPage;
+		static FlyoutPage RootPage;
 		protected override void Init()
 		{
-			MasterDetailPage testPage = new MasterDetailPage();
+			FlyoutPage testPage = new FlyoutPage();
 			RootPage = testPage;
-			testPage.Master = new ContentPage
+			testPage.Flyout = new ContentPage
 			{
 				Title = "M",
 			};

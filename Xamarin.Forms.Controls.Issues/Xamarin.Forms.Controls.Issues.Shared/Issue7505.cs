@@ -5,11 +5,11 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 7505, "Icons from Toolbaritem are not displayed on UWP if starts on second monitor", PlatformAffected.UWP)]
-	public class Issue7505 : MasterDetailPage
+	public class Issue7505 : FlyoutPage
 	{
 		public Issue7505()
 		{
-			Master = new ContentPage { Title = "master" };
+			Flyout = new ContentPage { Title = "master" };
 			Detail = CreateDetailPage("Don't look here, look at the toolbar!");
 		}
 

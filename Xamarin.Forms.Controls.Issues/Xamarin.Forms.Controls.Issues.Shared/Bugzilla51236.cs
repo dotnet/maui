@@ -12,8 +12,8 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 51236, "[WinRT/UWP] Setting a MasterDetailPage's IsPresented to false should not be allowed in Split mode", PlatformAffected.WinRT)]
-	public class Bugzilla51236 : TestMasterDetailPage
+	[Issue(IssueTracker.Bugzilla, 51236, "[WinRT/UWP] Setting a FlyoutPage's IsPresented to false should not be allowed in Split mode", PlatformAffected.WinRT)]
+	public class Bugzilla51236 : TestFlyoutPage
 	{
 		protected override void Init()
 		{
@@ -56,9 +56,9 @@ namespace Xamarin.Forms.Controls.Issues
 				};
 			};
 
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
-				Title = "Master",
+				Title = "Flyout",
 				Content = new StackLayout
 				{
 					Children =
@@ -66,22 +66,22 @@ namespace Xamarin.Forms.Controls.Issues
 						listView,
 						new Button
 						{
-							Text = "Set MasterBehavior to Popover",
+							Text = "Set FlyoutLayoutBehavior to Popover",
 							Command = new Command(() =>
 							{
-								MasterBehavior = MasterBehavior.Popover;
+								FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
 								IsPresented = false;
 							})
 						},
 						new Button
 						{
-							Text = "Set MasterBehavior to Split",
-							Command = new Command(() => MasterBehavior = MasterBehavior.Split)
+							Text = "Set FlyoutLayoutBehavior to Split",
+							Command = new Command(() => FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split)
 						},
 						new Button
 						{
-							Text = "Set MasterBehavior to SplitOnLandscape",
-							Command = new Command(() => MasterBehavior = MasterBehavior.SplitOnLandscape)
+							Text = "Set FlyoutLayoutBehavior to SplitOnLandscape",
+							Command = new Command(() => FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnLandscape)
 						},
 					}
 				}

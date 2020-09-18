@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 44166, "MasterDetailPage instances do not get disposed upon GC")]
+	[Issue(IssueTracker.Bugzilla, 44166, "FlyoutPage instances do not get disposed upon GC")]
 	public class Bugzilla44166 : TestContentPage
 	{
 		protected override void Init()
@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 
 	[Preserve(AllMembers = true)]
-	public class _44166MDP : MasterDetailPage
+	public class _44166MDP : FlyoutPage
 	{
 		public static int Counter;
 
@@ -128,7 +128,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Interlocked.Increment(ref Counter);
 			Debug.WriteLine($"++++++++ {nameof(_44166MDP)} constructor, {Counter} allocated");
 
-			Master = new _44166Master();
+			Flyout = new _44166Master();
 			Detail = new _44166Detail();
 		}
 
@@ -149,7 +149,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Interlocked.Increment(ref Counter);
 			Debug.WriteLine($"++++++++ {nameof(_44166Master)} constructor, {Counter} allocated");
 
-			Title = "Master";
+			Title = "Flyout";
 			var goButton = new Button { Text = "Return", AutomationId = "Return" };
 			goButton.Clicked += (sender, args) => Application.Current.MainPage = new Bugzilla44166();
 

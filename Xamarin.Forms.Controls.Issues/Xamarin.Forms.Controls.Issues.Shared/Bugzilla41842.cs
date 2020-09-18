@@ -14,14 +14,14 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 41842, "Set MasterDetailPage.Detail = New Page() twice will crash the application when set MasterBehavior = MasterBehavior.Split", PlatformAffected.WinRT)]
-	public class Bugzilla41842 : TestMasterDetailPage
+	[Issue(IssueTracker.Bugzilla, 41842, "Set FlyoutPage.Detail = New Page() twice will crash the application when set FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split", PlatformAffected.WinRT)]
+	public class Bugzilla41842 : TestFlyoutPage
 	{
 		protected override void Init()
 		{
-			MasterBehavior = MasterBehavior.Split;
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
 
-			Master = new Page() { Title = "Master" };
+			Flyout = new Page() { Title = "Flyout" };
 
 			Detail = new NavigationPage(new Page());
 			Detail = new NavigationPage(new ContentPage { Content = new Label { Text = "Success" } });

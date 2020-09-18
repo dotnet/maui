@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2954, "Cell becomes empty after adding a new one with context actions (TableView) ")]
-	public class Issue2954 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue2954 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		TableSection _dataSection;
 		TableView _tableView;

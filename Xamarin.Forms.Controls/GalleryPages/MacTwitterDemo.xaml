@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<MasterDetailPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Controls.MacTwitterDemo">
-    <MasterDetailPage.Master>
-        <ContentPage BackgroundColor="#24456e" Title="Master">
+<FlyoutPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Controls.MacTwitterDemo">
+    <FlyoutPage.Flyout>
+        <ContentPage BackgroundColor="#24456e" Title="Flyout">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition />
@@ -21,8 +21,8 @@
                 <Image Grid.Row="1" Source="tweet.png" WidthRequest="25" HeightRequest="25" VerticalOptions="Start" />
             </Grid>
         </ContentPage>
-    </MasterDetailPage.Master>
-    <MasterDetailPage.Detail>
+    </FlyoutPage.Flyout>
+    <FlyoutPage.Detail>
         <ContentPage BackgroundColor="#ffffff" Title="Home">
             <ListView x:Name="lstTweets" RowHeight="125" BackgroundColor="#ffffff">
                 <ListView.Header>
@@ -64,5 +64,5 @@
                 </ListView.ItemTemplate>
             </ListView>
         </ContentPage>
-    </MasterDetailPage.Detail>
-</MasterDetailPage>
+    </FlyoutPage.Detail>
+</FlyoutPage>

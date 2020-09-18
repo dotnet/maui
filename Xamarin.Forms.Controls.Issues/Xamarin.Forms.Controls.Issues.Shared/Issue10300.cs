@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 10300, "ObservableCollection.RemoveAt(index) with a valid index raises ArgementOutOfRangeException", PlatformAffected.iOS)]
-	public class Issue10300 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue10300 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		CarouselView carousel;
 

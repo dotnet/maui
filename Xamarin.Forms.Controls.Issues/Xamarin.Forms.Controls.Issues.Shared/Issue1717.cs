@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1717, "Allow DetectReadingOrderFromContent on UWP", PlatformAffected.UWP)]
-	public class Issue1717 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue1717 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		Entry _entry1;
 		Entry _entry2;

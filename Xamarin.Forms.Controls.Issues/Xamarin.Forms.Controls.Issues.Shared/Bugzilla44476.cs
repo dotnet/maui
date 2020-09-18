@@ -18,17 +18,17 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			BackgroundColor = Color.Maroon;
-			PushAsync(new MasterDetailPage
+			PushAsync(new FlyoutPage
 			{
 				Title = "Bugzilla Issue 44476",
-				Master = new ContentPage
+				Flyout = new ContentPage
 				{
-					Title = "Master",
+					Title = "Flyout",
 					Content = new StackLayout
 					{
 						Children =
 						{
-							new Label { Text = "Master" }
+							new Label { Text = "Flyout" }
 						}
 					}
 				},
@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 		[Test]
 		[Description("Verify that label with text 'This should be visible' is visible")]
-		[UiTest(typeof(MasterDetailPage))]
+		[UiTest(typeof(FlyoutPage))]
 		public void Issue44476TestUnwantedMargin()
 		{
 			RunningApp.WaitForElement(q => q.Marked("This should be visible."));

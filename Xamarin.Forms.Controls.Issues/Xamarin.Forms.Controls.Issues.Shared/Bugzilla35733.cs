@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
-	public class Bugzilla35733 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla35733 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 34720, "Incorrect iOS button IsEnabled when scrolling ListView with command binding ")]
-	public class Bugzilla34720 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla34720 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

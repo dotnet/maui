@@ -10,11 +10,11 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
-	[Category(Core.UITests.UITestCategories.MasterDetailPage)]
+	[Category(Core.UITests.UITestCategories.FlyoutPage)]
 	[Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 30324, "Detail view of MasterDetailPage does not get appearance events on Android when whole MasterDetailPage disappears/reappears")]
+	[Issue (IssueTracker.Bugzilla, 30324, "Detail view of FlyoutPage does not get appearance events on Android when whole FlyoutPage disappears/reappears")]
 	public class Bugzilla30324 : TestNavigationPage
 	{
 		Label _lbl;
@@ -22,8 +22,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init ()
 		{
-			MasterDetailPage page = new MasterDetailPage();
-			page.Master = new Page () { Title = "Master", BackgroundColor = Color.Red };
+			FlyoutPage page = new FlyoutPage();
+			page.Flyout = new Page () { Title = "Flyout", BackgroundColor = Color.Red };
 			_lbl = new Label ();	
 
 			var otherPage = new ContentPage () {
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Controls.Issues
 				page.Detail.BackgroundColor = Color.Green;
 				_count++;
 			};
-			page.Master.Appearing += (sender, e) => 
+			page.Flyout.Appearing += (sender, e) => 
 			{
 				System.Diagnostics.Debug.WriteLine("Appear master");
 			};

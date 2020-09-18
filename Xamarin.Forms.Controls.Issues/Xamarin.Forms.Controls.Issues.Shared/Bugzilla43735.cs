@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 43735, "Multiple Swipe on ContextActions", PlatformAffected.iOS)]
-	public class Bugzilla43735 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla43735 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

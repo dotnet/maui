@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 25979, "https://bugzilla.xamarin.com/show_bug.cgi?id=25979")]
-	public class Bugzilla25979 : TestNavigationPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla25979 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		[Preserve(AllMembers = true)]
 		internal sealed class MyPage : ContentPage

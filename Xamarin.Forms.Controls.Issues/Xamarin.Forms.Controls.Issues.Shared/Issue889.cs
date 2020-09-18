@@ -11,8 +11,8 @@ using Xamarin.UITest;
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 889, "Assigning to MasterDetailPage.Detail after construction doesn't work", PlatformAffected.Android | PlatformAffected.iOS)]
-	public class Issue889 : TestMasterDetailPage
+	[Issue (IssueTracker.Github, 889, "Assigning to FlyoutPage.Detail after construction doesn't work", PlatformAffected.Android | PlatformAffected.iOS)]
+	public class Issue889 : TestFlyoutPage
 	{
 		protected override void Init ()
 		{
@@ -42,14 +42,14 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			var master = new ContentPage {
-				Title = "Master",
+				Title = "Flyout",
 				IconImageSource = "bank.png",
 				Content = listView
 			};
 
 
 
-			Master = master;
+			Flyout = master;
 			Detail = new CustomNavTabDetailPage ("Initial Page");
 		}
 
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 		[Test]
 		[Description ("Reproduce app crash - Issue #983")]
-		[UiTest (typeof(MasterDetailPage), "Detail")]
+		[UiTest (typeof(FlyoutPage), "Detail")]
 		public void Issue899TestsAppCrashWhenSwitchingTabs ()
 		{
 			RunningApp.Tap (q => q.Marked ("Push new page"));

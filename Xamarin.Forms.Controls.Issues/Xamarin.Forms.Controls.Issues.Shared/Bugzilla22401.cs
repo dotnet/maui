@@ -10,8 +10,8 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 22401, "MasterDetailPage detail width broken when landscape", PlatformAffected.iOS, NavigationBehavior.PushAsync)]
-	public class Bugzilla22401 : MasterDetailPage
+	[Issue(IssueTracker.Bugzilla, 22401, "FlyoutPage detail width broken when landscape", PlatformAffected.iOS, NavigationBehavior.PushAsync)]
+	public class Bugzilla22401 : FlyoutPage
 	{
 		public Bugzilla22401()
 		{
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 				})
 			};
 
-			Master = new ContentPage { Title = "master", IconImageSource = "menuIcon.png", Content = listView };
+			Flyout = new ContentPage { Title = "master", IconImageSource = "menuIcon.png", Content = listView };
 
 			listView.ItemSelected += (sender, e) =>
 			{

@@ -7,19 +7,19 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Controls
 {
-	//MasterDetailPage -> NavigationPage -> ContentPage
-	public class RootMDPNavigationContentPage : MasterDetailPage 
+	//FlyoutPage -> NavigationPage -> ContentPage
+	public class RootMDPNavigationContentPage : FlyoutPage 
 	{
 
 		public RootMDPNavigationContentPage (string hierarchy) 
 		{
 			AutomationId = hierarchy + "PageId";
 
-			Master = new ContentPage {
+			Flyout = new ContentPage {
 				Title = "Testing 123",
 				Content = new StackLayout {
 					Children = {
-						new Label { Text = "Master" },
+						new Label { Text = "Flyout" },
 						new AbsoluteLayout {
 							BackgroundColor = Color.Red,
 							VerticalOptions = LayoutOptions.FillAndExpand,

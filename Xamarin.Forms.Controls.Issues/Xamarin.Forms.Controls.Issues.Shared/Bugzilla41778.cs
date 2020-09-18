@@ -14,12 +14,12 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 41778, "Slider Inside ScrollView Will Open MasterDetailPage.Master", PlatformAffected.iOS)]
-	public class Bugzilla41778 : TestMasterDetailPage // or TestMasterDetailPage, etc ...
+	[Issue(IssueTracker.Bugzilla, 41778, "Slider Inside ScrollView Will Open FlyoutPage.Flyout", PlatformAffected.iOS)]
+	public class Bugzilla41778 : TestFlyoutPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{
-			Master = new ContentPage
+			Flyout = new ContentPage
 			{
 				Title = "Menu",
 				BackgroundColor = Color.Blue

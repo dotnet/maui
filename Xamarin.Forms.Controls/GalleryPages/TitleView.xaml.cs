@@ -32,16 +32,16 @@ namespace Xamarin.Forms.Controls.GalleryPages
 
 		public static Page GetPage()
 		{
-			return new MasterDetailPage()
+			return new FlyoutPage()
 			{
 				Detail = CreateNavigationPage(),
-				Master = new ContentPage() { Title = "Master" }
+				Flyout = new ContentPage() { Title = "Flyout" }
 			};
 		}
 
 		void swapDetails_Page(object sender, EventArgs e)
 		{
-			if (App.Current.MainPage is MasterDetailPage mdp)
+			if (App.Current.MainPage is FlyoutPage mdp)
 			{
 				mdp.Detail = CreateNavigationPage();
 			}
@@ -50,10 +50,10 @@ namespace Xamarin.Forms.Controls.GalleryPages
 		void masterDetailsPage_Clicked(object sender, EventArgs e)
 		{
 			App.Current.MainPage =
-				new MasterDetailPage()
+				new FlyoutPage()
 				{
 					Detail = CreateNavigationPage(),
-					Master = new ContentPage() { Title = "Master" },
+					Flyout = new ContentPage() { Title = "Flyout" },
 				};
 
 		}
@@ -195,12 +195,12 @@ namespace Xamarin.Forms.Controls.GalleryPages
 
 		void masterDetailsPageIcon_Clicked(object sender, EventArgs e)
 		{
-			if (App.Current.MainPage is MasterDetailPage mdp)
+			if (App.Current.MainPage is FlyoutPage mdp)
 			{
-				if (mdp.Master.IconImageSource == null || mdp.Master.IconImageSource.IsEmpty)
-					mdp.Master.IconImageSource = "menuIcon";
+				if (mdp.Flyout.IconImageSource == null || mdp.Flyout.IconImageSource.IsEmpty)
+					mdp.Flyout.IconImageSource = "menuIcon";
 				else
-					mdp.Master.IconImageSource = null;
+					mdp.Flyout.IconImageSource = null;
 			}
 		}
 

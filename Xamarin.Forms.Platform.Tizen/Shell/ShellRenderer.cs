@@ -1,13 +1,12 @@
 using System;
-using ERect = ElmSharp.Rect;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ShellRenderer : VisualElementRenderer<Shell>, IFlyoutController
 	{
-		INavigationDrawer _native;
+		INavigationDrawer _drawer;
 		INavigationView _navigationView;
-		ShellItemRenderer _shellItem;
+		ShellItemRenderer _currentShellItem;
 
 		public static readonly Color DefaultBackgroundColor = ThemeConstants.Shell.ColorClass.DefaultBackgroundColor;
 		public static readonly Color DefaultForegroundColor = ThemeConstants.Shell.ColorClass.DefaultForegroundColor;
@@ -20,29 +19,25 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Shell.FlyoutBackgroundImageProperty, UpdateFlyoutBackgroundImage);
 			RegisterPropertyHandler(Shell.FlyoutBackgroundImageAspectProperty, UpdateFlyoutBackgroundImageAspect);
 			RegisterPropertyHandler(Shell.FlyoutIsPresentedProperty, UpdateFlyoutIsPresented);
-		}
-
-		public override ERect GetNativeContentGeometry()
-		{
-			var rect = base.GetNativeContentGeometry();
-			rect.X = 0;
-			rect.Y = 0;
-			return rect;
+			RegisterPropertyHandler(Shell.FlyoutHeaderProperty, UpdateFlyoutHeader);
+			RegisterPropertyHandler(Shell.FlyoutHeaderTemplateProperty, UpdateFlyoutHeader);
+			RegisterPropertyHandler(Shell.FlyoutHeaderBehaviorProperty, UpdateFlyoutHeaderBehavior);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Shell> e)
 		{
-			if (_native == null)
+			if (_drawer == null)
 			{
-				_native = CreateNavigationDrawer();
+				_drawer = CreateNavigationDrawer();
 				_navigationView = CreateNavigationView();
-				_native.NavigationView = _navigationView as ElmSharp.EvasObject;
-				_native.Toggled += OnFlyoutIsPresentedChanged;
-				SetNativeView(_native as ElmSharp.EvasObject);
+				_drawer.NavigationView = _navigationView.NativeView;
+				_drawer.Toggled += OnFlyoutIsPresentedChanged;
+				SetNativeView(_drawer.TargetView);
 
 				InitializeFlyout();
 			}
 			base.OnElementChanged(e);
+			UpdateFlyoutHeader(false);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -50,9 +45,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (disposing)
 			{
 				((IShellController)Element).StructureChanged -= OnShellStructureChanged;
-				if (_native != null)
+				if (_drawer != null)
 				{
-					_native.Toggled -= OnFlyoutIsPresentedChanged;
+					_drawer.Toggled -= OnFlyoutIsPresentedChanged;
 					_navigationView.SelectedItemChanged -= OnItemSelected;
 				}
 			}
@@ -62,31 +57,18 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected void InitializeFlyout()
 		{
 			((IShellController)Element).StructureChanged += OnShellStructureChanged;
-
-			View flyoutHeader = ((IShellController)Element).FlyoutHeader;
-			if (flyoutHeader != null)
-			{
-				var headerView = Platform.GetOrCreateRenderer(flyoutHeader);
-				(headerView as LayoutRenderer)?.RegisterOnLayoutUpdated();
-
-				Size request = flyoutHeader.Measure(Forms.ConvertToScaledDP(_native.NavigationView.MinimumWidth),
-													Forms.ConvertToScaledDP(_native.NavigationView.MinimumHeight)).Request;
-				headerView.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(request.Height);
-
-				_navigationView.Header = headerView.NativeView;
-			}
 			_navigationView.BuildMenu(((IShellController)Element).GenerateFlyoutGrouping());
 			_navigationView.SelectedItemChanged += OnItemSelected;
 		}
 
 		protected void OnFlyoutIsPresentedChanged(object sender, EventArgs e)
 		{
-			Element.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, _native.IsOpen);
+			Element.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, _drawer.IsOpen);
 		}
 
-		protected virtual ShellItemRenderer CreateShellItem(ShellItem item)
+		protected virtual ShellItemRenderer CreateShellItemRenderer(ShellItem item)
 		{
-			return new ShellItemRenderer(this, item);
+			return new ShellItemRenderer(item);
 		}
 
 		protected virtual INavigationDrawer CreateNavigationDrawer()
@@ -96,22 +78,40 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual INavigationView CreateNavigationView()
 		{
-			return new NavigationView(Forms.NativeParent);
+			return new NavigationView(Forms.NativeParent, Element);
+		}
+
+		void UpdateFlyoutHeader(bool init)
+		{
+			if (init)
+				return;
+
+			if ((Element as IShellController).FlyoutHeader != null)
+			{
+				_navigationView.Header = (Element as IShellController).FlyoutHeader;
+			}
+			else
+			{
+				_navigationView.Header = null;
+			}
+		}
+
+		void UpdateFlyoutHeaderBehavior()
+		{
+			_navigationView.HeaderBehavior = Element.FlyoutHeaderBehavior;
 		}
 
 		void UpdateCurrentItem()
 		{
-			_shellItem?.Dispose();
+			_currentShellItem?.Dispose();
 			if (Element.CurrentItem != null)
 			{
-				_shellItem = CreateShellItem(Element.CurrentItem);
-				_shellItem.Control.SetAlignment(-1, -1);
-				_shellItem.Control.SetWeight(1, 1);
-				_native.Main = _shellItem.Control;
+				_currentShellItem = CreateShellItemRenderer(Element.CurrentItem);
+				_drawer.Main = _currentShellItem.NativeView;
 			}
 			else
 			{
-				_native.Main = null;
+				_drawer.Main = null;
 			}
 		}
 
@@ -132,7 +132,11 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateFlyoutIsPresented()
 		{
-			_native.IsOpen = Element.FlyoutIsPresented;
+			// It is workaround of Panel.IsOpen bug, Panel.IsOpen property is not working when layouting was triggered
+			Device.BeginInvokeOnMainThread(() =>
+			{
+				_drawer.IsOpen = Element.FlyoutIsPresented;
+			});
 		}
 
 		void OnShellStructureChanged(object sender, EventArgs e)
@@ -147,7 +151,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void IFlyoutController.Open()
 		{
-			_native.IsOpen = true;
+			_drawer.IsOpen = true;
 		}
 	}
 }

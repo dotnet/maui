@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3884, "BoxView corner radius", PlatformAffected.Android)]
-	public class Issue3884 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue3884 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

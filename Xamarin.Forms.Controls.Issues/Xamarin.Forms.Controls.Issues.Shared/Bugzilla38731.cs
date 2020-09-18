@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 38731, "Xamarin.Forms.Platform.iOS.NavigationRenderer.GetAppearedOrDisappearedTask NullReferenceExceptionObject", PlatformAffected.iOS)]
-	public class Bugzilla38731 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla38731 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

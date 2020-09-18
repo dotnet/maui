@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40005, "Navigation Bar back button does not show when using InsertPageBefore")]
-	public class Bugzilla40005 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla40005 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		public const string GoToPage2 = "Go to Page 2";
 		public const string PageOneLabel = "Page 1";

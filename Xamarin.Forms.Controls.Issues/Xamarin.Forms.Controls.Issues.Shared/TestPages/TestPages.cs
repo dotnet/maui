@@ -462,9 +462,9 @@ namespace Xamarin.Forms.Controls
 	}
 
 #if UITEST
-	[Category(Core.UITests.UITestCategories.MasterDetailPage)]
+	[Category(Core.UITests.UITestCategories.FlyoutPage)]
 #endif
-	public abstract class TestMasterDetailPage : MasterDetailPage
+	public abstract class TestFlyoutPage : FlyoutPage
 	{
 #if UITEST
 		public IApp RunningApp => AppSetup.RunningApp;
@@ -472,7 +472,7 @@ namespace Xamarin.Forms.Controls
 		protected virtual bool Isolate => false;
 #endif
 
-		protected TestMasterDetailPage()
+		protected TestFlyoutPage()
 		{
 #if APP
 			Init();

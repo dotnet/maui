@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<MasterDetailPage
+<FlyoutPage
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:gradients="clr-namespace:Xamarin.Forms.Controls.GalleryPages.GradientGalleries"
     x:Class="Xamarin.Forms.Controls.GalleryPages.GradientGalleries.GradientNavigationPageGallery"
     Title="GradientNavigationPage Gallery">
-    <MasterDetailPage.Resources>
+    <FlyoutPage.Resources>
         <ResourceDictionary>
 
             <LinearGradientBrush 
@@ -20,21 +20,21 @@
             </LinearGradientBrush>
 
         </ResourceDictionary>
-    </MasterDetailPage.Resources>
-    <MasterDetailPage.Master>
+    </FlyoutPage.Resources>
+    <FlyoutPage.Flyout>
         <ContentPage
-            Title="Master"
+            Title="Flyout"
             BackgroundColor="White"
             Background="{StaticResource HorizontalLinearGradient}">
             <Label
                 FontSize="24"
                 TextColor="White"
-                Text="Master"
+                Text="Flyout"
                 HorizontalOptions="Center"
                 VerticalOptions="Center"/>
         </ContentPage>
-    </MasterDetailPage.Master>
-    <MasterDetailPage.Detail>
+    </FlyoutPage.Flyout>
+    <FlyoutPage.Detail>
         <NavigationPage
             BarBackground="{StaticResource HorizontalLinearGradient}"
             Title="Gradient NavigationPage">
@@ -42,5 +42,5 @@
                 <gradients:GradientsGallery />
             </x:Arguments>
         </NavigationPage>
-    </MasterDetailPage.Detail>
-</MasterDetailPage>
+    </FlyoutPage.Detail>
+</FlyoutPage>

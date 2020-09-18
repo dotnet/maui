@@ -1,5 +1,3 @@
-using ElmSharp;
-using System;
 using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -84,6 +82,17 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (GestureDetector != null)
 			{
 				GestureDetector.InputTransparent = Element.InputTransparent;
+			}
+		}
+		protected override void UpdateLayout()
+		{
+			if (!_layoutUpdatedRegistered)
+			{
+				base.UpdateLayout();
+			}
+			else
+			{
+				ApplyTransformation();
 			}
 		}
 

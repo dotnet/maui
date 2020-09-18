@@ -135,10 +135,14 @@
 	{
 	}
 
-	internal class _MasterDetailPageRenderer
+	internal class _FlyoutPageRenderer
 	{
 	}
 
+	internal class _MasterDetailPageRenderer
+	{
+	}
+   
 	internal class _SwipeViewRenderer
 	{
 	}

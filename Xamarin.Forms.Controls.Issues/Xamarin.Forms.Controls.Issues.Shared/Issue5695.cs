@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 	//TODO: Write a new test for this issue
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5695, "Memory leak when Navigation.RemovePage", PlatformAffected.iOS)]
-	public class Issue5695 : TestMasterDetailPage
+	public class Issue5695 : TestFlyoutPage
     {
 		[Preserve(AllMembers = true)]
 		class LeakPage : ContentPage
@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Detail = new NavigationPage(new LeakPage());
 
-            Master = new ContentPage
+            Flyout = new ContentPage
             {
                 Title = "menu",
 			    Content = new StackLayout

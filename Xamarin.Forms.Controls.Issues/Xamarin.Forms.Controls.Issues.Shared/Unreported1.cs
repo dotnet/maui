@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0, "NRE when switching page on Appearing", PlatformAffected.iOS)]
-	public class Unreported1 : TestMasterDetailPage
+	public class Unreported1 : TestFlyoutPage
 	{
 		static Unreported1 MDP;
 
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			MDP = this;
 
-			Master = new Page { Title = "Master" };
+			Flyout = new Page { Title = "Flyout" };
 			Detail = new SplashPage();
 		}
 

@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 26171, "Xamarin.Forms.Maps is not updating VisibleRegion property when layout is changed")]
-	public class Bugzilla26171 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla26171 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{

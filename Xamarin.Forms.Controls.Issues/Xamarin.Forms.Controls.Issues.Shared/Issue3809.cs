@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3809, "SetUseSafeArea is wiping out Page Padding ")]
-	public class Issue3809 : TestMasterDetailPage
+	public class Issue3809 : TestFlyoutPage
 	{
 		const string _setPagePadding = "Set Page Padding";
 		const string _safeAreaText = "Safe Area Enabled: ";
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Controls.Issues
 				AutomationId = _paddingLabel
 			};
 
-			Master = new ContentPage() { Title = "Master" };
+			Flyout = new ContentPage() { Title = "Flyout" };
 			Button button = null;
 			button = new Button()
 			{

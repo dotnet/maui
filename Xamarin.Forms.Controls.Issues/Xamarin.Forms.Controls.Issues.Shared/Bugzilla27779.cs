@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 27779, "Xamarin.Forms.ReadOnlyListAdapter.IndexOf throws NotImplementedExcpetion ")]
-	public class Bugzilla27779 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla27779 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		ListView _listview;
 		IReadOnlyList<Person> _itemsSource;
