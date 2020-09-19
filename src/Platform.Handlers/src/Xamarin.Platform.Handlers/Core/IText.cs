@@ -6,7 +6,7 @@ namespace Xamarin.Platform
 	{
 		string Text { get; }
 
-		Color TextColor { get; }
+		Color Color { get; }
 
 		Font Font { get; }
 

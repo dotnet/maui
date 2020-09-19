@@ -10,7 +10,7 @@ namespace Sample
 
 		public string Text { get; set; }
 
-		public Color TextColor { get; set; }
+		public Color Color { get; set; }
 
 		public int CornerRadius { get; set; } = DefaultCornerRadius;
 

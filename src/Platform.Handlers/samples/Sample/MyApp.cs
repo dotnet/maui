@@ -1,4 +1,5 @@
-﻿using Xamarin.Platform;
+﻿using Xamarin.Forms;
+using Xamarin.Platform;
 using Xamarin.Platform.Core;
 
 namespace Sample
@@ -12,7 +13,7 @@ namespace Sample
 
 		public IView CreateView()
 		{
-			return new Button() { Text = "Hello I'm a button" };
+			return new Button() { Text = "Hello I'm a button", BackgroundColor = Color.Purple };
 		}
 	}
 }

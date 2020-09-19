@@ -11,10 +11,8 @@ namespace Xamarin.Platform
 
 		protected virtual void UpdatePropertyCore(string key, IViewHandler viewHandler, IFrameworkElement virtualView)
 		{
-			if (_mapper.TryGetValue(key, out var action))
-			{
-				action.Action?.Invoke(viewHandler, virtualView);
-			}
+			var action = Get(key);
+			action.Action?.Invoke(viewHandler, virtualView);
 		}
 
 		public void UpdateProperty(IViewHandler viewHandler, IFrameworkElement virtualView, string property)
@@ -28,34 +26,60 @@ namespace Xamarin.Platform
 		{
 			if (virtualView == null)
 				return;
-			foreach (var key in Keys)
+			foreach (var key in UpdateKeys)
 			{
 				UpdatePropertyCore(key, viewHandler, virtualView);
 			}
 		}
 
 		public virtual ICollection<string> Keys => _mapper.Keys;
+		protected List<string> PopulateKeys(ref List<string> returnList)
+		{
+			updateKeys = new List<string>();
+			actionKeys = new List<string>();
+			foreach (var key in Keys)
+			{
+				var result = Get(key);
+				if (result.RunOnUpdateAll)
+					updateKeys.Add(key);
+				else
+					actionKeys.Add(key);
+
+			}
+			return returnList;
+		}
+		protected virtual void ClearKeyCache()
+		{
+			updateKeys = null;
+			actionKeys = null;
+		}
+		public virtual (Action<IViewHandler, IFrameworkElement> Action, bool RunOnUpdateAll) Get(string key)
+		{
+			_mapper.TryGetValue(key, out var action);
+			return action;
+		}
+		List<string> actionKeys;
+		List<string> updateKeys;
+		public virtual IReadOnlyList<string> ActionKeys => actionKeys ?? PopulateKeys(ref actionKeys);
+		public virtual IReadOnlyList<string> UpdateKeys => updateKeys ?? PopulateKeys(ref updateKeys);
 	}
 
 	public class PropertyMapper<TVirtualView> : PropertyMapper, IEnumerable
 		where TVirtualView : IFrameworkElement
 	{
-		PropertyMapper _chained;
-		ICollection<string> _cachedKeys;
-
+		private PropertyMapper chained;
 		public PropertyMapper Chained
 		{
-			get => _chained;
+			get => chained;
 			set
 			{
-				_chained = value;
-				_cachedKeys = null;
+				chained = value;
+				ClearKeyCache();
 			}
 		}
 
-		public override ICollection<string> Keys => _cachedKeys ??= (Chained?.Keys.Union(keysForStartup).ToList() as ICollection<string> ?? _mapper.Keys);
-
-		ICollection<string> keysForStartup => _mapper.Where(x => x.Value.RunOnUpdateAll).Select(x => x.Key).ToList();
+		ICollection<string> cachedKeys;
+		public override ICollection<string> Keys => cachedKeys ??= (Chained?.Keys.Union(_mapper.Keys).ToList() as ICollection<string> ?? _mapper.Keys);
 
 		public int Count => Keys.Count;
 
@@ -81,12 +105,20 @@ namespace Xamarin.Platform
 			get => actions ??= new ActionMapper<TVirtualView>(this);
 		}
 
-		protected override void UpdatePropertyCore(string key, IViewHandler viewHandler, IFrameworkElement virtualView)
+		protected override void ClearKeyCache()
 		{
+			base.ClearKeyCache();
+			cachedKeys = null;
+		}
+
+
+		public override (Action<IViewHandler, IFrameworkElement> Action, bool RunOnUpdateAll) Get(string key)
+		{
+
 			if (_mapper.TryGetValue(key, out var action))
-				action.Action?.Invoke(viewHandler, virtualView);
+				return action;
 			else
-				Chained?.UpdateProperty(viewHandler, virtualView, key);
+				return Chained?.Get(key) ?? (null, false);
 		}
 
 		public void Add(string key, Action<IViewHandler, TVirtualView> action)
@@ -95,6 +127,11 @@ namespace Xamarin.Platform
 		public void Add(string key, Action<IViewHandler, TVirtualView> action, bool ignoreOnStartup)
 			=> _mapper[key] = ((r, v) => action?.Invoke(r, (TVirtualView)v), ignoreOnStartup);
 
+
+
+
 		IEnumerator IEnumerable.GetEnumerator() => _mapper.GetEnumerator();
+
+
 	}
 }
