@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (TryGetTypeReference(xmlType, module, xmlInfo, out TypeReference typeReference))
 				return typeReference;
 
-			throw new BuildException(BuildExceptionCode.TypeResolution, xmlInfo, null, xmlType.Name);
+			throw new BuildException(BuildExceptionCode.TypeResolution, xmlInfo, null, $"{xmlType.NamespaceUri}:{xmlType.Name}");
 		}
 
 		public static XmlnsDefinitionAttribute GetXmlnsDefinition(this CustomAttribute ca, AssemblyDefinition asmDef)

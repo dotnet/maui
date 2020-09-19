@@ -31,13 +31,26 @@
 //
 
 using System;
+using System.Collections.Generic;
 
 namespace Xamarin.Forms
 {
 	[AttributeUsage(AttributeTargets.All)]
 	public sealed class TypeConverterAttribute : Attribute
 	{
-		internal static string[] TypeConvertersType = { "Xamarin.Forms.TypeConverterAttribute", "System.ComponentModel.TypeConverterAttribute" };
+		internal static string[] TypeConvertersType = {
+			"Xamarin.Forms.TypeConverterAttribute",
+			"System.ComponentModel.TypeConverterAttribute"
+		};
+
+		internal static Dictionary<Type, Type> KnownConverters = new Dictionary<Type, Type> {
+			{ typeof(Color), typeof(ColorTypeConverter) },
+			{ typeof(Font), typeof(FontTypeConverter) },
+			{ typeof(Keyboard), typeof(KeyboardTypeConverter) },
+			{ typeof(Rectangle), typeof(RectangleTypeConverter) },
+			{ typeof(Size), typeof(SizeTypeConverter) },
+			{ typeof(Thickness), typeof(ThicknessTypeConverter) },
+		};
 
 		public static readonly TypeConverterAttribute Default = new TypeConverterAttribute();
 

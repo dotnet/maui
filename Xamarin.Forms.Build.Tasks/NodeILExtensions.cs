@@ -29,6 +29,14 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 			}
 
+			if (typeConverter == null)
+				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters) {
+					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef)) {
+						typeConverter = context.Module.ImportReference(tc);
+						break;
+					}
+				}
+
 			return node.CanConvertValue(context, targetTypeRef, typeConverter);
 		}
 
@@ -116,6 +124,15 @@ namespace Xamarin.Forms.Build.Tasks
 					break;
 				}
 			}
+
+			if (typeConverter == null)
+				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters) {
+					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef)) {
+						typeConverter = context.Module.ImportReference(tc);
+						break;
+					}
+				}
+
 			return node.PushConvertedValue(context, targetTypeRef, typeConverter, pushServiceProvider, boxValueTypes,
 				unboxValueTypes);
 		}

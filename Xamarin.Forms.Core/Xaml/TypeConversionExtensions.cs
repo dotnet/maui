@@ -66,10 +66,11 @@ namespace Xamarin.Forms.Xaml
 				var converterTypeName = toType.GetTypeInfo().CustomAttributes.GetTypeConverterTypeName();
 				if (minfoRetriever != null && (memberInfo = minfoRetriever()) != null)
 					converterTypeName = memberInfo.CustomAttributes.GetTypeConverterTypeName() ?? converterTypeName;
+				if (converterTypeName == null && TypeConverterAttribute.KnownConverters.TryGetValue(toType, out var convertertype))
+					return Activator.CreateInstance(convertertype);
 				if (converterTypeName == null)
 					return null;
-
-				var convertertype = Type.GetType(converterTypeName);
+				convertertype = Type.GetType(converterTypeName);
 				return Activator.CreateInstance(convertertype);
 			};
 

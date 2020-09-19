@@ -55,7 +55,24 @@ namespace Xamarin.Forms.Build.Tasks
 			if (staticGetter != null && staticGetter.ReturnType.ResolveGenericParameters(bpRef.DeclaringType).ResolveCached().HasCustomAttributes)
 				attributes.AddRange(staticGetter.ReturnType.ResolveGenericParameters(bpRef.DeclaringType).ResolveCached().CustomAttributes);
 
-			return attributes.FirstOrDefault(cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))?.ConstructorArguments [0].Value as TypeReference;
+			if (attributes.FirstOrDefault(cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))?.ConstructorArguments[0].Value is TypeReference typeConverter)
+				return typeConverter;
+
+			propertyType = propertyType ?? staticGetter?.ReturnType;
+			foreach (var (t, tc) in TypeConverterAttribute.KnownConverters) {
+				if (TypeRefComparer.Default.Equals(module.ImportReference(t), propertyType))
+					return module.ImportReference(tc);
+			}
+			return null;
+		}
+	}
+
+	static class KVPExtensions
+	{
+		public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> kvp, out TKey key, out TValue value)
+		{
+			key = kvp.Key;
+			value = kvp.Value;
 		}
 	}
 }

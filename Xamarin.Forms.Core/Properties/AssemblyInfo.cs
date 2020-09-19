@@ -38,6 +38,7 @@ using Xamarin.Forms.StyleSheets;
 
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Xamarin.Forms.Shapes")]
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Xamarin.Forms")]
+[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Xamarin.Forms", AssemblyName = "Xamarin.Platform")]
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Xamarin.Forms.Shapes")]
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Xamarin.Forms")]
 [assembly: XmlnsPrefix("http://xamarin.com/schemas/2014/forms", "xf")]

@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Core.XamlC
 		{
 			foreach (var d in args)
 				yield return Instruction.Create(OpCodes.Ldc_R8, d);
-			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Thickness"), parameterTypes: args.Select(a => ("mscorlib", "System", "Double")).ToArray()));
+			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Xamarin.Platform", "Xamarin.Forms", "Thickness"), parameterTypes: args.Select(a => ("mscorlib", "System", "Double")).ToArray()));
 		}
 	}
 	
