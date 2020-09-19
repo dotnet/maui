@@ -53,7 +53,8 @@ namespace Xamarin.Platform
 			}
 		}
 
-		public override ICollection<string> Keys => _cachedKeys ??= (Chained?.Keys.Union(keysForStartup) as ICollection<string> ?? _mapper.Keys);
+		public override ICollection<string> Keys => _cachedKeys ??= (Chained?.Keys.Union(keysForStartup).ToList() as ICollection<string> ?? _mapper.Keys);
+
 		ICollection<string> keysForStartup => _mapper.Where(x => x.Value.RunOnUpdateAll).Select(x => x.Key).ToList();
 
 		public int Count => Keys.Count;
