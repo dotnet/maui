@@ -14,7 +14,8 @@ namespace Xamarin.Forms
 	{
 		public static readonly BindableProperty BackButtonTitleProperty = BindableProperty.CreateAttached("BackButtonTitle", typeof(string), typeof(Page), null);
 
-		public static readonly BindableProperty HasNavigationBarProperty = BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), true);
+		public static readonly BindableProperty HasNavigationBarProperty = 
+			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), true);
 
 		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), true);
 

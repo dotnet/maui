@@ -192,7 +192,6 @@
     <Compile Include="Renderers\CheckBoxRendererBase.cs" />
     <Compile Include="Renderers\PhoneFlyoutPageRenderer.cs" />
     <Compile Include="Renderers\RadioButtonCALayer.cs" />
-    <Compile Include="Renderers\RadioButtonRenderer.cs" />
     <Compile Include="Renderers\TabletFlyoutPageRenderer.cs" />
     <Compile Include="Renderers\WkWebViewRenderer.cs" />
     <Compile Include="Renderers\ElementSelectedEventArgs.cs" />

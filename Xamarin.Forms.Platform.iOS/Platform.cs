@@ -222,7 +222,18 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
-			var renderer = Internals.Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+			IVisualElementRenderer renderer = null;
+
+			if (element is TemplatedView tv && tv.ResolveControlTemplate() != null)
+			{
+				renderer = new DefaultRenderer();
+			}
+
+			if (renderer == null)
+			{
+				renderer = Internals.Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+			}
+
 			renderer.SetElement(element);
 			return renderer;
 		}

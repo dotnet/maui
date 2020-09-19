@@ -78,10 +78,11 @@ namespace Xamarin.Forms
 
 			return new Uri(uri);
 		}
-
-		internal static NavigationRequest GetNavigationRequest(Shell shell, Uri uri, bool enableRelativeShellRoutes = false, bool throwNavigationErrorAsException = true)
+    
+		internal static NavigationRequest GetNavigationRequest(Shell shell, Uri uri, bool enableRelativeShellRoutes = false, bool throwNavigationErrorAsException = true, ShellNavigationParameters shellNavigationParameters = null)
 		{
 			uri = FormatUri(uri, shell);
+
 			// figure out the intent of the Uri
 			NavigationRequest.WhatToDoWithTheStack whatDoIDo = NavigationRequest.WhatToDoWithTheStack.PushToIt;
 			if (uri.IsAbsoluteUri)
@@ -93,6 +94,7 @@ namespace Xamarin.Forms
 
 			Uri request = ConvertToStandardFormat(shell, uri);
 
+			
 			var possibleRouteMatches = GenerateRoutePaths(shell, request, uri, enableRelativeShellRoutes);
 
 
@@ -822,6 +824,4 @@ namespace Xamarin.Forms
 		public ShellContent Content { get; }
 		public List<string> GlobalRoutes { get; }
 	}
-
-
 }

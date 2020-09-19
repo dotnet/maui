@@ -119,7 +119,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void NullConstructor ()
 		{
-			Assert.Throws<ArgumentNullException> (() => new ControlTemplate (null));
+			Func<object> func = null;
+			Assert.Throws<ArgumentNullException> (() => new ControlTemplate (func));
 		}
 
 		class TestPage : ContentPage

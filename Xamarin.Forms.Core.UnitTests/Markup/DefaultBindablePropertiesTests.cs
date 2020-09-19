@@ -99,6 +99,7 @@ namespace Xamarin.Forms.Markup.UnitTests
 				{ typeof(PolyQuadraticBezierSegment), tbd },
 				{ typeof(QuadraticBezierSegment), tbd },
 				{ typeof(RectangleGeometry), tbd },
+				{ typeof(RoundRectangleGeometry), tbd },
 				{ typeof(RotateTransform), tbd },
 				{ typeof(ScaleTransform), tbd },
 				{ typeof(SkewTransform), tbd },

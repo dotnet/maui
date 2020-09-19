@@ -42,8 +42,19 @@ namespace Xamarin.Forms.Platform.UWP
 			if (element == null)
 				throw new ArgumentNullException(nameof(element));
 
-			IVisualElementRenderer renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ??
-			                                  new DefaultRenderer();
+			IVisualElementRenderer renderer = null;
+
+			if (element is TemplatedView tv && tv.ResolveControlTemplate() != null)
+			{
+				renderer = new DefaultRenderer();
+			}
+
+			if (renderer == null)
+			{
+				renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ??
+												  new DefaultRenderer();
+			}
+
 			renderer.SetElement(element);
 			return renderer;
 		}

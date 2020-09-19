@@ -97,5 +97,10 @@ namespace Xamarin.Forms
 		}
 
 		protected object GetTemplateChild(string name) => TemplateUtilities.GetTemplateChild(this, name);
+
+		public virtual ControlTemplate ResolveControlTemplate() 
+		{
+			return ControlTemplate;
+		}
 	}
 }
