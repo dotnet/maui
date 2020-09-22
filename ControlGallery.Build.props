@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup>
-    <CGLangVersion Condition="'$(CGLangVersion)' == ''">7.3</CGLangVersion>
-    <LangVersion Condition="'$(LangVersion)' == ''">$(CGLangVersion)</LangVersion>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 </Project>
