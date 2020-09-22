@@ -235,6 +235,17 @@ namespace Xamarin.Forms.Platform.Tizen
 			return button;
 		}
 
+		public static EButton SetWatchTextStyle(this EButton button)
+		{
+			if (Device.Idiom != TargetIdiom.Watch)
+			{
+				Log.Error($"ToWatchPopupRightStyleButton is only supported on TargetIdiom.Watch : {0}", Device.Idiom);
+				return button;
+			}
+			button.Style = ThemeConstants.Button.Styles.Watch.Text;
+			return button;
+		}
+
 		public static bool SetIconPart(this EButton button, EvasObject content, bool preserveOldContent = false)
 		{
 			return button.SetPartContent(ThemeConstants.Button.Parts.Icon, content, preserveOldContent);
@@ -273,6 +284,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			button.SetPartColor(ThemeConstants.Button.ColorClass.Effect, color);
 			button.SetPartColor(ThemeConstants.Button.ColorClass.EffectPressed, color);
 		}
+
 		#endregion
 
 		#region Popup

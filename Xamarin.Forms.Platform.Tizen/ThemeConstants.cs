@@ -81,6 +81,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					public const string PopupLeft = "popup/circle/left_delete";
 					public const string PopupRight = "popup/circle/right_check";
+					public const string Text = "textbutton";
 				}
 			}
 

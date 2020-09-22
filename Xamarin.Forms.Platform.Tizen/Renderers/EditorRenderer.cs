@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateText()
 		{
-			Control.Text = Element.Text;
+			Control.Text = Element.Text ?? "";
 			if (!Control.IsFocused)
 			{
 				Control.MoveCursorEnd();
