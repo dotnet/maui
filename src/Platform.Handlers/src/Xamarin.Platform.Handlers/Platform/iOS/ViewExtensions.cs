@@ -6,11 +6,6 @@ namespace Xamarin.Platform
 {
 	public static class ViewExtensions
 	{
-		public static void SetText(this UILabel label, string text)
-			=> label.Text = text;
-
-		public static void SetText(this UILabel label, NSAttributedString text)
-			=> label.AttributedText = text;
 
 		public static void SetBackgroundColor(this UIView view, UIColor color)
 			=> view.BackgroundColor = color;
@@ -18,17 +13,20 @@ namespace Xamarin.Platform
 			view.BackgroundColor;
 
 
-		public static void SetText(this UIButton view, string text)
-			=> view.SetTitle(text, UIControlState.Normal);
-
-		public static void SetText(this UIButton view, NSAttributedString text)
-			=> view.SetAttributedTitle(text, UIControlState.Normal);
-
-		public static void SetTextColor(this UIButton button, Color color, Color defaultColor)
+		public static void UpdateIsEnabled(this UIView nativeView, IView view)
 		{
-			button.SetTitleColor(color.Cleanse(defaultColor).ToNative(), UIControlState.Normal);
+			if (!(nativeView is UIControl uiControl))
+				return;
+
+			uiControl.Enabled = view.IsEnabled;
 		}
 
-		static Color Cleanse(this Color color, Color defaultColor) => color.IsDefault ? defaultColor : color;
+		public static void UpdateBackgroundColor(this UIView nativeView, IView view)
+		{
+			var color = view.BackgroundColor;
+
+			if (color != null && !color.IsDefault)
+				nativeView.BackgroundColor = color.ToNative();
+		}
 	}
 }

@@ -248,5 +248,9 @@ namespace Xamarin.Forms
 			width = Width;
 			height = Height;
 		}
+
+		public static implicit operator Rect(Rectangle rectangle) => new Rect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
+
+		public static implicit operator Rectangle(Rect rect) => new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
 	}
 }

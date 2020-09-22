@@ -1,24 +1,20 @@
 ﻿using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Xamarin.Forms;
+using AView = Android.Views.View;
 
 namespace Xamarin.Platform
 {
 	public static class ViewExtensions
 	{
-		public static void SetTextColor(this AndroidX.AppCompat.Widget.AppCompatButton button, Color color, Color defaultColor)
-			=> button.SetTextColor(color.Cleanse(defaultColor).ToNative());
+		public static void UpdateIsEnabled(this AView nativeView, IView view) =>
+				nativeView.Enabled = view.IsEnabled;
 
-		public static void SetTextColor(this AndroidX.AppCompat.Widget.AppCompatButton button, Color color, ColorStateList defaultColor)
+		public static void UpdateBackgroundColor(this AView nativeView, IView view)
 		{
-			if (color.IsDefault)
-				button.SetTextColor(defaultColor);
-			else
-				button.SetTextColor(color.ToNative());
+			var backgroundColor = view.BackgroundColor;
+			if (!backgroundColor.IsDefault)
+				nativeView.SetBackgroundColor(backgroundColor.ToNative());
 		}
-
-		static Color Cleanse(this Color color, Color defaultColor) => color.IsDefault ? defaultColor : color;
-
-		public static void SetText(this AndroidX.AppCompat.Widget.AppCompatButton button, string text)
-			=> button.Text = text;
 	}
 }

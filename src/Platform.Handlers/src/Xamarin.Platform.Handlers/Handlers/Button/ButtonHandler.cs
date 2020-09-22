@@ -1,4 +1,6 @@
 ﻿using System;
+using Xamarin.Forms;
+
 #if __IOS__
 using NativeView = UIKit.UIButton;
 #elif __MACOS__
@@ -13,7 +15,7 @@ using NativeView = System.Object;
 
 namespace Xamarin.Platform.Handlers
 {
-	public partial class ButtonHandler : AbstractViewHandler<IButton, NativeView>
+	public class ButtonHandler : AbstractViewHandler<IButton, NativeView>
 	{
 		public static PropertyMapper<IButton, ButtonHandler> ButtonMapper = new PropertyMapper<IButton, ButtonHandler>(ViewHandler.ViewMapper)
 		{

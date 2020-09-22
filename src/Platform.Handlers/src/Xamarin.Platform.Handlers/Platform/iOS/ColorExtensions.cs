@@ -2,7 +2,7 @@
 using Xamarin.Forms;
 using System;
 
-#if __MOBILE__
+#if __IOS__
 using UIKit;
 using UIColor = UIKit.UIColor;
 #else
@@ -14,7 +14,7 @@ namespace Xamarin.Platform
 {
 	public static class ColorExtensions
 	{
-#if __MOBILE__
+#if __IOS__
 		internal static readonly UIColor Black = UIColor.Black;
 		internal static readonly UIColor SeventyPercentGrey = new UIColor(0.7f, 0.7f, 0.7f, 1);
 
@@ -162,7 +162,7 @@ namespace Xamarin.Platform
 			return color.ToNative().CGColor;
 		}
 
-#if __MOBILE__
+#if __IOS__
 		public static UIColor FromPatternImageFromBundle(string bgImage)
 		{
 			var image = UIImage.FromBundle(bgImage);
@@ -179,7 +179,7 @@ namespace Xamarin.Platform
 			nfloat green;
 			nfloat blue;
 			nfloat alpha;
-#if __MOBILE__
+#if __IOS__
 			color.GetRGBA(out red, out green, out blue, out alpha);
 #else
 			if (color.Type == NSColorType.Catalog)
@@ -201,7 +201,7 @@ namespace Xamarin.Platform
 		}
 #endif
 
-#if __MOBILE__
+#if __IOS__
 		public static UIColor ToNative(this Color color)
 		{
 			return new UIColor((float)color.R, (float)color.G, (float)color.B, (float)color.A);

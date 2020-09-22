@@ -13,7 +13,7 @@ using NativeView = System.Object;
 
 namespace Xamarin.Platform.Handlers
 {
-	public partial class LabelHandler : AbstractViewHandler<ILabel, NativeView>
+	public class LabelHandler : AbstractViewHandler<ILabel, NativeView>
 	{
 		public static PropertyMapper<ILabel, LabelHandler> LabelMapper = new PropertyMapper<ILabel, LabelHandler>(ViewHandler.ViewMapper)
 		{

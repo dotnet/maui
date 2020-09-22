@@ -728,66 +728,7 @@ Task("BuildForNuget")
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}.binlog";
         MSBuild("./Xamarin.Forms.sln", msbuildSettings);
-        
-        // // This currently fails on CI will revisit later
-        // if(isCIBuild)
-        // {        
-        //     MSBuild("./Xamarin.Forms.Xaml.UnitTests/Xamarin.Forms.Xaml.UnitTests.csproj", GetMSBuildSettings().WithTarget("Restore"));
-        //     MSBuild("./Xamarin.Forms.Xaml.UnitTests/Xamarin.Forms.Xaml.UnitTests.csproj", GetMSBuildSettings());
-        // }
 
-        // MSBuild("./Xamarin.Forms.sln", GetMSBuildSettings().WithTarget("Restore"));
-        // MSBuild("./Xamarin.Forms.DualScreen.sln", GetMSBuildSettings().WithTarget("Restore"));
-
-        // if(isCIBuild)
-        // {       
-        //     foreach(var platformProject in GetFiles("./Xamarin.*.UnitTests/*.csproj").Select(x=> x.FullPath))
-        //     {
-        //         if(platformProject.Contains("Xamarin.Forms.Xaml.UnitTests"))
-        //             continue;
-
-        //         Information("Building: {0}", platformProject);
-        //         MSBuild(platformProject,
-        //                 GetMSBuildSettings().WithRestore());
-        //     }
-        // }
-
-        // MSBuild("./Xamarin.Forms.sln", GetMSBuildSettings().WithTarget("Restore"));
-        // MSBuild("./Xamarin.Forms.DualScreen.sln", GetMSBuildSettings().WithTarget("Restore"));
-        
-        // msbuildSettings.BinaryLogger = binaryLogger;
-        
-        // var platformProjects = 
-        //     GetFiles("./Xamarin.Forms.Platform.*/*.csproj")
-        //         .Union(GetFiles("./Stubs/*/*.csproj"))
-        //         .Union(GetFiles("./Xamarin.Forms.Maps.*/*.csproj"))
-        //         .Union(GetFiles("./Xamarin.Forms.Pages.*/*.csproj"))
-        //         .Union(GetFiles("./Xamarin.Forms.Material.*/*.csproj"))
-        //         .Union(GetFiles("./Xamarin.Forms.Core.Design/*.csproj"))
-        //         .Union(GetFiles("./Xamarin.Forms.Xaml.Design/*.csproj"))
-        //         .Select(x=> x.FullPath).Distinct()
-        //         .ToList();
-
-        // foreach(var platformProject in platformProjects)
-        // {
-        //     if(platformProject.Contains("UnitTests"))
-        //         continue;
-                
-        //     msbuildSettings = GetMSBuildSettings();
-        //     string projectName = platformProject
-        //         .Replace(' ', '_')
-        //         .Split('/')
-        //         .Last();
-
-        //     binaryLogger.FileName = $"{artifactStagingDirectory}/{projectName}-{configuration}.binlog";
-        //     msbuildSettings.BinaryLogger = binaryLogger;
-
-        //     Information("Building: {0}", platformProject);
-        //     MSBuild(platformProject,
-        //             msbuildSettings);
-        // }
-
-        // dual screen
         msbuildSettings = GetMSBuildSettings();
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/dualscreen-{configuration}-csproj.binlog";
@@ -812,6 +753,15 @@ Task("BuildForNuget")
         MSBuild("./Xamarin.Forms.Platform.iOS/Xamarin.Forms.Platform.iOS.csproj",
                     msbuildSettings
                         .WithTarget("rebuild"));
+
+                        
+       /* msbuildSettings = GetMSBuildSettings();
+        msbuildSettings.BinaryLogger = binaryLogger;
+        binaryLogger.FileName = $"{artifactStagingDirectory}/xaml-unittests-{configuration}-csproj.binlog";
+        MSBuild("./Xamarin.Forms.Xaml.UnitTests/Xamarin.Forms.Xaml.UnitTests.csproj",
+                    msbuildSettings
+                        .WithRestore()
+                        .WithTarget("rebuild"));*/
 
         // msbuildSettings = GetMSBuildSettings();
         // msbuildSettings.BinaryLogger = binaryLogger;

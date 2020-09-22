@@ -50,6 +50,7 @@ namespace Xamarin.Forms
 			{ typeof(Rectangle), typeof(RectangleTypeConverter) },
 			{ typeof(Size), typeof(SizeTypeConverter) },
 			{ typeof(Thickness), typeof(ThicknessTypeConverter) },
+			{ typeof(Rect), typeof(RectTypeConverter) },
 		};
 
 		public static readonly TypeConverterAttribute Default = new TypeConverterAttribute();

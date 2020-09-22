@@ -265,9 +265,17 @@
     <Compile Include="GeometryTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\src\Platform.Handlers\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
+      <Name>Xamarin.Platform.Handlers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
       <Name>Xamarin.Forms.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+      <Project>{f137fac5-3385-4b19-988b-4a14ed84ccc6}</Project>
+      <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
       <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>
