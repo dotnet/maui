@@ -13,7 +13,7 @@ namespace Sample
 
 		public IView CreateView()
 		{
-			return new Button() { Text = "Hello I'm a button", BackgroundColor = Color.Purple };
+			return new Button() { Color = Color.Green , Text = "Hello I'm a button", BackgroundColor = Color.Purple };
 		}
 	}
 }

@@ -64,8 +64,9 @@ namespace Xamarin.Platform
 		public virtual IReadOnlyList<string> UpdateKeys => updateKeys ?? PopulateKeys(ref updateKeys);
 	}
 
-	public class PropertyMapper<TVirtualView> : PropertyMapper, IEnumerable
+	public class PropertyMapper<TVirtualView, TViewHandler> : PropertyMapper, IEnumerable
 		where TVirtualView : IFrameworkElement
+		where TViewHandler : IViewHandler
 	{
 		private PropertyMapper chained;
 		public PropertyMapper Chained
@@ -85,7 +86,7 @@ namespace Xamarin.Platform
 
 		public bool IsReadOnly => false;
 
-		public Action<IViewHandler, TVirtualView> this[string key]
+		public Action<TViewHandler, TVirtualView> this[string key]
 		{
 			set => Add(key, value, true);
 		}
@@ -99,10 +100,10 @@ namespace Xamarin.Platform
 			Chained = chained;
 		}
 
-		ActionMapper<TVirtualView> actions;
-		public ActionMapper<TVirtualView> Actions
+		ActionMapper<TVirtualView, TViewHandler> actions;
+		public ActionMapper<TVirtualView, TViewHandler> Actions
 		{
-			get => actions ??= new ActionMapper<TVirtualView>(this);
+			get => actions ??= new ActionMapper<TVirtualView, TViewHandler>(this);
 		}
 
 		protected override void ClearKeyCache()
@@ -121,17 +122,27 @@ namespace Xamarin.Platform
 				return Chained?.Get(key) ?? (null, false);
 		}
 
-		public void Add(string key, Action<IViewHandler, TVirtualView> action)
+		public void Add(string key, Action<TViewHandler, TVirtualView> action)
 			=> this[key] = action;
 
-		public void Add(string key, Action<IViewHandler, TVirtualView> action, bool ignoreOnStartup)
-			=> _mapper[key] = ((r, v) => action?.Invoke(r, (TVirtualView)v), ignoreOnStartup);
-
-
-
+		public void Add(string key, Action<TViewHandler, TVirtualView> action, bool ignoreOnStartup)
+			=> _mapper[key] = ((r, v) => action?.Invoke((TViewHandler)r, (TVirtualView)v), ignoreOnStartup);
 
 		IEnumerator IEnumerable.GetEnumerator() => _mapper.GetEnumerator();
+	}
 
 
+
+
+	public class PropertyMapper<TVirtualView> : PropertyMapper<TVirtualView, IViewHandler>
+		where TVirtualView : IFrameworkElement
+	{
+		public PropertyMapper()
+		{
+		}
+
+		public PropertyMapper(PropertyMapper chained) : base(chained)
+		{
+		}
 	}
 }

@@ -130,5 +130,28 @@ namespace Xamarin.Platform.Handlers.Tests
 			Assert.False(mapperActionWasCalled);
 			Assert.True(wasMapper2Called);
 		}
+
+
+
+		[Test]
+		public void GenericMappersWorks()
+		{
+			bool wasMapper1Called = false;
+			bool wasMapper2Called = false;
+			var mapper1 = new PropertyMapper<IView, IViewHandler>
+			{
+				[nameof(IView.BackgroundColor)] = (r, v) => wasMapper1Called = true
+			};
+
+			var mapper2 = new PropertyMapper<IButton, ButtonHandler>(mapper1)
+			{
+				[nameof(IButton.Color)] = (r, v) => wasMapper2Called = true
+			};
+
+			mapper2.UpdateProperties(null, new Button());
+
+			Assert.True(wasMapper1Called);
+			Assert.True(wasMapper2Called);
+		}
 	}
 }

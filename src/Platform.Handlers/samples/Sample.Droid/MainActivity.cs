@@ -35,7 +35,7 @@ namespace Sample.Droid
 		{
 			foreach (var view in views)
 			{
-				_page.AddView(view.ToNative(this), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent));
+				_page.AddView(view.ToNative(this));
 			}
 		}
 
