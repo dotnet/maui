@@ -14,7 +14,7 @@
             BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Shape), null);
 
         public static readonly BindableProperty StrokeThicknessProperty =
-            BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Shape), 0.0);
+            BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Shape), 1.0);
 
         public static readonly BindableProperty StrokeDashArrayProperty =
             BindableProperty.Create(nameof(StrokeDashArray), typeof(DoubleCollection), typeof(Shape), null,
