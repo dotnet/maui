@@ -4,7 +4,7 @@ steps:
 
   - task: xamops.azdevex.provisionator-task.provisionator@1
     displayName: 'Provision Xcode'
-    condition: and(ne(variables['REQUIRED_XCODE'], ''), eq(variables['buildForVS2017'], 'false'))
+    condition: eq(variables['buildForVS2017'], 'false')
     inputs:
       provisioning_script: 'build/provisioning/xcode.csx'
 
