@@ -216,7 +216,9 @@ namespace Xamarin.Forms.Core.UnitTests
 				content.Route = shellContentRoute;
 			}
 			else if (asImplicit)
-				content = (ShellContent)page;
+			{
+				content = (ShellContent)(page ?? new ContentPage());
+			}
 			else
 			{
 				if (templated)
@@ -288,6 +290,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			public int OnBackButtonPressedCount;
 			public ShellNavigatedEventArgs LastShellNavigatedEventArgs;
 			public ShellNavigatingEventArgs LastShellNavigatingEventArgs;
+
+			public IShellController Controller => this;
 
 			public TestShell()
 			{

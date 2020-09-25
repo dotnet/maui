@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		readonly IShellContext _shellContext;
 		List<AdapterListItem> _listItems;
+		List<List<Element>> _flyoutGroupings;
 		Dictionary<int, DataTemplate> _templateMap = new Dictionary<int, DataTemplate>();
 		Action<Element> _selectedCallback;
 		bool _disposed;
@@ -173,7 +174,12 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var result = new List<AdapterListItem>();
 
-			var grouping = ((IShellController)_shellContext.Shell).GenerateFlyoutGrouping();
+			List<List<Element>> grouping = ((IShellController)_shellContext.Shell).GenerateFlyoutGrouping();
+
+			if (_flyoutGroupings == grouping)
+				return _listItems;
+
+			_flyoutGroupings = grouping;
 
 			bool skip = true;
 
@@ -193,8 +199,13 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void OnShellStructureChanged(object sender, EventArgs e)
 		{
-			_listItems = GenerateItemList();
-			NotifyDataSetChanged();
+			var newListItems =  GenerateItemList();
+
+			if (newListItems != _listItems)
+			{
+				_listItems = newListItems;
+				NotifyDataSetChanged();
+			}
 		}
 
 		protected override void Dispose(bool disposing)
