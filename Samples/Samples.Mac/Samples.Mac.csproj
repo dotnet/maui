@@ -54,6 +54,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.Mac" />
+    <Reference Include="OpenTK" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AppCenter" Version="3.0.0" />
