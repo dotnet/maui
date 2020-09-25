@@ -12,7 +12,7 @@ namespace Xamarin.Essentials
             where TPermission : BasePermission, new() =>
                 new TPermission().RequestAsync();
 
-        public static void ShouldShowRationale<TPermission>()
+        public static bool ShouldShowRationale<TPermission>()
             where TPermission : BasePermission, new() =>
                 new TPermission().ShouldShowRationale();
 
