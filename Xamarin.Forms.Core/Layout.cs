@@ -326,14 +326,15 @@ namespace Xamarin.Forms
 			}
 
 			s_resolutionList.Add(new KeyValuePair<Layout, int>(this, GetElementDepth(this)));
-			if (!s_relayoutInProgress)
-			{
-				s_relayoutInProgress = true;
 
-				// Rather than recomputing the layout for each change as it happens, we accumulate them in 
+			if (Device.PlatformInvalidator == null && !s_relayoutInProgress)
+			{
+				// Rather than recomputing the layout for each change as it happens, we accumulate them in
 				// s_resolutionList and schedule a single layout update operation to handle them all at once.
 				// This avoids a lot of unnecessary layout operations if something is triggering many property
 				// changes at once (e.g., a BindingContext change)
+
+				s_relayoutInProgress = true;
 
 				if (Dispatcher != null)
 				{
@@ -342,16 +343,27 @@ namespace Xamarin.Forms
 				else
 				{
 					Device.BeginInvokeOnMainThread(ResolveLayoutChanges);
-				}			
+				}
+			}
+			else
+			{
+				// If the platform supports PlatformServices2, queueing is unnecessary; the layout changes
+				// will be handled during the Layout's next Measure/Arrange pass
+				Device.Invalidate(this);
 			}
 		}
 
-		internal void ResolveLayoutChanges()
+		public void ResolveLayoutChanges()
 		{
-			// if thread safety mattered we would need to lock this and compareexchange above
+			s_relayoutInProgress = false;
+
+			if (s_resolutionList.Count == 0)
+			{
+				return;
+			}	
+
 			IList<KeyValuePair<Layout, int>> copy = s_resolutionList;
 			s_resolutionList = new List<KeyValuePair<Layout, int>>();
-			s_relayoutInProgress = false;
 
 			foreach (KeyValuePair<Layout, int> kvp in copy)
 			{

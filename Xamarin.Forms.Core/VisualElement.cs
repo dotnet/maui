@@ -663,7 +663,10 @@ namespace Xamarin.Forms
 		{
 			_batched = Math.Max(0, _batched - 1);
 			if (!Batched)
+			{
 				BatchCommitted?.Invoke(this, new EventArg<VisualElement>(this));
+				Device.Invalidate(this);
+			}
 		}
 
 		ResourceDictionary _resources;

@@ -191,8 +191,12 @@ namespace Xamarin.Forms
 			}
 #endif
 			Device.SetFlags(s_flags);
-			Device.PlatformServices = new IOSPlatformServices();
+			var platformServices = new IOSPlatformServices();
+
+			Device.PlatformServices = platformServices;
+
 #if __MOBILE__
+			Device.PlatformInvalidator = platformServices;
 			Device.Info = new IOSDeviceInfo();
 #else
 			Device.Info = new Platform.macOS.MacDeviceInfo();
@@ -238,6 +242,9 @@ namespace Xamarin.Forms
 		}
 
 		class IOSPlatformServices : IPlatformServices
+#if __MOBILE__
+			, IPlatformInvalidate
+#endif
 		{
 			readonly double _fontScalingFactor = 1;
 			public IOSPlatformServices()
@@ -792,6 +799,18 @@ namespace Xamarin.Forms
 					throw new InvalidOperationException("Could not find current view controller.");
 
 				return viewController;
+			}
+
+			public void Invalidate(VisualElement visualElement)
+			{
+				var renderer = Platform.iOS.Platform.GetRenderer(visualElement);
+
+				if (renderer == null)
+				{
+					return;
+				}
+
+				renderer.NativeView.SetNeedsLayout();
 			}
 #endif
 		}
