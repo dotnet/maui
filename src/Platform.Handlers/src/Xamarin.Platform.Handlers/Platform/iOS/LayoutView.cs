@@ -28,12 +28,12 @@ namespace Xamarin.Platform
 
 			var width = Frame.Width;
 			var height = Frame.Height;
-			CrossPlatformMeasure(width, height);
 
+			CrossPlatformMeasure?.Invoke(width, height);
 			CrossPlatformArrange?.Invoke(Frame.ToRectangle());
 		}
 
-		internal Func<double, double, SizeRequest> CrossPlatformMeasure { get; set; }
-		internal Action<Rectangle> CrossPlatformArrange { get; set; }
+		internal Func<double, double, SizeRequest>? CrossPlatformMeasure { get; set; }
+		internal Action<Rectangle>? CrossPlatformArrange { get; set; }
 	}
 }

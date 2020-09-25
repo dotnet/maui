@@ -9,7 +9,7 @@ namespace Xamarin.Platform
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateColor(this AndroidX.AppCompat.Widget.AppCompatButton button, Color color, ColorStateList defaultColor)
+		public static void UpdateColor(this AndroidX.AppCompat.Widget.AppCompatButton button, Color color, ColorStateList? defaultColor)
 		{
 			if (color.IsDefault)
 				button.SetTextColor(defaultColor);

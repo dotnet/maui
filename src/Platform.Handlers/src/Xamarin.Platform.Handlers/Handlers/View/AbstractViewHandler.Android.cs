@@ -8,7 +8,7 @@ namespace Xamarin.Platform.Handlers
 	{
 		public void SetContext(Context context) => Context = context;
 
-		public Context Context { get; private set; }
+		public Context? Context { get; private set; }
 
 		public void SetFrame(Rectangle frame)
 		{
@@ -22,6 +22,9 @@ namespace Xamarin.Platform.Handlers
 				// This is just some initial Forms value nonsense, nothing is actually laying out yet
 				return;
 			}
+
+			if (Context == null)
+				return;
 
 			var left = Context.ToPixels(frame.Left);
 			var top = Context.ToPixels(frame.Top);
@@ -48,6 +51,11 @@ namespace Xamarin.Platform.Handlers
 			if (TypedNativeView == null)
 			{
 				return new SizeRequest(Size.Zero);
+			}
+
+			if (Context == null)
+			{
+				return new SizeRequest(new Size(widthConstraint, heightConstraint));
 			}
 
 			var deviceWidthConstraint = Context.ToPixels(widthConstraint);

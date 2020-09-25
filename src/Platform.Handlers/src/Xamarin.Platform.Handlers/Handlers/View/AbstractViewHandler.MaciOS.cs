@@ -10,14 +10,26 @@ namespace Xamarin.Platform.Handlers
 {
 	public partial class AbstractViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
-		public void SetFrame(Rectangle rect) => View.Frame = rect.ToCGRect();
+		public void SetFrame(Rectangle rect)
+		{
+			if (View != null)
+				View.Frame = rect.ToCGRect();
+		}
 
 		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var s = TypedNativeView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
-			var request = new Size(s.Width == float.PositiveInfinity ? double.PositiveInfinity : s.Width,
-				s.Height == float.PositiveInfinity ? double.PositiveInfinity : s.Height);
-			return new SizeRequest(request);
+			var sizeThatFits = TypedNativeView?.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
+
+			if (sizeThatFits.HasValue)
+			{
+				var request = new Size(
+					sizeThatFits.Value.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Value.Width,
+					sizeThatFits.Value.Height == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Value.Height);
+
+				return new SizeRequest(request);
+			}
+
+			return new SizeRequest(new Size(widthConstraint, heightConstraint));
 		}
 
 		void SetupContainer()

@@ -7,6 +7,6 @@ namespace Xamarin.Platform
 	{
 		void SetContext(Context context);
 
-		AView View { get; }
+		AView? View { get; }
 	}
 }

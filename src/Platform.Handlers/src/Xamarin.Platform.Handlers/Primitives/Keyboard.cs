@@ -2,21 +2,21 @@ namespace Xamarin.Forms
 {
 	public class Keyboard
 	{
-		static Keyboard s_plain;
+		static Keyboard? s_plain;
 
-		static Keyboard s_def;
+		static Keyboard? s_def;
 
-		static Keyboard s_email;
+		static Keyboard? s_email;
 
-		static Keyboard s_text;
+		static Keyboard? s_text;
 
-		static Keyboard s_url;
+		static Keyboard? s_url;
 
-		static Keyboard s_numeric;
+		static Keyboard? s_numeric;
 
-		static Keyboard s_telephone;
+		static Keyboard? s_telephone;
 
-		static Keyboard s_chat;
+		static Keyboard? s_chat;
 
 		internal Keyboard()
 		{
@@ -24,41 +24,41 @@ namespace Xamarin.Forms
 
 		public static Keyboard Plain
 		{
-			get { return s_plain ?? (s_plain = new CustomKeyboard(KeyboardFlags.None)); }
+			get { return s_plain ??= new CustomKeyboard(KeyboardFlags.None); }
 		}
 
 		public static Keyboard Chat {
-			get { return s_chat ?? (s_chat = new ChatKeyboard()); }
+			get { return s_chat ??= new ChatKeyboard(); }
 		}
 
 		public static Keyboard Default
 		{
-			get { return s_def ?? (s_def = new Keyboard()); }
+			get { return s_def ??= new Keyboard(); }
 		}
 
 		public static Keyboard Email
 		{
-			get { return s_email ?? (s_email = new EmailKeyboard()); }
+			get { return s_email ??= new EmailKeyboard(); }
 		}
 
 		public static Keyboard Numeric
 		{
-			get { return s_numeric ?? (s_numeric = new NumericKeyboard()); }
+			get { return s_numeric ??= new NumericKeyboard(); }
 		}
 
 		public static Keyboard Telephone
 		{
-			get { return s_telephone ?? (s_telephone = new TelephoneKeyboard()); }
+			get { return s_telephone ??= new TelephoneKeyboard(); }
 		}
 
 		public static Keyboard Text
 		{
-			get { return s_text ?? (s_text = new TextKeyboard()); }
+			get { return s_text ??= new TextKeyboard(); }
 		}
 
 		public static Keyboard Url
 		{
-			get { return s_url ?? (s_url = new UrlKeyboard()); }
+			get { return s_url ??= new UrlKeyboard(); }
 		}
 
 		public static Keyboard Create(KeyboardFlags flags)

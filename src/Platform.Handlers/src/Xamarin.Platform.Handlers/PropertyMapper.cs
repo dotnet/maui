@@ -7,6 +7,9 @@ namespace Xamarin.Platform
 {
 	public class PropertyMapper
 	{
+		List<string>? _actionKeys;
+		List<string>? _updateKeys;
+
 		internal Dictionary<string, (Action<IViewHandler, IFrameworkElement> Action, bool RunOnUpdateAll)> _mapper = new Dictionary<string, (Action<IViewHandler, IFrameworkElement> action, bool runOnUpdateAll)>();
 
 		protected virtual void UpdatePropertyCore(string key, IViewHandler viewHandler, IFrameworkElement virtualView)
@@ -15,17 +18,19 @@ namespace Xamarin.Platform
 			action.Action?.Invoke(viewHandler, virtualView);
 		}
 
-		public void UpdateProperty(IViewHandler viewHandler, IFrameworkElement virtualView, string property)
+		internal void UpdateProperty(IViewHandler viewHandler, IFrameworkElement? virtualView, string property)
 		{
 			if (virtualView == null)
 				return;
+
 			UpdatePropertyCore(property, viewHandler, virtualView);
 		}
 
-		public void UpdateProperties(IViewHandler viewHandler, IFrameworkElement virtualView)
+		internal void UpdateProperties(IViewHandler viewHandler, IFrameworkElement? virtualView)
 		{
 			if (virtualView == null)
 				return;
+
 			foreach (var key in UpdateKeys)
 			{
 				UpdatePropertyCore(key, viewHandler, virtualView);
@@ -33,54 +38,61 @@ namespace Xamarin.Platform
 		}
 
 		public virtual ICollection<string> Keys => _mapper.Keys;
-		protected List<string> PopulateKeys(ref List<string> returnList)
+
+		protected List<string> PopulateKeys(ref List<string>? returnList)
 		{
-			updateKeys = new List<string>();
-			actionKeys = new List<string>();
+			_updateKeys = new List<string>();
+			_actionKeys = new List<string>();
+
 			foreach (var key in Keys)
 			{
 				var result = Get(key);
+
 				if (result.RunOnUpdateAll)
-					updateKeys.Add(key);
+					_updateKeys.Add(key);
 				else
-					actionKeys.Add(key);
+					_actionKeys.Add(key);
 
 			}
-			return returnList;
+
+			return returnList ?? new List<string>();
 		}
+
 		protected virtual void ClearKeyCache()
 		{
-			updateKeys = null;
-			actionKeys = null;
+			_updateKeys = null;
+			_actionKeys = null;
 		}
-		public virtual (Action<IViewHandler, IFrameworkElement> Action, bool RunOnUpdateAll) Get(string key)
+
+		public virtual (Action<IViewHandler, IFrameworkElement>? Action, bool RunOnUpdateAll) Get(string key)
 		{
 			_mapper.TryGetValue(key, out var action);
 			return action;
 		}
-		List<string> actionKeys;
-		List<string> updateKeys;
-		public virtual IReadOnlyList<string> ActionKeys => actionKeys ?? PopulateKeys(ref actionKeys);
-		public virtual IReadOnlyList<string> UpdateKeys => updateKeys ?? PopulateKeys(ref updateKeys);
+
+		public virtual IReadOnlyList<string> ActionKeys => _actionKeys ?? PopulateKeys(ref _actionKeys);
+		public virtual IReadOnlyList<string> UpdateKeys => _updateKeys ?? PopulateKeys(ref _updateKeys);
 	}
 
 	public class PropertyMapper<TVirtualView, TViewHandler> : PropertyMapper, IEnumerable
 		where TVirtualView : IFrameworkElement
 		where TViewHandler : IViewHandler
 	{
-		private PropertyMapper chained;
-		public PropertyMapper Chained
+		PropertyMapper? _chained;
+		ICollection<string>? _cachedKeys;
+		ActionMapper<TVirtualView, TViewHandler>? _actions;
+
+		public PropertyMapper? Chained
 		{
-			get => chained;
+			get => _chained;
 			set
 			{
-				chained = value;
+				_chained = value;
 				ClearKeyCache();
 			}
 		}
 
-		ICollection<string> cachedKeys;
-		public override ICollection<string> Keys => cachedKeys ??= (Chained?.Keys.Union(_mapper.Keys).ToList() as ICollection<string> ?? _mapper.Keys);
+		public override ICollection<string> Keys => _cachedKeys ??= (Chained?.Keys.Union(_mapper.Keys).ToList() as ICollection<string> ?? _mapper.Keys);
 
 		public int Count => Keys.Count;
 
@@ -100,22 +112,20 @@ namespace Xamarin.Platform
 			Chained = chained;
 		}
 
-		ActionMapper<TVirtualView, TViewHandler> actions;
 		public ActionMapper<TVirtualView, TViewHandler> Actions
 		{
-			get => actions ??= new ActionMapper<TVirtualView, TViewHandler>(this);
+			get => _actions ??= new ActionMapper<TVirtualView, TViewHandler>(this);
 		}
 
 		protected override void ClearKeyCache()
 		{
 			base.ClearKeyCache();
-			cachedKeys = null;
+			_cachedKeys = null;
 		}
 
 
-		public override (Action<IViewHandler, IFrameworkElement> Action, bool RunOnUpdateAll) Get(string key)
+		public override (Action<IViewHandler, IFrameworkElement>? Action, bool RunOnUpdateAll) Get(string key)
 		{
-
 			if (_mapper.TryGetValue(key, out var action))
 				return action;
 			else

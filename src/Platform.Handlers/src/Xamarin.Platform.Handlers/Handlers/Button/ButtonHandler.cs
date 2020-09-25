@@ -25,12 +25,14 @@ namespace Xamarin.Platform.Handlers
 
 		public static void MapColor(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView.UpdateColor(button);
+			ViewHandler.CheckParameters(handler, button);
+			handler.TypedNativeView?.UpdateColor(button);
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView.UpdateText(button);
+			ViewHandler.CheckParameters(handler, button);
+			handler.TypedNativeView?.UpdateText(button);
 		}
 
 #if MONOANDROID

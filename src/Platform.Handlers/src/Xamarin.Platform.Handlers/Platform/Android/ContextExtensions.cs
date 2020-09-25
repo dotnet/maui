@@ -3,19 +3,13 @@ using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Util;
 using Android.Views.InputMethods;
+using Xamarin.Forms;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AActivity = Android.App.Activity;
 using Size = Xamarin.Forms.Size;
-#if __ANDROID_29__
 using AndroidX.Fragment.App;
 using AndroidX.AppCompat.App;
 using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
-#else
-using AFragmentManager = Android.Support.V4.App.FragmentManager;
-using Android.Support.V4.App;
-using Android.Support.V7.App;
-#endif
-using Xamarin.Forms;
 
 namespace Xamarin.Platform
 {
@@ -46,17 +40,15 @@ namespace Xamarin.Platform
 
 		public static void HideKeyboard(this Context self, global::Android.Views.View view)
 		{
-			var service = (InputMethodManager)self.GetSystemService(Context.InputMethodService);
-			// service may be null in the context of the Android Designer
-			if (service != null)
+			// Service may be null in the context of the Android Designer
+			if (self.GetSystemService(Context.InputMethodService) is InputMethodManager service)
 				service.HideSoftInputFromWindow(view.WindowToken, HideSoftInputFlags.None);
 		}
 
 		public static void ShowKeyboard(this Context self, global::Android.Views.View view)
 		{
-			var service = (InputMethodManager)self.GetSystemService(Context.InputMethodService);
 			// Can happen in the context of the Android Designer
-			if (service != null)
+			if (self.GetSystemService(Context.InputMethodService) is InputMethodManager service)
 				service.ShowSoftInput(view, ShowFlags.Implicit);
 		}
 
@@ -68,20 +60,30 @@ namespace Xamarin.Platform
 			return (float)Math.Ceiling(dp * s_displayDensity);
 		}
 
-		public static bool HasRtlSupport(this Context self) =>
-			(self.ApplicationInfo.Flags & AApplicationInfoFlags.SupportsRtl) == AApplicationInfoFlags.SupportsRtl;
+		public static bool HasRtlSupport(this Context self)
+		{
+			if (self == null)
+				return false;
 
-		public static int TargetSdkVersion(this Context self) =>
-			(int)self.ApplicationInfo.TargetSdkVersion;
+			return (self.ApplicationInfo?.Flags & AApplicationInfoFlags.SupportsRtl) == AApplicationInfoFlags.SupportsRtl;
+		}
+
+		public static int? TargetSdkVersion(this Context self)
+		{
+			return (int?)self?.ApplicationInfo?.TargetSdkVersion;
+		}
 
 		internal static double GetThemeAttributeDp(this Context self, int resource)
 		{
 			using (var value = new TypedValue())
 			{
+				if (self == null || self.Theme == null)
+					return -1;
+
 				if (!self.Theme.ResolveAttribute(resource, value, true))
 					return -1;
 
-				var pixels = (double)TypedValue.ComplexToDimension(value.Data, self.Resources.DisplayMetrics);
+				var pixels = (double)TypedValue.ComplexToDimension(value.Data, self.Resources?.DisplayMetrics);
 
 				return self.FromPixels(pixels);
 			}
@@ -93,11 +95,11 @@ namespace Xamarin.Platform
 			if (s_displayDensity != float.MinValue)
 				return;
 
-			using (DisplayMetrics metrics = context.Resources.DisplayMetrics)
-				s_displayDensity = metrics.Density;
+			using (DisplayMetrics? metrics = context?.Resources?.DisplayMetrics)
+				s_displayDensity = metrics != null ? metrics.Density : 0;
 		}
 
-		public static AActivity GetActivity(this Context context)
+		public static AActivity? GetActivity(this Context context)
 		{
 			if (context == null)
 				return null;
@@ -106,65 +108,26 @@ namespace Xamarin.Platform
 				return activity;
 
 			if (context is ContextWrapper contextWrapper)
-				return contextWrapper.BaseContext.GetActivity();
+				return contextWrapper.BaseContext?.GetActivity();
 
 			return null;
 		}
 
-		internal static Context GetThemedContext(this Context context)
+		internal static Context? GetThemedContext(this Context context)
 		{
 			if (context == null)
 				return null;
-
-			if (context.IsDesignerContext())
-				return context;
 
 			if (context is AppCompatActivity activity)
 				return activity.SupportActionBar.ThemedContext;
 
 			if (context is ContextWrapper contextWrapper)
-				return contextWrapper.BaseContext.GetThemedContext();
+				return contextWrapper.BaseContext?.GetThemedContext();
 
 			return null;
 		}
 
-		static bool? _isDesignerContext;
-		internal static bool IsDesignerContext(this Context context)
-		{
-			if (_isDesignerContext.HasValue)
-				return _isDesignerContext.Value;
-
-			context.SetDesignerContext();
-			return _isDesignerContext.Value;
-		}
-
-		internal static void SetDesignerContext(this Context context)
-		{
-			if (_isDesignerContext.HasValue)
-				return;
-
-			if (context == null)
-				_isDesignerContext = false;
-			else if ($"{context}".Contains("com.android.layoutlib.bridge.android.BridgeContext"))
-				_isDesignerContext = true;
-			else
-				_isDesignerContext = false;
-		}
-
-		internal static void SetDesignerContext(global::Android.Views.View view)
-		{
-			_isDesignerContext = view.IsInEditMode;
-		}
-
-		internal static bool IsDesignerContext(this global::Android.Views.View view)
-		{
-			if (!_isDesignerContext.HasValue)
-				SetDesignerContext(view);
-
-			return _isDesignerContext.Value;
-		}
-
-		public static AFragmentManager GetFragmentManager(this Context context)
+		public static AFragmentManager? GetFragmentManager(this Context context)
 		{
 			if (context == null)
 				return null;

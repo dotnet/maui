@@ -8,8 +8,6 @@ namespace Xamarin.Platform
 	public static class Registrar
 	{
 		public static Registrar<IFrameworkElement, IViewHandler> Handlers { get; private set; }
-		public static Registrar<Type, Type> Registered { get; private set; }
-		public static Dictionary<string, Type> Effects { get; } = new Dictionary<string, Type>();
 
 		static Registrar()
 		{
@@ -19,7 +17,7 @@ namespace Xamarin.Platform
 
 	public class Registrar<TType, TTypeRender>
 	{
-		internal Dictionary<Type, Type> Handler = new Dictionary<Type, Type>();
+		internal Dictionary<Type, Type> _handler = new Dictionary<Type, Type>();
 
 		public void Register<TView, TRender>()
 			where TView : TType
@@ -30,22 +28,25 @@ namespace Xamarin.Platform
 
 		public void Register(Type view, Type handler)
 		{
-			Handler[view] = handler;
+			_handler[view] = handler;
 		}
+
 		public TTypeRender GetHandler<T>()
 		{
 			return GetHandler(typeof(T));
 		}
 
 		internal List<KeyValuePair<Type, Type>> GetViewType(Type type) =>
-			Handler.Where(x => isType(x.Value, type)).ToList();
+			_handler.Where(x => isType(x.Value, type)).ToList();
 
 		bool isType(Type type, Type type2)
 		{
 			if (type == type2)
 				return true;
+
 			if (!type.IsGenericType)
 				return false;
+
 			var paramerter = type.GetGenericArguments();
 			return paramerter[0] == type2;
 		}
@@ -54,6 +55,7 @@ namespace Xamarin.Platform
 		{
 			List<Type> types = new List<Type> { type };
 			Type baseType = type.BaseType;
+
 			while (baseType != null)
 			{
 				types.Add(baseType);
@@ -62,17 +64,19 @@ namespace Xamarin.Platform
 
 			foreach (var t in types)
 			{
-				var handler = getHandler(t);
-				if (handler != null)
-					return handler;
+				var renderer = GetRenderer(t);
+				if (renderer != null)
+					return renderer;
 			}
-			return default;
+
+			return default!;
 		}
 
-		public Type GetHandlerType(Type type)
+		public Type? GetRendererType(Type type)
 		{
 			List<Type> types = new List<Type> { type };
 			Type baseType = type.BaseType;
+
 			while (baseType != null)
 			{
 				types.Add(baseType);
@@ -81,16 +85,17 @@ namespace Xamarin.Platform
 
 			foreach (var t in types)
 			{
-				if (Handler.TryGetValue(t, out var returnType))
+				if (_handler.TryGetValue(t, out var returnType))
 					return returnType;
 			}
+
 			return null;
 		}
 
-		TTypeRender getHandler(Type t)
+		TTypeRender GetRenderer(Type type)
 		{
-			if (!Handler.TryGetValue(t, out var handler))
-				return default;
+			if (!_handler.TryGetValue(type, out var handler))
+				return default!;
 			try
 			{
 				var newObject = Activator.CreateInstance(handler);
@@ -102,7 +107,7 @@ namespace Xamarin.Platform
 					throw ex;
 			}
 
-			return default;
+			throw new ArgumentException($"No Handler found for type: {type}", nameof(type));
 		}
 	}
 }
