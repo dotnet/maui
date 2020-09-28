@@ -2,13 +2,10 @@
 
 namespace Xamarin.Forms.Platform.Tizen.Renderers
 {
-	[Obsolete("MasterDetailContainer is obsolete as of version 5.0.0. Please use FlyoutContainer instead.")]
-	public class MasterDetailContainer : ElmSharp.Box, IDisposable
+	public class FlyoutContainer : ElmSharp.Box, IDisposable
 	{
-#pragma warning disable CS0618 // Type or member is obsolete
-		readonly MasterDetailPage _parent;
-#pragma warning restore CS0618 // Type or member is obsolete
-		readonly bool _isMaster;
+		readonly FlyoutPage _parent;
+		readonly bool _isFlyout;
 
 		VisualElement _childView;
 		bool _disposed;
@@ -16,20 +13,18 @@ namespace Xamarin.Forms.Platform.Tizen.Renderers
 
 		IPageController PageController => ChildView as IPageController;
 
-		IMasterDetailPageController MasterDetailPageController => _parent as IMasterDetailPageController;
+		IFlyoutPageController FlyoutPageController => _parent as IFlyoutPageController;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-		public MasterDetailContainer(MasterDetailPage parentElement, bool isMaster) : base(Forms.NativeParent)
-#pragma warning restore CS0618 // Type or member is obsolete
+		public FlyoutContainer(FlyoutPage parentElement, bool isFlyout) : base(Forms.NativeParent)
 		{
 			_parent = parentElement;
-			_isMaster = isMaster;
+			_isFlyout = isFlyout;
 
 			SetLayoutCallback(OnLayoutUpdated);
 			Show();
 		}
 
-		~MasterDetailContainer()
+		~FlyoutContainer()
 		{
 			Dispose(false);
 		}
@@ -107,10 +102,10 @@ namespace Xamarin.Forms.Platform.Tizen.Renderers
 		{
 			if (_childView != null)
 			{
-				if (_isMaster)
-					MasterDetailPageController.MasterBounds = this.Geometry.ToDP();
+				if (_isFlyout)
+					FlyoutPageController.FlyoutBounds = this.Geometry.ToDP();
 				else
-					MasterDetailPageController.DetailBounds = this.Geometry.ToDP();
+					FlyoutPageController.DetailBounds = this.Geometry.ToDP();
 
 				IVisualElementRenderer renderer = Platform.GetRenderer(_childView);
 				renderer.NativeView.Geometry = this.Geometry;
