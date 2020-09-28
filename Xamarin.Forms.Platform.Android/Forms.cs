@@ -296,7 +296,11 @@ namespace Xamarin.Forms
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// because AndroidPlatformServices needs a current activity to launch URIs from
 			Profile.FramePartition("Device.PlatformServices");
-			Device.PlatformServices = new AndroidPlatformServices(activity);
+
+			var androidServices = new AndroidPlatformServices(activity);
+
+			Device.PlatformServices = androidServices;
+			Device.PlatformInvalidator = androidServices;
 
 			// use field and not property to avoid exception in getter
 			if (Device.info != null)
@@ -610,7 +614,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		class AndroidPlatformServices : IPlatformServices
+		class AndroidPlatformServices : IPlatformServices, IPlatformInvalidate
 		{
 			double _buttonDefaultSize;
 			double _editTextDefaultSize;
@@ -915,6 +919,18 @@ namespace Xamarin.Forms
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
 				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+			}
+
+			public void Invalidate(VisualElement visualElement)
+			{
+				var renderer = visualElement.GetRenderer();
+				if (renderer == null || renderer.View.IsDisposed())
+				{
+					return;
+				}
+
+				renderer.View.Invalidate();
+				renderer.View.RequestLayout();
 			}
 
 			public OSAppTheme RequestedTheme

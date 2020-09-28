@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateText()
 		{
-			Control.Text = Element.Text;
+			Control.Text = Element.Text ?? "";
 		}
 
 		void UpdateTextColor()

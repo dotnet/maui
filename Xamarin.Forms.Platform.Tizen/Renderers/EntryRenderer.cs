@@ -116,7 +116,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateText()
 		{
-			Control.Text = Element.Text;
+			Control.Text = Element.Text ?? "";
 			if (!Control.IsFocused)
 			{
 				Control.MoveCursorEnd();
@@ -259,7 +259,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		int GetSelectionStart()
 		{
-			int start = Element.Text.Length;
+			int start = Element.Text?.Length ?? 0;
 			int cursorPosition = Element.CursorPosition;
 
 			if (Element.IsSet(Entry.CursorPositionProperty))

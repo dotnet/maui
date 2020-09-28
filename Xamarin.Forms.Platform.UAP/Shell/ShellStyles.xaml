@@ -10,12 +10,12 @@
     xmlns:xf="using:Xamarin.Forms.Platform.UWP">
     <DataTemplate x:Key="ShellFlyoutBaseShellItemTemplate">
         <winui:NavigationViewItem x:Name="navItem">
-            <xf:ShellFlyoutItemRenderer IsSelected="{Binding IsSelected, ElementName=navItem}"></xf:ShellFlyoutItemRenderer>
+            <xf:ShellFlyoutItemRenderer IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></xf:ShellFlyoutItemRenderer>
         </winui:NavigationViewItem>
     </DataTemplate>
     <DataTemplate x:Key="ShellFlyoutMenuItemTemplate">
         <winui:NavigationViewItem x:Name="navItem">
-            <xf:ShellFlyoutItemRenderer IsSelected="{Binding IsSelected, ElementName=navItem}"></xf:ShellFlyoutItemRenderer>
+            <xf:ShellFlyoutItemRenderer IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></xf:ShellFlyoutItemRenderer>
         </winui:NavigationViewItem>
     </DataTemplate>
     <DataTemplate x:Key="ShellFlyoutSeperatorTemplate">

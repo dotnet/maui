@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateText(bool isInitialized)
 		{
-			_span.Text = Element.ContentAsString();
+			_span.Text = Element.ContentAsString() ?? "";
 			if (!isInitialized)
 				ApplyTextAndStyle();
 		}

@@ -87,7 +87,6 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateContent();
 				UpdateIsSwipeEnabled();
 				UpdateSwipeTransitionMode();
-				SetBackgroundColor(Element.BackgroundColor);
 			}
 
 			if (e.OldElement != null)
@@ -152,10 +151,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (e.PropertyName == ContentView.ContentProperty.PropertyName)
 				UpdateContent();
-			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
-				SetBackgroundColor(Element.BackgroundColor);
-			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
-				SetBackground(Element.Background);
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateIsSwipeEnabled();
 			else if (e.PropertyName == Specifics.SwipeTransitionModeProperty.PropertyName)
@@ -164,31 +159,21 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void SetBackgroundColor(Color color)
 		{
-			UIColor backgroundColor = ColorExtensions.BackgroundColor;
-
 			if (Element.BackgroundColor != Color.Default)
-			{
 				BackgroundColor = Element.BackgroundColor.ToUIColor();
-
-				if (_contentView != null && (Element.Content == null || (Element.Content != null && Element.Content.BackgroundColor == Color.Default)))
-					_contentView.BackgroundColor = Element.BackgroundColor.ToUIColor();
-			}
 			else
-				BackgroundColor = backgroundColor;
-
-			if (_contentView != null && _contentView.BackgroundColor == UIColor.Clear)
-				_contentView.BackgroundColor = backgroundColor;
+				BackgroundColor = ColorExtensions.BackgroundColor;
 		}
 
 		protected override void SetBackground(Brush brush)
 		{
 			Brush background = Element.Background;
 
+			if (Brush.IsNullOrEmpty(background))
+				return;
+
 			if (Control != null)
 				Control.UpdateBackground(background);
-
-			if (_contentView != null && Element.Content == null && HasSwipeItems())
-				_contentView.UpdateBackground(background);
 		}
 
 		public override void TouchesEnded(NSSet touches, UIEvent evt)
