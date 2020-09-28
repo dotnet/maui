@@ -580,17 +580,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		}
 		#endregion
 
-		#region CollectionView
-		public class CollectionView
-		{
-			public class ColorClass
-			{
-				public static readonly EColor DefaultFocusedColor = EColor.FromRgba(244, 244, 244, 200);
-				public static readonly EColor DefaultSelectedColor = EColor.FromRgba(227, 242, 253, 200);
-			}
-		}
-		#endregion
-
 		#region CarouselView
 		public class CarouselView
 		{

@@ -287,6 +287,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				var content = Adaptor.CreateNativeView(index, this);
 				holder = CreateViewHolder();
 				holder.RequestSelected += OnRequestItemSelection;
+				holder.StateUpdated += OnItemStateChanged;
 				holder.Content = content;
 				holder.ViewCategory = Adaptor.GetViewCategory(index);
 				_innerLayout.PackEnd(holder);
@@ -301,15 +302,22 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			return holder;
 		}
 
+		void OnItemStateChanged(object sender, EventArgs e)
+		{
+			if (sender is ViewHolder holder && holder.Content != null)
+			{
+				Adaptor?.UpdateViewState(holder.Content, holder.State);
+			}
+		}
+
 		void OnRequestItemSelection(object sender, EventArgs e)
 		{
 			if (SelectionMode == CollectionViewSelectionMode.None)
 				return;
 
-
 			if (_lastSelectedViewHolder != null)
 			{
-				_lastSelectedViewHolder.State = ViewHolderState.Normal;
+				_lastSelectedViewHolder.ResetState();
 			}
 
 			_lastSelectedViewHolder = sender as ViewHolder;
@@ -377,7 +385,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				if (_lastSelectedViewHolder != null)
 				{
-					_lastSelectedViewHolder.State = ViewHolderState.Normal;
+					_lastSelectedViewHolder.ResetState();
 					_lastSelectedViewHolder = null;
 				}
 				_selectedItemIndex = -1;
