@@ -11,11 +11,11 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IAccessibilityElementsController, IShellContentInsetObserver, IDisconnectable
 	{
+		bool _appeared;
 		bool _disposed;
 		EventTracker _events;
 		VisualElementPackager _packager;
 		VisualElementTracker _tracker;
-		PageLifecycleManager _pageLifecycleManager;
 
 		// storing this into a local variable causes it to not get collected. Do not delete this please		
 		PageContainer _pageContainer;
@@ -111,8 +111,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
-			_pageLifecycleManager = new PageLifecycleManager(Element as IPageController);
-
 			if (element != null)
 			{
 				if (!string.IsNullOrEmpty(element.AutomationId))
@@ -189,31 +187,33 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidAppear(animated);
 
-			if (_disposed || Element == null)
+			if (_appeared || _disposed || Element == null)
 				return;
 
+			_appeared = true;
 			UpdateStatusBarPrefersHidden();
-
 			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			if (Element.Parent is CarouselPage)
 				return;
 
-			_pageLifecycleManager?.HandlePageAppearing();
+			Page.SendAppearing();
 		}
 
 		public override void ViewDidDisappear(bool animated)
 		{
 			base.ViewDidDisappear(animated);
 
-			if (_disposed || Element == null)
+			if (!_appeared || _disposed || Element == null)
 				return;
+
+			_appeared = false;
 
 			if (Element.Parent is CarouselPage)
 				return;
 
-			_pageLifecycleManager?.HandlePageDisappearing();
+			Page.SendDisappearing();
 		}
 
 		public override void ViewDidLoad()
@@ -264,10 +264,13 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				Element.PropertyChanged -= OnHandlePropertyChanged;
 				Platform.SetRenderer(Element, null);
+
+				if (_appeared)
+					Page.SendDisappearing();
+				
 				Element = null;
 			}
-
-			(_pageLifecycleManager as IDisconnectable)?.Disconnect();
+				
 			_events?.Disconnect();
 			_packager?.Disconnect();
 			_tracker?.Disconnect();
@@ -282,14 +285,12 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				(this as IDisconnectable).Disconnect();
 
-				_pageLifecycleManager?.Dispose();
 				_events?.Dispose();
 				_packager?.Dispose();
 				_tracker?.Dispose();
 				_events = null;
 				_packager = null;
 				_tracker = null;
-				_pageLifecycleManager = null;
 
 				Element = null;
 				Container?.Dispose();
@@ -379,7 +380,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateUseSafeArea()
 		{
-			if (Element == null || _pageLifecycleManager == null)
+			if (Element == null)
 				return;
 
 			if (_userOverriddenSafeArea)
