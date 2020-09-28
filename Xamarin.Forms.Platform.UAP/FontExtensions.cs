@@ -109,12 +109,27 @@ namespace Xamarin.Forms.Platform.UWP
 
 		static string FindFontFamilyName(string fontFile)
 		{
-			using (var fontSet = new CanvasFontSet(new Uri(fontFile)))
+			try
 			{
-				if (fontSet.Fonts.Count == 0)
-					return null;
+				var fontUri = new Uri(fontFile, UriKind.RelativeOrAbsolute);
 
-				return fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName).FirstOrDefault().Value;
+				// CanvasFontSet only supports ms-appx:// and ms-appdata:// font URIs
+				if (fontUri.IsAbsoluteUri && (fontUri.Scheme == "ms-appx" || fontUri.Scheme == "ms-appdata"))
+				{
+					using (var fontSet = new CanvasFontSet(fontUri))
+					{
+						if (fontSet.Fonts.Count != 0) 
+							return fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName).FirstOrDefault().Value;
+					}
+				}
+
+				return null;
+			}
+			catch(Exception ex)
+			{
+				// the CanvasFontSet constructor can throw an exception in case something's wrong with the font. It should not crash the app
+				Internals.Log.Warning("Font",$"Error loading font {fontFile}: {ex.Message}");
+				return null;
 			}
 		}
 
