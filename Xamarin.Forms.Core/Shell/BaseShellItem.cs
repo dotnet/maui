@@ -308,6 +308,22 @@ namespace Xamarin.Forms
 				.StyleClass = bindableObjectStyle;
 		}
 
+		BindableObject NonImplicitParent
+		{
+			get
+			{
+				if (Parent is Shell)
+					return Parent;
+
+				var parent = (BaseShellItem)Parent;
+
+				if (!Routing.IsImplicit(parent))
+					return parent;
+
+				return parent.NonImplicitParent;
+			}
+		}
+
 		internal static DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
 		{
 			return new DataTemplate(() =>
@@ -359,6 +375,16 @@ namespace Xamarin.Forms
 					{
 						Property = VisualElement.BackgroundColorProperty,
 						Value = new Color(0.95)
+
+					});
+				}
+
+				if (Device.RuntimePlatform == Device.UWP)
+				{
+					normalState.Setters.Add(new Setter
+					{
+						Property = VisualElement.BackgroundColorProperty,
+						Value = Color.Transparent
 					});
 				}
 

@@ -108,6 +108,7 @@
     <Compile Include="DeviceUnitTests.cs" />
     <Compile Include="EffectiveFlowDirectionExtensions.cs" />
     <Compile Include="ShellElementCollectionTests.cs" />
+    <Compile Include="ShellFlyoutItemGroupTests.cs" />
     <Compile Include="ShellFlyoutItemTemplateTests.cs" />
     <Compile Include="ShellModalTests.cs" />
     <Compile Include="ShellNavigatingTests.cs" />

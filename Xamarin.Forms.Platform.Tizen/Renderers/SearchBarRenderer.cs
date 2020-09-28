@@ -175,7 +175,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// </summary>
 		void TextPropertyHandler()
 		{
-			Control.Text = Element.Text;
+			Control.Text = Element.Text ?? "";
 		}
 
 		void UpdateKeyboard(bool initialize)

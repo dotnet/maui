@@ -32,6 +32,7 @@ namespace Xamarin.Forms.Platform.iOS
 					_groups = ((IShellController)_context.Shell).GenerateFlyoutGrouping();
 					_views = new Dictionary<Element, View>();
 				}
+
 				return _groups;
 			}
 		}
@@ -42,8 +43,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public void ClearCache()
 		{
-			_groups = null;
-			_views = null;
+			var newGroups = ((IShellController)_context.Shell).GenerateFlyoutGrouping();
+
+			if(newGroups != _groups)
+			{
+				_groups = newGroups;
+				_views = new Dictionary<Element, View>();
+			}
 		}
 
 		public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)

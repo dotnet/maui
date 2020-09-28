@@ -76,8 +76,6 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateContent();
 				UpdateIsSwipeEnabled();
 				UpdateSwipeTransitionMode();
-				UpdateBackgroundColor();
-				UpdateBackground();
 			}
 
 			if (e.OldElement != null)
@@ -100,10 +98,6 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (e.PropertyName == ContentView.ContentProperty.PropertyName)
 				UpdateContent();
-			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
-				UpdateBackgroundColor();
-			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
-				UpdateBackground();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateIsSwipeEnabled();
 			else if (e.PropertyName == Specifics.SwipeTransitionModeProperty.PropertyName)
@@ -137,29 +131,19 @@ namespace Xamarin.Forms.Platform.Android
 		protected override void UpdateBackgroundColor()
 		{
 			if (Element.BackgroundColor != Color.Default)
-			{
-				var backgroundColor = Element.BackgroundColor.ToAndroid();
-
-				SetBackgroundColor(backgroundColor);
-
-				if (Element.Content == null || (Element.Content != null && Element.Content.BackgroundColor == Color.Default))
-					_contentView?.SetBackgroundColor(backgroundColor);
-			}
+				SetBackgroundColor(Element.BackgroundColor.ToAndroid());
 			else
-				Control.SetWindowBackground();
-
-			if (_contentView != null && _contentView.Background == null)
-				_contentView?.SetWindowBackground();
+				Control?.SetWindowBackground();
 		}
 
 		protected override void UpdateBackground()
 		{
 			Brush background = Element.Background;
 
-			this.UpdateBackground(background);
+			if (Brush.IsNullOrEmpty(background))
+				return;
 
-			if (Element.Content == null)
-				_contentView?.UpdateBackground(background);
+			this.UpdateBackground(background);
 		}
 
 		protected override void OnAttachedToWindow()

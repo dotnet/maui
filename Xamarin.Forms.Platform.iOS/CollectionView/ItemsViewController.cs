@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				_emptyUIView?.Dispose();
 				_emptyUIView = null;
-	
+
 				_emptyViewFormsElement = null;
 
 				ItemsViewLayout?.Dispose();

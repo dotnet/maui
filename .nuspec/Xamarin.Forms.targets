@@ -203,6 +203,9 @@
     </PropertyGroup>
     <Warning
         Text="Xamarin.Forms recommends TargetPlatformVersion &gt;= 10.0.17763.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
-        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 17763" />
+        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 17763 AND '$(OutputType)'!='Library'" />
+    <Warning
+        Text="Xamarin.Forms recommends TargetPlatformVersion &gt;= 10.0.14393.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
+        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 14393 AND '$(OutputType)'=='Library'" />
   </Target>
 </Project>
