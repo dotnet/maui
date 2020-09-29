@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using NUnit.Framework;
 using Xamarin.Forms.Build.Tasks;
+using Xamarin.Platform;
 
 namespace Xamarin.Forms
 {
