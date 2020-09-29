@@ -64,7 +64,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D5B986A3-7FC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{75A2CD30-BB85-4CA6-AC95-86A8A538A690}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Core.UnitTests", "Xamarin.Forms.Core.UnitTests\Xamarin.Forms.Core.UnitTests.csproj", "{00259593-A283-47A5-ACB7-9C3819B16364}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Core.UnitTests", "Xamarin.Forms.Core.UnitTests\Xamarin.Forms.Core.UnitTests.csproj", "{00259593-A283-47A5-ACB7-9C3819B16364}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj", "{BB98A559-62C4-4C98-90A0-9E4D8DF1CA27}"
 EndProject
@@ -310,6 +310,7 @@ Global
 		{0E63E501-2348-41D1-8B56-2B66346AA34A}.Debug|ARM64.Build.0 = Debug|iPhoneSimulator
 		{0E63E501-2348-41D1-8B56-2B66346AA34A}.Debug|iPhone.ActiveCfg = Debug|iPhone
 		{0E63E501-2348-41D1-8B56-2B66346AA34A}.Debug|iPhone.Build.0 = Debug|iPhone
+		{0E63E501-2348-41D1-8B56-2B66346AA34A}.Debug|iPhone.Deploy.0 = Debug|iPhone
 		{0E63E501-2348-41D1-8B56-2B66346AA34A}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
 		{0E63E501-2348-41D1-8B56-2B66346AA34A}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
 		{0E63E501-2348-41D1-8B56-2B66346AA34A}.Debug|x64.ActiveCfg = Debug|iPhoneSimulator
