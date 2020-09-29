@@ -1,7 +1,7 @@
 ﻿using System;
 using AndroidX.RecyclerView.Widget;
-using AView = Android.Views.View;
 using ARect = Android.Graphics.Rect;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			var spanIndex = 0;
 
-			if(view.LayoutParameters is GridLayoutManager.LayoutParams gridLayoutParameters)
+			if (view.LayoutParameters is GridLayoutManager.LayoutParams gridLayoutParameters)
 			{
 				spanIndex = gridLayoutParameters.SpanIndex;
 			}

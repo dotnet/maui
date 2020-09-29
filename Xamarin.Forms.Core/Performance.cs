@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System;
 using System.Threading;
 
 namespace Xamarin.Forms.Internals

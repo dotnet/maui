@@ -278,7 +278,7 @@ namespace Xamarin.Forms
 			readonly Lazy<PlatformConfigurationRegistry<Cell>> _platformConfigurationRegistry;
 			public ElementConfiguration(Cell cell)
 			{
-				_platformConfigurationRegistry = 
+				_platformConfigurationRegistry =
 					new Lazy<PlatformConfigurationRegistry<Cell>>(() => new PlatformConfigurationRegistry<Cell>(cell));
 			}
 

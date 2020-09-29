@@ -1,7 +1,7 @@
 ﻿using System;
-using Android.Widget;
 using Android.Content;
 using Android.Views;
+using Android.Widget;
 
 
 namespace Xamarin.Forms.Platform.Android
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.Android
 					Pressed = false;
 					break;
 			}
-				
+
 			return base.OnTouchEvent(e);
 		}
 
@@ -42,11 +42,10 @@ namespace Xamarin.Forms.Platform.Android
 					base.Pressed = value;
 					isTouching = value;
 				}
-					
+
 			}
 		}
 
 		bool isTouching = false;
 	}
 }
-

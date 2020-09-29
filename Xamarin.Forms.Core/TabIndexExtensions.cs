@@ -1,7 +1,7 @@
-using System.Collections.Generic;
-using Xamarin.Forms.Internals;
-using System.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -13,7 +13,7 @@ namespace Xamarin.Forms
 		}
 
 		public static IDictionary<int, List<ITabStopElement>> GetTabIndexesOnParentPage(this ITabStopElement element, out int countChildrenWithTabStopWithoutThis)
-        {
+		{
 			var empty = new Dictionary<int, List<ITabStopElement>>();
 			countChildrenWithTabStopWithoutThis = 0;
 

@@ -1,11 +1,8 @@
 using System.Collections.Generic;
 using System.Globalization;
-
 using Mono.Cecil.Cil;
-
-using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Build.Tasks;
-
+using Xamarin.Forms.Xaml;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 

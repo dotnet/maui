@@ -1,7 +1,7 @@
 using System;
-using NUnit.Framework;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -213,7 +213,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var converter = new PickerTestValueConverter();
 			var picker = new Picker
 			{
-				ItemDisplayBinding = new Binding (Binding.SelfPath, converter:converter),
+				ItemDisplayBinding = new Binding(Binding.SelfPath, converter: converter),
 				ItemsSource = new ObservableCollection<object>
 				{
 					obj
@@ -379,8 +379,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void ThrowsWhenModifyingItemsIfItemsSourceIsSet()
 		{
-			var picker = new Picker {
-				ItemsSource = new System.Collections.Generic.List<object> ()
+			var picker = new Picker
+			{
+				ItemsSource = new System.Collections.Generic.List<object>()
 			};
 			Assert.Throws<InvalidOperationException>(() => picker.Items.Add("foo"));
 		}

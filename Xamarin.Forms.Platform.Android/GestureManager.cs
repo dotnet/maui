@@ -4,8 +4,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Android.Content;
-using AndroidX.Core.View;
 using Android.Views;
+using AndroidX.Core.View;
 
 namespace Xamarin.Forms.Platform.Android
 {

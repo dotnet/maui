@@ -17,17 +17,17 @@ namespace Xamarin.Forms.Core.UnitTests
 		[TearDown]
 		public override void TearDown()
 		{
-			base.TearDown ();
+			base.TearDown();
 			Device.PlatformServices = null;
 			Device.Info = null;
 		}
 
 		[SetUp]
-		public override void Setup ()
+		public override void Setup()
 		{
-			base.Setup ();
-			Device.PlatformServices = new MockPlatformServices ();
-			Device.Info = new TestDeviceInfo ();
+			base.Setup();
+			Device.PlatformServices = new MockPlatformServices();
+			Device.Info = new TestDeviceInfo();
 		}
 
 		[Test]

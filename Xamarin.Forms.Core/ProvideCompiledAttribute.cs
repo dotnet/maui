@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Xaml
 	{
 		public string CompiledVersion { get; }
 
-		public ProvideCompiledAttribute (string compiledVersion)
+		public ProvideCompiledAttribute(string compiledVersion)
 		{
 			CompiledVersion = compiledVersion;
 		}

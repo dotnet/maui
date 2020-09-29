@@ -10,14 +10,14 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
-using FragmentManager = AndroidX.Fragment.App.FragmentManager;
-using AndroidX.Legacy.App;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Platform.Android.AppCompat;
+using AndroidX.Legacy.App;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform.Android.AppCompat;
 using AView = Android.Views.View;
+using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -644,7 +644,7 @@ namespace Xamarin.Forms.Platform.Android
 			TabbedPage currentTabs = CurrentTabbedPage;
 
 			var atab = actionBar.NewTab();
-			
+
 			atab.SetText(new Java.Lang.String(page.Title));
 			atab.TabSelected += (sender, e) =>
 			{
@@ -805,15 +805,15 @@ namespace Xamarin.Forms.Platform.Android
 			// TODO: this must be changed to support the other image source types
 			var fileImageSource = CurrentFlyoutPage.Flyout.IconImageSource as FileImageSource;
 			if (fileImageSource == null)
-					throw new InvalidOperationException("Icon property must be a FileImageSource on Flyout page");
+				throw new InvalidOperationException("Icon property must be a FileImageSource on Flyout page");
 
 			int icon = ResourceManager.GetDrawableByName(fileImageSource);
 
 			FastRenderers.AutomationPropertiesProvider.GetDrawerAccessibilityResources(_activity, CurrentFlyoutPage, out int resourceIdOpen, out int resourceIdClose);
 #pragma warning disable 618 // Eventually we will need to determine how to handle the v7 ActionBarDrawerToggle for AppCompat
 			FlyoutPageToggle = new ActionBarDrawerToggle(_activity, drawer, icon,
-			                                                   resourceIdOpen == 0 ? global::Android.Resource.String.Ok : resourceIdOpen,
-													  		   resourceIdClose == 0 ? global::Android.Resource.String.Ok : resourceIdClose);
+															   resourceIdOpen == 0 ? global::Android.Resource.String.Ok : resourceIdOpen,
+																 resourceIdClose == 0 ? global::Android.Resource.String.Ok : resourceIdClose);
 #pragma warning restore 618
 			FlyoutPageToggle.SyncState();
 		}
@@ -1206,7 +1206,7 @@ namespace Xamarin.Forms.Platform.Android
 		internal class DefaultRenderer : VisualElementRenderer<View>, ILayoutChanges
 		{
 			public bool NotReallyHandled { get; private set; }
-			
+
 			IOnTouchListener _touchListener;
 			bool _disposed;
 			bool _hasLayoutOccurred;
@@ -1305,7 +1305,7 @@ namespace Xamarin.Forms.Platform.Android
 				_disposed = true;
 
 				if (disposing)
-					SetOnTouchListener(null); 
+					SetOnTouchListener(null);
 
 				base.Dispose(disposing);
 			}

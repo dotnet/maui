@@ -1,14 +1,14 @@
+using System.Collections.Generic;
+using System.Linq;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
-using AndroidX.Core.Content;
 using Android.Util;
 using Android.Views;
+using AndroidX.Core.Content;
+using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
-using AColor = Android.Graphics.Color;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Xamarin.Forms.Platform.Android
 {

@@ -4,12 +4,12 @@
 	{
 		public void BatchBegin()
 		{
-	
+
 		}
 
 		public void BatchCommit()
 		{
-	
+
 		}
 	}
 }

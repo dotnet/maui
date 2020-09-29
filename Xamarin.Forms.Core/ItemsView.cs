@@ -27,12 +27,14 @@ namespace Xamarin.Forms
 		internal ItemsView()
 			=> TemplatedItems = new TemplatedItemsList<ItemsView<TVisual>, TVisual>(this, ItemsSourceProperty, ItemTemplateProperty);
 
-		public IEnumerable ItemsSource {
+		public IEnumerable ItemsSource
+		{
 			get => (IEnumerable)GetValue(ItemsSourceProperty);
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
-		public DataTemplate ItemTemplate {
+		public DataTemplate ItemTemplate
+		{
 			get => (DataTemplate)GetValue(ItemTemplateProperty);
 			set => SetValue(ItemTemplateProperty, value);
 		}

@@ -24,32 +24,36 @@ namespace Xamarin.Forms.StyleSheets
 			int p;
 			reader.SkipWhiteSpaces();
 			bool readingName = true;
-			while ((p = reader.Peek()) > 0) {
-				switch (unchecked((char)p)) {
-				case ':':
-					reader.Read();
-					readingName = false;
-					reader.SkipWhiteSpaces();
-					break;
-				case ';':
-					reader.Read();
-					if (!string.IsNullOrEmpty(propertyName) && !string.IsNullOrEmpty(propertyValue))
-						style.Declarations.Add(propertyName, propertyValue);
-					propertyName = propertyValue = null;
-					readingName = true;
-					reader.SkipWhiteSpaces();
-					break;
-				default:
-					if ((char)p == stopChar)
-						return style;
+			while ((p = reader.Peek()) > 0)
+			{
+				switch (unchecked((char)p))
+				{
+					case ':':
+						reader.Read();
+						readingName = false;
+						reader.SkipWhiteSpaces();
+						break;
+					case ';':
+						reader.Read();
+						if (!string.IsNullOrEmpty(propertyName) && !string.IsNullOrEmpty(propertyValue))
+							style.Declarations.Add(propertyName, propertyValue);
+						propertyName = propertyValue = null;
+						readingName = true;
+						reader.SkipWhiteSpaces();
+						break;
+					default:
+						if ((char)p == stopChar)
+							return style;
 
-					if (readingName) {
-						propertyName = reader.ReadIdent();
-						if (propertyName == null)
-							throw new Exception();
-					} else 
-						propertyValue = reader.ReadUntil(stopChar, ';', ':');
-					break;
+						if (readingName)
+						{
+							propertyName = reader.ReadIdent();
+							if (propertyName == null)
+								throw new Exception();
+						}
+						else
+							propertyValue = reader.ReadUntil(stopChar, ';', ':');
+						break;
 				}
 			}
 			return style;
@@ -60,13 +64,15 @@ namespace Xamarin.Forms.StyleSheets
 			if (styleable == null)
 				throw new ArgumentNullException(nameof(styleable));
 
-			foreach (var decl in Declarations) {
+			foreach (var decl in Declarations)
+			{
 				var property = ((IStylable)styleable).GetProperty(decl.Key, inheriting);
 				if (property == null)
 					continue;
 				if (string.Equals(decl.Value, "initial", StringComparison.OrdinalIgnoreCase))
 					styleable.ClearValue(property, fromStyle: true);
-				else {
+				else
+				{
 					object value;
 					if (!convertedValues.TryGetValue(decl, out value))
 						convertedValues[decl] = (value = Convert(styleable, decl.Value, property));
@@ -74,7 +80,8 @@ namespace Xamarin.Forms.StyleSheets
 				}
 			}
 
-			foreach (var child in styleable.LogicalChildrenInternal) {
+			foreach (var child in styleable.LogicalChildrenInternal)
+			{
 				var ve = child as VisualElement;
 				if (ve == null)
 					continue;
@@ -90,16 +97,22 @@ namespace Xamarin.Forms.StyleSheets
 				() =>
 				{
 					MemberInfo minfo = null;
-					try {
+					try
+					{
 						minfo = property.DeclaringType.GetRuntimeProperty(property.PropertyName);
-					} catch (AmbiguousMatchException e) {
+					}
+					catch (AmbiguousMatchException e)
+					{
 						throw new XamlParseException($"Multiple properties with name '{property.DeclaringType}.{property.PropertyName}' found.", serviceProvider, innerException: e);
 					}
 					if (minfo != null)
 						return minfo;
-					try {
+					try
+					{
 						return property.DeclaringType.GetRuntimeMethod("Get" + property.PropertyName, new[] { typeof(BindableObject) });
-					} catch (AmbiguousMatchException e) {
+					}
+					catch (AmbiguousMatchException e)
+					{
 						throw new XamlParseException($"Multiple methods with name '{property.DeclaringType}.Get{property.PropertyName}' found.", serviceProvider, innerException: e);
 					}
 				};

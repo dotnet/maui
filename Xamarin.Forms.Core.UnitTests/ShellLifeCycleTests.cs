@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var item0 = CreateShellItem(shellContentRoute: "Outbox", templated: true);
 			var item1 = CreateShellItem(shellSectionRoute: "RequestType1", shellContentRoute: "RequestType1Details", templated: true);
-			var section2 = CreateShellSection(shellSectionRoute: "RequestType2",  shellContentRoute: "RequestType2Dates", templated: true);
+			var section2 = CreateShellSection(shellSectionRoute: "RequestType2", shellContentRoute: "RequestType2Dates", templated: true);
 
 			item1.Items.Add(section2);
 			shell.Items.Add(item0);
@@ -161,14 +161,14 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsFalse(nonVisiblePage.Appearing);
 			Assert.IsTrue(page.Appearing);
 		}
-		
+
 		[Test]
 		public async Task EnsureOnAppearingFiresForLastPageOnlyAbsoluteRoute()
 		{
 			Shell shell = new Shell();
 			LifeCyclePage shellContentPage = new LifeCyclePage();
 			shell.Items.Add(CreateShellItem());
-			shell.Items.Add(CreateShellItem(page: shellContentPage, shellItemRoute:"ShellItemRoute"));
+			shell.Items.Add(CreateShellItem(page: shellContentPage, shellItemRoute: "ShellItemRoute"));
 			await shell.GoToAsync("///ShellItemRoute/LifeCyclePage/LifeCyclePage");
 
 			var page = (LifeCyclePage)shell.GetVisiblePage();

@@ -87,7 +87,7 @@ namespace Xamarin.Forms
 			{
 				Clip.PropertyChanged -= OnClipChanged;
 
-				if(Clip is GeometryGroup geometryGroup)
+				if (Clip is GeometryGroup geometryGroup)
 					geometryGroup.InvalidateGeometryRequested -= InvalidateGeometryRequested;
 			}
 		}
@@ -132,8 +132,9 @@ namespace Xamarin.Forms
 
 		static void OnTransformChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-            if ((string)newValue == "none") {
-                bindable.ClearValue(TranslationXProperty);
+			if ((string)newValue == "none")
+			{
+				bindable.ClearValue(TranslationXProperty);
 				bindable.ClearValue(TranslationYProperty);
 				bindable.ClearValue(RotationProperty);
 				bindable.ClearValue(RotationXProperty);
@@ -144,7 +145,8 @@ namespace Xamarin.Forms
 				return;
 			}
 			var transforms = ((string)newValue).Split(' ');
-			foreach (var transform in transforms) {
+			foreach (var transform in transforms)
+			{
 				if (string.IsNullOrEmpty(transform) || transform.IndexOf('(') < 0 || transform.IndexOf(')') < 0)
 					throw new FormatException("Format for transform is 'none | transform(value) [transform(value) ]*'");
 				var transformName = transform.Substring(0, transform.IndexOf('('));
@@ -154,9 +156,11 @@ namespace Xamarin.Forms
 					bindable.SetValue(TranslationXProperty, translationX);
 				else if (transformName.StartsWith("translateY", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out translationY))
 					bindable.SetValue(TranslationYProperty, translationY);
-				else if (transformName.StartsWith("translate", StringComparison.OrdinalIgnoreCase)) {
+				else if (transformName.StartsWith("translate", StringComparison.OrdinalIgnoreCase))
+				{
 					var translate = value.Split(',');
-					if (double.TryParse(translate[0], out translationX) && double.TryParse(translate[1], out translationY)) {
+					if (double.TryParse(translate[0], out translationX) && double.TryParse(translate[1], out translationY))
+					{
 						bindable.SetValue(TranslationXProperty, translationX);
 						bindable.SetValue(TranslationYProperty, translationY);
 					}
@@ -165,9 +169,11 @@ namespace Xamarin.Forms
 					bindable.SetValue(ScaleXProperty, scaleX);
 				else if (transformName.StartsWith("scaleY", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out scaleY))
 					bindable.SetValue(ScaleYProperty, scaleY);
-				else if (transformName.StartsWith("scale", StringComparison.OrdinalIgnoreCase)) {
+				else if (transformName.StartsWith("scale", StringComparison.OrdinalIgnoreCase))
+				{
 					var scale = value.Split(',');
-					if (double.TryParse(scale[0], out scaleX) && double.TryParse(scale[1], out scaleY)) {
+					if (double.TryParse(scale[0], out scaleX) && double.TryParse(scale[1], out scaleY))
+					{
 						bindable.SetValue(ScaleXProperty, scaleX);
 						bindable.SetValue(ScaleYProperty, scaleY);
 					}
@@ -258,7 +264,7 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty TriggersProperty = TriggersPropertyKey.BindableProperty;
 
-		
+
 		public static readonly BindableProperty WidthRequestProperty = BindableProperty.Create("WidthRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
 		public static readonly BindableProperty HeightRequestProperty = BindableProperty.Create("HeightRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
@@ -273,7 +279,7 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty IsFocusedProperty = IsFocusedPropertyKey.BindableProperty;
 
-		public static readonly BindableProperty FlowDirectionProperty = BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(VisualElement), FlowDirection.MatchParent, propertyChanging:FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
+		public static readonly BindableProperty FlowDirectionProperty = BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(VisualElement), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
 		public static readonly BindableProperty TabIndexProperty =
 			BindableProperty.Create(nameof(TabIndex),
@@ -335,7 +341,7 @@ namespace Xamarin.Forms
 
 		readonly Dictionary<Size, SizeRequest> _measureCache = new Dictionary<Size, SizeRequest>();
 
-		
+
 
 		int _batched;
 		LayoutConstraint _computedConstraint;
@@ -906,7 +912,7 @@ namespace Xamarin.Forms
 				foreach (var state in group.States)
 					foreach (var stateTrigger in state.StateTriggers)
 					{
-						if(attach)
+						if (attach)
 							stateTrigger.SendAttached();
 						else
 							stateTrigger.SendDetached();

@@ -19,5 +19,5 @@ namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 		Bottom
 	}
 
-	
+
 }

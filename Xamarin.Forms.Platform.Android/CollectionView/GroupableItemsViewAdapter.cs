@@ -1,15 +1,15 @@
 ﻿using System;
 using Android.Content;
-using AndroidX.RecyclerView.Widget;
 using Android.Views;
+using AndroidX.RecyclerView.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class GroupableItemsViewAdapter<TItemsView, TItemsViewSource> : SelectableItemsViewAdapter<TItemsView, TItemsViewSource> 
+	public class GroupableItemsViewAdapter<TItemsView, TItemsViewSource> : SelectableItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsView : GroupableItemsView
 		where TItemsViewSource : IGroupableItemsViewSource
 	{
-		protected internal GroupableItemsViewAdapter(TItemsView groupableItemsView, 
+		protected internal GroupableItemsViewAdapter(TItemsView groupableItemsView,
 			Func<View, Context, ItemContentView> createView = null) : base(groupableItemsView, createView)
 		{
 		}
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				return ItemViewType.GroupFooter;
 			}
-			
+
 			return base.GetItemViewType(position);
 		}
 
@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
 		{
-			if (holder is TemplatedItemViewHolder templatedItemViewHolder && 
+			if (holder is TemplatedItemViewHolder templatedItemViewHolder &&
 				(ItemsSource.IsGroupFooter(position) || ItemsSource.IsGroupHeader(position)))
 			{
 				BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsSource.GetItem(position));

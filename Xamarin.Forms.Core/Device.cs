@@ -126,7 +126,8 @@ namespace Xamarin.Forms
 
 		public static Task InvokeOnMainThreadAsync(Action action)
 		{
-			object wrapAction() { action(); return null; }
+			object wrapAction()
+			{ action(); return null; }
 			return InvokeOnMainThreadAsync((Func<object>)wrapAction);
 		}
 
@@ -134,7 +135,7 @@ namespace Xamarin.Forms
 		{
 			var tcs = new TaskCompletionSource<T>();
 			BeginInvokeOnMainThread(
-				async() =>
+				async () =>
 				{
 					try
 					{
@@ -153,7 +154,8 @@ namespace Xamarin.Forms
 
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask)
 		{
-			async Task<object> wrapFunction() { await funcTask().ConfigureAwait(false); return null; }
+			async Task<object> wrapFunction()
+			{ await funcTask().ConfigureAwait(false); return null; }
 			return InvokeOnMainThreadAsync(wrapFunction);
 		}
 
@@ -286,7 +288,7 @@ namespace Xamarin.Forms
 			public static readonly Style CaptionStyle = new Style(typeof(Label)) { BaseResourceKey = CaptionStyleKey };
 		}
 
-		public static void Invalidate(VisualElement visualElement) 
+		public static void Invalidate(VisualElement visualElement)
 		{
 			PlatformInvalidator?.Invalidate(visualElement);
 		}

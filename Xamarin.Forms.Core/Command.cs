@@ -4,9 +4,9 @@ using System.Windows.Input;
 
 namespace Xamarin.Forms
 {
-	public sealed class Command<T> : Command 
+	public sealed class Command<T> : Command
 	{
-		public Command(Action<T> execute) 
+		public Command(Action<T> execute)
 			: base(o =>
 			{
 				if (IsValidParameter(o))
@@ -21,7 +21,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		public Command(Action<T> execute, Func<T, bool> canExecute) 
+		public Command(Action<T> execute, Func<T, bool> canExecute)
 			: base(o =>
 			{
 				if (IsValidParameter(o))

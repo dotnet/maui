@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Xaml
 
 		static bool IsDataTemplate(INode node, INode parentNode)
 		{
-			if (   parentNode is IElementNode parentElement
+			if (parentNode is IElementNode parentElement
 				&& parentElement.Properties.TryGetValue(XmlName._CreateContent, out var createContent)
 				&& createContent == node)
 				return true;

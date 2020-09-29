@@ -2,13 +2,13 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Text;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
 using Xamarin.Forms.Internals;
+using AButton = Android.Widget.Button;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
-using AButton = Android.Widget.Button;
-using Android.Text;	
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -269,7 +269,7 @@ namespace Xamarin.Forms.Platform.Android
 				return false;
 
 			var textTransform = _element.TextTransform;
-			
+
 			_renderer.View.SetAllCaps(textTransform == TextTransform.Default);
 
 			string oldText = view.Text;

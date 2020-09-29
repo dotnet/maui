@@ -167,7 +167,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateActionBar()
 		{
-			Device.StartTimer(TimeSpan.FromMilliseconds(0), () => {
+			Device.StartTimer(TimeSpan.FromMilliseconds(0), () =>
+			{
 				Platform?.UpdateActionBar();
 				return false;
 			});
@@ -260,9 +261,9 @@ namespace Xamarin.Forms.Platform.Android
 					// animate out
 					if (containerToAdd.Parent != this)
 					{
-						var indexRenderToAdd = Math.Min(ChildCount,((IElementController)Element).LogicalChildren.IndexOf(rendererToAdd.Element));
+						var indexRenderToAdd = Math.Min(ChildCount, ((IElementController)Element).LogicalChildren.IndexOf(rendererToAdd.Element));
 						AddView(containerToAdd, indexRenderToAdd);
-					}						
+					}
 					else
 						((IPageController)rendererToAdd.Element).SendAppearing();
 					containerToAdd.Visibility = ViewStates.Visible;
@@ -286,12 +287,15 @@ namespace Xamarin.Forms.Platform.Android
 						};
 
 						// should always happen
-						s_currentAnimation = containerToRemove.Animate().Alpha(0).ScaleX(0.8f).ScaleY(0.8f).SetDuration(250).SetListener(new GenericAnimatorListener { OnEnd = a =>
+						s_currentAnimation = containerToRemove.Animate().Alpha(0).ScaleX(0.8f).ScaleY(0.8f).SetDuration(250).SetListener(new GenericAnimatorListener
 						{
-							s_currentAnimation = null;
-							done(a);
-						},
-							OnCancel = done });
+							OnEnd = a =>
+{
+s_currentAnimation = null;
+done(a);
+},
+							OnCancel = done
+						});
 					}
 				}
 				else
@@ -309,16 +313,19 @@ namespace Xamarin.Forms.Platform.Android
 					containerToAdd.Alpha = 0;
 					containerToAdd.ScaleX = containerToAdd.ScaleY = 0.8f;
 					containerToAdd.Visibility = ViewStates.Visible;
-					s_currentAnimation = containerToAdd.Animate().Alpha(1).ScaleX(1).ScaleY(1).SetDuration(250).SetListener(new GenericAnimatorListener { OnEnd = a =>
+					s_currentAnimation = containerToAdd.Animate().Alpha(1).ScaleX(1).ScaleY(1).SetDuration(250).SetListener(new GenericAnimatorListener
 					{
-						if (containerToRemove != null && containerToRemove.Handle != IntPtr.Zero)
-						{
-							containerToRemove.Visibility = ViewStates.Gone;
-							((IPageController)pageToRemove)?.SendDisappearing();
-						}
-						s_currentAnimation = null;
-						tcs.TrySetResult(true);
-					} });
+						OnEnd = a =>
+{
+if (containerToRemove != null && containerToRemove.Handle != IntPtr.Zero)
+{
+containerToRemove.Visibility = ViewStates.Gone;
+((IPageController)pageToRemove)?.SendDisappearing();
+}
+s_currentAnimation = null;
+tcs.TrySetResult(true);
+}
+					});
 				}
 			}
 			else

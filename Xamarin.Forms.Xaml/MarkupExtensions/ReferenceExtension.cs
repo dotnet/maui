@@ -29,7 +29,8 @@ namespace Xamarin.Forms.Xaml
 			//fallback
 			var valueProvider = serviceProvider.GetService<IProvideValueTarget>() as IProvideParentValues
 								   ?? throw new ArgumentException("serviceProvider does not provide an IProvideValueTarget");
-			foreach (var target in valueProvider.ParentObjects) {
+			foreach (var target in valueProvider.ParentObjects)
+			{
 				if (!(target is BindableObject bo))
 					continue;
 				if (!(NameScope.GetNameScope(bo) is INameScope ns))

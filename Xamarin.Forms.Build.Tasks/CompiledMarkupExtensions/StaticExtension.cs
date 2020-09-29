@@ -35,7 +35,8 @@ namespace Xamarin.Forms.Build.Tasks
 				throw new BuildException(BuildExceptionCode.XStaticResolution, node as IXmlLineInfo, null, membername, typename);
 
 			var fieldDef = fieldRef?.Resolve();
-			if (fieldRef != null) {
+			if (fieldRef != null)
+			{
 				memberRef = fieldRef.FieldType;
 				if (!fieldDef.HasConstant)
 					return new[] { Instruction.Create(OpCodes.Ldsfld, fieldRef) };
@@ -63,7 +64,8 @@ namespace Xamarin.Forms.Build.Tasks
 					return new[] { Instruction.Create(OpCodes.Ldc_I8, (ulong)fieldDef.Constant) };
 
 				//enum values
-				if (memberRef.ResolveCached().IsEnum) {
+				if (memberRef.ResolveCached().IsEnum)
+				{
 					if (fieldDef.Constant is long)
 						return new[] { Instruction.Create(OpCodes.Ldc_I8, (long)fieldDef.Constant) };
 					if (fieldDef.Constant is ulong)
@@ -85,7 +87,8 @@ namespace Xamarin.Forms.Build.Tasks
 			FieldReference fRef = typeRef.GetField(fd => fd.Name == fieldName
 														&& fd.IsStatic
 														&& IsPublicOrVisibleInternal(fd, module), out TypeReference declaringTypeReference);
-			if (fRef != null) {
+			if (fRef != null)
+			{
 				fRef = module.ImportReference(fRef.ResolveGenericParameters(declaringTypeReference));
 				fRef.FieldType = module.ImportReference(fRef.FieldType);
 			}
@@ -96,10 +99,11 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			if (fd.IsPublic)
 				return true;
-			if (fd.IsAssembly) {
+			if (fd.IsAssembly)
+			{
 				if (fd.Module == module)
 					return true;
-				if (fd.Module.GetCustomAttributes().Any(ca =>  ca.AttributeType.FullName == "System.Runtime.CompilerServices.InternalsVisibleToAttribute"
+				if (fd.Module.GetCustomAttributes().Any(ca => ca.AttributeType.FullName == "System.Runtime.CompilerServices.InternalsVisibleToAttribute"
 															&& ca.HasConstructorArguments
 															&& (ca.ConstructorArguments[0].Value as string) != null
 															&& (ca.ConstructorArguments[0].Value as string).StartsWith(module.Assembly.Name.Name, System.StringComparison.InvariantCulture)))
@@ -120,7 +124,8 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			if (md.IsPublic)
 				return true;
-			if (md.IsAssembly) {
+			if (md.IsAssembly)
+			{
 				if (md.Module == module)
 					return true;
 				if (md.Module.GetCustomAttributes().Any(ca => ca.AttributeType.FullName == "System.Runtime.CompilerServices.InternalsVisibleToAttribute"

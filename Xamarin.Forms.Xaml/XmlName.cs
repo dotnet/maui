@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Xaml
 		{
 			if (obj == null)
 				return false;
-			if (obj.GetType() != typeof (XmlName))
+			if (obj.GetType() != typeof(XmlName))
 				return false;
 			var other = (XmlName)obj;
 			return NamespaceURI == other.NamespaceURI && LocalName == other.LocalName;
@@ -53,6 +53,6 @@ namespace Xamarin.Forms.Xaml
 			=> x1.NamespaceURI == x2.NamespaceURI && x1.LocalName == x2.LocalName;
 
 		public static bool operator !=(XmlName x1, XmlName x2)
-			=>  !(x1 == x2);
+			=> !(x1 == x2);
 	}
 }

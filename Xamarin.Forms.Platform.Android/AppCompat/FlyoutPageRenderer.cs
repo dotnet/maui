@@ -2,12 +2,12 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
-using AndroidX.Core.Widget;
-using AndroidX.Fragment.App;
-using AndroidX.DrawerLayout.Widget;
-using Android.Views;
-using AView = Android.Views.View;
 using Android.OS;
+using Android.Views;
+using AndroidX.Core.Widget;
+using AndroidX.DrawerLayout.Widget;
+using AndroidX.Fragment.App;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {

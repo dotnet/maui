@@ -2,8 +2,8 @@
 
 namespace Xamarin.Forms.Shapes
 {
-    public sealed class PathFigureCollection : ObservableCollection<PathFigure>
-    {
+	public sealed class PathFigureCollection : ObservableCollection<PathFigure>
+	{
 
-    }
+	}
 }

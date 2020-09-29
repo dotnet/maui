@@ -1,5 +1,5 @@
-﻿using Android.Views;
-using System;
+﻿using System;
+using Android.Views;
 using ARect = Android.Graphics.Rect;
 
 namespace Xamarin.Forms.Platform.Android

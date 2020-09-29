@@ -38,10 +38,11 @@ namespace Xamarin.Forms.Internals
 			BindableProperty bindableProperty = null;
 			propertyChanged = propertyChanged ?? target as INotifyPropertyChanged;
 			var propertyType = target.GetType().GetProperty(targetProperty)?.PropertyType;
-			var defaultValue = target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, new object [] { });
+			var defaultValue = target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, new object[] { });
 			bindableProperty = CreateBindableProperty<TNativeView>(targetProperty, propertyType, defaultValue);
 			if (binding != null && binding.Mode != BindingMode.OneWay && propertyChanged != null)
-				propertyChanged.PropertyChanged += (sender, e) => {
+				propertyChanged.PropertyChanged += (sender, e) =>
+				{
 					if (e.PropertyName != targetProperty)
 						return;
 					SetValueFromNative<TNativeView>(sender as TNativeView, targetProperty, bindableProperty);
@@ -65,7 +66,8 @@ namespace Xamarin.Forms.Internals
 				typeof(BindableObjectProxy<TNativeView>),
 				defaultValue: defaultValue,
 				defaultBindingMode: BindingMode.Default,
-				propertyChanged: (bindable, oldValue, newValue) => {
+				propertyChanged: (bindable, oldValue, newValue) =>
+				{
 					TNativeView nativeView;
 					if ((bindable as BindableObjectProxy<TNativeView>).TargetReference.TryGetTarget(out nativeView))
 						SetNativeValue(nativeView, targetProperty, newValue);
@@ -86,7 +88,7 @@ namespace Xamarin.Forms.Internals
 			BindableObjectProxy<TNativeView> proxy;
 			if (!BindableObjectProxy<TNativeView>.BindableObjectProxies.TryGetValue(target, out proxy))
 				return;
-			SetValueFromRenderer(proxy, bindableProperty, target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, new object [] { }));
+			SetValueFromRenderer(proxy, bindableProperty, target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, new object[] { }));
 		}
 
 		static void SetValueFromRenderer(BindableObject bindable, BindableProperty property, object value)
@@ -102,7 +104,7 @@ namespace Xamarin.Forms.Internals
 				throw new ArgumentNullException(nameof(targetProperty));
 			if (binding == null)
 				throw new ArgumentNullException(nameof(binding));
-			
+
 			var proxy = BindableObjectProxy<TNativeView>.BindableObjectProxies.GetValue(target, (TNativeView key) => new BindableObjectProxy<TNativeView>(key));
 			proxy.BindingsBackpack.Add(new KeyValuePair<BindableProperty, BindingBase>(targetProperty, binding));
 		}
@@ -154,12 +156,15 @@ namespace Xamarin.Forms.Internals
 			{
 				TargetProperty = targetProperty;
 				Delegate handlerDelegate = null;
-				EventInfo updateSourceEvent=null;
-				try {
+				EventInfo updateSourceEvent = null;
+				try
+				{
 					updateSourceEvent = target.GetType().GetRuntimeEvent(updateSourceEventName);
 					handlerDelegate = s_handlerinfo.CreateDelegate(updateSourceEvent.EventHandlerType, this);
-				} catch (Exception){
-					throw new ArgumentException(Format("No declared or accessible event {0} on {1}",updateSourceEventName,target.GetType()), nameof(updateSourceEventName));
+				}
+				catch (Exception)
+				{
+					throw new ArgumentException(Format("No declared or accessible event {0} on {1}", updateSourceEventName, target.GetType()), nameof(updateSourceEventName));
 				}
 				if (updateSourceEvent != null && handlerDelegate != null)
 					updateSourceEvent.AddEventHandler(target, handlerDelegate);

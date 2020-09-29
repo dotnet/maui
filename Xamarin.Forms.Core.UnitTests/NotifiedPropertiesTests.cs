@@ -1,8 +1,8 @@
 ﻿using System;
-using NUnit.Framework;
 using System.ComponentModel;
-using Xamarin.Forms.Maps;
 using System.Windows.Input;
+using NUnit.Framework;
+using Xamarin.Forms.Maps;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -11,44 +11,47 @@ namespace Xamarin.Forms.Core.UnitTests
 	{
 		public abstract class PropertyTestCase
 		{
-			public string Name { get; set;}
-			public Func<INotifyPropertyChanged,object> PropertyGetter { get; set; }
+			public string Name { get; set; }
+			public Func<INotifyPropertyChanged, object> PropertyGetter { get; set; }
 			public Action<INotifyPropertyChanged, object> PropertySetter { get; set; }
 			public object ExpectedDefaultValue { get; set; }
 			public object TestValue { get; set; }
-			public abstract INotifyPropertyChanged CreateView ();
-			public virtual string DebugName {
+			public abstract INotifyPropertyChanged CreateView();
+			public virtual string DebugName
+			{
 				get { return Name; }
 			}
 		}
 
-		public class PropertyTestCase<TView, TProperty>:PropertyTestCase where TView : INotifyPropertyChanged
+		public class PropertyTestCase<TView, TProperty> : PropertyTestCase where TView : INotifyPropertyChanged
 		{
 			Func<TView> init;
-			Func<TProperty> expectedValueCreator; 
+			Func<TProperty> expectedValueCreator;
 
-			public PropertyTestCase (string name, Func<TView,TProperty> propertyGetter, Action<TView, TProperty> propertySetter, Func<TProperty> expectedDefaultValue, TProperty testValue, Func<TView> init = null)
+			public PropertyTestCase(string name, Func<TView, TProperty> propertyGetter, Action<TView, TProperty> propertySetter, Func<TProperty> expectedDefaultValue, TProperty testValue, Func<TView> init = null)
 			{
 				Name = name;
 				PropertyGetter = v => propertyGetter((TView)v);
-				PropertySetter = (v,o)=> propertySetter ((TView)v, (TProperty)o);
+				PropertySetter = (v, o) => propertySetter((TView)v, (TProperty)o);
 				expectedValueCreator = expectedDefaultValue;
 				TestValue = testValue;
 				this.init = init;
 			}
 
-			public override INotifyPropertyChanged CreateView ()
+			public override INotifyPropertyChanged CreateView()
 			{
-				ExpectedDefaultValue = expectedValueCreator ();
+				ExpectedDefaultValue = expectedValueCreator();
 				if (init != null)
-					return init ();
+					return init();
 				if (typeof(TView) == typeof(View))
-					return new View ();
-				return (TView)Activator.CreateInstance (typeof(TView), new object[]{ });
-			}	
+					return new View();
+				return (TView)Activator.CreateInstance(typeof(TView), new object[] { });
+			}
 
-			public override string DebugName {
-				get {
+			public override string DebugName
+			{
+				get
+				{
 					return typeof(TView).Name + "." + Name;
 				}
 			}
@@ -158,62 +161,64 @@ namespace Xamarin.Forms.Core.UnitTests
 #pragma warning restore 0414
 
 		[SetUp]
-		public override void Setup ()
+		public override void Setup()
 		{
-			base.Setup ();
-			Device.PlatformServices = new MockPlatformServices ();
+			base.Setup();
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
 		[TearDown]
-		public override void TearDown ()
+		public override void TearDown()
 		{
-			base.TearDown ();
+			base.TearDown();
 			Device.PlatformServices = null;
 		}
 
-		[Test, TestCaseSource ("Properties")]
-		public void DefaultValues (PropertyTestCase property)
+		[Test, TestCaseSource("Properties")]
+		public void DefaultValues(PropertyTestCase property)
 		{
-			var view = property.CreateView ();
-			Assert.AreEqual (property.ExpectedDefaultValue, property.PropertyGetter (view), property.DebugName);
+			var view = property.CreateView();
+			Assert.AreEqual(property.ExpectedDefaultValue, property.PropertyGetter(view), property.DebugName);
 		}
 
-		[Test, TestCaseSource ("Properties")]
-		public void Set (PropertyTestCase property)
+		[Test, TestCaseSource("Properties")]
+		public void Set(PropertyTestCase property)
 		{
-			var view = property.CreateView ();
+			var view = property.CreateView();
 
 			bool changed = false;
-			view.PropertyChanged += (sender, args) => {
+			view.PropertyChanged += (sender, args) =>
+			{
 				if (args.PropertyName == property.Name)
 					changed = true;
 			};
 
 			var testvalue = property.TestValue;
-			property.PropertySetter (view, testvalue);
+			property.PropertySetter(view, testvalue);
 
-			Assert.True (changed, property.DebugName);
-			Assert.AreEqual (testvalue, property.PropertyGetter (view), property.DebugName);
+			Assert.True(changed, property.DebugName);
+			Assert.AreEqual(testvalue, property.PropertyGetter(view), property.DebugName);
 		}
 
-		[Test, TestCaseSource ("Properties")]
-		public void DoubleSet (PropertyTestCase property)
+		[Test, TestCaseSource("Properties")]
+		public void DoubleSet(PropertyTestCase property)
 		{
-			var view = property.CreateView ();
+			var view = property.CreateView();
 
 			var testvalue = property.TestValue;
-			property.PropertySetter (view, testvalue);
+			property.PropertySetter(view, testvalue);
 
 			bool changed = false;
-			view.PropertyChanged += (sender, args) => {
+			view.PropertyChanged += (sender, args) =>
+			{
 				if (args.PropertyName == property.Name)
 					changed = true;
 			};
 
-			property.PropertySetter (view, testvalue);
+			property.PropertySetter(view, testvalue);
 
-			Assert.False (changed, property.DebugName);
-			Assert.AreEqual (testvalue, property.PropertyGetter (view), property.DebugName);
+			Assert.False(changed, property.DebugName);
+			Assert.AreEqual(testvalue, property.PropertyGetter(view), property.DebugName);
 		}
 	}
 }

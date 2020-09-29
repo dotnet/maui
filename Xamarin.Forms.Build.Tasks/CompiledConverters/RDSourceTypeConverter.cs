@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-
-using static Mono.Cecil.Cil.Instruction;
-using static Mono.Cecil.Cil.OpCodes;
-
 using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Xaml;
+using static Mono.Cecil.Cil.Instruction;
+using static Mono.Cecil.Cil.OpCodes;
 
 namespace Xamarin.Forms.Core.XamlC
 {
@@ -58,15 +55,16 @@ namespace Xamarin.Forms.Core.XamlC
 			foreach (var instruction in node.PushXmlLineInfo(context))
 				yield return instruction; //lineinfo
 			yield return Create(Callvirt, module.ImportMethodReference(resourceDictionaryType,
-			                                                           methodName: "SetAndLoadSource",
-			                                                           parameterTypes: new[] { ("System", "System", "Uri"), ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") }));
+																	   methodName: "SetAndLoadSource",
+																	   parameterTypes: new[] { ("System", "System", "Uri"), ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") }));
 			//ldloc the stored uri as return value
 			yield return Create(Ldloc, uriVarDef);
 		}
 
 		internal static string GetPathForType(ModuleDefinition module, TypeReference type)
 		{
-			foreach (var ca in type.Module.GetCustomAttributes()) {
+			foreach (var ca in type.Module.GetCustomAttributes())
+			{
 				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))

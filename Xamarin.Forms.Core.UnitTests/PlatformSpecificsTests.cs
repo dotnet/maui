@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using ImAVendor.Forms.PlatformConfiguration.iOS;
+using NUnit.Framework;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsTrue(x.On<Android>().GetSomeOtherAndroidThing() == 45);
 
 			x.On<Android>().UsePhabletDefaults();
-			
+
 			Assert.IsTrue(x.On<Android>().GetSomeAndroidThing() == 8);
 			Assert.IsTrue(x.On<Android>().GetSomeOtherAndroidThing() == 40);
 		}
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			x.On<iOS>().SetIsNavigationBarTranslucent(true);
 
-			Assert.IsTrue(x.On<iOS>().IsNavigationBarTranslucent()); 
+			Assert.IsTrue(x.On<iOS>().IsNavigationBarTranslucent());
 		}
 	}
 }

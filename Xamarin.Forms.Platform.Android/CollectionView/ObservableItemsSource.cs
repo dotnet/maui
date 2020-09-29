@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				CollectionChanged(args);
 			}
-			
+
 		}
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)

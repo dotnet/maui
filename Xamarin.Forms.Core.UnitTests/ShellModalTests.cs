@@ -243,7 +243,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			await shell.GoToAsync("ModalTestPage");
 			Assert.AreEqual("//NewRoute/Section/Content/ModalTestPage", shell.CurrentState.Location.ToString());
-			
+
 			await shell.GoToAsync("ModalTestPage");
 			Assert.AreEqual("//NewRoute/Section/Content/ModalTestPage/ModalTestPage", shell.CurrentState.Location.ToString());
 		}
@@ -262,7 +262,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				{
 					action();
 				}
-				catch(InvalidOperationException) 
+				catch (InvalidOperationException)
 				{
 					invalidOperationThrown = true;
 				}
@@ -382,7 +382,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			{
 				base.OnAppearing();
 			}
-			
+
 
 			protected override void OnParentSet()
 			{

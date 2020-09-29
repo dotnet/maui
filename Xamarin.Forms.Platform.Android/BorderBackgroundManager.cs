@@ -1,10 +1,10 @@
 using System;
 using System.ComponentModel;
 using Android.Content.Res;
-using AView = Android.Views.View;
 using Android.Graphics.Drawables;
-using Specifics = Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
+using AView = Android.Views.View;
+using Specifics = Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android
 {

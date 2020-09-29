@@ -1,9 +1,9 @@
 ﻿using System;
-using ADrawable = Android.Graphics.Drawables.Drawable;
-using AColorFilter = Android.Graphics.ColorFilter;
-using AColor = Android.Graphics.Color;
-using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using Android.Graphics;
+using AColor = Android.Graphics.Color;
+using AColorFilter = Android.Graphics.ColorFilter;
+using ADrawable = Android.Graphics.Drawables.Drawable;
+using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static void SetColorFilter(this ADrawable drawable, AColor color, FilterMode mode)
 		{
-			if(Forms.Is29OrNewer)
+			if (Forms.Is29OrNewer)
 				drawable.SetColorFilter(new BlendModeColorFilter(color, GetFilterMode(mode)));
 			else
 #pragma warning disable CS0612 // Type or member is obsolete

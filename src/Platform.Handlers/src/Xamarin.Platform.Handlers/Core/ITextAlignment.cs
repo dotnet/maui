@@ -2,10 +2,10 @@
 
 namespace Xamarin.Platform
 {
-    public interface ITextAlignment : IView
-    {
-        TextAlignment HorizontalTextAlignment { get; }
+	public interface ITextAlignment : IView
+	{
+		TextAlignment HorizontalTextAlignment { get; }
 
-        TextAlignment VerticalTextAlignment { get; }
-    }
+		TextAlignment VerticalTextAlignment { get; }
+	}
 }

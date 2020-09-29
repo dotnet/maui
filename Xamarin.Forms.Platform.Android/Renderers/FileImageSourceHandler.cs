@@ -3,17 +3,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
-using Android.Widget;
-using Android.Net;
-using Xamarin.Forms.Internals;
 using Android.Graphics.Drawables;
+using Android.Net;
+using Android.Widget;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	public sealed class FileImageSourceHandler : IImageSourceHandler, IImageViewHandler, IAnimationSourceHandler
-    {
+	{
 		// This is set to true when run under designer context
-		internal static bool DecodeSynchronously {
+		internal static bool DecodeSynchronously
+		{
 			get;
 			set;
 		}
@@ -22,10 +23,10 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			string file = ((FileImageSource)imagesource).File;
 			Bitmap bitmap;
-			if (File.Exists (file))
-				bitmap = !DecodeSynchronously ? (await BitmapFactory.DecodeFileAsync (file).ConfigureAwait (false)) : BitmapFactory.DecodeFile (file);
+			if (File.Exists(file))
+				bitmap = !DecodeSynchronously ? (await BitmapFactory.DecodeFileAsync(file).ConfigureAwait(false)) : BitmapFactory.DecodeFile(file);
 			else
-				bitmap = !DecodeSynchronously ? (await context.Resources.GetBitmapAsync (file, context).ConfigureAwait (false)) : context.Resources.GetBitmap (file, context);
+				bitmap = !DecodeSynchronously ? (await context.Resources.GetBitmapAsync(file, context).ConfigureAwait(false)) : context.Resources.GetBitmap(file, context);
 
 			if (bitmap == null)
 			{

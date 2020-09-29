@@ -685,13 +685,15 @@ namespace Xamarin.Forms.Core.UnitTests
 			var label = new Label();
 			var view = new StackLayout { Children = { label } };
 
-			view.BindingContext = new MockViewModel { Text = "FooBar" }; ;
+			view.BindingContext = new MockViewModel { Text = "FooBar" };
+			;
 			label.SetBinding(BindableObject.BindingContextProperty, "Text");
 			label.SetBinding(Label.TextProperty, Binding.SelfPath);
 
 			Assert.AreEqual("FooBar", label.BindingContext);
 
-			view.BindingContext = new MockViewModel { Text = "Baz" }; ;
+			view.BindingContext = new MockViewModel { Text = "Baz" };
+			;
 			Assert.AreEqual("Baz", label.BindingContext);
 		}
 

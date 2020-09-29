@@ -1,17 +1,17 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using AndroidX.RecyclerView.Widget;
-using AViewCompat = AndroidX.Core.View.ViewCompat;
 using Android.Views;
+using AndroidX.RecyclerView.Widget;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.CollectionView;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using ARect = Android.Graphics.Rect;
+using AViewCompat = AndroidX.Core.View.ViewCompat;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public abstract class ItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IVisualElementRenderer, IEffectControlProvider 
+	public abstract class ItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IVisualElementRenderer, IEffectControlProvider
 		where TItemsView : ItemsView
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Platform.Android
 		RecyclerView.ItemDecoration _itemDecoration;
 
 		public ItemsViewRenderer(Context context) : base(
-			new ContextThemeWrapper(context, Resource.Style.collectionViewTheme), null, 
+			new ContextThemeWrapper(context, Resource.Style.collectionViewTheme), null,
 			Resource.Attribute.collectionViewStyle)
 		{
 			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
@@ -283,9 +283,9 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_emptyCollectionObserver.Stop(oldItemViewAdapter);
 				_itemsUpdateScrollObserver.Stop(oldItemViewAdapter);
-	
+
 				SetAdapter(null);
-	
+
 				SwapAdapter(ItemsViewAdapter, true);
 			}
 
@@ -634,14 +634,14 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			int itemCount = 0;
-			if(ItemsView is StructuredItemsView itemsView)
+			if (ItemsView is StructuredItemsView itemsView)
 			{
 				if (itemsView.Header != null || itemsView.HeaderTemplate != null)
 					itemCount++;
 				if (itemsView.Footer != null || itemsView.FooterTemplate != null)
 					itemCount++;
 			}
-   
+
 			var showEmptyView = ItemsView?.EmptyView != null && ItemsViewAdapter.ItemCount == itemCount;
 
 			var currentAdapter = GetAdapter();

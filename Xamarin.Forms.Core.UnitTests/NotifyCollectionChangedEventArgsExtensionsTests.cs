@@ -14,20 +14,21 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			List<string> applied = new List<string> { "foo", "bar", "baz" };
 
-			Action reset = () => Assert.Fail ("Reset should not be called");
-			Action<object, int, bool> insert = (o, i, create) => {
-				Assert.That (create, Is.True);
-				applied.Insert (i, (string) o);
+			Action reset = () => Assert.Fail("Reset should not be called");
+			Action<object, int, bool> insert = (o, i, create) =>
+			{
+				Assert.That(create, Is.True);
+				applied.Insert(i, (string)o);
 			};
 
-			Action<object, int> removeAt = (o, i) => applied.RemoveAt (i);
+			Action<object, int> removeAt = (o, i) => applied.RemoveAt(i);
 
-			var items = new ObservableCollection<string> (applied);
-			items.CollectionChanged += (s, e) => e.Apply (insert, removeAt, reset);
+			var items = new ObservableCollection<string>(applied);
+			items.CollectionChanged += (s, e) => e.Apply(insert, removeAt, reset);
 
-			items.Add ("monkey");
+			items.Add("monkey");
 
-			CollectionAssert.AreEqual (items, applied);
+			CollectionAssert.AreEqual(items, applied);
 		}
 
 		[Test]
@@ -35,19 +36,20 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			List<string> applied = new List<string> { "foo", "bar", "baz" };
 
-			Action reset = () => Assert.Fail ("Reset should not be called");
-			Action<object, int, bool> insert = (o, i, create) => {
-				Assert.That (create, Is.True);
-				applied.Insert (i, (string) o);
+			Action reset = () => Assert.Fail("Reset should not be called");
+			Action<object, int, bool> insert = (o, i, create) =>
+			{
+				Assert.That(create, Is.True);
+				applied.Insert(i, (string)o);
 			};
-			Action<object, int> removeAt = (o, i) => applied.RemoveAt (i);
+			Action<object, int> removeAt = (o, i) => applied.RemoveAt(i);
 
-			var items = new ObservableCollection<string> (applied);
-			items.CollectionChanged += (s, e) => e.Apply (insert, removeAt, reset);
+			var items = new ObservableCollection<string>(applied);
+			items.CollectionChanged += (s, e) => e.Apply(insert, removeAt, reset);
 
-			items.Insert (1, "monkey");
+			items.Insert(1, "monkey");
 
-			CollectionAssert.AreEqual (items, applied);
+			CollectionAssert.AreEqual(items, applied);
 		}
 
 		[Test]
@@ -55,20 +57,21 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			List<string> applied = new List<string> { "foo", "bar", "baz" };
 
-			Action reset = () => Assert.Fail ("Reset should not be called");
-			Action<object, int, bool> insert = (o, i, create) => {
-				Assert.That (create, Is.False);
-				applied.Insert (i, (string) o);
+			Action reset = () => Assert.Fail("Reset should not be called");
+			Action<object, int, bool> insert = (o, i, create) =>
+			{
+				Assert.That(create, Is.False);
+				applied.Insert(i, (string)o);
 			};
 
-			Action<object, int> removeAt = (o, i) => applied.RemoveAt (i);
+			Action<object, int> removeAt = (o, i) => applied.RemoveAt(i);
 
-			var items = new ObservableCollection<string> (applied);
-			items.CollectionChanged += (s, e) => e.Apply (insert, removeAt, reset);
+			var items = new ObservableCollection<string>(applied);
+			items.CollectionChanged += (s, e) => e.Apply(insert, removeAt, reset);
 
-			items.Move (0, 2);
+			items.Move(0, 2);
 
-			CollectionAssert.AreEqual (items, applied);
+			CollectionAssert.AreEqual(items, applied);
 		}
 
 		[Test]
@@ -77,7 +80,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			List<string> applied = new List<string> { "foo", "bar", "baz" };
 
 			Action reset = () => Assert.Fail("Reset should not be called");
-			Action<object, int, bool> insert = (o, i, create) => {
+			Action<object, int, bool> insert = (o, i, create) =>
+			{
 				Assert.That(create, Is.True);
 				applied.Insert(i, (string)o);
 			};

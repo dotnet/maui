@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Internals
 			}
 		}
 
-		public static void Start() 
+		public static void Start()
 		{
 			if (!IsEnabled)
 				return;
@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Internals
 		}
 
 		static void FramePartitionBody(
-			string id, 
+			string id,
 			int line)
 		{
 			var profile = Stack.Pop();

@@ -6,15 +6,15 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class OpenGLViewUnitTests : BaseTestFixture
 	{
 		[Test]
-		public void Display ()
+		public void Display()
 		{
-			var view = new OpenGLView ();
+			var view = new OpenGLView();
 			bool displayed = false;
 
 			view.DisplayRequested += (s, o) => displayed = true;
 
-			view.Display ();
-			Assert.True (displayed);
+			view.Display();
+			Assert.True(displayed);
 		}
 	}
 }

@@ -1,12 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Collections.Generic;
-using System.Net;
 
 namespace Xamarin.Forms
 {
@@ -48,7 +48,7 @@ namespace Xamarin.Forms
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		bool IWebViewController.CanGoBack 
+		bool IWebViewController.CanGoBack
 		{
 			get { return CanGoBack; }
 			set { SetValue(CanGoBackPropertyKey, value); }
@@ -60,7 +60,7 @@ namespace Xamarin.Forms
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		bool IWebViewController.CanGoForward 
+		bool IWebViewController.CanGoForward
 		{
 			get { return CanGoForward; }
 			set { SetValue(CanGoForwardPropertyKey, value); }
@@ -159,7 +159,8 @@ namespace Xamarin.Forms
 			OnPropertyChanged(SourceProperty.PropertyName);
 		}
 
-		event EventHandler<EvalRequested> IWebViewController.EvalRequested {
+		event EventHandler<EvalRequested> IWebViewController.EvalRequested
+		{
 			add { EvalRequested += value; }
 			remove { EvalRequested -= value; }
 		}
@@ -209,7 +210,7 @@ namespace Xamarin.Forms
 
 			var uniqueMatches = new List<string>();
 
-			for (var i=0; i < singleQuotes.Count; i++)
+			for (var i = 0; i < singleQuotes.Count; i++)
 			{
 				var matchedString = singleQuotes[i].Value;
 				if (!uniqueMatches.Contains(matchedString))
@@ -221,7 +222,7 @@ namespace Xamarin.Forms
 			uniqueMatches.Sort((x, y) => y.Length.CompareTo(x.Length));
 
 			//escape all quotes from the script as well as add additional escaping to all quotes that were already escaped
-			for (var i=0; i < uniqueMatches.Count; i++)
+			for (var i = 0; i < uniqueMatches.Count; i++)
 			{
 				var match = uniqueMatches[i];
 				var numberOfBackslashes = match.Length - 1;

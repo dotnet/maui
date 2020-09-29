@@ -1,6 +1,6 @@
 using AndroidX.RecyclerView.Widget;
-using AView = Android.Views.View;
 using ALayoutDirection = Android.Views.LayoutDirection;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {

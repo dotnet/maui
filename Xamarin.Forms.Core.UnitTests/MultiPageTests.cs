@@ -12,51 +12,52 @@ namespace Xamarin.Forms.Core.UnitTests
 	{
 		protected abstract MultiPage<T> CreateMultiPage();
 		protected abstract T CreateContainedPage();
-		protected abstract int GetIndex (T page);
+		protected abstract int GetIndex(T page);
 
 		[SetUp]
 		public override void Setup()
 		{
-			base.Setup ();
-			Device.PlatformServices = new MockPlatformServices ();
+			base.Setup();
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
 		[TearDown]
 		public override void TearDown()
 		{
-			base.TearDown ();
+			base.TearDown();
 			Device.PlatformServices = null;
 		}
 
 		[Test]
-		public void TestSetChildren ()
+		public void TestSetChildren()
 		{
 			var container = CreateMultiPage();
-			var page = (Page) container;
+			var page = (Page)container;
 
 			int childCount = 0;
 			page.ChildAdded += (sender, args) => childCount++;
 
 			int pagesAdded = 0;
-			container.PagesChanged += (sender, args) => {
+			container.PagesChanged += (sender, args) =>
+			{
 				if (args.Action == NotifyCollectionChangedAction.Add)
 					pagesAdded++;
 			};
 
-			container.Children.Add (CreateContainedPage());
-			container.Children.Add (CreateContainedPage());
+			container.Children.Add(CreateContainedPage());
+			container.Children.Add(CreateContainedPage());
 
-			Assert.AreEqual (2, childCount);
-			Assert.AreEqual (2, ((IElementController)page).LogicalChildren.Count);
-			Assert.AreEqual (2, pagesAdded);
+			Assert.AreEqual(2, childCount);
+			Assert.AreEqual(2, ((IElementController)page).LogicalChildren.Count);
+			Assert.AreEqual(2, pagesAdded);
 		}
 
 		[Test]
 		public void TestOverwriteChildren()
 		{
 			var page = CreateMultiPage();
-			page.Children.Add (CreateContainedPage());
-			page.Children.Add (CreateContainedPage());
+			page.Children.Add(CreateContainedPage());
+			page.Children.Add(CreateContainedPage());
 
 			int childCount = 0;
 			int removeCount = 0;
@@ -64,34 +65,35 @@ namespace Xamarin.Forms.Core.UnitTests
 			page.ChildRemoved += (sender, args) => removeCount++;
 
 			foreach (var child in page.Children.ToArray())
-				page.Children.Remove ((T)child);
+				page.Children.Remove((T)child);
 
-			page.Children.Add (CreateContainedPage());
-			page.Children.Add (CreateContainedPage());
+			page.Children.Add(CreateContainedPage());
+			page.Children.Add(CreateContainedPage());
 
-			Assert.AreEqual (2, removeCount);
-			Assert.AreEqual (2, childCount);
-			Assert.AreEqual (2, ((IElementController)page).LogicalChildren.Count);
+			Assert.AreEqual(2, removeCount);
+			Assert.AreEqual(2, childCount);
+			Assert.AreEqual(2, ((IElementController)page).LogicalChildren.Count);
 		}
 
 		[Test]
 		public void CurrentPageSetAfterAdd()
 		{
 			var page = CreateMultiPage();
-			Assert.That (page.CurrentPage, Is.Null);
+			Assert.That(page.CurrentPage, Is.Null);
 
 			var child = CreateContainedPage();
-			
+
 			bool property = false;
-			page.PropertyChanged += (o, e) => {
+			page.PropertyChanged += (o, e) =>
+			{
 				if (e.PropertyName == "CurrentPage")
 					property = true;
 			};
 
-			page.Children.Add (child);
+			page.Children.Add(child);
 
-			Assert.That (page.CurrentPage, Is.SameAs (child));
-			Assert.That (property, Is.True, "CurrentPage property change did not fire");
+			Assert.That(page.CurrentPage, Is.SameAs(child));
+			Assert.That(property, Is.True, "CurrentPage property change did not fire");
 		}
 
 		[Test]
@@ -100,19 +102,20 @@ namespace Xamarin.Forms.Core.UnitTests
 			var page = CreateMultiPage();
 			var child = CreateContainedPage();
 			var child2 = CreateContainedPage();
-			page.Children.Add (child);
-			page.Children.Add (child2);
+			page.Children.Add(child);
+			page.Children.Add(child2);
 
 			bool property = false;
-			page.PropertyChanged += (o, e) => {
+			page.PropertyChanged += (o, e) =>
+			{
 				if (e.PropertyName == "CurrentPage")
 					property = true;
 			};
 
-			page.Children.Remove (child);
+			page.Children.Remove(child);
 
-			Assert.That (page.CurrentPage, Is.SameAs (child2), "MultiPage.CurrentPage is not set to a new page after current was removed");
-			Assert.That (property, Is.True, "CurrentPage property change did not fire");
+			Assert.That(page.CurrentPage, Is.SameAs(child2), "MultiPage.CurrentPage is not set to a new page after current was removed");
+			Assert.That(property, Is.True, "CurrentPage property change did not fire");
 		}
 
 		[Test]
@@ -120,18 +123,19 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 			var child = CreateContainedPage();
-			page.Children.Add (child);
+			page.Children.Add(child);
 
 			bool property = false;
-			page.PropertyChanged += (o, e) => {
+			page.PropertyChanged += (o, e) =>
+			{
 				if (e.PropertyName == "CurrentPage")
 					property = true;
 			};
 
-			page.Children.Remove (child);
+			page.Children.Remove(child);
 
-			Assert.That (page.CurrentPage, Is.Null, "MultiPage.CurrentPage is still set after that page was removed");
-			Assert.That (property, Is.True, "CurrentPage property change did not fire");
+			Assert.That(page.CurrentPage, Is.Null, "MultiPage.CurrentPage is still set after that page was removed");
+			Assert.That(property, Is.True, "CurrentPage property change did not fire");
 		}
 
 		[Test]
@@ -139,91 +143,96 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			page.ItemsSource = new[] { "Foo", "Bar" };
 
-			Action<Page, string> assertPage = (p, s) => {
-				Assert.That (p, Is.InstanceOf<ContentPage>());
+			Action<Page, string> assertPage = (p, s) =>
+			{
+				Assert.That(p, Is.InstanceOf<ContentPage>());
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (2));
-			assertPage ((Page)pages[0], "Foo");
-			assertPage ((Page)pages[1], "Bar");
+			Assert.That(pages.Length, Is.EqualTo(2));
+			assertPage((Page)pages[0], "Foo");
+			assertPage((Page)pages[1], "Bar");
 		}
 
 		[Test]
 		public void SelectedItemSetAfterAdd()
 		{
 			var page = CreateMultiPage();
-			Assert.That (page.CurrentPage, Is.Null);
+			Assert.That(page.CurrentPage, Is.Null);
 
 			var items = new ObservableCollection<string>();
 
 			page.ItemsSource = items;
-			
+
 			bool selected = false;
 			bool current = false;
-			page.PropertyChanged += (o, e) => {
+			page.PropertyChanged += (o, e) =>
+			{
 				if (e.PropertyName == "CurrentPage")
 					current = true;
 				else if (e.PropertyName == "SelectedItem")
 					selected = true;
 			};
 
-			items.Add ("foo");
+			items.Add("foo");
 
-			Assert.That (page.SelectedItem, Is.SameAs (items.First()));
-			Assert.That (page.CurrentPage.BindingContext, Is.SameAs (page.SelectedItem));
-			Assert.That (current, Is.True, "CurrentPage property change did not fire");
-			Assert.That (selected, Is.True, "SelectedItem property change did not fire");
+			Assert.That(page.SelectedItem, Is.SameAs(items.First()));
+			Assert.That(page.CurrentPage.BindingContext, Is.SameAs(page.SelectedItem));
+			Assert.That(current, Is.True, "CurrentPage property change did not fire");
+			Assert.That(selected, Is.True, "SelectedItem property change did not fire");
 		}
 
 		[Test]
 		public void SelectedItemNullAfterRemove()
 		{
 			var page = CreateMultiPage();
-			Assert.That (page.CurrentPage, Is.Null);
+			Assert.That(page.CurrentPage, Is.Null);
 
 			var items = new ObservableCollection<string> { "foo" };
 			page.ItemsSource = items;
 
 			bool selected = false;
 			bool current = false;
-			page.PropertyChanged += (o, e) => {
+			page.PropertyChanged += (o, e) =>
+			{
 				if (e.PropertyName == "CurrentPage")
 					current = true;
 				else if (e.PropertyName == "SelectedItem")
 					selected = true;
 			};
 
-			items.Remove ("foo");
+			items.Remove("foo");
 
-			Assert.That (page.SelectedItem, Is.Null, "MultiPage.SelectedItem is still set after that page was removed");
-			Assert.That (page.CurrentPage, Is.Null, "MultiPage.CurrentPage is still set after that page was removed");
-			Assert.That (current, Is.True, "CurrentPage property change did not fire");
-			Assert.That (selected, Is.True, "SelectedItem property change did not fire");
+			Assert.That(page.SelectedItem, Is.Null, "MultiPage.SelectedItem is still set after that page was removed");
+			Assert.That(page.CurrentPage, Is.Null, "MultiPage.CurrentPage is still set after that page was removed");
+			Assert.That(current, Is.True, "CurrentPage property change did not fire");
+			Assert.That(selected, Is.True, "SelectedItem property change did not fire");
 		}
 
 		[Test]
-		[Description ("When ItemsSource is set with items, the first item should automatically be selected")]
+		[Description("When ItemsSource is set with items, the first item should automatically be selected")]
 		public void SelectedItemSetAfterItemsSourceSet()
 		{
 			var page = CreateMultiPage();
 
 			bool selected = false;
 			bool current = false;
-			page.PropertyChanged += (o, e) => {
+			page.PropertyChanged += (o, e) =>
+			{
 				if (e.PropertyName == "CurrentPage")
 					current = true;
 				else if (e.PropertyName == "SelectedItem")
@@ -232,10 +241,10 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			page.ItemsSource = new[] { "foo" };
 
-			Assert.That (page.SelectedItem, Is.SameAs (((string[]) page.ItemsSource)[0]));
-			Assert.That (page.CurrentPage.BindingContext, Is.SameAs (page.SelectedItem));
-			Assert.That (current, Is.True, "CurrentPage property change did not fire");
-			Assert.That (selected, Is.True, "SelectedItem property change did not fire");
+			Assert.That(page.SelectedItem, Is.SameAs(((string[])page.ItemsSource)[0]));
+			Assert.That(page.CurrentPage.BindingContext, Is.SameAs(page.SelectedItem));
+			Assert.That(current, Is.True, "CurrentPage property change did not fire");
+			Assert.That(selected, Is.True, "SelectedItem property change did not fire");
 		}
 
 		[Test]
@@ -250,7 +259,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			items = new[] { "fad", "baz" };
 			page.ItemsSource = items;
 
-			Assert.That (page.SelectedItem, Is.SameAs (items[0]));
+			Assert.That(page.SelectedItem, Is.SameAs(items[0]));
 		}
 
 		[Test]
@@ -261,18 +270,18 @@ namespace Xamarin.Forms.Core.UnitTests
 			var items = new ObservableCollection<string> { "foo", "bar" };
 			page.ItemsSource = items;
 
-			Assert.That (page.SelectedItem, Is.SameAs (items[0]));
-			Assert.That (page.CurrentPage, Is.Not.Null);
-			Assert.That (page.CurrentPage.BindingContext, Is.SameAs (items[0]));
-			
+			Assert.That(page.SelectedItem, Is.SameAs(items[0]));
+			Assert.That(page.CurrentPage, Is.Not.Null);
+			Assert.That(page.CurrentPage.BindingContext, Is.SameAs(items[0]));
+
 			page.SelectedItem = items[1];
-			Assert.That (page.CurrentPage.BindingContext, Is.SameAs (items[1]));
+			Assert.That(page.CurrentPage.BindingContext, Is.SameAs(items[1]));
 
-			items.Move (1, 0);
+			items.Move(1, 0);
 
-			Assert.That (page.SelectedItem, Is.SameAs (items[0]));
-			Assert.That (page.CurrentPage, Is.Not.Null);
-			Assert.That (page.CurrentPage.BindingContext, Is.SameAs (items[0]));
+			Assert.That(page.SelectedItem, Is.SameAs(items[0]));
+			Assert.That(page.CurrentPage, Is.Not.Null);
+			Assert.That(page.CurrentPage.BindingContext, Is.SameAs(items[0]));
 		}
 
 		[Test]
@@ -283,9 +292,9 @@ namespace Xamarin.Forms.Core.UnitTests
 			page.ItemsSource = new[] { "Foo", "Bar" };
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (2));
-			Assert.That (((Page)pages[0]).Title, Is.EqualTo ("Foo"));
-			Assert.That (((Page)pages[1]).Title, Is.EqualTo ("Bar"));
+			Assert.That(pages.Length, Is.EqualTo(2));
+			Assert.That(((Page)pages[0]).Title, Is.EqualTo("Foo"));
+			Assert.That(((Page)pages[1]).Title, Is.EqualTo("Bar"));
 		}
 
 		[Test]
@@ -293,33 +302,35 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			var items = new ObservableCollection<string> { "Foo", "Bar" };
 			page.ItemsSource = items;
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) => {
+			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
+			{
 				Page p = (Page)ps[index];
-				Assert.That (p, Is.InstanceOf<ContentPage>());
-				Assert.That (GetIndex ((T) p), Is.EqualTo (index));
+				Assert.That(p, Is.InstanceOf<ContentPage>());
+				Assert.That(GetIndex((T)p), Is.EqualTo(index));
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
-			items.Add ("Baz");
+			items.Add("Baz");
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (3), "Children should have 3 pages");
-			assertPage (pages, 0, "Foo");
-			assertPage (pages, 1, "Bar");
-			assertPage (pages, 2, "Baz");
+			Assert.That(pages.Length, Is.EqualTo(3), "Children should have 3 pages");
+			assertPage(pages, 0, "Foo");
+			assertPage(pages, 1, "Bar");
+			assertPage(pages, 2, "Baz");
 		}
 
 		[Test]
@@ -327,45 +338,48 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			var items = new ObservableList<string> { "Foo", "Bar" };
 			page.ItemsSource = items;
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) => {
+			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
+			{
 				Page p = (Page)ps[index];
-				Assert.That (p, Is.InstanceOf<ContentPage>());
-				Assert.That (GetIndex ((T) p), Is.EqualTo (index));
+				Assert.That(p, Is.InstanceOf<ContentPage>());
+				Assert.That(GetIndex((T)p), Is.EqualTo(index));
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
 			int addedCount = 0;
-			page.PagesChanged += (sender, e) => {
+			page.PagesChanged += (sender, e) =>
+			{
 				if (e.Action != NotifyCollectionChangedAction.Add)
 					return;
 
 				addedCount++;
-				Assert.That (e.NewItems.Count, Is.EqualTo (2));
+				Assert.That(e.NewItems.Count, Is.EqualTo(2));
 			};
 
-			items.AddRange (new[] { "Baz", "Bam" });
+			items.AddRange(new[] { "Baz", "Bam" });
 
-			Assert.That (addedCount, Is.EqualTo (1));
+			Assert.That(addedCount, Is.EqualTo(1));
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (4));
-			assertPage (pages, 0, "Foo");
-			assertPage (pages, 1, "Bar");
-			assertPage (pages, 2, "Baz");
-			assertPage (pages, 3, "Bam");
+			Assert.That(pages.Length, Is.EqualTo(4));
+			assertPage(pages, 0, "Foo");
+			assertPage(pages, 1, "Bar");
+			assertPage(pages, 2, "Baz");
+			assertPage(pages, 3, "Bam");
 		}
 
 		[Test]
@@ -373,33 +387,35 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			var items = new ObservableCollection<string> { "Foo", "Bar" };
 			page.ItemsSource = items;
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) => {
+			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
+			{
 				Page p = (Page)ps[index];
-				Assert.That (p, Is.InstanceOf<ContentPage>());
-				Assert.That (GetIndex ((T) p), Is.EqualTo (index));
+				Assert.That(p, Is.InstanceOf<ContentPage>());
+				Assert.That(GetIndex((T)p), Is.EqualTo(index));
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
-			items.Insert (1, "Baz");
+			items.Insert(1, "Baz");
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (3));
-			assertPage (pages, 0, "Foo");
-			assertPage (pages, 1, "Baz");
-			assertPage (pages, 2, "Bar");
+			Assert.That(pages.Length, Is.EqualTo(3));
+			assertPage(pages, 0, "Foo");
+			assertPage(pages, 1, "Baz");
+			assertPage(pages, 2, "Bar");
 		}
 
 		[Test]
@@ -407,34 +423,36 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			var items = new ObservableList<string> { "Foo", "Bar" };
 			page.ItemsSource = items;
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) => {
+			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
+			{
 				Page p = (Page)ps[index];
-				Assert.That (p, Is.InstanceOf<ContentPage>());
-				Assert.That (GetIndex ((T) p), Is.EqualTo (index));
+				Assert.That(p, Is.InstanceOf<ContentPage>());
+				Assert.That(GetIndex((T)p), Is.EqualTo(index));
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
-			items.InsertRange (1, new[] { "Baz", "Bam" });
+			items.InsertRange(1, new[] { "Baz", "Bam" });
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (4));
-			assertPage (pages, 0, "Foo");
-			assertPage (pages, 1, "Baz");
-			assertPage (pages, 2, "Bam");
-			assertPage (pages, 3, "Bar");
+			Assert.That(pages.Length, Is.EqualTo(4));
+			assertPage(pages, 0, "Foo");
+			assertPage(pages, 1, "Baz");
+			assertPage(pages, 2, "Bam");
+			assertPage(pages, 3, "Bar");
 		}
 
 		[Test]
@@ -442,31 +460,33 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			var items = new ObservableCollection<string> { "Foo", "Bar" };
 			page.ItemsSource = items;
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) => {
+			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
+			{
 				Page p = (Page)ps[index];
-				Assert.That (p, Is.InstanceOf<ContentPage>());
-				Assert.That (GetIndex ((T) p), Is.EqualTo (index));
+				Assert.That(p, Is.InstanceOf<ContentPage>());
+				Assert.That(GetIndex((T)p), Is.EqualTo(index));
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
-			items.Remove ("Foo");
+			items.Remove("Foo");
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (1));
-			assertPage (pages, 0, "Bar");
+			Assert.That(pages.Length, Is.EqualTo(1));
+			assertPage(pages, 0, "Bar");
 		}
 
 		[Test]
@@ -474,33 +494,35 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			var items = new ObservableList<string> { "Foo", "Bar", "Baz", "Bam", "Who" };
 			page.ItemsSource = items;
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) => {
+			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
+			{
 				Page p = (Page)ps[index];
-				Assert.That (p, Is.InstanceOf<ContentPage>());
-				Assert.That (GetIndex ((T) p), Is.EqualTo (index));
+				Assert.That(p, Is.InstanceOf<ContentPage>());
+				Assert.That(GetIndex((T)p), Is.EqualTo(index));
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
-			items.RemoveAt (1, 2);
+			items.RemoveAt(1, 2);
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (3));
-			assertPage (pages, 0, "Foo");
-			assertPage (pages, 1, "Bam");
-			assertPage (pages, 2, "Who");
+			Assert.That(pages.Length, Is.EqualTo(3));
+			assertPage(pages, 0, "Foo");
+			assertPage(pages, 1, "Bam");
+			assertPage(pages, 2, "Who");
 		}
 
 		[Test]
@@ -508,32 +530,34 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			var items = new ObservableCollection<string> { "Foo", "Bar" };
 			page.ItemsSource = items;
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) => {
+			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
+			{
 				Page p = (Page)ps[index];
-				Assert.That (p, Is.InstanceOf<ContentPage>());
-				Assert.That (GetIndex ((T) p), Is.EqualTo (index));
+				Assert.That(p, Is.InstanceOf<ContentPage>());
+				Assert.That(GetIndex((T)p), Is.EqualTo(index));
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
-			items.Move (0, 1);
+			items.Move(0, 1);
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (2));
-			assertPage (pages, 0, "Bar");
-			assertPage (pages, 1, "Foo");
+			Assert.That(pages.Length, Is.EqualTo(2));
+			assertPage(pages, 0, "Bar");
+			assertPage(pages, 1, "Foo");
 		}
 
 		[Test]
@@ -541,36 +565,38 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			var items = new ObservableList<string> { "Foo", "Bar", "Baz", "Bam", "Who", "Where" };
 			page.ItemsSource = items;
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) => {
+			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
+			{
 				Page p = (Page)ps[index];
-				Assert.That (p, Is.InstanceOf<ContentPage>());
-				Assert.That (GetIndex ((T) p), Is.EqualTo (index));
+				Assert.That(p, Is.InstanceOf<ContentPage>());
+				Assert.That(GetIndex((T)p), Is.EqualTo(index));
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
-			items.Move (1, 4, 2);
+			items.Move(1, 4, 2);
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (6));
-			assertPage (pages, 0, "Foo");
-			assertPage (pages, 1, "Bam");
-			assertPage (pages, 2, "Who");
-			assertPage (pages, 3, "Bar");
-			assertPage (pages, 4, "Baz");
-			assertPage (pages, 5, "Where");
+			Assert.That(pages.Length, Is.EqualTo(6));
+			assertPage(pages, 0, "Foo");
+			assertPage(pages, 1, "Bam");
+			assertPage(pages, 2, "Who");
+			assertPage(pages, 3, "Bar");
+			assertPage(pages, 4, "Baz");
+			assertPage(pages, 5, "Where");
 		}
 
 		[Test]
@@ -578,37 +604,39 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			var items = new ObservableList<string> { "Foo", "Bar", "Baz", "Bam", "Who", "Where", "When" };
 			page.ItemsSource = items;
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) => {
+			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
+			{
 				Page p = (Page)ps[index];
-				Assert.That (p, Is.InstanceOf<ContentPage>());
-				Assert.That (GetIndex ((T) p), Is.EqualTo (index));
+				Assert.That(p, Is.InstanceOf<ContentPage>());
+				Assert.That(GetIndex((T)p), Is.EqualTo(index));
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
-			items.Move (4, 1, 2);
+			items.Move(4, 1, 2);
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (7));
-			assertPage (pages, 0, "Foo");
-			assertPage (pages, 1, "Who");
-			assertPage (pages, 2, "Where");
-			assertPage (pages, 3, "Bar");
-			assertPage (pages, 4, "Baz");
-			assertPage (pages, 5, "Bam");
-			assertPage (pages, 6, "When");
+			Assert.That(pages.Length, Is.EqualTo(7));
+			assertPage(pages, 0, "Foo");
+			assertPage(pages, 1, "Who");
+			assertPage(pages, 2, "Where");
+			assertPage(pages, 3, "Bar");
+			assertPage(pages, 4, "Baz");
+			assertPage(pages, 5, "Bam");
+			assertPage(pages, 6, "When");
 		}
 
 		[Test]
@@ -616,32 +644,34 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			var items = new ObservableCollection<string> { "Foo", "Bar" };
 			page.ItemsSource = items;
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) => {
+			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
+			{
 				Page p = (Page)ps[index];
-				Assert.That (p, Is.InstanceOf<ContentPage>());
-				Assert.That (GetIndex ((T) p), Is.EqualTo (index));
+				Assert.That(p, Is.InstanceOf<ContentPage>());
+				Assert.That(GetIndex((T)p), Is.EqualTo(index));
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
 			items[0] = "Baz";
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (2));
-			assertPage (pages, 0, "Baz");
-			assertPage (pages, 1, "Bar");
+			Assert.That(pages.Length, Is.EqualTo(2));
+			assertPage(pages, 0, "Baz");
+			assertPage(pages, 1, "Bar");
 		}
 
 		[Test]
@@ -649,33 +679,35 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = CreateMultiPage();
 
-			page.ItemTemplate = new DataTemplate (() => {
+			page.ItemTemplate = new DataTemplate(() =>
+			{
 				var p = new ContentPage();
 				p.Content = new Label();
-				p.Content.SetBinding (Label.TextProperty, new Binding ("."));
+				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
 
 			page.ItemsSource = new ObservableCollection<string> { "Foo", "Bar" };
 
-			Action<Page, string> assertPage = (p, s) => {
-				Assert.That (p, Is.InstanceOf<ContentPage>());
+			Action<Page, string> assertPage = (p, s) =>
+			{
+				Assert.That(p, Is.InstanceOf<ContentPage>());
 
-				var cp = (ContentPage) p;
-				Assert.That (cp.Content, Is.InstanceOf<Label>());
-				Assert.That (((Label)cp.Content).Text, Is.EqualTo (s));
+				var cp = (ContentPage)p;
+				Assert.That(cp.Content, Is.InstanceOf<Label>());
+				Assert.That(((Label)cp.Content).Text, Is.EqualTo(s));
 			};
 
 			page.ItemsSource = new ObservableCollection<string> { "Baz", "Bar" };
 
 			var pages = page.Children.ToArray();
-			Assert.That (pages.Length, Is.EqualTo (2));
-			assertPage ((Page)pages[0], "Baz");
-			assertPage ((Page)pages[1], "Bar");
+			Assert.That(pages.Length, Is.EqualTo(2));
+			assertPage((Page)pages[0], "Baz");
+			assertPage((Page)pages[1], "Bar");
 		}
 
 		[Test]
-		[Description ("If you have a templated set of items, setting CurrentPage (usually from renderers) should update SelectedItem properly")]
+		[Description("If you have a templated set of items, setting CurrentPage (usually from renderers) should update SelectedItem properly")]
 		public void SettingCurrentPageWithTemplatesUpdatesSelectedItem()
 		{
 			var page = CreateMultiPage();
@@ -684,12 +716,12 @@ namespace Xamarin.Forms.Core.UnitTests
 			page.ItemsSource = items;
 
 			// If these aren't correct, the rest of the test is invalid
-			Assert.That (page.CurrentPage, Is.SameAs (page.Children[0]));
-			Assert.That (page.SelectedItem, Is.SameAs (items[0]));
+			Assert.That(page.CurrentPage, Is.SameAs(page.Children[0]));
+			Assert.That(page.SelectedItem, Is.SameAs(items[0]));
 
 			page.CurrentPage = (T)page.Children[1];
 
-			Assert.That (page.SelectedItem, Is.SameAs (items[1]));
+			Assert.That(page.SelectedItem, Is.SameAs(items[1]));
 		}
 
 		[Test]
@@ -701,7 +733,8 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			int fail = 0;
 			int reset = 0;
-			page.PagesChanged += (sender, args) => {
+			page.PagesChanged += (sender, args) =>
+			{
 				if (args.Action == NotifyCollectionChangedAction.Reset)
 					reset++;
 				else
@@ -710,8 +743,8 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			page.ItemsSource = new[] { "Foo", "Bar" };
 
-			Assert.That (reset, Is.EqualTo (1), "PagesChanged wasn't raised or was raised too many times for Reset");
-			Assert.That (fail, Is.EqualTo (0), "PagesChanged was raised with an unexpected action");
+			Assert.That(reset, Is.EqualTo(1), "PagesChanged wasn't raised or was raised too many times for Reset");
+			Assert.That(fail, Is.EqualTo(0), "PagesChanged was raised with an unexpected action");
 		}
 
 		[Test]
@@ -723,19 +756,21 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			int fail = 0;
 			int reset = 0;
-			page.PagesChanged += (sender, args) => {
+			page.PagesChanged += (sender, args) =>
+			{
 				if (args.Action == NotifyCollectionChangedAction.Reset)
 					reset++;
 				else
 					fail++;
 			};
 
-			page.ItemTemplate = new DataTemplate (() => new ContentPage {
+			page.ItemTemplate = new DataTemplate(() => new ContentPage
+			{
 				Content = new Label { Text = "Content" }
 			});
 
-			Assert.That (reset, Is.EqualTo (1), "PagesChanged wasn't raised or was raised too many times for Reset");
-			Assert.That (fail, Is.EqualTo (0), "PagesChanged was raised with an unexpected action");
+			Assert.That(reset, Is.EqualTo(1), "PagesChanged wasn't raised or was raised too many times for Reset");
+			Assert.That(fail, Is.EqualTo(0), "PagesChanged was raised with an unexpected action");
 		}
 
 		[Test]
@@ -747,11 +782,11 @@ namespace Xamarin.Forms.Core.UnitTests
 			page.ItemsSource = items;
 			page.SelectedItem = items[1];
 
-			var template = new DataTemplate (typeof (ContentPage));
-			template.SetBinding (ContentPage.TitleProperty, ".");
+			var template = new DataTemplate(typeof(ContentPage));
+			template.SetBinding(ContentPage.TitleProperty, ".");
 			page.ItemTemplate = template;
 
-			Assert.That (page.SelectedItem, Is.SameAs (items[1]));
+			Assert.That(page.SelectedItem, Is.SameAs(items[1]));
 		}
 
 		[Test]
@@ -764,42 +799,45 @@ namespace Xamarin.Forms.Core.UnitTests
 			var untemplated = page.CurrentPage;
 
 			bool raised = false;
-			page.PropertyChanged += (sender, e) => {
+			page.PropertyChanged += (sender, e) =>
+			{
 				if (e.PropertyName == "CurrentPage")
 					raised = true;
 			};
 
-			var template = new DataTemplate(() => {
+			var template = new DataTemplate(() =>
+			{
 				var p = new ContentPage { Content = new Label() };
-				p.Content.SetBinding (Label.TextProperty, ".");
+				p.Content.SetBinding(Label.TextProperty, ".");
 				return p;
 			});
 
 			page.ItemTemplate = template;
 
-			Assert.That (raised, Is.True, "CurrentPage did not change with the template");
-			Assert.That (page.CurrentPage, Is.Not.SameAs (untemplated));
+			Assert.That(raised, Is.True, "CurrentPage did not change with the template");
+			Assert.That(page.CurrentPage, Is.Not.SameAs(untemplated));
 		}
 
 		[Test]
 		public void CurrentPageChanged()
 		{
 			var page = CreateMultiPage();
-			page.Children.Add (CreateContainedPage());
-			page.Children.Add (CreateContainedPage());
+			page.Children.Add(CreateContainedPage());
+			page.Children.Add(CreateContainedPage());
 
 			bool raised = false;
-			page.CurrentPageChanged += (sender, e) => {
+			page.CurrentPageChanged += (sender, e) =>
+			{
 				raised = true;
 			};
 
 			page.CurrentPage = page.Children[0];
 
-			Assert.That (raised, Is.False);
+			Assert.That(raised, Is.False);
 
 			page.CurrentPage = page.Children[1];
 
-			Assert.That (raised, Is.True);
+			Assert.That(raised, Is.True);
 		}
 	}
 }

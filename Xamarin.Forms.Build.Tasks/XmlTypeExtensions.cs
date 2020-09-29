@@ -3,14 +3,14 @@ using System.Linq;
 using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
-using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Build.Tasks
 {
 	static class XmlTypeExtensions
 	{
-		static Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>> s_xmlnsDefinitions = 
+		static Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>> s_xmlnsDefinitions =
 			new Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>>();
 		static object _nsLock = new object();
 
@@ -18,19 +18,25 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
-			if (module.AssemblyReferences?.Count > 0) {
+			if (module.AssemblyReferences?.Count > 0)
+			{
 				// Search for the attribute in the assemblies being
 				// referenced.
-				foreach (var asmRef in module.AssemblyReferences) {
+				foreach (var asmRef in module.AssemblyReferences)
+				{
 					var asmDef = module.AssemblyResolver.Resolve(asmRef);
-					foreach (var ca in asmDef.CustomAttributes) {
-						if (ca.AttributeType.FullName == typeof(XmlnsDefinitionAttribute).FullName) {
+					foreach (var ca in asmDef.CustomAttributes)
+					{
+						if (ca.AttributeType.FullName == typeof(XmlnsDefinitionAttribute).FullName)
+						{
 							var attr = GetXmlnsDefinition(ca, asmDef);
 							xmlnsDefinitions.Add(attr);
 						}
 					}
 				}
-			} else {
+			}
+			else
+			{
 				// Use standard XF assemblies
 				// (Should only happen in unit tests)
 				var requiredAssemblies = new[] {
@@ -38,7 +44,8 @@ namespace Xamarin.Forms.Build.Tasks
 					typeof(View).Assembly,
 				};
 				foreach (var assembly in requiredAssemblies)
-					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute), false)) {
+					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute), false))
+					{
 						attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
 						xmlnsDefinitions.Add(attribute);
 					}
@@ -55,10 +62,13 @@ namespace Xamarin.Forms.Build.Tasks
 				throw new BuildException(BuildExceptionCode.InvalidXaml, node as IXmlLineInfo, null, xmlType);
 
 			string prefix, name;
-			if (split.Length == 2) {
+			if (split.Length == 2)
+			{
 				prefix = split[0];
 				name = split[1];
-			} else {
+			}
+			else
+			{
 				prefix = "";
 				name = split[0];
 			}
@@ -74,17 +84,19 @@ namespace Xamarin.Forms.Build.Tasks
 		public static bool TryGetTypeReference(this XmlType xmlType, ModuleDefinition module, IXmlLineInfo xmlInfo, out TypeReference typeReference)
 		{
 			IList<XmlnsDefinitionAttribute> xmlnsDefinitions = null;
-			lock (_nsLock) {
+			lock (_nsLock)
+			{
 				if (!s_xmlnsDefinitions.TryGetValue(module, out xmlnsDefinitions))
 					xmlnsDefinitions = GatherXmlnsDefinitionAttributes(module);
 			}
 
 			var typeArguments = xmlType.TypeArguments;
 
-			TypeReference type = xmlType.GetTypeReference(xmlnsDefinitions, module.Assembly.Name.Name, (typeInfo) => {
-					string typeName = typeInfo.TypeName.Replace('+', '/'); //Nested types
-					return module.GetTypeDefinition((typeInfo.AssemblyName, typeInfo.ClrNamespace, typeName));
-				},
+			TypeReference type = xmlType.GetTypeReference(xmlnsDefinitions, module.Assembly.Name.Name, (typeInfo) =>
+			{
+				string typeName = typeInfo.TypeName.Replace('+', '/'); //Nested types
+				return module.GetTypeDefinition((typeInfo.AssemblyName, typeInfo.ClrNamespace, typeName));
+			},
 				out IList<XamlLoader.FallbackTypeInfo> potentialTypes);
 
 			if (type != null && typeArguments != null && type.HasGenericParameters)

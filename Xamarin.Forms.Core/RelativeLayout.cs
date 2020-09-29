@@ -31,7 +31,7 @@ namespace Xamarin.Forms
 			_children = new RelativeElementCollection(InternalChildren, this);
 			_children.Parent = this;
 
-			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RelativeLayout>>(() => 
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RelativeLayout>>(() =>
 				new PlatformConfigurationRegistry<RelativeLayout>(this));
 		}
 

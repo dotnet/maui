@@ -38,4 +38,3 @@ namespace Xamarin.Forms
 	}
 
 }
-

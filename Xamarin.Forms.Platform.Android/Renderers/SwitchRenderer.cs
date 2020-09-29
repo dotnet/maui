@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Platform.Android
 					var aswitch = CreateNativeControl();
 					aswitch.SetOnCheckedChangeListener(this);
 					SetNativeControl(aswitch);
-					_defaultTrackDrawable = Control.TrackDrawable;					
+					_defaultTrackDrawable = Control.TrackDrawable;
 				}
 				else
 				{

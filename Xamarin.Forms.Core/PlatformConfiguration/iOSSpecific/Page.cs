@@ -132,7 +132,7 @@
 
 		public static readonly BindableProperty ModalPresentationStyleProperty =
 			BindableProperty.Create(nameof(ModalPresentationStyle), typeof(UIModalPresentationStyle), typeof(Page), UIModalPresentationStyle.FullScreen);
-		
+
 		public static UIModalPresentationStyle ModalPresentationStyle(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetModalPresentationStyle(config.Element);
@@ -154,7 +154,7 @@
 			element.SetValue(ModalPresentationStyleProperty, value);
 		}
 
-		public static readonly BindableProperty PrefersHomeIndicatorAutoHiddenProperty = 
+		public static readonly BindableProperty PrefersHomeIndicatorAutoHiddenProperty =
 			BindableProperty.Create(nameof(PrefersHomeIndicatorAutoHidden), typeof(bool), typeof(Page), false);
 
 		public static bool GetPrefersHomeIndicatorAutoHidden(BindableObject element)

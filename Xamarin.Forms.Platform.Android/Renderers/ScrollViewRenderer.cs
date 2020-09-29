@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Android.Animation;
 using Android.Content;
 using Android.Graphics;
-using AndroidX.Core.Widget;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.Widget;
 using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 
@@ -386,10 +386,10 @@ namespace Xamarin.Forms.Platform.Android
 			while (IsLayoutRequested)
 			{
 				await Task.Delay(TimeSpan.FromMilliseconds(1));
-				
+
 				if (_disposed)
-                	return;
-				
+					return;
+
 				cycle++;
 
 				if (cycle >= 10)
@@ -533,7 +533,7 @@ namespace Xamarin.Forms.Platform.Android
 					newHorizontalScrollVisiblility = _defaultHorizontalScrollVisibility;
 				}
 
-				_hScrollView.HorizontalScrollBarEnabled = newHorizontalScrollVisiblility == ScrollBarVisibility.Always;				
+				_hScrollView.HorizontalScrollBarEnabled = newHorizontalScrollVisiblility == ScrollBarVisibility.Always;
 			}
 		}
 

@@ -13,7 +13,8 @@ namespace Xamarin.Forms.Core.UnitTests
 	{
 		internal class Logger : LogListener
 		{
-			public IReadOnlyList<string> Messages {
+			public IReadOnlyList<string> Messages
+			{
 				get { return messages; }
 			}
 
@@ -27,13 +28,15 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		internal Logger log;
 
-		protected abstract BindingBase CreateBinding (BindingMode mode = BindingMode.Default, string stringFormat = null);
+		protected abstract BindingBase CreateBinding(BindingMode mode = BindingMode.Default, string stringFormat = null);
 
 		internal class ComplexMockViewModel : MockViewModel
 		{
-			public ComplexMockViewModel Model {
+			public ComplexMockViewModel Model
+			{
 				get { return model; }
-				set {
+				set
+				{
 					if (model == value)
 						return;
 
@@ -43,23 +46,27 @@ namespace Xamarin.Forms.Core.UnitTests
 			}
 
 			internal int count;
-			public int QueryCount {
+			public int QueryCount
+			{
 				get { return count++; }
 			}
 
 			[IndexerName("Indexer")]
-			public string this [int v] {
-				get { return values [v]; }
-				set {
-					if (values [v] == value)
+			public string this[int v]
+			{
+				get { return values[v]; }
+				set
+				{
+					if (values[v] == value)
 						return;
 
-					values [v] = value;
+					values[v] = value;
 					OnPropertyChanged("Indexer[" + v + "]");
 				}
 			}
 
-			public string [] Array {
+			public string[] Array
+			{
 				get;
 				set;
 			}
@@ -74,93 +81,93 @@ namespace Xamarin.Forms.Core.UnitTests
 				return null;
 			}
 
-			string [] values = new string [5];
+			string[] values = new string[5];
 			ComplexMockViewModel model;
 		}
 
 		[Test]
 		public void CloneMode()
 		{
-			var binding = CreateBinding (BindingMode.Default);
+			var binding = CreateBinding(BindingMode.Default);
 			var clone = binding.Clone();
 
-			Assert.AreEqual (binding.Mode, clone.Mode);
+			Assert.AreEqual(binding.Mode, clone.Mode);
 		}
 
 		[Test]
 		public void StringFormat()
 		{
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
-			var binding = CreateBinding (BindingMode.Default, "Foo {0}");
+			var binding = CreateBinding(BindingMode.Default, "Foo {0}");
 
 			var vm = new MockViewModel { Text = "Bar" };
 			var bo = new MockBindable { BindingContext = vm };
-			bo.SetBinding (property, binding);
+			bo.SetBinding(property, binding);
 
-			Assert.That (bo.GetValue (property), Is.EqualTo ("Foo Bar"));
+			Assert.That(bo.GetValue(property), Is.EqualTo("Foo Bar"));
 		}
 
 		[Test]
 		public void StringFormatOnUpdate()
 		{
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
-			var binding = CreateBinding (BindingMode.Default, "Foo {0}");
+			var binding = CreateBinding(BindingMode.Default, "Foo {0}");
 
 			var vm = new MockViewModel { Text = "Bar" };
 			var bo = new MockBindable { BindingContext = vm };
-			bo.SetBinding (property, binding);
+			bo.SetBinding(property, binding);
 
 			vm.Text = "Baz";
 
-			Assert.That (bo.GetValue (property), Is.EqualTo ("Foo Baz"));
+			Assert.That(bo.GetValue(property), Is.EqualTo("Foo Baz"));
 		}
 
 		[Test]
-		[Description ("StringFormat should not be applied to OneWayToSource bindings")]
+		[Description("StringFormat should not be applied to OneWayToSource bindings")]
 		public void StringFormatOneWayToSource()
 		{
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
-			var binding = CreateBinding (BindingMode.OneWayToSource, "Foo {0}");
+			var binding = CreateBinding(BindingMode.OneWayToSource, "Foo {0}");
 
 			var vm = new MockViewModel { Text = "Bar" };
 			var bo = new MockBindable { BindingContext = vm };
-			bo.SetBinding (property, binding);
+			bo.SetBinding(property, binding);
 
-			bo.SetValue (property, "Bar");
+			bo.SetValue(property, "Bar");
 
-			Assert.That (vm.Text, Is.EqualTo ("Bar"));
+			Assert.That(vm.Text, Is.EqualTo("Bar"));
 		}
 
 		[Test]
-		[Description ("StringFormat should only be applied from from source in TwoWay bindings")]
+		[Description("StringFormat should only be applied from from source in TwoWay bindings")]
 		public void StringFormatTwoWay()
 		{
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
-			var binding = CreateBinding (BindingMode.TwoWay, "Foo {0}");
+			var binding = CreateBinding(BindingMode.TwoWay, "Foo {0}");
 
 			var vm = new MockViewModel { Text = "Bar" };
 			var bo = new MockBindable { BindingContext = vm };
-			bo.SetBinding (property, binding);
+			bo.SetBinding(property, binding);
 
-			bo.SetValue (property, "Baz");
+			bo.SetValue(property, "Baz");
 
-			Assert.That (vm.Text, Is.EqualTo ("Baz"));
-			Assert.That (bo.GetValue (property), Is.EqualTo ("Foo Baz"));
+			Assert.That(vm.Text, Is.EqualTo("Baz"));
+			Assert.That(bo.GetValue(property), Is.EqualTo("Foo Baz"));
 		}
 
 		[Test]
-		[Description ("You should get an exception when trying to change a binding after it's been applied")]
+		[Description("You should get an exception when trying to change a binding after it's been applied")]
 		public void ChangeAfterApply()
 		{
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
-			var binding = CreateBinding (BindingMode.OneWay);
+			var binding = CreateBinding(BindingMode.OneWay);
 
 			var vm = new MockViewModel { Text = "Bar" };
 			var bo = new MockBindable { BindingContext = vm };
-			bo.SetBinding (property, binding);
+			bo.SetBinding(property, binding);
 
-			Assert.That (() => binding.Mode = BindingMode.OneWayToSource, Throws.InvalidOperationException);
-			Assert.That (() => binding.StringFormat = "{0}", Throws.InvalidOperationException);
+			Assert.That(() => binding.Mode = BindingMode.OneWayToSource, Throws.InvalidOperationException);
+			Assert.That(() => binding.StringFormat = "{0}", Throws.InvalidOperationException);
 		}
 
 		[TestCase("en-US"), TestCase("tr-TR")]
@@ -171,11 +178,11 @@ namespace Xamarin.Forms.Core.UnitTests
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
 			var binding = new Binding("Value", stringFormat: "{0:P2}");
 
-			var vm = new  { Value = 0.95d };
+			var vm = new { Value = 0.95d };
 			var bo = new MockBindable { BindingContext = vm };
 			bo.SetBinding(property, binding);
 
-			Assert.That(bo.GetValue(property), Is.EqualTo(string.Format(new System.Globalization.CultureInfo(culture),"{0:P2}",.95d))); //%95,00 or 95.00%
+			Assert.That(bo.GetValue(property), Is.EqualTo(string.Format(new System.Globalization.CultureInfo(culture), "{0:P2}", .95d))); //%95,00 or 95.00%
 		}
 
 		[Test]
@@ -204,13 +211,15 @@ namespace Xamarin.Forms.Core.UnitTests
 			[Values(true, false)] bool isDefault)
 		{
 			const string value = "Foo";
-			var viewmodel = new MockViewModel {
+			var viewmodel = new MockViewModel
+			{
 				Text = value
 			};
 
 			BindingMode propertyDefault = BindingMode.OneWay;
 			BindingMode bindingMode = BindingMode.OneWay;
-			if (isDefault) {
+			if (isDefault)
+			{
 				propertyDefault = BindingMode.OneWay;
 				bindingMode = BindingMode.Default;
 			}
@@ -219,10 +228,13 @@ namespace Xamarin.Forms.Core.UnitTests
 			var binding = CreateBinding(bindingMode);
 
 			var bindable = new MockBindable();
-			if (setContextFirst) {
+			if (setContextFirst)
+			{
 				bindable.BindingContext = viewmodel;
 				bindable.SetBinding(property, binding);
-			} else {
+			}
+			else
+			{
 				bindable.SetBinding(property, binding);
 				bindable.BindingContext = viewmodel;
 			}
@@ -245,7 +257,8 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			BindingMode propertyDefault = BindingMode.OneWay;
 			BindingMode bindingMode = BindingMode.OneWayToSource;
-			if (isDefault) {
+			if (isDefault)
+			{
 				propertyDefault = BindingMode.OneWayToSource;
 				bindingMode = BindingMode.Default;
 			}
@@ -254,10 +267,13 @@ namespace Xamarin.Forms.Core.UnitTests
 			var binding = CreateBinding(bindingMode);
 
 			var bindable = new MockBindable();
-			if (setContextFirst) {
+			if (setContextFirst)
+			{
 				bindable.BindingContext = viewmodel;
 				bindable.SetBinding(property, binding);
-			} else {
+			}
+			else
+			{
 				bindable.SetBinding(property, binding);
 				bindable.BindingContext = viewmodel;
 			}
@@ -276,13 +292,15 @@ namespace Xamarin.Forms.Core.UnitTests
 			[Values(true, false)] bool isDefault)
 		{
 			const string value = "Foo";
-			var viewmodel = new MockViewModel {
+			var viewmodel = new MockViewModel
+			{
 				Text = value
 			};
 
 			BindingMode propertyDefault = BindingMode.OneWay;
 			BindingMode bindingMode = BindingMode.TwoWay;
-			if (isDefault) {
+			if (isDefault)
+			{
 				propertyDefault = BindingMode.TwoWay;
 				bindingMode = BindingMode.Default;
 			}
@@ -291,10 +309,13 @@ namespace Xamarin.Forms.Core.UnitTests
 			var binding = CreateBinding(bindingMode);
 
 			var bindable = new MockBindable();
-			if (setContextFirst) {
+			if (setContextFirst)
+			{
 				bindable.BindingContext = viewmodel;
 				bindable.SetBinding(property, binding);
-			} else {
+			}
+			else
+			{
 				bindable.SetBinding(property, binding);
 				bindable.BindingContext = viewmodel;
 			}
@@ -309,16 +330,18 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		[Test, Category("[Binding] Update Value")]
 		public void ValueUpdatedWithSimplePathOnOneWayBinding(
-			[Values(true, false)]bool isDefault)
+			[Values(true, false)] bool isDefault)
 		{
 			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
+			var viewmodel = new MockViewModel
+			{
 				Text = "Foo"
 			};
 
 			BindingMode propertyDefault = BindingMode.OneWay;
 			BindingMode bindingMode = BindingMode.OneWay;
-			if (isDefault) {
+			if (isDefault)
+			{
 				propertyDefault = BindingMode.OneWay;
 				bindingMode = BindingMode.Default;
 			}
@@ -341,17 +364,19 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		[Test, Category("[Binding] Update Value")]
 		public void ValueUpdatedWithSimplePathOnOneWayToSourceBinding(
-			[Values(true, false)]bool isDefault)
+			[Values(true, false)] bool isDefault)
 
 		{
 			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
+			var viewmodel = new MockViewModel
+			{
 				Text = "Foo"
 			};
 
 			BindingMode propertyDefault = BindingMode.OneWay;
 			BindingMode bindingMode = BindingMode.OneWayToSource;
-			if (isDefault) {
+			if (isDefault)
+			{
 				propertyDefault = BindingMode.OneWayToSource;
 				bindingMode = BindingMode.Default;
 			}
@@ -380,16 +405,18 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		[Test, Category("[Binding] Update Value")]
 		public void ValueUpdatedWithSimplePathOnTwoWayBinding(
-			[Values(true, false)]bool isDefault)
+			[Values(true, false)] bool isDefault)
 		{
 			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
+			var viewmodel = new MockViewModel
+			{
 				Text = "Foo"
 			};
 
 			BindingMode propertyDefault = BindingMode.OneWay;
 			BindingMode bindingMode = BindingMode.TwoWay;
-			if (isDefault) {
+			if (isDefault)
+			{
 				propertyDefault = BindingMode.TwoWay;
 				bindingMode = BindingMode.Default;
 			}
@@ -423,13 +450,15 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ValueUpdatedWithOldContextDoesNotUpdateWithOneWayBinding(bool isDefault)
 		{
 			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
+			var viewmodel = new MockViewModel
+			{
 				Text = "Foo"
 			};
 
 			BindingMode propertyDefault = BindingMode.OneWay;
 			BindingMode bindingMode = BindingMode.OneWay;
-			if (isDefault) {
+			if (isDefault)
+			{
 				propertyDefault = BindingMode.OneWay;
 				bindingMode = BindingMode.Default;
 			}
@@ -456,13 +485,15 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ValueUpdatedWithOldContextDoesNotUpdateWithTwoWayBinding(bool isDefault)
 		{
 			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
+			var viewmodel = new MockViewModel
+			{
 				Text = "Foo"
 			};
 
 			BindingMode propertyDefault = BindingMode.OneWay;
 			BindingMode bindingMode = BindingMode.TwoWay;
-			if (isDefault) {
+			if (isDefault)
+			{
 				propertyDefault = BindingMode.TwoWay;
 				bindingMode = BindingMode.Default;
 			}
@@ -495,13 +526,15 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ValueUpdatedWithOldContextDoesNotUpdateWithOneWayToSourceBinding(bool isDefault)
 		{
 			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
+			var viewmodel = new MockViewModel
+			{
 				Text = "Foo"
 			};
 
 			BindingMode propertyDefault = BindingMode.OneWay;
 			BindingMode bindingMode = BindingMode.OneWayToSource;
-			if (isDefault) {
+			if (isDefault)
+			{
 				propertyDefault = BindingMode.OneWayToSource;
 				bindingMode = BindingMode.Default;
 			}
@@ -527,7 +560,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void BindingStaysOnUpdateValueFromBinding()
 		{
 			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
+			var viewmodel = new MockViewModel
+			{
 				Text = "Foo"
 			};
 
@@ -554,7 +588,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var binding = new Binding("Text", BindingMode.OneWayToSource);
 
-			MockBindable bindable = new MockBindable {
+			MockBindable bindable = new MockBindable
+			{
 				BindingContext = new MockViewModel()
 			};
 			bindable.SetBinding(MockBindable.TextProperty, binding);
@@ -575,8 +610,10 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			int i = 0;
 			Action create = null;
-			create = () => {
-				if (i++ < 1024) {
+			create = () =>
+			{
+				if (i++ < 1024)
+				{
 					create();
 					return;
 				}
@@ -631,45 +668,45 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void EnableCollectionSynchronizationInvalid()
 		{
-			Assert.That (() => BindingBase.EnableCollectionSynchronization (null, new object(),
-				(collection, context, method, access) => { }), Throws.InstanceOf<ArgumentNullException>());
-			Assert.That (() => BindingBase.EnableCollectionSynchronization (new string[0], new object(),
-				null), Throws.InstanceOf<ArgumentNullException>());
-			Assert.That (() => BindingBase.EnableCollectionSynchronization (new string[0], null,
-				(collection, context, method, access) => { }), Throws.Nothing);
+			Assert.That(() => BindingBase.EnableCollectionSynchronization(null, new object(),
+			   (collection, context, method, access) => { }), Throws.InstanceOf<ArgumentNullException>());
+			Assert.That(() => BindingBase.EnableCollectionSynchronization(new string[0], new object(),
+			   null), Throws.InstanceOf<ArgumentNullException>());
+			Assert.That(() => BindingBase.EnableCollectionSynchronization(new string[0], null,
+			   (collection, context, method, access) => { }), Throws.Nothing);
 		}
 
 		[Test]
 		public void EnableCollectionSynchronization()
 		{
-			string[] stuff = new[] {"foo", "bar"};
+			string[] stuff = new[] { "foo", "bar" };
 			object context = new object();
 			CollectionSynchronizationCallback callback = (collection, o, method, access) => { };
 
-			BindingBase.EnableCollectionSynchronization (stuff, context, callback);
+			BindingBase.EnableCollectionSynchronization(stuff, context, callback);
 
 			CollectionSynchronizationContext syncContext;
-			Assert.IsTrue (BindingBase.TryGetSynchronizedCollection (stuff, out syncContext));
-			Assert.That (syncContext, Is.Not.Null);
-			Assert.AreSame (syncContext.Callback, callback);
-			Assert.That (syncContext.ContextReference, Is.Not.Null);
-			Assert.That (syncContext.ContextReference.Target, Is.SameAs (context));
+			Assert.IsTrue(BindingBase.TryGetSynchronizedCollection(stuff, out syncContext));
+			Assert.That(syncContext, Is.Not.Null);
+			Assert.AreSame(syncContext.Callback, callback);
+			Assert.That(syncContext.ContextReference, Is.Not.Null);
+			Assert.That(syncContext.ContextReference.Target, Is.SameAs(context));
 		}
 
 		[Test]
 		public void DisableCollectionSynchronization()
 		{
-			string[] stuff = new[] {"foo", "bar"};
+			string[] stuff = new[] { "foo", "bar" };
 			object context = new object();
 			CollectionSynchronizationCallback callback = (collection, o, method, access) => { };
 
-			BindingBase.EnableCollectionSynchronization (stuff, context, callback);
+			BindingBase.EnableCollectionSynchronization(stuff, context, callback);
 
-			BindingBase.DisableCollectionSynchronization (stuff);
+			BindingBase.DisableCollectionSynchronization(stuff);
 
 			CollectionSynchronizationContext syncContext;
-			Assert.IsFalse (BindingBase.TryGetSynchronizedCollection (stuff, out syncContext));
-			Assert.IsNull (syncContext);
+			Assert.IsFalse(BindingBase.TryGetSynchronizedCollection(stuff, out syncContext));
+			Assert.IsNull(syncContext);
 		}
 
 		[Test]
@@ -679,19 +716,21 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			int i = 0;
 			Action create = null;
-			create = () => {
-				if (i++ < 1024) {
+			create = () =>
+			{
+				if (i++ < 1024)
+				{
 					create();
 					return;
 				}
 
-				string[] collection = new[] {"foo", "bar"};
-				weakCollection = new WeakReference (collection);
+				string[] collection = new[] { "foo", "bar" };
+				weakCollection = new WeakReference(collection);
 
 				object context = new object();
-				weakContext = new WeakReference (context);
+				weakContext = new WeakReference(context);
 
-				BindingBase.EnableCollectionSynchronization (collection, context, (enumerable, o, method, access) => { });
+				BindingBase.EnableCollectionSynchronization(collection, context, (enumerable, o, method, access) => { });
 			};
 
 			create();
@@ -699,8 +738,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
-			Assert.IsFalse (weakCollection.IsAlive);
-			Assert.IsFalse (weakContext.IsAlive);
+			Assert.IsFalse(weakCollection.IsAlive);
+			Assert.IsFalse(weakContext.IsAlive);
 		}
 
 		[Test]
@@ -710,19 +749,22 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			int i = 0;
 			Action create = null;
-			create = () => {
-				if (i++ < 1024) {
+			create = () =>
+			{
+				if (i++ < 1024)
+				{
 					create();
 					return;
 				}
 
-				string[] collection = new[] {"foo", "bar"};
-				weakCollection = new WeakReference (collection);
+				string[] collection = new[] { "foo", "bar" };
+				weakCollection = new WeakReference(collection);
 
 				object context = new object();
-				weakContext = new WeakReference (context);
+				weakContext = new WeakReference(context);
 
-				BindingBase.EnableCollectionSynchronization (collection, context, (enumerable, o, method, access) => {
+				BindingBase.EnableCollectionSynchronization(collection, context, (enumerable, o, method, access) =>
+				{
 					collection[0] = "baz";
 				});
 			};
@@ -732,21 +774,21 @@ namespace Xamarin.Forms.Core.UnitTests
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
-			Assert.IsFalse (weakCollection.IsAlive);
-			Assert.IsFalse (weakContext.IsAlive);
+			Assert.IsFalse(weakCollection.IsAlive);
+			Assert.IsFalse(weakContext.IsAlive);
 		}
 
 		[Test]
 		public void DisableCollectionSynchronizationInvalid()
 		{
-			Assert.That (() => BindingBase.DisableCollectionSynchronization (null), Throws.InstanceOf<ArgumentNullException>());
+			Assert.That(() => BindingBase.DisableCollectionSynchronization(null), Throws.InstanceOf<ArgumentNullException>());
 		}
 
 		[Test]
 		public void TryGetSynchronizedCollectionInvalid()
 		{
 			CollectionSynchronizationContext context;
-			Assert.That (() => BindingBase.TryGetSynchronizedCollection (null, out context),
+			Assert.That(() => BindingBase.TryGetSynchronizedCollection(null, out context),
 				Throws.InstanceOf<ArgumentNullException>());
 		}
 

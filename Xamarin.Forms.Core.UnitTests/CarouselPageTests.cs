@@ -14,16 +14,16 @@ namespace Xamarin.Forms.Core.UnitTests
 			return new ContentPage { Content = new View() };
 		}
 
-		protected override int GetIndex (ContentPage page)
+		protected override int GetIndex(ContentPage page)
 		{
-			return CarouselPage.GetIndex (page);
+			return CarouselPage.GetIndex(page);
 		}
 
 		[Test]
 		public void TestConstructor()
 		{
 			var page = new CarouselPage();
-			Assert.That (page.Children, Is.Empty);
+			Assert.That(page.Children, Is.Empty);
 		}
 	}
 }

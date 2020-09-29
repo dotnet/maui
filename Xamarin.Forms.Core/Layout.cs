@@ -360,7 +360,7 @@ namespace Xamarin.Forms
 			if (s_resolutionList.Count == 0)
 			{
 				return;
-			}	
+			}
 
 			IList<KeyValuePair<Layout, int>> copy = s_resolutionList;
 			s_resolutionList = new List<KeyValuePair<Layout, int>>();

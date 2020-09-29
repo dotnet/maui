@@ -1,15 +1,15 @@
 using System;
-using System.ComponentModel;
-using Android.Content;
-using Android.Webkit;
-using Android.OS;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.Internals;
-using MixedContentHandling = Android.Webkit.MixedContentHandling;
-using AWebView = Android.Webkit.WebView;
-using System.Threading.Tasks;
-using System.Net;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Net;
+using System.Threading.Tasks;
+using Android.Content;
+using Android.OS;
+using Android.Webkit;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using AWebView = Android.Webkit.WebView;
+using MixedContentHandling = Android.Webkit.MixedContentHandling;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public WebViewRenderer(Context context) : base(context)
 		{
-			AutoPackage = false;			
+			AutoPackage = false;
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use WebViewRenderer(Context) instead.")]
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_eventState = WebNavigationEvent.NewPage;
 				Control.LoadUrl(url);
-			}	
+			}
 		}
 
 		protected internal bool SendNavigatingCanceled(string url)
@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Platform.Android
 				_webChromeClient.SetContext(Context);
 				webView.SetWebChromeClient(_webChromeClient);
 
-				if(Context.IsDesignerContext())
+				if (Context.IsDesignerContext())
 				{
 					SetNativeControl(webView);
 					return;
@@ -235,7 +235,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (currentCookies != null)
 			{
-				foreach(var cookie in currentCookies.Split(';'))
+				foreach (var cookie in currentCookies.Split(';'))
 					existingCookies.SetCookies(uri, cookie);
 			}
 
@@ -359,7 +359,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_eventState = WebNavigationEvent.Back;
 				Control.GoBack();
-			}	
+			}
 
 			UpdateCanGoBackForward();
 		}
@@ -370,7 +370,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_eventState = WebNavigationEvent.Forward;
 				Control.GoForward();
-			}	
+			}
 
 			UpdateCanGoBackForward();
 		}

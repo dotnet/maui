@@ -18,7 +18,8 @@ namespace Xamarin.Forms.Xaml
 		bool IsResourceDictionary(ElementNode node);
 	}
 
-	enum TreeVisitingMode {
+	enum TreeVisitingMode
+	{
 		TopDown,
 		BottomUp
 	}

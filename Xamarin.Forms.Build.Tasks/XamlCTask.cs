@@ -45,39 +45,47 @@ namespace Xamarin.Forms.Build.Tasks
 			var skipassembly = !CompileByDefault;
 			bool success = true;
 
-			if (!File.Exists(Assembly)) {
+			if (!File.Exists(Assembly))
+			{
 				LoggingHelper.LogMessage(Normal, $"{new string(' ', 2)}Assembly file not found. Skipping XamlC.");
 				return true;
 			}
 
-			using (var fallbackResolver = DefaultAssemblyResolver == null ? new XamlCAssemblyResolver() : null) {
+			using (var fallbackResolver = DefaultAssemblyResolver == null ? new XamlCAssemblyResolver() : null)
+			{
 				var resolver = DefaultAssemblyResolver ?? fallbackResolver;
-				if (resolver is XamlCAssemblyResolver xamlCResolver) {
-					if (ReferencePath != null) {
-						var paths = ReferencePath.Select (p => IOPath.GetDirectoryName(p.Replace("//", "/"))).Distinct();
-						foreach (var searchpath in paths) {
+				if (resolver is XamlCAssemblyResolver xamlCResolver)
+				{
+					if (ReferencePath != null)
+					{
+						var paths = ReferencePath.Select(p => IOPath.GetDirectoryName(p.Replace("//", "/"))).Distinct();
+						foreach (var searchpath in paths)
+						{
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Adding searchpath {searchpath}");
 							xamlCResolver.AddSearchDirectory(searchpath);
 						}
 					}
 				}
 				else
-				LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Ignoring dependency and reference paths due to an unsupported resolver");
+					LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Ignoring dependency and reference paths due to an unsupported resolver");
 
 				var debug = DebugSymbols || (!string.IsNullOrEmpty(DebugType) && DebugType.ToLowerInvariant() != "none");
 
-				var readerParameters = new ReaderParameters {
+				var readerParameters = new ReaderParameters
+				{
 					AssemblyResolver = resolver,
 					ReadWrite = !ValidateOnly,
 					ReadSymbols = debug && !ValidateOnly, // We don't need symbols for ValidateOnly, since we won't be writing
 				};
 
-				using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(IOPath.GetFullPath(Assembly),readerParameters)) {
+				using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(IOPath.GetFullPath(Assembly), readerParameters))
+				{
 					CustomAttribute xamlcAttr;
 					if (assemblyDefinition.HasCustomAttributes &&
 						(xamlcAttr =
 							assemblyDefinition.CustomAttributes.FirstOrDefault(
-								ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null) {
+								ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null)
+					{
 						var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
 						if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
 							skipassembly = true;
@@ -85,12 +93,14 @@ namespace Xamarin.Forms.Build.Tasks
 							skipassembly = false;
 					}
 
-					foreach (var module in assemblyDefinition.Modules) {
+					foreach (var module in assemblyDefinition.Modules)
+					{
 						var skipmodule = skipassembly;
 						if (module.HasCustomAttributes &&
 							(xamlcAttr =
 								module.CustomAttributes.FirstOrDefault(
-									ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null) {
+									ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null)
+						{
 							var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
 							if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
 								skipmodule = true;
@@ -100,15 +110,18 @@ namespace Xamarin.Forms.Build.Tasks
 
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Module: {module.Name}");
 						var resourcesToPrune = new List<EmbeddedResource>();
-						foreach (var resource in module.Resources.OfType<EmbeddedResource>()) {
+						foreach (var resource in module.Resources.OfType<EmbeddedResource>())
+						{
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 4)}Resource: {resource.Name}");
 							string classname;
-							if (!resource.IsXaml(module, out classname)) {
+							if (!resource.IsXaml(module, out classname))
+							{
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}skipped.");
 								continue;
 							}
 							TypeDefinition typeDef = module.GetType(classname);
-							if (typeDef == null) {
+							if (typeDef == null)
+							{
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}no type found... skipped.");
 								continue;
 							}
@@ -116,7 +129,8 @@ namespace Xamarin.Forms.Build.Tasks
 							if (typeDef.HasCustomAttributes &&
 								(xamlcAttr =
 									typeDef.CustomAttributes.FirstOrDefault(
-										ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null) {
+										ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null)
+							{
 								var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
 								if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
 									skiptype = true;
@@ -127,13 +141,15 @@ namespace Xamarin.Forms.Build.Tasks
 							if (Type != null)
 								skiptype = !(Type == classname);
 
-							if (skiptype && !ForceCompile) {
+							if (skiptype && !ForceCompile)
+							{
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}has XamlCompilationAttribute set to Skip and not Compile... skipped.");
 								continue;
 							}
 
 							var initComp = typeDef.Methods.FirstOrDefault(md => md.Name == "InitializeComponent");
-							if (initComp == null) {
+							if (initComp == null)
+							{
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}no InitializeComponent found... skipped.");
 								continue;
 							}
@@ -170,7 +186,8 @@ namespace Xamarin.Forms.Build.Tasks
 
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Parsing Xaml");
 							var rootnode = ParseXaml(resource.GetResourceStream(), typeDef);
-							if (rootnode == null) {
+							if (rootnode == null)
+							{
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
 								continue;
 							}
@@ -180,11 +197,12 @@ namespace Xamarin.Forms.Build.Tasks
 
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Replacing {0}.InitializeComponent ()");
 							Exception e;
-							if (!TryCoreCompile(initComp, initCompRuntime, rootnode, xamlFilePath, out e)) {
+							if (!TryCoreCompile(initComp, initCompRuntime, rootnode, xamlFilePath, out e))
+							{
 								success = false;
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
 								(thrownExceptions = thrownExceptions ?? new List<Exception>()).Add(e);
-								if (e is BuildException be) 
+								if (e is BuildException be)
 									LoggingHelper.LogError("XamlC", be.Code.Code, be.HelpLink, xamlFilePath, be.XmlInfo?.LineNumber ?? 0, be.XmlInfo?.LinePosition ?? 0, 0, 0, ErrorMessages.ResourceManager.GetString(be.Code.ErrorMessageKey), be.MessageArgs);
 								else if (e is XamlParseException xpe) //shouldn't happen anymore
 									LoggingHelper.LogError("XamlC", null, xpe.HelpLink, xamlFilePath, xpe.XmlInfo.LineNumber, xpe.XmlInfo.LinePosition, 0, 0, xpe.Message);
@@ -196,14 +214,15 @@ namespace Xamarin.Forms.Build.Tasks
 								continue;
 							}
 							if (Type != null)
-							    InitCompForType = initComp;
+								InitCompForType = initComp;
 
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
 
 							if (ValidateOnly)
 								continue;
 
-							if (OptimizeIL) {
+							if (OptimizeIL)
+							{
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Optimizing IL");
 								initComp.Body.Optimize();
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
@@ -215,37 +234,46 @@ namespace Xamarin.Forms.Build.Tasks
 #pragma warning restore 0618
 							resourcesToPrune.Add(resource);
 						}
-						if (hasCompiledXamlResources) {
+						if (hasCompiledXamlResources)
+						{
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 4)}Changing the module MVID");
 							module.Mvid = Guid.NewGuid();
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}done.");
 						}
-						if (!KeepXamlResources) {
+						if (!KeepXamlResources)
+						{
 							if (resourcesToPrune.Any())
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 4)}Removing compiled xaml resources");
-							foreach (var resource in resourcesToPrune) {
+							foreach (var resource in resourcesToPrune)
+							{
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Removing {resource.Name}");
 								module.Resources.Remove(resource);
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
 							}
 						}
 					}
-					if (ValidateOnly) {
+					if (ValidateOnly)
+					{
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 0)}ValidateOnly=True. Skipping writing assembly.");
 						return success;
 					}
-					if (!hasCompiledXamlResources) {
+					if (!hasCompiledXamlResources)
+					{
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 0)}No compiled resources. Skipping writing assembly.");
 						return success;
 					}
 
 					LoggingHelper.LogMessage(Low, $"{new string(' ', 0)}Writing the assembly");
-					try {
-						assemblyDefinition.Write(new WriterParameters {
+					try
+					{
+						assemblyDefinition.Write(new WriterParameters
+						{
 							WriteSymbols = debug,
 						});
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}done.");
-					} catch (Exception e) {
+					}
+					catch (Exception e)
+					{
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}failed.");
 						LoggingHelper.LogErrorFromException(e);
 						(thrownExceptions = thrownExceptions ?? new List<Exception>()).Add(e);
@@ -259,7 +287,8 @@ namespace Xamarin.Forms.Build.Tasks
 
 		bool TryCoreCompile(MethodDefinition initComp, MethodDefinition initCompRuntime, ILRootNode rootnode, string xamlFilePath, out Exception exception)
 		{
-			try {
+			try
+			{
 				var body = new MethodBody(initComp);
 				var module = body.Method.Module;
 				body.InitLocals = true;
@@ -268,7 +297,8 @@ namespace Xamarin.Forms.Build.Tasks
 
 				il.Emit(Nop);
 
-				if (initCompRuntime != null) {
+				if (initCompRuntime != null)
+				{
 					// Generating branching code for the Previewer
 
 					//First using the ResourceLoader
@@ -318,7 +348,7 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Emit(Callvirt, module.ImportMethodReference(("mscorlib", "System", "Func`2"),
 																   methodName: "Invoke",
 																   paramCount: 1,
-																   classArguments: new[] { ("mscorlib", "System", "Type"), ("mscorlib", "System", "String")}));
+																   classArguments: new[] { ("mscorlib", "System", "Type"), ("mscorlib", "System", "String") }));
 					il.Emit(Brfalse, nop);
 					il.Emit(Ldarg_0);
 					il.Emit(Call, initCompRuntime);
@@ -326,7 +356,8 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Append(nop);
 				}
 
-				var visitorContext = new ILContext(il, body, module) {
+				var visitorContext = new ILContext(il, body, module)
+				{
 					DefineDebug = DebugSymbols || (!string.IsNullOrEmpty(DebugType) && DebugType.ToLowerInvariant() != "none"),
 					XamlFilePath = xamlFilePath
 				};
@@ -345,7 +376,9 @@ namespace Xamarin.Forms.Build.Tasks
 				initComp.Body = body;
 				exception = null;
 				return true;
-			} catch (Exception e) {
+			}
+			catch (Exception e)
+			{
 				exception = e;
 				return false;
 			}

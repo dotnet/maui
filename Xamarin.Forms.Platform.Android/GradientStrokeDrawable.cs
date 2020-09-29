@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.Android
 				float centerX = (float)center.X;
 				float centerY = (float)center.Y;
 				float radius = (float)radialGradientBrush.Radius;
-	
+
 				var gradientBrushData = radialGradientBrush.GetGradientBrushData();
 				var colors = gradientBrushData.Item1;
 				var offsets = gradientBrushData.Item2;

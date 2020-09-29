@@ -34,7 +34,7 @@ namespace Xamarin.Forms
 
 		public delegate bool ValidateValueDelegate<in TPropertyType>(BindableObject bindable, TPropertyType value);
 
-		static readonly Dictionary<Type, TypeConverter> KnownTypeConverters = new Dictionary<Type,TypeConverter>
+		static readonly Dictionary<Type, TypeConverter> KnownTypeConverters = new Dictionary<Type, TypeConverter>
 		{
 			{ typeof(Uri), new UriTypeConverter() },
 			{ typeof(Color), new ColorTypeConverter() },
@@ -327,11 +327,13 @@ namespace Xamarin.Forms
 			Type type = ReturnType;
 
 			// Dont support arbitrary IConvertible by limiting which types can use this
-			if (SimpleConvertTypes.TryGetValue(valueType, out Type[]  convertibleTo) && Array.IndexOf( convertibleTo, type) != -1) {
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, type) != -1)
+			{
 				value = Convert.ChangeType(value, type);
 				return true;
 			}
-			if (KnownTypeConverters.TryGetValue(type, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType)) {
+			if (KnownTypeConverters.TryGetValue(type, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+			{
 				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
 				return true;
 			}
@@ -339,11 +341,13 @@ namespace Xamarin.Forms
 				return true;
 
 			var cast = type.GetImplicitConversionOperator(fromType: valueType, toType: type) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: type);
-			if (cast != null) {
+			if (cast != null)
+			{
 				value = cast.Invoke(null, new[] { value });
 				return true;
 			}
-			if (KnownIValueConverters.TryGetValue(type, out IValueConverter valueConverter)) {
+			if (KnownIValueConverters.TryGetValue(type, out IValueConverter valueConverter))
+			{
 				value = valueConverter.Convert(value, type, null, CultureInfo.CurrentUICulture);
 				return true;
 			}

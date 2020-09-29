@@ -6,7 +6,7 @@ namespace Xamarin.Forms
 	[ContentProperty("Setters")]
 	public sealed class MultiTrigger : TriggerBase
 	{
-		public MultiTrigger([TypeConverter(typeof(TypeTypeConverter))] [Parameter("TargetType")] Type targetType) : base(new MultiCondition(), targetType)
+		public MultiTrigger([TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new MultiCondition(), targetType)
 		{
 		}
 

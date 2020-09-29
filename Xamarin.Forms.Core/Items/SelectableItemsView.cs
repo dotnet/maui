@@ -8,7 +8,7 @@ namespace Xamarin.Forms
 	{
 		public static readonly BindableProperty SelectionModeProperty =
 			BindableProperty.Create(nameof(SelectionMode), typeof(SelectionMode), typeof(SelectableItemsView),
-				SelectionMode.None, propertyChanged: SelectionModePropertyChanged );
+				SelectionMode.None, propertyChanged: SelectionModePropertyChanged);
 
 		public static readonly BindableProperty SelectedItemProperty =
 			BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(SelectableItemsView), default(object),
@@ -69,12 +69,12 @@ namespace Xamarin.Forms
 
 		public event EventHandler<SelectionChangedEventArgs> SelectionChanged;
 
-		public void UpdateSelectedItems(IList<object> newSelection) 
+		public void UpdateSelectedItems(IList<object> newSelection)
 		{
 			var oldSelection = new List<object>(SelectedItems);
-			
+
 			_suppressSelectionChangeNotification = true;
-			
+
 			SelectedItems.Clear();
 
 			if (newSelection?.Count > 0)
@@ -101,7 +101,7 @@ namespace Xamarin.Forms
 				return new SelectionList((SelectableItemsView)bindable);
 			}
 
-			if(value is SelectionList)
+			if (value is SelectionList)
 			{
 				return value;
 			}
@@ -131,7 +131,7 @@ namespace Xamarin.Forms
 			}
 
 			SelectionPropertyChanged(this, new SelectionChangedEventArgs(oldSelection, newSelection));
-			
+
 			OnPropertyChanged(SelectedItemsProperty.PropertyName);
 		}
 

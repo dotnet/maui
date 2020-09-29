@@ -23,9 +23,9 @@ namespace Xamarin.Forms.Build.Tasks
 			var module = targetType.Module;
 			var voidType = module.ImportReference(("mscorlib", "System", "Void"));
 			var methodAttributes = MethodAttributes.Public |
-			                       MethodAttributes.HideBySig |
-			                       MethodAttributes.SpecialName |
-			                       MethodAttributes.RTSpecialName;
+								   MethodAttributes.HideBySig |
+								   MethodAttributes.SpecialName |
+								   MethodAttributes.RTSpecialName;
 
 			var parentctor = module.ImportCtorReference(parentType, paramCount: 0) ?? module.ImportCtorReference(("mscorlib", "System", "Object"), parameterTypes: null);
 
@@ -49,7 +49,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public static IEnumerable<(MethodDefinition methodDef, TypeReference declTypeRef)> AllMethods(this TypeDefinition self)
 		{
 			TypeReference selfTypeRef = self;
-			while (self != null) {
+			while (self != null)
+			{
 				foreach (var md in self.Methods)
 					yield return (md, selfTypeRef);
 				selfTypeRef = self.BaseType;

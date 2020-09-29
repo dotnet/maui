@@ -9,7 +9,7 @@ namespace Xamarin.Forms
 
 		public StateTriggerBase()
 		{
-			
+
 		}
 
 		public bool IsActive

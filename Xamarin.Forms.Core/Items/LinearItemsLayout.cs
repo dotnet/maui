@@ -8,7 +8,7 @@ namespace Xamarin.Forms
 		{
 		}
 
-		public static readonly IItemsLayout Vertical = new LinearItemsLayout(ItemsLayoutOrientation.Vertical); 
+		public static readonly IItemsLayout Vertical = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
 		public static readonly IItemsLayout Horizontal = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
 
 		public static readonly IItemsLayout CarouselVertical = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)

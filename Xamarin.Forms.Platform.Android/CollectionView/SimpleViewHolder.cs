@@ -1,8 +1,8 @@
 ﻿using System;
 using Android.Content;
-using AndroidX.RecyclerView.Widget;
 using Android.Views;
 using Android.Widget;
+using AndroidX.RecyclerView.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.Android
 					ViewGroup.LayoutParams.MatchParent);
 				textView.LayoutParameters = layoutParams;
 			}
-			
+
 			textView.Gravity = GravityFlags.Center;
 
 			return new SimpleViewHolder(textView, null);

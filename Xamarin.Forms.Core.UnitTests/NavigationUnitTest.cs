@@ -10,17 +10,17 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class NavigationUnitTest : BaseTestFixture
 	{
 		[Test]
-		public async Task TestNavigationImplPush ()
+		public async Task TestNavigationImplPush()
 		{
-			NavigationPage nav = new NavigationPage ();
+			NavigationPage nav = new NavigationPage();
 
 			Assert.IsNull(nav.RootPage);
-			Assert.IsNull (nav.CurrentPage);
+			Assert.IsNull(nav.CurrentPage);
 
-			Label child = new Label {Text = "Label"};
-			Page childRoot = new ContentPage {Content = child};
+			Label child = new Label { Text = "Label" };
+			Page childRoot = new ContentPage { Content = child };
 
-			await nav.Navigation.PushAsync (childRoot);
+			await nav.Navigation.PushAsync(childRoot);
 
 			Assert.AreSame(childRoot, nav.RootPage);
 			Assert.AreSame(childRoot, nav.CurrentPage);
@@ -28,18 +28,18 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async Task TestNavigationImplPop ()
+		public async Task TestNavigationImplPop()
 		{
-			NavigationPage nav = new NavigationPage ();
-			
-			Label child = new Label ();
-			Page childRoot = new ContentPage {Content = child};
+			NavigationPage nav = new NavigationPage();
 
-			Label child2 = new Label ();
-			Page childRoot2 = new ContentPage {Content = child2};
-			
-			await nav.Navigation.PushAsync (childRoot);
-			await nav.Navigation.PushAsync (childRoot2);
+			Label child = new Label();
+			Page childRoot = new ContentPage { Content = child };
+
+			Label child2 = new Label();
+			Page childRoot2 = new ContentPage { Content = child2 };
+
+			await nav.Navigation.PushAsync(childRoot);
+			await nav.Navigation.PushAsync(childRoot2);
 
 			bool fired = false;
 			nav.Popped += (sender, e) => fired = true;
@@ -48,66 +48,66 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreNotSame(childRoot2, nav.RootPage);
 			Assert.AreNotSame(nav.RootPage, nav.CurrentPage);
 
-			var popped = await nav.Navigation.PopAsync ();
+			var popped = await nav.Navigation.PopAsync();
 
-			Assert.True (fired);
+			Assert.True(fired);
 			Assert.AreSame(childRoot, nav.RootPage);
 			Assert.AreSame(childRoot, nav.CurrentPage);
 			Assert.AreSame(nav.RootPage, nav.CurrentPage);
-			Assert.AreEqual (childRoot2, popped);
+			Assert.AreEqual(childRoot2, popped);
 
-			await nav.PopAsync ();
-			var last = await nav.Navigation.PopAsync ();
+			await nav.PopAsync();
+			var last = await nav.Navigation.PopAsync();
 
-			Assert.IsNull (last);
+			Assert.IsNull(last);
 			Assert.IsNotNull(nav.RootPage);
 			Assert.IsNotNull(nav.CurrentPage);
 			Assert.AreSame(nav.RootPage, nav.CurrentPage);
 		}
 
 		[Test]
-		public async Task TestPushRoot ()
+		public async Task TestPushRoot()
 		{
-			NavigationPage nav = new NavigationPage ();
+			NavigationPage nav = new NavigationPage();
 
 			Assert.IsNull(nav.RootPage);
-			Assert.IsNull (nav.CurrentPage);
+			Assert.IsNull(nav.CurrentPage);
 
-			Label child = new Label {Text = "Label"};
-			Page childRoot = new ContentPage {Content = child};
+			Label child = new Label { Text = "Label" };
+			Page childRoot = new ContentPage { Content = child };
 
-			await nav.PushAsync (childRoot);
+			await nav.PushAsync(childRoot);
 
-			Assert.AreSame (childRoot, nav.RootPage);
+			Assert.AreSame(childRoot, nav.RootPage);
 			Assert.AreSame(childRoot, nav.CurrentPage);
 			Assert.AreSame(nav.RootPage, nav.CurrentPage);
 		}
 
 		[Test]
-		public async Task TestPushEvent ()
+		public async Task TestPushEvent()
 		{
-			NavigationPage nav = new NavigationPage ();
-			
-			Label child = new Label ();
-			Page childRoot = new ContentPage {Content = child};
+			NavigationPage nav = new NavigationPage();
+
+			Label child = new Label();
+			Page childRoot = new ContentPage { Content = child };
 
 			bool fired = false;
 			nav.Pushed += (sender, e) => fired = true;
 
-			await nav.PushAsync (childRoot);
-			
-			Assert.True (fired);
+			await nav.PushAsync(childRoot);
+
+			Assert.True(fired);
 		}
 
 		[Test]
-		public async Task TestDoublePush ()
+		public async Task TestDoublePush()
 		{
-			NavigationPage nav = new NavigationPage ();
-			
-			Label child = new Label ();
-			Page childRoot = new ContentPage {Content = child};
-			
-			await nav.PushAsync (childRoot);
+			NavigationPage nav = new NavigationPage();
+
+			Label child = new Label();
+			Page childRoot = new ContentPage { Content = child };
+
+			await nav.PushAsync(childRoot);
 
 			bool fired = false;
 			nav.Pushed += (sender, e) => fired = true;
@@ -115,123 +115,125 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreSame(childRoot, nav.RootPage);
 			Assert.AreSame(childRoot, nav.CurrentPage);
 
-			await nav.PushAsync (childRoot);
-			
-			Assert.False (fired);
+			await nav.PushAsync(childRoot);
+
+			Assert.False(fired);
 			Assert.AreSame(childRoot, nav.RootPage);
 			Assert.AreSame(childRoot, nav.CurrentPage);
 			Assert.AreSame(nav.RootPage, nav.CurrentPage);
 		}
 
 		[Test]
-		public async Task TestPop ()
+		public async Task TestPop()
 		{
-			NavigationPage nav = new NavigationPage ();
-			
-			Label child = new Label ();
-			Page childRoot = new ContentPage {Content = child};
+			NavigationPage nav = new NavigationPage();
 
-			Label child2 = new Label ();
-			Page childRoot2 = new ContentPage {Content = child2};
-			
-			await nav.PushAsync (childRoot);
-			await nav.PushAsync (childRoot2);
+			Label child = new Label();
+			Page childRoot = new ContentPage { Content = child };
+
+			Label child2 = new Label();
+			Page childRoot2 = new ContentPage { Content = child2 };
+
+			await nav.PushAsync(childRoot);
+			await nav.PushAsync(childRoot2);
 
 			bool fired = false;
 			nav.Popped += (sender, e) => fired = true;
-			var popped = await nav.PopAsync ();
+			var popped = await nav.PopAsync();
 
-			Assert.True (fired);
-			Assert.AreSame (childRoot, nav.CurrentPage);
-			Assert.AreEqual (childRoot2, popped);
+			Assert.True(fired);
+			Assert.AreSame(childRoot, nav.CurrentPage);
+			Assert.AreEqual(childRoot2, popped);
 
-			await nav.PopAsync ();
-			var last = await nav.PopAsync ();
+			await nav.PopAsync();
+			var last = await nav.PopAsync();
 
-			Assert.IsNull (last);
+			Assert.IsNull(last);
 		}
 
 		[Test]
-		public void TestTint ()
+		public void TestTint()
 		{
-			var nav = new NavigationPage ();
+			var nav = new NavigationPage();
 
-			Assert.AreEqual (Color.Default, nav.Tint);
+			Assert.AreEqual(Color.Default, nav.Tint);
 
 			bool signaled = false;
-			nav.PropertyChanged += (sender, args) => {
+			nav.PropertyChanged += (sender, args) =>
+			{
 				if (args.PropertyName == "Tint")
 					signaled = true;
 			};
 
-			nav.Tint = new Color (1, 0, 0);
+			nav.Tint = new Color(1, 0, 0);
 
-			Assert.AreEqual (new Color (1, 0, 0), nav.Tint);
-			Assert.True (signaled);
+			Assert.AreEqual(new Color(1, 0, 0), nav.Tint);
+			Assert.True(signaled);
 		}
 
 		[Test]
-		public void TestTintDoubleSet ()
+		public void TestTintDoubleSet()
 		{
-			var nav = new NavigationPage ();
+			var nav = new NavigationPage();
 
 			bool signaled = false;
-			nav.PropertyChanged += (sender, args) => {
+			nav.PropertyChanged += (sender, args) =>
+			{
 				if (args.PropertyName == "Tint")
 					signaled = true;
 			};
 
 			nav.Tint = nav.Tint;
 
-			Assert.False (signaled);
+			Assert.False(signaled);
 		}
 
 		[Test]
-		public async Task TestPopToRoot ()
+		public async Task TestPopToRoot()
 		{
-			var nav = new NavigationPage ();
+			var nav = new NavigationPage();
 
 			bool signaled = false;
 			nav.PoppedToRoot += (sender, args) => signaled = true;
 
-			var root = new ContentPage {Content = new View ()};
-			var child1 = new ContentPage {Content = new View ()};
-			var child2 = new ContentPage {Content = new View ()};
+			var root = new ContentPage { Content = new View() };
+			var child1 = new ContentPage { Content = new View() };
+			var child2 = new ContentPage { Content = new View() };
 
-			await nav.PushAsync (root);
-			await nav.PushAsync (child1);
-			await nav.PushAsync (child2);
+			await nav.PushAsync(root);
+			await nav.PushAsync(child1);
+			await nav.PushAsync(child2);
 
-			nav.PopToRootAsync ();
+			nav.PopToRootAsync();
 
-			Assert.True (signaled);
-			Assert.AreSame (root, nav.RootPage);
+			Assert.True(signaled);
+			Assert.AreSame(root, nav.RootPage);
 			Assert.AreSame(root, nav.CurrentPage);
 			Assert.AreSame(nav.RootPage, nav.CurrentPage);
 		}
 
 		[Test]
-		public async Task TestPopToRootEventArgs ()
+		public async Task TestPopToRootEventArgs()
 		{
-			var nav = new NavigationPage ();
+			var nav = new NavigationPage();
 
 			List<Page> poppedChildren = null;
 			nav.PoppedToRoot += (sender, args) => poppedChildren = (args as PoppedToRootEventArgs).PoppedPages.ToList();
 
-			var root = new ContentPage {Content = new View ()};
-			var child1 = new ContentPage {Content = new View ()};
-			var child2 = new ContentPage {Content = new View ()};
+			var root = new ContentPage { Content = new View() };
+			var child1 = new ContentPage { Content = new View() };
+			var child2 = new ContentPage { Content = new View() };
 
-			await nav.PushAsync (root);
-			await nav.PushAsync (child1);
-			await nav.PushAsync (child2);
+			await nav.PushAsync(root);
+			await nav.PushAsync(child1);
+			await nav.PushAsync(child2);
 
-			await nav.PopToRootAsync ();
+			await nav.PopToRootAsync();
 
-			Assert.IsNotNull (poppedChildren);
-			Assert.AreEqual (2, poppedChildren.Count);
-			Assert.Contains (child1, poppedChildren);
-			Assert.Contains (child2, poppedChildren);
+			Assert.IsNotNull(poppedChildren);
+			Assert.AreEqual(2, poppedChildren.Count);
+			Assert.Contains(child1, poppedChildren);
+			Assert.Contains(child2, poppedChildren);
 			Assert.AreSame(root, nav.RootPage);
 			Assert.AreSame(root, nav.CurrentPage);
 			Assert.AreSame(nav.RootPage, nav.CurrentPage);
@@ -327,14 +329,14 @@ namespace Xamarin.Forms.Core.UnitTests
 
 
 		[Test]
-		public void ConstructWithRoot ()
+		public void ConstructWithRoot()
 		{
-			var root = new ContentPage ();
-			var nav = new NavigationPage (root);
+			var root = new ContentPage();
+			var nav = new NavigationPage(root);
 
 
-			Assert.AreEqual (1, ((INavigationPageController)nav).StackDepth);
-			Assert.AreEqual (root, ((IElementController)nav).LogicalChildren[0]);
+			Assert.AreEqual(1, ((INavigationPageController)nav).StackDepth);
+			Assert.AreEqual(root, ((IElementController)nav).LogicalChildren[0]);
 
 		}
 
@@ -382,44 +384,49 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async Task NavigationChangedEventArgs ()
+		public async Task NavigationChangedEventArgs()
 		{
 			var rootPage = new ContentPage { Title = "Root" };
-			var navPage = new NavigationPage (rootPage);
+			var navPage = new NavigationPage(rootPage);
 
-			var rootArg = new Page ();
+			var rootArg = new Page();
 
-			navPage.Pushed += (s, e) => {
+			navPage.Pushed += (s, e) =>
+			{
 				rootArg = e.Page;
 			};
 
-			var pushPage = new ContentPage {
+			var pushPage = new ContentPage
+			{
 				Title = "Page 2"
 			};
 
-			await navPage.PushAsync (pushPage);
+			await navPage.PushAsync(pushPage);
 
-			Assert.AreEqual (rootArg, pushPage);
+			Assert.AreEqual(rootArg, pushPage);
 
-			var secondPushPage = new ContentPage {
+			var secondPushPage = new ContentPage
+			{
 				Title = "Page 3"
 			};
 
-			await navPage.PushAsync (secondPushPage);
+			await navPage.PushAsync(secondPushPage);
 
-			Assert.AreEqual (rootArg, secondPushPage);
+			Assert.AreEqual(rootArg, secondPushPage);
 		}
 
 		[Test]
 		public async Task CurrentPageChanged()
 		{
 			var root = new ContentPage { Title = "Root" };
-			var navPage = new NavigationPage (root);
+			var navPage = new NavigationPage(root);
 
 			bool changing = false;
-			navPage.PropertyChanging += (object sender, PropertyChangingEventArgs e) => {
-				if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName) {
-					Assert.That (navPage.CurrentPage, Is.SameAs (root));
+			navPage.PropertyChanging += (object sender, PropertyChangingEventArgs e) =>
+			{
+				if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
+				{
+					Assert.That(navPage.CurrentPage, Is.SameAs(root));
 					changing = true;
 				}
 			};
@@ -427,103 +434,106 @@ namespace Xamarin.Forms.Core.UnitTests
 			var next = new ContentPage { Title = "Next" };
 
 			bool changed = false;
-			navPage.PropertyChanged += (sender, e) => {
-				if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName) {
-					Assert.That (navPage.CurrentPage, Is.SameAs (next));
+			navPage.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
+				{
+					Assert.That(navPage.CurrentPage, Is.SameAs(next));
 					changed = true;
 				}
 			};
 
-			await navPage.PushAsync (next);
+			await navPage.PushAsync(next);
 
-			Assert.That (changing, Is.True, "PropertyChanging was not raised for 'CurrentPage'");
-			Assert.That (changed, Is.True, "PropertyChanged was not raised for 'CurrentPage'");
+			Assert.That(changing, Is.True, "PropertyChanging was not raised for 'CurrentPage'");
+			Assert.That(changed, Is.True, "PropertyChanged was not raised for 'CurrentPage'");
 		}
 
 		[Test]
-		public async Task HandlesPopToRoot ()
+		public async Task HandlesPopToRoot()
 		{
 			var root = new ContentPage { Title = "Root" };
-			var navPage = new NavigationPage (root);
+			var navPage = new NavigationPage(root);
 
-			await navPage.PushAsync (new ContentPage ());
-			await navPage.PushAsync (new ContentPage ());
+			await navPage.PushAsync(new ContentPage());
+			await navPage.PushAsync(new ContentPage());
 
 			bool popped = false;
-			navPage.PoppedToRoot += (sender, args) => {
+			navPage.PoppedToRoot += (sender, args) =>
+			{
 				popped = true;
 			};
 
-			await navPage.Navigation.PopToRootAsync ();
+			await navPage.Navigation.PopToRootAsync();
 
-			Assert.True (popped);
+			Assert.True(popped);
 		}
 
 		[Test]
-		public void SendsBackButtonEventToCurrentPage ()
+		public void SendsBackButtonEventToCurrentPage()
 		{
-			var current = new BackButtonPage ();
-			var navPage = new NavigationPage (current);
+			var current = new BackButtonPage();
+			var navPage = new NavigationPage(current);
 
 			var emitted = false;
 			current.BackPressed += (sender, args) => emitted = true;
 
-			navPage.SendBackButtonPressed ();
+			navPage.SendBackButtonPressed();
 
-			Assert.True (emitted);
+			Assert.True(emitted);
 		}
 
 		[Test]
-		public void DoesNotSendBackEventToNonCurrentPage ()
+		public void DoesNotSendBackEventToNonCurrentPage()
 		{
-			var current = new BackButtonPage ();
-			var navPage = new NavigationPage (current);
-			navPage.PushAsync (new ContentPage ());
+			var current = new BackButtonPage();
+			var navPage = new NavigationPage(current);
+			navPage.PushAsync(new ContentPage());
 
 			var emitted = false;
 			current.BackPressed += (sender, args) => emitted = true;
 
-			navPage.SendBackButtonPressed ();
+			navPage.SendBackButtonPressed();
 
-			Assert.False (emitted);
+			Assert.False(emitted);
 		}
 
 		[Test]
-		public async Task NavigatesBackWhenBackButtonPressed ()
+		public async Task NavigatesBackWhenBackButtonPressed()
 		{
 			var root = new ContentPage { Title = "Root" };
-			var navPage = new NavigationPage (root);
+			var navPage = new NavigationPage(root);
 
-			await navPage.PushAsync (new ContentPage ());
+			await navPage.PushAsync(new ContentPage());
 
-			var result = navPage.SendBackButtonPressed ();
+			var result = navPage.SendBackButtonPressed();
 
-			Assert.AreEqual (root, navPage.CurrentPage);
-			Assert.True (result);
+			Assert.AreEqual(root, navPage.CurrentPage);
+			Assert.True(result);
 		}
 
 		[Test]
-		public async Task DoesNotNavigatesBackWhenBackButtonPressedIfHandled ()
+		public async Task DoesNotNavigatesBackWhenBackButtonPressedIfHandled()
 		{
 			var root = new BackButtonPage { Title = "Root" };
-			var second = new BackButtonPage () {Handle = true};
-			var navPage = new NavigationPage (root);
+			var second = new BackButtonPage() { Handle = true };
+			var navPage = new NavigationPage(root);
 
-			await navPage.PushAsync (second);
+			await navPage.PushAsync(second);
 
-			navPage.SendBackButtonPressed ();
+			navPage.SendBackButtonPressed();
 
-			Assert.AreEqual (second, navPage.CurrentPage);
+			Assert.AreEqual(second, navPage.CurrentPage);
 		}
 
 		[Test]
-		public void DoesNotHandleBackButtonWhenNoNavStack ()
+		public void DoesNotHandleBackButtonWhenNoNavStack()
 		{
 			var root = new ContentPage { Title = "Root" };
-			var navPage = new NavigationPage (root);
+			var navPage = new NavigationPage(root);
 
-			var result = navPage.SendBackButtonPressed ();
-			Assert.False (result);
+			var result = navPage.SendBackButtonPressed();
+			Assert.False(result);
 		}
 
 		[Test]
@@ -592,17 +602,17 @@ namespace Xamarin.Forms.Core.UnitTests
 			});
 		}
 
-		[Test (Description = "CurrentPage should not be set to null when you attempt to pop the last page")]
-		[Property ("Bugzilla", 28335)]
+		[Test(Description = "CurrentPage should not be set to null when you attempt to pop the last page")]
+		[Property("Bugzilla", 28335)]
 		public async Task CurrentPageNotNullPoppingRoot()
 		{
 			var root = new ContentPage { Title = "Root" };
-			var navPage = new NavigationPage (root);
-			var popped = await navPage.PopAsync ();
-			Assert.That (popped, Is.Null);
-			Assert.That (navPage.CurrentPage, Is.SameAs (root));
+			var navPage = new NavigationPage(root);
+			var popped = await navPage.PopAsync();
+			Assert.That(popped, Is.Null);
+			Assert.That(navPage.CurrentPage, Is.SameAs(root));
 		}
-		
+
 		[Test]
 		[Property("Bugzilla", 31171)]
 		public async Task ReleasesPoppedPage()
@@ -630,14 +640,14 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		public bool Handle = false;
 
-		protected override bool OnBackButtonPressed ()
+		protected override bool OnBackButtonPressed()
 		{
 			if (BackPressed != null)
-				BackPressed (this, EventArgs.Empty);
+				BackPressed(this, EventArgs.Empty);
 			return Handle;
 		}
 	}
-	
+
 	internal class PageWithFinalizer : Page
 	{
 		Action OnFinalize;

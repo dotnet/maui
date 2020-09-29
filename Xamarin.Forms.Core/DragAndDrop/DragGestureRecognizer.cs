@@ -101,7 +101,7 @@ namespace Xamarin.Forms
 				args.Data.Image = ie.Source;
 			}
 
-			if(String.IsNullOrWhiteSpace(args.Data.Text))
+			if (String.IsNullOrWhiteSpace(args.Data.Text))
 				args.Data.Text = element.GetStringValue();
 
 			return args;

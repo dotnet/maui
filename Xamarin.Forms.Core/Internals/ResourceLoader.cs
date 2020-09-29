@@ -12,9 +12,11 @@ namespace Xamarin.Forms.Internals
 		[Obsolete("You shouldn't have used this one to begin with, don't use the other one either")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		//takes a resource path, returns string content
-		public static Func<AssemblyName, string, string> ResourceProvider {
+		public static Func<AssemblyName, string, string> ResourceProvider
+		{
 			get => resourceProvider;
-			internal set {
+			internal set
+			{
 				resourceProvider = value;
 				if (value != null)
 					ResourceProvider2 = rlq => new ResourceLoadingResponse { ResourceContent = value(rlq.AssemblyName, rlq.ResourcePath) };
@@ -24,9 +26,11 @@ namespace Xamarin.Forms.Internals
 		}
 
 		static Func<ResourceLoadingQuery, ResourceLoadingResponse> _resourceProvider2;
-		public static Func<ResourceLoadingQuery, ResourceLoadingResponse> ResourceProvider2 {
+		public static Func<ResourceLoadingQuery, ResourceLoadingResponse> ResourceProvider2
+		{
 			get => _resourceProvider2;
-			internal set {
+			internal set
+			{
 				DesignMode.IsDesignModeEnabled = value != null;
 				_resourceProvider2 = value;
 			}
@@ -56,9 +60,11 @@ namespace Xamarin.Forms.Internals
 		static Action<Exception> exceptionHandler1;
 
 		[Obsolete("2 is better than 1")]
-		internal static Action<Exception> ExceptionHandler {
+		internal static Action<Exception> ExceptionHandler
+		{
 			get => exceptionHandler1;
-			set {
+			set
+			{
 				exceptionHandler1 = value;
 				ExceptionHandler2 = value != null ? ((Exception exception, string filepath) err) => exceptionHandler1(err.exception) : (Action<(Exception, string)>)null;
 			}

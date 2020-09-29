@@ -18,7 +18,7 @@ namespace Xamarin.Platform
 		public static void UpdateText(this UIButton view, NSAttributedString text)
 			=> view.SetAttributedTitle(text, UIControlState.Normal);
 
-		public static void UpdateColor(this UIButton button, Color color, Color defaultColor) => 
+		public static void UpdateColor(this UIButton button, Color color, Color defaultColor) =>
 			button.SetTitleColor(color.Cleanse(defaultColor).ToNative(), UIControlState.Normal);
 
 		public static void UpdateColor(this UIButton nativeButton, IButton button, Color defaultColor) =>

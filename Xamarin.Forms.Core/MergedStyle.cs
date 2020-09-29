@@ -59,13 +59,15 @@ namespace Xamarin.Forms
 
 				_styleClass = value;
 
-				if (_styleClass != null) {
-					_classStyleProperties = new List<BindableProperty> ();
-					foreach (var styleClass in _styleClass) {
-						var classStyleProperty = BindableProperty.Create ("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
+				if (_styleClass != null)
+				{
+					_classStyleProperties = new List<BindableProperty>();
+					foreach (var styleClass in _styleClass)
+					{
+						var classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
 							propertyChanged: (bindable, oldvalue, newvalue) => OnClassStyleChanged());
-						_classStyleProperties.Add (classStyleProperty);
-						Target.OnSetDynamicResource (classStyleProperty, Forms.Style.StyleClassPrefix + styleClass);
+						_classStyleProperties.Add(classStyleProperty);
+						Target.OnSetDynamicResource(classStyleProperty, Forms.Style.StyleClassPrefix + styleClass);
 					}
 
 					//reapply the css stylesheets
@@ -111,13 +113,13 @@ namespace Xamarin.Forms
 
 		void OnClassStyleChanged()
 		{
-			ClassStyles = _classStyleProperties.Select (p => (Target.GetValue (p) as IList<Style>)?.FirstOrDefault (s => s.CanBeAppliedTo (TargetType))).ToList ();
+			ClassStyles = _classStyleProperties.Select(p => (Target.GetValue(p) as IList<Style>)?.FirstOrDefault(s => s.CanBeAppliedTo(TargetType))).ToList();
 		}
 
 		void OnImplicitStyleChanged()
 		{
 			var first = true;
-			
+
 			foreach (BindableProperty implicitStyleProperty in _implicitStyles)
 			{
 				var implicitStyle = (Style)Target.GetValue(implicitStyleProperty);
@@ -138,7 +140,8 @@ namespace Xamarin.Forms
 		void RegisterImplicitStyles()
 		{
 			Type type = TargetType;
-			while (true) {
+			while (true)
+			{
 				BindableProperty implicitStyleProperty = BindableProperty.Create("ImplicitStyle", typeof(Style), typeof(NavigableElement), default(Style),
 						propertyChanged: (bindable, oldvalue, newvalue) => OnImplicitStyleChanged());
 				_implicitStyles.Add(implicitStyleProperty);

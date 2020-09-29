@@ -16,17 +16,17 @@ namespace Xamarin.Forms.Core.UnitTests
 			return new ContentPage { Content = new View() };
 		}
 
-		protected override int GetIndex (Page page)
+		protected override int GetIndex(Page page)
 		{
-			return TabbedPage.GetIndex (page);
+			return TabbedPage.GetIndex(page);
 		}
 
 		[Test]
-		public void TestConstructor ()
+		public void TestConstructor()
 		{
-			TabbedPage page = new TabbedPage ();
+			TabbedPage page = new TabbedPage();
 
-			Assert.That (page.Children, Is.Empty);
+			Assert.That(page.Children, Is.Empty);
 		}
 	}
 }

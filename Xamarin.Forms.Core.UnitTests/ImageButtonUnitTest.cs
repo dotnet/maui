@@ -1,8 +1,8 @@
 using System;
-using NUnit.Framework;
 using System.IO;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
 {

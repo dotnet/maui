@@ -56,6 +56,6 @@ namespace Xamarin.Forms
 			{
 				return _templatedParent ?? (_templatedParent = new RelativeBindingSource(RelativeBindingSourceMode.TemplatedParent));
 			}
-		}		
+		}
 	}
 }

@@ -7,148 +7,150 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class CommandTests : BaseTestFixture
 	{
 		[Test]
-		public void Constructor ()
+		public void Constructor()
 		{
-			var cmd = new Command (() => { });
-			Assert.True (cmd.CanExecute (null));
+			var cmd = new Command(() => { });
+			Assert.True(cmd.CanExecute(null));
 		}
 
 		[Test]
-		public void ThrowsWithNullConstructor ()
+		public void ThrowsWithNullConstructor()
 		{
-			Assert.Throws<ArgumentNullException> (() => new Command ((Action)null));
+			Assert.Throws<ArgumentNullException>(() => new Command((Action)null));
 		}
 
 		[Test]
-		public void ThrowsWithNullParameterizedConstructor ()
+		public void ThrowsWithNullParameterizedConstructor()
 		{
-			Assert.Throws<ArgumentNullException> (() => new Command ((Action<object>)null));
+			Assert.Throws<ArgumentNullException>(() => new Command((Action<object>)null));
 		}
 
 		[Test]
-		public void ThrowsWithNullCanExecute ()
+		public void ThrowsWithNullCanExecute()
 		{
-			Assert.Throws<ArgumentNullException> (() => new Command (() => { }, null));
+			Assert.Throws<ArgumentNullException>(() => new Command(() => { }, null));
 		}
 
 		[Test]
-		public void ThrowsWithNullParameterizedCanExecute ()
+		public void ThrowsWithNullParameterizedCanExecute()
 		{
-			Assert.Throws<ArgumentNullException> (() => new Command (o => { }, null));
+			Assert.Throws<ArgumentNullException>(() => new Command(o => { }, null));
 		}
 
 		[Test]
-		public void ThrowsWithNullExecuteValidCanExecute ()
+		public void ThrowsWithNullExecuteValidCanExecute()
 		{
-			Assert.Throws<ArgumentNullException> (() => new Command (null, () => true));
+			Assert.Throws<ArgumentNullException>(() => new Command(null, () => true));
 		}
 
 		[Test]
-		public void Execute ()
+		public void Execute()
 		{
 			bool executed = false;
-			var cmd = new Command (() => executed = true);
+			var cmd = new Command(() => executed = true);
 
-			cmd.Execute (null);
-			Assert.True (executed);
+			cmd.Execute(null);
+			Assert.True(executed);
 		}
 
 		[Test]
-		public void ExecuteParameterized ()
+		public void ExecuteParameterized()
 		{
 			object executed = null;
-			var cmd = new Command (o => executed = o);
+			var cmd = new Command(o => executed = o);
 
-			var expected = new object ();
-			cmd.Execute (expected);
+			var expected = new object();
+			cmd.Execute(expected);
 
-			Assert.AreEqual (expected, executed);
+			Assert.AreEqual(expected, executed);
 		}
 
 		[Test]
-		public void ExecuteWithCanExecute ()
+		public void ExecuteWithCanExecute()
 		{
 			bool executed = false;
-			var cmd = new Command (() => executed = true, () => true);
+			var cmd = new Command(() => executed = true, () => true);
 
-			cmd.Execute (null);
-			Assert.True (executed);
+			cmd.Execute(null);
+			Assert.True(executed);
 		}
 
 		[Test]
-		public void CanExecute ([Values (true, false)] bool expected)
+		public void CanExecute([Values(true, false)] bool expected)
 		{
 			bool canExecuteRan = false;
-			var cmd = new Command (() => { }, () => {
+			var cmd = new Command(() => { }, () =>
+			{
 				canExecuteRan = true;
 				return expected;
 			});
 
-			Assert.AreEqual(expected, cmd.CanExecute (null));
-			Assert.True (canExecuteRan);
+			Assert.AreEqual(expected, cmd.CanExecute(null));
+			Assert.True(canExecuteRan);
 		}
 
 		[Test]
-		public void ChangeCanExecute ()
+		public void ChangeCanExecute()
 		{
 			bool signaled = false;
-			var cmd = new Command (() => { });
+			var cmd = new Command(() => { });
 
 			cmd.CanExecuteChanged += (sender, args) => signaled = true;
 
-			cmd.ChangeCanExecute ();
-			Assert.True (signaled);
+			cmd.ChangeCanExecute();
+			Assert.True(signaled);
 		}
 
 		[Test]
-		public void GenericThrowsWithNullExecute ()
+		public void GenericThrowsWithNullExecute()
 		{
-			Assert.Throws<ArgumentNullException> (() => new Command<string> (null));
+			Assert.Throws<ArgumentNullException>(() => new Command<string>(null));
 		}
 
 		[Test]
-		public void GenericThrowsWithNullExecuteAndCanExecuteValid ()
+		public void GenericThrowsWithNullExecuteAndCanExecuteValid()
 		{
-			Assert.Throws<ArgumentNullException> (() => new Command<string> (null, s => true));
+			Assert.Throws<ArgumentNullException>(() => new Command<string>(null, s => true));
 		}
 
 		[Test]
-		public void GenericThrowsWithValidExecuteAndCanExecuteNull ()
+		public void GenericThrowsWithValidExecuteAndCanExecuteNull()
 		{
-			Assert.Throws<ArgumentNullException> (() => new Command<string> (s => { }, null));
+			Assert.Throws<ArgumentNullException>(() => new Command<string>(s => { }, null));
 		}
 
 		[Test]
-		public void GenericExecute ()
-		{
-			string result = null;
-			var cmd = new Command<string> (s => result = s);
-
-			cmd.Execute ("Foo");
-			Assert.AreEqual ("Foo", result);
-		}
-
-		[Test]
-		public void GenericExecuteWithCanExecute ()
+		public void GenericExecute()
 		{
 			string result = null;
-			var cmd = new Command<string> (s => result = s, s => true);
+			var cmd = new Command<string>(s => result = s);
 
-			cmd.Execute ("Foo");
-			Assert.AreEqual ("Foo", result);
+			cmd.Execute("Foo");
+			Assert.AreEqual("Foo", result);
 		}
 
 		[Test]
-		public void GenericCanExecute ([Values (true, false)] bool expected)
+		public void GenericExecuteWithCanExecute()
 		{
 			string result = null;
-			var cmd = new Command<string> (s => { }, s => {
+			var cmd = new Command<string>(s => result = s, s => true);
+
+			cmd.Execute("Foo");
+			Assert.AreEqual("Foo", result);
+		}
+
+		[Test]
+		public void GenericCanExecute([Values(true, false)] bool expected)
+		{
+			string result = null;
+			var cmd = new Command<string>(s => { }, s =>
+			{
 				result = s;
 				return expected;
 			});
 
-			Assert.AreEqual (expected, cmd.CanExecute ("Foo"));
-			Assert.AreEqual ("Foo", result);
+			Assert.AreEqual(expected, cmd.CanExecute("Foo"));
+			Assert.AreEqual("Foo", result);
 		}
 
 		class FakeParentContext

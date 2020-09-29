@@ -21,7 +21,7 @@ namespace Xamarin.Platform
 			appCompatButton.UpdateColor(button.Color, appCompatButton.TextColors);
 
 		public static void UpdateColor(this AppCompatButton appCompatButton, IButton button, Color defaultColor) =>
-			appCompatButton.SetTextColor(button.Color.Cleanse(defaultColor).ToNative());		
+			appCompatButton.SetTextColor(button.Color.Cleanse(defaultColor).ToNative());
 
 		public static void UpdateText(this AppCompatButton appCompatButton, IButton button) =>
 			appCompatButton.Text = button.Text;

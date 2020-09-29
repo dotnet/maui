@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Markup
 		{
 			VerifyExperimental();
 			bindable.SetBinding(
-				targetProperty, 
+				targetProperty,
 				new Binding(path, mode, converter, converterParameter, stringFormat, source)
 				{
 					TargetNullValue = targetNullValue,

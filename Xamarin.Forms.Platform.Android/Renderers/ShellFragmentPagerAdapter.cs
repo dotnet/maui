@@ -1,7 +1,7 @@
-﻿using Android.OS;
+﻿using System.Collections.Specialized;
+using Android.OS;
 using AndroidX.Fragment.App;
 using Java.Lang;
-using System.Collections.Specialized;
 using Xamarin.Forms.Platform.Android.AppCompat;
 
 namespace Xamarin.Forms.Platform.Android
@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Android
 		bool _disposed;
 		ShellSection _shellSection;
 		IShellSectionController SectionController => (IShellSectionController)_shellSection;
-		
+
 		public ShellFragmentPagerAdapter(ShellSection shellSection, FragmentManager fragmentManager) : base(fragmentManager, FragmentStatePagerAdapter.BehaviorResumeOnlyCurrentFragment)
 		{
 			_shellSection = shellSection;

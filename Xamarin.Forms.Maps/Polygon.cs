@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Maps
 		public Color FillColor
 		{
 			get => (Color)GetValue(FillColorProperty);
-			set => SetValue(FillColorProperty, value); 
+			set => SetValue(FillColorProperty, value);
 		}
 
 		public IList<Position> Geopath { get; }

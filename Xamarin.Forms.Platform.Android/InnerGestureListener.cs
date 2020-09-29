@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.Android
 		PanGestureHandler _panGestureHandler;
 		SwipeGestureHandler _swipeGestureHandler;
 		DragAndDropGestureHandler _dragAndDropGestureHandler;
-		bool _isScrolling;		
+		bool _isScrolling;
 		float _lastX;
 		float _lastY;
 		bool _disposed;
@@ -27,8 +27,8 @@ namespace Xamarin.Forms.Platform.Android
 		Func<int, IEnumerable<TapGestureRecognizer>> _tapGestureRecognizers;
 
 		public InnerGestureListener(
-			TapGestureHandler tapGestureHandler, 
-			PanGestureHandler panGestureHandler, 
+			TapGestureHandler tapGestureHandler,
+			PanGestureHandler panGestureHandler,
 			SwipeGestureHandler swipeGestureHandler,
 			DragAndDropGestureHandler dragAndDropGestureHandler)
 		{
@@ -218,7 +218,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			return _scrollDelegate(totalX, totalY, e2.PointerCount) || _swipeDelegate(totalX, totalY);
 		}
-			
+
 		internal void EndScrolling()
 		{
 			if (_isScrolling && _scrollCompleteDelegate != null)

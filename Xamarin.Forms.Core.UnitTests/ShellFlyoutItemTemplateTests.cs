@@ -209,7 +209,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			item.Items.Add(shellContent1);
 			item.Items.Add(shellContent2);
 			shell.Items.Add(item);
-			
+
 			var vm = new TestShellViewModel();
 			vm.SubViewModel = new TestShellViewModel() { Text = "Item1" };
 			vm.SubViewModel2 = new TestShellViewModel() { Text = "Item2" };
@@ -247,7 +247,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			if (content is BindableObject bindableContent)
 			{
-				if(bo is MenuItem mi)
+				if (bo is MenuItem mi)
 					bindableContent.BindingContext = mi.Parent;
 				else
 					bindableContent.BindingContext = bo;

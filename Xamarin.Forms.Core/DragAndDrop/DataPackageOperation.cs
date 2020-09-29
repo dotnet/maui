@@ -7,7 +7,7 @@ namespace Xamarin.Forms
 	[Flags]
 	public enum DataPackageOperation
 	{
-		None = 0, 
+		None = 0,
 		Copy = 1
 	}
 }

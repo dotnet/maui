@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows.Input;
-using Xamarin.Forms.Platform;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Collections.ObjectModel;
+using System.Windows.Input;
+using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {

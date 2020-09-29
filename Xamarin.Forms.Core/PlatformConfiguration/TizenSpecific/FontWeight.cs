@@ -12,7 +12,7 @@ namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 		public const string SemiBold = "SemiBold";
 		public const string Bold = "Bold";
 		public const string UltraBold = "UltraBold";
-		public const string Black= "Black";
-		public const string ExtraBlack= "ExtraBlack";
+		public const string Black = "Black";
+		public const string ExtraBlack = "ExtraBlack";
 	}
 }

@@ -75,9 +75,11 @@ namespace Xamarin.Forms.Xaml
 			if (expression.StartsWith("{}", StringComparison.Ordinal))
 				return new ValueNode(expression.Substring(2), null);
 
-			if (expression[expression.Length - 1] != '}') {
+			if (expression[expression.Length - 1] != '}')
+			{
 				var ex = new XamlParseException("Expression must end with '}'", xmlLineInfo);
-				if (Context.ExceptionHandler != null) {
+				if (Context.ExceptionHandler != null)
+				{
 					Context.ExceptionHandler(ex);
 					return null;
 				}
@@ -88,18 +90,20 @@ namespace Xamarin.Forms.Xaml
 				throw new Exception();
 
 			expression = expression.Substring(len).TrimStart();
-			if (expression.Length == 0) {
+			if (expression.Length == 0)
+			{
 				var ex = new XamlParseException("Expression did not end in '}'", xmlLineInfo);
-				if (Context.ExceptionHandler != null) {
+				if (Context.ExceptionHandler != null)
+				{
 					Context.ExceptionHandler(ex);
 					return null;
 				}
 				throw ex;
 			}
 			var serviceProvider = new XamlServiceProvider(node, Context);
-			serviceProvider.Add(typeof (IXmlNamespaceResolver), nsResolver);
+			serviceProvider.Add(typeof(IXmlNamespaceResolver), nsResolver);
 
-			return new MarkupExpansionParser { ExceptionHandler = Context.ExceptionHandler}.Parse(match, ref expression, serviceProvider);
+			return new MarkupExpansionParser { ExceptionHandler = Context.ExceptionHandler }.Parse(match, ref expression, serviceProvider);
 		}
 
 		public class MarkupExpansionParser : MarkupExpressionParser, IExpressionParser<INode>
@@ -127,19 +131,24 @@ namespace Xamarin.Forms.Xaml
 				var childnodes = new List<(XmlName, INode)>();
 				var contentname = new XmlName(null, null);
 
-				if (remaining.StartsWith("}", StringComparison.Ordinal)) {
+				if (remaining.StartsWith("}", StringComparison.Ordinal))
+				{
 					remaining = remaining.Substring(1);
 				}
-				else {
+				else
+				{
 					Property parsed;
-					do {
+					do
+					{
 						parsed = ParseProperty(serviceProvider, ref remaining);
 						XmlName childname;
 
-						if (parsed.name == null) {
+						if (parsed.name == null)
+						{
 							childname = contentname;
 						}
-						else {
+						else
+						{
 							var (propertyPrefix, propertyName) = ParseName(parsed.name);
 
 							childname = XamlParser.ParsePropertyName(new XmlName(
@@ -150,11 +159,13 @@ namespace Xamarin.Forms.Xaml
 								continue;
 						}
 
-						if (childname == XmlName.xTypeArguments) {
+						if (childname == XmlName.xTypeArguments)
+						{
 							typeArguments = TypeArgumentsParser.ParseExpression(parsed.strValue, nsResolver, xmlLineInfo);
 							childnodes.Add((childname, new ValueNode(typeArguments, nsResolver)));
 						}
-						else {
+						else
+						{
 							var childnode = parsed.value as INode ?? new ValueNode(parsed.strValue, nsResolver);
 							childnodes.Add((childname, childnode));
 						}
@@ -163,17 +174,20 @@ namespace Xamarin.Forms.Xaml
 				}
 
 
-				if (!(serviceProvider.GetService(typeof (IXamlTypeResolver)) is XamlTypeResolver typeResolver))
+				if (!(serviceProvider.GetService(typeof(IXamlTypeResolver)) is XamlTypeResolver typeResolver))
 					throw new NotSupportedException();
 
 				var xmltype = new XmlType(namespaceuri, name + "Extension", typeArguments);
 
 				//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.
-				if (!typeResolver.TryResolve(xmltype, out _)) {
+				if (!typeResolver.TryResolve(xmltype, out _))
+				{
 					xmltype = new XmlType(namespaceuri, name, typeArguments);
-					if (!typeResolver.TryResolve(xmltype, out _)) {
+					if (!typeResolver.TryResolve(xmltype, out _))
+					{
 						var ex = new XamlParseException($"MarkupExtension not found for {match}", serviceProvider);
-						if (ExceptionHandler != null) {
+						if (ExceptionHandler != null)
+						{
 							ExceptionHandler(ex);
 							return null;
 						}
@@ -185,14 +199,17 @@ namespace Xamarin.Forms.Xaml
 					? new ElementNode(xmltype, null, nsResolver)
 					: new ElementNode(xmltype, null, nsResolver, xmlLineInfo.LineNumber, xmlLineInfo.LinePosition);
 
-				foreach (var (childname, childnode) in childnodes) {
+				foreach (var (childname, childnode) in childnodes)
+				{
 					childnode.Parent = _node;
 
-					if (childname == contentname) {
+					if (childname == contentname)
+					{
 						//ContentProperty
 						_node.CollectionItems.Add(childnode);
 					}
-					else {
+					else
+					{
 						_node.Properties[childname] = childnode;
 					}
 				}

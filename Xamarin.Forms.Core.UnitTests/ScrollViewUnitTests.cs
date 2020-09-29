@@ -12,43 +12,45 @@ namespace Xamarin.Forms.Core.UnitTests
 		[SetUp]
 		public override void Setup()
 		{
-			base.Setup ();
-			Device.PlatformServices = new MockPlatformServices ();
+			base.Setup();
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
 		[TearDown]
 		public override void TearDown()
 		{
-			base.TearDown ();
+			base.TearDown();
 			Device.PlatformServices = null;
 		}
 
 		[Test]
-		public void TestConstructor ()
+		public void TestConstructor()
 		{
-			ScrollView scrollView = new ScrollView ();
+			ScrollView scrollView = new ScrollView();
 
-			Assert.Null (scrollView.Content);
+			Assert.Null(scrollView.Content);
 
-			View view = new View ();
-			scrollView = new ScrollView {Content = view};
+			View view = new View();
+			scrollView = new ScrollView { Content = view };
 
-			Assert.AreEqual (view, scrollView.Content);
+			Assert.AreEqual(view, scrollView.Content);
 		}
 
 		[Test]
-		[TestCase (ScrollOrientation.Horizontal)]
-		[TestCase (ScrollOrientation.Both)]
-		public void GetsCorrectSizeRequestWithWrappingContent (ScrollOrientation orientation)
+		[TestCase(ScrollOrientation.Horizontal)]
+		[TestCase(ScrollOrientation.Both)]
+		public void GetsCorrectSizeRequestWithWrappingContent(ScrollOrientation orientation)
 		{
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc:null, useRealisticLabelMeasure:true);
+			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: null, useRealisticLabelMeasure: true);
 
-			var scrollView = new ScrollView {
+			var scrollView = new ScrollView
+			{
 				IsPlatformEnabled = true,
 				Orientation = orientation,
 			};
 
-			var hLayout = new StackLayout {
+			var hLayout = new StackLayout
+			{
 				IsPlatformEnabled = true,
 				Orientation = StackOrientation.Horizontal,
 				Children = {
@@ -62,49 +64,53 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			scrollView.Content = hLayout;
 
-			var r = scrollView.GetSizeRequest (100, 100);
+			var r = scrollView.GetSizeRequest(100, 100);
 
-			Assert.AreEqual (10, r.Request.Height);
+			Assert.AreEqual(10, r.Request.Height);
 		}
 
 		[Test]
-		public void TestContentSizeChangedVertical ()
+		public void TestContentSizeChangedVertical()
 		{
-			View view = new View {IsPlatformEnabled = true, WidthRequest = 100, HeightRequest = 100};
+			View view = new View { IsPlatformEnabled = true, WidthRequest = 100, HeightRequest = 100 };
 
-			ScrollView scroll = new ScrollView {Content = view};
-			scroll.Layout (new Rectangle (0, 0, 50, 50));
+			ScrollView scroll = new ScrollView { Content = view };
+			scroll.Layout(new Rectangle(0, 0, 50, 50));
 
-			Assert.AreEqual (new Size (50, 100), scroll.ContentSize);
+			Assert.AreEqual(new Size(50, 100), scroll.ContentSize);
 
 			bool changed = false;
-			scroll.PropertyChanged += (sender, e) => {
-				switch (e.PropertyName) {
-				case "ContentSize":
-					changed = true;
-					break;
+			scroll.PropertyChanged += (sender, e) =>
+			{
+				switch (e.PropertyName)
+				{
+					case "ContentSize":
+						changed = true;
+						break;
 				}
 			};
 
 			view.HeightRequest = 200;
 
-			Assert.True (changed);
-			Assert.AreEqual (new Size (50, 200), scroll.ContentSize);
+			Assert.True(changed);
+			Assert.AreEqual(new Size(50, 200), scroll.ContentSize);
 		}
 
 		[Test]
-		public void TestContentSizeChangedVerticalBidirectional ()
+		public void TestContentSizeChangedVerticalBidirectional()
 		{
 			View view = new View { IsPlatformEnabled = true, WidthRequest = 100, HeightRequest = 100 };
 
 			ScrollView scroll = new ScrollView { Content = view, Orientation = ScrollOrientation.Both };
-			scroll.Layout (new Rectangle (0, 0, 50, 50));
+			scroll.Layout(new Rectangle(0, 0, 50, 50));
 
-			Assert.AreEqual (new Size (100, 100), scroll.ContentSize);
+			Assert.AreEqual(new Size(100, 100), scroll.ContentSize);
 
 			bool changed = false;
-			scroll.PropertyChanged += (sender, e) => {
-				switch (e.PropertyName) {
+			scroll.PropertyChanged += (sender, e) =>
+			{
+				switch (e.PropertyName)
+				{
 					case "ContentSize":
 						changed = true;
 						break;
@@ -113,54 +119,29 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			view.HeightRequest = 200;
 
-			Assert.True (changed);
-			Assert.AreEqual (new Size (100, 200), scroll.ContentSize);
+			Assert.True(changed);
+			Assert.AreEqual(new Size(100, 200), scroll.ContentSize);
 		}
 
 		[Test]
-		public void TestContentSizeChangedHorizontal ()
-		{
-			View view = new View {IsPlatformEnabled = true, WidthRequest = 100, HeightRequest = 100};
-
-			var scroll = new ScrollView {
-				Orientation = ScrollOrientation.Horizontal,
-				Content = view
-			};
-			scroll.Layout (new Rectangle (0, 0, 50, 50));
-
-			Assert.AreEqual (new Size (100, 50), scroll.ContentSize);
-
-			bool changed = false;
-			scroll.PropertyChanged += (sender, e) => {
-				switch (e.PropertyName) {
-				case "ContentSize":
-					changed = true;
-					break;
-				}
-			};
-
-			view.WidthRequest = 200;
-			
-			Assert.True (changed);
-			Assert.AreEqual (new Size (200, 50), scroll.ContentSize);
-		}
-
-		[Test]
-		public void TestContentSizeChangedHorizontalBidirectional ()
+		public void TestContentSizeChangedHorizontal()
 		{
 			View view = new View { IsPlatformEnabled = true, WidthRequest = 100, HeightRequest = 100 };
 
-			var scroll = new ScrollView {
-				Orientation = ScrollOrientation.Both,
+			var scroll = new ScrollView
+			{
+				Orientation = ScrollOrientation.Horizontal,
 				Content = view
 			};
-			scroll.Layout (new Rectangle (0, 0, 50, 50));
+			scroll.Layout(new Rectangle(0, 0, 50, 50));
 
-			Assert.AreEqual (new Size (100, 100), scroll.ContentSize);
+			Assert.AreEqual(new Size(100, 50), scroll.ContentSize);
 
 			bool changed = false;
-			scroll.PropertyChanged += (sender, e) => {
-				switch (e.PropertyName) {
+			scroll.PropertyChanged += (sender, e) =>
+			{
+				switch (e.PropertyName)
+				{
 					case "ContentSize":
 						changed = true;
 						break;
@@ -169,8 +150,39 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			view.WidthRequest = 200;
 
-			Assert.True (changed);
-			Assert.AreEqual (new Size (200, 100), scroll.ContentSize);
+			Assert.True(changed);
+			Assert.AreEqual(new Size(200, 50), scroll.ContentSize);
+		}
+
+		[Test]
+		public void TestContentSizeChangedHorizontalBidirectional()
+		{
+			View view = new View { IsPlatformEnabled = true, WidthRequest = 100, HeightRequest = 100 };
+
+			var scroll = new ScrollView
+			{
+				Orientation = ScrollOrientation.Both,
+				Content = view
+			};
+			scroll.Layout(new Rectangle(0, 0, 50, 50));
+
+			Assert.AreEqual(new Size(100, 100), scroll.ContentSize);
+
+			bool changed = false;
+			scroll.PropertyChanged += (sender, e) =>
+			{
+				switch (e.PropertyName)
+				{
+					case "ContentSize":
+						changed = true;
+						break;
+				}
+			};
+
+			view.WidthRequest = 200;
+
+			Assert.True(changed);
+			Assert.AreEqual(new Size(200, 100), scroll.ContentSize);
 		}
 
 		[Test]
@@ -191,7 +203,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(originalBounds.Size, Is.EqualTo(scroll.ContentSize));
 
 			bool changed = false;
-			scroll.PropertyChanged += (sender, e) => {
+			scroll.PropertyChanged += (sender, e) =>
+			{
 				switch (e.PropertyName)
 				{
 					case "ContentSize":
@@ -207,100 +220,107 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestContentSizeClamping ()
+		public void TestContentSizeClamping()
 		{
-			View view = new View {IsPlatformEnabled = true, WidthRequest = 100, HeightRequest = 100};
+			View view = new View { IsPlatformEnabled = true, WidthRequest = 100, HeightRequest = 100 };
 
-			var scroll = new ScrollView {
+			var scroll = new ScrollView
+			{
 				Orientation = ScrollOrientation.Horizontal,
 				Content = view,
 			};
-			scroll.Layout (new Rectangle (0, 0, 50, 50));
+			scroll.Layout(new Rectangle(0, 0, 50, 50));
 
 			bool changed = false;
-			scroll.PropertyChanged += (sender, e) => {
-				switch (e.PropertyName) {
-				case "ContentSize":
-					changed = true;
-					break;
+			scroll.PropertyChanged += (sender, e) =>
+			{
+				switch (e.PropertyName)
+				{
+					case "ContentSize":
+						changed = true;
+						break;
 				}
 			};
 
 			view.HeightRequest = 200;
-			
-			Assert.False (changed);
-			Assert.AreEqual (new Size (100, 50), scroll.ContentSize);
+
+			Assert.False(changed);
+			Assert.AreEqual(new Size(100, 50), scroll.ContentSize);
 		}
 
 		[Test]
-		public void TestChildChanged ()
+		public void TestChildChanged()
 		{
-			ScrollView scrollView = new ScrollView ();
+			ScrollView scrollView = new ScrollView();
 
 			bool changed = false;
-			scrollView.PropertyChanged += (sender, e) => {
-				switch (e.PropertyName) {
-				case "Content":
-					changed = true;
-					break;
+			scrollView.PropertyChanged += (sender, e) =>
+			{
+				switch (e.PropertyName)
+				{
+					case "Content":
+						changed = true;
+						break;
 				}
 			};
-			View view = new View ();
+			View view = new View();
 			scrollView.Content = view;
-			
-			Assert.True (changed);
+
+			Assert.True(changed);
 		}
 
 		[Test]
-		public void TestChildDoubleSet ()
+		public void TestChildDoubleSet()
 		{
-			var scrollView = new ScrollView ();
+			var scrollView = new ScrollView();
 
 			bool changed = false;
-			scrollView.PropertyChanged += (sender, args) => {
+			scrollView.PropertyChanged += (sender, args) =>
+			{
 				if (args.PropertyName == "Content")
 					changed = true;
 			};
 
-			var child = new View ();
+			var child = new View();
 			scrollView.Content = child;
 
-			Assert.True (changed);
-			Assert.AreEqual (child, scrollView.Content);
+			Assert.True(changed);
+			Assert.AreEqual(child, scrollView.Content);
 
 			changed = false;
 
 			scrollView.Content = child;
 
-			Assert.False (changed);
+			Assert.False(changed);
 
 			scrollView.Content = null;
 
-			Assert.True (changed);
-			Assert.Null (scrollView.Content);
+			Assert.True(changed);
+			Assert.Null(scrollView.Content);
 		}
 
 		[Test]
-		public void TestOrientation ()
+		public void TestOrientation()
 		{
-			var scrollView = new ScrollView ();
+			var scrollView = new ScrollView();
 
-			Assert.AreEqual (ScrollOrientation.Vertical, scrollView.Orientation);
+			Assert.AreEqual(ScrollOrientation.Vertical, scrollView.Orientation);
 
 			bool signaled = false;
-			scrollView.PropertyChanged += (sender, args) => {
+			scrollView.PropertyChanged += (sender, args) =>
+			{
 				if (args.PropertyName == "Orientation")
 					signaled = true;
 			};
 
 			scrollView.Orientation = ScrollOrientation.Horizontal;
 
-			Assert.AreEqual (ScrollOrientation.Horizontal, scrollView.Orientation);
-			Assert.True (signaled);
+			Assert.AreEqual(ScrollOrientation.Horizontal, scrollView.Orientation);
+			Assert.True(signaled);
 
 			scrollView.Orientation = ScrollOrientation.Both;
-			Assert.AreEqual (ScrollOrientation.Both, scrollView.Orientation);
-			Assert.True (signaled);
+			Assert.AreEqual(ScrollOrientation.Both, scrollView.Orientation);
+			Assert.True(signaled);
 
 			scrollView.Orientation = ScrollOrientation.Neither;
 			Assert.AreEqual(ScrollOrientation.Neither, scrollView.Orientation);
@@ -308,41 +328,43 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestOrientationDoubleSet ()
+		public void TestOrientationDoubleSet()
 		{
-			var scrollView = new ScrollView ();
+			var scrollView = new ScrollView();
 
 			bool signaled = false;
-			scrollView.PropertyChanged += (sender, args) => {
+			scrollView.PropertyChanged += (sender, args) =>
+			{
 				if (args.PropertyName == "Orientation")
 					signaled = true;
 			};
 
 			scrollView.Orientation = scrollView.Orientation;
 
-			Assert.False (signaled);
+			Assert.False(signaled);
 		}
 
 
 		[Test]
 		public void TestScrollTo()
 		{
-			var scrollView = new ScrollView ();
+			var scrollView = new ScrollView();
 
-			var item = new View {   };
+			var item = new View { };
 			scrollView.Content = new StackLayout { Children = { item } };
 
 			bool requested = false;
-			((IScrollViewController) scrollView).ScrollToRequested += (sender, args) => {
+			((IScrollViewController)scrollView).ScrollToRequested += (sender, args) =>
+			{
 				requested = true;
-				Assert.AreEqual(args.ScrollY,100);
-				Assert.AreEqual(args.ScrollX,0);
-				Assert.Null (args.Item);
-				Assert.That (args.ShouldAnimate, Is.EqualTo (true));
+				Assert.AreEqual(args.ScrollY, 100);
+				Assert.AreEqual(args.ScrollX, 0);
+				Assert.Null(args.Item);
+				Assert.That(args.ShouldAnimate, Is.EqualTo(true));
 			};
 
-			scrollView.ScrollToAsync (0,100, true);
-			Assert.That (requested, Is.True);
+			scrollView.ScrollToAsync(0, 100, true);
+			Assert.That(requested, Is.True);
 		}
 
 		[Test]
@@ -357,7 +379,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			scrollView.Content = new StackLayout { Children = { item } };
 
 			bool requested = false;
-			((IScrollViewController)scrollView).ScrollToRequested += (sender, args) => {
+			((IScrollViewController)scrollView).ScrollToRequested += (sender, args) =>
+			{
 				requested = true;
 			};
 
@@ -368,84 +391,87 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestScrollToNotAnimated()
 		{
-			var scrollView = new ScrollView ();
+			var scrollView = new ScrollView();
 
-			var item = new View {   };
+			var item = new View { };
 			scrollView.Content = new StackLayout { Children = { item } };
 
 			bool requested = false;
-			((IScrollViewController) scrollView).ScrollToRequested += (sender, args) => {
+			((IScrollViewController)scrollView).ScrollToRequested += (sender, args) =>
+			{
 				requested = true;
-				Assert.AreEqual(args.ScrollY,100);
-				Assert.AreEqual(args.ScrollX,0);
-				Assert.Null (args.Item);
-				Assert.That (args.ShouldAnimate, Is.EqualTo (false));
+				Assert.AreEqual(args.ScrollY, 100);
+				Assert.AreEqual(args.ScrollX, 0);
+				Assert.Null(args.Item);
+				Assert.That(args.ShouldAnimate, Is.EqualTo(false));
 			};
 
-			scrollView.ScrollToAsync (0,100, false);
-			Assert.That (requested, Is.True);
+			scrollView.ScrollToAsync(0, 100, false);
+			Assert.That(requested, Is.True);
 		}
 
 		[Test]
-		public void TestScrollToElement ()
+		public void TestScrollToElement()
 		{
-			var scrollView = new ScrollView ();
+			var scrollView = new ScrollView();
 
-			var item = new Label {  Text = "Test" };
+			var item = new Label { Text = "Test" };
 			scrollView.Content = new StackLayout { Children = { item } };
 
 			bool requested = false;
-			((IScrollViewController) scrollView).ScrollToRequested += (sender, args) => {
+			((IScrollViewController)scrollView).ScrollToRequested += (sender, args) =>
+			{
 				requested = true;
 
-				Assert.That (args.Element, Is.SameAs (item));
-				Assert.That (args.Position, Is.EqualTo (ScrollToPosition.Center));
-				Assert.That (args.ShouldAnimate, Is.EqualTo (true));
+				Assert.That(args.Element, Is.SameAs(item));
+				Assert.That(args.Position, Is.EqualTo(ScrollToPosition.Center));
+				Assert.That(args.ShouldAnimate, Is.EqualTo(true));
 			};
 
-			scrollView.ScrollToAsync (item, ScrollToPosition.Center, true);
-			Assert.That (requested, Is.True);
+			scrollView.ScrollToAsync(item, ScrollToPosition.Center, true);
+			Assert.That(requested, Is.True);
 		}
 
 		[Test]
-		public void TestScrollToElementNotAnimated ()
+		public void TestScrollToElementNotAnimated()
 		{
-			var scrollView = new ScrollView ();
+			var scrollView = new ScrollView();
 
-			var item = new Label {  Text = "Test" };
+			var item = new Label { Text = "Test" };
 			scrollView.Content = new StackLayout { Children = { item } };
 
 			bool requested = false;
-			((IScrollViewController) scrollView).ScrollToRequested += (sender, args) => {
+			((IScrollViewController)scrollView).ScrollToRequested += (sender, args) =>
+			{
 				requested = true;
 
-				Assert.That (args.Element, Is.SameAs (item));
-				Assert.That (args.Position, Is.EqualTo (ScrollToPosition.Center));
-				Assert.That (args.ShouldAnimate, Is.EqualTo (false));
+				Assert.That(args.Element, Is.SameAs(item));
+				Assert.That(args.Position, Is.EqualTo(ScrollToPosition.Center));
+				Assert.That(args.ShouldAnimate, Is.EqualTo(false));
 			};
 
-			scrollView.ScrollToAsync (item, ScrollToPosition.Center, false);
-			Assert.That (requested, Is.True);
+			scrollView.ScrollToAsync(item, ScrollToPosition.Center, false);
+			Assert.That(requested, Is.True);
 		}
 
 		[Test]
-		public void TestScrollToInvalid ()
+		public void TestScrollToInvalid()
 		{
-			var scrollView = new ScrollView ();
+			var scrollView = new ScrollView();
 
-			Assert.That (() => scrollView.ScrollToAsync (new VisualElement(), ScrollToPosition.Center, true), Throws.ArgumentException);
-			Assert.That (() => scrollView.ScrollToAsync (null, (ScrollToPosition) 500, true), Throws.ArgumentException);
+			Assert.That(() => scrollView.ScrollToAsync(new VisualElement(), ScrollToPosition.Center, true), Throws.ArgumentException);
+			Assert.That(() => scrollView.ScrollToAsync(null, (ScrollToPosition)500, true), Throws.ArgumentException);
 		}
 
 		[Test]
-		public void SetScrollPosition ()
+		public void SetScrollPosition()
 		{
 			var scroll = new ScrollView();
 			IScrollViewController controller = scroll;
-			controller.SetScrolledPosition (100, 100);
+			controller.SetScrolledPosition(100, 100);
 
-			Assert.That (scroll.ScrollX, Is.EqualTo (100));
-			Assert.That (scroll.ScrollY, Is.EqualTo (100));
+			Assert.That(scroll.ScrollX, Is.EqualTo(100));
+			Assert.That(scroll.ScrollY, Is.EqualTo(100));
 		}
 
 		[Test]

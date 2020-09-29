@@ -129,10 +129,10 @@ namespace Xamarin.Forms.Internals
 				AppendProfile(sb, profiledMs, showZeros);
 				label.Text = sb.ToString();
 			};
-			buttonA.Clicked += delegate { showZeros = !showZeros; update(); };
+			buttonA.Clicked += delegate
+			{ showZeros = !showZeros; update(); };
 
 			update();
 		}
 	}
 }
-

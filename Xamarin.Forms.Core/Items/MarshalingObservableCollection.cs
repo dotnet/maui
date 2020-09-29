@@ -30,16 +30,16 @@ namespace Xamarin.Forms
 			}
 		}
 
-		class ResetNotifyCollectionChangedEventArgs : NotifyCollectionChangedEventArgs 
+		class ResetNotifyCollectionChangedEventArgs : NotifyCollectionChangedEventArgs
 		{
 			public IList Items { get; }
-			public ResetNotifyCollectionChangedEventArgs(IList items) 
+			public ResetNotifyCollectionChangedEventArgs(IList items)
 				: base(NotifyCollectionChangedAction.Reset) => Items = items;
 		}
 
 		public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-		void OnCollectionChanged(NotifyCollectionChangedEventArgs args) 
+		void OnCollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			CollectionChanged?.Invoke(this, args);
 		}
@@ -49,7 +49,7 @@ namespace Xamarin.Forms
 			if (args.Action == NotifyCollectionChangedAction.Reset)
 			{
 				var items = new List<object>();
-				for(int n = 0; n < _internalCollection.Count; n++)
+				for (int n = 0; n < _internalCollection.Count; n++)
 				{
 					items.Add(_internalCollection[n]);
 				}
@@ -67,7 +67,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		void HandleCollectionChange(NotifyCollectionChangedEventArgs args) 
+		void HandleCollectionChange(NotifyCollectionChangedEventArgs args)
 		{
 			switch (args.Action)
 			{
@@ -114,7 +114,7 @@ namespace Xamarin.Forms
 			OnCollectionChanged(args);
 		}
 
-		void Replace(NotifyCollectionChangedEventArgs args) 
+		void Replace(NotifyCollectionChangedEventArgs args)
 		{
 			var startIndex = args.NewStartingIndex;
 			foreach (var item in args.NewItems)
@@ -126,7 +126,7 @@ namespace Xamarin.Forms
 			OnCollectionChanged(args);
 		}
 
-		void Add(NotifyCollectionChangedEventArgs args) 
+		void Add(NotifyCollectionChangedEventArgs args)
 		{
 			var startIndex = args.NewStartingIndex;
 			foreach (var item in args.NewItems)

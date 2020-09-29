@@ -82,7 +82,8 @@ namespace Xamarin.Forms
 		public bool IsEnabled
 		{
 			get => (bool)GetValue(IsEnabledProperty);
-			[EditorBrowsable(EditorBrowsableState.Never)] set => SetValue(IsEnabledPropertyKey, value);
+			[EditorBrowsable(EditorBrowsableState.Never)]
+			set => SetValue(IsEnabledPropertyKey, value);
 		}
 
 		[TypeConverter(typeof(ListStringTypeConverter))]
@@ -96,8 +97,8 @@ namespace Xamarin.Forms
 		public IList<string> @class
 		{
 			get { return _mergedStyle.StyleClass; }
-			set 
-			{ 
+			set
+			{
 				_mergedStyle.StyleClass = value;
 			}
 		}

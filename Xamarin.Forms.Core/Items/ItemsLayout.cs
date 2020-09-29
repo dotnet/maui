@@ -10,7 +10,7 @@
 		}
 
 		public static readonly BindableProperty SnapPointsAlignmentProperty =
-			BindableProperty.Create(nameof(SnapPointsAlignment), typeof(SnapPointsAlignment), typeof(ItemsLayout), 
+			BindableProperty.Create(nameof(SnapPointsAlignment), typeof(SnapPointsAlignment), typeof(ItemsLayout),
 				SnapPointsAlignment.Start);
 
 		public SnapPointsAlignment SnapPointsAlignment
@@ -20,7 +20,7 @@
 		}
 
 		public static readonly BindableProperty SnapPointsTypeProperty =
-			BindableProperty.Create(nameof(SnapPointsType), typeof(SnapPointsType), typeof(ItemsLayout), 
+			BindableProperty.Create(nameof(SnapPointsType), typeof(SnapPointsType), typeof(ItemsLayout),
 				SnapPointsType.None);
 
 		public SnapPointsType SnapPointsType

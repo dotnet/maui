@@ -25,7 +25,8 @@ namespace Xamarin.Forms.Build.Tasks
 			if (!(typeNameNode is ValueNode valueNode))
 				throw new BuildException(BuildExceptionCode.PropertyMissing, node as IXmlLineInfo, null, "TypeName", typeof(Xamarin.Forms.Xaml.TypeExtension));
 
-			if (!node.Properties.ContainsKey(name)) {
+			if (!node.Properties.ContainsKey(name))
+			{
 				node.Properties[name] = typeNameNode;
 				node.CollectionItems.Clear();
 			}

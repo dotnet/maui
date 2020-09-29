@@ -54,7 +54,7 @@ namespace Xamarin.Forms
 			if (propertyKey == null)
 				throw new ArgumentNullException(nameof(propertyKey));
 
-			ClearValue(propertyKey.BindableProperty, fromStyle:false, checkAccess: false);
+			ClearValue(propertyKey.BindableProperty, fromStyle: false, checkAccess: false);
 		}
 
 		void ClearValue(BindableProperty property, bool fromStyle, bool checkAccess)
@@ -206,7 +206,7 @@ namespace Xamarin.Forms
 				bindable._inheritedContext = value;
 			}
 
-			bindable.ApplyBindings(skipBindingContext:false, fromBindingContextChanged:true);
+			bindable.ApplyBindings(skipBindingContext: false, fromBindingContextChanged: true);
 			bindable.OnBindingContextChanged();
 		}
 
@@ -233,7 +233,8 @@ namespace Xamarin.Forms
 
 		protected void UnapplyBindings()
 		{
-			foreach (var context in _properties.Values) {
+			foreach (var context in _properties.Values)
+			{
 				if (context.Binding == null)
 					continue;
 
@@ -371,10 +372,12 @@ namespace Xamarin.Forms
 				value = property.CoerceValue(this, value);
 
 			BindablePropertyContext context = GetOrCreateContext(property);
-			if (manuallySet) {
+			if (manuallySet)
+			{
 				context.Attributes |= BindableContextAttributes.IsManuallySet;
 				context.Attributes &= ~BindableContextAttributes.IsSetFromStyle;
-			} else
+			}
+			else
 				context.Attributes &= ~BindableContextAttributes.IsManuallySet;
 
 			if (fromStyle)
@@ -467,8 +470,9 @@ namespace Xamarin.Forms
 		internal void ApplyBindings(bool skipBindingContext, bool fromBindingContextChanged)
 		{
 			var prop = _properties.Values.ToArray();
-			for (int i = 0, propLength = prop.Length; i < propLength; i++) {
-				BindablePropertyContext context = prop [i];
+			for (int i = 0, propLength = prop.Length; i < propLength; i++)
+			{
+				BindablePropertyContext context = prop[i];
 				BindingBase binding = context.Binding;
 				if (binding == null)
 					continue;
@@ -496,7 +500,7 @@ namespace Xamarin.Forms
 		static void BindingContextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
 			bindable._inheritedContext = null;
-			bindable.ApplyBindings(skipBindingContext: true, fromBindingContextChanged:true);
+			bindable.ApplyBindings(skipBindingContext: true, fromBindingContextChanged: true);
 			bindable.OnBindingContextChanged();
 		}
 

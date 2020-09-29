@@ -1,9 +1,9 @@
-﻿using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -73,10 +73,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			string text = "hello";
 			int count = 0;
 			var menu = new Menu { Text = text };
-		
+
 			menu.PropertyChanged += (s, e) =>
 			{
-				count = count+1;
+				count = count + 1;
 			};
 
 			menu.Invalidate();

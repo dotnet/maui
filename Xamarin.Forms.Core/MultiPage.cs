@@ -307,7 +307,7 @@ namespace Xamarin.Forms
 
 		void Reset()
 		{
-			List <Element> snapshot = InternalChildren.ToList();
+			List<Element> snapshot = InternalChildren.ToList();
 
 			InternalChildren.Clear();
 

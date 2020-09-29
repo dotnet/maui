@@ -8,16 +8,16 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class FormattedStringTests : BaseTestFixture
 	{
 		[SetUp]
-		public override void Setup ()
+		public override void Setup()
 		{
-			base.Setup ();
-			Device.PlatformServices = new MockPlatformServices ();
+			base.Setup();
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
 		[TearDown]
-		public override void TearDown ()
+		public override void TearDown()
 		{
-			base.Setup ();
+			base.Setup();
 			Device.PlatformServices = null;
 		}
 
@@ -25,12 +25,13 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void NullSpansNotAllowed()
 		{
 			var fs = new FormattedString();
-			Assert.That (() => fs.Spans.Add (null), Throws.InstanceOf<ArgumentNullException>());
+			Assert.That(() => fs.Spans.Add(null), Throws.InstanceOf<ArgumentNullException>());
 
 			fs = new FormattedString();
-			fs.Spans.Add (new Span());
+			fs.Spans.Add(new Span());
 
-			Assert.That (() => {
+			Assert.That(() =>
+			{
 				fs.Spans[0] = null;
 			}, Throws.InstanceOf<ArgumentNullException>());
 		}
@@ -40,17 +41,18 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var span = new Span();
 			var fs = new FormattedString();
-			fs.Spans.Add (span);
+			fs.Spans.Add(span);
 
 			bool spansChanged = false;
-			fs.PropertyChanged += (s, e) => {
+			fs.PropertyChanged += (s, e) =>
+			{
 				if (e.PropertyName == "Spans")
 					spansChanged = true;
 			};
 
 			span.Text = "New text";
 
-			Assert.That (spansChanged, Is.True);
+			Assert.That(spansChanged, Is.True);
 		}
 
 		[Test]
@@ -58,18 +60,19 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var span = new Span();
 			var fs = new FormattedString();
-			fs.Spans.Add (span);
-			fs.Spans.Remove (span);
+			fs.Spans.Add(span);
+			fs.Spans.Remove(span);
 
 			bool spansChanged = false;
-			fs.PropertyChanged += (s, e) => {
+			fs.PropertyChanged += (s, e) =>
+			{
 				if (e.PropertyName == "Spans")
 					spansChanged = true;
 			};
 
 			span.Text = "New text";
 
-			Assert.That (spansChanged, Is.False);
+			Assert.That(spansChanged, Is.False);
 		}
 
 		[Test]
@@ -77,16 +80,17 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var span = new Span();
 			var fs = new FormattedString();
-			
+
 			bool spansChanged = false;
-			fs.PropertyChanged += (s, e) => {
+			fs.PropertyChanged += (s, e) =>
+			{
 				if (e.PropertyName == "Spans")
 					spansChanged = true;
 			};
 
-			fs.Spans.Add (span);
+			fs.Spans.Add(span);
 
-			Assert.That (spansChanged, Is.True);
+			Assert.That(spansChanged, Is.True);
 		}
 
 		[Test]
@@ -94,10 +98,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			string original = "fubar";
 			FormattedString fs = original;
-			Assert.That (fs, Is.Not.Null);
-			Assert.That (fs.Spans.Count, Is.EqualTo (1));
-			Assert.That (fs.Spans[0], Is.Not.Null);
-			Assert.That (fs.Spans[0].Text, Is.EqualTo (original));
+			Assert.That(fs, Is.Not.Null);
+			Assert.That(fs.Spans.Count, Is.EqualTo(1));
+			Assert.That(fs.Spans[0], Is.Not.Null);
+			Assert.That(fs.Spans[0].Text, Is.EqualTo(original));
 		}
 
 		[Test]
@@ -105,10 +109,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			string original = null;
 			FormattedString fs = original;
-			Assert.That (fs, Is.Not.Null);
-			Assert.That (fs.Spans.Count, Is.EqualTo (1));
-			Assert.That (fs.Spans[0], Is.Not.Null);
-			Assert.That (fs.Spans[0].Text, Is.EqualTo (original));
+			Assert.That(fs, Is.Not.Null);
+			Assert.That(fs.Spans.Count, Is.EqualTo(1));
+			Assert.That(fs.Spans[0], Is.Not.Null);
+			Assert.That(fs.Spans[0].Text, Is.EqualTo(original));
 		}
 	}
 }

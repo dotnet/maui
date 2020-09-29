@@ -9,79 +9,80 @@ namespace Xamarin.Forms.Core.UnitTests
 	{
 		class TestModel : TableModel
 		{
-			public override int GetRowCount (int section)
+			public override int GetRowCount(int section)
 			{
 				return 10;
 			}
 
-			public override int GetSectionCount ()
+			public override int GetSectionCount()
 			{
 				return 1;
 			}
 
-			public override object GetItem (int section, int row)
+			public override object GetItem(int section, int row)
 			{
 				return "Foo";
 			}
 
-			public string ProtectedSectionTitle ()
+			public string ProtectedSectionTitle()
 			{
-				return GetSectionTitle (0);
+				return GetSectionTitle(0);
 			}
 		}
 
 		[Test]
-		public void DefaultSectionTitle ()
+		public void DefaultSectionTitle()
 		{
-			Assert.IsNull (new TestModel ().ProtectedSectionTitle ());
+			Assert.IsNull(new TestModel().ProtectedSectionTitle());
 		}
 
 		[Test]
-		public void DefualtSectionIndexTitles ()
+		public void DefualtSectionIndexTitles()
 		{
-			Assert.IsNull (new TestModel ().GetSectionIndexTitles ());
+			Assert.IsNull(new TestModel().GetSectionIndexTitles());
 		}
 
 		[Test]
-		public void DefaultHeaderCell ()
+		public void DefaultHeaderCell()
 		{
-			Assert.IsNull (new TestModel ().GetHeaderCell (0));
+			Assert.IsNull(new TestModel().GetHeaderCell(0));
 		}
 
 		[Test]
-		public void DefaultCellFromObject ()
+		public void DefaultCellFromObject()
 		{
-			var model = new TestModel ();
-			var cell = model.GetCell (0, 5);
+			var model = new TestModel();
+			var cell = model.GetCell(0, 5);
 
-			Assert.That (cell, Is.TypeOf<TextCell> ());
+			Assert.That(cell, Is.TypeOf<TextCell>());
 
-			var textCell = (TextCell) cell;
-			Assert.AreEqual ("Foo", textCell.Text);
+			var textCell = (TextCell)cell;
+			Assert.AreEqual("Foo", textCell.Text);
 		}
 
 		[Test]
-		public void RowLongPressed ()
+		public void RowLongPressed()
 		{
-			var model = new TestModel ();
+			var model = new TestModel();
 
 			var longPressedItem = "";
-			model.ItemLongPressed += (sender, arg) => {
+			model.ItemLongPressed += (sender, arg) =>
+			{
 				longPressedItem = (string)arg.Data;
 			};
 
-			model.RowLongPressed (0, 5);
+			model.RowLongPressed(0, 5);
 		}
 
 		[Test]
-		public void RowSelectedForObject ()
+		public void RowSelectedForObject()
 		{
-			var model = new TestModel ();
+			var model = new TestModel();
 			string result = null;
 			model.ItemSelected += (sender, arg) => result = (string)arg.Data;
 
-			model.RowSelected ("Foobar");
-			Assert.AreEqual ("Foobar", result);
+			model.RowSelected("Foobar");
+			Assert.AreEqual("Foobar", result);
 		}
 	}
 }

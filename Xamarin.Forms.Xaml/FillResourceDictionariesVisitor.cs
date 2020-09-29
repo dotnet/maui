@@ -39,11 +39,13 @@ namespace Xamarin.Forms.Xaml
 		{
 			if (!Values.TryGetValue(node, out var value) && Context.ExceptionHandler != null)
 				return;
-			
+
 			//Set RD to VE
-			if (typeof(ResourceDictionary).IsAssignableFrom(Context.Types[node]) && ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName propertyName)) {
+			if (typeof(ResourceDictionary).IsAssignableFrom(Context.Types[node]) && ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName propertyName))
+			{
 				if ((propertyName.LocalName == "Resources" ||
-					 propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)) && value is ResourceDictionary) {
+					 propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)) && value is ResourceDictionary)
+				{
 					var source = Values[parentNode];
 					ApplyPropertiesVisitor.SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
 					return;
@@ -51,12 +53,12 @@ namespace Xamarin.Forms.Xaml
 			}
 
 			//Only proceed further if the node is a keyless RD
-			if (   parentNode is IElementNode
+			if (parentNode is IElementNode
 				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)
 				&& typeof(ResourceDictionary).IsAssignableFrom(parentType)
 				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
-			else if (   parentNode is ListNode
+			else if (parentNode is ListNode
 					 && typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
 					 && !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
@@ -75,12 +77,12 @@ namespace Xamarin.Forms.Xaml
 			var enode = node as ElementNode;
 			if (enode is null)
 				return false;
-			if (   parentNode is IElementNode
+			if (parentNode is IElementNode
 				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)
 				&& typeof(ResourceDictionary).IsAssignableFrom(parentType)
-			    && !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
 				return true;
-			if (   parentNode is ListNode
+			if (parentNode is ListNode
 				&& typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
 				&& !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				return true;

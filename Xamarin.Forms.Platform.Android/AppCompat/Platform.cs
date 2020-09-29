@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
-using AView = Android.Views.View;
 using Xamarin.Forms.Internals;
-using System.ComponentModel;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {

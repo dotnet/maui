@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Internals
 			PropagateFlowDirection(child, child.Parent);
 		}
 
-		internal static void PropagateVisual(Element target, Element source) 
+		internal static void PropagateVisual(Element target, Element source)
 		{
 			IVisualController targetController = target as IVisualController;
 			if (targetController == null)

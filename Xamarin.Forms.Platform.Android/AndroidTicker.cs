@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (animatorEnabled != _animatorEnabled)
 			{
 				_animatorEnabled = animatorEnabled;
-				
+
 				// Notify the ticker that this value has changed, so it can manage animations in progress
 				OnSystemEnabledChanged();
 			}

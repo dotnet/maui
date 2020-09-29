@@ -359,7 +359,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		void ContractStarRowsIfNeeded(double targetHeight) 
+		void ContractStarRowsIfNeeded(double targetHeight)
 		{
 			var request = ComputeCurrentSize();
 
@@ -543,7 +543,7 @@ namespace Xamarin.Forms
 		void MeasureAndContractStarredRows(double width, double height, double totalStarsHeight)
 		{
 			double starRowHeight;
-			starRowHeight = MeasureStarredRows(width, height); 
+			starRowHeight = MeasureStarredRows(width, height);
 
 			if (!double.IsPositiveInfinity(height) && double.IsPositiveInfinity(width))
 			{
@@ -566,7 +566,7 @@ namespace Xamarin.Forms
 
 			ContractStarRowsIfNeeded(height);
 		}
-	
+
 		void MeasureGrid(double width, double height, bool requestSize = false)
 		{
 			EnsureRowsColumnsInitialized();
@@ -687,7 +687,7 @@ namespace Xamarin.Forms
 							double assignedHeight = GetAssignedRowHeight(child);
 
 							SizeRequest sizeRequest = child.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
-							actualHeight = Math.Max(actualHeight, sizeRequest.Request.Height - assignedHeight -  (GetRowSpan(child) - 1) * RowSpacing);
+							actualHeight = Math.Max(actualHeight, sizeRequest.Request.Height - assignedHeight - (GetRowSpan(child) - 1) * RowSpacing);
 							minimumHeight = Math.Max(minimumHeight, sizeRequest.Minimum.Height - assignedHeight - (GetRowSpan(child) - 1) * RowSpacing);
 						}
 						if (actualHeight >= 0)

@@ -7,7 +7,7 @@
 		public static readonly BindableProperty DefaultBackgroundColorProperty = BindableProperty.Create(nameof(DefaultBackgroundColor), typeof(Color), typeof(Cell), Color.Default);
 
 		public static Color GetDefaultBackgroundColor(BindableObject element)
-			=> (Color) element.GetValue(DefaultBackgroundColorProperty);
+			=> (Color)element.GetValue(DefaultBackgroundColorProperty);
 
 		public static void SetDefaultBackgroundColor(BindableObject element, Color value)
 			=> element.SetValue(DefaultBackgroundColorProperty, value);

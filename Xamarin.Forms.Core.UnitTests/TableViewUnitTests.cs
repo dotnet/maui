@@ -8,47 +8,48 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class TableViewUnitTests : BaseTestFixture
 	{
 		[Test]
-		public void TestConstructor ()
+		public void TestConstructor()
 		{
-			var table = new TableView ();
+			var table = new TableView();
 
-			Assert.False (table.Root.Any ());
-			Assert.AreEqual (LayoutOptions.FillAndExpand, table.HorizontalOptions);
-			Assert.AreEqual (LayoutOptions.FillAndExpand, table.VerticalOptions);
+			Assert.False(table.Root.Any());
+			Assert.AreEqual(LayoutOptions.FillAndExpand, table.HorizontalOptions);
+			Assert.AreEqual(LayoutOptions.FillAndExpand, table.VerticalOptions);
 		}
 
 		[Test]
-		public void TestModelChanged ()
+		public void TestModelChanged()
 		{
-			var table = new TableView ();
+			var table = new TableView();
 
 			bool changed = false;
 
 			table.ModelChanged += (sender, e) => changed = true;
 
-			table.Root = new TableRoot ("NewRoot");
+			table.Root = new TableRoot("NewRoot");
 
-			Assert.True (changed);
+			Assert.True(changed);
 		}
 
 		[Test]
-		public void BindingsContextChainsToModel ()
+		public void BindingsContextChainsToModel()
 		{
 			const string context = "Context";
 			var table = new TableView { BindingContext = context, Root = new TableRoot() };
 
-			Assert.AreEqual (context, table.Root.BindingContext);
+			Assert.AreEqual(context, table.Root.BindingContext);
 
 			// reverse assignment order
-			table = new TableView { Root = new TableRoot(), BindingContext = context};
-			Assert.AreEqual (context, table.Root.BindingContext);
+			table = new TableView { Root = new TableRoot(), BindingContext = context };
+			Assert.AreEqual(context, table.Root.BindingContext);
 		}
 
 		[Test]
-		public void ParentsViewCells ()
+		public void ParentsViewCells()
 		{
-			ViewCell viewCell = new ViewCell { View = new Label () };
-			var table = new TableView {
+			ViewCell viewCell = new ViewCell { View = new Label() };
+			var table = new TableView
+			{
 				Root = new TableRoot {
 					new TableSection {
 						viewCell
@@ -56,25 +57,26 @@ namespace Xamarin.Forms.Core.UnitTests
 				}
 			};
 
-			Assert.AreEqual (table, viewCell.Parent);
-			Assert.AreEqual (viewCell, viewCell.View.Parent);
+			Assert.AreEqual(table, viewCell.Parent);
+			Assert.AreEqual(viewCell, viewCell.View.Parent);
 		}
 
 		[Test]
-		public void ParentsAddedViewCells ()
+		public void ParentsAddedViewCells()
 		{
-			var viewCell = new ViewCell { View = new Label () };
-			var section = new TableSection (); 
-			var table = new TableView {
+			var viewCell = new ViewCell { View = new Label() };
+			var section = new TableSection();
+			var table = new TableView
+			{
 				Root = new TableRoot {
 					section
 				}
 			};
 
-			section.Add (viewCell);
+			section.Add(viewCell);
 
-			Assert.AreEqual (table, viewCell.Parent);
-			Assert.AreEqual (viewCell, viewCell.View.Parent);
+			Assert.AreEqual(table, viewCell.Parent);
+			Assert.AreEqual(viewCell, viewCell.View.Parent);
 		}
-	}	
+	}
 }

@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Xamarin.Forms;
-using System.Globalization;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Collections.Generic;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -128,7 +128,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var checkBox = new CheckBox();
 			checkBox.SetBinding(
 				CheckBox.IsCheckedProperty,
-				new MultiBinding {
+				new MultiBinding
+				{
 					Bindings = {
 						new MultiBinding {
 							Bindings = {
@@ -250,11 +251,11 @@ namespace Xamarin.Forms.Core.UnitTests
 			label2.SetValueCore(Label.TextProperty, $"Duck Duck", Internals.SetValueFlags.None);
 			Assert.AreEqual($"Duck Duck {oldLastName}", group.Person2.FullName);
 			Assert.AreEqual($"Duck Duck", label2.Text);
-			
+
 			// Too many members are no problem either 
 			label2.Text = oldName;
 			Assert.AreEqual(oldName, group.Person2.FullName);
-			label2.SetValueCore(Label.TextProperty, oldName + " Extra", Internals.SetValueFlags.None);	
+			label2.SetValueCore(Label.TextProperty, oldName + " Extra", Internals.SetValueFlags.None);
 			Assert.AreEqual(oldName, group.Person2.FullName);
 			Assert.AreEqual(oldName + " Extra", label2.Text);
 		}
@@ -357,7 +358,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var property = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
 			var bindable = new MockBindable();
-			var multibinding = new MultiBinding {
+			var multibinding = new MultiBinding
+			{
 				Bindings = {
 					new Binding ("foo"),
 					new Binding ("bar"),
@@ -365,8 +367,8 @@ namespace Xamarin.Forms.Core.UnitTests
 				},
 				StringFormat = "{0} - {1} - {2}"
 			};
-			Assert.DoesNotThrow(()=>bindable.SetBinding(property, multibinding));
-			Assert.DoesNotThrow(()=>bindable.BindingContext = new { foo = "FOO", bar = 42, baz = "BAZ" });
+			Assert.DoesNotThrow(() => bindable.SetBinding(property, multibinding));
+			Assert.DoesNotThrow(() => bindable.BindingContext = new { foo = "FOO", bar = 42, baz = "BAZ" });
 			Assert.That(bindable.GetValue(property), Is.EqualTo("FOO - 42 - BAZ"));
 		}
 
@@ -514,7 +516,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 				string separator = parameter as string ?? " ";
 
-				if (!targetTypes.All(t=>t==typeof(object)) && !targetTypes.All(t => t == typeof(string)))
+				if (!targetTypes.All(t => t == typeof(object)) && !targetTypes.All(t => t == typeof(string)))
 					// Normally we'd return null but throw exception just for unit test to catch
 					throw new Exception("Invalid targetTypes");
 

@@ -7,15 +7,15 @@ using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
-using AndroidX.AppCompat.App;
-using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using Android.Views;
+using AndroidX.AppCompat.App;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.AppCompat;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AColor = Android.Graphics.Color;
 using ARelativeLayout = Android.Widget.RelativeLayout;
-using Xamarin.Forms.Internals;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -208,7 +208,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		void OnCreate(
-			Bundle savedInstanceState, 
+			Bundle savedInstanceState,
 			ActivationFlags flags)
 		{
 			Profile.FrameBegin();
@@ -266,7 +266,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (bar == null)
 					throw new InvalidOperationException("ToolbarResource must be set to a androidx.appcompat.widget.Toolbar");
 			}
-			else 
+			else
 			{
 				bar = new AToolbar(this);
 			}
@@ -339,9 +339,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
 			{
-					// Don't listen for power save mode changes while we're paused
-					UnregisterReceiver(_powerSaveModeBroadcastReceiver);
-					_powerSaveReceiverRegistered = false;
+				// Don't listen for power save mode changes while we're paused
+				UnregisterReceiver(_powerSaveModeBroadcastReceiver);
+				_powerSaveReceiverRegistered = false;
 			}
 
 			// Stop animations or other ongoing actions that could consume CPU
@@ -472,7 +472,7 @@ namespace Xamarin.Forms.Platform.Android
 				SettingMainPage();
 			}
 		}
-		
+
 		void CheckForAppLink(Intent intent)
 		{
 			string action = intent.Action;
@@ -510,7 +510,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (_previousState == AndroidApplicationLifecycleState.OnCreate && _currentState == AndroidApplicationLifecycleState.OnStart)
 				_application.SendStart();
-			else if (_previousState == AndroidApplicationLifecycleState.OnRestart && _currentState == AndroidApplicationLifecycleState.OnStart)	
+			else if (_previousState == AndroidApplicationLifecycleState.OnRestart && _currentState == AndroidApplicationLifecycleState.OnStart)
 				_application.SendResume();
 			else if (_previousState == AndroidApplicationLifecycleState.OnPause && _currentState == AndroidApplicationLifecycleState.OnStop)
 				_application.SendSleep();
@@ -526,7 +526,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			InternalSetPage(_application.MainPage);
 		}
-				
+
 		void SettingMainPage()
 		{
 			Platform.SettingNewPage();
@@ -560,7 +560,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
-#region Statics
+		#region Statics
 
 		public static event BackButtonPressedEventHandler BackPressed;
 
@@ -568,6 +568,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static int ToolbarResource { get; set; }
 
-#endregion
+		#endregion
 	}
 }

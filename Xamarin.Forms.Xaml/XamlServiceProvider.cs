@@ -17,7 +17,8 @@ namespace Xamarin.Forms.Xaml.Internals
 				IProvideValueTarget = new XamlValueTargetProvider(targetObject, node, context, null);
 			if (context != null)
 				IRootObjectProvider = new XamlRootObjectProvider(context.RootElement);
-			if (context != null && node != null) {
+			if (context != null && node != null)
+			{
 				IXamlTypeResolver = new XamlTypeResolver(node.NamespaceResolver, XamlParser.GetElementType, context.RootAssembly);
 				Add(typeof(IReferenceProvider), new ReferenceProvider(node));
 			}
@@ -91,16 +92,20 @@ namespace Xamarin.Forms.Xaml.Internals
 
 		IEnumerable<object> IProvideParentValues.ParentObjects
 		{
-			get {
+			get
+			{
 				if (Node == null || Context == null)
 					yield break;
 				var n = Node;
 				var context = Context;
-				while (n.Parent != null && context != null) {
-					if (n.Parent is IElementNode) {
+				while (n.Parent != null && context != null)
+				{
+					if (n.Parent is IElementNode)
+					{
 						if (context.Values.TryGetValue(n.Parent, out var obj))
 							yield return obj;
-						else {
+						else
+						{
 							context = context.ParentContext;
 							continue;
 						}
@@ -119,13 +124,13 @@ namespace Xamarin.Forms.Xaml.Internals
 
 		[Obsolete("SimpleValueTargetProvider(object[] objectAndParents) is obsolete as of version 2.3.4. Please use SimpleValueTargetProvider(object[] objectAndParents, object targetProperty) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public SimpleValueTargetProvider(object[] objectAndParents) : this (objectAndParents, null)
+		public SimpleValueTargetProvider(object[] objectAndParents) : this(objectAndParents, null)
 		{
 		}
 
 		[Obsolete("SimpleValueTargetProvider(object[] objectAndParents) is obsolete as of version 3.3.0. Please use SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, NameScope scope) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty) : this (objectAndParents, targetProperty, null)
+		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty) : this(objectAndParents, targetProperty, null)
 		{
 		}
 
@@ -151,7 +156,8 @@ namespace Xamarin.Forms.Xaml.Internals
 			if ((value = scope?.FindByName(name)) != null)
 				return value;
 
-			for (var i = 0; i < objectAndParents.Length; i++) {
+			for (var i = 0; i < objectAndParents.Length; i++)
+			{
 				if (!(objectAndParents[i] is BindableObject bo))
 					continue;
 				if (!(NameScope.GetNameScope(bo) is INameScope ns))
@@ -211,23 +217,27 @@ namespace Xamarin.Forms.Xaml.Internals
 				return null;
 
 			string prefix, name;
-			if (split.Length == 2) {
+			if (split.Length == 2)
+			{
 				prefix = split[0];
 				name = split[1];
 			}
-			else {
+			else
+			{
 				prefix = "";
 				name = split[0];
 			}
 
 			IXmlLineInfo xmlLineInfo = null;
-			if (serviceProvider != null) {
+			if (serviceProvider != null)
+			{
 				if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider)
 					xmlLineInfo = lineInfoProvider.XmlLineInfo;
 			}
 
 			var namespaceuri = namespaceResolver.LookupNamespace(prefix);
-			if (namespaceuri == null) {
+			if (namespaceuri == null)
+			{
 				exception = new XamlParseException($"No xmlns declaration for prefix \"{prefix}\"", xmlLineInfo);
 				return null;
 			}
@@ -260,7 +270,8 @@ namespace Xamarin.Forms.Xaml.Internals
 		public object FindByName(string name)
 		{
 			var n = _node;
-			while (n != null) {
+			while (n != null)
+			{
 				object value;
 				if ((value = (n as IElementNode)?.NameScopeRef.NameScope?.FindByName(name)) != null)
 					return value;

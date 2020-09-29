@@ -21,10 +21,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			var shellSection = shell.CurrentItem.CurrentItem;
 
 			int firedCount = 0;
-			
+
 			(shellSection as IShellSectionController).ItemsCollectionChanged += (_, e) =>
 			{
-				if(e.OldItems != null)
+				if (e.OldItems != null)
 					firedCount++;
 			};
 

@@ -2,8 +2,8 @@
 
 namespace Xamarin.Forms.Shapes
 {
-    public sealed class GeometryCollection : ObservableCollection<Geometry>
-    {
+	public sealed class GeometryCollection : ObservableCollection<Geometry>
+	{
 
-    }
+	}
 }

@@ -1,12 +1,9 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
-using System.Collections.Generic;
-
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-
 using Xamarin.Forms.Xaml;
-
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 

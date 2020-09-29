@@ -121,7 +121,8 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			bool result = false;
 
-			var bindingContext = new {
+			var bindingContext = new
+			{
 				Command = new Command(() => { result = true; }, () => true)
 			};
 
