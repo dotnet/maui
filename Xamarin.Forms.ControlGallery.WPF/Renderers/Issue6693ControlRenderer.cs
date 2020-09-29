@@ -8,7 +8,7 @@ using WRect = System.Windows.Rect;
 [assembly: ExportRenderer(typeof(Issue6693Control), typeof(Issue6693ControlRenderer))]
 namespace Xamarin.Forms.ControlGallery.WPF.Renderers
 {
-	public class Issue6693ControlRenderer:ViewRenderer<Issue6693Control,WIssue6693Control>
+	public class Issue6693ControlRenderer : ViewRenderer<Issue6693Control, WIssue6693Control>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Issue6693Control> e)
 		{
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.ControlGallery.WPF.Renderers
 	{
 		public WIssue6693Control()
 		{
-			
+
 		}
 
 		protected override void OnRender(DrawingContext drawingContext)
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.ControlGallery.WPF.Renderers
 		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
-			if(e.Property.Name == WIssue6693Control.IsEnabledProperty.Name)
+			if (e.Property.Name == WIssue6693Control.IsEnabledProperty.Name)
 			{
 				InvalidateVisual();
 			}

@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	}
 
-	public partial class Bz60575:ContentPage
+	public partial class Bz60575 : ContentPage
 	{
 		public Bz60575()
 		{
@@ -49,7 +49,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public static readonly BindableProperty CollectionProperty =
 			BindableProperty.Create("Collection", typeof(IList<string>), typeof(Bz60575), default(IList<string>), defaultValueCreator: (b) => new List<string>());
 
-		public IList<string> Collection {
+		public IList<string> Collection
+		{
 			get { return (IList<string>)GetValue(CollectionProperty); }
 			set { SetValue(CollectionProperty, value); }
 		}
@@ -57,7 +58,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public static readonly BindableProperty Collection2Property =
 			BindableProperty.Create("Collection2", typeof(IList<string>), typeof(Bz60575), default(IList<string>), defaultValueCreator: (b) => new List<string>());
 
-		public IList<string> Collection2 {
+		public IList<string> Collection2
+		{
 			get { return (IList<string>)GetValue(Collection2Property); }
 			set { SetValue(Collection2Property, value); }
 		}

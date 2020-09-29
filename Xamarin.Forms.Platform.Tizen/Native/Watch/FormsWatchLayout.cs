@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 			public const string Buttons2 = "content/circle/buttons2";
 		}
 
-		
+
 		public PopupLayout(EvasObject parent, string style) : base(parent)
 		{
 			SetTheme("layout", "popup", style);
@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 		{
 			public const string Circle = "circle";
 		}
-		
+
 		public class Parts
 		{
 			public const string ActionArea = "elm.swallow.action_area";

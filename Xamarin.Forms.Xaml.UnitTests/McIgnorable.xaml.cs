@@ -4,12 +4,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class McIgnorable : ContentPage
 	{
-		public McIgnorable ()
+		public McIgnorable()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public McIgnorable (bool useCompiledXaml)
+		public McIgnorable(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -18,11 +18,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase (false)]
-			[TestCase (true)]
-			public void DoesNotThrow (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void DoesNotThrow(bool useCompiledXaml)
 			{
-				var layout = new McIgnorable (useCompiledXaml);
+				var layout = new McIgnorable(useCompiledXaml);
 			}
 		}
 	}

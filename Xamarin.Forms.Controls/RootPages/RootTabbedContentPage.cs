@@ -10,13 +10,14 @@ namespace Xamarin.Forms.Controls
 	// TabbedPage -> ContentPage
 	public class RootTabbedContentPage : TabbedPage
 	{
-		public RootTabbedContentPage (string hierarchy)
+		public RootTabbedContentPage(string hierarchy)
 		{
 			AutomationId = hierarchy + "PageId";
 
-			var tabOne = new ContentPage {
+			var tabOne = new ContentPage
+			{
 				Title = "Testing 123",
-				Content = new SwapHierachyStackLayout (hierarchy)
+				Content = new SwapHierachyStackLayout(hierarchy)
 			};
 
 			var clearSelectedTabColorButton = new Button { Text = "Button" };
@@ -26,9 +27,11 @@ namespace Xamarin.Forms.Controls
 				SelectedTabColor = Color.Default;
 			};
 
-			var tabTwo = new ContentPage {
+			var tabTwo = new ContentPage
+			{
 				Title = "Testing 345",
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					Children = {
 						new Label { Text = "Hello" },
 						new AbsoluteLayout {
@@ -43,8 +46,8 @@ namespace Xamarin.Forms.Controls
 			UnselectedTabColor = Color.HotPink;
 			SelectedTabColor = Color.Green;
 
-			Children.Add (tabOne);
-			Children.Add (tabTwo);
+			Children.Add(tabOne);
+			Children.Add(tabTwo);
 		}
 	}
 }

@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;
@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			protected virtual bool SetProperty<T>(
 				ref T backingStore, T value,
-				[CallerMemberName]string propertyName = "",
+				[CallerMemberName] string propertyName = "",
 				Action onChanged = null)
 			{
 				if (EqualityComparer<T>.Default.Equals(backingStore, value))
@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			public event PropertyChangedEventHandler PropertyChanged;
 
-			protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = "") =>
+			protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "") =>
 			 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 

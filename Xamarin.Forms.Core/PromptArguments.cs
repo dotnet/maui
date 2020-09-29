@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Internals
 		[Obsolete("PromptArguments overload is obsolete as of version 4.5.0 and is no longer supported.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public PromptArguments(string title, string message, string accept, string cancel, string placeholder, int maxLength, Keyboard keyboard)
-			: this (title, message, accept, cancel, placeholder, maxLength, keyboard, "")
+			: this(title, message, accept, cancel, placeholder, maxLength, keyboard, "")
 		{ }
 
 		public PromptArguments(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")

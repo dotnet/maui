@@ -17,7 +17,7 @@ namespace Xamarin.Forms.ControlGallery.Tizen
 
 			var renderer = Platform.Tizen.Platform.GetOrCreateRenderer(element);
 
-			if (renderer == null 
+			if (renderer == null
 				|| renderer.GetType().Name == "DefaultRenderer"
 				)
 			{

@@ -44,7 +44,7 @@
 							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true), Navigation),
 
 						GalleryBuilder.NavButton("Scroll mode Keep items in view", () =>
-                            new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true, scrollMode: ItemsUpdatingScrollMode.KeepItemsInView), Navigation),
+							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true, scrollMode: ItemsUpdatingScrollMode.KeepItemsInView), Navigation),
 
 						GalleryBuilder.NavButton("Scroll mode Keep scroll offset", () =>
 							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true, scrollMode: ItemsUpdatingScrollMode.KeepScrollOffset), Navigation),

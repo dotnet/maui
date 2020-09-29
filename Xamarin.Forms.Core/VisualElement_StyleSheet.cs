@@ -14,7 +14,8 @@ namespace Xamarin.Forms
 				return null;
 
 			StylePropertyAttribute styleAttribute = null;
-			for (int i = 0; i < attrList.Count; i++) {
+			for (int i = 0; i < attrList.Count; i++)
+			{
 				styleAttribute = attrList[i];
 				if (styleAttribute.TargetType.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
 					break;

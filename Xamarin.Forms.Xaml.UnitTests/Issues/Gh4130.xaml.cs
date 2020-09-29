@@ -6,7 +6,7 @@ using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-	public class Gh4130Control:ContentView
+	public class Gh4130Control : ContentView
 	{
 		public delegate void TextChangedEventHandler(object sender, TextChangedEventArgs args);
 #pragma warning disable 067
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
-			[TestCase(false),TestCase(true)]
+			[TestCase(false), TestCase(true)]
 			public void NonGenericEventHanlders(bool useCompiledXaml)
 			{
 				var layout = new Gh4130(useCompiledXaml);

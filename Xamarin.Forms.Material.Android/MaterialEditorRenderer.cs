@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Material.Android
 		public MaterialEditorRenderer(Context context) :
 			base(MaterialContextThemeWrapper.Create(context))
 		{
-		}		
+		}
 
 		protected override MaterialFormsTextInputLayout CreateNativeControl()
 		{
@@ -54,12 +54,12 @@ namespace Xamarin.Forms.Material.Android
 
 			_textInputLayout?.SetHint(Element.Placeholder, Element);
 		}
-		
+
 		protected override void UpdatePlaceholderColor() => ApplyTheme();
 		protected virtual void ApplyTheme() => _textInputLayout?.ApplyTheme(Element.TextColor, Element.PlaceholderColor);
 		protected override void UpdateTextColor() => ApplyTheme();
 		protected override EditText EditText => _textInputEditText;
-		protected override AView ControlUsedForAutomation => EditText; 
+		protected override AView ControlUsedForAutomation => EditText;
 		protected override void UpdateFont()
 		{
 			if (_disposed || _textInputLayout == null)

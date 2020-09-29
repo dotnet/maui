@@ -174,7 +174,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public async Task NavigationPushAndPopBasic()
 		{
-			var flyoutItem = 
+			var flyoutItem =
 				CreateShellItem<FlyoutItem>(
 					 shellItemRoute: "item",
 					 shellSectionRoute: "section",
@@ -228,8 +228,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		public async Task PopToRootWithMultipleFlyoutItems()
 		{
 			TestShell testShell = new TestShell(
-				CreateShellItem<FlyoutItem>(shellItemRoute:"store", shellContentRoute: "home"),
-				CreateShellItem<FlyoutItem>(shellItemRoute:"second", shellContentRoute: "home")
+				CreateShellItem<FlyoutItem>(shellItemRoute: "store", shellContentRoute: "home"),
+				CreateShellItem<FlyoutItem>(shellItemRoute: "second", shellContentRoute: "home")
 			);
 
 			await testShell.Navigation.PushAsync(new ContentPage());

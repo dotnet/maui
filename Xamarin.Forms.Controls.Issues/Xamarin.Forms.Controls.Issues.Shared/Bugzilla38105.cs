@@ -6,30 +6,32 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 38105, "RemovePage does not cause back arrow to go away on Android", PlatformAffected.Android, navigationBehavior: NavigationBehavior.PushModalAsync)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 38105, "RemovePage does not cause back arrow to go away on Android", PlatformAffected.Android, navigationBehavior: NavigationBehavior.PushModalAsync)]
 	public class Bugzilla38105 : TestFlyoutPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			Detail = new NavigationPage (new ViewA38105 ());
+			Detail = new NavigationPage(new ViewA38105());
 
-			var button = new Button () { Text = "Click me" };
-			button.Clicked += (o, e) => {
+			var button = new Button() { Text = "Click me" };
+			button.Clicked += (o, e) =>
+			{
 				var navPage = (NavigationPage)Detail;
 
 				var rootPage = navPage.CurrentPage;
 
-				navPage.PopToRootAsync (false);
+				navPage.PopToRootAsync(false);
 
-				navPage.Navigation.PushAsync (new ViewB38105 ());
+				navPage.Navigation.PushAsync(new ViewB38105());
 
-				navPage.Navigation.RemovePage (rootPage);
+				navPage.Navigation.RemovePage(rootPage);
 
 				IsPresented = false;
 			};
 
-			Flyout = new ContentPage () {
+			Flyout = new ContentPage()
+			{
 				Title = "test",
 				Content = button
 			};
@@ -38,7 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Preserve(AllMembers = true)]
 		class ViewA38105 : ContentPage
 		{
-			public ViewA38105 ()
+			public ViewA38105()
 			{
 				Title = "View A";
 
@@ -57,7 +59,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Preserve(AllMembers = true)]
 		class ViewB38105 : ContentPage
 		{
-			public ViewB38105 ()
+			public ViewB38105()
 			{
 				Title = "View B";
 			}

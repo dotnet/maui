@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			var newTintColor = foreground.IsDefault ? ShellRenderer.DefaultForegroundColor : foreground;
 
-			if(toolbarTracker.TintColor != newTintColor)
+			if (toolbarTracker.TintColor != newTintColor)
 				toolbarTracker.TintColor = newTintColor;
 		}
 

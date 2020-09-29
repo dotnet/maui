@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			Element.SetValueFromRenderer(RadioButton.IsCheckedProperty, Control.GroupValue == 1 ? true : false);
 		}
-		
+
 		void UpdateIsChecked()
 		{
 			Control.GroupValue = Element.IsChecked ? 1 : 0;

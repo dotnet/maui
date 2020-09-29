@@ -10,13 +10,13 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 889, "Assigning to FlyoutPage.Detail after construction doesn't work", PlatformAffected.Android | PlatformAffected.iOS)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 889, "Assigning to FlyoutPage.Detail after construction doesn't work", PlatformAffected.Android | PlatformAffected.iOS)]
 	public class Issue889 : TestFlyoutPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var cells = new [] {
+			var cells = new[] {
 				new NavPageNameObject ("Page 1"),
 				new NavPageNameObject ("Page 3"),
 				new NavPageNameObject ("Page 4"),
@@ -26,22 +26,25 @@ namespace Xamarin.Forms.Controls.Issues
 				new NavPageNameObject ("Page 8"),
 			};
 
-			var template = new DataTemplate (typeof (TextCell));
-			template.SetBinding (TextCell.TextProperty, "PageName");
+			var template = new DataTemplate(typeof(TextCell));
+			template.SetBinding(TextCell.TextProperty, "PageName");
 
-			var listView = new ListView { 
+			var listView = new ListView
+			{
 				ItemTemplate = template,
 				ItemsSource = cells
 			};
 
 			listView.BindingContext = cells;
 
-			listView.ItemTapped += (sender, e) => {
+			listView.ItemTapped += (sender, e) =>
+			{
 				var cellName = ((NavPageNameObject)e.Item).PageName;
-				Detail = new CustomNavTabDetailPage (cellName);
+				Detail = new CustomNavTabDetailPage(cellName);
 			};
 
-			var master = new ContentPage {
+			var master = new ContentPage
+			{
 				Title = "Flyout",
 				IconImageSource = "bank.png",
 				Content = listView
@@ -50,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 
 			Flyout = master;
-			Detail = new CustomNavTabDetailPage ("Initial Page");
+			Detail = new CustomNavTabDetailPage("Initial Page");
 		}
 
 		// Issue892
@@ -76,22 +79,24 @@ namespace Xamarin.Forms.Controls.Issues
 
 	public class CustomNavTabDetailPage : NavigationPage
 	{
-		public CustomNavTabDetailPage (string pageName)
+		public CustomNavTabDetailPage(string pageName)
 		{
-			PushAsync (new NestedNavTabPageRootView (pageName));
+			PushAsync(new NestedNavTabPageRootView(pageName));
 		}
 	}
 
 	public class NestedNavTabPageRootView : TabbedPage
 	{
-		public NestedNavTabPageRootView (string pageTitle)
+		public NestedNavTabPageRootView(string pageTitle)
 		{
 			Title = pageTitle;
 
-			var tabOne = new ContentPage {
+			var tabOne = new ContentPage
+			{
 				Title = "Tab 1 Title",
-				BackgroundColor = Color.FromHex ("#666"),
-				Content = new StackLayout {
+				BackgroundColor = Color.FromHex("#666"),
+				Content = new StackLayout
+				{
 					Children = {
 						new Button {
 							Text = "Push new page",
@@ -101,10 +106,12 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			var tabTwo = new ContentPage {
+			var tabTwo = new ContentPage
+			{
 				Title = "Tab 2 Title",
-				BackgroundColor = Color.FromHex ("#BBB"),
-				Content = new StackLayout {
+				BackgroundColor = Color.FromHex("#BBB"),
+				Content = new StackLayout
+				{
 					Children = {
 						new Button {
 							Text = "Push new page",
@@ -114,21 +121,22 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			tabOne.SetValue (IconImageSourceProperty, "bank.png");
-			tabTwo.SetValue (IconImageSourceProperty, "coffee.png");
-			Children.Add (tabOne);
-			Children.Add (tabTwo);
+			tabOne.SetValue(IconImageSourceProperty, "bank.png");
+			tabTwo.SetValue(IconImageSourceProperty, "coffee.png");
+			Children.Add(tabOne);
+			Children.Add(tabTwo);
 		}
 	}
 
 	public class NestedNavTabPageOneLevel : ContentPage
 	{
-		public NestedNavTabPageOneLevel ()
+		public NestedNavTabPageOneLevel()
 		{
 			Title = "One pushed";
 			BackgroundColor = Color.FromHex("#999");
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					new Label {
 						TextColor = Color.Red,

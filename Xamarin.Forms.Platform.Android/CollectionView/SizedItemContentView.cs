@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Platform.Android
 		readonly Func<int> _width;
 		readonly Func<int> _height;
 
-		public SizedItemContentView(Context context, Func<int> width, Func<int> height) 
+		public SizedItemContentView(Context context, Func<int> width, Func<int> height)
 			: base(context)
 		{
 			_width = width;
@@ -26,9 +26,9 @@ namespace Xamarin.Forms.Platform.Android
 			var targetWidth = _width();
 			var targetHeight = _height();
 
-			Content.Element.Measure(Context.FromPixels(targetWidth), Context.FromPixels(targetHeight), 
+			Content.Element.Measure(Context.FromPixels(targetWidth), Context.FromPixels(targetHeight),
 				MeasureFlags.IncludeMargins);
-			
+
 			SetMeasuredDimension(targetWidth, targetHeight);
 		}
 	}

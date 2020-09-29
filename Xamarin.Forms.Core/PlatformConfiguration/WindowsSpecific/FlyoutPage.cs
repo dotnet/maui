@@ -26,7 +26,7 @@ namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 		{
 			return (CollapseStyle)config.Element.GetValue(CollapseStyleProperty);
 		}
-		
+
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetCollapseStyle(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, CollapseStyle value)
 		{

@@ -1,10 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using ElmSharp;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
-using ElmSharp;
 using EButton = ElmSharp.Button;
 using EToolbar = ElmSharp.Toolbar;
 using EToolbarItem = ElmSharp.ToolbarItem;
@@ -327,7 +327,8 @@ namespace Xamarin.Forms.Platform.Tizen
 						var copyOfStack = Element.Navigation.NavigationStack.Reverse().Skip(1);
 						foreach (var lp in copyOfStack)
 						{
-							if (lp == p) break;
+							if (lp == p)
+								break;
 							Element.Navigation.RemovePage(lp);
 						}
 						if (Element.Navigation.NavigationStack.Last() != p)

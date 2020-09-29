@@ -223,7 +223,7 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			NavigationPage = this;
-			
+
 			PushAsync(BuildMenu());
 		}
 	}

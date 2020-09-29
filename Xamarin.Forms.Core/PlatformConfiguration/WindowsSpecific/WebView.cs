@@ -3,8 +3,8 @@ namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 {
 	using FormsElement = Forms.WebView;
 
-    public static class WebView
-    {
+	public static class WebView
+	{
 		public static readonly BindableProperty IsJavaScriptAlertEnabledProperty = BindableProperty.Create("IsJavaScriptAlertEnabled", typeof(bool), typeof(WebView), false);
 
 		public static bool GetIsJavaScriptAlertEnabled(BindableObject element)

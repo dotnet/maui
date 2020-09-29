@@ -18,7 +18,8 @@ namespace Xamarin.Forms.Core.XamlC
 		{
 			var module = context.Body.Method.Module;
 
-			if (IsNullOrEmpty(value)) {
+			if (IsNullOrEmpty(value))
+			{
 				yield return Instruction.Create(OpCodes.Ldnull);
 				yield break;
 			}
@@ -90,8 +91,8 @@ namespace Xamarin.Forms.Core.XamlC
 				throw new XamlParseException($"Expected {nameof(VisualStateGroup)} but found {parent.Parent}", lineInfo);
 
 			//3. if the VSG is in a VSGL, skip that as it could be implicit
-			if (   target.Parent is ListNode
-				|| (  (target.Parent as IElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri
+			if (target.Parent is ListNode
+				|| ((target.Parent as IElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri
 				   && (target.Parent as IElementNode)?.XmlType.Name == nameof(VisualStateGroupList)))
 				target = target.Parent.Parent as IElementNode;
 			else
@@ -108,7 +109,8 @@ namespace Xamarin.Forms.Core.XamlC
 		{
 			TypeReference declaringTypeReference;
 			FieldReference bpRef = typeRef.GetField(fd => fd.Name == $"{propertyName}Property" && fd.IsStatic && fd.IsPublic, out declaringTypeReference);
-			if (bpRef != null) {
+			if (bpRef != null)
+			{
 				bpRef = module.ImportReference(bpRef.ResolveGenericParameters(declaringTypeReference));
 				bpRef.FieldType = module.ImportReference(bpRef.FieldType);
 			}

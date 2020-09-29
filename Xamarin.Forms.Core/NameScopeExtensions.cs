@@ -7,10 +7,12 @@ namespace Xamarin.Forms
 	{
 		public static T FindByName<T>(this Element element, string name)
 		{
-			try {
+			try
+			{
 				return (T)element.FindByName(name);
 			}
-			catch (InvalidCastException ice) when (ResourceLoader.ExceptionHandler2 != null) {
+			catch (InvalidCastException ice) when (ResourceLoader.ExceptionHandler2 != null)
+			{
 				ResourceLoader.ExceptionHandler2((ice, null));
 				return default(T);
 			}

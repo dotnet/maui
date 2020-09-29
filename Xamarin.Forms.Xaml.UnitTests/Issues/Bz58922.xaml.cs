@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-           
+
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class Bz58922 : ContentPage

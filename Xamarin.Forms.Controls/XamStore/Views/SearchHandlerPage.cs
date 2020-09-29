@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.XamStore
 			{
 				Spacing = 10,
 				Padding = 10,
-				Children = { new Button { Text = "Show/Hide SearchHandler", Command = new Command(()=> ShowHideSearchHandler()) }}
+				Children = { new Button { Text = "Show/Hide SearchHandler", Command = new Command(() => ShowHideSearchHandler()) } }
 			};
 			Content = new StackLayout
 			{

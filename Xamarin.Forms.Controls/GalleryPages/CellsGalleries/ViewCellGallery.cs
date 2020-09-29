@@ -9,11 +9,12 @@ namespace Xamarin.Forms.Controls
 {
 	public class ViewCellGallery : ContentPage
 	{
-		public ViewCellGallery ()
+		public ViewCellGallery()
 		{
 			Title = "ViewCell Gallery - Legacy";
 
-			Content = new TableView {
+			Content = new TableView
+			{
 				RowHeight = 150,
 				Root = new TableRoot {
 					new TableSection ("Testing") {
@@ -27,7 +28,7 @@ namespace Xamarin.Forms.Controls
 			};
 		}
 	}
-	
+
 	public class UrlImageViewCellListPage : ContentPage
 	{
 		public UrlImageViewCellListPage()
@@ -35,12 +36,14 @@ namespace Xamarin.Forms.Controls
 			if (Device.RuntimePlatform == Device.iOS && Device.Idiom == TargetIdiom.Tablet)
 				Padding = new Thickness(0, 0, 0, 60);
 
-			var stringToImageSourceConverter = new GenericValueConverter (
-				obj => new UriImageSource() {
-					Uri = new Uri ((string) obj)
+			var stringToImageSourceConverter = new GenericValueConverter(
+				obj => new UriImageSource()
+				{
+					Uri = new Uri((string)obj)
 				});
 
-			var dataTemplate = new DataTemplate (() => {
+			var dataTemplate = new DataTemplate(() =>
+			{
 				var cell = new ViewCell();
 
 				var image = new Image();
@@ -49,10 +52,11 @@ namespace Xamarin.Forms.Controls
 				image.HeightRequest = 160;
 
 				var text = new Label();
-				text.SetBinding (Label.TextProperty, new Binding ("Text"));
-				text.SetBinding (Label.TextColorProperty, new Binding ("TextColor"));
+				text.SetBinding(Label.TextProperty, new Binding("Text"));
+				text.SetBinding(Label.TextColorProperty, new Binding("TextColor"));
 
-				cell.View = new StackLayout {
+				cell.View = new StackLayout
+				{
 					Orientation = StackOrientation.Horizontal,
 					Children = {
 						image,
@@ -73,9 +77,11 @@ namespace Xamarin.Forms.Controls
 
 			var label = new Label { Text = "I have not been selected" };
 
-			var listView = new ListView {
+			var listView = new ListView
+			{
 				AutomationId = CellTypeList.CellTestContainerId,
-				ItemsSource = Enumerable.Range (0, albums.Length).Select (i => new UrlImageViewCellListPageModel {
+				ItemsSource = Enumerable.Range(0, albums.Length).Select(i => new UrlImageViewCellListPageModel
+				{
 					Text = "Text " + i,
 					TextColor = i % 2 == 0 ? Color.Red : Color.Blue,
 					Image = albums[i]

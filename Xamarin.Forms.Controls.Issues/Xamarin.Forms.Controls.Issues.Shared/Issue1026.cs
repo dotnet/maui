@@ -3,28 +3,33 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1026, "Label cropping", PlatformAffected.iOS | PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1026, "Label cropping", PlatformAffected.iOS | PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
 	public class Issue1026 : ContentPage
 	{
-		public Issue1026 ()
+		public Issue1026()
 		{
-			var instructions = new Label { Text = "The label at the bottom of the form should read 'by subscribing," +
-				" you accept the general conditions.'; if the label is truncated, this test has failed." };
+			var instructions = new Label
+			{
+				Text = "The label at the bottom of the form should read 'by subscribing," +
+				" you accept the general conditions.'; if the label is truncated, this test has failed."
+			};
 
-			var scrollView = 
-				new ScrollView {
+			var scrollView =
+				new ScrollView
+				{
 					BackgroundColor = Color.FromHex("#dae1eb"),
 					Content =
-					new StackLayout {
-					Padding = new Thickness (0, 18),
-					Spacing = 10,
-					Orientation = StackOrientation.Vertical,
-					Children = {
+					new StackLayout
+					{
+						Padding = new Thickness(0, 18),
+						Spacing = 10,
+						Orientation = StackOrientation.Vertical,
+						Children = {
 						new Button {
-							BackgroundColor = Color.FromHex ("#006599"), 
+							BackgroundColor = Color.FromHex ("#006599"),
 							TextColor = Color.White,
-							Text = "Subscribe with LinkedIn", 
+							Text = "Subscribe with LinkedIn",
 							WidthRequest = 262,
 							HorizontalOptions = LayoutOptions.Center,
 #pragma warning disable 0618
@@ -65,9 +70,9 @@ namespace Xamarin.Forms.Controls.Issues
 							HorizontalOptions = LayoutOptions.Center,
 						},
 						new Button {
-							BackgroundColor = Color.FromHex ("#05addc"), 
+							BackgroundColor = Color.FromHex ("#05addc"),
 							TextColor = Color.White,
-							Text = "Create an account", 
+							Text = "Create an account",
 							WidthRequest = 262,
 							HorizontalOptions = LayoutOptions.Center,
 #pragma warning disable 0618
@@ -88,9 +93,9 @@ namespace Xamarin.Forms.Controls.Issues
 							HorizontalOptions = LayoutOptions.Center,
 						},
 					},
-				},
+					},
 
-			};
+				};
 
 			Content = new StackLayout { Children = { instructions, scrollView } };
 		}

@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Xaml
 		{
 			var attributes = ParseXamlAttributes(reader, out IList<KeyValuePair<string, string>> xmlns);
 			var prefixes = PrefixesToIgnore(xmlns);
-			(rootNode.IgnorablePrefixes ?? (rootNode.IgnorablePrefixes=new List<string>())).AddRange(prefixes);
+			(rootNode.IgnorablePrefixes ?? (rootNode.IgnorablePrefixes = new List<string>())).AddRange(prefixes);
 			rootNode.Properties.AddRange(attributes);
 			ParseXamlElementFor(rootNode, reader);
 		}
@@ -72,7 +72,8 @@ namespace Xamarin.Forms.Xaml
 						return;
 					case XmlNodeType.Element:
 						// 1. Property Element.
-						if (reader.Name.Contains(".")) {
+						if (reader.Name.Contains("."))
+						{
 							XmlName name;
 							if (reader.Name.StartsWith(elementName + ".", StringComparison.Ordinal))
 								name = new XmlName(reader.NamespaceURI, reader.Name.Substring(elementName.Length + 1));
@@ -92,7 +93,8 @@ namespace Xamarin.Forms.Xaml
 								node.Properties.Add(name, prop);
 						}
 						// 2. Xaml2009 primitives, x:Arguments, ...
-						else if (reader.NamespaceURI == X2009Uri && reader.LocalName == "Arguments") {
+						else if (reader.NamespaceURI == X2009Uri && reader.LocalName == "Arguments")
+						{
 							if (node.Properties.ContainsKey(XmlName.xArguments))
 								throw new XamlParseException($"'x:Arguments' is a duplicate directive name.", (IXmlLineInfo)reader);
 
@@ -102,7 +104,8 @@ namespace Xamarin.Forms.Xaml
 						}
 						// 3. DataTemplate (should be handled by 4.)
 						else if (node.XmlType.NamespaceUri == XFUri &&
-								 (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate")) {
+								 (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate"))
+						{
 							if (node.Properties.ContainsKey(XmlName._CreateContent))
 								throw new XamlParseException($"Multiple child elements in {node.XmlType.Name}", (IXmlLineInfo)reader);
 
@@ -111,7 +114,8 @@ namespace Xamarin.Forms.Xaml
 								node.Properties.Add(XmlName._CreateContent, prop);
 						}
 						// 4. Implicit content, implicit collection, or collection syntax. Add to CollectionItems, resolve case later.
-						else {
+						else
+						{
 							var item = ReadNode(reader, true);
 							if (item != null)
 								node.CollectionItems.Add(item);
@@ -201,7 +205,7 @@ namespace Xamarin.Forms.Xaml
 				: null;
 		}
 
-		static IList<KeyValuePair<XmlName, INode>> ParseXamlAttributes(XmlReader reader, out IList<KeyValuePair<string,string>> xmlns)
+		static IList<KeyValuePair<XmlName, INode>> ParseXamlAttributes(XmlReader reader, out IList<KeyValuePair<string, string>> xmlns)
 		{
 			Debug.Assert(reader.NodeType == XmlNodeType.Element);
 			var attributes = new List<KeyValuePair<XmlName, INode>>();
@@ -211,7 +215,8 @@ namespace Xamarin.Forms.Xaml
 				reader.MoveToAttribute(i);
 
 				//skip xmlns
-				if (reader.NamespaceURI == "http://www.w3.org/2000/xmlns/") {
+				if (reader.NamespaceURI == "http://www.w3.org/2000/xmlns/")
+				{
 					xmlns.Add(new KeyValuePair<string, string>(reader.LocalName, reader.Value));
 					continue;
 				}
@@ -240,41 +245,43 @@ namespace Xamarin.Forms.Xaml
 		{
 			if (name.NamespaceURI == X2006Uri)
 			{
-				switch (name.LocalName) {
-				case "Key":
-					return XmlName.xKey;
-				case "Name":
-					return XmlName.xName;
-				case "Class":
-				case "FieldModifier":
-					return new XmlName(null, null);
-				default:
-					Debug.WriteLine("Unhandled attribute {0}", name);
-					return new XmlName(null, null);
+				switch (name.LocalName)
+				{
+					case "Key":
+						return XmlName.xKey;
+					case "Name":
+						return XmlName.xName;
+					case "Class":
+					case "FieldModifier":
+						return new XmlName(null, null);
+					default:
+						Debug.WriteLine("Unhandled attribute {0}", name);
+						return new XmlName(null, null);
 				}
-            }
+			}
 
 			if (name.NamespaceURI == X2009Uri)
 			{
-				switch (name.LocalName) {
-				case "Key":
-					return XmlName.xKey;
-				case "Name":
-					return XmlName.xName;
-				case "TypeArguments":
-					return XmlName.xTypeArguments;
-				case "DataType":
-					return XmlName.xDataType;
-				case "Class":
-				case "FieldModifier":
-					return new XmlName(null, null);
-				case "FactoryMethod":
-					return XmlName.xFactoryMethod;
-				case "Arguments":
-					return XmlName.xArguments;
-				default:
-					Debug.WriteLine("Unhandled attribute {0}", name);
-					return new XmlName(null, null);
+				switch (name.LocalName)
+				{
+					case "Key":
+						return XmlName.xKey;
+					case "Name":
+						return XmlName.xName;
+					case "TypeArguments":
+						return XmlName.xTypeArguments;
+					case "DataType":
+						return XmlName.xDataType;
+					case "Class":
+					case "FieldModifier":
+						return new XmlName(null, null);
+					case "FactoryMethod":
+						return XmlName.xFactoryMethod;
+					case "Arguments":
+						return XmlName.xArguments;
+					default:
+						Debug.WriteLine("Unhandled attribute {0}", name);
+						return new XmlName(null, null);
 				}
 			}
 
@@ -284,23 +291,27 @@ namespace Xamarin.Forms.Xaml
 		static IList<string> PrefixesToIgnore(IList<KeyValuePair<string, string>> xmlns)
 		{
 			var prefixes = new List<string>();
-			foreach (var kvp in xmlns) {
+			foreach (var kvp in xmlns)
+			{
 				var prefix = kvp.Key;
 
 				string typeName = null, ns = null, asm = null, targetPlatform = null;
 				XmlnsHelper.ParseXmlns(kvp.Value, out typeName, out ns, out asm, out targetPlatform);
 				if (targetPlatform == null)
 					continue;
-				try {
+				try
+				{
 					if (targetPlatform != Device.RuntimePlatform)
 					{
 						// Special case for Windows backward compatibility
 						if (targetPlatform == "Windows" && Device.RuntimePlatform == Device.UWP)
 							continue;
-						
+
 						prefixes.Add(prefix);
 					}
-				} catch (InvalidOperationException) {
+				}
+				catch (InvalidOperationException)
+				{
 					prefixes.Add(prefix);
 				}
 			}
@@ -341,7 +352,8 @@ namespace Xamarin.Forms.Xaml
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
 			foreach (var assembly in assemblies)
-				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute))) {
+				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
+				{
 					s_xmlnsDefinitions.Add(attribute);
 					attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
 				}
@@ -367,7 +379,7 @@ namespace Xamarin.Forms.Xaml
 				(typeInfo) =>
 					Type.GetType($"{typeInfo.ClrNamespace}.{typeInfo.TypeName}, {typeInfo.AssemblyName}"),
 				out potentialTypes);
-			
+
 			var typeArguments = xmlType.TypeArguments;
 			exception = null;
 
@@ -378,21 +390,23 @@ namespace Xamarin.Forms.Xaml
 				// assemblies might have changed since this method was first
 				// called. This occurred during unit test runs and could
 				// conceivably occur in the field. 
-				if (!hasRetriedNsSearch) {
+				if (!hasRetriedNsSearch)
+				{
 					hasRetriedNsSearch = true;
 					s_xmlnsDefinitions = null;
 					goto retry;
 				}
 			}
 #endif
-							
+
 			if (XamlLoader.FallbackTypeResolver != null)
 				type = XamlLoader.FallbackTypeResolver(potentialTypes, type);
 
 			if (type != null && typeArguments != null)
 			{
 				XamlParseException innerexception = null;
-				var args = typeArguments.Select(delegate(XmlType xmltype) {
+				var args = typeArguments.Select(delegate (XmlType xmltype)
+				{
 					var t = GetElementType(xmltype, xmlInfo, currentAssembly, out XamlParseException xpe);
 					if (xpe != null)
 					{
@@ -407,9 +421,12 @@ namespace Xamarin.Forms.Xaml
 					return null;
 				}
 
-				try {
+				try
+				{
 					type = type.MakeGenericType(args);
-				} catch (InvalidOperationException) {
+				}
+				catch (InvalidOperationException)
+				{
 					exception = new XamlParseException($"Type {type} is not a GenericTypeDefinition", xmlInfo);
 				}
 			}
@@ -425,7 +442,7 @@ namespace Xamarin.Forms.Xaml
 			IEnumerable<XmlnsDefinitionAttribute> xmlnsDefinitions,
 			string defaultAssemblyName,
 			Func<XamlLoader.FallbackTypeInfo, T> refFromTypeInfo,
-			out IList<XamlLoader.FallbackTypeInfo> potentialTypes) 
+			out IList<XamlLoader.FallbackTypeInfo> potentialTypes)
 			where T : class
 		{
 			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
@@ -434,13 +451,15 @@ namespace Xamarin.Forms.Xaml
 			var typeArguments = xmlType.TypeArguments;
 			potentialTypes = null;
 
-			foreach (var xmlnsDef in xmlnsDefinitions) {
+			foreach (var xmlnsDef in xmlnsDefinitions)
+			{
 				if (xmlnsDef.XmlNamespace != namespaceURI)
 					continue;
 				lookupAssemblies.Add(xmlnsDef);
 			}
 
-			if (lookupAssemblies.Count == 0) {
+			if (lookupAssemblies.Count == 0)
+			{
 				XmlnsHelper.ParseXmlns(namespaceURI, out _, out var ns, out var asmstring, out _);
 				asmstring = asmstring ?? defaultAssemblyName;
 				if (namespaceURI != null && ns != null)
@@ -452,7 +471,8 @@ namespace Xamarin.Forms.Xaml
 				lookupNames.Add(elementName + "Extension");
 			lookupNames.Add(elementName);
 
-			for (var i = 0; i < lookupNames.Count; i++) {
+			for (var i = 0; i < lookupNames.Count; i++)
+			{
 				var name = lookupNames[i];
 				if (name.Contains(":"))
 					name = name.Substring(name.LastIndexOf(':') + 1);
@@ -460,11 +480,12 @@ namespace Xamarin.Forms.Xaml
 					name += "`" + typeArguments.Count; //this will return an open generic Type
 				lookupNames[i] = name;
 			}
-			
+
 			potentialTypes = new List<XamlLoader.FallbackTypeInfo>();
 			foreach (string typeName in lookupNames)
-				foreach (XmlnsDefinitionAttribute xmlnsDefinitionAttribute in lookupAssemblies)	
-					potentialTypes.Add(new XamlLoader.FallbackTypeInfo {
+				foreach (XmlnsDefinitionAttribute xmlnsDefinitionAttribute in lookupAssemblies)
+					potentialTypes.Add(new XamlLoader.FallbackTypeInfo
+					{
 						ClrNamespace = xmlnsDefinitionAttribute.ClrNamespace,
 						TypeName = typeName,
 						AssemblyName = xmlnsDefinitionAttribute.AssemblyName,
@@ -475,7 +496,7 @@ namespace Xamarin.Forms.Xaml
 			foreach (XamlLoader.FallbackTypeInfo typeInfo in potentialTypes)
 				if ((type = refFromTypeInfo(typeInfo)) != null)
 					break;
-				
+
 			return type;
 		}
 	}

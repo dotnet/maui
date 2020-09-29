@@ -1,7 +1,7 @@
-using Android.Graphics;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using Android.Graphics;
 using Xamarin.Forms.Core;
 using Xamarin.Forms.Internals;
 using AApplication = Android.App.Application;

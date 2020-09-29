@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms.Internals;
-using Xamarin.Forms.CustomAttributes;
+﻿using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;
@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	public class CustomSwitch : Switch
 	{
-		public static readonly BindableProperty CustomColorProperty = 
+		public static readonly BindableProperty CustomColorProperty =
 			BindableProperty.Create(nameof(CustomColor), typeof(Color), typeof(CustomSwitch), Color.Black);
 
 		public Color CustomColor

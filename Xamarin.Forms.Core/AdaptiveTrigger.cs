@@ -15,7 +15,7 @@ namespace Xamarin.Forms
 			set => SetValue(MinWindowHeightProperty, value);
 		}
 
-		public static readonly BindableProperty MinWindowHeightProperty =	
+		public static readonly BindableProperty MinWindowHeightProperty =
 			BindableProperty.Create(nameof(MinWindowHeight), typeof(double), typeof(AdaptiveTrigger), -1d,
 				propertyChanged: OnMinWindowHeightChanged);
 

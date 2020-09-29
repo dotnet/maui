@@ -78,7 +78,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			if (IsHorizontal)
 			{
-				_scrollCanvasSize = new ESize(totalItemSize , _allocatedSize.Height);
+				_scrollCanvasSize = new ESize(totalItemSize, _allocatedSize.Height);
 			}
 			else
 			{

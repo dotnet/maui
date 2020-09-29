@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 53179, 
+	[Issue(IssueTracker.Bugzilla, 53179,
 		"PopAsync crashing after RemovePage when support packages are updated to 25.1.1",
 		PlatformAffected.Android, issueTestNumber: 1)]
 	public class Bugzilla53179_1 : TestNavigationPage
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var instructions = new Label
 			{
 				Text =
-					$"Tap the button labeled '{StartTest}'. The app should navigate to a page displaying the label " 
+					$"Tap the button labeled '{StartTest}'. The app should navigate to a page displaying the label "
 					+ $"'{RootLabel}'. If the application crashes, the test has failed."
 			};
 
@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Navigation.RemovePage(_intermediate2);
 				Navigation.RemovePage(_intermediate1);
-				
+
 				Navigation.PopAsync(true);
 			};
 

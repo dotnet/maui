@@ -4,9 +4,10 @@ using Xamarin.Forms.Platform.Tizen.Renderers;
 namespace Xamarin.Forms.Platform.Tizen
 {
 #pragma warning disable CS0618 // Type or member is obsolete
+	[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
 	public class MasterDetailPageRenderer : VisualElementRenderer<MasterDetailPage>
 	{
-		Native.MasterDetailPage _mdpage;
+		Native.FlyoutPage _mdpage;
 		MasterDetailContainer _masterContainer = null;
 		MasterDetailContainer _detailContainer = null;
 
@@ -29,10 +30,10 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (_mdpage == null)
 			{
-				_mdpage = new Native.MasterDetailPage(Forms.NativeParent)
+				_mdpage = new Native.FlyoutPage(Forms.NativeParent)
 				{
 					IsPresented = e.NewElement.IsPresented,
-					Master = _masterContainer = new MasterDetailContainer(Element, true),
+					Flyout = _masterContainer = new MasterDetailContainer(Element, true),
 					Detail = _detailContainer = new MasterDetailContainer(Element, false),
 				};
 
@@ -127,7 +128,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateMasterBehavior()
 		{
-			_mdpage.MasterBehavior = Element.MasterBehavior;
+			_mdpage.FlyoutLayoutBehavior = (FlyoutLayoutBehavior)Element.MasterBehavior;
 		}
 
 		void UpdateMasterPage(bool isInit)

@@ -1,5 +1,5 @@
-﻿using Cairo;
-using System;
+﻿using System;
+using Cairo;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
 {
@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		public void Start()
 		{
 			_running = true;
-			GLib.Timeout.Add(100, ExposeTimeoutHandler);	// Every 100 ms.
+			GLib.Timeout.Add(100, ExposeTimeoutHandler);    // Every 100 ms.
 			QueueDraw();
 		}
 
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		public void UpdateColor(Color color)
 		{
-            _color = color;
+			_color = color;
 		}
 
 		private bool ExposeTimeoutHandler()

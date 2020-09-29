@@ -2,11 +2,11 @@
 {
 	public interface ITestCloudService
 	{
-		bool IsOnTestCloud ();
+		bool IsOnTestCloud();
 
-		string GetTestCloudDeviceName ();
+		string GetTestCloudDeviceName();
 
-		string GetTestCloudDevice ();
+		string GetTestCloudDevice();
 	}
 }
 

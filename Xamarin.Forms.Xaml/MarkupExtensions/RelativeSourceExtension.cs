@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Xaml
 			{
 				RelativeBindingSourceMode actualMode;
 
-				if (Mode != RelativeBindingSourceMode.FindAncestor && 
+				if (Mode != RelativeBindingSourceMode.FindAncestor &&
 					Mode != RelativeBindingSourceMode.FindAncestorBindingContext)
 				{
 					// Note to documenters:
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Xaml
 
 				return new RelativeBindingSource(actualMode, AncestorType, AncestorLevel);
 			}
-			else if (Mode == RelativeBindingSourceMode.FindAncestor || 
+			else if (Mode == RelativeBindingSourceMode.FindAncestor ||
 					Mode == RelativeBindingSourceMode.FindAncestorBindingContext)
 			{
 				throw new XamlParseException(

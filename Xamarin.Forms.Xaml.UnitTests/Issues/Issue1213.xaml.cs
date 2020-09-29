@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
-
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class Issue1213 : TabbedPage
 	{
-		public Issue1213 ()
+		public Issue1213()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Issue1213 (bool useCompiledXaml)
+		public Issue1213(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -24,10 +22,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			[TestCase(false)]
 			[TestCase(true)]
-			public void MultiPageAsContentPropertyAttribute (bool useCompiledXaml)
+			public void MultiPageAsContentPropertyAttribute(bool useCompiledXaml)
 			{
-				var page = new Issue1213 (useCompiledXaml);
-				Assert.AreEqual (2, page.Children.Count);
+				var page = new Issue1213(useCompiledXaml);
+				Assert.AreEqual(2, page.Children.Count);
 			}
 		}
 	}

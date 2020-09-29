@@ -226,7 +226,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			Element item = data as Element;
 			View view;
 			if (!_cachedView.TryGetValue(item, out view))
-			{ 
+			{
 				view = (View)GetFlyoutItemDataTemplate(item).CreateContent(item, Shell);
 				view.Parent = Shell;
 				view.BindingContext = item;

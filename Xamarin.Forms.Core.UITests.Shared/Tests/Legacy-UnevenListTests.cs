@@ -5,7 +5,7 @@ using Xamarin.UITest.iOS;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-    [Ignore("check if the last one fails")]
+	[Ignore("check if the last one fails")]
 	[Category(UITestCategories.Cells)]
 	internal class UnevenListTests : BaseTestFixture
 	{

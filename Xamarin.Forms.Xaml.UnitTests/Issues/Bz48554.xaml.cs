@@ -10,9 +10,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		static List<string> all;
 
-		public static List<string> All {
-			get {
-				if (all == null) {
+		public static List<string> All
+		{
+			get
+			{
+				if (all == null)
+				{
 					all = new List<string>();
 					all.Add("6b+");
 					all.Add("6c");
@@ -22,7 +25,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				}
 				return all;
 			}
-			set {
+			set
+			{
 				all = value;
 			}
 		}
@@ -33,7 +37,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public static readonly BindableProperty ValuesProperty =
 			BindableProperty.Create(nameof(Values), typeof(List<string>), typeof(Bz48554Slider), null);
 
-		public List<string> Values {
+		public List<string> Values
+		{
 			get { return (List<string>)GetValue(ValuesProperty); }
 			set { SetValue(ValuesProperty, value); }
 		}
@@ -59,7 +64,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void XStaticWithXamlC(bool useCompiledXaml)
 			{
 				Bz48554 page = null;
-				Assert.DoesNotThrow(()=> page = new Bz48554(useCompiledXaml));
+				Assert.DoesNotThrow(() => page = new Bz48554(useCompiledXaml));
 				Assert.NotNull(page.SliderGrades);
 				Assert.AreEqual(5, page.SliderGrades.Values.Count);
 			}

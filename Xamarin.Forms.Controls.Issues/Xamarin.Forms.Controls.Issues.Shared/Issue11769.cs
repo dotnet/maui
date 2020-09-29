@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init()
 		{
-			Items.Add(new FlyoutItem() 
+			Items.Add(new FlyoutItem()
 			{
 				Items =
 				{

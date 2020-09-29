@@ -162,7 +162,7 @@ namespace Xamarin.Forms.Core.UITests
 		void ScrollAndTap(string actionSheet)
 		{
 			var queryString = $"* text:'{actionSheet}'";
-			Func<AppQuery, AppQuery> actionSheetQuery = q => q.Raw (queryString);
+			Func<AppQuery, AppQuery> actionSheetQuery = q => q.Raw(queryString);
 #if __WINDOWS__
 			App.ScrollDownTo(actionSheetQuery);
 #elif __MACOS__

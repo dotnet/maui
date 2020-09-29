@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-
+using Newtonsoft.Json;
 using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Xaml;
-using Newtonsoft.Json;
-using System.Collections.ObjectModel;
-using System.Net.Http;
-using System.Diagnostics;
-using System.ComponentModel;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;

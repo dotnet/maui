@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Core.UITests
 		string btn4Id = "toolbaritem_secondary2";
 #if !__MACOS__
 		string btn3Id = "toolbaritem_secondary";
-#endif 
+#endif
 
 #if __ANDROID__
 		bool isSecondaryMenuOpen()

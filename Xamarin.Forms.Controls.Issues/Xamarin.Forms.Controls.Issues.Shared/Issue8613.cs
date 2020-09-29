@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = text
 			};
 
-			if(IsInAccessibleTree.HasValue)
+			if (IsInAccessibleTree.HasValue)
 				AutomationProperties.SetIsInAccessibleTree(label, IsInAccessibleTree);
 
 			return label;

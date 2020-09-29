@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
-using System.Collections.ObjectModel;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -12,61 +12,62 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-    [Issue(IssueTracker.Bugzilla, 36802, "[iOS] AccessoryView Partially Hidden When Using RecycleElement and GroupShortName", PlatformAffected.iOS)]
-    public class Bugzilla36802 : TestContentPage
-    {
-        const string Instructions = "On iOS, all the list items below should have an AccessoryView visible. If any are not visible or are covered by the section index list then this test has failed.";
-        ObservableCollection<GroupedItem> grouped { get; set; }
-        ListView lstView;
+	[Issue(IssueTracker.Bugzilla, 36802, "[iOS] AccessoryView Partially Hidden When Using RecycleElement and GroupShortName", PlatformAffected.iOS)]
+	public class Bugzilla36802 : TestContentPage
+	{
+		const string Instructions = "On iOS, all the list items below should have an AccessoryView visible. If any are not visible or are covered by the section index list then this test has failed.";
+		ObservableCollection<GroupedItem> grouped { get; set; }
+		ListView lstView;
 
-        public class AccessoryViewCell : ViewCell
-        {
-            public AccessoryViewCell()
-            {
-                var label = new Label();
-                label.SetBinding(Label.TextProperty, ".");
-                View = label;
-            }
-        }
+		public class AccessoryViewCell : ViewCell
+		{
+			public AccessoryViewCell()
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, ".");
+				View = label;
+			}
+		}
 
-        public class GroupedItem : ObservableCollection<string>
-        {
-            public string LongName { get; set; }
-            public string ShortName { get; set; }
-        }
+		public class GroupedItem : ObservableCollection<string>
+		{
+			public string LongName { get; set; }
+			public string ShortName { get; set; }
+		}
 
-        protected override void Init()
-        {
-            var label = new Label { Text = Instructions, AutomationId = "TestReady" };
-            grouped = new ObservableCollection<GroupedItem>();
-            lstView = new ListView(ListViewCachingStrategy.RecycleElement) {
-                IsGroupingEnabled = true,
-                ItemTemplate = new DataTemplate(typeof(AccessoryViewCell)),
-                ItemsSource = grouped,
-                GroupDisplayBinding = new Binding("LongName"),
-                GroupShortNameBinding = new Binding("ShortName")
-            };
+		protected override void Init()
+		{
+			var label = new Label { Text = Instructions, AutomationId = "TestReady" };
+			grouped = new ObservableCollection<GroupedItem>();
+			lstView = new ListView(ListViewCachingStrategy.RecycleElement)
+			{
+				IsGroupingEnabled = true,
+				ItemTemplate = new DataTemplate(typeof(AccessoryViewCell)),
+				ItemsSource = grouped,
+				GroupDisplayBinding = new Binding("LongName"),
+				GroupShortNameBinding = new Binding("ShortName")
+			};
 
-            var grp1 = new GroupedItem() { LongName = "Group 1", ShortName = "1" };
-            var grp2 = new GroupedItem() { LongName = "Group 2", ShortName = "2" };
+			var grp1 = new GroupedItem() { LongName = "Group 1", ShortName = "1" };
+			var grp2 = new GroupedItem() { LongName = "Group 2", ShortName = "2" };
 
-            for (int i = 1; i < 4; i++)
-            {
-                grp1.Add($"Item #{i}");
-                grp2.Add($"Item #{i}");
-            }
+			for (int i = 1; i < 4; i++)
+			{
+				grp1.Add($"Item #{i}");
+				grp2.Add($"Item #{i}");
+			}
 
-            grouped.Add(grp1); 
-            grouped.Add(grp2);
+			grouped.Add(grp1);
+			grouped.Add(grp2);
 
-            Content = new StackLayout
-            {
-                Children = {
-                    label,
-                    lstView
-                }
-            };
-        }
+			Content = new StackLayout
+			{
+				Children = {
+					label,
+					lstView
+				}
+			};
+		}
 
 #if (UITEST && __IOS__)
         [Test]
@@ -77,5 +78,5 @@ namespace Xamarin.Forms.Controls.Issues
             RunningApp.Screenshot("AccessoryView partially hidden test");
         }
 #endif
-    }
+	}
 }

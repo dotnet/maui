@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -30,7 +30,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			_source = new ObservableCollection<_7393Group>();
 
-			cv.GroupHeaderTemplate = new DataTemplate(() => {
+			cv.GroupHeaderTemplate = new DataTemplate(() =>
+			{
 				var label = new Label();
 
 				label.SetBinding(Label.TextProperty, new Binding("Header"));
@@ -38,7 +39,8 @@ namespace Xamarin.Forms.Controls.Issues
 				return label;
 			});
 
-			cv.GroupFooterTemplate = new DataTemplate(() => {
+			cv.GroupFooterTemplate = new DataTemplate(() =>
+			{
 				var label = new Label();
 
 				label.SetBinding(Label.TextProperty, new Binding("Footer"));
@@ -46,7 +48,8 @@ namespace Xamarin.Forms.Controls.Issues
 				return label;
 			});
 
-			cv.ItemTemplate = new DataTemplate(() => {
+			cv.ItemTemplate = new DataTemplate(() =>
+			{
 				var label = new Label();
 
 				label.SetBinding(Label.TextProperty, new Binding("Name"));
@@ -65,7 +68,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Content = layout;
 
-			Appearing += Issue7393Appearing;	
+			Appearing += Issue7393Appearing;
 		}
 
 		async void Issue7393Appearing(object sender, EventArgs e)
@@ -74,7 +77,7 @@ namespace Xamarin.Forms.Controls.Issues
 			_result.Text = Success;
 		}
 
-		async Task AddItems() 
+		async Task AddItems()
 		{
 			var groupIndex = _source.Count + 1;
 
@@ -98,13 +101,13 @@ namespace Xamarin.Forms.Controls.Issues
 			await AddItems();
 		}
 
-		class _7393Item 
+		class _7393Item
 		{
 			public string Name { get; set; }
 		}
 
-		class _7393Group : ObservableCollection<_7393Item> 
-		{ 
+		class _7393Group : ObservableCollection<_7393Item>
+		{
 			public string Header { get; set; }
 			public string Footer { get; set; }
 		}

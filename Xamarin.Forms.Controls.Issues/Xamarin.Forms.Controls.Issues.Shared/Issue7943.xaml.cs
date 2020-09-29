@@ -1,8 +1,8 @@
-﻿using Xamarin.Forms.Xaml;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 #if UITEST
 using Xamarin.UITest;
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if APP
 		void OnChangeTemplate(object sender, EventArgs e)
-		{	
+		{
 			var random = new Random();
 
 			collectionView.ItemTemplate = new DataTemplate(() =>
@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Controls.Issues
 		void OnChangeItemsSource(object sender, EventArgs e)
 		{
 			collectionView.ItemsSource = new List<Issue7943Model> { new Issue7943Model("Paul", 35), new Issue7943Model("Lucy", 57) };
-		}		
+		}
 
 		void OnClearItemsSource(object sender, EventArgs e)
 		{

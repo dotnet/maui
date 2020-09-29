@@ -1,9 +1,9 @@
 using System;
 using ElmSharp;
+using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using ESize = ElmSharp.Size;
 using TSButtonStyle = Xamarin.Forms.PlatformConfiguration.TizenSpecific.ButtonStyle;
-using EButton = ElmSharp.Button;
 
 #if __MATERIAL__
 using Tizen.NET.MaterialComponents;
@@ -203,7 +203,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 					MinimumWidth += Image.Geometry.Width;
 
 				var rawSize = this.GetTextBlockNativeSize();
-				return new ESize(rawSize.Width + MinimumWidth , Math.Max(MinimumHeight, rawSize.Height));
+				return new ESize(rawSize.Width + MinimumWidth, Math.Max(MinimumHeight, rawSize.Height));
 			}
 		}
 

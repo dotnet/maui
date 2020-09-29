@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.WPF
 		Page Page { get; set; }
 
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer));
-		
+
 		internal Platform(FormsApplicationPage page)
 		{
 			_page = page;
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, OnPageAlert);
 			MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, OnPageActionSheet);
-			
+
 		}
 
 		async void OnPageAlert(Page sender, AlertArguments options)
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Platform.WPF
 				Style = (System.Windows.Style)System.Windows.Application.Current.Resources["ActionSheetList"],
 				ItemsSource = options.Buttons
 			};
-			
+
 			var dialog = new FormsContentDialog
 			{
 				Content = list,
@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			list.SelectionChanged += (s, e) =>
 			{
-				if(list.SelectedItem != null)
+				if (list.SelectedItem != null)
 				{
 					dialog.Hide();
 					options.SetResult((string)list.SelectedItem);
@@ -185,7 +185,8 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			get
 			{
-				return _page.InternalChildren.Cast<Page>().ToList(); }
+				return _page.InternalChildren.Cast<Page>().ToList();
+			}
 		}
 
 		Task INavigation.PushAsync(Page root)
@@ -246,9 +247,9 @@ namespace Xamarin.Forms.Platform.WPF
 			var tcs = new TaskCompletionSource<bool>();
 
 #pragma warning disable CS0618 // Type or member is obsolete
-				// The Platform property is no longer necessary, but we have to set it because some third-party
-				// library might still be retrieving it and using it
-				page.Platform = this;
+			// The Platform property is no longer necessary, but we have to set it because some third-party
+			// library might still be retrieving it and using it
+			page.Platform = this;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			_page.PushModal(page, animated);
@@ -259,8 +260,8 @@ namespace Xamarin.Forms.Platform.WPF
 		Task<Page> INavigation.PopModalAsync(bool animated)
 		{
 			var tcs = new TaskCompletionSource<Page>();
-			var page =_page.PopModal(animated) as Page;
-			tcs.SetResult(page); 
+			var page = _page.PopModal(animated) as Page;
+			tcs.SetResult(page);
 			return tcs.Task;
 		}
 
@@ -273,4 +274,4 @@ namespace Xamarin.Forms.Platform.WPF
 
 		#endregion
 	}
-} 
+}

@@ -18,7 +18,7 @@ namespace Xamarin.Forms
 		public AbsoluteLayout()
 		{
 			_children = new AbsoluteElementCollection(InternalChildren, this);
-			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<AbsoluteLayout>>(() => 
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<AbsoluteLayout>>(() =>
 				new PlatformConfigurationRegistry<AbsoluteLayout>(this));
 		}
 

@@ -45,8 +45,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 						GalleryBuilder.NavButton("ScrollTo Index (Grouped)", () =>
 							new ScrollToGroup(), Navigation)
-						
-						
+
+
 					}
 				}
 			};

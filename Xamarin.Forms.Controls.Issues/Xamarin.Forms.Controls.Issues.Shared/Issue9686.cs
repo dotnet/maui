@@ -30,13 +30,15 @@ namespace Xamarin.Forms.Controls.Issues
 
 			BindingContext = new _9686ViewModel();
 
-			cv.ItemTemplate = new DataTemplate(() => {
+			cv.ItemTemplate = new DataTemplate(() =>
+			{
 				var label = new Label() { Margin = new Thickness(5, 0, 0, 0) };
 				label.SetBinding(Label.TextProperty, new Binding("Name"));
 				return label;
 			});
 
-			cv.GroupHeaderTemplate = new DataTemplate(() => {
+			cv.GroupHeaderTemplate = new DataTemplate(() =>
+			{
 				var label = new Label();
 				label.SetBinding(Label.TextProperty, new Binding("GroupName"));
 				return label;
@@ -48,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var result = new Label { };
 
-			var button = new Button { Text  = Run, AutomationId = Run };
+			var button = new Button { Text = Run, AutomationId = Run };
 			button.Command = ((_9686ViewModel)BindingContext).ShowOrHideCommand;
 			button.CommandParameter = ((_9686ViewModel)BindingContext).Groups[0];
 

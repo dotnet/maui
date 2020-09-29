@@ -173,7 +173,6 @@
     <Compile Include="IOSDeviceInfo.cs" />
     <Compile Include="LinkerSafeAttribute.cs" />
     <Compile Include="ModalWrapper.cs" />
-    <Compile Include="PageLifecycleManager.cs" />
     <Compile Include="Renderers\FormsCAKeyFrameAnimation.cs" />
     <Compile Include="Renderers\FormsCheckBox.cs" />
     <Compile Include="Renderers\FormsUIImageView.cs" />

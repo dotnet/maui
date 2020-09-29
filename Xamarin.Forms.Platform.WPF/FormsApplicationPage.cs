@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Platform.WPF
 	{
 		protected Application Application { get; private set; }
 		protected Platform Platform { get; private set; }
-		
+
 		public FormsApplicationPage()
 		{
 			System.Windows.Application.Current.Startup += OnLaunching;

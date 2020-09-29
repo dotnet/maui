@@ -1,8 +1,8 @@
-﻿using Xamarin.Forms.Internals;
-using Xamarin.Forms.CustomAttributes;
-using System.Collections.Generic;
-using System.Windows.Input;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Windows.Input;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;
@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			layout.Children.Add(instructions);
 			layout.Children.Add(swipeView);
-	
+
 			Content = layout;
 
 			swipeItem.Invoked += (sender, args) =>

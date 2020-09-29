@@ -1,11 +1,11 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using ElmSharp;
-using EToolbarItem = ElmSharp.ToolbarItem;
-using EColor = ElmSharp.Color;
 using EBox = ElmSharp.Box;
+using EColor = ElmSharp.Color;
+using EToolbarItem = ElmSharp.ToolbarItem;
 
 namespace Xamarin.Forms.Platform.Tizen
 {

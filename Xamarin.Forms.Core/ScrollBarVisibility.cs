@@ -1,7 +1,7 @@
 ﻿namespace Xamarin.Forms
 {
-    public enum ScrollBarVisibility
-    {
+	public enum ScrollBarVisibility
+	{
 		Default,
 		Always,
 		Never,

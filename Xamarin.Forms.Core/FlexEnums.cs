@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Globalization;
-            
+
 namespace Xamarin.Forms
 {
 	[TypeConverter(typeof(FlexJustifyTypeConverter))]
@@ -19,7 +19,8 @@ namespace Xamarin.Forms
 	{
 		public override object ConvertFromInvariantString(string value)
 		{
-			if (value != null) {
+			if (value != null)
+			{
 				if (Enum.TryParse(value, true, out FlexJustify justify))
 					return justify;
 				if (value.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
@@ -55,7 +56,8 @@ namespace Xamarin.Forms
 	{
 		public override object ConvertFromInvariantString(string value)
 		{
-			if (value != null) {
+			if (value != null)
+			{
 				if (Enum.TryParse(value, true, out FlexDirection aligncontent))
 					return aligncontent;
 				if (value.Equals("row-reverse", StringComparison.OrdinalIgnoreCase))
@@ -84,7 +86,8 @@ namespace Xamarin.Forms
 	{
 		public override object ConvertFromInvariantString(string value)
 		{
-			if (value != null) {
+			if (value != null)
+			{
 				if (Enum.TryParse(value, true, out FlexAlignContent aligncontent))
 					return aligncontent;
 				if (value.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
@@ -115,7 +118,8 @@ namespace Xamarin.Forms
 	{
 		public override object ConvertFromInvariantString(string value)
 		{
-			if (value != null) {
+			if (value != null)
+			{
 				if (Enum.TryParse(value, true, out FlexAlignItems alignitems))
 					return alignitems;
 				if (value.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
@@ -143,7 +147,8 @@ namespace Xamarin.Forms
 	{
 		public override object ConvertFromInvariantString(string value)
 		{
-			if (value != null) {
+			if (value != null)
+			{
 				if (Enum.TryParse(value, true, out FlexAlignSelf alignself))
 					return alignself;
 				if (value.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
@@ -168,7 +173,8 @@ namespace Xamarin.Forms
 	{
 		public override object ConvertFromInvariantString(string value)
 		{
-			if (value != null) {
+			if (value != null)
+			{
 				if (Enum.TryParse(value, true, out FlexWrap wrap))
 					return wrap;
 				if (value.Equals("wrap-reverse", StringComparison.OrdinalIgnoreCase))
@@ -208,12 +214,13 @@ namespace Xamarin.Forms
 		{
 			public override object ConvertFromInvariantString(string value)
 			{
-				if (value != null) {
+				if (value != null)
+				{
 					if (value.Equals("auto", StringComparison.OrdinalIgnoreCase))
 						return Auto;
 					value = value.Trim();
 					if (value.EndsWith("%", StringComparison.OrdinalIgnoreCase) && float.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
-						return new FlexBasis(relflex/100, isRelative: true);
+						return new FlexBasis(relflex / 100, isRelative: true);
 					if (float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
 						return new FlexBasis(flex);
 				}

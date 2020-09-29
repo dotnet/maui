@@ -2,6 +2,6 @@
 {
 	public interface INativeColorService
 	{
-		Color GetConvertedColor(bool shouldCrash); 
+		Color GetConvertedColor(bool shouldCrash);
 	}
 }

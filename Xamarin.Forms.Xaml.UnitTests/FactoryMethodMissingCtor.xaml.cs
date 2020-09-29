@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void Throw([Values(false, true)]bool useCompiledXaml)
+			public void Throw([Values(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws(new BuildExceptionConstraint(7, 4), () => MockCompiler.Compile(typeof(FactoryMethodMissingCtor)));

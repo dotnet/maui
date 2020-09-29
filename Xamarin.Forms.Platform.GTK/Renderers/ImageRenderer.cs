@@ -1,4 +1,3 @@
-using Gdk;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -8,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Gdk;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using DrawingFont = System.Drawing.Font;
 using IOPath = System.IO.Path;
@@ -204,7 +204,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			Pixbuf image = null;
 
 			var streamsource = imagesource as StreamImageSource;
-			if (streamsource?.Stream == null) return null;
+			if (streamsource?.Stream == null)
+				return null;
 			using (var streamImage = await ((IStreamImageSource)streamsource)
 				.GetStreamAsync(cancelationToken).ConfigureAwait(false))
 			{
@@ -285,7 +286,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				var fontPathAndFamily = fontImageSource.FontFamily.Split('#');
 				privateFontCollection.AddFontFile(fontPathAndFamily[0]);
 				fontFamily = fontPathAndFamily.Length > 1 ?
-					privateFontCollection.Families.FirstOrDefault(f => f.Name.Equals(fontPathAndFamily[1], StringComparison.InvariantCultureIgnoreCase)) ?? privateFontCollection.Families[0] : 
+					privateFontCollection.Families.FirstOrDefault(f => f.Name.Equals(fontPathAndFamily[1], StringComparison.InvariantCultureIgnoreCase)) ?? privateFontCollection.Families[0] :
 					privateFontCollection.Families[0];
 			}
 			else

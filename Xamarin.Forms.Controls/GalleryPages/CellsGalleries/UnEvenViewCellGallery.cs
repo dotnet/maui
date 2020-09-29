@@ -8,14 +8,15 @@ namespace Xamarin.Forms.Controls
 {
 	public class UnevenViewCellGallery : ContentPage
 	{
-		public UnevenViewCellGallery ()
+		public UnevenViewCellGallery()
 		{
 			Title = "UnevenViewCell Gallery - Legacy";
 
-			var map = MapGallery.MakeMap ();
+			var map = MapGallery.MakeMap();
 			map.HasScrollEnabled = false;
 
-			Content = new TableView {
+			Content = new TableView
+			{
 				RowHeight = 150,
 				HasUnevenRows = true,
 				Root = new TableRoot {

@@ -330,7 +330,7 @@ namespace Xamarin.Forms
 			return $"#{alpha:X2}{red:X2}{green:X2}{blue:X2}";
 		}
 
-		static uint ToHex (char c)
+		static uint ToHex(char c)
 		{
 			ushort x = (ushort)c;
 			if (x >= '0' && x <= '9')
@@ -340,50 +340,51 @@ namespace Xamarin.Forms
 			if (x >= 'a' && x <= 'f')
 				return (uint)(x - 'a' + 10);
 			return 0;
-		} 
+		}
 
-		static uint ToHexD (char c)
+		static uint ToHexD(char c)
 		{
-			var j = ToHex (c);
+			var j = ToHex(c);
 			return (j << 4) | j;
 		}
 
-		public static Color FromHex (string hex)
+		public static Color FromHex(string hex)
 		{
 			// Undefined
 			if (hex.Length < 3)
 				return Default;
-			int idx = (hex [0] == '#') ? 1 : 0;
+			int idx = (hex[0] == '#') ? 1 : 0;
 
-			switch (hex.Length - idx) {
-			case 3: //#rgb => ffrrggbb
-				var t1 = ToHexD (hex [idx++]);
-				var t2 = ToHexD (hex [idx++]);
-				var t3 = ToHexD (hex [idx]);
+			switch (hex.Length - idx)
+			{
+				case 3: //#rgb => ffrrggbb
+					var t1 = ToHexD(hex[idx++]);
+					var t2 = ToHexD(hex[idx++]);
+					var t3 = ToHexD(hex[idx]);
 
-				return FromRgb ((int)t1, (int)t2, (int)t3);
+					return FromRgb((int)t1, (int)t2, (int)t3);
 
-			case 4: //#argb => aarrggbb
-				var f1 = ToHexD (hex [idx++]);
-				var f2 = ToHexD (hex [idx++]);
-				var f3 = ToHexD (hex [idx++]);
-				var f4 = ToHexD (hex [idx]);
-				return FromRgba ((int)f2, (int)f3, (int)f4, (int)f1);
+				case 4: //#argb => aarrggbb
+					var f1 = ToHexD(hex[idx++]);
+					var f2 = ToHexD(hex[idx++]);
+					var f3 = ToHexD(hex[idx++]);
+					var f4 = ToHexD(hex[idx]);
+					return FromRgba((int)f2, (int)f3, (int)f4, (int)f1);
 
-			case 6: //#rrggbb => ffrrggbb
-				return FromRgb ((int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx++])),
-						(int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx++])),
-						(int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx])));
-				
-			case 8: //#aarrggbb
-				var a1 = ToHex (hex [idx++]) << 4 | ToHex (hex [idx++]);
-				return FromRgba ((int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx++])),
-						(int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx++])),
-						(int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx])),
-						(int)a1);
-				
-			default: //everything else will result in unexpected results
-				return Default;
+				case 6: //#rrggbb => ffrrggbb
+					return FromRgb((int)(ToHex(hex[idx++]) << 4 | ToHex(hex[idx++])),
+							(int)(ToHex(hex[idx++]) << 4 | ToHex(hex[idx++])),
+							(int)(ToHex(hex[idx++]) << 4 | ToHex(hex[idx])));
+
+				case 8: //#aarrggbb
+					var a1 = ToHex(hex[idx++]) << 4 | ToHex(hex[idx++]);
+					return FromRgba((int)(ToHex(hex[idx++]) << 4 | ToHex(hex[idx++])),
+							(int)(ToHex(hex[idx++]) << 4 | ToHex(hex[idx++])),
+							(int)(ToHex(hex[idx++]) << 4 | ToHex(hex[idx])),
+							(int)a1);
+
+				default: //everything else will result in unexpected results
+					return Default;
 			}
 		}
 

@@ -8,14 +8,15 @@ namespace Xamarin.Forms.Controls
 {
 	public class ClipToBoundsGallery : ContentPage
 	{
-		public ClipToBoundsGallery ()
+		public ClipToBoundsGallery()
 		{
 			var child1 = new BoxView { Color = Color.Red };
 			var child2 = new BoxView { Color = Color.Blue };
 			var button = new Button { Text = "Clip", BackgroundColor = Color.Green };
 
-			Padding = new Thickness (55);
-			var layout = new AbsoluteLayout {
+			Padding = new Thickness(55);
+			var layout = new AbsoluteLayout
+			{
 				Children = {
 					{child1, new Rectangle (-50, 0, 100, 100)},
 					{child2, new Rectangle (0, -50, 100, 100)},

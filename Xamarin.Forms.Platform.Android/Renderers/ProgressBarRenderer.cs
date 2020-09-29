@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (color.IsDefault)
 			{
-				(Control.Indeterminate ? Control.IndeterminateDrawable : 
+				(Control.Indeterminate ? Control.IndeterminateDrawable :
 					Control.ProgressDrawable).ClearColorFilter();
 			}
 			else

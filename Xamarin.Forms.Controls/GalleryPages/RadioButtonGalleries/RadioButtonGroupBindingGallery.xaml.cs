@@ -33,14 +33,14 @@ namespace Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-		public string GroupName 
-		{ 
-			get => _groupName; 
-			set 
-			{ 
-				_groupName = value; 
-				OnPropertyChanged(nameof(GroupName)); 
-			} 
+		public string GroupName
+		{
+			get => _groupName;
+			set
+			{
+				_groupName = value;
+				OnPropertyChanged(nameof(GroupName));
+			}
 		}
 
 		public object Selection

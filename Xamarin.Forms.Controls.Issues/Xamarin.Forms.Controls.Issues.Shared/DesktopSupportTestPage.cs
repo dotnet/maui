@@ -210,7 +210,7 @@ namespace Xamarin.Forms.Controls.Issues
 					SetMenu(Application.Current, mainMenu);
 					menuHolder = GetMenu(Application.Current);
 				}
-					
+
 				menuHolder.Add(menu);
 			}
 		}

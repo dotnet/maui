@@ -76,7 +76,7 @@ namespace Xamarin.Forms
 		public event EventHandler Completed;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendCompleted() 
+		public void SendCompleted()
 			=> Completed?.Invoke(this, EventArgs.Empty);
 
 		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)

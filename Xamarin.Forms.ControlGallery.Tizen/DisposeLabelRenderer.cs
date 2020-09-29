@@ -1,6 +1,6 @@
 using Xamarin.Forms;
-using Xamarin.Forms.Controls;
 using Xamarin.Forms.ControlGallery.Tizen;
+using Xamarin.Forms.Controls;
 using Xamarin.Forms.Platform.Tizen;
 
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]

@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			_container.Register(typeof(MockElementRenderer), renderer);
 			var result = Internals.Registrar.Registered.GetHandler(typeof(MockElement));
 			var typedRenderer = (MockElementRenderer)result;
-			
+
 			Assert.That(typedRenderer, Is.SameAs(renderer));
 		}
 
@@ -129,7 +129,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var effect = new MockEffect();
 			_container.Register(typeof(MockEffect), effect);
 			var result = Effect.Resolve(effectName);
-			
+
 			Assert.That(result, Is.SameAs(effect));
 		}
 
@@ -151,7 +151,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			_container.Register(typeof(IMockService), impl);
 			DependencyService.Register<IMockService, MockServiceImpl2>();
 			var result = DependencyService.Resolve<IMockService>();
-			
+
 			Assert.That(result, Is.SameAs(impl));
 		}
 
@@ -160,7 +160,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			DependencyService.Register<MockServiceImpl>();
 			var result = DependencyService.Resolve<IMockService>();
-			
+
 			Assert.That(result, Is.Not.Null);
 		}
 

@@ -1,7 +1,7 @@
 using System;
 using ElmSharp;
-using ELabel = ElmSharp.Label;
 using EColor = ElmSharp.Color;
+using ELabel = ElmSharp.Label;
 using ESize = ElmSharp.Size;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
@@ -230,7 +230,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				if (value != _span.LineBreakMode)
 				{
 					_span.LineBreakMode = value;
-					switch(value)
+					switch (value)
 					{
 						case LineBreakMode.NoWrap:
 							LineWrapType = WrapType.None;
@@ -415,5 +415,5 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			base.Text = formattedText;
 			TextStyle = textStyle;
 		}
-    }
+	}
 }

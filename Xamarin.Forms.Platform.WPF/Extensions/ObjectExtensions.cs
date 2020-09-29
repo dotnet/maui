@@ -9,11 +9,13 @@ namespace Xamarin.Forms.Platform.WPF.Extensions
 		{
 			foreach (String part in name.Split('.'))
 			{
-				if (obj == null) { return null; }
+				if (obj == null)
+				{ return null; }
 
 				Type type = obj.GetType();
 				PropertyInfo info = type.GetProperty(part);
-				if (info == null) { return null; }
+				if (info == null)
+				{ return null; }
 
 				obj = info.GetValue(obj, null);
 			}
@@ -23,7 +25,8 @@ namespace Xamarin.Forms.Platform.WPF.Extensions
 		public static T GetPropValue<T>(this Object obj, String name)
 		{
 			Object retval = GetPropValue(obj, name);
-			if (retval == null) { return default(T); }
+			if (retval == null)
+			{ return default(T); }
 
 			return (T)retval;
 		}

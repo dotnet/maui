@@ -1,6 +1,6 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.Linq;
+using Gtk;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
 {
@@ -388,7 +388,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		void UpdateEntryText()
 		{
-			_comboBox.Entry.Text = _currentDate.ToString(string.IsNullOrEmpty(_dateFormat)? "D" : _dateFormat);
+			_comboBox.Entry.Text = _currentDate.ToString(string.IsNullOrEmpty(_dateFormat) ? "D" : _dateFormat);
 		}
 
 		void OnBtnShowCalendarClicked(object sender, EventArgs e)

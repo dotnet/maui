@@ -8,9 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1028, "ViewCell in TableView raises exception - root page is ContentPage, Content is TableView" ,PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
-	public class Issue1028 : TestContentPage 
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1028, "ViewCell in TableView raises exception - root page is ContentPage, Content is TableView", PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
+	public class Issue1028 : TestContentPage
 	{
 		// Issue1028, ViewCell with StackLayout causes exception when nested in a table section. This occurs when the app's root page is a ContentPage with a TableView.
 		protected override void Init()

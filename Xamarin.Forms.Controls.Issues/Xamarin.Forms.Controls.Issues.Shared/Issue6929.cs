@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6929, "Accessibility problem with hidden views", PlatformAffected.iOS)]
-	public class Issue6929 : TestContentPage 
+	public class Issue6929 : TestContentPage
 	{
 		protected override void Init()
 		{

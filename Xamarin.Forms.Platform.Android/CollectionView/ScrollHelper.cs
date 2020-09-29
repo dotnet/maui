@@ -1,6 +1,6 @@
 using System;
-using ARect = Android.Graphics.Rect;
 using AndroidX.RecyclerView.Widget;
+using ARect = Android.Graphics.Rect;
 
 namespace Xamarin.Forms.Platform.Android
 {

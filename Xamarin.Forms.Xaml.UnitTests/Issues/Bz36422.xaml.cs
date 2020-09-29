@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-
-using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -12,12 +11,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public partial class Bz36422 : ContentPage
 	{
-		public Bz36422 ()
+		public Bz36422()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Bz36422 (bool useCompiledXaml)
+		public Bz36422(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -27,10 +26,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			[TestCase(true)]
 			[TestCase(false)]
-			public void xArrayCanBeAssignedToIListT (bool useCompiledXaml)
+			public void xArrayCanBeAssignedToIListT(bool useCompiledXaml)
 			{
-				var layout = new Bz36422 (useCompiledXaml);
-				Assert.AreEqual (3, layout.control.Views.Count);
+				var layout = new Bz36422(useCompiledXaml);
+				Assert.AreEqual(3, layout.control.Views.Count);
 			}
 		}
 	}

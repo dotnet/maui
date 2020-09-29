@@ -72,9 +72,10 @@ namespace Xamarin.Forms.Controls
 			var tb1 = new ToolbarItem()
 			{
 				Text = "tb1",
-				IconImageSource =  new FontImageSource()
+				IconImageSource = new FontImageSource()
 				{
-					FontFamily = fontFamily, Glyph = '\uf101'.ToString()
+					FontFamily = fontFamily,
+					Glyph = '\uf101'.ToString()
 				}
 			};
 			var tb2 = new ToolbarItem
@@ -82,7 +83,9 @@ namespace Xamarin.Forms.Controls
 				Text = "tb2 red",
 				IconImageSource = new FontImageSource()
 				{
-					FontFamily = fontFamily, Glyph = '\uf101'.ToString(), Color = Color.Red
+					FontFamily = fontFamily,
+					Glyph = '\uf101'.ToString(),
+					Color = Color.Red
 				},
 			};
 			var tb3 = new ToolbarItem
@@ -90,7 +93,9 @@ namespace Xamarin.Forms.Controls
 				Text = "tb3 yellow",
 				IconImageSource = new FontImageSource()
 				{
-					FontFamily = fontFamily, Glyph = '\uf2c7'.ToString(), Color = Color.Yellow
+					FontFamily = fontFamily,
+					Glyph = '\uf2c7'.ToString(),
+					Color = Color.Yellow
 				},
 			};
 			ToolbarItems.Add(tb1);

@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void BindingToNullable([Values(false, true)]bool useCompiledXaml)
+			public void BindingToNullable([Values(false, true)] bool useCompiledXaml)
 			{
 				var vm = new Issue6280ViewModel();
 				var page = new Issue6280(useCompiledXaml) { BindingContext = vm };

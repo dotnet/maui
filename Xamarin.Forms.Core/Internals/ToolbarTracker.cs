@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Internals
 		public bool HaveMasterDetail => SeparateFlyoutPage;
 
 		[Obsolete("MASTERDETAILPAGE")]
-		public bool SeparateMasterDetail 
+		public bool SeparateMasterDetail
 		{
 			get => SeparateFlyoutPage;
 			set => SeparateFlyoutPage = value;

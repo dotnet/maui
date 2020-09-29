@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public static TypeReference ImportReference(this ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) type, (string assemblyName, string clrNamespace, string typeName)[] classArguments)
 		{
-			var typeKey = $"{type}<{string.Join(",",classArguments)}>";
+			var typeKey = $"{type}<{string.Join(",", classArguments)}>";
 			if (!TypeRefCache.TryGetValue((module, typeKey), out var typeRef))
 				TypeRefCache.Add((module, typeKey), typeRef = module.ImportReference(module.ImportReference(type).MakeGenericInstanceType(classArguments.Select(gp => module.GetTypeDefinition((gp.assemblyName, gp.clrNamespace, gp.typeName))).ToArray())));
 			return typeRef;
@@ -50,7 +50,8 @@ namespace Xamarin.Forms.Build.Tasks
 			var ctorKey = $"{type}.ctor({(parameterTypes == null ? "" : string.Join(",", parameterTypes.Select(SerializeTypeReference)))})";
 			if (MethodRefCache.TryGetValue((module, ctorKey), out var ctorRef))
 				return ctorRef;
-			ctorRef = module.ImportCtorReference(type, classArguments: null, predicate: md => {
+			ctorRef = module.ImportCtorReference(type, classArguments: null, predicate: md =>
+			{
 				if (md.Parameters.Count != (parameterTypes?.Length ?? 0))
 					return false;
 				for (var i = 0; i < md.Parameters.Count; i++)
@@ -82,7 +83,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			var ctorKey = $"{type}<{(string.Join(",", classArguments))}>.ctor({(string.Join(",", Enumerable.Repeat("_", paramCount)))})";
 			if (!MethodRefCache.TryGetValue((module, ctorKey), out var ctorRef))
-				MethodRefCache.Add((module, ctorKey), ctorRef = module.ImportCtorReference(module.GetTypeDefinition(type), classArguments.Select(module.GetTypeDefinition).ToArray(), md=>md.Parameters.Count==paramCount));
+				MethodRefCache.Add((module, ctorKey), ctorRef = module.ImportCtorReference(module.GetTypeDefinition(type), classArguments.Select(module.GetTypeDefinition).ToArray(), md => md.Parameters.Count == paramCount));
 			return ctorRef;
 		}
 
@@ -99,7 +100,8 @@ namespace Xamarin.Forms.Build.Tasks
 			var ctorKey = $"{type}<{(string.Join(",", classArguments))}>.ctor({(parameterTypes == null ? "" : string.Join(",", parameterTypes))})";
 			if (MethodRefCache.TryGetValue((module, ctorKey), out var ctorRef))
 				return ctorRef;
-			ctorRef = module.ImportCtorReference(module.GetTypeDefinition(type), classArguments.Select(module.GetTypeDefinition).ToArray(), md => {
+			ctorRef = module.ImportCtorReference(module.GetTypeDefinition(type), classArguments.Select(module.GetTypeDefinition).ToArray(), md =>
+			{
 				if (md.Parameters.Count != (parameterTypes?.Length ?? 0))
 					return false;
 				for (var i = 0; i < md.Parameters.Count; i++)
@@ -116,7 +118,8 @@ namespace Xamarin.Forms.Build.Tasks
 			var ctorKey = $"{type}.ctor({(parameterTypes == null ? "" : string.Join(",", parameterTypes))})";
 			if (MethodRefCache.TryGetValue((module, ctorKey), out var ctorRef))
 				return ctorRef;
-			ctorRef = module.ImportCtorReference(module.GetTypeDefinition(type), classArguments: null, predicate: md => {
+			ctorRef = module.ImportCtorReference(module.GetTypeDefinition(type), classArguments: null, predicate: md =>
+			{
 				if (md.Parameters.Count != (parameterTypes?.Length ?? 0))
 					return false;
 				for (var i = 0; i < md.Parameters.Count; i++)
@@ -159,7 +162,7 @@ namespace Xamarin.Forms.Build.Tasks
 				.Properties
 				.FirstOrDefault(pd =>
 								   pd.Name == propertyName
-				                && !pd.SetMethod.IsPrivate
+								&& !pd.SetMethod.IsPrivate
 								&& (predicate?.Invoke(pd) ?? true))
 				?.SetMethod;
 			return setter == null ? null : module.ImportReference(setter);
@@ -169,7 +172,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			var setterKey = $"{(isStatic ? "static " : "")}{type}.set{propertyName}";
 			if (!MethodRefCache.TryGetValue((module, setterKey), out var methodReference))
-				MethodRefCache.Add((module,setterKey), methodReference = module.ImportPropertySetterReference(module.GetTypeDefinition(type), propertyName, pd => pd.SetMethod.IsStatic == isStatic));
+				MethodRefCache.Add((module, setterKey), methodReference = module.ImportPropertySetterReference(module.GetTypeDefinition(type), propertyName, pd => pd.SetMethod.IsStatic == isStatic));
 			return methodReference;
 		}
 
@@ -181,7 +184,7 @@ namespace Xamarin.Forms.Build.Tasks
 				.Methods
 				.FirstOrDefault(md =>
 								   !md.IsConstructor
-				                && !md.IsPrivate
+								&& !md.IsPrivate
 								&& md.Name == methodName
 								&& (predicate?.Invoke(md) ?? true));
 			if (method is null)
@@ -201,7 +204,8 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			return module.ImportMethodReference(type,
 												methodName: methodName,
-												predicate: md => {
+												predicate: md =>
+												{
 													if (md.IsStatic != isStatic)
 														return false;
 													if (md.Parameters.Count != (parameterTypes?.Length ?? 0))
@@ -226,10 +230,11 @@ namespace Xamarin.Forms.Build.Tasks
 				return methodReference;
 			methodReference = module.ImportMethodReference(module.GetTypeDefinition(type),
 														   methodName: methodName,
-														   predicate: md => {
+														   predicate: md =>
+														   {
 															   if (md.IsStatic != isStatic)
 																   return false;
-											   				   if (md.Parameters.Count != (parameterTypes?.Length ?? 0))
+															   if (md.Parameters.Count != (parameterTypes?.Length ?? 0))
 																   return false;
 															   for (var i = 0; i < md.Parameters.Count; i++)
 																   if (!TypeRefComparer.Default.Equals(md.Parameters[i].ParameterType, module.ImportReference(parameterTypes[i])))
@@ -253,7 +258,8 @@ namespace Xamarin.Forms.Build.Tasks
 				return methodReference;
 			methodReference = module.ImportMethodReference(module.GetTypeDefinition(type),
 														   methodName: methodName,
-														   predicate: md => {
+														   predicate: md =>
+														   {
 															   if (md.IsStatic != isStatic)
 																   return false;
 															   if (md.Parameters.Count != paramCount)
@@ -298,13 +304,15 @@ namespace Xamarin.Forms.Build.Tasks
 							? module.Assembly
 							: module.AssemblyResolver.Resolve(AssemblyNameReference.Parse(type.assemblyName));
 			var typeDef = asm.MainModule.GetType($"{type.clrNamespace}.{type.typeName}");
-			if (typeDef != null) {
+			if (typeDef != null)
+			{
 				typeDefCache.Add((module, type), typeDef);
 				return typeDef;
 			}
 			var exportedType = asm.MainModule.ExportedTypes.FirstOrDefault(
 				arg => arg.IsForwarder && arg.Namespace == type.clrNamespace && arg.Name == type.typeName);
-			if (exportedType != null) {
+			if (exportedType != null)
+			{
 				typeDef = exportedType.Resolve();
 				typeDefCache.Add((module, type), typeDef);
 				return typeDef;

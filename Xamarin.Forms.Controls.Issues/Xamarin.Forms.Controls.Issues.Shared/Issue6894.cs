@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6894, "Accessibility tags are not working with WebView", PlatformAffected.iOS)]
-	public class Issue6894 : TestContentPage 
+	public class Issue6894 : TestContentPage
 	{
 		protected override void Init()
 		{

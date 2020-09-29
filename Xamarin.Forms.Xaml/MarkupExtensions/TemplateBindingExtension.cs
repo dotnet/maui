@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Xaml
 				Converter = Converter,
 				ConverterParameter = ConverterParameter,
 				StringFormat = StringFormat
-			};		
+			};
 		}
 
 		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)

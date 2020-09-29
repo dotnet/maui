@@ -9,11 +9,11 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 2783, "MemoryLeak in FrameRenderer", PlatformAffected.Android, NavigationBehavior.PushModalAsync)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2783, "MemoryLeak in FrameRenderer", PlatformAffected.Android, NavigationBehavior.PushModalAsync)]
 	public class Issue2783 : ContentPage
 	{
-		public Issue2783 ()
+		public Issue2783()
 		{
 			Frame frPatientInfo = new Frame
 			{
@@ -23,13 +23,14 @@ namespace Xamarin.Forms.Controls.Issues
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
 				Padding = 5,
-				Content = new AbsoluteLayout {
+				Content = new AbsoluteLayout
+				{
 					BackgroundColor = Color.Red,
 					HeightRequest = 1000,
 					WidthRequest = 2000,
 				}
 			};
-		
+
 			Content = frPatientInfo;
 
 		}

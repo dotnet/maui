@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if(e.PropertyName == Stepper.MinimumProperty.PropertyName ||e.PropertyName == Stepper.MaximumProperty.PropertyName ||
+			if (e.PropertyName == Stepper.MinimumProperty.PropertyName || e.PropertyName == Stepper.MaximumProperty.PropertyName ||
 				e.PropertyName == Stepper.ValueProperty.PropertyName)
 				UpdateButtons();
 		}

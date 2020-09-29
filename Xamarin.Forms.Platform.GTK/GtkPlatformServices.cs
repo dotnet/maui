@@ -18,7 +18,8 @@ namespace Xamarin.Forms.Platform.GTK
 
 		public void BeginInvokeOnMainThread(Action action)
 		{
-			GLib.Idle.Add(delegate { action(); return false; });
+			GLib.Idle.Add(delegate
+			{ action(); return false; });
 		}
 
 		public Ticker CreateTicker()
@@ -42,22 +43,22 @@ namespace Xamarin.Forms.Platform.GTK
 				case NamedSize.Default:
 					return 11;
 				case NamedSize.Micro:
-                case NamedSize.Caption:
-                    return 12;
+				case NamedSize.Caption:
+					return 12;
 				case NamedSize.Medium:
 					return 17;
 				case NamedSize.Large:
 					return 22;
-                case NamedSize.Small:
-                case NamedSize.Body:
-                    return 14;
-                case NamedSize.Header:
-                    return 46;
-                case NamedSize.Subtitle:
-                    return 20;
-                case NamedSize.Title:
-                    return 24;
-                default:
+				case NamedSize.Small:
+				case NamedSize.Body:
+					return 14;
+				case NamedSize.Header:
+					return 46;
+				case NamedSize.Subtitle:
+					return 20;
+				case NamedSize.Title:
+					return 24;
+				default:
 					throw new ArgumentOutOfRangeException(nameof(size));
 			}
 		}

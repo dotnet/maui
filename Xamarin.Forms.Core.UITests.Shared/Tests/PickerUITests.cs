@@ -8,35 +8,35 @@ namespace Xamarin.Forms.Core.UITests
 	[Category(UITestCategories.Picker)]
 	internal class PickerUITests : _ViewUITests
 	{
-		public PickerUITests ()
+		public PickerUITests()
 		{
 			PlatformViewType = Views.Picker;
 		}
 
-		protected override void NavigateToGallery ()
+		protected override void NavigateToGallery()
 		{
-			App.NavigateToGallery (GalleryQueries.PickerGallery);
+			App.NavigateToGallery(GalleryQueries.PickerGallery);
 		}
 
 		// TODO
-		public override void _Focus () {}
+		public override void _Focus() { }
 
-		[UiTestExempt (ExemptReason.CannotTest, "Invalid interaction")]
-		public override void _GestureRecognizers () {}
-		
-		// TODO
-		public override void _IsFocused () {}
+		[UiTestExempt(ExemptReason.CannotTest, "Invalid interaction")]
+		public override void _GestureRecognizers() { }
 
 		// TODO
-		public override void _UnFocus () {}
+		public override void _IsFocused() { }
+
+		// TODO
+		public override void _UnFocus() { }
 
 		// TODO
 		// Implement control specific ui tests
 
-		protected override void FixtureTeardown ()
+		protected override void FixtureTeardown()
 		{
-			App.NavigateBack ();
-			base.FixtureTeardown ();
+			App.NavigateBack();
+			base.FixtureTeardown();
 		}
 
 #if __ANDROID__ || __IOS__

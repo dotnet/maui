@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			var generator = new ItemsSourceGenerator(carouselView, initialItems: nItems, itemsSourceType: ItemsSourceType.ObservableCollection);
 
 			var positionControl = new PositionControl(carouselView, nItems);
-			
+
 			var spacingModifier = new SpacingModifier(carouselView.ItemsLayout, "Update Spacing");
 
 			var stckPeek = new StackLayout { Orientation = StackOrientation.Horizontal };
@@ -80,7 +80,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				BackgroundColor = Color.Pink
 			};
 
-			padi.ValueChanged += (s, e) => {
+			padi.ValueChanged += (s, e) =>
+			{
 				var peek = padi.Value;
 
 				if (orientation == ItemsLayoutOrientation.Horizontal)
@@ -90,7 +91,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			};
 
 			stckPeek.Children.Add(padi);
-		
+
 			var content = new Grid();
 			content.Children.Add(carouselView);
 
@@ -114,7 +115,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			Grid.SetRow(content, 6);
 
 			Content = layout;
-			generator.CollectionChanged += (sender, e) => {
+			generator.CollectionChanged += (sender, e) =>
+			{
 				positionControl.UpdatePositionCount(generator.Count);
 			};
 

@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void ErrorOnMissingDefaultCtor([Values (false, true)]bool useCompiledXaml)
+			public void ErrorOnMissingDefaultCtor([Values(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh4751)));

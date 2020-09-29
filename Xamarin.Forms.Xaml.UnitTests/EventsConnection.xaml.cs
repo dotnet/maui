@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public class BaseForEvents : ContentView
 	{
 		protected int baseClicked;
-		protected void HandleClickedOnBase (object sender, EventArgs e)
+		protected void HandleClickedOnBase(object sender, EventArgs e)
 		{
 			baseClicked++;
 		}
@@ -19,11 +18,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		public event EventHandler Clicked;
 
-		public void SendClicked ()
+		public void SendClicked()
 		{
 			var eh = Clicked;
 			if (eh != null)
-				eh (this, EventArgs.Empty);
+				eh(this, EventArgs.Empty);
 		}
 	}
 
@@ -31,41 +30,41 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		public event EventHandler<ItemTappedEventArgs> Clicked;
 
-		public void SendClicked ()
+		public void SendClicked()
 		{
 			var eh = Clicked;
 			if (eh != null)
-				eh (this, new ItemTappedEventArgs ("foo", "bar", -1));
+				eh(this, new ItemTappedEventArgs("foo", "bar", -1));
 		}
 	}
 
 	public partial class EventsConnection : BaseForEvents
 	{
-		public EventsConnection ()
+		public EventsConnection()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public EventsConnection (bool useCompiledXaml)
+		public EventsConnection(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
 
 		int clicked;
-		public void HandleClicked (object sender, EventArgs e)
+		public void HandleClicked(object sender, EventArgs e)
 		{
 			clicked++;
 		}
 
 		int genericClicked;
-		public void HandleGenericClicked (object sender, ItemTappedEventArgs e)
+		public void HandleGenericClicked(object sender, ItemTappedEventArgs e)
 		{
 			genericClicked++;
 		}
 
 		int asyncPrivateClicked;
 #pragma warning disable 1998 // considered for removal
-		async void HandleClickedPrivateAsync (object sender, EventArgs e)
+		async void HandleClickedPrivateAsync(object sender, EventArgs e)
 #pragma warning restore 1998
 		{
 			asyncPrivateClicked++;
@@ -90,44 +89,44 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase (false)]
-			[TestCase (true)]
-			public void TestClicked (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestClicked(bool useCompiledXaml)
 			{
-				var layout = new EventsConnection (useCompiledXaml);
-				Assert.AreEqual (0, layout.clicked);
-				layout.elementWithEvent.SendClicked ();
-				Assert.AreEqual (1, layout.clicked);
+				var layout = new EventsConnection(useCompiledXaml);
+				Assert.AreEqual(0, layout.clicked);
+				layout.elementWithEvent.SendClicked();
+				Assert.AreEqual(1, layout.clicked);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void TestGenericClicked (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestGenericClicked(bool useCompiledXaml)
 			{
-				var layout = new EventsConnection (useCompiledXaml);
-				Assert.AreEqual (0, layout.genericClicked);
-				layout.elementWithGenericEvent.SendClicked ();
-				Assert.AreEqual (1, layout.genericClicked);
+				var layout = new EventsConnection(useCompiledXaml);
+				Assert.AreEqual(0, layout.genericClicked);
+				layout.elementWithGenericEvent.SendClicked();
+				Assert.AreEqual(1, layout.genericClicked);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void TestHandlerOnBase (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestHandlerOnBase(bool useCompiledXaml)
 			{
-				var layout = new EventsConnection (useCompiledXaml);
-				Assert.AreEqual (0, layout.baseClicked);
-				layout.eventHandlerOnBase.SendClicked ();
-				Assert.AreEqual (1, layout.baseClicked);
+				var layout = new EventsConnection(useCompiledXaml);
+				Assert.AreEqual(0, layout.baseClicked);
+				layout.eventHandlerOnBase.SendClicked();
+				Assert.AreEqual(1, layout.baseClicked);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void TestAsyncPrivateHandler (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestAsyncPrivateHandler(bool useCompiledXaml)
 			{
-				var layout = new EventsConnection (useCompiledXaml);
-				Assert.AreEqual (0, layout.asyncPrivateClicked);
-				layout.elementwithAsyncprivateHandler.SendClicked ();
-				Assert.AreEqual (1, layout.asyncPrivateClicked);
+				var layout = new EventsConnection(useCompiledXaml);
+				Assert.AreEqual(0, layout.asyncPrivateClicked);
+				layout.elementwithAsyncprivateHandler.SendClicked();
+				Assert.AreEqual(1, layout.asyncPrivateClicked);
 			}
 
 			[TestCase(false)]

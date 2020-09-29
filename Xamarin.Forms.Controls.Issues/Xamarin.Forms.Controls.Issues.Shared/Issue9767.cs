@@ -1,8 +1,8 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -126,5 +126,5 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 
 		}
-	} 
+	}
 }

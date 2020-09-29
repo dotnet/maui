@@ -21,7 +21,8 @@ namespace Xamarin.Forms.Build.Tasks
 				CallingConvention = self.CallingConvention
 			};
 
-			foreach (var parameter in self.Parameters) {
+			foreach (var parameter in self.Parameters)
+			{
 				var definition = new ParameterDefinition(ImportUnresolvedType(parameter.ParameterType, module));
 
 				foreach (var attribute in parameter.CustomAttributes)
@@ -62,9 +63,10 @@ namespace Xamarin.Forms.Build.Tasks
 				self.Parameters[i].ParameterType = module.ImportReference(self.Parameters[i].ParameterType);
 		}
 
-		public static MethodReference MakeGeneric(this MethodReference self, TypeReference declaringType, params TypeReference [] arguments)
+		public static MethodReference MakeGeneric(this MethodReference self, TypeReference declaringType, params TypeReference[] arguments)
 		{
-			var reference = new MethodReference(self.Name, self.ReturnType) {
+			var reference = new MethodReference(self.Name, self.ReturnType)
+			{
 				DeclaringType = declaringType,
 				HasThis = self.HasThis,
 				ExplicitThis = self.ExplicitThis,

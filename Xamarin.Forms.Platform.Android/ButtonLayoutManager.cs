@@ -5,10 +5,9 @@ using Android.Graphics.Drawables;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
 using Xamarin.Forms.Internals;
+using AButton = Android.Widget.Button;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
-using AButton = Android.Widget.Button;
-using Android.Text;	
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -269,7 +268,7 @@ namespace Xamarin.Forms.Platform.Android
 				return false;
 
 			var textTransform = _element.TextTransform;
-			
+
 			_renderer.View.SetAllCaps(textTransform == TextTransform.Default);
 
 			string oldText = view.Text;
@@ -303,9 +302,9 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			// No text, so no need for relative position; just center the image
-			// There's no option for just plain-old centering, so we'll use Top 
+			// There's no option for just plain-old centering, so we'll use Top
 			// (which handles the horizontal centering) and some tricksy padding (in OnLayout)
-			// to handle the vertical centering 
+			// to handle the vertical centering
 			var layout = string.IsNullOrEmpty(_element.Text) ? _imageOnlyLayout : _element.ContentLayout;
 
 			if (_maintainLegacyMeasurements)

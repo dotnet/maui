@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var tabs = layout.AllChildren;
 
 				int i = 0;
-				foreach(var tab in tabs)
+				foreach (var tab in tabs)
 				{
 					Tab myTab = (Tab)tab;
 					if (myTab == null)
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					Assert.AreEqual(FontFamily, fontImage.FontFamily);
 					Assert.AreEqual(Glyph, fontImage.Glyph);
 
-					if(i == 3)
+					if (i == 3)
 						Assert.AreEqual(30d, fontImage.Size);
 					else
 						Assert.AreEqual(Size, fontImage.Size);

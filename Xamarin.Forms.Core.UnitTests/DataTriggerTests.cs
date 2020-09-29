@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -25,77 +25,81 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void SettersAppliedOnAttachIfConditionIsTrue ()
+		public void SettersAppliedOnAttachIfConditionIsTrue()
 		{
-			var setterbp = BindableProperty.Create ("bar", typeof(string), typeof(BindableObject), null);
-			var element = new MockElement ();
-			var datatrigger = new DataTrigger (typeof(VisualElement)) {
-				Binding = new Binding ("foo"),
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			var datatrigger = new DataTrigger(typeof(VisualElement))
+			{
+				Binding = new Binding("foo"),
 				Value = "foobar",
 				Setters = {
 					new Setter { Property = setterbp, Value = "qux" },
 				}
 			};
 
-			element.SetValue (setterbp, "default");
-			element.BindingContext = new {foo = "foobar"};
-			Assert.AreEqual ("default", element.GetValue (setterbp));
-			element.Triggers.Add (datatrigger);
-			Assert.AreEqual ("qux", element.GetValue (setterbp));
+			element.SetValue(setterbp, "default");
+			element.BindingContext = new { foo = "foobar" };
+			Assert.AreEqual("default", element.GetValue(setterbp));
+			element.Triggers.Add(datatrigger);
+			Assert.AreEqual("qux", element.GetValue(setterbp));
 		}
 
 		[Test]
-		public void SettersUnappliedOnDetach ()
+		public void SettersUnappliedOnDetach()
 		{
-			var setterbp = BindableProperty.Create ("bar", typeof(string), typeof(BindableObject), null);
-			var element = new MockElement ();
-			var datatrigger = new DataTrigger (typeof(VisualElement)) {
-				Binding = new Binding ("foo"),
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			var datatrigger = new DataTrigger(typeof(VisualElement))
+			{
+				Binding = new Binding("foo"),
 				Value = "foobar",
 				Setters = {
 					new Setter { Property = setterbp, Value = "qux" },
 				}
 			};
 
-			element.SetValue (setterbp, "default");
-			element.Triggers.Add (datatrigger);
+			element.SetValue(setterbp, "default");
+			element.Triggers.Add(datatrigger);
 
-			Assert.AreEqual ("default", element.GetValue (setterbp));
-			element.BindingContext = new {foo = "foobar"};
-			Assert.AreEqual ("qux", element.GetValue (setterbp));
-			element.Triggers.Remove (datatrigger);
-			Assert.AreEqual ("default", element.GetValue (setterbp));
+			Assert.AreEqual("default", element.GetValue(setterbp));
+			element.BindingContext = new { foo = "foobar" };
+			Assert.AreEqual("qux", element.GetValue(setterbp));
+			element.Triggers.Remove(datatrigger);
+			Assert.AreEqual("default", element.GetValue(setterbp));
 		}
 
 		[Test]
-		public void SettersAppliedOnConditionChanged ()
+		public void SettersAppliedOnConditionChanged()
 		{
-			var setterbp = BindableProperty.Create ("bar", typeof(string), typeof(BindableObject), null);
-			var element = new MockElement ();
-			var trigger = new DataTrigger (typeof (VisualElement)){
-				Binding = new Binding ("foo"),
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			var trigger = new DataTrigger(typeof(VisualElement))
+			{
+				Binding = new Binding("foo"),
 				Value = "foobar",
 				Setters = {
 					new Setter { Property = setterbp, Value = "qux" },
 				}
 			};
 
-			element.SetValue (setterbp, "default");
-			element.Triggers.Add (trigger);
+			element.SetValue(setterbp, "default");
+			element.Triggers.Add(trigger);
 
-			Assert.AreEqual ("default", element.GetValue (setterbp));
-			element.BindingContext = new {foo = "foobar"};
-			Assert.AreEqual ("qux", element.GetValue (setterbp));
-			element.BindingContext = new {foo = ""};
-			Assert.AreEqual ("default", element.GetValue (setterbp));
+			Assert.AreEqual("default", element.GetValue(setterbp));
+			element.BindingContext = new { foo = "foobar" };
+			Assert.AreEqual("qux", element.GetValue(setterbp));
+			element.BindingContext = new { foo = "" };
+			Assert.AreEqual("default", element.GetValue(setterbp));
 		}
 
 		[Test]
-		public void TriggersAppliedOnMultipleElements ()
+		public void TriggersAppliedOnMultipleElements()
 		{
-			var setterbp = BindableProperty.Create ("bar", typeof(string), typeof(BindableObject), null);
-			var trigger = new DataTrigger (typeof(VisualElement)) {
-				Binding = new Binding ("foo"),
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var trigger = new DataTrigger(typeof(VisualElement))
+			{
+				Binding = new Binding("foo"),
 				Value = "foobar",
 				Setters = {
 					new Setter { Property = setterbp, Value = "qux" },
@@ -104,16 +108,17 @@ namespace Xamarin.Forms.Core.UnitTests
 			var element0 = new MockElement { Triggers = { trigger } };
 			var element1 = new MockElement { Triggers = { trigger } };
 
-			element0.BindingContext = element1.BindingContext = new {foo = "foobar"};
-			Assert.AreEqual ("qux", element0.GetValue (setterbp));
-			Assert.AreEqual ("qux", element1.GetValue (setterbp));
+			element0.BindingContext = element1.BindingContext = new { foo = "foobar" };
+			Assert.AreEqual("qux", element0.GetValue(setterbp));
+			Assert.AreEqual("qux", element1.GetValue(setterbp));
 		}
 
 		[Test]
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=30074
-		public void AllTriggersUnappliedBeforeApplying ()
+		public void AllTriggersUnappliedBeforeApplying()
 		{
-			var boxview = new BoxView {
+			var boxview = new BoxView
+			{
 				Triggers = {
 					new DataTrigger (typeof(BoxView)) {
 						Binding = new Binding ("."),
@@ -141,20 +146,20 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 
 			boxview.BindingContext = "Complete";
-			Assert.AreEqual (Color.Green, boxview.Color);
-			Assert.AreEqual (.5, boxview.Opacity);
+			Assert.AreEqual(Color.Green, boxview.Color);
+			Assert.AreEqual(.5, boxview.Opacity);
 
 			boxview.BindingContext = "MissingInfo";
-			Assert.AreEqual (Color.Yellow, boxview.Color);
-			Assert.AreEqual (1, boxview.Opacity);
+			Assert.AreEqual(Color.Yellow, boxview.Color);
+			Assert.AreEqual(1, boxview.Opacity);
 
 			boxview.BindingContext = "Error";
-			Assert.AreEqual (Color.Red, boxview.Color);
-			Assert.AreEqual (1, boxview.Opacity);
+			Assert.AreEqual(Color.Red, boxview.Color);
+			Assert.AreEqual(1, boxview.Opacity);
 
 			boxview.BindingContext = "Complete";
-			Assert.AreEqual (Color.Green, boxview.Color);
-			Assert.AreEqual (.5, boxview.Opacity);
+			Assert.AreEqual(Color.Green, boxview.Color);
+			Assert.AreEqual(.5, boxview.Opacity);
 		}
 	}
 }

@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
-
 using NUnit.Framework;
+using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class Issue2578 : ContentPage
 	{
-		public Issue2578 ()
+		public Issue2578()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Issue2578 (bool useCompiledXaml)
+		public Issue2578(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -24,23 +22,23 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public class Tests
 		{
 			[SetUp]
-			public void Setup ()
+			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices ();
+				Device.PlatformServices = new MockPlatformServices();
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void MultipleTriggers (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void MultipleTriggers(bool useCompiledXaml)
 			{
 				Issue2578 layout = null;
-				Assert.DoesNotThrow (() => layout = new Issue2578 (useCompiledXaml));
+				Assert.DoesNotThrow(() => layout = new Issue2578(useCompiledXaml));
 
-				Assert.AreEqual (null, layout.label.Text);
-				Assert.AreEqual (Color.Default, layout.label.BackgroundColor);
-				Assert.AreEqual (Color.Olive, layout.label.TextColor);
+				Assert.AreEqual(null, layout.label.Text);
+				Assert.AreEqual(Color.Default, layout.label.BackgroundColor);
+				Assert.AreEqual(Color.Olive, layout.label.TextColor);
 				layout.label.Text = "Foo";
-				Assert.AreEqual (Color.Red, layout.label.BackgroundColor);
+				Assert.AreEqual(Color.Red, layout.label.BackgroundColor);
 			}
 		}
 	}

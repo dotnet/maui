@@ -1,10 +1,10 @@
-﻿using Android.Views;
-using Android.Widget;
+﻿using System.Collections.Generic;
 using Android.Text;
-using System.Collections.Generic;
-using AView = global::Android.Views.View;
-using Java.Lang;
 using Android.Text.Style;
+using Android.Views;
+using Android.Widget;
+using Java.Lang;
+using AView = global::Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static ICharSequence GetTitle(Color titleColor, string title)
 		{
-			if(titleColor == Color.Default)
+			if (titleColor == Color.Default)
 				return new Java.Lang.String(title);
 
 			var spannableTitle = new SpannableString(title ?? "");

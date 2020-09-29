@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
-using AImageView = Android.Widget.ImageView;
 using Xamarin.Forms.Internals;
+using AImageView = Android.Widget.ImageView;
 
 namespace Xamarin.Forms.Platform.Android
 {

@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.GradientGalleries
 		public CssGradientsPlaygroundViewModel()
 		{
 			_brushTypeConverter = new BrushTypeConverter();
-			
+
 			Css = "linear-gradient(90deg, rgb(255, 0, 0) 0%,rgb(255, 153, 51) 60%)";
 			UpdateGradientBrush();
 		}
@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.GradientGalleries
 				BackgroundBrush = (GradientBrush)gradient;
 				Error = string.Empty;
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				Error = ex.Message;
 			}

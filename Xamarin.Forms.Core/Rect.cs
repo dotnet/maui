@@ -43,7 +43,8 @@ namespace Xamarin.Forms
 		public Size Size
 		{
 			get => new Size(Width, Height);
-			set {
+			set
+			{
 				Width = value.Width;
 				Height = value.Height;
 			}
@@ -52,7 +53,8 @@ namespace Xamarin.Forms
 		public Point Location
 		{
 			get => new Point(X, Y);
-			set {
+			set
+			{
 				X = value.X;
 				Y = value.Y;
 			}

@@ -9,38 +9,40 @@ namespace Xamarin.Forms.Controls.GalleryPages
 {
 	internal class ControlTemplatePage : ContentPage
 	{
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		class MyLayout : StackLayout
 		{
-			public MyLayout ()
+			public MyLayout()
 			{
-				Children.Add (new Label {Text = "Before"});
-				Children.Add (new ContentPresenter ());
-				Children.Add (new Label {Text = "After"});
+				Children.Add(new Label { Text = "Before" });
+				Children.Add(new ContentPresenter());
+				Children.Add(new Label { Text = "After" });
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		class MyOtherLayout : StackLayout
 		{
-			public MyOtherLayout ()
+			public MyOtherLayout()
 			{
-				Children.Add (new Entry {Text = "Before"});
-				Children.Add (new ContentPresenter ());
-				Children.Add (new Entry {Text = "After"});
+				Children.Add(new Entry { Text = "Before" });
+				Children.Add(new ContentPresenter());
+				Children.Add(new Entry { Text = "After" });
 			}
 		}
 
-		public ControlTemplatePage ()
+		public ControlTemplatePage()
 		{
 			var button = new Button { Text = "Replace Template" };
-			var content = new ContentView {
+			var content = new ContentView
+			{
 				Content = button,
-				ControlTemplate = new ControlTemplate (typeof (MyLayout))
+				ControlTemplate = new ControlTemplate(typeof(MyLayout))
 			};
 
-			button.Clicked += (sender, args) => {
-				content.ControlTemplate = new ControlTemplate (typeof (MyOtherLayout));
+			button.Clicked += (sender, args) =>
+			{
+				content.ControlTemplate = new ControlTemplate(typeof(MyOtherLayout));
 			};
 
 			Content = content;

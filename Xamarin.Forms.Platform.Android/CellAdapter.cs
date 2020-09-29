@@ -5,10 +5,10 @@ using Android.Content;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using AView = Android.Views.View;
-using AListView = Android.Widget.ListView;
-using AActionMode = global::AndroidX.AppCompat.View.ActionMode;
 using AndroidX.AppCompat.App;
+using AActionMode = global::AndroidX.AppCompat.View.ActionMode;
+using AListView = Android.Widget.ListView;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -232,10 +232,10 @@ namespace Xamarin.Forms.Platform.Android
 
 				ActionModeContext = cell;
 
-				if(ActionModeContext.IsContextActionsLegacyModeEnabled == false)
+				if (ActionModeContext.IsContextActionsLegacyModeEnabled == false)
 					_actionModeNeedsUpdates = true;
 
-                _actionMode?.Invalidate();
+				_actionMode?.Invalidate();
 				_supportActionMode?.Invalidate();
 			}
 			else

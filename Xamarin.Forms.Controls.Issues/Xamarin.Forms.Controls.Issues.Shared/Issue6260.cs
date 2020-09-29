@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Text = "Click me",
 				BackgroundColor = Color.Green,
-				
+
 			};
 
 			var label = new Label()

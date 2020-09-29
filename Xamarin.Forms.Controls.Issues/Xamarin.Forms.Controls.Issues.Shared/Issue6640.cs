@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Controls.Issues
 																{
 																	new Label
 																	{
-																		Text = $"Press Back Arrow to send application to background and wait few seconds.{Environment.NewLine}Application must not crash." 
+																		Text = $"Press Back Arrow to send application to background and wait few seconds.{Environment.NewLine}Application must not crash."
 																	}
 																}
 															}

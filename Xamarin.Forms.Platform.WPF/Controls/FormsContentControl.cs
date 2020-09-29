@@ -52,7 +52,8 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 
 		private void OnSourceChanged(object oldValue, object newValue)
 		{
-			if (newValue != null && newValue.Equals(oldValue)) return;
+			if (newValue != null && newValue.Equals(oldValue))
+				return;
 
 			var localTokenSource = new CancellationTokenSource();
 			this.tokenSource = localTokenSource;

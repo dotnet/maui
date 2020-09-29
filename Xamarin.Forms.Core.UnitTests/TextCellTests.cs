@@ -8,14 +8,14 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class TextCellTests : BaseTestFixture
 	{
 		[Test]
-		public void TestTapped ()
+		public void TestTapped()
 		{
-			var cell = new TextCell ();
+			var cell = new TextCell();
 			bool tapped = false;
 			cell.Tapped += (sender, args) => tapped = true;
 
 			cell.OnTapped();
-			Assert.True (tapped);
+			Assert.True(tapped);
 		}
 
 		[TestCase(true)]
@@ -24,11 +24,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			bool executed = false;
 
-			var cmd = new Command (() => executed = true, () => canExecute);
+			var cmd = new Command(() => executed = true, () => canExecute);
 			var cell = new TextCell { Command = cmd };
 			cell.OnTapped();
 
-			Assert.That (executed, Is.EqualTo(canExecute));
+			Assert.That(executed, Is.EqualTo(canExecute));
 		}
 
 		[Test]
@@ -36,12 +36,12 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			bool executed = false;
 
-			var cmd = new Command (() => executed = true);
+			var cmd = new Command(() => executed = true);
 			var cell = new TextCell();
 			cell.Command = cmd;
 			cell.OnTapped();
 
-			Assert.IsTrue (executed, "Command was not executed");
+			Assert.IsTrue(executed, "Command was not executed");
 		}
 
 		[Test]
@@ -50,19 +50,21 @@ namespace Xamarin.Forms.Core.UnitTests
 			bool executed = false;
 
 			object obj = new object();
-			var cmd = new Command (p => {
-				Assert.AreSame (obj, p);
+			var cmd = new Command(p =>
+			{
+				Assert.AreSame(obj, p);
 				executed = true;
 			});
 
-			var cell = new TextCell {
+			var cell = new TextCell
+			{
 				Command = cmd,
 				CommandParameter = obj
 			};
 
 			cell.OnTapped();
 
-			Assert.IsTrue (executed, "Command was not executed");
+			Assert.IsTrue(executed, "Command was not executed");
 		}
 
 		[Test]
@@ -70,73 +72,78 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			bool tested = false;
 
-			var cmd = new Command (() => { },
-				canExecute: () => {
+			var cmd = new Command(() => { },
+				canExecute: () =>
+				{
 					tested = true;
 					return true;
 				});
 
 			new TextCell { Command = cmd };
-			Assert.IsTrue (tested, "Command.CanExecute was not called");
+			Assert.IsTrue(tested, "Command.CanExecute was not called");
 		}
 
 		[Test]
 		public void TestCommandCanExecuteDisables()
 		{
-			var cmd = new Command (() => { }, () => false);
+			var cmd = new Command(() => { }, () => false);
 			var cell = new TextCell { Command = cmd };
-			Assert.IsFalse (cell.IsEnabled, "Cell was not disabled");
+			Assert.IsFalse(cell.IsEnabled, "Cell was not disabled");
 		}
 
 		[Test]
 		public void TestCommandCanExecuteChanged()
 		{
 			bool first = true;
-			var cmd = new Command (() => { }, () => {
-				if (first) {
+			var cmd = new Command(() => { }, () =>
+			{
+				if (first)
+				{
 					first = false;
 					return false;
-				} else {
+				}
+				else
+				{
 					return true;
 				}
 			});
-			
+
 			var cell = new TextCell { Command = cmd };
-			Assert.IsFalse (cell.IsEnabled, "Cell was not disabled");
+			Assert.IsFalse(cell.IsEnabled, "Cell was not disabled");
 
 			cmd.ChangeCanExecute();
 
-			Assert.IsTrue (cell.IsEnabled, "Cell was not reenabled");
+			Assert.IsTrue(cell.IsEnabled, "Cell was not reenabled");
 		}
 
 		[Test]
-		public void Create ()
+		public void Create()
 		{
-			var template = new DataTemplate (typeof (TextCell));
-			var content = template.CreateContent ();
+			var template = new DataTemplate(typeof(TextCell));
+			var content = template.CreateContent();
 
-			Assert.IsNotNull (content);
-			Assert.That (content, Is.InstanceOf<TextCell> ());
+			Assert.IsNotNull(content);
+			Assert.That(content, Is.InstanceOf<TextCell>());
 		}
 
 		[Test]
-		public void Detail ()
+		public void Detail()
 		{
-			var template = new DataTemplate (typeof (TextCell));
-			template.SetValue (TextCell.DetailProperty, "detail");
+			var template = new DataTemplate(typeof(TextCell));
+			template.SetValue(TextCell.DetailProperty, "detail");
 
-			TextCell cell = (TextCell)template.CreateContent ();
-			Assert.That (cell.Detail, Is.EqualTo ("detail"));
+			TextCell cell = (TextCell)template.CreateContent();
+			Assert.That(cell.Detail, Is.EqualTo("detail"));
 		}
 
 		[Test]
-		public void Text ()
+		public void Text()
 		{
-			var template = new DataTemplate (typeof (TextCell));
-			template.SetValue (TextCell.TextProperty, "text");
+			var template = new DataTemplate(typeof(TextCell));
+			template.SetValue(TextCell.TextProperty, "text");
 
-			TextCell cell = (TextCell)template.CreateContent ();
-			Assert.That (cell.Text, Is.EqualTo ("text"));
+			TextCell cell = (TextCell)template.CreateContent();
+			Assert.That(cell.Text, Is.EqualTo("text"));
 		}
 	}
 }

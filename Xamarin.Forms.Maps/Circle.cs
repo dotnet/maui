@@ -27,19 +27,19 @@ namespace Xamarin.Forms.Maps
 		public Position Center
 		{
 			get => (Position)GetValue(CenterProperty);
-			set => SetValue(CenterProperty, value); 
+			set => SetValue(CenterProperty, value);
 		}
 
 		public Distance Radius
 		{
 			get => (Distance)GetValue(RadiusProperty);
-			set => SetValue(RadiusProperty, value); 
+			set => SetValue(RadiusProperty, value);
 		}
 
 		public Color FillColor
 		{
 			get => (Color)GetValue(FillColorProperty);
-			set => SetValue(FillColorProperty, value); 
+			set => SetValue(FillColorProperty, value);
 		}
 	}
 }

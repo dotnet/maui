@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System;
 using Xamarin.Forms.Xaml;
-using System.Collections.Generic;
 
 #if UITEST
 using Xamarin.UITest;
@@ -116,7 +116,7 @@ namespace Xamarin.Forms.Controls.Issues
 				collection.Add(new Model5354
 				{
 					Text = "Image" + i,
-					Source = i % 2 == 0 ? 
+					Source = i % 2 == 0 ?
 					"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kamchatka_Brown_Bear_near_Dvuhyurtochnoe_on_2015-07-23.jpg/320px-Kamchatka_Brown_Bear_near_Dvuhyurtochnoe_on_2015-07-23.jpg" :
 					"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Elephant_%40_kabini.jpg/180px-Elephant_%40_kabini.jpg",
 					AutomationId = "Image" + i
@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public Model5354()
 		{
-			
+
 		}
 	}
 }

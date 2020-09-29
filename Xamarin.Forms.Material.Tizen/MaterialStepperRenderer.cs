@@ -118,9 +118,9 @@ namespace Xamarin.Forms.Material.Tizen
 
 		protected override void Dispose(bool disposing)
 		{
-			if(disposing)
+			if (disposing)
 			{
-				if(Control != null)
+				if (Control != null)
 				{
 					_buttonL.Clicked -= OnDecrementButtonClicked;
 					_buttonR.Clicked -= OnIncrementButtonClicked;
@@ -165,7 +165,7 @@ namespace Xamarin.Forms.Material.Tizen
 
 		void OnIncrementButtonClicked(object sender, EventArgs e)
 		{
-			if ( _value < _maximum)
+			if (_value < _maximum)
 			{
 				_value = Math.Min((_value + _increment), _maximum);
 				((IElementController)Element).SetValueFromRenderer(Stepper.ValueProperty, _value);

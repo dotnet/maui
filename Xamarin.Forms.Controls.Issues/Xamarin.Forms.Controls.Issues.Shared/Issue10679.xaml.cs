@@ -108,7 +108,7 @@ namespace Xamarin.Forms.Controls.Issues
 			swipeView.RightItems = rightItems;
 
 			layout.Children.Add(swipeView);
-			
+
 			Content = layout;
 
 			leftItem.Invoked += async (sender, args) =>

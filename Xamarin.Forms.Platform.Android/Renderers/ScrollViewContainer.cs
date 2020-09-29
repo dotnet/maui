@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			_isDisposed = true;
-			
+
 			if (disposing)
 			{
 				while (ChildCount > 0)

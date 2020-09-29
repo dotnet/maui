@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Xaml
 
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
-			if (   Default == null
+			if (Default == null
 				&& Phone == null
 				&& Tablet == null
 				&& Desktop == null
@@ -37,10 +37,12 @@ namespace Xamarin.Forms.Xaml
 			PropertyInfo pi = null;
 			Type propertyType = null;
 
-			if (valueProvider.TargetObject is Setter setter) {
+			if (valueProvider.TargetObject is Setter setter)
+			{
 				bp = setter.Property;
 			}
-			else {
+			else
+			{
 				bp = valueProvider.TargetProperty as BindableProperty;
 				pi = valueProvider.TargetProperty as PropertyInfo;
 			}
@@ -57,25 +59,30 @@ namespace Xamarin.Forms.Xaml
 				return Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
 
 			var converterProvider = serviceProvider?.GetService<IValueConverterProvider>();
-			if (converterProvider != null) {
+			if (converterProvider != null)
+			{
 				MemberInfo minforetriever()
 				{
 					if (pi != null)
 						return pi;
 
 					MemberInfo minfo = null;
-					try {
+					try
+					{
 						minfo = bp.DeclaringType.GetRuntimeProperty(bp.PropertyName);
 					}
-					catch (AmbiguousMatchException e) {
+					catch (AmbiguousMatchException e)
+					{
 						throw new XamlParseException($"Multiple properties with name '{bp.DeclaringType}.{bp.PropertyName}' found.", serviceProvider, innerException: e);
 					}
 					if (minfo != null)
 						return minfo;
-					try {
+					try
+					{
 						return bp.DeclaringType.GetRuntimeMethod("Get" + bp.PropertyName, new[] { typeof(BindableObject) });
 					}
-					catch (AmbiguousMatchException e) {
+					catch (AmbiguousMatchException e)
+					{
 						throw new XamlParseException($"Multiple methods with name '{bp.DeclaringType}.Get{bp.PropertyName}' found.", serviceProvider, innerException: e);
 					}
 				}
@@ -93,19 +100,20 @@ namespace Xamarin.Forms.Xaml
 
 		object GetValue()
 		{
-			switch (Device.Idiom) {
-			case TargetIdiom.Phone:
-				return Phone ?? Default;
-			case TargetIdiom.Tablet:
-				return Tablet ?? Default;
-			case TargetIdiom.Desktop:
-				return Desktop ?? Default;
-			case TargetIdiom.TV:
-				return TV ?? Default;
-			case TargetIdiom.Watch:
-				return Watch ?? Default;
-			default:
-				return Default;
+			switch (Device.Idiom)
+			{
+				case TargetIdiom.Phone:
+					return Phone ?? Default;
+				case TargetIdiom.Tablet:
+					return Tablet ?? Default;
+				case TargetIdiom.Desktop:
+					return Desktop ?? Default;
+				case TargetIdiom.TV:
+					return TV ?? Default;
+				case TargetIdiom.Watch:
+					return Watch ?? Default;
+				default:
+					return Default;
 			}
 		}
 	}

@@ -1,15 +1,14 @@
 ﻿using System;
-using NUnit.Framework;
-using System.Xml;
-
-using Xamarin.Forms.Core.UnitTests;
 using System.Reflection;
+using System.Xml;
+using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public class FooMarkupExtension : IMarkupExtension
 	{
-		public object ProvideValue (IServiceProvider serviceProvider)
+		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			return "Foo";
 		}
@@ -20,23 +19,24 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public object Value0 { get; set; }
 		public object Value1 { get; set; }
 
-		public object ProvideValue (IServiceProvider serviceProvider)
+		public object ProvideValue(IServiceProvider serviceProvider)
 		{
-			return Value0.ToString () + Value1.ToString ();
+			return Value0.ToString() + Value1.ToString();
 		}
 	}
 
 	public class AccessServiceProviderExtension : IMarkupExtension
 	{
-		public object ProvideValue (IServiceProvider serviceProvider)
+		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			var result = "";
-			if (serviceProvider != null) {
-				var targetValueProvider = serviceProvider.GetService (typeof(IProvideValueTarget));
+			if (serviceProvider != null)
+			{
+				var targetValueProvider = serviceProvider.GetService(typeof(IProvideValueTarget));
 				result += targetValueProvider != null;
-				var xamlType = serviceProvider.GetService (typeof(IXamlTypeResolver));
+				var xamlType = serviceProvider.GetService(typeof(IXamlTypeResolver));
 				result += xamlType != null;
-				var rootObject = serviceProvider.GetService (typeof(IRootObjectProvider));
+				var rootObject = serviceProvider.GetService(typeof(IRootObjectProvider));
 				result += rootObject != null;
 			}
 			return result;
@@ -49,19 +49,19 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public int G { get; set; }
 		public int B { get; set; }
 
-		public ColorMarkup ()
+		public ColorMarkup()
 		{
 		}
 
-		public object ProvideValue (IServiceProvider serviceProvider)
+		public object ProvideValue(IServiceProvider serviceProvider)
 		{
-			return Color.FromRgb (R, G, B);
+			return Color.FromRgb(R, G, B);
 		}
 	}
 
 	public class FuuExtension : IMarkupExtension
 	{
-		public object ProvideValue (IServiceProvider serviceProvider)
+		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			return "FuuExtension";
 		}
@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public class Fuu : IMarkupExtension
 	{
-		public object ProvideValue (IServiceProvider serviceProvider)
+		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			return "Fuu";
 		}
@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public class BaaExtension : IMarkupExtension
 	{
-		public object ProvideValue (IServiceProvider serviceProvider)
+		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			return "BaaExtension";
 		}
@@ -89,60 +89,63 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		IXamlTypeResolver typeResolver;
 
 		[SetUp]
-		public override void Setup ()
+		public override void Setup()
 		{
-			base.Setup ();
-			var nsManager = new XmlNamespaceManager (new NameTable ());
-			nsManager.AddNamespace ("local", "clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests");
-			nsManager.AddNamespace ("x", "http://schemas.microsoft.com/winfx/2006/xaml");
+			base.Setup();
+			var nsManager = new XmlNamespaceManager(new NameTable());
+			nsManager.AddNamespace("local", "clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests");
+			nsManager.AddNamespace("x", "http://schemas.microsoft.com/winfx/2006/xaml");
 
-			typeResolver = new Internals.XamlTypeResolver (nsManager, XamlParser.GetElementType, Assembly.GetCallingAssembly ());
+			typeResolver = new Internals.XamlTypeResolver(nsManager, XamlParser.GetElementType, Assembly.GetCallingAssembly());
 		}
 
 		[Test]
-		public void TestSimpleExtension ()
+		public void TestSimpleExtension()
 		{
 			var markupString = "{local:FooMarkupExtension}";
-			var serviceProvider = new Internals.XamlServiceProvider (null, null) {
+			var serviceProvider = new Internals.XamlServiceProvider(null, null)
+			{
 				IXamlTypeResolver = typeResolver,
 			};
-			var result = (new MarkupExtensionParser ()).ParseExpression (ref markupString, serviceProvider);
+			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
-			Assert.That (result, Is.InstanceOf<string> ());
-			Assert.AreEqual ("Foo", result);
+			Assert.That(result, Is.InstanceOf<string>());
+			Assert.AreEqual("Foo", result);
 		}
 
 		[Test]
-		public void TestExtensionWithParameters ()
+		public void TestExtensionWithParameters()
 		{
 			var markupString = "{local:AppendMarkupExtension Value0=Foo, Value1=Bar}";
-			var serviceProvider = new Internals.XamlServiceProvider (null, null) {
+			var serviceProvider = new Internals.XamlServiceProvider(null, null)
+			{
 				IXamlTypeResolver = typeResolver,
 			};
-			var result = (new MarkupExtensionParser ()).ParseExpression (ref markupString, serviceProvider);
+			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
-			Assert.That (result, Is.InstanceOf<string> ());
-			Assert.AreEqual ("FooBar", result);
+			Assert.That(result, Is.InstanceOf<string>());
+			Assert.AreEqual("FooBar", result);
 		}
 
 		[Test]
-		public void TestServiceProvider ()
+		public void TestServiceProvider()
 		{
 			var markupString = "{local:AccessServiceProviderExtension}";
-			var serviceProvider = new Internals.XamlServiceProvider (null, null) {
-				IProvideValueTarget = new Internals.XamlValueTargetProvider (null, null, null, null),
+			var serviceProvider = new Internals.XamlServiceProvider(null, null)
+			{
+				IProvideValueTarget = new Internals.XamlValueTargetProvider(null, null, null, null),
 				IXamlTypeResolver = typeResolver,
 				IRootObjectProvider = new Internals.XamlRootObjectProvider(null),
 			};
 
-			var result = (new MarkupExtensionParser ()).ParseExpression (ref markupString, serviceProvider);
+			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
-			Assert.That (result, Is.InstanceOf<string> ());
-			Assert.AreEqual ("TrueTrueTrue", result);
+			Assert.That(result, Is.InstanceOf<string>());
+			Assert.AreEqual("TrueTrueTrue", result);
 		}
 
 		[Test]
-		public void TestInXaml ()
+		public void TestInXaml()
 		{
 			var xaml = @"
 			<Label 
@@ -152,13 +155,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Text=""{local:AppendMarkupExtension Value0=Foo, Value1=Bar}""
 			/>";
 
-			var label = new Label ();
-			label.LoadFromXaml (xaml);
-			Assert.AreEqual ("FooBar", label.Text.ToString ());
+			var label = new Label();
+			label.LoadFromXaml(xaml);
+			Assert.AreEqual("FooBar", label.Text.ToString());
 		}
 
 		[Test]
-		public void TestMarkupExtensionInDefaultNamespace ()
+		public void TestMarkupExtensionInDefaultNamespace()
 		{
 			var xaml = @"
 			<forms:Label 
@@ -174,54 +177,57 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
-		public void TestDocumentationCode ()
+		public void TestDocumentationCode()
 		{
-			var xaml =@"
+			var xaml = @"
 			<Label
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
 				TextColor=""{local:ColorMarkup R=100, G=80, B=60}""/>";
 
-			var label = new Label ().LoadFromXaml (xaml);
-			Assert.AreEqual (Color.FromRgb (100, 80, 60), label.TextColor);
+			var label = new Label().LoadFromXaml(xaml);
+			Assert.AreEqual(Color.FromRgb(100, 80, 60), label.TextColor);
 		}
 
 		[Test]
-		public void TestLookupWithSuffix ()
+		public void TestLookupWithSuffix()
 		{
 			var markupString = "{local:Baa}";
-			var serviceProvider = new Internals.XamlServiceProvider (null, null) {
+			var serviceProvider = new Internals.XamlServiceProvider(null, null)
+			{
 				IXamlTypeResolver = typeResolver,
 			};
-			var result = (new MarkupExtensionParser ()).ParseExpression (ref markupString, serviceProvider);
+			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
-			Assert.That (result, Is.InstanceOf<string> ());
-			Assert.AreEqual ("BaaExtension", result);
+			Assert.That(result, Is.InstanceOf<string>());
+			Assert.AreEqual("BaaExtension", result);
 		}
 
 		[Test]
-		public void TestLookupOrder ()
+		public void TestLookupOrder()
 		{
 			//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.
 			var markupString = "{local:Fuu}";
-			var serviceProvider = new Internals.XamlServiceProvider (null, null) {
+			var serviceProvider = new Internals.XamlServiceProvider(null, null)
+			{
 				IXamlTypeResolver = typeResolver,
 			};
-			var result = (new MarkupExtensionParser ()).ParseExpression (ref markupString, serviceProvider);
+			var result = (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider);
 
-			Assert.That (result, Is.InstanceOf<string> ());
-			Assert.AreEqual ("FuuExtension", result);
+			Assert.That(result, Is.InstanceOf<string>());
+			Assert.AreEqual("FuuExtension", result);
 		}
 
 		[Test]
-		public void ThrowOnMarkupExtensionNotFound ()
+		public void ThrowOnMarkupExtensionNotFound()
 		{
 			var markupString = "{local:Missing}";
-			var serviceProvider = new Internals.XamlServiceProvider (null, null) {
+			var serviceProvider = new Internals.XamlServiceProvider(null, null)
+			{
 				IXamlTypeResolver = typeResolver,
 			};
-			Assert.Throws<XamlParseException> (()=> (new MarkupExtensionParser ()).ParseExpression (ref markupString, serviceProvider));
+			Assert.Throws<XamlParseException>(() => (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
 		}
 	}
 }

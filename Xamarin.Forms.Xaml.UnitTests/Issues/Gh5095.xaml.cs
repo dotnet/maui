@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void ThrowsOnInvalidXaml([Values(false, true)]bool useCompiledXaml)
+			public void ThrowsOnInvalidXaml([Values(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh5095)));

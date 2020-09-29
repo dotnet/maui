@@ -1,8 +1,8 @@
 ﻿using System;
-using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -51,7 +51,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 
-				if (flag != "xamlDoubleImplicitOpHack") {
+				if (flag != "xamlDoubleImplicitOpHack")
+				{
 					if (useCompiledXaml)
 						Assert.Throws<InvalidCastException>(() => new Bz59818(useCompiledXaml));
 					else

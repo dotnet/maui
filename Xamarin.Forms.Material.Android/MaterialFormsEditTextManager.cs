@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Material.Android
 			var right = (int)Context.ToPixels(rect.Right);
 			var bottom = (int)Context.ToPixels(rect.Bottom);
 
-			if(textInputEditText.PaddingLeft != left ||
+			if (textInputEditText.PaddingLeft != left ||
 			   textInputEditText.PaddingTop != top ||
 			   textInputEditText.PaddingRight != right ||
 			   textInputEditText.PaddingBottom != bottom)

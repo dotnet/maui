@@ -761,7 +761,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		}
 
-		
+
 
 
 		[Test]

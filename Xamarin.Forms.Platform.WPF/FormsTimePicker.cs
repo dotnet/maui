@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.WPF
 			else
 			{
 				var dateTime = new DateTime(Time.Value.Ticks);
-				
+
 				String text = dateTime.ToString(String.IsNullOrWhiteSpace(TimeFormat) ? @"hh\:mm" : TimeFormat);
 				if (text.CompareTo(Text) != 0)
 					Text = text;

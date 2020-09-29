@@ -19,7 +19,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public static readonly BindableProperty TextProperty =
 			BindableProperty.Create("Text", typeof(string), typeof(Gh3821View), default(string));
 
-		public string Text {
+		public string Text
+		{
 			get { return (string)GetValue(TextProperty); }
 			set { SetValue(TextProperty, value); }
 		}

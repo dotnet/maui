@@ -1,6 +1,6 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.ComponentModel;
+using Gtk;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Renderers
@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 		private double _maximum;
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
-		
+
 		protected override void Dispose(bool disposing)
 		{
 			if (Control != null)

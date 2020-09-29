@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace Xamarin.Forms.Internals
 {
@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Internals
 			;
 		}
 
-		public GIFDecoderFormatException(string message) :base(message)
+		public GIFDecoderFormatException(string message) : base(message)
 		{
 			;
 		}

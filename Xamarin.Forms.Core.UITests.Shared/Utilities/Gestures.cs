@@ -96,13 +96,13 @@ namespace Xamarin.Forms.Core.UITests
 			var appRect = app.RootViewRect();
 			var width = Math.Max(250, rect.Width);
 
-			if((rect.X + width) > appRect.Width)
+			if ((rect.X + width) > appRect.Width)
 			{
 				width = appRect.Width - rect.X;
 			}
 
-			app.DragCoordinates(rect.X + (0.95f * width), 
-				rect.CenterY, 
+			app.DragCoordinates(rect.X + (0.95f * width),
+				rect.CenterY,
 				rect.X + (0.05f * width),
 				rect.CenterY);
 #elif __ANDROID__
@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Core.UITests
 		{
 #if __IOS__
 			var screenbounds = app.RootViewRect();
-			app.TapCoordinates (screenbounds.CenterX, screenbounds.CenterY);
+			app.TapCoordinates(screenbounds.CenterX, screenbounds.CenterY);
 #elif __ANDROID__
 			app.Back();
 #elif __WINDOWS__

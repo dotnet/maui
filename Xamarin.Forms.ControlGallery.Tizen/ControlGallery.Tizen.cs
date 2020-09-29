@@ -1,9 +1,9 @@
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.Tizen;
-using Xamarin.Forms.Controls;
 using ElmSharp;
 using Tizen.Applications;
 using Tizen.NET.MaterialComponents;
+using Xamarin.Forms;
+using Xamarin.Forms.Controls;
+using Xamarin.Forms.Platform.Tizen;
 
 namespace Xamarin.Forms.ControlGallery.Tizen
 {

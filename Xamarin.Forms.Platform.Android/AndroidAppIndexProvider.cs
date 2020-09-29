@@ -1,5 +1,5 @@
-﻿using Android.Content;
-using System;
+﻿using System;
+using Android.Content;
 
 namespace Xamarin.Forms.Platform.Android
 {

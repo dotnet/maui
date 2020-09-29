@@ -3,11 +3,10 @@ using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Util;
 using Android.Views.InputMethods;
-using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
-using AActivity = Android.App.Activity;
-
-using AndroidX.Fragment.App;
 using AndroidX.AppCompat.App;
+using AndroidX.Fragment.App;
+using AActivity = Android.App.Activity;
+using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
 
 namespace Xamarin.Forms.Platform.Android

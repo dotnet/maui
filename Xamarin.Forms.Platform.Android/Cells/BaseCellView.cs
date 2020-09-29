@@ -1,11 +1,11 @@
+using System;
 using Android.Content;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
-using AView = Android.Views.View;
-using Xamarin.Forms.Internals;
 using AndroidX.Core.Widget;
-using System;
+using Xamarin.Forms.Internals;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {

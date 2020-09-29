@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			var timePicker = new TimePicker();
-		
+
 			Content = new StackLayout
 			{
 				Spacing = 20,

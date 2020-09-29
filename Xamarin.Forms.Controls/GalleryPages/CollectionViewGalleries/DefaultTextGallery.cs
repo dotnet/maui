@@ -21,13 +21,13 @@
 						// TODO hartez 2018-06-05 10:43 AM Need a gallery page which allows layout selection
 						// so we can demonstrate switching between them
 						descriptionLabel,
-						GalleryBuilder.NavButton("Vertical List (Code)", () => 
+						GalleryBuilder.NavButton("Vertical List (Code)", () =>
 							new TextCodeCollectionViewGallery(LinearItemsLayout.Vertical), Navigation),
-						GalleryBuilder.NavButton("Horizontal List (Code)", () => 
+						GalleryBuilder.NavButton("Horizontal List (Code)", () =>
 							new TextCodeCollectionViewGallery(LinearItemsLayout.Horizontal), Navigation),
-						GalleryBuilder.NavButton("Vertical Grid (Code)", () => 
+						GalleryBuilder.NavButton("Vertical Grid (Code)", () =>
 							new TextCodeCollectionViewGridGallery(), Navigation),
-						GalleryBuilder.NavButton("Horizontal Grid (Code)", () => 
+						GalleryBuilder.NavButton("Horizontal Grid (Code)", () =>
 							new TextCodeCollectionViewGridGallery(ItemsLayoutOrientation.Horizontal), Navigation),
 					}
 				}

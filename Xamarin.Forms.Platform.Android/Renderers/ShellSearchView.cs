@@ -1,22 +1,22 @@
-﻿using Android.Content;
+﻿using System;
+using System.ComponentModel;
+using System.Threading.Tasks;
+using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-using AndroidX.AppCompat.Widget;
-using ASupportDrawable = AndroidX.AppCompat.Graphics.Drawable;
-using AndroidX.CardView.Widget;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
+using AndroidX.CardView.Widget;
 using Java.Lang;
-using System;
-using System.ComponentModel;
-using System.Threading.Tasks;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using AColor = Android.Graphics.Color;
+using AImageButton = Android.Widget.ImageButton;
+using ASupportDrawable = AndroidX.AppCompat.Graphics.Drawable;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
-using AImageButton = Android.Widget.ImageButton;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -220,7 +220,7 @@ namespace Xamarin.Forms.Platform.Android
 			linearLayout.AddView(_textBlock);
 			linearLayout.AddView(_clearButton);
 			linearLayout.AddView(_clearPlaceholderButton);
-		
+
 			UpdateClearButtonState();
 
 			// hook all events down here to avoid getting events while doing setup
@@ -230,7 +230,7 @@ namespace Xamarin.Forms.Platform.Android
 			_clearButton.Click += OnClearButtonClicked;
 			_clearPlaceholderButton.Click += OnClearPlaceholderButtonClicked;
 			_searchButton.Click += OnSearchButtonClicked;
-			
+
 			AddView(_cardView);
 
 			linearLayout.Dispose();

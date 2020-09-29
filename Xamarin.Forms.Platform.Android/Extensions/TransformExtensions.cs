@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public static class TransformExtensions
 	{
-        public static AMatrix ToAndroid(this Transform transform, float density = 1)
+		public static AMatrix ToAndroid(this Transform transform, float density = 1)
 		{
 			AMatrix aMatrix = new AMatrix();
 
@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			Matrix matrix = transform.Value;
 
-            aMatrix.SetValues(
+			aMatrix.SetValues(
 				new float[] {
 					(float)matrix.M11,
 					(float)matrix.M21,
@@ -27,6 +27,6 @@ namespace Xamarin.Forms.Platform.Android
 					1 });
 
 			return aMatrix;
-        }
-    }
+		}
+	}
 }

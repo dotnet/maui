@@ -21,12 +21,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			};
 		}
 
-		public string Name {
+		public string Name
+		{
 			get => name;
 			set => SetProperty(ref name, value);
 		}
 
-		public Dictionary<string, string> Errors {
+		public Dictionary<string, string> Errors
+		{
 			get => errors;
 			private set => SetProperty(ref errors, value);
 		}
@@ -56,13 +58,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture] class Tests
+		[TestFixture]
+		class Tests
 		{
 			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void CompileBindingWithIndexer([Values(false, true)]bool useCompiledXaml)
+			public void CompileBindingWithIndexer([Values(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5510)));

@@ -2,7 +2,7 @@ namespace Xamarin.Forms.Controls
 {
 	public class EntryCellTablePage : ContentPage
 	{
-		public EntryCellTablePage ()
+		public EntryCellTablePage()
 		{
 			Title = "EntryCell Table Gallery - Legacy";
 
@@ -12,12 +12,13 @@ namespace Xamarin.Forms.Controls
 			int timesEntered = 1;
 
 			var entryCell = new EntryCell { Label = "Enter text", Placeholder = "I am a placeholder" };
-			entryCell.Completed += (sender, args) => {
+			entryCell.Completed += (sender, args) =>
+			{
 				((EntryCell)sender).Label = "Entered: " + timesEntered;
 				timesEntered++;
 			};
 
-			var tableSection = new TableSection ("Section One") {
+			var tableSection = new TableSection("Section One") {
 				new EntryCell { Label = "disabled", Placeholder = "disabled", IsEnabled = false },
 				new EntryCell { Label = "Text 2" },
 				new EntryCell { Label = "Text 3", Placeholder = "Placeholder 2" },
@@ -37,7 +38,7 @@ namespace Xamarin.Forms.Controls
 				entryCell
 			};
 
-			var tableSectionTwo = new TableSection ("Section Two") {
+			var tableSectionTwo = new TableSection("Section Two") {
 				new EntryCell { Label = "Text 17", Placeholder = "Placeholder 9" },
 				new EntryCell { Label = "Text 18" },
 				new EntryCell { Label = "Text 19", Placeholder = "Placeholder 10" },
@@ -56,7 +57,7 @@ namespace Xamarin.Forms.Controls
 				new EntryCell { Label = "Text 32" },
 			};
 
-			var keyboards = new TableSection ("Keyboards") {
+			var keyboards = new TableSection("Keyboards") {
 				new EntryCell { Label = "Chat", Keyboard = Keyboard.Chat },
 				new EntryCell { Label = "Default", Keyboard = Keyboard.Default },
 				new EntryCell { Label = "Email", Keyboard = Keyboard.Email },
@@ -66,13 +67,14 @@ namespace Xamarin.Forms.Controls
 				new EntryCell { Label = "Url", Keyboard = Keyboard.Url }
 			};
 
-			var root = new TableRoot ("Text Cell table") {
+			var root = new TableRoot("Text Cell table") {
 				tableSection,
 				tableSectionTwo,
 				keyboards
 			};
 
-			var table = new TableView {
+			var table = new TableView
+			{
 				AutomationId = CellTypeList.CellTestContainerId,
 				Root = root
 			};

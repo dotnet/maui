@@ -1,9 +1,9 @@
 ﻿namespace Xamarin.Forms.Core.Design
 {
-	using System.Linq;
 	using System;
-	using System.Reflection;
 	using System.ComponentModel;
+	using System.Linq;
+	using System.Reflection;
 
 	public class EasingDesignTypeConverter : TypeConverter
 	{

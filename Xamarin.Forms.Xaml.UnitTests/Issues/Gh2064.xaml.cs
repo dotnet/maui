@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh2064)));
 				else
-					Assert.Throws<XamlParseException>(()=> new Gh2064(useCompiledXaml));
+					Assert.Throws<XamlParseException>(() => new Gh2064(useCompiledXaml));
 			}
 		}
 	}

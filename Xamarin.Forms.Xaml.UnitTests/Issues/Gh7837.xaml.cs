@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void BindingWithMultipleIndexers([Values(false, true)]bool useCompiledXaml)
+			public void BindingWithMultipleIndexers([Values(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					MockCompiler.Compile(typeof(Gh7837));

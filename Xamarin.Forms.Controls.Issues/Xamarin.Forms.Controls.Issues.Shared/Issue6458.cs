@@ -15,8 +15,9 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init()
 		{
-			NavigationPage.SetTitleIconImageSource(this, 
-				new FileImageSource {
+			NavigationPage.SetTitleIconImageSource(this,
+				new FileImageSource
+				{
 					File = "bank.png",
 					AutomationId = "banktitleicon"
 				});

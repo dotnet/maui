@@ -6,12 +6,12 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using Xamarin.Forms.Internals;
-using WTransformGroup = System.Windows.Media.TransformGroup;
-using WTransformCollection = System.Windows.Media.TransformCollection;
-using WRotateTransform = System.Windows.Media.RotateTransform;
-using WTranslateTransform = System.Windows.Media.TranslateTransform;
-using WScaleTransform = System.Windows.Media.ScaleTransform;
 using Xamarin.Forms.Platform.WPF.Extensions;
+using WRotateTransform = System.Windows.Media.RotateTransform;
+using WScaleTransform = System.Windows.Media.ScaleTransform;
+using WTransformCollection = System.Windows.Media.TransformCollection;
+using WTransformGroup = System.Windows.Media.TransformGroup;
+using WTranslateTransform = System.Windows.Media.TranslateTransform;
 
 namespace Xamarin.Forms.Platform.WPF
 {

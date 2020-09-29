@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.WPF
 					var name = new InputScopeName();
 					//name.NameValue = InputScopeNameValue.;
 					scope.Names.Add(name);
-					
+
 					SetNativeControl(new FormsTextBox { InputScope = scope });
 					Control.KeyUp += PhoneTextBoxOnKeyUp;
 					Control.TextChanged += PhoneTextBoxOnTextChanged;
@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.WPF
 			else if (e.PropertyName == SearchBar.TextColorProperty.PropertyName)
 				UpdateTextColor();
 		}
-		
+
 		void PhoneTextBoxOnKeyUp(object sender, KeyEventArgs keyEventArgs)
 		{
 			if (keyEventArgs.Key == Key.Enter)

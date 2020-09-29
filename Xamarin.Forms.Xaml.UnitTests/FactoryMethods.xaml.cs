@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public class MockFactory
 	{
 		public string Content { get; set; }
-		public MockFactory ()
+		public MockFactory()
 		{
 			Content = "default ctor";
 		}
@@ -27,33 +27,36 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Content = "alternate ctor " + arg0;
 		}
 
-		public MockFactory (int arg)
+		public MockFactory(int arg)
 		{
-			Content = "int ctor " + arg.ToString ();
+			Content = "int ctor " + arg.ToString();
 		}
 
-		public MockFactory(object [] args)
+		public MockFactory(object[] args)
 		{
 			Content = string.Join(" ", args);
 		}
 
-		public static  MockFactory ParameterlessFactory ()
+		public static MockFactory ParameterlessFactory()
 		{
-			return new MockFactory {
+			return new MockFactory
+			{
 				Content = "parameterless factory",
 			};
 		}
 
-		public static MockFactory Factory (string arg0, int arg1)
+		public static MockFactory Factory(string arg0, int arg1)
 		{
-			return new MockFactory {
+			return new MockFactory
+			{
 				Content = "factory " + arg0 + arg1,
 			};
 		}
 
-		public static MockFactory Factory (int arg0, string arg1)
+		public static MockFactory Factory(int arg0, string arg1)
 		{
-			return new MockFactory {
+			return new MockFactory
+			{
 				Content = "factory " + arg0 + arg1,
 			};
 		}
@@ -61,12 +64,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public partial class FactoryMethods : ContentPage
 	{
-		public FactoryMethods ()
+		public FactoryMethods()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public FactoryMethods (bool useCompiledXaml)
+		public FactoryMethods(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -80,52 +83,52 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = new MockPlatformServices();
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void TestDefaultCtor (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestDefaultCtor(bool useCompiledXaml)
 			{
-				var layout = new FactoryMethods (useCompiledXaml);
-				Assert.AreEqual ("default ctor", layout.v0.Content.Content);
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("default ctor", layout.v0.Content.Content);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void TestStringCtor (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestStringCtor(bool useCompiledXaml)
 			{
-				var layout = new FactoryMethods (useCompiledXaml);
-				Assert.AreEqual ("alternate ctor foobar", layout.v1.Content.Content);
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("alternate ctor foobar", layout.v1.Content.Content);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void TestIntCtor (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestIntCtor(bool useCompiledXaml)
 			{
-				var layout = new FactoryMethods (useCompiledXaml);
-				Assert.AreEqual ("int ctor 42", layout.v2.Content.Content);
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("int ctor 42", layout.v2.Content.Content);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void TestArgumentlessFactoryMethod (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestArgumentlessFactoryMethod(bool useCompiledXaml)
 			{
-				var layout = new FactoryMethods (useCompiledXaml);
-				Assert.AreEqual ("parameterless factory", layout.v3.Content.Content);
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("parameterless factory", layout.v3.Content.Content);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void TestFactoryMethod (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestFactoryMethod(bool useCompiledXaml)
 			{
-				var layout = new FactoryMethods (useCompiledXaml);
-				Assert.AreEqual ("factory foo42", layout.v4.Content.Content);
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("factory foo42", layout.v4.Content.Content);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void TestFactoryMethodParametersOrder (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestFactoryMethodParametersOrder(bool useCompiledXaml)
 			{
-				var layout = new FactoryMethods (useCompiledXaml);
-				Assert.AreEqual ("factory 42foo", layout.v5.Content.Content);
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("factory 42foo", layout.v5.Content.Content);
 			}
 
 			[TestCase(false)]

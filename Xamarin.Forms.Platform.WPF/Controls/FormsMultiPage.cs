@@ -58,13 +58,15 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 
 		private static void OnSelectedItemChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
 		{
-			if (e.OldValue == e.NewValue) return;
+			if (e.OldValue == e.NewValue)
+				return;
 			((FormsMultiPage)o).OnSelectedItemChanged(e.OldValue, e.NewValue);
 		}
 
 		private void OnSelectedItemChanged(object oldValue, object newValue)
 		{
-			if (ItemsSource == null) return;
+			if (ItemsSource == null)
+				return;
 			SelectedIndex = ItemsSource.Cast<object>().ToList().IndexOf(newValue);
 			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(oldValue, newValue));
 		}

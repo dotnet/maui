@@ -16,58 +16,65 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 36171, "WinRT Entry UI not updating on TextChanged",
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 36171, "WinRT Entry UI not updating on TextChanged",
 		PlatformAffected.WinPhone | PlatformAffected.WinRT)]
-	public class Bugzilla36171 : TestContentPage 
+	public class Bugzilla36171 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			var entry = new Entry { AutomationId = "36171Entry" };
 			var editor = new Editor();
 			var focuseEntryButton = new Button { Text = "Start Entry" };
 			var focuseEditorButton = new Button { Text = "Start Editor" };
 
-			focuseEntryButton.Clicked += (sender, args) => { entry.Focus (); };
-			focuseEditorButton.Clicked += (sender, args) => { editor.Focus (); };
+			focuseEntryButton.Clicked += (sender, args) => { entry.Focus(); };
+			focuseEditorButton.Clicked += (sender, args) => { editor.Focus(); };
 
 			var entryLabel = new Label { Text = "Type 123A into the Entry below; the entry should display '123'. If the 'A' is displayed, the test has failed. If the cursor resets to the beginning of the Entry after typing 'A', the test has failed." };
 			var editorLabel = new Label { Text = "Type 123A into the Editor below; the entry should display '123'. If the 'A' is displayed, the test has failed. If the cursor resets to the beginning of the Editor after typing 'A', the test has failed." };
 
-			entry.TextChanged += (sender, args) => {
+			entry.TextChanged += (sender, args) =>
+			{
 				var e = sender as Entry;
 
 				int val;
 
-				if(string.IsNullOrEmpty (args.NewTextValue?.Trim ())) {
+				if (string.IsNullOrEmpty(args.NewTextValue?.Trim()))
+				{
 					return;
 				}
 
 				// check if this is numeric
-				if(!int.TryParse (args.NewTextValue, out val)) {
+				if (!int.TryParse(args.NewTextValue, out val))
+				{
 					// put the old value back.
 					e.Text = args.OldTextValue;
 				}
 			};
 
-			editor.TextChanged += (sender, args) => {
+			editor.TextChanged += (sender, args) =>
+			{
 				var e = sender as Editor;
 
 				int val;
 
-				if(string.IsNullOrEmpty (args.NewTextValue?.Trim ())) {
+				if (string.IsNullOrEmpty(args.NewTextValue?.Trim()))
+				{
 					return;
 				}
 
 				// check if this is numeric
-				if(!int.TryParse (args.NewTextValue, out val)) {
+				if (!int.TryParse(args.NewTextValue, out val))
+				{
 					// put the old value back.
 					e.Text = args.OldTextValue;
 				}
 			};
 
 			// Initialize ui here instead of ctor
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = { focuseEntryButton, entryLabel, entry, focuseEditorButton, editorLabel, editor }
 			};
 		}

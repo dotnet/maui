@@ -3,8 +3,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries
 {
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFoot
 
 			public ObservableCollection<CollectionViewGalleryTestItem> Items => _demoFilteredItemSource.Items;
 
-			public ICommand TapCommand => new Command(()=> { CurrentTime = DateTime.Now; });
+			public ICommand TapCommand => new Command(() => { CurrentTime = DateTime.Now; });
 
 			public DateTime CurrentTime
 			{

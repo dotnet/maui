@@ -1,9 +1,9 @@
-﻿using Android.Views;
-using Android.Widget;
-using Java.Lang;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Android.Views;
+using Android.Widget;
+using Java.Lang;
 using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 
@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			base.Dispose(disposing);
 		}
-		
+
 		public Filter Filter => _filter ?? (_filter = new CustomFilter(this));
 
 		public override int Count => ListProxy.Count;

@@ -10,11 +10,11 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 2223, "Possibility to change IsPassword", PlatformAffected.macOS)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2223, "Possibility to change IsPassword", PlatformAffected.macOS)]
 	public class Issue2223 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			var checkEntry = new Entry
 			{

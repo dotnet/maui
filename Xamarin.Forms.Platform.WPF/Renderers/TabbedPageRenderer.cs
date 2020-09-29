@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.WPF
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
-			
+
 			if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
 			else if (e.PropertyName == TabbedPage.BarBackgroundProperty.PropertyName)

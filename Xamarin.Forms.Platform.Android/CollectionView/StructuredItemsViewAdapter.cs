@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		Size? _size;
 
-		protected internal StructuredItemsViewAdapter(TItemsView itemsView, 
+		protected internal StructuredItemsViewAdapter(TItemsView itemsView,
 			Func<View, Context, ItemContentView> createItemContentView = null) : base(itemsView, createItemContentView)
 		{
 			UpdateHasHeader();

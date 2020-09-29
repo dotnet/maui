@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Threading.Tasks;
-using System.Threading;
 
 
 #if UITEST
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public Issue10182()
 		{
-			
+
 		}
 
 		protected override void Init()
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		public class Issue10182SuccessPage : ContentPage
-		{ 
+		{
 			public Issue10182SuccessPage()
 			{
 				Content = new StackLayout()

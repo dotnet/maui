@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Preserve(AllMembers = true)]
 		class ImageController39378 : ViewModelBase
 		{
-			
+
 			public ImageController39378()
 			{
 				HomeImage = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/banner.png";
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Controls.Issues
 			public string BackgroundColor
 			{
 				get
-				{ 
+				{
 					return _backgroundColor;
 				}
 
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 			public string HomeImage
 			{
 				get
-				{ 
+				{
 					return _homeImage;
 				}
 

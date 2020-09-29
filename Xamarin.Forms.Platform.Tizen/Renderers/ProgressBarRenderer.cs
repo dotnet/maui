@@ -1,9 +1,8 @@
 using System.ComponentModel;
-
-using SpecificVE = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.ProgressBar;
-using EProgressBar = ElmSharp.ProgressBar;
 using EColor = ElmSharp.Color;
+using EProgressBar = ElmSharp.ProgressBar;
+using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.ProgressBar;
+using SpecificVE = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
 
 namespace Xamarin.Forms.Platform.Tizen
 {

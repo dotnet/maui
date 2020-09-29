@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
-			[TestCase(false),TestCase(true)]
+			[TestCase(false), TestCase(true)]
 			public void xNameOnRoot(bool useCompiledXaml)
 			{
 				var layout = new Gh2574(useCompiledXaml);

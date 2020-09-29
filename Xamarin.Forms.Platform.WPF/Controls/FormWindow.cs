@@ -200,7 +200,7 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			}
 
 			if (hamburgerButton != null)
-			  hamburgerButton.Visibility = CurrentFlyoutPage != null ? Visibility.Visible : Visibility.Collapsed;
+				hamburgerButton.Visibility = CurrentFlyoutPage != null ? Visibility.Visible : Visibility.Collapsed;
 
 			if (CurrentNavigationPage != null)
 			{
@@ -220,7 +220,8 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			IEnumerable<FormsPage> childrens = this.FindVisualChildren<FormsPage>();
 
 			var page = childrens.FirstOrDefault();
-			if (page == null) return;
+			if (page == null)
+				return;
 
 			topAppBar.PrimaryCommands = page.GetPrimaryTopBarCommands().OrderBy(ti => ti.GetValue(FrameworkElementAttached.PriorityProperty));
 			topAppBar.SecondaryCommands = page.GetSecondaryTopBarCommands().OrderBy(ti => ti.GetValue(FrameworkElementAttached.PriorityProperty));

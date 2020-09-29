@@ -10,17 +10,18 @@ namespace Xamarin.Forms.Controls
 	{
 		readonly StackLayout _stack;
 
-		public ProgressBarGallery ()
+		public ProgressBarGallery()
 		{
-			_stack = new StackLayout ();
+			_stack = new StackLayout();
 
-			var normal = new ProgressBar {
+			var normal = new ProgressBar
+			{
 				Progress = 0.24
 			};
 
 			Content = _stack;
 
-			_stack.Children.Add (normal);
+			_stack.Children.Add(normal);
 		}
 	}
 }

@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Controls
 {
-	
-	public class RootContentPage : ContentPage 
+
+	public class RootContentPage : ContentPage
 	{
-		public RootContentPage (string hierarchy) 
+		public RootContentPage(string hierarchy)
 		{
 			AutomationId = hierarchy + "PageId";
-			Content = new SwapHierachyStackLayout (hierarchy);
+			Content = new SwapHierachyStackLayout(hierarchy);
 		}
 	}
 }

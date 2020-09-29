@@ -5,6 +5,6 @@ namespace Xamarin.Forms
 {
 	internal sealed class ShellSectionCollection : ShellElementCollection<ShellSection>
 	{
-		public ShellSectionCollection() : base() {}
+		public ShellSectionCollection() : base() { }
 	}
 }

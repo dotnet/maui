@@ -21,9 +21,9 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		_37841ViewModel _viewModel;
 
-		protected override void Init ()
+		protected override void Init()
 		{
-			_viewModel = new _37841ViewModel ();
+			_viewModel = new _37841ViewModel();
 
 			var instructions = new Label { FontSize = 16, Text = @"Click on the Generate button. 
 The EntryCell should display '12345' and the TextCell should display '6789'. 
@@ -31,17 +31,17 @@ Click on the Generate button a second time.
 The EntryCell should display '112358' and the TextCell should display '48151623'." };
 
 			var button = new Button { Text = "Generate" };
-			button.SetBinding (Button.CommandProperty, nameof (_37841ViewModel.GetNextNumbersCommand));
+			button.SetBinding(Button.CommandProperty, nameof(_37841ViewModel.GetNextNumbersCommand));
 
 			var random1 = new EntryCell { IsEnabled = false, Label = "Entry Cell" };
-			random1.SetBinding (EntryCell.TextProperty, nameof (_37841ViewModel.Value1));
+			random1.SetBinding(EntryCell.TextProperty, nameof(_37841ViewModel.Value1));
 
 			var textCell = new TextCell { IsEnabled = false, Detail = "TextCell" };
-			textCell.SetBinding (TextCell.TextProperty, nameof (_37841ViewModel.Value2));
+			textCell.SetBinding(TextCell.TextProperty, nameof(_37841ViewModel.Value2));
 
 			var buttonViewCell = new ViewCell { View = button };
 
-			var section = new TableSection ("") {
+			var section = new TableSection("") {
 				random1,
 				textCell,
 				buttonViewCell
@@ -50,14 +50,15 @@ The EntryCell should display '112358' and the TextCell should display '48151623'
 			var root = new TableRoot { section };
 			var tv = new TableView { Root = root };
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = { instructions, tv }
 			};
 
 			BindingContext = _viewModel;
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class _37841ViewModel : INotifyPropertyChanged
 		{
 			public int Value1
@@ -65,9 +66,10 @@ The EntryCell should display '112358' and the TextCell should display '48151623'
 				get { return _value1; }
 				set
 				{
-					if (value != _value1) {
+					if (value != _value1)
+					{
 						_value1 = value;
-						RaisePropertyChanged ();
+						RaisePropertyChanged();
 					}
 				}
 			}
@@ -77,21 +79,23 @@ The EntryCell should display '112358' and the TextCell should display '48151623'
 				get { return _value2; }
 				set
 				{
-					if (value != _value2) {
+					if (value != _value2)
+					{
 						_value2 = value;
-						RaisePropertyChanged ();
+						RaisePropertyChanged();
 					}
 				}
 			}
 
 			public Command GetNextNumbersCommand
-				=> _getNextNumbersCommand ?? (_getNextNumbersCommand = new Command (ExecuteGenerateRandomCommand));
+				=> _getNextNumbersCommand ?? (_getNextNumbersCommand = new Command(ExecuteGenerateRandomCommand));
 
 			class SomeNumbers : IEnumerable<int>
 			{
-				public IEnumerator<int> GetEnumerator ()
+				public IEnumerator<int> GetEnumerator()
 				{
-					while (true) {
+					while (true)
+					{
 						yield return 12345;
 						yield return 6789;
 						yield return 112358;
@@ -99,27 +103,27 @@ The EntryCell should display '112358' and the TextCell should display '48151623'
 					}
 				}
 
-				IEnumerator IEnumerable.GetEnumerator ()
+				IEnumerator IEnumerable.GetEnumerator()
 				{
-					return GetEnumerator ();
+					return GetEnumerator();
 				}
 			}
 
-			readonly IEnumerator<int> _numberList = new SomeNumbers ().GetEnumerator ();
+			readonly IEnumerator<int> _numberList = new SomeNumbers().GetEnumerator();
 
-			void ExecuteGenerateRandomCommand ()
+			void ExecuteGenerateRandomCommand()
 			{
-				_numberList.MoveNext ();
+				_numberList.MoveNext();
 				Value1 = _numberList.Current;
-				_numberList.MoveNext ();
+				_numberList.MoveNext();
 				Value2 = _numberList.Current;
 			}
 
-			void RaisePropertyChanged ([CallerMemberName] string propertyName = null)
+			void RaisePropertyChanged([CallerMemberName] string propertyName = null)
 			{
 				PropertyChangedEventHandler handler = PropertyChanged;
 
-				handler?.Invoke (this, new PropertyChangedEventArgs (propertyName));
+				handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 			}
 
 			#region INotifyPropertyChanged implementation

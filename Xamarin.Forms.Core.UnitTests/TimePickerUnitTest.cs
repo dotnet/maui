@@ -8,36 +8,36 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class TimePickerUnitTest : BaseTestFixture
 	{
 		[Test]
-		public void TestConstructor ()
+		public void TestConstructor()
 		{
-			TimePicker picker = new TimePicker ();
+			TimePicker picker = new TimePicker();
 
-			Assert.AreEqual (new TimeSpan (), picker.Time);
+			Assert.AreEqual(new TimeSpan(), picker.Time);
 		}
 
 		[Test]
-		public void TestTimeOutOfRange ()
+		public void TestTimeOutOfRange()
 		{
-			TimePicker picker = new TimePicker ();
+			TimePicker picker = new TimePicker();
 
-			Assert.That (() => picker.Time = new TimeSpan (1000, 0, 0), Throws.ArgumentException);
-			Assert.AreEqual (picker.Time, new TimeSpan ());
+			Assert.That(() => picker.Time = new TimeSpan(1000, 0, 0), Throws.ArgumentException);
+			Assert.AreEqual(picker.Time, new TimeSpan());
 
-			picker.Time = new TimeSpan (8, 30, 0);
+			picker.Time = new TimeSpan(8, 30, 0);
 
-			Assert.AreEqual (new TimeSpan (8, 30, 0), picker.Time);
+			Assert.AreEqual(new TimeSpan(8, 30, 0), picker.Time);
 
-			Assert.That (() => picker.Time = new TimeSpan (-1, 0, 0), Throws.ArgumentException);
-			Assert.AreEqual (new TimeSpan (8, 30, 0), picker.Time);
+			Assert.That(() => picker.Time = new TimeSpan(-1, 0, 0), Throws.ArgumentException);
+			Assert.AreEqual(new TimeSpan(8, 30, 0), picker.Time);
 		}
 
 		[Test]
-		[Description ("Issue #745")]
+		[Description("Issue #745")]
 		public void ZeroTimeIsValid()
 		{
-			var picker = new TimePicker ();
+			var picker = new TimePicker();
 
-			Assert.That (() => picker.Time = new TimeSpan (0, 0, 0), Throws.Nothing);
+			Assert.That(() => picker.Time = new TimeSpan(0, 0, 0), Throws.Nothing);
 		}
 	}
 }

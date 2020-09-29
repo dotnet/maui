@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.Internals;
+﻿using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Shapes;
-using System.Collections.Generic;
 
 #if UITEST
 using Xamarin.UITest;
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Update Polygon points"
 			};
 
-			var points  = new PointCollection() { new Point(10, 10), new Point(100, 50), new Point(100, 95), new Point(10, 95) };
+			var points = new PointCollection() { new Point(10, 10), new Point(100, 50), new Point(100, 95), new Point(10, 95) };
 
 			var polygon = new Polygon
 			{

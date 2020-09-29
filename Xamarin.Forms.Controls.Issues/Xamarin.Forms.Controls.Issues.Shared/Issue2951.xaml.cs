@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
 using System.Threading.Tasks;
+using Xamarin.Forms;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest.Queries;
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue2951()
 		{
 #if APP
-			InitializeComponent ();
+			InitializeComponent();
 #endif
 		}
 

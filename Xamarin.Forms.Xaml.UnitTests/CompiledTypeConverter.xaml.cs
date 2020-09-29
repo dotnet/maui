@@ -6,11 +6,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public partial class CompiledTypeConverter : ContentPage
 	{
 		public static readonly BindableProperty RectangleBPProperty =
-			BindableProperty.Create ("RectangleBP", typeof(Rectangle), typeof(CompiledTypeConverter), default(Rectangle));
+			BindableProperty.Create("RectangleBP", typeof(Rectangle), typeof(CompiledTypeConverter), default(Rectangle));
 
-		public Rectangle RectangleBP {
-			get { return (Rectangle)GetValue (RectangleBPProperty); }
-			set { SetValue (RectangleBPProperty, value); }
+		public Rectangle RectangleBP
+		{
+			get { return (Rectangle)GetValue(RectangleBPProperty); }
+			set { SetValue(RectangleBPProperty, value); }
 		}
 
 		public Rectangle RectangleP { get; set; }
@@ -19,12 +20,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public IList<string> List { get; set; }
 
 
-		public CompiledTypeConverter ()
+		public CompiledTypeConverter()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public CompiledTypeConverter (bool useCompiledXaml)
+		public CompiledTypeConverter(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}

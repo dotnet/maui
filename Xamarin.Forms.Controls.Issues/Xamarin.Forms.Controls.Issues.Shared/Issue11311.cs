@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Children.Add(CollectionViewPage());
 		}
 
-		ContentPage FirstPage() 
+		ContentPage FirstPage()
 		{
 			var firstPage = new ContentPage
 			{
@@ -30,7 +30,8 @@ namespace Xamarin.Forms.Controls.Issues
 				Content = new Label { Text = Success }
 			};
 
-			firstPage.Appearing += (sender, args) => {
+			firstPage.Appearing += (sender, args) =>
+			{
 				if (firstPage.Parent is TabbedPage tabbedPage
 				&& tabbedPage.Children[1] is ContentPage collectionViewPage
 				&& collectionViewPage.Content is RefreshView refreshView)
@@ -109,7 +110,7 @@ namespace Xamarin.Forms.Controls.Issues
 				IsRefreshing = false;
 			}
 
-			void OnPropertyChanged([CallerMemberName] string propertyName = "") => 
+			void OnPropertyChanged([CallerMemberName] string propertyName = "") =>
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 

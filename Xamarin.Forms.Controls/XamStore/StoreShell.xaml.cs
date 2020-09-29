@@ -58,11 +58,11 @@ namespace Xamarin.Forms.Controls.XamStore
 		{
 			base.OnNavigating(args);
 
-			if(_defernavigationWithAlert)
+			if (_defernavigationWithAlert)
 			{
 				var token = args.GetDeferral();
 
-				var result  = await DisplayActionSheet(
+				var result = await DisplayActionSheet(
 					"Are you sure?",
 					"cancel",
 					"destruction",

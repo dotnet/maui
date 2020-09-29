@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public interface IButtonLayoutRenderer
 	{
-		AppCompatButton View { get; }		
+		AppCompatButton View { get; }
 		Button Element { get; }
 		event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 	}

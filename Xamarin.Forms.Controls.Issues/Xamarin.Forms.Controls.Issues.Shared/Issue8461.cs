@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
-				
+
 				ColumnDefinitions = new ColumnDefinitionCollection()
 				{
 					new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) },

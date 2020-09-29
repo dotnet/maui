@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 	}
 
-	public class Gh6176Base<TVM> : ContentPage where TVM: class
+	public class Gh6176Base<TVM> : ContentPage where TVM : class
 	{
 		public TVM ViewModel => BindingContext as TVM;
 		protected void ShowMenu(object sender, EventArgs e) { }
@@ -24,13 +24,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture] class Tests
+		[TestFixture]
+		class Tests
 		{
 			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void XamlCDoesntFail([Values(false, true)]bool useCompiledXaml)
+			public void XamlCDoesntFail([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh6176(useCompiledXaml);
 			}

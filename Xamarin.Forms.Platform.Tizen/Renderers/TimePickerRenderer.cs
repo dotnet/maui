@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
 using Xamarin.Forms.Platform.Tizen.Native;
-using WatchDateTimePickerDialog = Xamarin.Forms.Platform.Tizen.Native.Watch.WatchDateTimePickerDialog;
 using EEntry = ElmSharp.Entry;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Application;
+using WatchDateTimePickerDialog = Xamarin.Forms.Platform.Tizen.Native.Watch.WatchDateTimePickerDialog;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -52,7 +52,8 @@ namespace Xamarin.Forms.Platform.Tizen
 					ie.TextBlockFocused += OnTextBlockFocused;
 				}
 
-				_lazyDialog = new Lazy<IDateTimeDialog>(() => {
+				_lazyDialog = new Lazy<IDateTimeDialog>(() =>
+				{
 					var dialog = CreateDialog();
 					dialog.Mode = DateTimePickerMode.Time;
 					dialog.Title = DialogTitle;
@@ -101,7 +102,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected override Size MinimumSize()
 		{
-			if ( Control is IMeasurable im)
+			if (Control is IMeasurable im)
 			{
 				return im.Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
 			}

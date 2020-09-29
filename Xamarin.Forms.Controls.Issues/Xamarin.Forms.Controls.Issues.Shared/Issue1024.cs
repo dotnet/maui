@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Threading;
 
 #if UITEST
 using Xamarin.UITest;
@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = new ListView
 			{
 				HasUnevenRows = true,
-				ItemsSource = new List<string> { "Entry", "Editor"},
+				ItemsSource = new List<string> { "Entry", "Editor" },
 				ItemTemplate = new InputViewDataTemplateSelector(),
 				AutomationId = "ListView"
 			};

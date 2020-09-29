@@ -25,9 +25,9 @@ namespace Xamarin.Forms.Controls.Issues
 				AutomationId = "test",
 				Children = { new Label { Text = "Turn on the Screen Reader. If you do not hear 'I am the StackLayout', this test has failed." } },
 			};
-			
+
 			Xamarin.Forms.CompressedLayout.SetIsHeadless(stack, true);
-			
+
 			AutomationProperties.SetIsInAccessibleTree(stack, true);
 			AutomationProperties.SetName(stack, "I am the StackLayout. This should be announced.");
 			Content = stack;

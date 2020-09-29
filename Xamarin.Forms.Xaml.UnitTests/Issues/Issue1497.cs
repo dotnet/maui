@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
-		public void BPCollectionsWithSingleElement ()
+		public void BPCollectionsWithSingleElement()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 						<Grid
@@ -31,9 +31,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 							</Grid.ColumnDefinitions>
 					    </Grid>";
 
-			var grid = new Grid ().LoadFromXaml (xaml);
-			Assert.AreEqual (1, grid.ColumnDefinitions.Count);
-			Assert.True (grid.ColumnDefinitions [0].Width.IsStar);
+			var grid = new Grid().LoadFromXaml(xaml);
+			Assert.AreEqual(1, grid.ColumnDefinitions.Count);
+			Assert.True(grid.ColumnDefinitions[0].Width.IsStar);
 		}
 	}
 }

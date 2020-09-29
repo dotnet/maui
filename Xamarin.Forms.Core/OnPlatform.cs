@@ -17,9 +17,11 @@ namespace Xamarin.Forms
 		T android;
 		[Obsolete]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public T Android {
+		public T Android
+		{
 			get { return android; }
-			set {
+			set
+			{
 				useLegacyFallback = true;
 				android = value;
 			}
@@ -28,9 +30,11 @@ namespace Xamarin.Forms
 		T ios;
 		[Obsolete]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public T iOS {
+		public T iOS
+		{
 			get { return ios; }
-			set {
+			set
+			{
 				useLegacyFallback = true;
 				ios = value;
 			}
@@ -39,9 +43,11 @@ namespace Xamarin.Forms
 		T winPhone;
 		[Obsolete]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public T WinPhone {
+		public T WinPhone
+		{
 			get { return winPhone; }
-			set {
+			set
+			{
 				useLegacyFallback = true;
 				winPhone = value;
 			}
@@ -49,9 +55,11 @@ namespace Xamarin.Forms
 
 		bool hasDefault;
 		T @default;
-		public T Default {
+		public T Default
+		{
 			get { return @default; }
-			set {
+			set
+			{
 				hasDefault = true;
 				@default = value;
 			}
@@ -65,7 +73,8 @@ namespace Xamarin.Forms
 
 		public static implicit operator T(OnPlatform<T> onPlatform)
 		{
-			foreach (var onPlat in onPlatform.Platforms) {
+			foreach (var onPlat in onPlatform.Platforms)
+			{
 				if (onPlat.Platform == null)
 					continue;
 				if (!onPlat.Platform.Contains(Device.RuntimePlatform))

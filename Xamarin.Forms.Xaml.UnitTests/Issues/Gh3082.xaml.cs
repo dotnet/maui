@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
-
-
 using Xamarin.Forms;
 using Xamarin.Forms.Build.Tasks;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -48,9 +46,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void ThrowsOnWrongEventHandlerSignature(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws<BuildException>(()=>MockCompiler.Compile(typeof(Gh3082)));
+					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh3082)));
 				else
-					Assert.Throws<XamlParseException>(()=>new Gh3082(false));
+					Assert.Throws<XamlParseException>(() => new Gh3082(false));
 			}
 		}
 	}

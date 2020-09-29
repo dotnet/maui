@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void FontImageSourceColorWithDynamicResource([Values(false, true)]bool useCompiledXaml)
+			public void FontImageSourceColorWithDynamicResource([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh6996(useCompiledXaml);
 				Image image = layout.image;

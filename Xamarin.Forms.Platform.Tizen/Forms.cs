@@ -4,14 +4,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using ElmSharp;
+using ElmSharp.Wearable;
+using Tizen.Applications;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Tizen;
-using ElmSharp;
-using Tizen.Applications;
-using TSystemInfo = Tizen.System.Information;
-using ELayout = ElmSharp.Layout;
 using DeviceOrientation = Xamarin.Forms.Internals.DeviceOrientation;
-using ElmSharp.Wearable;
+using ELayout = ElmSharp.Layout;
+using TSystemInfo = Tizen.System.Information;
 
 namespace Xamarin.Forms
 {
@@ -68,7 +68,7 @@ namespace Xamarin.Forms
 			Assemblies = assemblies;
 		}
 
-		public void UseStaticRegistrar(StaticRegistrarStrategy strategy, Dictionary<Type, Func<IRegisterable>> customHandlers=null, bool disableCss=false)
+		public void UseStaticRegistrar(StaticRegistrarStrategy strategy, Dictionary<Type, Func<IRegisterable>> customHandlers = null, bool disableCss = false)
 		{
 			StaticRegistarStrategy = strategy;
 			CustomHandlers = customHandlers;
@@ -320,7 +320,7 @@ namespace Xamarin.Forms
 			}
 
 			s_flags = (string[])flags.Clone();
-			if (s_flags.Contains ("Profile"))
+			if (s_flags.Contains("Profile"))
 				Profile.Enable();
 		}
 
@@ -494,20 +494,20 @@ namespace Xamarin.Forms
 						// static registrar
 						if (options.StaticRegistarStrategy != StaticRegistrarStrategy.None)
 						{
-								s_staticRegistrarStrategy = options.StaticRegistarStrategy;
-								StaticRegistrar.RegisterHandlers(options.CustomHandlers);
+							s_staticRegistrarStrategy = options.StaticRegistarStrategy;
+							StaticRegistrar.RegisterHandlers(options.CustomHandlers);
 
-								if (options.StaticRegistarStrategy == StaticRegistrarStrategy.All)
+							if (options.StaticRegistarStrategy == StaticRegistrarStrategy.All)
+							{
+								Registrar.RegisterAll(new Type[]
 								{
-									Registrar.RegisterAll(new Type[]
-									{
 										typeof(ExportRendererAttribute),
 										typeof(ExportImageSourceHandlerAttribute),
 										typeof(ExportCellAttribute),
 										typeof(ExportHandlerAttribute),
 										typeof(ExportFontAttribute)
-									});
-								}
+								});
+							}
 						}
 						else
 						{

@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Controls.Issues
 			CarouselView.PeekAreaInsets = new Thickness(peekAreaInsets, 0);
 #endif
 		}
-   	}
+	}
 
 	[Preserve(AllMembers = true)]
 	public class Issue8638Model

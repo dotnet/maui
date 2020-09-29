@@ -18,21 +18,21 @@ namespace Xamarin.Forms.Controls.Issues
 	public partial class Bugzilla51642 : ContentPage
 	{
 #if APP
-		public Bugzilla51642 ()
+		public Bugzilla51642()
 		{
-			InitializeComponent ();
-            LoadDelayedVM();
+			InitializeComponent();
+			LoadDelayedVM();
 			BoundPicker.SelectedIndexChanged += (s, e) =>
 			{
 				SelectedItemLabel.Text = BoundPicker.SelectedItem.ToString();
 			};
 		}
 
-        public async void LoadDelayedVM()
-        {
-            await Task.Delay(1000);
-            Device.BeginInvokeOnMainThread(() => BindingContext = new Bz51642VM());
-        }
+		public async void LoadDelayedVM()
+		{
+			await Task.Delay(1000);
+			Device.BeginInvokeOnMainThread(() => BindingContext = new Bz51642VM());
+		}
 #endif
 	}
 

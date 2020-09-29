@@ -9,21 +9,21 @@ namespace Xamarin.Forms.Controls
 			get { return false; }
 		}
 
-		protected override void InitializeElement (ProgressBar element)
+		protected override void InitializeElement(ProgressBar element)
 		{
-			base.InitializeElement (element);
+			base.InitializeElement(element);
 
 			element.Progress = 1;
 		}
 
-		protected override void Build (StackLayout stackLayout)
+		protected override void Build(StackLayout stackLayout)
 		{
-			base.Build (stackLayout);
+			base.Build(stackLayout);
 
 			var progressContainer = new ViewContainer<ProgressBar>(Test.ProgressBar.Progress, new ProgressBar { Progress = 0.5 });
 			var colorContainer = new ViewContainer<ProgressBar>(Test.ProgressBar.ProgressColor, new ProgressBar { ProgressColor = Color.Lime, Progress = 0.5 });
 
-			Add (progressContainer);
+			Add(progressContainer);
 			Add(colorContainer);
 		}
 	}

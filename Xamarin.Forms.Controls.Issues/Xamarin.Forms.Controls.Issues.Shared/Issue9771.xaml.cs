@@ -7,8 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Xaml;
 
 
 #if UITEST

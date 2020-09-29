@@ -1,7 +1,7 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Gtk;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Controls;
 using Xamarin.Forms.Platform.GTK.Extensions;

@@ -21,14 +21,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void DoesntFailOnNullDataType([Values(true)]bool useCompiledXaml)
+			public void DoesntFailOnNullDataType([Values(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh6648)));
 			}
 
 			[Test]
-			public void BindingsOnxNullDataTypeWorks([Values(true, false)]bool useCompiledXaml)
+			public void BindingsOnxNullDataTypeWorks([Values(true, false)] bool useCompiledXaml)
 			{
 				var layout = new Gh6648(useCompiledXaml);
 				layout.stack.BindingContext = new { foo = "Foo" };

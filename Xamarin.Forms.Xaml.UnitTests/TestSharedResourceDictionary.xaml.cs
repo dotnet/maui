@@ -5,12 +5,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class TestSharedResourceDictionary : ContentPage
 	{
-		public TestSharedResourceDictionary ()
+		public TestSharedResourceDictionary()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public TestSharedResourceDictionary (bool useCompiledXaml)
+		public TestSharedResourceDictionary(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -22,8 +22,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void Setup()
 			{
 				Device.PlatformServices = new MockPlatformServices();
-				Application.Current = new MockApplication {
-					Resources = new ResourceDictionary {
+				Application.Current = new MockApplication
+				{
+					Resources = new ResourceDictionary
+					{
 #pragma warning disable 618
 						MergedWith = typeof(MyRD)
 #pragma warning restore 618
@@ -37,26 +39,26 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void MergedResourcesAreFound (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void MergedResourcesAreFound(bool useCompiledXaml)
 			{
-				var layout = new TestSharedResourceDictionary (useCompiledXaml);
-				Assert.AreEqual (Color.Pink, layout.label.TextColor);
+				var layout = new TestSharedResourceDictionary(useCompiledXaml);
+				Assert.AreEqual(Color.Pink, layout.label.TextColor);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void NoConflictsBetweenSharedRDs (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void NoConflictsBetweenSharedRDs(bool useCompiledXaml)
 			{
-				var layout = new TestSharedResourceDictionary (useCompiledXaml);
-				Assert.AreEqual (Color.Pink, layout.label.TextColor);
-				Assert.AreEqual (Color.Purple, layout.label2.TextColor);
+				var layout = new TestSharedResourceDictionary(useCompiledXaml);
+				Assert.AreEqual(Color.Pink, layout.label.TextColor);
+				Assert.AreEqual(Color.Purple, layout.label2.TextColor);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void ImplicitStyleCanBeSharedFromSharedRD (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void ImplicitStyleCanBeSharedFromSharedRD(bool useCompiledXaml)
 			{
 				var layout = new TestSharedResourceDictionary(useCompiledXaml);
 				Assert.AreEqual(Color.Red, layout.implicitLabel.TextColor);

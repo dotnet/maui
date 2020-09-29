@@ -60,7 +60,8 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					var label = new Label();
 					label.SetBinding(Label.TextProperty, nameof(ListViewGroup.Heading));
-					var grid = new Grid {
+					var grid = new Grid
+					{
 						HorizontalOptions = LayoutOptions.FillAndExpand,
 						ColumnDefinitions = new ColumnDefinitionCollection {
 							new ColumnDefinition { Width = GridLength.Star }
@@ -93,6 +94,6 @@ namespace Xamarin.Forms.Controls.Issues
 					listView
 				}
 			};
-		} 
+		}
 	}
 }

@@ -97,7 +97,8 @@ namespace Xamarin.Forms.Platform.WPF
 			var tcr = new TaskCompletionSource<string>();
 			var task = tcr.Task;
 
-			Device.BeginInvokeOnMainThread(() => {
+			Device.BeginInvokeOnMainThread(() =>
+			{
 				tcr.SetResult((string)Control.InvokeScript("eval", new[] { script }));
 			});
 
@@ -151,7 +152,8 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void WebBrowserOnNavigated(object sender, System.Windows.Navigation.NavigationEventArgs navigationEventArgs)
 		{
-			if (navigationEventArgs.Uri == null) return;
+			if (navigationEventArgs.Uri == null)
+				return;
 
 			string url = navigationEventArgs.Uri.IsAbsoluteUri ? navigationEventArgs.Uri.AbsoluteUri : navigationEventArgs.Uri.OriginalString;
 			SendNavigated(new UrlWebViewSource { Url = url }, _eventState, WebNavigationResult.Success);
@@ -160,7 +162,8 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void WebBrowserOnNavigating(object sender, NavigatingCancelEventArgs navigatingEventArgs)
 		{
-			if (navigatingEventArgs.Uri == null) return;
+			if (navigatingEventArgs.Uri == null)
+				return;
 
 			string url = navigatingEventArgs.Uri.IsAbsoluteUri ? navigatingEventArgs.Uri.AbsoluteUri : navigatingEventArgs.Uri.OriginalString;
 			var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = url }, url);
@@ -176,7 +179,8 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void WebBrowserOnNavigationFailed(object sender, NavigationFailedEventArgs navigationFailedEventArgs)
 		{
-			if (navigationFailedEventArgs.Uri == null) return;
+			if (navigationFailedEventArgs.Uri == null)
+				return;
 
 			string url = navigationFailedEventArgs.Uri.IsAbsoluteUri ? navigationFailedEventArgs.Uri.AbsoluteUri : navigationFailedEventArgs.Uri.OriginalString;
 			SendNavigated(new UrlWebViewSource { Url = url }, _eventState, WebNavigationResult.Failure);

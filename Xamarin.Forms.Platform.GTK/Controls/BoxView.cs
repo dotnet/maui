@@ -1,5 +1,5 @@
-﻿using Cairo;
-using System;
+﻿using System;
+using Cairo;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Controls

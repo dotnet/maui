@@ -6,9 +6,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class TimePickerDisabledStatesGallery : ContentPage
 	{
-		public TimePickerDisabledStatesGallery ()
+		public TimePickerDisabledStatesGallery()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 
 			Button0.Text = $"Toggle IsEnabled (Currently {Picker0.IsEnabled})";
 			Button1.Text = $"Toggle IsEnabled (Currently {Picker1.IsEnabled})";

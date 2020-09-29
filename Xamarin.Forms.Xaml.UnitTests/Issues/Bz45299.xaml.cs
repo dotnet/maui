@@ -10,7 +10,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		public static readonly BindableProperty PortraitLayoutProperty =
 		   BindableProperty.Create(nameof(PortraitLayout), typeof(Bz45299OrientationLayout), typeof(Bz45299Control));
-		public Bz45299OrientationLayout PortraitLayout {
+		public Bz45299OrientationLayout PortraitLayout
+		{
 			get { return (Bz45299OrientationLayout)GetValue(PortraitLayoutProperty); }
 			set { this.SetValue(PortraitLayoutProperty, value); }
 		}
@@ -21,21 +22,24 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		public static readonly BindableProperty SizeProperty =
 		   BindableProperty.Create(nameof(Size), typeof(Bz45299UISize), typeof(Bz45299OrientationLayout), Bz45299UISize.Zero);
-		public Bz45299UISize Size {
+		public Bz45299UISize Size
+		{
 			get { return (Bz45299UISize)GetValue(SizeProperty); }
 			set { SetValue(SizeProperty, value); }
 		}
 
 		public static readonly BindableProperty SpacingProperty =
 		   BindableProperty.Create(nameof(Spacing), typeof(Bz45299UILength), typeof(Bz45299OrientationLayout), Bz45299UILength.Zero);
-		public Bz45299UILength Spacing {
+		public Bz45299UILength Spacing
+		{
 			get { return (Bz45299UILength)GetValue(SpacingProperty); }
 			set { SetValue(SpacingProperty, value); }
 		}
 
 		public static readonly BindableProperty CountProperty =
 		   BindableProperty.Create(nameof(Count), typeof(int), typeof(Bz45299OrientationLayout), 1);
-		public int Count {
+		public int Count
+		{
 			get { return (int)GetValue(CountProperty); }
 			set { SetValue(CountProperty, value); }
 		}

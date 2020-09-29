@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public PlatformSpecifics_iOSTranslucentNavBarX()
 		{
 #if APP
-			InitializeComponent ();
+			InitializeComponent();
 #endif
 		}
 

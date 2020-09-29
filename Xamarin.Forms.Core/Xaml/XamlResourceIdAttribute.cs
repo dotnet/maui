@@ -20,7 +20,8 @@ namespace Xamarin.Forms.Xaml
 		internal static string GetResourceIdForType(Type type)
 		{
 			var assembly = type.GetTypeInfo().Assembly;
-			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>()) {
+			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+			{
 				if (xria.Type == type)
 					return xria.ResourceId;
 			}
@@ -30,7 +31,8 @@ namespace Xamarin.Forms.Xaml
 		internal static string GetPathForType(Type type)
 		{
 			var assembly = type.GetTypeInfo().Assembly;
-			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>()) {
+			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+			{
 				if (xria.Type == type)
 					return xria.Path;
 			}
@@ -39,7 +41,8 @@ namespace Xamarin.Forms.Xaml
 
 		internal static string GetResourceIdForPath(Assembly assembly, string path)
 		{
-			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>()) {
+			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+			{
 				if (xria.Path == path)
 					return xria.ResourceId;
 			}
@@ -48,7 +51,8 @@ namespace Xamarin.Forms.Xaml
 
 		internal static Type GetTypeForResourceId(Assembly assembly, string resourceId)
 		{
-			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>()) {
+			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+			{
 				if (xria.ResourceId == resourceId)
 					return xria.Type;
 			}
@@ -57,7 +61,8 @@ namespace Xamarin.Forms.Xaml
 
 		internal static Type GetTypeForPath(Assembly assembly, string path)
 		{
-			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>()) {
+			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+			{
 				if (xria.Path == path)
 					return xria.Type;
 			}

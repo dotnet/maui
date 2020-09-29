@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 
 		ContentPage CreatePageWithNoTitle()
 		{
-			var page = new ContentPage {  };
+			var page = new ContentPage { };
 
 			var content = new StackLayout
 			{

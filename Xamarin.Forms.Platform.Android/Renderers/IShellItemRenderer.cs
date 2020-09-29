@@ -1,5 +1,5 @@
-﻿using AndroidX.Fragment.App;
-using System;
+﻿using System;
+using AndroidX.Fragment.App;
 
 namespace Xamarin.Forms.Platform.Android
 {

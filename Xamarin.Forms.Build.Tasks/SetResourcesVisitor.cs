@@ -39,19 +39,21 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			XmlName propertyName;
 			//Set ResourcesDictionaries to their parents
-			if (IsResourceDictionary(node) && SetPropertiesVisitor.TryGetPropertyName(node, parentNode, out propertyName)) {
-				if ((propertyName.LocalName == "Resources" || propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal))) {
+			if (IsResourceDictionary(node) && SetPropertiesVisitor.TryGetPropertyName(node, parentNode, out propertyName))
+			{
+				if ((propertyName.LocalName == "Resources" || propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)))
+				{
 					Context.IL.Append(SetPropertiesVisitor.SetPropertyValue(Context.Variables[(IElementNode)parentNode], propertyName, node, Context, node));
 					return;
 				}
 			}
 
 			//Only proceed further if the node is a keyless RD
-			if (   parentNode is IElementNode
+			if (parentNode is IElementNode
 				&& IsResourceDictionary((IElementNode)parentNode)
 				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
-			else if (   parentNode is ListNode
+			else if (parentNode is ListNode
 					 && IsResourceDictionary((IElementNode)parentNode.Parent)
 					 && !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
@@ -79,13 +81,13 @@ namespace Xamarin.Forms.Build.Tasks
 			var enode = node as ElementNode;
 			if (enode == null)
 				return false;
-			if (   parentNode is IElementNode
-			    && IsResourceDictionary((IElementNode)parentNode)
-			    && !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+			if (parentNode is IElementNode
+				&& IsResourceDictionary((IElementNode)parentNode)
+				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
 				return true;
-			if (   parentNode is ListNode
-			    && IsResourceDictionary((IElementNode)parentNode.Parent)
-			    && !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
+			if (parentNode is ListNode
+				&& IsResourceDictionary((IElementNode)parentNode.Parent)
+				&& !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				return true;
 			return false;
 		}

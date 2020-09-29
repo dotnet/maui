@@ -66,7 +66,8 @@ namespace Xamarin.Forms
 		{
 			if (repeat == null)
 				self.Animate(name, animation.GetCallback(), rate, length, easing, finished, null);
-			else {
+			else
+			{
 				Func<bool> r = () =>
 				{
 					var val = repeat();
@@ -186,7 +187,7 @@ namespace Xamarin.Forms
 			info.Finished = final;
 			info.Repeat = repeat;
 			info.Owner = new WeakReference<IAnimatable>(self);
-			
+
 			s_animations[key] = info;
 
 			info.Callback(0.0f);
@@ -202,7 +203,8 @@ namespace Xamarin.Forms
 			double sign = velocity / Math.Abs(velocity);
 			velocity = Math.Abs(velocity);
 
-			int tick = Ticker.Default.Insert(step => {
+			int tick = Ticker.Default.Insert(step =>
+			{
 				long ms = step;
 
 				velocity -= drag * ms;

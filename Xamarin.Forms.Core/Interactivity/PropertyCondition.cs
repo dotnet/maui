@@ -35,9 +35,12 @@ namespace Xamarin.Forms
 				{
 					Func<MemberInfo> minforetriever = () =>
 					{
-						try {
+						try
+						{
 							return Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
-						} catch (AmbiguousMatchException e) {
+						}
+						catch (AmbiguousMatchException e)
+						{
 							throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", new XmlLineInfo(), innerException: e);
 						}
 					};
@@ -61,9 +64,12 @@ namespace Xamarin.Forms
 				{
 					Func<MemberInfo> minforetriever = () =>
 					{
-						try {
+						try
+						{
 							return Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
-						} catch (AmbiguousMatchException e) {
+						}
+						catch (AmbiguousMatchException e)
+						{
 							throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", new XmlLineInfo(), innerException: e);
 						}
 					};

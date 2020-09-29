@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
-using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -20,6 +19,7 @@ namespace Xamarin.Forms.Platform.iOS
 	public class NavigationRenderer : UINavigationController, IVisualElementRenderer, IEffectControlProvider
 	{
 		internal const string UpdateToolbarButtons = "Xamarin.UpdateToolbarButtons";
+		bool _appeared;
 		bool _ignorePopCall;
 		bool _loaded;
 		FlyoutPage _parentFlyoutPage;
@@ -32,9 +32,8 @@ namespace Xamarin.Forms.Platform.iOS
 		UIImage _defaultNavBarShadowImage;
 		UIImage _defaultNavBarBackImage;
 		bool _disposed;
-		PageLifecycleManager _pageLifecycleManager;
 
-		[Internals.Preserve(Conditional = true)]
+		[Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(FormsNavigationBar), null)
 		{
 			MessagingCenter.Subscribe<IVisualElementRenderer>(this, UpdateToolbarButtons, sender =>
@@ -72,9 +71,8 @@ namespace Xamarin.Forms.Platform.iOS
 			Element = element;
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
-			_pageLifecycleManager = new PageLifecycleManager(Element as IPageController);
-
-			element?.SendViewInitialized(NativeView);
+			if (element != null)
+				element.SendViewInitialized(NativeView);
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
@@ -134,7 +132,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void ViewDidAppear(bool animated)
 		{
-			_pageLifecycleManager?.HandlePageAppearing();
+			if (!_appeared)
+			{
+				_appeared = true;
+				PageController?.SendAppearing();
+			}
 
 			base.ViewDidAppear(animated);
 
@@ -152,7 +154,11 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidDisappear(animated);
 
-			_pageLifecycleManager?.HandlePageDisappearing();
+			if (!_appeared || Element == null)
+				return;
+
+			_appeared = false;
+			PageController.SendDisappearing();
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -275,12 +281,16 @@ namespace Xamarin.Forms.Platform.iOS
 				navPage.PopToRootRequested -= OnPopToRootRequested;
 				navPage.RemovePageRequested -= OnRemovedPageRequested;
 				navPage.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
-
-				_pageLifecycleManager?.Dispose();
-				_pageLifecycleManager = null;
 			}
 
 			base.Dispose(disposing);
+
+			if (disposing && _appeared)
+			{
+				PageController.SendDisappearing();
+
+				_appeared = false;
+			}
 		}
 
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
@@ -356,6 +366,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				UpdateBackgroundColor();
 		}
+
 
 		ParentingViewController CreateViewControllerForPage(Page page)
 		{

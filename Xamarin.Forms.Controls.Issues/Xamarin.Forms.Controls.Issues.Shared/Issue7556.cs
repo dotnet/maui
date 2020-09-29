@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Linq;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Linq;
 
 
 #if UITEST
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Content = new StackLayout()
 				{
-					Children = 
+					Children =
 					{
 						new Label() { Margin = 20, Text = "Flyout Visible", TextColor = Color.White }
 					}

@@ -10,9 +10,9 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries
 {
-    [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class DragAndDropBetweenLayouts : ContentPage
-    {
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class DragAndDropBetweenLayouts : ContentPage
+	{
 		public ObservableCollection<Brush> AllColors { get; }
 		public ObservableCollection<Brush> RainbowColors { get; }
 		public DragAndDropBetweenLayouts()

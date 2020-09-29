@@ -22,14 +22,16 @@ namespace Xamarin.Forms.Controls.Issues
 			public ChildPage(int pageNumber)
 			{
 				var layout = new StackLayout();
-				var MyLabel = new Label {
+				var MyLabel = new Label
+				{
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalOptions = LayoutOptions.Center,
 					FontSize = 21,
 					TextColor = Color.White,
 					Text = $"This is page {pageNumber}"
 				};
-				var TestBtn = new Button {
+				var TestBtn = new Button
+				{
 					Text = "Go to Page 2",
 					IsEnabled = false,
 					BackgroundColor = Color.White

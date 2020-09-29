@@ -1,7 +1,7 @@
-﻿using Gdk;
-using Gtk;
-using System;
+﻿using System;
 using System.Windows.Markup;
+using Gdk;
+using Gtk;
 using Xamarin.Forms.Platform.GTK.Animations;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
@@ -272,7 +272,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		{
 			_isPresented = isPresented;
 
-			if (_flyoutBehaviorType == FlyoutLayoutBehaviorType.Split) return;
+			if (_flyoutBehaviorType == FlyoutLayoutBehaviorType.Split)
+				return;
 
 			if (_animationsEnabled)
 			{
@@ -397,7 +398,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 			public void UpdateBackgroundColor(Gdk.Color? backgroundColor)
 			{
-				if(_root== null)
+				if (_root == null)
 				{
 					return;
 				}
@@ -423,7 +424,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		}
 	}
 
-	public class MasterDetailPage : FlyoutPage 
+	public class MasterDetailPage : FlyoutPage
 	{
 
 		public string MasterTitle

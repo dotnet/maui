@@ -5,8 +5,8 @@ using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Xamarin.Forms.Xaml;
 using AndroidSpecific = Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using iOSSpecific = Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using ButtonImagePosition = Xamarin.Forms.Button.ButtonContentLayout.ImagePosition;
+using iOSSpecific = Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Controls
 {

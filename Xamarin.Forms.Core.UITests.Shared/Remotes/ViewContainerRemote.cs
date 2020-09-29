@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Core.UITests
 {
 	internal sealed class ViewContainerRemote : BaseViewContainerRemote
 	{
-		public ViewContainerRemote (IApp app, Enum formsType, string platformViewType)
-			: base (app, formsType, platformViewType) { }
+		public ViewContainerRemote(IApp app, Enum formsType, string platformViewType)
+			: base(app, formsType, platformViewType) { }
 	}
 }

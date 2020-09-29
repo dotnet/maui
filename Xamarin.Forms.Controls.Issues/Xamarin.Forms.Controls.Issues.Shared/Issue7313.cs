@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 				BackgroundColor = Color.Transparent,
 				IsPullToRefreshEnabled = true,
 				RefreshControlColor = Color.Cyan,
-				ItemsSource = new []{ "ListLoaded" }
+				ItemsSource = new[] { "ListLoaded" }
 			};
 
 			_testLoaded = new Label();

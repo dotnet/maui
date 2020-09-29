@@ -13,8 +13,8 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 22229, "ToolbarItems not clearing", PlatformAffected.iOS | PlatformAffected.WinPhone, NavigationBehavior.PushAsync)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 22229, "ToolbarItems not clearing", PlatformAffected.iOS | PlatformAffected.WinPhone, NavigationBehavior.PushAsync)]
 	public partial class Bugzilla22229 : TabbedPage
 	{
 		string _prefix;
@@ -22,16 +22,17 @@ namespace Xamarin.Forms.Controls.Issues
 		public Bugzilla22229()
 		{
 			InitializeComponent();
-			switch (Device.RuntimePlatform) {
-			case Device.iOS:
-				_prefix = "Images/";
-				break;
-			case Device.Android:
-				_prefix = "";
-				break;
-			case Device.UWP:
-				_prefix = "Assets/";
-				break;
+			switch (Device.RuntimePlatform)
+			{
+				case Device.iOS:
+					_prefix = "Images/";
+					break;
+				case Device.Android:
+					_prefix = "";
+					break;
+				case Device.UWP:
+					_prefix = "Assets/";
+					break;
 			}
 			InitializeActionBar();
 		}

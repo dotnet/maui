@@ -15,9 +15,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 		string _currentColorState = "Normal";
 		string _currentAlignmentState = "LeftAligned";
 
-		public VisualStatesDirectlyOnElements ()
+		public VisualStatesDirectlyOnElements()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
 		void ToggleValid_OnClicked(object sender, EventArgs e)

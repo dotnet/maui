@@ -3,8 +3,8 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 4561, "Keyboard navigation does not work", PlatformAffected.Android)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 4561, "Keyboard navigation does not work", PlatformAffected.Android)]
 	public class Issue4561 : TestContentPage
 	{
 		[Preserve(AllMembers = true)]
@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 		}
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			Content = new StackLayout
 			{

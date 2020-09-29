@@ -2,4 +2,4 @@
 using Microsoft.Windows.Design.Metadata;
 using Xamarin.Forms.Xaml.Design;
 
-[assembly: ProvideMetadata(typeof (RegisterMetadata))]
+[assembly: ProvideMetadata(typeof(RegisterMetadata))]

@@ -4,7 +4,7 @@ namespace Xamarin.Forms.Platform.GTK.Packagers
 {
 	public class PageElementPackager : VisualElementPackager<PageRenderer>
 	{
-		public PageElementPackager(PageRenderer renderer) 
+		public PageElementPackager(PageRenderer renderer)
 			: base(renderer)
 		{
 		}

@@ -13,39 +13,41 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class ViewUnitTests : BaseTestFixture
 	{
 		[SetUp]
-		public override void Setup ()
+		public override void Setup()
 		{
-			base.Setup ();
-			Device.PlatformServices = new MockPlatformServices (getNativeSizeFunc: (ve, widthConstraint, heightConstraint) => {
+			base.Setup();
+			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (ve, widthConstraint, heightConstraint) =>
+			{
 				if (widthConstraint < 30)
-					return new SizeRequest (new Size (40, 50));
+					return new SizeRequest(new Size(40, 50));
 				return new SizeRequest(new Size(20, 100));
 			});
 		}
 
 		[TearDown]
-		public override void TearDown ()
+		public override void TearDown()
 		{
-			base.TearDown ();
+			base.TearDown();
 			Device.PlatformServices = null;
 		}
 
 		[Test]
-		public void TestLayout ()
+		public void TestLayout()
 		{
-			View view = new View ();
-			view.Layout (new Rectangle (50, 25, 100, 200));
+			View view = new View();
+			view.Layout(new Rectangle(50, 25, 100, 200));
 
-			Assert.AreEqual (view.X, 50);
-			Assert.AreEqual (view.Y, 25);
-			Assert.AreEqual (view.Width, 100);
-			Assert.AreEqual (view.Height, 200);
+			Assert.AreEqual(view.X, 50);
+			Assert.AreEqual(view.Y, 25);
+			Assert.AreEqual(view.Width, 100);
+			Assert.AreEqual(view.Height, 200);
 		}
 
 		[Test]
-		public void TestPreferredSize ()
+		public void TestPreferredSize()
 		{
-			View view = new View {
+			View view = new View
+			{
 				IsPlatformEnabled = true,
 			};
 
@@ -55,53 +57,54 @@ namespace Xamarin.Forms.Core.UnitTests
 			view.WidthRequest = 200;
 			view.HeightRequest = 300;
 
-			Assert.True (fired);
+			Assert.True(fired);
 
-			var result = view.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity).Request;
-			Assert.AreEqual (new Size (200, 300), result);
+			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+			Assert.AreEqual(new Size(200, 300), result);
 		}
 
 		[Test]
-		public void TestSizeChangedEvent ()
+		public void TestSizeChangedEvent()
 		{
-			View view = new View ();
+			View view = new View();
 
 			bool fired = false;
 			view.SizeChanged += (sender, e) => fired = true;
 
-			view.Layout (new Rectangle (0, 0, 100, 100));
+			view.Layout(new Rectangle(0, 0, 100, 100));
 
-			Assert.True (fired);
+			Assert.True(fired);
 		}
-			
+
 		[Test]
-		public void TestOpacityClamping ()
+		public void TestOpacityClamping()
 		{
-			var view = new View ();
+			var view = new View();
 
 			view.Opacity = -1;
-			Assert.AreEqual (0, view.Opacity);
+			Assert.AreEqual(0, view.Opacity);
 
 			view.Opacity = 2;
-			Assert.AreEqual (1, view.Opacity);
+			Assert.AreEqual(1, view.Opacity);
 		}
 
 		[Test]
-		public void TestMeasureInvalidatedFiredOnVisibilityChanged ()
+		public void TestMeasureInvalidatedFiredOnVisibilityChanged()
 		{
-			var view = new View {IsVisible = false};
+			var view = new View { IsVisible = false };
 			bool signaled = false;
-			view.MeasureInvalidated += (sender, e) => {
+			view.MeasureInvalidated += (sender, e) =>
+			{
 				signaled = true;
 			};
 			view.IsVisible = true;
-			Assert.True (signaled);
+			Assert.True(signaled);
 		}
 
 		[Test]
-		public void TestOnPlatformiOS ()
+		public void TestOnPlatformiOS()
 		{
-			var view = new View ();
+			var view = new View();
 
 			bool ios = false;
 			bool android = false;
@@ -109,20 +112,20 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 
-			Device.OnPlatform (
+			Device.OnPlatform(
 				iOS: () => ios = true,
 				Android: () => android = true,
 				WinPhone: () => winphone = true);
 
-			Assert.True (ios);
-			Assert.False (android);
-			Assert.False (winphone);
+			Assert.True(ios);
+			Assert.False(android);
+			Assert.False(winphone);
 		}
 
 		[Test]
-		public void TestOnPlatformAndroid ()
+		public void TestOnPlatformAndroid()
 		{
-			var view = new View ();
+			var view = new View();
 
 			bool ios = false;
 			bool android = false;
@@ -130,284 +133,285 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
 
-			Device.OnPlatform (
+			Device.OnPlatform(
 				iOS: () => ios = true,
 				Android: () => android = true,
 				WinPhone: () => winphone = true);
 
-			Assert.False (ios);
-			Assert.True (android);
-			Assert.False (winphone);
+			Assert.False(ios);
+			Assert.True(android);
+			Assert.False(winphone);
 		}
 
 		[Test]
-		public void TestOnPlatformDefault ()
+		public void TestOnPlatformDefault()
 		{
-			var view = new View ();
+			var view = new View();
 
 			bool ios = false;
 			bool android = false;
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
 
-			Device.OnPlatform (
+			Device.OnPlatform(
 				iOS: () => ios = false,
 				Default: () => android = true);
 
-			Assert.False (ios);
-			Assert.True (android);
+			Assert.False(ios);
+			Assert.True(android);
 		}
 
 		[Test]
-		public void TestOnPlatformNoOpWithoutDefault ()
+		public void TestOnPlatformNoOpWithoutDefault()
 		{
 			bool any = false;
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = "Other";
 
-			Device.OnPlatform (
+			Device.OnPlatform(
 				iOS: () => any = true,
 				Android: () => any = true,
 				WinPhone: () => any = true);
 
-			Assert.False (any);
+			Assert.False(any);
 		}
 
 		[Test]
-		public void TestDefaultOniOS ()
+		public void TestDefaultOniOS()
 		{
 			bool defaultExecuted = false;
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 
-			Device.OnPlatform (
+			Device.OnPlatform(
 				Android: () => { },
 				WinPhone: () => { },
-				Default:() => defaultExecuted = true);
+				Default: () => defaultExecuted = true);
 
-			Assert.True (defaultExecuted);
+			Assert.True(defaultExecuted);
 		}
 
 		[Test]
-		public void TestDefaultOnAndroid ()
+		public void TestDefaultOnAndroid()
 		{
 			bool defaultExecuted = false;
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
 
-			Device.OnPlatform (
+			Device.OnPlatform(
 				iOS: () => { },
 				WinPhone: () => { },
-				Default:() => defaultExecuted = true);
+				Default: () => defaultExecuted = true);
 
-			Assert.True (defaultExecuted);
+			Assert.True(defaultExecuted);
 		}
 
 		[Test]
-		public void TestDefaultOnOther ()
+		public void TestDefaultOnOther()
 		{
 			bool defaultExecuted = false;
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = "Other";
 
-			Device.OnPlatform (
+			Device.OnPlatform(
 				iOS: () => { },
 				Android: () => { },
 				WinPhone: () => { },
-				Default:() => defaultExecuted = true);
+				Default: () => defaultExecuted = true);
 
-			Assert.True (defaultExecuted);
+			Assert.True(defaultExecuted);
 		}
 
 		[Test]
-		public void TestNativeStateConsistent ()
+		public void TestNativeStateConsistent()
 		{
 			var view = new View { IsPlatformEnabled = true };
 
-			Assert.True (view.IsNativeStateConsistent);
+			Assert.True(view.IsNativeStateConsistent);
 
 			view.IsNativeStateConsistent = false;
 
-			Assert.False (view.IsNativeStateConsistent);
+			Assert.False(view.IsNativeStateConsistent);
 
 			bool sizeChanged = false;
-			view.MeasureInvalidated += (sender, args) => {
+			view.MeasureInvalidated += (sender, args) =>
+			{
 				sizeChanged = true;
 			};
 
 			view.IsNativeStateConsistent = true;
 
-			Assert.True (sizeChanged);
+			Assert.True(sizeChanged);
 
 			sizeChanged = false;
 			view.IsNativeStateConsistent = true;
 
-			Assert.False (sizeChanged);
+			Assert.False(sizeChanged);
 		}
 
 		[Test]
-		public async Task TestFadeTo ()
+		public async Task TestFadeTo()
 		{
-			var view = new View {IsPlatformEnabled = true};
-			Ticker.Default = new BlockingTicker ();
+			var view = new View { IsPlatformEnabled = true };
+			Ticker.Default = new BlockingTicker();
 
-			await view.FadeTo (0.1);
+			await view.FadeTo(0.1);
 
-			Assert.True (Math.Abs (0.1 - view.Opacity) < 0.001);
+			Assert.True(Math.Abs(0.1 - view.Opacity) < 0.001);
 		}
 
 		[Test]
-		public async Task TestTranslateTo ()
+		public async Task TestTranslateTo()
 		{
-			var view = new View {IsPlatformEnabled = true};
-			Ticker.Default = new BlockingTicker ();
+			var view = new View { IsPlatformEnabled = true };
+			Ticker.Default = new BlockingTicker();
 
-			await view.TranslateTo (100, 50);
+			await view.TranslateTo(100, 50);
 
-			Assert.AreEqual (100, view.TranslationX);
-			Assert.AreEqual (50, view.TranslationY);
+			Assert.AreEqual(100, view.TranslationX);
+			Assert.AreEqual(50, view.TranslationY);
 		}
 
 		[Test]
-		public async Task ScaleTo ()
+		public async Task ScaleTo()
 		{
-			var view = new View {IsPlatformEnabled = true};
-			Ticker.Default = new BlockingTicker ();
+			var view = new View { IsPlatformEnabled = true };
+			Ticker.Default = new BlockingTicker();
 
-			await view.ScaleTo (2);
+			await view.ScaleTo(2);
 
-			Assert.AreEqual (2, view.Scale);
+			Assert.AreEqual(2, view.Scale);
 		}
 
 		[Test]
-		public void TestNativeSizeChanged ()
+		public void TestNativeSizeChanged()
 		{
-			var view = new View ();
+			var view = new View();
 
 			bool sizeChanged = false;
 			view.MeasureInvalidated += (sender, args) => sizeChanged = true;
 
-			((IVisualElementController)view).NativeSizeChanged ();
+			((IVisualElementController)view).NativeSizeChanged();
 
-			Assert.True (sizeChanged);
+			Assert.True(sizeChanged);
 		}
 
 		[Test]
-		public async Task TestRotateTo ()
+		public async Task TestRotateTo()
 		{
-			var view = new View {IsPlatformEnabled = true};
-			Ticker.Default = new BlockingTicker ();
+			var view = new View { IsPlatformEnabled = true };
+			Ticker.Default = new BlockingTicker();
 
-			await view.RotateTo (25);
+			await view.RotateTo(25);
 
-			Assert.That (view.Rotation, Is.EqualTo (25).Within (0.001));
+			Assert.That(view.Rotation, Is.EqualTo(25).Within(0.001));
 		}
 
 		[Test]
-		public async Task TestRotateYTo ()
+		public async Task TestRotateYTo()
 		{
-			var view = new View {IsPlatformEnabled = true};
-			Ticker.Default = new BlockingTicker ();
+			var view = new View { IsPlatformEnabled = true };
+			Ticker.Default = new BlockingTicker();
 
-			await view.RotateYTo (25);
+			await view.RotateYTo(25);
 
-			Assert.That (view.RotationY, Is.EqualTo (25).Within (0.001));
+			Assert.That(view.RotationY, Is.EqualTo(25).Within(0.001));
 		}
 
 		[Test]
-		public async Task TestRotateXTo ()
+		public async Task TestRotateXTo()
 		{
-			var view = new View {IsPlatformEnabled = true};
-			Ticker.Default = new BlockingTicker ();
+			var view = new View { IsPlatformEnabled = true };
+			Ticker.Default = new BlockingTicker();
 
-			await view.RotateXTo (25);
+			await view.RotateXTo(25);
 
-			Assert.That (view.RotationX, Is.EqualTo (25).Within (0.001));
+			Assert.That(view.RotationX, Is.EqualTo(25).Within(0.001));
 		}
 
 		[Test]
-		public async Task TestRelRotateTo ()
+		public async Task TestRelRotateTo()
 		{
-			var view = new View {Rotation = 30, IsPlatformEnabled = true};
-			Ticker.Default = new BlockingTicker ();
+			var view = new View { Rotation = 30, IsPlatformEnabled = true };
+			Ticker.Default = new BlockingTicker();
 
-			await view.RelRotateTo (20);
+			await view.RelRotateTo(20);
 
-			Assert.That (view.Rotation, Is.EqualTo (50).Within (0.001));
+			Assert.That(view.Rotation, Is.EqualTo(50).Within(0.001));
 		}
 
 		[Test]
-		public async Task TestRelScaleTo ()
+		public async Task TestRelScaleTo()
 		{
-			var view = new View {Scale = 1, IsPlatformEnabled = true};
-			Ticker.Default = new BlockingTicker ();
+			var view = new View { Scale = 1, IsPlatformEnabled = true };
+			Ticker.Default = new BlockingTicker();
 
-			await view.RelScaleTo (1);
+			await view.RelScaleTo(1);
 
-			Assert.That (view.Scale, Is.EqualTo (2).Within (0.001));
+			Assert.That(view.Scale, Is.EqualTo(2).Within(0.001));
 		}
 
 		class ParentSignalView : View
 		{
 			public bool ParentSet { get; set; }
 
-			protected override void OnParentSet ()
+			protected override void OnParentSet()
 			{
 				ParentSet = true;
-				base.OnParentSet ();
+				base.OnParentSet();
 			}
 		}
 
 		[Test]
-		public void TestDoubleSetParent ()
+		public void TestDoubleSetParent()
 		{
-			var view = new ParentSignalView ();
-			var parent = new NaiveLayout {Children = {view}};
+			var view = new ParentSignalView();
+			var parent = new NaiveLayout { Children = { view } };
 
 			view.ParentSet = false;
 			view.Parent = parent;
 
-			Assert.False (view.ParentSet, "OnParentSet should not be called in the event the parent is already properly set");
+			Assert.False(view.ParentSet, "OnParentSet should not be called in the event the parent is already properly set");
 		}
 
 		[Test]
-		public void TestAncestorAdded ()
+		public void TestAncestorAdded()
 		{
-			var child = new NaiveLayout ();
-			var view = new NaiveLayout {Children = {child}};
+			var child = new NaiveLayout();
+			var view = new NaiveLayout { Children = { child } };
 
 			bool added = false;
 			view.DescendantAdded += (sender, arg) => added = true;
 
-			child.Children.Add (new View ());
+			child.Children.Add(new View());
 
-			Assert.True (added, "AncestorAdded must fire when adding a child to an ancestor of a view.");
+			Assert.True(added, "AncestorAdded must fire when adding a child to an ancestor of a view.");
 		}
 
 		[Test]
-		public void TestAncestorRemoved ()
+		public void TestAncestorRemoved()
 		{
-			var ancestor = new View ();
-			var child = new NaiveLayout {Children = {ancestor}};
-			var view = new NaiveLayout {Children = {child}};
+			var ancestor = new View();
+			var child = new NaiveLayout { Children = { ancestor } };
+			var view = new NaiveLayout { Children = { child } };
 
 			bool removed = false;
 			view.DescendantRemoved += (sender, arg) => removed = true;
 
-			child.Children.Remove (ancestor);
-			Assert.True (removed, "AncestorRemoved must fire when removing a child from an ancestor of a view.");
+			child.Children.Remove(ancestor);
+			Assert.True(removed, "AncestorRemoved must fire when removing a child from an ancestor of a view.");
 		}
 
 		[Test]
-		public void TestOnPlatformGeneric ()
+		public void TestOnPlatformGeneric()
 		{
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
-			Assert.AreEqual (1, Device.OnPlatform (1, 2, 3));
+			Assert.AreEqual(1, Device.OnPlatform(1, 2, 3));
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
-			Assert.AreEqual (2, Device.OnPlatform (1, 2, 3));
+			Assert.AreEqual(2, Device.OnPlatform(1, 2, 3));
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = "Other";
-			Assert.AreEqual (1, Device.OnPlatform (1, 2, 3));
+			Assert.AreEqual(1, Device.OnPlatform(1, 2, 3));
 		}
 
 		[Test]
@@ -420,30 +424,30 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestBatching ()
+		public void TestBatching()
 		{
-			var view = new View ();
+			var view = new View();
 
 			bool committed = false;
 			view.BatchCommitted += (sender, arg) => committed = true;
 
-			view.BatchBegin ();
+			view.BatchBegin();
 
-			Assert.True (view.Batched);
+			Assert.True(view.Batched);
 
-			view.BatchBegin ();
+			view.BatchBegin();
 
-			Assert.True (view.Batched);
+			Assert.True(view.Batched);
 
-			view.BatchCommit ();
+			view.BatchCommit();
 
-			Assert.True (view.Batched);
-			Assert.False (committed);
+			Assert.True(view.Batched);
+			Assert.False(committed);
 
-			view.BatchCommit ();
+			view.BatchCommit();
 
-			Assert.False (view.Batched);
-			Assert.True (committed);
+			Assert.False(view.Batched);
+			Assert.True(committed);
 		}
 
 		[Test]
@@ -485,183 +489,188 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void IsPlatformEnabled ()
+		public void IsPlatformEnabled()
 		{
-			var view = new View ();
+			var view = new View();
 
-			Assert.False (view.IsPlatformEnabled);
+			Assert.False(view.IsPlatformEnabled);
 
 			view.IsPlatformEnabled = true;
 
-			Assert.True (view.IsPlatformEnabled);
+			Assert.True(view.IsPlatformEnabled);
 
 			view.IsPlatformEnabled = false;
 
-			Assert.False (view.IsPlatformEnabled);
+			Assert.False(view.IsPlatformEnabled);
 		}
 
 		[Test]
-		public void TestBindingContextChaining ()
+		public void TestBindingContextChaining()
 		{
 			View child;
-			var group = new NaiveLayout {
-				Children = { (child = new View ()) }
+			var group = new NaiveLayout
+			{
+				Children = { (child = new View()) }
 			};
 
-			var context = new object ();
+			var context = new object();
 			group.BindingContext = context;
 
-			Assert.AreEqual (context, child.BindingContext);
+			Assert.AreEqual(context, child.BindingContext);
 		}
 
 
 
 		[Test]
-		public void FocusWithoutSubscriber ()
+		public void FocusWithoutSubscriber()
 		{
-			var view = new View ();
-			
-			Assert.False (view.Focus ());
+			var view = new View();
+
+			Assert.False(view.Focus());
 		}
-		
+
 		[Test]
-		public void FocusWithSubscriber ([Values(true, false)] bool result)
+		public void FocusWithSubscriber([Values(true, false)] bool result)
 		{
-			var view = new View ();
+			var view = new View();
 			view.FocusChangeRequested += (sender, arg) => arg.Result = result;
-			Assert.True (view.Focus () == result);
+			Assert.True(view.Focus() == result);
 		}
 
 		[Test]
-		public void DoNotSignalWhenAlreadyFocused ()
+		public void DoNotSignalWhenAlreadyFocused()
 		{
-			var view = new View ();
-			view.SetValueCore (VisualElement.IsFocusedPropertyKey, true);
+			var view = new View();
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, true);
 			bool signaled = false;
 			view.FocusChangeRequested += (sender, args) => signaled = true;
 
-			Assert.True (view.Focus (), "View.Focus returned false");
-			Assert.False (signaled, "FocusRequested was raised");
+			Assert.True(view.Focus(), "View.Focus returned false");
+			Assert.False(signaled, "FocusRequested was raised");
 		}
 
 		[Test]
-		public void UnFocus ()
+		public void UnFocus()
 		{
-			var view = new View ();
-			view.SetValueCore (VisualElement.IsFocusedPropertyKey, true);
+			var view = new View();
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, true);
 
 			var requested = false;
-			view.FocusChangeRequested += (sender, args) => {
+			view.FocusChangeRequested += (sender, args) =>
+			{
 				requested = !args.Focus;
 			};
 
-			view.Unfocus ();
+			view.Unfocus();
 
-			Assert.True (requested);
+			Assert.True(requested);
 		}
 
 		[Test]
-		public void UnFocusDoesNotFireWhenNotFocused ()
+		public void UnFocusDoesNotFireWhenNotFocused()
 		{
-			var view = new View ();
-			view.SetValueCore (VisualElement.IsFocusedPropertyKey, false);
+			var view = new View();
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, false);
 
 			var requested = false;
-			view.FocusChangeRequested += (sender, args) => {
+			view.FocusChangeRequested += (sender, args) =>
+			{
 				requested = args.Focus;
 			};
 
-			view.Unfocus ();
+			view.Unfocus();
 
-			Assert.False (requested);
+			Assert.False(requested);
 		}
 
 		[Test]
-		public void TestFocusedEvent ()
+		public void TestFocusedEvent()
 		{
-			var view = new View ();
+			var view = new View();
 
 			bool fired = false;
 			view.Focused += (sender, args) => fired = true;
-			view.SetValueCore (VisualElement.IsFocusedPropertyKey, true);
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, true);
 
 
-			Assert.True (fired);
+			Assert.True(fired);
 		}
 
 		[Test]
-		public void TestUnFocusedEvent ()
+		public void TestUnFocusedEvent()
 		{
-			var view = new View ();
-			view.SetValueCore (VisualElement.IsFocusedPropertyKey, true);
+			var view = new View();
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, true);
 
 			bool fired = false;
 			view.Unfocused += (sender, args) => fired = true;
-			view.SetValueCore (VisualElement.IsFocusedPropertyKey, false);
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, false);
 
-			Assert.True (fired);
+			Assert.True(fired);
 		}
 
 		[Test]
-		public void TestOpenUriAction ()
+		public void TestOpenUriAction()
 		{
-			var uri = new Uri ("http://www.xamarin.com/");
+			var uri = new Uri("http://www.xamarin.com/");
 			var invoked = false;
-			Device.PlatformServices = new MockPlatformServices (openUriAction: u => {
-				Assert.AreSame (uri, u);
+			Device.PlatformServices = new MockPlatformServices(openUriAction: u =>
+			{
+				Assert.AreSame(uri, u);
 				invoked = true;
 			});
 
-			Device.OpenUri (uri);
-			Assert.True (invoked);
+			Device.OpenUri(uri);
+			Assert.True(invoked);
 		}
 
 		[Test]
-		public void OpenUriThrowsWhenNull ()
+		public void OpenUriThrowsWhenNull()
 		{
 			Device.PlatformServices = null;
-			var uri = new Uri ("http://www.xamarin.com/");
-			Assert.Throws<InvalidOperationException> (() => Device.OpenUri (uri));
+			var uri = new Uri("http://www.xamarin.com/");
+			Assert.Throws<InvalidOperationException>(() => Device.OpenUri(uri));
 		}
 
 		[Test]
-		public void MinimumWidthRequest ()
+		public void MinimumWidthRequest()
 		{
-			var view = new View ();
+			var view = new View();
 
 			bool signaled = false;
 			view.MeasureInvalidated += (sender, args) => signaled = true;
 
 			view.MinimumWidthRequest = 10;
-			Assert.True (signaled);
-			Assert.AreEqual (10, view.MinimumWidthRequest);
+			Assert.True(signaled);
+			Assert.AreEqual(10, view.MinimumWidthRequest);
 
 			signaled = false;
 			view.MinimumWidthRequest = 10;
-			Assert.False (signaled);
+			Assert.False(signaled);
 		}
 
 		[Test]
-		public void MinimumHeightRequest ()
+		public void MinimumHeightRequest()
 		{
-			var view = new View ();
+			var view = new View();
 
 			bool signaled = false;
 			view.MeasureInvalidated += (sender, args) => signaled = true;
 
 			view.MinimumHeightRequest = 10;
-			Assert.True (signaled);
-			Assert.AreEqual (10, view.MinimumHeightRequest);
+			Assert.True(signaled);
+			Assert.AreEqual(10, view.MinimumHeightRequest);
 
 			signaled = false;
 			view.MinimumHeightRequest = 10;
-			Assert.False (signaled);
+			Assert.False(signaled);
 		}
 
 		[Test]
-		public void MinimumWidthRequestInSizeRequest ()
+		public void MinimumWidthRequestInSizeRequest()
 		{
-			var view = new View {
+			var view = new View
+			{
 				IsPlatformEnabled = true
 			};
 
@@ -669,15 +678,16 @@ namespace Xamarin.Forms.Core.UnitTests
 			view.WidthRequest = 200;
 			view.MinimumWidthRequest = 100;
 
-			var result = view.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity);
-			Assert.AreEqual (new Size (200, 20), result.Request);
-			Assert.AreEqual (new Size (100, 20), result.Minimum);
+			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			Assert.AreEqual(new Size(200, 20), result.Request);
+			Assert.AreEqual(new Size(100, 20), result.Minimum);
 		}
 
 		[Test]
-		public void MinimumHeightRequestInSizeRequest ()
+		public void MinimumHeightRequestInSizeRequest()
 		{
-			var view = new View {
+			var view = new View
+			{
 				IsPlatformEnabled = true
 			};
 
@@ -685,44 +695,46 @@ namespace Xamarin.Forms.Core.UnitTests
 			view.WidthRequest = 20;
 			view.MinimumHeightRequest = 100;
 
-			var result = view.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity);
-			Assert.AreEqual (new Size (20, 200), result.Request);
-			Assert.AreEqual (new Size (20, 100), result.Minimum);
+			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			Assert.AreEqual(new Size(20, 200), result.Request);
+			Assert.AreEqual(new Size(20, 100), result.Minimum);
 		}
 
 		[Test]
-		public void StartTimerSimple ()
+		public void StartTimerSimple()
 		{
-			Device.PlatformServices = new MockPlatformServices ();
-			var task = new TaskCompletionSource<bool> ();
+			Device.PlatformServices = new MockPlatformServices();
+			var task = new TaskCompletionSource<bool>();
 
-			Task.Factory.StartNew (() => Device.StartTimer (TimeSpan.FromMilliseconds (200), () => {
-				task.SetResult (false);
+			Task.Factory.StartNew(() => Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
+			{
+				task.SetResult(false);
 				return false;
 			}));
 
-			task.Task.Wait ();
-			Assert.False (task.Task.Result);
+			task.Task.Wait();
+			Assert.False(task.Task.Result);
 			Device.PlatformServices = null;
 		}
 
 		[Test]
-		public void StartTimerMultiple ()
+		public void StartTimerMultiple()
 		{
-			Device.PlatformServices = new MockPlatformServices ();
-			var task = new TaskCompletionSource<int> ();
+			Device.PlatformServices = new MockPlatformServices();
+			var task = new TaskCompletionSource<int>();
 
 			int steps = 0;
-			Task.Factory.StartNew (() => Device.StartTimer (TimeSpan.FromMilliseconds (200), () => {
+			Task.Factory.StartNew(() => Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
+			{
 				steps++;
 				if (steps < 2)
 					return true;
-				task.SetResult (steps);
+				task.SetResult(steps);
 				return false;
 			}));
 
-			task.Task.Wait ();
-			Assert.AreEqual (2, task.Task.Result);
+			task.Task.Wait();
+			Assert.AreEqual(2, task.Task.Result);
 			Device.PlatformServices = null;
 		}
 
@@ -733,111 +745,113 @@ namespace Xamarin.Forms.Core.UnitTests
 			parent.BindingContext = new MockViewModel { Text = "test" };
 
 			var child = new Entry();
-			child.SetBinding (Entry.TextProperty, new Binding ("Text"));
+			child.SetBinding(Entry.TextProperty, new Binding("Text"));
 
-			parent.Children.Add (child);
+			parent.Children.Add(child);
 
-			Assert.That (child.BindingContext, Is.SameAs (parent.BindingContext));
-			Assert.That (child.Text, Is.EqualTo ("test"));
+			Assert.That(child.BindingContext, Is.SameAs(parent.BindingContext));
+			Assert.That(child.Text, Is.EqualTo("test"));
 		}
 
 		[Test]
-		public void IdIsUnique ()
+		public void IdIsUnique()
 		{
-			var view1 = new View ();
-			var view2 = new View ();
+			var view1 = new View();
+			var view2 = new View();
 
-			Assert.True (view1.Id != view2.Id);
+			Assert.True(view1.Id != view2.Id);
 		}
 
 		[Test]
-		public void MockBounds ()
+		public void MockBounds()
 		{
-			var view = new View ();
-			view.Layout (new Rectangle (10, 20, 30, 40));
+			var view = new View();
+			view.Layout(new Rectangle(10, 20, 30, 40));
 
 			bool changed = false;
-			view.PropertyChanged += (sender, args) => {
+			view.PropertyChanged += (sender, args) =>
+			{
 				if (args.PropertyName == View.XProperty.PropertyName ||
-				    args.PropertyName == View.YProperty.PropertyName ||
-				    args.PropertyName == View.WidthProperty.PropertyName ||
-				    args.PropertyName == View.HeightProperty.PropertyName)
+					args.PropertyName == View.YProperty.PropertyName ||
+					args.PropertyName == View.WidthProperty.PropertyName ||
+					args.PropertyName == View.HeightProperty.PropertyName)
 					changed = true;
 			};
 
 			view.SizeChanged += (sender, args) => changed = true;
 
-			view.MockBounds (new Rectangle (5, 10, 15, 20));
+			view.MockBounds(new Rectangle(5, 10, 15, 20));
 
-			Assert.AreEqual (new Rectangle (5, 10, 15, 20), view.Bounds);
-			Assert.False (changed);
+			Assert.AreEqual(new Rectangle(5, 10, 15, 20), view.Bounds);
+			Assert.False(changed);
 
-			view.UnmockBounds ();
+			view.UnmockBounds();
 
-			Assert.AreEqual (new Rectangle (10, 20, 30, 40), view.Bounds);
-			Assert.False (changed);
+			Assert.AreEqual(new Rectangle(10, 20, 30, 40), view.Bounds);
+			Assert.False(changed);
 		}
 
 		[Test]
-		public void AddGestureRecognizer ()
+		public void AddGestureRecognizer()
 		{
-			var view = new View ();
-			var gestureRecognizer = new TapGestureRecognizer ();
+			var view = new View();
+			var gestureRecognizer = new TapGestureRecognizer();
 
-			view.GestureRecognizers.Add (gestureRecognizer);
+			view.GestureRecognizers.Add(gestureRecognizer);
 
-			Assert.True (view.GestureRecognizers.Contains (gestureRecognizer));
+			Assert.True(view.GestureRecognizers.Contains(gestureRecognizer));
 		}
 
 		[Test]
-		public void AddGestureRecognizerSetsParent ()
+		public void AddGestureRecognizerSetsParent()
 		{
-			var view = new View ();
-			var gestureRecognizer = new TapGestureRecognizer ();
+			var view = new View();
+			var gestureRecognizer = new TapGestureRecognizer();
 
-			view.GestureRecognizers.Add (gestureRecognizer);
+			view.GestureRecognizers.Add(gestureRecognizer);
 
-			Assert.AreEqual (view, gestureRecognizer.Parent);
+			Assert.AreEqual(view, gestureRecognizer.Parent);
 		}
 
 		[Test]
-		public void RemoveGestureRecognizerUnsetsParent ()
+		public void RemoveGestureRecognizerUnsetsParent()
 		{
-			var view = new View ();
-			var gestureRecognizer = new TapGestureRecognizer ();
+			var view = new View();
+			var gestureRecognizer = new TapGestureRecognizer();
 
-			view.GestureRecognizers.Add (gestureRecognizer);
-			view.GestureRecognizers.Remove (gestureRecognizer);
+			view.GestureRecognizers.Add(gestureRecognizer);
+			view.GestureRecognizers.Remove(gestureRecognizer);
 
-			Assert.Null (gestureRecognizer.Parent);
+			Assert.Null(gestureRecognizer.Parent);
 		}
 
 		[Test]
-		public void WidthRequestEffectsGetSizeRequest ()
+		public void WidthRequestEffectsGetSizeRequest()
 		{
-			var view = new View ();
+			var view = new View();
 			view.IsPlatformEnabled = true;
 			view.WidthRequest = 20;
-			var request = view.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity);
+			var request = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
 
-			Assert.AreEqual (new Size (20, 50), request.Request);
+			Assert.AreEqual(new Size(20, 50), request.Request);
 		}
 
 		[Test]
-		public void HeightRequestEffectsGetSizeRequest ()
+		public void HeightRequestEffectsGetSizeRequest()
 		{
-			Device.PlatformServices = new MockPlatformServices (getNativeSizeFunc: (ve, widthConstraint, heightConstraint) => {
+			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (ve, widthConstraint, heightConstraint) =>
+			{
 				if (heightConstraint < 30)
-					return new SizeRequest (new Size (40, 50));
+					return new SizeRequest(new Size(40, 50));
 				return new SizeRequest(new Size(20, 100));
 			});
 
-			var view = new View ();
+			var view = new View();
 			view.IsPlatformEnabled = true;
 			view.HeightRequest = 20;
-			var request = view.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity);
+			var request = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
 
-			Assert.AreEqual (new Size (40, 20), request.Request);
+			Assert.AreEqual(new Size(40, 20), request.Request);
 		}
 
 		[Test]

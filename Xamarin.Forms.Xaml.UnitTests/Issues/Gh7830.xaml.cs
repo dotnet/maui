@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void CanResolvexStaticWithShortName([Values(false, true)]bool useCompiledXaml)
+			public void CanResolvexStaticWithShortName([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7830(useCompiledXaml);
 				var cell = layout.listView.ItemTemplate.CreateContent() as ViewCell;

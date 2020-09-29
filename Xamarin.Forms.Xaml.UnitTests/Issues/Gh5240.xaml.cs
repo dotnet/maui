@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void FailOnUnresolvedDataType([Values(true)]bool useCompiledXaml)
+			public void FailOnUnresolvedDataType([Values(true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5240)));

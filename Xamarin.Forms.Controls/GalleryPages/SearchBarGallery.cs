@@ -10,13 +10,15 @@ namespace Xamarin.Forms.Controls
 	{
 		Label _searchQueryLabel;
 
-		public SearchBarGallery ()
+		public SearchBarGallery()
 		{
-			_searchQueryLabel = new Label {
+			_searchQueryLabel = new Label
+			{
 				Text = "Search Query"
 			};
 
-			var textChangedLabel = new Label {
+			var textChangedLabel = new Label
+			{
 				Text = ""
 			};
 
@@ -24,38 +26,45 @@ namespace Xamarin.Forms.Controls
 
 			var noPlaceholder = new SearchBar();
 			noPlaceholder.SearchButtonPressed += OnSearchBarPressed;
-			noPlaceholder.TextChanged += (sender, e) => {
+			noPlaceholder.TextChanged += (sender, e) =>
+			{
 				numCharsTyped++;
-				textChangedLabel.Text = numCharsTyped.ToString ();
+				textChangedLabel.Text = numCharsTyped.ToString();
 			};
 
 			var normal = new SearchBar { Placeholder = "Normal" };
 			normal.SearchButtonPressed += OnSearchBarPressed;
-			normal.TextChanged += (sender, e) => {
+			normal.TextChanged += (sender, e) =>
+			{
 				numCharsTyped++;
-				textChangedLabel.Text = numCharsTyped.ToString ();	
+				textChangedLabel.Text = numCharsTyped.ToString();
 			};
 
 			var activation = new SearchBar { Placeholder = "Activation" };
 			activation.SearchButtonPressed += OnSearchBarPressed;
-			activation.TextChanged += (sender, e) => {
+			activation.TextChanged += (sender, e) =>
+			{
 				numCharsTyped++;
-				textChangedLabel.Text = numCharsTyped.ToString ();
+				textChangedLabel.Text = numCharsTyped.ToString();
 			};
 
-			var nextPageButton = new Button {
+			var nextPageButton = new Button
+			{
 				Text = "More SearchBars",
-				Command = new Command (async () => await Navigation.PushAsync (new SearchBarGalleryPageTwo ()))
+				Command = new Command(async () => await Navigation.PushAsync(new SearchBarGalleryPageTwo()))
 			};
 
 			int i = 1;
-			activation.SearchButtonPressed += (sender, e) => {
+			activation.SearchButtonPressed += (sender, e) =>
+			{
 				activation.Text = "";
-				activation.Placeholder = "Activated " + i++.ToString ();
+				activation.Placeholder = "Activated " + i++.ToString();
 			};
 
-			Content = new ScrollView { 
-				Content = new StackLayout {
+			Content = new ScrollView
+			{
+				Content = new StackLayout
+				{
 					Spacing = 0,
 					Children = {
 						noPlaceholder,
@@ -80,11 +89,12 @@ namespace Xamarin.Forms.Controls
 	{
 		Label _searchQueryLabel;
 
-		public SearchBarGalleryPageTwo ()
+		public SearchBarGalleryPageTwo()
 		{
 			Title = "Search Bar Gallery Part 2";
 
-			_searchQueryLabel = new Label {
+			_searchQueryLabel = new Label
+			{
 				Text = "Search Query 2"
 			};
 
@@ -93,21 +103,28 @@ namespace Xamarin.Forms.Controls
 			var transparent = new SearchBar { Placeholder = "Transparent", Opacity = 0.5 };
 			transparent.SearchButtonPressed += OnSearchBarPressed;
 
-			var toggleDisabledButton = new Button {
+			var toggleDisabledButton = new Button
+			{
 				Text = "Toggle enabled",
-				Command = new Command (() => {
-					if (disabled.IsEnabled) {
+				Command = new Command(() =>
+				{
+					if (disabled.IsEnabled)
+					{
 						disabled.IsEnabled = false;
 						disabled.Placeholder = "Disabled";
-					} else {
+					}
+					else
+					{
 						disabled.IsEnabled = true;
 						disabled.Placeholder = "Enabled";
 					}
 				})
 			};
 
-			Content = new ScrollView { 
-				Content = new StackLayout {
+			Content = new ScrollView
+			{
+				Content = new StackLayout
+				{
 					Spacing = 0,
 					Children = {
 						disabled,

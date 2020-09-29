@@ -213,7 +213,7 @@ namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 		}
 
 		#endregion
-		
+
 		public static readonly BindableProperty CanBecomeFirstResponderProperty = BindableProperty.Create(nameof(CanBecomeFirstResponder), typeof(bool), typeof(VisualElement), false);
 
 		public static bool GetCanBecomeFirstResponder(BindableObject element)

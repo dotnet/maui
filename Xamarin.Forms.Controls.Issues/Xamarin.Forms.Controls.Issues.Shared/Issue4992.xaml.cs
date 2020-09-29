@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public List<string> People { get; set; }
 
-		public Issue4992 ()
+		public Issue4992()
 		{
 #if APP
 			Device.SetFlags(new List<string>(Device.Flags ?? new List<string>()) { "CollectionView_Experimental" });

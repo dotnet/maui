@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using Xamarin.Forms.CustomAttributes;
 using System.Threading.Tasks;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 #if UITEST

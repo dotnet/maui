@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using System.Linq;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Linq;
 
 
 #if UITEST
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Controls.Issues
 							var contentPage = GetContentPage(Color.Purple);
 							Navigation.PushAsync(contentPage);
 						}),
-					},				
+					},
 				}
 			};
 

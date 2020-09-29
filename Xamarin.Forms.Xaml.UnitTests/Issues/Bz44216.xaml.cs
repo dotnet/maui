@@ -10,7 +10,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		static readonly BindableProperty MinLenghProperty = BindableProperty.Create("MinLengh", typeof(int), typeof(Bz44216Behavior), 1);
 
-		public int MinLengh {
+		public int MinLengh
+		{
 			get { return (int)base.GetValue(MinLenghProperty); }
 			private set { base.SetValue(MinLenghProperty, value > 0 ? value : 1); }
 		}
@@ -51,7 +52,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				if (useCompiledXaml)
 					Assert.Throws(new BuildExceptionConstraint(7, 26, s => s.Contains("No property,")), () => MockCompiler.Compile(typeof(Bz44216)));
 				else
-					Assert.Throws(new XamlParseExceptionConstraint(7, 26, s=> s.StartsWith("Cannot assign property", StringComparison.Ordinal)), () => new Bz44216(useCompiledXaml));
+					Assert.Throws(new XamlParseExceptionConstraint(7, 26, s => s.StartsWith("Cannot assign property", StringComparison.Ordinal)), () => new Bz44216(useCompiledXaml));
 			}
 		}
 	}

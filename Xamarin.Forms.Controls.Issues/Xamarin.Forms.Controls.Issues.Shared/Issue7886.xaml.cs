@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 		const string TriggerModalAutomationId = "TriggerModal";
 		const string PopModalAutomationId = "PopModal";
 
-		public string ButtonAutomationId { get => TriggerModalAutomationId; } 
+		public string ButtonAutomationId { get => TriggerModalAutomationId; }
 
 		protected override void Init()
 		{

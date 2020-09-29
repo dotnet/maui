@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void GenericBaseClassForMarkups([Values (false, true)]bool useCompiledXaml)
+			public void GenericBaseClassForMarkups([Values(false, true)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh4760)));

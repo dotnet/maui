@@ -4,8 +4,8 @@ using System.Text;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries
 {
-    class GroupingGallery : ContentPage
-    {
+	class GroupingGallery : ContentPage
+	{
 		public GroupingGallery()
 		{
 			var descriptionLabel =
@@ -38,5 +38,5 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				}
 			};
 		}
-    }
+	}
 }

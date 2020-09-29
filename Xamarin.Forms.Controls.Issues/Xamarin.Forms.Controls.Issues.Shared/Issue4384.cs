@@ -12,9 +12,12 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var layout = new StackLayout();
 
-			var instructions = new Label { Text = "Tap the rotate button. The focus should cycle between the various "
-				+ "controls. When each control focuses, it should display the appropriate soft keyboard. If the soft " 
-				+ "keyboard does not display, the text of the control clears, or the wrong keyboard displays, the test has failed." };
+			var instructions = new Label
+			{
+				Text = "Tap the rotate button. The focus should cycle between the various "
+				+ "controls. When each control focuses, it should display the appropriate soft keyboard. If the soft "
+				+ "keyboard does not display, the text of the control clears, or the wrong keyboard displays, the test has failed."
+			};
 
 			var elements = new List<View>
 			{

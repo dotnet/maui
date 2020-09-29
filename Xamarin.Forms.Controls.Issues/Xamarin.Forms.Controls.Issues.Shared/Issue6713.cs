@@ -29,17 +29,17 @@ namespace Xamarin.Forms.Controls.Issues
 				if (result != null)
 					(sender as Button).Text = result;
 			};
-            stackLayout.Children.Add(button);
+			stackLayout.Children.Add(button);
 
-            var button2 = new Button { Text = "Numeric keyboard" };
-            button2.Clicked += async (sender, e) =>
-            {
-	            var result = await DisplayPromptAsync("What’s the meaning of life?", "You know that number.", maxLength:2, keyboard:Keyboard.Numeric);
+			var button2 = new Button { Text = "Numeric keyboard" };
+			button2.Clicked += async (sender, e) =>
+			{
+				var result = await DisplayPromptAsync("What’s the meaning of life?", "You know that number.", maxLength: 2, keyboard: Keyboard.Numeric);
 
-	            if (result != null)
+				if (result != null)
 					(sender as Button).Text = result;
 			};
-            stackLayout.Children.Add(button2);
+			stackLayout.Children.Add(button2);
 
 			var button3 = new Button { Text = "Prefilled" };
 			button3.Clicked += async (sender, e) =>

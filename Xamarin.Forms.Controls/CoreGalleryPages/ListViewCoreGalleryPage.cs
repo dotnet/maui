@@ -285,7 +285,8 @@ namespace Xamarin.Forms.Controls
 			InitializeElement(refreshControlColorContainer.View);
 			refreshControlColorContainer.View.RefreshControlColor = Color.Red;
 			refreshControlColorContainer.View.IsPullToRefreshEnabled = true;
-			refreshControlColorContainer.View.Refreshing += async (object sender, EventArgs e) => {
+			refreshControlColorContainer.View.Refreshing += async (object sender, EventArgs e) =>
+			{
 				await Task.Delay(2000);
 				refreshControlColorContainer.View.IsRefreshing = false;
 			};

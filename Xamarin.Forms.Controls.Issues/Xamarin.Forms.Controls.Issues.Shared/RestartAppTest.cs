@@ -14,9 +14,9 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.None, 11, "Config changes which restart the app should not crash", 
+	[Issue(IssueTracker.None, 11, "Config changes which restart the app should not crash",
 		PlatformAffected.Android)]
-	public class RestartAppTest : TestContentPage 
+	public class RestartAppTest : TestContentPage
 	{
 		public static object App;
 		public static bool Reinit;

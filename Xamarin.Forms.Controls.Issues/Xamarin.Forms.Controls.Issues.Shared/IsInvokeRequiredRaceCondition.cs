@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			for (int n = 0; n < 1000; n++)
 			{
-				result.Add(Task.Run(() => { var t = Device.IsInvokeRequired; } ));
+				result.Add(Task.Run(() => { var t = Device.IsInvokeRequired; }));
 			}
 
 			return result;

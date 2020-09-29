@@ -2,12 +2,12 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using AndroidX.Core.View;
 using Android.Views;
+using AndroidX.Core.View;
+using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using AProgressBar = Android.Widget.ProgressBar;
 using AView = Android.Views.View;
-using Xamarin.Forms.Platform.Android;
 
 
 namespace Xamarin.Forms.Material.Android
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Material.Android
 		VisualElementTracker _visualElementTracker;
 		VisualElementRenderer _visualElementRenderer;
 		MotionEventHelper _motionEventHelper;
-		
+
 		public MaterialProgressBarRenderer(Context context)
 			: base(MaterialContextThemeWrapper.Create(context), null, Resource.Attribute.materialProgressBarHorizontalStyle)
 		{

@@ -13,9 +13,9 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 36846, "ActionBar does not dismiss when content which called it is removed", 
+	[Issue(IssueTracker.Bugzilla, 36846, "ActionBar does not dismiss when content which called it is removed",
 		PlatformAffected.Android)]
-	public class Bugzilla36846 : TestNavigationPage 
+	public class Bugzilla36846 : TestNavigationPage
 	{
 		protected override void Init()
 		{
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var instructions = new Label
 			{
-				Text = "This test only applies to Android. " 
+				Text = "This test only applies to Android. "
 						+ "Long press one of the items in the list. The Action Bar should appear. "
 						+ "Tap the 'Clear List' button. The list should clear and the Action Bar should disappear. "
 						+ "If the action bar remains, this test has failed."

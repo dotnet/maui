@@ -126,7 +126,7 @@ namespace Xamarin.Forms
 
 			Stream stream = null;
 
-			if(CachingEnabled)
+			if (CachingEnabled)
 				stream = await GetStreamFromCacheAsync(uri, cancellationToken).ConfigureAwait(false);
 
 			if (stream == null)
@@ -135,7 +135,7 @@ namespace Xamarin.Forms
 				{
 					stream = await Device.GetStreamAsync(uri, cancellationToken).ConfigureAwait(false);
 				}
-				catch (Exception ex) 
+				catch (Exception ex)
 				{
 					Xamarin.Forms.Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
 					stream = null;

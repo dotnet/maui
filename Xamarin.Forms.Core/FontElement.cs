@@ -38,11 +38,14 @@ namespace Xamarin.Forms
 			SetCancelEvents(bindable, true);
 
 			var font = (Font)newValue;
-			if (font == Font.Default) {
+			if (font == Font.Default)
+			{
 				bindable.ClearValue(FontFamilyProperty);
 				bindable.ClearValue(FontSizeProperty);
 				bindable.ClearValue(FontAttributesProperty);
-			} else {
+			}
+			else
+			{
 				bindable.SetValue(FontFamilyProperty, font.FontFamily);
 				if (font.UseNamedSize)
 					bindable.SetValue(FontSizeProperty, Device.GetNamedSize(font.NamedSize, bindable.GetType(), true));

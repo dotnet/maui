@@ -2,15 +2,15 @@ namespace Xamarin.Forms.Controls
 {
 	public class TextCellTablePage : ContentPage
 	{
-	
-		public TextCellTablePage ()
+
+		public TextCellTablePage()
 		{
 			Title = "TextCell Table Gallery - Legacy";
 
 			if (Device.RuntimePlatform == Device.iOS && Device.Idiom == TargetIdiom.Tablet)
 				Padding = new Thickness(0, 0, 0, 60);
 
-			var tableSection = new TableSection ("Section One") {
+			var tableSection = new TableSection("Section One") {
 				new TextCell { Text = "Text 1" },
 				new TextCell { Text = "Text 2", Detail = "Detail 1" },
 				new TextCell { Text = "Text 3" },
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls
 				new TextCell { Text = "Text 12", Detail = "Detail 6" }
 			};
 
-			var tableSectionTwo = new TableSection ("Section Two") {
+			var tableSectionTwo = new TableSection("Section Two") {
 				new TextCell { Text = "Text 13" },
 				new TextCell { Text = "Text 14", Detail = "Detail 7" },
 				new TextCell { Text = "Text 15" },
@@ -40,12 +40,13 @@ namespace Xamarin.Forms.Controls
 				new TextCell { Text = "Text 24", Detail = "Detail 12" }
 			};
 
-			var root = new TableRoot ("Text Cell table") {
+			var root = new TableRoot("Text Cell table") {
 				tableSection,
 				tableSectionTwo
 			};
 
-			var table = new TableView {
+			var table = new TableView
+			{
 				AutomationId = CellTypeList.CellTestContainerId,
 				Root = root,
 			};

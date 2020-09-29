@@ -5,7 +5,7 @@
 		public CloseSwipeGallery()
 		{
 			Title = "Open/Close SwipeView Gallery";
-   
+
 			var swipeLayout = new StackLayout
 			{
 				Margin = new Thickness(12)

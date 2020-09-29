@@ -23,9 +23,19 @@ namespace Xamarin.Forms.Platform.UWP
 			var device = CanvasDevice.GetSharedDevice();
 			var dpi = Math.Max(_minimumDpi, Windows.Graphics.Display.DisplayInformation.GetForCurrentView().LogicalDpi);
 
+			// There's really no perfect solution to handle font families with fallbacks (comma-separated)
+			// So if the font family has fallbacks, only the first one is taken, because CanvasTextFormat
+			// only supports one font family
+
+			var fontFamily = fontsource.FontFamily.ToFontFamily();
+			var allFamilies = fontFamily.Source.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+			if (allFamilies.Length < 1)
+				return null;
+
 			var textFormat = new CanvasTextFormat
 			{
-				FontFamily = fontsource.FontFamily.ToFontFamily().Source,
+				FontFamily = allFamilies[0],
 				FontSize = (float)fontsource.Size,
 				HorizontalAlignment = CanvasHorizontalAlignment.Center,
 				VerticalAlignment = CanvasVerticalAlignment.Center,
@@ -44,7 +54,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 					// offset by 1 as we added a 1 inset
 					var x = (float)layout.DrawBounds.X * -1;
-
+					
 					ds.DrawTextLayout(layout, x, 1f, iconcolor);
 				}
 
@@ -65,10 +75,10 @@ namespace Xamarin.Forms.Platform.UWP
 					Foreground = fontImageSource.Color.ToBrush()
 				};
 
-				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily().Source;
+				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily();
 
-				if (!string.IsNullOrEmpty(uwpFontFamily))
-					((WFontIconSource)image).FontFamily = new FontFamily(uwpFontFamily);
+				if (!string.IsNullOrEmpty(uwpFontFamily.Source))
+					((WFontIconSource)image).FontFamily = uwpFontFamily;
 			}
 
 			return Task.FromResult(image);
@@ -87,10 +97,10 @@ namespace Xamarin.Forms.Platform.UWP
 					Foreground = fontImageSource.Color.ToBrush()
 				};
 
-				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily().Source;
+				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily();
 
-				if (!string.IsNullOrEmpty(uwpFontFamily))
-					((FontIcon)image).FontFamily = new FontFamily(uwpFontFamily);
+				if (!string.IsNullOrEmpty(uwpFontFamily.Source))
+					((FontIcon)image).FontFamily = uwpFontFamily;
 			}
 
 			return Task.FromResult(image);

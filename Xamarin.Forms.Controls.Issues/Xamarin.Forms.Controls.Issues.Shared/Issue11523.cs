@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Threading.Tasks;
 
 
 #if UITEST
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Content =
 					new StackLayout()
 					{
-						Children = 
+						Children =
 						{
 							new Label()
 							{
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Controls.Issues
 							new Label()
 							{
 								Text = "This Page Should Have a Hamburger Menu Icon when you return to it",
-								
+
 							}
 						}
 					};

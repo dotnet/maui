@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
-
+﻿using System;
+using System.Diagnostics;
 using Xamarin.Forms.CustomAttributes;
-using System;
 using Xamarin.Forms.Internals;
 
 #if UITEST
@@ -15,19 +14,19 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public string PageName { get; private set; }
 
-		public PageNameObject (string pageName)
+		public PageNameObject(string pageName)
 		{
 			PageName = pageName;
 		}
 	}
 
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 973, "ActionBar doesn't immediately update when nested TabbedPage is changed", PlatformAffected.Android)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 973, "ActionBar doesn't immediately update when nested TabbedPage is changed", PlatformAffected.Android)]
 	public class Issue973 : TestFlyoutPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var cells = new [] {
+			var cells = new[] {
 				new PageNameObject ("Close Flyout"),
 				new PageNameObject ("Page 1"),
 				new PageNameObject ("Page 2"),
@@ -39,28 +38,35 @@ namespace Xamarin.Forms.Controls.Issues
 				new PageNameObject ("Page 8"),
 			};
 
-			var template = new DataTemplate (typeof (TextCell));
-			template.SetBinding (TextCell.TextProperty, "PageName");
+			var template = new DataTemplate(typeof(TextCell));
+			template.SetBinding(TextCell.TextProperty, "PageName");
 
-			var listView = new ListView { 
+			var listView = new ListView
+			{
 				ItemTemplate = template,
 				ItemsSource = cells
 			};
 
 			listView.BindingContext = cells;
 
-			listView.ItemTapped += (sender, e) => {
+			listView.ItemTapped += (sender, e) =>
+			{
 
 				var cellName = ((PageNameObject)e.Item).PageName;
 
-				if (cellName == "Close Flyout") {
+				if (cellName == "Close Flyout")
+				{
 					IsPresented = false;
-				} else {
-					var d = new CustomDetailPage (cellName) {
+				}
+				else
+				{
+					var d = new CustomDetailPage(cellName)
+					{
 						Title = "Detail"
 					};
 
-					d.PresentMaster += (s, args) => {
+					d.PresentMaster += (s, args) =>
+					{
 						IsPresented = true;
 					};
 
@@ -68,19 +74,22 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			var master = new ContentPage {
-				Padding = new Thickness (0, 20, 0, 0),
+			var master = new ContentPage
+			{
+				Padding = new Thickness(0, 20, 0, 0),
 				Title = "Flyout",
 				Content = listView
 			};
 
 			Flyout = master;
 
-			var detail = new CustomDetailPage ("Initial Page") {
+			var detail = new CustomDetailPage("Initial Page")
+			{
 				Title = "Detail"
 			};
 
-			detail.PresentMaster += (sender, e) => {
+			detail.PresentMaster += (sender, e) =>
+			{
 				IsPresented = true;
 			};
 
@@ -123,13 +132,15 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public event EventHandler PresentMaster;
 
-		public CustomDetailPage (string pageName)
+		public CustomDetailPage(string pageName)
 		{
 			Title = pageName;
 
-			Children.Add (new ContentPage {
+			Children.Add(new ContentPage
+			{
 				Title = "Tab 1",
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					Children = {
 						new Label {
 							VerticalOptions = LayoutOptions.Center,
@@ -140,9 +151,11 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			});
 
-			Children.Add (new ContentPage {
+			Children.Add(new ContentPage
+			{
 				Title = "Tab 2",
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					Children = {
 						new Label {
 							VerticalOptions = LayoutOptions.Center,

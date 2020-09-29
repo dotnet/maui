@@ -9,20 +9,21 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	public class TabbedPageWithListName {
+	[Preserve(AllMembers = true)]
+	public class TabbedPageWithListName
+	{
 		public string Name { get; set; }
 	}
 
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.None, 0, "TabbedPage with list", PlatformAffected.All)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.None, 0, "TabbedPage with list", PlatformAffected.All)]
 	public class TabbedPageWithList : TestTabbedPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			Title = "Tabbed Page with List";
-			Children.Add (new ContentPage { Title = "Tab Two" });
-			Children.Add (new ListViewTest ());
+			Children.Add(new ContentPage { Title = "Tab Two" });
+			Children.Add(new ListViewTest());
 		}
 
 #if UITEST
@@ -49,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public class ListViewTest : ContentPage
 		{
-			public ListViewTest ()
+			public ListViewTest()
 			{
 				Title = "List Page";
 
@@ -59,10 +60,11 @@ namespace Xamarin.Forms.Controls.Issues
 					new TabbedPageWithListName () { Name = "Seth" }
 				};
 
-				var cellTemplate = new DataTemplate (typeof(TextCell));
-				cellTemplate.SetBinding (TextCell.TextProperty, "Name");
+				var cellTemplate = new DataTemplate(typeof(TextCell));
+				cellTemplate.SetBinding(TextCell.TextProperty, "Name");
 
-				Content = new ListView () {
+				Content = new ListView()
+				{
 					ItemTemplate = cellTemplate,
 					ItemsSource = items
 				};

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.ComponentModel;
-
+using System.Linq;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;

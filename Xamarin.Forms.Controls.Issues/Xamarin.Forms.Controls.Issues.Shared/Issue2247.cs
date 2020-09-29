@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Controls.Issues
 	// for NavigationBehavior.PushAsync. Coverage for NavigationBehavior.PushModalAsync is provided by Bugzilla33561.
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 2247, 
+	[Issue(IssueTracker.Github, 2247,
 		"[iOS] ListView.IsRefreshing not showing activity indicator on iOS", NavigationBehavior.PushAsync)]
 	public class Issue2247 : TestContentPage
 	{
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var instructions = new Label
 			{
-				Text = "The ListView on this page should be displaying the 'refreshing' activity indicator." 
+				Text = "The ListView on this page should be displaying the 'refreshing' activity indicator."
 						+ " If it is not, the test has failed"
 			};
 
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Content = new StackLayout
 			{
-				Children = {  instructions, _listView }
+				Children = { instructions, _listView }
 			};
 		}
 	}

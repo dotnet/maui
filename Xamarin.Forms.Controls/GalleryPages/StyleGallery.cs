@@ -2,11 +2,12 @@
 
 namespace Xamarin.Forms.Controls
 {
-	public class StyleGallery:ContentPage
+	public class StyleGallery : ContentPage
 	{
-		public StyleGallery ()
+		public StyleGallery()
 		{
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					new Label {
 						Text = "This uses TitleStyle",

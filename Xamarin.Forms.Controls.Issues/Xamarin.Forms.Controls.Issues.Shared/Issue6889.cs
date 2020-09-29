@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using System.Threading.Tasks;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -39,14 +39,18 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var layout = new StackLayout();
 
-			var instructions = new Label { Text = "Scroll the CollectionView below up and down quickly several times." 
-				+ " If any rows of labels disappear, this test has failed" };
+			var instructions = new Label
+			{
+				Text = "Scroll the CollectionView below up and down quickly several times."
+				+ " If any rows of labels disappear, this test has failed"
+			};
 
 			layout.Children.Add(instructions);
 
 			var cv = new CollectionView();
 
-			var template = new DataTemplate(() => {
+			var template = new DataTemplate(() =>
+			{
 				var grid = new Grid
 				{
 					ColumnDefinitions = new ColumnDefinitionCollection

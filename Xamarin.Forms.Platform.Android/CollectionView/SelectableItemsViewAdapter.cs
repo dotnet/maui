@@ -6,7 +6,7 @@ using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class SelectableItemsViewAdapter<TItemsView, TItemsSource> : StructuredItemsViewAdapter<TItemsView, TItemsSource> 
+	public class SelectableItemsViewAdapter<TItemsView, TItemsSource> : StructuredItemsViewAdapter<TItemsView, TItemsSource>
 		where TItemsView : SelectableItemsView
 		where TItemsSource : IItemsViewSource
 	{
@@ -151,6 +151,6 @@ namespace Xamarin.Forms.Platform.Android
 					}
 					return;
 			}
-		}		
+		}
 	}
 }

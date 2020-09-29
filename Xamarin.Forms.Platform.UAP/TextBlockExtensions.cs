@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.WPF
 			control.Inlines.Add(inline);
 
 			control.Measure(new NativeSize(double.PositiveInfinity, double.PositiveInfinity));
-			
+
 			var height = control.DesiredSize.Height;
 
 			control.Inlines.Remove(inline);

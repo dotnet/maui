@@ -14,7 +14,7 @@ using NUnit.Framework;
 
 
 namespace Xamarin.Forms.Controls.Issues
-{ 
+{
 #if APP
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 #endif
@@ -74,10 +74,10 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 #endif
 
-		
+
 	}
 
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	internal class Issue7167ViewModel
 	{
 		IEnumerable<string> CreateItems()
@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 	}
 
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	internal class ImprovedObservableCollection<T> : ObservableCollection<T>
 	{
 		bool _isActivated = true;
@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 	}
 
-	
+
 
 }
 

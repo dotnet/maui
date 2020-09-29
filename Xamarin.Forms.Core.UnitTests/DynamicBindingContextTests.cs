@@ -13,9 +13,9 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class DynamicBindingContextTests
 	{
 		[Test]
-		public void BindingTwoWayToDynamicModel ()
+		public void BindingTwoWayToDynamicModel()
 		{
-			var view = new MockBindable ();
+			var view = new MockBindable();
 			var model = new DynamicModel
 			{
 				Properties =
@@ -24,14 +24,14 @@ namespace Xamarin.Forms.Core.UnitTests
 				}
 			};
 
-			view.SetBinding (MockBindable.TextProperty, "Title");
+			view.SetBinding(MockBindable.TextProperty, "Title");
 			view.BindingContext = model;
 
-			Assert.AreEqual ("Foo", view.Text);
+			Assert.AreEqual("Foo", view.Text);
 
 			view.Text = "Bar";
 
-			Assert.AreEqual ("Bar", model.Properties["Title"]);
+			Assert.AreEqual("Bar", model.Properties["Title"]);
 		}
 
 		// This whole class and inner types is just a very simple 
@@ -41,14 +41,14 @@ namespace Xamarin.Forms.Core.UnitTests
 		// pass the tests.
 		class DynamicModel : IReflectableType
 		{
-			public DynamicModel ()
+			public DynamicModel()
 			{
-				Properties = new Dictionary<string, object> ();
+				Properties = new Dictionary<string, object>();
 			}
 
-			public TypeInfo GetTypeInfo ()
+			public TypeInfo GetTypeInfo()
 			{
-				return new DynamicTypeInfo (Properties);
+				return new DynamicTypeInfo(Properties);
 			}
 
 			public IDictionary<string, object> Properties { get; private set; }
@@ -57,18 +57,18 @@ namespace Xamarin.Forms.Core.UnitTests
 			{
 				IDictionary<string, object> properties;
 
-				public DynamicTypeInfo (IDictionary<string, object> properties)
-					: base (typeof(object))
+				public DynamicTypeInfo(IDictionary<string, object> properties)
+					: base(typeof(object))
 				{
 					this.properties = properties;
 				}
 
-				public override PropertyInfo GetDeclaredProperty (string name)
+				public override PropertyInfo GetDeclaredProperty(string name)
 				{
-					if (!properties.ContainsKey (name))
+					if (!properties.ContainsKey(name))
 						return null;
 
-					return new DynamicPropertyInfo (properties, name);
+					return new DynamicPropertyInfo(properties, name);
 				}
 
 				internal class DynamicPropertyInfo : PropertyInfo
@@ -76,7 +76,7 @@ namespace Xamarin.Forms.Core.UnitTests
 					IDictionary<string, object> properties;
 					string name;
 
-					public DynamicPropertyInfo (IDictionary<string, object> properties, string name)
+					public DynamicPropertyInfo(IDictionary<string, object> properties, string name)
 					{
 						this.properties = properties;
 						this.name = name;
@@ -92,19 +92,19 @@ namespace Xamarin.Forms.Core.UnitTests
 						get { return true; }
 					}
 
-					public override MethodInfo GetGetMethod (bool nonPublic)
+					public override MethodInfo GetGetMethod(bool nonPublic)
 					{
-						return new DynamicPropertyGetterInfo (this, properties);
+						return new DynamicPropertyGetterInfo(this, properties);
 					}
 
-					public override MethodInfo GetSetMethod (bool nonPublic)
+					public override MethodInfo GetSetMethod(bool nonPublic)
 					{
-						return new DynamicPropertySetterInfo (this, properties);
+						return new DynamicPropertySetterInfo(this, properties);
 					}
 
 					public override Type PropertyType
 					{
-						get { return properties[name].GetType (); }
+						get { return properties[name].GetType(); }
 					}
 
 					public override string Name
@@ -117,67 +117,67 @@ namespace Xamarin.Forms.Core.UnitTests
 						get { return PropertyAttributes.None; }
 					}
 
-					public override MethodInfo[] GetAccessors (bool nonPublic)
+					public override MethodInfo[] GetAccessors(bool nonPublic)
 					{
-						return new[] { GetGetMethod (nonPublic), GetSetMethod (nonPublic) };
+						return new[] { GetGetMethod(nonPublic), GetSetMethod(nonPublic) };
 					}
 
-					public override ParameterInfo[] GetIndexParameters ()
+					public override ParameterInfo[] GetIndexParameters()
 					{
 						return new ParameterInfo[0];
 					}
 
-					public override object GetValue (object obj, BindingFlags invokeAttr, Binder binder, object[] index, System.Globalization.CultureInfo culture)
+					public override object GetValue(object obj, BindingFlags invokeAttr, Binder binder, object[] index, System.Globalization.CultureInfo culture)
 					{
-						throw new NotImplementedException ();
+						throw new NotImplementedException();
 					}
 
-					public override void SetValue (object obj, object value, BindingFlags invokeAttr, Binder binder, object[] index, System.Globalization.CultureInfo culture)
+					public override void SetValue(object obj, object value, BindingFlags invokeAttr, Binder binder, object[] index, System.Globalization.CultureInfo culture)
 					{
-						throw new NotImplementedException ();
+						throw new NotImplementedException();
 					}
 
 					public override Type DeclaringType
 					{
-						get { throw new NotImplementedException (); }
+						get { throw new NotImplementedException(); }
 					}
 
-					public override object[] GetCustomAttributes (Type attributeType, bool inherit)
+					public override object[] GetCustomAttributes(Type attributeType, bool inherit)
 					{
-						throw new NotImplementedException ();
+						throw new NotImplementedException();
 					}
 
-					public override object[] GetCustomAttributes (bool inherit)
+					public override object[] GetCustomAttributes(bool inherit)
 					{
-						throw new NotImplementedException ();
+						throw new NotImplementedException();
 					}
 
-					public override bool IsDefined (Type attributeType, bool inherit)
+					public override bool IsDefined(Type attributeType, bool inherit)
 					{
-						throw new NotImplementedException ();
+						throw new NotImplementedException();
 					}
 
 					public override Type ReflectedType
 					{
-						get { throw new NotImplementedException (); }
+						get { throw new NotImplementedException(); }
 					}
 				}
 
 				internal class DynamicPropertyGetterInfo : DynamicPropertyMethodInfo
 				{
-					public DynamicPropertyGetterInfo (PropertyInfo property, IDictionary<string, object> properties)
-						: base (property, properties)
+					public DynamicPropertyGetterInfo(PropertyInfo property, IDictionary<string, object> properties)
+						: base(property, properties)
 					{
 					}
 
-					public override object Invoke (object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
+					public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
 					{
 						return Properties[Property.Name];
 					}
 
-					public override ParameterInfo[] GetParameters ()
+					public override ParameterInfo[] GetParameters()
 					{
-						return new[] { new DynamicParameterInfo (Property, Property.PropertyType, "value") };
+						return new[] { new DynamicParameterInfo(Property, Property.PropertyType, "value") };
 					}
 
 					public override Type ReturnType
@@ -188,18 +188,18 @@ namespace Xamarin.Forms.Core.UnitTests
 
 				internal class DynamicPropertySetterInfo : DynamicPropertyMethodInfo
 				{
-					public DynamicPropertySetterInfo (PropertyInfo property, IDictionary<string, object> properties)
-						: base (property, properties)
+					public DynamicPropertySetterInfo(PropertyInfo property, IDictionary<string, object> properties)
+						: base(property, properties)
 					{
 					}
 
-					public override object Invoke (object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
+					public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
 					{
 						Properties[Property.Name] = parameters[0];
 						return null;
 					}
 
-					public override ParameterInfo[] GetParameters ()
+					public override ParameterInfo[] GetParameters()
 					{
 						return new[] {
 							new DynamicParameterInfo (Property, typeof(DynamicTypeInfo), "this"),
@@ -215,7 +215,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 				internal abstract class DynamicPropertyMethodInfo : MethodInfo
 				{
-					public DynamicPropertyMethodInfo (PropertyInfo property, IDictionary<string, object> properties)
+					public DynamicPropertyMethodInfo(PropertyInfo property, IDictionary<string, object> properties)
 					{
 						Property = property;
 						Properties = properties;
@@ -225,7 +225,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 					protected IDictionary<string, object> Properties { get; private set; }
 
-					public override MethodInfo GetBaseDefinition ()
+					public override MethodInfo GetBaseDefinition()
 					{
 						return null;
 					}
@@ -240,19 +240,19 @@ namespace Xamarin.Forms.Core.UnitTests
 						get { return MethodAttributes.Public; }
 					}
 
-					public override MethodImplAttributes GetMethodImplementationFlags ()
+					public override MethodImplAttributes GetMethodImplementationFlags()
 					{
 						return MethodImplAttributes.IL;
 					}
 
-					public override ParameterInfo[] GetParameters ()
+					public override ParameterInfo[] GetParameters()
 					{
 						return new ParameterInfo[0];
 					}
 
 					public override RuntimeMethodHandle MethodHandle
 					{
-						get { throw new NotImplementedException (); }
+						get { throw new NotImplementedException(); }
 					}
 
 					public override Type DeclaringType
@@ -260,17 +260,17 @@ namespace Xamarin.Forms.Core.UnitTests
 						get { return typeof(DynamicModel); }
 					}
 
-					public override object[] GetCustomAttributes (Type attributeType, bool inherit)
+					public override object[] GetCustomAttributes(Type attributeType, bool inherit)
 					{
 						return new object[0];
 					}
 
-					public override object[] GetCustomAttributes (bool inherit)
+					public override object[] GetCustomAttributes(bool inherit)
 					{
 						return new object[0];
 					}
 
-					public override bool IsDefined (Type attributeType, bool inherit)
+					public override bool IsDefined(Type attributeType, bool inherit)
 					{
 						return false;
 					}
@@ -291,7 +291,7 @@ namespace Xamarin.Forms.Core.UnitTests
 					MemberInfo member;
 					Type type;
 
-					public DynamicParameterInfo (MemberInfo member, Type type, string name)
+					public DynamicParameterInfo(MemberInfo member, Type type, string name)
 					{
 						this.member = member;
 						this.type = type;

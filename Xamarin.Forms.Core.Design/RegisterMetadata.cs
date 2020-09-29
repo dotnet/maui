@@ -4,6 +4,6 @@ namespace Xamarin.Forms.Core.Design
 {
 	internal class RegisterMetadata : IProvideAttributeTable
 	{
-		public AttributeTable AttributeTable { get { return new AttributeTableBuilder ().CreateTable (); } }
+		public AttributeTable AttributeTable { get { return new AttributeTableBuilder().CreateTable(); } }
 	}
 }

@@ -10,7 +10,7 @@ using Xamarin.Forms.Xaml.Internals;
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public abstract class MockNativeView
-	{ 
+	{
 		public string Foo { get; set; }
 		public int Bar { get; set; }
 		public string Baz { get; set; }
@@ -138,7 +138,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public bool ConvertTo(object value, Type toType, out object nativeValue)
 		{
 			nativeValue = null;
-			if (typeof(MockUIView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View))) {
+			if (typeof(MockUIView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View)))
+			{
 				nativeValue = ((MockUIView)value).ToView();
 				return true;
 			}
@@ -151,7 +152,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public bool ConvertTo(object value, Type toType, out object nativeValue)
 		{
 			nativeValue = null;
-			if (typeof(MockAndroidView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View))) {
+			if (typeof(MockAndroidView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View)))
+			{
 				nativeValue = ((MockAndroidView)value).ToView();
 				return true;
 			}
@@ -238,7 +240,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			[SetUp]
 			public void SetUp()
-			{ 
+			{
 				Device.PlatformServices = new MockPlatformServices();
 			}
 
@@ -251,10 +253,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			void SetUpPlatform(string platform)
 			{
 				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = platform;
-				if (platform == Device.iOS) {
+				if (platform == Device.iOS)
+				{
 					DependencyService.Register<INativeValueConverterService, MockIosNativeValueConverterService>();
 					DependencyService.Register<INativeBindingService, MockIosNativeBindingService>();
-				} else if (platform == Device.Android) {
+				}
+				else if (platform == Device.Android)
+				{
 					DependencyService.Register<INativeValueConverterService, MockAndroidNativeValueConverterService>();
 					DependencyService.Register<INativeBindingService, MockAndroidNativeBindingService>();
 				}
@@ -267,18 +272,22 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				SetUpPlatform(platform);
 				var layout = new NativeViewsAndBindings(useCompiledXaml);
-				layout.BindingContext = new {
+				layout.BindingContext = new
+				{
 					Baz = "Bound Value",
-					VerticalOption=LayoutOptions.EndAndExpand
+					VerticalOption = LayoutOptions.EndAndExpand
 				};
 				var view = layout.view0;
 				Assert.NotNull(view.Content);
 				MockNativeView nativeView = null;
-				if (platform == Device.iOS) {
+				if (platform == Device.iOS)
+				{
 					Assert.That(view.Content, Is.TypeOf<MockUIViewWrapper>());
 					Assert.That(((MockUIViewWrapper)view.Content).NativeView, Is.TypeOf<MockUIView>());
 					nativeView = ((MockUIViewWrapper)view.Content).NativeView;
-				} else if (platform == Device.Android) {
+				}
+				else if (platform == Device.Android)
+				{
 					Assert.That(view.Content, Is.TypeOf<MockAndroidViewWrapper>());
 					Assert.That(((MockAndroidViewWrapper)view.Content).NativeView, Is.TypeOf<MockAndroidView>());
 					nativeView = ((MockAndroidViewWrapper)view.Content).NativeView;

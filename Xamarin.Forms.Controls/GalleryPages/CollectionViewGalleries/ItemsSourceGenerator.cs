@@ -7,7 +7,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
-    internal enum ItemsSourceType
+	internal enum ItemsSourceType
 	{
 		List,
 		ObservableCollection,
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 		CarouselView carousel => _cv as CarouselView;
 
 		public int Count => _count;
-		public ItemsSourceGenerator(ItemsView cv, int initialItems = 1000, 
+		public ItemsSourceGenerator(ItemsView cv, int initialItems = 1000,
 			ItemsSourceType itemsSourceType = ItemsSourceType.List)
 		{
 			_count = initialItems;
@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				HorizontalOptions = LayoutOptions.Fill
 			};
 
-			var button = new Button { Text = "Update", AutomationId = "btnUpdate"  };
+			var button = new Button { Text = "Update", AutomationId = "btnUpdate" };
 			var label = new Label { Text = "Items:", VerticalTextAlignment = TextAlignment.Center };
 			_entry = new Entry { Keyboard = Keyboard.Numeric, Text = initialItems.ToString(), WidthRequest = 100, AutomationId = "entryUpdate" };
 
@@ -48,7 +48,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			layout.Children.Add(button);
 
 			button.Clicked += GenerateItems;
-			MessagingCenter.Subscribe<ExampleTemplateCarousel>(this, "remove", (obj) => {
+			MessagingCenter.Subscribe<ExampleTemplateCarousel>(this, "remove", (obj) =>
+			{
 				(cv.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>).Remove(obj.BindingContext as CollectionViewGalleryTestItem);
 			});
 

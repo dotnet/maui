@@ -13,8 +13,8 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.CollectionView)]
-#endif	
- 	[Preserve(AllMembers = true)]
+#endif
+	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7395, "Changing ItemTemplate does not work as expected", PlatformAffected.Android)]
 	public class Issue7395 : TestContentPage
 	{

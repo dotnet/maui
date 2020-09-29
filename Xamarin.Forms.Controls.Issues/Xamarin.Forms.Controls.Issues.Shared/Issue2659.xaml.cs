@@ -8,16 +8,19 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if APP
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 2659, "", PlatformAffected.Android | PlatformAffected.iOS)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2659, "", PlatformAffected.Android | PlatformAffected.iOS)]
 	public partial class Issue2659 : ContentPage
 	{
-		public Issue2659 ()
+		public Issue2659()
 		{
-			try {
-			InitializeComponent ();
-			}catch (Exception e){
-				System.Diagnostics.Debug.WriteLine (e.Message);
+			try
+			{
+				InitializeComponent();
+			}
+			catch (Exception e)
+			{
+				System.Diagnostics.Debug.WriteLine(e.Message);
 			}
 		}
 
@@ -29,12 +32,13 @@ namespace Xamarin.Forms.Controls.Issues
 
 		internal void OnUnsetStyleButtonClicked(object sender, EventArgs args)
 		{
-			SetButtonStyle (null);
+			SetButtonStyle(null);
 		}
 
 		internal void OnSetLocalButtonClicked(object sender, EventArgs args)
 		{
-			EnumerateButtons ((Button button) => {
+			EnumerateButtons((Button button) =>
+			{
 				button.TextColor = Color.Red;
 				button.FontAttributes = FontAttributes.Bold;
 			});
@@ -42,15 +46,17 @@ namespace Xamarin.Forms.Controls.Issues
 
 		internal void OnClearLocalButtonClicked(object sender, EventArgs args)
 		{
-			EnumerateButtons ((Button button) => {
-				button.ClearValue (Button.TextColorProperty);
-				button.ClearValue (Button.FontAttributesProperty);
+			EnumerateButtons((Button button) =>
+			{
+				button.ClearValue(Button.TextColorProperty);
+				button.ClearValue(Button.FontAttributesProperty);
 			});
 		}
 
 		void SetButtonStyle(Style style)
 		{
-			EnumerateButtons (button => {
+			EnumerateButtons(button =>
+			{
 				button.Style = style;
 			});
 		}
@@ -58,7 +64,7 @@ namespace Xamarin.Forms.Controls.Issues
 		void EnumerateButtons(Action<Button> action)
 		{
 			foreach (View view in stackLayout.Children)
-				action ((Button)view);
+				action((Button)view);
 		}
 	}
 #endif

@@ -5,49 +5,49 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
 	/// <summary>
-	/// The native widget which provides Xamarin.MasterDetailPage features.
+	/// The native widget which provides Xamarin.FlyoutPage features.
 	/// </summary>
-	public class MasterDetailPage : Box
+	public class FlyoutPage : Box
 	{
 		/// <summary>
-		/// The default master behavior (a.k.a mode).
+		/// The default flyout layout behavior (a.k.a mode).
 		/// </summary>
-		static readonly MasterBehavior s_defaultMasterBehavior = (Device.Idiom == TargetIdiom.Phone || Device.Idiom == TargetIdiom.Watch) ? MasterBehavior.Popover : MasterBehavior.SplitOnLandscape;
+		static readonly FlyoutLayoutBehavior s_defaultFlyoutLayoutBehavior = (Device.Idiom == TargetIdiom.Phone || Device.Idiom == TargetIdiom.Watch) ? FlyoutLayoutBehavior.Popover : FlyoutLayoutBehavior.SplitOnLandscape;
 
 		/// <summary>
-		/// The MasterPage native container.
+		/// The Flyout native container.
 		/// </summary>
-		readonly Canvas _masterCanvas;
+		readonly Canvas _flyoutCanvas;
 
 		/// <summary>
-		/// The DetailPage native container.
+		/// The Detail native container.
 		/// </summary>
 		readonly Canvas _detailCanvas;
 
 		/// <summary>
-		/// The container for <c>_masterCanvas</c> and <c>_detailCanvas</c> used in split mode.
+		/// The container for <c>_flyoutCanvas</c> and <c>_detailCanvas</c> used in split mode.
 		/// </summary>
 		readonly Panes _splitPane;
 
 		/// <summary>
-		/// The container for <c>_masterCanvas</c> used in popover mode.
+		/// The container for <c>_flyoutCanvas</c> used in popover mode.
 		/// </summary>
 		readonly Panel _drawer;
 
 		/// <summary>
-		/// The <see cref="MasterBehavior"/> property value.
+		/// The <see cref="FlyoutLayoutBehavior"/> property value.
 		/// </summary>
-		MasterBehavior _masterBehavior = s_defaultMasterBehavior;
+		FlyoutLayoutBehavior _flyoutLayoutBehavior = s_defaultFlyoutLayoutBehavior;
 
 		/// <summary>
-		/// The actual MasterDetailPage mode - either split or popover. It depends on <c>_masterBehavior</c> and screen orientation.
+		/// The actual FlyoutPage mode - either split or popover. It depends on <c>_flyoutLayoutBehavior</c> and screen orientation.
 		/// </summary>
-		MasterBehavior _internalMasterBehavior = MasterBehavior.Popover;
+		FlyoutLayoutBehavior _internalFlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
 
 		/// <summary>
-		/// The <see cref="Master"/> property value.
+		/// The <see cref="Flyout"/> property value.
 		/// </summary>
-		EvasObject _master;
+		EvasObject _flyout;
 
 		/// <summary>
 		/// The <see cref="Detail"/> property value.
@@ -65,33 +65,33 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		bool _isGestureEnabled = true;
 
 		/// <summary>
-		/// The portion of the screen that the MasterPage takes in Split mode.
+		/// The portion of the screen that the Flyout takes in Split mode.
 		/// </summary>
 		double _splitRatio = 0.35;
 
 		/// <summary>
-		/// The portion of the screen that the MasterPage takes in Popover mode.
+		/// The portion of the screen that the Flyout takes in Popover mode.
 		/// </summary>
 		double _popoverRatio = 0.8;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.MasterDetailPage"/> class.
+		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.FlyoutPage"/> class.
 		/// </summary>
 		/// <param name="parent">Parent evas object.</param>
-		public MasterDetailPage(EvasObject parent) : base(parent)
+		public FlyoutPage(EvasObject parent) : base(parent)
 		{
 			LayoutUpdated += (s, e) =>
 			{
 				UpdateChildCanvasGeometry();
 			};
 
-			// create the controls which will hold the master and detail pages
-			_masterCanvas = new Canvas(this);
-			_masterCanvas.SetAlignment(-1.0, -1.0);  // fill
-			_masterCanvas.SetWeight(1.0, 1.0);  // expand
-			_masterCanvas.LayoutUpdated += (sender, e) =>
+			// create the controls which will hold the flyout and detail pages
+			_flyoutCanvas = new Canvas(this);
+			_flyoutCanvas.SetAlignment(-1.0, -1.0);  // fill
+			_flyoutCanvas.SetWeight(1.0, 1.0);  // expand
+			_flyoutCanvas.LayoutUpdated += (sender, e) =>
 			{
-				UpdatePageGeometry(_master);
+				UpdatePageGeometry(_flyout);
 			};
 
 			_detailCanvas = new Canvas(this);
@@ -131,13 +131,13 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				if (e.PropertyName == nameof(Device.Info.CurrentOrientation))
 				{
-					UpdateMasterBehavior();
+					UpdateFlyoutLayoutBehavior();
 				}
 			};
 		}
 
 		/// <summary>
-		/// Occurs when the MasterPage is shown or hidden.
+		/// Occurs when the Flyout is shown or hidden.
 		/// </summary>
 		public event EventHandler<IsPresentedChangedEventArgs> IsPresentedChanged;
 
@@ -147,47 +147,47 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		public event EventHandler<UpdateIsPresentChangeableEventArgs> UpdateIsPresentChangeable;
 
 		/// <summary>
-		/// Gets or sets the MasterDetailPage behavior.
+		/// Gets or sets the FlyoutPage behavior.
 		/// </summary>
-		/// <value>The behavior of the <c>MasterDetailPage</c> requested by the user.</value>
-		public MasterBehavior MasterBehavior
+		/// <value>The behavior of the <c>FlyoutPage</c> requested by the user.</value>
+		public FlyoutLayoutBehavior FlyoutLayoutBehavior
 		{
 			get
 			{
-				return _masterBehavior;
+				return _flyoutLayoutBehavior;
 			}
 
 			set
 			{
-				_masterBehavior = value;
-				UpdateMasterBehavior();
+				_flyoutLayoutBehavior = value;
+				UpdateFlyoutLayoutBehavior();
 			}
 		}
 
 		/// <summary>
-		/// Gets the MasterDEtailPage was splited
+		/// Gets the FlyoutPage was splited
 		/// </summary>
-		public bool IsSplit => _internalMasterBehavior == MasterBehavior.Split;
+		public bool IsSplit => _internalFlyoutLayoutBehavior == FlyoutLayoutBehavior.Split;
 
 		/// <summary>
-		/// Gets or sets the content of the MasterPage.
+		/// Gets or sets the content of the Flyout.
 		/// </summary>
-		/// <value>The MasterPage.</value>
-		public EvasObject Master
+		/// <value>The Flyout.</value>
+		public EvasObject Flyout
 		{
 			get
 			{
-				return _master;
+				return _flyout;
 			}
 
 			set
 			{
-				if (_master != value)
+				if (_flyout != value)
 				{
-					_master = value;
-					UpdatePageGeometry(_master);
-					_masterCanvas.Children.Clear();
-					_masterCanvas.Children.Add(_master);
+					_flyout = value;
+					UpdatePageGeometry(_flyout);
+					_flyoutCanvas.Children.Clear();
+					_flyoutCanvas.Children.Add(_flyout);
 					if (!IsSplit)
 						UpdateFocusPolicy();
 				}
@@ -220,9 +220,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the MasterPage is shown.
+		/// Gets or sets a value indicating whether the Flyout is shown.
 		/// </summary>
-		/// <value><c>true</c> if the MasterPage is presented.</value>
+		/// <value><c>true</c> if the Flyout is presented.</value>
 		public bool IsPresented
 		{
 			get
@@ -240,9 +240,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 
 		/// <summary>
-		/// Gets or sets a value indicating whether a MasterDetailPage allows showing MasterPage with swipe gesture.
+		/// Gets or sets a value indicating whether a FlyoutPage allows showing FlyoutPage with swipe gesture.
 		/// </summary>
-		/// <value><c>true</c> if the MasterPage can be revealed with a gesture.</value>
+		/// <value><c>true</c> if the FlyoutPage can be revealed with a gesture.</value>
 		public bool IsGestureEnabled
 		{
 			get
@@ -264,7 +264,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 
 		/// <summary>
-		/// Gets or Sets the portion of the screen that the MasterPage takes in split mode.
+		/// Gets or Sets the portion of the screen that the FlyoutPage takes in split mode.
 		/// </summary>
 		/// <value>The portion.</value>
 		public double SplitRatio
@@ -285,7 +285,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 
 		/// <summary>
-		/// Gets or sets the portion of the screen that the MasterPage takes in Popover mode.
+		/// Gets or sets the portion of the screen that the FlyoutPage takes in Popover mode.
 		/// </summary>
 		/// <value>The portion.</value>
 		public double PopoverRatio
@@ -324,15 +324,15 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Updates the geometry of the selected page.
 		/// </summary>
-		/// <param name="page">Master or Detail page to be updated.</param>
+		/// <param name="page">Flyout or Detail page to be updated.</param>
 		void UpdatePageGeometry(EvasObject page)
 		{
 			if (page != null)
 			{
-				if (_master == page)
+				if (_flyout == page)
 				{
-					// update the geometry of the master page
-					page.Geometry = _masterCanvas.Geometry;
+					// update the geometry of the flyout page
+					page.Geometry = _flyoutCanvas.Geometry;
 				}
 				else if (_detail == page)
 				{
@@ -343,32 +343,30 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 
 		/// <summary>
-		/// Updates <see cref="_internalMasterBehavior"/> according to <see cref="MasterDetailBehavior"/> set by the user and current screen orientation.
+		/// Updates <see cref="_internalFlyoutLayoutBehavior"/> according to <see cref="FlyoutLayoutBehavior"/> set by the user and current screen orientation.
 		/// </summary>
-		void UpdateMasterBehavior()
+		void UpdateFlyoutLayoutBehavior()
 		{
-			var behavior = (_masterBehavior == MasterBehavior.Default) ? s_defaultMasterBehavior : _masterBehavior;
+			var behavior = (_flyoutLayoutBehavior == FlyoutLayoutBehavior.Default) ? s_defaultFlyoutLayoutBehavior : _flyoutLayoutBehavior;
 
 			// Screen orientation affects those 2 behaviors
-			if (behavior == MasterBehavior.SplitOnLandscape ||
-				behavior == MasterBehavior.SplitOnPortrait)
+			if (behavior == FlyoutLayoutBehavior.SplitOnLandscape || behavior == FlyoutLayoutBehavior.SplitOnPortrait)
 			{
 				var orientation = Device.Info.CurrentOrientation;
 
-				if ((orientation.IsLandscape() && behavior == MasterBehavior.SplitOnLandscape) ||
-					(orientation.IsPortrait() && behavior == MasterBehavior.SplitOnPortrait))
+				if ((orientation.IsLandscape() && behavior == FlyoutLayoutBehavior.SplitOnLandscape) || (orientation.IsPortrait() && behavior == FlyoutLayoutBehavior.SplitOnPortrait))
 				{
-					behavior = MasterBehavior.Split;
+					behavior = FlyoutLayoutBehavior.Split;
 				}
 				else
 				{
-					behavior = MasterBehavior.Popover;
+					behavior = FlyoutLayoutBehavior.Popover;
 				}
 			}
 
-			if (behavior != _internalMasterBehavior)
+			if (behavior != _internalFlyoutLayoutBehavior)
 			{
-				_internalMasterBehavior = behavior;
+				_internalFlyoutLayoutBehavior = behavior;
 				ConfigureLayout();
 			}
 		}
@@ -390,7 +388,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			// the structure for split mode and for popover mode looks differently
 			if (IsSplit)
 			{
-				_splitPane.SetLeftPart(_masterCanvas, true);
+				_splitPane.SetLeftPart(_flyoutCanvas, true);
 				_splitPane.SetRightPart(_detailCanvas, true);
 				_splitPane.Show();
 				_mainWidget = _splitPane;
@@ -402,7 +400,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 			else
 			{
-				_drawer.SetContent(_masterCanvas, true);
+				_drawer.SetContent(_flyoutCanvas, true);
 				_drawer.Show();
 				_mainWidget = _detailCanvas;
 				PackEnd(_detailCanvas);
@@ -413,7 +411,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				UpdateFocusPolicy();
 			}
 
-			_masterCanvas.Show();
+			_flyoutCanvas.Show();
 			_detailCanvas.Show();
 
 			// even though child was changed, Layout callback was not called, so i manually call layout function.
@@ -424,7 +422,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		void UpdateChildCanvasGeometry()
 		{
 			var bound = Geometry;
-			// main widget should fill the area of the MasterDetailPage
+			// main widget should fill the area of the FlyoutPage
 			if (_mainWidget != null)
 			{
 				_mainWidget.Geometry = bound;
@@ -434,21 +432,21 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			_drawer.Geometry = bound;
 			// When a _drawer.IsOpen was false, Content of _drawer area is not allocated. So, need to manaully set the content area
 			if (!IsSplit)
-				_masterCanvas.Geometry = bound;
+				_flyoutCanvas.Geometry = bound;
 		}
 
 		/// <summary>
 		/// Force update the focus management
 		/// </summary>
-		void UpdateFocusPolicy(bool forceAllowFocusAll=false)
+		void UpdateFocusPolicy(bool forceAllowFocusAll = false)
 		{
-			var master = _master as Widget;
+			var flyout = _flyout as Widget;
 			var detail = _detail as Widget;
 
-			if(forceAllowFocusAll)
+			if (forceAllowFocusAll)
 			{
-				if (master != null)
-					master.AllowTreeFocus = true;
+				if (flyout != null)
+					flyout.AllowTreeFocus = true;
 				if (detail != null)
 					detail.AllowTreeFocus = true;
 				return;
@@ -460,17 +458,17 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				{
 					detail.AllowTreeFocus = false;
 				}
-				if (master != null)
+				if (flyout != null)
 				{
-					master.AllowTreeFocus = true;
-					master.SetFocus(true);
+					flyout.AllowTreeFocus = true;
+					flyout.SetFocus(true);
 				}
 			}
 			else
 			{
-				if (master != null)
+				if (flyout != null)
 				{
-					master.AllowTreeFocus = false;
+					flyout.AllowTreeFocus = false;
 				}
 				if (detail != null)
 				{
@@ -483,7 +481,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 	public class IsPresentedChangedEventArgs : EventArgs
 	{
-		public IsPresentedChangedEventArgs (bool isPresent)
+		public IsPresentedChangedEventArgs(bool isPresent)
 		{
 			IsPresent = isPresent;
 		}

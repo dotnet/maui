@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms
 {
-	public enum SelectionMode 
+	public enum SelectionMode
 	{
 		None,
 		Single,

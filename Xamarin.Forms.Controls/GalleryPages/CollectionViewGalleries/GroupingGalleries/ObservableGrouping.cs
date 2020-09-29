@@ -48,14 +48,16 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 			collectionView.ItemsSource = itemsSource;
 
 			var remover = new Button { Text = "Remove Selected", AutomationId = "RemoveItem", Style = buttonStyle };
-			remover.Clicked += (obj, args) => {
+			remover.Clicked += (obj, args) =>
+			{
 				var selectedMember = collectionView.SelectedItem as Member;
 				var team = FindTeam(itemsSource, selectedMember);
 				team?.Remove(selectedMember);
 			};
 
 			var adder = new Button { Text = "Add After Selected", AutomationId = "AddItem", Style = buttonStyle };
-			adder.Clicked += (obj, args) => {
+			adder.Clicked += (obj, args) =>
+			{
 				var selectedMember = collectionView.SelectedItem as Member;
 				var team = FindTeam(itemsSource, selectedMember);
 
@@ -70,7 +72,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 			AddStuffToGridRow(layout, 0, remover, adder);
 
 			var replacer = new Button { Text = "Replace Selected", AutomationId = "ReplaceItem", Style = buttonStyle };
-			replacer.Clicked += (obj, args) => {
+			replacer.Clicked += (obj, args) =>
+			{
 				var selectedMember = collectionView.SelectedItem as Member;
 				var team = FindTeam(itemsSource, selectedMember);
 
@@ -83,9 +86,14 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				team.Remove(selectedMember);
 			};
 
-			var mover = new Button { Text = $"Move Selected To {itemsSource[0].Name}", AutomationId = "MoveItem",
-				Style = buttonStyle };
-			mover.Clicked += (obj, args) => {
+			var mover = new Button
+			{
+				Text = $"Move Selected To {itemsSource[0].Name}",
+				AutomationId = "MoveItem",
+				Style = buttonStyle
+			};
+			mover.Clicked += (obj, args) =>
+			{
 				var selectedMember = collectionView.SelectedItem as Member;
 				var team = FindTeam(itemsSource, selectedMember);
 
@@ -100,9 +108,14 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 
 			AddStuffToGridRow(layout, 1, replacer, mover);
 
-			var groupRemover = new Button { Text = $"Remove {itemsSource[0].Name}", AutomationId = "RemoveGroup",
-				Style = buttonStyle };
-			groupRemover.Clicked += (obj, args) => {
+			var groupRemover = new Button
+			{
+				Text = $"Remove {itemsSource[0].Name}",
+				AutomationId = "RemoveGroup",
+				Style = buttonStyle
+			};
+			groupRemover.Clicked += (obj, args) =>
+			{
 				itemsSource?.Remove(itemsSource[0]);
 				if (itemsSource.Count > 0)
 				{
@@ -116,16 +129,22 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				mover.Text = $"Move Selected To {itemsSource[0].Name}";
 			};
 
-			var groupAdder = new Button { Text = $"Insert New Group at position 2", AutomationId = "AddGroup",
-				Style = buttonStyle };
-			groupAdder.Clicked += (obj, args) => {
+			var groupAdder = new Button
+			{
+				Text = $"Insert New Group at position 2",
+				AutomationId = "AddGroup",
+				Style = buttonStyle
+			};
+			groupAdder.Clicked += (obj, args) =>
+			{
 				itemsSource?.Insert(1, new ObservableTeam("Excalibur", new List<Member>()));
 			};
 
 			AddStuffToGridRow(layout, 2, groupRemover, groupAdder);
 
 			var groupMover = new Button { Text = "Move 3rd Group to 1st", AutomationId = "MoveGroup", Style = buttonStyle };
-			groupMover.Clicked += (obj, args) => {
+			groupMover.Clicked += (obj, args) =>
+			{
 				var group = itemsSource[2];
 				itemsSource.Remove(group);
 				itemsSource.Insert(0, group);
@@ -134,7 +153,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 			};
 
 			var groupReplacer = new Button { Text = "Replace 2nd Group", AutomationId = "ReplaceGroup", Style = buttonStyle };
-			groupReplacer.Clicked += (obj, args) => {
+			groupReplacer.Clicked += (obj, args) =>
+			{
 				var group = itemsSource[1];
 				itemsSource.Remove(group);
 				itemsSource?.Insert(1, new ObservableTeam("Alpha Flight", new List<Member> { new Member("Guardian"),
@@ -229,7 +249,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 			for (int i = 0; i < teams.Count; i++)
 			{
 				var group = teams[i];
-				
+
 				if (group.Contains(member))
 				{
 					return group;

@@ -13,9 +13,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	#if UITEST
+#if UITEST
 	[Category(UITestCategories.InputTransparent)]
-	#endif
+#endif
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 5552368, "Transparency Cascading", PlatformAffected.All)]
@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Text =
 					$"Wait 5 seconds. Tap the button labeled '{UnderButtonText}'. Then tap the button labeled '{OverButtonText}'."
 					+ $" If the label below's text changes to '{Success}' the test has passed."
-				};
+			};
 
 			grid.Children.Add(instructions);
 
@@ -212,7 +212,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		static IEnumerable<string> TestList => new List<string> { CascadesChange, CascadesStatic, NotCascadingChange, NotCascadingStatic };
 
-		#if UITEST
+#if UITEST
 		[Test, TestCaseSource(nameof(TestList))]
 		public void TransparencyCascading(string test)
 		{
@@ -229,6 +229,6 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 
-		#endif
+#endif
 	}
 }

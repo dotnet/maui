@@ -18,13 +18,13 @@ namespace Xamarin.Forms.Platform.WPF
 	{
 		public override System.Windows.DataTemplate SelectTemplate(object item, DependencyObject container)
 		{
-			if(item is Cell)
+			if (item is Cell)
 				return System.Windows.Application.Current.MainWindow.FindResource("CellTemplate") as System.Windows.DataTemplate;
 			else
 				return System.Windows.Application.Current.MainWindow.FindResource("TableSectionHeader") as System.Windows.DataTemplate;
 		}
 	}
-	
+
 	public class TableViewRenderer : ViewRenderer<TableView, WList>
 	{
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.WPF
 						ItemTemplateSelector = new TableViewDataTemplateSelector(),
 						Style = (System.Windows.Style)System.Windows.Application.Current.Resources["TableViewTemplate"],
 					};
-					
+
 					SetNativeControl(listView);
 					Control.SelectionChanged += Control_SelectionChanged;
 				}
@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.WPF
 			base.OnElementChanged(e);
 		}
 
-	
+
 		private void Control_SelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			foreach (object item in e.AddedItems)
@@ -91,12 +91,12 @@ namespace Xamarin.Forms.Platform.WPF
 		public IList<object> GetTableViewRow()
 		{
 			List<object> result = new List<object>();
-			
+
 			foreach (var item in Element.Root)
 			{
 				if (!string.IsNullOrWhiteSpace(item.Title))
 					result.Add(item);
-				
+
 				result.AddRange(item);
 			}
 			return result;
@@ -116,7 +116,7 @@ namespace Xamarin.Forms.Platform.WPF
 					Control.SelectionChanged -= Control_SelectionChanged;
 				}
 
-				if(Element != null)
+				if (Element != null)
 				{
 					Element.ModelChanged -= OnModelChanged;
 				}

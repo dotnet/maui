@@ -359,7 +359,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			stateGroups.Add(visualStateGroup);
 			visualStateGroup.States.Add(normalState);
 			visualStateGroup.States.Add(invalidState);
-			
+
 			stateGroups.Add(secondVisualStateGroup);
 
 			var name = stateGroups[0].Name;
@@ -394,7 +394,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			{
 				vsgs.Add(group);
 			}
-			
+
 			watch.Stop();
 
 			double iterations = states;

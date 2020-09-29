@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using Android.Graphics.Drawables;
+using Android.Util;
 using AndroidX.Core.Content;
 using AndroidX.RecyclerView.Widget;
-using Android.Util;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -74,12 +74,12 @@ namespace Xamarin.Forms.Platform.Android
 			using (var value = new TypedValue())
 			{
 				var context = ItemView.Context;
-				
-				if(!context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorActivatedHighlight, value, true))
+
+				if (!context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorActivatedHighlight, value, true))
 				{
 					return null;
 				}
-			
+
 				var color = Color.FromUint((uint)value.Data);
 				var colorDrawable = new ColorDrawable(color.ToAndroid());
 

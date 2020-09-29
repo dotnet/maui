@@ -12,12 +12,12 @@ namespace Xamarin.Forms.Platform.WPF
 		FrameworkElement GetNativeElement();
 
 		VisualElement Element { get; }
-		
+
 		event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 		SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint);
 
 		void SetElement(VisualElement element);
-		
+
 	}
 }

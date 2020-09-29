@@ -27,6 +27,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			ItemSelected?.Invoke(this, new SelectedItemChangedEventArgs(this[index], index));
 		}
 
+		public virtual void UpdateViewState(EvasObject view, ViewHolderState state)
+		{
+		}
+
 		public void RequestItemSelected(object item)
 		{
 			if (CollectionView != null)

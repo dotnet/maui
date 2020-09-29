@@ -13,13 +13,13 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Issue(IssueTracker.Github, 8902, "CarouselView Layout on orientation change", PlatformAffected.iOS)]
 	public partial class Issue8902 : TestContentPage
-    {
-        public Issue8902()
-        {
+	{
+		public Issue8902()
+		{
 #if APP
-            InitializeComponent();
+			InitializeComponent();
 #endif
-        }
+		}
 
 		protected override void Init()
 		{

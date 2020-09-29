@@ -3,7 +3,7 @@ using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Packagers
 {
-	public class VisualElementPackager<TElementRenderer> : IDisposable 
+	public class VisualElementPackager<TElementRenderer> : IDisposable
 		where TElementRenderer : class, IVisualElementRenderer
 	{
 		private bool _isDisposed;

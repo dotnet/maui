@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Internals;
+﻿using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
-using System.Collections.Generic;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls
 
 		protected override void Init()
 		{
-	
+
 		}
 	}
 }

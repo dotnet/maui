@@ -13,39 +13,44 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 36788, "Truncation Issues with Relative Layouts")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 36788, "Truncation Issues with Relative Layouts")]
 	public class Bugzilla36788 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		Label _resultLabel;
 		Label _testLabel;
 		View _container;
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			// Initialize ui here instead of ctor
-			var stackLayout = new StackLayout {
+			var stackLayout = new StackLayout
+			{
 				Spacing = 8
 			};
 
 			var longString = "Very long text in single line to be truncated at tail. Adding extra text to make sure it gets truncated. And even more extra text because otherwise the test might fail if we're in, say, landscape orientation rather than portrait.";
 
-			var contentView = new ContentView {
+			var contentView = new ContentView
+			{
 				Padding = 16,
 				BackgroundColor = Color.Gray,
-				Content = new Label {
+				Content = new Label
+				{
 					BackgroundColor = Color.Aqua,
 					Text = longString,
 					LineBreakMode = LineBreakMode.TailTruncation
 				}
 			};
 
-			stackLayout.Children.Add (contentView);
+			stackLayout.Children.Add(contentView);
 
-			contentView = new ContentView {
+			contentView = new ContentView
+			{
 				Padding = 16,
 				BackgroundColor = Color.Gray,
-				Content = new RelativeLayout {
+				Content = new RelativeLayout
+				{
 					BackgroundColor = Color.Navy,
 					Children = {
 						{new Label {
@@ -67,13 +72,15 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			stackLayout.Children.Add (contentView);
+			stackLayout.Children.Add(contentView);
 
-			contentView = new ContentView {
+			contentView = new ContentView
+			{
 				Padding = 16,
 				BackgroundColor = Color.Gray,
 				IsClippedToBounds = true,
-				Content = _container = new RelativeLayout {
+				Content = _container = new RelativeLayout
+				{
 					IsClippedToBounds = true,
 					BackgroundColor = Color.Navy,
 					Children = {
@@ -96,22 +103,22 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			stackLayout.Children.Add (contentView);
+			stackLayout.Children.Add(contentView);
 
-			_resultLabel = new Label ();
-			stackLayout.Children.Add (_resultLabel);
+			_resultLabel = new Label();
+			stackLayout.Children.Add(_resultLabel);
 
 			Content = stackLayout;
 		}
 
-		protected override async void OnAppearing ()
+		protected override async void OnAppearing()
 		{
-			base.OnAppearing ();
-			await Task.Delay (200);
+			base.OnAppearing();
+			await Task.Delay(200);
 
 			double fuzzFactor = 15; // labels sometimes overflow slightly, thanks hinting
 
-			if (Math.Abs (_testLabel.Width - _container.Width) < fuzzFactor)
+			if (Math.Abs(_testLabel.Width - _container.Width) < fuzzFactor)
 				_resultLabel.Text = "Passed";
 		}
 

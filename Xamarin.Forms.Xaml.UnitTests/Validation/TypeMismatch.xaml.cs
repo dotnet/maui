@@ -1,8 +1,6 @@
 using System;
-
-using Xamarin.Forms;
-
 using NUnit.Framework;
+using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -11,7 +9,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public partial class TypeMismatch : ContentPage
 	{
 		public TypeMismatch() => InitializeComponent();
-		public TypeMismatch (bool useCompiledXaml)
+		public TypeMismatch(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -23,7 +21,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void ThrowsOnMismatchingType ([Values(true, false)]bool useCompiledXaml)
+			public void ThrowsOnMismatchingType([Values(true, false)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws(new BuildExceptionConstraint(7, 16, m => m.Contains("No property, BindableProperty")), () => MockCompiler.Compile(typeof(TypeMismatch)));

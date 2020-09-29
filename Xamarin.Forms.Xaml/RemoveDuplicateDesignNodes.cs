@@ -24,7 +24,8 @@ namespace Xamarin.Forms.Xaml
 			if (node.Properties == null || node.Properties.Count == 0)
 				return;
 			var props = node.Properties.ToList();
-			for (var i = 0; i < props.Count; i++) {
+			for (var i = 0; i < props.Count; i++)
+			{
 				var key = props[i].Key;
 				if (key.NamespaceURI != XamlParser.XFDesignUri)
 					continue;

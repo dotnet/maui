@@ -39,7 +39,8 @@ namespace Xamarin.Forms.Core.XamlC
 			if (sourceNode != null && !(sourceNode is ValueNode))
 				throw new BuildException(BuildExceptionCode.StyleSheetSourceNotALiteral, node, null);
 
-			if (styleNode != null) {
+			if (styleNode != null)
+			{
 				var style = (styleNode as ValueNode).Value as string;
 				yield return Create(Ldstr, style);
 				yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.StyleSheets", "StyleSheet"),
@@ -47,7 +48,8 @@ namespace Xamarin.Forms.Core.XamlC
 																	   parameterTypes: new[] { ("mscorlib", "System", "String") },
 																	   isStatic: true));
 			}
-			else {
+			else
+			{
 				var source = (sourceNode as ValueNode)?.Value as string;
 				INode rootNode = node;
 				while (!(rootNode is ILRootNode))
@@ -73,7 +75,7 @@ namespace Xamarin.Forms.Core.XamlC
 
 				yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.StyleSheets", "StyleSheet"),
 																	   methodName: "FromResource",
-																	   parameterTypes: new[] { ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"),  ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") },
+																	   parameterTypes: new[] { ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") },
 																	   isStatic: true));
 			}
 

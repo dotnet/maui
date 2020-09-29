@@ -24,11 +24,10 @@ namespace Xamarin.Forms.Controls.Issues
 			var timePicker = new TimePicker();
 			Content = new StackLayout()
 			{
-				Children = { picker, datePicker,timePicker },
+				Children = { picker, datePicker, timePicker },
 				VerticalOptions = LayoutOptions.CenterAndExpand,
 				HorizontalOptions = LayoutOptions.CenterAndExpand
 			};
 		}
 	}
-} 
- 
+}

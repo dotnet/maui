@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4748, "Setting SelectedItem property of GTK ListView does not reflected in UI", PlatformAffected.Default)]
-	public class Issue4748 : TestContentPage 
+	public class Issue4748 : TestContentPage
 	{
 		protected override void Init()
 		{

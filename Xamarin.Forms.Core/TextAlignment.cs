@@ -15,7 +15,8 @@ namespace Xamarin.Forms
 	{
 		public override object ConvertFromInvariantString(string value)
 		{
-			if (value != null) {
+			if (value != null)
+			{
 				if (value.Equals("Start", StringComparison.OrdinalIgnoreCase) || value.Equals("left", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.Start;
 				if (value.Equals("top", StringComparison.OrdinalIgnoreCase))

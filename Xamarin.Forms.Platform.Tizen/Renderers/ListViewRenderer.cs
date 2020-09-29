@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Specialized;
-using Xamarin.Forms.Internals;
 using ElmSharp;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual Native.ListView CreateNativeControl()
 		{
-			if(Device.Idiom == TargetIdiom.Watch)
+			if (Device.Idiom == TargetIdiom.Watch)
 			{
 				return new Native.Watch.WatchListView(Forms.NativeParent, Forms.CircleSurface);
 			}

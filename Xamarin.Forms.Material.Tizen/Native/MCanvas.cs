@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using Xamarin.Forms.Platform.Tizen.Native;
 using ElmSharp;
 using Tizen.NET.MaterialComponents;
+using Xamarin.Forms.Platform.Tizen.Native;
 
 namespace Xamarin.Forms.Material.Tizen.Native
 {

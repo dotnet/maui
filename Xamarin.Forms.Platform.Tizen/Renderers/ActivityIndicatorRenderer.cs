@@ -1,5 +1,5 @@
-using EProgressBar = ElmSharp.ProgressBar;
 using EColor = ElmSharp.Color;
+using EProgressBar = ElmSharp.ProgressBar;
 
 namespace Xamarin.Forms.Platform.Tizen
 {

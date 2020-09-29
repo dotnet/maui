@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 	{
 		readonly bool _withIndex;
 
-		public MultiItemAdder (CollectionView cv, bool withIndex = false) : base(cv, "Add 4 Items")
+		public MultiItemAdder(CollectionView cv, bool withIndex = false) : base(cv, "Add 4 Items")
 		{
 			_withIndex = withIndex;
 		}
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 					newItems.Add(new CollectionViewGalleryTestItem(DateTime.Now.AddDays(n),
 						$"Added", "coffee.png", n));
 				}
-				
+
 				if (_withIndex)
 				{
 					observableCollection.TestAddWithListAndIndex(newItems, index1);

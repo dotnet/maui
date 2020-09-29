@@ -37,25 +37,25 @@ namespace Xamarin.Forms.Controls.Issues
 			BackgroundColor = Color.Green;
 		}
 	}
-		
+
 	[Preserve(AllMembers = true)]
 	public class CustomViewSelector : DataTemplateSelector
-    {
-        private DataTemplate view1 = new DataTemplate(typeof(Test1View));
-        private DataTemplate view2 = new DataTemplate(typeof(Test2View));
-        private DataTemplate view3 = new DataTemplate(typeof(Test3View));
+	{
+		private DataTemplate view1 = new DataTemplate(typeof(Test1View));
+		private DataTemplate view2 = new DataTemplate(typeof(Test2View));
+		private DataTemplate view3 = new DataTemplate(typeof(Test3View));
 
-        protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
-        {
-            Type currentView = item as Type;
+		protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+		{
+			Type currentView = item as Type;
 
-            if (currentView == typeof(Test1View))
-                return view1;
-            else if (currentView == typeof(Test2View))
-                return view2;
-            return view3;
-        }
-    }
+			if (currentView == typeof(Test1View))
+				return view1;
+			else if (currentView == typeof(Test2View))
+				return view2;
+			return view3;
+		}
+	}
 
 #endif
 
@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public int Position { get { return _position; } set { _position = value; OnPropertyChanged(); } }
 
 		protected override void Init()
-		{	
+		{
 			Device.SetFlags(new List<string>(Device.Flags ?? new List<string>()) { "CollectionView_Experimental" });
 
 			AvailableViews = new List<Type>() { typeof(Test1View), typeof(Test2View), typeof(Test3View) };

@@ -10,7 +10,7 @@ using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
 
 namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 {
-    public class FlyoutPageWindows : FlyoutPage
+	public class FlyoutPageWindows : FlyoutPage
 	{
 		public FlyoutPageWindows(ICommand restore)
 		{
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 			// And add them to the navigation pane's content
 			masterContent.Children.Add(navList);
 			master.Content = masterContent;
-			
+
 			var detailContent = new StackLayout { VerticalOptions = LayoutOptions.Fill, HorizontalOptions = LayoutOptions.Fill };
 			detailContent.Children.Add(new Label
 			{
@@ -182,7 +182,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 			var page = new ContentPage();
 
 			var label = new Label { Text = "This is content in a nav page" };
-			var button = new Button() { Text = "Push Another Page"};
+			var button = new Button() { Text = "Push Another Page" };
 
 			button.Clicked += (sender, args) => page.Navigation.PushAsync(CreateNavSubPage());
 

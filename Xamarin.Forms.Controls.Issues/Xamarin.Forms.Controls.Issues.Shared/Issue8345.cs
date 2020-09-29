@@ -18,20 +18,28 @@ namespace Xamarin.Forms.Controls.Issues
 				new _8345Group() { HeaderText = "Group 3" }
 			};
 
-			var cv = new CollectionView { IsGrouped = true, ItemsSource = groups, 
-				GroupHeaderTemplate = new DataTemplate(() => {
+			var cv = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groups,
+				GroupHeaderTemplate = new DataTemplate(() =>
+				{
 					var label = new Label
 					{
 						BackgroundColor = Color.Red
 					};
 					label.SetBinding(Label.TextProperty, new Binding("HeaderText"));
 					return label;
-			})};
+				})
+			};
 
 			cv.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 20 };
 
-			var instructions = new Label { Text = "The CollectionView group headers below should have space between " +
-				"them; if they are right next to each other, this test has failed." };
+			var instructions = new Label
+			{
+				Text = "The CollectionView group headers below should have space between " +
+				"them; if they are right next to each other, this test has failed."
+			};
 
 			var layout = new StackLayout();
 			layout.Children.Add(instructions);
@@ -41,7 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 
 	[Preserve(AllMembers = true)]
-	public class _8345Group : List<_8345Item> 
+	public class _8345Group : List<_8345Item>
 	{
 		public string HeaderText { get; set; }
 	}

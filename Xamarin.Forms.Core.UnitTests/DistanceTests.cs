@@ -9,10 +9,10 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class DistanceTests : BaseTestFixture
 	{
 		[Test]
-		public void Constructor ()
+		public void Constructor()
 		{
-			var distance = new Distance (25);
-			Assert.AreEqual (25, distance.Meters);
+			var distance = new Distance(25);
+			Assert.AreEqual(25, distance.Meters);
 		}
 
 		[Test]
@@ -180,33 +180,33 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void ClampFromMeters ()
+		public void ClampFromMeters()
 		{
-			var distance = Distance.FromMeters (-1);
+			var distance = Distance.FromMeters(-1);
 
-			Assert.AreEqual (0, distance.Meters);
+			Assert.AreEqual(0, distance.Meters);
 		}
 
 		[Test]
-		public void ClampFromMiles ()
+		public void ClampFromMiles()
 		{
-			var distance = Distance.FromMiles (-1);
+			var distance = Distance.FromMiles(-1);
 
-			Assert.AreEqual (0, distance.Meters);
+			Assert.AreEqual(0, distance.Meters);
 		}
 
 		[Test]
-		public void ClampFromKilometers ()
+		public void ClampFromKilometers()
 		{
-			var distance = Distance.FromKilometers (-1);
+			var distance = Distance.FromKilometers(-1);
 
-			Assert.AreEqual (0, distance.Meters);
+			Assert.AreEqual(0, distance.Meters);
 		}
 
 		[Test]
-		public void Equals ()
+		public void Equals()
 		{
-			Assert.True (Distance.FromMiles (2).Equals ((object) Distance.FromMiles (2)));
+			Assert.True(Distance.FromMiles(2).Equals((object)Distance.FromMiles(2)));
 		}
 	}
 }

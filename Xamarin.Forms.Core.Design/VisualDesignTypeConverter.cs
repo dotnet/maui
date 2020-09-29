@@ -1,9 +1,9 @@
 ﻿namespace Xamarin.Forms.Core.Design
 {
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.ComponentModel;
 	using System;
+	using System.Collections.Generic;
+	using System.ComponentModel;
+	using System.Linq;
 
 	public class VisualDesignTypeConverter : TypeConverter
 	{
@@ -29,7 +29,7 @@
 
 		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
 		{
-			if(Values == null)
+			if (Values == null)
 			{
 				var derivedNames = new List<string>();
 				var baseType = typeof(IVisual);

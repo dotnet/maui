@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Core.UITests
 		Direction oppositeDirection;
 		DragLength dragLength;
 
-		public Drag (AppRect dragbounds, float xStart, float yStart, float xEnd, float yEnd, Direction direction)
+		public Drag(AppRect dragbounds, float xStart, float yStart, float xEnd, float yEnd, Direction direction)
 		{
 			dragBounds = dragbounds;
 			this.xStart = xStart;
@@ -36,23 +36,24 @@ namespace Xamarin.Forms.Core.UITests
 			this.xEnd = xEnd;
 			this.yEnd = yEnd;
 			dragDirection = direction;
-			oppositeDirection = GetOppositeDirection (direction);
+			oppositeDirection = GetOppositeDirection(direction);
 		}
 
-		public Drag (AppRect dragBounds, Direction direction, DragLength dragLength)
+		public Drag(AppRect dragBounds, Direction direction, DragLength dragLength)
 		{
 			this.dragBounds = dragBounds;
 			dragDirection = direction;
 			this.dragLength = dragLength;
-			SetDragForBounds (dragDirection, dragLength);
+			SetDragForBounds(dragDirection, dragLength);
 		}
 
-		void SetDragForBounds (Direction direction, DragLength dragLength)
+		void SetDragForBounds(Direction direction, DragLength dragLength)
 		{
 			// percentage of bounds to scroll centered in element
 			float scrollPercentage;
 
-			switch (dragLength) {
+			switch (dragLength)
+			{
 				case DragLength.Long:
 					scrollPercentage = 0.8f;
 					break;
@@ -64,28 +65,35 @@ namespace Xamarin.Forms.Core.UITests
 					break;
 			}
 
-			if (direction == Direction.LeftToRight) {
+			if (direction == Direction.LeftToRight)
+			{
 				yStart = dragBounds.CenterY;
 				yEnd = dragBounds.CenterY;
 				float xDisplacement = (dragBounds.CenterX + (dragBounds.Width / 2)) - dragBounds.X;
 				float insetForScroll = (xDisplacement - (xDisplacement * scrollPercentage)) / 2;
 				xStart = dragBounds.X + insetForScroll;
 				xEnd = (dragBounds.CenterX + (dragBounds.Width / 2)) - insetForScroll;
-			} else if (direction == Direction.RightToLeft) {
+			}
+			else if (direction == Direction.RightToLeft)
+			{
 				yStart = dragBounds.CenterY;
 				yEnd = dragBounds.CenterY;
 				float xDisplacement = (dragBounds.CenterX + (dragBounds.Width / 2)) - dragBounds.X;
 				float insetForScroll = (xDisplacement - (xDisplacement * scrollPercentage)) / 2;
 				xStart = (dragBounds.CenterX + (dragBounds.Width / 2)) - insetForScroll;
 				xEnd = dragBounds.X + insetForScroll;
-			} else if (direction == Direction.TopToBottom) {
+			}
+			else if (direction == Direction.TopToBottom)
+			{
 				xStart = dragBounds.CenterX;
 				xEnd = dragBounds.CenterX;
 				float yDisplacement = (dragBounds.CenterY + (dragBounds.Height / 2)) - dragBounds.Y;
 				float insetForScroll = (yDisplacement - (yDisplacement * scrollPercentage)) / 2;
 				yStart = dragBounds.Y + insetForScroll;
 				yEnd = (dragBounds.CenterY + (dragBounds.Height / 2)) - insetForScroll;
-			} else if (direction == Direction.BottomToTop) {
+			}
+			else if (direction == Direction.BottomToTop)
+			{
 				xStart = dragBounds.CenterX;
 				xEnd = dragBounds.CenterX;
 				float yDisplacement = (dragBounds.CenterY + (dragBounds.Height / 2)) - dragBounds.Y;
@@ -96,9 +104,10 @@ namespace Xamarin.Forms.Core.UITests
 			}
 		}
 
-		Direction GetOppositeDirection (Direction direction)
+		Direction GetOppositeDirection(Direction direction)
 		{
-			switch (direction) {
+			switch (direction)
+			{
 				case Direction.TopToBottom:
 					return Direction.BottomToTop;
 				case Direction.BottomToTop:
@@ -146,14 +155,14 @@ namespace Xamarin.Forms.Core.UITests
 					return;
 
 				dragDirection = value;
-				oppositeDirection = GetOppositeDirection (dragDirection);
-				OnDragDirectionChanged ();
+				oppositeDirection = GetOppositeDirection(dragDirection);
+				OnDragDirectionChanged();
 			}
 		}
 
-		void OnDragDirectionChanged ()
+		void OnDragDirectionChanged()
 		{
-			SetDragForBounds (dragDirection, dragLength);
+			SetDragForBounds(dragDirection, dragLength);
 		}
 
 		public Direction OppositeDirection
@@ -163,7 +172,7 @@ namespace Xamarin.Forms.Core.UITests
 			{
 				if (oppositeDirection == value)
 					return;
-				
+
 				oppositeDirection = value;
 			}
 		}

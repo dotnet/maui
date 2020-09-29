@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			base.OnElementChanged(e);
 		}
-		
+
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Platform.WPF
 			var img = await bgImage.ToWindowsImageSourceAsync();
 			Control.Background = new ImageBrush { ImageSource = img };
 		}
-		
+
 		void UpdateToolbar()
 		{
 			Control.PrimaryTopBarCommands.Clear();
@@ -136,7 +136,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			UpdateToolbar();
 		}
-		
+
 		bool _isDisposed;
 
 		protected override void Dispose(bool disposing)

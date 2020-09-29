@@ -22,12 +22,14 @@ namespace Xamarin.Forms
 
 			FontAttributes attributes = FontAttributes.None;
 			value = value.Trim();
-			if (value.Contains(",")) { //Xaml
+			if (value.Contains(","))
+			{ //Xaml
 				foreach (var part in value.Split(','))
 					attributes |= ParseSingleAttribute(part, value);
 
 			}
-			else { //CSS or single value
+			else
+			{ //CSS or single value
 				foreach (var part in value.Split(' '))
 					attributes |= ParseSingleAttribute(part, value);
 			}

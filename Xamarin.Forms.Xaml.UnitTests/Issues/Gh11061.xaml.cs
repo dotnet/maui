@@ -30,9 +30,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh11061)));
 				else
-					Assert.Throws<XamlParseException>(()=> new Gh11061(useCompiledXaml) { BindingContext = new { Date = DateTime.Today} });
+					Assert.Throws<XamlParseException>(() => new Gh11061(useCompiledXaml) { BindingContext = new { Date = DateTime.Today } });
 			}
 		}
 	}
 }
- 

@@ -33,7 +33,8 @@ namespace Xamarin.Forms.Controls.GalleryPages
 				AddItemCommand = new Command(() => ItemsSource.Add(i++));
 				RemoveItemCommand = new Command(() =>
 				{
-					if (ItemsSource.Count > 0) ItemsSource.RemoveAt(0);
+					if (ItemsSource.Count > 0)
+						ItemsSource.RemoveAt(0);
 				});
 				ReplaceItemCommand = new Command(() =>
 				{

@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms.Internals;
-using Xamarin.Forms.CustomAttributes;
+﻿using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-		
+
 		}
 	}
 }

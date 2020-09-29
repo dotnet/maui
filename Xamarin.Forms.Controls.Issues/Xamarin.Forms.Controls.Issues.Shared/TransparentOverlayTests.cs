@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Linq;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
@@ -28,9 +28,9 @@ namespace Xamarin.Forms.Controls.Issues
 		double _transparentOpacity = 0;
 		double _nonTransparentOpacity = 0.2;
 
-        const string Running = "Running...";
+		const string Running = "Running...";
 		const string Success = "Success";
-        const string Failure = "Failure";
+		const string Failure = "Failure";
 		const string DefaultButtonText = "Button";
 		const string Overlay = "overlay";
 		const string AddOverlay = "Add Overlay";
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var layout = new StackLayout();
 
-			layout.Children.Add(new Label {Text = "Select a test below"});
+			layout.Children.Add(new Label { Text = "Select a test below" });
 
 			foreach (var test in GenerateTests)
 			{
@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Controls.Issues
 			internal bool Opacity { get; set; }
 			internal bool InputTransparent { get; set; }
 			internal bool BackgroundColor { get; set; }
-			
+
 			public override string ToString()
 			{
 				return $"O{(Opacity ? "1" : "0")}, B{(BackgroundColor ? "1" : "0")}, I{(InputTransparent ? "1" : "0")}";
@@ -98,19 +98,19 @@ namespace Xamarin.Forms.Controls.Issues
 
 		ContentPage CreateTestPage(TestPoint test)
 		{
-			Color backgroundColor = test.BackgroundColor? _transparentColor : _nontransparentColor;
+			Color backgroundColor = test.BackgroundColor ? _transparentColor : _nontransparentColor;
 			double opacity = test.Opacity ? _transparentOpacity : _nonTransparentOpacity;
 			bool inputTransparent = test.InputTransparent;
 
-            var grid = new Grid
-            {
-                AutomationId = "testgrid",
+			var grid = new Grid
+			{
+				AutomationId = "testgrid",
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill
 			};
 
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 
@@ -119,22 +119,22 @@ namespace Xamarin.Forms.Controls.Issues
 				HorizontalOptions = LayoutOptions.Fill,
 				HorizontalTextAlignment = TextAlignment.Center,
 				Text = $"Tap the 'Add Overlay' button, then tap the button labeled 'Button'."
-				       + (test.ShouldBeTransparent
-					       ? $" If the label below's text changes to {Success} the test has passed."
-					       : " If the label below's text remains unchanged, the test has passed.")
+					   + (test.ShouldBeTransparent
+						   ? $" If the label below's text changes to {Success} the test has passed."
+						   : " If the label below's text remains unchanged, the test has passed.")
 			};
 
 			grid.Children.Add(instructions);
 
-            var results = new Label 
-            { 
-                HorizontalOptions = LayoutOptions.Fill,
-                HorizontalTextAlignment = TextAlignment.Center, 
-                Text = Running 
-            };
+			var results = new Label
+			{
+				HorizontalOptions = LayoutOptions.Fill,
+				HorizontalTextAlignment = TextAlignment.Center,
+				Text = Running
+			};
 
-            grid.Children.Add(results);
-            Grid.SetRow(results, 1);
+			grid.Children.Add(results);
+			Grid.SetRow(results, 1);
 
 			var button = new Button
 			{
@@ -150,7 +150,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var layout = new StackLayout
 			{
-                AutomationId = Overlay,
+				AutomationId = Overlay,
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill,
 				BackgroundColor = backgroundColor,
@@ -174,7 +174,7 @@ namespace Xamarin.Forms.Controls.Issues
 			grid.Children.Add(addOverlayButton);
 			Grid.SetRow(addOverlayButton, 2);
 
-			return new ContentPage { Content = grid, Title = test.ToString()};
+			return new ContentPage { Content = grid, Title = test.ToString() };
 		}
 
 #if UITEST

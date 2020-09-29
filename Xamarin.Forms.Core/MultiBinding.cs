@@ -53,7 +53,8 @@ namespace Xamarin.Forms
 			foreach (var b in Bindings)
 				bindingsclone.Add(b.Clone());
 
-			return new MultiBinding() {
+			return new MultiBinding()
+			{
 				Converter = Converter,
 				ConverterParameter = ConverterParameter,
 				Bindings = bindingsclone,
@@ -70,7 +71,7 @@ namespace Xamarin.Forms
 				return;
 
 			base.Apply(fromTarget);
-			
+
 			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneTime)
 				return;
 
@@ -79,11 +80,12 @@ namespace Xamarin.Forms
 
 			if (!fromTarget && this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
 				return;
-			
+
 			if (!fromTarget)
 			{
 				var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
-				if (value != Binding.DoNothing) {
+				if (value != Binding.DoNothing)
+				{
 					_applying = true;
 					if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 					{
@@ -96,7 +98,8 @@ namespace Xamarin.Forms
 			}
 			else
 			{
-				try {
+				try
+				{
 					_applying = true;
 
 					//https://docs.microsoft.com/en-us/dotnet/api/system.windows.data.imultivalueconverter.convertback?view=netframework-4.8#remarks
@@ -109,7 +112,8 @@ namespace Xamarin.Forms
 						_proxyObject.SetValueCore(_bpProxies[i], values[i], SetValueFlags.None);
 					}
 				}
-				finally {
+				finally
+				{
 					_applying = false;
 				}
 
@@ -126,16 +130,19 @@ namespace Xamarin.Forms
 
 			base.Apply(context, targetObject, targetProperty, fromBindingContextChanged);
 
-			if (!ReferenceEquals(_targetObject, targetObject)) {
+			if (!ReferenceEquals(_targetObject, targetObject))
+			{
 				_targetObject = targetObject;
 				_proxyObject = new ProxyElement() { Parent = targetObject as Element };
 				_targetProperty = targetProperty;
 
-				if (_bpProxies == null) {
+				if (_bpProxies == null)
+				{
 					_bpProxies = new BindableProperty[Bindings.Count];
 					_applying = true;
 					var bindingMode = Mode == BindingMode.Default ? targetProperty.DefaultBindingMode : Mode;
-					for (var i = 0; i < Bindings.Count; i++) {
+					for (var i = 0; i < Bindings.Count; i++)
+					{
 						var binding = Bindings[i];
 						binding.RelativeSourceTargetOverride = targetObject as Element;
 						var bp = _bpProxies[i] = BindableProperty.Create($"mb-proxy{i}", typeof(object), typeof(MultiBinding), null, bindingMode, propertyChanged: OnBindingChanged);
@@ -150,7 +157,8 @@ namespace Xamarin.Forms
 				return;
 
 			var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
-			if (value != Binding.DoNothing) {
+			if (value != Binding.DoNothing)
+			{
 				_applying = true;
 				if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 				{
@@ -191,7 +199,8 @@ namespace Xamarin.Forms
 
 		internal override object GetTargetValue(object value, Type sourcePropertyType)
 		{
-			if (Converter != null) {
+			if (Converter != null)
+			{
 				var values = GetValueArray();
 				var types = new Type[_bpProxies.Length];
 				for (var i = 0; i < _bpProxies.Length; i++)
@@ -210,7 +219,8 @@ namespace Xamarin.Forms
 
 		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
-			if (!fromBindingContextChanged) {
+			if (!fromBindingContextChanged)
+			{
 				if (_bpProxies != null && _proxyObject != null)
 					foreach (var proxybp in _bpProxies)
 						_proxyObject.RemoveBinding(proxybp);

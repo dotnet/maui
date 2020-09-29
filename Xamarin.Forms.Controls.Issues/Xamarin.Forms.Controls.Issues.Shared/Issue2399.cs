@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Xamarin.Forms.Controls.Effects;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Linq;
-using Xamarin.Forms.Controls.Effects;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;

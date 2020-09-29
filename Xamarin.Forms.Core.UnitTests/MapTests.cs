@@ -1,8 +1,8 @@
-using NUnit.Framework;
 using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Linq;
+using NUnit.Framework;
 using Xamarin.Forms.Maps;
 
 namespace Xamarin.Forms.Core.UnitTests

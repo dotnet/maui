@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using System;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 #if UITEST
 using Xamarin.UITest;
@@ -43,9 +43,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public ObservableCollection<string> Data { get; } = new ObservableCollection<string>();
 
-        public ICommand DeleteCommand { get; }
+		public ICommand DeleteCommand { get; }
 
-        protected override void Init()
+		protected override void Init()
 		{
 
 		}

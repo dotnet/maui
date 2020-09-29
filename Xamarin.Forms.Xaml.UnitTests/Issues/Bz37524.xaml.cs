@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class Bz37524 : ContentPage
 	{
-		public Bz37524 ()
+		public Bz37524()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Bz37524 (bool useCompiledXaml)
+		public Bz37524(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -23,10 +22,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			[TestCase(true)]
 			[TestCase(false)]
-			public void MultiTriggerConditionNotApplied (bool useCompiledXaml)
+			public void MultiTriggerConditionNotApplied(bool useCompiledXaml)
 			{
-				var layout = new Bz37524 (useCompiledXaml);
-				Assert.AreEqual (false, layout.TheButton.IsEnabled);
+				var layout = new Bz37524(useCompiledXaml);
+				Assert.AreEqual(false, layout.TheButton.IsEnabled);
 			}
 		}
 	}

@@ -8,13 +8,14 @@ namespace Xamarin.Forms.Controls
 {
 	public class EditorGallery : ContentPage
 	{
-		public EditorGallery ()
+		public EditorGallery()
 		{
-			var cellTemplate = new DataTemplate (typeof (TextCell));
-			cellTemplate.SetBinding (TextCell.TextProperty, new Binding ("Title"));
+			var cellTemplate = new DataTemplate(typeof(TextCell));
+			cellTemplate.SetBinding(TextCell.TextProperty, new Binding("Title"));
 
-			var list = new ListView {
-				ItemsSource = new ContentPage [] {
+			var list = new ListView
+			{
+				ItemsSource = new ContentPage[] {
 					new EditorGalleryPage ("Default Keyboard", Keyboard.Default),
 					new EditorGalleryPage ("Chat Keyboard", Keyboard.Chat),
 					new EditorGalleryPage ("Text Keyboard", Keyboard.Text),
@@ -27,9 +28,11 @@ namespace Xamarin.Forms.Controls
 				ItemTemplate = cellTemplate
 			};
 
-			list.ItemSelected += (sender, arg) => {
-				if (list.SelectedItem != null) {
-					Navigation.PushAsync ((ContentPage)list.SelectedItem);
+			list.ItemSelected += (sender, arg) =>
+			{
+				if (list.SelectedItem != null)
+				{
+					Navigation.PushAsync((ContentPage)list.SelectedItem);
 					list.SelectedItem = null;
 				}
 			};
@@ -40,33 +43,39 @@ namespace Xamarin.Forms.Controls
 
 	internal class EditableEditorPage : ContentPage
 	{
-		public EditableEditorPage (string title, bool enabled)
+		public EditableEditorPage(string title, bool enabled)
 		{
-			Title = "Editable " + enabled.ToString ();
-			Padding = new Thickness (20);
-			var editor = new Editor {
+			Title = "Editable " + enabled.ToString();
+			Padding = new Thickness(20);
+			var editor = new Editor
+			{
 				Text = Title,
 				IsEnabled = enabled,
 				HeightRequest = 75,
 			};
 
-			var disableButton = new Button {
+			var disableButton = new Button
+			{
 				Text = "Disable Editor",
 			};
 
-			var enableButton = new Button {
+			var enableButton = new Button
+			{
 				Text = "Enable Editor",
 			};
 
-			disableButton.Clicked += (object sender, EventArgs e) => {
+			disableButton.Clicked += (object sender, EventArgs e) =>
+			{
 				editor.IsEnabled = false;
 			};
 
-			enableButton.Clicked += (object sender, EventArgs e) => {
+			enableButton.Clicked += (object sender, EventArgs e) =>
+			{
 				editor.IsEnabled = true;
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = { editor, disableButton, enableButton, }
 			};
 		}
@@ -74,51 +83,61 @@ namespace Xamarin.Forms.Controls
 
 	public class EditorGalleryPage : ContentPage
 	{
-		public EditorGalleryPage (string title, Keyboard keyboard)
+		public EditorGalleryPage(string title, Keyboard keyboard)
 		{
 			Title = title;
 			BackgroundColor = Color.Red;
-			Padding = new Thickness (20);
+			Padding = new Thickness(20);
 
-			var label = new Label {
+			var label = new Label
+			{
 				Text = "Nothing entered"
 			};
 
-			var label2 = new Label {
+			var label2 = new Label
+			{
 				Text = ""
 			};
 
-			var editor = new Editor {
+			var editor = new Editor
+			{
 				HeightRequest = 75,
 				Keyboard = keyboard,
 				Text = "PlaceHolder",
 			};
-					
-			editor.Completed += (sender, e) => {
+
+			editor.Completed += (sender, e) =>
+			{
 				label.Text = "Entered : " + editor.Text;
 			};
 
-			editor.TextChanged += (sender, e) => {
+			editor.TextChanged += (sender, e) =>
+			{
 				label2.Text += "x";
 			};
 
-			var unfocus = new Button {
+			var unfocus = new Button
+			{
 				Text = "Unfocus",
 			};
 
-			var focus = new Button {
+			var focus = new Button
+			{
 				Text = "Focus",
 			};
-				
-			unfocus.Clicked += (sender, e) => {
+
+			unfocus.Clicked += (sender, e) =>
+			{
 				editor.Unfocus();
 			};
 
-			focus.Clicked += (sender, e) => {
+			focus.Clicked += (sender, e) =>
+			{
 				editor.Focus();
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					label,
 					label2,

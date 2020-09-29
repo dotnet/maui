@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 				var nameLabel = new Label
 				{
 					Style = Device.Styles.TitleStyle
-				};	
+				};
 				nameLabel.SetBinding(Label.TextProperty, "Name");
 
 				var ageLabel = new Label

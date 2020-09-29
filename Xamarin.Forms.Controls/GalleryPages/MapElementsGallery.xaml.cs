@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Maps;
+using Xamarin.Forms.Xaml;
 using Map = Xamarin.Forms.Maps;
 
 namespace Xamarin.Forms.Controls.GalleryPages

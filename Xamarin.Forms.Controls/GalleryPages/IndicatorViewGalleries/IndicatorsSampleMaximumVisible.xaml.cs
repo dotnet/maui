@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Controls
 		readonly CarouselItemsGalleryViewModel _vm = new CarouselItemsGalleryViewModel(false, false);
 
 		public IndicatorsSampleMaximumVisible()
-		{			
+		{
 			InitializeComponent();
 			BindingContext = _vm;
 			indicators.MaximumVisible = indicatorsForms.MaximumVisible = _maxVisible;

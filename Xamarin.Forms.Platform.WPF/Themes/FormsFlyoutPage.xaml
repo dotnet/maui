@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="clr-namespace:Xamarin.Forms.Platform.WPF.Controls">
 
-    <Style TargetType="controls:FormsMasterDetailPage">
+    <Style TargetType="controls:FormsFlyoutPage">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Stretch"/>
@@ -11,7 +11,7 @@
         <Setter Property="TitleBarTextColor" Value="{DynamicResource DefaultTitleBarTextColor}"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="controls:FormsMasterDetailPage">
+                <ControlTemplate TargetType="controls:FormsFlyoutPage">
                     <Border HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalAlignment}"
                             Background="{TemplateBinding Background}" >

@@ -10,7 +10,8 @@ namespace Xamarin.Forms.Platform.Android
 		public bool ConvertTo(object value, Type toType, out object nativeValue)
 		{
 			nativeValue = null;
-			if (typeof(AView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View))) {
+			if (typeof(AView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View)))
+			{
 				nativeValue = ((AView)value).ToView();
 				return true;
 			}

@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class IsCompiledDefault : ContentPage
 	{
-		public IsCompiledDefault ()
+		public IsCompiledDefault()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public IsCompiledDefault (bool useCompiledXaml)
+		public IsCompiledDefault(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -21,12 +20,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase (false)]
-			[TestCase (true)]
-			public void IsCompiled (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void IsCompiled(bool useCompiledXaml)
 			{
-				var layout = new IsCompiledDefault (useCompiledXaml);
-				Assert.AreEqual (true, typeof (IsCompiledDefault).IsCompiled ());
+				var layout = new IsCompiledDefault(useCompiledXaml);
+				Assert.AreEqual(true, typeof(IsCompiledDefault).IsCompiled());
 			}
 		}
 	}

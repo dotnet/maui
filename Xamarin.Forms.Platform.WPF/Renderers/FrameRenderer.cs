@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.WPF
 			else if (e.PropertyName == Button.PaddingProperty.PropertyName)
 				UpdatePadding();
 		}
-		 
+
 		void UpdateContent()
 		{
 			if (_currentView != null)
@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Platform.WPF
 		}
 
 		protected virtual void UpdateShadow()
-		{ 
+		{
 			if (Element.HasShadow)
 			{
 				Control.Effect = new DropShadowEffect()
@@ -109,7 +109,7 @@ namespace Xamarin.Forms.Platform.WPF
 					ShadowDepth = 2
 				};
 			}
-			else if(Control.Effect is DropShadowEffect)
+			else if (Control.Effect is DropShadowEffect)
 			{
 				Control.Effect = null;
 			}

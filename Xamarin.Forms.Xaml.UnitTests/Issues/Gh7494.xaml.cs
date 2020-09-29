@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void TemplateBindingInSpans([Values(false, true)]bool useCompiledXaml)
+			public void TemplateBindingInSpans([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7494(useCompiledXaml);
 				var view = layout.Content as Gh7494Content;
@@ -38,7 +38,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(Gh7494Content), default(string));
 
-		public string Title {
+		public string Title
+		{
 			get => (string)GetValue(TitleProperty);
 			set => SetValue(TitleProperty, value);
 		}

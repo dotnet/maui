@@ -1,5 +1,5 @@
-using Xamarin.Forms.Internals;
 using ElmSharp;
+using Xamarin.Forms.Internals;
 using EEntry = ElmSharp.Entry;
 
 namespace Xamarin.Forms.Platform.Tizen

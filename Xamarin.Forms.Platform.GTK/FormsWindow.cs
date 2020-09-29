@@ -1,7 +1,7 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Threading;
+using Gtk;
 
 namespace Xamarin.Forms.Platform.GTK
 {
@@ -28,119 +28,126 @@ namespace Xamarin.Forms.Platform.GTK
 		public static int MainThreadID { get; set; }
 		public static Window MainWindow { get; set; }
 
-		public void LoadApplication (Application application)
+		public void LoadApplication(Application application)
 		{
 			if (application == null)
-				throw new ArgumentNullException (nameof (application));
+				throw new ArgumentNullException(nameof(application));
 
-			Application.SetCurrentApplication (application);
+			Application.SetCurrentApplication(application);
 			_application = application;
 
 			application.PropertyChanged += ApplicationOnPropertyChanged;
-			UpdateMainPage ();
+			UpdateMainPage();
 
-			_application.SendStart ();
+			_application.SendStart();
 		}
 
-		public void SetApplicationTitle (string title)
+		public void SetApplicationTitle(string title)
 		{
-			if (string.IsNullOrEmpty (title))
+			if (string.IsNullOrEmpty(title))
 				return;
 
 			Title = title;
 		}
 
-		public void SetApplicationIcon (string icon)
+		public void SetApplicationIcon(string icon)
 		{
-			if (string.IsNullOrEmpty (icon))
+			if (string.IsNullOrEmpty(icon))
 				return;
 
 			var appliccationIconPixbuf = new Gdk.Pixbuf(icon);
 			Icon = appliccationIconPixbuf;
 		}
 
-		public sealed override void Dispose ()
+		public sealed override void Dispose()
 		{
-			base.Dispose ();
+			base.Dispose();
 
-			Dispose (true);
+			Dispose(true);
 		}
 
-		protected override bool OnDeleteEvent (Gdk.Event evnt)
+		protected override bool OnDeleteEvent(Gdk.Event evnt)
 		{
-			base.OnDeleteEvent (evnt);
+			base.OnDeleteEvent(evnt);
 
-			Gtk.Application.Quit ();
+			Gtk.Application.Quit();
 
 			return true;
 		}
 
-		private void ApplicationOnPropertyChanged (object sender, PropertyChangedEventArgs args)
+		private void ApplicationOnPropertyChanged(object sender, PropertyChangedEventArgs args)
 		{
-			if (args.PropertyName == nameof (Application.MainPage)) {
-				UpdateMainPage ();
+			if (args.PropertyName == nameof(Application.MainPage))
+			{
+				UpdateMainPage();
 			}
 		}
 
-		protected override bool OnConfigureEvent (Gdk.EventConfigure evnt)
+		protected override bool OnConfigureEvent(Gdk.EventConfigure evnt)
 		{
 			Gdk.Size newSize = new Gdk.Size(evnt.Width, evnt.Height);
 
-			if (_lastSize != newSize) {
+			if (_lastSize != newSize)
+			{
 				_lastSize = newSize;
 				var pageRenderer = Platform.GetRenderer(_application.MainPage);
-				pageRenderer?.SetElementSize (new Size (newSize.Width, newSize.Height));
+				pageRenderer?.SetElementSize(new Size(newSize.Width, newSize.Height));
 			}
 
-			return base.OnConfigureEvent (evnt);
+			return base.OnConfigureEvent(evnt);
 		}
 
-		private void UpdateMainPage ()
+		private void UpdateMainPage()
 		{
 			if (_application.MainPage == null)
 				return;
 
 			var platformRenderer = Child as PlatformRenderer;
 
-			if (platformRenderer != null) {
-				RemoveChildIfExists ();
-				((IDisposable)platformRenderer.Platform).Dispose ();
+			if (platformRenderer != null)
+			{
+				RemoveChildIfExists();
+				((IDisposable)platformRenderer.Platform).Dispose();
 			}
 
 			var platform = new Platform();
-			platform.PlatformRenderer.SetSizeRequest (WidthRequest, HeightRequest);
-			Add (platform.PlatformRenderer);
-			platform.SetPage (_application.MainPage);
+			platform.PlatformRenderer.SetSizeRequest(WidthRequest, HeightRequest);
+			Add(platform.PlatformRenderer);
+			platform.SetPage(_application.MainPage);
 
-			Child.ShowAll ();
+			Child.ShowAll();
 		}
 
-		private void RemoveChildIfExists ()
+		private void RemoveChildIfExists()
 		{
-			foreach (var child in Children) {
+			foreach (var child in Children)
+			{
 				var widget = child as Widget;
 
-				if (widget != null) {
-					Remove (widget);
+				if (widget != null)
+				{
+					Remove(widget);
 				}
 			}
 		}
 
-		private void OnWindowStateEvent (object o, WindowStateEventArgs args)
+		private void OnWindowStateEvent(object o, WindowStateEventArgs args)
 		{
-			if (args.Event.ChangedMask == Gdk.WindowState.Iconified) {
+			if (args.Event.ChangedMask == Gdk.WindowState.Iconified)
+			{
 				var windowState = args.Event.NewWindowState;
 
 				if (windowState == Gdk.WindowState.Iconified)
 					_application.SendSleep();
 				else
-					_application.SendResume ();
+					_application.SendResume();
 			}
 		}
 
-		private void Dispose (bool disposing)
+		private void Dispose(bool disposing)
 		{
-			if (disposing && _application != null) {
+			if (disposing && _application != null)
+			{
 				WindowStateEvent -= OnWindowStateEvent;
 				_application.PropertyChanged -= ApplicationOnPropertyChanged;
 			}

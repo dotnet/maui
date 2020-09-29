@@ -9,56 +9,64 @@ namespace Xamarin.Forms.Controls
 	public class NavigationPropertiesGallery
 		: ContentPage
 	{
-		public NavigationPropertiesGallery ()
+		public NavigationPropertiesGallery()
 		{
-			var noBack = new ContentPage {
+			var noBack = new ContentPage
+			{
 				Title = "No back button",
 			};
-			NavigationPage.SetHasBackButton (noBack, false);
+			NavigationPage.SetHasBackButton(noBack, false);
 			var toggleBackButton = new Button { Text = "Toggle Back Button" };
-			toggleBackButton.Clicked += (sender, e) => {
-				var hasBack = NavigationPage.GetHasBackButton (noBack);
+			toggleBackButton.Clicked += (sender, e) =>
+			{
+				var hasBack = NavigationPage.GetHasBackButton(noBack);
 				if (hasBack)
-					NavigationPage.SetHasBackButton (noBack, false);
+					NavigationPage.SetHasBackButton(noBack, false);
 				else
-					NavigationPage.SetHasBackButton (noBack, true);
+					NavigationPage.SetHasBackButton(noBack, true);
 			};
 			noBack.Content = toggleBackButton;
 
 
-			var noBar = new ContentPage {
+			var noBar = new ContentPage
+			{
 				Title = "No bar",
-				Content = new Label {
+				Content = new Label
+				{
 					Text = "No bar content",
 					Style = Device.Styles.TitleStyle
 				}
 			};
 
-			var backTitle = new ContentPage {
+			var backTitle = new ContentPage
+			{
 				Title = "Back button title"
 			};
 
-			NavigationPage.SetHasNavigationBar (noBar, false);
+			NavigationPage.SetHasNavigationBar(noBar, false);
 
-			Content = new ListView {
+			Content = new ListView
+			{
 				ItemsSource = new[] {
 					noBack,
 					noBar,
 					backTitle
 				},
 
-				ItemTemplate = new DataTemplate (typeof(TextCell)) {
+				ItemTemplate = new DataTemplate(typeof(TextCell))
+				{
 					Bindings = {
 						{ TextCell.TextProperty, new Binding ("Title") }
 					}
 				}
 			};
 
-			((ListView) Content).ItemTapped += async (sender, args) => {
-				await Navigation.PushAsync ((Page) args.Item);
+			((ListView)Content).ItemTapped += async (sender, args) =>
+			{
+				await Navigation.PushAsync((Page)args.Item);
 			};
 
-			NavigationPage.SetBackButtonTitle (this, "Back Title");
+			NavigationPage.SetBackButtonTitle(this, "Back Title");
 		}
 	}
 }

@@ -12,9 +12,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class GroupingPlusSelection : ContentPage
 	{
-		public GroupingPlusSelection ()
+		public GroupingPlusSelection()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 			CollectionView.ItemsSource = new SuperTeams();
 		}
 	}

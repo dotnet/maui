@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Android.Graphics.Drawables;
-using Xamarin.Forms.Internals;
 using Android.Content;
 using Android.Graphics;
+using Android.Graphics.Drawables;
+using Xamarin.Forms.Internals;
 using AImageView = Android.Widget.ImageView;
 
 namespace Xamarin.Forms.Platform.Android
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Platform.Android
 							animation = await animationHandler.LoadImageAnimationAsync(newImageSource, imageView.Context);
 					}
 
-					if(animation == null)
+					if (animation == null)
 					{
 						var imageViewHandler = Registrar.Registered.GetHandlerForObject<IImageViewHandler>(newImageSource);
 						if (imageViewHandler != null)

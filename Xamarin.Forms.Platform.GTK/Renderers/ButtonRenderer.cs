@@ -1,6 +1,6 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.ComponentModel;
+using Gtk;
 using Xamarin.Forms.Platform.GTK.Controls;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using GtkImageButton = Xamarin.Forms.Platform.GTK.Controls.ImageButton;
@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			else if (e.PropertyName == Button.FontProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == Button.TextTransformProperty.PropertyName)
-                UpdateText();
+				UpdateText();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
 			else if (e.PropertyName == Button.TextColorProperty.PropertyName)

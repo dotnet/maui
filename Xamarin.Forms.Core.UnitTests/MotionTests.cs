@@ -10,17 +10,18 @@ namespace Xamarin.Forms.Core.UnitTests
 	internal class BlockingTicker : Ticker
 	{
 		bool _enabled;
-		
-		protected override void EnableTimer ()
+
+		protected override void EnableTimer()
 		{
 			_enabled = true;
 
-			while (_enabled) {
-				SendSignals (16);
+			while (_enabled)
+			{
+				SendSignals(16);
 			}
 		}
 
-		protected override void DisableTimer ()
+		protected override void DisableTimer()
 		{
 			_enabled = false;
 		}
@@ -42,7 +43,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			OnSystemEnabledChanged();
 		}
 
-		protected override async void EnableTimer ()
+		protected override async void EnableTimer()
 		{
 			_enabled = true;
 
@@ -53,7 +54,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			}
 		}
 
-		protected override void DisableTimer ()
+		protected override void DisableTimer()
 		{
 			_enabled = false;
 		}
@@ -63,92 +64,95 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class MotionTests : BaseTestFixture
 	{
 		[OneTimeSetUp]
-		public void Init ()
+		public void Init()
 		{
-			Device.PlatformServices = new MockPlatformServices ();
-			Ticker.Default = new BlockingTicker ();
+			Device.PlatformServices = new MockPlatformServices();
+			Ticker.Default = new BlockingTicker();
 		}
 
 		[OneTimeTearDown]
-		public void End ()
+		public void End()
 		{
 			Device.PlatformServices = null;
 			Ticker.Default = null;
 		}
 
 		[Test]
-		public void TestLinearTween ()
+		public void TestLinearTween()
 		{
-			var tweener = new Tweener (250);
+			var tweener = new Tweener(250);
 
 			double value = 0;
 			int updates = 0;
-			tweener.ValueUpdated += (sender, args) => {
-				Assert.That (tweener.Value, Is.GreaterThanOrEqualTo (value));
+			tweener.ValueUpdated += (sender, args) =>
+			{
+				Assert.That(tweener.Value, Is.GreaterThanOrEqualTo(value));
 				value = tweener.Value;
 				updates++;
 			};
-			tweener.Start ();
+			tweener.Start();
 
-			Assert.That (updates, Is.GreaterThanOrEqualTo (10));
+			Assert.That(updates, Is.GreaterThanOrEqualTo(10));
 		}
 
 		[Test]
-		public void ThrowsWithNullCallback ()
+		public void ThrowsWithNullCallback()
 		{
-			Assert.Throws<ArgumentNullException> (() => new View().Animate ("Test", (Action<double>) null));
+			Assert.Throws<ArgumentNullException>(() => new View().Animate("Test", (Action<double>)null));
 		}
 
 		[Test]
-		public void ThrowsWithNullTransform ()
+		public void ThrowsWithNullTransform()
 		{
-			Assert.Throws<ArgumentNullException> (() => new View().Animate<float> ("Test", null, f => { }));
+			Assert.Throws<ArgumentNullException>(() => new View().Animate<float>("Test", null, f => { }));
 		}
 
 		[Test]
-		public void ThrowsWithNullSelf ()
+		public void ThrowsWithNullSelf()
 		{
-			Assert.Throws<ArgumentNullException> (() => AnimationExtensions.Animate (null, "Foo", d => (float)d, f => { }));
+			Assert.Throws<ArgumentNullException>(() => AnimationExtensions.Animate(null, "Foo", d => (float)d, f => { }));
 		}
 
 		[Test]
-		public void Kinetic ()
+		public void Kinetic()
 		{
-			var view = new View ();
-			var resultList = new List<Tuple<double, double>> ();
-			view.AnimateKinetic (
+			var view = new View();
+			var resultList = new List<Tuple<double, double>>();
+			view.AnimateKinetic(
 				name: "Kinetics",
-				callback: (distance, velocity) => {
-					resultList.Add (new Tuple<double, double> (distance, velocity));
+				callback: (distance, velocity) =>
+				{
+					resultList.Add(new Tuple<double, double>(distance, velocity));
 					return true;
-				}, 
-				velocity: 100, 
+				},
+				velocity: 100,
 				drag: 1);
 
-			Assert.That (resultList, Is.Not.Empty);
+			Assert.That(resultList, Is.Not.Empty);
 			int checkVelo = 100;
 			int dragStep = 16;
 
-			foreach (var item in resultList) {
+			foreach (var item in resultList)
+			{
 				checkVelo -= dragStep;
-				Assert.AreEqual (checkVelo, item.Item2);
-				Assert.AreEqual (checkVelo * dragStep, item.Item1);
+				Assert.AreEqual(checkVelo, item.Item2);
+				Assert.AreEqual(checkVelo * dragStep, item.Item1);
 			}
 		}
 
 		[Test]
-		public void KineticFinished ()
+		public void KineticFinished()
 		{
-			var view = new View ();
+			var view = new View();
 			bool finished = false;
-			view.AnimateKinetic (
+			view.AnimateKinetic(
 				name: "Kinetics",
-				callback: (distance, velocity) => true, 
-				velocity: 100, 
+				callback: (distance, velocity) => true,
+				velocity: 100,
 				drag: 1,
 				finished: () => finished = true);
 
-			Assert.True (finished);
+			Assert.True(finished);
 		}
 	}
 
@@ -156,14 +160,14 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class TickerSystemEnabledTests
 	{
 		[OneTimeSetUp]
-		public void Init ()
+		public void Init()
 		{
-			Device.PlatformServices = new MockPlatformServices ();
-			Ticker.Default = new AsyncTicker(); 
+			Device.PlatformServices = new MockPlatformServices();
+			Ticker.Default = new AsyncTicker();
 		}
 
 		[OneTimeTearDown]
-		public void End ()
+		public void End()
 		{
 			Device.PlatformServices = null;
 			Ticker.Default = null;
@@ -193,8 +197,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var view = new View { Opacity = 1 };
 
 			await Task.WhenAll(view.FadeTo(0, 2000), DisableTicker());
-			
-			Assert.That (view.Opacity, Is.EqualTo(0));
+
+			Assert.That(view.Opacity, Is.EqualTo(0));
 		}
 
 		[Test, Timeout(3000)]
@@ -206,7 +210,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			await Task.WhenAll(SwapFadeViews(view1, view2), DisableTicker());
 
 			Assert.That(view1.Opacity, Is.EqualTo(0));
-			
+
 		}
 
 		static Task<bool> RepeatFade(View view)
@@ -214,7 +218,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var tcs = new TaskCompletionSource<bool>();
 			var fadeIn = new Animation(d => { view.Opacity = d; }, 0, 1);
 			var i = 0;
-			
+
 			fadeIn.Commit(view, "fadeIn", length: 2000, repeat: () => ++i < 2, finished: (d, b) =>
 			{
 				tcs.SetResult(b);
@@ -227,13 +231,13 @@ namespace Xamarin.Forms.Core.UnitTests
 		public async Task DisablingTickerPreventsAnimationFromRepeating()
 		{
 			var view = new View { Opacity = 0 };
-			
+
 			await Task.WhenAll(RepeatFade(view), DisableTicker());
 
 			Assert.That(view.Opacity, Is.EqualTo(1));
 		}
 
-		[Test] 
+		[Test]
 		public async Task NewAnimationsFinishImmediatelyWhenTickerDisabled()
 		{
 			var view = new View { Opacity = 1 };
@@ -246,7 +250,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async Task AnimationExtensionsReturnTrueIfAnimationsDisabled() 
+		public async Task AnimationExtensionsReturnTrueIfAnimationsDisabled()
 		{
 			await DisableTicker();
 
@@ -257,7 +261,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test, Timeout(2000)]
-		public async Task CanExitAnimationLoopIfAnimationsDisabled() 
+		public async Task CanExitAnimationLoopIfAnimationsDisabled()
 		{
 			await DisableTicker();
 
@@ -272,7 +276,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async Task CanCheckThatAnimationsAreEnabled() 
+		public async Task CanCheckThatAnimationsAreEnabled()
 		{
 			await EnableTicker();
 			Assert.That(Animation.IsEnabled, Is.True);

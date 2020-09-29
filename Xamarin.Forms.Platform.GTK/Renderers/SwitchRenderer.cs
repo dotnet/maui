@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			{
 				if (Control == null)
 				{
-				   // Use Gtk.CheckButton, a discrete toggle button.
+					// Use Gtk.CheckButton, a discrete toggle button.
 					SetNativeControl(new Gtk.CheckButton());
 				}
 

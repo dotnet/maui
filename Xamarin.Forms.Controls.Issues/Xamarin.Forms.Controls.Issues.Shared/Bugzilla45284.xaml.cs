@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	public class Bugzilla45284Model : INotifyPropertyChanged
 	{
-		public List<Bugzilla45284TabModel> Tabs => new List<Bugzilla45284TabModel> { 
+		public List<Bugzilla45284TabModel> Tabs => new List<Bugzilla45284TabModel> {
 			new Bugzilla45284TabModel(),
 			new Bugzilla45284TabModel(),
 			new Bugzilla45284TabModel(),

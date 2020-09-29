@@ -422,7 +422,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				{
 					Children = { more, less },
 					Orientation = StackOrientation.Horizontal,
-					HorizontalOptions = LayoutOptions.Center					
+					HorizontalOptions = LayoutOptions.Center
 				};
 
 				more.SetBinding(Button.CommandProperty, new Binding("MoreCommand"));

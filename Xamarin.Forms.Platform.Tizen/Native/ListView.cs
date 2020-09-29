@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
 using ElmSharp;
+using Xamarin.Forms.Internals;
 using ERect = ElmSharp.Rect;
 using EScroller = ElmSharp.Scroller;
 

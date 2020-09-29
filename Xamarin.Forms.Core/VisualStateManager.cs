@@ -191,7 +191,7 @@ namespace Xamarin.Forms
 
 		void ValidateAndNotify(IList<VisualStateGroup> groups)
 		{
-			if(groups.Count > 0)
+			if (groups.Count > 0)
 				IsDefault = false;
 
 			Validate(groups);
@@ -283,9 +283,9 @@ namespace Xamarin.Forms
 			set => _internalList[index] = value;
 		}
 
-        internal VisualElement VisualElement { get; set; }
+		internal VisualElement VisualElement { get; set; }
 
-        void OnStatesChanged()
+		void OnStatesChanged()
 		{
 			VisualElement?.ChangeVisualState();
 		}
@@ -350,7 +350,7 @@ namespace Xamarin.Forms
 
 					if (trigger.IsActive)
 					{
-						if(visualState == defaultState)
+						if (visualState == defaultState)
 							visualState = state;
 
 						conflicts.Add(trigger);
@@ -428,7 +428,7 @@ namespace Xamarin.Forms
 
 			if (newStateTrigger == null)
 				return;
-			
+
 			var oldStateTrigger = CurrentState;
 
 			if (newStateTrigger == oldStateTrigger)
@@ -446,7 +446,7 @@ namespace Xamarin.Forms
 				throw new InvalidOperationException("State names may not be null or empty");
 			}
 
-			foreach(var state in states)
+			foreach (var state in states)
 			{
 				state.VisualStateGroup = this;
 			}
@@ -490,7 +490,7 @@ namespace Xamarin.Forms
 
 		void OnStateTriggersChanged(IList<StateTriggerBase> stateTriggers)
 		{
-			foreach(var stateTrigger in stateTriggers)
+			foreach (var stateTrigger in stateTriggers)
 			{
 				stateTrigger.VisualState = this;
 			}
@@ -507,7 +507,7 @@ namespace Xamarin.Forms
 
 			foreach (var group in groups)
 			{
-				group.VisualElement = actual.VisualElement;	
+				group.VisualElement = actual.VisualElement;
 				actual.Add(group.Clone());
 			}
 

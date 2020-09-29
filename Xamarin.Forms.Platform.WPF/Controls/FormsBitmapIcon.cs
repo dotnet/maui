@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			this.DefaultStyleKey = typeof(FormsBitmapIcon);
 
 		}
-		
+
 		private static void OnSourceChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
 		{
 			((FormsBitmapIcon)o).OnSourceChanged(e.OldValue, e.NewValue);

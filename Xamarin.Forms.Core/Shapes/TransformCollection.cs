@@ -3,7 +3,7 @@
 namespace Xamarin.Forms.Shapes
 {
 	public sealed class TransformCollection : ObservableCollection<Transform>
-    {
+	{
 
-    }
+	}
 }

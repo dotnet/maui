@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Controls.Issues
 		PlatformAffected.iOS)]
 	public class Issue7700 : TestTabbedPage
 	{
-		readonly ObservableCollection<string> _source = new ObservableCollection<string>(){ "one", "two", "three" };
+		readonly ObservableCollection<string> _source = new ObservableCollection<string>() { "one", "two", "three" };
 		readonly ObservableCollection<Group> _groupedSource = new ObservableCollection<Group>();
 
 		[Preserve(AllMembers = true)]

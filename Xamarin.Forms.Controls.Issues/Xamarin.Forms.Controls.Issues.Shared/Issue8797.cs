@@ -25,8 +25,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
 			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
-			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(5, GridUnitType.Star)});
-			
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(5, GridUnitType.Star) });
+
 			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
 
 			var label = new Label

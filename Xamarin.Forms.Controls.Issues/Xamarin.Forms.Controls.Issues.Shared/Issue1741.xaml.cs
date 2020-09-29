@@ -13,16 +13,16 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 1741, "Switch.IsEnabled = false does not disable a switch when switch is defined in XAML", PlatformAffected.WinPhone)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1741, "Switch.IsEnabled = false does not disable a switch when switch is defined in XAML", PlatformAffected.WinPhone)]
 	public partial class Issue1741 : ContentPage
 	{
-		public Issue1741 ()
+		public Issue1741()
 		{
 			InitializeComponent();
 		}
 
-		public void Anonymous_Toggled (object sender, EventArgs e)
+		public void Anonymous_Toggled(object sender, EventArgs e)
 		{
 			chkAnon.IsEnabled = !chkAnon.IsEnabled;
 		}

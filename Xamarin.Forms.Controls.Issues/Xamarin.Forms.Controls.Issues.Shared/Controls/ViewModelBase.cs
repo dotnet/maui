@@ -20,7 +20,8 @@ namespace Xamarin.Forms.Controls
 		protected T GetProperty<T>([CallerMemberName] string name = null)
 		{
 			object value = null;
-			if (_properties.TryGetValue(name, out value)) {
+			if (_properties.TryGetValue(name, out value))
+			{
 				return value == null ? default(T) : (T)value;
 			}
 			return default(T);
@@ -28,7 +29,8 @@ namespace Xamarin.Forms.Controls
 
 		protected void SetProperty<T>(T value, [CallerMemberName] string name = null)
 		{
-			if (Equals(value, GetProperty<T>(name))) {
+			if (Equals(value, GetProperty<T>(name)))
+			{
 				return;
 			}
 			_properties[name] = value;
@@ -40,7 +42,8 @@ namespace Xamarin.Forms.Controls
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			PropertyChangedEventHandler handler = PropertyChanged;
-			if (handler != null) {
+			if (handler != null)
+			{
 				handler(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
@@ -58,7 +61,8 @@ namespace Xamarin.Forms.Controls
 		public override bool Equals(object obj)
 		{
 			var error = obj as ViewModelError;
-			if (error == null) {
+			if (error == null)
+			{
 				return false;
 			}
 			return Text.Equals(error.Text);
@@ -89,7 +93,7 @@ namespace Xamarin.Forms.Controls
 		{
 			get { return _errors.Count <= 0; }
 		}
-			
+
 		protected IEnumerable<ViewModelError> Errors
 		{
 			get { return _errors; }
@@ -105,24 +109,30 @@ namespace Xamarin.Forms.Controls
 			OnPropertyChanged("Errors");
 
 			var callback = IsValidChanged;
-			if (callback != null) {
+			if (callback != null)
+			{
 				callback(this, EventArgs.Empty);
 			}
 
 			// Spit out errors for easier debugging.
-			if (_errors != null && _errors.Count > 0) {
+			if (_errors != null && _errors.Count > 0)
+			{
 				Debug.WriteLine("Errors:");
-				foreach (var error in _errors) {
+				foreach (var error in _errors)
+				{
 					Debug.WriteLine(error);
 				}
 			}
 		}
-			
+
 		protected virtual void ValidateProperty(Func<bool> validate, ViewModelError error)
 		{
-			if (validate()) {
+			if (validate())
+			{
 				_errors.Remove(error);
-			} else if (!_errors.Contains(error)) {
+			}
+			else if (!_errors.Contains(error))
+			{
 				_errors.Add(error);
 			}
 		}
@@ -132,7 +142,8 @@ namespace Xamarin.Forms.Controls
 			get { return _isBusy; }
 			set
 			{
-				if (_isBusy != value) {
+				if (_isBusy != value)
+				{
 					_isBusy = value;
 					OnPropertyChanged("IsBusy");
 					OnIsBusyChanged();
@@ -172,7 +183,8 @@ namespace Xamarin.Forms.Controls
 
 		public bool CanExecute(object parameter)
 		{
-			if (_canExecute == null) {
+			if (_canExecute == null)
+			{
 				return true;
 			}
 
@@ -187,16 +199,17 @@ namespace Xamarin.Forms.Controls
 		public void RaiseCanExecuteChanged()
 		{
 			var handler = CanExecuteChanged;
-			if (handler != null) {
+			if (handler != null)
+			{
 				handler(this, EventArgs.Empty);
 			}
 		}
 	}
 
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public class ExampleViewModel : ViewModelBase
 	{
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class Job : ViewModelBase
 		{
 
@@ -224,7 +237,7 @@ namespace Xamarin.Forms.Controls
 				set { SetProperty(value); }
 			}
 		}
-				
+
 		public ExampleViewModel()
 		{
 
@@ -232,8 +245,8 @@ namespace Xamarin.Forms.Controls
 			{
 				new Job() { JobId = "3672", JobName = "Big Job", Hours = 2},
 				new Job() { JobId = "6289", JobName = "Smaller Job", Hours = 2},
-				new Job() { JobId = "3672-41", JobName = "Add On Job", Hours = 23},                
-			};            
+				new Job() { JobId = "3672-41", JobName = "Add On Job", Hours = 23},
+			};
 		}
 
 		public ObservableCollection<Job> Jobs { get; set; }
@@ -243,10 +256,12 @@ namespace Xamarin.Forms.Controls
 		{
 			get
 			{
-				if (_addOneCommand == null) {
-					_addOneCommand = new DelegateCommand(obj => {
-						Jobs.Add(new Job(){JobId = "1234", JobName = "add one", Hours = 12});                        
-						}, obj => !IsBusy);
+				if (_addOneCommand == null)
+				{
+					_addOneCommand = new DelegateCommand(obj =>
+					{
+						Jobs.Add(new Job() { JobId = "1234", JobName = "add one", Hours = 12 });
+					}, obj => !IsBusy);
 				}
 				return _addOneCommand;
 			}
@@ -258,11 +273,13 @@ namespace Xamarin.Forms.Controls
 		{
 			get
 			{
-				if (_addTwoCommand == null) {
-					_addTwoCommand = new DelegateCommand(obj => {
-							Jobs.Add(new Job() { JobId = "9999", JobName = "add two", Hours = 12 });
-							Jobs.Add(new Job() { JobId = "8888", JobName = "add two", Hours = 12 });
-						}, obj => !IsBusy);
+				if (_addTwoCommand == null)
+				{
+					_addTwoCommand = new DelegateCommand(obj =>
+					{
+						Jobs.Add(new Job() { JobId = "9999", JobName = "add two", Hours = 12 });
+						Jobs.Add(new Job() { JobId = "8888", JobName = "add two", Hours = 12 });
+					}, obj => !IsBusy);
 				}
 				return _addTwoCommand;
 			}
@@ -272,7 +289,7 @@ namespace Xamarin.Forms.Controls
 
 		public void GetHours()
 		{
-		
+
 			var results = new ObservableCollection<Job>()
 			{
 				new Job() { JobId = "3672", JobName = "RADO", Hours = 2},
@@ -308,5 +325,5 @@ namespace Xamarin.Forms.Controls
 		}
 	}
 
-	
+
 }

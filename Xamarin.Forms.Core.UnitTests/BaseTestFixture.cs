@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		CultureInfo _defaultUICulture;
 
 		[SetUp]
-		public virtual void Setup ()
+		public virtual void Setup()
 		{
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 			_defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[TearDown]
-		public virtual void TearDown ()
+		public virtual void TearDown()
 		{
 			Device.PlatformServices = null;
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;

@@ -19,7 +19,7 @@ namespace Xamarin.Forms
 		{
 			base.OnBindingContextChanged();
 			for (int i = 0; i < Spans.Count; i++)
-				SetInheritedBindingContext(Spans[i], BindingContext);			
+				SetInheritedBindingContext(Spans[i], BindingContext);
 		}
 
 		public IList<Span> Spans => _spans;
@@ -43,7 +43,7 @@ namespace Xamarin.Forms
 						bo.PropertyChanging -= OnItemPropertyChanging;
 						bo.PropertyChanged -= OnItemPropertyChanged;
 					}
-						
+
 				}
 			}
 
@@ -58,7 +58,7 @@ namespace Xamarin.Forms
 						bo.PropertyChanging += OnItemPropertyChanging;
 						bo.PropertyChanged += OnItemPropertyChanged;
 					}
-						
+
 				}
 			}
 

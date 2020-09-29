@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using Xamarin.Forms.Controls;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Controls;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 #if !(__ANDROID__ || __IOS__)
 		[Ignore("Shell test is only supported on Android and iOS")]
-#endif 
+#endif
 		[Test]
 		public void ShellFlyoutAndHamburgerAutomationProperties()
 		{

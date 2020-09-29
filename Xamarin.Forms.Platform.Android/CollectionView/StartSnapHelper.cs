@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Platform.Android
 			var firstView = linearLayoutManager.FindViewByPosition(firstVisibleItemPosition);
 
 			// If the first visible item is in the last row/col of the collection, snap to it
-			if(firstVisibleItemPosition >= linearLayoutManager.ItemCount - span)
+			if (firstVisibleItemPosition >= linearLayoutManager.ItemCount - span)
 			{
 				return firstView;
 			}

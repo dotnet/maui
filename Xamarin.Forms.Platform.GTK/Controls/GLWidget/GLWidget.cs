@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Threading;
 using System.ComponentModel;
-using OpenTK.Graphics;
-using OpenTK.Platform;
+using System.Threading;
 using Gtk;
+using OpenTK.Graphics;
 using OpenTK.OSX;
+using OpenTK.Platform;
 using OpenTK.Win;
 using OpenTK.X11;
 

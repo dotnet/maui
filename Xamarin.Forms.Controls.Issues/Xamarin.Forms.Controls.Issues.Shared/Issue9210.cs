@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var stackLayout = new StackLayout();
 			stackLayout.Children.Add(new Label() { Text = IssueInstructions });
-			stackLayout.Children.Add(new Entry() { Text="Some demo text." });
+			stackLayout.Children.Add(new Entry() { Text = "Some demo text." });
 			stackLayout.Children.Add(new Entry() { Text = "Some other demo text." });
 
 			Content = stackLayout;

@@ -73,10 +73,10 @@ namespace Xamarin.Forms.Platform.WPF
 			else if (args.PropertyName == Shape.StrokeMiterLimitProperty.PropertyName)
 				UpdateStrokeMiterLimit();
 		}
-		
+
 #if !WINDOWS_UWP
-		new 
-#endif	
+		new
+#endif
 		void UpdateHeight()
 		{
 			Control.Height = Math.Max(Element.Height, 0);

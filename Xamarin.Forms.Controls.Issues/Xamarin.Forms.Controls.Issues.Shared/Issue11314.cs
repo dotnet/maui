@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue11314Page(string title)
 		{
 			Title = title;
-	
+
 			for (int i = 0; i < 5; i++)
 			{
 				Items.Add(DateTime.Now.ToString());

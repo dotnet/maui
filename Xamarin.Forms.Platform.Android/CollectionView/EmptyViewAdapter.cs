@@ -1,7 +1,7 @@
 using System;
 using Android.Content;
-using AndroidX.RecyclerView.Widget;
 using Android.Views;
+using AndroidX.RecyclerView.Widget;
 using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android
@@ -78,7 +78,7 @@ namespace Xamarin.Forms.Platform.Android
 				_emptyItemViewType += 1;
 			}
 		}
-		
+
 		public DataTemplate EmptyViewTemplate
 		{
 			get => _emptyViewTemplate;
@@ -276,7 +276,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		int GetWidth(ViewGroup parent)
-		{	
+		{
 			return parent.MeasuredWidth;
 		}
 

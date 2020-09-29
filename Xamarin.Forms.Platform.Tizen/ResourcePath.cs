@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using IOPath = System.IO.Path;
 using AppFW = Tizen.Applications;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
