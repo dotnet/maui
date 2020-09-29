@@ -23,6 +23,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			"System",
 			"Xamarin.Forms.Core.dll",
 			"Xamarin.Forms.Xaml.dll",
+			"Xamarin.Platform.dll",
 		};
 
 		class Xaml
@@ -306,7 +307,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			RestoreIfNeeded(projectFile, sdkStyle);
 
 			string log = Build(projectFile, additionalArgs: "/p:XFXamlCValidateOnly=True", shouldSucceed: false);
-			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XFC0000: Cannot resolve type \"NotARealThing\".", log);
+			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XFC0000: Cannot resolve type \"http://xamarin.com/schemas/2014/forms:NotARealThing\".", log);
 		}
 
 		/// <summary>

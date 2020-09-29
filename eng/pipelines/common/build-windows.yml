@@ -1,0 +1,75 @@
+parameters:
+  slnPath : 'Xamarin.Forms.sln'
+  msbuildExtraArguments : ''
+  artifactsTargetFolder: '$(build.artifactstagingdirectory)'
+  artifactsName: 'win_build'
+  nunitTestFolder: '$(build.sourcesdirectory)'
+  nunitTestAdapterFolder: 'packages/NUnitTestAdapter.AnyVersion/build/'
+
+steps:
+  - checkout: self
+    clean: true
+
+  - task: xamops.azdevex.provisionator-task.provisionator@1
+    displayName: 'Provisionator'
+    condition: eq(variables['provisioning'], 'true')
+    inputs:
+      provisioning_script: ${{ parameters.provisionatorPath }}
+      provisioning_extra_args: ${{ parameters.provisionator.extraArguments }}
+
+  - task: NuGetToolInstaller@1
+    displayName: 'Use NuGet $(NUGET_VERSION)'
+    condition: ne(variables['NUGET_VERSION'], '')
+    inputs:
+      versionSpec: $(NUGET_VERSION)
+
+  - task: CmdLine@2
+    displayName: 'install NUnit3TestAdapter'
+    inputs:
+      script: 'nuget install NUnit3TestAdapter'
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore ${{ parameters.slnPath }}'
+    inputs:
+      restoreSolution: ${{ parameters.slnPath }}
+      feedsToUse: config
+      nugetConfigPath: 'DevopsNuget.config'
+
+  - script: build.cmd -Target BuildForNuget -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"','-Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
+    name: winbuild
+    displayName: 'Build Projects For Nuget'
+
+  - task: VSTest@2
+    displayName: 'XAML Unit Tests'
+    inputs:
+      testAssemblyVer2: |
+        **/bin/$(BuildConfiguration)/**/Xamarin.Forms.Xaml.UnitTests.dll
+      searchFolder: ${{ parameters.nunitTestFolder }}
+      codeCoverageEnabled: true
+      testRunTitle: '$(BuildConfiguration)_UnitTests'
+      configuration: '$(BuildConfiguration)'
+      diagnosticsEnabled: true
+      # pathtoCustomTestAdapters: ${{ parameters.nunitTestAdapterFolder }}
+      # overrideTestrunParameters: -platform AnyCPU -framework Framework47
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Unit Tests'
+    inputs:
+      command: test
+      projects:   |
+        **/Xamarin.Forms.Core.UnitTests.csproj
+        **/Xamarin.Platform.Handlers.UnitTests.csproj
+      arguments: '--configuration $(BuildConfiguration)'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Files dlls'
+    inputs:
+      Contents: |
+        **/bin/**/*.dll
+      TargetFolder: ${{ parameters.artifactsTargetFolder }}
+  
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: ${{ parameters.artifactsName }}'
+    condition: always()
+    inputs:
+      ArtifactName: ${{ parameters.artifactsName }}

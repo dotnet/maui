@@ -50,7 +50,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 			Forms.Init(this, bundle);
 
 			FormsMaps.Init(this, bundle);
-			FormsMaterial.Init(this, bundle);
+			//FormsMaterial.Init(this, bundle);
 			AndroidAppLinks.Init(this);
 			Forms.ViewInitialized += (sender, e) => {
 				//				if (!string.IsNullOrWhiteSpace(e.View.StyleId)) {

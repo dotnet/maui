@@ -5,7 +5,7 @@
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.0.0.1" />
     <PackageReference Include="Xamarin.AndroidX.Palette" Version="1.0.0.1" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.1.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.2.0" />
     <PackageReference Include="Xamarin.Google.Android.Material" Version="1.0.0.1" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0.1" />
   </ItemGroup>

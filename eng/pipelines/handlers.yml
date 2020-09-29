@@ -1,0 +1,80 @@
+trigger:
+  branches:
+    include:
+    - main
+    - main-handlers
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+    - main
+    - main-handlers
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
+
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - main
+
+variables:
+  - template: /eng/pipelines/common/variables.yml
+
+resources:
+  repositories:
+    - repository: xamarin-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
+      ref: refs/heads/main # still defaults to master even though main is the main branch
+
+stages:
+  - stage: windows
+    displayName: Build Windows
+    jobs:
+      - job: win_hosted
+        workspace:
+          clean: all
+        displayName: Build Windows Phase
+        timeoutInMinutes: 60
+        pool:
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+          demands:
+            msbuild
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+            release:
+              BuildConfiguration:  'Release'
+        steps:
+          - template: common/build-windows.yml
+            parameters:
+              provisionatorPath : '/build/provisioning/provisioning.csx'

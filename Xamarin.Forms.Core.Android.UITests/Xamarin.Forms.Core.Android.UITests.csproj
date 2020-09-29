@@ -50,7 +50,7 @@
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
     <PackageReference Include="Xamarin.UITest" Version="3.0.7" />
     <PackageReference Include="NUnit3TestAdapter">
-      <Version>3.15.1</Version>
+      <Version>3.17.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +58,10 @@
     <Compile Include="PlatformTests\DisplayAlertUITestsAndroid.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\src\Platform.Handlers\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj">
+      <Project>{e2403480-7079-4e09-9c21-113b615a2a0a}</Project>
+      <Name>Xamarin.Platform.Handlers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
       <Name>Xamarin.Forms.Core</Name>
@@ -65,6 +69,10 @@
     <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
       <Project>{4DCD0420-1168-4B77-86DB-6196EE4BD491}</Project>
       <Name>Xamarin.Forms.CustomAttributes</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+      <Project>{7724ac21-0b03-4bb0-b125-d26ccf84b3f9}</Project>
+      <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
       <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>

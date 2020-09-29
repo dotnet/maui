@@ -722,16 +722,14 @@ Task("BuildForNuget")
         };
 
         msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}.binlog";
+        binaryLogger.FileName = $"{artifactStagingDirectory}/Xamarin.Forms-{configuration}.binlog";
         MSBuild("./Xamarin.Forms.sln", msbuildSettings);
 
         msbuildSettings = GetMSBuildSettings();
         msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/dualscreen-{configuration}-csproj.binlog";
+        binaryLogger.FileName = $"{artifactStagingDirectory}/Xamarin.Forms.DualScreen-{configuration}-csproj.binlog";
         MSBuild("./Xamarin.Forms.DualScreen/Xamarin.Forms.DualScreen.csproj",
-                    msbuildSettings
-                        .WithRestore()
-                        .WithTarget("rebuild"));
+                    msbuildSettings.WithRestore());
 
 
         // msbuildSettings = GetMSBuildSettings();
@@ -743,21 +741,22 @@ Task("BuildForNuget")
         //                 .WithProperty("DisableEmbeddedXbf", "false")
         //                 .WithProperty("EnableTypeInfoReflection", "false"));
 
-        msbuildSettings = GetMSBuildSettings();
+       /*msbuildSettings = GetMSBuildSettings();
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/ios-{configuration}-csproj.binlog";
         MSBuild("./Xamarin.Forms.Platform.iOS/Xamarin.Forms.Platform.iOS.csproj",
                     msbuildSettings
-                        .WithTarget("rebuild"));
-
-                        
-       /* msbuildSettings = GetMSBuildSettings();
-        msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/xaml-unittests-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.Xaml.UnitTests/Xamarin.Forms.Xaml.UnitTests.csproj",
-                    msbuildSettings
-                        .WithRestore()
                         .WithTarget("rebuild"));*/
+
+
+        // XAML Tests are currently having issues compiling in Release Mode
+        if(configuration == "Debug")
+        {
+            msbuildSettings = GetMSBuildSettings();
+            msbuildSettings.BinaryLogger = binaryLogger;
+            binaryLogger.FileName = $"{artifactStagingDirectory}/Xamarin.Forms.ControlGallery-{configuration}.binlog";
+            MSBuild("./Xamarin.Forms.ControlGallery.sln", msbuildSettings.WithRestore());
+        }
 
         // msbuildSettings = GetMSBuildSettings();
         // msbuildSettings.BinaryLogger = binaryLogger;
