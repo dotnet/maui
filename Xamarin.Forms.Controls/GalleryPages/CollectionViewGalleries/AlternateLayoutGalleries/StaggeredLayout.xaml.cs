@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateL
 		}
 	}
 
-	public class StaggeredCollectionView : CollectionView {	}
+	public class StaggeredCollectionView : CollectionView { }
 
 	public class StaggeredGridItemsLayout : GridItemsLayout
 	{

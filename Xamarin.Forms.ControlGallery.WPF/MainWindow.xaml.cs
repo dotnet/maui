@@ -2,10 +2,10 @@
 
 namespace Xamarin.Forms.ControlGallery.WPF
 {
-    /// <summary>
-    /// Logique d'interaction pour MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : FormsApplicationPage
+	/// <summary>
+	/// Logique d'interaction pour MainWindow.xaml
+	/// </summary>
+	public partial class MainWindow : FormsApplicationPage
 	{
 		public MainWindow()
 		{
@@ -13,6 +13,6 @@ namespace Xamarin.Forms.ControlGallery.WPF
 			Xamarin.Forms.Forms.Init();
 			FormsMaps.Init("");
 			LoadApplication(new Controls.App());
-    }
+		}
 	}
 }

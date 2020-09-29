@@ -2,14 +2,14 @@ namespace Xamarin.Forms.Controls
 {
 	public class SwitchCellTablePage : ContentPage
 	{
-		public SwitchCellTablePage ()
+		public SwitchCellTablePage()
 		{
 			Title = "SwitchCell Table Gallery - Legacy";
 
 			if (Device.RuntimePlatform == Device.iOS && Device.Idiom == TargetIdiom.Tablet)
 				Padding = new Thickness(0, 0, 0, 60);
 
-			var tableSection = new TableSection ("Section One") {
+			var tableSection = new TableSection("Section One") {
 				new SwitchCell { Text = "text 1", On = true },
 				new SwitchCell { Text = "text 2" },
 				new SwitchCell { Text = "text 3", On = true },
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Controls
 				new SwitchCell { Text = "text 16", On = false },
 			};
 
-			var tableSectionTwo = new TableSection ("Section Two") {
+			var tableSectionTwo = new TableSection("Section Two") {
 				new SwitchCell { Text = "text 17", On = true },
 				new SwitchCell { Text = "text 18" },
 				new SwitchCell { Text = "text 19", On = true },
@@ -47,12 +47,13 @@ namespace Xamarin.Forms.Controls
 				new SwitchCell { Text = "text 32", On = false },
 			};
 
-			var root = new TableRoot ("Text Cell table") {
+			var root = new TableRoot("Text Cell table") {
 				tableSection,
 				tableSectionTwo
 			};
 
-			var table = new TableView {
+			var table = new TableView
+			{
 				AutomationId = CellTypeList.CellTestContainerId,
 				Root = root,
 			};

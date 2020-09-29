@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			[TestCase(false)]
 			[TestCase(true)]
-			public void EscapedStringsAreTreatedAsLiterals (bool useCompiledXaml)
+			public void EscapedStringsAreTreatedAsLiterals(bool useCompiledXaml)
 			{
 				var layout = new ButtonCornerRadius(useCompiledXaml);
 				Assert.AreEqual(0, layout.Button0.CornerRadius);

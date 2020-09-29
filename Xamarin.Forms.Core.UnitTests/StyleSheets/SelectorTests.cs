@@ -20,7 +20,8 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		[SetUp]
 		public void SetUp()
 		{
-			Page = new MockStylable {
+			Page = new MockStylable
+			{
 				NameAndBases = new[] { "Page", "Layout", "VisualElement" },
 				Children = new List<IStyleSelectable> {
 					new MockStylable {

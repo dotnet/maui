@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void OnPlatformDefaultToBPDefaultValue([Values(true, false)]bool useCompiledXaml)
+			public void OnPlatformDefaultToBPDefaultValue([Values(true, false)] bool useCompiledXaml)
 			{
 				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
 				var layout = new Gh7156(useCompiledXaml);

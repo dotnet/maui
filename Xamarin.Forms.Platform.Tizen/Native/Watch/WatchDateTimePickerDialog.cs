@@ -1,8 +1,8 @@
 using System;
 using ElmSharp;
 using ElmSharp.Wearable;
-using ELayout = ElmSharp.Layout;
 using EButton = ElmSharp.Button;
+using ELayout = ElmSharp.Layout;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Application;
 
 namespace Xamarin.Forms.Platform.Tizen.Native.Watch

@@ -9,7 +9,7 @@ using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-	public class Dict : Dictionary<string,string> {}
+	public class Dict : Dictionary<string, string> { }
 	public class Gh8936VM
 	{
 		public Dict Data { get; set; } = new Dict { { "Key", "Value" } };
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void IndexerBindingOnSubclasses([Values(false, true)]bool useCompiledXaml)
+			public void IndexerBindingOnSubclasses([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh8936(useCompiledXaml) { BindingContext = new Gh8936VM() };
 				Assert.That(layout.entry0.Text, Is.EqualTo("Value"));

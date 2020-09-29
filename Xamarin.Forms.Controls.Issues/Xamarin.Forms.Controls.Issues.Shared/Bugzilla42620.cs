@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using System;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;

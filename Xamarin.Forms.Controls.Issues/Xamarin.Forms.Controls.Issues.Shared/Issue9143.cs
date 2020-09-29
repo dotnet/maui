@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Controls.Issues
 			CreateAndPushPageForNavigationPage(tab3);
 			CreateAndPushPageForNavigationPage(tab4);
 			CreateAndPushPageForNavigationPage(tab5);
-			
+
 			Flyout = menuNavigationPage;
 			Detail = tabbedPage;
 		}

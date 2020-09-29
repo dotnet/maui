@@ -36,7 +36,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(false)]
 			public void Foo(bool useCompiledXaml)
 			{
-				Application.Current = new MockApplication {
+				Application.Current = new MockApplication
+				{
 					Resources = new ResourceDictionary {
 						{"Color1", Color.Red},
 						{"Color2", Color.Blue},

@@ -17,7 +17,7 @@ namespace Xamarin.Forms.ControlGallery.GTK
 
 			var renderer = Platform.GTK.Platform.CreateRenderer(element);
 
-			if (renderer == null 
+			if (renderer == null
 				|| renderer.GetType().Name == "DefaultRenderer"
 				)
 			{

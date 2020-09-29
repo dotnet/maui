@@ -17,8 +17,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 		public DateTimePickerMode Mode
 		{
-			get 
-			{ 
+			get
+			{
 				return _mode;
 			}
 			set

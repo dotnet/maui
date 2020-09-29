@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (!isoStore.FileExists(PropertyStoreFile))
 				return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>(4));
-			
+
 			using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream(PropertyStoreFile, FileMode.Open, isoStore))
 			{
 				if (stream.Length == 0)

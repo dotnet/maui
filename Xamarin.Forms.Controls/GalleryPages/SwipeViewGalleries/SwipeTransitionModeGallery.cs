@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 				Text = "This Gallery use a Platform Specific only available for Android and iOS."
 			};
 
-   			swipeLayout.Children.Add(instructions);
+			swipeLayout.Children.Add(instructions);
 
 			var swipeItemSwipeTransitionModeLabel = new Label
 			{
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 			var swipeTransitionModes = Enum.GetNames(typeof(PlatformConfiguration.AndroidSpecific.SwipeTransitionMode)).Select(t => t).ToList();
 
 			swipeItemSwipeTransitionModePicker.ItemsSource = swipeTransitionModes;
-			swipeItemSwipeTransitionModePicker.SelectedIndex = 0;	// Reveal
+			swipeItemSwipeTransitionModePicker.SelectedIndex = 0;   // Reveal
 
 			swipeLayout.Children.Add(swipeItemSwipeTransitionModePicker);
 
@@ -160,7 +160,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 			{
 				var swipeTransitionMode = swipeItemSwipeTransitionModePicker.SelectedItem;
 
-				switch(swipeTransitionMode)
+				switch (swipeTransitionMode)
 				{
 					case "Drag":
 						leftSwipeView.On<Android>().SetSwipeTransitionMode(PlatformConfiguration.AndroidSpecific.SwipeTransitionMode.Drag);

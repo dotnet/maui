@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 				{
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalOptions = LayoutOptions.Center,
-					Children = { translucentToggleButton, restoreButton, togglePrefersStatusBarHiddenButton, togglePreferredStatusBarUpdateAnimationButton}
+					Children = { translucentToggleButton, restoreButton, togglePrefersStatusBarHiddenButton, togglePreferredStatusBarUpdateAnimationButton }
 				}
 			};
 

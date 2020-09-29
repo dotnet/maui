@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls.Issues
 						HorizontalOptions = LayoutOptions.FillAndExpand,
 						VerticalOptions = LayoutOptions.FillAndExpand,
 						Orientation = ScrollOrientation.Both,
-						Content = new Label  
+						Content = new Label
 						{
 							Text = "Label"
 						}
@@ -42,8 +42,8 @@ namespace Xamarin.Forms.Controls.Issues
 				await Navigation.PushModalAsync(page);
 				await Navigation.PopModalAsync();
 
-				await PushAsync(new ContentPage 
-				{ 
+				await PushAsync(new ContentPage
+				{
 					Content = new Label
 					{
 						Text = TestOk

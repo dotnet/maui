@@ -499,7 +499,7 @@ namespace Xamarin.Forms
 			{
 				TargetState = state,
 				Animated = animate,
-				EnableRelativeShellRoutes = enableRelativeShellRoutes, 
+				EnableRelativeShellRoutes = enableRelativeShellRoutes,
 				DeferredArgs = deferredArgs
 			});
 		}
@@ -509,7 +509,7 @@ namespace Xamarin.Forms
 			if (shellNavigationParameters.PagePushing != null)
 				Routing.RegisterImplicitPageRoute(shellNavigationParameters.PagePushing);
 
-			ShellNavigationState state = shellNavigationParameters.TargetState ?? Routing.GetRoute(shellNavigationParameters.PagePushing);			
+			ShellNavigationState state = shellNavigationParameters.TargetState ?? Routing.GetRoute(shellNavigationParameters.PagePushing);
 			bool? animate = shellNavigationParameters.Animated;
 			bool enableRelativeShellRoutes = shellNavigationParameters.EnableRelativeShellRoutes;
 			ShellNavigatingEventArgs deferredArgs = shellNavigationParameters.DeferredArgs;
@@ -555,7 +555,7 @@ namespace Xamarin.Forms
 			bool modalStackPreBuilt = false;
 
 			// If we're replacing the whole stack and there are global routes then build the navigation stack before setting the shell section visible
-			if (navigationRequest.Request.GlobalRoutes.Count > 0 && 
+			if (navigationRequest.Request.GlobalRoutes.Count > 0 &&
 				nextActiveSection != null &&
 				navigationRequest.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 			{
@@ -1062,7 +1062,7 @@ namespace Xamarin.Forms
 
 				if (Routing.IsImplicit(shellItem) || shellItem.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
 				{
-					if(shellItem.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
+					if (shellItem.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
 						IncrementGroup();
 
 					foreach (var shellSection in (shellItem as IShellItemController).GetItems())
@@ -1085,7 +1085,7 @@ namespace Xamarin.Forms
 								}
 							}
 
-							if(shellSection.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
+							if (shellSection.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
 								IncrementGroup();
 						}
 						else
@@ -1126,7 +1126,7 @@ namespace Xamarin.Forms
 			// If the flyout groupings haven't changed just return
 			// the same instance so the caller knows it hasn't changed
 			// at a later point this will all get converted to an observable collection
-			if(_currentFlyoutViews?.Count == result.Count)
+			if (_currentFlyoutViews?.Count == result.Count)
 			{
 				bool hasChanged = false;
 				for (var i = 0; i < result.Count && !hasChanged; i++)
@@ -1140,9 +1140,9 @@ namespace Xamarin.Forms
 						break;
 					}
 
-					for(var j = 0; j > topLevelNew.Count; j++)
+					for (var j = 0; j > topLevelNew.Count; j++)
 					{
-						if(topLevelNew[j] != topLevelPrevious[j])
+						if (topLevelNew[j] != topLevelPrevious[j])
 						{
 							hasChanged = true;
 							break;
@@ -1160,7 +1160,7 @@ namespace Xamarin.Forms
 
 			bool ShowInFlyoutMenu(BindableObject bo)
 			{
-				if(bo is MenuShellItem msi)
+				if (bo is MenuShellItem msi)
 					return FlyoutItem.GetIsVisible(msi.MenuItem);
 
 				return FlyoutItem.GetIsVisible(bo);
@@ -1285,7 +1285,7 @@ namespace Xamarin.Forms
 				return;
 			}
 
-			if(args.DeferralCount > 0 && args.CanCancel)
+			if (args.DeferralCount > 0 && args.CanCancel)
 			{
 				_deferredEventArgs = args;
 				args.RegisterDeferralCompletedCallBack(async () =>
@@ -1298,7 +1298,7 @@ namespace Xamarin.Forms
 
 					await CompleteDeferredNavigating(args);
 				});
-			}	
+			}
 		}
 
 		static void OnCurrentItemChanged(BindableObject bindable, object oldValue, object newValue)

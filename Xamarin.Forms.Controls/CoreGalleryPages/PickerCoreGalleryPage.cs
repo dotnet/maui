@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Controls
 			var fontFamilyContainer = new ViewContainer<Picker>(Test.Picker.FontFamily,
 				new Picker());
 			// Set font family based on available fonts per platform
-			switch(Device.RuntimePlatform)
+			switch (Device.RuntimePlatform)
 			{
 				case Device.Android:
 					fontFamilyContainer.View.FontFamily = "sans-serif-thin";
@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Controls
 			verticalTextAlignmentContainer.View.Items.Add("Item 1");
 			verticalTextAlignmentContainer.View.Items.Add("Item 2");
 			verticalTextAlignmentContainer.View.Items.Add("Item 3");
-			
+
 			Add(itemsContainer);
 			Add(selectedIndexContainer);
 			Add(titleContainer);

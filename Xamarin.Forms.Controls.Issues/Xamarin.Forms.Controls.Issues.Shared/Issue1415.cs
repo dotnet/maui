@@ -9,8 +9,8 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 1415, 
-		"HorizontalTextAlignment=\"Center\" loses alignment when scrolled", 
+	[Issue(IssueTracker.Github, 1415,
+		"HorizontalTextAlignment=\"Center\" loses alignment when scrolled",
 		PlatformAffected.Android)]
 	public class Issue1415 : TestContentPage
 	{
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var layout = new StackLayout();
 
 			var instructions =
-				"Scroll up and down for a while. The text in the ListView items should remain centered. " 
+				"Scroll up and down for a while. The text in the ListView items should remain centered. "
 				+ "If any of the text is not centered, this test has failed.";
 
 			var lv = new ListView();

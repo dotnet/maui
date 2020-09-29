@@ -16,14 +16,14 @@ namespace Xamarin.Forms.Core.UnitTests
 		[SetUp]
 		public override void Setup()
 		{
-			base.Setup ();
-			Device.PlatformServices = new MockPlatformServices ();
+			base.Setup();
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
 		[TearDown]
 		public override void TearDown()
 		{
-			base.TearDown ();
+			base.TearDown();
 			Device.PlatformServices = null;
 		}
 
@@ -31,39 +31,39 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ListCount()
 		{
 			var list = new List<string> { "foo", "bar" };
-			var proxy = new ListProxy (list);
+			var proxy = new ListProxy(list);
 
-			Assert.AreEqual (list.Count, proxy.Count);
-			list.Add ("baz");
-			Assert.AreEqual (list.Count, proxy.Count);
+			Assert.AreEqual(list.Count, proxy.Count);
+			list.Add("baz");
+			Assert.AreEqual(list.Count, proxy.Count);
 		}
 
 		[Test]
 		public void CollectionCount()
 		{
 			var list = new Collection<string> { "foo", "bar" };
-			var proxy = new ListProxy (list);
+			var proxy = new ListProxy(list);
 
-			Assert.AreEqual (list.Count, proxy.Count);
-			list.Add ("baz");
-			Assert.AreEqual (list.Count, proxy.Count);
+			Assert.AreEqual(list.Count, proxy.Count);
+			list.Add("baz");
+			Assert.AreEqual(list.Count, proxy.Count);
 		}
 
 		[Test]
-		[Description ("Count should ensure that the window is created if neccessary")]
+		[Description("Count should ensure that the window is created if neccessary")]
 		public void EnumerableInitialCount()
 		{
-			var enumerable = Enumerable.Range (0, 100);
-			var proxy = new ListProxy (enumerable, 10);
+			var enumerable = Enumerable.Range(0, 100);
+			var proxy = new ListProxy(enumerable, 10);
 
-			Assert.AreEqual (10, proxy.Count);
+			Assert.AreEqual(10, proxy.Count);
 		}
 
 		[Test]
 		public void EnumerableCount()
 		{
-			var enumerable = Enumerable.Range (0, 100);
-			var proxy = new ListProxy (enumerable, 10);
+			var enumerable = Enumerable.Range(0, 100);
+			var proxy = new ListProxy(enumerable, 10);
 
 			int changed = 0;
 			proxy.CountChanged += (o, e) => changed++;
@@ -71,88 +71,90 @@ namespace Xamarin.Forms.Core.UnitTests
 			var enumerator = proxy.GetEnumerator();
 			enumerator.MoveNext();
 
-			Assert.AreEqual (10, proxy.Count);
-			Assert.AreEqual (1, changed);
+			Assert.AreEqual(10, proxy.Count);
+			Assert.AreEqual(1, changed);
 
 			enumerator.MoveNext();
 
-			Assert.AreEqual (10, proxy.Count);
-			Assert.AreEqual (1, changed);
+			Assert.AreEqual(10, proxy.Count);
+			Assert.AreEqual(1, changed);
 
-			while (enumerator.MoveNext()) {
+			while (enumerator.MoveNext())
+			{
 			}
 
 			enumerator.Dispose();
 
-			Assert.AreEqual (100, proxy.Count);
-			Assert.AreEqual (19, changed);
+			Assert.AreEqual(100, proxy.Count);
+			Assert.AreEqual(19, changed);
 
-			using (enumerator = proxy.GetEnumerator()) {
+			using (enumerator = proxy.GetEnumerator())
+			{
 
-				Assert.AreEqual (100, proxy.Count);
+				Assert.AreEqual(100, proxy.Count);
 
 				while (enumerator.MoveNext())
-					Assert.AreEqual (100, proxy.Count);
+					Assert.AreEqual(100, proxy.Count);
 
-				Assert.AreEqual (100, proxy.Count);
+				Assert.AreEqual(100, proxy.Count);
 			}
 
-			Assert.AreEqual (19, changed);
+			Assert.AreEqual(19, changed);
 		}
 
 		[Test]
 		public void InsideWindowSize()
 		{
-			var numbers = Enumerable.Range (0, 100);
-			var proxy = new ListProxy (numbers, 10);
+			var numbers = Enumerable.Range(0, 100);
+			var proxy = new ListProxy(numbers, 10);
 
 			int i = (int)proxy[5];
-			Assert.That (i, Is.EqualTo (5));
+			Assert.That(i, Is.EqualTo(5));
 		}
 
 		[Test]
 		public void IndexOutsideWindowSize()
 		{
-			var numbers = Enumerable.Range (0, 100);
-			var proxy = new ListProxy (numbers, 10);
+			var numbers = Enumerable.Range(0, 100);
+			var proxy = new ListProxy(numbers, 10);
 
 			int i = (int)proxy[50];
-			Assert.That (i, Is.EqualTo (50));
+			Assert.That(i, Is.EqualTo(50));
 		}
 
 		[Test]
 		public void IndexInsideToOutsideWindowSize()
 		{
-			var numbers = Enumerable.Range (0, 100);
-			var proxy = new ListProxy (numbers, 10);
+			var numbers = Enumerable.Range(0, 100);
+			var proxy = new ListProxy(numbers, 10);
 
 			int i = (int)proxy[5];
-			Assert.That (i, Is.EqualTo (5));
+			Assert.That(i, Is.EqualTo(5));
 
 			i = (int)proxy[50];
-			Assert.That (i, Is.EqualTo (50));
+			Assert.That(i, Is.EqualTo(50));
 		}
 
 		[Test]
 		public void IndexOutsideToPreWindowSize()
 		{
-			var numbers = Enumerable.Range (0, 100);
-			var proxy = new ListProxy (numbers, 10);
+			var numbers = Enumerable.Range(0, 100);
+			var proxy = new ListProxy(numbers, 10);
 
 			int i = (int)proxy[50];
-			Assert.That (i, Is.EqualTo (50));
+			Assert.That(i, Is.EqualTo(50));
 
 			i = (int)proxy[5];
-			Assert.That (i, Is.EqualTo (5));
+			Assert.That(i, Is.EqualTo(5));
 		}
 
 		[Test]
 		public void EnumerableIndexOutOfRange()
 		{
-			var numbers = Enumerable.Range (0, 100);
-			var proxy = new ListProxy (numbers);
+			var numbers = Enumerable.Range(0, 100);
+			var proxy = new ListProxy(numbers);
 
-			Assert.That (() => proxy[100], Throws.InstanceOf<ArgumentOutOfRangeException>());
+			Assert.That(() => proxy[100], Throws.InstanceOf<ArgumentOutOfRangeException>());
 		}
 
 		class IntCollection
@@ -160,7 +162,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			readonly List<int> ints;
 
-			public IntCollection (IEnumerable<int> ints)
+			public IntCollection(IEnumerable<int> ints)
 			{
 				this.ints = ints.ToList();
 			}
@@ -175,12 +177,12 @@ namespace Xamarin.Forms.Core.UnitTests
 				return GetEnumerator();
 			}
 
-			public void CopyTo (Array array, int index)
+			public void CopyTo(Array array, int index)
 			{
 				throw new NotImplementedException();
 			}
 
-			public int Count { get { return ints.Count; }}
+			public int Count { get { return ints.Count; } }
 
 			public object SyncRoot
 			{
@@ -198,33 +200,33 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void CollectionIndexOutOfRange()
 		{
-			var numbers = new IntCollection (Enumerable.Range (0, 100));
-			var proxy = new ListProxy (numbers);
+			var numbers = new IntCollection(Enumerable.Range(0, 100));
+			var proxy = new ListProxy(numbers);
 
-			Assert.That (() => proxy[100], Throws.InstanceOf<ArgumentOutOfRangeException>());
+			Assert.That(() => proxy[100], Throws.InstanceOf<ArgumentOutOfRangeException>());
 		}
 
 		[Test]
 		public void ListIndexOutOfRange()
 		{
-			var numbers = Enumerable.Range (0, 100).ToList();
-			var proxy = new ListProxy (numbers);
+			var numbers = Enumerable.Range(0, 100).ToList();
+			var proxy = new ListProxy(numbers);
 
-			Assert.That (() => proxy[100], Throws.InstanceOf<ArgumentOutOfRangeException>());
+			Assert.That(() => proxy[100], Throws.InstanceOf<ArgumentOutOfRangeException>());
 		}
 
 		[Test]
 		public void CollectionChangedWhileEnumerating()
 		{
 			var c = new ObservableCollection<string> { "foo", "bar" };
-			var p = new ListProxy (c);
+			var p = new ListProxy(c);
 
 			IEnumerator<object> e = p.GetEnumerator();
-			Assert.IsTrue (e.MoveNext(), "Initial MoveNext() failed, test can't continue");
+			Assert.IsTrue(e.MoveNext(), "Initial MoveNext() failed, test can't continue");
 
-			c.Add ("baz");
+			c.Add("baz");
 
-			Assert.That (() => e.MoveNext(), Throws.InvalidOperationException,
+			Assert.That(() => e.MoveNext(), Throws.InvalidOperationException,
 				"MoveNext did not throw an exception when the underlying collection had changed");
 		}
 
@@ -234,15 +236,16 @@ namespace Xamarin.Forms.Core.UnitTests
 			var collection = new ObservableCollection<string> { "foo" };
 			var context = new object();
 
-			var list = new ListProxy (collection);
+			var list = new ListProxy(collection);
 
 			bool executed = false;
-			BindingBase.EnableCollectionSynchronization (collection, context, (enumerable, o, method, access) => {
+			BindingBase.EnableCollectionSynchronization(collection, context, (enumerable, o, method, access) =>
+			{
 				executed = true;
-				Assert.AreSame (collection, enumerable);
-				Assert.AreSame (context, o);
-				Assert.IsNotNull (method);
-				Assert.IsFalse (access);
+				Assert.AreSame(collection, enumerable);
+				Assert.AreSame(context, o);
+				Assert.IsNotNull(method);
+				Assert.IsFalse(access);
 
 				lock (enumerable)
 					method();
@@ -250,14 +253,15 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			object value = list[0];
 
-			Assert.IsTrue (executed, "Callback was not executed");
+			Assert.IsTrue(executed, "Callback was not executed");
 		}
 
 		[Test]
 		public void SynchronizedCollectionAdd()
 		{
 			bool invoked = false;
-			Device.PlatformServices  = new MockPlatformServices (isInvokeRequired:true, invokeOnMainThread: action => {
+			Device.PlatformServices = new MockPlatformServices(isInvokeRequired: true, invokeOnMainThread: action =>
+			{
 				invoked = true;
 				action();
 			});
@@ -265,98 +269,100 @@ namespace Xamarin.Forms.Core.UnitTests
 			var collection = new ObservableCollection<string> { "foo" };
 			var context = new object();
 
-			var list = new ListProxy (collection);
-			
-			Assert.IsFalse (invoked, "An invoke shouldn't be executed just setting up ListProxy");
+			var list = new ListProxy(collection);
+
+			Assert.IsFalse(invoked, "An invoke shouldn't be executed just setting up ListProxy");
 
 			bool executed = false;
-			BindingBase.EnableCollectionSynchronization (collection, context, (enumerable, o, method, access) => {
+			BindingBase.EnableCollectionSynchronization(collection, context, (enumerable, o, method, access) =>
+			{
 				executed = true;
-				Assert.AreSame (collection, enumerable);
-				Assert.AreSame (context, o);
-				Assert.IsNotNull (method);
-				Assert.IsFalse (access);
+				Assert.AreSame(collection, enumerable);
+				Assert.AreSame(context, o);
+				Assert.IsNotNull(method);
+				Assert.IsFalse(access);
 
 				lock (enumerable)
 					method();
 			});
 
-			var mre = new ManualResetEvent (false);
+			var mre = new ManualResetEvent(false);
 
-			Task.Factory.StartNew (() => {
+			Task.Factory.StartNew(() =>
+			{
 				lock (collection)
-					collection.Add ("foo");
+					collection.Add("foo");
 
 				mre.Set();
 			}, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
 
-			mre.WaitOne (5000);
+			mre.WaitOne(5000);
 
-			Assert.IsTrue (executed, "Callback was not executed");
-			Assert.IsTrue (invoked, "Callback was not executed on the UI thread");
+			Assert.IsTrue(executed, "Callback was not executed");
+			Assert.IsTrue(invoked, "Callback was not executed on the UI thread");
 		}
 
 		[Test]
 		public void ClearEnumerable()
 		{
-			var proxy = new ListProxy (Enumerable.Range (0, 100));
+			var proxy = new ListProxy(Enumerable.Range(0, 100));
 			var enumerator = proxy.GetEnumerator();
 			enumerator.MoveNext();
 			enumerator.MoveNext();
 
 			proxy.Clear();
 
-			Assert.AreEqual (100, proxy.Count);
-			Assert.That (() => enumerator.MoveNext(), Throws.InvalidOperationException);
+			Assert.AreEqual(100, proxy.Count);
+			Assert.That(() => enumerator.MoveNext(), Throws.InvalidOperationException);
 		}
 
 		[Test]
 		public void ClearCollection()
 		{
-			var proxy = new ListProxy (new IntCollection (Enumerable.Range (0, 100)));
+			var proxy = new ListProxy(new IntCollection(Enumerable.Range(0, 100)));
 			var enumerator = proxy.GetEnumerator();
 			enumerator.MoveNext();
 			enumerator.MoveNext();
 
 			proxy.Clear();
 
-			Assert.AreEqual (100, proxy.Count);
-			Assert.That (() => enumerator.MoveNext(), Throws.InvalidOperationException);
+			Assert.AreEqual(100, proxy.Count);
+			Assert.That(() => enumerator.MoveNext(), Throws.InvalidOperationException);
 		}
 
 		[Test]
 		public void ClearList()
 		{
-			var proxy = new ListProxy (Enumerable.Range (0, 100).ToList());
+			var proxy = new ListProxy(Enumerable.Range(0, 100).ToList());
 			var enumerator = proxy.GetEnumerator();
 			enumerator.MoveNext();
 			enumerator.MoveNext();
 
 			proxy.Clear();
 
-			Assert.AreEqual (100, proxy.Count);
-			Assert.That (() => enumerator.MoveNext(), Throws.InvalidOperationException);
+			Assert.AreEqual(100, proxy.Count);
+			Assert.That(() => enumerator.MoveNext(), Throws.InvalidOperationException);
 		}
 
 		[Test]
 		public void IndexOfValueTypeNonList()
 		{
-			var proxy = new ListProxy (Enumerable.Range (0, 100));
-			Assert.AreEqual (1, proxy.IndexOf (1));
+			var proxy = new ListProxy(Enumerable.Range(0, 100));
+			Assert.AreEqual(1, proxy.IndexOf(1));
 		}
 
 		[Test]
 		public void EnumeratorForEnumerable()
 		{
-			var proxy = new ListProxy (Enumerable.Range (0, 2));
+			var proxy = new ListProxy(Enumerable.Range(0, 2));
 
 			var enumerator = proxy.GetEnumerator();
-			Assert.That (enumerator.Current, Is.Null);
-			Assert.That (enumerator.MoveNext(), Is.True);
-			Assert.That (enumerator.Current, Is.EqualTo (0));
-			Assert.That (enumerator.MoveNext(), Is.True);
-			Assert.That (enumerator.Current, Is.EqualTo (1));
-			Assert.That (enumerator.MoveNext(), Is.False);
+			Assert.That(enumerator.Current, Is.Null);
+			Assert.That(enumerator.MoveNext(), Is.True);
+			Assert.That(enumerator.Current, Is.EqualTo(0));
+			Assert.That(enumerator.MoveNext(), Is.True);
+			Assert.That(enumerator.Current, Is.EqualTo(1));
+			Assert.That(enumerator.MoveNext(), Is.False);
 		}
 
 		[Test]
@@ -368,14 +374,16 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			int i = 0;
 			Action create = null;
-			create = () => {
-				if (i++ < 1024) {
+			create = () =>
+			{
+				if (i++ < 1024)
+				{
 					create();
 					return;
 				}
 
-				var proxy = new ListProxy (collection);
-				weakProxy = new WeakReference (proxy);
+				var proxy = new ListProxy(collection);
+				weakProxy = new WeakReference(proxy);
 			};
 
 			create();
@@ -384,42 +392,42 @@ namespace Xamarin.Forms.Core.UnitTests
 			GC.WaitForPendingFinalizers();
 			GC.Collect();
 
-			Assert.That (weakProxy.IsAlive, Is.False);
+			Assert.That(weakProxy.IsAlive, Is.False);
 		}
 
 		[Test]
 		public void IEnumerableAddDoesNotReport0()
 		{
 			var custom = new CustomINCC();
-			custom.Add ("test");
-			custom.Add ("test2");
+			custom.Add("test");
+			custom.Add("test2");
 
-			var proxy = new ListProxy (custom);
-			Assert.That (proxy.Count, Is.EqualTo (2));
+			var proxy = new ListProxy(custom);
+			Assert.That(proxy.Count, Is.EqualTo(2));
 
-			custom.Add ("testing");
-			Assert.That (proxy.Count, Is.EqualTo (3));
+			custom.Add("testing");
+			Assert.That(proxy.Count, Is.EqualTo(3));
 		}
 
 		class CustomINCC : IEnumerable<string>, INotifyCollectionChanged
 		{
 			public event NotifyCollectionChangedEventHandler CollectionChanged;
-			List<string> Items = new List<string> ();
+			List<string> Items = new List<string>();
 
-			public void Add (string s)
+			public void Add(string s)
 			{
 				Items.Add(s);
 				if (CollectionChanged != null)
-					CollectionChanged (this, new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Add, s));
+					CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, s));
 			}
 
-			public IEnumerator<string> GetEnumerator ()
+			public IEnumerator<string> GetEnumerator()
 			{
-				return Items.GetEnumerator ();
+				return Items.GetEnumerator();
 			}
-			IEnumerator IEnumerable.GetEnumerator ()
+			IEnumerator IEnumerable.GetEnumerator()
 			{
-				return Items.GetEnumerator ();
+				return Items.GetEnumerator();
 			}
 		}
 

@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public static implicit operator long(Gh4215VM value) => long.MaxValue;
 		public static implicit operator Rectangle(Gh4215VM value) => new Rectangle();
 	}
-	
+
 	public partial class Gh4215 : ContentPage
 	{
 		public Gh4215()

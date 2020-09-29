@@ -55,11 +55,11 @@ namespace Xamarin.Forms.Platform.Android
 			foreach (Element logicalChild in ((IElementController)view).LogicalChildren)
 			{
 				var child = logicalChild as VisualElement;
-				
+
 				if (child != null)
 				{
 					IVisualElementRenderer renderer = Platform.GetRenderer(child);
-			
+
 					if (renderer == null)
 						continue;
 
@@ -72,7 +72,7 @@ namespace Xamarin.Forms.Platform.Android
 					renderer.View.RemoveFromParent();
 
 					Platform.SetRenderer(child, null);
-					
+
 					PushRenderer(renderer);
 				}
 			}

@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			// Top Right end character
 			Assert.IsTrue(region.Contains(new Point(179, 80)));
 			Assert.IsTrue(region.Contains(new Point(179, 99)));
-			
+
 			//** Outside Container **//
 			// Top Left start character
 			Assert.IsFalse(region.Contains(new Point(89, 80)));
@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsTrue(region.Contains(new Point(199, 80)));
 			Assert.IsTrue(region.Contains(new Point(199, 99)));
 
-		
+
 			// End Left end character
 			Assert.IsTrue(region.Contains(new Point(0, 100)));
 			Assert.IsTrue(region.Contains(new Point(0, 119)));
@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			// Top Right end character
 			Assert.IsFalse(region.Contains(new Point(200, 80)));
 			Assert.IsFalse(region.Contains(new Point(200, 99)));
-			
+
 			// End Left end character
 			Assert.IsFalse(region.Contains(new Point(-1, 120)));
 			Assert.IsFalse(region.Contains(new Point(-1, 139)));
@@ -145,7 +145,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			double startY = 80;
 
 			var region = Region.FromLines(lineHeights, maxWidth, startX, endX, startY).Inflate(10);
-			
+
 			// Top Left start character
 			Assert.IsTrue(region.Contains(new Point(90, 80)));
 			Assert.IsTrue(region.Contains(new Point(90, 99)));

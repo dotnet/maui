@@ -2,9 +2,8 @@
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using AToolbarPlacement = Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ToolbarPlacement;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-
+using AToolbarPlacement = Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ToolbarPlacement;
 using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
 
 #if UITEST

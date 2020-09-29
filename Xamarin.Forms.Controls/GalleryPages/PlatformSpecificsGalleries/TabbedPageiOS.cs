@@ -14,7 +14,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 
 		ContentPage CreatePage(ICommand restore, string title)
 		{
-			var page = new ContentPage {
+			var page = new ContentPage
+			{
 				Title = title
 			};
 			var content = new StackLayout

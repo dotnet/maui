@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Android
 		public ImageCache() : base()
 		{
 			_waiting = new ConcurrentDictionary<string, SemaphoreSlim>();
-			_lruCache = new FormsLruCache();			
+			_lruCache = new FormsLruCache();
 		}
 
 		void Put(string key, TimeSpan cacheValidity, global::Android.Graphics.Bitmap cacheObject)
@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Platform.Android
 					if (cacheEntry == null && createMethod != null)
 					{
 						innerCacheObject = await createMethod().ConfigureAwait(false);
-						if(innerCacheObject is global::Android.Graphics.Bitmap bm)
+						if (innerCacheObject is global::Android.Graphics.Bitmap bm)
 							Put(cacheKey, cacheValidity, bm);
 						else if (innerCacheObject is global::Android.Graphics.Drawables.BitmapDrawable bitmap)
 							Put(cacheKey, cacheValidity, bitmap.Bitmap);
@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			protected override void Dispose(bool disposing)
 			{
-				if(!_isDisposed)
+				if (!_isDisposed)
 				{
 					_isDisposed = true;
 					Data = null;
@@ -135,7 +135,7 @@ namespace Xamarin.Forms.Platform.Android
 					return bitmap.ByteCount / 1024;
 
 				return base.SizeOf(key, value);
-			} 
+			}
 		}
 
 	}

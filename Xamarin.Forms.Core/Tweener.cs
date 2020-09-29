@@ -103,7 +103,7 @@ namespace Xamarin.Forms
 				}
 
 				long wantedFrames = (_lastMilliseconds / Rate) + 1;
-				if(wantedFrames > _frames || Value >= 1.0f)
+				if (wantedFrames > _frames || Value >= 1.0f)
 				{
 					ValueUpdated?.Invoke(this, EventArgs.Empty);
 				}

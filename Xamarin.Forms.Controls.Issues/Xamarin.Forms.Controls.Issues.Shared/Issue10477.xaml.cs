@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Xamarin.Forms.CustomAttributes;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;

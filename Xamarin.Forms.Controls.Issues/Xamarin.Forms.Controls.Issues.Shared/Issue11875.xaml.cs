@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using System.Windows.Input;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
-using System.Windows.Input;
 
 #if UITEST
 using Xamarin.UITest;
@@ -27,47 +27,47 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 #if APP
 			InitializeComponent();
-            BindingContext = new Issue11875ViewModel();
+			BindingContext = new Issue11875ViewModel();
 #endif
-        }
+		}
 
-        protected override void Init()
+		protected override void Init()
 		{
 
 		}
-    }
+	}
 
-    public class Issue11875ViewModel : BindableObject
-    {
-        int _maxLines;
+	public class Issue11875ViewModel : BindableObject
+	{
+		int _maxLines;
 
-        public Issue11875ViewModel()
-        {
-            MaxLines = 2;
-        }
+		public Issue11875ViewModel()
+		{
+			MaxLines = 2;
+		}
 
-        public int MaxLines
-        {
-            get { return _maxLines; }
-            set
-            {
-                _maxLines = value;
-                OnPropertyChanged();
-            }
-        }
+		public int MaxLines
+		{
+			get { return _maxLines; }
+			set
+			{
+				_maxLines = value;
+				OnPropertyChanged();
+			}
+		}
 
-        public ICommand IncreaseCommand => new Command(Increase);
-        public ICommand DecreaseCommand => new Command(Decrease);
+		public ICommand IncreaseCommand => new Command(Increase);
+		public ICommand DecreaseCommand => new Command(Decrease);
 
-        void Increase()
-        {
-            MaxLines++;
-        }
+		void Increase()
+		{
+			MaxLines++;
+		}
 
-        void Decrease()
-        {
-            if (MaxLines > 0)
-                MaxLines--;
-        }
-    }
+		void Decrease()
+		{
+			if (MaxLines > 0)
+				MaxLines--;
+		}
+	}
 }

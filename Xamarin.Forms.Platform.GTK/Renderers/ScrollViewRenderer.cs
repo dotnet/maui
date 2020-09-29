@@ -1,6 +1,6 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.ComponentModel;
+using Gtk;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Renderers

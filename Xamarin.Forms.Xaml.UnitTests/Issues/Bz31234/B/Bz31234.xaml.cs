@@ -7,9 +7,9 @@ namespace Xamarin.Forms.Xaml.UnitTests.B
 {
 	public partial class Bz31234 : ContentPage
 	{
-		public Bz31234 ()
+		public Bz31234()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 	}
 }

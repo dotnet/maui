@@ -22,7 +22,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public static readonly BindableProperty ListProperty =
 			BindableProperty.Create("List", typeof(IEnumerable<string>), typeof(Bz45891), default(IEnumerable<string>));
 
-		public IEnumerable<string> List {
+		public IEnumerable<string> List
+		{
 			get { return (IEnumerable<string>)GetValue(ListProperty); }
 			set { SetValue(ListProperty, value); }
 		}

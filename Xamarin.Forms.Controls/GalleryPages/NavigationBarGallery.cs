@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using static Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
 namespace Xamarin.Forms.Controls
 {

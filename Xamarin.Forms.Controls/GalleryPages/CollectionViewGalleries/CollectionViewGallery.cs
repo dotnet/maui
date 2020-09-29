@@ -1,12 +1,12 @@
 
+using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ItemSizeGalleries;
+using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries;
+using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGalleries;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries

@@ -5,8 +5,8 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.None, 9906753, "Default colors toggle test", PlatformAffected.All)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.None, 9906753, "Default colors toggle test", PlatformAffected.All)]
 	public class DefaultColorToggleTest : TabbedPage
 	{
 		public DefaultColorToggleTest()
@@ -28,7 +28,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var passwordColorDefaultToggle = new Entry() { IsPassword = true, Text = "Default Password Color" };
 			var passwordColorInit = new Entry() { IsPassword = true, Text = "Should Be Red", TextColor = Color.Red };
 			var passwordToggleButton = new Button() { Text = "Toggle Password Box (Default)" };
-			passwordToggleButton.Clicked += (sender, args) => {
+			passwordToggleButton.Clicked += (sender, args) =>
+			{
 				if (passwordColorDefaultToggle.TextColor.IsDefault)
 				{
 					passwordColorDefaultToggle.TextColor = Color.Red;
@@ -41,9 +42,11 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			return new ContentPage {
+			return new ContentPage
+			{
 				Title = "Password",
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					VerticalOptions = LayoutOptions.Fill,
 					HorizontalOptions = LayoutOptions.Fill,
 					Children =
@@ -60,7 +63,8 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var searchbarTextColorDefaultToggle = new SearchBar() { Text = "Default SearchBar Text Color" };
 			var searchbarTextColorToggleButton = new Button() { Text = "Toggle SearchBar Color" };
-			searchbarTextColorToggleButton.Clicked += (sender, args) => {
+			searchbarTextColorToggleButton.Clicked += (sender, args) =>
+			{
 				if (searchbarTextColorDefaultToggle.TextColor.IsDefault)
 				{
 					searchbarTextColorDefaultToggle.TextColor = Color.Fuchsia;
@@ -75,7 +79,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var searchbarPlaceholderColorDefaultToggle = new SearchBar() { Placeholder = "Default Placeholder Color" };
 			var searchbarPlaceholderToggleButton = new Button() { Text = "Toggle Placeholder Color" };
-			searchbarPlaceholderToggleButton.Clicked += (sender, args) => {
+			searchbarPlaceholderToggleButton.Clicked += (sender, args) =>
+			{
 				if (searchbarPlaceholderColorDefaultToggle.PlaceholderColor.IsDefault)
 				{
 					searchbarPlaceholderColorDefaultToggle.PlaceholderColor = Color.Lime;
@@ -88,9 +93,11 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			return new ContentPage {
+			return new ContentPage
+			{
 				Title = "SearchBar",
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					VerticalOptions = LayoutOptions.Fill,
 					HorizontalOptions = LayoutOptions.Fill,
 					Children =
@@ -108,11 +115,13 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			const string defaultLabel = "Default Color (Click To Toggle)";
 
-			var buttonColorDefaultToggle = new Button {
+			var buttonColorDefaultToggle = new Button
+			{
 				Text = defaultLabel
 			};
 
-			var buttonColorInitted = new Button {
+			var buttonColorInitted = new Button
+			{
 				Text = "This Should Always Be Red",
 				TextColor = Color.Red
 			};
@@ -143,7 +152,8 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			buttonColorDefaultToggle.Clicked += (s, e) => {
+			buttonColorDefaultToggle.Clicked += (s, e) =>
+			{
 				if (buttonColorDefaultToggle.TextColor == Color.Default)
 				{
 					buttonColorDefaultToggle.TextColor = Color.Red;
@@ -157,7 +167,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			};
 
-			return new ContentPage {
+			return new ContentPage
+			{
 				Title = "Button",
 				Content = new StackLayout
 				{
@@ -171,24 +182,28 @@ namespace Xamarin.Forms.Controls.Issues
 						buttonDisableOtherButton
 					}
 				}
-			}; 
+			};
 		}
 
 		static ContentPage LabelPage()
 		{
 			const string defaultText = "Default Label Color (Tap To Toggle)";
 
-			var labelColorDefaultToggle = new Label {
+			var labelColorDefaultToggle = new Label
+			{
 				Text = defaultText
 			};
 
-			var labelColorInitted = new Label {
+			var labelColorInitted = new Label
+			{
 				Text = "Should Always Be Blue",
 				TextColor = Color.Blue
 			};
 
-			labelColorDefaultToggle.GestureRecognizers.Add(new TapGestureRecognizer {
-				Command = new Command(o => {
+			labelColorDefaultToggle.GestureRecognizers.Add(new TapGestureRecognizer
+			{
+				Command = new Command(o =>
+				{
 					if (labelColorDefaultToggle.TextColor == Color.Default)
 					{
 						labelColorDefaultToggle.TextColor = Color.Green;
@@ -202,9 +217,11 @@ namespace Xamarin.Forms.Controls.Issues
 				})
 			});
 
-			return new ContentPage {
+			return new ContentPage
+			{
 				Title = "Label",
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					VerticalOptions = LayoutOptions.Fill,
 					HorizontalOptions = LayoutOptions.Fill,
 					Children =
@@ -283,10 +300,11 @@ namespace Xamarin.Forms.Controls.Issues
 			var timePickerColorDefaultToggle = new TimePicker { Time = new TimeSpan(11, 34, 00) };
 
 			var defaultText = "Should have default color text";
-			var timePickerColorLabel = new Label() {Text = defaultText };
+			var timePickerColorLabel = new Label() { Text = defaultText };
 
 			var toggleButton = new Button { Text = "Toggle TimePicker Text Color" };
-			toggleButton.Clicked += (sender, args) => {
+			toggleButton.Clicked += (sender, args) =>
+			{
 				if (timePickerColorDefaultToggle.TextColor.IsDefault)
 				{
 					timePickerColorDefaultToggle.TextColor = Color.Fuchsia;
@@ -300,17 +318,20 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			const string disabledText = "TimePicker is Disabled; Should have default disabled color.";
-			var timePickerDisabledlabel = new Label { Text = disabledText};
-			var timePickerColorDisabled = new TimePicker {
+			var timePickerDisabledlabel = new Label { Text = disabledText };
+			var timePickerColorDisabled = new TimePicker
+			{
 				IsEnabled = false,
 				TextColor = Color.Green
 			};
 
-			var buttonToggleEnabled = new Button() {
+			var buttonToggleEnabled = new Button()
+			{
 				Text = "Toggle IsEnabled"
 			};
 
-			buttonToggleEnabled.Clicked += (sender, args) => {
+			buttonToggleEnabled.Clicked += (sender, args) =>
+			{
 				timePickerColorDisabled.IsEnabled = !timePickerColorDisabled.IsEnabled;
 				if (!timePickerColorDisabled.IsEnabled)
 				{
@@ -322,10 +343,12 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			return new ContentPage {
+			return new ContentPage
+			{
 				Title = "TimePicker",
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					VerticalOptions = LayoutOptions.Fill,
 					HorizontalOptions = LayoutOptions.Fill,
 					Children =
@@ -351,7 +374,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var pickerColorLabel = new Label { Text = defaultText };
 
 			var toggleButton = new Button { Text = "Toggle DatePicker Text Color" };
-			toggleButton.Clicked += (sender, args) => {
+			toggleButton.Clicked += (sender, args) =>
+			{
 				if (pickerColorDefaultToggle.TextColor.IsDefault)
 				{
 					pickerColorDefaultToggle.TextColor = Color.Fuchsia;
@@ -366,16 +390,19 @@ namespace Xamarin.Forms.Controls.Issues
 
 			const string disabledText = "DatePicker is Disabled; Should have default disabled color.";
 			var pickerDisabledlabel = new Label { Text = disabledText };
-			var pickerColorDisabled = new DatePicker {
+			var pickerColorDisabled = new DatePicker
+			{
 				IsEnabled = false,
 				TextColor = Color.Green
 			};
 
-			var buttonToggleEnabled = new Button() {
+			var buttonToggleEnabled = new Button()
+			{
 				Text = "Toggle IsEnabled"
 			};
 
-			buttonToggleEnabled.Clicked += (sender, args) => {
+			buttonToggleEnabled.Clicked += (sender, args) =>
+			{
 				pickerColorDisabled.IsEnabled = !pickerColorDisabled.IsEnabled;
 				if (!pickerColorDisabled.IsEnabled)
 				{
@@ -387,10 +414,12 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			return new ContentPage {
+			return new ContentPage
+			{
 				Title = "DatePicker",
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					VerticalOptions = LayoutOptions.Fill,
 					HorizontalOptions = LayoutOptions.Fill,
 					Children =
@@ -411,13 +440,14 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var pickerInit = new Picker { TextColor = Color.Red, Items = { "Item 1", "Item 2", "Item 3" }, SelectedIndex = 1 };
 
-			var pickerColorDefaultToggle = new Picker { Items = { "Item 1", "Item 2", "Item 3" } , SelectedIndex = 1 };
+			var pickerColorDefaultToggle = new Picker { Items = { "Item 1", "Item 2", "Item 3" }, SelectedIndex = 1 };
 
 			var defaultText = "Should have default color text";
 			var pickerColorLabel = new Label { Text = defaultText };
 
 			var toggleButton = new Button { Text = "Toggle Picker Text Color" };
-			toggleButton.Clicked += (sender, args) => {
+			toggleButton.Clicked += (sender, args) =>
+			{
 				if (pickerColorDefaultToggle.TextColor.IsDefault)
 				{
 					pickerColorDefaultToggle.TextColor = Color.Fuchsia;
@@ -432,18 +462,21 @@ namespace Xamarin.Forms.Controls.Issues
 
 			const string disabledText = "Picker is Disabled; Should have default disabled color.";
 			var pickerDisabledlabel = new Label { Text = disabledText };
-			var pickerColorDisabled = new Picker {
+			var pickerColorDisabled = new Picker
+			{
 				IsEnabled = false,
 				TextColor = Color.Green,
 				Items = { "Item 1", "Item 2", "Item 3" },
 				SelectedIndex = 1
 			};
 
-			var buttonToggleEnabled = new Button() {
+			var buttonToggleEnabled = new Button()
+			{
 				Text = "Toggle IsEnabled"
 			};
 
-			buttonToggleEnabled.Clicked += (sender, args) => {
+			buttonToggleEnabled.Clicked += (sender, args) =>
+			{
 				pickerColorDisabled.IsEnabled = !pickerColorDisabled.IsEnabled;
 				if (!pickerColorDisabled.IsEnabled)
 				{
@@ -455,10 +488,12 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			return new ContentPage {
+			return new ContentPage
+			{
 				Title = "Picker",
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					VerticalOptions = LayoutOptions.Fill,
 					HorizontalOptions = LayoutOptions.Fill,
 					Children =

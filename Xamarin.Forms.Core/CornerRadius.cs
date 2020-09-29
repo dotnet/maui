@@ -2,8 +2,8 @@
 
 namespace Xamarin.Forms
 {
-	[DebuggerDisplay ("TopLeft={TopLeft}, TopRight={TopRight}, BottomLeft={BottomLeft}, BottomRight={BottomRight}")]
-	[TypeConverter (typeof (CornerRadiusTypeConverter))]
+	[DebuggerDisplay("TopLeft={TopLeft}, TopRight={TopRight}, BottomLeft={BottomLeft}, BottomRight={BottomRight}")]
+	[TypeConverter(typeof(CornerRadiusTypeConverter))]
 	public struct CornerRadius
 	{
 		bool _isParameterized;
@@ -13,11 +13,11 @@ namespace Xamarin.Forms
 		public double BottomLeft { get; }
 		public double BottomRight { get; }
 
-		public CornerRadius (double uniformRadius) : this (uniformRadius, uniformRadius, uniformRadius, uniformRadius)
+		public CornerRadius(double uniformRadius) : this(uniformRadius, uniformRadius, uniformRadius, uniformRadius)
 		{
 		}
 
-		public CornerRadius (double topLeft, double topRight, double bottomLeft, double bottomRight)
+		public CornerRadius(double topLeft, double topRight, double bottomLeft, double bottomRight)
 		{
 			_isParameterized = true;
 
@@ -27,12 +27,12 @@ namespace Xamarin.Forms
 			BottomRight = bottomRight;
 		}
 
-		public static implicit operator CornerRadius (double uniformRadius)
+		public static implicit operator CornerRadius(double uniformRadius)
 		{
-			return new CornerRadius (uniformRadius);
+			return new CornerRadius(uniformRadius);
 		}
 
-		bool Equals (CornerRadius other)
+		bool Equals(CornerRadius other)
 		{
 			if (!_isParameterized && !other._isParameterized)
 				return true;
@@ -40,36 +40,37 @@ namespace Xamarin.Forms
 			return TopLeft == other.TopLeft && TopRight == other.TopRight && BottomLeft == other.BottomLeft && BottomRight == other.BottomRight;
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals (null, obj))
+			if (ReferenceEquals(null, obj))
 				return false;
 
-			return obj is CornerRadius cornerRadius && Equals (cornerRadius);
+			return obj is CornerRadius cornerRadius && Equals(cornerRadius);
 		}
 
-		public override int GetHashCode ()
+		public override int GetHashCode()
 		{
-			unchecked {
+			unchecked
+			{
 				int hashCode = TopLeft.GetHashCode();
-				hashCode = (hashCode * 397) ^ TopRight.GetHashCode ();
-				hashCode = (hashCode * 397) ^ BottomLeft.GetHashCode ();
-				hashCode = (hashCode * 397) ^ BottomRight.GetHashCode ();
+				hashCode = (hashCode * 397) ^ TopRight.GetHashCode();
+				hashCode = (hashCode * 397) ^ BottomLeft.GetHashCode();
+				hashCode = (hashCode * 397) ^ BottomRight.GetHashCode();
 				return hashCode;
 			}
 		}
 
-		public static bool operator == (CornerRadius left, CornerRadius right)
+		public static bool operator ==(CornerRadius left, CornerRadius right)
 		{
-			return left.Equals (right);
+			return left.Equals(right);
 		}
 
-		public static bool operator != (CornerRadius left, CornerRadius right)
+		public static bool operator !=(CornerRadius left, CornerRadius right)
 		{
-			return !left.Equals (right);
+			return !left.Equals(right);
 		}
 
-		public void Deconstruct (out double topLeft, out double topRight, out double bottomLeft, out double bottomRight)
+		public void Deconstruct(out double topLeft, out double topRight, out double bottomLeft, out double bottomRight)
 		{
 			topLeft = TopLeft;
 			topRight = TopRight;

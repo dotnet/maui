@@ -26,7 +26,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture] class Tests
+		[TestFixture]
+		class Tests
 		{
 			[SetUp]
 			public void Setup()
@@ -41,7 +42,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			}
 
 			[Test]
-			public void ReportSyntaxError([Values(false, true)]bool useCompiledXaml)
+			public void ReportSyntaxError([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh5706(useCompiledXaml);
 				layout.searchHandler.BindingContext = new VM();

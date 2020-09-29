@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Xamarin.Forms;
 
@@ -134,7 +134,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(label2.TextColor, stack2.BackgroundColor);
 			Assert.IsNull(label0.Text);
 			Assert.IsNull(label1.Text);
-			Assert.IsNull(label2.Text);					
+			Assert.IsNull(label2.Text);
 
 			// stack2	(person2)
 			//		stack1 (person2*)
@@ -224,7 +224,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsNull(label0.Text);
 			Assert.IsNull(label1.Text);
 			Assert.IsNull(label2.Text);
-			
+
 			stack0.BindingContext = person0;
 			stack1.BindingContext = person1;
 			stack2.BindingContext = person2;
@@ -240,7 +240,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			stack2.Children.Clear();
 			Assert.AreEqual(label0.TextColor, stack0.BackgroundColor);
 			Assert.AreEqual(label1.TextColor, stack1.BackgroundColor);
-			Assert.AreEqual(label2.TextColor, StackLayout.BackgroundColorProperty.DefaultValue);		
+			Assert.AreEqual(label2.TextColor, StackLayout.BackgroundColorProperty.DefaultValue);
 			Assert.AreEqual(label0.Text, person0.Name);
 			Assert.AreEqual(label1.Text, person1.Name);
 			Assert.IsNull(label2.Text);
@@ -317,9 +317,9 @@ namespace Xamarin.Forms.Core.UnitTests
 			this.Children.Add(_label);
 
 			_label.SetBinding(
-				Label.TextProperty, 
+				Label.TextProperty,
 				new Binding(
-					nameof(CustomControl.CustomText), 
+					nameof(CustomControl.CustomText),
 					source: RelativeBindingSource.TemplatedParent));
 		}
 	}

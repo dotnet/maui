@@ -42,7 +42,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 		public override string Description
 		{
-			get	{
+			get
+			{
 				if (_haslineinfo)
 					return string.Format($"{base.Description} line {_linenumber}, position {_lineposition}");
 

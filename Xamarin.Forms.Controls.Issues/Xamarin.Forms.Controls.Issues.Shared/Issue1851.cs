@@ -16,8 +16,8 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[Category(UITestCategories.ListView)]
 #endif
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1851, "ObservableCollection in ListView gets Index out of range when removing item", PlatformAffected.Android)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1851, "ObservableCollection in ListView gets Index out of range when removing item", PlatformAffected.Android)]
 	public class Issue1851 : TestContentPage
 	{
 		protected override void Init()

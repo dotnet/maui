@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using System;
-using System.Linq;
-using System.ComponentModel;
+﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;

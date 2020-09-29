@@ -11,12 +11,12 @@ namespace Xamarin.Forms
 		{
 		}
 
-		public InvalidNavigationException(string message) 
+		public InvalidNavigationException(string message)
 			: base(message)
 		{
 		}
 
-		public InvalidNavigationException(string message, Exception innerException) 
+		public InvalidNavigationException(string message, Exception innerException)
 			: base(message, innerException)
 		{
 		}

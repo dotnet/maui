@@ -1,7 +1,7 @@
 using System;
 using ElmSharp;
-using EEntry = ElmSharp.Entry;
 using EColor = ElmSharp.Color;
+using EEntry = ElmSharp.Entry;
 using ESize = ElmSharp.Size;
 
 #if __MATERIAL__

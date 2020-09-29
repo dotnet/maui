@@ -1,10 +1,10 @@
 using System;
 using Android.Content;
-using AndroidX.Core.Widget;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using AndroidX.Core.Widget;
 using Java.Lang;
 
 namespace Xamarin.Forms.Platform.Android

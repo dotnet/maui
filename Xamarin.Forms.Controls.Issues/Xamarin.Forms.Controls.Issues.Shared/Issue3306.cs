@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			TimePicker timePicker = new TimePicker();
 			timePicker.Time = DateTime.Now.TimeOfDay;
-			
+
 			TimePicker timePicker2 = new TimePicker();
 			timePicker2.Time = DateTime.Now.TimeOfDay;
 			timePicker2.Format = "t";

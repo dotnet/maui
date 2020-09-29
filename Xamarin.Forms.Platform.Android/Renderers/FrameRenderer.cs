@@ -222,13 +222,13 @@ namespace Xamarin.Forms.Platform.Android
 
 			void FrameOnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				if (   e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName
+				if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName
 					|| e.PropertyName == Frame.BorderColorProperty.PropertyName
 					|| e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
 				{
-					if(_normalBitmap == null)
+					if (_normalBitmap == null)
 						return;
-						
+
 					using (var canvas = new ACanvas(_normalBitmap))
 					{
 						int width = Bounds.Width();

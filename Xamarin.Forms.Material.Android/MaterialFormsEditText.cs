@@ -1,9 +1,9 @@
 
 using System;
 using Android.Content;
-using Android.Views;
 using Android.Runtime;
 using Android.Util;
+using Android.Views;
 using Xamarin.Forms.Platform.Android;
 
 namespace Xamarin.Forms.Material.Android

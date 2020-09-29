@@ -2,13 +2,13 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using AndroidX.Core.View;
-using MaterialCardView = Google.Android.Material.Card.MaterialCardView;
+using Android.Graphics.Drawables;
 using Android.Views;
+using AndroidX.Core.View;
+using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using AView = Android.Views.View;
-using Xamarin.Forms.Platform.Android;
-using Android.Graphics.Drawables;
+using MaterialCardView = Google.Android.Material.Card.MaterialCardView;
 
 namespace Xamarin.Forms.Material.Android
 {

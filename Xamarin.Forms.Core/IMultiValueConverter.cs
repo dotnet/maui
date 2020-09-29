@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace Xamarin.Forms
@@ -20,6 +20,6 @@ namespace Xamarin.Forms
 	{
 		object Convert(object[] values, Type targetType, object parameter, CultureInfo culture);
 
-		object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture);		
+		object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture);
 	}
 }

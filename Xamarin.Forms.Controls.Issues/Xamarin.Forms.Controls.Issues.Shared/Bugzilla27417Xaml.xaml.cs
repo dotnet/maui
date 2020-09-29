@@ -13,10 +13,10 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	public partial class Bugzilla27417Xaml : ContentPage
 	{
-		public Bugzilla27417Xaml ()
+		public Bugzilla27417Xaml()
 		{
 #if APP
-			InitializeComponent ();
+			InitializeComponent();
 #endif
 		}
 	}

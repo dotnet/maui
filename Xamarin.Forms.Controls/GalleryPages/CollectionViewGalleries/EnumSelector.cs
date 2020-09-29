@@ -2,10 +2,10 @@
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
-	internal class EnumSelector<T> : ContentView where T : struct 
+	internal class EnumSelector<T> : ContentView where T : struct
 	{
 		readonly Action<T> _setValue;
-		
+
 		readonly Picker _picker;
 
 		public EnumSelector(Func<T> getValue, Action<T> setValue, string automationId = "")

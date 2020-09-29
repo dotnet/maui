@@ -2,9 +2,9 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform.Tizen.Native;
 using TChromium = Tizen.WebView.Chromium;
 using TWebView = Tizen.WebView.WebView;
-using Xamarin.Forms.Platform.Tizen.Native;
 
 namespace Xamarin.Forms.Platform.Tizen
 {

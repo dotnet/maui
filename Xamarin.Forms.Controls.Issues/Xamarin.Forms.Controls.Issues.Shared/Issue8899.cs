@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Collections.ObjectModel;
+using System.Text;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -25,25 +25,31 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var layout = new StackLayout();
 
-			var instructions = new Label { Text = $"Tap the button marked '{Go}'. The CollectionView below should clear," +
-				$" and the '{Running}' label should change to {Success}. If this does not happen, the test has failed."};
+			var instructions = new Label
+			{
+				Text = $"Tap the button marked '{Go}'. The CollectionView below should clear," +
+				$" and the '{Running}' label should change to {Success}. If this does not happen, the test has failed."
+			};
 			var result = new Label { Text = "running..." };
 
 			var viewModel = new _8899ViewModel();
 
 			var button = new Button { Text = Go, AutomationId = Go };
-			button.Clicked += (obj, args) => {
+			button.Clicked += (obj, args) =>
+			{
 				viewModel.Groups.Clear();
 				result.Text = Success;
 			};
 
 			var cv = new CollectionView { };
-			cv.GroupHeaderTemplate = new DataTemplate(() => {
+			cv.GroupHeaderTemplate = new DataTemplate(() =>
+			{
 				var label = new Label { };
 				label.SetBinding(Label.TextProperty, new Binding("GroupName"));
 				return label;
 			});
-			cv.ItemTemplate = new DataTemplate(() => {
+			cv.ItemTemplate = new DataTemplate(() =>
+			{
 				var label = new Label { };
 				label.SetBinding(Label.TextProperty, new Binding("Text"));
 				return label;
@@ -61,10 +67,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 		[Preserve(AllMembers = true)]
 		public class _8899ViewModel
-		{ 
+		{
 			public ObservableCollection<_8899Group> Groups { get; set; }
 
-			public _8899ViewModel() 
+			public _8899ViewModel()
 			{
 				Groups = new ObservableCollection<_8899Group>();
 				for (int n = 0; n < 3; n++)
@@ -76,10 +82,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 		[Preserve(AllMembers = true)]
 		public class _8899Group : List<_8899Item>
-		{ 
+		{
 			public string GroupName { get; set; }
 
-			public _8899Group(int n) 
+			public _8899Group(int n)
 			{
 				GroupName = $"Group {n}";
 
@@ -88,7 +94,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		public class _8899Item
-		{ 
+		{
 			public string Text { get; set; }
 		}
 

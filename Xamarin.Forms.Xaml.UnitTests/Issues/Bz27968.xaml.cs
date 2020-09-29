@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
-
 using NUnit.Framework;
+using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -14,12 +12,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public partial class Bz27968 : Bz27968Page
 	{
-		public Bz27968 ()
+		public Bz27968()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Bz27968 (bool useCompiledXaml)
+		public Bz27968(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -41,10 +39,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			[TestCase(true)]
 			[TestCase(false)]
-			public void BaseClassIdentifiersAreValidForResources (bool useCompiledXaml)
+			public void BaseClassIdentifiersAreValidForResources(bool useCompiledXaml)
 			{
-				var layout = new Bz27968 (useCompiledXaml);
-				Assert.That (layout.Resources ["listView"], Is.TypeOf<ListView> ());
+				var layout = new Bz27968(useCompiledXaml);
+				Assert.That(layout.Resources["listView"], Is.TypeOf<ListView>());
 			}
 		}
 	}

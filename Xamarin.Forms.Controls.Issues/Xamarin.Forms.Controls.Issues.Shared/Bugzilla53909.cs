@@ -18,15 +18,15 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 
-            var tbi = new ToolbarItem();
-            tbi.IconImageSource = "synchronize.png";
-            tbi.Order = ToolbarItemOrder.Primary;
-            tbi.Priority = 0;
+			var tbi = new ToolbarItem();
+			tbi.IconImageSource = "synchronize.png";
+			tbi.Order = ToolbarItemOrder.Primary;
+			tbi.Priority = 0;
 
-            ToolbarItems.Add(tbi);
+			ToolbarItems.Add(tbi);
 
-            // Initialize ui here instead of ctor
-            Content = new Label
+			// Initialize ui here instead of ctor
+			Content = new Label
 			{
 				Text = "We need to check the icon appears"
 			};

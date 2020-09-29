@@ -302,10 +302,10 @@ namespace Xamarin.Forms
 
 		public object SyncRoot => ((IList)_list).SyncRoot;
 
-		object IList.this[int index] 
-		{ 
-			get => (this as IList<TRestrict>)[index]; 
-			set => (this as IList<TRestrict>)[index] = (TRestrict)value; 
+		object IList.this[int index]
+		{
+			get => (this as IList<TRestrict>)[index];
+			set => (this as IList<TRestrict>)[index] = (TRestrict)value;
 		}
 
 		#endregion

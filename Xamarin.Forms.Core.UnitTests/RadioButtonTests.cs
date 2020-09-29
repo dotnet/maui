@@ -6,16 +6,16 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class RadioButtonTests : BaseTestFixture
 	{
 		[SetUp]
-		public void SetUp() 
+		public void SetUp()
 		{
-			Device.SetFlags(new[] 
-			{ 
+			Device.SetFlags(new[]
+			{
 				ExperimentalFlags.RadioButtonExperimental
 			});
 		}
 
 		[Test]
-		public void RadioButtonAddedToGroupGetsGroupName() 
+		public void RadioButtonAddedToGroupGetsGroupName()
 		{
 			var layout = new StackLayout();
 			var groupName = "foo";
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			layout.Children.Add(radioButton);
 			layout.SetValue(RadioButtonGroup.GroupNameProperty, groupName);
-			
+
 			Assert.That(radioButton.GroupName, Is.EqualTo(groupName));
 		}
 
@@ -171,7 +171,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void RemovingSelectedButtonFromGroupClearsSelection() 
+		public void RemovingSelectedButtonFromGroupClearsSelection()
 		{
 			var radioButton1 = new RadioButton() { GroupName = "foo" };
 			var radioButton2 = new RadioButton() { GroupName = "foo" };
@@ -224,7 +224,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void GroupSelectedValueUpdatesWhenSelectedButtonValueUpdates() 
+		public void GroupSelectedValueUpdatesWhenSelectedButtonValueUpdates()
 		{
 			var layout = new Grid();
 			layout.SetValue(RadioButtonGroup.GroupNameProperty, "foo");

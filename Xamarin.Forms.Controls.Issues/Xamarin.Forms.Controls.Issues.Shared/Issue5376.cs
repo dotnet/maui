@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using System.Threading;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;

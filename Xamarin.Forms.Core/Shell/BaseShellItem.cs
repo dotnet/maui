@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
-using System.ComponentModel;
-using System.Linq;
 using Xamarin.Forms.StyleSheets;
 
 namespace Xamarin.Forms

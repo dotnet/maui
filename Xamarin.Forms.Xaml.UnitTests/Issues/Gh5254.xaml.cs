@@ -27,11 +27,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void BindToIntIndexer([Values(false, true)]bool useCompiledXaml)
+			public void BindToIntIndexer([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh5254(useCompiledXaml)
 				{
-					BindingContext = new Gh5254VM {
+					BindingContext = new Gh5254VM
+					{
 						Answer = new List<Gh5254VM> {
 							new Gh5254VM { Title = "Foo"},
 							new Gh5254VM { Title = "Bar"},

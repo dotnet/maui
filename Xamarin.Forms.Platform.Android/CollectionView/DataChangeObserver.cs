@@ -1,6 +1,6 @@
 using System;
-using static AndroidX.RecyclerView.Widget.RecyclerView;
 using AndroidX.RecyclerView.Widget;
+using static AndroidX.RecyclerView.Widget.RecyclerView;
 using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android

@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateL
 								ScrollToMode.Element, ExampleTemplates.RandomSizeTemplate, () => new StaggeredCollectionView()), Navigation),
 
 						GalleryBuilder.NavButton("Scroll Mode (Staggered Grid, [Android only])", () =>
-							new ScrollModeTestGallery(new StaggeredGridItemsLayout(3, ItemsLayoutOrientation.Vertical), 
+							new ScrollModeTestGallery(new StaggeredGridItemsLayout(3, ItemsLayoutOrientation.Vertical),
 							ExampleTemplates.RandomSizeTemplate, () => new StaggeredCollectionView()), Navigation)
 					}
 				}

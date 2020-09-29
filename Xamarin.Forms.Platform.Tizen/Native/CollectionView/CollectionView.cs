@@ -1,14 +1,14 @@
 using System;
-using System.Linq;
-using System.Collections.Specialized;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using ElmSharp;
+using ElmSharp.Wearable;
 using EBox = ElmSharp.Box;
+using EPoint = ElmSharp.Point;
 using ERect = ElmSharp.Rect;
 using EScroller = ElmSharp.Scroller;
 using ESize = ElmSharp.Size;
-using EPoint = ElmSharp.Point;
-using ElmSharp.Wearable;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
@@ -661,7 +661,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			if (LayoutManager.IsHorizontal)
 			{
-				Scroller.SetPageSize(itemSize , 0);
+				Scroller.SetPageSize(itemSize, 0);
 			}
 			else
 			{

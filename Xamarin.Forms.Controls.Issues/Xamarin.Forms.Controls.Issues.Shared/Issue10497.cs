@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 					"Always",
 					"Never"
 				},
-				SelectedIndex = 0	
+				SelectedIndex = 0
 			};
 
 			var collectionView = new CollectionView
@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-	
+
 		}
 	}
 }

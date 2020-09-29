@@ -1,9 +1,9 @@
 ﻿using System;
-using Android.Util;
 using Android.App;
 using Android.Content;
 using Android.Gms.Tasks;
 using Android.Runtime;
+using Android.Util;
 using Firebase.AppIndexing;
 using Actions = Firebase.AppIndexing.Builders.Actions;
 using GMSTask = Android.Gms.Tasks.Task;

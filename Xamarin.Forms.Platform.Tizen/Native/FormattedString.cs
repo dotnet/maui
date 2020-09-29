@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// Casts the FormattedString to a string.
 		/// </summary>
 		/// <param name="formatted">The FormattedString instance which will be used for the conversion.</param>
-		public static explicit operator string (FormattedString formatted)
+		public static explicit operator string(FormattedString formatted)
 		{
 			return formatted.ToString();
 		}

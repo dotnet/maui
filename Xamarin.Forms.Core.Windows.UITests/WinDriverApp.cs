@@ -676,11 +676,11 @@ namespace Xamarin.Forms.Core.UITests
 					actions.DoubleClick();
 					break;
 				case ClickType.ContextClick:
-					actions.ContextClick();					
+					actions.ContextClick();
 					break;
 				case ClickType.SingleClick:
 				default:
-					actions.Click();					
+					actions.Click();
 					break;
 			}
 
@@ -698,7 +698,7 @@ namespace Xamarin.Forms.Core.UITests
 			{
 				ProcessException();
 			}
-			catch(WebDriverException)
+			catch (WebDriverException)
 			{
 				ProcessException();
 			}
@@ -765,12 +765,12 @@ namespace Xamarin.Forms.Core.UITests
 
 		WindowsElement FindFirstElement(WinQuery query)
 		{
-			Func<ReadOnlyCollection<WindowsElement>> fquery = 
+			Func<ReadOnlyCollection<WindowsElement>> fquery =
 				() => QueryWindows(query, true);
 
 			string timeoutMessage = $"Timed out waiting for element: {query.Raw}";
 
-			ReadOnlyCollection<WindowsElement> results = 
+			ReadOnlyCollection<WindowsElement> results =
 				WaitForAtLeastOne(fquery, timeoutMessage);
 
 			WindowsElement element = results.FirstOrDefault();
@@ -885,7 +885,7 @@ namespace Xamarin.Forms.Core.UITests
 			ReadOnlyCollection<WindowsElement> resultByAccessibilityId = _session.FindElementsByAccessibilityId(query.Marked);
 			ReadOnlyCollection<WindowsElement> resultByName = null;
 
-			if(!findFirst || resultByAccessibilityId.Count == 0)
+			if (!findFirst || resultByAccessibilityId.Count == 0)
 				resultByName = _session.FindElementsByName(query.Marked);
 
 			IEnumerable<WindowsElement> result = resultByAccessibilityId;
@@ -1062,7 +1062,7 @@ namespace Xamarin.Forms.Core.UITests
 				if (elapsed >= timeout.Value.Ticks)
 				{
 					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
-					
+
 					throw new TimeoutException(timeoutMessage);
 				}
 
@@ -1075,7 +1075,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		static ReadOnlyCollection<WindowsElement> WaitForAtLeastOne(Func<ReadOnlyCollection<WindowsElement>> query,
 			string timeoutMessage = null,
-			TimeSpan? timeout = null, 
+			TimeSpan? timeout = null,
 			TimeSpan? retryFrequency = null)
 		{
 			return Wait(query, i => i > 0, timeoutMessage, timeout, retryFrequency);

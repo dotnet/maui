@@ -1,12 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System;
-using System.Security.Cryptography;
 using Xamarin.Forms.Xaml;
-using System.Threading;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 
 namespace Xamarin.Forms.Controls.Issues
@@ -21,10 +21,10 @@ namespace Xamarin.Forms.Controls.Issues
 	public partial class Issue7242 : TestContentPage
 	{
 #if APP
-        public Issue7242()
-        {
-            InitializeComponent();
-        }
+		public Issue7242()
+		{
+			InitializeComponent();
+		}
 #endif
 		protected override void Init()
 		{

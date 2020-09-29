@@ -1,3 +1,5 @@
+using System;
+using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -5,8 +7,6 @@ using Android.Text;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using System;
-using System.ComponentModel;
 using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
 
 namespace Xamarin.Forms.Platform.Android
@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateFlowDirection();
 			}
 			else
-			{	
+			{
 				UpdateText();
 				if (e.OldElement.LineBreakMode != e.NewElement.LineBreakMode)
 					UpdateLineBreakMode();

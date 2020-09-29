@@ -1,8 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
-
-using Xamarin.Forms.Core.UnitTests;
 using NUnit.Framework.Constraints;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {

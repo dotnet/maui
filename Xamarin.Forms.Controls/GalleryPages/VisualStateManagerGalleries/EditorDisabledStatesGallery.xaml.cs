@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 	{
 		public EditorDisabledStatesGallery()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 
 			Button0.Text = $"Toggle IsEnabled (Currently {Editor0.IsEnabled})";
 			Button1.Text = $"Toggle IsEnabled (Currently {Editor1.IsEnabled})";

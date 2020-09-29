@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			button.Clicked += OnButton1Clicked;
-   
+
 			_collectionView = new CollectionView
 			{
 				BackgroundColor = Color.LightGreen,
@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			_collectionView.ItemTemplate = CreateDataGridTemplate(2);
 		}
-  
+
 		DataTemplate CreateDataGridTemplate(int columns)
 		{
 			var template = new DataTemplate(() =>

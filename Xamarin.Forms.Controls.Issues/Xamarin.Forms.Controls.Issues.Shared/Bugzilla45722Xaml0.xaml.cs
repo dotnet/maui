@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public Bugzilla45722Xaml0()
 		{
 #if APP
-			InitializeComponent ();
+			InitializeComponent();
 
 			Model = new ObservableCollection<_45722Group>();
 

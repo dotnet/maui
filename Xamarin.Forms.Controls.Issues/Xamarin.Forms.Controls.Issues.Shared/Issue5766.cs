@@ -11,8 +11,8 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 5766, "Frame size gets corrupted when ListView is scrolled", PlatformAffected.Android)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 5766, "Frame size gets corrupted when ListView is scrolled", PlatformAffected.Android)]
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.Layout)]
 #endif

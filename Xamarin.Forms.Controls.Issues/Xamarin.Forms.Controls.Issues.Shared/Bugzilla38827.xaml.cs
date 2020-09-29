@@ -17,10 +17,10 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Bugzilla, 38827, "UWP - Text not wrapping")]
 	public partial class Bugzilla38827 : ContentPage
 	{
-		public Bugzilla38827 ()
+		public Bugzilla38827()
 		{
 #if !UITEST
-			InitializeComponent ();
+			InitializeComponent();
 #endif
 		}
 	}

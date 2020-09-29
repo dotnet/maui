@@ -2,11 +2,11 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
-using AndroidX.DrawerLayout.Widget;
-using Android.Views;
-using AView = Android.Views.View;
 using Android.OS;
+using Android.Views;
+using AndroidX.DrawerLayout.Widget;
 using Xamarin.Forms.Platform.Android.FastRenderers;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {

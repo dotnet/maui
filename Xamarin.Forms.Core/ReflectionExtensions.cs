@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Internals
 			return null;
 		}
 
-		internal static object[] GetCustomAttributesSafe(this Assembly assembly,  Type attrType)
+		internal static object[] GetCustomAttributesSafe(this Assembly assembly, Type attrType)
 		{
 			try
 			{

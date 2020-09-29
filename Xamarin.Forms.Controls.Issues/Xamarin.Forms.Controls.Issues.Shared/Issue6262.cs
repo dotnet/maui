@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void SetupGrid(Grid theGrid)
 		{
-			if(theGrid.Children.Count > 0)
+			if (theGrid.Children.Count > 0)
 				theGrid.Children.Clear();
 
 			theGrid.Children.Add(

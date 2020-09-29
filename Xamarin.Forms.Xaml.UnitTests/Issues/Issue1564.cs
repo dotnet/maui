@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public class Issue1564
 	{
 		[Test]
-		public void ViewCellAsXamlRoot ()
+		public void ViewCellAsXamlRoot()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 				<ViewCell 
@@ -20,9 +20,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				        </StackLayout>
 				    </ViewCell.View>
 				</ViewCell>";
-			var cell = new ViewCell ().LoadFromXaml (xaml);
-			Assert.NotNull (cell);
-			Assert.AreEqual ("This is my label", ((cell.View as StackLayout).Children [0] as Label).Text);
+			var cell = new ViewCell().LoadFromXaml(xaml);
+			Assert.NotNull(cell);
+			Assert.AreEqual("This is my label", ((cell.View as StackLayout).Children[0] as Label).Text);
 		}
 	}
 }

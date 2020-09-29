@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.CustomAttributes;
 using System.Threading.Tasks;
+using Xamarin.Forms.CustomAttributes;
 
 namespace Xamarin.Forms.Controls
 {
@@ -11,14 +11,14 @@ namespace Xamarin.Forms.Controls
 	{
 		public class TestCaseScreen : TableView
 		{
-			public static Dictionary<string, Action> PageToAction = new Dictionary<string, Action> ();
+			public static Dictionary<string, Action> PageToAction = new Dictionary<string, Action>();
 
 			bool _filterBugzilla;
 			bool _filterNone;
 			bool _filterGitHub;
 			string _filter;
 
-			static TextCell MakeIssueCell (string text, string detail, Action tapped)
+			static TextCell MakeIssueCell(string text, string detail, Action tapped)
 			{
 				PageToAction[text] = tapped;
 				if (detail != null)
@@ -29,49 +29,59 @@ namespace Xamarin.Forms.Controls
 				return cell;
 			}
 
-			Action ActivatePageAndNavigate (IssueAttribute issueAttribute, Type type)
+			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type)
 			{
 				Action navigationAction = null;
 
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync) {
-					return async () => {
-						var page = ActivatePage (type);
-						TrackOnInsights (page);
-						await Navigation.PushAsync (page);
+				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)
+				{
+					return async () =>
+					{
+						var page = ActivatePage(type);
+						TrackOnInsights(page);
+						await Navigation.PushAsync(page);
 					};
 				}
 
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushModalAsync) {
-					return async () => {
-						var page = ActivatePage (type);
-						TrackOnInsights (page);
-						await Navigation.PushModalAsync (page);
+				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushModalAsync)
+				{
+					return async () =>
+					{
+						var page = ActivatePage(type);
+						TrackOnInsights(page);
+						await Navigation.PushModalAsync(page);
 					};
 				}
 
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.Default) {
-					return async () => {
-						var page = ActivatePage (type);
-						TrackOnInsights (page);
-						if (page is ContentPage || page is CarouselPage) {
-							
-							await Navigation.PushAsync (page);
+				if (issueAttribute.NavigationBehavior == NavigationBehavior.Default)
+				{
+					return async () =>
+					{
+						var page = ActivatePage(type);
+						TrackOnInsights(page);
+						if (page is ContentPage || page is CarouselPage)
+						{
+
+							await Navigation.PushAsync(page);
 
 						}
 						else if (page is Shell)
 						{
 							Application.Current.MainPage = page;
 						}
-						else {
-							await Navigation.PushModalAsync (page);
+						else
+						{
+							await Navigation.PushModalAsync(page);
 						}
-					}; 
+					};
 				}
 
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot) {
-					return () => {
-						var page = ActivatePage (type);
-						TrackOnInsights (page);
+				if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot)
+				{
+					return () =>
+					{
+						var page = ActivatePage(type);
+						TrackOnInsights(page);
 						Application.Current.MainPage = page;
 					};
 				}
@@ -79,16 +89,17 @@ namespace Xamarin.Forms.Controls
 				return navigationAction;
 			}
 
-			static void TrackOnInsights (Page page)
+			static void TrackOnInsights(Page page)
 			{
-				
+
 			}
 
-			Page ActivatePage (Type type)
+			Page ActivatePage(Type type)
 			{
-				var page = Activator.CreateInstance (type) as Page;
-				if (page == null) {
-					throw new InvalidCastException ("Issue must be of type Page");
+				var page = Activator.CreateInstance(type) as Page;
+				if (page == null)
+				{
+					throw new InvalidCastException("Issue must be of type Page");
 				}
 				return page;
 			}
@@ -99,7 +110,7 @@ namespace Xamarin.Forms.Controls
 				public int IssueNumber { get; set; }
 				public int IssueTestNumber { get; set; }
 				public string Name { get; set; }
-				public string Description {get; set; }
+				public string Description { get; set; }
 				public Action Action { get; set; }
 
 				public bool Matches(string filter)
@@ -135,16 +146,17 @@ namespace Xamarin.Forms.Controls
 
 			void VerifyNoDuplicates()
 			{
-				var duplicates = new HashSet<string> ();
-				_issues.ForEach (im =>
-				{
-					if (duplicates.Contains (im.Name) && !IsExempt (im.Name)) {
-						throw new NotSupportedException ("Please provide unique tracker + issue number combo: " 
-							+ im.IssueTracker.ToString () + im.IssueNumber.ToString () + im.IssueTestNumber.ToString());
-					}
+				var duplicates = new HashSet<string>();
+				_issues.ForEach(im =>
+			   {
+				   if (duplicates.Contains(im.Name) && !IsExempt(im.Name))
+				   {
+					   throw new NotSupportedException("Please provide unique tracker + issue number combo: "
+						   + im.IssueTracker.ToString() + im.IssueNumber.ToString() + im.IssueTestNumber.ToString());
+				   }
 
-					duplicates.Add (im.Name);
-				});
+				   duplicates.Add(im.Name);
+			   });
 			}
 
 			public TestCaseScreen()
@@ -155,18 +167,19 @@ namespace Xamarin.Forms.Controls
 
 				var assembly = typeof(TestCases).GetTypeInfo().Assembly;
 
-				_issues = 
-					(from typeInfo in assembly.DefinedTypes.Select (o => o.AsType ().GetTypeInfo ())
-					where typeInfo.GetCustomAttribute<IssueAttribute> () != null
-					let attribute = typeInfo.GetCustomAttribute<IssueAttribute> ()
-					select new IssueModel {
-						IssueTracker = attribute.IssueTracker,
-						IssueNumber = attribute.IssueNumber,
-						IssueTestNumber = attribute.IssueTestNumber,
-						Name = attribute.DisplayName,
-						Description = attribute.Description,
-						Action = ActivatePageAndNavigate (attribute, typeInfo.AsType ())
-					}).ToList();
+				_issues =
+					(from typeInfo in assembly.DefinedTypes.Select(o => o.AsType().GetTypeInfo())
+					 where typeInfo.GetCustomAttribute<IssueAttribute>() != null
+					 let attribute = typeInfo.GetCustomAttribute<IssueAttribute>()
+					 select new IssueModel
+					 {
+						 IssueTracker = attribute.IssueTracker,
+						 IssueNumber = attribute.IssueNumber,
+						 IssueTestNumber = attribute.IssueTestNumber,
+						 Name = attribute.DisplayName,
+						 Description = attribute.Description,
+						 Action = ActivatePageAndNavigate(attribute, typeInfo.AsType())
+					 }).ToList();
 
 				VerifyNoDuplicates();
 
@@ -207,14 +220,14 @@ namespace Xamarin.Forms.Controls
 			{
 				filter = filter?.Trim();
 				_filter = filter;
-				
+
 				// Deeeee bounce
 				await Task.Delay(10);
 				if (_filter != filter)
 					return;
 
 				PageToAction.Clear();
-				if(String.IsNullOrWhiteSpace(filter) && !Controls.App.PreloadTestCasesIssuesList)
+				if (String.IsNullOrWhiteSpace(filter) && !Controls.App.PreloadTestCasesIssuesList)
 				{
 					if (_section != null)
 					{
@@ -257,7 +270,7 @@ namespace Xamarin.Forms.Controls
 
 					issueCells = issueCells.Concat(untrackedIssueCells);
 				}
-				
+
 				if (_section != null)
 				{
 					Root.Remove(_section);
@@ -265,9 +278,10 @@ namespace Xamarin.Forms.Controls
 
 				_section = new TableSection("Bug Repro");
 
-				foreach (var issueCell in issueCells) {
-					_section.Add (issueCell);
-				} 
+				foreach (var issueCell in issueCells)
+				{
+					_section.Add(issueCell);
+				}
 
 				Root.Add(_section);
 			}
@@ -279,51 +293,59 @@ namespace Xamarin.Forms.Controls
 			bool IsExempt(string name) => _exemptNames.Contains(name);
 		}
 
-		public static NavigationPage GetTestCases ()
+		public static NavigationPage GetTestCases()
 		{
 			TestCaseScreen testCaseScreen = null;
-			var rootLayout = new StackLayout ();
-			
-			var testCasesRoot = new ContentPage {
+			var rootLayout = new StackLayout();
+
+			var testCasesRoot = new ContentPage
+			{
 				Title = "Bug Repro's",
 				Content = rootLayout
 			};
 
-			var searchBar = new SearchBar() {
+			var searchBar = new SearchBar()
+			{
 				MinimumHeightRequest = 42, // Need this for Android N, see https://bugzilla.xamarin.com/show_bug.cgi?id=43975
 				AutomationId = "SearchBarGo"
 			};
 
-			var searchButton = new Button () {
+			var searchButton = new Button()
+			{
 				Text = "Search And Go To Issue",
 				AutomationId = "SearchButton",
-				Command = new Command (() => {
-					try {
+				Command = new Command(() =>
+				{
+					try
+					{
 						if (TestCaseScreen.PageToAction.ContainsKey(searchBar.Text?.Trim()))
 						{
 							TestCaseScreen.PageToAction[searchBar.Text?.Trim()]();
 						}
-						else if(!testCaseScreen.TryToNavigateTo(searchBar.Text?.Trim()))
+						else if (!testCaseScreen.TryToNavigateTo(searchBar.Text?.Trim()))
 						{
 							throw new Exception($"Unable to Navigate to {searchBar.Text}");
 						}
-					} catch (Exception e) {
+					}
+					catch (Exception e)
+					{
 						System.Diagnostics.Debug.WriteLine(e.Message);
 						Console.WriteLine(e.Message);
 					}
-					 
+
 				})
 			};
 
-			var leaveTestCasesButton = new Button {
+			var leaveTestCasesButton = new Button
+			{
 				AutomationId = "GoBackToGalleriesButton",
 				Text = "Go Back to Galleries",
-				Command = new Command (() => testCasesRoot.Navigation.PopModalAsync ())
+				Command = new Command(() => testCasesRoot.Navigation.PopModalAsync())
 			};
 
-			rootLayout.Children.Add (leaveTestCasesButton);
-			rootLayout.Children.Add (searchBar);
-			rootLayout.Children.Add (searchButton);
+			rootLayout.Children.Add(leaveTestCasesButton);
+			rootLayout.Children.Add(searchBar);
+			rootLayout.Children.Add(searchButton);
 
 			testCaseScreen = new TestCaseScreen();
 
@@ -334,15 +356,16 @@ namespace Xamarin.Forms.Controls
 			searchBar.TextChanged += (sender, args) => SearchBarOnTextChanged(sender, args, testCaseScreen);
 
 			var page = new NavigationPage(testCasesRoot);
-			switch (Device.RuntimePlatform) {
-			case Device.iOS:
-			case Device.Android:
-			default:
-				page.Title = "Test Cases";
-				break;
-			case Device.UWP:
-				page.Title = "Tests";
-				break;
+			switch (Device.RuntimePlatform)
+			{
+				case Device.iOS:
+				case Device.Android:
+				default:
+					page.Title = "Test Cases";
+					break;
+				case Device.UWP:
+					page.Title = "Tests";
+					break;
 			}
 			return page;
 		}

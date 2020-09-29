@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Controls
 {
 	public class ActionSheetGallery : ContentPage
 	{
-		public ActionSheetGallery ()
+		public ActionSheetGallery()
 		{
 			AutomationId = "ActionSheetPage";
 
@@ -26,8 +26,10 @@ namespace Xamarin.Forms.Controls
 				"Extra Eleven",
 			};
 
-			Content = new ScrollView {
-				Content = new StackLayout {
+			Content = new ScrollView
+			{
+				Content = new StackLayout
+				{
 					Spacing = 0,
 					Children = {
 						MakeActionSheetButton (this, "ActionSheet Cancel", null, "Cancel", null),
@@ -50,14 +52,15 @@ namespace Xamarin.Forms.Controls
 			};
 		}
 
-		static Button MakeActionSheetButton (Page page, string buttonText, string title, string cancel, string destruction, params string[] extras)
+		static Button MakeActionSheetButton(Page page, string buttonText, string title, string cancel, string destruction, params string[] extras)
 		{
-			var actionSheetButton = new Button {
+			var actionSheetButton = new Button
+			{
 				Text = buttonText
 			};
 
-			actionSheetButton.Clicked += async (sender, e) => await page.DisplayActionSheet (title, cancel, destruction, extras);
-				
+			actionSheetButton.Clicked += async (sender, e) => await page.DisplayActionSheet(title, cancel, destruction, extras);
+
 			return actionSheetButton;
 		}
 	}

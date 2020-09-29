@@ -27,12 +27,12 @@ namespace Xamarin.Forms.Controls.Issues
 			var instructions = new Label
 			{
 				Margin = new Thickness(6),
-				Text = "Slide slider to the extreme Right and Left, check that the Stepper to the right's +/- buttons work as expected, " + 
+				Text = "Slide slider to the extreme Right and Left, check that the Stepper to the right's +/- buttons work as expected, " +
 					   "becoming disabled at the Max and Min positions of the Slider, and then enabled again as the Slider moves towards the center."
 			};
 
 			StackLayout controlsLayout = new StackLayout();
-			controlsLayout.Orientation= StackOrientation.Horizontal;
+			controlsLayout.Orientation = StackOrientation.Horizontal;
 			controlsLayout.HorizontalOptions = LayoutOptions.FillAndExpand;
 
 			TheSlider = new Slider
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Controls.Issues
 				MaximumTrackColor = Color.LightPink
 			};
 			controlsLayout.Children.Add(TheSlider);
-			
+
 			TheStepper = new Stepper
 			{
 				Maximum = 100,

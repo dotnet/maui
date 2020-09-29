@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Threading;
 
 #if UITEST
 using Xamarin.UITest;

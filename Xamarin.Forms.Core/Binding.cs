@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using System.Diagnostics;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -90,9 +90,11 @@ namespace Xamarin.Forms
 		public static readonly object DoNothing = new object();
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public string UpdateSourceEventName {
+		public string UpdateSourceEventName
+		{
 			get { return _updateSourceEventName; }
-			set {
+			set
+			{
 				ThrowIfApplied();
 				_updateSourceEventName = value;
 			}
@@ -108,7 +110,7 @@ namespace Xamarin.Forms
 
 			return new Binding(GetBindingPath(propertyGetter), mode, converter, converterParameter, stringFormat);
 		}
-				
+
 		internal override void Apply(bool fromTarget)
 		{
 			base.Apply(fromTarget);
@@ -129,9 +131,12 @@ namespace Xamarin.Forms
 			if (src != null && isApplied && fromBindingContextChanged)
 				return;
 
-			if (Source is RelativeBindingSource) {
+			if (Source is RelativeBindingSource)
+			{
 				ApplyRelativeSourceBinding(bindObj, targetProperty);
-			} else {
+			}
+			else
+			{
 				object bindingContext = src ?? Context ?? context;
 				if (_expression == null && bindingContext != null)
 					_expression = new BindingExpression(this, SelfPath);
@@ -141,7 +146,7 @@ namespace Xamarin.Forms
 
 #pragma warning disable RECS0165 // Asynchronous methods should return a Task instead of void
 		async void ApplyRelativeSourceBinding(
-			BindableObject targetObject, 
+			BindableObject targetObject,
 			BindableProperty targetProperty)
 #pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
 		{
@@ -152,7 +157,7 @@ namespace Xamarin.Forms
 			if (!(relativeSourceTarget is Element))
 				throw new InvalidOperationException();
 
-			object resolvedSource = null;			
+			object resolvedSource = null;
 			switch (relativeSource.Mode)
 			{
 				case RelativeBindingSourceMode.Self:
@@ -160,7 +165,7 @@ namespace Xamarin.Forms
 					break;
 
 				case RelativeBindingSourceMode.TemplatedParent:
-                    resolvedSource = await TemplateUtilities.FindTemplatedParentAsync(relativeSourceTarget);
+					resolvedSource = await TemplateUtilities.FindTemplatedParentAsync(relativeSourceTarget);
 					break;
 
 				case RelativeBindingSourceMode.FindAncestor:
@@ -172,7 +177,7 @@ namespace Xamarin.Forms
 					throw new InvalidOperationException();
 			}
 
-			_expression.Apply(resolvedSource, targetObject, targetProperty);						
+			_expression.Apply(resolvedSource, targetObject, targetProperty);
 		}
 
 		void ApplyAncestorTypeBinding(
@@ -183,14 +188,14 @@ namespace Xamarin.Forms
 			int currentLevel = 0,
 			List<Element> chain = null,
 			object lastMatchingBctx = null)
-		{			
+		{
 			currentElement = currentElement ?? relativeSourceTarget;
 			chain = chain ?? new List<Element> { relativeSourceTarget };
 
 			if (!(Source is RelativeBindingSource relativeSource))
 				return;
 
-			if (currentElement.RealParent is Application || 
+			if (currentElement.RealParent is Application ||
 				currentElement.RealParent == null)
 			{
 				// Couldn't find the desired ancestor type in the chain, but it may be added later, 
@@ -213,17 +218,17 @@ namespace Xamarin.Forms
 						resolvedSource = currentElement.RealParent?.BindingContext;
 					_expression.Apply(resolvedSource, actualTarget, targetProperty);
 					_expression.SubscribeToAncestryChanges(
-						chain, 
+						chain,
 						relativeSource.Mode == RelativeBindingSourceMode.FindAncestorBindingContext,
 						rootIsSource: true);
 				}
 				else
 				{
 					ApplyAncestorTypeBinding(
-						actualTarget, 
+						actualTarget,
 						relativeSourceTarget,
-						targetProperty, 
-						currentElement.RealParent, 
+						targetProperty,
+						currentElement.RealParent,
 						currentLevel,
 						chain,
 						lastMatchingBctx);
@@ -236,16 +241,16 @@ namespace Xamarin.Forms
 				{
 					currentElement.ParentSet -= onElementParentSet;
 					ApplyAncestorTypeBinding(
-						actualTarget, 
+						actualTarget,
 						relativeSourceTarget,
-						targetProperty, 
-						currentElement, 
+						targetProperty,
+						currentElement,
 						currentLevel,
 						chain,
 						lastMatchingBctx);
 				};
 				currentElement.ParentSet += onElementParentSet;
-			}			
+			}
 		}
 
 		bool ElementFitsAncestorTypeAndLevel(Element element, ref int level, ref object lastPotentialBctx)
@@ -258,7 +263,7 @@ namespace Xamarin.Forms
 				relativeSource.AncestorType.GetTypeInfo().IsAssignableFrom(element.GetType().GetTypeInfo());
 
 			bool fitsBindingContextType =
-				element.BindingContext != null &&				
+				element.BindingContext != null &&
 				relativeSource.Mode == RelativeBindingSourceMode.FindAncestorBindingContext &&
 				relativeSource.AncestorType.GetTypeInfo().IsAssignableFrom(element.BindingContext.GetType().GetTypeInfo());
 
@@ -283,7 +288,8 @@ namespace Xamarin.Forms
 
 		internal override BindingBase Clone()
 		{
-			return new Binding(Path, Mode) {
+			return new Binding(Path, Mode)
+			{
 				Converter = Converter,
 				ConverterParameter = ConverterParameter,
 				StringFormat = StringFormat,
@@ -314,7 +320,7 @@ namespace Xamarin.Forms
 		{
 			if (Source != null && !(Source is RelativeBindingSource) && fromBindingContextChanged && IsApplied)
 				return;
-			
+
 			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);
 
 			if (_expression != null)

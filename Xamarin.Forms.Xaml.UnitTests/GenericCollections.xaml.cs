@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
 using System.Collections.ObjectModel;
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public class AttachedBP
 	{
-		public static readonly BindableProperty AttachedBPProperty = BindableProperty.CreateAttached (
+		public static readonly BindableProperty AttachedBPProperty = BindableProperty.CreateAttached(
 			"AttachedBP",
 			typeof(GenericCollection),
 			typeof(AttachedBP),
@@ -27,12 +26,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public partial class GenericCollections : ContentPage
 	{
-		public GenericCollections ()
+		public GenericCollections()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public GenericCollections (bool useCompiledXaml)
+		public GenericCollections(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -40,12 +39,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase (false)]
-			[TestCase (true)]
-			public void SupportsCrookedGenericScenarios (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void SupportsCrookedGenericScenarios(bool useCompiledXaml)
 			{
-				var p = new GenericCollections ();
-				Assert.AreEqual ("Foo", (p.label0.GetValue (AttachedBP.AttachedBPProperty) as GenericCollection) [0]);
+				var p = new GenericCollections();
+				Assert.AreEqual("Foo", (p.label0.GetValue(AttachedBP.AttachedBPProperty) as GenericCollection)[0]);
 			}
 		}
 	}

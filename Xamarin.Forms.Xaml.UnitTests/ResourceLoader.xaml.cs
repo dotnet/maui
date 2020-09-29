@@ -41,7 +41,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
 
 #pragma warning disable CS0618 // Type or member is obsolete
-				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider = (asmName, path) => {
+				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider = (asmName, path) =>
+				{
 #pragma warning restore CS0618 // Type or member is obsolete
 					if (path == "ResourceLoader.xaml")
 						return @"
@@ -59,13 +60,15 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			}
 
 			[Test]
-			public void XamlLoadingUsesResourceProvider2([Values (false, true)]bool useCompiledXaml)
+			public void XamlLoadingUsesResourceProvider2([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new ResourceLoader(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
 				object instance = null;
-				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider2 = (rlq) => {
-					if (rlq.ResourcePath == "ResourceLoader.xaml") {
+				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider2 = (rlq) =>
+				{
+					if (rlq.ResourcePath == "ResourceLoader.xaml")
+					{
 						instance = rlq.Instance;
 						return new Forms.Internals.ResourceLoader.ResourceLoadingResponse
 						{
@@ -83,7 +86,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						};
 					}
 					return null;
-				}; 
+				};
 
 
 				layout = new ResourceLoader(useCompiledXaml);
@@ -92,14 +95,16 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			}
 
 			[Test]
-			public void XamlLoadingUsesResourceProvider2WithDesignProperties([Values(false, true)]bool useCompiledXaml)
+			public void XamlLoadingUsesResourceProvider2WithDesignProperties([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new ResourceLoader(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
 
-				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider2 = (rlq) => {
+				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider2 = (rlq) =>
+				{
 					if (rlq.ResourcePath == "ResourceLoader.xaml")
-						return new Forms.Internals.ResourceLoader.ResourceLoadingResponse {
+						return new Forms.Internals.ResourceLoader.ResourceLoadingResponse
+						{
 							UseDesignProperties = true,
 							ResourceContent = @"
 <ContentPage 
@@ -111,7 +116,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	mc:Ignorable=""d"" >
   
 	<Label x:Name = ""label"" TextColor = ""Pink"" d:TextColor = ""HotPink"" />
-</ContentPage >"};
+</ContentPage >"
+						};
 					return null;
 				};
 
@@ -127,7 +133,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
 
 #pragma warning disable CS0618 // Type or member is obsolete
-				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider = (asmName, path) => {
+				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider = (asmName, path) =>
+				{
 #pragma warning restore CS0618 // Type or member is obsolete
 					if (path == "AppResources/Colors.xaml")
 						return @"

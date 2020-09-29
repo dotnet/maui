@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Linq;
-using System.Threading.Tasks;
 
 
 #if UITEST
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 			StackLayout layout = new StackLayout();
 
 			Label instructions = new Label
-			{ 
+			{
 				Text = "Check that the font size in the search bars below matches the size specified in the placeholders."
 			};
 

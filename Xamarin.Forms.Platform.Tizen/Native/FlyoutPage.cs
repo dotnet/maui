@@ -438,12 +438,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Force update the focus management
 		/// </summary>
-		void UpdateFocusPolicy(bool forceAllowFocusAll=false)
+		void UpdateFocusPolicy(bool forceAllowFocusAll = false)
 		{
 			var flyout = _flyout as Widget;
 			var detail = _detail as Widget;
 
-			if(forceAllowFocusAll)
+			if (forceAllowFocusAll)
 			{
 				if (flyout != null)
 					flyout.AllowTreeFocus = true;
@@ -481,7 +481,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 	public class IsPresentedChangedEventArgs : EventArgs
 	{
-		public IsPresentedChangedEventArgs (bool isPresent)
+		public IsPresentedChangedEventArgs(bool isPresent)
 		{
 			IsPresent = isPresent;
 		}

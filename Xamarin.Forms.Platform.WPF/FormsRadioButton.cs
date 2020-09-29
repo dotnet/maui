@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Platform.WPF
 {
 	public class FormsRadioButton : System.Windows.Controls.RadioButton
 	{
-		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),	
+		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),
 			new PropertyMetadata(default(int), OnBorderRadiusChanged));
 
 		public static readonly DependencyProperty BackgroundColorProperty = DependencyProperty.Register(nameof(BackgroundColor), typeof(WBrush), typeof(FormsButton),

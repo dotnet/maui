@@ -1,8 +1,8 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Gtk;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Helpers;
 using Xamarin.Forms.Platform.GTK.Renderers;

@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Threading;
+using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -21,7 +21,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			FlexLayout.SetOrder(label1, 2);
 			FlexLayout.SetOrder(label0, 3);
 
-			var layout = new FlexLayout {
+			var layout = new FlexLayout
+			{
 				IsPlatformEnabled = true,
 				Direction = FlexDirection.Column,
 				Children = {

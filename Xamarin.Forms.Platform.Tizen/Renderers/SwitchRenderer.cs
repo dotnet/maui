@@ -1,9 +1,9 @@
 using System;
 using ElmSharp;
 using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using EColor = ElmSharp.Color;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
 using SpecificSwitch = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Switch;
-using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen
 {

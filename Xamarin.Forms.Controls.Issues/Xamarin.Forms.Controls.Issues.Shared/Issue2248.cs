@@ -9,37 +9,37 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 2248, "ListView.ScrollTo crashes app", PlatformAffected.WinPhone)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2248, "ListView.ScrollTo crashes app", PlatformAffected.WinPhone)]
 	public class Issue2248 : ContentPage
-    {
+	{
 		ObservableCollection<Item> _items;
 
-        public Issue2248()
-        {
-            _items = new ObservableCollection<Item>()
-            {
-                new Item() {Id = 1, Name = "First"},
-                new Item() {Id = 2, Name = "Second"},
-                new Item() {Id = 3, Name = "Third"},
-                new Item() {Id = 4, Name = "Fourth"},
-                new Item() {Id = 5, Name = "Fifth"}
-            };
+		public Issue2248()
+		{
+			_items = new ObservableCollection<Item>()
+			{
+				new Item() {Id = 1, Name = "First"},
+				new Item() {Id = 2, Name = "Second"},
+				new Item() {Id = 3, Name = "Third"},
+				new Item() {Id = 4, Name = "Fourth"},
+				new Item() {Id = 5, Name = "Fifth"}
+			};
 
 
-            var listView = new ListView()
-            {
-                ItemsSource = _items,
-                ItemTemplate = new DataTemplate(typeof (ItemCell))
-            };
+			var listView = new ListView()
+			{
+				ItemsSource = _items,
+				ItemTemplate = new DataTemplate(typeof(ItemCell))
+			};
 
-            Content = listView;
-        }
+			Content = listView;
+		}
 
-        public void RemoveItemFromCollection(Item item)
-        {
-            _items.Remove(item);
-        }
+		public void RemoveItemFromCollection(Item item)
+		{
+			_items.Remove(item);
+		}
 		public class Item
 		{
 			public int Id { get; set; }
@@ -67,9 +67,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 				if (parent != null)
 				{
-					parent.RemoveItemFromCollection((Item) BindingContext);
+					parent.RemoveItemFromCollection((Item)BindingContext);
 				}
 			}
 		}
-    }
+	}
 }

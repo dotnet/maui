@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using NUnit.Framework.Interfaces;
-using Xamarin.Forms.Controls.Tests;
-using Xamarin.Forms.Xaml;
-using NUnit.Framework.Internal;
-using Xamarin.Forms.Internals;
-using System;
-using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
-using System.ComponentModel;
+using System.Threading.Tasks;
+using NUnit.Framework.Interfaces;
+using NUnit.Framework.Internal;
+using Xamarin.Forms.Controls.Tests;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
 {
@@ -55,7 +55,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
 
 		async void RerunClicked(object sender, EventArgs e)
 		{
-			await Device.InvokeOnMainThreadAsync(() => {
+			await Device.InvokeOnMainThreadAsync(() =>
+			{
 				Status.Text = "Running...";
 				RunCount.Text = "";
 				Results.Children.Clear();
@@ -78,7 +79,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
 			}
 		}
 
-		async Task Run() 
+		async Task Run()
 		{
 			_finishedAssemblyCount = 0;
 			_testsRunCount = 0;
@@ -116,7 +117,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
 			});
 		}
 
-		void DisplayFailResult(string failText = null) 
+		void DisplayFailResult(string failText = null)
 		{
 			failText = failText ?? FailedText;
 
@@ -148,12 +149,16 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
 			}
 		}
 
-		void OutputFixtureStarted(TestFixture testFixture) 
+		void OutputFixtureStarted(TestFixture testFixture)
 		{
 			var name = testFixture.Name;
 
-			var label = new Label { Text = $"{name} Started", LineBreakMode = LineBreakMode.HeadTruncation,
-				FontAttributes = FontAttributes.Bold };
+			var label = new Label
+			{
+				Text = $"{name} Started",
+				LineBreakMode = LineBreakMode.HeadTruncation,
+				FontAttributes = FontAttributes.Bold
+			};
 
 			SetupPassedLabelBindings(label);
 
@@ -180,7 +185,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
 
 		void OutputTestCaseResult(TestCaseResult result)
 		{
-			var name = result.Test.Name; 
+			var name = result.Test.Name;
 
 			var outcome = "Fail";
 
@@ -255,7 +260,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
 				{
 					Results.Children.Add(outputView);
 				}
-				
+
 			});
 		}
 
@@ -303,7 +308,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
 			});
 		}
 
-		static void ExtractErrorMessage(List<View> views, string message) 
+		static void ExtractErrorMessage(List<View> views, string message)
 		{
 			const string openTag = "<img>";
 			const string closeTag = "</img>";
@@ -321,7 +326,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
 				if (!string.IsNullOrEmpty(messageBefore))
 				{
 					views.Add(new Label { Text = messageBefore });
-				} 
+				}
 
 				views.Add(new Image { Source = ImageSource.FromStream(() => stream) });
 

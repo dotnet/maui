@@ -34,13 +34,13 @@ namespace Xamarin.Forms.Controls.Issues
 				};
 				label.BindingContext = this;
 				label.SetBinding(Label.TextProperty, "FlyoutIsPresented");
-				return new ContentPage 
+				return new ContentPage
 				{
-					Title = title, 
-					Content = new ScrollView 
-					{ 
+					Title = title,
+					Content = new ScrollView
+					{
 						Content = label
-					} 
+					}
 				};
 			}
 		}

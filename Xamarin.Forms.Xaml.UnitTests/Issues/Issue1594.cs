@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
-		public void OnPlatformForButtonHeight ()
+		public void OnPlatformForButtonHeight()
 		{
 			var xaml = @"
 				<Button 
@@ -37,16 +37,16 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				 </Button>";
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
-			var button = new Button ().LoadFromXaml (xaml);
-			Assert.AreEqual (33, button.HeightRequest);
+			var button = new Button().LoadFromXaml(xaml);
+			Assert.AreEqual(33, button.HeightRequest);
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
-			button = new Button ().LoadFromXaml (xaml);
-			Assert.AreEqual (44, button.HeightRequest);
+			button = new Button().LoadFromXaml(xaml);
+			Assert.AreEqual(44, button.HeightRequest);
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.UWP;
-			button = new Button ().LoadFromXaml (xaml);
-			Assert.AreEqual (44, button.HeightRequest);
+			button = new Button().LoadFromXaml(xaml);
+			Assert.AreEqual(44, button.HeightRequest);
 		}
 	}
 }

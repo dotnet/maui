@@ -201,7 +201,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			source.FireTestEvent();
 
-			Assert.AreEqual (beforeRun + 1, s_count);
+			Assert.AreEqual(beforeRun + 1, s_count);
 		}
 
 		[Test]

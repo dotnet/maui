@@ -1,14 +1,14 @@
 using ElmSharp;
 using EButton = ElmSharp.Button;
-using ELayout = ElmSharp.Layout;
 using EColor = ElmSharp.Color;
+using ELayout = ElmSharp.Layout;
 
 namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 {
 	public class WatchDialog : Dialog
 	{
 		ELayout _popupLayout;
-		bool _hasAcceptButton = false ;
+		bool _hasAcceptButton = false;
 
 		/// <summary>
 		/// Creates a dialog window for watch

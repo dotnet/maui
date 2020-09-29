@@ -1,14 +1,14 @@
-﻿using ElmSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using ElmSharp;
 using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
-using EToolbarItem = ElmSharp.ToolbarItem;
 using EImage = ElmSharp.Image;
+using EToolbarItem = ElmSharp.ToolbarItem;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -425,7 +425,7 @@ namespace Xamarin.Forms.Platform.Tizen
 					int moreItemListHeight = _moreItemsList.HeightRequest;
 					moreItemListHeight = Math.Min(moreItemListHeight, bound.Height - tabsHeight);
 					var moreItemDrawerBound = bound;
-					moreItemDrawerBound.Y += (bound.Height - tabsHeight - moreItemListHeight );
+					moreItemDrawerBound.Y += (bound.Height - tabsHeight - moreItemListHeight);
 					moreItemDrawerBound.Height = moreItemListHeight;
 					_moreItemsDrawer.Geometry = moreItemDrawerBound;
 				}

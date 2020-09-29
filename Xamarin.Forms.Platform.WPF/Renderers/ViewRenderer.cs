@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel; 
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Xamarin.Forms.Platform.WPF.Extensions;
-using WControl = System.Windows.Controls.Control;
 using WAutomationProperties = System.Windows.Automation.AutomationProperties;
+using WControl = System.Windows.Controls.Control;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -129,7 +129,7 @@ namespace Xamarin.Forms.Platform.WPF
 			var args = new VisualElementChangedEventArgs(e.OldElement, e.NewElement);
 			for (var i = 0; i < _elementChangedHandlers.Count; i++)
 				_elementChangedHandlers[i](this, args);
-			
+
 			ElementChanged?.Invoke(this, e);
 		}
 
@@ -194,7 +194,7 @@ namespace Xamarin.Forms.Platform.WPF
 			UpdateWidth();
 			UpdateHeight();
 		}
-		
+
 		private void Control_Loaded(object sender, RoutedEventArgs e)
 		{
 			Control.Loaded -= Control_Loaded;
@@ -233,7 +233,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			if (Control == null || Element == null)
 				return;
-			
+
 			Control.Height = Element.Height > 0 ? Element.Height : Double.NaN;
 		}
 
@@ -244,7 +244,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			Control.Width = Element.Width > 0 ? Element.Width : Double.NaN;
 		}
-		
+
 		protected virtual void UpdateNativeWidget()
 		{
 			UpdateEnabled();
@@ -278,7 +278,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			if (control == null || !control.IsEnabled)
 				return;
-			control.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)); 
+			control.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 		}
 
 		void HandleTrackerUpdated(object sender, EventArgs e)
@@ -325,7 +325,7 @@ namespace Xamarin.Forms.Platform.WPF
 		protected void UpdateAutomationLabeledBy()
 		{
 			var label = AutomationProperties.GetLabeledBy(Element);
-			if(label != null)
+			if (label != null)
 			{
 				WAutomationProperties.SetLabeledBy(Control, Platform.GetRenderer(label)?.GetNativeElement());
 			}

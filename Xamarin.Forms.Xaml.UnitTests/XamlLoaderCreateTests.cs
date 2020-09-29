@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
-		public void CreateFromXaml ()
+		public void CreateFromXaml()
 		{
 			var xaml = @"
 				<ContentView xmlns=""http://xamarin.com/schemas/2014/forms""
@@ -31,13 +31,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					<Label Text=""Foo""  x:Name=""label""/>
 				</ContentView>";
 
-			var view = XamlLoader.Create (xaml);
-			Assert.That (view, Is.TypeOf<ContentView> ());
-			Assert.AreEqual ("Foo", ((Label)((ContentView)view).Content).Text);
+			var view = XamlLoader.Create(xaml);
+			Assert.That(view, Is.TypeOf<ContentView>());
+			Assert.AreEqual("Foo", ((Label)((ContentView)view).Content).Text);
 		}
 
 		[Test]
-		public void CreateFromXamlDoesntFailOnMissingEventHandler ()
+		public void CreateFromXamlDoesntFailOnMissingEventHandler()
 		{
 			var xaml = @"
 				<Button xmlns=""http://xamarin.com/schemas/2014/forms""
@@ -46,8 +46,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				</Button>";
 
 			Button button = null;
-			Assert.DoesNotThrow (() => button = XamlLoader.Create (xaml, true) as Button);
-			Assert.NotNull (button);
+			Assert.DoesNotThrow(() => button = XamlLoader.Create(xaml, true) as Button);
+			Assert.NotNull(button);
 		}
 	}
 #pragma warning restore 0618

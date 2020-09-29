@@ -14,8 +14,8 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 852, "Async loading of Content causes UI element to be unclickable", PlatformAffected.Android | PlatformAffected.iOS)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 852, "Async loading of Content causes UI element to be unclickable", PlatformAffected.Android | PlatformAffected.iOS)]
 	public class Issue852 : TestContentPage
 	{
 		protected override void Init() { }
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Controls.Issues
 		Button _loginButton;
 		ScrollView _loginScrollView;
 
-		public Issue852 ()
+		public Issue852()
 		{
 			var welcomeLabel = new Label()
 			{
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			if (!(await AttemptLogin())) //try to log in, if login fails show login screen
 			{
-				Device.BeginInvokeOnMainThread (() => BuildLogin ());
+				Device.BeginInvokeOnMainThread(() => BuildLogin());
 			}
 			else
 			{
@@ -131,10 +131,10 @@ namespace Xamarin.Forms.Controls.Issues
 			return false; //for this test we are always going ot fail, want to show login screen and error
 		}
 
-			// Can't tell if it wasn't working in iOS or Android, but in either case we can probably just use automationID
-			// instead of querying on the placeholder text
+		// Can't tell if it wasn't working in iOS or Android, but in either case we can probably just use automationID
+		// instead of querying on the placeholder text
 
-		
+
 #endif
 #if UITEST
 		[Test]

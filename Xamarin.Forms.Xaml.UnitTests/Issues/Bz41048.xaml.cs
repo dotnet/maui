@@ -40,9 +40,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				var layout = new Bz41048(useCompiledXaml);
 				var label = layout.label0;
-				Assert.That (label.TextColor, Is.EqualTo(Color.Red));
-				Assert.That (label.FontAttributes, Is.EqualTo(FontAttributes.Bold));
-				Assert.That (label.LineBreakMode, Is.EqualTo(LineBreakMode.WordWrap));
+				Assert.That(label.TextColor, Is.EqualTo(Color.Red));
+				Assert.That(label.FontAttributes, Is.EqualTo(FontAttributes.Bold));
+				Assert.That(label.LineBreakMode, Is.EqualTo(LineBreakMode.WordWrap));
 			}
 		}
 	}

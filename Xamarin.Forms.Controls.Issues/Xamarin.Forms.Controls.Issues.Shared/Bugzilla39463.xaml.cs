@@ -17,10 +17,10 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Bugzilla, 39463, "Items not showing in ListView using DataTemplate when there are more items than can fit on screen", PlatformAffected.WinPhone)]
 	public partial class Bugzilla39463 : ContentPage
 	{
-		public Bugzilla39463 ()
+		public Bugzilla39463()
 		{
-			#if !UITEST
-			InitializeComponent ();
+#if !UITEST
+			InitializeComponent();
 
 			var n = 16;
 

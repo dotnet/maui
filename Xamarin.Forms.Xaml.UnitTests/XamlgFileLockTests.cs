@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Build.Utilities;
 using NUnit.Framework;
 using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Core.UnitTests;
-using Microsoft.Build.Utilities;
 using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -12,27 +12,28 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	[TestFixture]
 	public class XamlgFileLockTests : BaseTestFixture
 	{
-		string CreateXamlInputFile ()
+		string CreateXamlInputFile()
 		{
-			string xaml = 
+			string xaml =
 				@"<ContentPage xmlns='http://xamarin.com/schemas/2014/forms' xmlns:x='http://schemas.microsoft.com/winfx/2009/xaml' x:Class='Test.MyPage'>
 					<ContentPage.Content></ContentPage.Content> 
 				</ContentPage>";
 
-			string fileName = IOPath.GetTempFileName ();
-			File.WriteAllText (fileName, xaml);
+			string fileName = IOPath.GetTempFileName();
+			File.WriteAllText(fileName, xaml);
 
 			return fileName;
 		}
 
 		[Test]
-		public void XamlFileShouldNotBeLockedAfterFileIsGenerated ()
+		public void XamlFileShouldNotBeLockedAfterFileIsGenerated()
 		{
-			string xamlInputFile = CreateXamlInputFile ();
+			string xamlInputFile = CreateXamlInputFile();
 			var item = new TaskItem(xamlInputFile);
 			item.SetMetadata("TargetPath", xamlInputFile);
-			var generator = new XamlGTask() {
-				BuildEngine= new MSBuild.UnitTests.DummyBuildEngine(),
+			var generator = new XamlGTask()
+			{
+				BuildEngine = new MSBuild.UnitTests.DummyBuildEngine(),
 				AssemblyName = "test",
 				Language = "C#",
 				XamlFiles = new[] { item },
@@ -42,9 +43,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			generator.Execute();
 
 			string xamlOutputFile = generator.OutputFiles.First().ItemSpec;
-			File.Delete (xamlOutputFile);
+			File.Delete(xamlOutputFile);
 
-			Assert.DoesNotThrow (() => File.Delete (xamlInputFile));
+			Assert.DoesNotThrow(() => File.Delete(xamlInputFile));
 		}
 	}
 }

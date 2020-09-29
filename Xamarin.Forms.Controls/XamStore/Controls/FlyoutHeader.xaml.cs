@@ -12,9 +12,9 @@ namespace Xamarin.Forms.Controls.XamStore
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class FlyoutHeader : ContentView
 	{
-		public FlyoutHeader ()
+		public FlyoutHeader()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 	}
 }

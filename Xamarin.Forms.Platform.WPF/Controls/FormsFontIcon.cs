@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 		{
 			this.DefaultStyleKey = typeof(FormsFontIcon);
 		}
-		
+
 		private static void OnSourceChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
 		{
 			((FormsFontIcon)o).OnSourceChanged(e.OldValue, e.NewValue);

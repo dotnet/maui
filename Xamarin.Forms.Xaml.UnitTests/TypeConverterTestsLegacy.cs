@@ -1,15 +1,14 @@
 ﻿using System;
-using NUnit.Framework;
-using System.Xml;
 using System.Globalization;
-
+using System.Xml;
+using NUnit.Framework;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public class FooConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString (string value)
+		public override object ConvertFromInvariantString(string value)
 		{
 			return new Foo { Value = value };
 		}
@@ -17,7 +16,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public class BarConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString (string value)
+		public override object ConvertFromInvariantString(string value)
 		{
 			return new Bar { Value = (string)value };
 		}
@@ -25,7 +24,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public class QuxConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString (string value)
+		public override object ConvertFromInvariantString(string value)
 		{
 			return new Qux { Value = (string)value };
 		}
@@ -33,62 +32,68 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public class FooBarConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString (string value)
+		public override object ConvertFromInvariantString(string value)
 		{
 			return new FooBar { Value = (string)value };
 		}
 	}
 
-	public class Foo {
+	public class Foo
+	{
 		public string Value { get; set; }
 	}
-	public class Bar {
+	public class Bar
+	{
 		public string Value { get; set; }
 	}
-	public class Baz {
+	public class Baz
+	{
 		public string Value { get; set; }
 	}
-	public class Qux {
+	public class Qux
+	{
 		public string Value { get; set; }
 	}
 
-	[TypeConverter (typeof(FooBarConverter))]
-	public class FooBar {
+	[TypeConverter(typeof(FooBarConverter))]
+	public class FooBar
+	{
 		public string Value { get; set; }
 	}
 
 	public class Bindable : BindableObject
 	{
-		[TypeConverter (typeof(FooConverter))]
+		[TypeConverter(typeof(FooConverter))]
 		public Foo Foo { get; set; }
 
-		public static readonly BindableProperty BarProperty = 
+		public static readonly BindableProperty BarProperty =
 #pragma warning disable 618
-			BindableProperty.Create<Bindable, Bar> (w => w.Bar, default(Bar));
+			BindableProperty.Create<Bindable, Bar>(w => w.Bar, default(Bar));
 #pragma warning restore 618
 
-		[TypeConverter (typeof(BarConverter))]
-		public Bar Bar {
-			get { return (Bar)GetValue (BarProperty); }
-			set { SetValue (BarProperty, value); } 
+		[TypeConverter(typeof(BarConverter))]
+		public Bar Bar
+		{
+			get { return (Bar)GetValue(BarProperty); }
+			set { SetValue(BarProperty, value); }
 		}
 
 		public Baz Baz { get; set; }
 
-		public static readonly BindableProperty QuxProperty = 
+		public static readonly BindableProperty QuxProperty =
 #pragma warning disable 618
-			BindableProperty.CreateAttached<Bindable, Qux> (bindable => GetQux (bindable), default(Qux));
+			BindableProperty.CreateAttached<Bindable, Qux>(bindable => GetQux(bindable), default(Qux));
 #pragma warning restore 618
 
-		[TypeConverter (typeof(QuxConverter))]
-		public static Qux GetQux (BindableObject bindable)
+		[TypeConverter(typeof(QuxConverter))]
+		public static Qux GetQux(BindableObject bindable)
 		{
-			return (Qux)bindable.GetValue (QuxProperty);
+			return (Qux)bindable.GetValue(QuxProperty);
 		}
 
-		public static void SetQux (BindableObject bindable, Qux value)
+		public static void SetQux(BindableObject bindable, Qux value)
 		{
-			bindable.SetValue (QuxProperty, value);
+			bindable.SetValue(QuxProperty, value);
 		}
 
 		public FooBar FooBar { get; set; }
@@ -96,17 +101,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	internal class MockNameSpaceResolver : IXmlNamespaceResolver
 	{
-		public System.Collections.Generic.IDictionary<string, string> GetNamespacesInScope (XmlNamespaceScope scope)
+		public System.Collections.Generic.IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope)
 		{
-			throw new NotImplementedException ();
+			throw new NotImplementedException();
 		}
 
-		public string LookupNamespace (string prefix)
+		public string LookupNamespace(string prefix)
 		{
 			return "";
 		}
 
-		public string LookupPrefix (string namespaceName)
+		public string LookupPrefix(string namespaceName)
 		{
 			return "";
 		}
@@ -123,7 +128,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(bindable.Baz);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+			{
 				Properties = {
 					{ new XmlName (null, "Baz"), node },
 				}
@@ -142,7 +148,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(bindable.Baz);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+			{
 				Properties = {
 					{ new XmlName (null, "Baz"), node },
 				}
@@ -159,7 +166,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(bindable.Foo);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+			{
 				Properties = {
 					{ new XmlName (null, "Foo"), node },
 				}
@@ -180,7 +188,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(bindable.Bar);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+			{
 				Properties = {
 					{ new XmlName (null, "Bar"), node },
 				}
@@ -200,7 +209,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(Bindable.GetQux(bindable));
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+			{
 				Properties = {
 					{ new XmlName ("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable.Qux"), node },
 				}
@@ -220,7 +230,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(bindable.FooBar);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+			{
 				Properties = {
 					{ new XmlName (null, "FooBar"), node },
 				}

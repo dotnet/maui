@@ -1,3 +1,3 @@
 ﻿using Xamarin.Forms.Xaml;
 
-[assembly:XamlCompilationAttribute (XamlCompilationOptions.Compile)]
+[assembly: XamlCompilationAttribute(XamlCompilationOptions.Compile)]

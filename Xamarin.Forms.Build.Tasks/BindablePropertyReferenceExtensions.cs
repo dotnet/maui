@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (staticGetter != null && staticGetter.ReturnType.ResolveGenericParameters(bpRef.DeclaringType).ResolveCached().HasCustomAttributes)
 				attributes.AddRange(staticGetter.ReturnType.ResolveGenericParameters(bpRef.DeclaringType).ResolveCached().CustomAttributes);
 
-			return attributes.FirstOrDefault(cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))?.ConstructorArguments [0].Value as TypeReference;
+			return attributes.FirstOrDefault(cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))?.ConstructorArguments[0].Value as TypeReference;
 		}
 	}
 }

@@ -11,7 +11,7 @@ namespace Xamarin.Forms
 	{
 		readonly Dictionary<string, List<Subscription>> _eventHandlers = new Dictionary<string, List<Subscription>>();
 
-		public void AddEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName]string eventName = null)
+		public void AddEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName] string eventName = null)
 			where TEventArgs : EventArgs
 		{
 			if (IsNullOrEmpty(eventName))
@@ -23,7 +23,7 @@ namespace Xamarin.Forms
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		public void AddEventHandler(EventHandler handler, [CallerMemberName]string eventName = null)
+		public void AddEventHandler(EventHandler handler, [CallerMemberName] string eventName = null)
 		{
 			if (IsNullOrEmpty(eventName))
 				throw new ArgumentNullException(nameof(eventName));
@@ -75,7 +75,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		public void RemoveEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName]string eventName = null)
+		public void RemoveEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName] string eventName = null)
 			where TEventArgs : EventArgs
 		{
 			if (IsNullOrEmpty(eventName))
@@ -87,7 +87,7 @@ namespace Xamarin.Forms
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		public void RemoveEventHandler(EventHandler handler, [CallerMemberName]string eventName = null)
+		public void RemoveEventHandler(EventHandler handler, [CallerMemberName] string eventName = null)
 		{
 			if (IsNullOrEmpty(eventName))
 				throw new ArgumentNullException(nameof(eventName));
@@ -125,7 +125,7 @@ namespace Xamarin.Forms
 			{
 				Subscription current = subscriptions[n - 1];
 
-				if (current.Subscriber?.Target != handlerTarget|| current.Handler.Name != methodInfo.Name)
+				if (current.Subscriber?.Target != handlerTarget || current.Handler.Name != methodInfo.Name)
 					continue;
 
 				subscriptions.Remove(current);

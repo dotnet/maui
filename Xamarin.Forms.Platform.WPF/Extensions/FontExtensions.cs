@@ -101,7 +101,7 @@ namespace Xamarin.Forms.Platform.WPF
 					return (double)System.Windows.Application.Current.Resources["FontSizeSmall"];
 				case NamedSize.Medium:
 					return (double)System.Windows.Application.Current.Resources["FontSizeNormal"];
-					// use normal instead of medium as this is the default
+				// use normal instead of medium as this is the default
 				case NamedSize.Large:
 					return (double)System.Windows.Application.Current.Resources["FontSizeLarge"];
 				default:
@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		public static FontFamily ToFontFamily(this string fontFamily, string defaultFontResource = "FontFamilySemiBold")
 		{
-			if(string.IsNullOrWhiteSpace(fontFamily))
+			if (string.IsNullOrWhiteSpace(fontFamily))
 				return (FontFamily)System.Windows.Application.Current.Resources[defaultFontResource];
 
 			if (FontFamilies.TryGetValue(fontFamily, out var f))
@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Platform.WPF
 				return FontFamilies[fontFamily] = embeddedResult.fontFamily;
 			//self.FontFamily = new FontFamily(new Uri("pack://application:,,,/"), fontFamily);
 
-				//Cache this puppy!
+			//Cache this puppy!
 			var formatted = string.Join(", ", GetAllFontPossibilities(fontFamily));
 			var font = new FontFamily(formatted);
 			FontFamilies[fontFamily] = font;

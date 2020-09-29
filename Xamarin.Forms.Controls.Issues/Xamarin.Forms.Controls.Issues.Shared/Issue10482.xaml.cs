@@ -1,7 +1,7 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System;
 
 #if UITEST
 using Xamarin.UITest;

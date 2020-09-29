@@ -1,6 +1,6 @@
 ﻿using Android.Content;
-using AndroidX.DrawerLayout.Widget;
 using AndroidX.AppCompat.Widget;
+using AndroidX.DrawerLayout.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {

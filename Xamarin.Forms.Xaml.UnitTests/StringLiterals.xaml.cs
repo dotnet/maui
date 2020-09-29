@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
-
 using NUnit.Framework;
+using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class StringLiterals : ContentPage
 	{
-		public StringLiterals ()
+		public StringLiterals()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public StringLiterals (bool useCompiledXaml)
+		public StringLiterals(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -37,13 +35,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			[TestCase(false)]
 			[TestCase(true)]
-			public void EscapedStringsAreTreatedAsLiterals (bool useCompiledXaml)
+			public void EscapedStringsAreTreatedAsLiterals(bool useCompiledXaml)
 			{
-				var layout = new StringLiterals (useCompiledXaml);
-				Assert.AreEqual ("Foo", layout.label0.Text);
-				Assert.AreEqual ("{Foo}", layout.label1.Text);
-				Assert.AreEqual ("Foo", layout.label2.Text);
-				Assert.AreEqual ("Foo", layout.label3.Text);
+				var layout = new StringLiterals(useCompiledXaml);
+				Assert.AreEqual("Foo", layout.label0.Text);
+				Assert.AreEqual("{Foo}", layout.label1.Text);
+				Assert.AreEqual("Foo", layout.label2.Text);
+				Assert.AreEqual("Foo", layout.label3.Text);
 			}
 		}
 	}

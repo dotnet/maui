@@ -1,11 +1,10 @@
 ﻿using System;
-using Xamarin.Forms.CustomAttributes;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Collections.Generic;
-
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -84,14 +83,14 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Device.BeginInvokeOnMainThread(() =>
 					{
-							// If we want to filter the data, GetItems by expression
-							IList<Contact1> contactEntities = new List<Contact1>();
+						// If we want to filter the data, GetItems by expression
+						IList<Contact1> contactEntities = new List<Contact1>();
 						List<ContactViewModel1> data = new List<ContactViewModel1>();
 
 						if (contactEntities == null || contactEntities.Count == 0)
 						{
-								// Fill with dummy contacts
-								for (int i = 0; i < 20; i++)
+							// Fill with dummy contacts
+							for (int i = 0; i < 20; i++)
 							{
 								Contact1 contact = new Contact1()
 								{
@@ -103,8 +102,8 @@ namespace Xamarin.Forms.Controls.Issues
 							}
 						}
 
-							// Create Contact items for the listView
-							foreach (Contact1 contact in contactEntities)
+						// Create Contact items for the listView
+						foreach (Contact1 contact in contactEntities)
 						{
 							ContactViewModel1 contactItem = new ContactViewModel1()
 							{
@@ -117,14 +116,14 @@ namespace Xamarin.Forms.Controls.Issues
 							data.Add(contactItem);
 						}
 
-							// Sort, order and group the contacts
-							var contacts = from contact in data
+						// Sort, order and group the contacts
+						var contacts = from contact in data
 									   orderby contact.LastName, contact.FirstName
 									   group contact by contact.FirstNameSort into contactGroup
 									   select new Grouping1<string, ContactViewModel1>(contactGroup.Key, contactGroup);
 
-							// Create a new collection of groups
-							var grouppedContacts = new ObservableCollection<Grouping1<string, ContactViewModel1>>(contacts);
+						// Create a new collection of groups
+						var grouppedContacts = new ObservableCollection<Grouping1<string, ContactViewModel1>>(contacts);
 
 						_contactsListView.ItemsSource = grouppedContacts;
 					});

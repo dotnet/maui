@@ -41,7 +41,8 @@ namespace Xamarin.Forms.Internals
 		public static void SetDefault(Ticker ticker) => Default = ticker;
 		public static Ticker Default
 		{
-			internal set {
+			internal set
+			{
 				if (value == null && s_ticker != null)
 				{
 					(s_ticker as IDisposable)?.Dispose();
@@ -55,7 +56,7 @@ namespace Xamarin.Forms.Internals
 					s_ticker = Device.PlatformServices.CreateTicker();
 				}
 
-				return s_ticker.GetTickerInstance(); 
+				return s_ticker.GetTickerInstance();
 			}
 		}
 
@@ -118,8 +119,8 @@ namespace Xamarin.Forms.Internals
 
 		protected void SendSignals(int timestep = -1)
 		{
-			long step = timestep >= 0 
-				? timestep 
+			long step = timestep >= 0
+				? timestep
 				: _stopwatch.ElapsedMilliseconds;
 
 			SendSignals(step);

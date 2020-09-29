@@ -13,9 +13,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public string SelectedItem { get; set; }
 	}
 
-	public interface IViewModel5651 : IEditViewModel5651<string>{}
+	public interface IViewModel5651 : IEditViewModel5651<string> { }
 
-	public interface IEditViewModel5651<T> : IBaseViewModel5651<T>{}
+	public interface IEditViewModel5651<T> : IBaseViewModel5651<T> { }
 
 	public interface IBaseViewModel5651<T>
 	{

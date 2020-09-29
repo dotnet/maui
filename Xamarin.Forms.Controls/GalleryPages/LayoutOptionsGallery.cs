@@ -9,14 +9,15 @@ namespace Xamarin.Forms.Controls
 {
 	public class LayoutOptionsGallery : ContentPage
 	{
-		public LayoutOptionsGallery ()
+		public LayoutOptionsGallery()
 		{
-			Build ();
+			Build();
 		}
 
-		void Build ()
+		void Build()
 		{
-			var mainLayout = new StackLayout {
+			var mainLayout = new StackLayout
+			{
 				BackgroundColor = Color.Silver,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				Children = {
@@ -25,10 +26,11 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 
-			var changeOrientationButton = new Button {Text = "Change Orientation"};
+			var changeOrientationButton = new Button { Text = "Change Orientation" };
 			changeOrientationButton.Clicked += (sender, args) => mainLayout.Orientation = (mainLayout.Orientation == StackOrientation.Horizontal) ? StackOrientation.Vertical : StackOrientation.Horizontal;
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					changeOrientationButton,
 					mainLayout
@@ -36,9 +38,10 @@ namespace Xamarin.Forms.Controls
 			};
 		}
 
-		LayoutOptions StringToLayoutOptions (string options)
+		LayoutOptions StringToLayoutOptions(string options)
 		{
-			switch (options) {
+			switch (options)
+			{
 				case "Start":
 					return LayoutOptions.Start;
 				case "StartAndExpand":
@@ -56,25 +59,28 @@ namespace Xamarin.Forms.Controls
 				case "FillAndExpand":
 					return LayoutOptions.FillAndExpand;
 			}
-			throw new InvalidDataException ();
+			throw new InvalidDataException();
 		}
 
-		View BuildLayoutRegion ()
+		View BuildLayoutRegion()
 		{
 			// Set these to fill and expand so they just fill their parent which is the thing we actually want to play with.
-			var horizontalButton = new Button {
+			var horizontalButton = new Button
+			{
 				Text = "H Options",
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 			};
 
-			var verticalButton = new Button {
+			var verticalButton = new Button
+			{
 				Text = "V Options",
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 			};
 
-			var result = new StackLayout {
+			var result = new StackLayout
+			{
 				BackgroundColor = Color.Gray,
 				Children = {
 					horizontalButton,
@@ -82,24 +88,26 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 
-			horizontalButton.Clicked += async (sender, args) => {
-				var selection = await DisplayActionSheet ("Select Horizontal Options", null, null,
-				                                          "Start", "StartAndExpand", 
+			horizontalButton.Clicked += async (sender, args) =>
+			{
+				var selection = await DisplayActionSheet("Select Horizontal Options", null, null,
+														  "Start", "StartAndExpand",
 														  "Center", "CenterAndExpand",
-				                                          "End", "EndAndExpand", 
+														  "End", "EndAndExpand",
 														  "Fill", "FillAndExpand");
 
-				result.HorizontalOptions = StringToLayoutOptions (selection);
+				result.HorizontalOptions = StringToLayoutOptions(selection);
 			};
 
-			verticalButton.Clicked += async (sender, args) => {
-				var selection = await DisplayActionSheet ("Select Horizontal Options", null, null,
-				                                          "Start", "StartAndExpand", 
+			verticalButton.Clicked += async (sender, args) =>
+			{
+				var selection = await DisplayActionSheet("Select Horizontal Options", null, null,
+														  "Start", "StartAndExpand",
 														  "Center", "CenterAndExpand",
-				                                          "End", "EndAndExpand", 
+														  "End", "EndAndExpand",
 														  "Fill", "FillAndExpand");
 
-				result.VerticalOptions = StringToLayoutOptions (selection);
+				result.VerticalOptions = StringToLayoutOptions(selection);
 			};
 
 			return result;

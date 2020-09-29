@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.WPF
 					SetNativeControl(new FormsCarouselPage() { ContentLoader = new FormsContentLoader() });
 				}
 			}
-			
+
 			base.OnElementChanged(e);
 		}
 

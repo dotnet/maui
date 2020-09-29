@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("Binding Errors: 0");
 		}
 #endif
-		}
+	}
 
 	[Preserve(AllMembers = true)]
 	public class CollectionViewGalleryTestItem

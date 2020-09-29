@@ -60,7 +60,8 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 			Assume.That(style, Is.Not.Null);
 
 			var label = new Label();
-			var layout = new StackLayout {
+			var layout = new StackLayout
+			{
 				Children = {
 					label,
 				}
@@ -92,7 +93,8 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		{
 			var app = new MockApplication();
 			app.Resources.Add(StyleSheet.FromString("label{ color: red;}"));
-			var page = new ContentPage {
+			var page = new ContentPage
+			{
 				Content = new Label()
 			};
 			app.MainPage = page;
@@ -104,7 +106,8 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		{
 			var app = new MockApplication();
 			app.Resources.Add(StyleSheet.FromString("label{ color: white; background-color: blue; }"));
-			var page = new ContentPage {
+			var page = new ContentPage
+			{
 				Content = new Label()
 			};
 			page.Resources.Add(StyleSheet.FromString("label{ color: red; }"));
@@ -117,7 +120,8 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		public void StyleSheetsOnChildAreReAppliedWhenParentStyleSheetAdded()
 		{
 			var app = new MockApplication();
-			var page = new ContentPage {
+			var page = new ContentPage
+			{
 				Content = new Label()
 			};
 			page.Resources.Add(StyleSheet.FromString("label{ color: red; }"));
@@ -137,7 +141,8 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 			var label = new Label();
 			label.Resources.Add(StyleSheet.FromString("label{color: yellow;}"));
 
-			var page = new ContentPage {
+			var page = new ContentPage
+			{
 				Content = label
 			};
 			page.Resources.Add(StyleSheet.FromString("label{ color: red; }"));

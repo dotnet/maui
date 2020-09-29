@@ -18,10 +18,12 @@ namespace Xamarin.Forms.Controls.Issues
 			var otherButton = new Button() { Text = "back" };
 			otherButton.Clicked += (sender, args) => Navigation.PopModalAsync();
 
-			var page = new ContentPage {
+			var page = new ContentPage
+			{
 				Title = "Page Two",
 				Content =
-					new StackLayout {
+					new StackLayout
+					{
 						Children = {
 							new Label {
 								Text =

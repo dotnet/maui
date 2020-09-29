@@ -1,8 +1,8 @@
 ﻿using System;
+using System.IO;
+using System.Reflection;
 using System.Xml;
 using Xamarin.Forms.StyleSheets;
-using System.Reflection;
-using System.IO;
 
 namespace Xamarin.Forms.Xaml
 {
@@ -22,7 +22,8 @@ namespace Xamarin.Forms.Xaml
 			if (!string.IsNullOrEmpty(Style) && Source != null)
 				throw new XamlParseException($"StyleSheet can not have both a Source and a content", serviceProvider);
 
-			if (Source != null) {
+			if (Source != null)
+			{
 				lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider)?.XmlLineInfo;
 				if (Source.IsAbsoluteUri)
 					throw new XamlParseException($"Source only accepts Relative URIs", lineInfo);
@@ -37,7 +38,8 @@ namespace Xamarin.Forms.Xaml
 				return StyleSheet.FromResource(resourcePath, assembly, lineInfo);
 			}
 
-			if (!string.IsNullOrEmpty(Style)) {
+			if (!string.IsNullOrEmpty(Style))
+			{
 				using (var reader = new StringReader(Style))
 					return StyleSheet.FromReader(reader);
 			}

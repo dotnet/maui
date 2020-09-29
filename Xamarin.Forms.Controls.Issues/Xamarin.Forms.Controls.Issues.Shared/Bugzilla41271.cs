@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System;
 
 #if UITEST
 using Xamarin.UITest;

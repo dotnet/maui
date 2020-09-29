@@ -15,9 +15,9 @@ namespace Xamarin.Forms.Controls
 		}
 	}
 
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public class VM
-	{ 
+	{
 		public string NativeText { get; set; }
 	}
 }

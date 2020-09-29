@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewG
 			get => _filter;
 			set
 			{
-				_filter = value; 
+				_filter = value;
 				OnPropertyChanged();
 			}
 		}

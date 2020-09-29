@@ -22,7 +22,8 @@ namespace Xamarin.Forms.Xaml
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (TypedBinding == null)
-				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source) {
+				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
+				{
 					UpdateSourceEventName = UpdateSourceEventName,
 					FallbackValue = FallbackValue,
 					TargetNullValue = TargetNullValue,

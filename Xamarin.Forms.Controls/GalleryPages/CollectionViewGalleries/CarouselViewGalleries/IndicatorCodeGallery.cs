@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			_carouselView.PropertyChanged += CarouselViewPropertyChanged;
 			(_carouselView.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>).CollectionChanged += IndicatorCodeGalleryCollectionChanged;
- 
+
 			var indicatorView = new IndicatorView
 			{
 				HorizontalOptions = LayoutOptions.Center,

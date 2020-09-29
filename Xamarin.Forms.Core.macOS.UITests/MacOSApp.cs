@@ -1,13 +1,13 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using Xamarin.UITest;
 using Xamarin.UITest.Desktop;
 using Xamarin.UITest.Queries;
-using System.Linq;
-using System.Diagnostics;
-using System.Threading;
-using System.Drawing;
 
 namespace Xamarin.Forms.Core.macOS.UITests
 {

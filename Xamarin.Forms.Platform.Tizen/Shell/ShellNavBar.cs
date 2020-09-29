@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Reflection;
 using ElmSharp;
-using EColor = ElmSharp.Color;
-using EButton = ElmSharp.Button;
-using EImage = ElmSharp.Image;
 using EBox = ElmSharp.Box;
+using EButton = ElmSharp.Button;
+using EColor = ElmSharp.Color;
+using EImage = ElmSharp.Image;
 
 namespace Xamarin.Forms.Platform.Tizen
 {

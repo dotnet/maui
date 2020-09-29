@@ -25,7 +25,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void MultipleWaysToCreateAThicknessResource(bool useCompiledXaml)
 			{
 				var page = new Bz46921(useCompiledXaml);
-				foreach (var resname in new string[] { "thickness0", "thickness1", "thickness2", "thickness3", }) {
+				foreach (var resname in new string[] { "thickness0", "thickness1", "thickness2", "thickness3", })
+				{
 					var resource = page.Resources[resname];
 					Assert.That(resource, Is.TypeOf<Thickness>());
 					var thickness = (Thickness)resource;

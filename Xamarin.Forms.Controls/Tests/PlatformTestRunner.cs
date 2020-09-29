@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls.Tests
 #endif
 
 			var platformTestSettings = DependencyService.Resolve<IPlatformTestSettings>();
-			
+
 			// "platform" is the native assembly (ControGallery.iOS, ControlGallery.Android, etc.)
 			Assembly platform = platformTestSettings.Assembly;
 
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Controls.Tests
 				runner.Load(platform, testRunSettings);
 				runner.Run(_testListener, testFilter);
 			}
-			catch (Exception ex) 
+			catch (Exception ex)
 			{
 				MessagingCenter.Send(ex, "TestRunnerError");
 			}

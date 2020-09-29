@@ -3,8 +3,8 @@ using System.Diagnostics;
 
 namespace Xamarin.Forms.CustomAttributes
 {
-	[Conditional ("DEBUG")]
-	[AttributeUsage (
+	[Conditional("DEBUG")]
+	[AttributeUsage(
 		AttributeTargets.Class |
 		AttributeTargets.Event |
 		AttributeTargets.Property |
@@ -14,13 +14,13 @@ namespace Xamarin.Forms.CustomAttributes
 		)]
 	public class UiTestAttribute : Attribute
 	{
-		public UiTestAttribute (Type formsType)
+		public UiTestAttribute(Type formsType)
 		{
 			Type = formsType;
 			MemberName = "";
 		}
 
-		public UiTestAttribute (Type formsType, string memberName)
+		public UiTestAttribute(Type formsType, string memberName)
 		{
 			Type = formsType;
 			MemberName = memberName;

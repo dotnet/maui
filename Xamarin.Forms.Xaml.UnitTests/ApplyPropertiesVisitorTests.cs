@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using System.Collections;
+using NUnit.Framework;
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Xaml.UnitTests

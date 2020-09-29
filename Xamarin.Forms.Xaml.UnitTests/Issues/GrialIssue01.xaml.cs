@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class GrialIssue01 : ContentPage
 	{
-		public GrialIssue01 ()
+		public GrialIssue01()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public GrialIssue01 (bool useCompiledXaml)
+		public GrialIssue01(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -23,12 +22,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			[TestCase(true)]
 			[TestCase(false)]
-			public void ImplicitCastIsUsedOnFileImageSource (bool useCompiledXaml)
+			public void ImplicitCastIsUsedOnFileImageSource(bool useCompiledXaml)
 			{
-				var layout = new GrialIssue01 (useCompiledXaml);
-				var res = (FileImageSource)layout.Resources ["image"];
+				var layout = new GrialIssue01(useCompiledXaml);
+				var res = (FileImageSource)layout.Resources["image"];
 
-				Assert.AreEqual ("path.png", res.File);
+				Assert.AreEqual("path.png", res.File);
 			}
 		}
 	}

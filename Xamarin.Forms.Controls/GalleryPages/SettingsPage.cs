@@ -9,16 +9,16 @@ namespace Xamarin.Forms.Controls
 	public class SettingsPage : ContentPage
 	{
 		SettingsScreen _settingsScreen;
-		public SettingsPage ()
+		public SettingsPage()
 		{
-			_settingsScreen = new SettingsScreen ();
+			_settingsScreen = new SettingsScreen();
 			Content = _settingsScreen;
 		}
 	}
 
 	public class SettingsScreen : TableView
 	{
-		public SettingsScreen ()
+		public SettingsScreen()
 		{
 			Intent = TableIntent.Settings;
 			var cell = new TextCell { Text = "Coverflow", Detail = "Value 1" };
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls
 			var boolCell = new SwitchCell { Text = "Off" };
 			boolCell.OnChanged += (sender, arg) => boolCell.Text = boolCell.On ? "On" : "Off";
 
-			var root = new TableRoot () {
+			var root = new TableRoot() {
 				new TableSection () {
 					cell,
 					new TextCell { Text = "Cell 2", Detail = "Value 2" },

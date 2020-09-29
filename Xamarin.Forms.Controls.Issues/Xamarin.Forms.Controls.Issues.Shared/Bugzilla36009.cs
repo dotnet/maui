@@ -13,36 +13,39 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 36009, "Children of Layouts with data bound IsVisible are not displayed")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 36009, "Children of Layouts with data bound IsVisible are not displayed")]
 	public class Bugzilla36009 : TestContentPage // or TestFlyoutPage, etc ...
 	{
-		[Preserve (AllMembers = true)]
-		public class SampleViewModel: ViewModelBase
+		[Preserve(AllMembers = true)]
+		public class SampleViewModel : ViewModelBase
 		{
-			public bool IsContentVisible {
-				get{ return GetProperty<bool> (); }
-				set{ SetProperty (value); }
+			public bool IsContentVisible
+			{
+				get { return GetProperty<bool>(); }
+				set { SetProperty(value); }
 			}
 		}
 
-		protected override void Init ()
+		protected override void Init()
 		{
-			var boxview = new BoxView{ BackgroundColor = Color.Aqua, AutomationId = "Victory" };
+			var boxview = new BoxView { BackgroundColor = Color.Aqua, AutomationId = "Victory" };
 
-			var contentView = new ContentView { 
+			var contentView = new ContentView
+			{
 				Content = boxview
 			};
 
-			contentView.SetBinding (IsVisibleProperty, "IsContentVisible");
+			contentView.SetBinding(IsVisibleProperty, "IsContentVisible");
 
-			var layout = new AbsoluteLayout {
+			var layout = new AbsoluteLayout
+			{
 				Children = { contentView }
 			};
 
 			Content = layout;
 
-			var vm = new SampleViewModel ();
+			var vm = new SampleViewModel();
 
 			BindingContext = vm;
 

@@ -1,7 +1,7 @@
-﻿using Gdk;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Gdk;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Renderers;
 using IOPath = System.IO.Path;

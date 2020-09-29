@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				((GridLayoutManager)(Control.LayoutManager)).UpdateSpan(((GridItemsLayout)sender).Span);
 			}
-			else if (e.PropertyName == nameof(LinearItemsLayout.ItemSpacing) 
+			else if (e.PropertyName == nameof(LinearItemsLayout.ItemSpacing)
 				|| e.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing)
 				|| e.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing))
 			{

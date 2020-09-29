@@ -1,37 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Diagnostics;
+using NUnit.Framework;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
-
-using NUnit.Framework;
-using System.Diagnostics;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public class SimpleContentPageCode : ContentPage
 	{
-		public SimpleContentPageCode ()
+		public SimpleContentPageCode()
 		{
-			Content = new Label {
-				Text="Hello, Xamarin.Forms!",
-				VerticalOptions=LayoutOptions.CenterAndExpand,
-				HorizontalOptions=LayoutOptions.CenterAndExpand
+			Content = new Label
+			{
+				Text = "Hello, Xamarin.Forms!",
+				VerticalOptions = LayoutOptions.CenterAndExpand,
+				HorizontalOptions = LayoutOptions.CenterAndExpand
 			};
 		}
 
-		public SimpleContentPageCode (bool useCompiledXaml) : this ()
+		public SimpleContentPageCode(bool useCompiledXaml) : this()
 		{
 		}
 	}
 	public partial class SimpleContentPage : ContentPage
 	{
-		public SimpleContentPage ()
+		public SimpleContentPage()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public SimpleContentPage (bool useCompiledXaml)
+		public SimpleContentPage(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -40,49 +39,49 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public class Tests
 		{
 			[SetUp]
-			public void Setup ()
+			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices ();
+				Device.PlatformServices = new MockPlatformServices();
 			}
 
 			[Test]
 			[Ignore(nameof(XamlCIs20TimesFasterThanXaml))]
-			public void XamlCIs20TimesFasterThanXaml ()
+			public void XamlCIs20TimesFasterThanXaml()
 			{
-				var swXamlC = new Stopwatch ();
-				var swXaml = new Stopwatch ();
+				var swXamlC = new Stopwatch();
+				var swXaml = new Stopwatch();
 
-				swXamlC.Start ();
+				swXamlC.Start();
 				for (var i = 0; i < 1000; i++)
-					new SimpleContentPage (true);
-				swXamlC.Stop ();
+					new SimpleContentPage(true);
+				swXamlC.Stop();
 
-				swXaml.Start ();
+				swXaml.Start();
 				for (var i = 0; i < 1000; i++)
-					new SimpleContentPage (false);
-				swXaml.Stop ();
+					new SimpleContentPage(false);
+				swXaml.Stop();
 
-				Assert.Less (swXamlC.ElapsedMilliseconds * 20, swXaml.ElapsedMilliseconds);
+				Assert.Less(swXamlC.ElapsedMilliseconds * 20, swXaml.ElapsedMilliseconds);
 			}
 
 			[Test]
 			[Ignore(nameof(XamlCIsNotMuchSlowerThanCode))]
-			public void XamlCIsNotMuchSlowerThanCode ()
+			public void XamlCIsNotMuchSlowerThanCode()
 			{
-				var swXamlC = new Stopwatch ();
-				var swCode = new Stopwatch ();
+				var swXamlC = new Stopwatch();
+				var swCode = new Stopwatch();
 
-				swXamlC.Start ();
+				swXamlC.Start();
 				for (var i = 0; i < 1000; i++)
-					new SimpleContentPage (true);
-				swXamlC.Stop ();
+					new SimpleContentPage(true);
+				swXamlC.Stop();
 
-				swCode.Start ();
+				swCode.Start();
 				for (var i = 0; i < 1000; i++)
-					new SimpleContentPageCode (false);
-				swCode.Stop ();
+					new SimpleContentPageCode(false);
+				swCode.Stop();
 
-				Assert.LessOrEqual (swXamlC.ElapsedMilliseconds*.2, swCode.ElapsedMilliseconds);
+				Assert.LessOrEqual(swXamlC.ElapsedMilliseconds * .2, swCode.ElapsedMilliseconds);
 			}
 		}
 	}

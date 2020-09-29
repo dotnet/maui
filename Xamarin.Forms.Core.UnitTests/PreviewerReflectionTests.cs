@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = new Page();
 
-			var setPlatform = page.GetType ().GetProperty ("Platform", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+			var setPlatform = page.GetType().GetProperty("Platform", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 			Assert.That(setPlatform, Is.Not.Null, "Previewer requires that Page have a property called 'Platform'");
 
 			TestDelegate setValue = () => setPlatform.SetValue(page, new FakePlatform(), null);

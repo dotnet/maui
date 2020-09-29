@@ -40,10 +40,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(true)]
 			public void BetterExceptionReport(bool useCompiledXaml)
 			{
-				if(useCompiledXaml) {
-					try {
+				if (useCompiledXaml)
+				{
+					try
+					{
 						MockCompiler.Compile(typeof(Gh4099));
-					} catch (BuildException xpe) {
+					}
+					catch (BuildException xpe)
+					{
 						Assert.That(xpe.XmlInfo.LineNumber, Is.EqualTo(5));
 						Assert.Pass();
 					}

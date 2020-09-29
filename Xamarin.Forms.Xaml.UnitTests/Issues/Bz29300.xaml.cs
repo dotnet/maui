@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
-
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -11,12 +9,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		public static readonly BindableProperty NumOfRepeatProperty =
 #pragma warning disable 618
-			BindableProperty.Create<Bz29300DummyView, int> (p => p.NumOfRepeat, 1, BindingMode.OneWay, null, UpdateTexts);
+			BindableProperty.Create<Bz29300DummyView, int>(p => p.NumOfRepeat, 1, BindingMode.OneWay, null, UpdateTexts);
 #pragma warning restore 618
 
 		public static readonly BindableProperty TextProperty =
 #pragma warning disable 618
-			BindableProperty.Create<Bz29300DummyView, string> (p => p.Text, string.Empty, BindingMode.OneWay, null, UpdateTexts);
+			BindableProperty.Create<Bz29300DummyView, string>(p => p.Text, string.Empty, BindingMode.OneWay, null, UpdateTexts);
 #pragma warning restore 618
 
 		public int NumOfRepeat
@@ -40,7 +38,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var instance = bindable as Bz29300DummyView;
 			instance.Children.Clear();
 			for (int i = 0; i < instance.NumOfRepeat; i++)
-				instance.Children.Add(new Label() {Text = newValue });
+				instance.Children.Add(new Label() { Text = newValue });
 		}
 
 		static void UpdateTexts(BindableObject bindable, int oldValue, int newValue)
@@ -48,10 +46,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var instance = bindable as Bz29300DummyView;
 			if (oldValue == newValue)
 				return;
-			if (oldValue > newValue) {
+			if (oldValue > newValue)
+			{
 				for (int i = newValue; i > oldValue; i--)
 					instance.Children.RemoveAt(0);
-			} else {
+			}
+			else
+			{
 				for (int i = oldValue; i < newValue; i++)
 					instance.Children.Add(new Label() { Text = instance.Text });
 			}
@@ -60,12 +61,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public partial class Bz29300 : ContentPage
 	{
-		public Bz29300 ()
+		public Bz29300()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Bz29300 (bool useCompiledXaml)
+		public Bz29300(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -75,11 +76,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			[TestCase(true)]
 			[TestCase(false)]
-			public void AccessUserDefinedBindableProperties (bool useCompiledXaml)
+			public void AccessUserDefinedBindableProperties(bool useCompiledXaml)
 			{
-				var layout = new Bz29300 (useCompiledXaml);
-				Assert.AreEqual (4, layout.dummy.NumOfRepeat);
-				Assert.AreEqual ("Test", layout.dummy.Text);
+				var layout = new Bz29300(useCompiledXaml);
+				Assert.AreEqual(4, layout.dummy.NumOfRepeat);
+				Assert.AreEqual("Test", layout.dummy.Text);
 			}
 		}
 	}

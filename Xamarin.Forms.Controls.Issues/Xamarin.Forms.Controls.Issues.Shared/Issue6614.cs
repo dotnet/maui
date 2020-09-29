@@ -23,8 +23,8 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Text = _instruction1,
 				Command = new Command(() =>
-				{							
-					if(Content is ContentView currentContentView)
+				{
+					if (Content is ContentView currentContentView)
 					{
 						var currentContent = currentContentView.Content;
 						currentContentView.Content = null;

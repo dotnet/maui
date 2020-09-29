@@ -6,8 +6,8 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 35294, "Certain pages do not align properly in RT Desktop")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 35294, "Certain pages do not align properly in RT Desktop")]
 	public class Bugzilla35294 : TestContentPage
 	{
 		public static Label LblMsg = new Label
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 			TextColor = Color.Black,
 		};
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			Label header = new Label
 			{

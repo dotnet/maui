@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void XamlOnlyResourceResolvesLocalAssembly([Values(false, true)]bool useCompiledXaml)
+			public void XamlOnlyResourceResolvesLocalAssembly([Values(false, true)] bool useCompiledXaml)
 			{
 				Gh7531 layout = null;
 				Assert.DoesNotThrow(() => layout = new Gh7531(useCompiledXaml));

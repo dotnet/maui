@@ -1,6 +1,6 @@
-using Gdk;
 using System;
 using Cairo;
+using Gdk;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
 {
@@ -95,7 +95,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				_scale = value;
 				UpdateScaleAndRotation();
 			}
-			
+
 		}
 
 		public double Rotation
@@ -205,7 +205,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			if (newPixBuf != null)
 			{
 				_image.Pixbuf = newPixBuf;
-				newPixBuf.Dispose();	// Important: Image should adapt to window size. To maintain memory consuption, we make Pixbuf dispose (Unref is deprecated).
+				newPixBuf.Dispose();    // Important: Image should adapt to window size. To maintain memory consuption, we make Pixbuf dispose (Unref is deprecated).
 				System.GC.Collect();
 			}
 		}
@@ -216,7 +216,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			{
 				Pixbuf rotated;
 
-				if(_rotation != 0.0)
+				if (_rotation != 0.0)
 				{
 					ImageSurface surface = new ImageSurface(Format.Argb32, _original.Width, _original.Height);
 					Context ctx = new Context(surface);
@@ -239,7 +239,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 					rotated = _original;
 				}
 
-				if(_scaleX != 0.0 || _scaleY != 0.0)
+				if (_scaleX != 0.0 || _scaleY != 0.0)
 				{
 					_image.Pixbuf = rotated.ScaleSimple((int)(rotated.Width * _scale), (int)(rotated.Height * _scale), InterpType.Bilinear);
 				}
@@ -269,13 +269,13 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		{
 			int srcDataIndex = srcStride * srcY + srcX * 4;
 
-			for(int y = 0; y < height; y++)
+			for (int y = 0; y < height; y++)
 			{
-				for(int x = 0; x < width; x++)
+				for (int x = 0; x < width; x++)
 				{
 					byte a = srcData[srcDataIndex + (x * 4) + 3];
 
-					if(a == 0)
+					if (a == 0)
 					{
 						System.Runtime.InteropServices.Marshal.WriteByte(IntPtr.Add(destData, x * 4 + 0), 0);
 						System.Runtime.InteropServices.Marshal.WriteByte(IntPtr.Add(destData, x * 4 + 1), 0);

@@ -54,8 +54,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var cv = new CollectionView();
 
-			cv.ItemTemplate = new DataTemplate(() => {
-				return CreateFrame();	
+			cv.ItemTemplate = new DataTemplate(() =>
+			{
+				return CreateFrame();
 			});
 
 			cv.ItemsSource = new List<string> { "one", "two", "three" };

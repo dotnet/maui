@@ -2,9 +2,9 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
-using AndroidX.AppCompat.Widget;
 using Android.Util;
 using Android.Views;
+using AndroidX.AppCompat.Widget;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
@@ -195,7 +195,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				NativeButton.LetterSpacing = Element.CharacterSpacing.ToEm();
 			}
-			
+
 		}
 
 		void IOnClickListener.OnClick(AView v) => ButtonElementManager.OnClick(Element, Element, v);

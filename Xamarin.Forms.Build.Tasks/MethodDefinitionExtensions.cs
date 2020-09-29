@@ -28,11 +28,12 @@ namespace Xamarin.Forms.Build.Tasks
 			{
 				var paramType = methodDef.Parameters[i].ParameterType;
 				var genParam = paramType as GenericParameter;
-				if (genParam != null) {
+				if (genParam != null)
+				{
 					var index = genParam.DeclaringType.GenericParameters.IndexOf(genParam);
 					paramType = (declaringTypeRef as GenericInstanceType).GenericArguments[index];
 				}
-				var argType = context.Variables [arguments [i] as IElementNode].VariableType;
+				var argType = context.Variables[arguments[i] as IElementNode].VariableType;
 				if (!argType.InheritsFromOrImplements(paramType))
 					return false;
 			}
@@ -56,7 +57,8 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			if (!self.HasCustomAttributes)
 				return false;
-			foreach (var arg in self.CustomAttributes) {
+			foreach (var arg in self.CustomAttributes)
+			{
 				if (TypeRefComparer.Default.Equals(arg.AttributeType, attribute))
 					return true;
 			}

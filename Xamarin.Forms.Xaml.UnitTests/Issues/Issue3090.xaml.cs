@@ -6,12 +6,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class Issue3090 : ContentPage
 	{
-		public Issue3090 ()
+		public Issue3090()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Issue3090 (bool useCompiledXaml)
+		public Issue3090(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -19,11 +19,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase (false)]
-			[TestCase (true)]
-			public void NewDoesNotThrow (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void NewDoesNotThrow(bool useCompiledXaml)
 			{
-				var p = new Issue3090 (useCompiledXaml);
+				var p = new Issue3090(useCompiledXaml);
 			}
 		}
 	}

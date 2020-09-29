@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel;
-using ESlider = ElmSharp.Slider;
-using ESize = ElmSharp.Size;
 using EColor = ElmSharp.Color;
+using ESize = ElmSharp.Size;
+using ESlider = ElmSharp.Slider;
 
 namespace Xamarin.Forms.Platform.Tizen
 {

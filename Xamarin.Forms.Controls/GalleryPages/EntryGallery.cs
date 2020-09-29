@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Controls
 {
 	public class EntryGallery : ContentPage
 	{
-		public EntryGallery ()
+		public EntryGallery()
 		{
 			var label = new Label { Text = "Enter something in Normal" };
 			var label2 = new Label { Text = "No typing has happened in Normal yet" };
@@ -19,16 +19,19 @@ namespace Xamarin.Forms.Controls
 			var disabled = new Entry { Placeholder = "Disabled" };
 			var transparent = new Entry { Placeholder = "Transparent" };
 
-			var isFocusedlabel = new Label { 
+			var isFocusedlabel = new Label
+			{
 				Text = "Focus an Entry"
 			};
 
-			var changeKeyboardType = new Entry { 
+			var changeKeyboardType = new Entry
+			{
 				Placeholder = "Keyboard.Default",
 				Keyboard = Keyboard.Default
 			};
 
-			changeKeyboardType.Completed += (sender, e) => {
+			changeKeyboardType.Completed += (sender, e) =>
+			{
 				changeKeyboardType.Placeholder = "Keyboard.Numeric";
 				changeKeyboardType.Keyboard = Keyboard.Numeric;
 			};
@@ -56,31 +59,38 @@ namespace Xamarin.Forms.Controls
 			activation.Completed += (sender, e) => activation.Text = "Activated";
 			disabled.IsEnabled = false;
 
-			toggleColorButton.Clicked += (sender, e) => {
-				if (normal.TextColor == Color.Default) {
+			toggleColorButton.Clicked += (sender, e) =>
+			{
+				if (normal.TextColor == Color.Default)
+				{
 					normal.TextColor = Color.Red;
 					password.TextColor = Color.Red;
 					numericPassword.TextColor = Color.Red;
-				} else {
+				}
+				else
+				{
 					normal.TextColor = Color.Default;
 					password.TextColor = Color.Default;
 					numericPassword.TextColor = Color.Default;
 				}
 			};
 
-			changeSecureButton.Clicked += (sender, e) => { 
+			changeSecureButton.Clicked += (sender, e) =>
+			{
 				password.IsPassword = !password.IsPassword;
-				numericPassword.IsPassword = !numericPassword.IsPassword;			
+				numericPassword.IsPassword = !numericPassword.IsPassword;
 			};
 
 			int i = 1;
-			changePlaceholderButton.Clicked += (sender, e) => { normal.Placeholder = "Placeholder " + i++.ToString (); };
+			changePlaceholderButton.Clicked += (sender, e) => { normal.Placeholder = "Placeholder " + i++.ToString(); };
 
-			focusNormalButton.Clicked += (sender, args) => normal.Focus ();
+			focusNormalButton.Clicked += (sender, args) => normal.Focus();
 
-			Content = new ScrollView {
-				Content = new StackLayout {
-					Padding = new Thickness (80),
+			Content = new ScrollView
+			{
+				Content = new StackLayout
+				{
+					Padding = new Thickness(80),
 					Children = {
 						label,
 						label2,

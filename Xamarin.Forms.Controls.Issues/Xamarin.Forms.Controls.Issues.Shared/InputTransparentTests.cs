@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Grid.SetRow(abs, 1);
 
-			return new ContentPage {Content = layout};
+			return new ContentPage { Content = layout };
 		}
 
 		static Button MenuButton(string label, Func<View> view)
@@ -166,7 +166,8 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var layout = new Grid
 			{
-				VerticalOptions = LayoutOptions.Fill, HorizontalOptions = LayoutOptions.Fill,
+				VerticalOptions = LayoutOptions.Fill,
+				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions = new ColumnDefinitionCollection { new ColumnDefinition(), new ColumnDefinition() }
 			};
 

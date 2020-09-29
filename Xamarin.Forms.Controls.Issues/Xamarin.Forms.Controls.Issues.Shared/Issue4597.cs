@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
+using System.Threading;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Linq;
-using System.Threading;
 
 #if UITEST
 using Xamarin.UITest;

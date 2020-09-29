@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
 		}
-		
+
 		public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
 		{
 			Stream stream = _isolatedStorageFile.OpenFile(path, (System.IO.FileMode)mode, (System.IO.FileAccess)access);

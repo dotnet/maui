@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using WBrush = System.Windows.Media.Brush;
-using WGradientStopCollection = System.Windows.Media.GradientStopCollection;
 using WGradientStop = System.Windows.Media.GradientStop;
+using WGradientStopCollection = System.Windows.Media.GradientStopCollection;
 using WLinearGradientBrush = System.Windows.Media.LinearGradientBrush;
-using WRadialGradientBrush = System.Windows.Media.RadialGradientBrush;
 using WPoint = System.Windows.Point;
+using WRadialGradientBrush = System.Windows.Media.RadialGradientBrush;
 
 namespace Xamarin.Forms.Platform.WPF.Extensions
 {

@@ -242,8 +242,8 @@ namespace Xamarin.Forms.Controls.Issues
 			// that was never a public feature, it was never a valid fix for the test.
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=28277
 #if !UITEST
-                if (App.IOSVersion < 9)
-                    runTest = false;
+			if (App.IOSVersion < 9)
+				runTest = false;
 #endif
 
 			if (!runTest)

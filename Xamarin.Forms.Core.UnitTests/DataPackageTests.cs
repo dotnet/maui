@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public async Task DataPackageViewGetters()
 		{
 			var dataPackage = new DataPackage();
-			
+
 			ImageSource imageSource = "somefile.jpg";
 			dataPackage.Text = "text";
 			dataPackage.Image = imageSource;

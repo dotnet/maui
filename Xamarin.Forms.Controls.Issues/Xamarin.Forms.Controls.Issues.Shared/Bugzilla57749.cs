@@ -1,7 +1,7 @@
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
 using System;
 using System.Threading.Tasks;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;
@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 57749, "After enabling a disabled button it is not clickable", PlatformAffected.UWP)]
-	public class Bugzilla57749 : TestContentPage 
+	public class Bugzilla57749 : TestContentPage
 	{
 		protected override void Init()
 		{

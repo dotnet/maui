@@ -96,7 +96,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				HorizontalTextAlignment = TextAlignment.Center,
 			};
-			
+
 			Span span = new Span()
 			{
 				TextColor = Color.Red,
@@ -146,7 +146,7 @@ namespace Xamarin.Forms.Controls.Issues
 				default:
 					break;
 			}
-			
+
 			stack.Children.Add(issueTestButton1Description);
 			stack.Children.Add(issueTestButton1);
 

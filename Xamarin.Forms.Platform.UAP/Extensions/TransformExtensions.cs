@@ -21,10 +21,10 @@ namespace Xamarin.Forms.Platform.WPF
 			return new WMatrixTransform
 			{
 				Matrix = new WMatrix(
-					matrix.M11, 
-					matrix.M12,		
-					matrix.M21, 
-					matrix.M22,	
+					matrix.M11,
+					matrix.M12,
+					matrix.M21,
+					matrix.M22,
 					matrix.OffsetX,
 					matrix.OffsetY)
 			};

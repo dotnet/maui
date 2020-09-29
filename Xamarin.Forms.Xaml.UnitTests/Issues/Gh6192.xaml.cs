@@ -18,10 +18,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void XamlCDoesntFail([Values(false, true)]bool useCompiledXaml)
+			public void XamlCDoesntFail([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh6192(useCompiledXaml);
-				layout.BindingContext = new {
+				layout.BindingContext = new
+				{
 					Items = new[] {
 						new {
 							Options = new [] { "Foo", "Bar" },

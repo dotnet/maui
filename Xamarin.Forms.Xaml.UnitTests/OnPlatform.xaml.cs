@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
-
 using NUnit.Framework;
+using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class OnPlatform : ContentPage
 	{
-		public OnPlatform ()
+		public OnPlatform()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public OnPlatform (bool useCompiledXaml)
+		public OnPlatform(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -35,17 +33,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void BoolToVisibility (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void BoolToVisibility(bool useCompiledXaml)
 			{
 				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
-				var layout = new OnPlatform (useCompiledXaml);
-				Assert.AreEqual (true, layout.label0.IsVisible);
+				var layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(true, layout.label0.IsVisible);
 
 				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
-				layout = new OnPlatform (useCompiledXaml);
-				Assert.AreEqual (false, layout.label0.IsVisible);
+				layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(false, layout.label0.IsVisible);
 			}
 
 			[TestCase(false)]
@@ -79,7 +77,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void OnPlatformAsResource(bool useCompiledXaml)
 			{
 				var layout = new OnPlatform(useCompiledXaml);
-				var onplat = layout.Resources ["fontAttributes"] as OnPlatform<FontAttributes>;
+				var onplat = layout.Resources["fontAttributes"] as OnPlatform<FontAttributes>;
 				Assert.NotNull(onplat);
 #pragma warning disable 612
 				Assert.AreEqual(FontAttributes.Bold, onplat.iOS);
@@ -94,7 +92,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
-				var onidiom = layout.Resources ["fontSize"] as OnIdiom<double>;
+				var onidiom = layout.Resources["fontSize"] as OnIdiom<double>;
 				Assert.NotNull(onidiom);
 				Assert.That(onidiom.Phone, Is.TypeOf<double>());
 				Assert.AreEqual(20, onidiom.Phone);

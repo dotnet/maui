@@ -1,7 +1,7 @@
 using System;
 using ElmSharp;
-using ESize = ElmSharp.Size;
 using ELayout = ElmSharp.Layout;
+using ESize = ElmSharp.Size;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {

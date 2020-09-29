@@ -1,9 +1,8 @@
 ﻿using System;
-
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Maps;
 using System.Threading.Tasks;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Maps;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;

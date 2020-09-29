@@ -9,12 +9,12 @@ using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-    public class Gh4446Item
-    {
-        public string Id { get; set; }
-        public string Text { get; set; }
-        public string Description { get; set; }
-    }
+	public class Gh4446Item
+	{
+		public string Id { get; set; }
+		public string Text { get; set; }
+		public string Description { get; set; }
+	}
 
 	public partial class Gh4446 : ContentPage
 	{

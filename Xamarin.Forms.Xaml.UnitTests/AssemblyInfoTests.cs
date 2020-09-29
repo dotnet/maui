@@ -1,8 +1,8 @@
-using NUnit.Framework;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Diagnostics;
+using NUnit.Framework;
 using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.MSBuild.UnitTests
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		[Test, TestCaseSource(nameof(references))]
 		public void AssemblyVersion(string assemblyName)
 		{
-			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);			
+			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			Version actual = testAssembly.GetName().Version;
 			Assert.AreEqual(2, actual.Major, actual.ToString());
 			Assert.AreEqual(0, actual.Minor, actual.ToString());

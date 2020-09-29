@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Xamarin.Forms.Controls.LegacyComponents
 {
-    public class NonAppCompatSwitch : Switch
-    {
-    }
+	public class NonAppCompatSwitch : Switch
+	{
+	}
 }

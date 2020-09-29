@@ -128,7 +128,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateMasterBehavior()
 		{
-			_mdpage.FlyoutLayoutBehavior = (FlyoutLayoutBehavior) Element.MasterBehavior;
+			_mdpage.FlyoutLayoutBehavior = (FlyoutLayoutBehavior)Element.MasterBehavior;
 		}
 
 		void UpdateMasterPage(bool isInit)

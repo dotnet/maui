@@ -60,13 +60,15 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 
 		private void MinimizeClick(object sender, RoutedEventArgs e)
 		{
-			if (null == this.ParentWindow) return;
+			if (null == this.ParentWindow)
+				return;
 			Microsoft.Windows.Shell.SystemCommands.MinimizeWindow(this.ParentWindow);
 		}
 
 		private void MaximizeClick(object sender, RoutedEventArgs e)
 		{
-			if (null == this.ParentWindow) return;
+			if (null == this.ParentWindow)
+				return;
 			if (this.ParentWindow.WindowState == WindowState.Maximized)
 			{
 				Microsoft.Windows.Shell.SystemCommands.RestoreWindow(this.ParentWindow);
@@ -79,7 +81,8 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 
 		private void CloseClick(object sender, RoutedEventArgs e)
 		{
-			if (null == this.ParentWindow) return;
+			if (null == this.ParentWindow)
+				return;
 			this.ParentWindow.Close();
 		}
 	}

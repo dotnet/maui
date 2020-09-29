@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		public CheckBoxRenderer()
 		{
-			
+
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<CheckBox> e)
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			base.OnElementChanged(e);
 		}
-		
+
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateTintColor();
 			}
 		}
-		
+
 		void UpdateTintColor()
 		{
 			if (Element.Color == Color.Default)
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			((IElementController)Element).SetValueFromRenderer(CheckBox.IsCheckedProperty, Control.IsChecked);
 		}
-		
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)

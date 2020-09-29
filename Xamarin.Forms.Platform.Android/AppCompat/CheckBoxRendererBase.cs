@@ -1,17 +1,17 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using AndroidX.AppCompat.Widget;
-using AView = Android.Views.View;
-using Android.Views;
-using Xamarin.Forms.Internals;
-using AColor = Android.Graphics.Color;
-using Android.Graphics;
-using Xamarin.Forms.Platform.Android.FastRenderers;
-using Android.Widget;
 using Android.Content.Res;
+using Android.Graphics;
+using Android.Views;
+using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform.Android.FastRenderers;
 using AAttribute = Android.Resource.Attribute;
+using AColor = Android.Graphics.Color;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {

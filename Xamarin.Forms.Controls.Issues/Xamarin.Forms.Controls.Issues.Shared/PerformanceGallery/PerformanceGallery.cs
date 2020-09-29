@@ -1,12 +1,12 @@
-﻿using Plugin.DeviceInfo;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+using Plugin.DeviceInfo;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.IO;
-using System.Threading.Tasks;
 
 #if UITEST
 using Xamarin.UITest;
@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Controls.Issues
 				ViewModel.BenchmarkResults = await PerformanceDataManager.GetScenarioResults(_DeviceIdentifier);
 				success = true;
 			}
-			catch(Exception exc)
+			catch (Exception exc)
 			{
 				if (tryCount < 3)
 					GetBenchmarkResults(++tryCount);

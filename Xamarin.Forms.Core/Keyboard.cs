@@ -30,7 +30,8 @@ namespace Xamarin.Forms
 			get { return s_plain ?? (s_plain = new CustomKeyboard(KeyboardFlags.None)); }
 		}
 
-		public static Keyboard Chat {
+		public static Keyboard Chat
+		{
 			get { return s_chat ?? (s_chat = new ChatKeyboard()); }
 		}
 

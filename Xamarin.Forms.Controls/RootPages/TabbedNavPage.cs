@@ -8,24 +8,28 @@ using System.Threading.Tasks;
 namespace Xamarin.Forms.Controls
 {
 	// TabbedPage -> NavigationPage
-	public class TabbedNavPage : FlyoutPage 
+	public class TabbedNavPage : FlyoutPage
 	{
-		public TabbedNavPage () 
+		public TabbedNavPage()
 		{
 			NavigationPage navpage = null;
-			navpage = new NavigationPage (new ContentPage {
+			navpage = new NavigationPage(new ContentPage
+			{
 				Title = "Content0",
-				Content = new Button {
+				Content = new Button
+				{
 					Text = "Button",
-					Command = new Command (() => {
-						Debug.WriteLine ("k");
-						navpage.PushAsync (new ContentPage () {Title = "Content1"});
+					Command = new Command(() =>
+					{
+						Debug.WriteLine("k");
+						navpage.PushAsync(new ContentPage() { Title = "Content1" });
 					})
 				}
-			}) {
-				Title = "Page0", 
+			})
+			{
+				Title = "Page0",
 			};
-			
+
 			//Children.add(navpage);
 			//Children.add(new HomeButton ());
 		}

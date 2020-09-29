@@ -18,9 +18,9 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(UITestCategories.CollectionView)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 8203, 
+	[Issue(IssueTracker.Github, 8203,
 	"CollectionView fires SelectionChanged x (number of items selected +1) times, while incrementing SelectedItems from 0 " +
-	"to number of items each time", 
+	"to number of items each time",
 	PlatformAffected.UWP)]
 
 	public class Issue8203 : TestContentPage
@@ -30,8 +30,11 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			var instructions = new Label { Text = "Select an item below. Then select another one. The SelectionChanged " +
-				"event should have been raised twice. If not, this test has failed." };
+			var instructions = new Label
+			{
+				Text = "Select an item below. Then select another one. The SelectionChanged " +
+				"event should have been raised twice. If not, this test has failed."
+			};
 
 			_eventRaisedCount = new Label();
 
@@ -52,7 +55,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = layout;
 		}
 
-		void UpdateRaisedCount() 
+		void UpdateRaisedCount()
 		{
 			_eventRaisedCount.Text = $"SelectionChanged has been raised {_raisedCount} times.";
 		}

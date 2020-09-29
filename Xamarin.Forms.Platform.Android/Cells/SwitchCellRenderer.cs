@@ -1,11 +1,11 @@
 using System.ComponentModel;
 using Android.Content;
-using Android.Views;
-using AView = Android.Views.View;
-using ASwitch = Android.Widget.Switch;
-using Android.OS;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.OS;
+using Android.Views;
+using ASwitch = Android.Widget.Switch;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {

@@ -134,7 +134,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			PopupManager.Unsubscribe(this);
 
-			((IDisposable) Platform)?.Dispose();
+			((IDisposable)Platform)?.Dispose();
 		}
 
 		protected override void OnPause()
@@ -247,9 +247,9 @@ namespace Xamarin.Forms.Platform.Android
 			if (_application != null)
 			{
 #pragma warning disable CS0618 // Type or member is obsolete
-			// The Platform property is no longer necessary, but we have to set it because some third-party
-			// library might still be retrieving it and using it
-			_application.Platform = Platform;
+				// The Platform property is no longer necessary, but we have to set it because some third-party
+				// library might still be retrieving it and using it
+				_application.Platform = Platform;
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
@@ -264,7 +264,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (_previousState == AndroidApplicationLifecycleState.OnCreate && _currentState == AndroidApplicationLifecycleState.OnStart)
 				_application.SendStart();
-			else if (_previousState == AndroidApplicationLifecycleState.OnRestart && _currentState == AndroidApplicationLifecycleState.OnStart)	
+			else if (_previousState == AndroidApplicationLifecycleState.OnRestart && _currentState == AndroidApplicationLifecycleState.OnStart)
 				_application.SendResume();
 			else if (_previousState == AndroidApplicationLifecycleState.OnPause && _currentState == AndroidApplicationLifecycleState.OnStop)
 				_application.SendSleep();

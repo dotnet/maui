@@ -26,14 +26,14 @@ namespace Xamarin.Forms.Controls.Issues
 				grid.AddChild(picker, col, row++);
 			}
 
-			AddPicker("AutomationProperties", () => 
+			AddPicker("AutomationProperties", () =>
 			{
 				var picker = new Picker();
 				picker.SetAutomationPropertiesName("First accessibility");
 				picker.SetAutomationPropertiesHelpText("This is the accessibility text");
 				return picker;
 			});
-			AddPicker("Default", () => new Picker ());
+			AddPicker("Default", () => new Picker());
 			AddPicker("Default + Title", () => new Picker { Title = "Title1" });
 			AddPicker("AutomationProperties + Title", () =>
 			{
@@ -43,7 +43,8 @@ namespace Xamarin.Forms.Controls.Issues
 				return picker;
 			});
 
-			row = 0; col++;
+			row = 0;
+			col++;
 			grid.AddChild(new Label { Text = "Material Style" }, col, row++);
 			AddPicker("AutomationProperties", () =>
 			{

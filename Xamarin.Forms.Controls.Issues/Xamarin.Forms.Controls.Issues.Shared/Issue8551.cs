@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Controls.Issues
 				BackgroundColor = Color.White,
 				CornerRadius = 12
 			};
-			
+
 			var modalLayout = new StackLayout();
 
 			var backButton = new Button

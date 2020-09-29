@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Threading.Tasks;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -38,7 +38,8 @@ namespace Xamarin.Forms.Controls.Issues
 				source.Add($"Item: {n}");
 			}
 
-			var template = new DataTemplate(() => {
+			var template = new DataTemplate(() =>
+			{
 				var label = new Label
 				{
 					TextType = TextType.Html
@@ -49,8 +50,8 @@ namespace Xamarin.Forms.Controls.Issues
 				return label;
 			});
 
-			var cv = new CollectionView() 
-			{ 
+			var cv = new CollectionView()
+			{
 				ItemsSource = source,
 				ItemTemplate = template
 			};

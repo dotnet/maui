@@ -1,8 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using System;
-using System.Linq;
-using System.Collections.Generic;
 
 namespace Xamarin.Forms.Build.Tasks
 {
@@ -28,7 +28,8 @@ namespace Xamarin.Forms.Build.Tasks
 		//this can be removed if/when https://github.com/jbevain/cecil/pull/307 is released in a nuget we consume
 		static void OptimizeLongs(this MethodBody self)
 		{
-			for (var i = 0; i < self.Instructions.Count; i++) {
+			for (var i = 0; i < self.Instructions.Count; i++)
+			{
 				var instruction = self.Instructions[i];
 				if (instruction.OpCode.Code != Code.Ldc_I8)
 					continue;
@@ -43,7 +44,8 @@ namespace Xamarin.Forms.Build.Tasks
 		static void OptimizeStLdLoc(this MethodBody self)
 		{
 			var method = self.Method;
-			for (var i = 0; i < self.Instructions.Count; i++) {
+			for (var i = 0; i < self.Instructions.Count; i++)
+			{
 				var instruction = self.Instructions[i];
 				if (instruction.OpCode.Code != Code.Stloc)
 					continue;
@@ -63,7 +65,8 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			//Count ldloc for each variable
 			var ldlocUsed = new List<VariableDefinition>();
-			foreach (var instruction in self.Instructions) {
+			foreach (var instruction in self.Instructions)
+			{
 				if (instruction.OpCode.Code != Code.Ldloc)
 					continue;
 				var varDef = (VariableDefinition)instruction.Operand;
@@ -71,7 +74,8 @@ namespace Xamarin.Forms.Build.Tasks
 					ldlocUsed.Add(varDef);
 			}
 
-			foreach (var varDef in self.Variables.ToArray()) {
+			foreach (var varDef in self.Variables.ToArray())
+			{
 				if (ldlocUsed.Contains(varDef))
 					continue;
 

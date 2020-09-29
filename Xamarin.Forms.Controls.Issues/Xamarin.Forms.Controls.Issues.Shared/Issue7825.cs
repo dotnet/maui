@@ -12,8 +12,10 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var sl = new StackLayout { Padding = new Size(20, 20) };
 
-			var frame = new Frame {
-				Content = new BoxView() {
+			var frame = new Frame
+			{
+				Content = new BoxView()
+				{
 					BackgroundColor = Color.Red
 				},
 				VerticalOptions = LayoutOptions.FillAndExpand

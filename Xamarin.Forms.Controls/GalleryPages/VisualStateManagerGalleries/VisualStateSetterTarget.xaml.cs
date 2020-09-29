@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 
 		public VisualStateSetterTarget()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
 		void ToggleValid_OnClicked(object sender, EventArgs e)

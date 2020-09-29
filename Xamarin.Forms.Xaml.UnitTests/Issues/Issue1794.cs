@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public class Issue1794
 	{
 		[Test]
-		public void FindNameInDT ()
+		public void FindNameInDT()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 				<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
@@ -48,11 +48,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						</ListView.ItemTemplate>
 					</ListView> 
 				</ContentPage>";
-			var layout = new ContentPage ().LoadFromXaml (xaml);
-			var list = layout.FindByName<ListView> ("listView");
-			var item0 = list.TemplatedItems.GetOrCreateContent (0, null);
-			var item1 = list.TemplatedItems.GetOrCreateContent (1, null);
-			Assert.Pass ();
+			var layout = new ContentPage().LoadFromXaml(xaml);
+			var list = layout.FindByName<ListView>("listView");
+			var item0 = list.TemplatedItems.GetOrCreateContent(0, null);
+			var item1 = list.TemplatedItems.GetOrCreateContent(1, null);
+			Assert.Pass();
 		}
 	}
 }

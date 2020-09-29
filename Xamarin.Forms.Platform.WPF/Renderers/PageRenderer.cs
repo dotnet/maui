@@ -22,12 +22,12 @@ namespace Xamarin.Forms.Platform.WPF
 
 			base.OnElementChanged(e);
 		}
-		
+
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if(e.PropertyName == ContentPage.ContentProperty.PropertyName)
+			if (e.PropertyName == ContentPage.ContentProperty.PropertyName)
 				UpdateContent();
 		}
 

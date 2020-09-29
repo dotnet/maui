@@ -13,7 +13,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
 			var view1 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
 			var view2 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
-			var layout = new FlexLayout {
+			var layout = new FlexLayout
+			{
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -38,7 +39,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
 			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
 			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
-			var layout = new FlexLayout {
+			var layout = new FlexLayout
+			{
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -64,7 +66,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
 			var view1 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
 			var view2 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
-			var layout = new FlexLayout {
+			var layout = new FlexLayout
+			{
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -88,7 +91,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
 			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
 			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
-			var layout = new FlexLayout {
+			var layout = new FlexLayout
+			{
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -112,7 +116,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
 			var view1 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
 			var view2 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
-			var layout = new FlexLayout {
+			var layout = new FlexLayout
+			{
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -137,7 +142,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
 			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
 
-			var layout = new FlexLayout {
+			var layout = new FlexLayout
+			{
 				IsPlatformEnabled = true,
 				Children = {
 					view0,

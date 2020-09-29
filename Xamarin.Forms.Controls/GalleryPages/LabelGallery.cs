@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Controls
 {
 	public class LabelGallery : ContentPage
 	{
-		public LabelGallery ()
+		public LabelGallery()
 		{
 			var normal = new Label { Text = "Normal Label" };
 			var center = new Label { Text = "Center Label" };
@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Controls
 			var micro = new Label { Text = "Micro Label" };
 			var small = new Label { Text = "Small Label" };
 			var medium = new Label { Text = "Medium Label" };
-			var large = new Label { Text = "Large Label", VerticalOptions = LayoutOptions.FillAndExpand, VerticalTextAlignment = TextAlignment.Center};
+			var large = new Label { Text = "Large Label", VerticalOptions = LayoutOptions.FillAndExpand, VerticalTextAlignment = TextAlignment.Center };
 			var bold = new Label { Text = "Bold Label" };
 			var italic = new Label { Text = "Italic Label" };
 			var bolditalic = new Label { Text = "Bold Italic Label" };
@@ -30,25 +30,35 @@ namespace Xamarin.Forms.Controls
 			var boldfont = new Label { Text = "Custom Bold Font" };
 			var bolditalicfont = new Label { Text = "Custom Bold Italic Font" };
 			var toggleUnderline = new Label { Text = "Tap to toggle Underline", TextDecorations = TextDecorations.Underline };
-			toggleUnderline.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(()=> { toggleUnderline.TextDecorations ^= TextDecorations.Underline; }) });
+			toggleUnderline.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => { toggleUnderline.TextDecorations ^= TextDecorations.Underline; }) });
 			var toggleStrike = new Label { Text = "Tap to toggle StrikeThrough", TextDecorations = TextDecorations.Strikethrough };
 			toggleStrike.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => { toggleStrike.TextDecorations ^= TextDecorations.Strikethrough; }) });
 			var toggleBoth = new Label { Text = "Tap to toggle both", TextDecorations = TextDecorations.Strikethrough | TextDecorations.Underline };
-			toggleBoth.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => { toggleBoth.TextDecorations ^= TextDecorations.Strikethrough;
-																										toggleBoth.TextDecorations ^= TextDecorations.Underline;
-																								}) });
-			var huge = new Label {
+			toggleBoth.GestureRecognizers.Add(new TapGestureRecognizer
+			{
+				Command = new Command(() =>
+				{
+					toggleBoth.TextDecorations ^= TextDecorations.Strikethrough;
+					toggleBoth.TextDecorations ^= TextDecorations.Underline;
+				})
+			});
+			var huge = new Label
+			{
 				Text = "This is the label that never ends, yes it go on and on my friend. " +
 				"Some people started catting it not knowing what it was, and they'll continue catting it forever just because...",
 				LineBreakMode = LineBreakMode.WordWrap
 			};
-			var formatted = new Label { FormattedText = new FormattedString { 
+			var formatted = new Label
+			{
+				FormattedText = new FormattedString
+				{
 					Spans = { 
 #pragma warning disable 618
 						new Span {Text="FormattedStrings ", TextColor=Color.Blue, BackgroundColor = Color.Yellow, Font = Font.BoldSystemFontOfSize (NamedSize.Large)},
 #pragma warning restore 618
 					}
-				} };
+				}
+			};
 			var underlineSpan = new Span { Text = "are ", TextColor = Color.Red, BackgroundColor = Color.Gray, TextDecorations = TextDecorations.Underline };
 			var strikeSpan = new Span { Text = "not pretty!", TextColor = Color.Green, TextDecorations = TextDecorations.Strikethrough };
 			formatted.FormattedText.Spans.Add(underlineSpan);
@@ -57,89 +67,96 @@ namespace Xamarin.Forms.Controls
 			var missingfont = new Label { Text = "Missing font: use default" };
 
 #pragma warning disable 618
-			micro.Font = Font.SystemFontOfSize (NamedSize.Micro);
+			micro.Font = Font.SystemFontOfSize(NamedSize.Micro);
 #pragma warning restore 618
 
 #pragma warning disable 618
-			small.Font = Font.SystemFontOfSize (NamedSize.Small);
+			small.Font = Font.SystemFontOfSize(NamedSize.Small);
 #pragma warning restore 618
 
 #pragma warning disable 618
-			medium.Font = Font.SystemFontOfSize (NamedSize.Medium);
+			medium.Font = Font.SystemFontOfSize(NamedSize.Medium);
 #pragma warning restore 618
 
 #pragma warning disable 618
-			large.Font = Font.SystemFontOfSize (NamedSize.Large);
+			large.Font = Font.SystemFontOfSize(NamedSize.Large);
 #pragma warning restore 618
 
 #pragma warning disable 618
-			bold.Font = Font.SystemFontOfSize (NamedSize.Medium, FontAttributes.Bold);
+			bold.Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold);
 #pragma warning restore 618
 
 #pragma warning disable 618
-			italic.Font = Font.SystemFontOfSize (NamedSize.Medium, FontAttributes.Italic);
+			italic.Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Italic);
 #pragma warning restore 618
 
 #pragma warning disable 618
-			bolditalic.Font = Font.SystemFontOfSize (NamedSize.Medium, FontAttributes.Bold | FontAttributes.Italic);
+			bolditalic.Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold | FontAttributes.Italic);
 #pragma warning restore 618
 			string fontName;
-			switch (Device.RuntimePlatform) {
-			default:
-			case Device.iOS:
-				fontName = "Georgia";
-				break;
-			case Device.Android:
-				fontName = "sans-serif-light";
-				break;
-			case Device.UWP:
-				fontName = "Comic Sans MS";
-				break;
+			switch (Device.RuntimePlatform)
+			{
+				default:
+				case Device.iOS:
+					fontName = "Georgia";
+					break;
+				case Device.Android:
+					fontName = "sans-serif-light";
+					break;
+				case Device.UWP:
+					fontName = "Comic Sans MS";
+					break;
 			}
-			var font = Font.OfSize (fontName, NamedSize.Medium);
+			var font = Font.OfSize(fontName, NamedSize.Medium);
 #pragma warning disable 618
 			customFont.Font = font;
 #pragma warning restore 618
 
 #pragma warning disable 618
-			italicfont.Font = font.WithAttributes (FontAttributes.Italic);
+			italicfont.Font = font.WithAttributes(FontAttributes.Italic);
 #pragma warning restore 618
 
 #pragma warning disable 618
-			boldfont.Font = font.WithAttributes (FontAttributes.Bold);
+			boldfont.Font = font.WithAttributes(FontAttributes.Bold);
 #pragma warning restore 618
 
 #pragma warning disable 618
-			bolditalicfont.Font = font.WithAttributes (FontAttributes.Bold | FontAttributes.Italic);
+			bolditalicfont.Font = font.WithAttributes(FontAttributes.Bold | FontAttributes.Italic);
 #pragma warning restore 618
 
 #pragma warning disable 618
-			customFont.GestureRecognizers.Add (new TapGestureRecognizer{Command = new Command (o => customFont.Font = Font.Default)});
+			customFont.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(o => customFont.Font = Font.Default) });
 #pragma warning restore 618
 
 #pragma warning disable 618
-			missingfont.Font = Font.OfSize ("FooBar", 20);
+			missingfont.Font = Font.OfSize("FooBar", 20);
 #pragma warning restore 618
 			center.HorizontalTextAlignment = TextAlignment.Center;
 			right.HorizontalTextAlignment = TextAlignment.End;
 			int i = 1;
-			click.GestureRecognizers.Add (new TapGestureRecognizer{Command = new Command (o=>click.Text = "Clicked " + i++)});
-			rotate.GestureRecognizers.Add (new TapGestureRecognizer{Command = new Command (o=>rotate.RelRotateTo (180))});
+			click.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(o => click.Text = "Clicked " + i++) });
+			rotate.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(o => rotate.RelRotateTo(180)) });
 			transparent.Opacity = .5;
-			moving.GestureRecognizers.Add (new TapGestureRecognizer{Command = new Command (o=>moving.HorizontalTextAlignment = TextAlignment.End)});
+			moving.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(o => moving.HorizontalTextAlignment = TextAlignment.End) });
 
-			color.GestureRecognizers.Add (new TapGestureRecognizer{Command = new Command (o=>{
-				color.TextColor = new Color (1, 0, 0);
-				color.BackgroundColor = new Color (0, 1, 0);
-			})});
+			color.GestureRecognizers.Add(new TapGestureRecognizer
+			{
+				Command = new Command(o =>
+				{
+					color.TextColor = new Color(1, 0, 0);
+					color.BackgroundColor = new Color(0, 1, 0);
+				})
+			});
 
-			Thickness padding = new Thickness (20);
+			Thickness padding = new Thickness(20);
 			// Padding Adjust for iPad
 			if (Device.RuntimePlatform == Device.iOS && Device.Idiom == TargetIdiom.Tablet)
 				Padding = new Thickness(20, 20, 20, 60);
 
-			Content = new ScrollView {
-				Content = new StackLayout {
+			Content = new ScrollView
+			{
+				Content = new StackLayout
+				{
 					Padding = padding,
 					Children = {
 						formatted,

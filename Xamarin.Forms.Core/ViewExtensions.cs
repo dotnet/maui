@@ -22,7 +22,7 @@ namespace Xamarin.Forms
 			view.AbortAnimation(nameof(FadeTo));
 		}
 
-		static Task<bool> AnimateTo(this VisualElement view, double start, double end, string name, 
+		static Task<bool> AnimateTo(this VisualElement view, double start, double end, string name,
 			Action<VisualElement, double> updateAction, uint length = 250, Easing easing = null)
 		{
 			if (easing == null)
@@ -68,7 +68,7 @@ namespace Xamarin.Forms
 
 				return new Rectangle(x, y, w, h);
 			};
-		
+
 			return AnimateTo(view, 0, 1, nameof(LayoutTo), (v, value) => v.Layout(computeBounds(value)), length, easing);
 		}
 
@@ -156,7 +156,7 @@ namespace Xamarin.Forms
 				if (weakView.TryGetTarget(out v))
 					v.TranslationY = f;
 			};
-			new Animation { { 0, 1, new Animation(translateX, view.TranslationX, x, easing: easing) }, { 0, 1, new Animation(translateY, view.TranslationY, y, easing:easing) } }.Commit(view, nameof(TranslateTo), 16, length, null,
+			new Animation { { 0, 1, new Animation(translateX, view.TranslationX, x, easing: easing) }, { 0, 1, new Animation(translateY, view.TranslationY, y, easing: easing) } }.Commit(view, nameof(TranslateTo), 16, length, null,
 				(f, a) => tcs.SetResult(a));
 
 			return tcs.Task;

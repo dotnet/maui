@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using System;
+using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
 {

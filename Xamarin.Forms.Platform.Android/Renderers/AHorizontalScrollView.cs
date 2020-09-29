@@ -1,8 +1,8 @@
 using Android.Content;
-using AndroidX.Core.Widget;
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {

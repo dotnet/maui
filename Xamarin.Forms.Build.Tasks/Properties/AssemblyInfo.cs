@@ -2,5 +2,5 @@
 using System.Runtime.CompilerServices;
 
 #if DEBUG
-[assembly:InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]
+[assembly: InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]
 #endif

@@ -1,9 +1,9 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Gtk;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Animations;
 using Xamarin.Forms.Platform.GTK.Controls;
@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 {
 	public class NavigationPageRenderer : AbstractPageRenderer<Fixed, NavigationPage>, IToolbarTracker
 	{
-		private const int NavigationAnimationDuration = 250;	// Ms
+		private const int NavigationAnimationDuration = 250;    // Ms
 
 		private Stack<NavigationChildPage> _currentStack;
 

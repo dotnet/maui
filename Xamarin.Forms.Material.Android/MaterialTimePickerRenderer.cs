@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Material.Android
 			var view = inflater.Inflate(Resource.Layout.MaterialPickerTextInput, null);
 			_textInputLayout = (MaterialPickerTextInputLayout)view;
 			_textInputEditText = _textInputLayout.FindViewById<MaterialPickerEditText>(Resource.Id.materialformsedittext);
-			
+
 			return _textInputLayout;
 		}
 

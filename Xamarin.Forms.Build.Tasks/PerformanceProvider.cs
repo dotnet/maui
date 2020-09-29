@@ -20,7 +20,8 @@ namespace Xamarin.Forms.Build.Tasks
 
 		readonly Dictionary<string, Statistic> _Statistics = new Dictionary<string, Statistic>();
 
-		public Dictionary<string, Statistic> Statistics {
+		public Dictionary<string, Statistic> Statistics
+		{
 			get { return _Statistics; }
 		}
 
@@ -59,7 +60,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public IEnumerable<string> GetStats()
 		{
 			yield return "ID                                                                                 | Call Count | Total Time | Avg Time";
-			foreach (KeyValuePair<string, Statistic> kvp in Statistics.OrderBy(kvp => kvp.Key)) {
+			foreach (KeyValuePair<string, Statistic> kvp in Statistics.OrderBy(kvp => kvp.Key))
+			{
 				string key = ShortenPath(kvp.Key);
 				double total = TimeSpan.FromTicks(kvp.Value.TotalTime).TotalMilliseconds;
 				double avg = total / kvp.Value.CallCount;
@@ -84,7 +86,8 @@ namespace Xamarin.Forms.Build.Tasks
 		Statistic GetStat(string id)
 		{
 			Statistic stats;
-			if (!Statistics.TryGetValue(id, out stats)) {
+			if (!Statistics.TryGetValue(id, out stats))
+			{
 				Statistics[id] = stats = new Statistic();
 			}
 			return stats;

@@ -1,7 +1,7 @@
-﻿using ElmSharp;
-using System;
+﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using ElmSharp;
 using ERect = ElmSharp.Rect;
 using TWebView = Tizen.WebView.WebView;
 
@@ -101,7 +101,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
-				TranslationY = -RefreshIcon.IconSize, 
+				TranslationY = -RefreshIcon.IconSize,
 				Opacity = 0.5,
 			};
 			Children.Add(RefreshIcon);
@@ -127,7 +127,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		public void Start()
 		{
-			_ = RefreshIcon.TranslateTo(0, MaximumDistance / 2.0, length:200);
+			_ = RefreshIcon.TranslateTo(0, MaximumDistance / 2.0, length: 200);
 			RefreshIcon.Start();
 		}
 

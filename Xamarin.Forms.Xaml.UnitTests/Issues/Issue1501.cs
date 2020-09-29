@@ -3,11 +3,11 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-	public class BoxView1501 : BoxView 
+	public class BoxView1501 : BoxView
 	{
-		public bool Fired { get; set;}
+		public bool Fired { get; set; }
 
-		public void OnBoxViewTapped (object sender, EventArgs e)
+		public void OnBoxViewTapped(object sender, EventArgs e)
 		{
 			Fired = true;
 		}
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public class Issue1501
 	{
 		[Test]
-		public void ConnectEventsInGestureRecognizers ()
+		public void ConnectEventsInGestureRecognizers()
 		{
 			var xaml = @"
 				<BoxView 
@@ -30,12 +30,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				</BoxView>";
 
 			BoxView1501 layout = null;
-			Assert.DoesNotThrow (() => {layout = new BoxView1501 ().LoadFromXaml (xaml);});
+			Assert.DoesNotThrow(() => { layout = new BoxView1501().LoadFromXaml(xaml); });
 
-			Assert.False (layout.Fired);
-			var tgr = layout.GestureRecognizers [0] as TapGestureRecognizer;
-			tgr.SendTapped (layout);
-			Assert.True (layout.Fired);
+			Assert.False(layout.Fired);
+			var tgr = layout.GestureRecognizers[0] as TapGestureRecognizer;
+			tgr.SendTapped(layout);
+			Assert.True(layout.Fired);
 		}
 	}
 }

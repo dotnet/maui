@@ -1,9 +1,9 @@
-﻿using Gdk;
-using Gtk;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Gdk;
+using Gtk;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
@@ -104,10 +104,10 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				_root.ModifyBg(StateType.Normal, backgroundColor);
 			}
 		}
-		
+
 		public void SetCurrentPage(int selectedIndex)
 		{
-			if(!_pages.Any())
+			if (!_pages.Any())
 			{
 				return;
 			}
@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			if (page != null)
 			{
 				var gtkPage = _pages.FirstOrDefault(p => p.Page == page);
-				
+
 				if (gtkPage != null)
 				{
 					gtkPage.GtkPage.Shown -= OnChildPageShown;
@@ -220,7 +220,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		{
 			var lastPos = args.Event.X;
 
-			if(lastPos == _initialPos)
+			if (lastPos == _initialPos)
 			{
 				return;
 			}
@@ -279,7 +279,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			{
 				return;
 			}
-			
+
 			SelectedIndex++;
 
 			SetCurrentPage(SelectedIndex);

@@ -131,7 +131,8 @@ namespace Xamarin.Forms.Xaml
 				return ParsePropertyExpression(null, serviceProvider, ref remaining);
 
 			str_value = GetNextPiece(serviceProvider, ref remaining, out var next);
-			if (next == '=') {
+			if (next == '=')
+			{
 				remaining = remaining.TrimStart();
 				if (remaining[0] == '{')
 					return ParsePropertyExpression(str_value, serviceProvider, ref remaining);
@@ -139,7 +140,8 @@ namespace Xamarin.Forms.Xaml
 				name = str_value;
 				str_value = GetNextPiece(serviceProvider, ref remaining, out next);
 			}
-			else {
+			else
+			{
 				name = null;
 			}
 
@@ -173,14 +175,14 @@ namespace Xamarin.Forms.Xaml
 			var piece = new StringBuilder();
 			// If we're inside a quoted string we append all chars to our piece until we hit the ending quote.
 			while (end < remaining.Length &&
-			       (inString || (remaining[end] != '}' && remaining[end] != ',' && remaining[end] != '=')))
+				   (inString || (remaining[end] != '}' && remaining[end] != ',' && remaining[end] != '=')))
 			{
 				if (inString)
 				{
 					if (remaining[end] == stringTerminator)
 					{
 						inString = false;
-						end ++;
+						end++;
 						while (remaining[end] == ' ')
 							end++;
 						break;
@@ -192,7 +194,7 @@ namespace Xamarin.Forms.Xaml
 					{
 						inString = true;
 						stringTerminator = remaining[end];
-						end ++;
+						end++;
 						continue;
 					}
 				}
@@ -200,7 +202,7 @@ namespace Xamarin.Forms.Xaml
 				// If this is an escape char, consume it and append the next char to our piece.
 				if (remaining[end] == '\\')
 				{
-					end ++;
+					end++;
 					if (end == remaining.Length)
 						break;
 				}
@@ -220,7 +222,7 @@ namespace Xamarin.Forms.Xaml
 			// Whitespace is trimmed from the end of the piece before stripping
 			// quote chars from the start/end of the string. 
 			while (piece.Length > 0 && char.IsWhiteSpace(piece[piece.Length - 1]))
-				piece.Length --;
+				piece.Length--;
 
 			if (piece.Length >= 2)
 			{

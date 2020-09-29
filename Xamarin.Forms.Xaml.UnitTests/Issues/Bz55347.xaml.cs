@@ -35,7 +35,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(false)]
 			public void PaddingThicknessResource(bool useCompiledXaml)
 			{
-				Application.Current = new MockApplication {
+				Application.Current = new MockApplication
+				{
 					Resources = new ResourceDictionary {
 						{"Padding", new Thickness(8)}
 					}

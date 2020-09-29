@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			set => SetValue(InternalBarProperty, value);
 		}
 	}
-	
+
 	public partial class BindablePropertiesAccessModifiers : ContentPage
 	{
 		class Data

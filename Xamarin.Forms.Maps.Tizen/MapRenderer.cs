@@ -136,7 +136,8 @@ namespace Xamarin.Forms.Maps.Tizen
 			int latitudeZoomFactor = GetZoomFactor(span.LatitudeDegrees, 90.0);
 			int longitudeZoomFactor = GetZoomFactor(span.LongitudeDegrees, 180.0);
 
-			Control.Center = new Geocoordinates(span.Center.Latitude, span.Center.Longitude); ;
+			Control.Center = new Geocoordinates(span.Center.Latitude, span.Center.Longitude);
+			;
 			Control.ZoomLevel = BaseZoomLevel + Math.Min(latitudeZoomFactor, longitudeZoomFactor);
 			UpdateVisibleRegion();
 		}
@@ -266,7 +267,7 @@ namespace Xamarin.Forms.Maps.Tizen
 		void Dummy(object sender, MapGestureEventArgs e)
 		{
 			// The implementation of Tizen.Maps needs to be changed to remove this method
-		} 
+		}
 
 		void ApplyIsShowingUser(Geocoordinates coordinates)
 		{

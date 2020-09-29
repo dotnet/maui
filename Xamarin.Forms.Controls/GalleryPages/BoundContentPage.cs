@@ -5,19 +5,19 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public class BoundContentPage : ContentPage
 	{
-        internal class NavWrapperConverter : IValueConverter
+		internal class NavWrapperConverter : IValueConverter
 		{
-			public object Convert (object value, Type targetType, object parameter, CultureInfo culture)
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 			{
-				throw new NotSupportedException ();
+				throw new NotSupportedException();
 			}
 
-			public object ConvertBack (object value, Type targetType, object parameter, CultureInfo culture)
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			{
-				return new NavigationWrapper ((INavigation) value);
+				return new NavigationWrapper((INavigation)value);
 			}
 		}
 
@@ -27,15 +27,17 @@ namespace Xamarin.Forms.Controls
 			// Normally this class would implement pushes with ViewModel then do the conversion
 			readonly INavigation _inner;
 
-			public NavigationWrapper (INavigation inner	)
+			public NavigationWrapper(INavigation inner)
 			{
 				_inner = inner;
 			}
 
-			public void WrappedPush ()
+			public void WrappedPush()
 			{
-				_inner.PushAsync (new ContentPage {
-					Content = new StackLayout {
+				_inner.PushAsync(new ContentPage
+				{
+					Content = new StackLayout
+					{
 						BackgroundColor = Color.Red,
 						Children = {
 							new Label {
@@ -47,7 +49,7 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		internal class BoundContentPageViewModel
 		{
 			public string ButtonText { get { return "Click Me!"; } }
@@ -56,23 +58,23 @@ namespace Xamarin.Forms.Controls
 
 			public NavigationWrapper Navigation { get; set; }
 
-			public BoundContentPageViewModel ()
+			public BoundContentPageViewModel()
 			{
-				ButtonCommand = new Command (() => Navigation.WrappedPush ());
+				ButtonCommand = new Command(() => Navigation.WrappedPush());
 			}
 		}
 
-		public BoundContentPage ()
+		public BoundContentPage()
 		{
-			Title ="Bound Gallery";
+			Title = "Bound Gallery";
 
-			BindingContext = new BoundContentPageViewModel ();
+			BindingContext = new BoundContentPageViewModel();
 
-			var button = new Button ();
-			button.SetBinding (Button.TextProperty, "ButtonText");
-			button.SetBinding (Button.CommandProperty, "ButtonCommand");
+			var button = new Button();
+			button.SetBinding(Button.TextProperty, "ButtonText");
+			button.SetBinding(Button.CommandProperty, "ButtonCommand");
 
-			SetBinding (NavigationProperty, new Binding ("Navigation", converter: new NavWrapperConverter ()));
+			SetBinding(NavigationProperty, new Binding("Navigation", converter: new NavWrapperConverter()));
 
 			Content = button;
 		}

@@ -22,10 +22,10 @@ namespace Xamarin.Forms.Controls.Issues
 	public partial class Bugzilla26032 : TestContentPage
 	{
 #if APP
-		public Bugzilla26032 ()
+		public Bugzilla26032()
 		{
-			
-			InitializeComponent ();
+
+			InitializeComponent();
 			var data = new[] { "1", "2", "3", "4", "5" };
 			var dataContext = new[] { "1 Context", "2 Context", "3 Context", "4 Context", "5 Context" };
 			List1.ItemsSource = data;

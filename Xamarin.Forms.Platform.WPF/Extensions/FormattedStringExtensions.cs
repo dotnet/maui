@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (span.TextColor != Color.Default)
 				run.Foreground = span.TextColor.ToBrush();
-			
+
 			if (span.BackgroundColor != Color.Default)
 				run.Background = span.BackgroundColor.ToBrush();
 
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if ((textDecorations & TextDecorations.Strikethrough) != 0)
 				run.TextDecorations.Add(System.Windows.TextDecorations.Strikethrough);
-		
+
 			return run;
 		}
 	}

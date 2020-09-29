@@ -1,4 +1,3 @@
-using ElmSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,6 +7,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using ElmSharp;
 using Xamarin.Forms.Internals;
 using TAppControl = Tizen.Applications.AppControl;
 

@@ -14,7 +14,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public static readonly BindableProperty NullableTimeProperty =
 			BindableProperty.Create("NullableTime", typeof(TimeSpan?), typeof(Gh5290), default(TimeSpan?));
 
-		public TimeSpan? NullableTime {
+		public TimeSpan? NullableTime
+		{
 			get => (TimeSpan?)GetValue(NullableTimeProperty);
 			set => SetValue(NullableTimeProperty, value);
 		}
@@ -32,7 +33,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void TwoWayBindingToNullable([Values(false, true)]bool useCompiledXaml)
+			public void TwoWayBindingToNullable([Values(false, true)] bool useCompiledXaml)
 			{
 				var vm = new Gh5290VM { Time = TimeSpan.FromMinutes(42) };
 				var layout = new Gh5290(useCompiledXaml) { BindingContext = vm };

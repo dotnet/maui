@@ -31,8 +31,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var instructions = new Label
 			{
 				Text = "Toggle the IsClippedToBounds settings below. Toggling the settings "
-						+ "for the first layout should not affect the second layout " 
-						+ "(and vice versa). If toggling the settings for one layout affects" 
+						+ "for the first layout should not affect the second layout "
+						+ "(and vice versa). If toggling the settings for one layout affects"
 						+ " the other layout, this test has failed."
 			};
 

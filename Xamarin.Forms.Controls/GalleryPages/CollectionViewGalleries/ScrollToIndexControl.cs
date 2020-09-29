@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 			var layout = new StackLayout { Margin = 3 };
 
-			var indexLabel = new Label { Text = "Scroll To Index: ", VerticalTextAlignment = TextAlignment.Center};
+			var indexLabel = new Label { Text = "Scroll To Index: ", VerticalTextAlignment = TextAlignment.Center };
 			_entry = new Entry { Keyboard = Keyboard.Numeric, Text = "0", WidthRequest = 200 };
 			var indexButton = new Button { Text = "Go" };
 
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 			layout.Children.Add(row1);
 
-			var animateLabel = new Label { Text = "Animate: ", VerticalTextAlignment = TextAlignment.Center};
+			var animateLabel = new Label { Text = "Animate: ", VerticalTextAlignment = TextAlignment.Center };
 			_animateSwitch = new Switch { IsToggled = true };
 
 			var row2 = new StackLayout { Orientation = StackOrientation.Horizontal };
@@ -46,15 +46,15 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				HorizontalTextAlignment = TextAlignment.Center
 			};
 
-			var forwardButton = new Button { Text = "Advance 1 >>"};
+			var forwardButton = new Button { Text = "Advance 1 >>" };
 			forwardButton.Clicked += (sender, args) =>
 			{
 				_index = _index + 1;
 				_currentIndex.Text = _index.ToString();
 				ScrollToIndex(_index);
 			};
-			
-			var backButton = new Button { Text = "<< Back 1"};
+
+			var backButton = new Button { Text = "<< Back 1" };
 			backButton.Clicked += (sender, args) =>
 			{
 				if (_index > 0)

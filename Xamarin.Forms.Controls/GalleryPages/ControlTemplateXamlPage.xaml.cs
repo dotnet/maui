@@ -11,21 +11,22 @@ namespace Xamarin.Forms.Controls.GalleryPages
 	public partial class ControlTemplateXamlPage : ContentPage
 	{
 		public static readonly BindableProperty AboveTextProperty =
-			BindableProperty.Create (nameof (AboveText), typeof (string), typeof (ControlTemplateXamlPage), null);
+			BindableProperty.Create(nameof(AboveText), typeof(string), typeof(ControlTemplateXamlPage), null);
 
 		public string AboveText
 		{
-			get { return (string)GetValue (AboveTextProperty); }
-			set { SetValue (AboveTextProperty, value); }
+			get { return (string)GetValue(AboveTextProperty); }
+			set { SetValue(AboveTextProperty, value); }
 		}
 
-		public ControlTemplateXamlPage ()
+		public ControlTemplateXamlPage()
 		{
-			BindingContext = new {
+			BindingContext = new
+			{
 				Text = "Testing 123"
 			};
-			this.SetBinding (AboveTextProperty, "Text");
-			InitializeComponent ();
+			this.SetBinding(AboveTextProperty, "Text");
+			InitializeComponent();
 		}
 	}
 }

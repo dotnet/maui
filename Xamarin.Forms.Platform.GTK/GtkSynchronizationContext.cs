@@ -1,6 +1,6 @@
-﻿using GLib;
-using System;
+﻿using System;
 using System.Threading;
+using GLib;
 
 namespace Xamarin.Forms.Platform.GTK
 {

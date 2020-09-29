@@ -72,9 +72,9 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				UpdateTextColor();
 			}
-			else if (e.PropertyName == RadioButton.FontFamilyProperty.PropertyName 
+			else if (e.PropertyName == RadioButton.FontFamilyProperty.PropertyName
 				|| e.PropertyName == RadioButton.FontSizeProperty.PropertyName
-				|| e.PropertyName == RadioButton.FontAttributesProperty.PropertyName )
+				|| e.PropertyName == RadioButton.FontAttributesProperty.PropertyName)
 			{
 				UpdateFont();
 			}

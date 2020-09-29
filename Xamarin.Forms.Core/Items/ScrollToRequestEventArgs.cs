@@ -15,7 +15,7 @@ namespace Xamarin.Forms
 		public object Item { get; }
 		public object Group { get; }
 
-		public ScrollToRequestEventArgs(int index, int groupIndex, 
+		public ScrollToRequestEventArgs(int index, int groupIndex,
 			ScrollToPosition scrollToPosition, bool isAnimated)
 		{
 			Mode = ScrollToMode.Position;
@@ -26,7 +26,7 @@ namespace Xamarin.Forms
 			IsAnimated = isAnimated;
 		}
 
-		public ScrollToRequestEventArgs(object item, object group, 
+		public ScrollToRequestEventArgs(object item, object group,
 			ScrollToPosition scrollToPosition, bool isAnimated)
 		{
 			Mode = ScrollToMode.Element;

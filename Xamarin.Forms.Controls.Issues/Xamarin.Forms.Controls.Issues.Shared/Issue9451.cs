@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.CustomAttributes;
 using System.ComponentModel;
+using System.Text;
 using System.Threading.Tasks;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {

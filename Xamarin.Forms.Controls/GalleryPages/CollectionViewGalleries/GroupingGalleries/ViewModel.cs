@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 	{
 		public SuperTeams()
 		{
-			Add(new Team("Avengers", 
+			Add(new Team("Avengers",
 				new List<Member>
 				{
 					new Member("Thor"),
@@ -133,9 +133,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 	[Preserve(AllMembers = true)]
 	class ObservableSuperTeams : ObservableCollection<ObservableTeam>
 	{
-		public ObservableSuperTeams ()
+		public ObservableSuperTeams()
 		{
-			Add(new ObservableTeam("Avengers", 
+			Add(new ObservableTeam("Avengers",
 				new List<Member>
 				{
 					new Member("Thor"),
@@ -153,7 +153,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				}
 			));
 
-			Add(new ObservableTeam("Fantastic Four", 
+			Add(new ObservableTeam("Fantastic Four",
 				new List<Member>
 				{
 					new Member("The Thing"),
@@ -163,7 +163,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				}
 			));
 
-			Add(new ObservableTeam("Defenders", 
+			Add(new ObservableTeam("Defenders",
 				new List<Member>
 				{
 					new Member("Doctor Strange"),
@@ -175,8 +175,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 					new Member("Yellowjacket"),
 				}
 			));
-			
-			Add(new ObservableTeam("Heroes for Hire", 
+
+			Add(new ObservableTeam("Heroes for Hire",
 				new List<Member>
 				{
 					new Member("Luke Cage"),
@@ -187,7 +187,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				}
 			));
 
-			Add(new ObservableTeam("West Coast Avengers", 
+			Add(new ObservableTeam("West Coast Avengers",
 				new List<Member>
 				{
 					new Member("Hawkeye"),
@@ -198,7 +198,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				}
 			));
 
-			Add(new ObservableTeam("Great Lakes Avengers", 
+			Add(new ObservableTeam("Great Lakes Avengers",
 				new List<Member>
 				{
 					new Member("Squirrel Girl"),

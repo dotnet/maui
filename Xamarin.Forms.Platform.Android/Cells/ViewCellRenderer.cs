@@ -1,9 +1,9 @@
-using Android.Content;
-using Android.Views;
-using Xamarin.Forms.Internals;
 using System;
 using System.Linq;
+using Android.Content;
 using Android.Runtime;
+using Android.Views;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AView = Android.Views.View;
 

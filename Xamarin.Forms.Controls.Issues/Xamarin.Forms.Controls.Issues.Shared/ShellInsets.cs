@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
 using System.Text;
+using System.Threading;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Linq;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using System.Threading;
-using System.ComponentModel;
 
 
 #if UITEST
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Controls.Issues
 		const string EntryToClick2 = "EntryToClick2";
 		const string CreateTopTabButton = "CreateTopTabButton";
 		const string CreateBottomTabButton = "CreateBottomTabButton";
-		
+
 		const string EntrySuccess = "EntrySuccess";
 		const string ResetKeyboard = "Hide Keyboard";
 		const string ResetKeyboard2 = "Hide Keyboard 2";

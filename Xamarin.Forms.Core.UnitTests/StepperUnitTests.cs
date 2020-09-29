@@ -184,7 +184,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			for (int i = steps; i < steps; i++)
 				stepper.Value += stepper.Increment;
-			
+
 			for (int i = steps; i < steps; i--)
 				stepper.Value += stepper.Increment;
 
@@ -208,7 +208,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[TestCase(100, .0000000003, -10000, 10000)]
 		[TestCase(100, .0000000000003, -10000, 10000)]
 		[TestCase(100, .00003456, -10000, 10000)] //we support 4 significant digits for the increment. no less, no more
-		//https://github.com/xamarin/Xamarin.Forms/issues/5168
+												  //https://github.com/xamarin/Xamarin.Forms/issues/5168
 		public void SmallIncrements(int steps, double increment, double min, double max)
 		{
 			var stepper = new Stepper(min, max, 0, increment);

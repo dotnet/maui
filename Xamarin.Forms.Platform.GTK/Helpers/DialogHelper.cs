@@ -1,5 +1,5 @@
-﻿using Gtk;
-using System.Linq;
+﻿using System.Linq;
+using Gtk;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
@@ -85,13 +85,15 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
 				.OfType<HButtonBox>()
 				.FirstOrDefault();
 
-			if (buttonsBox == null) return;
+			if (buttonsBox == null)
+				return;
 
 			var targetButton = buttonsBox.GetDescendants()
 				.OfType<Gtk.Button>()
 				.FirstOrDefault(x => x.Label == gtkLabel);
 
-			if (targetButton == null) return;
+			if (targetButton == null)
+				return;
 
 			if (string.IsNullOrEmpty(text))
 			{

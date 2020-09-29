@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -6,10 +7,9 @@ using Android.Content;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using AView = Android.Views.View;
-using AListView = Android.Widget.ListView;
 using Xamarin.Forms.Internals;
-using System.Collections;
+using AListView = Android.Widget.ListView;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -227,7 +227,7 @@ namespace Xamarin.Forms.Platform.Android
 					if (cell == null)
 					{
 						Performance.Stop(reference);
-						
+
 						return new AView(_context);
 					}
 				}
@@ -504,7 +504,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (layout.IsDisposed())
 					continue;
-				
+
 				DisposeOfConditionalFocusLayout(layout);
 			}
 

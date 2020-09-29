@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Platform.GTK.Packagers
 {
 	public class LayoutElementPackager : VisualElementPackager<LayoutRenderer>
 	{
-		public LayoutElementPackager(LayoutRenderer renderer) 
+		public LayoutElementPackager(LayoutRenderer renderer)
 			: base(renderer)
 		{
 		}

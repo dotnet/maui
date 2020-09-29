@@ -20,9 +20,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		string _text;
-		public string Text {
+		public string Text
+		{
 			get => _text;
-			set {
+			set
+			{
 				_text = value;
 				OnPropertyChanged();
 			}

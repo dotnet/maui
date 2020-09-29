@@ -10,13 +10,13 @@ using Xamarin.UITest.Queries;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 773, "Horizontal ScrollView locks after rotation", PlatformAffected.iOS)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 773, "Horizontal ScrollView locks after rotation", PlatformAffected.iOS)]
 	public class Issue773 : TestNavigationPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			PushAsync (new CannotScrollRepro ());
+			PushAsync(new CannotScrollRepro());
 		}
 
 #if UITEST
@@ -45,12 +45,13 @@ namespace Xamarin.Forms.Controls.Issues
 
 	public class CannotScrollRepro : ContentPage
 	{
-		public CannotScrollRepro ()
+		public CannotScrollRepro()
 		{
 			Title = "Nav Bar";
 
-			var layout = new StackLayout {
-				Padding = new Thickness (20),
+			var layout = new StackLayout
+			{
+				Padding = new Thickness(20),
 				BackgroundColor = Color.Gray
 			};
 
@@ -65,8 +66,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var label = new Label { Text = "Not Clicked" };
 
-			var buttonStack = new StackLayout {
-				Padding = new Thickness (30, 0),
+			var buttonStack = new StackLayout
+			{
+				Padding = new Thickness(30, 0),
 				Orientation = StackOrientation.Horizontal,
 				Spacing = 30,
 				Children = {
@@ -81,33 +83,41 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			button1.Clicked += (sender, args) => Navigation.PopModalAsync ();
+			button1.Clicked += (sender, args) => Navigation.PopModalAsync();
 
 			int count = 0;
-			button8.Clicked += (sender, e) => {
-				if (count == 0) {
+			button8.Clicked += (sender, e) =>
+			{
+				if (count == 0)
+				{
 					label.Text = "I was clicked once!";
 					count++;
-				} else if (count == 1) {
+				}
+				else if (count == 1)
+				{
 					label.Text = "I was clicked again!";
 					count++;
-				} else if (count == 2) {
+				}
+				else if (count == 2)
+				{
 					label.Text = "I was clicked again again!";
 				}
 			};
 
-			layout.Children.Add (new BoxView {
+			layout.Children.Add(new BoxView
+			{
 				BackgroundColor = Color.Red,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				HorizontalOptions = LayoutOptions.FillAndExpand
 			});
 
-			layout.Children.Add (label);
+			layout.Children.Add(label);
 
-			layout.Children.Add(new ScrollView {
+			layout.Children.Add(new ScrollView
+			{
 				BackgroundColor = Color.Aqua,
 				Orientation = ScrollOrientation.Horizontal,
-				HeightRequest = Device.RuntimePlatform == Device.UWP  ? 80 : 44,
+				HeightRequest = Device.RuntimePlatform == Device.UWP ? 80 : 44,
 				Content = buttonStack
 			});
 

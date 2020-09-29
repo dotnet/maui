@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.ComponentModel;
-using System.Collections.ObjectModel;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var image = new Image { Aspect = Aspect.AspectFill };
 			image.SetBinding(Image.SourceProperty, new Binding("Url"));
-			
+
 			var label = new Label { Margin = 10, BackgroundColor = Color.Red, HorizontalOptions = LayoutOptions.Fill };
 			label.SetBinding(Label.TextProperty, new Binding("Text"));
 
@@ -106,7 +106,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var layout = new StackLayout() { Padding = 5 };
 
-			var instructions = new Label { Text = "Scroll the CollectionView down several pages, then click on one " +
+			var instructions = new Label
+			{
+				Text = "Scroll the CollectionView down several pages, then click on one " +
 				"of the labels. The text of the label should change, but the CollectionView should not scroll to a " +
 				"different location. If it does scroll, the test has failed."
 			};

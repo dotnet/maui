@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Markup
 
 		public static class Columns
 		{
-			public static ColumnDefinitionCollection Define(params GridLength [] widths)
+			public static ColumnDefinitionCollection Define(params GridLength[] widths)
 			{
 				VerifyExperimental();
 				var columnDefinitions = new ColumnDefinitionCollection();

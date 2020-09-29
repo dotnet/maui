@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 
 #if UITEST

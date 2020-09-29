@@ -37,7 +37,7 @@ namespace Xamarin.Forms
 		Element _parentOverride;
 
 		string _styleId;
-		
+
 
 		public string AutomationId
 		{
@@ -180,7 +180,7 @@ namespace Xamarin.Forms
 				{
 					((IElement)RealParent).RemoveResourcesChangedListener(OnParentResourcesChanged);
 
-					if(value != null && (RealParent is Layout || RealParent is IControlTemplated))
+					if (value != null && (RealParent is Layout || RealParent is IControlTemplated))
 						Log.Warning("Element", $"{this} is already a child of {RealParent}. Remove {this} from {RealParent} before adding to {value}.");
 				}
 
@@ -356,9 +356,9 @@ namespace Xamarin.Forms
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
-			foreach(var logicalChildren in ChildrenNotDrawnByThisElement)
+			foreach (var logicalChildren in ChildrenNotDrawnByThisElement)
 			{
-				if(logicalChildren is IPropertyPropagationController controller)
+				if (logicalChildren is IPropertyPropagationController controller)
 					PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { logicalChildren });
 			}
 
@@ -613,14 +613,14 @@ namespace Xamarin.Forms
 			get => _platform;
 			set
 			{
-				if (_platform == value)	
-					return;	
-				_platform = value;	
-				PlatformSet?.Invoke(this, EventArgs.Empty);	
+				if (_platform == value)
+					return;
+				_platform = value;
+				PlatformSet?.Invoke(this, EventArgs.Empty);
 				foreach (Element descendant in Descendants())
-				{	
-					descendant._platform = _platform;	
-					descendant.PlatformSet?.Invoke(this, EventArgs.Empty);	
+				{
+					descendant._platform = _platform;
+					descendant.PlatformSet?.Invoke(this, EventArgs.Empty);
 				}
 			}
 		}

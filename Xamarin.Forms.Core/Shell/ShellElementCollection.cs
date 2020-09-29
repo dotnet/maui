@@ -231,7 +231,7 @@ namespace Xamarin.Forms
 				sgi.ShellElementCollection.VisibleItemsChangedInternal += OnShellElementControllerItemsCollectionChanged;
 			}
 
-			if(controller is BaseShellItem bsi)
+			if (controller is BaseShellItem bsi)
 				bsi.PropertyChanged += BaseShellItemPropertyChanged;
 		}
 
@@ -248,7 +248,7 @@ namespace Xamarin.Forms
 
 		void BaseShellItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if(e.PropertyName == nameof(BaseShellItem.IsVisible))
+			if (e.PropertyName == nameof(BaseShellItem.IsVisible))
 				CheckVisibility((BaseShellItem)sender);
 		}
 
@@ -274,7 +274,7 @@ namespace Xamarin.Forms
 
 	internal abstract class ShellElementCollection<TBaseShellItem> :
 		ShellElementCollection,
-		IList<TBaseShellItem>		
+		IList<TBaseShellItem>
 		where TBaseShellItem : BaseShellItem
 	{
 

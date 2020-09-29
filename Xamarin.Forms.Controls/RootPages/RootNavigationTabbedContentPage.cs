@@ -9,13 +9,14 @@ namespace Xamarin.Forms.Controls
 {
 	// NavigationPage -> TabbedPage -> ContentPage
 	// Not recommended
-	public class RootNavigationTabbedContentPage : NavigationPage 
+	public class RootNavigationTabbedContentPage : NavigationPage
 	{
-		public RootNavigationTabbedContentPage (string hierarchy)
+		public RootNavigationTabbedContentPage(string hierarchy)
 		{
 			AutomationId = hierarchy + "PageId";
 
-			var tabbedPage = new TabbedPage {
+			var tabbedPage = new TabbedPage
+			{
 				Children = {
 					new ContentPage {
 						Title = "Page 1",
@@ -38,8 +39,8 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 
-			PushAsync (tabbedPage);
+			PushAsync(tabbedPage);
 		}
-	  
+
 	}
 }

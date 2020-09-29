@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public class Bz53350String : Bz53350Generic<string>
 	{
-		
+
 	}
 
 	public partial class Bz53350

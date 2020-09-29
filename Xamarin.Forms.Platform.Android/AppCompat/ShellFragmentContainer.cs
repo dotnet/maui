@@ -1,10 +1,10 @@
+using System;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
-using System;
-using LP = Android.Views.ViewGroup.LayoutParams;
 using AView = Android.Views.View;
+using LP = Android.Views.ViewGroup.LayoutParams;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {

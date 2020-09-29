@@ -53,8 +53,8 @@ namespace Xamarin.Forms.Controls.Issues
 			public Issue9794Modal()
 			{
 				Shell.SetTabBarIsVisible(this, false);
-				 Content = new StackLayout()
-				 {
+				Content = new StackLayout()
+				{
 					Children =
 					{
 						new Label()
@@ -62,8 +62,8 @@ namespace Xamarin.Forms.Controls.Issues
 							Text = "Click Back Button"
 						}
 					}
-				 };
-			}	
+				};
+			}
 		}
 
 

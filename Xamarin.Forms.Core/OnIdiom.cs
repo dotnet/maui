@@ -15,44 +15,56 @@ namespace Xamarin.Forms
 		bool _isWatchSet;
 		bool _isDefaultSet;
 
-		public T Phone {
+		public T Phone
+		{
 			get => _phone;
-			set {
+			set
+			{
 				_phone = value;
 				_isPhoneSet = true;
 			}
 		}
-		public T Tablet {
+		public T Tablet
+		{
 			get => _tablet;
-			set {
+			set
+			{
 				_tablet = value;
 				_isTabletSet = true;
 			}
 		}
-		public T Desktop {
+		public T Desktop
+		{
 			get => _desktop;
-			set {
+			set
+			{
 				_desktop = value;
 				_isDesktopSet = true;
 			}
 		}
-		public T TV {
+		public T TV
+		{
 			get => _tV;
-			set {
+			set
+			{
 				_tV = value;
 				_isTVSet = true;
 			}
 		}
-		public T Watch {
+		public T Watch
+		{
 			get => _watch;
-			set {
+			set
+			{
 				_watch = value;
 				_isWatchSet = true;
 			}
 		}
-		public T Default {
+		public T Default
+		{
 			get => _default;
-			set {
+			set
+			{
 				_default = value;
 				_isDefaultSet = true;
 			}
@@ -60,18 +72,19 @@ namespace Xamarin.Forms
 
 		public static implicit operator T(OnIdiom<T> onIdiom)
 		{
-			switch (Device.Idiom) {
-			default:
-			case TargetIdiom.Phone:
-				return onIdiom._isPhoneSet ? onIdiom.Phone : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
-			case TargetIdiom.Tablet:
-				return onIdiom._isTabletSet ? onIdiom.Tablet : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
-			case TargetIdiom.Desktop:
-				return onIdiom._isDesktopSet ? onIdiom.Desktop : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
-			case TargetIdiom.TV:
-				return onIdiom._isTVSet ? onIdiom.TV : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
-			case TargetIdiom.Watch:
-				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			switch (Device.Idiom)
+			{
+				default:
+				case TargetIdiom.Phone:
+					return onIdiom._isPhoneSet ? onIdiom.Phone : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+				case TargetIdiom.Tablet:
+					return onIdiom._isTabletSet ? onIdiom.Tablet : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+				case TargetIdiom.Desktop:
+					return onIdiom._isDesktopSet ? onIdiom.Desktop : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+				case TargetIdiom.TV:
+					return onIdiom._isTVSet ? onIdiom.TV : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+				case TargetIdiom.Watch:
+					return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
 			}
 		}
 	}

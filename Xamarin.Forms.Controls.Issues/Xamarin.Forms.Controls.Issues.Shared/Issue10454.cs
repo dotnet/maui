@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			for (int i = 0; i < 100; i++)
 			{
-				Items.Add($"Item {i+1}");
+				Items.Add($"Item {i + 1}");
 			}
 		}
 	}

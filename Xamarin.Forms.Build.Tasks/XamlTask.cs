@@ -1,19 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
-
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-
 using Mono.Cecil;
-
-using Xamarin.Forms.Xaml;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Pdb;
 using Mono.Cecil.Mdb;
-using System.ComponentModel;
+using Mono.Cecil.Pdb;
+using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Build.Tasks
 {
@@ -50,12 +47,15 @@ namespace Xamarin.Forms.Build.Tasks
 		internal static ILRootNode ParseXaml(Stream stream, TypeReference typeReference)
 		{
 			ILRootNode rootnode = null;
-			using (var reader = XmlReader.Create(stream)) {
-				while (reader.Read()) {
+			using (var reader = XmlReader.Create(stream))
+			{
+				while (reader.Read())
+				{
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
 						continue;
-					if (reader.NodeType != XmlNodeType.Element) {
+					if (reader.NodeType != XmlNodeType.Element)
+					{
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
 						continue;
 					}
@@ -81,7 +81,8 @@ namespace Xamarin.Forms.Build.Tasks
 			using (var reader = XmlReader.Create(resourceStream))
 			{
 				// Read to the first Element
-				while (reader.Read() && reader.NodeType != XmlNodeType.Element) ;
+				while (reader.Read() && reader.NodeType != XmlNodeType.Element)
+					;
 
 				if (reader.NodeType != XmlNodeType.Element)
 					return false;
@@ -94,7 +95,8 @@ namespace Xamarin.Forms.Build.Tasks
 				//no x:Class, but it might be a RD without x:Class and with <?xaml-comp compile="true" ?>
 				//in that case, it has a XamlResourceIdAttribute
 				var typeRef = GetTypeForResourceId(module, resource.Name);
-				if (typeRef != null) {
+				if (typeRef != null)
+				{
 					classname = typeRef.FullName;
 					return true;
 				}
@@ -105,7 +107,8 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static TypeReference GetTypeForResourceId(ModuleDefinition module, string resourceId)
 		{
-			foreach (var ca in module.GetCustomAttributes()) {
+			foreach (var ca in module.GetCustomAttributes())
+			{
 				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (ca.ConstructorArguments[0].Value as string != resourceId)

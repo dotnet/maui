@@ -8,7 +8,8 @@ namespace Xamarin.Forms
 	{
 		public override object ConvertFromInvariantString(string value)
 		{
-			if (value != null) {
+			if (value != null)
+			{
 				string[] wh = value.Split(',');
 				if (wh.Length == 2
 					&& double.TryParse(wh[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double w)

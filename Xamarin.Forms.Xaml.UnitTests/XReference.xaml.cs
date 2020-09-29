@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using NUnit.Framework;
 using Xamarin.Forms;
 
-using NUnit.Framework;
-
 namespace Xamarin.Forms.Xaml.UnitTests
-{	
+{
 	public partial class XReference : ContentPage
-	{	
-		public XReference ()
+	{
+		public XReference()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public XReference (bool useCompiledXaml)
+		public XReference(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -22,49 +20,51 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase (false)]
-			[TestCase (true)]
-			public void SupportsXReference (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void SupportsXReference(bool useCompiledXaml)
 			{
-				var layout = new XReference (useCompiledXaml);
-				Assert.AreSame (layout.image, layout.imageView.Content);
+				var layout = new XReference(useCompiledXaml);
+				Assert.AreSame(layout.image, layout.imageView.Content);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void XReferenceAsCommandParameterToSelf (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void XReferenceAsCommandParameterToSelf(bool useCompiledXaml)
 			{
-				var layout = new XReference (useCompiledXaml);
+				var layout = new XReference(useCompiledXaml);
 
 				var button = layout.aButton;
-				button.BindingContext = new {
-					ButtonClickCommand = new Command (o => {
+				button.BindingContext = new
+				{
+					ButtonClickCommand = new Command(o =>
+					{
 						if (o == button)
-							Assert.Pass ();
+							Assert.Pass();
 					})
 				};
-				((IButtonController) button).SendClicked ();
-				Assert.Fail ();
+				((IButtonController)button).SendClicked();
+				Assert.Fail();
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void XReferenceAsBindingSource (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void XReferenceAsBindingSource(bool useCompiledXaml)
 			{
-				var layout = new XReference (useCompiledXaml);
+				var layout = new XReference(useCompiledXaml);
 
-				Assert.AreEqual ("foo", layout.entry.Text);
-				Assert.AreEqual ("bar", layout.entry.Placeholder);
+				Assert.AreEqual("foo", layout.entry.Text);
+				Assert.AreEqual("bar", layout.entry.Placeholder);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void CrossXReference (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void CrossXReference(bool useCompiledXaml)
 			{
-				var layout = new XReference (useCompiledXaml);
+				var layout = new XReference(useCompiledXaml);
 
-				Assert.AreSame (layout.label0, layout.label1.BindingContext);
-				Assert.AreSame (layout.label1, layout.label0.BindingContext);
+				Assert.AreSame(layout.label0, layout.label1.BindingContext);
+				Assert.AreSame(layout.label1, layout.label0.BindingContext);
 			}
 		}
 	}

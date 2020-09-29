@@ -10,7 +10,7 @@ namespace Xamarin.Forms
 			AcceptedOperation = DataPackageOperation.Copy;
 		}
 
-		public DataPackage Data { get;  }
+		public DataPackage Data { get; }
 		public DataPackageOperation AcceptedOperation { get; set; }
 	}
 }

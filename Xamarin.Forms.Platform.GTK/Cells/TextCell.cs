@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 
 		private void UpdateText(string text)
 		{
-			if(_textLabel != null)
+			if (_textLabel != null)
 			{
 				_textLabel.Text = text ?? string.Empty;
 			}

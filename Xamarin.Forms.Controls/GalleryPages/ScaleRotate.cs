@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Controls
 
 			// Set Bindings.
 			scaleSliderValue.BindingContext = scaleSlider;
-			scaleSliderValue.SetBinding(Label.TextProperty, 
+			scaleSliderValue.SetBinding(Label.TextProperty,
 				new Binding("Value", BindingMode.OneWay, null, null, "Scale = {0:F1}"));
 
 			scaleSlider.BindingContext = label;
@@ -40,13 +40,15 @@ namespace Xamarin.Forms.Controls
 				new Binding("Scale", BindingMode.TwoWay));
 
 			// Label and Slider for ScaleX property.
-			Label scaleXSliderValue = new Label {
+			Label scaleXSliderValue = new Label
+			{
 				VerticalTextAlignment = TextAlignment.Center
 			};
 			Grid.SetRow(scaleXSliderValue, 1);
 			Grid.SetColumn(scaleXSliderValue, 0);
 
-			Slider scaleXSlider = new Slider {
+			Slider scaleXSlider = new Slider
+			{
 				Maximum = 10
 			};
 			Grid.SetRow(scaleXSlider, 1);
@@ -108,7 +110,7 @@ namespace Xamarin.Forms.Controls
 				new Binding("Value", BindingMode.OneWay, null, null, "AnchorX = {0:F1}"));
 
 			anchorxStepper.BindingContext = label;
-			anchorxStepper.SetBinding(Stepper.ValueProperty, 
+			anchorxStepper.SetBinding(Stepper.ValueProperty,
 				new Binding("AnchorX", BindingMode.TwoWay));
 
 			// Label and Slider for AnchorY property.
@@ -134,7 +136,7 @@ namespace Xamarin.Forms.Controls
 				new Binding("Value", BindingMode.OneWay, null, null, "AnchorY = {0:F1}"));
 
 			anchoryStepper.BindingContext = label;
-			anchoryStepper.SetBinding(Stepper.ValueProperty, 
+			anchoryStepper.SetBinding(Stepper.ValueProperty,
 				new Binding("AnchorY", BindingMode.TwoWay));
 
 			// Assemble the page.
@@ -146,7 +148,7 @@ namespace Xamarin.Forms.Controls
 					new Grid
 					{
 						Padding = 10,
-						RowDefinitions = 
+						RowDefinitions =
 						{
 							new RowDefinition { Height = GridLength.Auto },
 							new RowDefinition { Height = GridLength.Auto },
@@ -154,12 +156,12 @@ namespace Xamarin.Forms.Controls
 							new RowDefinition { Height = GridLength.Auto },
 							new RowDefinition { Height = GridLength.Auto },
 						},
-						ColumnDefinitions = 
+						ColumnDefinitions =
 						{
 							new ColumnDefinition { Width = GridLength.Auto },
 							new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star)}
 						},
-						Children = 
+						Children =
 						{
 							scaleSliderValue,
 							scaleSlider,
@@ -167,7 +169,7 @@ namespace Xamarin.Forms.Controls
 							scaleXSlider,
 							rotationSliderValue,
 							rotationSlider,
-							anchorxStepperValue, 
+							anchorxStepperValue,
 							anchorxStepper,
 							anchoryStepperValue,
 							anchoryStepper

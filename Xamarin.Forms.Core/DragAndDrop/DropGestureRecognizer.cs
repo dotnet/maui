@@ -14,7 +14,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty DragOverCommandProperty = BindableProperty.Create(nameof(DragOverCommand), typeof(ICommand), typeof(DropGestureRecognizer), null);
 
 		public static readonly BindableProperty DragOverCommandParameterProperty = BindableProperty.Create(nameof(DragOverCommandParameter), typeof(object), typeof(DropGestureRecognizer), null);
-		
+
 		public static readonly BindableProperty DragLeaveCommandProperty = BindableProperty.Create(nameof(DragLeaveCommand), typeof(ICommand), typeof(DropGestureRecognizer), null);
 
 		public static readonly BindableProperty DragLeaveCommandParameterProperty = BindableProperty.Create(nameof(DragLeaveCommandParameter), typeof(object), typeof(DropGestureRecognizer), null);
@@ -22,7 +22,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty DropCommandProperty = BindableProperty.Create(nameof(DropCommand), typeof(ICommand), typeof(DragGestureRecognizer), null);
 
 		public static readonly BindableProperty DropCommandParameterProperty = BindableProperty.Create(nameof(DropCommandParameter), typeof(object), typeof(DropGestureRecognizer), null);
-		
+
 		public DropGestureRecognizer()
 		{
 		}
@@ -95,7 +95,7 @@ namespace Xamarin.Forms
 			DropCommand?.Execute(DropCommandParameter);
 			Drop?.Invoke(this, args);
 
-			if(!args.Handled)
+			if (!args.Handled)
 			{
 				var dataView = args.Data;
 				var internalProperties = dataView.PropertiesInternal;
@@ -124,7 +124,7 @@ namespace Xamarin.Forms
 					ib.Source = sourceTarget;
 				else if (Parent is Button b)
 					b.ImageSource = sourceTarget;
-				
+
 				Parent?.TrySetValue(text);
 			}
 		}

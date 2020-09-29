@@ -6,9 +6,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class SearchBarDisabledStatesGallery : ContentPage
 	{
-		public SearchBarDisabledStatesGallery ()
+		public SearchBarDisabledStatesGallery()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 
 			Button0.Text = $"Toggle IsEnabled (Currently {Search0.IsEnabled})";
 			Button1.Text = $"Toggle IsEnabled (Currently {Search1.IsEnabled})";

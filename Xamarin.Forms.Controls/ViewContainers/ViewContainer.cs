@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Controls
 		Layered
 	}
 
-	internal class ViewContainer<T> 
+	internal class ViewContainer<T>
 		where T : View
 	{
 
@@ -20,22 +20,25 @@ namespace Xamarin.Forms.Controls
 		// May want to override the container layout in subclasses
 		public StackLayout ContainerLayout { get; protected set; }
 
-		public ViewContainer (Enum formsMember, T view)
+		public ViewContainer(Enum formsMember, T view)
 		{
 			view.AutomationId = formsMember + "VisualElement";
 			View = view;
-			
-			TitleLabel = new Label {
+
+			TitleLabel = new Label
+			{
 				Text = formsMember + " View"
 			};
 
-			BoundsLabel = new Label {
-				BindingContext = new MultiBindingHack (view)
+			BoundsLabel = new Label
+			{
+				BindingContext = new MultiBindingHack(view)
 			};
-			BoundsLabel.SetBinding (Label.TextProperty, "LabelWithBounds");
+			BoundsLabel.SetBinding(Label.TextProperty, "LabelWithBounds");
 
-			ContainerLayout = new StackLayout {
-				AutomationId = formsMember + "Container", 
+			ContainerLayout = new StackLayout
+			{
+				AutomationId = formsMember + "Container",
 				Padding = 10,
 				Children = { TitleLabel, BoundsLabel, view }
 			};

@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Platform.WPF
 			else if (e.PropertyName == Slider.ValueProperty.PropertyName)
 				UpdateValue();
 		}
-		
+
 		void UpdateMinimum()
 		{
 			Control.Minimum = Element.Minimum;

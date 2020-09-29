@@ -3,13 +3,14 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 2594, "StackLayout produces overlapping layouts on some phones with specific screen sizes", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2594, "StackLayout produces overlapping layouts on some phones with specific screen sizes", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]
 	public class Issue2594 : ContentPage
 	{
-		public Issue2594 ()
+		public Issue2594()
 		{
-			var layout = new StackLayout {
+			var layout = new StackLayout
+			{
 				Children = {
 					new StackLayout {
 						BackgroundColor = Color.Red,
@@ -28,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			Padding = new Thickness (0, 20, 0, 0);
+			Padding = new Thickness(0, 20, 0, 0);
 			Content = layout;
 		}
 	}

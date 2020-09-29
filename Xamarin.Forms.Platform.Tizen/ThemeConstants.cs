@@ -350,7 +350,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				public const string Pending = "pending";
 				public const string Small = "process_small";
 				public const string Large = "process_large";
-				
+
 				public class Watch
 				{
 					public const string PopupSmall = "process/popup/small";

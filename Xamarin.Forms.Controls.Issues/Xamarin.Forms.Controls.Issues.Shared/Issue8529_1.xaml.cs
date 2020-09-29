@@ -1,8 +1,8 @@
-﻿using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
-using System;
-using System.Windows.Input;
+﻿using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.Issues
 {

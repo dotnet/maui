@@ -27,13 +27,15 @@ namespace Xamarin.Forms
 			//legacy path
 			if (!(serviceProvider.GetService(typeof(IProvideValueTarget)) is IProvideParentValues valueProvider))
 				throw new ArgumentException("serviceProvider does not provide an IProvideValueTarget");
-			if (serviceProvider.GetService(typeof(INameScopeProvider)) is INameScopeProvider namescopeprovider && namescopeprovider.NameScope != null) {
+			if (serviceProvider.GetService(typeof(INameScopeProvider)) is INameScopeProvider namescopeprovider && namescopeprovider.NameScope != null)
+			{
 				var element = namescopeprovider.NameScope.FindByName(value);
 				if (element != null)
 					return element;
 			}
 
-			foreach (var target in valueProvider.ParentObjects) {
+			foreach (var target in valueProvider.ParentObjects)
+			{
 				if (!(target is INameScope ns))
 					continue;
 				var element = ns.FindByName(value);

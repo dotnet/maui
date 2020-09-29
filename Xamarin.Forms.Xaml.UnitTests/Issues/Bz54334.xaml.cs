@@ -19,7 +19,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				}
 			};
 			MainPage = new Bz54334(useCompiledXaml);
-			MessagingCenter.Subscribe<ContentPage>(this, "ChangeTheme", (s) => {
+			MessagingCenter.Subscribe<ContentPage>(this, "ChangeTheme", (s) =>
+			{
 				ToggleTheme();
 			});
 		}

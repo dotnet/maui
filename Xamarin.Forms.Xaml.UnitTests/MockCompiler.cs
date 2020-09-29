@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Xamarin.Forms.Build.Tasks;
 using Mono.Cecil;
+using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.MSBuild.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -24,7 +23,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					   let a = System.Reflection.Assembly.Load(an)
 					   select a.Location;
 
-			var xamlc = new XamlCTask {
+			var xamlc = new XamlCTask
+			{
 				Assembly = assembly,
 				ReferencePath = refs.ToArray(),
 				KeepXamlResources = true,
@@ -35,7 +35,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				BuildEngine = new MSBuild.UnitTests.DummyBuildEngine()
 			};
 
-			if (xamlc.Execute(out IList<Exception> exceptions) || exceptions == null || !exceptions.Any()) {
+			if (xamlc.Execute(out IList<Exception> exceptions) || exceptions == null || !exceptions.Any())
+			{
 				methdoDefinition = xamlc.InitCompForType;
 				return;
 			}

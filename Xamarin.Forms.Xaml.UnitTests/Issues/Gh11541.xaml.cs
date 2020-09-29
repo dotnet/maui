@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using NUnit.Framework;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
-
-using NUnit.Framework;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -26,7 +24,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[Test]
 			public void RectangleGeometryDoesntThrow([Values(false, true)] bool useCompiledXaml)
 			{
-				Assert.DoesNotThrow(()=> new Gh11541(useCompiledXaml));
+				Assert.DoesNotThrow(() => new Gh11541(useCompiledXaml));
 			}
 		}
 	}

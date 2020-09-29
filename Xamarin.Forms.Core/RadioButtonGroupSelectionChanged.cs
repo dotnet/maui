@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms
 {
-	internal abstract class RadioButtonScopeMessage 
+	internal abstract class RadioButtonScopeMessage
 	{
 		public Element Scope { get; }
 

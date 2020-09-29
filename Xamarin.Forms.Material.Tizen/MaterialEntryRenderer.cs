@@ -1,7 +1,7 @@
 ﻿using Xamarin.Forms;
+using Xamarin.Forms.Material.Tizen;
 using Xamarin.Forms.Platform.Tizen;
 using Xamarin.Forms.Platform.Tizen.Native;
-using Xamarin.Forms.Material.Tizen;
 using XFEntry = Xamarin.Forms.Entry;
 
 [assembly: ExportRenderer(typeof(XFEntry), typeof(MaterialEntryRenderer), new[] { typeof(VisualMarker.MaterialVisual) }, Priority = short.MinValue)]
@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Material.Tizen
 
 		protected override void UpdateTextColor()
 		{
-			if(Control is MaterialEntry me)
+			if (Control is MaterialEntry me)
 			{
 				me.TextColor = Element.TextColor.ToNative();
 				me.TextFocusedColor = Element.TextColor.ToNative();

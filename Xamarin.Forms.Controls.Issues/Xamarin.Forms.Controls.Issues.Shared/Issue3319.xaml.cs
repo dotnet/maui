@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
-using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Threading.Tasks;
+using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -39,13 +38,14 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue3319()
 		{
 #if APP
-			InitializeComponent ();
-			BindingContext = new FavoritesViewModel ();
+			InitializeComponent();
+			BindingContext = new FavoritesViewModel();
 
 			listView.SeparatorVisibility = SeparatorVisibility.Default;
-			listView.SeparatorColor = Color.FromHex ("#ababab");
+			listView.SeparatorColor = Color.FromHex("#ababab");
 
-			listView.ItemTapped += (sender, args) => {
+			listView.ItemTapped += (sender, args) =>
+			{
 				if (listView.SelectedItem == null)
 					return;
 

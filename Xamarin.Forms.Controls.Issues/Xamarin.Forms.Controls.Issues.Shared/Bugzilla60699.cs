@@ -1,13 +1,13 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using System;
-using System.Runtime.CompilerServices;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Linq;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;

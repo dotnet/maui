@@ -1,10 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System;
 using Xamarin.Forms.Xaml;
-using System.Collections.Generic;
-using System.Linq;
 
 #if UITEST
 using Xamarin.UITest;
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		}
 
-	 void HandleButtonClick(object sender, EventArgs e)
+		void HandleButtonClick(object sender, EventArgs e)
 		{
 			var button = sender as Button;
 			var stackLayout = button.Parent as StackLayout;

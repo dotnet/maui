@@ -5,7 +5,7 @@
 		public TemplateCodeCollectionViewGridGallery(ItemsLayoutOrientation orientation = ItemsLayoutOrientation.Vertical)
 		{
 			var layout = new Grid
-			{ 
+			{
 				RowDefinitions = new RowDefinitionCollection
 				{
 					new RowDefinition { Height = GridLength.Auto },
@@ -18,7 +18,7 @@
 
 			var itemTemplate = ExampleTemplates.PhotoTemplate();
 
-			var collectionView = new CollectionView {ItemsLayout = itemsLayout, ItemTemplate = itemTemplate, AutomationId = "collectionview" };
+			var collectionView = new CollectionView { ItemsLayout = itemsLayout, ItemTemplate = itemTemplate, AutomationId = "collectionview" };
 
 			var generator = new ItemsSourceGenerator(collectionView, 100);
 			var spanSetter = new SpanSetter(collectionView);

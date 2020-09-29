@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-
 using Xamarin.Forms;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-
 using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
 
 #if UITEST
@@ -63,7 +61,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			_toggleIconsButton = new Button();
 			_toggleIconsButton.Text = "Show Header Icons";
-			_toggleIconsButton.Clicked += (object sender, EventArgs e) => {
+			_toggleIconsButton.Clicked += (object sender, EventArgs e) =>
+			{
 				if (_target.On<WindowsOS>().IsHeaderIconsEnabled())
 				{
 					_target.On<WindowsOS>().DisableHeaderIcons();
@@ -84,7 +83,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			_changeIconsSizeButton = new Button();
 			_changeIconsSizeButton.Text = "Change Header Icons Size";
-			_changeIconsSizeButton.Clicked += (object sender, EventArgs e) => {
+			_changeIconsSizeButton.Clicked += (object sender, EventArgs e) =>
+			{
 				int width;
 				int height;
 
@@ -100,14 +100,18 @@ namespace Xamarin.Forms.Controls.Issues
 
 			_getCurrentIconsSizeButton = new Button();
 			_getCurrentIconsSizeButton.Text = "Load Current Header Icons Size";
-			_getCurrentIconsSizeButton.Clicked += (object sender, EventArgs e) => {
+			_getCurrentIconsSizeButton.Clicked += (object sender, EventArgs e) =>
+			{
 
 				var currentSize = _target.On<WindowsOS>().GetHeaderIconsSize();
 				_iconWidthEntry.Text = currentSize.Width.ToString();
 				_iconHeightEntry.Text = currentSize.Height.ToString();
 			};
 
-			Content = new StackLayout { Padding = new Thickness(0, 16), Children = {
+			Content = new StackLayout
+			{
+				Padding = new Thickness(0, 16),
+				Children = {
 					new Label { Text = "Control page for header icons on UWP.", FontAttributes = FontAttributes.Bold },
 					_toggleIconsButton, iconWidthLabel, _iconWidthEntry, iconHeightLabel, _iconHeightEntry, _changeIconsSizeButton,
 					_getCurrentIconsSizeButton

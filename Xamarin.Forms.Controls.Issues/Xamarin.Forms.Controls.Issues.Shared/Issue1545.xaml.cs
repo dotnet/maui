@@ -15,8 +15,8 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 1545, "Binding instances cannot be reused", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1545, "Binding instances cannot be reused", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]
 	public partial class Issue1545 : ContentPage
 	{
 		ArtistsViewModel _viewModel;
@@ -28,12 +28,12 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void OnAppearing()
 		{
-		  base.OnAppearing();
-		  if (_viewModel.IsInitialized)
-			return;
+			base.OnAppearing();
+			if (_viewModel.IsInitialized)
+				return;
 
-		  _viewModel.IsInitialized = true;
-		  _viewModel.LoadCommand.Execute(null);
+			_viewModel.IsInitialized = true;
+			_viewModel.LoadCommand.Execute(null);
 		}
 	}
 
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Controls.Issues
 		protected void OnPropertyChanged(string propertyName)
 		{
 			if (PropertyChanged == null)
-			return;
+				return;
 
 			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 		}
@@ -105,10 +105,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Artists.Clear();
 
-			await Task.Delay (3000);
+			await Task.Delay(3000);
 
 			foreach (Artist a in ArtistsToLoad)
-				Artists.Add (a);
+				Artists.Add(a);
 
 			IsBusy = false;
 		}

@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Core.Design
 	/// </summary>
 	internal class EnumConverter<T> : EnumConverter
 	{
-		public EnumConverter () : base(typeof(T))
+		public EnumConverter() : base(typeof(T))
 		{
 		}
 	}

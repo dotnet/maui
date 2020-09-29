@@ -1,7 +1,7 @@
-﻿using Gtk;
+﻿using System;
+using Gtk;
 using OpenTK.GLWidget;
 using OpenTK.Graphics;
-using System;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
 {

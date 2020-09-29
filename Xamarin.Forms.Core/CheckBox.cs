@@ -11,10 +11,11 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty IsCheckedProperty =
 			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), false,
-				propertyChanged: (bindable, oldValue, newValue) => {
-			((CheckBox)bindable).CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool)newValue));
-			((CheckBox)bindable).ChangeVisualState();
-		}, defaultBindingMode: BindingMode.TwoWay);
+				propertyChanged: (bindable, oldValue, newValue) =>
+				{
+					((CheckBox)bindable).CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool)newValue));
+					((CheckBox)bindable).ChangeVisualState();
+				}, defaultBindingMode: BindingMode.TwoWay);
 
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;
 

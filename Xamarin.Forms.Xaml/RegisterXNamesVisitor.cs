@@ -26,21 +26,26 @@ namespace Xamarin.Forms.Xaml
 			if (!IsXNameProperty(node, parentNode))
 				return;
 
-			try {
+			try
+			{
 				((IElementNode)parentNode).NameScopeRef.NameScope.RegisterName((string)node.Value, Values[parentNode]);
 			}
-			catch (ArgumentException ae) {
+			catch (ArgumentException ae)
+			{
 				if (ae.ParamName != "name")
 					throw ae;
 				var xpe = new XamlParseException($"An element with the name \"{(string)node.Value}\" already exists in this NameScope", node);
-				if (Context.ExceptionHandler != null) {
+				if (Context.ExceptionHandler != null)
+				{
 					Context.ExceptionHandler(xpe);
 					return;
 				}
 				throw xpe;
 			}
-			catch (KeyNotFoundException knfe) {
-				if (Context.ExceptionHandler != null) {
+			catch (KeyNotFoundException knfe)
+			{
+				if (Context.ExceptionHandler != null)
+				{
 					Context.ExceptionHandler(knfe);
 					return;
 				}

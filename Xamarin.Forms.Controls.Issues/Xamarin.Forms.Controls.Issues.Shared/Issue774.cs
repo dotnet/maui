@@ -11,13 +11,14 @@ using Xamarin.UITest.iOS;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 774, "ActionSheet won't dismiss after rotation to landscape", PlatformAffected.Android, NavigationBehavior.PushModalAsync)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 774, "ActionSheet won't dismiss after rotation to landscape", PlatformAffected.Android, NavigationBehavior.PushModalAsync)]
 	public class Issue774 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					new Label {
 						Text = "Hi"

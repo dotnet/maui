@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -24,8 +24,8 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue2777()
 		{
 #if APP
-			InitializeComponent ();
-			var list = SetupList ();
+			InitializeComponent();
+			var list = SetupList();
 			itemListView.ItemsSource = list;
 #endif
 

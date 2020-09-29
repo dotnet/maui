@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using System;
+﻿using System;
 using System.Linq;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;
@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 	public class Issue2271 : TestNavigationPage
 	{
 		public class LandingPage : ContentPage
-		{ 
+		{
 			StackLayout layout;
 			Button addAtEndAndScrollToEnd, addAtStartAndScrollToStart, scrollToStart, scrollToEnd;
 			ScrollView scrollView;
@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Controls.Issues
 						Text = $"Insert nr {layout.Children.Count}"
 					};
 					layout.Children.Insert(0, lastButton);
-				} 
+				}
 
 				await scrollView.ScrollToAsync(lastButton, ScrollToPosition.Start, false);
 			}

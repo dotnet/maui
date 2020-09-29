@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using NUnit.Framework;
-
-using Xamarin.Forms.Core.UnitTests;
 using Xamarin.Forms;
 using Xamarin.Forms.Build.Tasks;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {

@@ -14,7 +14,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[TestFixture] class Tests
+		[TestFixture]
+		class Tests
 		{
 
 			[SetUp]
@@ -30,7 +31,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			}
 
 			[Test]
-			public void SearchHandlerIneritBC([Values(false, true)]bool useCompiledXaml)
+			public void SearchHandlerIneritBC([Values(false, true)] bool useCompiledXaml)
 			{
 				var vm = new object();
 				var shell = new Gh5705(useCompiledXaml) { BindingContext = vm };

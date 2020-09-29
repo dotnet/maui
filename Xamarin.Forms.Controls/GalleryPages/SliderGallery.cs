@@ -8,19 +8,20 @@ namespace Xamarin.Forms.Controls
 {
 	public class SliderGallery : ContentPage
 	{
-		public SliderGallery ()
+		public SliderGallery()
 		{
-			var normal = new Slider (20, 100, 20);
-			var disabled = new Slider (0, 1, 0);
-			var transparent = new Slider (0, 1, 0);
-			var valueLabel = new Label { Text = normal.Value.ToString () };
+			var normal = new Slider(20, 100, 20);
+			var disabled = new Slider(0, 1, 0);
+			var transparent = new Slider(0, 1, 0);
+			var valueLabel = new Label { Text = normal.Value.ToString() };
 
 			disabled.IsEnabled = false;
 			transparent.Opacity = .5;
-			normal.ValueChanged += (sender, e) => { valueLabel.Text = normal.Value.ToString (); };
+			normal.ValueChanged += (sender, e) => { valueLabel.Text = normal.Value.ToString(); };
 
-			Content = new StackLayout {
-				Padding = new Thickness (40),
+			Content = new StackLayout
+			{
+				Padding = new Thickness(40),
 				Children = {
 					normal,
 					disabled,

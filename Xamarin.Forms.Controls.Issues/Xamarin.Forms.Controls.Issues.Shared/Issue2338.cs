@@ -1,10 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Linq;
-using System.Collections.Generic;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;

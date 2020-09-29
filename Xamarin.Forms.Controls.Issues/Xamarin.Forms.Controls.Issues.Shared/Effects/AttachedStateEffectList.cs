@@ -46,7 +46,8 @@ namespace Xamarin.Forms.Controls.Effects
 
 		private async void AttachedStateEffectStateChanged(object sender, EventArgs e)
 		{
-			if (Count == 0) return;
+			if (Count == 0)
+				return;
 
 			bool allAttached = true;
 			bool allDetached = true;

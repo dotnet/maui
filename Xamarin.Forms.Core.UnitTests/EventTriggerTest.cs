@@ -5,9 +5,9 @@ namespace Xamarin.Forms.Core.UnitTests
 {
 	internal class MockTriggerAction : TriggerAction<BindableObject>
 	{
-		public bool Invoked { get; set;}
+		public bool Invoked { get; set; }
 
-		protected override void Invoke (BindableObject sender)
+		protected override void Invoke(BindableObject sender)
 		{
 			Invoked = true;
 		}
@@ -15,16 +15,16 @@ namespace Xamarin.Forms.Core.UnitTests
 
 	internal class MockBindableWithEvent : VisualElement
 	{
-		public void FireEvent ()
+		public void FireEvent()
 		{
 			if (MockEvent != null)
-				MockEvent (this, EventArgs.Empty);
+				MockEvent(this, EventArgs.Empty);
 		}
 
-		public void FireEvent2 ()
+		public void FireEvent2()
 		{
 			if (MockEvent2 != null)
-				MockEvent2 (this, EventArgs.Empty);
+				MockEvent2(this, EventArgs.Empty);
 		}
 
 		public event EventHandler MockEvent;
@@ -35,39 +35,39 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class EventTriggerTest : BaseTestFixture
 	{
 		[Test]
-		public void TestTriggerActionInvoked ()
+		public void TestTriggerActionInvoked()
 		{
-			var bindable = new MockBindableWithEvent ();
-			var triggeraction = new MockTriggerAction ();
-			var eventtrigger = new EventTrigger () { Event = "MockEvent", Actions = { triggeraction } };
+			var bindable = new MockBindableWithEvent();
+			var triggeraction = new MockTriggerAction();
+			var eventtrigger = new EventTrigger() { Event = "MockEvent", Actions = { triggeraction } };
 			var collection = bindable.Triggers;
-			collection.Add (eventtrigger);
+			collection.Add(eventtrigger);
 
-			Assert.False (triggeraction.Invoked);
-			bindable.FireEvent ();
-			Assert.True (triggeraction.Invoked);
+			Assert.False(triggeraction.Invoked);
+			bindable.FireEvent();
+			Assert.True(triggeraction.Invoked);
 		}
-			
+
 		[Test]
-		public void TestChangeEventOnEventTrigger ()
+		public void TestChangeEventOnEventTrigger()
 		{
-			var bindable = new MockBindableWithEvent ();
-			var triggeraction = new MockTriggerAction ();
-			var eventtrigger = new EventTrigger  { Event = "MockEvent", Actions = { triggeraction } };
+			var bindable = new MockBindableWithEvent();
+			var triggeraction = new MockTriggerAction();
+			var eventtrigger = new EventTrigger { Event = "MockEvent", Actions = { triggeraction } };
 			var collection = bindable.Triggers;
-			collection.Add (eventtrigger);
+			collection.Add(eventtrigger);
 
 			triggeraction.Invoked = false;
-			Assert.False (triggeraction.Invoked);
-			bindable.FireEvent ();
-			Assert.True (triggeraction.Invoked);
+			Assert.False(triggeraction.Invoked);
+			bindable.FireEvent();
+			Assert.True(triggeraction.Invoked);
 
 			triggeraction.Invoked = false;
-			Assert.False (triggeraction.Invoked);
-			bindable.FireEvent2 ();
-			Assert.False (triggeraction.Invoked);
+			Assert.False(triggeraction.Invoked);
+			bindable.FireEvent2();
+			Assert.False(triggeraction.Invoked);
 
-			Assert.Throws<InvalidOperationException>(()=> eventtrigger.Event = "MockEvent2");
+			Assert.Throws<InvalidOperationException>(() => eventtrigger.Event = "MockEvent2");
 		}
-	}	
+	}
 }

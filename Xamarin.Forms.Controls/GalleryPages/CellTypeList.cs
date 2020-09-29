@@ -8,19 +8,19 @@ namespace Xamarin.Forms.Controls
 {
 	internal class CellTypesListPage : ContentPage
 	{
-		public CellTypesListPage ()
+		public CellTypesListPage()
 		{
-			Content = new CellTypeList ();
+			Content = new CellTypeList();
 		}
 	}
 
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public class CellNavigation
 	{
 		public string CellType { get; set; }
 		public ContentPage Page { get; set; }
 
-		public CellNavigation (string type, ContentPage page)
+		public CellNavigation(string type, ContentPage page)
 		{
 			CellType = type;
 			Page = page;
@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Controls
 		public const string CellTestContainerId = "CellTestContainer";
 
 		// TODO Add gallerys for ViewCell, ListView and TableView
-		public CellTypeList ()
+		public CellTypeList()
 		{
 			var itemList = new List<CellNavigation> {
 				new CellNavigation ("TextCell List", new TextCellListPage ()),
@@ -48,19 +48,20 @@ namespace Xamarin.Forms.Controls
 				new CellNavigation ("EntryCell Table", new EntryCellTablePage ()),
 				new CellNavigation ("ViewCell Image url table", new UrlImageViewCellListPage())
 			};
-			
+
 			ItemsSource = itemList;
 
-			var template = new DataTemplate (typeof (TextCell));
-			template.SetBinding (TextCell.TextProperty, new Binding ("CellType"));
+			var template = new DataTemplate(typeof(TextCell));
+			template.SetBinding(TextCell.TextProperty, new Binding("CellType"));
 
 			ItemTemplate = template;
-			ItemSelected += (s, e) => {
-				
+			ItemSelected += (s, e) =>
+			{
+
 				if (SelectedItem == null)
 					return;
 
-				var cellNav = (CellNavigation) e.SelectedItem;
+				var cellNav = (CellNavigation)e.SelectedItem;
 
 				if (cellNav == _last)
 				{
@@ -68,12 +69,12 @@ namespace Xamarin.Forms.Controls
 					return;
 				}
 
-				Navigation.PushAsync (cellNav.Page);
+				Navigation.PushAsync(cellNav.Page);
 				_last = cellNav;
 #if !__WINDOWS__
 				SelectedItem = null;
 #endif
 			};
-		}		
+		}
 	}
 }

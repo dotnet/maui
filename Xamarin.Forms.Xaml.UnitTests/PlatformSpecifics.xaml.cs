@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-
 using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
 
 namespace Xamarin.Forms.Xaml.UnitTests

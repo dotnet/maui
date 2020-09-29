@@ -1,7 +1,7 @@
-﻿using Gdk;
-using Gtk;
-using System;
+﻿using System;
 using System.ComponentModel;
+using Gdk;
+using Gtk;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using Xamarin.Forms.Platform.GTK.Helpers;
 using NativeLabel = Gtk.Label;
@@ -106,7 +106,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 		{
 			var elemValue = (string)Element?.GetValue(AutomationProperties.NameProperty);
 
-			if (string.IsNullOrWhiteSpace(elemValue) 
+			if (string.IsNullOrWhiteSpace(elemValue)
 				&& Control?.Accessible.Description == Control?.Text)
 				return;
 
@@ -205,7 +205,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-		}		
+		}
 
 		private SizeRequest GetPerfectSize(int widthConstraint = -1)
 		{

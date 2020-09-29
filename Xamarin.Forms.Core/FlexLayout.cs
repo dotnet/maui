@@ -40,11 +40,11 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty GrowProperty =
 			BindableProperty.CreateAttached("Grow", typeof(float), typeof(FlexLayout), default(float),
-			                                propertyChanged: OnGrowPropertyChanged, validateValue: (bindable, value) => (float)value >= 0);
+											propertyChanged: OnGrowPropertyChanged, validateValue: (bindable, value) => (float)value >= 0);
 
 		public static readonly BindableProperty ShrinkProperty =
 			BindableProperty.CreateAttached("Shrink", typeof(float), typeof(FlexLayout), 1f,
-			                                propertyChanged: OnShrinkPropertyChanged, validateValue: (bindable, value) => (float)value >= 0);
+											propertyChanged: OnShrinkPropertyChanged, validateValue: (bindable, value) => (float)value >= 0);
 
 		public static readonly BindableProperty AlignSelfProperty =
 			BindableProperty.CreateAttached("AlignSelf", typeof(FlexAlignSelf), typeof(FlexLayout), FlexAlignSelf.Auto,
@@ -54,32 +54,38 @@ namespace Xamarin.Forms
 			BindableProperty.CreateAttached("Basis", typeof(FlexBasis), typeof(FlexLayout), FlexBasis.Auto,
 											propertyChanged: OnBasisPropertyChanged);
 
-		public FlexDirection Direction {
+		public FlexDirection Direction
+		{
 			get => (FlexDirection)GetValue(DirectionProperty);
 			set => SetValue(DirectionProperty, value);
 		}
 
-		public FlexJustify JustifyContent {
+		public FlexJustify JustifyContent
+		{
 			get => (FlexJustify)GetValue(JustifyContentProperty);
 			set => SetValue(JustifyContentProperty, value);
 		}
 
-		public FlexAlignContent AlignContent {
+		public FlexAlignContent AlignContent
+		{
 			get => (FlexAlignContent)GetValue(AlignContentProperty);
 			set => SetValue(AlignContentProperty, value);
 		}
 
-		public FlexAlignItems AlignItems {
+		public FlexAlignItems AlignItems
+		{
 			get => (FlexAlignItems)GetValue(AlignItemsProperty);
 			set => SetValue(AlignItemsProperty, value);
 		}
 
-		public FlexPosition Position {
+		public FlexPosition Position
+		{
 			get => (FlexPosition)GetValue(PositionProperty);
 			set => SetValue(PositionProperty, value);
 		}
 
-		public FlexWrap Wrap {
+		public FlexWrap Wrap
+		{
 			get => (FlexWrap)GetValue(WrapProperty);
 			set => SetValue(WrapProperty, value);
 		}
@@ -222,7 +228,7 @@ namespace Xamarin.Forms
 			base.OnIsPlatformEnabledChanged();
 			if (IsPlatformEnabled && _root == null)
 				PopulateLayout();
-			else if(!IsPlatformEnabled && _root != null)
+			else if (!IsPlatformEnabled && _root != null)
 				ClearLayout();
 		}
 
@@ -278,8 +284,10 @@ namespace Xamarin.Forms
 				return;
 			var item = (view as FlexLayout)?._root ?? new Flex.Item();
 			InitItemProperties(view, item);
-			if (!(view is FlexLayout)) { //inner layouts don't get measured
-				item.SelfSizing = (Flex.Item it, ref float w, ref float h) => {
+			if (!(view is FlexLayout))
+			{ //inner layouts don't get measured
+				item.SelfSizing = (Flex.Item it, ref float w, ref float h) =>
+				{
 					var sizeConstrains = item.GetConstraints();
 					sizeConstrains.Width = (_measuring && sizeConstrains.Width == 0) ? double.PositiveInfinity : sizeConstrains.Width;
 					sizeConstrains.Height = (_measuring && sizeConstrains.Height == 0) ? double.PositiveInfinity : sizeConstrains.Height;
@@ -310,7 +318,8 @@ namespace Xamarin.Forms
 			var height = (double)view.GetValue(HeightRequestProperty);
 			item.Height = height < 0 ? float.NaN : (float)height;
 			item.IsVisible = (bool)view.GetValue(IsVisibleProperty);
-			if (view is FlexLayout) {
+			if (view is FlexLayout)
+			{
 				var (pleft, ptop, pright, pbottom) = (Thickness)view.GetValue(PaddingProperty);
 				item.PaddingLeft = (float)pleft;
 				item.PaddingTop = (float)ptop;
@@ -330,8 +339,9 @@ namespace Xamarin.Forms
 
 		void OnChildPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (   e.PropertyName == WidthRequestProperty.PropertyName
-				|| e.PropertyName == HeightRequestProperty.PropertyName) {
+			if (e.PropertyName == WidthRequestProperty.PropertyName
+				|| e.PropertyName == HeightRequestProperty.PropertyName)
+			{
 				var item = (sender as FlexLayout)?._root ?? GetFlexItem((BindableObject)sender);
 				if (item == null)
 					return;
@@ -341,7 +351,8 @@ namespace Xamarin.Forms
 				return;
 			}
 
-			if (e.PropertyName == MarginProperty.PropertyName) {
+			if (e.PropertyName == MarginProperty.PropertyName)
+			{
 				var item = (sender as FlexLayout)?._root ?? GetFlexItem((BindableObject)sender);
 				if (item == null)
 					return;
@@ -354,7 +365,8 @@ namespace Xamarin.Forms
 				return;
 			}
 
-			if (e.PropertyName == PaddingProperty.PropertyName) {
+			if (e.PropertyName == PaddingProperty.PropertyName)
+			{
 				var item = (sender as FlexLayout)?._root ?? GetFlexItem((BindableObject)sender);
 				if (item == null)
 					return;
@@ -367,7 +379,8 @@ namespace Xamarin.Forms
 				return;
 			}
 
-			if (e.PropertyName == IsVisibleProperty.PropertyName) {
+			if (e.PropertyName == IsVisibleProperty.PropertyName)
+			{
 				var item = (sender as FlexLayout)?._root ?? GetFlexItem((BindableObject)sender);
 				if (item == null)
 					return;
@@ -381,9 +394,10 @@ namespace Xamarin.Forms
 		{
 			if (_root == null)
 				return;
-			
+
 			Layout(width, height);
-			foreach (var child in Children) {
+			foreach (var child in Children)
+			{
 				var frame = GetFlexItem(child).GetFrame();
 				if (double.IsNaN(frame.X)
 					|| double.IsNaN(frame.Y)
@@ -408,8 +422,10 @@ namespace Xamarin.Forms
 			_measuring = true;
 			//1. Set Shrink to 0, set align-self to start (to avoid stretching)
 			//   Set Image.Aspect to Fill to get the value we expect in measuring
-			foreach (var child in Children) {
-				if (GetFlexItem(child) is Flex.Item item) {
+			foreach (var child in Children)
+			{
+				if (GetFlexItem(child) is Flex.Item item)
+				{
 					item.Shrink = 0;
 					item.AlignSelf = Flex.AlignSelf.Start;
 				}
@@ -417,20 +433,24 @@ namespace Xamarin.Forms
 			Layout(widthConstraint, heightConstraint);
 
 			//2. look at the children location
-			if (double.IsPositiveInfinity(widthConstraint)) {
+			if (double.IsPositiveInfinity(widthConstraint))
+			{
 				widthConstraint = 0;
 				foreach (var item in _root)
 					widthConstraint = Math.Max(widthConstraint, item.Frame[0] + item.Frame[2] + item.MarginRight);
 			}
-			if (double.IsPositiveInfinity(heightConstraint)) {
+			if (double.IsPositiveInfinity(heightConstraint))
+			{
 				heightConstraint = 0;
 				foreach (var item in _root)
 					heightConstraint = Math.Max(heightConstraint, item.Frame[1] + item.Frame[3] + item.MarginBottom);
 			}
 
 			//3. reset Shrink, algin-self, and image.aspect
-			foreach (var child in Children) {
-				if (GetFlexItem(child) is Flex.Item item) {
+			foreach (var child in Children)
+			{
+				if (GetFlexItem(child) is Flex.Item item)
+				{
 					item.Shrink = (float)child.GetValue(ShrinkProperty);
 					item.AlignSelf = (Flex.AlignSelf)(FlexAlignSelf)child.GetValue(AlignSelfProperty);
 				}
@@ -441,7 +461,7 @@ namespace Xamarin.Forms
 
 		void Layout(double width, double height)
 		{
-			if (_root.Parent != null)	//Layout is only computed at root level
+			if (_root.Parent != null)   //Layout is only computed at root level
 				return;
 			_root.Width = !double.IsPositiveInfinity((width)) ? (float)width : 0;
 			_root.Height = !double.IsPositiveInfinity((height)) ? (float)height : 0;
@@ -454,7 +474,8 @@ namespace Xamarin.Forms
 		public static int IndexOf(this Flex.Item parent, Flex.Item child)
 		{
 			var index = -1;
-			foreach (var it in parent) {
+			foreach (var it in parent)
+			{
 				index++;
 				if (it == child)
 					return index;

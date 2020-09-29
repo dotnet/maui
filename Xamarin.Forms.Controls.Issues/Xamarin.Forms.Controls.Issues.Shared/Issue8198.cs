@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		RefreshView _refreshView;
 		Command _refreshCommand;
-  
+
 		protected override void Init()
 		{
 			Title = "Issue 8198";
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 			_refreshView = new RefreshView
 			{
 				Command = _refreshCommand
-   			};
+			};
 
 			var collectionView = new CollectionView
 			{
@@ -107,7 +107,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 				scroll.Content = grid;
 				return scroll;
-   			});
+			});
 			return template;
 		}
 	}

@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
-
 using NUnit.Framework;
+using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class SharedResourceDictionary : ResourceDictionary
 	{
-		public SharedResourceDictionary ()
+		public SharedResourceDictionary()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public SharedResourceDictionary (bool useCompiledXaml)
+		public SharedResourceDictionary(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -35,12 +33,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void ResourcesDirectoriesCanBeXamlRoots (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void ResourcesDirectoriesCanBeXamlRoots(bool useCompiledXaml)
 			{
-				var layout = new SharedResourceDictionary (useCompiledXaml);
-				Assert.AreEqual (5, layout.Count);
+				var layout = new SharedResourceDictionary(useCompiledXaml);
+				Assert.AreEqual(5, layout.Count);
 			}
 		}
 	}

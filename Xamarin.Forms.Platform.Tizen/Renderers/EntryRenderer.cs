@@ -1,6 +1,6 @@
 using System;
-using IEntry = Xamarin.Forms.Platform.Tizen.Native.IEntry;
 using EEntry = ElmSharp.Entry;
+using IEntry = Xamarin.Forms.Platform.Tizen.Native.IEntry;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Entry;
 
 namespace Xamarin.Forms.Platform.Tizen

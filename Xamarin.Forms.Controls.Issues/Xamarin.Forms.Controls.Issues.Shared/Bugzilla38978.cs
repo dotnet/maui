@@ -10,35 +10,39 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 38978, "Cell.ForceUpdateSize issues with row selection/deselection (ViewCell)", PlatformAffected.Android)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 38978, "Cell.ForceUpdateSize issues with row selection/deselection (ViewCell)", PlatformAffected.Android)]
 	public class Bugzilla38978 : TestContentPage // or TestFlyoutPage, etc ...
 	{
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class MyViewCell : ViewCell
 		{
 			Image _image;
-			public MyViewCell ()
+			public MyViewCell()
 			{
-				_image = new Image {
-					Source = ImageSource.FromFile ("oasis.jpg"),
+				_image = new Image
+				{
+					Source = ImageSource.FromFile("oasis.jpg"),
 					HeightRequest = 50
 				};
 
 				Label label = new Label { Text = "Click the image to resize", VerticalOptions = LayoutOptions.Center };
 
-				var tapGestureRecognizer = new TapGestureRecognizer ();
-				tapGestureRecognizer.Tapped += (object sender, EventArgs e) => {
-					if (_image.HeightRequest < 250) {
+				var tapGestureRecognizer = new TapGestureRecognizer();
+				tapGestureRecognizer.Tapped += (object sender, EventArgs e) =>
+				{
+					if (_image.HeightRequest < 250)
+					{
 						_image.HeightRequest = _image.Height + 100;
-						ForceUpdateSize ();
+						ForceUpdateSize();
 						label.Text = "If the tapped image is not larger, this test has failed.";
 					}
 				};
-				_image.GestureRecognizers.Add (tapGestureRecognizer);
+				_image.GestureRecognizers.Add(tapGestureRecognizer);
 
-				var stackLayout = new StackLayout {
-					Padding = new Thickness (20, 5, 5, 5),
+				var stackLayout = new StackLayout
+				{
+					Padding = new Thickness(20, 5, 5, 5),
 					Orientation = StackOrientation.Horizontal,
 					Children = {
 						_image,
@@ -49,27 +53,29 @@ namespace Xamarin.Forms.Controls.Issues
 				View = stackLayout;
 			}
 
-			protected override void OnBindingContextChanged ()
+			protected override void OnBindingContextChanged()
 			{
-				base.OnBindingContextChanged ();
+				base.OnBindingContextChanged();
 				var item = BindingContext?.ToString();
-				if (string.IsNullOrWhiteSpace (item))
+				if (string.IsNullOrWhiteSpace(item))
 					return;
 
 				_image.AutomationId = item;
 			}
 		}
 
-		protected override void Init ()
+		protected override void Init()
 		{
-			var listView = new ListView {
+			var listView = new ListView
+			{
 				HasUnevenRows = true,
-				ItemTemplate = new DataTemplate (typeof (MyViewCell)),
-				ItemsSource = Enumerable.Range (0, 10)
+				ItemTemplate = new DataTemplate(typeof(MyViewCell)),
+				ItemsSource = Enumerable.Range(0, 10)
 			};
 
-			Content = new StackLayout {
-				Padding = new Thickness (0, 20, 0, 0),
+			Content = new StackLayout
+			{
+				Padding = new Thickness(0, 20, 0, 0),
 				Children = {
 					listView
 				}

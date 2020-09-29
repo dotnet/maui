@@ -34,12 +34,12 @@ namespace Xamarin.Forms.Build.Tasks
 			var yasm = GetAssembly(y);
 
 			//standard types comes from either mscorlib. System.Runtime or netstandard. Assume they are equivalent
-			if ((      xasm.StartsWith("System.Runtime", StringComparison.Ordinal)
+			if ((xasm.StartsWith("System.Runtime", StringComparison.Ordinal)
 					|| xasm.StartsWith("System", StringComparison.Ordinal)
 					|| xasm.StartsWith("mscorlib", StringComparison.Ordinal)
 					|| xasm.StartsWith("netstandard", StringComparison.Ordinal)
 					|| xasm.StartsWith("System.Xml", StringComparison.Ordinal))
-				&& (   yasm.StartsWith("System.Runtime", StringComparison.Ordinal)
+				&& (yasm.StartsWith("System.Runtime", StringComparison.Ordinal)
 					|| yasm.StartsWith("System", StringComparison.Ordinal)
 					|| yasm.StartsWith("mscorlib", StringComparison.Ordinal)
 					|| yasm.StartsWith("netstandard", StringComparison.Ordinal)
@@ -67,10 +67,13 @@ namespace Xamarin.Forms.Build.Tasks
 			var properties = typeDef.Properties.Where(predicate);
 			if (properties.Any())
 				return properties.Single();
-			if (typeDef.IsInterface) {
-				foreach (var face in typeDef.Interfaces) {
+			if (typeDef.IsInterface)
+			{
+				foreach (var face in typeDef.Interfaces)
+				{
 					var p = face.InterfaceType.ResolveGenericParameters(typeRef).GetProperty(predicate, out var interfaceDeclaringTypeRef);
-					if (p != null) {
+					if (p != null)
+					{
 						declaringTypeRef = interfaceDeclaringTypeRef;
 						return p;
 					}
@@ -87,7 +90,8 @@ namespace Xamarin.Forms.Build.Tasks
 			declaringTypeRef = typeRef;
 			var typeDef = typeRef.ResolveCached();
 			var events = typeDef.Events.Where(predicate);
-			if (events.Any()) {
+			if (events.Any())
+			{
 				var ev = events.Single();
 				return ev.ResolveGenericEvent(declaringTypeRef);
 			}
@@ -182,20 +186,28 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public static bool InheritsFromOrImplements(this TypeReference typeRef, TypeReference baseClass)
 		{
-			if (typeRef is GenericInstanceType genericInstance) {
+			if (typeRef is GenericInstanceType genericInstance)
+			{
 				if (baseClass is GenericInstanceType genericInstanceBaseClass &&
-						TypeRefComparer.Default.Equals(genericInstance.ElementType, genericInstanceBaseClass.ElementType)) {
-					foreach (var parameter in genericInstanceBaseClass.ElementType.ResolveCached().GenericParameters) {
+						TypeRefComparer.Default.Equals(genericInstance.ElementType, genericInstanceBaseClass.ElementType))
+				{
+					foreach (var parameter in genericInstanceBaseClass.ElementType.ResolveCached().GenericParameters)
+					{
 						var argument = genericInstance.GenericArguments[parameter.Position];
 						var baseClassArgument = genericInstanceBaseClass.GenericArguments[parameter.Position];
 
-						if (parameter.IsCovariant) {
+						if (parameter.IsCovariant)
+						{
 							if (!argument.InheritsFromOrImplements(baseClassArgument))
 								return false;
-						} else if (parameter.IsContravariant) {
+						}
+						else if (parameter.IsContravariant)
+						{
 							if (!baseClassArgument.InheritsFromOrImplements(argument))
 								return false;
-						} else if (!TypeRefComparer.Default.Equals(argument, baseClassArgument)) {
+						}
+						else if (!TypeRefComparer.Default.Equals(argument, baseClassArgument))
+						{
 							return false;
 						}
 					}
@@ -203,11 +215,13 @@ namespace Xamarin.Forms.Build.Tasks
 					return true;
 				}
 			}
-			else {
+			else
+			{
 				if (TypeRefComparer.Default.Equals(typeRef, baseClass))
 					return true;
 
-				if (typeRef.IsArray) {
+				if (typeRef.IsArray)
+				{
 					var array = (ArrayType)typeRef;
 					var arrayType = typeRef.ResolveCached();
 					if (arrayInterfaces.Contains(baseClass.FullName))
@@ -326,24 +340,26 @@ namespace Xamarin.Forms.Build.Tasks
 			if (TypeRefComparer.Default.Equals(fromType, toType))
 				return null;
 
-			var implicitOperatorsOnFromType = fromType.GetMethods(md =>    md.IsPublic
+			var implicitOperatorsOnFromType = fromType.GetMethods(md => md.IsPublic
 																		&& md.IsStatic
 																		&& md.IsSpecialName
 																		&& md.Name == "op_Implicit", module);
-			var implicitOperatorsOnToType = toType.GetMethods(md =>    md.IsPublic
+			var implicitOperatorsOnToType = toType.GetMethods(md => md.IsPublic
 																	&& md.IsStatic
 																	&& md.IsSpecialName
 																	&& md.Name == "op_Implicit", module);
 			var implicitOperators = implicitOperatorsOnFromType.Concat(implicitOperatorsOnToType).ToList();
 
-			if (implicitOperators.Any()) {
-				foreach (var op in implicitOperators) {
+			if (implicitOperators.Any())
+			{
+				foreach (var op in implicitOperators)
+				{
 					var cast = op.Item1;
 					var opDeclTypeRef = op.Item2;
 					var castDef = module.ImportReference(cast).ResolveGenericParameters(opDeclTypeRef, module);
 					var returnType = castDef.ReturnType;
 					if (returnType.IsGenericParameter)
-						returnType = ((GenericInstanceType)opDeclTypeRef).GenericArguments [((GenericParameter)returnType).Position];
+						returnType = ((GenericInstanceType)opDeclTypeRef).GenericArguments[((GenericParameter)returnType).Position];
 					if (!returnType.InheritsFromOrImplements(toType))
 						continue;
 					var paramType = cast.Parameters[0].ParameterType.ResolveGenericParameters(castDef);
@@ -362,15 +378,17 @@ namespace Xamarin.Forms.Build.Tasks
 			var declaringTypeReference = declaringMethodReference.DeclaringType;
 			var genericdeclType = declaringTypeReference as GenericInstanceType;
 
-			if (genericParameterSelf != null) {
-				switch (genericParameterSelf.Type) {
-				case GenericParameterType.Method:
-					self = genericdeclMethod.GenericArguments[genericParameterSelf.Position];
-					break;
+			if (genericParameterSelf != null)
+			{
+				switch (genericParameterSelf.Type)
+				{
+					case GenericParameterType.Method:
+						self = genericdeclMethod.GenericArguments[genericParameterSelf.Position];
+						break;
 
-				case GenericParameterType.Type:
-					self = genericdeclType.GenericArguments[genericParameterSelf.Position];
-					break;
+					case GenericParameterType.Type:
+						self = genericdeclType.GenericArguments[genericParameterSelf.Position];
+						break;
 				}
 			}
 
@@ -379,7 +397,8 @@ namespace Xamarin.Forms.Build.Tasks
 				return self;
 
 			genericself = genericself.ResolveGenericParameters(declaringTypeReference);
-			for (var i = 0; i < genericself.GenericArguments.Count; i++) {
+			for (var i = 0; i < genericself.GenericArguments.Count; i++)
+			{
 				var genericParameter = genericself.GenericArguments[i] as GenericParameter;
 				if (genericParameter != null)
 					genericself.GenericArguments[i] = genericdeclMethod.GenericArguments[genericParameter.Position];
@@ -396,7 +415,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (genericdeclType == null && genericParameterSelf == null && genericself == null)
 				return self;
 
-			if (genericdeclType == null && genericParameterSelf!=null)
+			if (genericdeclType == null && genericParameterSelf != null)
 			{
 				var typeDef = declaringTypeReference.Resolve();
 				if (typeDef.BaseType == null || typeDef.BaseType.FullName == "System.Object")
@@ -424,7 +443,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public static GenericInstanceType ResolveGenericParameters(this GenericInstanceType self, GenericInstanceType declaringTypeReference)
 		{
 			List<TypeReference> args = new List<TypeReference>();
-			for (var i = 0; i < self.GenericArguments.Count; i++) {
+			for (var i = 0; i < self.GenericArguments.Count; i++)
+			{
 				var genericParameter = self.GenericArguments[i] as GenericParameter;
 				if (genericParameter == null)
 					args.Add(self.GenericArguments[i].ResolveGenericParameters(declaringTypeReference));

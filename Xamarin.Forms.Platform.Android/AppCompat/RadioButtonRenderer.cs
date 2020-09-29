@@ -2,21 +2,21 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
-using AndroidX.Core.View;
-using AndroidX.AppCompat.Widget;
 using Android.Util;
 using Android.Views;
+using Android.Widget;
+using AndroidX.AppCompat.Widget;
+using AndroidX.Core.View;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
-using Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	public class RadioButtonRenderer : AppCompatRadioButton,
 		IBorderVisualElementRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
-		AView.IOnFocusChangeListener, 
+		AView.IOnFocusChangeListener,
 		CompoundButton.IOnCheckedChangeListener
 	{
 		float _defaultFontSize;

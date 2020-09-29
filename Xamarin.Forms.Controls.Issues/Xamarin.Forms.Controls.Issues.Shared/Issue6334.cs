@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public const string EffectName = "GradientEffect";
 		public const string Success = "Success";
 		public const string Fail = "Fail";
-		
+
 		protected override void Init()
 		{
 			BackgroundColor = Color.Blue;

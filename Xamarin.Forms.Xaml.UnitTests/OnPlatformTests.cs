@@ -1,6 +1,5 @@
-﻿using NUnit.Framework;
-using System;
-
+﻿using System;
+using NUnit.Framework;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -23,7 +22,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
-		public void ApplyToProperty ()
+		public void ApplyToProperty()
 		{
 			var xaml = @"
 			<ContentPage 
@@ -36,12 +35,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					<OnPlatform.WinPhone><Button Text=""WinPhone""/></OnPlatform.WinPhone>
 				</OnPlatform>
 			</ContentPage>";
-			var layout = new ContentPage ().LoadFromXaml (xaml);
-			Assert.NotNull (layout.Content);
+			var layout = new ContentPage().LoadFromXaml(xaml);
+			Assert.NotNull(layout.Content);
 		}
 
 		[Test]
-		public void UseTypeConverters ()
+		public void UseTypeConverters()
 		{
 			var xaml = @"
 			<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
@@ -65,21 +64,21 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			ContentPage layout;
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
-			layout = new ContentPage ().LoadFromXaml (xaml);
-			Assert.AreEqual (new Thickness (0, 20, 0, 0), layout.Padding);
+			layout = new ContentPage().LoadFromXaml(xaml);
+			Assert.AreEqual(new Thickness(0, 20, 0, 0), layout.Padding);
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
-			layout = new ContentPage ().LoadFromXaml (xaml);
-			Assert.AreEqual (new Thickness (0, 0, 10, 0), layout.Padding);
+			layout = new ContentPage().LoadFromXaml(xaml);
+			Assert.AreEqual(new Thickness(0, 0, 10, 0), layout.Padding);
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.UWP;
-			layout = new ContentPage ().LoadFromXaml (xaml);
-			Assert.AreEqual (new Thickness (0, 20, 0, 20), layout.Padding);
+			layout = new ContentPage().LoadFromXaml(xaml);
+			Assert.AreEqual(new Thickness(0, 20, 0, 20), layout.Padding);
 		}
 
 		[Test]
 		//Issue 1480
-		public void TypeConverterAndDerivedTypes ()
+		public void TypeConverterAndDerivedTypes()
 		{
 			var xaml = @"
 			<Image xmlns=""http://xamarin.com/schemas/2014/forms""
@@ -96,8 +95,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Image image;
 
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
-			image = new Image ().LoadFromXaml (xaml);
-			Assert.AreEqual ("icon_twitter.png", (image.Source as FileImageSource).File);
+			image = new Image().LoadFromXaml(xaml);
+			Assert.AreEqual("icon_twitter.png", (image.Source as FileImageSource).File);
 		}
 	}
 
@@ -105,7 +104,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public class OnIdiomTests : BaseTestFixture
 	{
 		[Test]
-		public void StackLayoutOrientation ()
+		public void StackLayoutOrientation()
 		{
 			var xaml = @"
 			<StackLayout 
@@ -121,12 +120,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<Label Text=""child1""/>			
 			</StackLayout>";
 			Device.Idiom = TargetIdiom.Phone;
-			var layout = new StackLayout ().LoadFromXaml (xaml);
-			Assert.AreEqual (StackOrientation.Vertical, layout.Orientation);
+			var layout = new StackLayout().LoadFromXaml(xaml);
+			Assert.AreEqual(StackOrientation.Vertical, layout.Orientation);
 
 			Device.Idiom = TargetIdiom.Tablet;
-			layout = new StackLayout ().LoadFromXaml (xaml);
-			Assert.AreEqual (StackOrientation.Horizontal, layout.Orientation);
+			layout = new StackLayout().LoadFromXaml(xaml);
+			Assert.AreEqual(StackOrientation.Horizontal, layout.Orientation);
 		}
 	}
 }

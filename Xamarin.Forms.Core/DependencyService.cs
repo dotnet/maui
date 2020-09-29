@@ -89,7 +89,7 @@ namespace Xamarin.Forms
 
 		static Type FindImplementor(Type target) =>
 			DependencyTypes.FirstOrDefault(t => target.IsAssignableFrom(t));
-	
+
 		static void Initialize()
 		{
 			if (s_initialized)

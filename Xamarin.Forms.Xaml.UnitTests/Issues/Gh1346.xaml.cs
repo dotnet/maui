@@ -50,7 +50,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(IGh1346FontIcon), typeof(Gh1346FontIcon));
 
-		public IGh1346FontIcon Icon {
+		public IGh1346FontIcon Icon
+		{
 			get { return (IGh1346FontIcon)GetValue(IconProperty); }
 			set { SetValue(IconProperty, value); }
 		}

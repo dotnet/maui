@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Aspect = Aspect.AspectFit;
 				Source = "bank.png";
 				WidthRequest = 30;
-				HeightRequest = 30;				
+				HeightRequest = 30;
 				BackgroundColor = Color.Red;
 				AnchorX = anchorx;
 				AnchorY = anchory;

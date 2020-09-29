@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Controls.Issues
 				var id = new Label();
 				id.SetBinding(Label.TextProperty, "Id");
 				layout.Children.Add(id);
-				
+
 				var name = new Label();
 				name.SetBinding(Label.TextProperty, "Name");
 				layout.Children.Add(name);

@@ -1,6 +1,6 @@
 using System.ComponentModel;
-using EColor = ElmSharp.Color;
 using Xamarin.Forms.Platform.Tizen.Native;
+using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen
 {

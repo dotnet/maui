@@ -16,42 +16,57 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public double Hue {
-			set {
-				if (color.Hue != value) {
+		public double Hue
+		{
+			set
+			{
+				if (color.Hue != value)
+				{
 					Color = Color.FromHsla(value, color.Saturation, color.Luminosity);
 				}
 			}
-			get {
+			get
+			{
 				return color.Hue;
 			}
 		}
 
-		public double Saturation {
-			set {
-				if (color.Saturation != value) {
+		public double Saturation
+		{
+			set
+			{
+				if (color.Saturation != value)
+				{
 					Color = Color.FromHsla(color.Hue, value, color.Luminosity);
 				}
 			}
-			get {
+			get
+			{
 				return color.Saturation;
 			}
 		}
 
-		public double Luminosity {
-			set {
-				if (color.Luminosity != value) {
+		public double Luminosity
+		{
+			set
+			{
+				if (color.Luminosity != value)
+				{
 					Color = Color.FromHsla(color.Hue, color.Saturation, value);
 				}
 			}
-			get {
+			get
+			{
 				return color.Luminosity;
 			}
 		}
 
-		public Color Color {
-			set {
-				if (color != value) {
+		public Color Color
+		{
+			set
+			{
+				if (color != value)
+				{
 					color = value;
 					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Hue"));
 					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Saturation"));
@@ -61,19 +76,24 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					Name = Gh3539NamedColor.GetNearestColorName(color);
 				}
 			}
-			get {
+			get
+			{
 				return color;
 			}
 		}
 
-		public string Name {
-			private set {
-				if (name != value) {
+		public string Name
+		{
+			private set
+			{
+				if (name != value)
+				{
 					name = value;
 					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
 				}
 			}
-			get {
+			get
+			{
 				return name;
 			}
 		}
@@ -111,17 +131,21 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			StringBuilder stringBuilder = new StringBuilder();
 
 			// Loop through the public static fields of the Color structure.
-			foreach (FieldInfo fieldInfo in typeof(Color).GetRuntimeFields()) {
+			foreach (FieldInfo fieldInfo in typeof(Color).GetRuntimeFields())
+			{
 				if (fieldInfo.IsPublic &&
 					fieldInfo.IsStatic &&
-					fieldInfo.FieldType == typeof(Color)) {
+					fieldInfo.FieldType == typeof(Color))
+				{
 					// Convert the name to a friendly name.
 					string name = fieldInfo.Name;
 					stringBuilder.Clear();
 					int index = 0;
 
-					foreach (char ch in name) {
-						if (index != 0 && Char.IsUpper(ch)) {
+					foreach (char ch in name)
+					{
+						if (index != 0 && Char.IsUpper(ch))
+						{
 							stringBuilder.Append(' ');
 						}
 						stringBuilder.Append(ch);
@@ -131,7 +155,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					// Instantiate a NamedColor object.
 					Color color = (Color)fieldInfo.GetValue(null);
 
-					Gh3539NamedColor namedColor = new Gh3539NamedColor {
+					Gh3539NamedColor namedColor = new Gh3539NamedColor
+					{
 						Name = name,
 						FriendlyName = stringBuilder.ToString(),
 						Color = color,
@@ -162,12 +187,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			double shortestDistance = 1000;
 			Gh3539NamedColor closestColor = null;
 
-			foreach (Gh3539NamedColor namedColor in Gh3539NamedColor.All) {
+			foreach (Gh3539NamedColor namedColor in Gh3539NamedColor.All)
+			{
 				double distance = Math.Sqrt(Math.Pow(color.R - namedColor.Color.R, 2) +
 											Math.Pow(color.G - namedColor.Color.G, 2) +
 											Math.Pow(color.B - namedColor.Color.B, 2));
 
-				if (distance < shortestDistance) {
+				if (distance < shortestDistance)
+				{
 					shortestDistance = distance;
 					closestColor = namedColor;
 				}

@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2482,
-		"Animating a `View` that is currently animating will throw `System.InvalidOperationException`", 
+		"Animating a `View` that is currently animating will throw `System.InvalidOperationException`",
 		PlatformAffected.All)]
 	public class Issue2482 : TestContentPage
 	{
@@ -34,8 +34,11 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var layout = new StackLayout();
 
-			var instructions = new Label { Text = "Tap the button below twice quickly." 
-												+ " If the application crashes, this test has failed." };
+			var instructions = new Label
+			{
+				Text = "Tap the button below twice quickly."
+												+ " If the application crashes, this test has failed."
+			};
 
 			_result = new Label { Text = Success, IsVisible = false };
 
@@ -77,8 +80,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 			this.Dispatcher.BeginInvokeOnMainThread(() => { instructions.Text = "updated from thread pool 1"; });
 
-			threadpoolButton.Clicked += (o, a) => {
-				Task.Run(() => {
+			threadpoolButton.Clicked += (o, a) =>
+			{
+				Task.Run(() =>
+				{
 					this.Dispatcher.BeginInvokeOnMainThread(() => { instructions.Text = "updated from thread pool 2"; });
 				});
 			};

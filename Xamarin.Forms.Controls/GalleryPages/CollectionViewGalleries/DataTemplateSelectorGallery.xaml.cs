@@ -9,14 +9,14 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
-    [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class DataTemplateSelectorGallery : ContentPage
-    {
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class DataTemplateSelectorGallery : ContentPage
+	{
 		DemoFilteredItemSource _demoFilteredItemSource;
 
-        public DataTemplateSelectorGallery()
-        {
-            InitializeComponent();
+		public DataTemplateSelectorGallery()
+		{
+			InitializeComponent();
 
 			_demoFilteredItemSource = new DemoFilteredItemSource(filter: ItemMatches);
 
@@ -40,20 +40,20 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 		}
 	}
 
-    public class WeekendSelector : DataTemplateSelector
-    {
-        public DataTemplate FridayTemplate { get; set; }
-        public DataTemplate DefaultTemplate { get; set; }
+	public class WeekendSelector : DataTemplateSelector
+	{
+		public DataTemplate FridayTemplate { get; set; }
+		public DataTemplate DefaultTemplate { get; set; }
 
-        protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
-        {
+		protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+		{
 			var dow = ((CollectionViewGalleryTestItem)item).Date.DayOfWeek;
 
 			return dow == DayOfWeek.Saturday || dow == DayOfWeek.Sunday
-                ? FridayTemplate 
+				? FridayTemplate
 				: DefaultTemplate;
-        }
-    }
+		}
+	}
 
 	public class SearchTermSelector : DataTemplateSelector
 	{

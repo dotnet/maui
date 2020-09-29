@@ -18,12 +18,14 @@ namespace Xamarin.Forms.Build.Tasks
 		public static bool CanConvertValue(this ValueNode node, ILContext context, TypeReference targetTypeRef, IEnumerable<ICustomAttributeProvider> attributeProviders)
 		{
 			TypeReference typeConverter = null;
-			foreach (var attributeProvider in attributeProviders) {
+			foreach (var attributeProvider in attributeProviders)
+			{
 				CustomAttribute typeConverterAttribute;
 				if (
 					(typeConverterAttribute =
 						attributeProvider.CustomAttributes.FirstOrDefault(
-							cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))) != null) {
+							cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))) != null)
+				{
 					typeConverter = typeConverterAttribute.ConstructorArguments[0].Value as TypeReference;
 					break;
 				}
@@ -46,7 +48,8 @@ namespace Xamarin.Forms.Build.Tasks
 			var module = context.Body.Method.Module;
 
 			//If there's a [TypeConverter], use it
-			if (typeConverter != null && str != null) {
+			if (typeConverter != null && str != null)
+			{
 				var typeConvAttribute = typeConverter.GetCustomAttribute(module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "TypeConversionAttribute"));
 				if (typeConvAttribute == null) //trust the unattributed TypeConverter
 					return true;
@@ -133,9 +136,12 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static T TryFormat<T>(Func<string, T> func, IXmlLineInfo lineInfo, string str)
 		{
-			try {
+			try
+			{
 				return func(str);
-			} catch (FormatException fex) {
+			}
+			catch (FormatException fex)
+			{
 				throw new BuildException(BuildExceptionCode.Conversion, lineInfo, fex, str, typeof(T));
 			}
 		}
@@ -147,14 +153,18 @@ namespace Xamarin.Forms.Build.Tasks
 			var str = (string)node.Value;
 			//If the TypeConverter has a ProvideCompiledAttribute that can be resolved, shortcut this
 			Type compiledConverterType;
-			if (typeConverter?.GetCustomAttribute(module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType (compiledConverterName)) != null) {
-				var compiledConverter = Activator.CreateInstance (compiledConverterType);
-				var converter = typeof(ICompiledTypeConverter).GetMethods ().FirstOrDefault (md => md.Name == "ConvertFromString");
+			if (typeConverter?.GetCustomAttribute(module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType(compiledConverterName)) != null)
+			{
+				var compiledConverter = Activator.CreateInstance(compiledConverterType);
+				var converter = typeof(ICompiledTypeConverter).GetMethods().FirstOrDefault(md => md.Name == "ConvertFromString");
 				IEnumerable<Instruction> instructions;
-				try {
+				try
+				{
 					instructions = (IEnumerable<Instruction>)converter.Invoke(compiledConverter, new object[] {
 					node.Value as string, context, node as BaseNode});
-				} catch (System.Reflection.TargetInvocationException tie) when (tie.InnerException is XamlParseException) {
+				}
+				catch (System.Reflection.TargetInvocationException tie) when (tie.InnerException is XamlParseException)
+				{
 					throw tie.InnerException;
 				}
 				catch (System.Reflection.TargetInvocationException tie) when (tie.InnerException is BuildException)
@@ -164,12 +174,13 @@ namespace Xamarin.Forms.Build.Tasks
 				foreach (var i in instructions)
 					yield return i;
 				if (targetTypeRef.IsValueType && boxValueTypes)
-					yield return Instruction.Create (OpCodes.Box, module.ImportReference (targetTypeRef));
+					yield return Instruction.Create(OpCodes.Box, module.ImportReference(targetTypeRef));
 				yield break;
 			}
 
 			//If there's a [TypeConverter], use it
-			if (typeConverter != null) {
+			if (typeConverter != null)
+			{
 				var isExtendedConverter = typeConverter.ImplementsInterface(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "IExtendedTypeConverter")));
 				var typeConverterCtorRef = module.ImportCtorReference(typeConverter, paramCount: 0);
 				var convertFromInvariantStringDefinition = isExtendedConverter
@@ -218,7 +229,7 @@ namespace Xamarin.Forms.Build.Tasks
 			else if (targetTypeRef.FullName == "System.Char")
 				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(Char.Parse, node, str)));
 			else if (targetTypeRef.FullName == "System.SByte")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => SByte.Parse(s,CultureInfo.InvariantCulture), node, str)));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => SByte.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.Int16")
 				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => Int16.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.Int32")
@@ -237,39 +248,47 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return Instruction.Create(OpCodes.Ldc_R4, TryFormat(s => Single.Parse(str, CultureInfo.InvariantCulture), node, str));
 			else if (targetTypeRef.FullName == "System.Double")
 				yield return Instruction.Create(OpCodes.Ldc_R8, TryFormat(s => Double.Parse(str, CultureInfo.InvariantCulture), node, str));
-			else if (targetTypeRef.FullName == "System.Boolean") {
+			else if (targetTypeRef.FullName == "System.Boolean")
+			{
 				if (TryFormat(Boolean.Parse, node, str))
 					yield return Instruction.Create(OpCodes.Ldc_I4_1);
 				else
 					yield return Instruction.Create(OpCodes.Ldc_I4_0);
-			} else if (targetTypeRef.FullName == "System.TimeSpan") {
+			}
+			else if (targetTypeRef.FullName == "System.TimeSpan")
+			{
 				var ts = TryFormat(s => TimeSpan.Parse(s, CultureInfo.InvariantCulture), node, str);
 				var ticks = ts.Ticks;
 				yield return Instruction.Create(OpCodes.Ldc_I8, ticks);
 				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("mscorlib", "System", "TimeSpan"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
-			} else if (targetTypeRef.FullName == "System.DateTime") {
+			}
+			else if (targetTypeRef.FullName == "System.DateTime")
+			{
 				var dt = TryFormat(s => DateTime.Parse(s, CultureInfo.InvariantCulture), node, str);
 				var ticks = dt.Ticks;
 				yield return Instruction.Create(OpCodes.Ldc_I8, ticks);
 				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("mscorlib", "System", "DateTime"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
-			} else if (targetTypeRef.FullName == "System.String" && str.StartsWith("{}", StringComparison.Ordinal))
+			}
+			else if (targetTypeRef.FullName == "System.String" && str.StartsWith("{}", StringComparison.Ordinal))
 				yield return Instruction.Create(OpCodes.Ldstr, str.Substring(2));
 			else if (targetTypeRef.FullName == "System.String")
 				yield return Instruction.Create(OpCodes.Ldstr, str);
 			else if (targetTypeRef.FullName == "System.Object")
 				yield return Instruction.Create(OpCodes.Ldstr, str);
-			else if (targetTypeRef.FullName == "System.Decimal") {
+			else if (targetTypeRef.FullName == "System.Decimal")
+			{
 				decimal outdecimal;
-				if (decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out outdecimal)) {
+				if (decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out outdecimal))
+				{
 					var vardef = new VariableDefinition(module.ImportReference(("mscorlib", "System", "Decimal")));
 					context.Body.Variables.Add(vardef);
 					//Use an extra temp var so we can push the value to the stack, just like other cases
-//					IL_0003:  ldstr "adecimal"
-//					IL_0008:  ldc.i4.s 0x6f
-//					IL_000a:  call class [mscorlib]System.Globalization.CultureInfo class [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()
-//					IL_000f:  ldloca.s 0
-//					IL_0011:  call bool valuetype [mscorlib]System.Decimal::TryParse(string, valuetype [mscorlib]System.Globalization.NumberStyles, class [mscorlib]System.IFormatProvider, [out] valuetype [mscorlib]System.Decimal&)
-//					IL_0016:  pop
+					//					IL_0003:  ldstr "adecimal"
+					//					IL_0008:  ldc.i4.s 0x6f
+					//					IL_000a:  call class [mscorlib]System.Globalization.CultureInfo class [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()
+					//					IL_000f:  ldloca.s 0
+					//					IL_0011:  call bool valuetype [mscorlib]System.Decimal::TryParse(string, valuetype [mscorlib]System.Globalization.NumberStyles, class [mscorlib]System.IFormatProvider, [out] valuetype [mscorlib]System.Decimal&)
+					//					IL_0016:  pop
 					yield return Create(Ldstr, str);
 					yield return Create(Ldc_I4, 0x6f); //NumberStyles.Number
 					yield return Create(Call, module.ImportPropertyGetterReference(("mscorlib", "System.Globalization", "CultureInfo"),
@@ -286,14 +305,19 @@ namespace Xamarin.Forms.Build.Tasks
 																		   isStatic: true));
 					yield return Create(Pop);
 					yield return Create(Ldloc, vardef);
-				} else {
+				}
+				else
+				{
 					yield return Create(Ldc_I4_0);
 					yield return Create(Newobj, module.ImportCtorReference(("mscorlib", "System", "Decimal"), parameterTypes: new[] { ("mscorlib", "System", "Int32") }));
 				}
-			} else if (implicitOperator != null) {
+			}
+			else if (implicitOperator != null)
+			{
 				yield return Create(Ldstr, node.Value as string);
 				yield return Create(Call, module.ImportReference(implicitOperator));
-			} else
+			}
+			else
 				yield return Create(Ldnull);
 
 			if (isNullable)
@@ -310,8 +334,14 @@ namespace Xamarin.Forms.Build.Tasks
 
 			// The approved types for an enum are byte, sbyte, short, ushort, int, uint, long, or ulong.
 			// https://msdn.microsoft.com/en-us/library/sbbt4032.aspx
-			byte b = 0; sbyte sb = 0; short s = 0; ushort us = 0;
-			int i = 0; uint ui = 0; long l = 0; ulong ul = 0;
+			byte b = 0;
+			sbyte sb = 0;
+			short s = 0;
+			ushort us = 0;
+			int i = 0;
+			uint ui = 0;
+			long l = 0;
+			ulong ul = 0;
 			bool found = false;
 			TypeReference typeRef = null;
 
@@ -322,37 +352,42 @@ namespace Xamarin.Forms.Build.Tasks
 			if (typeRef == null)
 				throw new ArgumentException();
 
-			foreach (var v in value.Split(',')) {
-				foreach (var field in enumDef.Fields) {
+			foreach (var v in value.Split(','))
+			{
+				foreach (var field in enumDef.Fields)
+				{
 					if (field.Name == "value__")
 						continue;
-					if (field.Name == v.Trim()) {
-						switch (typeRef.FullName) {
-						case "System.Byte":
-							b |= (byte)field.Constant;
-							break;
-						case "System.SByte":
-								if (found) throw new BuildException(BuildExceptionCode.SByteEnums, lineInfo, null);
-							sb = (sbyte)field.Constant;
-							break;
-						case "System.Int16":
-							s |= (short)field.Constant;
-							break;
-						case "System.UInt16":
-							us |= (ushort)field.Constant;
-							break;
-						case "System.Int32":
-							i |= (int)field.Constant;
-							break;
-						case "System.UInt32":
-							ui |= (uint)field.Constant;
-							break;
-						case "System.Int64":
-							l |= (long)field.Constant;
-							break;
-						case "System.UInt64":
-							ul |= (ulong)field.Constant;
-							break;
+					if (field.Name == v.Trim())
+					{
+						switch (typeRef.FullName)
+						{
+							case "System.Byte":
+								b |= (byte)field.Constant;
+								break;
+							case "System.SByte":
+								if (found)
+									throw new BuildException(BuildExceptionCode.SByteEnums, lineInfo, null);
+								sb = (sbyte)field.Constant;
+								break;
+							case "System.Int16":
+								s |= (short)field.Constant;
+								break;
+							case "System.UInt16":
+								us |= (ushort)field.Constant;
+								break;
+							case "System.Int32":
+								i |= (int)field.Constant;
+								break;
+							case "System.UInt32":
+								ui |= (uint)field.Constant;
+								break;
+							case "System.Int64":
+								l |= (long)field.Constant;
+								break;
+							case "System.UInt64":
+								ul |= (ulong)field.Constant;
+								break;
 						}
 						found = true;
 					}
@@ -362,25 +397,26 @@ namespace Xamarin.Forms.Build.Tasks
 			if (!found)
 				throw new BuildException(BuildExceptionCode.EnumValueMissing, lineInfo, null, value);
 
-			switch (typeRef.FullName) {
-			case "System.Byte":
-				return Instruction.Create(OpCodes.Ldc_I4, (int)b);
-			case "System.SByte":
-				return Instruction.Create(OpCodes.Ldc_I4, (int)sb);
-			case "System.Int16":
-				return Instruction.Create(OpCodes.Ldc_I4, (int)s);
-			case "System.UInt16":
-				return Instruction.Create(OpCodes.Ldc_I4, (int)us);
-			case "System.Int32":
-				return Instruction.Create(OpCodes.Ldc_I4, (int)i);
-			case "System.UInt32":
-				return Instruction.Create(OpCodes.Ldc_I4, (uint)ui);
-			case "System.Int64":
-				return Instruction.Create(OpCodes.Ldc_I4, (long)l);
-			case "System.UInt64":
-				return Instruction.Create(OpCodes.Ldc_I4, (ulong)ul);
-			default:
-				throw new BuildException(BuildExceptionCode.EnumValueMissing, lineInfo, null, value);
+			switch (typeRef.FullName)
+			{
+				case "System.Byte":
+					return Instruction.Create(OpCodes.Ldc_I4, (int)b);
+				case "System.SByte":
+					return Instruction.Create(OpCodes.Ldc_I4, (int)sb);
+				case "System.Int16":
+					return Instruction.Create(OpCodes.Ldc_I4, (int)s);
+				case "System.UInt16":
+					return Instruction.Create(OpCodes.Ldc_I4, (int)us);
+				case "System.Int32":
+					return Instruction.Create(OpCodes.Ldc_I4, (int)i);
+				case "System.UInt32":
+					return Instruction.Create(OpCodes.Ldc_I4, (uint)ui);
+				case "System.Int64":
+					return Instruction.Create(OpCodes.Ldc_I4, (long)l);
+				case "System.UInt64":
+					return Instruction.Create(OpCodes.Ldc_I4, (ulong)ul);
+				default:
+					throw new BuildException(BuildExceptionCode.EnumValueMissing, lineInfo, null, value);
 			}
 		}
 
@@ -389,12 +425,14 @@ namespace Xamarin.Forms.Build.Tasks
 			var module = context.Body.Method.Module;
 
 			var xmlLineInfo = node as IXmlLineInfo;
-			if (xmlLineInfo == null) {
+			if (xmlLineInfo == null)
+			{
 				yield return Create(Ldnull);
 				yield break;
 			}
 			MethodReference ctor;
-			if (xmlLineInfo.HasLineInfo()) {
+			if (xmlLineInfo.HasLineInfo())
+			{
 				yield return Create(Ldc_I4, xmlLineInfo.LineNumber);
 				yield return Create(Ldc_I4, xmlLineInfo.LinePosition);
 				ctor = module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XmlLineInfo"), parameterTypes: new[] {
@@ -496,11 +534,13 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static IEnumerable<Instruction> PushTargetProperty(FieldReference bpRef, PropertyReference propertyRef, TypeReference declaringTypeReference, ModuleDefinition module)
 		{
-			if (bpRef != null) {
+			if (bpRef != null)
+			{
 				yield return Create(Ldsfld, bpRef);
 				yield break;
 			}
-			if (propertyRef != null) {
+			if (propertyRef != null)
+			{
 				yield return Create(Ldtoken, module.ImportReference(declaringTypeReference ?? propertyRef.DeclaringType));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 				yield return Create(Ldstr, propertyRef.Name);
@@ -537,7 +577,8 @@ namespace Xamarin.Forms.Build.Tasks
 
 			//Add a SimpleValueTargetProvider and register it as IProvideValueTarget and IReferenceProvider
 			var pushParentIl = node.PushParentObjectsArray(context).ToList();
-			if (pushParentIl[pushParentIl.Count - 1].OpCode != Ldnull) {
+			if (pushParentIl[pushParentIl.Count - 1].OpCode != Ldnull)
+			{
 				yield return Create(Dup); //Keep the serviceProvider on the stack
 				yield return Create(Ldtoken, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IProvideValueTarget")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
@@ -569,12 +610,14 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			//Add a XamlTypeResolver
-			if (node.NamespaceResolver != null) {
+			if (node.NamespaceResolver != null)
+			{
 				yield return Create(Dup); //Duplicate the serviceProvider
 				yield return Create(Ldtoken, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IXamlTypeResolver")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 				yield return Create(Newobj, module.ImportCtorReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "XmlNamespaceResolver"), parameterTypes: null));
-				foreach (var kvp in node.NamespaceResolver.GetNamespacesInScope(XmlNamespaceScope.ExcludeXml)) {
+				foreach (var kvp in node.NamespaceResolver.GetNamespacesInScope(XmlNamespaceScope.ExcludeXml))
+				{
 					yield return Create(Dup); //dup the resolver
 					yield return Create(Ldstr, kvp.Key);
 					yield return Create(Ldstr, kvp.Value);
@@ -593,7 +636,8 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return Create(Callvirt, addService);
 			}
 
-			if (node is IXmlLineInfo) {
+			if (node is IXmlLineInfo)
+			{
 				yield return Create(Dup); //Duplicate the serviceProvider
 				yield return Create(Ldtoken, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IXmlLineInfoProvider")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));

@@ -5,48 +5,51 @@ using System.Linq;
 namespace Xamarin.Forms.Core.UITests
 {
 
-	internal static class ParsingUtils 
+	internal static class ParsingUtils
 	{
-		public static Font ParseUIFont (string font) 
+		public static Font ParseUIFont(string font)
 		{
 			FontAttributes fontAttrs = FontAttributes.None;
 
 			// Logger.LogLine ("TEST PARSING");
 
-			if (font.Contains ("font-weight: bold;")) {
+			if (font.Contains("font-weight: bold;"))
+			{
 				// Logger.LogLine ("Found Bold");
 				fontAttrs = FontAttributes.Bold;
 			}
-				
-			return new Font ().WithAttributes (fontAttrs);
+
+			return new Font().WithAttributes(fontAttrs);
 		}
 
-		public static Color ParseUIColor (string backgroundColor)
+		public static Color ParseUIColor(string backgroundColor)
 		{
 			var delimiters = new char[] { ' ' };
-			string[] words = backgroundColor.Split (delimiters, StringSplitOptions.RemoveEmptyEntries);
-			return new Color (double.Parse (words[1]), double.Parse (words[2]), double.Parse (words[3]), double.Parse (words[4]));
+			string[] words = backgroundColor.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
+			return new Color(double.Parse(words[1]), double.Parse(words[2]), double.Parse(words[3]), double.Parse(words[4]));
 		}
 
-		public static Point ParseCGPoint (object CGPoint) {
+		public static Point ParseCGPoint(object CGPoint)
+		{
 			var point = new Point { X = 0, Y = 0 };
 			return point;
 		}
 
-		public static Matrix ParseCATransform3D (string CATransform3D)
+		public static Matrix ParseCATransform3D(string CATransform3D)
 		{
 			// Logger.Log (CATransform3D);
 			char[] delimiters = { '[', ' ', ']', ';' };
-			string[] words = CATransform3D.Split (delimiters, StringSplitOptions.RemoveEmptyEntries);
+			string[] words = CATransform3D.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
 
-			List<double> numbers = new List<double> ();
+			List<double> numbers = new List<double>();
 
 			// Each number is represented by 2 blocks returned by server
-			for (int i = 0; i < words.Length; i++) {
-				numbers.Add (Convert.ToDouble(words[i]));
+			for (int i = 0; i < words.Length; i++)
+			{
+				numbers.Add(Convert.ToDouble(words[i]));
 			}
 
-			var transformationMatrix = new Matrix ();
+			var transformationMatrix = new Matrix();
 			transformationMatrix.M00 = numbers[0];
 			transformationMatrix.M01 = numbers[1];
 			transformationMatrix.M02 = numbers[2];

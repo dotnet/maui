@@ -24,11 +24,11 @@ namespace Xamarin.Forms
 			get { return _mode; }
 			set
 			{
-				if (   value != BindingMode.Default
-				    && value != BindingMode.OneWay
-				    && value != BindingMode.OneWayToSource
-				    && value != BindingMode.TwoWay
-				    && value != BindingMode.OneTime)
+				if (value != BindingMode.Default
+					&& value != BindingMode.OneWay
+					&& value != BindingMode.OneWayToSource
+					&& value != BindingMode.TwoWay
+					&& value != BindingMode.OneTime)
 					throw new ArgumentException("mode is not a valid BindingMode", "mode");
 
 				ThrowIfApplied();
@@ -50,15 +50,18 @@ namespace Xamarin.Forms
 		public object TargetNullValue
 		{
 			get { return _targetNullValue; }
-			set {
+			set
+			{
 				ThrowIfApplied();
 				_targetNullValue = value;
 			}
 		}
 
-		public object FallbackValue {
+		public object FallbackValue
+		{
 			get => _fallbackValue;
-			set {
+			set
+			{
 				ThrowIfApplied();
 				_fallbackValue = value;
 			}
@@ -131,10 +134,13 @@ namespace Xamarin.Forms
 
 		internal bool TryFormat(string format, object arg0, out string value)
 		{
-			try {
+			try
+			{
 				value = string.Format(format, arg0);
 				return true;
-			} catch (FormatException) {
+			}
+			catch (FormatException)
+			{
 				value = null;
 				Log.Warning("Binding", "FormatException");
 				return false;
@@ -143,11 +149,13 @@ namespace Xamarin.Forms
 
 		internal bool TryFormat(string format, object[] args, out string value)
 		{
-			try {
+			try
+			{
 				value = string.Format(format, args);
 				return true;
 			}
-			catch (FormatException) {
+			catch (FormatException)
+			{
 				value = null;
 				Log.Warning("Binding", "FormatException");
 				return false;

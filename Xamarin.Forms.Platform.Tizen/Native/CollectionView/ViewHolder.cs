@@ -1,6 +1,7 @@
 using System;
 using ElmSharp;
 using EColor = ElmSharp.Color;
+using ERectangle = ElmSharp.Rectangle;
 
 
 namespace Xamarin.Forms.Platform.Tizen.Native

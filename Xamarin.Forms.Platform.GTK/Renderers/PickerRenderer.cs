@@ -1,6 +1,6 @@
-﻿using Gtk;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Linq;
+using Gtk;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				UpdateItemsSource();
 			if (e.PropertyName == Picker.TextColorProperty.PropertyName)
 				UpdateTextColor();
-			else if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName )
+			else if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName)
 				UpdateHorizontalTextAlignment();
 			else if (e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
 				UpdateVerticalTextAlignment();
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 						Control.Changed -= OnChanged;
 					}
 
-					if(Element != null)
+					if (Element != null)
 					{
 						((LockableObservableListWrapper)Element.Items)._list.CollectionChanged -= OnCollectionChanged;
 					}
@@ -200,7 +200,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		private bool OpenPicker()
 		{
-			if(Control == null)
+			if (Control == null)
 			{
 				return false;
 			}

@@ -1,6 +1,6 @@
-﻿using Gdk;
+﻿using System;
+using Gdk;
 using Gtk;
-using System;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Controls

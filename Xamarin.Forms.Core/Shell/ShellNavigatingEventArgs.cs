@@ -45,7 +45,7 @@ namespace Xamarin.Forms
 
 			DeferredEventArgs = true;
 			var currentCount = Interlocked.Increment(ref _deferalCount);
-			if(currentCount == 1)
+			if (currentCount == 1)
 			{
 				_deferredTaskCompletionSource = new TaskCompletionSource<bool>();
 			}
@@ -65,7 +65,7 @@ namespace Xamarin.Forms
 					await task;
 					_deferredTaskCompletionSource.SetResult(true);
 				}
-				catch(TaskCanceledException)
+				catch (TaskCanceledException)
 				{
 					_deferredTaskCompletionSource.SetCanceled();
 				}

@@ -13,14 +13,15 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			result = default(T);
 
-			if (formProperty == View.ScaleProperty) {
+			if (formProperty == View.ScaleProperty)
+			{
 
 				Tuple<string[], bool> property = formProperty.GetPlatformPropertyQuery();
 				string[] propertyPath = property.Item1;
 
-				var matrix = new Matrix ();
-				matrix.M00 = App.Query (q => q.Raw (query).Invoke (propertyPath[0]).Value<float> ()).First ();
-				matrix.M11 = App.Query (q => q.Raw (query).Invoke (propertyPath[1]).Value<float> ()).First ();
+				var matrix = new Matrix();
+				matrix.M00 = App.Query(q => q.Raw(query).Invoke(propertyPath[0]).Value<float>()).First();
+				matrix.M11 = App.Query(q => q.Raw(query).Invoke(propertyPath[1]).Value<float>()).First();
 				matrix.M22 = 0.5f;
 				matrix.M33 = 1.0f;
 				result = (T)((object)matrix);

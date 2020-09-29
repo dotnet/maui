@@ -134,7 +134,7 @@ namespace Xamarin.UITest
 #if __IOS__
 		public static void SendAppToBackground(this IApp app, TimeSpan timeSpan)
 		{
-			if(app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			if (app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
 			{
 				sca.SendAppToBackground(timeSpan);
 				Thread.Sleep(timeSpan.Add(TimeSpan.FromSeconds(2)));

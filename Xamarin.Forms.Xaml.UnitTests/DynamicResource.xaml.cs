@@ -10,12 +10,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class DynamicResource : ContentPage
 	{
-		public DynamicResource ()
+		public DynamicResource()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public DynamicResource (bool useCompiledXaml)
+		public DynamicResource(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -35,18 +35,18 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
-			[TestCase (false), TestCase (true)]
-			public void TestDynamicResources (bool useCompiledXaml)
+			[TestCase(false), TestCase(true)]
+			public void TestDynamicResources(bool useCompiledXaml)
 			{
-				var layout = new DynamicResource (useCompiledXaml);
+				var layout = new DynamicResource(useCompiledXaml);
 				var label = layout.label0;
 
-				Assert.Null (label.Text);
+				Assert.Null(label.Text);
 
-				layout.Resources = new ResourceDictionary { 
+				layout.Resources = new ResourceDictionary {
 					{"FooBar", "FOOBAR"},
 				};
-				Assert.AreEqual ("FOOBAR", label.Text);
+				Assert.AreEqual("FOOBAR", label.Text);
 			}
 		}
 	}

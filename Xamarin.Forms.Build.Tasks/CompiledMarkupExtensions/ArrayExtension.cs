@@ -24,16 +24,20 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Instruction.Create(OpCodes.Ldc_I4, n);
 			yield return Instruction.Create(OpCodes.Newarr, typeTypeRef);
 
-			for (var i = 0; i < n; i++) {
+			for (var i = 0; i < n; i++)
+			{
 				var vardef = context.Variables[items[i] as IElementNode];
-				if (typeTypeRef.IsValueType) {
+				if (typeTypeRef.IsValueType)
+				{
 					yield return Instruction.Create(OpCodes.Dup);
 					yield return Instruction.Create(OpCodes.Ldc_I4, i);
 					yield return Instruction.Create(OpCodes.Ldelema, typeTypeRef);
 					foreach (var instruction in vardef.LoadAs(typeTypeRef, module))
 						yield return instruction;
 					yield return Instruction.Create(OpCodes.Stobj, typeTypeRef);
-				} else {
+				}
+				else
+				{
 					yield return Instruction.Create(OpCodes.Dup);
 					yield return Instruction.Create(OpCodes.Ldc_I4, i);
 					foreach (var instruction in vardef.LoadAs(typeTypeRef, module))

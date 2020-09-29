@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Android
 			CheckAnimationEnabledStatus();
 		}
 
-		public void CheckAnimationEnabledStatus() 
+		public void CheckAnimationEnabledStatus()
 		{
 			((AndroidTicker)Ticker.Default).CheckAnimationEnabledStatus();
 		}

@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6368, "[CustomRenderer]Crash when navigating back from page with custom renderer control", PlatformAffected.iOS)]
-	public class Issue6368 : TestNavigationPage 
+	public class Issue6368 : TestNavigationPage
 	{
 		public class CustomView : View
 		{

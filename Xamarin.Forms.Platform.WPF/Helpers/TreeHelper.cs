@@ -27,7 +27,8 @@ namespace Xamarin.Forms.Platform.WPF.Helpers
 			DependencyObject parentObject = GetParentObject(child);
 
 			//we've reached the end of the tree
-			if (parentObject == null) return null;
+			if (parentObject == null)
+				return null;
 
 			//check if the parent matches the type we're looking for
 			T parent = parentObject as T;
@@ -47,7 +48,8 @@ namespace Xamarin.Forms.Platform.WPF.Helpers
 		   where T : DependencyObject
 		{
 			// Confirm parent and childName are valid. 
-			if (parent == null) return null;
+			if (parent == null)
+				return null;
 
 			T foundChild = null;
 
@@ -63,7 +65,8 @@ namespace Xamarin.Forms.Platform.WPF.Helpers
 					foundChild = FindChild<T>(child, childName);
 
 					// If the child is found, break so we do not overwrite the found child. 
-					if (foundChild != null) break;
+					if (foundChild != null)
+						break;
 				}
 				else if (!string.IsNullOrEmpty(childName))
 				{
@@ -98,14 +101,16 @@ namespace Xamarin.Forms.Platform.WPF.Helpers
 		/// null.</returns>
 		public static DependencyObject GetParentObject(this DependencyObject child)
 		{
-			if (child == null) return null;
+			if (child == null)
+				return null;
 
 			//handle content elements separately
 			var contentElement = child as ContentElement;
 			if (contentElement != null)
 			{
 				DependencyObject parent = ContentOperations.GetParent(contentElement);
-				if (parent != null) return parent;
+				if (parent != null)
+					return parent;
 
 				var fce = contentElement as FrameworkContentElement;
 				return fce != null ? fce.Parent : null;
@@ -116,7 +121,8 @@ namespace Xamarin.Forms.Platform.WPF.Helpers
 			if (frameworkElement != null)
 			{
 				DependencyObject parent = frameworkElement.Parent;
-				if (parent != null) return parent;
+				if (parent != null)
+					return parent;
 			}
 
 			//if it's not a ContentElement/FrameworkElement, rely on VisualTreeHelper
@@ -165,7 +171,8 @@ namespace Xamarin.Forms.Platform.WPF.Helpers
 		/// <returns>The submitted item's child elements, if available.</returns>
 		public static IEnumerable<DependencyObject> GetChildObjects(this DependencyObject parent, bool forceUsingTheVisualTreeHelper = false)
 		{
-			if (parent == null) yield break;
+			if (parent == null)
+				yield break;
 
 			if (!forceUsingTheVisualTreeHelper && (parent is ContentElement || parent is FrameworkElement))
 			{
@@ -173,7 +180,8 @@ namespace Xamarin.Forms.Platform.WPF.Helpers
 				foreach (object obj in LogicalTreeHelper.GetChildren(parent))
 				{
 					var depObj = obj as DependencyObject;
-					if (depObj != null) yield return (DependencyObject)obj;
+					if (depObj != null)
+						yield return (DependencyObject)obj;
 				}
 			}
 			else

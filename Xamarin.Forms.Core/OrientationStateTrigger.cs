@@ -46,7 +46,7 @@ namespace Xamarin.Forms
 
 		void OnInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if(e.PropertyName == "CurrentOrientation")
+			if (e.PropertyName == "CurrentOrientation")
 				UpdateState();
 		}
 

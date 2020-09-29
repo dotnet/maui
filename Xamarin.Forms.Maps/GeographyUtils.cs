@@ -28,10 +28,10 @@ namespace Xamarin.Forms.Maps
 			{
 				double angleInRadians = ((double)angle).ToRadians();
 				double latitude = Math.Asin(Math.Sin(centerLatitude) * Math.Cos(distance) +
-				                            Math.Cos(centerLatitude) * Math.Sin(distance) * Math.Cos(angleInRadians));
+											Math.Cos(centerLatitude) * Math.Sin(distance) * Math.Cos(angleInRadians));
 				double longitude = centerLongitude +
-				                   Math.Atan2(Math.Sin(angleInRadians) * Math.Sin(distance) * Math.Cos(centerLatitude),
-					                   Math.Cos(distance) - Math.Sin(centerLatitude) * Math.Sin(latitude));
+								   Math.Atan2(Math.Sin(angleInRadians) * Math.Sin(distance) * Math.Cos(centerLatitude),
+									   Math.Cos(distance) - Math.Sin(centerLatitude) * Math.Sin(latitude));
 
 				positions.Add(new Position(latitude.ToDegrees(), longitude.ToDegrees()));
 			}

@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void HtmlInCDATA([Values(true, false)]bool useCompiledXaml)
+			public void HtmlInCDATA([Values(true, false)] bool useCompiledXaml)
 			{
 				var html = "<h1>Hello World!</h1><br/>SecondLine";
 				var layout = new LabelHtml(useCompiledXaml);

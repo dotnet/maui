@@ -1,9 +1,9 @@
 using System;
 using Android.Content;
 using Android.Runtime;
-using AndroidX.ViewPager.Widget;
 using Android.Util;
 using Android.Views;
+using AndroidX.ViewPager.Widget;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {

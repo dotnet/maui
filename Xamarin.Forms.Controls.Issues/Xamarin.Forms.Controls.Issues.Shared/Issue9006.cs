@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					await GoToAsync("Issue9006_ContentPage");
 					await GoToAsync("Issue9006_FinalPage");
-					
+
 					button.Text = "Click me again. If pages get pushed again then test has passed.";
 					DisplayedPage.Content = new StackLayout()
 					{

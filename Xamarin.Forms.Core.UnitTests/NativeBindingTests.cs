@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
 using System.ComponentModel;
 using System.Globalization;
+using NUnit.Framework;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
@@ -15,9 +15,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		public string Baz { get; set; }
 
 		string cantBeNull = "";
-		public string CantBeNull {
+		public string CantBeNull
+		{
 			get { return cantBeNull; }
-			set {
+			set
+			{
 				if (value == null)
 					throw new NullReferenceException();
 				cantBeNull = value;
@@ -148,18 +150,22 @@ namespace Xamarin.Forms.Core.UnitTests
 	class MockVMForNativeBinding : INotifyPropertyChanged
 	{
 		string fFoo;
-		public string FFoo {
+		public string FFoo
+		{
 			get { return fFoo; }
-			set {
+			set
+			{
 				fFoo = value;
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FFoo"));
 			}
 		}
 
 		int bBar;
-		public int BBar {
+		public int BBar
+		{
 			get { return bBar; }
-			set { 
+			set
+			{
 				bBar = value;
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("BBar"));
 			}
@@ -200,8 +206,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
 
-			nativeView.SetBinding("Foo", new Binding("FFoo", mode:BindingMode.OneWay));
-			nativeView.SetBinding("Bar", new Binding("BBar", mode:BindingMode.OneWay));
+			nativeView.SetBinding("Foo", new Binding("FFoo", mode: BindingMode.OneWay));
+			nativeView.SetBinding("Bar", new Binding("BBar", mode: BindingMode.OneWay));
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
 
@@ -233,8 +239,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var vm = new MockVMForNativeBinding();
 			nativeView.SetBindingContext(vm);
 			var inpc = new MockINPC();
-			nativeView.SetBinding("Foo", new Binding("FFoo", mode:BindingMode.TwoWay), inpc);
-			nativeView.SetBinding("Bar", new Binding("BBar", mode:BindingMode.TwoWay), inpc);
+			nativeView.SetBinding("Foo", new Binding("FFoo", mode: BindingMode.TwoWay), inpc);
+			nativeView.SetBinding("Bar", new Binding("BBar", mode: BindingMode.TwoWay), inpc);
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
 			Assert.AreEqual(null, vm.FFoo);
@@ -289,7 +295,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var vm = new MockVMForNativeBinding();
 			nativeView.SetBindingContext(vm);
 
-			nativeView.SetBinding("Baz", new Binding("FFoo", mode: BindingMode.TwoWay) { UpdateSourceEventName = "BazChanged"});
+			nativeView.SetBinding("Baz", new Binding("FFoo", mode: BindingMode.TwoWay) { UpdateSourceEventName = "BazChanged" });
 			Assert.AreEqual(null, nativeView.Baz);
 			Assert.AreEqual(null, vm.FFoo);
 
@@ -310,8 +316,10 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			int i = 0;
 			Action create = null;
-			create = () => {
-				if (i++ < 1024) {
+			create = () =>
+			{
+				if (i++ < 1024)
+				{
 					create();
 					return;
 				}
@@ -341,8 +349,10 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			int i = 0;
 			Action create = null;
-			create = () => {
-				if (i++ < 1024) {
+			create = () =>
+			{
+				if (i++ < 1024)
+				{
 					create();
 					return;
 				}
@@ -371,7 +381,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void SetBindingContextToSubviews()
 		{
-			var nativeView = new MockNativeView { SubViews = new List<MockNativeView> ()};
+			var nativeView = new MockNativeView { SubViews = new List<MockNativeView>() };
 			var nativeViewChild = new MockNativeView();
 
 			nativeViewChild.SetBinding("Foo", new Binding("FFoo", mode: BindingMode.OneWay));
@@ -445,7 +455,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var nativeView = new MockNativeView();
 			int count = 0;
 
-			nativeView.SelectedColorChanged += (o, e) => {
+			nativeView.SelectedColorChanged += (o, e) =>
+			{
 				if (++count > 5)
 					Assert.Fail("Probable loop detected");
 			};
@@ -463,14 +474,14 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var nativeView = new MockNativeView();
 			nativeView.SetBinding("Qux", new Binding("Foo"));
-			Assert.Throws<InvalidOperationException>(()=>nativeView.SetBindingContext(new { Foo = 42 }));
+			Assert.Throws<InvalidOperationException>(() => nativeView.SetBindingContext(new { Foo = 42 }));
 		}
 
 		[Test]
 		public void ThrowsOnMissingEvent()
 		{
 			var nativeView = new MockNativeView();
-			Assert.Throws<ArgumentException>(()=>nativeView.SetBinding("Foo", new Binding("Foo", BindingMode.TwoWay), "missingEvent"));
+			Assert.Throws<ArgumentException>(() => nativeView.SetBinding("Foo", new Binding("Foo", BindingMode.TwoWay), "missingEvent"));
 		}
 
 		[Test]
