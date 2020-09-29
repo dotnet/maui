@@ -185,17 +185,17 @@ namespace Xamarin.Forms.Platform.WPF
 			FontStretch fontStretch,
 			double fontSize,
 			WBrush foreBrush)
-        {
-            if (fontFamily == null || string.IsNullOrEmpty(text))
-            {
-                return null;
-            }
-            var typeface = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
-            if (!typeface.TryGetGlyphTypeface(out GlyphTypeface glyphTypeface))
-            {
-                //if it does not work 
-                return null;
-            }
+		{
+			if (fontFamily == null || string.IsNullOrEmpty(text))
+			{
+				return null;
+			}
+			var typeface = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
+			if (!typeface.TryGetGlyphTypeface(out GlyphTypeface glyphTypeface))
+			{
+				//if it does not work 
+				return null;
+			}
 
 			var glyphIndexes = new ushort[text.Length];
 			var advanceWidths = new double[text.Length];
@@ -210,10 +210,10 @@ namespace Xamarin.Forms.Platform.WPF
 #if NETCOREAPP3_1
 			var dpi = VisualTreeHelper.GetDpi(System.Windows.Application.Current.MainWindow).PixelsPerDip;
 			var gr = new GlyphRun(glyphTypeface,
-				0, 
+				0,
 				false,
 				fontSize,
-				(float) dpi,
+				(float)dpi,
 				glyphIndexes,
 				new System.Windows.Point(0, 0),
 				advanceWidths,

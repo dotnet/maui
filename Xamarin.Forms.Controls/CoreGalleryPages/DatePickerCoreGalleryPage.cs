@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls
 			var fontFamilyContainer = new ViewContainer<DatePicker>(Test.DatePicker.FontFamily,
 				new DatePicker());
 			// Set font family based on available fonts per platform
-			switch(Device.RuntimePlatform)
+			switch (Device.RuntimePlatform)
 			{
 				case Device.Android:
 					fontFamilyContainer.View.FontFamily = "sans-serif-thin";
@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Controls
 					break;
 			}
 
-			var fontSizeContainer = new ViewContainer<DatePicker>(Test.DatePicker.FontSize, 
+			var fontSizeContainer = new ViewContainer<DatePicker>(Test.DatePicker.FontSize,
 				new DatePicker { FontSize = 32 });
 
 			Add(dateContainer);

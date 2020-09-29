@@ -1,11 +1,11 @@
-﻿using Microsoft.Maps.MapControl.WPF;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Maps.MapControl.WPF;
 
 namespace Xamarin.Forms.Maps.WPF
 {
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Maps.WPF
 			Pin = pin;
 
 			UpdateLocation();
-			
+
 			Loaded += FormsPushPin_Loaded;
 			Unloaded += FormsPushPin_Unloaded;
 			MouseDown += FormsPushPin_MouseDown;
@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Maps.WPF
 			if (e.PropertyName == Pin.PositionProperty.PropertyName)
 				UpdateLocation();
 		}
-		
+
 		void UpdateLocation()
 		{
 			Location = new Location(Pin.Position.Latitude, Pin.Position.Longitude);

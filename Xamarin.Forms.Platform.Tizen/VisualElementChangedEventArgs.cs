@@ -10,7 +10,8 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// </summary>
 		/// <param name="oldElement">Old element.</param>
 		/// <param name="newElement">New element.</param>
-		public VisualElementChangedEventArgs(VisualElement oldElement, VisualElement newElement) : base(oldElement, newElement) {
+		public VisualElementChangedEventArgs(VisualElement oldElement, VisualElement newElement) : base(oldElement, newElement)
+		{
 		}
 	}
 }

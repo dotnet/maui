@@ -9,11 +9,12 @@ namespace Xamarin.Forms.Controls.GalleryPages
 {
 	public class LayoutPerformanceGallery : ContentPage
 	{
-		public LayoutPerformanceGallery ()
+		public LayoutPerformanceGallery()
 		{
 			int size = 3;
 
-			var grid = new Grid {
+			var grid = new Grid
+			{
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				RowDefinitions = {
 					new RowDefinition { Height = new GridLength (100, GridUnitType.Absolute) },
@@ -27,9 +28,12 @@ namespace Xamarin.Forms.Controls.GalleryPages
 				}
 			};
 
-			for (int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
-					var g = new Grid {
+			for (int i = 0; i < size; i++)
+			{
+				for (int j = 0; j < size; j++)
+				{
+					var g = new Grid
+					{
 						RowDefinitions = {
 							new RowDefinition { Height = new GridLength (100, GridUnitType.Absolute) },
 							new RowDefinition { Height = new GridLength (5, GridUnitType.Star) },
@@ -42,22 +46,25 @@ namespace Xamarin.Forms.Controls.GalleryPages
 						}
 					};
 
-					for (int k = 0; k < size; k++) {
-						for (int l = 0; l < size; l++) {
+					for (int k = 0; k < size; k++)
+					{
+						for (int l = 0; l < size; l++)
+						{
 							var label = new Label { Text = "10" };
-							g.Children.Add (label, k, l);
-							_labelList.Add (label);
+							g.Children.Add(label, k, l);
+							_labelList.Add(label);
 						}
 					}
 
-					grid.Children.Add (g, i, j);
+					grid.Children.Add(g, i, j);
 				}
 			}
 
 
 
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					(_mainLabel = new Label ()),
 					grid
@@ -66,36 +73,42 @@ namespace Xamarin.Forms.Controls.GalleryPages
 		}
 
 		Label _mainLabel = null;
-		List<Label> _labelList = new List<Label> ();
-		Stopwatch _sw = new Stopwatch ();
+		List<Label> _labelList = new List<Label>();
+		Stopwatch _sw = new Stopwatch();
 		long _ticks = 0;
 		int _count = 0;
 		int _cycle = 0;
 		bool _flip = true;
-		Random _r = new Random (34269027);
+		Random _r = new Random(34269027);
 		bool _repeat = false;
 
-		protected override void OnAppearing ()
+		protected override void OnAppearing()
 		{
-			base.OnAppearing ();
+			base.OnAppearing();
 			_repeat = true;
-			Device.StartTimer (TimeSpan.FromMilliseconds (10), () => {
-				_sw.Start ();
-				foreach (var label in _labelList) {
-					if (_flip) {
-						label.Text = _r.Next (10, 40).ToString ();
-					} else {
-						label.Text = _r.Next (50, 90).ToString ();
+			Device.StartTimer(TimeSpan.FromMilliseconds(10), () =>
+			{
+				_sw.Start();
+				foreach (var label in _labelList)
+				{
+					if (_flip)
+					{
+						label.Text = _r.Next(10, 40).ToString();
+					}
+					else
+					{
+						label.Text = _r.Next(50, 90).ToString();
 					}
 				}
-				_sw.Stop ();
+				_sw.Stop();
 				_ticks += _sw.ElapsedMilliseconds;
-				_sw.Reset ();
+				_sw.Reset();
 
 				_cycle = (_cycle + 1) % 100;
 				_count++;
-				if (_cycle == 0) {
-					_mainLabel.Text = string.Format ("Avg Time: {0:0.000}ms", _ticks / (double)_count);
+				if (_cycle == 0)
+				{
+					_mainLabel.Text = string.Format("Avg Time: {0:0.000}ms", _ticks / (double)_count);
 				}
 
 				_flip = !_flip;
@@ -103,14 +116,14 @@ namespace Xamarin.Forms.Controls.GalleryPages
 			});
 		}
 
-		protected override void OnDisappearing ()
+		protected override void OnDisappearing()
 		{
 			_repeat = false;
 			_ticks = 0;
 			_count = 0;
 			_cycle = 0;
 
-			base.OnDisappearing ();
+			base.OnDisappearing();
 		}
 	}
 }

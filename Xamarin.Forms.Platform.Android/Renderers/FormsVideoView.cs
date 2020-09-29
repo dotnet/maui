@@ -1,9 +1,9 @@
-using Android.Content;
-using Android.Media;
-using Android.Widget;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.Content;
+using Android.Media;
+using Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (System.IO.File.Exists(path))
 			{
 				var retriever = new MediaMetadataRetriever();
-				
+
 				Task.Run(() =>
 				{
 					retriever.SetDataSource(path);
@@ -35,13 +35,13 @@ namespace Xamarin.Forms.Platform.Android
 		void ExtractMetadata(MediaMetadataRetriever retriever)
 		{
 			int videoWidth = 0;
-			if(int.TryParse(retriever.ExtractMetadata(MetadataKey.VideoWidth), out videoWidth))
+			if (int.TryParse(retriever.ExtractMetadata(MetadataKey.VideoWidth), out videoWidth))
 			{
 				VideoWidth = videoWidth;
 			}
 
 			int videoHeight = 0;
-			if(int.TryParse(retriever.ExtractMetadata(MetadataKey.VideoHeight), out videoHeight))
+			if (int.TryParse(retriever.ExtractMetadata(MetadataKey.VideoHeight), out videoHeight))
 			{
 				VideoHeight = videoHeight;
 			}

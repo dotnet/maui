@@ -1,6 +1,6 @@
-﻿using NUnit.Framework;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UITests
 {
@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Core.UITests
 
 			rootPages =
 			(from id in ids
-				select new RootPageModel(id + "ButtonId", id + "PageId")).Union(
+			 select new RootPageModel(id + "ButtonId", id + "PageId")).Union(
 				from id in modalIds
 				select new RootPageModel(id + "ButtonId", id + "PageId", true));
 		}

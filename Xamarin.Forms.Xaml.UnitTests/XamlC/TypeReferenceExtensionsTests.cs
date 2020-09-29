@@ -1,9 +1,8 @@
 ﻿using System;
-using NUnit.Framework;
-using Mono.Cecil;
-using Xamarin.Forms.Build.Tasks;
 using System.Collections.Generic;
-using Xamarin.Platform;
+using Mono.Cecil;
+using NUnit.Framework;
+using Xamarin.Forms.Build.Tasks;
 
 namespace Xamarin.Forms
 {
@@ -93,7 +92,8 @@ namespace Xamarin.Forms.XamlcUnitTests
 			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(Queue<>).Assembly.CodeBase)).Path));
 			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(IViewHandler).Assembly.CodeBase)).Path));
 
-			module = ModuleDefinition.CreateModule("foo", new ModuleParameters {
+			module = ModuleDefinition.CreateModule("foo", new ModuleParameters
+			{
 				AssemblyResolver = resolver,
 				Kind = ModuleKind.NetModule
 			});
@@ -228,7 +228,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 
 			Assert.That(TypeRefComparer.Default.Equals(module.ImportReference(returnType), resolved));
 		}
-		
+
 		[Test]
 		public void TestImplementsGenericInterface()
 		{

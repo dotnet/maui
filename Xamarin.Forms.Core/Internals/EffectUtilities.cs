@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Internals
 				controller.EffectControlProvider = self;
 		}
 
-		public static void UnregisterEffectControlProvider (IEffectControlProvider self, IElementController element)
+		public static void UnregisterEffectControlProvider(IEffectControlProvider self, IElementController element)
 		{
 			if (element?.EffectControlProvider == self)
 				element.EffectControlProvider = null;

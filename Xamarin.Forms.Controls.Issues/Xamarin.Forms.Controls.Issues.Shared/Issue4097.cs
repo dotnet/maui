@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using static Xamarin.Forms.DependencyService;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
+using static Xamarin.Forms.DependencyService;
 
 namespace Xamarin.Forms.Controls.Issues
 {

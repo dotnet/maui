@@ -6,9 +6,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ValidationExample : ContentPage
 	{
-		public ValidationExample ()
+		public ValidationExample()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 
 			Message.TextChanged += EditorTextChanged;
 		}

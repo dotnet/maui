@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
-using NUnit.Framework;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using NUnit.Framework;
+using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -43,24 +42,30 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				if (useCompiledXaml)
 					MockCompiler.Compile(typeof(BindingsCompiler));
-				var vm = new MockViewModel {
+				var vm = new MockViewModel
+				{
 					Text = "Text0",
 					I = 42,
-					Model = new MockViewModel {
+					Model = new MockViewModel
+					{
 						Text = "Text1"
 					},
-					StructModel = new MockStructViewModel {
-						Model = new MockViewModel {
+					StructModel = new MockStructViewModel
+					{
+						Model = new MockViewModel
+						{
 							Text = "Text9"
 						}
 					}
 				};
-				vm.Model [3] = "TextIndex";
+				vm.Model[3] = "TextIndex";
 
 				var layout = new BindingsCompiler(useCompiledXaml);
 				layout.BindingContext = vm;
-				layout.label6.BindingContext = new MockStructViewModel {
-					Model = new MockViewModel { 
+				layout.label6.BindingContext = new MockStructViewModel
+				{
+					Model = new MockViewModel
+					{
 						Text = "text6"
 					}
 				};
@@ -113,7 +118,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	struct MockStructViewModel
 	{
-		public string Text {
+		public string Text
+		{
 			get { return Model.Text; }
 			set { Model.Text = value; }
 		}
@@ -132,9 +138,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		string _text;
-		public string Text {
+		public string Text
+		{
 			get { return _text; }
-			set {
+			set
+			{
 				if (_text == value)
 					return;
 
@@ -144,9 +152,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		int _i;
-		public int I {
+		public int I
+		{
 			get { return _i; }
-			set {
+			set
+			{
 				if (_i == value)
 					return;
 				_i = value;
@@ -155,9 +165,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		MockViewModel _model;
-		public MockViewModel Model {
+		public MockViewModel Model
+		{
 			get { return _model; }
-			set {
+			set
+			{
 				if (_model == value)
 					return;
 				_model = value;
@@ -166,23 +178,27 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		MockStructViewModel _structModel;
-		public MockStructViewModel StructModel {
+		public MockStructViewModel StructModel
+		{
 			get { return _structModel; }
-			set {
+			set
+			{
 				_structModel = value;
 				OnPropertyChanged();
 			}
 		}
 
-		string [] values = new string [5];
+		string[] values = new string[5];
 		[IndexerName("Indexer")]
-		public string this [int v] {
-			get { return values [v]; }
-			set {
-				if (values [v] == value)
+		public string this[int v]
+		{
+			get { return values[v]; }
+			set
+			{
+				if (values[v] == value)
 					return;
 
-				values [v] = value;
+				values[v] = value;
 				OnPropertyChanged("Indexer[" + v + "]");
 			}
 		}

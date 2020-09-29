@@ -1,39 +1,42 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.None, 0, "Activity Indicator Does Not Show when set to default color")]
-	public class ModalActivityIndicatorTest : TestContentPage 
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.None, 0, "Activity Indicator Does Not Show when set to default color")]
+	public class ModalActivityIndicatorTest : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var vm = new ModalActivityIndicatorModel () { IsBusy = false, BusyText = "Not busy" };
+			var vm = new ModalActivityIndicatorModel() { IsBusy = false, BusyText = "Not busy" };
 
-	 		var button = new Button () { Text = "Make Busy" };
-			var colorToggle = new Button() {Text = "Toggle Activity Indicator Color" };
+			var button = new Button() { Text = "Make Busy" };
+			var colorToggle = new Button() { Text = "Toggle Activity Indicator Color" };
 
-			button.Clicked += async (sender, args) => {
+			button.Clicked += async (sender, args) =>
+			{
 				vm.IsBusy = true;
 				vm.BusyText = "Busy";
-				await Task.Delay (1500);
+				await Task.Delay(1500);
 				vm.IsBusy = false;
 				vm.BusyText = "Not Busy";
 			};
-			
+
 			var activityIndicator = new ModalActivityIndicator();
 			activityIndicator.BindingContext = vm;
 
-			colorToggle.Clicked += (sender, args) => {
+			colorToggle.Clicked += (sender, args) =>
+			{
 				vm.Color = vm.Color.IsDefault ? Color.Green : Color.Default;
 			};
 
-			Content = new StackLayout() {
+			Content = new StackLayout()
+			{
 				Children = { button, colorToggle, activityIndicator }
 			};
 		}
@@ -45,7 +48,7 @@ namespace Xamarin.Forms.Controls.Issues
 			string _busyText;
 			Color _color;
 
-			public ModalActivityIndicatorModel ()
+			public ModalActivityIndicatorModel()
 			{
 				_color = Color.Default;
 			}
@@ -55,7 +58,7 @@ namespace Xamarin.Forms.Controls.Issues
 				get { return _isBusy; }
 				set
 				{
-					_isBusy = value; 
+					_isBusy = value;
 					OnPropertyChanged();
 				}
 			}
@@ -75,16 +78,16 @@ namespace Xamarin.Forms.Controls.Issues
 				get { return _color; }
 				set
 				{
-					_color = value; 
+					_color = value;
 					OnPropertyChanged();
 				}
 			}
 
 			public event PropertyChangedEventHandler PropertyChanged;
 
-			protected virtual void OnPropertyChanged ([CallerMemberName] string propertyName = null)
+			protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 			{
-				PropertyChanged?.Invoke (this, new PropertyChangedEventArgs (propertyName));
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
 
@@ -102,10 +105,12 @@ namespace Xamarin.Forms.Controls.Issues
 						Opacity = .4,
 						BackgroundColor = Color.FromHex("#ccc")
 					},
-					widthConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					widthConstraint: Forms.Constraint.RelativeToParent((parent) =>
+					{
 						return parent.Width;
 					}),
-					heightConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					heightConstraint: Forms.Constraint.RelativeToParent((parent) =>
+					{
 						return parent.Height;
 					})
 					);
@@ -133,16 +138,20 @@ namespace Xamarin.Forms.Controls.Issues
 
 				Children.Add(
 					view: content,
-					widthConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					widthConstraint: Forms.Constraint.RelativeToParent((parent) =>
+					{
 						return parent.Width / 2;
 					}),
-					heightConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					heightConstraint: Forms.Constraint.RelativeToParent((parent) =>
+					{
 						return parent.Width / 3;
 					}),
-					xConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					xConstraint: Forms.Constraint.RelativeToParent((parent) =>
+					{
 						return parent.Width / 4;
 					}),
-					yConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					yConstraint: Forms.Constraint.RelativeToParent((parent) =>
+					{
 						return (parent.Height / 2) - (parent.Width / 6);
 					})
 					);

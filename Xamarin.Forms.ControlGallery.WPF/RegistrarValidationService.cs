@@ -17,7 +17,7 @@ namespace Xamarin.Forms.ControlGallery.WPF
 
 			var renderer = Platform.WPF.Platform.GetOrCreateRenderer(element);
 
-			if (renderer == null 
+			if (renderer == null
 				|| renderer.GetType().Name == "DefaultRenderer"
 				)
 			{

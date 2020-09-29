@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Device.Location;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Platform.WPF;
-using Microsoft.Maps.MapControl.WPF;
-using WMap = Microsoft.Maps.MapControl.WPF.Map;
-using System.ComponentModel;
-using System.Collections.Specialized;
-using System.Device.Location;
 using System.Windows.Threading;
+using Microsoft.Maps.MapControl.WPF;
+using Xamarin.Forms.Platform.WPF;
+using WMap = Microsoft.Maps.MapControl.WPF.Map;
 
 namespace Xamarin.Forms.Maps.WPF
 {
@@ -122,15 +122,17 @@ namespace Xamarin.Forms.Maps.WPF
 
 		async Task UpdateIsShowingUser(bool moveToLocation = true)
 		{
-			if (Control == null || Element == null) return;
+			if (Control == null || Element == null)
+				return;
 
 			if (Element.IsShowingUser)
 			{
 				var location = await GetCurrentLocation();
-				if(location != null)
+				if (location != null)
 					LoadUserPosition(location, moveToLocation);
 
-				if (Control == null || Element == null) return;
+				if (Control == null || Element == null)
+					return;
 
 				if (_timer == null)
 				{
@@ -145,7 +147,7 @@ namespace Xamarin.Forms.Maps.WPF
 			else
 			{
 				_timer?.Stop();
-				
+
 				if (Control.Children.Contains(_userPositionPin))
 					Control.Children.Remove(_userPositionPin);
 			}
@@ -165,7 +167,7 @@ namespace Xamarin.Forms.Maps.WPF
 		void RemovePin(Pin pinToRemove)
 		{
 			var pushPin = Control.Children.Cast<FormsPushPin>().FirstOrDefault(x => x.Pin == pinToRemove);
-			
+
 			if (pushPin != null)
 				Control.Children.Remove(pushPin);
 		}
@@ -211,17 +213,18 @@ namespace Xamarin.Forms.Maps.WPF
 
 		void LoadUserPosition(GeoCoordinate userCoordinate, bool center)
 		{
-			if (Control == null || Element == null) return;
+			if (Control == null || Element == null)
+				return;
 
 			var userPosition = new Location
 			{
 				Latitude = userCoordinate.Latitude,
 				Longitude = userCoordinate.Longitude
 			};
-			
+
 			if (Control.Children.Contains(_userPositionPin))
 				Control.Children.Remove(_userPositionPin);
-			
+
 			_userPositionPin = new FormsPushPin(new Pin() { Position = new Position(userCoordinate.Latitude, userCoordinate.Longitude) });
 
 			Control.Children.Add(_userPositionPin);

@@ -77,6 +77,7 @@ namespace Xamarin.Forms.Platform.Tizen
 #pragma warning disable CS0618 // Type or member is obsolete
 			Registered.Register(typeof(MasterDetailPage), () => new MasterDetailPageRenderer());
 #pragma warning restore CS0618 // Type or member is obsolete
+			Registered.Register(typeof(FlyoutPage), () => new FlyoutPageRenderer());
 			Registered.Register(typeof(TabbedPage), () => new TabbedPageRenderer());
 			Registered.Register(typeof(Label), () => new LabelRenderer());
 			Registered.Register(typeof(Button), () => new ButtonRenderer());

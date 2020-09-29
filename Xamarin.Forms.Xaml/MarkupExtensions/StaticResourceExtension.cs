@@ -1,9 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Xml;
-using System.Linq;
 using Xamarin.Forms.Internals;
-using System.Collections.Generic;
 
 namespace Xamarin.Forms.Xaml
 {
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Xaml
 
 			var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
 
-			if (   !TryGetResource(Key, valueProvider.ParentObjects, out var resource, out var resourceDictionary)
+			if (!TryGetResource(Key, valueProvider.ParentObjects, out var resource, out var resourceDictionary)
 				&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary))
 				throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
 
@@ -85,7 +85,8 @@ namespace Xamarin.Forms.Xaml
 			resource = null;
 			resourceDictionary = null;
 
-			foreach (var p in parentObjects) {
+			foreach (var p in parentObjects)
+			{
 				var resDict = p is IResourcesProvider irp && irp.IsResourcesCreated ? irp.Resources : p as ResourceDictionary;
 				if (resDict == null)
 					continue;
@@ -99,7 +100,7 @@ namespace Xamarin.Forms.Xaml
 		{
 			resource = null;
 			resourceDictionary = null;
-			return Application.Current != null && ((IResourcesProvider)Application.Current).IsResourcesCreated && Application.Current.Resources.TryGetValueAndSource (key, out resource, out resourceDictionary);
+			return Application.Current != null && ((IResourcesProvider)Application.Current).IsResourcesCreated && Application.Current.Resources.TryGetValueAndSource(key, out resource, out resourceDictionary);
 		}
 	}
 }

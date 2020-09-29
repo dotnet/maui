@@ -6,49 +6,52 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
-	[Preserve (AllMembers = true)]
-    [Issue (IssueTracker.Bugzilla, 37601, "ToolbarItem throws error when navigating to TabbedPage ",
-        PlatformAffected.WinPhone)]
-    public class Bugzilla37601 : TestNavigationPage
-    {
-        protected override void Init ()
-        {
-            Navigation.PushAsync (new SelectPage ());
-        }
-    }
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 37601, "ToolbarItem throws error when navigating to TabbedPage ",
+		PlatformAffected.WinPhone)]
+	public class Bugzilla37601 : TestNavigationPage
+	{
+		protected override void Init()
+		{
+			Navigation.PushAsync(new SelectPage());
+		}
+	}
 
-    internal class SelectPage : ContentPage
-    {
-        public SelectPage ()
-        {
-            var button = new Button { Text = "Move" };
+	internal class SelectPage : ContentPage
+	{
+		public SelectPage()
+		{
+			var button = new Button { Text = "Move" };
 
-            var label = new Label {
-                Text =
-                    "Click the Move button. If the next page is displayed, the test has passed. If the app crashes, the test has failed."
-            };
+			var label = new Label
+			{
+				Text =
+					"Click the Move button. If the next page is displayed, the test has passed. If the app crashes, the test has failed."
+			};
 
-            Content = new StackLayout {
-                Children = { label, button }
-            };
+			Content = new StackLayout
+			{
+				Children = { label, button }
+			};
 
-            button.Clicked += (sender, args) => { Navigation.PushAsync (new TabbedMain (), true); };
+			button.Clicked += (sender, args) => { Navigation.PushAsync(new TabbedMain(), true); };
 
-            ToolbarItems.Add (new ToolbarItem { Text = "Log Out" });
-        }
-    }
+			ToolbarItems.Add(new ToolbarItem { Text = "Log Out" });
+		}
+	}
 
-    internal class TabbedMain : TabbedPage
-    {
-        public TabbedMain ()
-        {
-            var page1 = new ContentPage { Title = "Page1" };
-            page1.Content = new StackLayout {
-                Children = { new Label { Text = "If you can see this, we haven't crashed. Yay!" } }
-            };
+	internal class TabbedMain : TabbedPage
+	{
+		public TabbedMain()
+		{
+			var page1 = new ContentPage { Title = "Page1" };
+			page1.Content = new StackLayout
+			{
+				Children = { new Label { Text = "If you can see this, we haven't crashed. Yay!" } }
+			};
 
-           Children.Add (page1);
-           Children.Add (new ContentPage { Title = "Page2" });
-        }
-    }
+			Children.Add(page1);
+			Children.Add(new ContentPage { Title = "Page2" });
+		}
+	}
 }

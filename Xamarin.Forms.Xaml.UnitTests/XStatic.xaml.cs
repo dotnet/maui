@@ -18,7 +18,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public string InstanceProperty { get { return "InstanceProperty"; } }
 		public static readonly Color BackgroundColor = Color.Fuchsia;
 
-		public class Nested {
+		public class Nested
+		{
 			public static string Foo = "FOO";
 		}
 	}
@@ -32,11 +33,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public partial class XStatic : ContentPage
 	{
-		public XStatic ()
+		public XStatic()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
-		public XStatic (bool useCompiledXaml)
+		public XStatic(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -66,28 +67,28 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void StaticProperty (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void StaticProperty(bool useCompiledXaml)
 			{
-				var layout = new XStatic (useCompiledXaml);
-				Assert.AreEqual ("Property", layout.staticproperty.Text);
+				var layout = new XStatic(useCompiledXaml);
+				Assert.AreEqual("Property", layout.staticproperty.Text);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void MemberOptional (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void MemberOptional(bool useCompiledXaml)
 			{
-				var layout = new XStatic (useCompiledXaml);
-				Assert.AreEqual ("Property", layout.memberisoptional.Text);
+				var layout = new XStatic(useCompiledXaml);
+				Assert.AreEqual("Property", layout.memberisoptional.Text);
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void FieldColor (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void FieldColor(bool useCompiledXaml)
 			{
-				var layout = new XStatic (useCompiledXaml);
-				Assert.AreEqual (Color.Fuchsia, layout.color.TextColor);
+				var layout = new XStatic(useCompiledXaml);
+				Assert.AreEqual(Color.Fuchsia, layout.color.TextColor);
 			}
 
 			[TestCase(false)]

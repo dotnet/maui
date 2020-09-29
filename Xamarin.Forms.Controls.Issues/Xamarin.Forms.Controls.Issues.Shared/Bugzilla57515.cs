@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using System;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System;
 #if UITEST
 using Xamarin.UITest;
 using Xamarin.Forms.Core.UITests;

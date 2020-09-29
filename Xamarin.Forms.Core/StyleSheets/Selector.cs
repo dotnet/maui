@@ -16,89 +16,93 @@ namespace Xamarin.Forms.StyleSheets
 
 			int p;
 			reader.SkipWhiteSpaces();
-			while ((p = reader.Peek()) > 0) {
-				switch (unchecked((char)p)) {
-				case '*':
-					setCurrentSelector(new And(), All);
-					reader.Read();
-					break;
-				case '.':
-					reader.Read();
-					var className = reader.ReadIdent();
-					if (className == null)
-						return Invalid;
-					setCurrentSelector(new And(), new Class(className));
-					break;
-				case '#':
-					reader.Read();
-					var id = reader.ReadName();
-					if (id == null)
-						return Invalid;
-					setCurrentSelector(new And(), new Id(id));
-					break;
-				case '[':
-					throw new NotImplementedException("Attributes not implemented");
-				case ',':
-					reader.Read();
-					setCurrentSelector(new Or(), All);
-					reader.SkipWhiteSpaces();
-					break;
-				case '+':
-					reader.Read();
-					setCurrentSelector(new Adjacent(), All);
-					reader.SkipWhiteSpaces();
-					break;
-				case '~':
-					reader.Read();
-					setCurrentSelector(new Sibling(), All);
-					reader.SkipWhiteSpaces();
-					break;
-				case '>':
-					reader.Read();
-					setCurrentSelector(new Child(), All);
-					reader.SkipWhiteSpaces();
-					break;
-				case '^':				//not in CSS spec
-					reader.Read();
-					var element = reader.ReadIdent();
-					if (element == null)
-					return Invalid;
-					setCurrentSelector(new And(), new Base(element));
-					break;
-				case ' ':
-				case '\t':
-				case '\n':
-				case '\r':
-				case '\f':
-					reader.Read();
-					bool processWs = false;
-					while ((p = reader.Peek()) > 0) {
-						var c = unchecked((char)p);
-						if (char.IsWhiteSpace(c)) {
-							reader.Read();
-							continue;
+			while ((p = reader.Peek()) > 0)
+			{
+				switch (unchecked((char)p))
+				{
+					case '*':
+						setCurrentSelector(new And(), All);
+						reader.Read();
+						break;
+					case '.':
+						reader.Read();
+						var className = reader.ReadIdent();
+						if (className == null)
+							return Invalid;
+						setCurrentSelector(new And(), new Class(className));
+						break;
+					case '#':
+						reader.Read();
+						var id = reader.ReadName();
+						if (id == null)
+							return Invalid;
+						setCurrentSelector(new And(), new Id(id));
+						break;
+					case '[':
+						throw new NotImplementedException("Attributes not implemented");
+					case ',':
+						reader.Read();
+						setCurrentSelector(new Or(), All);
+						reader.SkipWhiteSpaces();
+						break;
+					case '+':
+						reader.Read();
+						setCurrentSelector(new Adjacent(), All);
+						reader.SkipWhiteSpaces();
+						break;
+					case '~':
+						reader.Read();
+						setCurrentSelector(new Sibling(), All);
+						reader.SkipWhiteSpaces();
+						break;
+					case '>':
+						reader.Read();
+						setCurrentSelector(new Child(), All);
+						reader.SkipWhiteSpaces();
+						break;
+					case '^':               //not in CSS spec
+						reader.Read();
+						var element = reader.ReadIdent();
+						if (element == null)
+							return Invalid;
+						setCurrentSelector(new And(), new Base(element));
+						break;
+					case ' ':
+					case '\t':
+					case '\n':
+					case '\r':
+					case '\f':
+						reader.Read();
+						bool processWs = false;
+						while ((p = reader.Peek()) > 0)
+						{
+							var c = unchecked((char)p);
+							if (char.IsWhiteSpace(c))
+							{
+								reader.Read();
+								continue;
+							}
+							processWs = (c != '+'
+										&& c != '>'
+										&& c != ','
+										&& c != '~'
+										&& c != stopChar);
+							break;
 						}
-						processWs = (c != '+'
-									&& c != '>'
-									&& c != ','
-									&& c != '~'
-									&& c != stopChar);
+						if (!processWs)
+							break;
+						setCurrentSelector(new Descendent(), All);
+						reader.SkipWhiteSpaces();
 						break;
-					}
-					if (!processWs)
-						break;
-					setCurrentSelector(new Descendent(), All);
-					reader.SkipWhiteSpaces();
-					break;
-				default:
-					if (unchecked((char)p) == stopChar)
-						return root;
+					default:
+						if (unchecked((char)p) == stopChar)
+							return root;
 
-					var elementName = reader.ReadIdent();
-					if (elementName == null)
-						return Invalid;
-					setCurrentSelector(new And(), new Element(elementName));
-					break;
+						var elementName = reader.ReadIdent();
+						if (elementName == null)
+							return Invalid;
+						setCurrentSelector(new And(), new Element(elementName));
+						break;
 				}
 			}
 			return root;
@@ -117,7 +121,8 @@ namespace Xamarin.Forms.StyleSheets
 			if (updateRoot)
 				root = workingRoot;
 
-			if (workingRoot is Or) {
+			if (workingRoot is Or)
+			{
 				workingRootParent = (Operator)workingRoot;
 				workingRoot = sel;
 			}
@@ -202,7 +207,8 @@ namespace Xamarin.Forms.StyleSheets
 			}
 
 			public string ElementName { get; }
-			public override bool Matches(IStyleSelectable styleable) {
+			public override bool Matches(IStyleSelectable styleable)
+			{
 				for (var i = 0; i < styleable.NameAndBases.Length; i++)
 					if (string.Equals(styleable.NameAndBases[i], ElementName, StringComparison.OrdinalIgnoreCase))
 						return true;
@@ -223,7 +229,8 @@ namespace Xamarin.Forms.StyleSheets
 				if (!Right.Matches(styleable))
 					return false;
 				var parent = styleable.Parent;
-				while (parent != null) {
+				while (parent != null)
+				{
 					if (Left.Matches(parent))
 						return true;
 					parent = parent.Parent;
@@ -242,7 +249,8 @@ namespace Xamarin.Forms.StyleSheets
 					return false;
 
 				IStyleSelectable prev = null;
-				foreach (var elem in styleable.Parent.Children) {
+				foreach (var elem in styleable.Parent.Children)
+				{
 					if (elem == styleable && prev != null)
 						return Left.Matches(prev);
 					prev = elem;
@@ -267,8 +275,10 @@ namespace Xamarin.Forms.StyleSheets
 
 				int selfIndex = 0;
 				bool foundSelfInParent = false;
-				foreach (var elem in styleable.Parent.Children) {
-					if (elem == styleable) {
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable)
+					{
 						foundSelfInParent = true;
 						break;
 					}
@@ -279,7 +289,8 @@ namespace Xamarin.Forms.StyleSheets
 					return false;
 
 				int index = 0;
-				foreach (var elem in styleable.Parent.Children) {
+				foreach (var elem in styleable.Parent.Children)
+				{
 					if (index >= selfIndex)
 						return false;
 					if (Left.Matches(elem))

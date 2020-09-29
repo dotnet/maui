@@ -1,15 +1,15 @@
 ﻿using System;
-using Xamarin.Forms.CustomAttributes;
 using System.Collections.ObjectModel;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 3624, "Layout Compression causes the app to crash when scrolling a ListView with ListViewCachingStrategy.RetainElement")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 3624, "Layout Compression causes the app to crash when scrolling a ListView with ListViewCachingStrategy.RetainElement")]
 	public class Issue3624 : TestContentPage // or TestFlyoutPage, etc ...
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			Content = new StackLayout
 			{
@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Controls.Issues
 				};
 				Forms.CompressedLayout.SetIsHeadless(stack, true);
 				grid.AddChild(stack, 0, 0);
-				layout.Children.Add(grid, new Rectangle(0,0,1,1), AbsoluteLayoutFlags.All);
+				layout.Children.Add(grid, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
 
 				View = layout;
 				Forms.CompressedLayout.SetIsHeadless(stack, TestPage.ShouldUseCompressedLayout);

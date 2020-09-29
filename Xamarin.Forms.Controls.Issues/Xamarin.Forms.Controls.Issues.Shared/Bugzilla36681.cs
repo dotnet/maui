@@ -1,7 +1,6 @@
 ﻿using System;
-
-using Xamarin.Forms.CustomAttributes;
 using System.Collections.Generic;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 #if UITEST
@@ -14,57 +13,58 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 36681, "[A] NRE when Picker Replaces Page Content (pre-AppCompat only)", PlatformAffected.Android)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 36681, "[A] NRE when Picker Replaces Page Content (pre-AppCompat only)", PlatformAffected.Android)]
 	public class Bugzilla36681 : TestTabbedPage // or TestFlyoutPage, etc ...
 	{
 		public class PickerPage : ContentPage
 		{
 			public Picker Picker { get; private set; }
 			public Label Label { get; private set; }
-			public PickerPage ()
+			public PickerPage()
 			{
 				Picker = new Picker { Title = "Select Item", AutomationId = "picker" };
 
 				var items = new List<string> { "item", "item2", "item3", "item4" };
 				foreach (var i in items)
-					Picker.Items.Add (i);
+					Picker.Items.Add(i);
 
 				Picker.FocusChangeRequested += Picker_FocusChangeRequested;
 				Picker.SelectedIndexChanged += Picker_SelectedIndexChanged;
 
 				StackLayout stack = new StackLayout { Padding = 20 };
-				stack.Children.Add (Picker);
+				stack.Children.Add(Picker);
 
 				Content = stack;
 			}
 
-			void Picker_FocusChangeRequested (object sender, FocusRequestArgs e)
+			void Picker_FocusChangeRequested(object sender, FocusRequestArgs e)
 			{
-				SwitchContent ();
+				SwitchContent();
 			}
 
-			void Picker_SelectedIndexChanged (object sender, EventArgs e)
+			void Picker_SelectedIndexChanged(object sender, EventArgs e)
 			{
-				SwitchContent ();
+				SwitchContent();
 			}
 
-			void SwitchContent ()
+			void SwitchContent()
 			{
 				var x = Parent as TabbedPage;
 				var y = x.CurrentPage as ContentPage;
-				y.Content = new Label {
+				y.Content = new Label
+				{
 					Text = "Success!"
 				};
-				y.Padding = new Thickness (0, 20, 0, 0);
+				y.Padding = new Thickness(0, 20, 0, 0);
 			}
 		}
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			PickerPage pickerPage = new PickerPage { Title = "Picker Page" };
-			Children.Add (pickerPage);
-			Children.Add (new ContentPage { BackgroundColor = Color.Blue, Title = "Page 2" });
+			Children.Add(pickerPage);
+			Children.Add(new ContentPage { BackgroundColor = Color.Blue, Title = "Page 2" });
 		}
 
 #if UITEST && __ANDROID__

@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 		}
 
-#if UITEST 
+#if UITEST
 		[Test]
 		public void RemoveSelectedItem()
 		{

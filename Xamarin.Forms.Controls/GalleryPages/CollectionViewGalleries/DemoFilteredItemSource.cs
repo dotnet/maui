@@ -15,10 +15,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 		public DemoFilteredItemSource(int count = 50, Func<string, CollectionViewGalleryTestItem, bool> filter = null)
 		{
 			_source = new List<CollectionViewGalleryTestItem>();
-			
-			string[] images = 
+
+			string[] images =
 			{
-				"cover1.jpg", 
+				"cover1.jpg",
 				"oasis.jpg",
 				"photo.jpg",
 				"Vegetables.jpg",

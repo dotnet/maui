@@ -12,7 +12,7 @@ namespace Xamarin.Forms
 			if (value != null)
 			{
 				string[] xywh = value.Split(',');
-				if (   xywh.Length == 4
+				if (xywh.Length == 4
 					&& double.TryParse(xywh[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double x)
 					&& double.TryParse(xywh[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double y)
 					&& double.TryParse(xywh[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double w)

@@ -5,7 +5,7 @@
 		public VariableSizeTemplateGridGallery(ItemsLayoutOrientation orientation = ItemsLayoutOrientation.Vertical)
 		{
 			var layout = new Grid
-			{ 
+			{
 				RowDefinitions = new RowDefinitionCollection
 				{
 					new RowDefinition { Height = GridLength.Auto },
@@ -19,8 +19,12 @@
 
 			var itemTemplate = ExampleTemplates.VariableSizeTemplate();
 
-			var collectionView = new CollectionView {ItemsLayout = itemsLayout, ItemTemplate = itemTemplate,
-				ItemSizingStrategy = ItemSizingStrategy.MeasureFirstItem };
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = itemsLayout,
+				ItemTemplate = itemTemplate,
+				ItemSizingStrategy = ItemSizingStrategy.MeasureFirstItem
+			};
 
 			var generator = new ItemsSourceGenerator(collectionView, 100);
 
@@ -28,15 +32,16 @@
 			UpdateExplanation(explanation, collectionView.ItemSizingStrategy);
 
 			var sizingStrategySelector = new EnumSelector<ItemSizingStrategy>(() => collectionView.ItemSizingStrategy,
-				mode => {
+				mode =>
+				{
 					collectionView.ItemSizingStrategy = mode;
 					UpdateExplanation(explanation, collectionView.ItemSizingStrategy);
 				});
 
 			layout.Children.Add(generator);
 
-			layout.Children.Add(sizingStrategySelector );
-			Grid.SetRow(sizingStrategySelector , 1);
+			layout.Children.Add(sizingStrategySelector);
+			Grid.SetRow(sizingStrategySelector, 1);
 
 			layout.Children.Add(explanation);
 			Grid.SetRow(explanation, 2);

@@ -90,7 +90,7 @@ namespace Xamarin.Forms
 			get { return (double)GetValue(FontSizeProperty); }
 			set { SetValue(FontSizeProperty, value); }
 		}
-		
+
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
 		{
 		}
@@ -109,7 +109,7 @@ namespace Xamarin.Forms
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
 		{
 		}
-		
+
 		public event EventHandler SearchButtonPressed;
 
 		public SearchBar()

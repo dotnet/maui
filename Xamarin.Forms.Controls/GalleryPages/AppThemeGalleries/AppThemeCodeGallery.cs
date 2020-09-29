@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries
 			{
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
-				Children = { _currentThemeLabel, onThemeLabel , onThemeLabel1,onThemeLabel2 }
+				Children = { _currentThemeLabel, onThemeLabel, onThemeLabel1, onThemeLabel2 }
 			};
 
 			Content = stackLayout;

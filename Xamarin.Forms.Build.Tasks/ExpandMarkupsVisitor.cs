@@ -43,10 +43,11 @@ namespace Xamarin.Forms.Build.Tasks
 				return;
 			if (_skips.Contains(propertyName))
 				return;
-			if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains (propertyName))
+			if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
 				return;
 			var markupString = markupnode.MarkupString;
-			if (ParseExpression(ref markupString, Context, markupnode.NamespaceResolver, markupnode) is IElementNode node) {
+			if (ParseExpression(ref markupString, Context, markupnode.NamespaceResolver, markupnode) is IElementNode node)
+			{
 				((IElementNode)parentNode).Properties[propertyName] = node;
 				node.Accept(new XamlNodeVisitor((n, parent) => n.Parent = parent), parentNode);
 			}
@@ -69,7 +70,8 @@ namespace Xamarin.Forms.Build.Tasks
 			name = default(XmlName);
 			if (!(parentNode is IElementNode parentElement))
 				return false;
-			foreach (var kvp in parentElement.Properties) {
+			foreach (var kvp in parentElement.Properties)
+			{
 				if (kvp.Value != node)
 					continue;
 				name = kvp.Key;
@@ -94,9 +96,9 @@ namespace Xamarin.Forms.Build.Tasks
 				throw new BuildException(BuildExceptionCode.MarkupNotClosed, xmlLineInfo, null);
 
 			var provider = new XamlServiceProvider(null, null);
-			provider.Add(typeof (ILContextProvider), new ILContextProvider(context));
-			provider.Add(typeof (IXmlNamespaceResolver), nsResolver);
-			provider.Add(typeof (IXmlLineInfoProvider), new XmlLineInfoProvider(xmlLineInfo));
+			provider.Add(typeof(ILContextProvider), new ILContextProvider(context));
+			provider.Add(typeof(IXmlNamespaceResolver), nsResolver);
+			provider.Add(typeof(IXmlLineInfoProvider), new XmlLineInfoProvider(xmlLineInfo));
 
 			return new MarkupExpansionParser().Parse(match, ref expression, provider);
 		}
@@ -121,7 +123,7 @@ namespace Xamarin.Forms.Build.Tasks
 				IXmlLineInfo xmlLineInfo = null;
 				if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider)
 					xmlLineInfo = xmlLineInfoProvider.XmlLineInfo;
-				var contextProvider = serviceProvider.GetService(typeof (ILContextProvider)) as ILContextProvider;
+				var contextProvider = serviceProvider.GetService(typeof(ILContextProvider)) as ILContextProvider;
 
 				var split = match.Split(':');
 				if (split.Length > 2)
@@ -146,9 +148,12 @@ namespace Xamarin.Forms.Build.Tasks
 					Property parsed;
 					do
 					{
-						try {
+						try
+						{
 							parsed = ParseProperty(serviceProvider, ref remaining);
-						} catch (XamlParseException xpe) {
+						}
+						catch (XamlParseException xpe)
+						{
 							throw new BuildException(BuildExceptionCode.MarkupParsingFailed, xmlLineInfo, xpe);
 						}
 						XmlName childname;
@@ -195,12 +200,15 @@ namespace Xamarin.Forms.Build.Tasks
 					? new ElementNode(type, "", nsResolver)
 					: new ElementNode(type, "", nsResolver, xmlLineInfo.LineNumber, xmlLineInfo.LinePosition);
 
-				foreach (var (childname, childnode) in childnodes) {
-					if (childname == contentname) {
+				foreach (var (childname, childnode) in childnodes)
+				{
+					if (childname == contentname)
+					{
 						//ContentProperty
 						_node.CollectionItems.Add(childnode);
 					}
-					else {
+					else
+					{
 						_node.Properties[childname] = childnode;
 					}
 				}

@@ -1,5 +1,5 @@
-﻿using ElmSharp;
-using System;
+﻿using System;
+using ElmSharp;
 using EBox = ElmSharp.Box;
 using EImage = ElmSharp.Image;
 
@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Platform.Tizen
 					icon.Geometry = iconBound;
 					leftMargin = (2 * iconPadding + iconSize);
 				}
-				
+
 				bound.X += leftMargin;
 				bound.Width -= leftMargin;
 				title.Geometry = bound;

@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using Xamarin.Forms;
-using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
+using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Collections;
-using System.Linq;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
@@ -32,9 +32,9 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 #endif
 		public Issue5749()
-        {
+		{
 #if APP
-            InitializeComponent();
+			InitializeComponent();
 			listViewHorizontal.ItemsSource = new string[] { "item1... ", "item2... ", "item3... ", "item4... ", "item5... ", "item6... ", "item7... ", "item8... ", "item9... ", "item10... " };
 #endif
 		}

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using ElmSharp;
 using EBox = ElmSharp.Box;
 

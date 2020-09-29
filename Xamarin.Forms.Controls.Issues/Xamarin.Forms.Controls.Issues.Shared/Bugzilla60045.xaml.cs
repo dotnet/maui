@@ -19,10 +19,10 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 60045, 
+	[Issue(IssueTracker.Bugzilla, 60045,
 		"ListView with RecycleElement strategy doesn't handle CanExecute of TextCell Command properly",
 		PlatformAffected.iOS)]
-    public partial class Bugzilla60045 : TestContentPage
+	public partial class Bugzilla60045 : TestContentPage
 	{
 		public const string ClickThis = "Click This";
 		public const string Fail = "Fail";
@@ -40,11 +40,11 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			Items = new[]
 			{
-				new { 
+				new {
 					Action = new Command(async () =>
 					{
 						await DisplayAlert(Fail, "Well, this is embarrassing.", "Ok");
-					}, 
+					},
 					() => false) }
 			};
 		}

@@ -107,10 +107,10 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 #if APP
-		[Preserve (AllMembers = true)]
-		public Issue2470 ()
+		[Preserve(AllMembers = true)]
+		public Issue2470()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 #endif
 

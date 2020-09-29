@@ -1,11 +1,11 @@
-﻿using AndroidX.Fragment.App;
-using Android.Views;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Views;
+using AndroidX.Fragment.App;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android

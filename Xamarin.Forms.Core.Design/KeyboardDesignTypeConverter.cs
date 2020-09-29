@@ -1,8 +1,8 @@
 ﻿namespace Xamarin.Forms.Core.Design
 {
-	using System.Linq;
-	using System.ComponentModel;
 	using System;
+	using System.ComponentModel;
+	using System.Linq;
 	using System.Reflection;
 
 	public class KeyboardDesignTypeConverter : TypeConverter

@@ -12,56 +12,56 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-    [Preserve(AllMembers = true)]
-    [Issue(IssueTracker.Github, 11374,
-        "[Bug] [Android] SwipeView in ListView is not working with RippleEffect and Release configuration",
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 11374,
+		"[Bug] [Android] SwipeView in ListView is not working with RippleEffect and Release configuration",
 		PlatformAffected.Android)]
 	public partial class Issue11374 : TestContentPage
 	{
 		public Issue11374()
 		{
 #if APP
-            InitializeComponent();
+			InitializeComponent();
 #endif
 		}
 
 		protected override void Init()
 		{
-            BindingContext = new Issue11374ViewModel();
-        }
+			BindingContext = new Issue11374ViewModel();
+		}
 	}
 
-    [Preserve(AllMembers = true)]
-    public class Issue11374ViewModel : BindableObject
-    {
-        public ObservableCollection<string> Items { get; set; }
+	[Preserve(AllMembers = true)]
+	public class Issue11374ViewModel : BindableObject
+	{
+		public ObservableCollection<string> Items { get; set; }
 
-        public Command LoadItemsCommand { get; set; }
+		public Command LoadItemsCommand { get; set; }
 
-        public Issue11374ViewModel()
-        {
-            LoadItems();
-        }
+		public Issue11374ViewModel()
+		{
+			LoadItems();
+		}
 
-        void LoadItems()
-        {
-            Items = new ObservableCollection<string>
-            {
-                "Item 1",
-                "Item 2",
-                "Item 3",
-                "Item 4",
-                "Item 5"
-            };
-        }
-    }
+		void LoadItems()
+		{
+			Items = new ObservableCollection<string>
+			{
+				"Item 1",
+				"Item 2",
+				"Item 3",
+				"Item 4",
+				"Item 5"
+			};
+		}
+	}
 
-    [Preserve(AllMembers = true)]
-    public class RippleEffect : RoutingEffect
-    {
-        public RippleEffect() : base($"{Effects.ResolutionGroupName}.{nameof(RippleEffect)}")
-        {
+	[Preserve(AllMembers = true)]
+	public class RippleEffect : RoutingEffect
+	{
+		public RippleEffect() : base($"{Effects.ResolutionGroupName}.{nameof(RippleEffect)}")
+		{
 
-        }
-    }
+		}
+	}
 }

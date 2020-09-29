@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (index != -1)
 			{
 				string font = cleansedFont.Substring(0, index);
-				string style = cleansedFont.Substring(index+1);
+				string style = cleansedFont.Substring(index + 1);
 				return $"{font}:style={style}";
 			}
 			else

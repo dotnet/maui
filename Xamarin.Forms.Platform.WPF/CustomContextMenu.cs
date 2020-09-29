@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using WMenuItem = System.Windows.Controls.MenuItem;
 using WApplication = System.Windows.Application;
+using WMenuItem = System.Windows.Controls.MenuItem;
 
 namespace Xamarin.Forms.Platform.WPF
 {

@@ -12,8 +12,8 @@ namespace Xamarin.Forms
 		{
 		}
 
-		public ControlTemplate(Func<object> createTemplate) : base(createTemplate) 
-		{ 
+		public ControlTemplate(Func<object> createTemplate) : base(createTemplate)
+		{
 		}
 	}
 }

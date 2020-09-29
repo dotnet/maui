@@ -51,16 +51,16 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		protected View _headerCache;
 		protected View _footerCache;
 
-		public ItemTemplateAdaptor(ItemsView itemsView) : base(itemsView.ItemsSource)
-		{
-			ItemTemplate = itemsView.ItemTemplate;
-			_itemsView = itemsView;
-		}
+		bool IsSelectable { get; }
+
+
+		public ItemTemplateAdaptor(ItemsView itemsView) : this(itemsView, itemsView.ItemsSource, itemsView.ItemTemplate) { }
 
 		protected ItemTemplateAdaptor(ItemsView itemsView, IEnumerable items, DataTemplate template) : base(items)
 		{
 			ItemTemplate = template;
 			_itemsView = itemsView;
+			IsSelectable = itemsView is SelectableItemsView;
 		}
 
 		protected DataTemplate ItemTemplate { get; set; }
@@ -210,6 +210,27 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		public override ESize MeasureFooter(int widthConstraint, int heightConstraint)
 		{
 			return _footerCache?.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint)).Request.ToPixel() ?? new ESize(0, 0);
+		}
+
+		public override void UpdateViewState(EvasObject view, ViewHolderState state)
+		{
+			base.UpdateViewState(view, state);
+			if (_nativeFormsTable.TryGetValue(view, out View formsView))
+			{
+				switch (state)
+				{
+					case ViewHolderState.Focused:
+						VisualStateManager.GoToState(formsView, VisualStateManager.CommonStates.Focused);
+						break;
+					case ViewHolderState.Normal:
+						VisualStateManager.GoToState(formsView, VisualStateManager.CommonStates.Normal);
+						break;
+					case ViewHolderState.Selected:
+						if (IsSelectable)
+							VisualStateManager.GoToState(formsView, VisualStateManager.CommonStates.Selected);
+						break;
+				}
+			}
 		}
 
 		protected virtual View CreateHeaderView()

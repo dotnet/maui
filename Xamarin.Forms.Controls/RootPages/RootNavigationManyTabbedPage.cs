@@ -9,14 +9,15 @@ namespace Xamarin.Forms.Controls
 {
 	// May not behave
 	// NavigationPage with multiple tabbed pages	
-	public class RootNavigationManyTabbedPage : NavigationPage 
+	public class RootNavigationManyTabbedPage : NavigationPage
 	{
-		public RootNavigationManyTabbedPage (string hierarchy) 
+		public RootNavigationManyTabbedPage(string hierarchy)
 		{
 			AutomationId = hierarchy + "PageId";
 
-			var content = new TabbedPage {
-				Children = { 
+			var content = new TabbedPage
+			{
+				Children = {
 					new ContentPage {
 						Title = "Page 1",
 						Content = new SwapHierachyStackLayout (hierarchy)
@@ -50,14 +51,14 @@ namespace Xamarin.Forms.Controls
 						Content = new Label {
 							Text = "Page 6"
 						}
-					}, 
-					
+					},
+
 					new ContentPage {
 						Title = "Go Home",
-					}, 
+					},
 				}
 			};
-			PushAsync (content);
+			PushAsync(content);
 		}
-	}	
+	}
 }

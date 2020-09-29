@@ -182,7 +182,7 @@ namespace Xamarin.Forms
 
 		public Task ScrollToAsync(double x, double y, bool animated)
 		{
-			if(Orientation == ScrollOrientation.Neither)
+			if (Orientation == ScrollOrientation.Neither)
 				return Task.FromResult(false);
 
 			var args = new ScrollToRequestedEventArgs(x, y, animated);
@@ -210,7 +210,7 @@ namespace Xamarin.Forms
 		}
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => false;
-		
+
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			var over = ((IScrollViewController)this).LayoutAreaOverride;

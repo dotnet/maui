@@ -1,7 +1,6 @@
 ﻿using System;
-
-using Xamarin.Forms;
 using System.Collections.Generic;
+using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 

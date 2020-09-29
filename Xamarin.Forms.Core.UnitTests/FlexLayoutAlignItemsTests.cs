@@ -1,9 +1,9 @@
-﻿using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NUnit.Framework;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Core.UnitTests
@@ -14,7 +14,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignItemsStretch()
 		{
-			var layout = new FlexLayout {
+			var layout = new FlexLayout
+			{
 				IsPlatformEnabled = true,
 
 				Direction = FlexDirection.Column,
@@ -30,7 +31,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignItemsCenter()
 		{
-			var layout = new FlexLayout {
+			var layout = new FlexLayout
+			{
 				IsPlatformEnabled = true,
 
 				AlignItems = FlexAlignItems.Center,
@@ -47,7 +49,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignItemsFlexStart()
 		{
-			var layout = new FlexLayout {
+			var layout = new FlexLayout
+			{
 				IsPlatformEnabled = true,
 
 				AlignItems = FlexAlignItems.Start,
@@ -64,7 +67,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignItemsFlexEnd()
 		{
-			var layout = new FlexLayout {
+			var layout = new FlexLayout
+			{
 				IsPlatformEnabled = true,
 
 				AlignItems = FlexAlignItems.End,

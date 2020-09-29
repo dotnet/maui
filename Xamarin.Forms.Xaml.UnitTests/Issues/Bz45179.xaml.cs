@@ -6,7 +6,8 @@ using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-	public class Bz45179_0 : ContentView {
+	public class Bz45179_0 : ContentView
+	{
 		public static int creator_count;
 		public Bz45179_0()
 		{

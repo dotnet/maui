@@ -14,13 +14,13 @@ namespace Xamarin.Forms.Controls.Issues
 	"[WinRT] ItemSelected Not Ignored When a ListView Item Contains a TapGestureRecognizer", PlatformAffected.WinRT)]
 	public partial class Bugzilla32842 : ContentPage
 	{
-		public Bugzilla32842 ()
+		public Bugzilla32842()
 		{
-			
+
 			List<string> items = new List<string> { "item1", "item2", "item3" };
-		
-			InitializeComponent ();
-		
+
+			InitializeComponent();
+
 			MainList.ItemsSource = items;
 			MainList.ItemSelected += MainListSelectionChanged;
 		}
@@ -30,7 +30,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void MainListSelectionChanged(object sender, SelectedItemChangedEventArgs e)
 		{
-			if (e.SelectedItem == null) {
+			if (e.SelectedItem == null)
+			{
 				return;
 			}
 

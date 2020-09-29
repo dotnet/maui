@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-
-using Xamarin.Forms;
-
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -15,9 +13,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			if (value == null)
 				return null;
 
-			return new {
+			return new
+			{
 				Date = DateTime.Now.ToString("dd MMMM yyyy"),
-				Object = new object ()
+				Object = new object()
 			};
 		}
 
@@ -29,12 +28,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public partial class Bz24485 : ContentPage
 	{
-		public Bz24485 ()
+		public Bz24485()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Bz24485 (bool useCompiledXaml)
+		public Bz24485(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -44,11 +43,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			[TestCase(true)]
 			[TestCase(false)]
-			public void BindingContextWithConverter (bool useCompiledXaml)
+			public void BindingContextWithConverter(bool useCompiledXaml)
 			{
-				var layout = new Bz24485 (useCompiledXaml);
-				layout.BindingContext = new { Data1 = new object ()};
-				Assert.Pass ();
+				var layout = new Bz24485(useCompiledXaml);
+				layout.BindingContext = new { Data1 = new object() };
+				Assert.Pass();
 			}
 		}
 	}

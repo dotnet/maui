@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 		Gdk.Color _textColor;
 		Gdk.Color _detailColor;
 
-		public ImageCell(   
+		public ImageCell(
 			Gdk.Pixbuf image,
 			string text,
 			Gdk.Color textColor,

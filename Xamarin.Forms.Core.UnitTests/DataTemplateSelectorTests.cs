@@ -23,34 +23,34 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		class TemplateOne : DataTemplate
 		{
-			public TemplateOne () : base (typeof (ViewCell))
+			public TemplateOne() : base(typeof(ViewCell))
 			{
-				
+
 			}
 		}
 
 		class TemplateTwo : DataTemplate
 		{
-			public TemplateTwo () : base (typeof (EntryCell))
+			public TemplateTwo() : base(typeof(EntryCell))
 			{
-				
+
 			}
 		}
 
 		class TestDTS : DataTemplateSelector
 		{
-			public TestDTS ()
+			public TestDTS()
 			{
-				templateOne = new TemplateOne ();
-				templateTwo = new TemplateTwo ();
+				templateOne = new TemplateOne();
+				templateTwo = new TemplateTwo();
 			}
 
-			protected override DataTemplate OnSelectTemplate (object item, BindableObject container)
+			protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 			{
 				if (item is double)
 					return templateOne;
 				if (item is byte)
-					return new TestDTS ();
+					return new TestDTS();
 				return templateTwo;
 			}
 
@@ -59,35 +59,35 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void Constructor ()
+		public void Constructor()
 		{
-			var dts = new TestDTS ();
+			var dts = new TestDTS();
 		}
 
 		[Test]
-		public void ReturnsCorrectType ()
+		public void ReturnsCorrectType()
 		{
-			var dts = new TestDTS ();
-			Assert.IsInstanceOf<TemplateOne> (dts.SelectTemplate (1d, null));
-			Assert.IsInstanceOf<TemplateTwo> (dts.SelectTemplate ("test", null));
+			var dts = new TestDTS();
+			Assert.IsInstanceOf<TemplateOne>(dts.SelectTemplate(1d, null));
+			Assert.IsInstanceOf<TemplateTwo>(dts.SelectTemplate("test", null));
 		}
 
 		[Test]
-		public void ListViewSupport ()
+		public void ListViewSupport()
 		{
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement);
 			listView.ItemsSource = new object[] { 0d, "test" };
 
-			listView.ItemTemplate = new TestDTS ();
-			Assert.IsInstanceOf<ViewCell> (listView.TemplatedItems[0]);
-			Assert.IsInstanceOf<EntryCell> (listView.TemplatedItems[1]);
+			listView.ItemTemplate = new TestDTS();
+			Assert.IsInstanceOf<ViewCell>(listView.TemplatedItems[0]);
+			Assert.IsInstanceOf<EntryCell>(listView.TemplatedItems[1]);
 		}
 
 		[Test]
-		public void NestingThrowsException ()
+		public void NestingThrowsException()
 		{
-			var dts = new TestDTS ();
-			Assert.Throws<NotSupportedException> (() => dts.SelectTemplate ((byte)0, null));
+			var dts = new TestDTS();
+			Assert.Throws<NotSupportedException>(() => dts.SelectTemplate((byte)0, null));
 		}
 	}
 
@@ -113,7 +113,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			readonly DataTemplate declarativeTemplate;
 			readonly DataTemplate proceduralTemplate;
 
-			public TestDataTemplateSelector ()
+			public TestDataTemplateSelector()
 			{
 				declarativeTemplate = new DataTemplate(typeof(ViewCell));
 				proceduralTemplate = new DataTemplate(() => new EntryCell());
@@ -133,12 +133,12 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void ListViewSupport ()
+		public void ListViewSupport()
 		{
 			var listView = new ListView(ListViewCachingStrategy.RecycleElementAndDataTemplate);
 			listView.ItemsSource = new object[] { "foo", "bar", 0 };
 
-			Assert.That(listView.CachingStrategy == 
+			Assert.That(listView.CachingStrategy ==
 				ListViewCachingStrategy.RecycleElementAndDataTemplate);
 
 			var selector = new TestDataTemplateSelector();

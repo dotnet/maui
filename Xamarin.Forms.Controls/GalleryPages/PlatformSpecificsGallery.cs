@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls
 				Content = new StackLayout
 				{
 					Children = { mdpiOSButton, mdpWindowsButton, npWindowsButton, tbiOSButton, tbWindowsButton, viselemiOSButton,
-						appAndroidButton, tbAndroidButton, entryiOSButton, entryAndroidButton, largeTitlesiOSButton, safeareaiOSButton, 
+						appAndroidButton, tbAndroidButton, entryiOSButton, entryAndroidButton, largeTitlesiOSButton, safeareaiOSButton,
 						modalformsheetiOSButton, homeIndicatoriOSButton, refreshWindowsButton, searchBariOSButton }
 				}
 			};

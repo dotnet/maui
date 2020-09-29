@@ -3,9 +3,9 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
+using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
-using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.Android
 		public AView GetCell(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
 			Performance.Start(out string reference);
-			
+
 			Cell = item;
 			Cell.PropertyChanged -= PropertyChangedHandler;
 
@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				Object tag = convertView.Tag;
 				CellRenderer renderer = (tag as RendererHolder)?.Renderer;
-				
+
 				Cell oldCell = renderer?.Cell;
 
 				if (oldCell != null)
@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Platform.Android
 			ICellController cellController = cell;
 			cellController.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
 
-			_onForceUpdateSizeRequested = (sender, e) => 
+			_onForceUpdateSizeRequested = (sender, e) =>
 			{
 				if (nativeCell.Handle == IntPtr.Zero)
 					return;

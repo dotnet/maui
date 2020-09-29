@@ -57,7 +57,7 @@ namespace Xamarin.Forms
 		public Grid()
 		{
 			_children = new GridElementCollection(InternalChildren, this) { Parent = this };
-			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Grid>>(() => 
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Grid>>(() =>
 				new PlatformConfigurationRegistry<Grid>(this));
 		}
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Windows.Input;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Windows.Input;
 
 #if UITEST
 using Xamarin.UITest;
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-		
+
 		}
 	}
 

@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-
+using Xamarin.Forms.Build.Tasks;
+using Xamarin.Forms.Xaml;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
-
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Build.Tasks;
 
 namespace Xamarin.Forms.Core.XamlC
 {
@@ -19,7 +16,8 @@ namespace Xamarin.Forms.Core.XamlC
 		{
 			var module = context.Body.Method.Module;
 
-			if (string.IsNullOrWhiteSpace(value)) {
+			if (string.IsNullOrWhiteSpace(value))
+			{
 				yield return Create(Ldnull);
 				yield break;
 			}

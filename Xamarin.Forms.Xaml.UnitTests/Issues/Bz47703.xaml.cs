@@ -23,9 +23,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		BindingBase displayBinding;
 
-		public BindingBase DisplayBinding {
+		public BindingBase DisplayBinding
+		{
 			get { return displayBinding; }
-			set {
+			set
+			{
 				displayBinding = value;
 				if (displayBinding != null)
 					this.SetBinding(TextProperty, DisplayBinding);

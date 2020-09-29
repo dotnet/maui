@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Controls
 		public DynamicViewGallery()
 		{
 			_selector = new Picker();
-			foreach (var item in TestedTypes.OrderBy(x=> x.Key.ToString()))
+			foreach (var item in TestedTypes.OrderBy(x => x.Key.ToString()))
 				_selector.Items.Add(item.Key.ToString());
 			_selector.SelectedIndexChanged += TypeSelected;
 
@@ -259,7 +259,7 @@ namespace Xamarin.Forms.Controls
 					stringFormat += ".#";
 					break;
 			}
-			
+
 			var slider = new Slider(min, max, value);
 
 			var actions = new Grid

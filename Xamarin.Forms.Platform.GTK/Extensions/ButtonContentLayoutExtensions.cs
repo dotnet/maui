@@ -1,5 +1,5 @@
-﻿using Gtk;
-using System;
+﻿using System;
+using Gtk;
 using static Xamarin.Forms.Button;
 
 namespace Xamarin.Forms.Platform.GTK.Extensions

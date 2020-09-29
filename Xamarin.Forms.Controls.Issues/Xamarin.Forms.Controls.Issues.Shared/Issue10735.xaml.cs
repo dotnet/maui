@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.Internals;
-using Xamarin.Forms.CustomAttributes;
+﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using System.Collections.ObjectModel;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -17,61 +17,61 @@ namespace Xamarin.Forms.Controls
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 10735, "[Bug] [Fatal] [Android] CollectionView Causes Application Crash When Keyboard Opens", PlatformAffected.Android)]
 	public partial class Issue10735 : TestContentPage
-    {
-        readonly int _addItemDelay = 300;
-        int _item = 0;
+	{
+		readonly int _addItemDelay = 300;
+		int _item = 0;
 #if APP
-        readonly int _changeFocusDelay = 1000;
-        View _lastFocus;
+		readonly int _changeFocusDelay = 1000;
+		View _lastFocus;
 #endif
 
-        public Issue10735()
+		public Issue10735()
 		{
 #if APP
 			InitializeComponent();
-            BindingContext = this;
-            StartAddingMessages();
+			BindingContext = this;
+			StartAddingMessages();
 #endif
-        }
+		}
 
-        public ObservableCollection<string> Items { get; } = new ObservableCollection<string>();
+		public ObservableCollection<string> Items { get; } = new ObservableCollection<string>();
 
-        protected override void Init()
+		protected override void Init()
 		{
 
-        }
+		}
 
 		void StartAddingMessages()
-        {
-            Task.Run(async () =>
-            {
-                while (true)
-                {
-                    await Task.Delay(_addItemDelay);
-                    Items.Add(_item.ToString());
-                    _item++;
-                }
-            });
+		{
+			Task.Run(async () =>
+			{
+				while (true)
+				{
+					await Task.Delay(_addItemDelay);
+					Items.Add(_item.ToString());
+					_item++;
+				}
+			});
 #if APP
-            Task.Run(async () =>
-            {
-                while (true)
-                {
-                    await Task.Delay(_changeFocusDelay);
-                    Device.BeginInvokeOnMainThread(() =>
-                    {
-                        _lastFocus?.Unfocus();
+			Task.Run(async () =>
+			{
+				while (true)
+				{
+					await Task.Delay(_changeFocusDelay);
+					Device.BeginInvokeOnMainThread(() =>
+					{
+						_lastFocus?.Unfocus();
 
-                        if (_lastFocus == _editor)
-                            _lastFocus = _button;
-                        else
-                            _lastFocus = _editor;
-                        
-                        _lastFocus.Focus();
-                    });
-                }
-            });
+						if (_lastFocus == _editor)
+							_lastFocus = _button;
+						else
+							_lastFocus = _editor;
+
+						_lastFocus.Focus();
+					});
+				}
+			});
 #endif
-        }
-    }
+		}
+	}
 }

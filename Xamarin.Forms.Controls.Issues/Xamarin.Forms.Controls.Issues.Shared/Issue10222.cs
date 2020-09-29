@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Controls.Issues
 				cv = new CollectionView
 				{
 					AutomationId = "collectionView",
-					Margin = new Thickness(0,40),
+					Margin = new Thickness(0, 40),
 					ItemTemplate = new DataTemplate(() =>
 					{
 						var label = new Label

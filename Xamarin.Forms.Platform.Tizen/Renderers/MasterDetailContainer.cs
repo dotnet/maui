@@ -2,6 +2,7 @@
 
 namespace Xamarin.Forms.Platform.Tizen.Renderers
 {
+	[Obsolete("MasterDetailContainer is obsolete as of version 5.0.0. Please use FlyoutContainer instead.")]
 	public class MasterDetailContainer : ElmSharp.Box, IDisposable
 	{
 #pragma warning disable CS0618 // Type or member is obsolete

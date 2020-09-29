@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Controls.Issues
 					DisplayAlert("Exception!", ex.Message, "Gotcha");
 				}
 			};
-			
+
 
 			stackLayout.Children.Add(buttonBoom);
 			stackLayout.Children.Add(buttonNotBoom);

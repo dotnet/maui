@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public class Issue1641
 	{
 		[Test]
-		public void StaticResourceInTableView ()
+		public void StaticResourceInTableView()
 		{
 			var xaml = @"
 					<ContentPage
@@ -27,10 +27,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					        </TableRoot>
 					    </TableView>
 					</ContentPage>";
-			var page = new ContentPage ().LoadFromXaml (xaml);
+			var page = new ContentPage().LoadFromXaml(xaml);
 			var table = page.Content as TableView;
-			Assert.AreEqual ("Hello there!", page.Resources ["caption"] as string);
-			Assert.AreEqual ("Hello there!", (table.Root [0] [0] as TextCell).Text);
+			Assert.AreEqual("Hello there!", page.Resources["caption"] as string);
+			Assert.AreEqual("Hello there!", (table.Root[0][0] as TextCell).Text);
 
 		}
 	}

@@ -2,9 +2,9 @@
 
 namespace Xamarin.Forms.Shapes
 {
-    [TypeConverter(typeof(PointCollectionConverter))]
-    public sealed class PointCollection : ObservableCollection<Point>
-    {
+	[TypeConverter(typeof(PointCollectionConverter))]
+	public sealed class PointCollection : ObservableCollection<Point>
+	{
 
-    }
+	}
 }

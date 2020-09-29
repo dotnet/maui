@@ -97,9 +97,12 @@ namespace Xamarin.Forms.Xaml
 			var binding = new AppThemeBinding();
 			if (converterProvider != null)
 			{
-				if (_haslight) binding.Light = converterProvider.Convert(Light, propertyType, minforetriever, serviceProvider);
-				if (_hasdark) binding.Dark = converterProvider.Convert(Dark, propertyType, minforetriever, serviceProvider);
-				if (_hasdefault) binding.Default = converterProvider.Convert(Default, propertyType, minforetriever, serviceProvider);
+				if (_haslight)
+					binding.Light = converterProvider.Convert(Light, propertyType, minforetriever, serviceProvider);
+				if (_hasdark)
+					binding.Dark = converterProvider.Convert(Dark, propertyType, minforetriever, serviceProvider);
+				if (_hasdefault)
+					binding.Default = converterProvider.Convert(Default, propertyType, minforetriever, serviceProvider);
 				return binding;
 			}
 

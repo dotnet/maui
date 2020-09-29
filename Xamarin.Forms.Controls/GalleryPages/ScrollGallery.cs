@@ -80,11 +80,13 @@ namespace Xamarin.Forms.Controls
 			root.Children.Add(_scrollview);
 			Grid.SetRow(_scrollview, 4);
 
-			_scrollview.Scrolled += (object sender, ScrolledEventArgs e) => {
+			_scrollview.Scrolled += (object sender, ScrolledEventArgs e) =>
+			{
 				label.Text = string.Format("X: {0}, Y: {1}", e.ScrollX, e.ScrollY);
 			};
 
-			btn.Clicked += async (object sender, EventArgs e) => {
+			btn.Clicked += async (object sender, EventArgs e) =>
+			{
 				scrollStatusLabel.Text = "scrolling";
 				switch (orientation)
 				{
@@ -100,7 +102,8 @@ namespace Xamarin.Forms.Controls
 				}
 				scrollStatusLabel.Text = "completed";
 			};
-			btn4.Clicked += async (object sender, EventArgs e) => {
+			btn4.Clicked += async (object sender, EventArgs e) =>
+			{
 				switch (orientation)
 				{
 					case ScrollOrientation.Horizontal:
@@ -115,16 +118,20 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 
-			btn1.Clicked += async (object sender, EventArgs e) => {
+			btn1.Clicked += async (object sender, EventArgs e) =>
+			{
 				await _scrollview.ScrollToAsync(_toNavigateTo, ScrollToPosition.Start, true);
 			};
-			btn2.Clicked += async (object sender, EventArgs e) => {
+			btn2.Clicked += async (object sender, EventArgs e) =>
+			{
 				await _scrollview.ScrollToAsync(_toNavigateTo, ScrollToPosition.Center, true);
 			};
-			btn3.Clicked += async (object sender, EventArgs e) => {
+			btn3.Clicked += async (object sender, EventArgs e) =>
+			{
 				await _scrollview.ScrollToAsync(_toNavigateTo, ScrollToPosition.End, true);
 			};
-			btn6.Clicked += async (object sender, EventArgs e) => {
+			btn6.Clicked += async (object sender, EventArgs e) =>
+			{
 				await _scrollview.ScrollToAsync(_toNavigateTo, ScrollToPosition.MakeVisible, true);
 			};
 			btn7.Clicked += (object sender, EventArgs e) =>
@@ -202,7 +209,8 @@ namespace Xamarin.Forms.Controls
 				if (i == 53)
 				{
 					newButton.Text = "the make visible from start";
-					newButton.Clicked += async (object sender, EventArgs e) => {
+					newButton.Clicked += async (object sender, EventArgs e) =>
+					{
 						await _scrollview.ScrollToAsync(_toNavigateTo, ScrollToPosition.MakeVisible, true);
 					};
 				}

@@ -1,10 +1,10 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Widget;
-using AScaleType = Android.Widget.ImageView.ScaleType;
-using ARect = Android.Graphics.Rect;
-using System;
 using Xamarin.Forms.Internals;
+using ARect = Android.Graphics.Rect;
+using AScaleType = Android.Widget.ImageView.ScaleType;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			var imageController = (IImageController)renderer.Element;
 
 
-			if (renderer?.View?.LayoutParameters == null &&(renderer is ILayoutChanges lc && lc.HasLayoutOccurred))
+			if (renderer?.View?.LayoutParameters == null && (renderer is ILayoutChanges lc && lc.HasLayoutOccurred))
 			{
 				return;
 			}

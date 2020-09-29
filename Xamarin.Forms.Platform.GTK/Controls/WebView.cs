@@ -1,8 +1,8 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Gtk;
 using Xamarin.Forms.Platform.GTK.Helpers;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
@@ -168,7 +168,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 			else
 			{
-				 _webViewLinux.WebView.GoForward();
+				_webViewLinux.WebView.GoForward();
 			}
 		}
 
@@ -252,7 +252,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 			if (IsRealized)
 			{
-				_browser.Bounds = 
+				_browser.Bounds =
 					new System.Drawing.Rectangle(allocation.X, allocation.Y, allocation.Width, allocation.Height);
 			}
 		}
@@ -310,7 +310,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		{
 			get { return _webview; }
 		}
-		
+
 		public void Navigate(string uri)
 		{
 			_webview.Open(uri);

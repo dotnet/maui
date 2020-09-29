@@ -8,12 +8,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		public Gh5256Entry()
 		{
-			base.Completed += (o,e) => this.Completed?.Execute(o);
+			base.Completed += (o, e) => this.Completed?.Execute(o);
 		}
 		public static readonly BindableProperty CompletedProperty =
 			BindableProperty.Create("Completed", typeof(ICommand), typeof(Gh5256Entry), default(ICommand));
 
-		public new ICommand Completed {
+		public new ICommand Completed
+		{
 			get => (ICommand)GetValue(CompletedProperty);
 			set => SetValue(CompletedProperty, value);
 		}
@@ -35,7 +36,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void EventOverriding([Values(false, true)]bool useCompiledXaml)
+			public void EventOverriding([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh5256(useCompiledXaml) { BindingContext = new { CompletedCommand = new Command(() => Assert.Pass()) } };
 				layout.entry.SendCompleted();

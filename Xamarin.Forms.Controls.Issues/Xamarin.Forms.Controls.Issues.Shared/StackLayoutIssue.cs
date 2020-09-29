@@ -9,20 +9,22 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.None, 0, "StackLayout issue", PlatformAffected.All, NavigationBehavior.PushModalAsync)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.None, 0, "StackLayout issue", PlatformAffected.All, NavigationBehavior.PushModalAsync)]
 	public class StackLayoutIssue : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var logo = new Image {
+			var logo = new Image
+			{
 				Source = "cover1.jpg",
 				WidthRequest = 20,
 				HeightRequest = 20,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 			};
 
-			var winPrizeLabel = new Label {
+			var winPrizeLabel = new Label
+			{
 				Text = "Win a Xamarin Prize",
 #pragma warning disable 618
 				XAlign = TextAlignment.Center,
@@ -35,16 +37,18 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 #pragma warning disable 618
-			Device.OnPlatform (iOS: () => winPrizeLabel.Font = Font.OfSize ("HelveticaNeue-UltraLight", NamedSize.Large));
+			Device.OnPlatform(iOS: () => winPrizeLabel.Font = Font.OfSize("HelveticaNeue-UltraLight", NamedSize.Large));
 #pragma warning restore 618
 
-			StackLayout form = MakeForm ();
+			StackLayout form = MakeForm();
 
-			var spinButton = new Button {
+			var spinButton = new Button
+			{
 				Text = "Spin"
 			};
 
-			var mainLayout = new StackLayout {
+			var mainLayout = new StackLayout
+			{
 				Children = {
 					logo,
 					winPrizeLabel,
@@ -54,7 +58,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			Content = mainLayout;
-			Padding = new Thickness (50);
+			Padding = new Thickness(50);
 		}
 
 #if UITEST
@@ -82,32 +86,38 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 #endif
 
-		StackLayout MakeForm ()
+		StackLayout MakeForm()
 		{
-			var nameEntry = new Entry {
+			var nameEntry = new Entry
+			{
 				Placeholder = "Full Name"
 			};
-			var emailEntry = new Entry {
+			var emailEntry = new Entry
+			{
 				Placeholder = "Email"
 			};
 
-			var companyEntry = new Entry {
+			var companyEntry = new Entry
+			{
 				Placeholder = "Company"
 			};
 
-			var switchContainer = new StackLayout {
+			var switchContainer = new StackLayout
+			{
 				Orientation = StackOrientation.Horizontal
 			};
 
-			var switchLabel = new Label {
+			var switchLabel = new Label
+			{
 				Text = "Completed Azure Mobile Services Challenge?"
 			};
-			var switchElement = new Switch ();
+			var switchElement = new Switch();
 
-			switchContainer.Children.Add (switchLabel);
-			switchContainer.Children.Add (switchElement);
+			switchContainer.Children.Add(switchLabel);
+			switchContainer.Children.Add(switchElement);
 
-			var entryContainer = new StackLayout {
+			var entryContainer = new StackLayout
+			{
 				Children = {
 					nameEntry,
 					emailEntry,
@@ -117,21 +127,24 @@ namespace Xamarin.Forms.Controls.Issues
 				MinimumWidthRequest = 50
 			};
 
-			var qrButton = new Image {
+			var qrButton = new Image
+			{
 				Source = "cover1.jpg",
 				WidthRequest = 100,
 				HeightRequest = 100
 			};
 
-			var result = new StackLayout {
+			var result = new StackLayout
+			{
 				Orientation = StackOrientation.Horizontal
 			};
 
-			result.Children.Add (entryContainer);
-			result.Children.Add (qrButton);
+			result.Children.Add(entryContainer);
+			result.Children.Add(qrButton);
 
-			result.SizeChanged += (sender, args) => {
-				Debug.WriteLine (result.Bounds);
+			result.SizeChanged += (sender, args) =>
+			{
+				Debug.WriteLine(result.Bounds);
 			};
 
 			return result;

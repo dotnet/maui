@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Children = {
 					new Entry
 					{
-                        Margin = new Thickness(50),
+						Margin = new Thickness(50),
 						HorizontalOptions = LayoutOptions.FillAndExpand,
 						ClearButtonVisibility = ClearButtonVisibility.WhileEditing,
 						Text = "ClearButtonVisibility"

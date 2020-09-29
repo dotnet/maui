@@ -14,20 +14,21 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
-	[Preserve (AllMembers = true)]
-    [Issue (IssueTracker.Bugzilla, 37625, "App crashes when quickly adding/removing Image views (Windows UWP)")]
-    public class Bugzilla37625 : TestContentPage 
-    {
-        protected override async void Init ()
-        {
-            int retry = 5;
-            while (retry-- >= 0) {
-                var imageUri = new Uri ("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.ControlGallery.Android/Assets/WebImages/XamarinLogo.png");
-                Content = new Image () { Source = new UriImageSource () { Uri = imageUri }, BackgroundColor = Color.Black, AutomationId = "success" };
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 37625, "App crashes when quickly adding/removing Image views (Windows UWP)")]
+	public class Bugzilla37625 : TestContentPage
+	{
+		protected override async void Init()
+		{
+			int retry = 5;
+			while (retry-- >= 0)
+			{
+				var imageUri = new Uri("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.ControlGallery.Android/Assets/WebImages/XamarinLogo.png");
+				Content = new Image() { Source = new UriImageSource() { Uri = imageUri }, BackgroundColor = Color.Black, AutomationId = "success" };
 
-                await Task.Delay (50);
-            }
-        }
+				await Task.Delay(50);
+			}
+		}
 
 #if UITEST
         [Test]
@@ -36,5 +37,5 @@ namespace Xamarin.Forms.Controls.Issues
             RunningApp.WaitForElement (q => q.Marked ("success"));
         }
 #endif
-    }
+	}
 }

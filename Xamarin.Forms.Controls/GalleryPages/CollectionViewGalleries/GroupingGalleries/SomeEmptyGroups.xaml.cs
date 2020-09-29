@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 					new Member("Thor"),
 					new Member("Captain America")
 				}),
-							   			
+
 				new Team("Bionic Six", new List<Member>()),
 
 				new Team("Fantastic Four", new List<Member>

@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			layout.Children.Add(_entry);
 			layout.Children.Add(button);
 
-			button.Clicked += UpdateSpan ;
+			button.Clicked += UpdateSpan;
 
 			Content = layout;
 		}

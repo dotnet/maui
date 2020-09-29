@@ -6,9 +6,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ButtonDisabledStatesGallery : ContentPage
 	{
-		public ButtonDisabledStatesGallery ()
+		public ButtonDisabledStatesGallery()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
 		void Button0_Toggle_OnClicked(object sender, EventArgs e)

@@ -1,8 +1,8 @@
-﻿using ElmSharp;
-using System;
+﻿using System;
 using System.ComponentModel;
-using NSearchBar = Xamarin.Forms.Platform.Tizen.Native.SearchBar;
+using ElmSharp;
 using EColor = ElmSharp.Color;
+using NSearchBar = Xamarin.Forms.Platform.Tizen.Native.SearchBar;
 
 namespace Xamarin.Forms.Platform.Tizen
 {

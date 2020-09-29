@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.GTK
 		{
 			var result = new Style(typeof(Label));
 
-			switch(nativeKey)
+			switch (nativeKey)
 			{
 				case TitleStyleKey:
 					result.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 24 });

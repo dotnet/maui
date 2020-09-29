@@ -43,9 +43,9 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == BoxView.ColorProperty.PropertyName || 
-				e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || 
-				e.PropertyName == VisualElement.BackgroundProperty.PropertyName )
+			if (e.PropertyName == BoxView.ColorProperty.PropertyName ||
+				e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+				e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 				UpdateBackground();
 			else if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
 				UpdateCornerRadius();

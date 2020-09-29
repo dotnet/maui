@@ -1,7 +1,7 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Gtk;
 
 namespace Xamarin.Forms.Platform.GTK.Extensions
 {
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 			{
 				var req = self.SizeRequest();
 				desiredSize = new Gdk.Size(
-					req.Width > 0 ? req.Width : 0, 
+					req.Width > 0 ? req.Width : 0,
 					req.Height > 0 ? req.Height : 0);
 			}
 
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 
 				var req = self.SizeRequest();
 				desiredSize = new Gdk.Size(
-					req.Width > 0 ? req.Width : 0, 
+					req.Width > 0 ? req.Width : 0,
 					req.Height > 0 ? req.Height : 0);
 				heightFits = heightConstraint >= desiredSize.Height;
 			}
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 			}
 		}
 
-		static void GetContainerChildXY (Fixed parent, Widget child, out int x, out int y)
+		static void GetContainerChildXY(Fixed parent, Widget child, out int x, out int y)
 		{
 			using (GLib.Value val = parent.ChildGetProperty(child, "x"))
 			{

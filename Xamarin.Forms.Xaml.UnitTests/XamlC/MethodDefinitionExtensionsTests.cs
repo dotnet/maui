@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Linq;
-
-using Mono.Cecil;
-
-using Xamarin.Forms.Build.Tasks;
-
-using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
+using Mono.Cecil;
+using NUnit.Framework;
+using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Xaml.UnitTests;
 
 namespace Xamarin.Forms.XamlcUnitTests
@@ -26,7 +23,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 			public U GenericU() => default(U);
 			public V GenericV() => default(V);
 			public IEnumerable<T> EnumerableT() => default(IEnumerable<T>);
-			public KeyValuePair<V, U> KvpVU() => default(KeyValuePair<V,U>);
+			public KeyValuePair<V, U> KvpVU() => default(KeyValuePair<V, U>);
 		}
 
 		ModuleDefinition module;

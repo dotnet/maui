@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class Pr3384 : ContentPage
 	{
-		public Pr3384 ()
+		public Pr3384()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Pr3384 (bool useCompiledXaml)
+		public Pr3384(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -34,12 +33,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
-			[TestCase (false)]
-			[TestCase (true)]
-			public void RecyclingStrategyIsHandled (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void RecyclingStrategyIsHandled(bool useCompiledXaml)
 			{
-				var p = new Pr3384 (useCompiledXaml);
-				Assert.AreEqual (ListViewCachingStrategy.RecycleElement, p.listView.CachingStrategy);
+				var p = new Pr3384(useCompiledXaml);
+				Assert.AreEqual(ListViewCachingStrategy.RecycleElement, p.listView.CachingStrategy);
 			}
 		}
 	}

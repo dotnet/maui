@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Controls.Issues
 			AddPage("Lock test has passed");
 
 			int i = 0;
-			foreach(var item in Items)
+			foreach (var item in Items)
 			{
 				item.Items[0].AutomationId = $"FlyoutItem{i}";
 				item.Items[0].Items.Add(new ContentPage()

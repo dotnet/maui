@@ -1,6 +1,6 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.IO;
+using Gtk;
 using Xamarin.Forms.Platform.GTK.Helpers;
 using IOPath = System.IO.Path;
 

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Linq;
-using System.Threading.Tasks;
 
 
 #if UITEST
@@ -27,10 +27,10 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var layout = new StackLayout();
 
-			var instructions = new Label { Text = "Open the Picker below. It should contain 3 items ('one', 'two', 'three'). Tap the button marked 'Change Picker Contents'. The Picker should now contain four items ('uno', 'dos', 'tres', 'quatro'). If it does not, the test has failed."};
+			var instructions = new Label { Text = "Open the Picker below. It should contain 3 items ('one', 'two', 'three'). Tap the button marked 'Change Picker Contents'. The Picker should now contain four items ('uno', 'dos', 'tres', 'quatro'). If it does not, the test has failed." };
 
 			var button = new Button { Text = "Change Picker Contents " };
-			
+
 			var originalList = new List<string> { "one", "two", "three" };
 			var picker = new Picker { ItemsSource = originalList };
 

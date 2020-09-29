@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class Unreported003 : ContentPage
 	{
-		public Unreported003 ()
+		public Unreported003()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Unreported003 (bool useCompiledXaml)
+		public Unreported003(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -22,9 +21,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		class Tests
 		{
 			[TestCase(true), TestCase(false)]
-			public void AllowCtorArgsForValueTypes (bool useCompiledXaml)
+			public void AllowCtorArgsForValueTypes(bool useCompiledXaml)
 			{
-				var page = new Unreported003 (useCompiledXaml);
+				var page = new Unreported003(useCompiledXaml);
 			}
 		}
 	}

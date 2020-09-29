@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public GitHub1331()
 		{
 #if APP
-			InitializeComponent ();
+			InitializeComponent();
 
 			var mainViewModel = new GH1331ViewModel
 			{

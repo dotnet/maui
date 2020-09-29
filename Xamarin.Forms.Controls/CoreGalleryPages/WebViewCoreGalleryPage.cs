@@ -14,19 +14,20 @@ namespace Xamarin.Forms.Controls
 			get { return false; }
 		}
 
-		protected override void InitializeElement (WebView element)
+		protected override void InitializeElement(WebView element)
 		{
 			element.HeightRequest = 200;
 
 			element.Source = new UrlWebViewSource { Url = "http://xamarin.com/" };
 		}
 
-		protected override void Build (StackLayout stackLayout)
+		protected override void Build(StackLayout stackLayout)
 		{
-			base.Build (stackLayout);
+			base.Build(stackLayout);
 
-			var urlWebViewSourceContainer = new ViewContainer<WebView> (Test.WebView.UrlWebViewSource, 
-				new WebView {
+			var urlWebViewSourceContainer = new ViewContainer<WebView>(Test.WebView.UrlWebViewSource,
+				new WebView
+				{
 					Source = new UrlWebViewSource { Url = "https://www.google.com/" },
 					HeightRequest = 200
 				}
@@ -36,15 +37,17 @@ namespace Xamarin.Forms.Controls
 				"<head><meta name='viewport' content='width=device-width,initial-scale=1.0'></head>" +
 				"<body><div class=\"test\"><h2>I am raw html</h2></div></body></html>";
 
-			var htmlWebViewSourceContainer = new ViewContainer<WebView> (Test.WebView.HtmlWebViewSource, 
-				new WebView {
+			var htmlWebViewSourceContainer = new ViewContainer<WebView>(Test.WebView.HtmlWebViewSource,
+				new WebView
+				{
 					Source = new HtmlWebViewSource { Html = html },
 					HeightRequest = 200
 				}
 			);
 
-			var htmlFileWebSourceContainer = new ViewContainer<WebView> (Test.WebView.LoadHtml,
-				new WebView {
+			var htmlFileWebSourceContainer = new ViewContainer<WebView>(Test.WebView.LoadHtml,
+				new WebView
+				{
 					Source = new HtmlWebViewSource
 					{
 						Html = @"<!DOCTYPE html><html>
@@ -135,7 +138,7 @@ namespace Xamarin.Forms.Controls
 			};
 
 			jsAlertWebView.On<WindowsOS>().SetIsJavaScriptAlertEnabled(true);
-			
+
 			var javascriptAlertWebSourceContainer = new ViewContainer<WebView>(Test.WebView.JavaScriptAlert,
 				jsAlertWebView
 			);
@@ -152,18 +155,18 @@ namespace Xamarin.Forms.Controls
 			var resultsLabel = new Label();
 			var execButton = new Button();
 			execButton.Text = "Evaluate Javascript";
-			execButton.Command = new Command(async() => resultsLabel.Text = await evaluateJsWebView.EvaluateJavaScriptAsync(
+			execButton.Command = new Command(async () => resultsLabel.Text = await evaluateJsWebView.EvaluateJavaScriptAsync(
 												"var test = function(){ return 'This string came from Javascript!'; }; test();"));
 
 			evaluateJsWebViewSourceContainer.ContainerLayout.Children.Add(resultsLabel);
 			evaluateJsWebViewSourceContainer.ContainerLayout.Children.Add(execButton);
 
 
-			Add (urlWebViewSourceContainer);
-			Add (htmlWebViewSourceContainer);
-			Add (htmlFileWebSourceContainer);
-			Add (javascriptAlertWebSourceContainer);
-			Add (evaluateJsWebViewSourceContainer);
+			Add(urlWebViewSourceContainer);
+			Add(htmlWebViewSourceContainer);
+			Add(htmlFileWebSourceContainer);
+			Add(javascriptAlertWebSourceContainer);
+			Add(evaluateJsWebViewSourceContainer);
 		}
 	}
 }

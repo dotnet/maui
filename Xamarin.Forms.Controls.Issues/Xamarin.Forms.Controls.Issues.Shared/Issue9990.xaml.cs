@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue9990()
 		{
 #if APP
-			InitializeComponent ();
+			InitializeComponent();
 #endif
 		}
 

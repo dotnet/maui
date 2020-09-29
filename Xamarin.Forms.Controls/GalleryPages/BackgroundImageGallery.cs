@@ -9,14 +9,17 @@ namespace Xamarin.Forms.Controls
 	public class BackgroundImageGallery
 		: ContentPage
 	{
-		public BackgroundImageGallery ()
+		public BackgroundImageGallery()
 		{
 			var contentIntabs = new Button { Text = "Tabbed children" };
-			contentIntabs.Clicked += async (sender, args) => {
-				await Navigation.PushModalAsync (new TabbedPage {
-					ItemTemplate = new DataTemplate (() => {
+			contentIntabs.Clicked += async (sender, args) =>
+			{
+				await Navigation.PushModalAsync(new TabbedPage
+				{
+					ItemTemplate = new DataTemplate(() =>
+					{
 						var page = new ContentPage();
-						page.SetBinding (BackgroundImageSourceProperty, ".");
+						page.SetBinding(BackgroundImageSourceProperty, ".");
 						return page;
 					}),
 
@@ -28,11 +31,14 @@ namespace Xamarin.Forms.Controls
 			};
 
 			var contentInCarosel = new Button { Text = "Carousel children" };
-			contentInCarosel.Clicked += async (sender, args) => {
-				await Navigation.PushModalAsync (new CarouselPage {
-					ItemTemplate = new DataTemplate (() => {
+			contentInCarosel.Clicked += async (sender, args) =>
+			{
+				await Navigation.PushModalAsync(new CarouselPage
+				{
+					ItemTemplate = new DataTemplate(() =>
+					{
 						var page = new ContentPage();
-						page.SetBinding (BackgroundImageSourceProperty, ".");
+						page.SetBinding(BackgroundImageSourceProperty, ".");
 						return page;
 					}),
 
@@ -43,45 +49,56 @@ namespace Xamarin.Forms.Controls
 				});
 			};
 
-			var navigation = new Button { Text = "NavigationPage"};
-			navigation.Clicked += async (sender, args) => {
-				await Navigation.PushModalAsync (new NavigationPage (new ContentPage {
-						Content = new Label {
-							Text = "Text",
-							FontSize = 42
-						}})
+			var navigation = new Button { Text = "NavigationPage" };
+			navigation.Clicked += async (sender, args) =>
+			{
+				await Navigation.PushModalAsync(new NavigationPage(new ContentPage
+				{
+					Content = new Label
 					{
-						BackgroundImageSource = "oasis.jpg"
+						Text = "Text",
+						FontSize = 42
 					}
+				})
+				{
+					BackgroundImageSource = "oasis.jpg"
+				}
 				);
 			};
 
 			var carousel = new Button { Text = "CarouselPage" };
-			carousel.Clicked += async (sender, args) => {
-				await Navigation.PushAsync (new CarouselPage {
+			carousel.Clicked += async (sender, args) =>
+			{
+				await Navigation.PushAsync(new CarouselPage
+				{
 					BackgroundImageSource = "crimson.jpg",
 					ItemsSource = new[] { "test1", "test2" }
 				});
 			};
 
 			var tabbed = new Button { Text = "TabbedPage" };
-			tabbed.Clicked += async (sender, args) => {
-				await Navigation.PushAsync (new TabbedPage {
+			tabbed.Clicked += async (sender, args) =>
+			{
+				await Navigation.PushAsync(new TabbedPage
+				{
 					BackgroundImageSource = "crimson.jpg",
 					ItemsSource = new[] { "test1", "test2" }
 				});
 			};
 
 			var master = new Button { Text = "MasterDetail" };
-			master.Clicked += async (sender, args) => {
-				await Navigation.PushModalAsync (new FlyoutPage {
+			master.Clicked += async (sender, args) =>
+			{
+				await Navigation.PushModalAsync(new FlyoutPage
+				{
 					Flyout = new ContentPage { Title = "Flyout" },
 					Detail = new ContentPage(),
 					BackgroundImageSource = "crimson.jpg",
 				});
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					navigation,
 					carousel,
@@ -90,7 +107,7 @@ namespace Xamarin.Forms.Controls
 					contentIntabs,
 					contentInCarosel
 				}
-				
+
 			};
 		}
 	}

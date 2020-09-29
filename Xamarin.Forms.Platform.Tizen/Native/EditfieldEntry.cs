@@ -1,7 +1,7 @@
 using System;
 using ElmSharp;
-using ELayout = ElmSharp.Layout;
 using EColor = ElmSharp.Color;
+using ELayout = ElmSharp.Layout;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {

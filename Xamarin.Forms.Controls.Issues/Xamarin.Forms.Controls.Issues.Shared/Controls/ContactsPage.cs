@@ -19,7 +19,8 @@ namespace Xamarin.Forms.Controls
 		{
 			var listView = new ListView
 			{
-				ItemTemplate = new DataTemplate(() => {
+				ItemTemplate = new DataTemplate(() =>
+				{
 					var cell = new TextCell();
 					cell.SetBinding(TextCell.TextProperty, new Binding("Name"));
 					cell.SetBinding(TextCell.DetailProperty, new Binding("Number"));

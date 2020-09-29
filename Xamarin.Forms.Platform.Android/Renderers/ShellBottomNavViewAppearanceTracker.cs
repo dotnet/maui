@@ -1,7 +1,7 @@
-﻿using Android.Content.Res;
+﻿using System;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Google.Android.Material.BottomNavigation;
-using System;
 using AColor = Android.Graphics.Color;
 using R = Android.Resource;
 

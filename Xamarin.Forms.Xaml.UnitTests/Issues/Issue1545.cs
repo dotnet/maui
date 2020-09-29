@@ -33,18 +33,18 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						</ListView>
 				</ContentPage>";
 
-			ContentPage page = new ContentPage().LoadFromXaml (xaml);
+			ContentPage page = new ContentPage().LoadFromXaml(xaml);
 
 			var items = new[] { "Fu", "Bar" };
 			page.BindingContext = items;
 
-			ListView lv = page.FindByName<ListView> ("List");
-			
-			TextCell cell = (TextCell)lv.TemplatedItems.GetOrCreateContent (0, items[0]);
-			Assert.That (cell.Text, Is.EqualTo ("Fu"));
-			
-			cell = (TextCell)lv.TemplatedItems.GetOrCreateContent (1, items[1]);
-			Assert.That (cell.Text, Is.EqualTo ("Bar"));
+			ListView lv = page.FindByName<ListView>("List");
+
+			TextCell cell = (TextCell)lv.TemplatedItems.GetOrCreateContent(0, items[0]);
+			Assert.That(cell.Text, Is.EqualTo("Fu"));
+
+			cell = (TextCell)lv.TemplatedItems.GetOrCreateContent(1, items[1]);
+			Assert.That(cell.Text, Is.EqualTo("Bar"));
 		}
 
 		[Test]
@@ -72,29 +72,29 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						</ListView>
 				</ContentPage>";
 
-			ContentPage page = new ContentPage().LoadFromXaml (xaml);
+			ContentPage page = new ContentPage().LoadFromXaml(xaml);
 
 			var items = new[] { "Fu", "Bar" };
 			page.BindingContext = items;
 
-			ListView lv = page.FindByName<ListView> ("List");
+			ListView lv = page.FindByName<ListView>("List");
 
-			ViewCell cell0 = (ViewCell)lv.TemplatedItems.GetOrCreateContent (0, items[0]);
+			ViewCell cell0 = (ViewCell)lv.TemplatedItems.GetOrCreateContent(0, items[0]);
 
 
-			Assert.That (((Label)((StackLayout)cell0.View).Children[0]).Text, Is.EqualTo ("Fu"));
+			Assert.That(((Label)((StackLayout)cell0.View).Children[0]).Text, Is.EqualTo("Fu"));
 
-			ViewCell cell1 = (ViewCell)lv.TemplatedItems.GetOrCreateContent (1, items[1]);
-			Assert.That (((Label)((StackLayout)cell1.View).Children[0]).Text, Is.EqualTo ("Bar"));
+			ViewCell cell1 = (ViewCell)lv.TemplatedItems.GetOrCreateContent(1, items[1]);
+			Assert.That(((Label)((StackLayout)cell1.View).Children[0]).Text, Is.EqualTo("Bar"));
 
-			Assert.AreNotSame (cell0, cell1);
-			Assert.AreNotSame (cell0.View, cell1.View);
-			Assert.AreNotSame (((StackLayout)cell0.View).Children [0], ((StackLayout)cell1.View).Children [0]);
-			Assert.AreEqual (Color.FromHex ("ff00aa"), ((StackLayout)cell1.View).Children [0].BackgroundColor);
+			Assert.AreNotSame(cell0, cell1);
+			Assert.AreNotSame(cell0.View, cell1.View);
+			Assert.AreNotSame(((StackLayout)cell0.View).Children[0], ((StackLayout)cell1.View).Children[0]);
+			Assert.AreEqual(Color.FromHex("ff00aa"), ((StackLayout)cell1.View).Children[0].BackgroundColor);
 		}
 
 		[Test]
-		public void ElementsFromCollectionsAreNotReused ()
+		public void ElementsFromCollectionsAreNotReused()
 		{
 			var xaml = @"<ListView 
 						xmlns=""http://xamarin.com/schemas/2014/forms""
@@ -115,21 +115,21 @@ namespace Xamarin.Forms.Xaml.UnitTests
 							</ListView.ItemTemplate>
 						</ListView>";
 
-			var listview = new ListView ();
-			var items = new [] { "Foo", "Bar", "Baz" };
+			var listview = new ListView();
+			var items = new[] { "Foo", "Bar", "Baz" };
 			listview.BindingContext = items;
-			listview.LoadFromXaml (xaml);
-			var cell0 = (ViewCellWithCollection)listview.TemplatedItems.GetOrCreateContent (0, items[0]);
-			var cell1 = (ViewCellWithCollection)listview.TemplatedItems.GetOrCreateContent (1, items[1]);
+			listview.LoadFromXaml(xaml);
+			var cell0 = (ViewCellWithCollection)listview.TemplatedItems.GetOrCreateContent(0, items[0]);
+			var cell1 = (ViewCellWithCollection)listview.TemplatedItems.GetOrCreateContent(1, items[1]);
 
-			Assert.AreNotSame (cell0, cell1);
-			Assert.AreNotSame (cell0.Children, cell1.Children);
-			Assert.AreNotSame (cell0.Children[0], cell1.Children[0]);
+			Assert.AreNotSame(cell0, cell1);
+			Assert.AreNotSame(cell0.Children, cell1.Children);
+			Assert.AreNotSame(cell0.Children[0], cell1.Children[0]);
 
 		}
 
 		[Test]
-		public void ResourcesDeclaredInDataTemplatesAreNotShared ()
+		public void ResourcesDeclaredInDataTemplatesAreNotShared()
 		{
 			var xaml = @"<ListView 
 						xmlns=""http://xamarin.com/schemas/2014/forms""
@@ -151,32 +151,32 @@ namespace Xamarin.Forms.Xaml.UnitTests
 							</ListView.ItemTemplate>
 						</ListView>";
 
-			var listview = new ListView ();
-			var items = new [] { "Foo", "Bar", "Baz" };
+			var listview = new ListView();
+			var items = new[] { "Foo", "Bar", "Baz" };
 			listview.BindingContext = items;
 
-			listview.LoadFromXaml (xaml);
-			var cell0 = (ViewCell)listview.TemplatedItems.GetOrCreateContent (0, items[0]);
-			var cell1 = (ViewCell)listview.TemplatedItems.GetOrCreateContent (1, items[1]);
-			Assert.AreNotSame (cell0, cell1);
+			listview.LoadFromXaml(xaml);
+			var cell0 = (ViewCell)listview.TemplatedItems.GetOrCreateContent(0, items[0]);
+			var cell1 = (ViewCell)listview.TemplatedItems.GetOrCreateContent(1, items[1]);
+			Assert.AreNotSame(cell0, cell1);
 
 			var label0 = (Label)cell0.View;
 			var label1 = (Label)cell1.View;
-			Assert.AreNotSame (label0, label1);
-			Assert.AreEqual ("Foo", label0.Text);
-			Assert.AreEqual ("Bar", label1.Text);
+			Assert.AreNotSame(label0, label1);
+			Assert.AreEqual("Foo", label0.Text);
+			Assert.AreEqual("Bar", label1.Text);
 
 			var res0 = label0.Resources;
 			var res1 = label1.Resources;
-			Assert.AreNotSame (res0, res1);
+			Assert.AreNotSame(res0, res1);
 
-			var obj0 = res0 ["object"];
-			var obj1 = res1 ["object"];
+			var obj0 = res0["object"];
+			var obj1 = res1["object"];
 
-			Assert.NotNull (obj0);
-			Assert.NotNull (obj1);
+			Assert.NotNull(obj0);
+			Assert.NotNull(obj1);
 
-			Assert.AreNotSame (obj0, obj1);
+			Assert.AreNotSame(obj0, obj1);
 		}
 	}
 

@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.Platform.Tizen;
+﻿using Tizen.NET.MaterialComponents;
+using Xamarin.Forms;
 using Xamarin.Forms.Material.Tizen;
-using Tizen.NET.MaterialComponents;
+using Xamarin.Forms.Platform.Tizen;
 
 [assembly: ExportRenderer(typeof(CheckBox), typeof(MaterialCheckBoxRenderer), new[] { typeof(VisualMarker.MaterialVisual) }, Priority = short.MinValue)]
 namespace Xamarin.Forms.Material.Tizen

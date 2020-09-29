@@ -1,13 +1,13 @@
 ﻿using System;
+using System.ComponentModel;
 using Android.App;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using Xamarin.Forms.Internals;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
-using Xamarin.Forms.Internals;
-using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.Android
 {

@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
 		//mostly happens in european cultures
-		public void CultureInvariantNumberParsing (string culture)
+		public void CultureInvariantNumberParsing(string culture)
 		{
 			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
 
@@ -36,9 +36,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							RelativeLayout.HeightConstraint=""{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.25}""
 							RelativeLayout.WidthConstraint=""{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.6}""/>";
-			View view = new View ();
-			view.LoadFromXaml (xaml);
-			Assert.DoesNotThrow (() => view.LoadFromXaml (xaml));
+			View view = new View();
+			view.LoadFromXaml(xaml);
+			Assert.DoesNotThrow(() => view.LoadFromXaml(xaml));
 		}
 	}
 }

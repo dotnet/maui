@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				// Subscribe control event
 				Control.SelectionChanged += Control_SelectionChanged;
-				
+
 				// Subscribe element event
 				((INotifyCollectionChanged)Element.Children).CollectionChanged += OnPagesChanged;
 			}
@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Platform.WPF
 			if (e.PropertyName == nameof(MultiPage<TContainer>.CurrentPage))
 				UpdateCurrentPage();
 		}
-		
+
 		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			e.Apply(Element.Children, Control.ItemsSource);
@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			Control.SelectedItem = Element.CurrentPage;
 		}
-		
+
 		private void Control_SelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			Element.CurrentPage = e.NewElement as TContainer;

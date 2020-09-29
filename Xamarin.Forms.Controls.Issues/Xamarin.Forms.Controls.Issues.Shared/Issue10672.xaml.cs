@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Controls
 		{
 			for (int i = 0; i < 5; i++)
 				Items.Add(new CarouselItemViewModel());
-			
+
 			BindingContext = this;
 		}
 	}

@@ -11,26 +11,27 @@ namespace Xamarin.Forms.Controls
 {
 	public partial class LayoutAddPerformance : ContentPage
 	{
-		public LayoutAddPerformance ()
+		public LayoutAddPerformance()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		protected override async void OnAppearing ()
+		protected override async void OnAppearing()
 		{
-			base.OnAppearing ();
+			base.OnAppearing();
 
-			layout.Children.Clear ();
+			layout.Children.Clear();
 
-			await Task.Delay (2000);
+			await Task.Delay(2000);
 
 			Stopwatch sw = new Stopwatch();
-			sw.Start ();
-			for (int i = 0; i < 500; i++) {
-				layout.Children.Add (new Label { Text = i.ToString () });
+			sw.Start();
+			for (int i = 0; i < 500; i++)
+			{
+				layout.Children.Add(new Label { Text = i.ToString() });
 			}
-			sw.Stop ();
-			this.timingLabel.Text = sw.ElapsedMilliseconds.ToString ();
+			sw.Stop();
+			this.timingLabel.Text = sw.ElapsedMilliseconds.ToString();
 		}
 	}
 }

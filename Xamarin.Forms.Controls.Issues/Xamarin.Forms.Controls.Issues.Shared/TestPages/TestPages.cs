@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Reflection;
-using Xamarin.Forms.CustomAttributes;
-using IOPath = System.IO.Path;
 using NUnit.Framework.Interfaces;
 using Xamarin.Forms.Controls.Issues;
+using Xamarin.Forms.CustomAttributes;
+using IOPath = System.IO.Path;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -750,7 +750,7 @@ namespace Xamarin.Forms.Controls
 
 			shellSection.Items.Add(content);
 
-			if(!String.IsNullOrWhiteSpace(title))
+			if (!String.IsNullOrWhiteSpace(title))
 			{
 				content.Route = title;
 			}

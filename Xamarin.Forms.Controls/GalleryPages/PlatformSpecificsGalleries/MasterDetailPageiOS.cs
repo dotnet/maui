@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 			var detail = new ContentPage
 			{
 				Title = "This is the detail page's Title",
-				Padding = new Thickness(0,20,0,0)
+				Padding = new Thickness(0, 20, 0, 0)
 			};
 
 			void ToggleApplyShadow()
@@ -37,11 +37,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 			};
 
 			var navList = new NavList(navItems);
-			
+
 			masterContent.Children.Add(navList);
 			master.Content = masterContent;
 
-			var detailContent = new StackLayout {
+			var detailContent = new StackLayout
+			{
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.Center,
 				Children =
@@ -150,7 +151,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 			{
 				Text = "Toggle PreferredStatusBarUpdateAnimation"
 			};
-			
+
 			var togglePrefersHomeIndicatorAutoHiddenButton = new Button
 			{
 				Text = "Toggle PrefersHomeIndicatorAutoHidden"
@@ -183,7 +184,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 				var isIndicatorAutoHidden = page.On<iOS>().PrefersHomeIndicatorAutoHidden();
 				page.On<iOS>().SetPrefersHomeIndicatorAutoHidden(!isIndicatorAutoHidden);
 			});
-			
+
 			content.Children.Add(navigateButton);
 			content.Children.Add(togglePrefersStatusBarHiddenButtonForPageButton);
 			content.Children.Add(togglePreferredStatusBarUpdateAnimationButton);

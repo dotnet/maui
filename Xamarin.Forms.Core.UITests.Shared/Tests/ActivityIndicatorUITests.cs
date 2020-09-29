@@ -58,8 +58,8 @@ namespace Xamarin.Forms.Core.UITests
 #elif __WINDOWS__
 			Assert.Inconclusive(PleaseInspect);
 #else
-			var isRunning = remote.GetProperty<bool> (ActivityIndicator.IsRunningProperty);
-			Assert.IsTrue (isRunning);
+			var isRunning = remote.GetProperty<bool>(ActivityIndicator.IsRunningProperty);
+			Assert.IsTrue(isRunning);
 #endif
 		}
 

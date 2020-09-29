@@ -1,8 +1,8 @@
 using Android.Content;
 using Android.Views;
-using AView = Android.Views.View;
-using AListView = Android.Widget.ListView;
 using Xamarin.Forms.Internals;
+using AListView = Android.Widget.ListView;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {

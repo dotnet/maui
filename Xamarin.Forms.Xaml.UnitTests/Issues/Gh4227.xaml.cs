@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				if (useCompiledXaml)
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh4227)));
-				var layout = new Gh4227(useCompiledXaml) { BindingContext = new Gh4227VM()};
+				var layout = new Gh4227(useCompiledXaml) { BindingContext = new Gh4227VM() };
 				Assert.That(layout.label0.Text, Is.EqualTo("level0"));
 				Assert.That(layout.label1.Text, Is.EqualTo("level1"));
 			}

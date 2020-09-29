@@ -39,10 +39,11 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		protected override void Init ()
+		protected override void Init()
 		{
-			var result = new Label { 
-				FontSize = 16,			
+			var result = new Label
+			{
+				FontSize = 16,
 				Text = "Click 'Push page' twice"
 			};
 
@@ -65,7 +66,8 @@ namespace Xamarin.Forms.Controls.Issues
 				})
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					result,
 					new Button
@@ -85,7 +87,7 @@ namespace Xamarin.Forms.Controls.Issues
 							{
 								checkButton.IsEnabled = true;
 								result.Text = "You can check result";
-							} 
+							}
 							else
 							{
 								result.Text = "Again";

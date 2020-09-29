@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Controls.Issues
 			stackLayout.Children.Add(text);
 			stackLayout.Children.Add(button);
 			return new ContentPage
- 			{
+			{
 				Content = stackLayout
 			};
 		}

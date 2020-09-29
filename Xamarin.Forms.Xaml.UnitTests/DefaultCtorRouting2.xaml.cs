@@ -43,7 +43,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void ShouldntBeCompiled()
 			{
 #pragma warning disable 0618
-				Internals.XamlLoader.XamlFileProvider = (t) => {
+				Internals.XamlLoader.XamlFileProvider = (t) =>
+				{
 #pragma warning restore 0618
 					if (t == typeof(DefaultCtorRouting2))
 						return @"<?xml version=""1.0"" encoding=""UTF-8""?>

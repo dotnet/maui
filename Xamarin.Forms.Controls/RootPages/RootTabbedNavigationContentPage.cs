@@ -10,18 +10,22 @@ namespace Xamarin.Forms.Controls
 {
 	public class RootTabbedNavigationContentPage : TabbedPage
 	{
-		public RootTabbedNavigationContentPage (string hierarchy)
+		public RootTabbedNavigationContentPage(string hierarchy)
 		{
 			AutomationId = hierarchy + "PageId";
 
-			var tabOne = new NavigationPage (new ContentPage {
+			var tabOne = new NavigationPage(new ContentPage
+			{
 				Title = "Nav title",
-				Content = new SwapHierachyStackLayout (hierarchy)
-			}) { Title = "Tab 123", };
+				Content = new SwapHierachyStackLayout(hierarchy)
+			})
+			{ Title = "Tab 123", };
 
-			var tabTwo = new ContentPage {
+			var tabTwo = new ContentPage
+			{
 				Title = "Testing 345",
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					Children = {
 						new Label { Text = "Hello" },
 						new AbsoluteLayout {
@@ -34,8 +38,8 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 
-			Children.Add (tabOne);
-			Children.Add (tabTwo);
+			Children.Add(tabOne);
+			Children.Add(tabTwo);
 		}
 	}
 }

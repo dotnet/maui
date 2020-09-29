@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel;
 using Android.Views;
-using AView = Android.Views.View;
 using ALayoutChangeEventArgs = Android.Views.View.LayoutChangeEventArgs;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {

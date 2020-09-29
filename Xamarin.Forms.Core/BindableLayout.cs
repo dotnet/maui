@@ -286,7 +286,7 @@ namespace Xamarin.Forms
 			{
 				return emptyLayout;
 			}
-			
+
 			return new Label { Text = emptyView?.ToString(), HorizontalTextAlignment = TextAlignment.Center };
 		}
 

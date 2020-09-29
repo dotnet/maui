@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			var remote = new StateViewContainerRemote(App, Test.VisualElement.Focus, PlatformViewType);
 			remote.GoTo();
-			
+
 			Assert.IsFalse(IsFocused());
 			remote.TapView();
 			Assert.IsTrue(IsFocused());
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 
-		
+
 		// TODO
 		// Implement control specific ui tests
 		[Test]

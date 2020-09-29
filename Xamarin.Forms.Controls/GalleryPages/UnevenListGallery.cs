@@ -7,38 +7,42 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {
-    [Preserve(AllMembers = true)]
-    public class UnevenListGallery : ContentPage
+	[Preserve(AllMembers = true)]
+	public class UnevenListGallery : ContentPage
 	{
-        public UnevenListGallery ()
+		public UnevenListGallery()
 		{
-			Padding = new Thickness (0, 20, 0, 0);
+			Padding = new Thickness(0, 20, 0, 0);
 
-			var list = new ListView {
+			var list = new ListView
+			{
 				HasUnevenRows = true
 			};
 
 			bool next = true;
-			list.ItemTemplate = new DataTemplate (() => {
+			list.ItemTemplate = new DataTemplate(() =>
+			{
 				bool tall = next;
 				next = !next;
-				
-				var cell = new TextCell {
+
+				var cell = new TextCell
+				{
 					Height = (tall) ? 88 : 44
 				};
 
-				cell.SetBinding (TextCell.TextProperty, ".");
+				cell.SetBinding(TextCell.TextProperty, ".");
 				return cell;
 			});
 
 			list.ItemsSource = new[] { "Tall", "Short", "Tall", "Short" };
 
-			var listViewCellDynamicHeight = new ListView {
+			var listViewCellDynamicHeight = new ListView
+			{
 				HasUnevenRows = true,
-				AutomationId= "unevenCellListGalleryDynamic"
+				AutomationId = "unevenCellListGalleryDynamic"
 			};
 
-			listViewCellDynamicHeight.ItemsSource = new [] { 
+			listViewCellDynamicHeight.ItemsSource = new[] {
 				@"That Flesh is heir to? 'Tis a consummation
 Devoutly to be wished. To die, to sleep,
 To sleep, perchance to Dream; Aye, there's the rub,
@@ -48,43 +52,46 @@ To sleep, perchance to Dream; Aye, there's the rub,
 For in that sleep of death, what dreams may come",
 			};
 
-			listViewCellDynamicHeight.ItemTemplate = new DataTemplate (typeof(UnevenRowsCell));
+			listViewCellDynamicHeight.ItemTemplate = new DataTemplate(typeof(UnevenRowsCell));
 
-			listViewCellDynamicHeight.ItemTapped += (sender, e) => {
+			listViewCellDynamicHeight.ItemTapped += (sender, e) =>
+			{
 				if (e == null)
 					return; // has been set to null, do not 'process' tapped event
 				((ListView)sender).SelectedItem = null; // de-select the row
 			};
 
-			var grd = new Grid ();
+			var grd = new Grid();
 
-			grd.RowDefinitions.Add (new RowDefinition ());
-			grd.RowDefinitions.Add (new RowDefinition ());
-		
-			grd.Children.Add (listViewCellDynamicHeight);
-			grd.Children.Add (list);
-		
-			Grid.SetRow (list, 1);
-		
-			Content =  grd;
+			grd.RowDefinitions.Add(new RowDefinition());
+			grd.RowDefinitions.Add(new RowDefinition());
+
+			grd.Children.Add(listViewCellDynamicHeight);
+			grd.Children.Add(list);
+
+			Grid.SetRow(list, 1);
+
+			Content = grd;
 		}
 
 
-        [Preserve(AllMembers = true)]
-        public class UnevenRowsCell : ViewCell
+		[Preserve(AllMembers = true)]
+		public class UnevenRowsCell : ViewCell
 		{
-			public UnevenRowsCell ()
+			public UnevenRowsCell()
 			{
-				var label1 = new Label {
+				var label1 = new Label
+				{
 					Text = "Label 1",
-					FontSize = Device.GetNamedSize (NamedSize.Small, typeof(Label))
+					FontSize = Device.GetNamedSize(NamedSize.Small, typeof(Label))
 				};
-				label1.SetBinding (Label.TextProperty, new Binding ("."));
+				label1.SetBinding(Label.TextProperty, new Binding("."));
 
-				View = new StackLayout {
+				View = new StackLayout
+				{
 					Orientation = StackOrientation.Vertical,
 					VerticalOptions = LayoutOptions.StartAndExpand,
-					Padding = new Thickness (15, 5, 5, 5),
+					Padding = new Thickness(15, 5, 5, 5),
 					Children = { label1 }
 				};
 			}

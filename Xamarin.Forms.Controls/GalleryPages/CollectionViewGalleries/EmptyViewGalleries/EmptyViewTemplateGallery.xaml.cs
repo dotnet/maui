@@ -8,9 +8,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewG
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource();
 		readonly EmptyViewGalleryFilterInfo _emptyViewGalleryFilterInfo = new EmptyViewGalleryFilterInfo();
 
-		public EmptyViewTemplateGallery ()
+		public EmptyViewTemplateGallery()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 
 			CollectionView.ItemTemplate = ExampleTemplates.PhotoTemplate();
 

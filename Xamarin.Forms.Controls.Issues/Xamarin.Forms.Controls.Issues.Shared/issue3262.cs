@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Net;
-using Xamarin.Forms.Internals;
+using System.Text.RegularExpressions;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using System.Text.RegularExpressions;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;

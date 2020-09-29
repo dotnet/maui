@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Android
 		public CarouselSpacingItemDecoration(IItemsLayout itemsLayout, FormsCarouselView carouselView)
 		{
 			var layout = itemsLayout ?? throw new ArgumentNullException(nameof(itemsLayout));
-		
+
 			switch (layout)
 			{
 				case GridItemsLayout gridItemsLayout:

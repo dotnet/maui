@@ -36,7 +36,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var emptyLabel = new Label { HorizontalTextAlignment = TextAlignment.Center };
 
-			var customLabel = new HintLabel { HorizontalTextAlignment = TextAlignment.Center }; ;
+			var customLabel = new HintLabel { HorizontalTextAlignment = TextAlignment.Center };
+			;
 
 			Content = new StackLayout { Children = { label, emptyLabel, customLabel } };
 		}

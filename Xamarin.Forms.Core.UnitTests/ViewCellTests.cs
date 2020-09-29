@@ -8,56 +8,57 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class ViewCellTests : BaseTestFixture
 	{
 		[Test]
-		public void SetParentBeforeView ()
+		public void SetParentBeforeView()
 		{
 			var parent = new View();
-			var child = new View ();
-			var viewCell = new ViewCell ();
+			var child = new View();
+			var viewCell = new ViewCell();
 
-			Assert.Null (viewCell.View);
-			Assert.DoesNotThrow (() => viewCell.Parent = parent);
+			Assert.Null(viewCell.View);
+			Assert.DoesNotThrow(() => viewCell.Parent = parent);
 
 			viewCell.View = child;
-			Assert.AreSame (parent, viewCell.Parent);
-			Assert.AreSame (viewCell, child.Parent);
+			Assert.AreSame(parent, viewCell.Parent);
+			Assert.AreSame(viewCell, child.Parent);
 		}
 
 		[Test]
 		//issue 550
-		public void SetBindingContextBeforeParent ()
+		public void SetBindingContextBeforeParent()
 		{
-			var parent = new View { 
-				BindingContext = new object (),
+			var parent = new View
+			{
+				BindingContext = new object(),
 			};
 
-			var itemcontext = new object ();
-			var cell = new ViewCell { View = new Label ()};
+			var itemcontext = new object();
+			var cell = new ViewCell { View = new Label() };
 			cell.BindingContext = itemcontext;
 			cell.Parent = parent;
 
-			Assert.AreSame (itemcontext, cell.View.BindingContext);
+			Assert.AreSame(itemcontext, cell.View.BindingContext);
 		}
 
 		[Test]
-		public void SetBindingContextBeforeView ()
+		public void SetBindingContextBeforeView()
 		{
-			var context = new object ();
-			var view = new View ();
-			var cell = new ViewCell ();
+			var context = new object();
+			var view = new View();
+			var cell = new ViewCell();
 			cell.BindingContext = context;
 			cell.View = view;
-			Assert.AreSame (context, view.BindingContext);
+			Assert.AreSame(context, view.BindingContext);
 		}
 
 		[Test]
-		public void SetViewBeforeBindingContext ()
+		public void SetViewBeforeBindingContext()
 		{
-			var context = new object ();
-			var view = new View ();
-			var cell = new ViewCell ();
+			var context = new object();
+			var view = new View();
+			var cell = new ViewCell();
 			cell.View = view;
 			cell.BindingContext = context;
-			Assert.AreSame (context, view.BindingContext);
+			Assert.AreSame(context, view.BindingContext);
 		}
 	}
 }

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using ElmSharp;
 using Xamarin.Forms.Platform.Tizen.Native;
 using Xamarin.Forms.Platform.Tizen.Native.Watch;
-using ElmSharp;
 using EEntry = ElmSharp.Entry;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Picker.FontAttributesProperty, UpdateFontAttributes);
 			RegisterPropertyHandler(Picker.TitleProperty, UpdateTitle);
 			RegisterPropertyHandler(Picker.TitleColorProperty, UpdateTitleColor);
-			RegisterPropertyHandler(Picker.HorizontalTextAlignmentProperty, UpdateHorizontalTextAlignment);			
+			RegisterPropertyHandler(Picker.HorizontalTextAlignmentProperty, UpdateHorizontalTextAlignment);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				ie.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
 			}
-		}		
+		}
 
 		void OnLayoutFocused(object sender, EventArgs e)
 		{

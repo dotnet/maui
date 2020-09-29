@@ -15,7 +15,8 @@ namespace Xamarin.Forms
 
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
-			if (value != null) {
+			if (value != null)
+			{
 				value = value.Trim();
 				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double size))
 					return size;
@@ -47,7 +48,8 @@ namespace Xamarin.Forms
 				else if (Enum.TryParse(value, ignoreCase, out NamedSize ns))
 					namedSize = ns;
 
-				if (namedSize.HasValue) {
+				if (namedSize.HasValue)
+				{
 					var type = serviceProvider.GetService(typeof(IProvideValueTarget)) is IProvideValueTarget valueTargetProvider ? valueTargetProvider.TargetObject.GetType() : typeof(Label);
 					return Device.GetNamedSize(namedSize.Value, type, false);
 				}
@@ -57,7 +59,8 @@ namespace Xamarin.Forms
 
 		public override object ConvertFromInvariantString(string value)
 		{
-			if (value != null) {
+			if (value != null)
+			{
 				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double size))
 					return size;
 				value = value.Trim();

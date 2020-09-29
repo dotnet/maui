@@ -1,8 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
-
 using Xamarin.Forms;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -21,7 +20,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void EmptyResourcesElement([Values(false, true)]bool useCompiledXaml)
+			public void EmptyResourcesElement([Values(false, true)] bool useCompiledXaml)
 			{
 				Assert.DoesNotThrow(() => new DO817710(useCompiledXaml: useCompiledXaml));
 			}

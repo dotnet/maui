@@ -14,17 +14,24 @@ namespace Xamarin.Forms.StyleSheets
 			bool first = true;
 			bool hasLeadingDash = false;
 			int p;
-			while ((p = reader.Peek()) > 0) {
+			while ((p = reader.Peek()) > 0)
+			{
 				var c = unchecked((char)p);
-				if (first && !hasLeadingDash && c == '-') {
+				if (first && !hasLeadingDash && c == '-')
+				{
 					sb.Append((char)reader.Read());
 					hasLeadingDash = true;
-				} else if (first && c.IsNmStart()) {
+				}
+				else if (first && c.IsNmStart())
+				{
 					sb.Append((char)reader.Read());
 					first = false;
-				} else if (first) { //a nmstart is expected
+				}
+				else if (first)
+				{ //a nmstart is expected
 					throw new Exception();
-				} else if (c.IsNmChar())
+				}
+				else if (c.IsNmChar())
 					sb.Append((char)reader.Read());
 				else
 					break;
@@ -37,7 +44,8 @@ namespace Xamarin.Forms.StyleSheets
 		{
 			var sb = new StringBuilder();
 			int p;
-			while ((p = reader.Peek()) > 0) {
+			while ((p = reader.Peek()) > 0)
+			{
 				var c = unchecked((char)p);
 				if (c.IsNmChar())
 					sb.Append((char)reader.Read());
@@ -51,7 +59,8 @@ namespace Xamarin.Forms.StyleSheets
 		{
 			var sb = new StringBuilder();
 			int p;
-			while ((p = reader.Peek()) > 0) {
+			while ((p = reader.Peek()) > 0)
+			{
 				var c = unchecked((char)p);
 				if (limit != null && limit.Contains(c))
 					break;
@@ -65,7 +74,8 @@ namespace Xamarin.Forms.StyleSheets
 		public static void SkipWhiteSpaces(this TextReader reader)
 		{
 			int p;
-			while ((p = reader.Peek()) > 0) {
+			while ((p = reader.Peek()) > 0)
+			{
 				var c = unchecked((char)p);
 				if (!c.IsW())
 					break;

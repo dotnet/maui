@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void StyleClassCanBeChanged([Values(false, true)]bool useCompiledXaml)
+			public void StyleClassCanBeChanged([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh2678(useCompiledXaml);
 				var label = layout.label0;

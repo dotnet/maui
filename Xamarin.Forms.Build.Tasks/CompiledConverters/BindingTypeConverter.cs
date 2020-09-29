@@ -1,10 +1,8 @@
 using System.Collections.Generic;
 using Mono.Cecil.Cil;
-
-using Xamarin.Forms.Xaml;
-
-using static System.String;
 using Xamarin.Forms.Build.Tasks;
+using Xamarin.Forms.Xaml;
+using static System.String;
 
 namespace Xamarin.Forms.Core.XamlC
 {

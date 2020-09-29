@@ -22,8 +22,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[SetUp]
 			public void SetUp()
 			{
-				Device.PlatformServices = new MockPlatformServices ();
-				Application.Current = new MockApplication ();
+				Device.PlatformServices = new MockPlatformServices();
+				Application.Current = new MockApplication();
 			}
 
 			[TearDown]

@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 	public class _8715AboutPage : ContentPage
 	{
-		public _8715AboutPage() 
+		public _8715AboutPage()
 		{
 			Content = new Label { Text = "Open the flyout. Tap 'CollectionView'. Tap the 'Toggle' button. Now tap it again. Open the flyout. Tap 'About'. Open the flyout yet again. Tap 'CollectionView' yet again. If the application didn't crash, the test has passed." };
 			Title = "8715 About";
@@ -65,7 +65,8 @@ namespace Xamarin.Forms.Controls.Issues
 			button.Clicked += (sender, args) => { cv.IsVisible = !cv.IsVisible; };
 			cv.SetBinding(ItemsView.ItemsSourceProperty, new Binding("."));
 
-			cv.ItemTemplate = new DataTemplate(() => {
+			cv.ItemTemplate = new DataTemplate(() =>
+			{
 
 				var l = new StackLayout();
 
@@ -79,7 +80,7 @@ namespace Xamarin.Forms.Controls.Issues
 				l.Children.Add(label2);
 
 				return l;
-			
+
 			});
 
 			layout.Children.Add(button);

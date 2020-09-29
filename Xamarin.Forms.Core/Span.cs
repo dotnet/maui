@@ -51,7 +51,7 @@ namespace Xamarin.Forms
 			get { return (double)GetValue(TextElement.CharacterSpacingProperty); }
 			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
-		
+
 		public TextTransform TextTransform
 		{
 			get => (TextTransform)GetValue(TextTransformProperty);
@@ -163,7 +163,7 @@ namespace Xamarin.Forms
 		void ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue)
 		{
 		}
-		
+
 		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
 		{
 		}

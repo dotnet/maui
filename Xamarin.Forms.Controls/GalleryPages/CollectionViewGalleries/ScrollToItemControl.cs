@@ -30,8 +30,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				}
 			};
 
-			var indexLabel = new Label { Text = "Scroll To Item: ", VerticalTextAlignment = TextAlignment.Center};
-			_picker = new Picker{ WidthRequest = 200 };
+			var indexLabel = new Label { Text = "Scroll To Item: ", VerticalTextAlignment = TextAlignment.Center };
+			_picker = new Picker { WidthRequest = 200 };
 			var indexButton = new Button { Text = "Go" };
 
 			indexButton.Clicked += ScrollTo;
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 			layout.Children.Add(row1);
 
-			var animateLabel = new Label { Text = "Animate: ", VerticalTextAlignment = TextAlignment.Center};
+			var animateLabel = new Label { Text = "Animate: ", VerticalTextAlignment = TextAlignment.Center };
 			_animateSwitch = new Switch { IsToggled = true };
 
 			var row2 = new StackLayout { Orientation = StackOrientation.Horizontal };
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 		{
 			if (_picker.SelectedItem != null)
 			{
-				ScrollToItem(_picker.SelectedItem );
+				ScrollToItem(_picker.SelectedItem);
 			}
 		}
 

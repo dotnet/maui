@@ -6,7 +6,8 @@ using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-	public class Gh2752VM {
+	public class Gh2752VM
+	{
 		public Gh2752VM Foo { get; set; }
 		public Gh2752VM Bar { get; set; }
 		public string Baz { get; set; }
@@ -14,9 +15,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public partial class Gh2752 : ContentPage
 	{
 		public static readonly BindableProperty MyProperty =
-			BindableProperty.Create("My", typeof(string), typeof(Gh2752), default(string), defaultValueCreator: b=> "default created value");
+			BindableProperty.Create("My", typeof(string), typeof(Gh2752), default(string), defaultValueCreator: b => "default created value");
 
-		public string My {
+		public string My
+		{
 			get { return (string)GetValue(MyProperty); }
 			set { SetValue(MyProperty, value); }
 		}

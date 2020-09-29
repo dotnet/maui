@@ -205,7 +205,7 @@ namespace Xamarin.Forms.Markup.UnitTests
 				Markup.NotConverter.Instance // Ensure instance reuse path covered
 					.AssertConvert(true, false, twoWay: true)
 					.AssertConvert(false, true, twoWay: true);
-			} 
+			}
 			else
 			{
 				AssertExperimental(() => { var _ = new NotConverter(); });

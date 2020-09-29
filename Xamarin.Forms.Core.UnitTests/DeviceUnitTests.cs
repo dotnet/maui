@@ -73,7 +73,8 @@ namespace Xamarin.Forms.Core.UnitTests
 				invokeOnMainThread: action => Task.Delay(50).ContinueWith(_ => action()));
 
 			bool invoked = false;
-			async Task<bool> boom() { invoked = true; throw new ApplicationException(); }
+			async Task<bool> boom()
+			{ invoked = true; throw new ApplicationException(); }
 			var task = Device.InvokeOnMainThreadAsync(boom);
 			Assert.True(calledFromMainThread, "Action not invoked from main thread.");
 			Assert.False(invoked, "Action invoked early.");
@@ -107,7 +108,8 @@ namespace Xamarin.Forms.Core.UnitTests
 				invokeOnMainThread: action => Task.Delay(50).ContinueWith(_ => action()));
 
 			bool invoked = false;
-			async Task boom() { invoked = true; throw new ApplicationException(); }
+			async Task boom()
+			{ invoked = true; throw new ApplicationException(); }
 			var task = Device.InvokeOnMainThreadAsync(boom);
 			Assert.True(calledFromMainThread, "Action not invoked from main thread.");
 			Assert.False(invoked, "Action invoked early.");

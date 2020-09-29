@@ -42,11 +42,12 @@ namespace Xamarin.Forms.Internals
 
 			var result = Resolve(type, args);
 
-			if (result != null) return result;
+			if (result != null)
+				return result;
 
 			if (args.Length > 0)
 			{
-				if(visualType != _defaultVisualType)
+				if (visualType != _defaultVisualType)
 					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
 						return Activator.CreateInstance(type, new[] { args[0], source });
 
@@ -58,7 +59,7 @@ namespace Xamarin.Forms.Internals
 					return Activator.CreateInstance(type, args);
 				}
 			}
-			
+
 			return Activator.CreateInstance(type);
 		}
 	}

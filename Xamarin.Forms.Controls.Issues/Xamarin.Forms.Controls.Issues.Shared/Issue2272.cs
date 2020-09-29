@@ -1,9 +1,8 @@
 ﻿using System;
-
+using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Threading.Tasks;
 
 #if UITEST
 using NUnit.Framework;
@@ -16,18 +15,20 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 #endif
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 2272, "Entry text updating set focus on the beginning of text not the end of it", PlatformAffected.Android)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2272, "Entry text updating set focus on the beginning of text not the end of it", PlatformAffected.Android)]
 	public class Issue2272 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var userNameEditor = new Entry () { AutomationId = "userNameEditorEmptyString", Text = "userNameEditorEmptyString" };
-			userNameEditor.Focused += (sender, args) => {
+			var userNameEditor = new Entry() { AutomationId = "userNameEditorEmptyString", Text = "userNameEditorEmptyString" };
+			userNameEditor.Focused += (sender, args) =>
+			{
 				userNameEditor.Text = "focused";
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Spacing = 10,
 				VerticalOptions = LayoutOptions.Start,
 				Children = { userNameEditor }

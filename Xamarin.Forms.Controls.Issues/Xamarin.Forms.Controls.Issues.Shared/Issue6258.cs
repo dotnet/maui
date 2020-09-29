@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			page.Content = new ListView()
 			{
-				ItemsSource = new [] {"1"},
+				ItemsSource = new[] { "1" },
 				ItemTemplate = new DataTemplate(() =>
 				{
 					ViewCell cells = new ViewCell();

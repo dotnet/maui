@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var horizontalCollectionView = new CollectionView
 			{
 				BackgroundColor = Color.LightCoral,
-				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal), 
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
 				EmptyView = "Empty Horizontal List as String"
 			};
 
@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			
+
 		}
 	}
 }

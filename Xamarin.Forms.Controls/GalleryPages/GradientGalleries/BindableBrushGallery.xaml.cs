@@ -3,7 +3,7 @@
 namespace Xamarin.Forms.Controls.GalleryPages.GradientGalleries
 {
 	public partial class BindableBrushGallery : ContentPage
-	{	
+	{
 		public BindableBrushGallery()
 		{
 			InitializeComponent();

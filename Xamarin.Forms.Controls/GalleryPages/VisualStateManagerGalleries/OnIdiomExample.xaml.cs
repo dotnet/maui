@@ -15,9 +15,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 		const string DefaultState = "Normal";
 		string _currentState = DefaultState;
 
-		public OnIdiomExample ()
+		public OnIdiomExample()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
 		void Button_OnClicked(object sender, EventArgs e)

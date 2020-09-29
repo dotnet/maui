@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
 using System.Threading.Tasks;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.GTK.Renderers
 {
@@ -209,8 +209,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		Task<string> OnEvaluateJavaScriptRequested(string script)
 		{
-			   Control?.ExecuteScript(script);
-			   return null;
+			Control?.ExecuteScript(script);
+			return null;
 		}
 
 		private void OnGoBackRequested(object sender, EventArgs eventArgs)

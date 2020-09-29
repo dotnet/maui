@@ -6,59 +6,59 @@ namespace Xamarin.Forms.Controls
 	// Full repro requires assignment to MainPage, hence the issue
 	public class NavReproApp : Application
 	{
-		NavigationPage navPage1 = new NavigationPage ();
+		NavigationPage navPage1 = new NavigationPage();
 
-		public NavReproApp ()
+		public NavReproApp()
 		{
 
-			var btn = new Button () { Text = "Start" };
+			var btn = new Button() { Text = "Start" };
 
 			btn.Clicked += Btn_Clicked;
 
-			navPage1.PushAsync (new ContentPage () { Content = btn });
+			navPage1.PushAsync(new ContentPage() { Content = btn });
 
 			MainPage = navPage1;
 
 		}
 
-		async void Btn_Clicked (object sender, EventArgs e)
+		async void Btn_Clicked(object sender, EventArgs e)
 		{
-			await navPage1.PushAsync (new ContentPage () { Content = new Label () { Text = "Page 2" } });
-			await navPage1.PushAsync (new ContentPage () { Content = new Label () { Text = "Page 3" } });
+			await navPage1.PushAsync(new ContentPage() { Content = new Label() { Text = "Page 2" } });
+			await navPage1.PushAsync(new ContentPage() { Content = new Label() { Text = "Page 3" } });
 
 
-			var navPage2 = new NavigationPage ();
+			var navPage2 = new NavigationPage();
 
-			var btn = new Button () { Text = "Start Next" };
+			var btn = new Button() { Text = "Start Next" };
 			btn.Clicked += Btn_Clicked1;
 
-			await navPage2.PushAsync (new ContentPage () { Content = btn });
+			await navPage2.PushAsync(new ContentPage() { Content = btn });
 
 			MainPage = navPage2;
 
 
 		}
 
-		async void Btn_Clicked1 (object sender, EventArgs e)
+		async void Btn_Clicked1(object sender, EventArgs e)
 		{
 			MainPage = navPage1;
-			await navPage1.PopAsync ();
+			await navPage1.PopAsync();
 
 
-			await navPage1.PushAsync (new ContentPage () { Content = new Label () { Text = "Page 3a" } });
+			await navPage1.PushAsync(new ContentPage() { Content = new Label() { Text = "Page 3a" } });
 		}
 
-		protected override void OnStart ()
+		protected override void OnStart()
 		{
 			// Handle when your app starts
 		}
 
-		protected override void OnSleep ()
+		protected override void OnSleep()
 		{
 			// Handle when your app sleeps
 		}
 
-		protected override void OnResume ()
+		protected override void OnResume()
 		{
 			// Handle when your app resumes
 		}

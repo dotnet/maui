@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
-		public ListSource(IEnumerable<object> enumerable) 
+		public ListSource(IEnumerable<object> enumerable)
 		{
 			_itemsSource = new List<object>(enumerable);
 		}
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void Dispose()
 		{
-			
+
 		}
 
 		public bool IsFooter(int index)

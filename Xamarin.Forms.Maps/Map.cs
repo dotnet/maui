@@ -108,11 +108,11 @@ namespace Xamarin.Forms.Maps
 			get { return (bool)GetValue(MoveToLastRegionOnLayoutChangeProperty); }
 			set { SetValue(MoveToLastRegionOnLayoutChangeProperty, value); }
 		}
-        
+
 		public IList<MapElement> MapElements => _mapElements;
 
 		public event EventHandler<MapClickedEventArgs> MapClicked;
-		
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendMapClicked(Position position) => MapClicked?.Invoke(this, new MapClickedEventArgs(position));
 

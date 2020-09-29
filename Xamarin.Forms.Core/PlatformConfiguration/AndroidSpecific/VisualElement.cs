@@ -3,7 +3,7 @@
 	using FormsElement = Forms.VisualElement;
 
 	public static class VisualElement
-    {
+	{
 		#region Elevation
 
 		public static readonly BindableProperty ElevationProperty =
@@ -36,31 +36,31 @@
 		#region IsLegacyColorModeEnabled
 
 		public static readonly BindableProperty IsLegacyColorModeEnabledProperty =
-		    BindableProperty.CreateAttached("IsLegacyColorModeEnabled", typeof(bool),
-			    typeof(FormsElement), true);
+			BindableProperty.CreateAttached("IsLegacyColorModeEnabled", typeof(bool),
+				typeof(FormsElement), true);
 
-	    public static bool GetIsLegacyColorModeEnabled(BindableObject element)
-	    {
-		    return (bool)element.GetValue(IsLegacyColorModeEnabledProperty);
-	    }
+		public static bool GetIsLegacyColorModeEnabled(BindableObject element)
+		{
+			return (bool)element.GetValue(IsLegacyColorModeEnabledProperty);
+		}
 
-	    public static void SetIsLegacyColorModeEnabled(BindableObject element, bool value)
-	    {
-		    element.SetValue(IsLegacyColorModeEnabledProperty, value);
-	    }
+		public static void SetIsLegacyColorModeEnabled(BindableObject element, bool value)
+		{
+			element.SetValue(IsLegacyColorModeEnabledProperty, value);
+		}
 
-	    public static bool GetIsLegacyColorModeEnabled(this IPlatformElementConfiguration<Android, FormsElement> config)
-	    {
-		    return (bool)config.Element.GetValue(IsLegacyColorModeEnabledProperty);
-	    }
+		public static bool GetIsLegacyColorModeEnabled(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			return (bool)config.Element.GetValue(IsLegacyColorModeEnabledProperty);
+		}
 
-	    public static IPlatformElementConfiguration<Android, FormsElement> SetIsLegacyColorModeEnabled(
-		    this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
-	    {
-		    config.Element.SetValue(IsLegacyColorModeEnabledProperty, value);
-		    return config;
-	    }
+		public static IPlatformElementConfiguration<Android, FormsElement> SetIsLegacyColorModeEnabled(
+			this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
+		{
+			config.Element.SetValue(IsLegacyColorModeEnabledProperty, value);
+			return config;
+		}
 
-	    #endregion
+		#endregion
 	}
 }

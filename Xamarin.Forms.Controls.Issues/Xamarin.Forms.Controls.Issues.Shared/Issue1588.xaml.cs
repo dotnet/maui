@@ -12,9 +12,9 @@ namespace Xamarin.Forms.Controls.Issues
 	public partial class Issue1588 : TestContentPage
 	{
 #if APP
-		public Issue1588 ()
+		public Issue1588()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 #endif
 

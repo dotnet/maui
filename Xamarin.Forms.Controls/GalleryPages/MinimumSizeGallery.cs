@@ -9,9 +9,10 @@ namespace Xamarin.Forms.Controls
 {
 	public class MinimumSizeGallery : ContentPage
 	{
-		public MinimumSizeGallery ()
+		public MinimumSizeGallery()
 		{
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					new Button { Text = "Big Button", HeightRequest = 300 },
 					new TableView {

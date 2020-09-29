@@ -26,10 +26,10 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			ListView list = new ListView();
 			list.BackgroundColor = Color.Yellow;
-			list.ItemsSource = 
+			list.ItemsSource =
 				Enumerable
 				.Range(0, 1000)
-				.Select(x=> String.Join("", Enumerable.Range(0,100))  )
+				.Select(x => String.Join("", Enumerable.Range(0, 100)))
 				.ToArray();
 
 			list.ItemTemplate = new DataTemplate(() =>
@@ -96,7 +96,7 @@ namespace Xamarin.Forms.Controls.Issues
 							UpdateScrollVisibility(list, labelScrollBarState);
 						})
 					},
-					
+
 				}
 			};
 

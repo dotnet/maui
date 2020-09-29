@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[Test]
 			public void DoesCompilesArgsInsideDataTemplate()
 			{
-				Assert.DoesNotThrow(()=>MockCompiler.Compile(typeof(Bz53318)));
+				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Bz53318)));
 			}
 		}
 	}

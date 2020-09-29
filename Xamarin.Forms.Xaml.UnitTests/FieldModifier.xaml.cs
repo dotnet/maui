@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public FieldModifier (bool useCompiledXaml)
+		public FieldModifier(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -19,9 +19,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class FindByNameTests
 		{
-			[TestCase (false)]
-			[TestCase (true)]
-			public void TestFieldModifier (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestFieldModifier(bool useCompiledXaml)
 			{
 				var layout = new FieldModifier();
 				Assert.That(layout.privateLabel, Is.Not.Null);

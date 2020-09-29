@@ -65,9 +65,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollMode
 		void AddItemToEnd_Clicked(object sender, EventArgs e)
 		{
 			_demoFilteredItemSource.Items.Add(
-				new CollectionViewGalleryTestItem(DateTime.Now, 
-				"Added item", 
-				"coffee.png", 
+				new CollectionViewGalleryTestItem(DateTime.Now,
+				"Added item",
+				"coffee.png",
 				_demoFilteredItemSource.Items.Count));
 		}
 	}

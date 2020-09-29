@@ -18,12 +18,14 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<BoxView>>(() => new PlatformConfigurationRegistry<BoxView>(this));
 		}
 
-		public Color Color {
+		public Color Color
+		{
 			get => (Color)GetValue(ColorElement.ColorProperty);
 			set => SetValue(ColorElement.ColorProperty, value);
 		}
 
-		public CornerRadius CornerRadius {
+		public CornerRadius CornerRadius
+		{
 			get => (CornerRadius)GetValue(CornerElement.CornerRadiusProperty);
 			set => SetValue(CornerElement.CornerRadiusProperty, value);
 		}

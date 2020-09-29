@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using AndroidX.ViewPager.Widget;
 using Android.Views;
+using AndroidX.ViewPager.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {

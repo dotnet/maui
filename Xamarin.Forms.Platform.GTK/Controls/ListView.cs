@@ -1,10 +1,10 @@
-﻿using GLib;
-using Gtk;
-using OpenTK.Input;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using GLib;
+using Gtk;
+using OpenTK.Input;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Cells;
 using Xamarin.Forms.Platform.GTK.Extensions;
@@ -62,17 +62,17 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		public ListViewSeparator()
 		{
 			HeightRequest = 1;
-			ModifyBg(StateType.Normal, Color.Gray.ToGtkColor());	// Default Color: Gray
+			ModifyBg(StateType.Normal, Color.Gray.ToGtkColor());    // Default Color: Gray
 			VisibleWindow = false;
 		}
 	}
 
 	public enum State : uint
 	{
-		Started,  
-		Loading,  
-		Completed, 
-		Finished  
+		Started,
+		Loading,
+		Completed,
+		Finished
 	};
 
 	public class IdleData
@@ -433,8 +433,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			// Make sure we're in the right state 
 			var isLoading = (id.LoadState == Controls.State.Started) ||
 				(id.LoadState == Controls.State.Loading);
-   
-			if(!isLoading)
+
+			if (!isLoading)
 			{
 				id.LoadState = Controls.State.Completed;
 				return false;
@@ -453,8 +453,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				id.NumItems = id.Items.Count;
 				id.NumLoaded = 0;
 				id.LoadState = Controls.State.Loading;
-			}   
-			
+			}
+
 			// Get the item in the list at pos n_loaded 
 			obj = id.Items[id.NumLoaded] as CellBase;
 
@@ -502,7 +502,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 					OnItemTapped?.Invoke(this, new ItemTappedEventArgs(SelectedItem, (MouseButton)args.Event.Button - 1));
 				}
 			};
-			
+
 			cell.VisibleWindow = false;
 
 			_list.PackStart(cell, false, false, 0);

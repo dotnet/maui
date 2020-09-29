@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void CSSBorderRadiusDoesNotFail([Values(false, true)]bool useCompiledXaml)
+			public void CSSBorderRadiusDoesNotFail([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh6361(useCompiledXaml);
 			}

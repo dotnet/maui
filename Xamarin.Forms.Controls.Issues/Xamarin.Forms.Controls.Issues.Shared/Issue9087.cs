@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.CustomAttributes;
 using System.ComponentModel;
+using System.Text;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -14,7 +14,7 @@ using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Issue(IssueTracker.Github, 9087, 
+	[Issue(IssueTracker.Github, 9087,
 		"[Bug] Collection View items don't load bindable properties values inside OnElementChanged", PlatformAffected.All)]
 	public class Issue9087 : TestContentPage
 	{
@@ -52,8 +52,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public class _9087Label : Label { }
 
-		public class _9087Item 
-		{ 
+		public class _9087Item
+		{
 			public string Name { get; set; }
 		}
 

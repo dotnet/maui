@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Threading.Tasks;
 
 
 #if UITEST
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Children =
 				{
 					new Label(){ Text = "Typing into either text field should change the other field to match" },
-					entry, 
+					entry,
 					editor
 				}
 			};

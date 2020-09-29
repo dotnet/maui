@@ -35,12 +35,16 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			}
 
 			[Test]
-			public void CanXReferenceRoot([Values(false, true)]bool useCompiledXaml)
+			public void CanXReferenceRoot([Values(false, true)] bool useCompiledXaml)
 			{
-				var layout = new Gh7097(useCompiledXaml) { BindingContext = new {
+				var layout = new Gh7097(useCompiledXaml)
+				{
+					BindingContext = new
+					{
 						Button1Command = new MockCommand(),
 						Button2Command = new MockCommand(),
-					} };
+					}
+				};
 				var cv = layout.Content as CollectionView;
 				var content = cv.ItemTemplate.CreateContent() as StackLayout;
 				var btn1 = content.Children[0] as Button;
@@ -49,7 +53,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			[Test]
 			//this was later reported as https://github.com/xamarin/Xamarin.Forms/issues/7286
-			public void RegisteringXNameOnSubPages([Values(false, true)]bool useCompiledXaml)
+			public void RegisteringXNameOnSubPages([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh7097(useCompiledXaml);
 				var s = layout.FindByName("self");

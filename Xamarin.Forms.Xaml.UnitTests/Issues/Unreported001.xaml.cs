@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public class U001Page : ContentPage
 	{
-		public U001Page ()
+		public U001Page()
 		{
 			;
 		}
@@ -17,12 +16,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public partial class Unreported001 : TabbedPage
 	{
-		public Unreported001 ()
+		public Unreported001()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Unreported001 (bool useCompiledXaml)
+		public Unreported001(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -30,12 +29,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase (false)]
-			[TestCase (true)]
-			public void DoesNotThrow (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void DoesNotThrow(bool useCompiledXaml)
 			{
-				var p = new Unreported001 (useCompiledXaml);
-				Assert.That (p.navpage.CurrentPage, Is.TypeOf<U001Page> ());
+				var p = new Unreported001(useCompiledXaml);
+				Assert.That(p.navpage.CurrentPage, Is.TypeOf<U001Page>());
 			}
 		}
 	}

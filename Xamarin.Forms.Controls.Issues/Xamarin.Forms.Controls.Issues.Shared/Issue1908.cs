@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			for (int i = 0; i < 1000; i++)
 			{
-				listView.Children.Add(new Image() { Source = "oasis.jpg",  ClassId = $"OASIS{i}", AutomationId = $"OASIS{i}" });
+				listView.Children.Add(new Image() { Source = "oasis.jpg", ClassId = $"OASIS{i}", AutomationId = $"OASIS{i}" });
 			}
 
 			Content = new ScrollView() { Content = listView };

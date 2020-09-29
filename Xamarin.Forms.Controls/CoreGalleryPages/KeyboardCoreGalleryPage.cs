@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Controls
 {
 	internal class KeyboardCoreGallery : ContentPage
 	{
-		public KeyboardCoreGallery ()
+		public KeyboardCoreGallery()
 		{
 			var keyboardTypes = new[] {
 				Keyboard.Chat,
@@ -20,14 +20,15 @@ namespace Xamarin.Forms.Controls
 				Keyboard.Url
 			};
 
-			var layout = new StackLayout ();
+			var layout = new StackLayout();
 
-			foreach (var keyboardType in keyboardTypes) {
-				var viewContainer = new ViewContainer<Entry> (Test.InputView.Keyboard, new Entry { Placeholder = keyboardType.ToString (), Keyboard = keyboardType } );
-				layout.Children.Add (viewContainer.ContainerLayout);
+			foreach (var keyboardType in keyboardTypes)
+			{
+				var viewContainer = new ViewContainer<Entry>(Test.InputView.Keyboard, new Entry { Placeholder = keyboardType.ToString(), Keyboard = keyboardType });
+				layout.Children.Add(viewContainer.ContainerLayout);
 			}
 
-			var customKeyboards = new [] {
+			var customKeyboards = new[] {
 				Tuple.Create ("None", Keyboard.Create (KeyboardFlags.None)),
 				Tuple.Create ("Suggestions", Keyboard.Create (KeyboardFlags.Suggestions)),
 				Tuple.Create ("Spellcheck", Keyboard.Create (KeyboardFlags.Spellcheck)),
@@ -39,13 +40,14 @@ namespace Xamarin.Forms.Controls
 				Tuple.Create ("All",  Keyboard.Create (KeyboardFlags.All)),
 			};
 
-			foreach (var customKeyboard in customKeyboards) {
-				var viewContainer = new ViewContainer<Entry> (Test.InputView.Keyboard, new Entry { Placeholder = customKeyboard.Item1, Keyboard = customKeyboard.Item2 } );
-				layout.Children.Add (viewContainer.ContainerLayout);
+			foreach (var customKeyboard in customKeyboards)
+			{
+				var viewContainer = new ViewContainer<Entry>(Test.InputView.Keyboard, new Entry { Placeholder = customKeyboard.Item1, Keyboard = customKeyboard.Item2 });
+				layout.Children.Add(viewContainer.ContainerLayout);
 			}
 
 			Content = new ScrollView { Content = layout };
 		}
-		
+
 	}
 }

@@ -8,9 +8,9 @@ namespace Xamarin.Forms.Controls
 			get { return false; }
 		}
 
-		protected override void Build (StackLayout stackLayout)
+		protected override void Build(StackLayout stackLayout)
 		{
-			base.Build (stackLayout);
+			base.Build(stackLayout);
 		}
 	}
 }

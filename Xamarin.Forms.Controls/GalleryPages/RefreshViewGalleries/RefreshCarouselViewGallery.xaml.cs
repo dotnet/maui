@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries
 		public RefreshCarouselViewGallery()
 		{
 			InitializeComponent();
-            BindingContext = new RefreshViewModel();
-        }
+			BindingContext = new RefreshViewModel();
+		}
 	}
 }

@@ -1,6 +1,6 @@
-﻿using Gtk;
+﻿using System;
+using Gtk;
 using Pango;
-using System;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
 {

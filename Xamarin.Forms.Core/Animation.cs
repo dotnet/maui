@@ -141,9 +141,9 @@ namespace Xamarin.Forms
 			return this;
 		}
 
-		public static bool IsEnabled 
+		public static bool IsEnabled
 		{
-			get 
+			get
 			{
 				return Internals.Ticker.Default.SystemEnabled;
 			}

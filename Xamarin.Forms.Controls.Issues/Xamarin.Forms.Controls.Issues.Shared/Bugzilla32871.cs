@@ -1,7 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.ComponentModel;
 
 #if UITEST
 using NUnit.Framework;

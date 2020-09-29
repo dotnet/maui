@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 #if UITEST
 using Xamarin.UITest;
@@ -76,7 +76,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			for (int i = 0; i < 20; i++)
 			{
-				Items.Add(new Issue8326Model { Text = $"Item {i+1}" });
+				Items.Add(new Issue8326Model { Text = $"Item {i + 1}" });
 			}
 		}
 	}

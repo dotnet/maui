@@ -1,6 +1,6 @@
 ﻿using System;
-using NUnit.Framework;
 using System.Collections.ObjectModel;
+using NUnit.Framework;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -9,43 +9,45 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public class SeverityColorConverter : IValueConverter
 	{
 
-		public object Convert (object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
 			count++;
 			return Color.Blue;
 		}
 
-		public object ConvertBack (object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			throw new NotImplementedException ();
+			throw new NotImplementedException();
 		}
 
 
-		public static int count=0;
+		public static int count = 0;
 	}
 
 	public class InvertBoolenConverter : IValueConverter
 	{
-		public object Convert (object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
 			count++;
-			if (value is bool)  {
+			if (value is bool)
+			{
 
 				return !(bool)value;
 			}
 			return value;
 		}
 
-		public object ConvertBack (object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			throw new NotImplementedException ();
+			throw new NotImplementedException();
 		}
-		public static int count=0;
+		public static int count = 0;
 	}
 
 	public class Item
 	{
-		public bool IsLocked {
+		public bool IsLocked
+		{
 			get;
 			set;
 		}
@@ -55,7 +57,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public class Issue1549
 	{
 		[SetUp]
-		public void Setup ()
+		public void Setup()
 		{
 			SeverityColorConverter.count = 0;
 			InvertBoolenConverter.count = 0;
@@ -69,7 +71,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
-		public void ConverterIsInvoked ()
+		public void ConverterIsInvoked()
 		{
 			var xaml = @"
 <ContentPage 							
@@ -90,11 +92,11 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 					XAlign=""Center"" YAlign=""Center""/>
 </ContentPage>";
 
-			var layout = new ContentPage ().LoadFromXaml (xaml);
-			layout.BindingContext = new {Value = "Foo", Severity = "Bar"};
-			var label = layout.FindByName<Label> ("label");
-			Assert.AreEqual (Color.Blue, label.BackgroundColor);
-			Assert.AreEqual (1, SeverityColorConverter.count);
+			var layout = new ContentPage().LoadFromXaml(xaml);
+			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
+			var label = layout.FindByName<Label>("label");
+			Assert.AreEqual(Color.Blue, label.BackgroundColor);
+			Assert.AreEqual(1, SeverityColorConverter.count);
 		}
 
 		[Test]
@@ -127,7 +129,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 		}
 
 		[Test]
-		public void ResourcesInNonXFBaseClassesAreFound ()
+		public void ResourcesInNonXFBaseClassesAreFound()
 		{
 			var xaml = @"<local:BaseView 
 	xmlns=""http://xamarin.com/schemas/2014/forms"" 
@@ -161,10 +163,11 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 		</ListView>
 	</local:BaseView.Content>
 </local:BaseView>";
-			var page = new Issue1549Page ().LoadFromXaml (xaml);
-			var lst = page.FindByName<ListView> ("lst");
+			var page = new Issue1549Page().LoadFromXaml(xaml);
+			var lst = page.FindByName<ListView>("lst");
 			ObservableCollection<Item> items;
-			lst.BindingContext = new {
+			lst.BindingContext = new
+			{
 				Items = items = new ObservableCollection<Item> {
 					new Item { IsLocked = true},
 					new Item { IsLocked = false},
@@ -173,21 +176,21 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 				},
 			};
 
-			var cell0 = (ViewCell)lst.TemplatedItems.GetOrCreateContent (0, items [0]);
-			var cell1 = (ViewCell)lst.TemplatedItems.GetOrCreateContent (1, items [1]);
-			var cell2 = (ViewCell)lst.TemplatedItems.GetOrCreateContent (2, items [2]);
-			var cell3 = (ViewCell)lst.TemplatedItems.GetOrCreateContent (3, items [3]);
+			var cell0 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(0, items[0]);
+			var cell1 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(1, items[1]);
+			var cell2 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(2, items[2]);
+			var cell3 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(3, items[3]);
 
-			var label00 = (cell0.View as Grid).Children [0] as Label;
-			var label01 = (cell0.View as Grid).Children [1] as Label;
+			var label00 = (cell0.View as Grid).Children[0] as Label;
+			var label01 = (cell0.View as Grid).Children[1] as Label;
 
-			Assert.AreEqual ("Show Is Locked", label00.Text);
-			Assert.AreEqual ("Show Is Not locked", label01.Text);
+			Assert.AreEqual("Show Is Locked", label00.Text);
+			Assert.AreEqual("Show Is Not locked", label01.Text);
 
-			Assert.AreEqual (true, label00.IsVisible);
-			Assert.AreEqual (false, label01.IsVisible);
+			Assert.AreEqual(true, label00.IsVisible);
+			Assert.AreEqual(false, label01.IsVisible);
 
-			Assert.AreEqual (4, InvertBoolenConverter.count);
+			Assert.AreEqual(4, InvertBoolenConverter.count);
 
 		}
 	}
@@ -197,7 +200,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 	}
 
 	public partial class Issue1549Page : BaseView
-	{	
+	{
 	}
 }
 

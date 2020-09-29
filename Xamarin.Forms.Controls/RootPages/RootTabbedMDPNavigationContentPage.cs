@@ -8,17 +8,20 @@ using System.Threading.Tasks;
 namespace Xamarin.Forms.Controls
 {
 	//TabbedPage -> FlyoutPage -> NavigationPage -> ContentPage
-	public class RootTabbedMDPNavigationContentPage : TabbedPage 
+	public class RootTabbedMDPNavigationContentPage : TabbedPage
 	{
-		public RootTabbedMDPNavigationContentPage (string hierarchy) 
+		public RootTabbedMDPNavigationContentPage(string hierarchy)
 		{
 			AutomationId = hierarchy + "PageId";
 
-			var tabOne = new FlyoutPage {
+			var tabOne = new FlyoutPage
+			{
 				Title = "Testing 123",
-				Flyout = new ContentPage {
+				Flyout = new ContentPage
+				{
 					Title = "Testing 123",
-					Content = new StackLayout {
+					Content = new StackLayout
+					{
 						Children = {
 								new Label {Text = "Flyout"},
 								new AbsoluteLayout {
@@ -30,15 +33,18 @@ namespace Xamarin.Forms.Controls
 							}
 					}
 				},
-				Detail = new NavigationPage (new ContentPage {
+				Detail = new NavigationPage(new ContentPage
+				{
 					Title = "Testing 123",
-					Content = new SwapHierachyStackLayout (hierarchy)
+					Content = new SwapHierachyStackLayout(hierarchy)
 				})
 			};
 
-			var tabTwo = new ContentPage {
+			var tabTwo = new ContentPage
+			{
 				Title = "Testing 345",
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					Children = {
 						new Label { Text = "Hello" },
 						new AbsoluteLayout {
@@ -50,8 +56,8 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 
-			Children.Add (tabOne);
-			Children.Add (tabTwo);
+			Children.Add(tabOne);
+			Children.Add(tabTwo);
 		}
 	}
 }

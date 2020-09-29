@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using System;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System;
 
 namespace Xamarin.Forms.Controls.Issues
 {
@@ -26,13 +26,13 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			Content = grid = new Grid();
-			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Star } );
-			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto } );
-			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto } );
-			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto } );
-			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto } );
-			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star } );
-			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto } );
+			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Star });
+			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
 
 			var label = new Label
 			{

@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class ConditionalFocusLayout : LinearLayout, global::Android.Views.View.IOnTouchListener
 	{
-		public ConditionalFocusLayout(System.IntPtr p, global::Android.Runtime.JniHandleOwnership o): base(p,o)
+		public ConditionalFocusLayout(System.IntPtr p, global::Android.Runtime.JniHandleOwnership o) : base(p, o)
 		{
 			// Added default constructor to prevent crash when accessing selected row in ListViewAdapter.Dispose
 		}

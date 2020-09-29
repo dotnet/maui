@@ -12,8 +12,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 	{
 		CarouselItemsGalleryViewModel _viewModel;
 		bool _setPositionOnAppering;
-		public CarouselItemsGallery(bool startEmptyCollection = false, bool setCollectionWithAsync = false, 
-									bool useNativeIndicators = false, bool setPositionOnConstructor = false, 
+		public CarouselItemsGallery(bool startEmptyCollection = false, bool setCollectionWithAsync = false,
+									bool useNativeIndicators = false, bool setPositionOnConstructor = false,
 									bool setPositionOnAppearing = false, bool useScrollAnimated = true)
 		{
 			_viewModel = new CarouselItemsGalleryViewModel(startEmptyCollection, setCollectionWithAsync);

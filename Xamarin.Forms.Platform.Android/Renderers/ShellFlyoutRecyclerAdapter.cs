@@ -1,10 +1,10 @@
-﻿using Android.Runtime;
-using AndroidX.RecyclerView.Widget;
-using Android.Views;
-using Android.Widget;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Android.Runtime;
+using Android.Views;
+using Android.Widget;
+using AndroidX.RecyclerView.Widget;
 using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
@@ -199,7 +199,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void OnShellStructureChanged(object sender, EventArgs e)
 		{
-			var newListItems =  GenerateItemList();
+			var newListItems = GenerateItemList();
 
 			if (newListItems != _listItems)
 			{
@@ -286,7 +286,7 @@ namespace Xamarin.Forms.Platform.Android
 					}
 
 					_element = value;
-					
+
 					// Set Parent after binding context so parent binding context doesn't propagate to view
 					View.BindingContext = value;
 					View.Parent = _shell;

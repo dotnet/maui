@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void LoadItems()
 		{
-			for(int i = 0; i < 10; i++)
+			for (int i = 0; i < 10; i++)
 			{
 				Items.Add(new Issue9646Model
 				{

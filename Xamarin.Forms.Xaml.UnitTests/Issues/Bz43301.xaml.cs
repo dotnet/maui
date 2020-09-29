@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Foo.Xamarin.Bar
 {

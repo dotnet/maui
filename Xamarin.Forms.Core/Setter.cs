@@ -29,16 +29,22 @@ namespace Xamarin.Forms
 				() =>
 				{
 					MemberInfo minfo = null;
-					try {
+					try
+					{
 						minfo = Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
-					} catch (AmbiguousMatchException e) {
+					}
+					catch (AmbiguousMatchException e)
+					{
 						throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", serviceProvider, innerException: e);
 					}
 					if (minfo != null)
 						return minfo;
-					try {
+					try
+					{
 						return Property.DeclaringType.GetRuntimeMethod("Get" + Property.PropertyName, new[] { typeof(BindableObject) });
-					} catch (AmbiguousMatchException e) {
+					}
+					catch (AmbiguousMatchException e)
+					{
 						throw new XamlParseException($"Multiple methods with name '{Property.DeclaringType}.Get{Property.PropertyName}' found.", serviceProvider, innerException: e);
 					}
 				};
@@ -50,7 +56,8 @@ namespace Xamarin.Forms
 
 		internal void Apply(BindableObject target, bool fromStyle = false)
 		{
-			if (target == null) throw new ArgumentNullException(nameof(target));
+			if (target == null)
+				throw new ArgumentNullException(nameof(target));
 
 			var targetObject = target;
 
@@ -83,7 +90,8 @@ namespace Xamarin.Forms
 
 		internal void UnApply(BindableObject target, bool fromStyle = false)
 		{
-			if (target == null) throw new ArgumentNullException(nameof(target));
+			if (target == null)
+				throw new ArgumentNullException(nameof(target));
 
 			var targetObject = target;
 

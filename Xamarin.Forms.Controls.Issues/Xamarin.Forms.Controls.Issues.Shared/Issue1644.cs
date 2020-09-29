@@ -1,7 +1,6 @@
 ﻿using System;
-using Xamarin.Forms;
 using System.Collections.ObjectModel;
-
+using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -10,32 +9,34 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1644, "ListView reappearing and selecting its item causes jobject exception", PlatformAffected.Android)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1644, "ListView reappearing and selecting its item causes jobject exception", PlatformAffected.Android)]
 	public class Issue1644 : ContentPage
 	{
 		public ObservableCollection<string> Collection = new
 			ObservableCollection<string>();
 
-		public Issue1644 ()
+		public Issue1644()
 		{
 			for (int i = 0; i < 20; i++)
 			{
 				Collection.Add(DateTime.Now.ToString());
 			}
 
-			var listView = new ListView() {
+			var listView = new ListView()
+			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
-				HasUnevenRows = true, 
+				HasUnevenRows = true,
 				ItemsSource = Collection,
 			};
 
-			listView.ItemSelected += (sender, e) => 
+			listView.ItemSelected += (sender, e) =>
 			{
 				listView.SelectedItem = null;
 			};
 
-			var root = new StackLayout() {
+			var root = new StackLayout()
+			{
 				Padding = 5,
 				Spacing = 5,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
@@ -55,20 +56,23 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public Issue1644Menu()
 		{
-			var button = new Button() {
+			var button = new Button()
+			{
 				Text = "MAIN MENU BUTTON"
 			};
 
-			button.Clicked += (sender, e) => 
+			button.Clicked += (sender, e) =>
 			{
 				Navigation.PushAsync(_secondPage);
 			};
 
-			Flyout = new ContentPage() {
+			Flyout = new ContentPage()
+			{
 				Title = "Flyout"
 			};
 
-			Detail = new ContentPage() {
+			Detail = new ContentPage()
+			{
 				Title = "Detail",
 				Content = button
 			};

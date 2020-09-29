@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 			await Task.Delay(TimeSpan.FromSeconds(3));
 
 			Detail = new NavigationPage(new Issue9419Page());
-			
+
 			await Task.Delay(TimeSpan.FromSeconds(3));
 
 			GarbageCollectionHelper.Collect();
@@ -62,15 +62,16 @@ namespace Xamarin.Forms.Controls.Issues
 				Device.BeginInvokeOnMainThread(() =>
 				{
 					IList<ToolbarItem> items = ((Page)item.Parent)?.ToolbarItems;
-					
-					if (items == null) return;
-					
+
+					if (items == null)
+						return;
+
 					bool setValue = item.IsVisible;
 
 					if (setValue && !items.Contains(item))
 					{
 						int index = items.Count;
-						
+
 						for (int i = 0; i < items.Count; i++)
 						{
 							if (((ConditionalToolbarItem)items[i]).Index > item.Index)
@@ -79,7 +80,7 @@ namespace Xamarin.Forms.Controls.Issues
 								break;
 							}
 						}
-						
+
 						items.Insert(index, item);
 					}
 					else if (!setValue && items.Contains(item))

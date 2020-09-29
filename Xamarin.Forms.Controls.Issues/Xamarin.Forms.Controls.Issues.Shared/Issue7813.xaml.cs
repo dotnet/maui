@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
-using System;
-using System.Collections.ObjectModel;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 #if UITEST
 using NUnit.Framework;

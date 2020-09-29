@@ -7,7 +7,8 @@ namespace Xamarin.Forms
 	{
 		public override object ConvertFromInvariantString(string value)
 		{
-			if (value != null) {
+			if (value != null)
+			{
 				var lengths = value.Split(',');
 				var coldefs = new ColumnDefinitionCollection();
 				var converter = new GridLengthTypeConverter();

@@ -21,24 +21,24 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 		}
 
-		public XamlParseExceptionConstraint (int linenumber, int lineposition, Func<string, bool> messagePredicate = null) : this (true)
+		public XamlParseExceptionConstraint(int linenumber, int lineposition, Func<string, bool> messagePredicate = null) : this(true)
 		{
 			this.linenumber = linenumber;
 			this.lineposition = lineposition;
 			this.messagePredicate = messagePredicate;
 		}
 
-		protected override bool Matches (object actual)
+		protected override bool Matches(object actual)
 		{
-			if (!base.Matches (actual))
+			if (!base.Matches(actual))
 				return false;
 			var xmlInfo = ((XamlParseException)actual).XmlInfo;
 			if (!haslineinfo)
 				return true;
-			if (xmlInfo == null || !xmlInfo.HasLineInfo ())
+			if (xmlInfo == null || !xmlInfo.HasLineInfo())
 				return false;
 			if (messagePredicate != null)
-				if (!messagePredicate (((XamlParseException)actual).UnformattedMessage))
+				if (!messagePredicate(((XamlParseException)actual).UnformattedMessage))
 					return false;
 			return xmlInfo.LineNumber == linenumber && xmlInfo.LinePosition == lineposition;
 		}

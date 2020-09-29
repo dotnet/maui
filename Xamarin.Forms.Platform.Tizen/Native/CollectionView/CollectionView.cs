@@ -1,14 +1,14 @@
 using System;
-using System.Linq;
-using System.Collections.Specialized;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using ElmSharp;
+using ElmSharp.Wearable;
 using EBox = ElmSharp.Box;
+using EPoint = ElmSharp.Point;
 using ERect = ElmSharp.Rect;
 using EScroller = ElmSharp.Scroller;
 using ESize = ElmSharp.Size;
-using EPoint = ElmSharp.Point;
-using ElmSharp.Wearable;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
@@ -287,6 +287,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				var content = Adaptor.CreateNativeView(index, this);
 				holder = CreateViewHolder();
 				holder.RequestSelected += OnRequestItemSelection;
+				holder.StateUpdated += OnItemStateChanged;
 				holder.Content = content;
 				holder.ViewCategory = Adaptor.GetViewCategory(index);
 				_innerLayout.PackEnd(holder);
@@ -301,15 +302,22 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			return holder;
 		}
 
+		void OnItemStateChanged(object sender, EventArgs e)
+		{
+			if (sender is ViewHolder holder && holder.Content != null)
+			{
+				Adaptor?.UpdateViewState(holder.Content, holder.State);
+			}
+		}
+
 		void OnRequestItemSelection(object sender, EventArgs e)
 		{
 			if (SelectionMode == CollectionViewSelectionMode.None)
 				return;
 
-
 			if (_lastSelectedViewHolder != null)
 			{
-				_lastSelectedViewHolder.State = ViewHolderState.Normal;
+				_lastSelectedViewHolder.ResetState();
 			}
 
 			_lastSelectedViewHolder = sender as ViewHolder;
@@ -377,7 +385,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				if (_lastSelectedViewHolder != null)
 				{
-					_lastSelectedViewHolder.State = ViewHolderState.Normal;
+					_lastSelectedViewHolder.ResetState();
 					_lastSelectedViewHolder = null;
 				}
 				_selectedItemIndex = -1;
@@ -653,7 +661,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			if (LayoutManager.IsHorizontal)
 			{
-				Scroller.SetPageSize(itemSize , 0);
+				Scroller.SetPageSize(itemSize, 0);
 			}
 			else
 			{

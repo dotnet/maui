@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Platform.WPF
 			if (sizeInfo.WidthChanged || sizeInfo.HeightChanged)
 				InvalidateMeasure();
 		}
-		
+
 		protected override WSize MeasureOverride(WSize constraint)
 		{
 			constraint.Width = ActualWidth;

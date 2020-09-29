@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var rowdef = layout.grid.RowDefinitions;
 
 				Assert.That(coldef.Count, Is.EqualTo(5));
-				
+
 				Assert.That(coldef[0].Width, Is.EqualTo(new GridLength(1, GridUnitType.Star)));
 				Assert.That(coldef[1].Width, Is.EqualTo(new GridLength(2, GridUnitType.Star)));
 				Assert.That(coldef[2].Width, Is.EqualTo(new GridLength(1, GridUnitType.Auto)));

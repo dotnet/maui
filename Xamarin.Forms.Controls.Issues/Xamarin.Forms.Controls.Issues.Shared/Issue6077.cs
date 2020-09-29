@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 
 			protected bool SetProperty<T>(ref T backingStore, T value,
-				[CallerMemberName]string propertyName = "",
+				[CallerMemberName] string propertyName = "",
 				Action onChanged = null)
 			{
 				if (EqualityComparer<T>.Default.Equals(backingStore, value))
@@ -87,11 +87,12 @@ namespace Xamarin.Forms.Controls.Issues
 			var cv = new CollectionView { ItemSizingStrategy = ItemSizingStrategy.MeasureAllItems };
 
 			var itemsLayout = new GridItemsLayout(3, ItemsLayoutOrientation.Horizontal);
-			
+
 
 			cv.ItemsLayout = itemsLayout;
 
-			var template = new DataTemplate(() => {
+			var template = new DataTemplate(() =>
+			{
 				var grid = new Grid { HeightRequest = 100, WidthRequest = 50, BackgroundColor = Color.AliceBlue };
 
 				grid.RowDefinitions = new RowDefinitionCollection { new RowDefinition { Height = new GridLength(100) } };

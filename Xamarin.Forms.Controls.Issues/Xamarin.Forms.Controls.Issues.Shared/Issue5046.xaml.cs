@@ -5,8 +5,8 @@ using Xamarin.Forms.Xaml;
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 5046, "CornerRadius doesn't work in explicit style when implicit style exists", 
-	       PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.UWP)]
+	[Issue(IssueTracker.Github, 5046, "CornerRadius doesn't work in explicit style when implicit style exists",
+		   PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.UWP)]
 #if APP
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 #endif

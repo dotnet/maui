@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using NUnit.Framework;
 using Xamarin.Forms;
 
-using NUnit.Framework;
-
 namespace Xamarin.Forms.Xaml.UnitTests
-{	
+{
 	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class StaticExtensionException : ContentPage
-	{	
-		public StaticExtensionException ()
+	{
+		public StaticExtensionException()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public StaticExtensionException (bool useCompiledXaml)
+		public StaticExtensionException(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -23,10 +21,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Issue2115
 		{
-			[TestCase (false)]
-			public void xStaticThrowsMeaningfullException (bool useCompiledXaml)
+			[TestCase(false)]
+			public void xStaticThrowsMeaningfullException(bool useCompiledXaml)
 			{
-				Assert.Throws (new XamlParseExceptionConstraint (6, 34), () => new StaticExtensionException (useCompiledXaml));
+				Assert.Throws(new XamlParseExceptionConstraint(6, 34), () => new StaticExtensionException(useCompiledXaml));
 			}
 		}
 	}

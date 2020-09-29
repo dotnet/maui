@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var page = new Bz40906(useCompiledXaml);
 				Assert.AreEqual("Foo", page.label0.Text);
 				Assert.AreEqual("FooBar>><<", page.label1.Text);
-}
+			}
 		}
 	}
 }

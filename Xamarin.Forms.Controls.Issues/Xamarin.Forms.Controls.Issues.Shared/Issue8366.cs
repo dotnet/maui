@@ -30,15 +30,19 @@ namespace Xamarin.Forms.Controls.Issues
 			Flyout = MasterPage();
 		}
 
-		ContentPage MasterPage() 
+		ContentPage MasterPage()
 		{
 			var page = new ContentPage();
 
 			var menu = new StackLayout();
 
-			var instructions = new Label { Margin = 3, Text = "Tap 'Other' to change the Detail page. " +
+			var instructions = new Label
+			{
+				Margin = 3,
+				Text = "Tap 'Other' to change the Detail page. " +
 				"Then tap 'Items' to return to this page. " +
-				"If the CollectionView does not show a garbled mess at the top, this test has passed." };
+				"If the CollectionView does not show a garbled mess at the top, this test has passed."
+			};
 
 			menu.Children.Add(instructions);
 
@@ -71,7 +75,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			cv.ItemsSource = items;
 
-			cv.ItemTemplate = new DataTemplate(() => {
+			cv.ItemTemplate = new DataTemplate(() =>
+			{
 				var root = new Label();
 				root.SetBinding(Label.TextProperty, new Binding("."));
 				return root;

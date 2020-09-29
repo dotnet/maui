@@ -83,9 +83,9 @@ namespace Xamarin.Forms.Xaml
 				attributes.FirstOrDefault(cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName));
 			if (converterAttribute == null)
 				return null;
-			if (converterAttribute.ConstructorArguments[0].ArgumentType == typeof (string))
+			if (converterAttribute.ConstructorArguments[0].ArgumentType == typeof(string))
 				return (string)converterAttribute.ConstructorArguments[0].Value;
-			if (converterAttribute.ConstructorArguments[0].ArgumentType == typeof (Type))
+			if (converterAttribute.ConstructorArguments[0].ArgumentType == typeof(Type))
 				return ((Type)converterAttribute.ConstructorArguments[0].Value).AssemblyQualifiedName;
 			return null;
 		}
@@ -95,7 +95,8 @@ namespace Xamarin.Forms.Xaml
 		{
 			Exception exception = null;
 			object ret = null;
-			if (convertertype == null) {
+			if (convertertype == null)
+			{
 				ret = value.ConvertTo(toType, (Func<object>)null, serviceProvider, out exception);
 				if (exception != null)
 					throw exception;
@@ -115,17 +116,21 @@ namespace Xamarin.Forms.Xaml
 			if (value == null)
 				return null;
 
-			if (value is string str) {
+			if (value is string str)
+			{
 				//If there's a [TypeConverter], use it
 				object converter;
-				try { //minforetriver can fail
+				try
+				{ //minforetriver can fail
 					converter = getConverter?.Invoke();
 				}
-				catch (Exception e) {
+				catch (Exception e)
+				{
 					exception = e;
 					return null;
 				}
-				try {
+				try
+				{
 					if (converter is IExtendedTypeConverter xfExtendedTypeConverter)
 						return xfExtendedTypeConverter.ConvertFromInvariantString(str, serviceProvider);
 					if (converter is TypeConverter xfTypeConverter)
@@ -140,12 +145,14 @@ namespace Xamarin.Forms.Xaml
 				if (converterType != null)
 				{
 					var convertFromStringInvariant = converterType.GetRuntimeMethod("ConvertFromInvariantString",
-						new[] { typeof (string) });
+						new[] { typeof(string) });
 					if (convertFromStringInvariant != null)
-						try {
+						try
+						{
 							return convertFromStringInvariant.Invoke(converter, new object[] { str });
 						}
-						catch (Exception e) {
+						catch (Exception e)
+						{
 							exception = new XamlParseException("Type conversion failed", serviceProvider, e);
 							return null;
 						}
@@ -153,11 +160,12 @@ namespace Xamarin.Forms.Xaml
 				var ignoreCase = (serviceProvider?.GetService(typeof(IConverterOptions)) as IConverterOptions)?.IgnoreCase ?? false;
 
 				//If the type is nullable, as the value is not null, it's safe to assume we want the built-in conversion
-				if (toType.GetTypeInfo().IsGenericType && toType.GetGenericTypeDefinition() == typeof (Nullable<>))
+				if (toType.GetTypeInfo().IsGenericType && toType.GetGenericTypeDefinition() == typeof(Nullable<>))
 					toType = Nullable.GetUnderlyingType(toType);
 
 				//Obvious Built-in conversions
-				try {
+				try
+				{
 					if (toType.GetTypeInfo().IsEnum)
 						return Enum.Parse(toType, str, ignoreCase);
 					if (toType == typeof(SByte))
@@ -186,7 +194,8 @@ namespace Xamarin.Forms.Xaml
 						return TimeSpan.Parse(str, CultureInfo.InvariantCulture);
 					if (toType == typeof(DateTime))
 						return DateTime.Parse(str, CultureInfo.InvariantCulture);
-					if (toType == typeof(Char)) {
+					if (toType == typeof(Char))
+					{
 						Char.TryParse(str, out var c);
 						return c;
 					}
@@ -197,18 +206,21 @@ namespace Xamarin.Forms.Xaml
 					if (toType == typeof(Decimal))
 						return Decimal.Parse(str, CultureInfo.InvariantCulture);
 				}
-				catch (FormatException fe) {
+				catch (FormatException fe)
+				{
 					exception = fe;
 					return null;
 				}
 			}
 
 			//if the value is not assignable and there's an implicit conversion, convert
-			if (value != null && !toType.IsAssignableFrom(value.GetType())) {
-				var opImplicit =   value.GetType().GetImplicitConversionOperator(fromType: value.GetType(), toType: toType)
+			if (value != null && !toType.IsAssignableFrom(value.GetType()))
+			{
+				var opImplicit = value.GetType().GetImplicitConversionOperator(fromType: value.GetType(), toType: toType)
 								?? toType.GetImplicitConversionOperator(fromType: value.GetType(), toType: toType);
 
-				if (opImplicit != null) {
+				if (opImplicit != null)
+				{
 					value = opImplicit.Invoke(null, new[] { value });
 					return value;
 				}
@@ -237,25 +249,38 @@ namespace Xamarin.Forms.Xaml
 #else
 			var bindingAttr = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
 			IEnumerable<MethodInfo> mis = null;
-			try {
+			try
+			{
 				mis = new[] { onType.GetMethod("op_Implicit", bindingAttr, null, new[] { fromType }, null) };
-			} catch (AmbiguousMatchException) {
+			}
+			catch (AmbiguousMatchException)
+			{
 				mis = new List<MethodInfo>();
-				foreach (var mi in onType.GetMethods(bindingAttr)) {
-					if (mi.Name != "op_Implicit") break;
+				foreach (var mi in onType.GetMethods(bindingAttr))
+				{
+					if (mi.Name != "op_Implicit")
+						break;
 					var p = mi.GetParameters()?.FirstOrDefault();
-					if (p == null) continue;
-					if (!p.ParameterType.IsAssignableFrom(fromType)) continue;
+					if (p == null)
+						continue;
+					if (!p.ParameterType.IsAssignableFrom(fromType))
+						continue;
 					((List<MethodInfo>)mis).Add(mi);
 				}
 			}
 
-			foreach (var mi in mis) {
-				if (mi == null) continue;
-				if (!mi.IsSpecialName) continue;
-				if (!mi.IsPublic) continue;
-				if (!mi.IsStatic) continue;
-				if (!toType.IsAssignableFrom(mi.ReturnType)) continue;
+			foreach (var mi in mis)
+			{
+				if (mi == null)
+					continue;
+				if (!mi.IsSpecialName)
+					continue;
+				if (!mi.IsPublic)
+					continue;
+				if (!mi.IsStatic)
+					continue;
+				if (!toType.IsAssignableFrom(mi.ReturnType))
+					continue;
 
 				return mi;
 			}

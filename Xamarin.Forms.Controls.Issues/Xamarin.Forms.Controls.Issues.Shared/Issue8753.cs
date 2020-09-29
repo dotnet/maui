@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Controls.Issues
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
 				Text = "Swipe to the Right"
-			};				
+			};
 
 			content.Children.Add(info);
 
@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			
+
 		}
 	}
 }

@@ -27,16 +27,20 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 			Button b3 = new Button { Text = "Amazing!", VerticalOptions = LayoutOptions.FillAndExpand };
 			Button b4 = new Button { Text = "Meh", HeightRequest = 100, MinimumHeightRequest = 50 };
-			b1.Clicked += (sender, e) => {
+			b1.Clicked += (sender, e) =>
+			{
 				b1.Text = "clicked1";
 			};
-			b2.Clicked += (sender, e) => {
+			b2.Clicked += (sender, e) =>
+			{
 				b2.Text = "clicked2";
 			};
-			b3.Clicked += (sender, e) => {
+			b3.Clicked += (sender, e) =>
+			{
 				b3.Text = "clicked3";
 			};
-			b4.Clicked += (sender, e) => {
+			b4.Clicked += (sender, e) =>
+			{
 				b4.Text = "clicked4";
 			};
 			stack.Children.Add(b1);

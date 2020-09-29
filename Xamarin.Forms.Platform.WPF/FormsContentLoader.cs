@@ -18,11 +18,11 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (!System.Windows.Application.Current.Dispatcher.CheckAccess())
 				throw new InvalidOperationException("UIThreadRequired");
-			
+
 			var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 			return Task.Factory.StartNew(() => LoadContent(parent, newContent), cancellationToken, TaskCreationOptions.None, scheduler);
 		}
-		
+
 		protected virtual object LoadContent(FrameworkElement parent, object page)
 		{
 			VisualElement visualElement = page as VisualElement;
@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.WPF
 			IPageController pageController = visualElement.RealParent as IPageController;
 			if (pageController != null)
 				pageController.ContainerArea = actualRect;
-				
+
 			return renderer.GetNativeElement();
 		}
 	}

@@ -7,11 +7,11 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using static System.String;
 using AButton = Android.Widget.Button;
-using AView = Android.Views.View;
+using AColor = Android.Graphics.Color;
 using AMotionEvent = Android.Views.MotionEvent;
 using AMotionEventActions = Android.Views.MotionEventActions;
+using AView = Android.Views.View;
 using Object = Java.Lang.Object;
-using AColor = Android.Graphics.Color;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 			_visualElementRenderer = this;
 			_backgroundTracker = new BorderBackgroundManager(this);
-			
+
 		}
 
 		AButton NativeButton

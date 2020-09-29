@@ -6,7 +6,7 @@ namespace Xamarin.Forms
 	internal sealed class ShellItemCollection : ShellElementCollection<ShellItem>
 	{
 		public ShellItemCollection() : base() { }
-		
+
 		public override void Add(ShellItem item)
 		{
 			/*

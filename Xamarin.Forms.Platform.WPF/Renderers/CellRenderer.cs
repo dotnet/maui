@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Windows.Input;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.WPF

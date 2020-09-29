@@ -27,7 +27,7 @@ namespace Xamarin.Forms
 				UpdateGroupNames(layout, _groupName);
 			}
 
-			MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this, 
+			MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this,
 				RadioButtonGroup.GroupSelectionChangedMessage, HandleRadioButtonGroupSelectionChanged);
 			MessagingCenter.Subscribe<RadioButton, RadioButtonGroupNameChanged>(this, RadioButton.GroupNameChangedMessage,
 				HandleRadioButtonGroupNameChanged);
@@ -35,7 +35,7 @@ namespace Xamarin.Forms
 				HandleRadioButtonValueChanged);
 		}
 
-		bool MatchesScope(RadioButtonScopeMessage message) 
+		bool MatchesScope(RadioButtonScopeMessage message)
 		{
 			return RadioButtonGroup.GetVisualRoot(_layout) == message.Scope;
 		}
@@ -50,7 +50,7 @@ namespace Xamarin.Forms
 			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, selected.Value);
 		}
 
-		void HandleRadioButtonGroupNameChanged(RadioButton radioButton, RadioButtonGroupNameChanged args) 
+		void HandleRadioButtonGroupNameChanged(RadioButton radioButton, RadioButtonGroupNameChanged args)
 		{
 			if (args.OldName != _groupName || !MatchesScope(args))
 			{
@@ -89,11 +89,11 @@ namespace Xamarin.Forms
 					{
 						AddRadioButton(radioButton1);
 					}
-				}			
+				}
 			}
 		}
 
-		void AddRadioButton(RadioButton radioButton) 
+		void AddRadioButton(RadioButton radioButton)
 		{
 			UpdateGroupName(radioButton, _groupName);
 
@@ -118,7 +118,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		void UpdateGroupNames(Layout<View> layout, string name, string oldName = null) 
+		void UpdateGroupNames(Layout<View> layout, string name, string oldName = null)
 		{
 			foreach (var descendant in layout.Descendants())
 			{
@@ -132,7 +132,7 @@ namespace Xamarin.Forms
 
 			if (radioButtonValue != null)
 			{
-				MessagingCenter.Send(_layout, RadioButtonGroup.GroupValueChangedMessage, 
+				MessagingCenter.Send(_layout, RadioButtonGroup.GroupValueChangedMessage,
 					new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
 			}
 		}

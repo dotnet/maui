@@ -17,7 +17,7 @@ namespace Xamarin.Forms
 
 		public StackLayout()
 		{
-			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<StackLayout>>(() => 
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<StackLayout>>(() =>
 				new PlatformConfigurationRegistry<StackLayout>(this));
 		}
 
@@ -62,7 +62,7 @@ namespace Xamarin.Forms
 			{
 				var child = (View)LogicalChildrenInternal[i];
 				if (child.IsVisible && layoutInformationCopy.Plots != null)
-						LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
+					LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
 			}
 		}
 

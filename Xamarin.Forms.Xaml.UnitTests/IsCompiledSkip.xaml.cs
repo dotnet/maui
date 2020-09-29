@@ -5,15 +5,15 @@ using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-	[XamlCompilation (XamlCompilationOptions.Skip)]
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class IsCompiledSkip : ContentPage
 	{
-		public IsCompiledSkip ()
+		public IsCompiledSkip()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public IsCompiledSkip (bool useCompiledXaml)
+		public IsCompiledSkip(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -21,12 +21,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase (false)]
-			[TestCase (true)]
-			public void IsCompiled (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void IsCompiled(bool useCompiledXaml)
 			{
-				var layout = new IsCompiledDefault (useCompiledXaml);
-				Assert.AreEqual (false, typeof (IsCompiledSkip).IsCompiled ());
+				var layout = new IsCompiledDefault(useCompiledXaml);
+				Assert.AreEqual(false, typeof(IsCompiledSkip).IsCompiled());
 			}
 		}
 	}

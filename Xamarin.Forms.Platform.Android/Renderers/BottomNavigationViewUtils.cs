@@ -1,20 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Android.Content;
+using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
+using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.BottomSheet;
 using AColor = Android.Graphics.Color;
+using ALabelVisibilityMode = Google.Android.Material.BottomNavigation.LabelVisibilityMode;
 using ColorStateList = Android.Content.Res.ColorStateList;
 using IMenu = Android.Views.IMenu;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Orientation = Android.Widget.Orientation;
 using Typeface = Android.Graphics.Typeface;
 using TypefaceStyle = Android.Graphics.TypefaceStyle;
-using Android.Graphics.Drawables;
-using System.Threading.Tasks;
-using Google.Android.Material.BottomNavigation;
-using Google.Android.Material.BottomSheet;
-using ALabelVisibilityMode = Google.Android.Material.BottomNavigation.LabelVisibilityMode;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				using (var innerLayout = new LinearLayout(context))
 				{
-					if(Forms.IsLollipopOrNewer)
+					if (Forms.IsLollipopOrNewer)
 					{
 						innerLayout.ClipToOutline = true;
 					}
@@ -161,7 +161,7 @@ namespace Xamarin.Forms.Platform.Android
 					};
 					image.LayoutParameters = lp;
 					lp.Dispose();
-					
+
 					if (Forms.IsLollipopOrNewer)
 					{
 						image.ImageTintList = ColorStateList.ValueOf(Color.Black.MultiplyAlpha(0.6).ToAndroid());

@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionG
 		{
 			var current = "[none]";
 
-			if(CollectionView.SelectionMode == SelectionMode.Multiple)
+			if (CollectionView.SelectionMode == SelectionMode.Multiple)
 			{
 				current = CollectionView?.SelectedItems.ToCommaSeparatedList();
 			}

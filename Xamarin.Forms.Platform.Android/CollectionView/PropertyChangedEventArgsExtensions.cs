@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.Android
 				args.PropertyName == p2.PropertyName ||
 				args.PropertyName == p3.PropertyName;
 		}
-		
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool IsOneOf(this PropertyChangedEventArgs args, BindableProperty p0, BindableProperty p1, BindableProperty p2, BindableProperty p3, BindableProperty p4)
 		{

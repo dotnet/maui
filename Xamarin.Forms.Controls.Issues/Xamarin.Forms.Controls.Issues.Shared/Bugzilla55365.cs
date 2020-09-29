@@ -58,8 +58,8 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Garbage",
 				Command = new Command(o =>
 {
-GarbageCollectionHelper.Collect();
-_layout.Children.Add(new Label { Text = "Success" });
+	GarbageCollectionHelper.Collect();
+	_layout.Children.Add(new Label { Text = "Success" });
 })
 			};
 			_layout.Children.Add(collectButton);

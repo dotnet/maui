@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 		void ToggleIsEnabled(Entry entry, Button button)
 		{
 			entry.IsEnabled = !entry.IsEnabled;
-			
+
 			if (button != null)
 			{
 				button.Text = $"Toggle IsEnabled (Currently {entry.IsEnabled})";

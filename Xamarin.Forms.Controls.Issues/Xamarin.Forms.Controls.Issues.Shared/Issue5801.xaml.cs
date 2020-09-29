@@ -9,9 +9,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 	public partial class Issue5801 : ContentPage
 	{
-		public Issue5801 ()
+		public Issue5801()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 	}
 #endif

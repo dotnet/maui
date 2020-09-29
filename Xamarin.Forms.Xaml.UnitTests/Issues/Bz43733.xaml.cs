@@ -45,8 +45,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(false)]
 			public void ThrowOnMissingDictionary(bool useCompiledXaml)
 			{
-				Application.Current = new MockApplication {
-					Resources = new ResourceDictionary {
+				Application.Current = new MockApplication
+				{
+					Resources = new ResourceDictionary
+					{
 #pragma warning disable 618
 						MergedWith = typeof(Bz43733Rd),
 #pragma warning restore 618

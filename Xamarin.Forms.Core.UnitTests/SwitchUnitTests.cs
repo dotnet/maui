@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		const string NormalStateName = "Normal";
 		const string OnStateName = "On";
 		const string OffStateName = "Off";
-		
+
 		static VisualStateGroupList CreateTestStateGroups()
 		{
 			var stateGroups = new VisualStateGroupList();
@@ -68,30 +68,30 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestConstructor ()
+		public void TestConstructor()
 		{
-			Switch sw = new Switch ();
+			Switch sw = new Switch();
 
-			Assert.IsFalse (sw.IsToggled);
+			Assert.IsFalse(sw.IsToggled);
 		}
 
 		[Test]
-		public void TestOnEvent ()
+		public void TestOnEvent()
 		{
-			Switch sw = new Switch ();
+			Switch sw = new Switch();
 
 			bool fired = false;
 			sw.Toggled += (sender, e) => fired = true;
 
 			sw.IsToggled = true;
 
-			Assert.IsTrue (fired);
+			Assert.IsTrue(fired);
 		}
 
 		[Test]
-		public void TestOnEventNotDoubleFired ()
+		public void TestOnEventNotDoubleFired()
 		{
-			var sw = new Switch ();
+			var sw = new Switch();
 
 			bool fired = false;
 			sw.IsToggled = true;
@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			sw.Toggled += (sender, args) => fired = true;
 			sw.IsToggled = true;
 
-			Assert.IsFalse (fired);
+			Assert.IsFalse(fired);
 		}
 
 		[Test]
@@ -152,5 +152,5 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.Null(groups1[0].CurrentState);
 		}
 	}
-	
+
 }

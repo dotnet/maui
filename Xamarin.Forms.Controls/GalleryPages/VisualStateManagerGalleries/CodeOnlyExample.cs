@@ -10,11 +10,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 
 			var calendar = new DatePicker();
 
-			VisualStateManager.SetVisualStateGroups(calendar, new VisualStateGroupList { SetUpMonths() }); 
+			VisualStateManager.SetVisualStateGroups(calendar, new VisualStateGroupList { SetUpMonths() });
 
 			calendar.DateSelected += CalendarOnDateSelected;
 			calendar.Date = new DateTime(2017, 12, 25);
-			
+
 			layout.Children.Add(calendar);
 
 			var context = new Label { Text = "The DatePicker above changes its colors based on the selected date's month. The colors are all VisualStates created and added in code." };

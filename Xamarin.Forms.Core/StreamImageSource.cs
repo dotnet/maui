@@ -23,7 +23,7 @@ namespace Xamarin.Forms
 			if (propertyName == StreamProperty.PropertyName)
 				OnSourceChanged();
 			base.OnPropertyChanged(propertyName);
-		} 
+		}
 
 		async Task<Stream> IStreamImageSource.GetStreamAsync(CancellationToken userToken)
 		{

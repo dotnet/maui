@@ -41,7 +41,8 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 
 		private void OnNextCanExecute(object sender, CanExecuteRoutedEventArgs e)
 		{
-			if (this.ItemsSource == null) return;
+			if (this.ItemsSource == null)
+				return;
 			e.CanExecute = this.SelectedIndex < (this.ItemsSource.Cast<object>().Count() - 1);
 		}
 
@@ -60,7 +61,8 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 
 		private void OnSelectedIndexChanged(DependencyPropertyChangedEventArgs e)
 		{
-			if (this.ItemsSource == null) return;
+			if (this.ItemsSource == null)
+				return;
 			var items = this.ItemsSource.Cast<object>();
 
 			if ((int)e.NewValue >= 0 && (int)e.NewValue < items.Count())

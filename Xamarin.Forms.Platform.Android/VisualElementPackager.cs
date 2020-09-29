@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.Internals;
 using Android.Views;
+using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
@@ -187,7 +187,7 @@ namespace Xamarin.Forms.Platform.Android
 								if (elevation > elevationToSet)
 									elevationToSet = elevation;
 
-								if(r.View.Elevation != elevationToSet)
+								if (r.View.Elevation != elevationToSet)
 									r.View.Elevation = elevationToSet;
 							}
 						}
@@ -286,7 +286,7 @@ namespace Xamarin.Forms.Platform.Android
 			ReadOnlyCollection<Element> newChildren = null, oldChildren = null;
 
 			RendererPool pool = null;
-			
+
 			if (oldElement != null)
 			{
 				oldElement.ChildAdded -= _childAddedHandler;
@@ -300,7 +300,7 @@ namespace Xamarin.Forms.Platform.Android
 					sameChildrenTypes = true;
 
 					newChildren = ((IElementController)newElement).LogicalChildren;
-					
+
 					if (oldChildren.Count == newChildren.Count)
 					{
 						for (var i = 0; i < oldChildren.Count; i++)

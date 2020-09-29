@@ -101,7 +101,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			// BackButtonPressed is only passed to the object that is at the highest Z-Order, and it does not propagate to lower objects.
 			// When the object is unfocesed BackButtonPressed event has to be released to stop using it.
 			Control.BackButtonPressed -= OnCompleted;
-			if(!_isSendComplate)
+			if (!_isSendComplate)
 				Element.SendCompleted();
 		}
 

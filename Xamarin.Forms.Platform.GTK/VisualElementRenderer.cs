@@ -1,7 +1,7 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Gtk;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using Container = Xamarin.Forms.Platform.GTK.GtkFormsContainer;
 using Control = Gtk.Widget;

@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue10908()
 		{
 #if APP
-			InitializeComponent ();
+			InitializeComponent();
 
 			Grouped = new ObservableCollection<GroupedIssue10908Model>();
 

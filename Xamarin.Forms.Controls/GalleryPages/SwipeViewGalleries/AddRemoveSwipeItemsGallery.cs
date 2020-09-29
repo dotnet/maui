@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 				FontSize = 10,
 				Text = "Choose SwipeItem Icon:"
 			};
-   
+
 			var deleteSwipeItem = new SwipeItem
 			{
 				BackgroundColor = Color.Orange,
@@ -78,10 +78,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 				LeftItems = leftSwipeItems,
 				Content = swipeContent
 			};
-   
+
 			swipeLayout.Children.Add(buttonsLayout);
 			swipeLayout.Children.Add(swipeView);
-   
+
 			Content = swipeLayout;
 
 			addButton.Clicked += (sender, e) =>
@@ -107,7 +107,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 
 				var swipeItemsCount = swipeView.LeftItems.Count;
 
-				if(swipeItemsCount > 0)
+				if (swipeItemsCount > 0)
 				{
 					var lastSwipeItem = swipeView.LeftItems.LastOrDefault();
 					swipeView.LeftItems.Remove(lastSwipeItem);

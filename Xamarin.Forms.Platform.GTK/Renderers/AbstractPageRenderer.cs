@@ -1,7 +1,7 @@
-﻿using Gtk;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Gtk;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using Container = Xamarin.Forms.Platform.GTK.GtkFormsContainer;
@@ -227,7 +227,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 				current = parent;
 
-				if (hasParentNavigation) break;
+				if (hasParentNavigation)
+					break;
 			}
 			var hasAncestorNavigationPage = hasParentNavigation && NavigationPage.GetHasNavigationBar(current);
 			return hasAncestorNavigationPage;

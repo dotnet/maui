@@ -10,30 +10,30 @@ namespace Xamarin.Forms.Core.UITests
 	[Category(UITestCategories.Maps)]
 	[Category(UITestCategories.ManualReview)]
 	internal class MapUITests : BaseTestFixture
-    {
-	    protected override void NavigateToGallery()
-	    {
-		    App.NavigateToGallery(GalleryQueries.MapGalleryLegacy);
-	    }
+	{
+		protected override void NavigateToGallery()
+		{
+			App.NavigateToGallery(GalleryQueries.MapGalleryLegacy);
+		}
 
-	    [Test]
-	    public void MapGalleryPinClicked()
-	    {
-		    App.Tap(PlatformQueries.Pin);
+		[Test]
+		public void MapGalleryPinClicked()
+		{
+			App.Tap(PlatformQueries.Pin);
 
-		    App.WaitForElement(c => c.Text("Colosseum"));
-		    App.Tap(c => c.Text("Colosseum"));
+			App.WaitForElement(c => c.Text("Colosseum"));
+			App.Tap(c => c.Text("Colosseum"));
 
-		    App.Screenshot("Alert displayed as result of PinClicked event");
+			App.Screenshot("Alert displayed as result of PinClicked event");
 
-		    // Dismiss alert
-		    App.Tap(c => c.Text("OK"));
-	    }
+			// Dismiss alert
+			App.Tap(c => c.Text("OK"));
+		}
 
-	    protected override void FixtureTeardown()
-	    {
-		    App.NavigateBack();
-		    base.FixtureTeardown();
-	    }
+		protected override void FixtureTeardown()
+		{
+			App.NavigateBack();
+			base.FixtureTeardown();
+		}
 	}
 }

@@ -10,7 +10,8 @@ namespace Xamarin.Forms
 	{
 		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Stepper), 100.0,
 			validateValue: (bindable, value) => (double)value > ((Stepper)bindable).Minimum,
-			coerceValue: (bindable, value) => {
+			coerceValue: (bindable, value) =>
+			{
 				var stepper = (Stepper)bindable;
 				stepper.Value = stepper.Value.Clamp(stepper.Minimum, (double)value);
 				return value;
@@ -18,18 +19,21 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(nameof(Minimum), typeof(double), typeof(Stepper), 0.0,
 			validateValue: (bindable, value) => (double)value < ((Stepper)bindable).Maximum,
-			coerceValue: (bindable, value) => {
+			coerceValue: (bindable, value) =>
+			{
 				var stepper = (Stepper)bindable;
 				stepper.Value = stepper.Value.Clamp((double)value, stepper.Maximum);
 				return value;
 			});
 
 		public static readonly BindableProperty ValueProperty = BindableProperty.Create(nameof(Value), typeof(double), typeof(Stepper), 0.0, BindingMode.TwoWay,
-			coerceValue: (bindable, value) => {
+			coerceValue: (bindable, value) =>
+			{
 				var stepper = (Stepper)bindable;
 				return Math.Round(((double)value), stepper.digits).Clamp(stepper.Minimum, stepper.Maximum);
 			},
-			propertyChanged: (bindable, oldValue, newValue) => {
+			propertyChanged: (bindable, oldValue, newValue) =>
+			{
 				var stepper = (Stepper)bindable;
 				stepper.ValueChanged?.Invoke(stepper, new ValueChangedEventArgs((double)oldValue, (double)newValue));
 			});

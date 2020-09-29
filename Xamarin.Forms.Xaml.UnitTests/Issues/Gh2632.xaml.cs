@@ -8,7 +8,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public class Gh2632Base : ContentPage
 	{
-		public new Gh2632Context BindingContext {
+		public new Gh2632Context BindingContext
+		{
 			get => base.BindingContext as Gh2632Context;
 			set => base.BindingContext = value;
 		}

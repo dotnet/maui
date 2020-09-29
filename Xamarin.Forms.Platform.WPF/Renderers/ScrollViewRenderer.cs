@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.WPF
 	{
 		VisualElement _currentView;
 		Animatable _animatable;
-		
+
 		protected IScrollViewController Controller
 		{
 			get { return Element; }
@@ -34,7 +34,10 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
-					SetNativeControl(new ScrollViewer() { IsManipulationEnabled = true, PanningMode = PanningMode.Both,
+					SetNativeControl(new ScrollViewer()
+					{
+						IsManipulationEnabled = true,
+						PanningMode = PanningMode.Both,
 						HorizontalScrollBarVisibility = e.NewElement.HorizontalScrollBarVisibility.ToWpfScrollBarVisibility(),
 						VerticalScrollBarVisibility = e.NewElement.VerticalScrollBarVisibility.ToWpfScrollBarVisibility()
 					});
@@ -54,7 +57,7 @@ namespace Xamarin.Forms.Platform.WPF
 			base.OnElementChanged(e);
 		}
 
-		
+
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
@@ -90,7 +93,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			_currentView = Element.Content;
 
-			if(_currentView != null)
+			if (_currentView != null)
 			{
 				/*
 				 * Wrap Content in a DockPanel : The goal is to reduce ce Measure Cycle on scolling

@@ -6,7 +6,8 @@ using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-	public class Gh4516VM {
+	public class Gh4516VM
+	{
 		public Uri[] Images { get; } = { };
 	}
 

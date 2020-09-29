@@ -1,6 +1,6 @@
 using System;
-using NUnit.Framework;
 using Mono.Cecil;
+using NUnit.Framework;
 using Xamarin.Forms.Build.Tasks;
 
 namespace Xamarin.Forms.XamlcUnitTests
@@ -29,7 +29,8 @@ namespace Xamarin.Forms.XamlcUnitTests
 			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(ModuleDefinitionExtensionsTests).Assembly.CodeBase)).Path));
 			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(byte).Assembly.CodeBase)).Path));
 
-			module = ModuleDefinition.CreateModule("foo", new ModuleParameters {
+			module = ModuleDefinition.CreateModule("foo", new ModuleParameters
+			{
 				AssemblyResolver = resolver,
 				Kind = ModuleKind.Dll
 			});

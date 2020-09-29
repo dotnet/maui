@@ -9,53 +9,53 @@ namespace Xamarin.Forms.Core.UnitTests
 		: CommandSourceTests<Button>
 	{
 		[SetUp]
-		public override void Setup ()
+		public override void Setup()
 		{
-			base.Setup ();
-			Device.PlatformServices = new MockPlatformServices ();
+			base.Setup();
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
 		[TearDown]
-		public override void TearDown ()
+		public override void TearDown()
 		{
-			base.TearDown ();
+			base.TearDown();
 			Device.PlatformServices = null;
 		}
 
 		[Test]
-		public void MeasureInvalidatedOnTextChange ()
+		public void MeasureInvalidatedOnTextChange()
 		{
-			var button = new Button ();
+			var button = new Button();
 
 			bool fired = false;
 			button.MeasureInvalidated += (sender, args) => fired = true;
 
 			button.Text = "foo";
-			Assert.True (fired);
+			Assert.True(fired);
 		}
 
 		[Test]
 		[TestCase(true)]
 		[TestCase(false)]
-		public void TestClickedvent (bool isEnabled)
+		public void TestClickedvent(bool isEnabled)
 		{
 			var view = new Button()
 			{
-				IsEnabled= isEnabled,
+				IsEnabled = isEnabled,
 			};
 
 			bool activated = false;
 			view.Clicked += (sender, e) => activated = true;
 
-			((IButtonController) view).SendClicked ();
+			((IButtonController)view).SendClicked();
 
-			Assert.True (activated == isEnabled ? true : false);
+			Assert.True(activated == isEnabled ? true : false);
 		}
 
 		[Test]
 		[TestCase(true)]
 		[TestCase(false)]
-		public void TestPressedEvent (bool isEnabled)
+		public void TestPressedEvent(bool isEnabled)
 		{
 			var view = new Button()
 			{
@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		[TestCase(true)]
 		[TestCase(false)]
-		public void TestReleasedEvent (bool isEnabled)
+		public void TestReleasedEvent(bool isEnabled)
 		{
 			var view = new Button()
 			{
@@ -93,9 +93,9 @@ namespace Xamarin.Forms.Core.UnitTests
 			return new Button();
 		}
 
-		protected override void Activate (Button source)
+		protected override void Activate(Button source)
 		{
-			((IButtonController) source).SendClicked();
+			((IButtonController)source).SendClicked();
 		}
 
 		protected override BindableProperty IsEnabledProperty
@@ -112,42 +112,42 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			get { return Button.CommandParameterProperty; }
 		}
-			
+
 
 		[Test]
-		public void TestBindingContextPropagation ()
+		public void TestBindingContextPropagation()
 		{
-			var context = new object ();
-			var button = new Button ();
+			var context = new object();
+			var button = new Button();
 			button.BindingContext = context;
-			var source = new FileImageSource ();
+			var source = new FileImageSource();
 			button.ImageSource = source;
-			Assert.AreSame (context, source.BindingContext);
+			Assert.AreSame(context, source.BindingContext);
 
-			button = new Button ();
-			source = new FileImageSource ();
+			button = new Button();
+			source = new FileImageSource();
 			button.ImageSource = source;
 			button.BindingContext = context;
-			Assert.AreSame (context, source.BindingContext);
+			Assert.AreSame(context, source.BindingContext);
 		}
 
 		[Test]
-		public void TestImageSourcePropertiesChangedTriggerResize ()
+		public void TestImageSourcePropertiesChangedTriggerResize()
 		{
-			var source = new FileImageSource ();
+			var source = new FileImageSource();
 			var button = new Button { ImageSource = source };
 			bool fired = false;
 			button.MeasureInvalidated += (sender, e) => fired = true;
-			Assert.Null (source.File);
+			Assert.Null(source.File);
 			source.File = "foo.png";
-			Assert.NotNull (source.File);
-			Assert.True (fired);
+			Assert.NotNull(source.File);
+			Assert.True(fired);
 		}
 
 		[Test]
-		public void AssignToFontStructUpdatesFontFamily (
-			[Values (NamedSize.Default, NamedSize.Large, NamedSize.Medium, NamedSize.Small, NamedSize.Micro)] NamedSize size,
-			[Values (FontAttributes.None, FontAttributes.Bold, FontAttributes.Italic, FontAttributes.Bold | FontAttributes.Italic)] FontAttributes attributes)
+		public void AssignToFontStructUpdatesFontFamily(
+			[Values(NamedSize.Default, NamedSize.Large, NamedSize.Medium, NamedSize.Small, NamedSize.Micro)] NamedSize size,
+			[Values(FontAttributes.None, FontAttributes.Bold, FontAttributes.Italic, FontAttributes.Bold | FontAttributes.Italic)] FontAttributes attributes)
 		{
 			var button = new Button();
 			double startSize = button.FontSize;
@@ -155,69 +155,71 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			bool firedSizeChanged = false;
 			bool firedAttributesChanged = false;
-			button.PropertyChanged += (sender, args) => {
+			button.PropertyChanged += (sender, args) =>
+			{
 				if (args.PropertyName == Label.FontSizeProperty.PropertyName)
 					firedSizeChanged = true;
 				if (args.PropertyName == Label.FontAttributesProperty.PropertyName)
 					firedAttributesChanged = true;
 			};
 
-			button.Font = Font.OfSize ("Testing123", size).WithAttributes (attributes);
+			button.Font = Font.OfSize("Testing123", size).WithAttributes(attributes);
 
-			Assert.AreEqual (Device.GetNamedSize (size, typeof (Label), true), button.FontSize);
-			Assert.AreEqual (attributes, button.FontAttributes);
-			Assert.AreEqual (startSize != button.FontSize, firedSizeChanged);
-			Assert.AreEqual (startAttributes != button.FontAttributes, firedAttributesChanged);
+			Assert.AreEqual(Device.GetNamedSize(size, typeof(Label), true), button.FontSize);
+			Assert.AreEqual(attributes, button.FontAttributes);
+			Assert.AreEqual(startSize != button.FontSize, firedSizeChanged);
+			Assert.AreEqual(startAttributes != button.FontAttributes, firedAttributesChanged);
 		}
 
 		[Test]
-		public void AssignToFontFamilyUpdatesFont ()
+		public void AssignToFontFamilyUpdatesFont()
 		{
 			var button = new Button();
 
 			button.FontFamily = "CrazyFont";
-			Assert.AreEqual (button.Font, Font.OfSize ("CrazyFont", button.FontSize));
+			Assert.AreEqual(button.Font, Font.OfSize("CrazyFont", button.FontSize));
 		}
 
 		[Test]
-		public void AssignToFontSizeUpdatesFont ()
+		public void AssignToFontSizeUpdatesFont()
 		{
 			var button = new Button();
 
 			button.FontSize = 1000;
-			Assert.AreEqual (button.Font, Font.SystemFontOfSize (1000));
+			Assert.AreEqual(button.Font, Font.SystemFontOfSize(1000));
 		}
 
 		[Test]
-		public void AssignToFontAttributesUpdatesFont ()
+		public void AssignToFontAttributesUpdatesFont()
 		{
 			var button = new Button();
 
 			button.FontAttributes = FontAttributes.Italic | FontAttributes.Bold;
-			Assert.AreEqual (button.Font, Font.SystemFontOfSize (button.FontSize, FontAttributes.Bold | FontAttributes.Italic));
+			Assert.AreEqual(button.Font, Font.SystemFontOfSize(button.FontSize, FontAttributes.Bold | FontAttributes.Italic));
 		}
 
 		[Test]
-		public void CommandCanExecuteUpdatesEnabled ()
+		public void CommandCanExecuteUpdatesEnabled()
 		{
-			var button = new Button ();
+			var button = new Button();
 
 			bool result = false;
 
-			var bindingContext = new {
-				Command = new Command (() => { }, () => result)
+			var bindingContext = new
+			{
+				Command = new Command(() => { }, () => result)
 			};
 
-			button.SetBinding (Button.CommandProperty, "Command");
+			button.SetBinding(Button.CommandProperty, "Command");
 			button.BindingContext = bindingContext;
 
-			Assert.False (button.IsEnabled);
+			Assert.False(button.IsEnabled);
 
 			result = true;
 
-			bindingContext.Command.ChangeCanExecute ();
+			bindingContext.Command.ChangeCanExecute();
 
-			Assert.True (button.IsEnabled);
+			Assert.True(button.IsEnabled);
 		}
 
 		[Test]
@@ -247,10 +249,10 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			(button as IButtonController)
 				?.SendClicked();
-			
+
 			Assert.False(invoked);
 		}
-		
+
 		public void ButtonBorderRadiusForwardsToButtonCornerRadius()
 		{
 			var button = new Button();
@@ -272,7 +274,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ButtonCornerRadiusClearValueForwardsToButtonBorderRadius()
 		{
 			var button = new Button();
-			
+
 			button.CornerRadius = 10;
 
 			button.ClearValue(Button.CornerRadiusProperty);
@@ -323,5 +325,5 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(layout1.Position, bcl.Position);
 			Assert.AreEqual(layout1.Spacing, bcl.Spacing);
 		}
-	}	
+	}
 }

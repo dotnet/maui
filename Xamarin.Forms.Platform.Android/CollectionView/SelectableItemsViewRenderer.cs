@@ -3,7 +3,7 @@ using Android.Content;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class SelectableItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource> : StructuredItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource> 
+	public class SelectableItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource> : StructuredItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource>
 		where TItemsView : SelectableItemsView
 		where TAdapter : SelectableItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
@@ -16,8 +16,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
 
-			if (changedProperty.IsOneOf(SelectableItemsView.SelectedItemProperty, 
-				SelectableItemsView.SelectedItemsProperty, 
+			if (changedProperty.IsOneOf(SelectableItemsView.SelectedItemProperty,
+				SelectableItemsView.SelectedItemsProperty,
 				SelectableItemsView.SelectionModeProperty))
 			{
 				UpdateNativeSelection();
@@ -54,8 +54,8 @@ namespace Xamarin.Forms.Platform.Android
 
 				case SelectionMode.Multiple:
 					var selectedItems = ItemsView.SelectedItems;
-					
-					foreach(var item in selectedItems)
+
+					foreach (var item in selectedItems)
 					{
 						ItemsViewAdapter.MarkNativeSelection(item);
 					}

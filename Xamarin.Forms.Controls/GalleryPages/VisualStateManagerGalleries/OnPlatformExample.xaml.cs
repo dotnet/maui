@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 				_currentState = "CustomState";
 				VisualStateManager.GoToState(DemoLabel, _currentState);
 				ToggleButton.Text = "Change Label to Normal state";
-				
+
 			}
 			else
 			{

@@ -42,7 +42,8 @@ namespace Xamarin.Forms.StyleSheets
 			_reader.Read(); //consume the '*'
 
 			bool hasStar = false;
-			while (true) {
+			while (true)
+			{
 				var next = _reader.Read();
 				if (next <= 0)
 					return next;
@@ -81,7 +82,8 @@ namespace Xamarin.Forms.StyleSheets
 			_reader.Read(); //consume the '*'
 
 			bool hasStar = false;
-			while (true) {
+			while (true)
+			{
 				var next = _reader.Read();
 				if (next <= 0)
 					return next;

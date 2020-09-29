@@ -26,7 +26,8 @@ namespace Xamarin.Forms.Controls
 			};
 
 			IsRunGrid.AddChild(new Label { Text = "Is Running" }, 0, 0);
-			var isRunSwitch = new Switch {
+			var isRunSwitch = new Switch
+			{
 				IsToggled = activityIndicator.IsRunning,
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center
@@ -41,7 +42,7 @@ namespace Xamarin.Forms.Controls
 			};
 			var backgroundPicker = new ColorPicker { Title = "Background Color", Color = activityIndicator.BackgroundColor };
 			backgroundPicker.ColorPicked += (_, e) => activityIndicator.BackgroundColor = e.Color;
-			
+
 			var heightPicker = MaterialProgressBarGallery.CreateValuePicker("Height", value => activityIndicator.HeightRequest = value);
 
 			var content = new StackLayout

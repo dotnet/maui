@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Xamarin.Forms;
-
 using NUnit.Framework;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class Bz30074 : ContentPage
 	{
-		public Bz30074 ()
+		public Bz30074()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
-		public Bz30074 (bool useCompiledXaml)
+		public Bz30074(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -24,16 +22,16 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			[TestCase(true)]
 			[TestCase(false)]
-			public void DataTriggerInTemplates (bool useCompiledXaml)
+			public void DataTriggerInTemplates(bool useCompiledXaml)
 			{
-				var layout = new Bz30074 (useCompiledXaml);
-				Assert.Null (layout.image.Source);
+				var layout = new Bz30074(useCompiledXaml);
+				Assert.Null(layout.image.Source);
 
-				layout.BindingContext = new {IsSelected = true};
-				Assert.AreEqual ("Add.png", ((FileImageSource)layout.image.Source).File);
+				layout.BindingContext = new { IsSelected = true };
+				Assert.AreEqual("Add.png", ((FileImageSource)layout.image.Source).File);
 
-				layout.BindingContext = new {IsSelected = false};
-				Assert.Null (layout.image.Source);
+				layout.BindingContext = new { IsSelected = false };
+				Assert.Null(layout.image.Source);
 			}
 		}
 	}

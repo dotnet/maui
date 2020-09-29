@@ -2,9 +2,9 @@
 
 namespace Xamarin.Forms.Controls
 {
-    public interface IWindowNavigation
-    {
+	public interface IWindowNavigation
+	{
 		Task OpenNewWindowAsync();
-		void NavigateToAnotherPage(Page page);	
+		void NavigateToAnotherPage(Page page);
 	}
 }

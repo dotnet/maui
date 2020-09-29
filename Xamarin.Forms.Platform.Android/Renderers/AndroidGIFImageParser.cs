@@ -1,12 +1,12 @@
 ﻿using System;
-using Xamarin.Forms.Internals;
-using Android.OS;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-using System.Threading.Tasks;
-using System.Threading;
-using System.IO;
+using Android.OS;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -222,7 +222,7 @@ namespace Xamarin.Forms.Platform.Android
 			FormsAnimationDrawable animation = null;
 
 			if (uri != null)
-			{	 
+			{
 				var options = new BitmapFactory.Options
 				{
 					InJustDecodeBounds = true
@@ -254,7 +254,7 @@ namespace Xamarin.Forms.Platform.Android
 					Log.Warning(nameof(FileImageSourceHandler), "Could not retrieve image or image data was invalid: {0}", imagesource);
 				}
 			}
-   
+
 			return animation;
 		}
 

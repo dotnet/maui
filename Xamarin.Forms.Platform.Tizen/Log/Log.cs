@@ -14,11 +14,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// </summary>
 		public static string Tag { get; set; } = "Xamarin";
 
-        /// <summary>
-        /// Gets or sets the logger used to report messages.
-        /// It's DlogLogger on a Tizen platform, ConsoleLogger on any other.
-        /// </summary>
-        public static ILogger Logger { get; set; } = IsTizen() ? (ILogger)new DlogLogger() : (ILogger)new ConsoleLogger();
+		/// <summary>
+		/// Gets or sets the logger used to report messages.
+		/// It's DlogLogger on a Tizen platform, ConsoleLogger on any other.
+		/// </summary>
+		public static ILogger Logger { get; set; } = IsTizen() ? (ILogger)new DlogLogger() : (ILogger)new ConsoleLogger();
 
 		public static void Debug(string message,
 								 Guardian _ = default(Guardian),

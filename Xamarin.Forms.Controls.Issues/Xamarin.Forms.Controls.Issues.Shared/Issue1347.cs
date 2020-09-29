@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using System.Collections.ObjectModel;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Collections.ObjectModel;
 
 #if UITEST
 using Xamarin.UITest;
@@ -34,7 +34,8 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			var tapGestureRecognizer = new TapGestureRecognizer();
-			tapGestureRecognizer.Tapped += (s, e) => {
+			tapGestureRecognizer.Tapped += (s, e) =>
+			{
 				frame.BorderColor = frame.BorderColor == Color.Default ? Color.Red : Color.Default;
 				frame.BackgroundColor = frame.BackgroundColor == Color.Default ? Color.LightBlue : Color.Default;
 				label.Text = frame.BorderColor == Color.Default ? "The ouline color should be default (click here to change color)" : "The ouline color should be red (click here to change color)";

@@ -1,5 +1,5 @@
-﻿using Gtk;
-using System;
+﻿using System;
+using Gtk;
 
 namespace Xamarin.Forms.Platform.GTK.Cells
 {

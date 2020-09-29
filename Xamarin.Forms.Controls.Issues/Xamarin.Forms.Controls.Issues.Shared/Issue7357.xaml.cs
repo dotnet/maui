@@ -1,12 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System;
-using System.Security.Cryptography;
 using Xamarin.Forms.Xaml;
-using System.Threading;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 #if UITEST
 using Xamarin.UITest;
@@ -78,7 +78,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			
+
 		}
 	}
 

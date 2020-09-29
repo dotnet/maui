@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -149,7 +149,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 #endif
 
-#region CreateMySwipeView
+		#region CreateMySwipeView
 
 		public SwipeView CreateMySwipeView()
 		{

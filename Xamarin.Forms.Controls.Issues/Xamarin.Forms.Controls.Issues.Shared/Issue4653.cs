@@ -31,7 +31,8 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Button inside tadded ScrollView",
 				IsTabStop = false
 			};
-			buttonInSctoolView.Command = new Command(() => {
+			buttonInSctoolView.Command = new Command(() =>
+			{
 				buttonInSctoolView.IsTabStop = !buttonInSctoolView.IsTabStop;
 				buttonInSctoolView.Text = $"IsTabStop: {buttonInSctoolView.IsTabStop}";
 			});

@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == Label.TextProperty.PropertyName || 
+			if (e.PropertyName == Label.TextProperty.PropertyName ||
 				e.PropertyName == Label.FormattedTextProperty.PropertyName ||
 				e.PropertyName == Label.TextTransformProperty.PropertyName)
 				UpdateText();
@@ -224,7 +224,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void UpdatePadding()
 		{
-			if(Control == null || Element == null)
+			if (Control == null || Element == null)
 			{
 				return;
 			}

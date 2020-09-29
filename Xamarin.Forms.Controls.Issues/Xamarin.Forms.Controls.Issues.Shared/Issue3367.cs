@@ -1,19 +1,19 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 3367, "The ScrollTo method freezes UI", PlatformAffected.UWP)]
-	public class Issue3367 : TestContentPage 
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 3367, "The ScrollTo method freezes UI", PlatformAffected.UWP)]
+	public class Issue3367 : TestContentPage
 	{
 		bool simulateMessages = false;
 		bool simulatedThreadEnabled = true;
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			var collection = new ObservableCollection<string>();
 			int itemId = 0;
@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
 					Device.BeginInvokeOnMainThread(() => lstMessages.ScrollTo(newItem, ScrollToPosition.Start, false));
 				}
 			});
-			
+
 			this.Disappearing += (_, __) => simulatedThreadEnabled = false;
 
 			var startStopButton = new Button()

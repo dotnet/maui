@@ -3,16 +3,20 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 1025, "StackLayout broken when image missing", PlatformAffected.iOS, NavigationBehavior.PushModalAsync)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1025, "StackLayout broken when image missing", PlatformAffected.iOS, NavigationBehavior.PushModalAsync)]
 	public class Issue1025 : ContentPage
 	{
-		public Issue1025 ()
+		public Issue1025()
 		{
-			var instructions = new Label { Text = "The StackLayout below should contain two buttons and some text. " +
-				"If the StackLayout appears empty, this test has failed." };
-			
-			var layout = new StackLayout {
+			var instructions = new Label
+			{
+				Text = "The StackLayout below should contain two buttons and some text. " +
+				"If the StackLayout appears empty, this test has failed."
+			};
+
+			var layout = new StackLayout
+			{
 				BackgroundColor = Color.FromHex("#dae1eb"),
 				Orientation = StackOrientation.Vertical,
 				Children = {
@@ -29,5 +33,5 @@ namespace Xamarin.Forms.Controls.Issues
 				Children = { instructions, layout }
 			};
 		}
-	}	
+	}
 }

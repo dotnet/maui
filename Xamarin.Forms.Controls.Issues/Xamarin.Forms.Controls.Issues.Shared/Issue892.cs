@@ -15,19 +15,19 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public string PageName { get; private set; }
 
-		public NavPageNameObject (string pageName)
+		public NavPageNameObject(string pageName)
 		{
 			PageName = pageName;
 		}
 	}
 
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 892, "NavigationPages as details in FlyoutPage don't work as expected", PlatformAffected.Android)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 892, "NavigationPages as details in FlyoutPage don't work as expected", PlatformAffected.Android)]
 	public class Issue892 : TestFlyoutPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var cells = new [] {
+			var cells = new[] {
 				new NavPageNameObject ("Close Flyout"),
 				new NavPageNameObject ("Page 1"),
 				new NavPageNameObject ("Page 3"),
@@ -38,35 +38,42 @@ namespace Xamarin.Forms.Controls.Issues
 				new NavPageNameObject ("Page 8"),
 			};
 
-			var template = new DataTemplate (typeof (TextCell));
-			template.SetBinding (TextCell.TextProperty, "PageName");
+			var template = new DataTemplate(typeof(TextCell));
+			template.SetBinding(TextCell.TextProperty, "PageName");
 
-			var listView = new ListView { 
+			var listView = new ListView
+			{
 				ItemTemplate = template,
 				ItemsSource = cells
 			};
 
 			listView.BindingContext = cells;
 
-			listView.ItemTapped += (sender, e) => {
+			listView.ItemTapped += (sender, e) =>
+			{
 				var cellName = ((NavPageNameObject)e.Item).PageName;
-				if (cellName == "Close Flyout") {
+				if (cellName == "Close Flyout")
+				{
 					IsPresented = false;
-				} else {
-					Detail = new CustomNavDetailPage (cellName);
+				}
+				else
+				{
+					Detail = new CustomNavDetailPage(cellName);
 				}
 			};
 
-			var master = new ContentPage {
+			var master = new ContentPage
+			{
 				Padding = new Thickness(0, 20, 0, 0),
 				Title = "Flyout",
 				Content = listView
 			};
-				
-			Flyout = master;
-			Detail = new CustomNavDetailPage ("Initial Page");
 
-			MessagingCenter.Subscribe<NestedNavPageRootView> (this, "PresentMaster", (sender) => {
+			Flyout = master;
+			Detail = new CustomNavDetailPage("Initial Page");
+
+			MessagingCenter.Subscribe<NestedNavPageRootView>(this, "PresentMaster", (sender) =>
+			{
 				IsPresented = true;
 			});
 		}
@@ -127,24 +134,26 @@ namespace Xamarin.Forms.Controls.Issues
 
 	public class CustomNavDetailPage : NavigationPage
 	{
-		public CustomNavDetailPage (string pageName)
+		public CustomNavDetailPage(string pageName)
 		{
-			PushAsync (new NestedNavPageRootView (pageName));
+			PushAsync(new NestedNavPageRootView(pageName));
 		}
 	}
 
 	public class NestedNavPageRootView : ContentPage
 	{
-		public NestedNavPageRootView (string pageTitle)
+		public NestedNavPageRootView(string pageTitle)
 		{
 			Title = pageTitle;
 			BackgroundColor = Color.FromHex("#666");
 
-			var label = new Label {
+			var label = new Label
+			{
 				Text = "Not Tapped"
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					label,
 					new Button {
@@ -168,16 +177,18 @@ namespace Xamarin.Forms.Controls.Issues
 
 	public class NestedNavPageOneLevel : ContentPage
 	{
-		public NestedNavPageOneLevel ()
+		public NestedNavPageOneLevel()
 		{
 			Title = "One pushed";
 			BackgroundColor = Color.FromHex("#999");
 
-			var label = new Label {
+			var label = new Label
+			{
 				Text = "Not Tapped"
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					label,
 					new Button {
@@ -195,22 +206,25 @@ namespace Xamarin.Forms.Controls.Issues
 
 	public class NestedNavPageTwoLevels : ContentPage
 	{
-		public NestedNavPageTwoLevels ()
+		public NestedNavPageTwoLevels()
 		{
 			Title = "Two pushed";
 			BackgroundColor = Color.FromHex("#BBB");
 
-			var label = new Label {
+			var label = new Label
+			{
 				Text = "Not Tapped",
 				TextColor = Color.Red
 			};
 
-			var label2 = new Label {
+			var label2 = new Label
+			{
 				Text = "You are at the end of the line",
 				TextColor = Color.Red
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					label,
 					label2,

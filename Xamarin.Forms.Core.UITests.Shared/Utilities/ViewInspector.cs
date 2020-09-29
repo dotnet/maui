@@ -1,27 +1,28 @@
-﻿using Xamarin.UITest;
-using System.Linq;
+﻿using System.Linq;
+using Xamarin.UITest;
 
 namespace Xamarin.Forms.Core.UITests
 {
 	internal static class ViewInspector
 	{
-	    public static void LogPropertiesForView (this IApp app, string query, bool isOnParent = false)
-	    {
+		public static void LogPropertiesForView(this IApp app, string query, bool isOnParent = false)
+		{
 #if __ANDROID__
 			LogPropertiesForAndroidView (app, query, isOnParent);
 #endif
 #if __IOS__
 
 			LogPropertiesForUIView(app, query, isOnParent);
-			LogPropertiesForCALayer (app, query, isOnParent);
+			LogPropertiesForCALayer(app, query, isOnParent);
 #endif
 		}
 
-		static void LogPropertiesForUIView (this IApp app, string query, bool isOnParent = false) {
+		static void LogPropertiesForUIView(this IApp app, string query, bool isOnParent = false)
+		{
 
-            //Logger.LogLine ("--- UIView Properties ---");
+			//Logger.LogLine ("--- UIView Properties ---");
 
-			var properties = new [] {
+			var properties = new[] {
 				// just getters with no params, bools
 				"alpha",
 				"autoresizesSubviews",
@@ -55,29 +56,30 @@ namespace Xamarin.Forms.Core.UITests
 			if (isOnParent)
 				query = query + " parent * index:0";
 
-			foreach (var property in properties) {
+			foreach (var property in properties)
+			{
 				object prop;
-				bool found = 
-					MaybeGetProperty<string> (app, query, property, out prop) || 
-					MaybeGetProperty<int>    (app, query, property, out prop) || 
-					MaybeGetProperty<float>  (app, query, property, out prop) ||
-					MaybeGetProperty<bool>   (app, query, property, out prop);
+				bool found =
+					MaybeGetProperty<string>(app, query, property, out prop) ||
+					MaybeGetProperty<int>(app, query, property, out prop) ||
+					MaybeGetProperty<float>(app, query, property, out prop) ||
+					MaybeGetProperty<bool>(app, query, property, out prop);
 
-                if (found)
-                    continue;
+				if (found)
+					continue;
 				//	Logger.LogLine (string.Format ("{0,-30}: {1}", property, prop));
 			}
 
-            //Logger.LogLine();
+			//Logger.LogLine();
 
 		}
 
 		static void LogPropertiesForCALayer(this IApp app, string query, bool isOnParent = false)
-        {
-           // Logger.LogLine ("--- UIView.Layer Properties ---");
+		{
+			// Logger.LogLine ("--- UIView.Layer Properties ---");
 
-            var properties = new[] {
-				"actions", 
+			var properties = new[] {
+				"actions",
 				"anchorPoint",
 				"anchorPointZ",
 				"backgroundColor",
@@ -126,32 +128,32 @@ namespace Xamarin.Forms.Core.UITests
 				"zPosition"
 			};
 
-            if (isOnParent)
-                query = query + " parent * index:0";
+			if (isOnParent)
+				query = query + " parent * index:0";
 
-            foreach (var property in properties)
-            {
-                object prop;
-                bool found =
-                    MaybeGetLayerProperty<string>(app, query, property, out prop) ||
-                    MaybeGetLayerProperty<int>(app, query, property, out prop) ||
-                    MaybeGetLayerProperty<bool>(app, query, property, out prop);
+			foreach (var property in properties)
+			{
+				object prop;
+				bool found =
+					MaybeGetLayerProperty<string>(app, query, property, out prop) ||
+					MaybeGetLayerProperty<int>(app, query, property, out prop) ||
+					MaybeGetLayerProperty<bool>(app, query, property, out prop);
 
-                if (found)
-                    continue;
+				if (found)
+					continue;
 				//if (found)
 				//	Logger.LogLine(string.Format("{0,-30}: {1}", property, prop));
-            }
+			}
 
-            //Logger.LogLine();
+			//Logger.LogLine();
 
-        }
+		}
 
-		static void LogPropertiesForAndroidView (this IApp app, string query, bool isOnParent = false)
+		static void LogPropertiesForAndroidView(this IApp app, string query, bool isOnParent = false)
 		{
-           // Logger.LogLine( "--- Android View Properties ---");
+			// Logger.LogLine( "--- Android View Properties ---");
 
-			var properties = new [] {
+			var properties = new[] {
 				// just getters with no params, bools
 				//"getAccessibilityLiveRegion",
 				//"getAccessibilbityNodeProvider",
@@ -296,30 +298,34 @@ namespace Xamarin.Forms.Core.UITests
 			if (isOnParent)
 				query = query + " parent * index:0";
 
-			foreach (var property in properties) {
+			foreach (var property in properties)
+			{
 				object prop;
-				bool found = 
-					MaybeGetProperty<string> (app, query, property, out prop) || 
+				bool found =
+					MaybeGetProperty<string>(app, query, property, out prop) ||
 					//MaybeGetProperty<int>    (app, query, property, out prop) || 
-					MaybeGetProperty<float>  (app, query, property, out prop) ||
-					MaybeGetProperty<bool>   (app, query, property, out prop);
+					MaybeGetProperty<float>(app, query, property, out prop) ||
+					MaybeGetProperty<bool>(app, query, property, out prop);
 
-                if (found)
-                    continue;
+				if (found)
+					continue;
 				//if (found)
 				//	Logger.LogLine (string.Format ("{0,-30}: {1}", property, prop));
 			}
 
-            //Logger.LogLine();
+			//Logger.LogLine();
 
 		}
 
-		static bool MaybeGetLayerProperty<T> (IApp app, string query, string property, out object result)
+		static bool MaybeGetLayerProperty<T>(IApp app, string query, string property, out object result)
 		{
 
-			try {
-				result = app.Query (q => q.Raw (query).Invoke ("layer").Invoke (property).Value<T> ()).First ();
-			} catch {
+			try
+			{
+				result = app.Query(q => q.Raw(query).Invoke("layer").Invoke(property).Value<T>()).First();
+			}
+			catch
+			{
 				result = null;
 				return false;
 			}
@@ -327,12 +333,15 @@ namespace Xamarin.Forms.Core.UITests
 			return true;
 		}
 
-		static bool MaybeGetProperty<T> (IApp app, string query, string property, out object result)
+		static bool MaybeGetProperty<T>(IApp app, string query, string property, out object result)
 		{
 
-			try {
-				result = app.Query (q => q.Raw (query).Invoke (property).Value<T> ()).First ();
-			} catch {
+			try
+			{
+				result = app.Query(q => q.Raw(query).Invoke(property).Value<T>()).First();
+			}
+			catch
+			{
 				result = null;
 				return false;
 			}

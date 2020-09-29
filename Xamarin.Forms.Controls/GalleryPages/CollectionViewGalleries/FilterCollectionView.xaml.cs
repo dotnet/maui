@@ -7,12 +7,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 	{
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource();
 
-		public FilterCollectionView ()
+		public FilterCollectionView()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 
 			CollectionView.ItemTemplate = ExampleTemplates.PhotoTemplate();
-			
+
 			CollectionView.ItemsSource = _demoFilteredItemSource.Items;
 
 			SearchBar.TextChanged += SearchBarOnTextChanged;

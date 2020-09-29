@@ -12,8 +12,8 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1660, "[Enhancement] IsSpellCheckEnabled on Entry/Editor", PlatformAffected.All)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1660, "[Enhancement] IsSpellCheckEnabled on Entry/Editor", PlatformAffected.All)]
 	public class Issue1660
 		: TestContentPage
 	{

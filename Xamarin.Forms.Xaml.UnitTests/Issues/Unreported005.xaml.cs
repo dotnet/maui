@@ -19,7 +19,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			var element = new ReferenceExtension { Name = ElementName }.ProvideValue(serviceProvider) as View;
-			if (element != null) {
+			if (element != null)
+			{
 				var result = Constraint.RelativeToView(element, (layout, view) => DeterminePosition(view) + Constant);
 				return result;
 			}

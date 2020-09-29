@@ -1,9 +1,9 @@
 ﻿using System;
 using Android.Content;
-using Android.Views;
-using Google.Android.Material.TextField;
 using Android.Runtime;
 using Android.Util;
+using Android.Views;
+using Google.Android.Material.TextField;
 using Xamarin.Forms.Platform.Android;
 using ARect = Android.Graphics.Rect;
 

@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Controls
 
 		public string PageStyleId { get; private set; }
 
-		public SwapRootButton (string hierarchyDescription, Command command)
+		public SwapRootButton(string hierarchyDescription, Command command)
 		{
 			AutomationId = hierarchyDescription + "ButtonId";
 			Text = hierarchyDescription;
@@ -22,13 +22,13 @@ namespace Xamarin.Forms.Controls
 
 	internal class SwapHierachyStackLayout : ScrollView
 	{
-		public SwapHierachyStackLayout (string heirarchy)
+		public SwapHierachyStackLayout(string heirarchy)
 		{
 			AutomationId = "ChoosePageScrollView";
 
 			BackgroundColor = Color.Blue;
 
-			var buttons = new [] {
+			var buttons = new[] {
 				new SwapRootButton ("Content", new Command (() => Application.Current.MainPage = new RootContentPage ("Content"))),
 				new SwapRootButton ("Nav->Content", new Command (() => Application.Current.MainPage = new RootNavigationContentPage ("Nav->Content"))),
 				new SwapRootButton ("MDP->Nav->Content", new Command (() => Application.Current.MainPage = new RootMDPNavigationContentPage ("MDP->Nav->Content"))),
@@ -55,12 +55,13 @@ namespace Xamarin.Forms.Controls
 				new SwapRootButton ("(Modal)CoreGallery", new Command (() => Application.Current.MainPage = CoreGallery.GetMainPage ()))
 			};
 
-			var layout = new StackLayout ();
+			var layout = new StackLayout();
 
-			layout.Children.Add (new Label { Text = heirarchy });
+			layout.Children.Add(new Label { Text = heirarchy });
 
-			foreach (var button in buttons) {
-				layout.Children.Add (button);
+			foreach (var button in buttons)
+			{
+				layout.Children.Add(button);
 			}
 
 			Content = layout;

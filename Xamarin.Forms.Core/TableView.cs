@@ -2,8 +2,8 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.Platform;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
@@ -91,9 +91,9 @@ namespace Xamarin.Forms
 			}
 		}
 
-		ITableModel ITableViewController.Model 
+		ITableModel ITableViewController.Model
 		{
-			get 
+			get
 			{
 				return Model;
 			}

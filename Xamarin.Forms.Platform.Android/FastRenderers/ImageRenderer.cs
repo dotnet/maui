@@ -3,11 +3,11 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
+using Android.Views;
+using AndroidX.Core.View;
+using Xamarin.Forms.Internals;
 using AImageView = Android.Widget.ImageView;
 using AView = Android.Views.View;
-using Android.Views;
-using Xamarin.Forms.Internals;
-using AndroidX.Core.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
@@ -186,7 +186,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		void IImageRendererController.SkipInvalidate() => _skipInvalidate = true;
 		void IImageRendererController.SetFormsAnimationDrawable(IFormsAnimationDrawable value)
 		{
-			if(_formsAnimationDrawable != null)
+			if (_formsAnimationDrawable != null)
 				_formsAnimationDrawable.AnimationStopped -= OnAnimationStopped;
 
 			_formsAnimationDrawable = value;

@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		public Box(EvasObject parent) : base(parent)
 		{
 			SetLayoutCallback(() => { NotifyOnLayout(); });
-		}		
+		}
 #endif
 
 		/// <summary>
@@ -61,9 +61,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				}
 
 				LayoutUpdated(this, new LayoutEventArgs()
-					{
-						Geometry = g,
-					}
+				{
+					Geometry = g,
+				}
 				);
 
 				_previousGeometry = g;

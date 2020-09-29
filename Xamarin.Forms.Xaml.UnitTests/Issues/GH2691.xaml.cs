@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Build.Utilities;
+using NUnit.Framework;
 using Xamarin.Forms;
 using Xamarin.Forms.Build.Tasks;
-
-using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
 using Xamarin.Forms.Controls;
+using Xamarin.Forms.Core.UnitTests;
 using Xamarin.Forms.MSBuild.UnitTests;
 using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Xaml.UnitTests
-{	
+{
 	public partial class Gh2691 : ContentPage
 	{
 		public Gh2691()
@@ -27,7 +26,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 		[TestFixture]
 		public class Tests
-		{			
+		{
 			const string c_xaml = @"
 				<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 							 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
@@ -59,7 +58,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void SetUp()
 			{
 				Device.PlatformServices = new MockPlatformServices();
-				GH2691.Init();	// only to make sure compiler pulls in Controls assembly
+				GH2691.Init();  // only to make sure compiler pulls in Controls assembly
 			}
 
 			[TestCase(false)]

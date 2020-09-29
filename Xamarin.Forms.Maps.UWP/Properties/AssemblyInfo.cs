@@ -2,4 +2,4 @@
 using Xamarin.Forms.Maps.UWP;
 using Xamarin.Forms.Platform.UWP;
 
-[assembly: ExportRenderer(typeof (Map), typeof (MapRenderer))]
+[assembly: ExportRenderer(typeof(Map), typeof(MapRenderer))]

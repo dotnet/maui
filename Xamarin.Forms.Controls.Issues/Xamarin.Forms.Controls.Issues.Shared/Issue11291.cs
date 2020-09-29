@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var frame = new Frame
 			{
-				IsClippedToBounds=true,
+				IsClippedToBounds = true,
 				BorderColor = Color.Black,
 				Padding = 0,
 				CornerRadius = 24,

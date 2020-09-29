@@ -42,10 +42,10 @@
 			var switchLayout = new StackLayout { Orientation = StackOrientation.Horizontal };
 			var updateSwitch = new Switch { };
 
-			updateSwitch.Toggled += (sender, args) => 
+			updateSwitch.Toggled += (sender, args) =>
 			{
-				layout.FlowDirection = layout.FlowDirection == FlowDirection.RightToLeft 
-					? FlowDirection.LeftToRight 
+				layout.FlowDirection = layout.FlowDirection == FlowDirection.RightToLeft
+					? FlowDirection.LeftToRight
 					: FlowDirection.RightToLeft;
 
 				UpdateInstructions(layout, instructions, itemsCount == 0);
@@ -58,7 +58,7 @@
 			layout.Children.Add(switchLayout);
 
 			layout.Children.Add(collectionView);
-			
+
 			Grid.SetRow(collectionView, 3);
 
 			Content = layout;

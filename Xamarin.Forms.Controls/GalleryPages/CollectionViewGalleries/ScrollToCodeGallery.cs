@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			}
 
 			layout.Children.Add(collectionView);
-			
+
 			Grid.SetRow(collectionView, 2);
 
 			Content = layout;

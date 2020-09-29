@@ -1,7 +1,7 @@
-﻿using Gtk;
-using Pango;
-using System;
+﻿using System;
 using System.ComponentModel;
+using Gtk;
+using Pango;
 using Xamarin.Forms.Platform.GTK.Controls;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using Xamarin.Forms.Platform.GTK.Helpers;

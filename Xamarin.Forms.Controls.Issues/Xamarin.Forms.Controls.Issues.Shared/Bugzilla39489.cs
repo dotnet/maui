@@ -1,9 +1,9 @@
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using System.Threading;
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Maps;
 
 #if UITEST

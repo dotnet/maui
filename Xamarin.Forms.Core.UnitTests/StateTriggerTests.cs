@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var stateGroups = new VisualStateGroupList();
 			var visualStateGroup = new VisualStateGroup();
-			
+
 			var normalState = new VisualState { Name = NormalStateName };
 
 			var greenStateTrigger = new CompareStateTrigger { Property = TestEntry.Text, Value = "Test" };
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void StateTriggerDefaultVisualState()
 		{
 			var grid = new Grid();
-			
+
 			TestEntry.Text = string.Empty;
 
 			grid.Children.Add(TestEntry);

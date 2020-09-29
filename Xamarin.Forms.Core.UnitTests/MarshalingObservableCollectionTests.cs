@@ -12,7 +12,7 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Core.UnitTests
 {
 	[TestFixture]
-	public class MarshalingObservableCollectionTests 
+	public class MarshalingObservableCollectionTests
 	{
 		MarshalingTestPlatformServices _services;
 
@@ -41,7 +41,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var source = new ObservableCollection<int>();
 			var moc = new MarshalingObservableCollection(source);
 
-			moc.CollectionChanged += (sender, args) => {
+			moc.CollectionChanged += (sender, args) =>
+			{
 				if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
 				{
 					insertCount += 1;
@@ -49,16 +50,16 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 
 			// Add an item from a threadpool thread
-			await Task.Run(() => 
+			await Task.Run(() =>
 			{
 				source.Add(1);
 				countFromThreadPool = moc.Count;
 			});
 
 			// Check the result on the main thread
-			var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() => 
-			{ 
-				return moc.Count; 
+			var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() =>
+			{
+				return moc.Count;
 			});
 
 			Assert.That(countFromThreadPool, Is.EqualTo(0), "Count should be zero because the update on the UI thread hasn't run yet");
@@ -242,7 +243,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			public void Start()
 			{
 				_running = true;
-				Task.Run(() => {
+				Task.Run(() =>
+				{
 
 					if (_threadId == 0)
 					{

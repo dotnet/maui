@@ -26,7 +26,7 @@ namespace Xamarin.Forms
 			throw new NotImplementedException();
 		}
 
-		View ConfigureView(View view) 
+		View ConfigureView(View view)
 		{
 			if (view is ITextElement)
 			{
@@ -41,7 +41,7 @@ namespace Xamarin.Forms
 			return view;
 		}
 
-		Label ConvertToLabel(string textContent) 
+		Label ConvertToLabel(string textContent)
 		{
 			var label = new Label
 			{
@@ -54,7 +54,7 @@ namespace Xamarin.Forms
 			return label;
 		}
 
-		static void BindTextProperties(BindableObject content) 
+		static void BindTextProperties(BindableObject content)
 		{
 			BindProperty(content, TextElement.TextColorProperty, typeof(ITextElement));
 			BindProperty(content, TextElement.CharacterSpacingProperty, typeof(ITextElement));
@@ -68,7 +68,7 @@ namespace Xamarin.Forms
 			BindProperty(content, FontElement.FontFamilyProperty, typeof(IFontElement));
 		}
 
-		static void BindProperty(BindableObject content, BindableProperty property, Type type) 
+		static void BindProperty(BindableObject content, BindableProperty property, Type type)
 		{
 			if (content.IsSet(property) || content.GetIsBound(property))
 			{
@@ -77,7 +77,7 @@ namespace Xamarin.Forms
 			}
 
 			content.SetBinding(property,
-					new Binding(property.PropertyName, 
+					new Binding(property.PropertyName,
 					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, type)));
 		}
 	}

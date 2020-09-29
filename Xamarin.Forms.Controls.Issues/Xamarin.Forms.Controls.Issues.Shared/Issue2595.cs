@@ -22,9 +22,12 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			public _2595Master()
 			{
-				var instructions = new Label { Text = $"Select one of the menu items. The detail page text should "
-				                                      + $"display a label which disappears after 1 second and is"
-				                                      + $" replaced by an updating list of labels which grows vertically." };
+				var instructions = new Label
+				{
+					Text = $"Select one of the menu items. The detail page text should "
+													  + $"display a label which disappears after 1 second and is"
+													  + $" replaced by an updating list of labels which grows vertically."
+				};
 
 				var menuView = new ListView(ListViewCachingStrategy.RetainElement)
 				{
@@ -33,14 +36,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 				menuView.ItemSelected += OnMenuClicked;
 
-				Content = new StackLayout{Children = { instructions, menuView }};
+				Content = new StackLayout { Children = { instructions, menuView } };
 				Title = "GH 2595 Test App";
 			}
 
 			void OnMenuClicked(object sender, SelectedItemChangedEventArgs e)
 			{
 				var mainPage = (FlyoutPage)Parent;
-				mainPage.Detail = new _2595ScrollPage ();
+				mainPage.Detail = new _2595ScrollPage();
 				mainPage.IsPresented = false;
 			}
 		}
@@ -50,12 +53,15 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			protected Label Label;
 
-			public _2595ScrollPage() {
-				Content = new ScrollView {
+			public _2595ScrollPage()
+			{
+				Content = new ScrollView
+				{
 
 					BackgroundColor = Color.Red,
 
-					Content = new StackLayout {
+					Content = new StackLayout
+					{
 						BackgroundColor = Color.BlueViolet,
 						Children = {
 							(Label = new Label {
@@ -68,18 +74,21 @@ namespace Xamarin.Forms.Controls.Issues
 				};
 			}
 
-			protected StackLayout ScrollContent {
+			protected StackLayout ScrollContent
+			{
 				get => (Content as ScrollView).Content as StackLayout;
 				set => (Content as ScrollView).Content = value;
 			}
 
-			protected override void OnAppearing() {
+			protected override void OnAppearing()
+			{
 				base.OnAppearing();
 
 				Timer timer = new Timer((o) => Device.BeginInvokeOnMainThread(OnTimerElapsed), new AutoResetEvent(true), 0, 1000);
 			}
 
-			void OnTimerElapsed() {
+			void OnTimerElapsed()
+			{
 				Label.Text = $"{ DateTime.Now.ToString() }: expecting {ScrollContent?.Children.Count} dates to show up.";
 				ScrollContent.Children.Add(new Label { Text = DateTime.Now.ToString() });
 			}

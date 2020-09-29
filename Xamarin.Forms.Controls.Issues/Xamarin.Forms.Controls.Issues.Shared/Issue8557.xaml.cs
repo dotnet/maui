@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using System.Collections.Generic;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
-using System.Collections.Generic;
 
 #if UITEST
 using Xamarin.UITest;
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 
 	[Preserve(AllMembers = true)]
-	public class Issue8557ViewModel 
+	public class Issue8557ViewModel
 	{
 		public List<Issue8557GroupModel> GroupContent { get; private set; }
 

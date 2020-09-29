@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionG
 		public PreselectedItemsGallery()
 		{
 			InitializeComponent();
-			
+
 			CollectionView.ItemTemplate = ExampleTemplates.PhotoTemplate();
 			CollectionView.ItemsSource = _demoFilteredItemSource.Items;
 

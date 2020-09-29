@@ -39,15 +39,17 @@ using Xamarin.Forms.Xaml.Diagnostics;
 
 namespace Xamarin.Forms.Xaml.Internals
 {
-	[Obsolete ("Replaced by ResourceLoader")]
+	[Obsolete("Replaced by ResourceLoader")]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class XamlLoader
 	{
 		static Func<Type, string> xamlFileProvider;
 
-		public static Func<Type, string> XamlFileProvider {
+		public static Func<Type, string> XamlFileProvider
+		{
 			get { return xamlFileProvider; }
-			internal set {
+			internal set
+			{
 				xamlFileProvider = value;
 				Xamarin.Forms.DesignMode.IsDesignModeEnabled = true;
 				//¯\_(ツ)_/¯ the previewer forgot to set that bool
@@ -78,14 +80,17 @@ namespace Xamarin.Forms.Xaml
 		public static void Load(object view, string xaml, Assembly rootAssembly, bool useDesignProperties)
 		{
 			using (var textReader = new StringReader(xaml))
-			using (var reader = XmlReader.Create(textReader)) {
-				while (reader.Read()) {
+			using (var reader = XmlReader.Create(textReader))
+			{
+				while (reader.Read())
+				{
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
 						continue;
 					if (reader.NodeType == XmlNodeType.XmlDeclaration)
 						continue;
-					if (reader.NodeType != XmlNodeType.Element) {
+					if (reader.NodeType != XmlNodeType.Element)
+					{
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
 						continue;
 					}
@@ -96,7 +101,8 @@ namespace Xamarin.Forms.Xaml
 					var doNotThrow = ResourceLoader.ExceptionHandler2 != null || Internals.XamlLoader.DoNotThrowOnExceptions;
 #pragma warning restore 0618
 					void ehandler(Exception e) => ResourceLoader.ExceptionHandler2?.Invoke((e, XamlFilePathAttribute.GetFilePathForObject(view)));
-					Visit(rootnode, new HydrationContext {
+					Visit(rootnode, new HydrationContext
+					{
 						RootElement = view,
 						RootAssembly = rootAssembly ?? view.GetType().GetTypeInfo().Assembly,
 						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null
@@ -118,14 +124,17 @@ namespace Xamarin.Forms.Xaml
 
 			object inflatedView = null;
 			using (var textreader = new StringReader(xaml))
-			using (var reader = XmlReader.Create(textreader)) {
-				while (reader.Read()) {
+			using (var reader = XmlReader.Create(textreader))
+			{
+				while (reader.Read())
+				{
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
 						continue;
 					if (reader.NodeType == XmlNodeType.XmlDeclaration)
 						continue;
-					if (reader.NodeType != XmlNodeType.Element) {
+					if (reader.NodeType != XmlNodeType.Element)
+					{
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
 						continue;
 					}
@@ -134,7 +143,8 @@ namespace Xamarin.Forms.Xaml
 					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, typeArguments), null, (IXmlNamespaceResolver)reader) { LineNumber = ((IXmlLineInfo)reader).LineNumber, LinePosition = ((IXmlLineInfo)reader).LinePosition };
 
 					XamlParser.ParseXaml(rootnode, reader);
-					var visitorContext = new HydrationContext {
+					var visitorContext = new HydrationContext
+					{
 						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null,
 					};
 					var cvv = new CreateValuesVisitor(visitorContext);
@@ -155,14 +165,17 @@ namespace Xamarin.Forms.Xaml
 			void ehandler(Exception e) => ResourceLoader.ExceptionHandler2?.Invoke((e, XamlFilePathAttribute.GetFilePathForObject(rootView)));
 
 			using (var textReader = new StringReader(xaml))
-			using (var reader = XmlReader.Create(textReader)) {
-				while (reader.Read()) {
+			using (var reader = XmlReader.Create(textReader))
+			{
+				while (reader.Read())
+				{
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
 						continue;
 					if (reader.NodeType == XmlNodeType.XmlDeclaration)
 						continue;
-					if (reader.NodeType != XmlNodeType.Element) {
+					if (reader.NodeType != XmlNodeType.Element)
+					{
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
 						continue;
 					}
@@ -179,11 +192,13 @@ namespace Xamarin.Forms.Xaml
 						ExceptionHandler = ResourceLoader.ExceptionHandler2 != null ? ehandler : (Action<Exception>)null,
 					};
 					var cvv = new CreateValuesVisitor(visitorContext);
-					if (resources is ElementNode resourcesEN && (resourcesEN.XmlType.NamespaceUri != XamlParser.XFUri || resourcesEN.XmlType.Name != nameof(ResourceDictionary))) { //single implicit resource
+					if (resources is ElementNode resourcesEN && (resourcesEN.XmlType.NamespaceUri != XamlParser.XFUri || resourcesEN.XmlType.Name != nameof(ResourceDictionary)))
+					{ //single implicit resource
 						resources = new ElementNode(new XmlType(XamlParser.XFUri, nameof(ResourceDictionary), null), XamlParser.XFUri, rootNode.NamespaceResolver);
 						((ElementNode)resources).CollectionItems.Add(resourcesEN);
 					}
-					else if (resources is ListNode resourcesLN) { //multiple implicit resources
+					else if (resources is ListNode resourcesLN)
+					{ //multiple implicit resources
 						resources = new ElementNode(new XmlType(XamlParser.XFUri, nameof(ResourceDictionary), null), XamlParser.XFUri, rootNode.NamespaceResolver);
 						foreach (var n in resourcesLN.CollectionItems)
 							((ElementNode)resources).CollectionItems.Add(n);
@@ -236,14 +251,16 @@ namespace Xamarin.Forms.Xaml
 			var assembly = type.GetTypeInfo().Assembly;
 			var resourceId = XamlResourceIdAttribute.GetResourceIdForType(type);
 
-			var rlr = ResourceLoader.ResourceProvider2?.Invoke(new ResourceLoader.ResourceLoadingQuery {
+			var rlr = ResourceLoader.ResourceProvider2?.Invoke(new ResourceLoader.ResourceLoadingQuery
+			{
 				AssemblyName = assembly.GetName(),
 				ResourcePath = XamlResourceIdAttribute.GetPathForType(type),
 				Instance = instance,
 			});
 			var alternateXaml = rlr?.ResourceContent;
 
-			if (alternateXaml != null) {
+			if (alternateXaml != null)
+			{
 				useDesignProperties = rlr.UseDesignProperties;
 				return alternateXaml;
 			}
@@ -251,7 +268,8 @@ namespace Xamarin.Forms.Xaml
 			if (resourceId == null)
 				return LegacyGetXamlForType(type);
 
-			using (var stream = assembly.GetManifestResourceStream(resourceId)) {
+			using (var stream = assembly.GetManifestResourceStream(resourceId))
+			{
 				if (stream != null)
 					using (var reader = new StreamReader(stream))
 						xaml = reader.ReadToEnd();
@@ -269,7 +287,8 @@ namespace Xamarin.Forms.Xaml
 			var assembly = type.GetTypeInfo().Assembly;
 
 			string resourceId;
-			if (XamlResources.TryGetValue(type, out resourceId)) {
+			if (XamlResources.TryGetValue(type, out resourceId))
+			{
 				var result = ReadResourceAsXaml(type, assembly, resourceId);
 				if (result != null)
 					return result;
@@ -281,8 +300,10 @@ namespace Xamarin.Forms.Xaml
 
 			// first pass, pray to find it because the user named it correctly
 
-			foreach (var resource in resourceNames) {
-				if (ResourceMatchesFilename(assembly, resource, likelyResourceName)) {
+			foreach (var resource in resourceNames)
+			{
+				if (ResourceMatchesFilename(assembly, resource, likelyResourceName))
+				{
 					resourceName = resource;
 					var xaml = ReadResourceAsXaml(type, assembly, resource);
 					if (xaml != null)
@@ -292,7 +313,8 @@ namespace Xamarin.Forms.Xaml
 
 			// okay maybe they at least named it .xaml
 
-			foreach (var resource in resourceNames) {
+			foreach (var resource in resourceNames)
+			{
 				if (!resource.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase))
 					continue;
 
@@ -302,7 +324,8 @@ namespace Xamarin.Forms.Xaml
 					return xaml;
 			}
 
-			foreach (var resource in resourceNames) {
+			foreach (var resource in resourceNames)
+			{
 				if (resource.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase))
 					continue;
 
@@ -318,14 +341,16 @@ namespace Xamarin.Forms.Xaml
 		//legacy...
 		static bool ResourceMatchesFilename(Assembly assembly, string resource, string filename)
 		{
-			try {
+			try
+			{
 				var info = assembly.GetManifestResourceInfo(resource);
 
 				if (!string.IsNullOrEmpty(info.FileName) &&
 					string.Compare(info.FileName, filename, StringComparison.OrdinalIgnoreCase) == 0)
 					return true;
 			}
-			catch (PlatformNotSupportedException) {
+			catch (PlatformNotSupportedException)
+			{
 				// Because Win10 + .NET Native
 			}
 
@@ -340,8 +365,10 @@ namespace Xamarin.Forms.Xaml
 		static string ReadResourceAsXaml(Type type, Assembly assembly, string likelyTargetName, bool validate = false)
 		{
 			using (var stream = assembly.GetManifestResourceStream(likelyTargetName))
-			using (var reader = new StreamReader(stream)) {
-				if (validate) {
+			using (var reader = new StreamReader(stream))
+			{
+				if (validate)
+				{
 					// terrible validation of XML. Unfortunately it will probably work most of the time since comments
 					// also start with a <. We can't bring in any real deps.
 
@@ -391,7 +418,7 @@ namespace Xamarin.Forms.Xaml
 		}
 
 		internal static Func<IList<FallbackTypeInfo>, Type, Type> FallbackTypeResolver { get; set; }
-		internal static Action<CallbackTypeInfo, object> ValueCreatedCallback  { get; set; }
+		internal static Action<CallbackTypeInfo, object> ValueCreatedCallback { get; set; }
 		internal static Func<CallbackTypeInfo, Type, Exception, object> InstantiationFailedCallback { get; set; }
 	}
 }

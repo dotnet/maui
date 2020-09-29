@@ -8,9 +8,9 @@ using Android.Text;
 using Android.Text.Method;
 using Android.Util;
 using Android.Views;
-using Java.Lang;
-using Android.Widget;
 using Android.Views.InputMethods;
+using Android.Widget;
+using Java.Lang;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -127,7 +127,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				SetNativeControl(edit);
 				EditText.AddTextChangedListener(this);
-				if(EditText is IFormsEditText formsEditText)
+				if (EditText is IFormsEditText formsEditText)
 					formsEditText.OnKeyboardBackPressed += OnKeyboardBackPressed;
 			}
 
@@ -237,12 +237,12 @@ namespace Xamarin.Forms.Platform.Android
 				if (model.IsSet(InputView.IsSpellCheckEnabledProperty))
 				{
 					if (!model.IsSpellCheckEnabled)
-						edit.InputType = edit.InputType | InputTypes.TextFlagNoSuggestions;					
+						edit.InputType = edit.InputType | InputTypes.TextFlagNoSuggestions;
 				}
 				if (model.IsSet(Editor.IsTextPredictionEnabledProperty))
 				{
 					if (!model.IsTextPredictionEnabled)
-						edit.InputType = edit.InputType | InputTypes.TextFlagNoSuggestions;					
+						edit.InputType = edit.InputType | InputTypes.TextFlagNoSuggestions;
 				}
 			}
 

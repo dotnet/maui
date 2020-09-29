@@ -1,8 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 			bool canExecute = true;
 			_refreshCommand = new Command(async (parameter) =>
 			{
-				if(!_refreshView.IsRefreshing)
+				if (!_refreshView.IsRefreshing)
 				{
 					throw new Exception("IsRefreshing should be true when command executes");
 				}

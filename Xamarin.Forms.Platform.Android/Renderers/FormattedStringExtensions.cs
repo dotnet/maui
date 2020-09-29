@@ -154,8 +154,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			public void ChooseHeight(Java.Lang.ICharSequence text, int start, int end, int spanstartv, int v, Paint.FontMetricsInt fm)
 			{
-				fm.Ascent = (int) (_ascent * _lineHeight);
-				fm.Descent = (int) (_descent * _lineHeight);
+				fm.Ascent = (int)(_ascent * _lineHeight);
+				fm.Descent = (int)(_descent * _lineHeight);
 			}
 		}
 	}

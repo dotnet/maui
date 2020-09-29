@@ -221,12 +221,12 @@ namespace Xamarin.Forms
 
 		protected virtual void OnRemainingItemsThresholdReached()
 		{
-			
+
 		}
 
 		protected virtual void OnScrolled(ItemsViewScrolledEventArgs e)
 		{
-			
+
 		}
 
 		protected override void OnBindingContextChanged()

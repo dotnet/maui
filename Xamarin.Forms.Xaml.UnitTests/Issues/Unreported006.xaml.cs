@@ -14,7 +14,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		public Layout<View> GenericProperty {
+		public Layout<View> GenericProperty
+		{
 			get { return (Layout<View>)GetValue(GenericPropertyProperty); }
 			set { SetValue(GenericPropertyProperty, value); }
 		}

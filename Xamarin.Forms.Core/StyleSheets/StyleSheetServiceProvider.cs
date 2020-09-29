@@ -10,7 +10,8 @@ namespace Xamarin.Forms.StyleSheets
 
 		public StyleSheetServiceProvider(object targetObject, object targetProperty)
 		{
-			vtProvider = new ValueTargetProvider {
+			vtProvider = new ValueTargetProvider
+			{
 				TargetObject = targetObject,
 				TargetProperty = targetProperty
 			};

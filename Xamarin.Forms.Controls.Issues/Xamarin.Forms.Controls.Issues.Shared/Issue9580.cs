@@ -9,7 +9,7 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Issue(IssueTracker.Github, 9580, "[Bug] CollectionView - iOS - Crash when adding first item to empty item group", 
+	[Issue(IssueTracker.Github, 9580, "[Bug] CollectionView - iOS - Crash when adding first item to empty item group",
 		PlatformAffected.iOS)]
 	public class Issue9580 : TestContentPage
 	{
@@ -31,13 +31,15 @@ namespace Xamarin.Forms.Controls.Issues
 				new _9580Group() { Name = "Four" }, new _9580Group(){ Name = "Five" }, new _9580Group(){ Name = "Six" }
 			};
 
-			cv.ItemTemplate = new DataTemplate(() => {
+			cv.ItemTemplate = new DataTemplate(() =>
+			{
 				var label = new Label() { Margin = new Thickness(5, 0, 0, 0) };
 				label.SetBinding(Label.TextProperty, new Binding("Text"));
 				return label;
 			});
-			
-			cv.GroupHeaderTemplate = new DataTemplate(() => {
+
+			cv.GroupHeaderTemplate = new DataTemplate(() =>
+			{
 				var label = new Label();
 				label.SetBinding(Label.TextProperty, new Binding("Name"));
 				return label;
@@ -65,11 +67,11 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		class _9580Item
-		{ 
+		{
 			public string Text { get; set; }
 		}
 
-		class _9580Group : ObservableCollection<_9580Item> 
+		class _9580Group : ObservableCollection<_9580Item>
 		{
 			public string Name { get; set; }
 		}

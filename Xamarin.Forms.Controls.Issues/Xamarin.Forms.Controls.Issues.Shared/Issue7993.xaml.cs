@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System;
 using Xamarin.Forms.Xaml;
-using System.Collections.Generic;
 
 #if UITEST && __ANDROID__
 using Xamarin.UITest;
@@ -104,7 +104,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public Model7993()
 		{
-			
+
 		}
 	}
 }

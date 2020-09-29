@@ -2,8 +2,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using WBrush = System.Windows.Media.Brush;
-using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 using WControl = System.Windows.Controls.Control;
+using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Platform.WPF
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
 					SetNativeControl(new FormsTextBox { VerticalScrollBarVisibility = WpfScrollBarVisibility.Visible, TextWrapping = TextWrapping.Wrap, AcceptsReturn = true });
-					Control.LostFocus += NativeOnLostFocus; 
+					Control.LostFocus += NativeOnLostFocus;
 					Control.TextChanged += NativeOnTextChanged;
 				}
 
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.WPF
 			base.OnElementChanged(e);
 		}
 
-		
+
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);

@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 
 		}
-    }
+	}
 
 	[Preserve(AllMembers = true)]
 	public class Issue8449CategoryModel : List<Issue8449Model>

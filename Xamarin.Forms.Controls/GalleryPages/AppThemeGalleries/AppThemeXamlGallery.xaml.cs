@@ -5,13 +5,13 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries
 {
-    [XamlCompilation(XamlCompilationOptions.Compile)]
+	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class AppThemeXamlGallery : ContentPage
 	{
-        public AppThemeXamlGallery()
+		public AppThemeXamlGallery()
 		{
 			InitializeComponent();
-        }
+		}
 	}
 
 	[Preserve(AllMembers = true)]

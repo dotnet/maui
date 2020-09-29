@@ -1,8 +1,8 @@
-﻿using Xamarin.Forms;
+﻿using Tizen.NET.MaterialComponents;
+using Xamarin.Forms;
+using Xamarin.Forms.Material.Tizen;
 using Xamarin.Forms.Platform.Tizen;
 using Xamarin.Forms.Platform.Tizen.Native;
-using Xamarin.Forms.Material.Tizen;
-using Tizen.NET.MaterialComponents;
 
 [assembly: ExportRenderer(typeof(Frame), typeof(MaterialFrameRenderer), new[] { typeof(VisualMarker.MaterialVisual) }, Priority = short.MinValue)]
 namespace Xamarin.Forms.Material.Tizen

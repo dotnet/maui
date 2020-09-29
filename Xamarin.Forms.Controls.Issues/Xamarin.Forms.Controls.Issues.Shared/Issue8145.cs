@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using Xamarin.Forms.Controls;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Controls;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Controls.Issues
 										new ContentPage { Title = "notme",  Content = new Label  { Text = "Click More, then choose the target. If it does not crash, this test has passed." } }
 									}
 						},
-					new Tab { 
+					new Tab {
 							Title = "target",
 							Items = {
 										new ContentPage { Title = "Target",  Content = new Label  { Text = "Success" } }

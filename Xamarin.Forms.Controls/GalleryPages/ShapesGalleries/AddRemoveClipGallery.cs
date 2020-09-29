@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
 			};
 
 			removeButton.Clicked += OnRemoveButtonClicked;
-	
+
 			buttonLayout.Children.Add(addButton);
 			buttonLayout.Children.Add(removeButton);
 

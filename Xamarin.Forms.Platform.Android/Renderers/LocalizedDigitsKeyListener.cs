@@ -96,11 +96,11 @@ namespace Xamarin.Forms.Platform.Android
 			if ((InputType & InputTypes.NumberFlagSigned) == 0)
 			{
 				return _acceptedChars ??
-				       (_acceptedChars = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', _decimalSeparator });
+					   (_acceptedChars = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', _decimalSeparator });
 			}
 
 			return _acceptedChars ??
-			       (_acceptedChars = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', SignCharacter, _decimalSeparator });
+				   (_acceptedChars = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', SignCharacter, _decimalSeparator });
 		}
 
 		static bool IsSignChar(char c)

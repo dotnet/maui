@@ -10,22 +10,26 @@ namespace Xamarin.Forms.Core.UnitTests
 		[SetUp]
 		public override void Setup()
 		{
-			base.Setup ();
-			Device.PlatformServices = new MockPlatformServices ();
+			base.Setup();
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
 		[Test]
-		public void ChangingHorizontalTextAlignmentFiresXAlignChanged ()
+		public void ChangingHorizontalTextAlignmentFiresXAlignChanged()
 		{
 			var entryCell = new EntryCell { HorizontalTextAlignment = TextAlignment.Center };
 
 			var xAlignFired = false;
 			var horizontalTextAlignmentFired = false;
 
-			entryCell.PropertyChanged += (sender, args) => {
-				if (args.PropertyName == "XAlign") {
-					xAlignFired	= true;
-				} else if (args.PropertyName == EntryCell.HorizontalTextAlignmentProperty.PropertyName) {
+			entryCell.PropertyChanged += (sender, args) =>
+			{
+				if (args.PropertyName == "XAlign")
+				{
+					xAlignFired = true;
+				}
+				else if (args.PropertyName == EntryCell.HorizontalTextAlignmentProperty.PropertyName)
+				{
 					horizontalTextAlignmentFired = true;
 				}
 			};
@@ -37,24 +41,24 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void EntryCellXAlignBindingMatchesHorizontalTextAlignmentBinding ()
+		public void EntryCellXAlignBindingMatchesHorizontalTextAlignmentBinding()
 		{
-			var vm = new ViewModel ();
+			var vm = new ViewModel();
 			vm.Alignment = TextAlignment.Center;
 
-			var entryCellXAlign = new EntryCell () { BindingContext = vm };
-			entryCellXAlign.SetBinding (EntryCell.XAlignProperty, new Binding ("Alignment"));
+			var entryCellXAlign = new EntryCell() { BindingContext = vm };
+			entryCellXAlign.SetBinding(EntryCell.XAlignProperty, new Binding("Alignment"));
 
-			var entryCellHorizontalTextAlignment = new EntryCell () { BindingContext = vm };
-			entryCellHorizontalTextAlignment.SetBinding (EntryCell.HorizontalTextAlignmentProperty, new Binding ("Alignment"));
+			var entryCellHorizontalTextAlignment = new EntryCell() { BindingContext = vm };
+			entryCellHorizontalTextAlignment.SetBinding(EntryCell.HorizontalTextAlignmentProperty, new Binding("Alignment"));
 
-			Assert.AreEqual (TextAlignment.Center, entryCellXAlign.XAlign);
-			Assert.AreEqual (TextAlignment.Center, entryCellHorizontalTextAlignment.HorizontalTextAlignment);
+			Assert.AreEqual(TextAlignment.Center, entryCellXAlign.XAlign);
+			Assert.AreEqual(TextAlignment.Center, entryCellHorizontalTextAlignment.HorizontalTextAlignment);
 
 			vm.Alignment = TextAlignment.End;
 
-			Assert.AreEqual (TextAlignment.End, entryCellXAlign.XAlign);
-			Assert.AreEqual (TextAlignment.End, entryCellHorizontalTextAlignment.HorizontalTextAlignment);
+			Assert.AreEqual(TextAlignment.End, entryCellXAlign.XAlign);
+			Assert.AreEqual(TextAlignment.End, entryCellHorizontalTextAlignment.HorizontalTextAlignment);
 		}
 
 		sealed class ViewModel : INotifyPropertyChanged
@@ -73,9 +77,9 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			public event PropertyChangedEventHandler PropertyChanged;
 
-			void OnPropertyChanged ([CallerMemberName] string propertyName = null)
+			void OnPropertyChanged([CallerMemberName] string propertyName = null)
 			{
-				PropertyChanged?.Invoke (this, new PropertyChangedEventArgs (propertyName));
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
 	}

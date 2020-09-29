@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public Bugzilla29107()
 		{
 #if APP
-			InitializeComponent ();
+			InitializeComponent();
 #endif
 		}
 

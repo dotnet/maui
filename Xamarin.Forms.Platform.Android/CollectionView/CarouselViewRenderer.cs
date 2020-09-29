@@ -2,13 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Android.Content;
-using AndroidX.RecyclerView.Widget;
-using Android.Views;
-using FormsCarouselView = Xamarin.Forms.CarouselView;
-using Xamarin.Forms.Platform.Android.CollectionView;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Runtime;
+using Android.Views;
+using AndroidX.RecyclerView.Widget;
+using Xamarin.Forms.Platform.Android.CollectionView;
+using FormsCarouselView = Xamarin.Forms.CarouselView;
 
 namespace Xamarin.Forms.Platform.Android
 {
