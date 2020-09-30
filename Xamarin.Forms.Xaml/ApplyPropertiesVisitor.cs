@@ -361,6 +361,9 @@ namespace Xamarin.Forms.Xaml
 			var localName = propertyName.LocalName;
 			xpe = null;
 
+			var assemblyName = rootElement.GetType().GetTypeInfo().Assembly?.GetName().Name;
+			void registerSourceInfo(object target, string path) => VisualDiagnostics.RegisterSourceInfo(target, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), lineInfo.LineNumber, lineInfo.LinePosition);
+
 			//If it's an attached BP, update elementType and propertyName
 			var bpOwnerType = element.GetType();
 			var attached = GetRealNameAndType(ref bpOwnerType, propertyName.NamespaceURI, ref localName, rootElement, lineInfo);
@@ -375,20 +378,32 @@ namespace Xamarin.Forms.Xaml
 				return true;
 
 			//If value is BindingBase, SetBinding
-			if (xpe == null && TrySetBinding(element, property, localName, value, lineInfo, out xpe))
+			if (xpe == null && TrySetBinding(element, property, localName, value, lineInfo, out var binding, out xpe)) {
+				if (binding != null && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
+					registerSourceInfo(binding, path);
 				return true;
+			}
 
 			//If it's a BindableProberty, SetValue
-			if (xpe == null && TrySetValue(element, property, attached, value, lineInfo, serviceProvider, out xpe))
+			if (xpe == null && TrySetValue(element, property, attached, value, lineInfo, serviceProvider, out xpe)) {
+				if (value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
+					registerSourceInfo(value, path);
 				return true;
+			}
 
 			//If we can assign that value to a normal property, let's do it
-			if (xpe == null && TrySetProperty(element, localName, value, lineInfo, serviceProvider, rootElement, out xpe))
+			if (xpe == null && TrySetProperty(element, localName, value, lineInfo, serviceProvider, rootElement, out xpe)) {
+				if (value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
+					registerSourceInfo(value, path);
 				return true;
+			}
 
 			//If it's an already initialized property, add to it
-			if (xpe == null && TryAddToProperty(element, propertyName, value, xKey, lineInfo, serviceProvider, rootElement, out xpe))
+			if (xpe == null && TryAddToProperty(element, propertyName, value, xKey, lineInfo, serviceProvider, rootElement, out xpe)) {
+				if (value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
+					registerSourceInfo(value, path);
 				return true;
+			}
 
 			xpe = xpe ?? new XamlParseException($"Cannot assign property \"{localName}\": Property does not exist, or is not assignable, or mismatching type between value and property", lineInfo);
 			return false;
@@ -473,21 +488,21 @@ namespace Xamarin.Forms.Xaml
 			return true;
 		}
 
-		static bool TrySetBinding(object element, BindableProperty property, string localName, object value, IXmlLineInfo lineInfo, out Exception exception)
+		static bool TrySetBinding(object element, BindableProperty property, string localName, object value, IXmlLineInfo lineInfo, out BindingBase binding, out Exception exception)
 		{
 			exception = null;
 
 			var elementType = element.GetType();
-			var binding = value.ConvertTo(typeof(BindingBase), pinfoRetriever: null, serviceProvider: null, exception: out exception) as BindingBase;
+			binding = value.ConvertTo(typeof(BindingBase), pinfoRetriever:null, serviceProvider: null, exception: out exception) as BindingBase;
 			if (exception != null)
 				return false;
-			var bindable = element as BindableObject;
+
 			var nativeBindingService = DependencyService.Get<INativeBindingService>();
 
 			if (binding == null)
 				return false;
 
-			if (bindable != null && property != null)
+			if (element is BindableObject bindable && property != null)
 			{
 				bindable.SetBinding(property, binding);
 				return true;

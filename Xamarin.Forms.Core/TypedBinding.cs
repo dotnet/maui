@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml.Diagnostics;
 
 namespace Xamarin.Forms.Internals
 {
@@ -229,6 +230,7 @@ namespace Xamarin.Forms.Internals
 				if (!BindingExpression.TryConvert(ref value, property, property.ReturnType, true))
 				{
 					Log.Warning("Binding", "'{0}' can not be converted to type '{1}'.", value, property.ReturnType);
+					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, null, "{0} can not be converted to type '{1}'", new[] { value, property.ReturnType });
 					return;
 				}
 				target.SetValueCore(property, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
@@ -242,6 +244,7 @@ namespace Xamarin.Forms.Internals
 				if (!BindingExpression.TryConvert(ref value, property, typeof(TProperty), false))
 				{
 					Log.Warning("Binding", "'{0}' can not be converted to type '{1}'.", value, typeof(TProperty));
+					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, null, "{0} can not be converted to type '{1}'", new[] { value, property.ReturnType });
 					return;
 				}
 				_setter((TSource)sourceObject, (TProperty)value);
