@@ -2,11 +2,9 @@ using System;
 using System.ComponentModel;
 using System.Windows.Input;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
-	[RenderWith(typeof(_EntryRenderer))]
 	public class Entry : InputView, IFontElement, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>
 	{
 		public static readonly BindableProperty ReturnTypeProperty = BindableProperty.Create(nameof(ReturnType), typeof(ReturnType), typeof(Entry), ReturnType.Default);

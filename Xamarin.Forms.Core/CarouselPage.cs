@@ -1,9 +1,7 @@
 using System;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
-	[RenderWith(typeof(_CarouselPageRenderer))]
 	public class CarouselPage : MultiPage<ContentPage>, IElementConfiguration<CarouselPage>
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CarouselPage>> _platformConfigurationRegistry;

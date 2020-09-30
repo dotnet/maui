@@ -1,9 +1,6 @@
 ﻿using System.ComponentModel;
-using Xamarin.Forms.Platform;
-
 namespace Xamarin.Forms.Shapes
 {
-	[RenderWith(typeof(_PathRenderer))]
 	public class Path : Shape
 	{
 		public static readonly BindableProperty DataProperty =

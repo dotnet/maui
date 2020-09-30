@@ -1,10 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
-	[RenderWith(typeof(_OpenGLViewRenderer))]
 	public sealed class OpenGLView : View, IOpenGlViewController, IElementConfiguration<OpenGLView>
 	{
 		#region Statics

@@ -4,11 +4,9 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Windows.Input;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
-	[RenderWith(typeof(_ImageButtonRenderer))]
 	public class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, IImageElement
 	{
 		const int DefaultCornerRadius = -1;

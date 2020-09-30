@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
 	[ContentProperty(nameof(IndicatorLayout))]
-	[RenderWith(typeof(_IndicatorViewRenderer))]
 	public class IndicatorView : TemplatedView
 	{
 		const int DefaultPadding = 4;

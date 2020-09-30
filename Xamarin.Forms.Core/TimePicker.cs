@@ -1,10 +1,8 @@
 using System;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
-	[RenderWith(typeof(_TimePickerRenderer))]
 	public class TimePicker : View, IFontElement, ITextElement, IElementConfiguration<TimePicker>
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(TimePicker), "t");

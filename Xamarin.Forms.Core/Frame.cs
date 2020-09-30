@@ -1,11 +1,9 @@
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
 	[ContentProperty("Content")]
-	[RenderWith(typeof(_FrameRenderer))]
 	public class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement
 	{
 		[Obsolete("OutlineColorProperty is obsolete as of version 3.0.0. Please use BorderColorProperty instead.")]

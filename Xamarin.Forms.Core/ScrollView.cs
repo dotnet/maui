@@ -2,12 +2,10 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
 	[ContentProperty("Content")]
-	[RenderWith(typeof(_ScrollViewRenderer))]
 	public class ScrollView : Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
 	{
 		#region IScrollViewController

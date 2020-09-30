@@ -1,8 +1,6 @@
-﻿using Xamarin.Forms.Platform;
-
+﻿
 namespace Xamarin.Forms.Shapes
 {
-	[RenderWith(typeof(_RectangleRenderer))]
 	public sealed class Rectangle : Shape
 	{
 		public Rectangle()

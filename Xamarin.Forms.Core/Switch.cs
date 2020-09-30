@@ -1,9 +1,7 @@
 using System;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
-	[RenderWith(typeof(_SwitchRenderer))]
 	public class Switch : View, IElementConfiguration<Switch>
 	{
 		public const string SwitchOnVisualState = "On";
