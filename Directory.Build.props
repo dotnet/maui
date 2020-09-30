@@ -16,9 +16,9 @@
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>
   </PropertyGroup>
-  <Import Condition="'$(SampleProject)' != 'True'" Project="SourceLink.Build.props" />
+  <Import Condition="'$(SampleProject)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
   <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
   <Target Name="GitVersion" />
   
-  <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="Environment.Build.props" />
+  <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
 </Project>

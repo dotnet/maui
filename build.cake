@@ -725,11 +725,11 @@ Task("BuildForNuget")
         binaryLogger.FileName = $"{artifactStagingDirectory}/Xamarin.Forms-{configuration}.binlog";
         MSBuild("./Xamarin.Forms.sln", msbuildSettings);
 
-        msbuildSettings = GetMSBuildSettings();
+        /*msbuildSettings = GetMSBuildSettings();
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/Xamarin.Forms.DualScreen-{configuration}-csproj.binlog";
         MSBuild("./Xamarin.Forms.DualScreen/Xamarin.Forms.DualScreen.csproj",
-                    msbuildSettings.WithRestore());
+                    msbuildSettings.WithRestore());*/
 
 
         // msbuildSettings = GetMSBuildSettings();
