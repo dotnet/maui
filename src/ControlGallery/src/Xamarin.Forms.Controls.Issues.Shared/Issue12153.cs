@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 					new Label() { Text = "Below a PLAY icon should be visible (if the \"Segoe MDL2 Assets\" font is installed)", Margin = new Thickness(10)},
 
-					new Image() { Source = new FontImageSource{Glyph = "\xe102",FontFamily = "Segoe MDL2 Assets", Size = 50, Color = Color.Green}, HorizontalOptions = LayoutOptions.Start },					
+					new Image() { Source = new FontImageSource{Glyph = "\xe102",FontFamily = "Segoe MDL2 Assets", Size = 50, Color = Color.Green}, HorizontalOptions = LayoutOptions.Start },
 				}
 			};
 		}
