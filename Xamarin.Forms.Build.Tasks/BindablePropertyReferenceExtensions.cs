@@ -59,7 +59,8 @@ namespace Xamarin.Forms.Build.Tasks
 				return typeConverter;
 
 			propertyType = propertyType ?? staticGetter?.ReturnType;
-			foreach (var (t, tc) in TypeConverterAttribute.KnownConverters) {
+			foreach (var (t, tc) in TypeConverterAttribute.KnownConverters)
+			{
 				if (TypeRefComparer.Default.Equals(module.ImportReference(t), propertyType))
 					return module.ImportReference(tc);
 			}

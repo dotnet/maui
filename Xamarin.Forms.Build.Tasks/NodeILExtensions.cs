@@ -32,8 +32,10 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			if (typeConverter == null)
-				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters) {
-					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef)) {
+				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters)
+				{
+					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef))
+					{
 						typeConverter = context.Module.ImportReference(tc);
 						break;
 					}
@@ -129,8 +131,10 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			if (typeConverter == null)
-				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters) {
-					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef)) {
+				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters)
+				{
+					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef))
+					{
 						typeConverter = context.Module.ImportReference(tc);
 						break;
 					}

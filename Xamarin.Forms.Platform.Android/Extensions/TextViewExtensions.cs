@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.Android
 			textView.SetMaxLines(maxLines);
 		}
 
-		public static void	SetLineBreakMode(this TextView textView, Label label)
+		public static void SetLineBreakMode(this TextView textView, Label label)
 		{
 			var maxLines = SetLineBreak(textView, label.LineBreakMode);
 			textView.SetMaxLines(maxLines);
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.Android
 			SetLineBreak(textView, button.LineBreakMode);
 
 
-		public static int SetLineBreak( TextView textView, LineBreakMode lineBreakMode)
+		public static int SetLineBreak(TextView textView, LineBreakMode lineBreakMode)
 		{
 			int maxLines = Int32.MaxValue;
 			bool singleLine = false;
