@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml.Diagnostics;
 
 namespace Xamarin.Forms
 {
@@ -129,6 +130,7 @@ namespace Xamarin.Forms
 						|| (needsSetter && part.NextPart == null && part.LastSetter == null)))
 				{
 					Log.Warning("Binding", PropertyNotFoundErrorMessage, part.Content, current, target.GetType(), property.PropertyName);
+					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, null, PropertyNotFoundErrorMessage, new[] { part.Content, current, target.GetType(), property.PropertyName });
 					break;
 				}
 
@@ -151,6 +153,7 @@ namespace Xamarin.Forms
 				if (!TryConvert(ref value, property, property.ReturnType, true))
 				{
 					Log.Warning("Binding", "'{0}' can not be converted to type '{1}'.", value, property.ReturnType);
+					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, null, "{0} can not be converted to type '{1}'", new[] { value, property.ReturnType });
 					return;
 				}
 
@@ -163,6 +166,7 @@ namespace Xamarin.Forms
 				if (!TryConvert(ref value, property, part.SetterType, false))
 				{
 					Log.Warning("Binding", "'{0}' can not be converted to type '{1}'.", value, part.SetterType);
+					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, null, "{0} can not be converted to type '{1}'", new[] { value, part.SetterType });
 					return;
 				}
 
@@ -307,8 +311,10 @@ namespace Xamarin.Forms
 			{
 				if (sourceType.IsArray)
 				{
-					if (!int.TryParse(part.Content, out var index))
+					if (!int.TryParse(part.Content, out var index)) {
 						Log.Warning("Binding", "{0} could not be parsed as an index for a {1}", part.Content, sourceType);
+						BindingDiagnostics.SendBindingFailure(Binding, null, "{0} could not be parsed as an index for a {1}", new object[] { part.Content, sourceType });
+					}
 					else
 						part.Arguments = new object[] { index };
 
