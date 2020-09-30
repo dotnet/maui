@@ -14,8 +14,8 @@
 	    <SignAssembly Condition=" '$(_DisableStrongNamer)' != 'True' ">True</SignAssembly>
 	    <DisableStrongNamer Condition=" '$(_DisableStrongNamer)' == 'True' ">True</DisableStrongNamer>
 	    <DelaySign>true</DelaySign>
-	    <AssemblyOriginatorKeyFile>..\xamarin.forms.snk</AssemblyOriginatorKeyFile>
-	    <StrongNamerKeyFile>..\xamarin.forms.snk</StrongNamerKeyFile>
+	    <AssemblyOriginatorKeyFile>..\..\..\..\eng\xamarin.forms.snk</AssemblyOriginatorKeyFile>
+	    <StrongNamerKeyFile>..\..\..\..\eng\xamarin.forms.snk</StrongNamerKeyFile>
 	</PropertyGroup>
 
   <ItemGroup>
@@ -71,13 +71,13 @@
 	</Target>
 
   <Target Name="_StrongName" AfterTargets="Build" DependsOnTargets="_SetSnExe" Condition="'$(TargetPath)' != ''" Inputs="$(TargetPath)" Outputs="$(IntermediateOutputPath)Sn.stamp">
-  	<Exec Command='"$(SnExe)" -R $(TargetPath) ..\xamarin.forms.snk' Condition=" '$(SignAssembly)' == 'true' " />
+  	<Exec Command='"$(SnExe)" -R $(TargetPath) ..\..\..\..\eng\xamarin.forms.snk' Condition=" '$(SignAssembly)' == 'true' " />
   </Target>
 
   <Target Name="_CopyToNuspecDir" AfterTargets="_StrongName;Build">
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)*.dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\.nuspec\$(TargetFramework)\" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\..\..\..\.nuspec\$(TargetFramework)\" ContinueOnError="true" Retries="0" />
   </Target>
 </Project>
