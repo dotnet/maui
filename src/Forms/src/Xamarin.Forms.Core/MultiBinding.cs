@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml.Diagnostics;
 
 namespace Xamarin.Forms
 {
@@ -90,6 +91,7 @@ namespace Xamarin.Forms
 					if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 					{
 						Log.Warning("MultiBinding", "'{0}' can not be converted to type '{1}'.", value, _targetProperty.ReturnType);
+						BindingDiagnostics.SendBindingFailure(this, null, _targetObject, _targetProperty, null, "{0} can not be converted to type '{1}'", new[] { value, _targetProperty.ReturnType });
 						return;
 					}
 					_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
@@ -163,6 +165,7 @@ namespace Xamarin.Forms
 				if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 				{
 					Log.Warning("MultiBinding", "'{0}' can not be converted to type '{1}'.", value, _targetProperty.ReturnType);
+					BindingDiagnostics.SendBindingFailure(this, context, _targetObject, _targetProperty, null, "{0} can not be converted to type '{1}'", new[] { value, _targetProperty.ReturnType });
 					return;
 				}
 				_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
