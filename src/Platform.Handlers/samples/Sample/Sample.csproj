@@ -4,11 +4,14 @@
   </PropertyGroup>  
   <Import Project="..\..\..\..\.nuspec\Xamarin.Forms.MultiTargeting.targets" />
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) == true ">
-    <ProjectReference Include="..\..\..\..\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj" />
+    <ProjectReference Include="..\..\..\Platform.Renderers\src\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true ">
+    <ProjectReference Include="..\..\..\Platform.Renderers\src\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
     <ProjectReference Include="..\..\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj" />
-    <ProjectReference Include="..\..\..\..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Platform.cs">
