@@ -6,12 +6,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
 using Xamarin.Forms.Xaml.Diagnostics;
 
 namespace Xamarin.Forms
 {
-	[RenderWith(typeof(_ListViewRenderer))]
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>
 	{
 		readonly List<Element> _logicalChildren = new List<Element>();

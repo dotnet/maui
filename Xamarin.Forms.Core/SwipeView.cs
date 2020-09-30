@@ -1,12 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
 	[ContentProperty("Content")]
-	[RenderWith(typeof(_SwipeViewRenderer))]
 	public class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController
 	{
 		readonly Lazy<PlatformConfigurationRegistry<SwipeView>> _platformConfigurationRegistry;

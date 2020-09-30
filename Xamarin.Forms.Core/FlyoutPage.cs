@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
-	[RenderWith(typeof(_FlyoutPageRenderer))]
 	public class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>
 	{
 		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create("IsGestureEnabled", typeof(bool), typeof(FlyoutPage), true);
@@ -255,7 +253,6 @@ namespace Xamarin.Forms
 	}
 
 	[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
-	[RenderWith(typeof(_MasterDetailPageRenderer))]
 	public class MasterDetailPage : FlyoutPage, IMasterDetailPageController
 	{
 

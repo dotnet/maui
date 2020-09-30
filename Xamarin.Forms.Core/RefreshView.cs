@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
 	[ContentProperty("Content")]
-	[RenderWith(typeof(_RefreshViewRenderer))]
 	public class RefreshView : ContentView, IElementConfiguration<RefreshView>
 	{
 		readonly Lazy<PlatformConfigurationRegistry<RefreshView>> _platformConfigurationRegistry;

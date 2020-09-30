@@ -1,8 +1,6 @@
-﻿using Xamarin.Forms.Platform;
-
+﻿
 namespace Xamarin.Forms.Shapes
 {
-	[RenderWith(typeof(_LineRenderer))]
 	public sealed class Line : Shape
 	{
 		public static readonly BindableProperty X1Property =

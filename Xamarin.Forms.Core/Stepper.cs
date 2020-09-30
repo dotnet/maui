@@ -1,11 +1,9 @@
 using System;
 using System.ComponentModel;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
-	[RenderWith(typeof(_StepperRenderer))]
 	public class Stepper : View, IElementConfiguration<Stepper>
 	{
 		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Stepper), 100.0,

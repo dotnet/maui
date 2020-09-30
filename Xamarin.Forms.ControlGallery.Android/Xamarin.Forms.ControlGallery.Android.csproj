@@ -211,10 +211,6 @@
     <ProguardConfiguration Include="..\.nuspec\proguard.cfg">
       <Link>proguard.cfg</Link>
     </ProguardConfiguration>
-    <ProjectReference Include="..\Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android (Forwarders).csproj">
-      <Project>{6e53feb1-1100-46ae-8013-17bba35cc197}</Project>
-      <Name>Xamarin.Forms.Platform.Android (Forwarders)</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform.Android.AppLinks\Xamarin.Forms.Platform.Android.AppLinks.csproj">
       <Project>{42db052e-0909-45d2-8240-187f99f393fb}</Project>
       <Name>Xamarin.Forms.Platform.Android.AppLinks</Name>

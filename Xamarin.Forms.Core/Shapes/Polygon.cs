@@ -1,8 +1,6 @@
-﻿using Xamarin.Forms.Platform;
-
+﻿
 namespace Xamarin.Forms.Shapes
 {
-	[RenderWith(typeof(_PolygonRenderer))]
 	public sealed class Polygon : Shape
 	{
 		public static readonly BindableProperty PointsProperty =

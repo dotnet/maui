@@ -16,7 +16,6 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			"Xamarin.Forms.Maps",
 			"Xamarin.Forms.Xaml",
 			"Xamarin.Forms.Build.Tasks",
-			"Xamarin.Forms.Platform",
 		};
 
 		const string s_productName = "Xamarin.Forms";

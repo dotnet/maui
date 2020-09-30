@@ -1,9 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
-	[RenderWith(typeof(_CheckBoxRenderer))]
 	public class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CheckBox>> _platformConfigurationRegistry;

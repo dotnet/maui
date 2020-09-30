@@ -6,11 +6,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
-	[RenderWith(typeof(_CarouselViewRenderer))]
 	public class CarouselView : ItemsView
 	{
 		public const string CurrentItemVisualState = "CurrentItem";
