@@ -202,13 +202,13 @@
       <Project>{10553575-8e27-4e2c-9e88-90b015e80f1c}</Project>
       <Name>Xamarin.Forms.Platform.Android.AppLinks</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Platform.Renderers\test\Xamarin.Forms.Platform.Android.UnitTests\Xamarin.Forms.Platform.Android.UnitTests.csproj">
+      <Project>{a4c57790-71d1-467c-a69e-2bd84cb6666c}</Project>
+      <Name>Xamarin.Forms.Platform.Android.UnitTests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
       <Project>{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}</Project>
       <Name>Xamarin.Forms.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.Android.UnitTests\Xamarin.Forms.Platform.Android.UnitTests.csproj">
-      <Project>{a4c57790-71d1-467c-a69e-2bd84cb6666c}</Project>
-      <Name>Xamarin.Forms.Platform.Android.UnitTests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="$(FromSource) == 'true'">

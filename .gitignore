@@ -82,3 +82,4 @@ WriteDevopsVariables.csproj
 !**/Xamarin.Forms.Maps.WPF/Properties/Settings.Designer.cs
 !**/DevopsNuget.config
 !**/Xamarin.Forms.Maps.GTK/Libs/**/*
+/tools

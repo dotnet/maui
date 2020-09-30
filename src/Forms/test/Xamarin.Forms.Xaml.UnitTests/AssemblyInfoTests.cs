@@ -15,7 +15,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			"Xamarin.Forms.Core",
 			"Xamarin.Forms.Maps",
 			"Xamarin.Forms.Xaml",
-			"Xamarin.Forms.Build.Tasks",
+			"Xamarin.Forms.Build.Tasks"
 		};
 
 		const string s_productName = "Xamarin.Forms";
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 
 		static string GetFileFromRoot(string file)
 		{
-			var gitInfoFile = IOPath.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", file);
+			var gitInfoFile = IOPath.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "..", "..", "..", file);
 			if (!File.Exists(gitInfoFile))
 			{
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source
