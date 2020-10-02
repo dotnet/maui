@@ -61,7 +61,7 @@
 
 			if (CornerRadius.TopLeft > 0)
 				roundedRectGeometry.Children.Add(
-					new EllipseGeometry(new Point(Rect.Location.X + CornerRadius.TopLeft, Rect.Location.Y + CornerRadius.TopLeft), Rect.Location.Y + CornerRadius.TopLeft, Rect.Location.Y + CornerRadius.TopLeft));
+					new EllipseGeometry(new Point(Rect.Location.X + CornerRadius.TopLeft, Rect.Location.Y + CornerRadius.TopLeft), CornerRadius.TopLeft, CornerRadius.TopLeft));
 
 			if (CornerRadius.TopRight > 0)
 				roundedRectGeometry.Children.Add(

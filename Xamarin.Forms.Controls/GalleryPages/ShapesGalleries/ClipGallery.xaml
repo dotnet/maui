@@ -42,6 +42,16 @@
                     </Image.Clip>
                 </Image>
                 <Label
+                    Text="Clipped Image using RoundRectangleGeometry"/>
+                <Image  
+                    Source="crimson.jpg">
+                    <Image.Clip>
+                        <RoundRectangleGeometry
+                            CornerRadius="6"
+                            Rect="0, 15, 150, 150" />
+                    </Image.Clip>
+                </Image>
+                <Label
                     Text="Clipped Image using EllipseGeometry"/>
                 <Image  
                     Source="crimson.jpg">
