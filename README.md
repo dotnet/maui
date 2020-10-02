@@ -6,7 +6,7 @@
 * Deploy to multiple devices across mobile & desktop
 * Using a single project, single codebase
 * Evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms)
-* Targeting .NET 6, previews end of year
+* Targeting .NET 6, previews Q1 of 2021
 
 ## Status: Planning and Early Development
 
@@ -27,7 +27,7 @@ Active development is happening today to build Android and iOS SDKs against the 
 
 ### Milestones
 
-* .NET MAUI previews Q4 2020 through Q3 2021
+* .NET MAUI previews Q1 2021 through Q3 2021
   * [Renderer architecture revisions](https://github.com/dotnet/maui/issues/28)
   * Source solution and project simplification
   * Complete approved proposals
@@ -48,7 +48,7 @@ Active development is happening today to build Android and iOS SDKs against the 
 |Tizen     |Samsung           |Samsung           |
 |Windows     |UWP Microsoft<br/>WPF Community         |Microsoft         |
 |**Features**     |         |         |
-|Renderers     |Tightly coupled to BindableObject         |Loosely coupled, no Core dependencies         |
+|Renderers     |Tightly coupled to BindableObject         |Loosely coupled, no Xamarin.Forms dependencies         |
 |App Models     |MVVM, RxUI         |MVVM, RxUI, MVU, Blazor         |
 |Single Project     |No         |Yes         |
 |Multi-targeting     |No         |Yes         |
