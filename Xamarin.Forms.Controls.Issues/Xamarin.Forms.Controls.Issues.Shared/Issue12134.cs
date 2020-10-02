@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 			else
 			{
-				
+
 				(Content as StackLayout).Children.Add(GetWebView());
 				button.Text = "Reload the page";
 			}
