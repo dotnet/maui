@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Controls.Issues
 			AddFlyoutItem(webViewPage, "Web View Page").Route = "user";
 		}
 
-        string GetHtml(string uid)
+		string GetHtml(string uid)
 		{
 			var htmlHeader = @"<header><meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no'></header>";
 			if ("UserOne".Equals(uid))
