@@ -16,7 +16,7 @@ jobs:
 
       - name: Run dotnet format
         id: format
-        uses: jfversluis/dotnet-format@v1.0.4
+        uses: jfversluis/dotnet-format@v1.0.5
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           action: "fix"
