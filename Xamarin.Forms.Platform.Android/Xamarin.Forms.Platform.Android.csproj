@@ -17,19 +17,17 @@
   <ItemGroup>
     <AndroidResource Include="Resources\anim\**\*" />
     <AndroidResource Include="Resources\values\**\*" />
-    <Compile Remove="Resources\Layout\**\*" />
     <Compile Remove="Anticipator.cs" />
-    <None Include="Resources\Layout\**\*" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">
-    <AndroidResource Link="Resources\Layout\BottomTabLayout.axml" Include="Resources\Layout\AndroidX\BottomTabLayout.axml" />
-    <AndroidResource Link="Resources\Layout\FlyoutContent.axml" Include="Resources\Layout\AndroidX\FlyoutContent.axml" />
-    <AndroidResource Link="Resources\Layout\RootLayout.axml" Include="Resources\Layout\AndroidX\RootLayout.axml" />
-    <AndroidResource Link="Resources\Layout\ShellContent.axml" Include="Resources\Layout\AndroidX\ShellContent.axml" />
-    <AndroidResource Link="Resources\Layout\FallbackTabbarDoNotUse.axml" Include="Resources\Layout\AndroidX\FallbackTabbarDoNotUse.axml" />
-    <AndroidResource Link="Resources\Layout\FallbackToolbarDoNotUse.axml" Include="Resources\Layout\AndroidX\FallbackToolbarDoNotUse.axml" />
-    <AndroidResource Link="Resources\Layout\Tabbar.axml" Include="Resources\Layout\AndroidX\Tabbar.axml" />
-    <AndroidResource Link="Resources\Layout\Toolbar.axml" Include="Resources\Layout\AndroidX\Toolbar.axml" />
+  <ItemGroup>
+    <AndroidResource Include="Resources\Layout\BottomTabLayout.axml" />
+    <AndroidResource Include="Resources\Layout\FlyoutContent.axml" />
+    <AndroidResource Include="Resources\Layout\RootLayout.axml" />
+    <AndroidResource Include="Resources\Layout\ShellContent.axml" />
+    <AndroidResource Include="Resources\Layout\FallbackTabbarDoNotUse.axml" />
+    <AndroidResource Include="Resources\Layout\FallbackToolbarDoNotUse.axml" />
+    <AndroidResource Include="Resources\Layout\Tabbar.axml" />
+    <AndroidResource Include="Resources\Layout\Toolbar.axml" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Resources\values\attrs.xml" />
@@ -44,7 +42,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Net.Http" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">
+  <ItemGroup>
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.1.0.1" />
     <PackageReference Include="Xamarin.Google.Android.Material" Version="1.0.0.1" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0.1" />
