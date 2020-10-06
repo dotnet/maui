@@ -92,7 +92,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (menuItemIndex == null)
 			{
-				menuitem = menu.Add(0, Platform.GenerateViewId(), 0, newTitle);
+				menuitem = menu.Add(0, AppCompat.Platform.GenerateViewId(), 0, newTitle);
 				menuItemsCreated?.Add(menuitem);
 				toolbarItemsCreated?.Add(item);
 			}

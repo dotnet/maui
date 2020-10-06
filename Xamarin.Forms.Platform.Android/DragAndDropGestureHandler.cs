@@ -250,7 +250,7 @@ namespace Xamarin.Forms.Platform.Android
 					return;
 
 				var element = GetView();
-				var renderer = Platform.GetRenderer(element);
+				var renderer = AppCompat.Platform.GetRenderer(element);
 				var v = renderer.View;
 
 				if (v.Handle == IntPtr.Zero)

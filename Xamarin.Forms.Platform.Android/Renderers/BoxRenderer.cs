@@ -133,8 +133,8 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
 
-					if (Platform.GetRenderer(Element) == this)
-						Element.ClearValue(Platform.RendererProperty);
+					if (AppCompat.Platform.GetRenderer(Element) == this)
+						Element.ClearValue(AppCompat.Platform.RendererProperty);
 				}
 
 			}

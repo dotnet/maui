@@ -108,9 +108,9 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (Element != null)
 				{
-					if (Platform.GetRenderer(Element) == this)
+					if (AppCompat.Platform.GetRenderer(Element) == this)
 					{
-						Element.ClearValue(Platform.RendererProperty);
+						Element.ClearValue(AppCompat.Platform.RendererProperty);
 					}
 
 					Element = null;

@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Xamarin.Forms;
 
 #if __ANDROID__
 using Xamarin.Forms.Platform.Android;
@@ -48,7 +42,11 @@ namespace Xamarin.Forms.Platform
 #endif
 	internal class _ImageRenderer { }
 
+#if __ANDROID__
+	[RenderWith(typeof(Xamarin.Forms.Platform.Android.AppCompat.ButtonRenderer))]
+#else
 	[RenderWith(typeof(ButtonRenderer))]
+#endif
 	internal class _ButtonRenderer { }
 
 	[RenderWith(typeof(ImageButtonRenderer))]
@@ -88,7 +86,11 @@ namespace Xamarin.Forms.Platform
 	[RenderWith(typeof(SearchBarRenderer))]
 	internal class _SearchBarRenderer { }
 
+#if __ANDROID__
+	[RenderWith(typeof(Xamarin.Forms.Platform.Android.AppCompat.SwitchRenderer))]
+#else
 	[RenderWith(typeof(SwitchRenderer))]
+#endif
 	internal class _SwitchRenderer { }
 
 	[RenderWith(typeof(DatePickerRenderer))]
@@ -97,7 +99,11 @@ namespace Xamarin.Forms.Platform
 	[RenderWith(typeof(TimePickerRenderer))]
 	internal class _TimePickerRenderer { }
 
+#if __ANDROID__
+	[RenderWith(typeof(Xamarin.Forms.Platform.Android.AppCompat.PickerRenderer))]
+#else
 	[RenderWith(typeof(PickerRenderer))]
+#endif
 	internal class _PickerRenderer { }
 
 	[RenderWith(typeof(StepperRenderer))]
@@ -112,22 +118,17 @@ namespace Xamarin.Forms.Platform
 	[RenderWith(typeof(ActivityIndicatorRenderer))]
 	internal class _ActivityIndicatorRenderer { }
 
-	[RenderWith(typeof(FrameRenderer))]
-	internal class _FrameRenderer { }
-
 #if __ANDROID__
-	// current previewer doesn't work with appcompat so this renderer is here for the previewer only
-	// once previewer switches to appcompat then we can remove this
-	[RenderWith(typeof(CheckBoxDesignerRenderer))]
-	internal class _CheckBoxRenderer { }
+	[RenderWith(typeof(Xamarin.Forms.Platform.Android.AppCompat.FrameRenderer))]
+#else
+	[RenderWith(typeof(FrameRenderer))]
 #endif
+	internal class _FrameRenderer { }
 
 	[RenderWith(typeof(IndicatorViewRenderer))]
 	internal class _IndicatorViewRenderer { }
 
-#if __IOS__
-	// current previewer doesn't work with appcompat so this renderer is here for the previewer only
-	// once previewer switches to appcompat then we can remove this
+#if __IOS__ || __ANDROID__
 	[RenderWith(typeof(CheckBoxRenderer))]
 	internal class _CheckBoxRenderer { }
 #endif
@@ -139,21 +140,29 @@ namespace Xamarin.Forms.Platform
 #endif
 	internal class _OpenGLViewRenderer { }
 
-#if !WINDOWS_PHONE && !WINDOWS_PHONE_APP && !TIZEN4_0
+#if __ANDROID__
+	[RenderWith(typeof(Xamarin.Forms.Platform.Android.AppCompat.TabbedPageRenderer))]
+#elif !WINDOWS_PHONE && !WINDOWS_PHONE_APP && !TIZEN4_0
 	[RenderWith(typeof(TabbedRenderer))]
 #else
-	[RenderWith (typeof (TabbedPageRenderer))]
+	[RenderWith (typeof (TabbedPageRenderer))]		
 #endif
 	internal class _TabbedPageRenderer { }
 
-#if !WINDOWS_PHONE && !WINDOWS_PHONE_APP && !TIZEN4_0
+#if __ANDROID__
+	[RenderWith(typeof(Xamarin.Forms.Platform.Android.AppCompat.NavigationPageRenderer))]
+#elif !WINDOWS_PHONE && !WINDOWS_PHONE_APP && !TIZEN4_0
 	[RenderWith(typeof(NavigationRenderer))]
 #else
-	[RenderWith (typeof (NavigationPageRenderer))]
+	[RenderWith(typeof(NavigationPageRenderer))]
 #endif
 	internal class _NavigationPageRenderer { }
 
+#if __ANDROID__
+	[RenderWith(typeof(Xamarin.Forms.Platform.Android.AppCompat.CarouselPageRenderer))]
+#else
 	[RenderWith(typeof(CarouselPageRenderer))]
+#endif
 	internal class _CarouselPageRenderer { }
 
 	[RenderWith(typeof(PageRenderer))]
@@ -170,9 +179,13 @@ namespace Xamarin.Forms.Platform
 #endif
 	internal class _FlyoutPageRenderer { }
 
-#if !__IOS__ && !TIZEN4_0
+#if !__IOS__ && !TIZEN4_0 && !__ANDROID__
 #pragma warning disable CS0618 // Type or member is obsolete
 	[RenderWith(typeof(MasterDetailRenderer))]
+#pragma warning restore CS0618 // Type or member is obsolete
+#elif __ANDROID__
+#pragma warning disable CS0618 // Type or member is obsolete
+	[RenderWith(typeof(Xamarin.Forms.Platform.Android.AppCompat.MasterDetailPageRenderer))]
 #pragma warning restore CS0618 // Type or member is obsolete
 #elif TIZEN4_0
 #pragma warning disable CS0618 // Type or member is obsolete

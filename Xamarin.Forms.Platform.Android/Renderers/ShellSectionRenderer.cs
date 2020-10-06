@@ -148,7 +148,7 @@ namespace Xamarin.Forms.Platform.Android
 			_viewPager.EnableGesture = false;
 
 			_viewPager.AddOnPageChangeListener(this);
-			_viewPager.Id = Platform.GenerateViewId();
+			_viewPager.Id = AppCompat.Platform.GenerateViewId();
 
 			_viewPager.Adapter = new ShellFragmentPagerAdapter(shellSection, ChildFragmentManager);
 			_viewPager.OverScrollMode = OverScrollMode.Never;

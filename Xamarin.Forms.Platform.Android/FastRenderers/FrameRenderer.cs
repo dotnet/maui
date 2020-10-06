@@ -154,8 +154,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 				if (Element != null)
 				{
-					if (Platform.GetRenderer(Element) == this)
-						Element.ClearValue(Platform.RendererProperty);
+					if (AppCompat.Platform.GetRenderer(Element) == this)
+						Element.ClearValue(AppCompat.Platform.RendererProperty);
 				}
 			}
 
@@ -208,7 +208,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				var visualElement = children[i] as VisualElement;
 				if (visualElement == null)
 					continue;
-				IVisualElementRenderer renderer = Android.Platform.GetRenderer(visualElement);
+				IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(visualElement);
 				renderer?.UpdateLayout();
 			}
 

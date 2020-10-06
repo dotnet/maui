@@ -8,6 +8,7 @@ using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentContainer = Xamarin.Forms.Platform.Android.AppCompat.FragmentContainer;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
+using APlatform = Xamarin.Forms.Platform.Android.AppCompat.Platform;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -26,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public FlyoutPageContainer(FlyoutPage parent, bool isFlyout, Context context) : base(context)
 		{
-			Id = Platform.GenerateViewId();
+			Id = APlatform.GenerateViewId();
 			_parent = parent;
 			_isFlyout = isFlyout;
 		}
@@ -47,7 +48,7 @@ namespace Xamarin.Forms.Platform.Android
 			else
 				FlyoutPageController.DetailBounds = bounds;
 
-			IVisualElementRenderer renderer = Platform.GetRenderer(_childView);
+			IVisualElementRenderer renderer = APlatform.GetRenderer(_childView);
 			renderer?.UpdateLayout();
 
 			// If we're using a PageContainer (i.e., we've wrapped our contents in a Fragment),
@@ -126,9 +127,9 @@ namespace Xamarin.Forms.Platform.Android
 					_currentFragment = null;
 				}
 
-				IVisualElementRenderer renderer = Platform.GetRenderer(childView);
+				IVisualElementRenderer renderer = APlatform.GetRenderer(childView);
 				if (renderer == null)
-					Platform.SetRenderer(childView, renderer = Platform.CreateRenderer(childView, Context));
+					APlatform.SetRenderer(childView, renderer = APlatform.CreateRenderer(childView, Context));
 
 				if (renderer.View.Parent != this)
 				{
@@ -257,9 +258,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void DisposeChildRenderers()
 		{
-			IVisualElementRenderer childRenderer = Platform.GetRenderer(_childView);
+			IVisualElementRenderer childRenderer = APlatform.GetRenderer(_childView);
 			childRenderer?.Dispose();
-			_childView?.ClearValue(Platform.RendererProperty);
+			_childView?.ClearValue(APlatform.RendererProperty);
 		}
 
 		Rectangle GetBounds(bool isFlyoutPage, int left, int top, int right, int bottom)

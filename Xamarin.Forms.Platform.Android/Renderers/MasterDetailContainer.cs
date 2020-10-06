@@ -1,10 +1,8 @@
 using System;
-using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.Runtime;
 using Android.Views;
-using Android.Widget;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
@@ -51,9 +49,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void AddChildView(VisualElement childView)
 		{
-			IVisualElementRenderer renderer = Platform.GetRenderer(childView);
+			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(childView);
 			if (renderer == null)
-				Platform.SetRenderer(childView, renderer = Platform.CreateRenderer(childView, Context));
+				AppCompat.Platform.SetRenderer(childView, renderer = AppCompat.Platform.CreateRenderer(childView, Context));
 
 			if (renderer.View.Parent != this)
 			{
@@ -105,15 +103,15 @@ namespace Xamarin.Forms.Platform.Android
 			else
 				MasterDetailPageController.DetailBounds = bounds;
 
-			IVisualElementRenderer renderer = Platform.GetRenderer(_childView);
+			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(_childView);
 			renderer?.UpdateLayout();
 		}
 
 		void DisposeChildRenderers()
 		{
-			IVisualElementRenderer childRenderer = Platform.GetRenderer(_childView);
+			IVisualElementRenderer childRenderer = AppCompat.Platform.GetRenderer(_childView);
 			childRenderer?.Dispose();
-			_childView?.ClearValue(Platform.RendererProperty);
+			_childView?.ClearValue(AppCompat.Platform.RendererProperty);
 		}
 
 		Rectangle GetBounds(bool isMasterPage, int left, int top, int right, int bottom)

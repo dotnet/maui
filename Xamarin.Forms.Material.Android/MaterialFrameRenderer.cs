@@ -107,8 +107,8 @@ namespace Xamarin.Forms.Material.Android
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
 
-					if (Platform.Android.Platform.GetRenderer(Element) == this)
-						Element.ClearValue(Platform.Android.Platform.RendererProperty);
+					if (Platform.Android.AppCompat.Platform.GetRenderer(Element) == this)
+						Element.ClearValue(Platform.Android.AppCompat.Platform.RendererProperty);
 				}
 			}
 
@@ -170,7 +170,7 @@ namespace Xamarin.Forms.Material.Android
 			{
 				if (children[i] is VisualElement visualElement)
 				{
-					var renderer = Platform.Android.Platform.GetRenderer(visualElement);
+					var renderer = Platform.Android.AppCompat.Platform.GetRenderer(visualElement);
 					renderer?.UpdateLayout();
 				}
 			}

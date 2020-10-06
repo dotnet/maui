@@ -31,8 +31,8 @@ namespace Xamarin.Forms.Platform.Android
 					return;
 
 				IVisualElementRenderer renderer;
-				if ((renderer = Platform.GetRenderer(_childView)) == null)
-					Platform.SetRenderer(_childView, renderer = Platform.CreateRenderer(_childView, Context));
+				if ((renderer = AppCompat.Platform.GetRenderer(_childView)) == null)
+					AppCompat.Platform.SetRenderer(_childView, renderer = AppCompat.Platform.CreateRenderer(_childView, Context));
 
 				if (renderer.View.Parent != null)
 					renderer.View.RemoveFromParent();
@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_childView == null)
 				return;
 
-			IVisualElementRenderer renderer = Platform.GetRenderer(_childView);
+			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(_childView);
 			renderer.UpdateLayout();
 		}
 

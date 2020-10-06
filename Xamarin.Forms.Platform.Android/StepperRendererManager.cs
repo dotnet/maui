@@ -11,10 +11,10 @@ namespace Xamarin.Forms.Platform.Android
 			where TButton : AButton
 		{
 			downButton = (TButton)renderer.CreateButton();
-			downButton.Id = Platform.GenerateViewId();
+			downButton.Id = AppCompat.Platform.GenerateViewId();
 			downButton.Focusable = true;
 			upButton = (TButton)renderer.CreateButton();
-			upButton.Id = Platform.GenerateViewId();
+			upButton.Id = AppCompat.Platform.GenerateViewId();
 			upButton.Focusable = true;
 
 			downButton.Gravity = GravityFlags.Center;

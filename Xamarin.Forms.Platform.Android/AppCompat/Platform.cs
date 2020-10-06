@@ -23,15 +23,45 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		bool _navAnimationInProgress;
 		NavigationModel _navModel = new NavigationModel();
 		NavigationModel _previousNavModel = null;
+		readonly bool _embedded;
 
 		internal static string PackageName { get; private set; }
-		internal static string GetPackageName() => PackageName ?? Android.Platform.PackageName;
+		internal static string GetPackageName() => PackageName;
 
-		public Platform(Context context)
+		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
+
+		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),
+			propertyChanged: (bindable, oldvalue, newvalue) =>
+			{
+				var view = bindable as VisualElement;
+				if (view != null)
+					view.IsPlatformEnabled = newvalue != null;
+			});
+
+		public Platform(Context context) : this(context, false)
 		{
+		}
+
+		public Platform(Context context, bool embedded)
+		{
+			_embedded = embedded;
 			_context = context;
 			PackageName = context?.PackageName;
 			_renderer = new PlatformRenderer(context, this);
+			var activity = _context.GetActivity();
+
+			if (embedded && activity != null)
+			{
+				// Set up handling of DisplayAlert/DisplayActionSheet/UpdateProgressBarVisibility
+				if (_context == null)
+				{
+					// Can't show dialogs if it's not an activity
+					return;
+				}
+
+				PopupManager.Subscribe(_context.GetActivity());
+				return;
+			}
 
 			FormsAppCompatActivity.BackPressed += HandleBackPressed;
 		}
@@ -45,13 +75,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					return;
 				_navAnimationInProgress = value;
 				if (value)
-					MessagingCenter.Send(this, Android.Platform.CloseContextActionsSignalName);
+					MessagingCenter.Send(this, CloseContextActionsSignalName);
 			}
 		}
 
 		Page Page { get; set; }
 
-		IPageController CurrentPageController => _navModel.CurrentPage as IPageController;
+		IPageController CurrentPageController => _navModel.CurrentPage;
 
 		public void Dispose()
 		{
@@ -62,6 +92,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			FormsAppCompatActivity.BackPressed -= HandleBackPressed;
 
 			SetPage(null);
+
+			var activity = _context?.GetActivity();
+			if (_embedded && activity != null)
+			{
+				PopupManager.Unsubscribe(activity);
+			}
 		}
 
 		void INavigation.InsertPageBefore(Page page, Page before)
@@ -94,7 +130,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			((IPageController)modal).SendDisappearing();
 			var source = new TaskCompletionSource<Page>();
 
-			IVisualElementRenderer modalRenderer = Android.Platform.GetRenderer(modal);
+			IVisualElementRenderer modalRenderer = GetRenderer(modal);
 			if (modalRenderer != null)
 			{
 				var modalContainer = modalRenderer.View.Parent as ModalContainer;
@@ -184,8 +220,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			Performance.Start(out string reference);
 
-			// FIXME: potential crash
-			IVisualElementRenderer visualElementRenderer = Android.Platform.GetRenderer(view);
+			IVisualElementRenderer visualElementRenderer = GetRenderer(view);
+
+			if (visualElementRenderer == null || visualElementRenderer.View.IsDisposed())
+			{
+				return new SizeRequest(Size.Zero, Size.Zero);
+			}
 
 			var context = visualElementRenderer.View.Context;
 
@@ -222,6 +262,85 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			return result;
 		}
 
+		public static void ClearRenderer(AView renderedView)
+		{
+			var element = (renderedView as IVisualElementRenderer)?.Element;
+			var view = element as View;
+			if (view != null)
+			{
+				var renderer = GetRenderer(view);
+				if (renderer == renderedView)
+					element.ClearValue(RendererProperty);
+				renderer?.Dispose();
+				renderer = null;
+			}
+			var layout = view as IVisualElementRenderer;
+			layout?.Dispose();
+			layout = null;
+		}
+
+		[Obsolete("CreateRenderer(VisualElement) is obsolete as of version 2.5. Please use CreateRendererWithContext(VisualElement, Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IVisualElementRenderer CreateRenderer(VisualElement element)
+		{
+			// If there's a previewer context set, use that when created 
+			return CreateRenderer(element, GetPreviewerContext(element) ?? Forms.Context);
+		}
+
+		internal static IVisualElementRenderer CreateRenderer(VisualElement element, Context context)
+		{
+			IVisualElementRenderer renderer = null;
+
+			if (element is TemplatedView tv && tv.ResolveControlTemplate() != null)
+			{
+				renderer = new DefaultRenderer(context);
+			}
+
+			if (renderer == null)
+			{
+				renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element, context)
+					?? new DefaultRenderer(context);
+			}
+
+			renderer.SetElement(element);
+
+			return renderer;
+		}
+
+		internal static IVisualElementRenderer CreateRenderer(VisualElement element, AndroidX.Fragment.App.FragmentManager fragmentManager, Context context)
+		{
+			IVisualElementRenderer renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element, context) ?? new DefaultRenderer(context);
+
+			var managesFragments = renderer as IManageFragments;
+			managesFragments?.SetFragmentManager(fragmentManager);
+
+			renderer.SetElement(element);
+
+			return renderer;
+		}
+
+		public static IVisualElementRenderer CreateRendererWithContext(VisualElement element, Context context)
+		{
+			// This is an interim method to allow public access to CreateRenderer(element, context), which we 
+			// can't make public yet because it will break the previewer
+			return CreateRenderer(element, context);
+		}
+
+		public static IVisualElementRenderer GetRenderer(VisualElement bindable)
+		{
+			return (IVisualElementRenderer)bindable?.GetValue(RendererProperty);
+		}
+
+		public static void SetRenderer(VisualElement bindable, IVisualElementRenderer value)
+		{
+			bindable.SetValue(RendererProperty, value);
+		}
+
+		internal ViewGroup GetViewGroup()
+		{
+			return _renderer;
+		}
+
 		void IPlatformLayout.OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (Page == null)
@@ -232,7 +351,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				LayoutRootPage(Page, r - l, b - t);
 			}
 
-			Android.Platform.GetRenderer(Page).UpdateLayout();
+			GetRenderer(Page).UpdateLayout();
 
 			for (var i = 0; i < _renderer.ChildCount; i++)
 			{
@@ -273,7 +392,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				var navModel = (_previousNavModel ?? _navModel);
 				foreach (var rootPage in navModel.Roots)
 				{
-					if (Android.Platform.GetRenderer(rootPage) is ILifeCycleState nr)
+					if (GetRenderer(rootPage) is ILifeCycleState nr)
 						nr.MarkedForDispose = true;
 				}
 
@@ -284,7 +403,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					viewsToRemove.Add(_renderer.GetChildAt(i));
 
 				foreach (var root in navModel.Roots)
-					renderersToDispose.Add(Android.Platform.GetRenderer(root));
+					renderersToDispose.Add(GetRenderer(root));
 
 				SetPageInternal(newRoot);
 
@@ -299,7 +418,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void UpdateAccessibilityImportance(Page page, ImportantForAccessibility importantForAccessibility, bool forceFocus)
 		{
 
-			var pageRenderer = Android.Platform.GetRenderer(page);
+			var pageRenderer = GetRenderer(page);
 			if (pageRenderer?.View == null)
 				return;
 			pageRenderer.View.ImportantForAccessibility = importantForAccessibility;
@@ -366,7 +485,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				for (int i = 0; i < renderersToDispose.Count; i++)
 				{
 					IVisualElementRenderer rootRenderer = renderersToDispose[i];
-					rootRenderer?.Element.ClearValue(Android.Platform.RendererProperty);
+					rootRenderer?.Element.ClearValue(RendererProperty);
 					rootRenderer?.Dispose();
 				}
 			}
@@ -377,11 +496,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (page == null)
 				return;
 
-			if (Android.Platform.GetRenderer(page) != null)
+			if (GetRenderer(page) != null)
 				return;
 
-			IVisualElementRenderer renderView = Android.Platform.CreateRenderer(page, _context);
-			Android.Platform.SetRenderer(page, renderView);
+			IVisualElementRenderer renderView = CreateRenderer(page, _context);
+			SetRenderer(page, renderView);
 
 			if (layout)
 				LayoutRootPage(page, _renderer.Width, _renderer.Height);
@@ -453,8 +572,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateBackgroundColor();
 				AddView(_backgroundView);
 
-				_renderer = Android.Platform.CreateRenderer(modal, context);
-				Android.Platform.SetRenderer(modal, _renderer);
+				_renderer = CreateRenderer(modal, context);
+				SetRenderer(modal, _renderer);
 
 				AddView(_renderer.View);
 
@@ -475,7 +594,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					{
 						_renderer.Dispose();
 						_renderer = null;
-						_modal.ClearValue(Android.Platform.RendererProperty);
+						_modal.ClearValue(RendererProperty);
 						_modal.PropertyChanged -= OnModalPagePropertyChanged;
 						_modal = null;
 					}
@@ -520,14 +639,53 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		internal static int GenerateViewId()
 		{
-			return Android.Platform.GenerateViewId();
+			// getting unique Id's is an art, and I consider myself the Jackson Pollock of the field
+			if ((int)Forms.SdkInt >= 17)
+				return global::Android.Views.View.GenerateViewId();
+
+			// Numbers higher than this range reserved for xml
+			// If we roll over, it can be exceptionally problematic for the user if they are still retaining things, android's internal implementation is
+			// basically identical to this except they do a lot of locking we don't have to because we know we only do this
+			// from the UI thread
+			if (s_id >= 0x00ffffff)
+				s_id = 0x00000400;
+
+			return s_id++;
 		}
+
+		static int s_id = 0x00000400;
 
 		#region Statics
 
 		public static implicit operator ViewGroup(Platform canvas)
 		{
 			return canvas._renderer;
+		}
+
+		#endregion
+
+		#region Previewer Stuff
+
+		internal static readonly BindableProperty PageContextProperty =
+			BindableProperty.CreateAttached("PageContext", typeof(Context), typeof(Platform), null);
+
+		internal static void SetPageContext(BindableObject bindable, Context context)
+		{
+			// Set a context for this page and its child controls
+			bindable.SetValue(PageContextProperty, context);
+		}
+
+		static Context GetPreviewerContext(Element element)
+		{
+			// Walk up the tree and find the Page this element is hosted in
+			Element parent = element;
+			while (!Application.IsApplicationOrNull(parent.RealParent))
+			{
+				parent = parent.RealParent;
+			}
+
+			// If a page is found, return the PageContext set by the previewer for that page (if any)
+			return (parent as Page)?.GetValue(PageContextProperty) as Context;
 		}
 
 		#endregion
@@ -540,5 +698,159 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		}
 
 		#endregion
+
+		internal class DefaultRenderer : VisualElementRenderer<View>, ILayoutChanges
+		{
+			public bool NotReallyHandled { get; private set; }
+
+			IOnTouchListener _touchListener;
+			bool _disposed;
+			bool _hasLayoutOccurred;
+
+			[Obsolete("This constructor is obsolete as of version 2.5. Please use DefaultRenderer(Context) instead.")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
+			public DefaultRenderer()
+			{
+			}
+
+			readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
+
+			public DefaultRenderer(Context context) : base(context)
+			{
+				ChildrenDrawingOrderEnabled = true;
+			}
+
+			internal void NotifyFakeHandling()
+			{
+				NotReallyHandled = true;
+			}
+
+			public override bool OnTouchEvent(MotionEvent e)
+			{
+				if (base.OnTouchEvent(e))
+					return true;
+
+				return _motionEventHelper.HandleMotionEvent(Parent, e);
+			}
+
+			protected override void OnElementChanged(ElementChangedEventArgs<View> e)
+			{
+				base.OnElementChanged(e);
+
+				_motionEventHelper.UpdateElement(e.NewElement);
+			}
+
+			public override bool DispatchTouchEvent(MotionEvent e)
+			{
+				#region Excessive explanation
+				// Normally dispatchTouchEvent feeds the touch events to its children one at a time, top child first,
+				// (and only to the children in the hit-test area of the event) stopping as soon as one of them has handled
+				// the event. 
+
+				// But to be consistent across the platforms, we don't want this behavior; if an element is not input transparent
+				// we don't want an event to "pass through it" and be handled by an element "behind/under" it. We just want the processing
+				// to end after the first non-transparent child, regardless of whether the event has been handled.
+
+				// This is only an issue for a couple of controls; the interactive controls (switch, button, slider, etc) already "handle" their touches 
+				// and the events don't propagate to other child controls. But for image, label, and box that doesn't happen. We can't have those controls 
+				// lie about their events being handled because then the events won't propagate to *parent* controls (e.g., a frame with a label in it would
+				// never get a tap gesture from the label). In other words, we *want* parent propagation, but *do not want* sibling propagation. So we need to short-circuit 
+				// base.DispatchTouchEvent here, but still return "false".
+
+				// Duplicating the logic of ViewGroup.dispatchTouchEvent and modifying it slightly for our purposes is a non-starter; the method is too
+				// complex and does a lot of micro-optimization. Instead, we provide a signalling mechanism for the controls which don't already "handle" touch
+				// events to tell us that they will be lying about handling their event; they then return "true" to short-circuit base.DispatchTouchEvent.
+
+				// The container gets this message and after it gets the "handled" result from dispatchTouchEvent, 
+				// it then knows to ignore that result and return false/unhandled. This allows the event to propagate up the tree.
+				#endregion
+
+				NotReallyHandled = false;
+
+				var result = base.DispatchTouchEvent(e);
+
+				if (result && NotReallyHandled)
+				{
+					// If the child control returned true from its touch event handler but signalled that it was a fake "true", then we
+					// don't consider the event truly "handled" yet. 
+					// Since a child control short-circuited the normal dispatchTouchEvent stuff, this layout never got the chance for
+					// IOnTouchListener.OnTouch and the OnTouchEvent override to try handling the touches; we'll do that now
+					// Any associated Touch Listeners are called from DispatchTouchEvents if all children of this view return false
+					// So here we are simulating both calls that would have typically been called from inside DispatchTouchEvent
+					// but were not called due to the fake "true"
+					result = _touchListener?.OnTouch(this, e) ?? false;
+					return result || OnTouchEvent(e);
+				}
+
+				return result;
+			}
+
+			public override void SetOnTouchListener(IOnTouchListener l)
+			{
+				_touchListener = l;
+				base.SetOnTouchListener(l);
+			}
+
+			protected override void Dispose(bool disposing)
+			{
+				if (_disposed)
+				{
+					return;
+				}
+
+				_disposed = true;
+
+				if (disposing)
+					SetOnTouchListener(null);
+
+				base.Dispose(disposing);
+			}
+
+			bool ILayoutChanges.HasLayoutOccurred => _hasLayoutOccurred;
+
+			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+			{
+				if (Element is Layout layout)
+				{
+					layout.ResolveLayoutChanges();
+				}
+
+				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+			}
+
+			protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+			{
+				base.OnLayout(changed, left, top, right, bottom);
+				_hasLayoutOccurred = true;
+			}
+		}
+
+		internal static string ResolveMsAppDataUri(Uri uri)
+		{
+			if (uri.Scheme == "ms-appdata")
+			{
+				string filePath = string.Empty;
+
+				if (uri.LocalPath.StartsWith("/local"))
+				{
+					filePath = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), uri.LocalPath.Substring(7));
+				}
+				else if (uri.LocalPath.StartsWith("/temp"))
+				{
+					filePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), uri.LocalPath.Substring(6));
+				}
+				else
+				{
+					throw new ArgumentException("Invalid Uri", "Source");
+				}
+
+				return filePath;
+			}
+			else
+			{
+				throw new ArgumentException("uri");
+			}
+
+		}
 	}
 }

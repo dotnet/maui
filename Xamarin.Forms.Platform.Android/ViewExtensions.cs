@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (view.Id == AView.NoId)
 			{
-				view.Id = Platform.GenerateViewId();
+				view.Id = AppCompat.Platform.GenerateViewId();
 			}
 		}
 

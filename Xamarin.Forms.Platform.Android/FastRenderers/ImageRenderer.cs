@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
@@ -56,8 +55,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 				if (_element != null)
 				{
-					if (Platform.GetRenderer(_element) == this)
-						_element.ClearValue(Platform.RendererProperty);
+					if (AppCompat.Platform.GetRenderer(_element) == this)
+						_element.ClearValue(AppCompat.Platform.RendererProperty);
 				}
 			}
 

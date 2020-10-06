@@ -261,7 +261,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (Element != null)
 				{
-					Element.ClearValue(Android.Platform.RendererProperty);
+					Element.ClearValue(Xamarin.Forms.Platform.Android.AppCompat.Platform.RendererProperty);
 					Element = null;
 				}
 			}

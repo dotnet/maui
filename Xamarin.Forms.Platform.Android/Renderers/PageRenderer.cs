@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (Id == NoId)
 			{
-				Id = Platform.GenerateViewId();
+				Id = AppCompat.Platform.GenerateViewId();
 			}
 
 			UpdateBackground(false);

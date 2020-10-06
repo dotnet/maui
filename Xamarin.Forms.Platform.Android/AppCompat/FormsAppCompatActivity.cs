@@ -119,14 +119,10 @@ namespace Xamarin.Forms.Platform.Android
 		// This is currently being used by the previewer please do not change or remove this
 		static void RegisterHandlers()
 		{
-			RegisterHandler(typeof(NavigationPage), typeof(NavigationPageRenderer), typeof(NavigationRenderer));
-			RegisterHandler(typeof(TabbedPage), typeof(TabbedPageRenderer), typeof(TabbedRenderer));
-			RegisterHandler(typeof(FlyoutPage), typeof(FlyoutPageRenderer), typeof(FlyoutPageRenderer));
 			RegisterHandler(typeof(Switch), typeof(AppCompat.SwitchRenderer), typeof(SwitchRenderer));
 			RegisterHandler(typeof(Picker), typeof(AppCompat.PickerRenderer), typeof(PickerRenderer));
 			RegisterHandler(typeof(CarouselPage), typeof(AppCompat.CarouselPageRenderer), typeof(CarouselPageRenderer));
-			RegisterHandler(typeof(CheckBox), typeof(CheckBoxRenderer), typeof(CheckBoxDesignerRenderer));
-
+			
 			if (Forms.Flags.Contains(Flags.UseLegacyRenderers))
 			{
 				RegisterHandler(typeof(Button), typeof(AppCompat.ButtonRenderer), typeof(ButtonRenderer));
