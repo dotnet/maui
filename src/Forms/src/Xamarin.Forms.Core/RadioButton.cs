@@ -153,8 +153,6 @@ namespace Xamarin.Forms
 
 		public RadioButton()
 		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(RadioButton), ExperimentalFlags.RadioButtonExperimental, nameof(RadioButton));
-
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RadioButton>>(() =>
 				new PlatformConfigurationRegistry<RadioButton>(this));
 		}

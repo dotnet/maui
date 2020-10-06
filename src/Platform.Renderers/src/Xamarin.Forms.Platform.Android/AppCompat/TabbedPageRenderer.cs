@@ -208,11 +208,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					foreach (Page pageToRemove in Element.Children)
 					{
-						IVisualElementRenderer pageRenderer = Android.Platform.GetRenderer(pageToRemove);
+						IVisualElementRenderer pageRenderer = Platform.GetRenderer(pageToRemove);
 
 						pageRenderer?.Dispose();
 
-						pageToRemove.ClearValue(Android.Platform.RendererProperty);
+						pageToRemove.ClearValue(Platform.RendererProperty);
 					}
 				}
 
@@ -367,7 +367,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				var child = PageController.InternalChildren[i] as VisualElement;
 				if (child == null)
 					continue;
-				IVisualElementRenderer renderer = Android.Platform.GetRenderer(child);
+				IVisualElementRenderer renderer = Platform.GetRenderer(child);
 				var navigationRenderer = renderer as NavigationPageRenderer;
 				if (navigationRenderer != null)
 				{
@@ -601,7 +601,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return;
 
 			var leftPage = (Page)PageController.InternalChildren[position];
-			IVisualElementRenderer leftRenderer = Android.Platform.GetRenderer(leftPage);
+			IVisualElementRenderer leftRenderer = Platform.GetRenderer(leftPage);
 
 			if (leftRenderer == null)
 				return;
@@ -617,7 +617,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			else
 			{
 				var rightPage = (Page)PageController.InternalChildren[position + 1];
-				IVisualElementRenderer rightRenderer = Android.Platform.GetRenderer(rightPage);
+				IVisualElementRenderer rightRenderer = Platform.GetRenderer(rightPage);
 
 				var leftHeight = 0;
 				var leftNavRenderer = leftRenderer as NavigationPageRenderer;

@@ -1,18 +1,17 @@
-﻿using Android.Content;
-using Android.Content.PM;
-using Android.Widget;
-using Xamarin.Forms.Platform.Android;
-using AView = Android.Views.View;
-using AColor = Android.Graphics.Color;
-using Android.Views;
-using System;
-using AProgressBar = Android.Widget.ProgressBar;
-using ASearchView = Android.Widget.SearchView;
+﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
 using System.Threading.Tasks;
+using Android.Content;
+using Android.Content.PM;
+using Android.Views;
+using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CardView.Widget;
+using NUnit.Framework;
+using AColor = Android.Graphics.Color;
+using AProgressBar = Android.Widget.ProgressBar;
+using ASearchView = Android.Widget.SearchView;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.UnitTests
 {
@@ -98,8 +97,8 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 			var renderer = element.GetRenderer();
 			if (renderer == null)
 			{
-				renderer = Platform.CreateRendererWithContext(element, context);
-				Platform.SetRenderer(element, renderer);
+				renderer = AppCompat.Platform.CreateRendererWithContext(element, context);
+				AppCompat.Platform.SetRenderer(element, renderer);
 			}
 
 			return renderer;
@@ -328,7 +327,8 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 		async Task<TProperty> GetRendererProperty<TProperty>(VisualElement element,
 			Func<IVisualElementRenderer, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() => {
+			return await Device.InvokeOnMainThreadAsync(() =>
+			{
 				using (var renderer = GetRenderer(element))
 				{
 					return getProperty(renderer);
@@ -339,7 +339,8 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 		async Task<TProperty> GetRendererPropertyWithParent<TProperty>(VisualElement element,
 			Func<IVisualElementRenderer, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() => {
+			return await Device.InvokeOnMainThreadAsync(() =>
+			{
 				using (var renderer = GetRenderer(element))
 				{
 					ParentView(renderer.View);
@@ -353,7 +354,8 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 		async Task<TProperty> GetRendererPropertyWithLayout<TProperty>(VisualElement element,
 			Func<IVisualElementRenderer, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() => {
+			return await Device.InvokeOnMainThreadAsync(() =>
+			{
 				using (var renderer = GetRenderer(element))
 				{
 					var view = renderer.View;
@@ -366,7 +368,8 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 		protected async Task<TProperty> GetControlProperty<TProperty>(ImageButton imageButton,
 			Func<AppCompatImageButton, TProperty> getProperty, bool requiresLayout = false)
 		{
-			return await Device.InvokeOnMainThreadAsync(() => {
+			return await Device.InvokeOnMainThreadAsync(() =>
+			{
 				using (var control = GetNativeControl(imageButton))
 				{
 					if (requiresLayout)
@@ -382,7 +385,8 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 		protected async Task<TProperty> GetControlProperty<TProperty>(Button button,
 			Func<AppCompatButton, TProperty> getProperty, bool requiresLayout = false)
 		{
-			return await Device.InvokeOnMainThreadAsync(() => {
+			return await Device.InvokeOnMainThreadAsync(() =>
+			{
 				using (var control = GetNativeControl(button))
 				{
 					if (requiresLayout)
@@ -399,7 +403,7 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 					}
 
 					var result = getProperty(control);
-					
+
 					if (needsParent)
 					{
 						UnparentView(control);
@@ -413,7 +417,8 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 		protected async Task<TProperty> GetControlProperty<TProperty>(Editor editor,
 			Func<EditText, TProperty> getProperty, bool requiresLayout = false)
 		{
-			return await Device.InvokeOnMainThreadAsync(() => {
+			return await Device.InvokeOnMainThreadAsync(() =>
+			{
 				using (var control = GetNativeControl(editor))
 				{
 					if (requiresLayout)
@@ -429,7 +434,8 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 		protected async Task<TProperty> GetControlProperty<TProperty>(Entry entry,
 			Func<EditText, TProperty> getProperty, bool requiresLayout = false)
 		{
-			return await Device.InvokeOnMainThreadAsync(() => {
+			return await Device.InvokeOnMainThreadAsync(() =>
+			{
 				using (var control = GetNativeControl(entry))
 				{
 					if (requiresLayout)
@@ -445,7 +451,8 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 		protected async Task<TProperty> GetControlProperty<TProperty>(Label label,
 			Func<TextView, TProperty> getProperty, bool requiresLayout = false)
 		{
-			return await Device.InvokeOnMainThreadAsync(() => {
+			return await Device.InvokeOnMainThreadAsync(() =>
+			{
 				using (var control = GetNativeControl(label))
 				{
 					if (requiresLayout)

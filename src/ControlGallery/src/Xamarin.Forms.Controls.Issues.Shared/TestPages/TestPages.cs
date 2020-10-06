@@ -75,15 +75,9 @@ namespace Xamarin.Forms.Controls
 
 			var app = appConfiguration.StartApp(UITest.Configuration.AppDataMode.DoNotClear);
 
-			if (bool.Parse((string)app.Invoke("IsPreAppCompat")))
-			{
-				IsFormsApplicationActivity = true;
-			}
-
 			return app;
 		}
 
-		public static bool IsFormsApplicationActivity { get; private set; }
 #endif
 
 #if __IOS__

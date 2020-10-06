@@ -311,7 +311,8 @@ namespace Xamarin.Forms
 			{
 				if (sourceType.IsArray)
 				{
-					if (!int.TryParse(part.Content, out var index)) {
+					if (!int.TryParse(part.Content, out var index))
+					{
 						Log.Warning("Binding", "{0} could not be parsed as an index for a {1}", part.Content, sourceType);
 						BindingDiagnostics.SendBindingFailure(Binding, null, "{0} could not be parsed as an index for a {1}", new object[] { part.Content, sourceType });
 					}

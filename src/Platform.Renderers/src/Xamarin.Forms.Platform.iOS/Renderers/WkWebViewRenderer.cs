@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using ObjCRuntime;
@@ -28,16 +29,42 @@ namespace Xamarin.Forms.Platform.iOS
 		VisualElementTracker _tracker;
 #pragma warning restore 0414
 
+		static WKProcessPool _sharedPool;
+		bool _disposed;
+		static int _sharedPoolCount = 0;
+		static bool _firstLoadFinished = false;
+		string _pendingUrl;
 
 		[Preserve(Conditional = true)]
-		public WkWebViewRenderer() : base(RectangleF.Empty, new WKWebViewConfiguration())
+		public WkWebViewRenderer() : this(CreateConfiguration())
 		{
+
 		}
 
 
 		[Preserve(Conditional = true)]
 		public WkWebViewRenderer(WKWebViewConfiguration config) : base(RectangleF.Empty, config)
 		{
+		
+		}
+
+		// https://developer.apple.com/forums/thread/99674
+		// WKWebView and making sure cookies synchronize is really quirky
+		// The main workaround I've found for ensuring that cookies synchronize 
+		// is to share the Process Pool between all WkWebView instances.
+		// It also has to be shared at the point you call init
+		static WKWebViewConfiguration CreateConfiguration()
+		{
+			var config = new WKWebViewConfiguration();
+			if (_sharedPool == null)
+			{
+				_sharedPool = config.ProcessPool;
+			}
+			else
+			{
+				config.ProcessPool = _sharedPool;
+			}
+			return config;
 		}
 
 		WebView WebView => Element as WebView;
@@ -54,29 +81,42 @@ namespace Xamarin.Forms.Platform.iOS
 		public void SetElement(VisualElement element)
 		{
 			var oldElement = Element;
-			Element = element;
-			Element.PropertyChanged += HandlePropertyChanged;
-			WebView.EvalRequested += OnEvalRequested;
-			WebView.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
-			WebView.GoBackRequested += OnGoBackRequested;
-			WebView.GoForwardRequested += OnGoForwardRequested;
-			WebView.ReloadRequested += OnReloadRequested;
-			NavigationDelegate = new CustomWebViewNavigationDelegate(this);
-			UIDelegate = new CustomWebViewUIDelegate();
 
-			BackgroundColor = UIColor.Clear;
+			if (oldElement != null)
+			{
+				oldElement.PropertyChanged -= HandlePropertyChanged;
+			}
 
-			AutosizesSubviews = true;
+			if (element != null)
+			{
+				Element = element;
+				Element.PropertyChanged += HandlePropertyChanged;
 
-			_tracker = new VisualElementTracker(this);
+				if (_packager == null)
+				{
+					WebView.EvalRequested += OnEvalRequested;
+					WebView.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
+					WebView.GoBackRequested += OnGoBackRequested;
+					WebView.GoForwardRequested += OnGoForwardRequested;
+					WebView.ReloadRequested += OnReloadRequested;
+					NavigationDelegate = new CustomWebViewNavigationDelegate(this);
+					UIDelegate = new CustomWebViewUIDelegate();
 
-			_packager = new VisualElementPackager(this);
-			_packager.Load();
+					BackgroundColor = UIColor.Clear;
 
-			_events = new EventTracker(this);
-			_events.LoadEvents(this);
+					AutosizesSubviews = true;
 
-			Load();
+					_tracker = new VisualElementTracker(this);
+
+					_packager = new VisualElementPackager(this);
+					_packager.Load();
+
+					_events = new EventTracker(this);
+					_events.LoadEvents(this);
+				}
+
+				Load();
+			}
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
@@ -100,16 +140,53 @@ namespace Xamarin.Forms.Platform.iOS
 				LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
 		}
 
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_firstLoadFinished = true;
+			if (!string.IsNullOrWhiteSpace(_pendingUrl))
+			{
+				var closure = _pendingUrl;
+				_pendingUrl = null;
+
+				// I realize this looks like the worst hack ever but iOS 11 and cookies are super quirky
+				// and this is the only way I could figure out how to get iOS 11 to inject a cookie 
+				// the first time a WkWebView is used in your app. This only has to run the first time a WkWebView is used 
+				// anywhere in the application. All subsequents uses of WkWebView won't hit this hack
+				// Even if it's a WkWebView on a new page.
+				// read through this thread https://developer.apple.com/forums/thread/99674
+				// Or Bing "WkWebView and Cookies" to see the myriad of hacks that exist
+				// Most of them all came down to different variations of synching the cookies before or after the
+				// WebView is added to the controller. This is the only one I was able to make work
+				// I think if we could delay adding the WebView to the Controller until after ViewWillAppear fires that might also work
+				// But we're not really setup for that
+				// If you'd like to try your hand at cleaning this up then UI Test Issue12134 and Issue3262 are your final bosses
+				InvokeOnMainThread(async () =>
+				{
+					await Task.Delay(500);
+					LoadUrl(closure);
+				});
+			}
+		}
+
 		public async void LoadUrl(string url)
 		{
 			try
 			{
+				
 				var uri = new Uri(url);
 
 				var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
 				var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
 				NSUrlRequest request = new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri));
 
+				if (!_firstLoadFinished && HasCookiesToLoad(url) && !Forms.IsiOS13OrNewer)
+				{
+					_pendingUrl = url;
+					return;
+				}
+
+				_firstLoadFinished = true;
 				await SyncNativeCookies(url);
 				LoadRequest(request);
 			}
@@ -156,6 +233,24 @@ namespace Xamarin.Forms.Platform.iOS
 			return false;
 		}
 
+		bool HasCookiesToLoad(string url)
+		{
+			var uri = CreateUriForCookies(url);
+
+			if (uri == null)
+				return false;
+
+			var myCookieJar = WebView.Cookies;
+			if (myCookieJar == null)
+				return false;
+
+			var cookies = myCookieJar.GetCookies(uri);
+			if (cookies == null)
+				return false;
+
+			return cookies.Count > 0;
+		}
+
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
@@ -166,6 +261,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void Dispose(bool disposing)
 		{
+			if (_disposed)
+				return;
+
+			_disposed = true;
+			if (Interlocked.Decrement(ref _sharedPoolCount) == 0 && Forms.IsiOS12OrNewer)
+				_sharedPool = null;
+
 			if (disposing)
 			{
 				if (IsLoading)
@@ -178,19 +280,23 @@ namespace Xamarin.Forms.Platform.iOS
 				WebView.GoForwardRequested -= OnGoForwardRequested;
 				WebView.ReloadRequested -= OnReloadRequested;
 
+				Element?.ClearValue(Platform.RendererProperty);
+				SetElement(null);
+
+				_events?.Dispose();
 				_tracker?.Dispose();
 				_packager?.Dispose();
+
+				_events = null;
+				_tracker = null;
+				_events = null;
 			}
 
 			base.Dispose(disposing);
 		}
 
-		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
-		{
-			var changed = ElementChanged;
-			if (changed != null)
-				changed(this, e);
-		}
+		protected virtual void OnElementChanged(VisualElementChangedEventArgs e) =>
+			ElementChanged?.Invoke(this, e);
 
 		HashSet<string> _loadedCookies = new HashSet<string>();
 
@@ -237,7 +343,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 					var extracted = extractCookies.GetCookies(uri);
 					_initialCookiesLoaded = new NSHttpCookie[extracted.Count];
-					for(int i = 0; i < extracted.Count; i++)
+					for (int i = 0; i < extracted.Count; i++)
 					{
 						_initialCookiesLoaded[i] = new NSHttpCookie(extracted[i]);
 					}
@@ -321,9 +427,9 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				NSHttpCookie nSHttpCookie = null;
 
-				foreach(var findCookie in retrieveCurrentWebCookies)
+				foreach (var findCookie in retrieveCurrentWebCookies)
 				{
-					if(findCookie.Name == cookie.Name)
+					if (findCookie.Name == cookie.Name)
 					{
 						nSHttpCookie = findCookie;
 						break;
@@ -405,7 +511,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (Forms.IsiOS11OrNewer)
 			{
-				foreach(var cookie in cookies)
+				foreach (var cookie in cookies)
 					await Configuration.WebsiteDataStore.HttpCookieStore.SetCookieAsync(new NSHttpCookie(cookie));
 			}
 			else
@@ -435,13 +541,15 @@ namespace Xamarin.Forms.Platform.iOS
 				// This is the only way I've found to delete cookies on pre ios 11
 				// I tried to set an expired cookie but it doesn't delete the cookie
 				// So, just deleting the whole domain is the best option I've found
-				WKWebsiteDataStore.DefaultDataStore.FetchDataRecordsOfTypes(WKWebsiteDataStore.AllWebsiteDataTypes, (NSArray records) =>
+				WKWebsiteDataStore
+					.DefaultDataStore
+					.FetchDataRecordsOfTypes(WKWebsiteDataStore.AllWebsiteDataTypes, (NSArray records) =>
 				{
 					for (nuint i = 0; i < records.Count; i++)
 					{
 						var record = records.GetItem<WKWebsiteDataRecord>(i);
 
-						foreach(var deleteme in cookies)
+						foreach (var deleteme in cookies)
 						{
 							if (record.DisplayName.Contains(deleteme.Domain) || deleteme.Domain.Contains(record.DisplayName))
 							{
@@ -511,7 +619,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			try
 			{
-			
+
 				await SyncNativeCookies(Url?.AbsoluteUrl?.ToString());
 			}
 			catch (Exception exc)
@@ -614,10 +722,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				try
 				{
-					if(_renderer?.WebView?.Cookies != null)
+					if (_renderer?.WebView?.Cookies != null)
 						await _renderer.SyncNativeCookiesToElement(url);
 				}
-				catch(Exception exc)
+				catch (Exception exc)
 				{
 					Log.Warning(nameof(WkWebViewRenderer), $"Failed to Sync Cookies {exc}");
 				}

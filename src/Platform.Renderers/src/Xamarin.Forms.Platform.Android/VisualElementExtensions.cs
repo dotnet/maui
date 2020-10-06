@@ -1,5 +1,4 @@
 using System;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android
@@ -11,7 +10,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (self == null)
 				throw new ArgumentNullException(nameof(self));
 
-			IVisualElementRenderer renderer = Platform.GetRenderer(self);
+			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(self);
 
 			return renderer;
 		}

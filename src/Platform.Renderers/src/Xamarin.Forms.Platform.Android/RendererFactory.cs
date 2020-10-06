@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.Android
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IVisualElementRenderer GetRenderer(VisualElement view)
 		{
-			return Platform.CreateRenderer(view);
+			return AppCompat.Platform.CreateRenderer(view);
 		}
 	}
 }

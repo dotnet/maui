@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 			s_subscriptions.Add(new PopupRequestHelper(context));
 		}
 
-		internal static void Unsubscribe(Context context)
+		internal static void Unsubscribe(Activity context)
 		{
 			var toRemove = s_subscriptions.Where(s => s.Activity == context).ToList();
 			foreach (PopupRequestHelper popupRequestHelper in toRemove)
@@ -201,7 +201,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			bool PageIsInThisContext(Page page)
 			{
-				var renderer = Platform.GetRenderer(page);
+				var renderer = AppCompat.Platform.GetRenderer(page);
 
 				if (renderer?.View?.Context == null)
 				{

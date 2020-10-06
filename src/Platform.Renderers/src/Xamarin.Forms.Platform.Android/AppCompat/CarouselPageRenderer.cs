@@ -85,14 +85,14 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					foreach (ContentPage pageToRemove in Element.Children)
 					{
-						IVisualElementRenderer pageRenderer = Android.Platform.GetRenderer(pageToRemove);
+						IVisualElementRenderer pageRenderer = Platform.GetRenderer(pageToRemove);
 						if (pageRenderer != null)
 						{
 							pageRenderer.View.RemoveFromParent();
 							pageRenderer.Dispose();
 						}
 
-						pageToRemove.ClearValue(Android.Platform.RendererProperty);
+						pageToRemove.ClearValue(Platform.RendererProperty);
 					}
 				}
 			}

@@ -312,9 +312,9 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("Loaded");
 			// add a couple cookies
 			RunningApp.Tap("ChangeDuringNavigating");
-			RunningApp.WaitForElement("Success");
+			ValidateSuccess();
 			RunningApp.Tap("ChangeDuringNavigating");
-			RunningApp.WaitForElement("Success");
+			ValidateSuccess();
 		}
 
 		[Test]
@@ -323,9 +323,9 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("Loaded");
 			// add a couple cookies
 			RunningApp.Tap("AdditionalCookie");
-			RunningApp.WaitForElement("Success");
+			ValidateSuccess();
 			RunningApp.Tap("AdditionalCookie");
-			RunningApp.WaitForElement("Success");
+			ValidateSuccess();
 		}
 
 		[Test]
@@ -333,7 +333,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement("Loaded");
 			RunningApp.Tap("OneCookie");
-			RunningApp.WaitForElement("Success");
+			ValidateSuccess();
 		}
 
 		[Test]
@@ -342,9 +342,9 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("Loaded");
 			// add a cookie to verify said cookie remains
 			RunningApp.Tap("AdditionalCookie");
-			RunningApp.WaitForElement("Success");
+			ValidateSuccess();
 			RunningApp.Tap("NullAllCookies");
-			RunningApp.WaitForElement("Success");
+			ValidateSuccess();
 		}
 
 		[Test]
@@ -353,9 +353,22 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("Loaded");
 			// add a cookie so you can remove a cookie
 			RunningApp.Tap("AdditionalCookie");
-			RunningApp.WaitForElement("Success");
+			ValidateSuccess();
 			RunningApp.Tap("EmptyAllCookies");
-			RunningApp.WaitForElement("Success");
+			ValidateSuccess();
+		}
+
+		void ValidateSuccess()
+		{
+			try
+			{
+				RunningApp.WaitForElement("Success");
+			}
+			catch
+			{
+				RunningApp.Tap("DisplayAllCookies");
+				throw;
+			}
 		}
 #endif
 	}

@@ -5,15 +5,6 @@ namespace Xamarin.Forms.Core.UnitTests
 	[TestFixture]
 	public class RadioButtonTests : BaseTestFixture
 	{
-		[SetUp]
-		public void SetUp()
-		{
-			Device.SetFlags(new[]
-			{
-				ExperimentalFlags.RadioButtonExperimental
-			});
-		}
-
 		[Test]
 		public void RadioButtonAddedToGroupGetsGroupName()
 		{

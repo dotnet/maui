@@ -11,9 +11,11 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 	{
 		public async Task CreateRenderer(VisualElement visualElement)
 		{
-			await Device.InvokeOnMainThreadAsync(() => 
+			await Device.InvokeOnMainThreadAsync(() =>
 				Platform.Android.Platform.CreateRendererWithContext(visualElement,
 					DependencyService.Resolve<Context>()));
+
+			await Task.CompletedTask;
 		}
 	}
 }

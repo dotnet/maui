@@ -193,7 +193,7 @@ namespace Xamarin.Forms.DualScreen
 
 			public Point? GetLocationOnScreen(VisualElement visualElement)
 			{
-				var view = Platform.Android.Platform.GetRenderer(visualElement);
+				var view = Platform.Android.AppCompat.Platform.GetRenderer(visualElement);
 				var androidView = view?.View;
 
 				if (!androidView.IsAlive())
@@ -209,7 +209,7 @@ namespace Xamarin.Forms.DualScreen
 				if (action == null)
 					return null;
 
-				var view = Platform.Android.Platform.GetRenderer(visualElement);
+				var view = Platform.Android.AppCompat.Platform.GetRenderer(visualElement);
 				var androidView = view?.View;
 
 				if (androidView == null || !androidView.IsAlive())
@@ -229,7 +229,7 @@ namespace Xamarin.Forms.DualScreen
 					return;
 
 				DualScreenGlobalLayoutListener ggl = null;
-				var view = Platform.Android.Platform.GetRenderer(visualElement);
+				var view = Platform.Android.AppCompat.Platform.GetRenderer(visualElement);
 				var androidView = view?.View;
 
 				if (androidView == null || !(table.TryGetValue(androidView, out ggl)))

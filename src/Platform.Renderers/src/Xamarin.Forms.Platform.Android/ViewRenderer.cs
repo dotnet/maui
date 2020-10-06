@@ -1,8 +1,6 @@
 using System;
 using System.ComponentModel;
-using Android.App;
 using Android.Content;
-using Android.OS;
 using Android.Views;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using AView = Android.Views.View;
@@ -306,7 +304,7 @@ namespace Xamarin.Forms.Platform.Android
 			Control = control;
 			if (Control.Id == NoId)
 			{
-				Control.Id = Platform.GenerateViewId();
+				Control.Id = AppCompat.Platform.GenerateViewId();
 			}
 
 			AView toAdd = container == this ? control : (AView)container;

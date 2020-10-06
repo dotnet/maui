@@ -7,8 +7,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
@@ -918,7 +916,7 @@ namespace Xamarin.Forms
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
-				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+				return Platform.Android.AppCompat.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 			}
 
 			public void Invalidate(VisualElement visualElement)

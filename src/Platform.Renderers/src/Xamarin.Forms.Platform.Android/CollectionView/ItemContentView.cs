@@ -123,8 +123,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		static IVisualElementRenderer CreateRenderer(View view, Context context)
 		{
-			var renderer = Platform.CreateRenderer(view, context);
-			Platform.SetRenderer(view, renderer);
+			var renderer = AppCompat.Platform.CreateRenderer(view, context);
+			AppCompat.Platform.SetRenderer(view, renderer);
 
 			return renderer;
 		}

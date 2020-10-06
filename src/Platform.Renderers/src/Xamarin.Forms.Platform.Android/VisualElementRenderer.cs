@@ -325,8 +325,8 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (Element != null)
 				{
-					if (Platform.GetRenderer(Element) == this)
-						Platform.SetRenderer(Element, null);
+					if (AppCompat.Platform.GetRenderer(Element) == this)
+						AppCompat.Platform.SetRenderer(Element, null);
 
 					Element = null;
 				}
@@ -411,7 +411,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (visualElement == null)
 					continue;
 
-				IVisualElementRenderer renderer = Platform.GetRenderer(visualElement);
+				IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(visualElement);
 				if (renderer == null && CompressedLayout.GetIsHeadless(visualElement))
 					UpdateLayout(visualElement.LogicalChildren);
 

@@ -54,8 +54,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			if (Page != null)
 			{
-				_visualElementRenderer = Android.Platform.CreateRenderer(Page, ChildFragmentManager, inflater.Context);
-				Android.Platform.SetRenderer(Page, _visualElementRenderer);
+				_visualElementRenderer = Platform.CreateRenderer(Page, ChildFragmentManager, inflater.Context);
+				Platform.SetRenderer(Page, _visualElementRenderer);
 
 				_pageContainer = CreatePageContainer(inflater.Context, _visualElementRenderer, true);
 
@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				// onAnimationEnd handler requires to properly clean things up)
 				// Instead, we let the garbage collector pick it up later, when we can be sure it's safe
 
-				Page?.ClearValue(Android.Platform.RendererProperty);
+				Page?.ClearValue(Platform.RendererProperty);
 			}
 
 			_onCreateCallback = null;
