@@ -3,13 +3,13 @@ using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Util;
 using Android.Views.InputMethods;
-using Xamarin.Forms;
-using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
-using AActivity = Android.App.Activity;
-using Size = Xamarin.Forms.Size;
-using AndroidX.Fragment.App;
 using AndroidX.AppCompat.App;
+using AndroidX.Fragment.App;
+using Xamarin.Forms;
+using AActivity = Android.App.Activity;
+using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
+using Size = Xamarin.Forms.Size;
 
 namespace Xamarin.Platform
 {
