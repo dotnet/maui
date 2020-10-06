@@ -378,28 +378,32 @@ namespace Xamarin.Forms.Xaml
 				return true;
 
 			//If value is BindingBase, SetBinding
-			if (xpe == null && TrySetBinding(element, property, localName, value, lineInfo, out var binding, out xpe)) {
+			if (xpe == null && TrySetBinding(element, property, localName, value, lineInfo, out var binding, out xpe))
+			{
 				if (binding != null && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
 					registerSourceInfo(binding, path);
 				return true;
 			}
 
 			//If it's a BindableProberty, SetValue
-			if (xpe == null && TrySetValue(element, property, attached, value, lineInfo, serviceProvider, out xpe)) {
+			if (xpe == null && TrySetValue(element, property, attached, value, lineInfo, serviceProvider, out xpe))
+			{
 				if (value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
 					registerSourceInfo(value, path);
 				return true;
 			}
 
 			//If we can assign that value to a normal property, let's do it
-			if (xpe == null && TrySetProperty(element, localName, value, lineInfo, serviceProvider, rootElement, out xpe)) {
+			if (xpe == null && TrySetProperty(element, localName, value, lineInfo, serviceProvider, rootElement, out xpe))
+			{
 				if (value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
 					registerSourceInfo(value, path);
 				return true;
 			}
 
 			//If it's an already initialized property, add to it
-			if (xpe == null && TryAddToProperty(element, propertyName, value, xKey, lineInfo, serviceProvider, rootElement, out xpe)) {
+			if (xpe == null && TryAddToProperty(element, propertyName, value, xKey, lineInfo, serviceProvider, rootElement, out xpe))
+			{
 				if (value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
 					registerSourceInfo(value, path);
 				return true;
@@ -493,7 +497,7 @@ namespace Xamarin.Forms.Xaml
 			exception = null;
 
 			var elementType = element.GetType();
-			binding = value.ConvertTo(typeof(BindingBase), pinfoRetriever:null, serviceProvider: null, exception: out exception) as BindingBase;
+			binding = value.ConvertTo(typeof(BindingBase), pinfoRetriever: null, serviceProvider: null, exception: out exception) as BindingBase;
 			if (exception != null)
 				return false;
 
