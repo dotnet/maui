@@ -8,9 +8,6 @@ namespace Xamarin.Essentials
     {
         static Task PlatformRequestAsync(ShareTextRequest request)
         {
-            if (string.IsNullOrEmpty(request.Text) && string.IsNullOrEmpty(request.Uri))
-                throw new ArgumentNullException(nameof(request.Text));
-
             Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
             var appControl = new AppControl
@@ -34,9 +31,6 @@ namespace Xamarin.Essentials
 
         static Task PlatformRequestAsync(ShareFileRequest request)
         {
-            if (string.IsNullOrEmpty(request.File.FullPath))
-                throw new ArgumentNullException(nameof(request.File.FullPath));
-
             Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
             var appControl = new AppControl

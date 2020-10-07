@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
 #if !NETSTANDARD1_0
 using System.Drawing;
@@ -15,11 +14,28 @@ namespace Xamarin.Essentials
         public static Task RequestAsync(string text, string title) =>
             RequestAsync(new ShareTextRequest(text, title));
 
-        public static Task RequestAsync(ShareTextRequest request) =>
-            PlatformRequestAsync(request);
+        public static Task RequestAsync(ShareTextRequest request)
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            if (string.IsNullOrEmpty(request.Text) && string.IsNullOrEmpty(request.Uri))
+                throw new ArgumentException($"Both the {nameof(request.Text)} and {nameof(request.Uri)} are invalid. Make sure to include at least one of them in the request.");
+
+            return PlatformRequestAsync(request);
+        }
 
         public static Task RequestAsync(ShareFileRequest request)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            if (request.File == null)
+                throw new ArgumentException($"The {nameof(request.File)} in the request is invalid.");
+
+            if (string.IsNullOrEmpty(request.File.FullPath))
+                throw new ArgumentException($"The request file's {nameof(request.File.FullPath)} is invalid.");
+
             return PlatformRequestAsync(request);
         }
     }
