@@ -264,6 +264,7 @@
     <Compile Include="SwipeViewTests.cs" />
     <Compile Include="PathSegmentTests.cs" />
     <Compile Include="GeometryTests.cs" />
+    <Compile Include="ShellParameterPassingTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">

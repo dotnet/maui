@@ -82,6 +82,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			return shellSection;
 		}
 
+		[QueryProperty("DoubleQueryParameter", "DoubleQueryParameter")]
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
 		[QueryProperty("CancelNavigationOnBackButtonPressed", "CancelNavigationOnBackButtonPressed")]
 		public class ShellTestPage : ContentPage
@@ -92,6 +93,12 @@ namespace Xamarin.Forms.Core.UnitTests
 			}
 
 			public string SomeQueryParameter
+			{
+				get;
+				set;
+			}
+
+			public double DoubleQueryParameter
 			{
 				get;
 				set;
