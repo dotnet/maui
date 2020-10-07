@@ -112,6 +112,13 @@ namespace Xamarin.Essentials
         }
 
         static string GetSystemSetting(string name)
-           => Settings.System.GetString(Essentials.Platform.AppContext.ContentResolver, name);
+        {
+            // DEVICE_NAME added in System.Global in API level 25
+            // https://developer.android.com/reference/android/provider/Settings.Global#DEVICE_NAME
+            if (Essentials.Platform.HasApiLevelNMr1)
+                return Settings.Global.GetString(Essentials.Platform.AppContext.ContentResolver, name);
+            else
+                return Settings.System.GetString(Essentials.Platform.AppContext.ContentResolver, name);
+        }
     }
 }
