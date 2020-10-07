@@ -16,7 +16,9 @@ namespace Xamarin.Essentials
 
         static string GetDeviceName()
         {
-            var name = GetSystemSetting("device_name");
+            // DEVICE_NAME added in System.Global in API level 25
+            // https://developer.android.com/reference/android/provider/Settings.Global#DEVICE_NAME
+            var name = GetSystemSetting("device_name", true);
             if (string.IsNullOrWhiteSpace(name))
                 name = Model;
             return name;
@@ -111,11 +113,9 @@ namespace Xamarin.Essentials
             return DeviceType.Physical;
         }
 
-        static string GetSystemSetting(string name)
+        static string GetSystemSetting(string name, bool isGlobal = false)
         {
-            // DEVICE_NAME added in System.Global in API level 25
-            // https://developer.android.com/reference/android/provider/Settings.Global#DEVICE_NAME
-            if (Essentials.Platform.HasApiLevelNMr1)
+            if (isGlobal && Essentials.Platform.HasApiLevelNMr1)
                 return Settings.Global.GetString(Essentials.Platform.AppContext.ContentResolver, name);
             else
                 return Settings.System.GetString(Essentials.Platform.AppContext.ContentResolver, name);
