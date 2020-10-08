@@ -427,7 +427,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual($"//content/{nameof(RoutePathDefaultRemovalWithGlobalRoutesKeepsOneNamedRoute)}", shell.CurrentState.Location.ToString());
 		}
 
-		
+
 
 		[Test]
 		public async Task OnBackbuttonPressedPageReturnsTrue()

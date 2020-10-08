@@ -292,7 +292,7 @@ namespace Xamarin.Forms
 					{
 						if (prop.PropertyType == typeof(String))
 						{
-							if(value != null)
+							if (value != null)
 								value = System.Net.WebUtility.UrlDecode(value);
 
 							prop.SetValue(content, value);
