@@ -24,6 +24,8 @@ namespace Xamarin.Forms.Platform.iOS
 			MeasuredHeight = double.NaN;
 		}
 
+		internal View View => _view;
+
 		internal double MeasuredHeight { get; private set; }
 
 		internal bool MeasureIfNeeded()

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				x:Class="Xamarin.Forms.Controls.XamStore.FlyoutFooter">
+	<ContentView.Content>
+		<StackLayout BackgroundColor="LightBlue">
+            <Label Margin="10, 5" Text="XamStore Footer" TextColor="White" FontAttributes="Bold" VerticalTextAlignment="Center" />
+		</StackLayout>
+	</ContentView.Content>
+</ContentView>

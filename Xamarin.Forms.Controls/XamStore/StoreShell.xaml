@@ -55,6 +55,10 @@
 	<Shell.FlyoutHeader>
 		<local:FlyoutHeader />
 	</Shell.FlyoutHeader>
+
+    <Shell.FlyoutFooter>
+        <local:FlyoutFooter />
+    </Shell.FlyoutFooter>
 	
 	<ShellContent Title="Search" Route="search" ContentTemplate="{DataTemplate local:SearchHandlerPage}" />
 	<ShellSection FlyoutDisplayOptions="AsMultipleItems" Route="apps" Title="My apps &amp; games" Icon="grid.png" Style="{StaticResource GreenShell}">

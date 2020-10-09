@@ -290,7 +290,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ShellAppearanceChange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10234.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellModal.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutBehavior.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FlyoutBehaviorShell.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7128.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellItemIsVisible.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellGestures.cs" />
@@ -1589,6 +1589,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue11869.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11723.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HeaderFooterShellFlyout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue12134.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11963.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11831.xaml.cs" />
@@ -1885,7 +1886,7 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11875.xaml">
-     <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11653.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>

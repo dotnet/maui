@@ -882,7 +882,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		ReadOnlyCollection<WindowsElement> QueryWindows(WinQuery query, bool findFirst = false)
 		{
-			ReadOnlyCollection<WindowsElement> resultByAccessibilityId = _session.FindElementsByAccessibilityId(query.Marked);
+			var resultByAccessibilityId = _session.FindElementsByAccessibilityId(query.Marked);
 			ReadOnlyCollection<WindowsElement> resultByName = null;
 
 			if (!findFirst || resultByAccessibilityId.Count == 0)

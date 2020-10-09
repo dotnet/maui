@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.Shell)]
 #endif
-	public class ShellFlyoutBehavior : TestShell
+	public class FlyoutBehaviorShell : TestShell
 	{
 		BackButtonBehavior _behavior;
 		const string title = "Basic Test";
@@ -184,14 +184,18 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(FlyoutItem, "Flyout not opening via code when back button behavior is disabled");
 			RunningApp.Tap(FlyoutItem);
 
+		}
+
+		[Test]
+		public void WhenFlyoutIsLockedButtonsAreStillVisible()
+		{
 			// FlyoutLocked ensure that the flyout and buttons are still visible
 			RunningApp.Tap(EnableBackButtonBehavior);
 			RunningApp.Tap(LockFlyoutBehavior);
 			RunningApp.WaitForElement(title, "Flyout Locked hiding content");
 			RunningApp.Tap(EnableFlyoutBehavior);
-
+			RunningApp.WaitForNoElement(FlyoutItem);
 		}
-
 #endif
 	}
 }

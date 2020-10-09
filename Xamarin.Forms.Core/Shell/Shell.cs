@@ -267,6 +267,7 @@ namespace Xamarin.Forms
 		event EventHandler _structureChanged;
 
 		View IShellController.FlyoutHeader => FlyoutHeaderView;
+		View IShellController.FlyoutFooter => FlyoutFooterView;
 
 		IShellController ShellController => this;
 
@@ -803,9 +804,17 @@ namespace Xamarin.Forms
 			BindableProperty.Create(nameof(FlyoutHeader), typeof(object), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutHeaderChanging);
 
+		public static readonly BindableProperty FlyoutFooterProperty =
+			BindableProperty.Create(nameof(FlyoutFooter), typeof(object), typeof(Shell), null, BindingMode.OneTime,
+				propertyChanging: OnFlyoutFooterChanging);
+
 		public static readonly BindableProperty FlyoutHeaderTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutHeaderTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutHeaderTemplateChanging);
+
+		public static readonly BindableProperty FlyoutFooterTemplateProperty =
+			BindableProperty.Create(nameof(FlyoutFooterTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
+				propertyChanging: OnFlyoutFooterTemplateChanging);
 
 		public static readonly BindableProperty FlyoutIsPresentedProperty =
 			BindableProperty.Create(nameof(FlyoutIsPresented), typeof(bool), typeof(Shell), false, BindingMode.TwoWay);
@@ -821,6 +830,7 @@ namespace Xamarin.Forms
 		ShellNavigatedEventArgs _accumulatedEvent;
 		bool _accumulateNavigatedEvents;
 		View _flyoutHeaderView;
+		View _flyoutFooterView;
 		List<List<Element>> _currentFlyoutViews;
 
 		public Shell()
@@ -976,6 +986,12 @@ namespace Xamarin.Forms
 			set => SetValue(FlyoutHeaderProperty, value);
 		}
 
+		public object FlyoutFooter
+		{
+			get => GetValue(FlyoutFooterProperty);
+			set => SetValue(FlyoutFooterProperty, value);
+		}
+
 		public FlyoutHeaderBehavior FlyoutHeaderBehavior
 		{
 			get => (FlyoutHeaderBehavior)GetValue(FlyoutHeaderBehaviorProperty);
@@ -986,6 +1002,12 @@ namespace Xamarin.Forms
 		{
 			get => (DataTemplate)GetValue(FlyoutHeaderTemplateProperty);
 			set => SetValue(FlyoutHeaderTemplateProperty, value);
+		}
+
+		public DataTemplate FlyoutFooterTemplate
+		{
+			get => (DataTemplate)GetValue(FlyoutFooterTemplateProperty);
+			set => SetValue(FlyoutFooterTemplateProperty, value);
 		}
 
 		public bool FlyoutIsPresented
@@ -1034,11 +1056,30 @@ namespace Xamarin.Forms
 			}
 		}
 
+		View FlyoutFooterView
+		{
+			get => _flyoutFooterView;
+			set
+			{
+				if (_flyoutFooterView == value)
+					return;
+
+				if (_flyoutFooterView != null)
+					OnChildRemoved(_flyoutFooterView, -1);
+				_flyoutFooterView = value;
+				if (_flyoutFooterView != null)
+					OnChildAdded(_flyoutFooterView);
+			}
+		}
+
 		protected override void OnBindingContextChanged()
 		{
 			base.OnBindingContextChanged();
 			if (FlyoutHeaderView != null)
 				SetInheritedBindingContext(FlyoutHeaderView, BindingContext);
+
+			if (FlyoutFooterView != null)
+				SetInheritedBindingContext(FlyoutFooterView, BindingContext);
 		}
 
 		List<List<Element>> IShellController.GenerateFlyoutGrouping()
@@ -1228,6 +1269,9 @@ namespace Xamarin.Forms
 			{
 				if (FlyoutHeaderView != null)
 					yield return FlyoutHeaderView;
+
+				if (FlyoutFooterView != null)
+					yield return FlyoutFooterView;
 			}
 		}
 
@@ -1389,10 +1433,22 @@ namespace Xamarin.Forms
 			shell.OnFlyoutHeaderChanged(oldValue, newValue);
 		}
 
+		static void OnFlyoutFooterChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			var shell = (Shell)bindable;
+			shell.OnFlyoutFooterChanged(oldValue, newValue);
+		}
+
 		static void OnFlyoutHeaderTemplateChanging(BindableObject bindable, object oldValue, object newValue)
 		{
 			var shell = (Shell)bindable;
 			shell.OnFlyoutHeaderTemplateChanged((DataTemplate)oldValue, (DataTemplate)newValue);
+		}
+
+		static void OnFlyoutFooterTemplateChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			var shell = (Shell)bindable;
+			shell.OnFlyoutFooterTemplateChanged((DataTemplate)oldValue, (DataTemplate)newValue);
 		}
 
 		static void OnTitleViewChanged(BindableObject bindable, object oldValue, object newValue)
@@ -1552,6 +1608,33 @@ namespace Xamarin.Forms
 			}
 		}
 
+		void OnFlyoutFooterChanged(object oldVal, object newVal)
+		{
+			if (FlyoutFooterTemplate == null)
+			{
+				if (newVal is View newFlyoutFooter)
+					FlyoutFooterView = newFlyoutFooter;
+				else
+					FlyoutFooterView = null;
+			}
+		}
+
+		void OnFlyoutFooterTemplateChanged(DataTemplate oldValue, DataTemplate newValue)
+		{
+			if (newValue == null)
+			{
+				if (FlyoutFooter is View flyoutFooterView)
+					FlyoutFooterView = flyoutFooterView;
+				else
+					FlyoutFooterView = null;
+			}
+			else
+			{
+				var newFooterView = (View)newValue.CreateContent(FlyoutFooter, this);
+				FlyoutFooterView = newFooterView;
+			}
+		}
+
 		bool ProposeNavigation(ShellNavigationSource source, ShellNavigationState proposedState, bool canCancel, ShellNavigatingEventArgs deferredArgs)
 		{
 			if (_accumulateNavigatedEvents)
@@ -1596,6 +1679,8 @@ namespace Xamarin.Forms
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, LogicalChildren);
 			if (FlyoutHeaderView != null)
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutHeaderView });
+			if (FlyoutFooterView != null)
+				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutFooterView });
 		}
 
 
