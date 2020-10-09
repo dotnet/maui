@@ -90,6 +90,9 @@
     <Compile Update="GalleryPages\IndicatorViewGalleries\IndicatorGalleries.cs">
       <SubType></SubType>
     </Compile>
+    <Compile Update="XamStore\Controls\FlyoutFooter.xaml.cs">
+      <DependentUpon>FlyoutFooter.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="GalleryPages\RadioButtonGalleries\ScatteredRadioButtonGallery.xaml">

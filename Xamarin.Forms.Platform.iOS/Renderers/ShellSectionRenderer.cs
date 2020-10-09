@@ -421,7 +421,9 @@ namespace Xamarin.Forms.Platform.iOS
 					OnPopRequested(e);
 				}
 
-				ViewControllers = ViewControllers.Remove(viewController);
+				if(ViewControllers.Contains(viewController))
+					ViewControllers = ViewControllers.Remove(viewController);
+
 				DisposePage(page);
 			}
 		}

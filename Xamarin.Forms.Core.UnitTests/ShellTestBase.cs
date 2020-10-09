@@ -82,6 +82,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			return shellSection;
 		}
 
+		[QueryProperty("DoubleQueryParameter", "DoubleQueryParameter")]
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
 		[QueryProperty("CancelNavigationOnBackButtonPressed", "CancelNavigationOnBackButtonPressed")]
 		public class ShellTestPage : ContentPage
@@ -92,6 +93,12 @@ namespace Xamarin.Forms.Core.UnitTests
 			}
 
 			public string SomeQueryParameter
+			{
+				get;
+				set;
+			}
+
+			public double DoubleQueryParameter
 			{
 				get;
 				set;
@@ -302,6 +309,31 @@ namespace Xamarin.Forms.Core.UnitTests
 			public TestShell(params ShellItem[] shellItems) : this()
 			{
 				shellItems.ForEach(x => Items.Add(x));
+			}
+
+			public ContentPage RegisterPage(string route)
+			{
+				ContentPage page = new ContentPage();
+				RegisterPage(route, page);
+				return page;
+			}
+
+			public void RegisterPage(string route, ContentPage contentPage)
+			{
+				Routing.SetRoute(contentPage, route);
+				Routing.RegisterRoute(route, new ConcretePageFactory(contentPage));
+			}
+
+			public class ConcretePageFactory : RouteFactory
+			{
+				ContentPage _contentPage;
+
+				public ConcretePageFactory(ContentPage contentPage)
+				{
+					_contentPage = contentPage;
+				}
+
+				public override Element GetOrCreate() => _contentPage;
 			}
 
 			public Action<ShellNavigatedEventArgs> OnNavigatedHandler { get; set; }

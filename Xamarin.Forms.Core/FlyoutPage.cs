@@ -315,5 +315,9 @@ namespace Xamarin.Forms
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void UpdateMasterBehavior() =>
+			(this as IFlyoutPageController).UpdateFlyoutLayoutBehavior();
 	}
 }

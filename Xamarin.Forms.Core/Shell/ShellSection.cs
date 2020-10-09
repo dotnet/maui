@@ -332,34 +332,71 @@ namespace Xamarin.Forms
 			return (ShellSection)(ShellContent)page;
 		}
 
-		internal async Task GoToAsync(NavigationRequest request, IDictionary<string, string> queryData, bool? animate)
+		async Task PrepareCurrentStackForBeingReplaced(NavigationRequest request, IDictionary<string, string> queryData, bool? animate, List<string> globalRoutes)
 		{
-			List<string> globalRoutes = request.Request.GlobalRoutes;
+			string route = "";
 			List<Page> navStack = null;
-			string route = String.Empty;
-
-			if (globalRoutes == null || globalRoutes.Count == 0)
-			{
-				if (_navStack.Count == 2)
-					await OnPopAsync(animate ?? false);
-				else
-					await OnPopToRootAsync(animate ?? false);
-
-				return;
-			}
-
-			int whereToStartNavigation = 0;
 
 			// Pop the stack down to where it no longer matches 
 			if (request.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 			{
+				// If there's a visible Modal Stack then let's remove the pages under it that
+				// are going to be popped so they never become visible and never fire OnAppearing
+				if (Navigation.ModalStack.Count > 0)
+				{
+					var navStackCopy = new List<Page>(_navStack);
+					for (int i = 1; i < navStackCopy.Count; i++)
+					{
+						var routeToRemove = Routing.GetRoute(navStackCopy[i]);
+						if (i > globalRoutes.Count || routeToRemove != globalRoutes[i - 1])
+						{
+							OnRemovePage(navStackCopy[i]);
+						}
+					}
+				}
+
+				RemoveExcessPathsWithinTheRoute();
+
+
+				// now that we've removed all the extra pages let's find the page on the stack that 
+				// will be visible so we can push that as the first visible thing
+				// If we already have a modal stack then we don't worry about doing this
+				// Modal pages can't be selectively inserted/removed so this only matters when there are
+				// no modal pages present
+				if (Navigation.ModalStack.Count == 0)
+				{
+					List<Page> pagesToInsert = new List<Page>();
+					for (int i = 0; i < globalRoutes.Count; i++)
+					{
+						int navIndex = i + 1;
+						// Routes match so don't do anything
+						if (navIndex < _navStack.Count && Routing.GetRoute(_navStack[navIndex]) == globalRoutes[i])
+						{
+							continue;
+						}
+
+						var page = GetOrCreateFromRoute(globalRoutes[i], queryData, i == globalRoutes.Count - 1);
+						if (IsModal(page))
+						{
+							await Navigation.PushModalAsync(page, IsNavigationAnimated(page));
+							break;
+						}
+						else
+						{
+							pagesToInsert.Add(page);
+						}
+					}
+
+					await PushStackOfPages(pagesToInsert, animate);
+					RemoveExcessPathsWithinTheRoute();
+				}
+
 				for (int i = 0; i < globalRoutes.Count; i++)
 				{
-					whereToStartNavigation = i;
 					bool isLast = i == globalRoutes.Count - 1;
 					route = globalRoutes[i];
 
-					navStack = BuildFlattenedNavigationStack(new List<Page>(_navStack), Navigation?.ModalStack);
+					navStack = BuildFlattenedNavigationStack(_navStack, Navigation?.ModalStack);
 
 					// if the navStack count is one that means there is nothing pushed
 					if (navStack.Count == 1)
@@ -377,7 +414,6 @@ namespace Xamarin.Forms
 							// if the routes do match and this is the last in the loop
 							// pop everything after this route
 							popCount = i + 2;
-							whereToStartNavigation++;
 							Shell.ApplyQueryAttributes(navPage, queryData, isLast);
 
 							// If we're not on the last loop of the stack then continue
@@ -387,7 +423,8 @@ namespace Xamarin.Forms
 						}
 
 						IsPoppingModalStack = true;
-						while (navStack.Count > popCount)
+
+						while (navStack.Count > popCount && Navigation.ModalStack.Count > 0)
 						{
 							bool isAnimated = animate ?? IsNavigationAnimated(navStack[navStack.Count - 1]);
 							if (Navigation.ModalStack.Contains(navStack[navStack.Count - 1]))
@@ -398,56 +435,135 @@ namespace Xamarin.Forms
 							{
 								await Navigation.ModalStack[Navigation.ModalStack.Count - 1].Navigation.PopAsync(isAnimated);
 							}
-							else
+
+							navStack = BuildFlattenedNavigationStack(_navStack, Navigation?.ModalStack);
+						}
+
+						while (_navStack.Count > popCount)
+						{
+							// Remove middle pages before doing a pop on the visible page so that the transition
+							// is seamless
+							if ((_navStack.Count - popCount) == 1)
 							{
+								bool isAnimated = animate ?? IsNavigationAnimated(_navStack[_navStack.Count - 1]);
 								await OnPopAsync(isAnimated);
 							}
-
-							navStack = BuildFlattenedNavigationStack(new List<Page>(_navStack), Navigation?.ModalStack);
+							else
+							{
+								OnRemovePage(_navStack[_navStack.Count - 2]);
+							}
 						}
+
+						navStack = BuildFlattenedNavigationStack(_navStack, Navigation?.ModalStack);
+
 						IsPoppingModalStack = false;
 
 						break;
 					}
-
-					var content = Routing.GetOrCreateContent(route) as Page;
-					if (content == null)
-						break;
-
-					Shell.ApplyQueryAttributes(content, queryData, isLast);
 				}
 			}
 
+			void RemoveExcessPathsWithinTheRoute()
+			{
+				// locate middle routes that were removed
+				// //route/page1/page2 => //route/page2
+				// Let's just remove page1 instead of pop, pop, add
+				for (int i = 0; i < globalRoutes.Count; i++)
+				{
+					int foundMatchAt = -1;
+					for (int j = 1; j < _navStack.Count; j++)
+					{
+						if (Routing.GetRoute(_navStack[j]) == globalRoutes[i])
+						{
+							foundMatchAt = j;
+							break;
+						}
+					}
+
+					// If we found a matching route then let's remove all the middle pages
+					for (int j = foundMatchAt - 1; j >= (i + 1); j--)
+					{
+						OnRemovePage(_navStack[j]);
+					}
+				}
+			}
+		}
+
+		List<Page> BuildFlattenedNavigationStack(List<Page> startingList, IReadOnlyList<Page> modalStack)
+		{
+			startingList = startingList.ToList();
+			if (modalStack == null)
+				return startingList;
+
+			for (int i = 0; i < modalStack.Count; i++)
+			{
+				startingList.Add(modalStack[i]);
+				for (int j = 1; j < modalStack[i].Navigation.NavigationStack.Count; j++)
+				{
+					startingList.Add(modalStack[i].Navigation.NavigationStack[j]);
+				}
+			}
+
+			return startingList;
+		}
+
+		Page GetOrCreateFromRoute(string route, IDictionary<string, string> queryData, bool isLast)
+		{
+			var content = Routing.GetOrCreateContent(route) as Page;
+			if (content == null)
+			{
+				Internals.Log.Warning(nameof(Shell), $"Failed to Create Content For: {route}");
+			}
+
+			Shell.ApplyQueryAttributes(content, queryData, isLast);
+			return content;
+		}
+
+		internal async Task GoToAsync(NavigationRequest request, IDictionary<string, string> queryData, bool? animate)
+		{
+			List<string> globalRoutes = request.Request.GlobalRoutes;
+			string route = String.Empty;
+
+			if (globalRoutes == null || globalRoutes.Count == 0)
+			{
+				if (_navStack.Count == 2)
+					await OnPopAsync(animate ?? false);
+				else
+					await OnPopToRootAsync(animate ?? false);
+
+				return;
+			}
+
+			await PrepareCurrentStackForBeingReplaced(request, queryData, animate, globalRoutes);
+
 			List<Page> modalPageStacks = new List<Page>();
 			List<Page> nonModalPageStacks = new List<Page>();
-
-			if (Navigation?.ModalStack?.Count > 0)
-				modalPageStacks.AddRange(Navigation.ModalStack);
+			var currentNavStack = BuildFlattenedNavigationStack(_navStack, Navigation?.ModalStack);
 
 			// populate global routes and build modal stacks
+
+			// If the currentNavStack is larger than _navStack then we have modal pages
+			bool weveGoneTotalModal = currentNavStack.Count > _navStack.Count;
+			int whereToStartNavigation = 0;
+
+			if(request.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
+				whereToStartNavigation = currentNavStack.Count - 1;
+
 			for (int i = whereToStartNavigation; i < globalRoutes.Count; i++)
 			{
 				bool isLast = i == globalRoutes.Count - 1;
 				route = globalRoutes[i];
-				var content = Routing.GetOrCreateContent(route) as Page;
+				var content = GetOrCreateFromRoute(route, queryData, isLast);
 				if (content == null)
 				{
 					break;
 				}
 
-				var isModal = (Shell.GetPresentationMode(content) & PresentationMode.Modal) == PresentationMode.Modal;
+				weveGoneTotalModal = weveGoneTotalModal || IsModal(content);
 
-				Shell.ApplyQueryAttributes(content, queryData, isLast);
-				if (isModal)
+				if (weveGoneTotalModal)
 				{
 					modalPageStacks.Add(content);
-				}
-				else if (modalPageStacks.Count > 0)
-				{
-					if (modalPageStacks[modalPageStacks.Count - 1] is NavigationPage navigationPage)
-						await navigationPage.Navigation.PushAsync(content, animate ?? IsNavigationAnimated(content));
-					else
-						throw new InvalidOperationException($"Shell cannot push a page to the following type: {modalPageStacks[modalPageStacks.Count - 1]}. The visible modal page needs to be a NavigationPage");
 				}
 				else
 				{
@@ -455,53 +571,70 @@ namespace Xamarin.Forms
 				}
 			}
 
-			for (int i = Navigation.ModalStack.Count; i < modalPageStacks.Count; i++)
+			// Check if we have an active Navigation Page
+			NavigationPage activeModalNavigationPage = null;
+			for (int i = Navigation.ModalStack.Count - 1; i >= 0; i--)
+			{
+				if (Navigation.ModalStack[i] is NavigationPage np)
+				{
+					activeModalNavigationPage = np;
+					break;
+				}
+			}
+
+			for (int i = 0; i < modalPageStacks.Count; i++)
 			{
 				bool isLast = i == modalPageStacks.Count - 1;
-				bool isAnimated = animate ?? IsNavigationAnimated(modalPageStacks[i]);
+				var modalPage = modalPageStacks[i];
+				bool isAnimated = animate ?? IsNavigationAnimated(modalPage);
 				IsPushingModalStack = !isLast;
-				await ((NavigationImpl)Navigation).PushModalAsync(modalPageStacks[i], isAnimated);
-			}
 
-			for (int i = nonModalPageStacks.Count - 1; i >= 0; i--)
-			{
-				bool isLast = i == nonModalPageStacks.Count - 1;
-
-				if (isLast)
+				if (modalPage is NavigationPage np)
 				{
-					bool isAnimated = animate ?? IsNavigationAnimated(nonModalPageStacks[i]);
-					await OnPushAsync(nonModalPageStacks[i], isAnimated);
+					await Navigation.PushModalAsync(modalPage, isAnimated);
+					activeModalNavigationPage = np;
 				}
 				else
-					Navigation.InsertPageBefore(nonModalPageStacks[i], nonModalPageStacks[nonModalPageStacks.Count - 1]);
+				{
+					if(activeModalNavigationPage != null)
+						await activeModalNavigationPage.Navigation.PushAsync(modalPage, animate ?? IsNavigationAnimated(modalPage));
+					else
+						await Navigation.PushModalAsync(modalPage, isAnimated);
+				}
 			}
+
+			await PushStackOfPages(nonModalPageStacks, animate);
 
 			if (Parent?.Parent is IShellController shell)
 			{
 				shell.UpdateCurrentState(ShellNavigationSource.ShellSectionChanged);
 			}
+		}
 
-			bool IsNavigationAnimated(BindableObject bo)
+		async Task PushStackOfPages(List<Page> pages, bool? animate)
+		{
+			for (int i = pages.Count - 1; i >= 0; i--)
 			{
-				return (Shell.GetPresentationMode(bo) & PresentationMode.NotAnimated) != PresentationMode.NotAnimated;
-			}
+				bool isLast = i == pages.Count - 1;
 
-			List<Page> BuildFlattenedNavigationStack(List<Page> startingList, IReadOnlyList<Page> modalStack)
-			{
-				if (modalStack == null)
-					return startingList;
-
-				for (int i = 0; i < modalStack.Count; i++)
+				if (isLast)
 				{
-					startingList.Add(modalStack[i]);
-					for (int j = 1; j < modalStack[i].Navigation.NavigationStack.Count; j++)
-					{
-						startingList.Add(modalStack[i].Navigation.NavigationStack[j]);
-					}
+					bool isAnimated = animate ?? IsNavigationAnimated(pages[i]);
+					await OnPushAsync(pages[i], isAnimated);
 				}
-
-				return startingList;
+				else
+					Navigation.InsertPageBefore(pages[i], pages[i + 1]);
 			}
+		}
+
+		bool IsModal(BindableObject bo)
+		{
+			return (Shell.GetPresentationMode(bo) & PresentationMode.Modal) == PresentationMode.Modal;
+		}
+
+		bool IsNavigationAnimated(BindableObject bo)
+		{
+			return (Shell.GetPresentationMode(bo) & PresentationMode.NotAnimated) != PresentationMode.NotAnimated;
 		}
 
 		internal void SendStructureChanged()

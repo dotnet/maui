@@ -45,7 +45,8 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			var bo = (BindableObject)args.NewValue;
-			var shell = (bo as Element)?.FindParent<Shell>();
+			var element = bo as Element;
+			var shell = element?.FindParent<Shell>();
 			DataTemplate dataTemplate = (shell as IShellController)?.GetFlyoutItemDataTemplate(bo);
 
 			if(bo != null)
@@ -77,6 +78,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 				UpdateVisualState();
 				OnMeasureInvalidated();
+
+				if (renderer.ContainerElement != null)
+					renderer.ContainerElement.SetAutomationPropertiesAutomationId(element.AutomationId);
 			}
 		}
 
