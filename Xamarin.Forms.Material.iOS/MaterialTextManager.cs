@@ -10,6 +10,8 @@ namespace Xamarin.Forms.Material.iOS
 {
 	internal static class MaterialTextManager
 	{
+		static double AlphaAdjustment = 0.0;
+
 		public static void Init(IMaterialEntryRenderer element, IMaterialTextField textField, IFontElement fontElement)
 		{
 			var containerScheme = textField.ContainerScheme;
@@ -49,8 +51,10 @@ namespace Xamarin.Forms.Material.iOS
 			textField.ContainerScheme.ColorScheme = (SemanticColorScheme)CreateColorScheme();
 			ApplyContainerTheme(textField);
 
-			var textColor = MaterialColors.GetEntryTextColor(element.TextColor);
-			var placeHolderColors = MaterialColors.GetPlaceHolderColor(element.PlaceholderColor, element.TextColor);
+			var adjustedTextColor = AdjustTextColor(element);
+
+			var textColor = MaterialColors.GetEntryTextColor(adjustedTextColor);
+			var placeHolderColors = MaterialColors.GetPlaceHolderColor(element.PlaceholderColor, adjustedTextColor);
 			var underlineColors = MaterialColors.GetUnderlineColor(element.PlaceholderColor);
 
 			textField.TextInput.TextColor = textColor;
@@ -63,7 +67,7 @@ namespace Xamarin.Forms.Material.iOS
 			if (Brush.IsNullOrEmpty(brush))
 			{
 				// BackgroundColor
-				textField.ActiveTextInputController.BorderFillColor = MaterialColors.CreateEntryFilledInputBackgroundColor(element.BackgroundColor, element.TextColor);
+				textField.ActiveTextInputController.BorderFillColor = MaterialColors.CreateEntryFilledInputBackgroundColor(element.BackgroundColor, adjustedTextColor);
 			}
 			else
 			{
@@ -114,9 +118,43 @@ namespace Xamarin.Forms.Material.iOS
 
 		public static void UpdateTextColor(IMaterialTextField textField, IMaterialEntryRenderer element)
 		{
-			var uIColor = MaterialColors.GetEntryTextColor(element.TextColor);
+			var adjustedTextColor = AdjustTextColor(element);
+
+			var uIColor = MaterialColors.GetEntryTextColor(adjustedTextColor);
 			textField.ContainerScheme.ColorScheme.OnSurfaceColor = uIColor;
 			textField.ContainerScheme.ColorScheme.PrimaryColor = uIColor;
+		}
+
+		static Color AdjustTextColor(IMaterialEntryRenderer element) 
+		{
+			if (Forms.IsiOS14OrNewer)
+			{
+				// This is a workaround for an iOS/Material bug; https://github.com/xamarin/Xamarin.Forms/issues/12246
+				// If we are on iOS 14, and we have multiple material text entry fields of the same color,
+				// and any of them are password fields, setting them to the same TextColor value will cause the application
+				// to hang when a password field loses focus. 
+
+				// So to work around this, we make an imperceptible adjustment to the alpha value of the color each time
+				// we set it; that way, none of the text entry fields have _exactly_ the same color and we avoid the bug
+
+				// Obviously this will start to become noticeable after the first 20 million or so text entry fields are displayed.
+				// We apologize for the inconvenience.
+
+				var elementTextColor = element.TextColor;
+				AlphaAdjustment += 0.0000001;
+
+				var adjustedAlpha = elementTextColor.A - AlphaAdjustment;
+				if (adjustedAlpha < 0)
+				{
+					// Below an alpha of 0.01 stuff on iOS doesn't show up in hit tests anyway, so it seems unlikely
+					// that the entry will get focus and cause the issue. 
+					adjustedAlpha = 0;
+				}
+
+				return new Color(elementTextColor.R, elementTextColor.G, elementTextColor.B, adjustedAlpha);
+			}
+
+			return element.TextColor;
 		}
 
 		static IColorScheming CreateColorScheme()
