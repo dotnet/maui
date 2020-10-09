@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -235,6 +236,203 @@ namespace Xamarin.Forms.Core.UnitTests
 			await testShell.Navigation.PushAsync(new ContentPage());
 			await testShell.Navigation.PushAsync(new ContentPage());
 			await testShell.Navigation.PopToRootAsync();
+		}
+
+		[Test]
+		public async Task MultiplePopsRemoveMiddlePagesBeforeFinalPop()
+		{
+			TestShell testShell = new TestShell(
+				CreateShellSection<NavigationMonitoringTab>(shellContentRoute: "rootpage")
+			);
+
+			var pageLeftOnStack = new ContentPage();
+			var tab = (NavigationMonitoringTab)testShell.CurrentItem.CurrentItem;
+			await testShell.Navigation.PushAsync(pageLeftOnStack);
+			await testShell.Navigation.PushAsync(new ContentPage());
+			await testShell.Navigation.PushAsync(new ContentPage());
+			tab.NavigationsFired.Clear();
+			await testShell.GoToAsync("../..");
+			Assert.That(testShell.CurrentState.Location.ToString(),
+				Is.EqualTo($"//rootpage/{Routing.GetRoute(pageLeftOnStack)}"));
+
+			Assert.AreEqual("OnRemovePage", tab.NavigationsFired[0]);
+			Assert.AreEqual("OnPopAsync", tab.NavigationsFired[1]);
+			Assert.AreEqual(2, tab.NavigationsFired.Count);
+		}
+
+		[Test]
+		public async Task PopToRootRemovesMiddlePagesBeforePoppingVisibleModalPages()
+		{
+			Routing.RegisterRoute("ModalTestPage", typeof(ShellModalTests.ModalTestPage));
+			TestShell testShell = new TestShell(
+				CreateShellSection<NavigationMonitoringTab>(shellContentRoute: "rootpage")
+			);
+
+			var middlePage = new ContentPage();
+			var tab = (NavigationMonitoringTab)testShell.CurrentItem.CurrentItem;
+			await testShell.Navigation.PushAsync(middlePage);
+			await testShell.GoToAsync("ModalTestPage");			
+			tab.NavigationsFired.Clear();
+						
+			await testShell.GoToAsync("../..");
+			Assert.That(testShell.CurrentState.Location.ToString(),
+				Is.EqualTo($"//rootpage"));
+
+			Assert.AreEqual("OnRemovePage", tab.NavigationsFired[0]);
+			Assert.AreEqual("OnPopModal", tab.NavigationsFired[1]);
+			Assert.AreEqual(2, tab.NavigationsFired.Count);
+		}
+
+
+
+		[Test]
+		public async Task MultiplePopsRemoveMiddlePagesBeforeFinalPopWhenUsingModal()
+		{
+			Routing.RegisterRoute("ModalTestPage", typeof(ShellModalTests.ModalTestPage));
+			TestShell testShell = new TestShell(
+				CreateShellSection<NavigationMonitoringTab>(shellContentRoute: "rootpage")
+			);
+
+			var pageLeftOnStack = new ContentPage();
+			var middlePage = new ContentPage();
+			var tab = (NavigationMonitoringTab)testShell.CurrentItem.CurrentItem;
+			await testShell.Navigation.PushAsync(pageLeftOnStack);
+			await testShell.Navigation.PushAsync(middlePage);
+			await testShell.GoToAsync("ModalTestPage");
+			tab.NavigationsFired.Clear();
+
+			await testShell.GoToAsync("../..");
+
+			Assert.That(testShell.CurrentState.Location.ToString(),
+				Is.EqualTo($"//rootpage/{Routing.GetRoute(pageLeftOnStack)}"));
+
+			Assert.AreEqual("OnRemovePage", tab.NavigationsFired[0]);
+			Assert.AreEqual("OnPopModal", tab.NavigationsFired[1]);
+			Assert.AreEqual(2, tab.NavigationsFired.Count);
+		}
+
+
+		[Test]
+		public async Task SwappingOutVisiblePageDoesntRevealPreviousPage()
+		{
+			TestShell testShell = new TestShell(
+				CreateShellSection<NavigationMonitoringTab>(shellContentRoute: "rootpage")
+			);
+
+
+			testShell.RegisterPage("firstPage");
+			testShell.RegisterPage("pageToSwapIn");
+
+			var tab = (NavigationMonitoringTab)testShell.CurrentItem.CurrentItem;
+			await testShell.GoToAsync("firstPage");
+			tab.NavigationsFired.Clear();
+
+			await testShell.GoToAsync($"../pageToSwapIn");
+			Assert.That(testShell.CurrentState.Location.ToString(),
+				Is.EqualTo($"//rootpage/pageToSwapIn"));
+
+			Assert.AreEqual("OnPushAsync", tab.NavigationsFired[0]);
+			Assert.AreEqual("OnRemovePage", tab.NavigationsFired[1]);
+			Assert.AreEqual(2, tab.NavigationsFired.Count);
+		}
+
+
+		[Test]
+		public async Task MiddleRoutesAreRemovedWithoutPoppingStack()
+		{
+			TestShell testShell = new TestShell(
+				CreateShellSection<NavigationMonitoringTab>(shellContentRoute: "rootpage")
+			);
+
+			testShell.RegisterPage("firstPage");
+			testShell.RegisterPage("secondPage");
+			testShell.RegisterPage("thirdPage");
+			testShell.RegisterPage("fourthPage");
+			testShell.RegisterPage("fifthPage");
+
+			var tab = (NavigationMonitoringTab)testShell.CurrentItem.CurrentItem;
+			await testShell.GoToAsync("firstPage/secondPage/thirdPage/fourthPage/fifthPage");
+			tab.NavigationsFired.Clear();
+
+			Assert.That(testShell.CurrentState.Location.ToString(),
+				Is.EqualTo($"//rootpage/firstPage/secondPage/thirdPage/fourthPage/fifthPage"));
+
+			await testShell.GoToAsync($"//rootpage/thirdPage/fifthPage");
+			Assert.That(testShell.CurrentState.Location.ToString(),
+				Is.EqualTo($"//rootpage/thirdPage/fifthPage"));
+
+			Assert.AreEqual("OnRemovePage", tab.NavigationsFired[0]);
+			Assert.AreEqual("OnRemovePage", tab.NavigationsFired[1]);
+			Assert.AreEqual("OnRemovePage", tab.NavigationsFired[2]);
+			Assert.AreEqual(3, tab.NavigationsFired.Count);
+		}
+
+		public class NavigationMonitoringTab : Tab
+		{
+			public List<string> NavigationsFired = new List<string>();
+ 
+			public NavigationMonitoringTab()
+			{
+				Navigation = new NavigationImpl(this, Navigation);
+			}
+
+			protected override Task OnPushAsync(Page page, bool animated)
+			{
+				NavigationsFired.Add(nameof(OnPushAsync));
+				return base.OnPushAsync(page, animated);
+			}
+
+			protected override void OnRemovePage(Page page)
+			{
+				base.OnRemovePage(page);
+				NavigationsFired.Add(nameof(OnRemovePage));
+			}
+
+			protected override Task<Page> OnPopAsync(bool animated)
+			{
+				NavigationsFired.Add(nameof(OnPopAsync));
+				return base.OnPopAsync(animated);
+			}
+
+			public class NavigationImpl : NavigationProxy
+			{
+				readonly NavigationMonitoringTab _navigationMonitoringTab;
+				readonly INavigation _navigation;
+
+				public NavigationImpl(
+					NavigationMonitoringTab navigationMonitoringTab, 
+					INavigation navigation)
+				{
+					_navigationMonitoringTab = navigationMonitoringTab;
+					_navigation = navigation;
+				}
+
+				protected override IReadOnlyList<Page> GetModalStack() => _navigation.ModalStack;
+
+				protected override IReadOnlyList<Page> GetNavigationStack() => _navigation.NavigationStack;
+
+				protected override void OnInsertPageBefore(Page page, Page before) => _navigation.InsertPageBefore(page, before);
+
+				protected override Task<Page> OnPopAsync(bool animated) => _navigation.PopAsync(animated);
+
+				protected override Task<Page> OnPopModal(bool animated)
+				{
+					_navigationMonitoringTab.NavigationsFired.Add(nameof(OnPopModal));
+					return _navigation.PopModalAsync(animated);
+				}
+
+				protected override Task OnPopToRootAsync(bool animated) => _navigation.PopToRootAsync(animated);
+				
+				protected override Task OnPushAsync(Page page, bool animated) => _navigation.PushAsync(page, animated);
+
+				protected override Task OnPushModal(Page modal, bool animated)
+				{
+					_navigationMonitoringTab.NavigationsFired.Add(nameof(OnPushModal));
+					return _navigation.PushModalAsync(modal, animated);
+				}
+
+				protected override void OnRemovePage(Page page) => _navigation.RemovePage(page);
+			}
 		}
 
 		ShellNavigatingEventArgs CreateShellNavigatedEventArgs() =>
