@@ -30,5 +30,19 @@ namespace Xamarin.Forms.Internals
 			if (bindable.GetValue(NameScopeProperty) == null)
 				bindable.SetValue(NameScopeProperty, value);
 		}
+
+		void INameScope.UnregisterName(string name)
+		{
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			if (name == "")
+				throw new ArgumentException("name was provided as empty string.", nameof(name));
+
+			if (!_names.ContainsKey(name))
+				throw new ArgumentException("name provided had not been registered.", nameof(name));
+
+			_names.Remove(name);
+		}
 	}
 }
