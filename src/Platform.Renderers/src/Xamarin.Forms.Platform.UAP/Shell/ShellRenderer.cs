@@ -65,6 +65,7 @@ namespace Xamarin.Forms.Platform.UWP
 			base.OnApplyTemplate();
 			UpdatePaneButtonColor(TogglePaneButton, !IsPaneOpen);
 			UpdatePaneButtonColor(NavigationViewBackButton, !IsPaneOpen);
+			(GetTemplateChild(TogglePaneButton) as FrameworkElement)?.SetAutomationPropertiesAutomationId("OK");
 		}
 
 		void OnPaneOpening(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
@@ -87,6 +88,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnPaneClosing(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewPaneClosingEventArgs args)
 		{
+			args.Cancel = true;
 			if (Shell != null)
 				Shell.FlyoutIsPresented = false;
 			UpdatePaneButtonColor(TogglePaneButton, true);
@@ -258,6 +260,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var shr = CreateShellHeaderRenderer(shell);
 			PaneCustomContent = shr;
+			PaneFooter = CreateShellFooterRenderer(shell);
+
 			UpdateMenuItemSource();
 			SwitchShellItem(shell.CurrentItem, false);
 			IsPaneOpen = Shell.FlyoutIsPresented;
@@ -270,7 +274,7 @@ namespace Xamarin.Forms.Platform.UWP
 			_shell.Navigated += OnShellNavigated;
 			UpdateToolBar();
 		}
-
+		
 		void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
 		{
 			UpdateToolBar();
@@ -406,6 +410,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public virtual ShellFlyoutTemplateSelector CreateShellFlyoutTemplateSelector() => new ShellFlyoutTemplateSelector();
 		public virtual ShellHeaderRenderer CreateShellHeaderRenderer(Shell shell) => new ShellHeaderRenderer(shell);
+		public virtual ShellFooterRenderer CreateShellFooterRenderer(Shell shell) => new ShellFooterRenderer(shell);
 		public virtual ShellItemRenderer CreateShellItemRenderer() => new ShellItemRenderer(this);
 		public virtual ShellSectionRenderer CreateShellSectionRenderer() => new ShellSectionRenderer();
 	}

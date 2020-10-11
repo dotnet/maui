@@ -59,13 +59,17 @@ namespace Xamarin.Forms
 
 		public static Uri ConvertToStandardFormat(string routeScheme, string routeHost, string route, Uri request)
 		{
-			string pathAndQuery = null;
+			string[] pathAndQuery;
 			if (request.IsAbsoluteUri)
-				pathAndQuery = $"{request.Host}/{request.PathAndQuery}";
+				pathAndQuery = $"{request.Host}/{request.PathAndQuery}".Split('?');
 			else
-				pathAndQuery = request.OriginalString;
+				pathAndQuery = request.OriginalString.Split('?');
 
-			var segments = new List<string>(pathAndQuery.Split(_pathSeparators, StringSplitOptions.RemoveEmptyEntries));
+			string query = null;
+			if (pathAndQuery.Length > 1)
+				query = $"?{pathAndQuery[1]}";
+
+			var segments = new List<string>(pathAndQuery[0].Split(_pathSeparators, StringSplitOptions.RemoveEmptyEntries));
 
 			if (segments[0] != routeHost)
 				segments.Insert(0, routeHost);
@@ -74,7 +78,7 @@ namespace Xamarin.Forms
 				segments.Insert(1, route);
 
 			var path = String.Join(_pathSeparator, segments.ToArray());
-			string uri = $"{routeScheme}://{path}";
+			string uri = $"{routeScheme}://{path}{query}";
 
 			return new Uri(uri);
 		}

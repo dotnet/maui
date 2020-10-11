@@ -115,8 +115,6 @@ namespace Xamarin.Forms.Platform.UWP
 					result = new Windows.Foundation.Size(request.Width, request.Height);
 				}
 
-				Layout.LayoutChildIntoBoundingRegion(_view, new Rectangle(0, 0, result.Width, result.Height));
-
 				FrameworkElement?.Measure(availableSize);
 
 				return result;

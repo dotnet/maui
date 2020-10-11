@@ -10,28 +10,61 @@ namespace Xamarin.Forms.Platform.iOS
 	public class ShellTableViewController : UITableViewController
 	{
 		readonly IShellContext _context;
-		readonly UIContainerView _headerView;
 		readonly ShellTableViewSource _source;
 		double _headerMin = 56;
 		double _headerOffset = 0;
 		double _headerSize;
 		bool _isDisposed;
 		Action<Element> _onElementSelected;
+		UIContainerView _headerView;
+		UIView _footerView;
+
 		IShellController ShellController => ((IShellController)_context.Shell);
 
-		public ShellTableViewController(IShellContext context, UIContainerView headerView, Action<Element> onElementSelected)
+		public ShellTableViewController(IShellContext context, UIContainerView headerView, Action<Element> onElementSelected) : this(context, onElementSelected)
+		{
+			HeaderView = headerView;
+		}
+
+		public ShellTableViewController(IShellContext context, Action<Element> onElementSelected)
 		{
 			_context = context;
 			_onElementSelected = onElementSelected;
-			_headerView = headerView;
 			_source = CreateShellTableViewSource();
 			_source.ScrolledEvent += OnScrolled;
 
-			if (_headerView != null)
-				_headerView.HeaderSizeChanged += OnHeaderSizeChanged;
-
 			ShellController.StructureChanged += OnStructureChanged;
 			_context.Shell.PropertyChanged += OnShellPropertyChanged;
+		}
+
+		public virtual UIContainerView HeaderView
+		{
+			get => _headerView;
+			set
+			{
+				if (_headerView == value)
+					return;
+
+				if (_headerView != null)
+					_headerView.HeaderSizeChanged -= OnHeaderFooterSizeChanged;
+
+				_headerView = value;
+
+				if (_headerView != null)
+					_headerView.HeaderSizeChanged += OnHeaderFooterSizeChanged;
+			}
+		}
+
+		public virtual UIView FooterView
+		{
+			get => _footerView;
+			set
+			{
+				if (_footerView == value)
+					return;
+
+				_footerView = value;
+			}
 		}
 
 		protected ShellTableViewSource CreateShellTableViewSource()
@@ -50,7 +83,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateVerticalScrollMode();
 		}
 
-		void OnHeaderSizeChanged(object sender, EventArgs e)
+		void OnHeaderFooterSizeChanged(object sender, EventArgs e)
 		{
 			_headerSize = HeaderMax;
 			SetHeaderContentInset();
@@ -90,18 +123,20 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var parent = TableView.Superview;
 
-			if (_headerView != null)
-				TableView.Frame =
-					new CGRect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin);
-			else
-				TableView.Frame = parent.Bounds;
+			nfloat footerHeight = 0;
 
-			if (_headerView != null)
+			if (FooterView != null)
+				footerHeight = FooterView.Frame.Height;
+
+			TableView.Frame =
+					new CGRect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight);
+
+			if (HeaderView != null)
 			{
-				var margin = _headerView.Margin;
+				var margin = HeaderView.Margin;
 				var leftMargin = margin.Left - margin.Right;
 
-				_headerView.Frame = new CGRect(leftMargin, _headerOffset + HeaderTopMargin, parent.Frame.Width, _headerSize);
+				HeaderView.Frame = new CGRect(leftMargin, _headerOffset + HeaderTopMargin, parent.Frame.Width, _headerSize);
 
 				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderTopMargin > 0 && _headerOffset < 0)
 				{
@@ -110,16 +145,16 @@ namespace Xamarin.Forms.Platform.iOS
 					CGRect rect = new CGRect(0, _headerOffset * -1, parent.Frame.Width, headerHeight);
 					var path = CGPath.FromRect(rect);
 					shapeLayer.Path = path;
-					_headerView.Layer.Mask = shapeLayer;
+					HeaderView.Layer.Mask = shapeLayer;
 				}
-				else if (_headerView.Layer.Mask != null)
-					_headerView.Layer.Mask = null;
+				else if (HeaderView.Layer.Mask != null)
+					HeaderView.Layer.Mask = null;
 			}
 		}
 
 		void SetHeaderContentInset()
 		{
-			if (_headerView != null)
+			if (HeaderView != null)
 				TableView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax, 0, 0, 0);
 			else
 				TableView.ContentInset = new UIEdgeInsets(Platform.SafeAreaInsetsForWindow.Top, 0, 0, 0);
@@ -129,7 +164,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
-			_headerView?.MeasureIfNeeded();
+			HeaderView?.MeasureIfNeeded();
 
 			TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
 			if (Forms.IsiOS11OrNewer)
@@ -152,15 +187,15 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_source != null)
 					_source.ScrolledEvent -= OnScrolled;
 
-				if (_headerView != null)
-					_headerView.HeaderSizeChanged -= OnHeaderSizeChanged;
+				if (HeaderView != null)
+					HeaderView.HeaderSizeChanged -= OnHeaderFooterSizeChanged;
 
 				_context.Shell.PropertyChanged -= OnShellPropertyChanged;
 
 				_onElementSelected = null;
 			}
 
-			
+
 			_isDisposed = true;
 			base.Dispose(disposing);
 		}
@@ -168,7 +203,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnScrolled(object sender, UIScrollView e)
 		{
-			if (_headerView == null)
+			if (HeaderView == null)
 				return;
 
 			var headerBehavior = _context.Shell.FlyoutHeaderBehavior;
@@ -195,7 +230,7 @@ namespace Xamarin.Forms.Platform.iOS
 			LayoutParallax();
 		}
 
-		double HeaderMax => _headerView?.MeasuredHeight ?? 0;
-		double HeaderTopMargin => (_headerView != null) ? _headerView.Margin.Top - _headerView.Margin.Bottom : 0;
+		double HeaderMax => HeaderView?.MeasuredHeight ?? 0;
+		double HeaderTopMargin => (HeaderView != null) ? HeaderView.Margin.Top - HeaderView.Margin.Bottom : 0;
 	}
 }
