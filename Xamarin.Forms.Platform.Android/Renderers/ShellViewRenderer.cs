@@ -101,7 +101,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (!(_context.TryGetTarget(out context)))
 					return;
 
-				_renderer = Platform.CreateRenderer(view, context);
+				_renderer = AppCompat.Platform.CreateRenderer(view, context);
 				Platform.SetRenderer(view, _renderer);
 				NativeView = _renderer.View;
 
