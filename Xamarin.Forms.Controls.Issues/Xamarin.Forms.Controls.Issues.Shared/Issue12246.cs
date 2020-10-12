@@ -27,17 +27,32 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var layout = new StackLayout() { Margin = 40, Spacing = 10, VerticalOptions = LayoutOptions.Center };
 
-			var instructions = new Label { Text = $"Focus the 'Email' Entry. Type in some text. Then focus the 'Password' Entry." +
+			var instructions = new Label
+			{
+				Text = $"Focus the 'Email' Entry. Type in some text. Then focus the 'Password' Entry." +
 				$" Type in some text. Now focus the 'Email' Entry again. The '{Success}' Label should appear. " +
-				$"If the '{Success}' Label does not appear or the application hangs, this test has failed." };
+				$"If the '{Success}' Label does not appear or the application hangs, this test has failed."
+			};
 
 			var result = new Label { Text = Success, IsVisible = false };
 
-			var entry = new Entry() { Visual = VisualMarker.Material, Keyboard = Keyboard.Email, Placeholder = "Email", 
-				TextColor = Color.Purple, AutomationId = Entry };
+			var entry = new Entry()
+			{
+				Visual = VisualMarker.Material,
+				Keyboard = Keyboard.Email,
+				Placeholder = "Email",
+				TextColor = Color.Purple,
+				AutomationId = Entry
+			};
 
-			var password = new Entry { Visual = VisualMarker.Material, IsPassword = true, Placeholder = "Password", 
-				TextColor = Color.Purple, AutomationId = Password };
+			var password = new Entry
+			{
+				Visual = VisualMarker.Material,
+				IsPassword = true,
+				Placeholder = "Password",
+				TextColor = Color.Purple,
+				AutomationId = Password
+			};
 
 			var passwordConfirmation = new Entry
 			{
@@ -47,7 +62,8 @@ namespace Xamarin.Forms.Controls.Issues
 				TextColor = Color.Purple
 			};
 
-			password.Unfocused += (sender, args) => {
+			password.Unfocused += (sender, args) =>
+			{
 				result.IsVisible = true;
 			};
 
