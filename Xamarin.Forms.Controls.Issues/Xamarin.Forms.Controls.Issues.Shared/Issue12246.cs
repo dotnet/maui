@@ -84,9 +84,11 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(Password);
 
 			RunningApp.EnterText(Entry, "test");
+			RunningApp.DismissKeyboard();
 			RunningApp.EnterText(Password, "test");
 
 			RunningApp.Tap(Entry);
+			RunningApp.DismissKeyboard();
 			RunningApp.WaitForElement(Success);
 		}
 #endif
