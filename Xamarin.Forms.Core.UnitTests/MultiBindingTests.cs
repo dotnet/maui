@@ -372,6 +372,25 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(bindable.GetValue(property), Is.EqualTo("FOO - 42 - BAZ"));
 		}
 
+		[Test]
+		public void TestConverterWithStringFormat()
+		{
+			var property = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
+			var bindable = new MockBindable();
+			var multibinding = new MultiBinding {
+				Bindings = {
+					new Binding ("foo"),
+					new Binding ("bar", stringFormat: "{0:000}"),
+					new Binding ("baz")
+				},
+				Converter = new StringConcatenationConverter(),
+				StringFormat = "Hello {0}"
+			};
+			Assert.DoesNotThrow(()=>bindable.SetBinding(property, multibinding));
+			Assert.DoesNotThrow(()=>bindable.BindingContext = new { foo = "FOO", bar = 42, baz = "BAZ" });
+			Assert.That(bindable.GetValue(property), Is.EqualTo("Hello FOO 042 BAZ"));
+		}
+
 		private Label GenerateNameLabel(string person, BindingMode mode)
 		{
 			var label = new Label();
