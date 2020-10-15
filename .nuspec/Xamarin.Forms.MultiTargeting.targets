@@ -29,7 +29,7 @@
     <Compile Remove="**\Standard\*.cs" />
     <None Include="**\Standard\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('netcoreapp')) != true ">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <Compile Remove="**\*.Win32.cs" />
     <None Include="**\*.Win32.cs" />
     <Compile Remove="**\*.xaml.cs" />
@@ -40,7 +40,7 @@
     <None Include="**\Win32\*.cs" />
   </ItemGroup>
 
-  <PropertyGroup Condition="$(TargetFramework.StartsWith('netcoreapp')) == true ">
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <UseWpf>true</UseWpf>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
