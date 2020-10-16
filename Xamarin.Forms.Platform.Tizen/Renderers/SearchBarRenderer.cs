@@ -36,6 +36,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					Control.TextChanged -= OnTextChanged;
 					Control.Activated -= OnActivated;
+					Control.EntryLayoutFocused -= OnFocused;
+					Control.EntryLayoutUnfocused -= OnUnfocused;
 				}
 			}
 			base.Dispose(disposing);
@@ -56,6 +58,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				Control.Activated += OnActivated;
 				Control.PrependMarkUpFilter(MaxLengthFilter);
 
+				Control.EntryLayoutFocused += OnFocused;
+				Control.EntryLayoutUnfocused += OnUnfocused;
 			}
 			base.OnElementChanged(e);
 		}

@@ -52,6 +52,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (entry is IEntry ie)
 				{
 					ie.TextChanged += OnTextChanged;
+					ie.EntryLayoutFocused += OnFocused;
+					ie.EntryLayoutUnfocused += OnUnfocused;
 				}
 				entry.PrependMarkUpFilter(MaxLengthFilter);
 				SetNativeControl(entry);
@@ -86,6 +88,8 @@ namespace Xamarin.Forms.Platform.Tizen
 					if (Control is IEntry ie)
 					{
 						ie.TextChanged -= OnTextChanged;
+						ie.EntryLayoutFocused -= OnFocused;
+						ie.EntryLayoutUnfocused -= OnUnfocused;
 					}
 				}
 			}

@@ -50,6 +50,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (entry is IEntry ie)
 				{
 					ie.TextBlockFocused += OnTextBlockFocused;
+					ie.EntryLayoutFocused += OnFocused;
+					ie.EntryLayoutUnfocused += OnUnfocused;
 				}
 
 				_lazyDialog = new Lazy<IDateTimeDialog>(() =>
@@ -86,6 +88,8 @@ namespace Xamarin.Forms.Platform.Tizen
 					if (Control is IEntry ie)
 					{
 						ie.TextBlockFocused -= OnTextBlockFocused;
+						ie.EntryLayoutFocused -= OnFocused;
+						ie.EntryLayoutUnfocused -= OnUnfocused;
 					}
 				}
 				if (_lazyDialog.IsValueCreated)
