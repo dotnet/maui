@@ -21,33 +21,35 @@ namespace Xamarin.Essentials
                 throw new InvalidOperationException("Unable to find main window content.");
 
             var bmp = new RenderTargetBitmap();
-            await bmp.RenderAsync(element).AsTask().ConfigureAwait(false);
 
-            return new ScreenshotResult(bmp);
+            // NOTE: Return to the main thread so we can access view properties such as
+            //       width and height. Do not ConfigureAwait!
+            await bmp.RenderAsync(element);
+
+            // get the view information first
+            var width = bmp.PixelWidth;
+            var height = bmp.PixelHeight;
+
+            // then potentially move to a different thread
+            var pixels = await bmp.GetPixelsAsync().AsTask().ConfigureAwait(false);
+
+            return new ScreenshotResult(width, height, pixels);
         }
     }
 
     public partial class ScreenshotResult
     {
-        readonly RenderTargetBitmap bmp;
-        byte[] bytes;
+        readonly byte[] bytes;
 
-        internal ScreenshotResult(RenderTargetBitmap bmp)
+        public ScreenshotResult(int width, int height, IBuffer pixels)
         {
-            this.bmp = bmp;
-
-            Width = bmp.PixelWidth;
-            Height = bmp.PixelHeight;
+            Width = width;
+            Height = height;
+            bytes = pixels?.ToArray() ?? throw new ArgumentNullException(nameof(pixels));
         }
 
         internal async Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format)
         {
-            if (bytes == null)
-            {
-                var pixels = await bmp.GetPixelsAsync().AsTask().ConfigureAwait(false);
-                bytes = pixels.ToArray();
-            }
-
             var f = format switch
             {
                 ScreenshotFormat.Jpeg => BitmapEncoder.JpegEncoderId,
