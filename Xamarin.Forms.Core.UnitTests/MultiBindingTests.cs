@@ -377,7 +377,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var property = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
 			var bindable = new MockBindable();
-			var multibinding = new MultiBinding {
+			var multibinding = new MultiBinding
+			{
 				Bindings = {
 					new Binding ("foo"),
 					new Binding ("bar", stringFormat: "{0:000}"),
@@ -386,8 +387,8 @@ namespace Xamarin.Forms.Core.UnitTests
 				Converter = new StringConcatenationConverter(),
 				StringFormat = "Hello {0}"
 			};
-			Assert.DoesNotThrow(()=>bindable.SetBinding(property, multibinding));
-			Assert.DoesNotThrow(()=>bindable.BindingContext = new { foo = "FOO", bar = 42, baz = "BAZ" });
+			Assert.DoesNotThrow(() => bindable.SetBinding(property, multibinding));
+			Assert.DoesNotThrow(() => bindable.BindingContext = new { foo = "FOO", bar = 42, baz = "BAZ" });
 			Assert.That(bindable.GetValue(property), Is.EqualTo("Hello FOO 042 BAZ"));
 		}
 
