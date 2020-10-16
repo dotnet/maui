@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		bool _isUpdateCarousel;
 		int _childCount;
 
-		ELayout _outterLayout;
+		Box _outterLayout;
 		EBox _innerContainer;
 		Scroller _scroller;
 
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (NativeView == null)
 			{
-				_outterLayout = new Native.ApplicationLayout(Forms.NativeParent)
+				_outterLayout = new Box(Forms.NativeParent)
 				{
 					AlignmentX = -1,
 					AlignmentY = -1,
@@ -47,22 +47,12 @@ namespace Xamarin.Forms.Platform.Tizen
 				};
 				_outterLayout.Show();
 
-				_index = new Index(Forms.NativeParent)
-				{
-					IsHorizontal = true,
-					AutoHide = false,
-				};
-				_index.Changed += OnIndexChanged;
-				_index.Show();
-				_outterLayout.SetContentPart(_index);
-
 				_scroller = new Scroller(Forms.NativeParent)
 				{
 					HorizontalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Invisible,
 					VerticalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Invisible,
 					HorizontalPageScrollLimit = 1,
-					PageWidth = 1,
-					PageHeight = 1,
+					HorizontalRelativePageSize = 1.0,
 					AlignmentX = -1,
 					AlignmentY = -1,
 					WeightX = 1,
@@ -82,7 +72,21 @@ namespace Xamarin.Forms.Platform.Tizen
 				_innerContainer.Show();
 				_scroller.SetContent(_innerContainer);
 
-				_outterLayout.SetBackgroundPart(_scroller);
+				_index = new Index(Forms.NativeParent)
+				{
+					IsHorizontal = true,
+					AutoHide = false,
+					AlignmentX = -1,
+					AlignmentY = -1,
+					WeightX = 1,
+					WeightY = 1,
+				};
+				_index.Changed += OnIndexChanged;
+				_index.Show();
+
+				_outterLayout.SetLayoutCallback(OnOutterLayoutUpdate);
+				_outterLayout.PackEnd(_scroller);
+				_outterLayout.PackEnd(_index);
 
 				SetNativeView(_outterLayout);
 			}
@@ -129,6 +133,16 @@ namespace Xamarin.Forms.Platform.Tizen
 			base.Dispose(disposing);
 		}
 
+		void OnOutterLayoutUpdate()
+		{
+			_scroller.Geometry = _outterLayout.Geometry;
+			var newGeometry = _outterLayout.Geometry;
+			if (Device.Idiom != TargetIdiom.Watch)
+				newGeometry.Y += (int)(newGeometry.Height * 0.9);
+			newGeometry.Height = (int)(newGeometry.Height * 0.1);
+			_index.Geometry = newGeometry;
+		}
+
 		void OnInnerLayoutUpdate()
 		{
 			if (!_isInitalized || (_layoutBound == _innerContainer.Geometry.Size && _childCount == Element.Children.Count))
@@ -140,14 +154,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			int baseX = _innerContainer.Geometry.X;
 			ERect bound = _scroller.Geometry;
 			int index = 0;
-
-			if (Device.Idiom != TargetIdiom.Watch)
-			{
-				var newGeometry = _index.Geometry;
-				newGeometry.Y = (int)(_layoutBound.Height * 0.9);
-				newGeometry.Height = (int)(_layoutBound.Height * 0.1);
-				_index.Geometry = newGeometry;
-			}
 
 			foreach (var page in Element.Children)
 			{
@@ -197,7 +203,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			_changedByScroll++;
 			int previousIndex = _pageIndex;
 			_pageIndex = _scroller.HorizontalPageIndex;
-
 			if (previousIndex != _pageIndex)
 			{
 				(Element.Children[previousIndex] as IPageController)?.SendDisappearing();
