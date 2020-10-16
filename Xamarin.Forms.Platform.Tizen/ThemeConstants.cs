@@ -115,6 +115,12 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				public const string PlaceHolderText = "elm.guide";
 			}
+
+			public class Signals
+			{
+				public const string SelectionChanged = "selection,changed";
+				public const string SelectionCleared = "selection,cleared";
+			}
 		}
 		#endregion
 

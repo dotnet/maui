@@ -1,4 +1,5 @@
 using System;
+using ElmSharp;
 using EEntry = ElmSharp.Entry;
 using IEntry = Xamarin.Forms.Platform.Tizen.Native.IEntry;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Entry;
@@ -7,6 +8,9 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public class EntryRenderer : ViewRenderer<Entry, EEntry>
 	{
+		SmartEvent _selectionCleared;
+		bool _nativeSelectionIsUpdating;
+
 		public EntryRenderer()
 		{
 			RegisterPropertyHandler(Entry.IsPasswordProperty, UpdateIsPassword);
@@ -39,12 +43,25 @@ namespace Xamarin.Forms.Platform.Tizen
 				entry.Activated += OnCompleted;
 				entry.CursorChanged += OnCursorChanged;
 
+
+				// In order to know when the selection is cleared, "selecton,cleared" event has been used.
+				// Because CursorChanged event is still invoked with the selected text when an user clears selection. It is an known issue in EFL.
+				_selectionCleared = new SmartEvent(entry, entry.RealHandle, ThemeConstants.Entry.Signals.SelectionCleared);
+				_selectionCleared.On += OnSelectionCleared;
+
 				if (entry is IEntry ie)
 				{
 					ie.TextChanged += OnTextChanged;
 				}
 				entry.PrependMarkUpFilter(MaxLengthFilter);
 				SetNativeControl(entry);
+
+				// An initial CursorPosition is set after layouting to avoid timing issue when the EditField entry is initialized.
+				Device.BeginInvokeOnMainThread(() =>
+				{
+					UpdateSelectionLength(false);
+				});
+
 			}
 			base.OnElementChanged(e);
 		}
@@ -225,42 +242,42 @@ namespace Xamarin.Forms.Platform.Tizen
 			Control.SetInputPanelReturnKeyType(Element.ReturnType.ToInputPanelReturnKeyType());
 		}
 
-		void UpdateSelectionLength()
+		void UpdateSelectionLength(bool initialize)
 		{
-			int start = GetSelectionStart();
-			int end = GetSelectionEnd(start);
+			if (initialize || _nativeSelectionIsUpdating )
+				return;
 
-			if (start != end)
+			var start = GetSelectionStart();
+			var end = GetSelectionEnd(start);
+			var selectionLength = end - start;
+
+			if (selectionLength != Element.SelectionLength)
+				SetSelectionLengthFromRenderer(selectionLength);
+
+			if (selectionLength > 0)
 			{
 				Control.SetSelectionRegion(start, end);
 			}
 			else
 			{
-				Control.CursorPosition = start;
-				Control.SelectNone();
-				Control.SetFocus(true);
+				Control.CursorPosition = Element.CursorPosition;
 			}
 		}
 
 		int GetSelectionEnd(int start)
 		{
-			int end = start;
-			int selectionLength = Element.SelectionLength;
+			var end = start;
 
 			if (Element.IsSet(Entry.SelectionLengthProperty))
-				end = Math.Max(start, Math.Min(Control.Text.Length, start + selectionLength));
-
-			int newSelectionLength = Math.Max(0, end - start);
-			if (newSelectionLength != selectionLength)
-				SetSelectionLengthFromRenderer(newSelectionLength);
+				end = Math.Min((start + Element.SelectionLength), Element.Text?.Length ?? 0);
 
 			return end;
 		}
 
 		int GetSelectionStart()
 		{
-			int start = Element.Text?.Length ?? 0;
-			int cursorPosition = Element.CursorPosition;
+			var start = Element.Text?.Length ?? 0;
+			var cursorPosition = Element.CursorPosition;
 
 			if (Element.IsSet(Entry.CursorPositionProperty))
 				start = Math.Min(start, cursorPosition);
@@ -271,27 +288,45 @@ namespace Xamarin.Forms.Platform.Tizen
 			return start;
 		}
 
-		void OnCursorChanged(object sender, EventArgs e)
+		void OnSelectionCleared(object sender, EventArgs e)
 		{
-			int cursorPosition = Element.CursorPosition;
-			int selectionStart = GetCursorPosition();
-
-			if (selectionStart != cursorPosition)
-				SetCursorPositionFromRenderer(selectionStart);
-
-			SetSelectionLengthFromRenderer(Control.GetSelection()?.Length ?? 0);
-
+			if (Control.IsFocused)
+			{
+				SetSelectionLengthFromRenderer(0);
+				SetCursorPositionFromRenderer(Control.CursorPosition);
+			}
 		}
 
-		void SetCursorPositionFromRenderer(int start)
+		void OnCursorChanged(object sender, EventArgs e)
+		{
+			var position = Control.CursorPosition;
+
+			Control.GetSelectRegion(out int start, out int end);
+
+			if (start > -1)
+			{
+				position = (start < end) ? start : end;
+				var selectionLength = Math.Abs(end - start);
+				SetSelectionLengthFromRenderer(selectionLength);
+			}
+
+			SetCursorPositionFromRenderer(position);
+		}
+
+		void SetCursorPositionFromRenderer(int position)
 		{
 			try
 			{
-				Element?.SetValueFromRenderer(Entry.CursorPositionProperty, start);
+				_nativeSelectionIsUpdating = true;
+				Element?.SetValueFromRenderer(Entry.CursorPositionProperty, position);
 			}
 			catch (Exception ex)
 			{
-				Internals.Log.Warning("Entry", $"Failed to set CursorPosition from renderer: {ex}");
+				Log.Error($"Failed to set CursorPosition from renderer: {ex}");
+			}
+			finally
+			{
+				_nativeSelectionIsUpdating = false;
 			}
 		}
 
@@ -299,23 +334,17 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			try
 			{
+				_nativeSelectionIsUpdating = true;
 				Element?.SetValueFromRenderer(Entry.SelectionLengthProperty, selectionLength);
 			}
 			catch (Exception ex)
 			{
-				Internals.Log.Warning("Entry", $"Failed to set SelectionLength from renderer: {ex}");
+				Log.Error($"Failed to set SelectionLength from renderer: {ex}");
 			}
-		}
-
-		int GetCursorPosition()
-		{
-			var selection = Control.GetSelection();
-			if (string.IsNullOrEmpty(selection))
+			finally
 			{
-				return Control.CursorPosition;
+				_nativeSelectionIsUpdating = false;
 			}
-
-			return Element.Text.IndexOf(selection, Math.Max(Control.CursorPosition - selection.Length, 0));
 		}
 
 		void UpdateIsReadOnly()
