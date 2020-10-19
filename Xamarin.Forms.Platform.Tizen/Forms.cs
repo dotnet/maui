@@ -32,6 +32,7 @@ namespace Xamarin.Forms
 	{
 		public CoreApplication Context { get; set; }
 		public bool UseDeviceIndependentPixel { get; set; }
+		public bool UseSkiaSharp { get; set; }
 		public HandlerAttribute[] Handlers { get; set; }
 		public Dictionary<Type, Func<IRegisterable>> CustomHandlers { get; set; } // for static registers
 		public Assembly[] Assemblies { get; set; }
@@ -267,6 +268,8 @@ namespace Xamarin.Forms
 
 		public static bool UseMessagingCenter => s_useMessagingCenter;
 
+		public static bool UseSkiaSharp { get; private set; }
+
 		public static DisplayResolutionUnit DisplayResolutionUnit { get; private set; }
 
 		public static int ScreenDPI => s_dpi.Value;
@@ -475,6 +478,7 @@ namespace Xamarin.Forms
 				{
 					s_platformType = options.PlatformType;
 					s_useMessagingCenter = options.UseMessagingCenter;
+					UseSkiaSharp = options.UseSkiaSharp;
 
 					if (options.Assemblies != null && options.Assemblies.Length > 0)
 					{
@@ -507,6 +511,9 @@ namespace Xamarin.Forms
 										typeof(ExportHandlerAttribute),
 										typeof(ExportFontAttribute)
 								});
+
+								if (UseSkiaSharp)
+									RegisterSkiaSharpRenderers();
 							}
 						}
 						else
@@ -521,6 +528,9 @@ namespace Xamarin.Forms
 								typeof(ExportHandlerAttribute),
 								typeof(ExportFontAttribute)
 							});
+
+							if (UseSkiaSharp)
+								RegisterSkiaSharpRenderers();
 						}
 					}
 
@@ -563,6 +573,14 @@ namespace Xamarin.Forms
 				s_platformType = PlatformType.Lightweight;
 
 			IsInitialized = true;
+		}
+
+		static void RegisterSkiaSharpRenderers()
+		{
+			// Register all skiasharp-based rednerers here.
+			Registrar.Registered.Register(typeof(Frame), typeof(Platform.Tizen.SkiaSharp.FrameRenderer));
+			Registrar.Registered.Register(typeof(BoxView), typeof(Platform.Tizen.SkiaSharp.BoxViewRenderer));
+			Registrar.Registered.Register(typeof(Image), typeof(Platform.Tizen.SkiaSharp.ImageRenderer));
 		}
 
 		static Color GetAccentColor(string profile)

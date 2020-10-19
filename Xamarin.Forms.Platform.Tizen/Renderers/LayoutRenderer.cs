@@ -1,13 +1,19 @@
+using System;
 using System.ComponentModel;
+using SkiaSharp.Views.Tizen;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	/// <summary>
 	/// Renderer of a Layout.
 	/// </summary>
-	public class LayoutRenderer : ViewRenderer<Layout, Native.Canvas>
+	public class LayoutRenderer : ViewRenderer<Layout, Native.Canvas>, SkiaSharp.IBackgroundCanvas
 	{
 		bool _layoutUpdatedRegistered = false;
+
+		Lazy<SKCanvasView> _backgroundCanvas;
+
+		public SKCanvasView BackgroundCanvas => _backgroundCanvas.Value;
 
 		public void RegisterOnLayoutUpdated()
 		{
@@ -25,6 +31,20 @@ namespace Xamarin.Forms.Platform.Tizen
 				SetNativeControl(new Native.Canvas(Forms.NativeParent));
 			}
 
+			if (Forms.UseSkiaSharp)
+			{
+				Control.LayoutUpdated += OnBackgroundLayoutUpdated;
+				_backgroundCanvas = new Lazy<SKCanvasView>(() =>
+				{
+					var canvas = new SKCanvasView(Forms.NativeParent);
+					canvas.PassEvents = true;
+					canvas.PaintSurface += OnBackgroundPaint;
+					canvas.Show();
+					Control.Children.Add(canvas);
+					canvas.Lower();
+					return canvas;
+				});
+			}
 			base.OnElementChanged(e);
 		}
 
@@ -46,8 +66,19 @@ namespace Xamarin.Forms.Platform.Tizen
 					Control.LayoutUpdated -= OnLayoutUpdated;
 					_layoutUpdatedRegistered = false;
 				}
-			}
 
+				if (Forms.UseSkiaSharp)
+				{
+					Control.LayoutUpdated -= OnBackgroundLayoutUpdated;
+
+					if (_backgroundCanvas.IsValueCreated)
+					{
+						BackgroundCanvas.PaintSurface -= OnBackgroundPaint;
+						BackgroundCanvas.Unrealize();
+						_backgroundCanvas = null;
+					}
+				}
+			}
 			base.Dispose(disposing);
 		}
 
@@ -84,6 +115,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				GestureDetector.InputTransparent = Element.InputTransparent;
 			}
 		}
+
 		protected override void UpdateLayout()
 		{
 			if (!_layoutUpdatedRegistered)
@@ -93,6 +125,32 @@ namespace Xamarin.Forms.Platform.Tizen
 			else
 			{
 				ApplyTransformation();
+			}
+		}
+
+		protected virtual void OnBackgroundPaint(object sender, SKPaintSurfaceEventArgs e)
+		{
+			var canvas = e.Surface.Canvas;
+			canvas.Clear();
+
+			var bounds = e.Info.Rect;
+			var paint = Element.GetBackgroundPaint(bounds);
+
+			if (paint != null)
+			{
+				using (paint)
+				using (var path = bounds.ToPath())
+				{
+					canvas.DrawPath(path, paint);
+				}
+			}
+		}
+
+		protected virtual void OnBackgroundLayoutUpdated(object sender, Native.LayoutEventArgs e)
+		{
+			if (_backgroundCanvas.IsValueCreated)
+			{
+				BackgroundCanvas.Geometry = Control.Geometry;
 			}
 		}
 
