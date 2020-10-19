@@ -16,7 +16,7 @@ namespace Xamarin.Forms
 
 		event EventHandler<BackButtonPressedEventArgs> BackButtonPressed;
 	}
-	
+
 	[Obsolete("IMasterDetailPageController is obsolete as of version 5.0.0. Please use IFlyoutPageController instead.")]
 	public interface IMasterDetailPageController
 	{

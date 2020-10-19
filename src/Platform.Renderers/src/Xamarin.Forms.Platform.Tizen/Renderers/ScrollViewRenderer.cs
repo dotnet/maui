@@ -4,37 +4,31 @@ using ElmSharp;
 using ERect = ElmSharp.Rect;
 using NBox = Xamarin.Forms.Platform.Tizen.Native.Box;
 using NScroller = Xamarin.Forms.Platform.Tizen.Native.Scroller;
+using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.ScrollView;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	/// <summary>
-	/// This class provides a Renderer for a ScrollView widget.
-	/// </summary>
 	public class ScrollViewRenderer : ViewRenderer<ScrollView, NScroller>
 	{
 		NBox _scrollCanvas;
+		int _defaultVerticalStepSize;
+		int _defaultHorizontalStepSize;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.ScrollViewRenderer"/> class.
-		/// </summary>
 		public ScrollViewRenderer()
 		{
 			RegisterPropertyHandler("Content", FillContent);
+			RegisterPropertyHandler(ScrollView.OrientationProperty, UpdateOrientation);
+			RegisterPropertyHandler(ScrollView.VerticalScrollBarVisibilityProperty, UpdateVerticalScrollBarVisibility);
+			RegisterPropertyHandler(ScrollView.HorizontalScrollBarVisibilityProperty, UpdateHorizontalScrollBarVisibility);
+			RegisterPropertyHandler(Specific.VerticalScrollStepProperty, UpdateVerticalScrollStep);
+			RegisterPropertyHandler(Specific.HorizontalScrollStepProperty, UpdateHorizontalScrollStep);
 		}
 
-		/// <summary>
-		/// Provide Native cotnent area to place child content
-		/// </summary>
-		/// <returns>Rect of Content area</returns>
 		public override ERect GetNativeContentGeometry()
 		{
 			return _scrollCanvas.Geometry;
 		}
 
-		/// <summary>
-		/// Handles the element change event.
-		/// </summary>
-		/// <param name="e">Event arguments.</param>
 		protected override void OnElementChanged(ElementChangedEventArgs<ScrollView> e)
 		{
 			if (Control == null)
@@ -44,6 +38,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				_scrollCanvas = new NBox(Control);
 				_scrollCanvas.LayoutUpdated += OnContentLayoutUpdated;
 				Control.SetContent(_scrollCanvas);
+				_defaultVerticalStepSize = Control.VerticalStepSize;
+				_defaultHorizontalStepSize = Control.HorizontalStepSize;
 			}
 
 			if (e.OldElement != null)
@@ -56,14 +52,23 @@ namespace Xamarin.Forms.Platform.Tizen
 				(e.NewElement as IScrollViewController).ScrollToRequested += OnScrollRequested;
 			}
 
-			UpdateAll();
-
 			base.OnElementChanged(e);
+		}
+
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (ScrollView.ContentSizeProperty.PropertyName == e.PropertyName)
+			{
+				UpdateContentSize();
+			}
+			else
+			{
+				base.OnElementPropertyChanged(sender, e);
+			}
 		}
 
 		protected virtual NScroller CreateNativeControl()
 		{
-
 			if (Device.Idiom == TargetIdiom.Watch)
 			{
 				return new Native.Watch.WatchScroller(Forms.NativeParent, Forms.CircleSurface);
@@ -112,13 +117,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			UpdateContentSize();
 		}
 
-		void UpdateAll()
-		{
-			UpdateOrientation();
-			UpdateVerticalScrollBarVisibility();
-			UpdateHorizontalScrollBarVisibility();
-		}
-
 		void UpdateOrientation()
 		{
 			switch (Element.Orientation)
@@ -156,28 +154,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			});
 		}
 
-		/// <summary>
-		/// An event raised on element's property change.
-		/// </summary>
-		/// <param name="sender">Sender.</param>
-		/// <param name="e">Event arguments</param>
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			if (ScrollView.OrientationProperty.PropertyName == e.PropertyName)
-			{
-				UpdateOrientation();
-			}
-			else if (ScrollView.ContentSizeProperty.PropertyName == e.PropertyName)
-			{
-				UpdateContentSize();
-			}
-			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
-				UpdateVerticalScrollBarVisibility();
-			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
-				UpdateHorizontalScrollBarVisibility();
-
-			base.OnElementPropertyChanged(sender, e);
-		}
 
 		protected void OnScrolled(object sender, EventArgs e)
 		{
@@ -211,6 +187,24 @@ namespace Xamarin.Forms.Platform.Tizen
 			var orientation = Element.Orientation;
 			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
 				Control.HorizontalScrollBarVisiblePolicy = Element.HorizontalScrollBarVisibility.ToNative();
+		}
+
+		void UpdateVerticalScrollStep(bool initialize)
+		{
+			var step = Specific.GetVerticalScrollStep(Element);
+			if (initialize && step == -1)
+				return;
+
+			Control.VerticalStepSize = step != -1 ? Forms.ConvertToScaledPixel(step) : _defaultVerticalStepSize;
+		}
+
+		void UpdateHorizontalScrollStep(bool initialize)
+		{
+			var step = Specific.GetHorizontalScrollStep(Element);
+			if (initialize && step == -1)
+				return;
+
+			Control.HorizontalStepSize = step != -1 ? Forms.ConvertToScaledPixel(step) : _defaultHorizontalStepSize;
 		}
 	}
 

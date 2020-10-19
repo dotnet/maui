@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls.XamStore
 	{
 		public FlyoutFooter()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 	}
 }

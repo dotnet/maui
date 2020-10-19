@@ -8,6 +8,7 @@ namespace Xamarin.Forms.Platform.MacOS
 	public class BoxViewRenderer : ViewRenderer<BoxView, NSView>
 	{
 		CGSize _previousSize;
+		bool _hasBackgrondBrush;
 
 		public override void Layout()
 		{
@@ -40,22 +41,23 @@ namespace Xamarin.Forms.Platform.MacOS
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
+
 			if (e.PropertyName == BoxView.ColorProperty.PropertyName)
 				SetBackgroundColor(Element.Color);
-			if (e.PropertyName == BoxView.ColorProperty.PropertyName)
-				SetBackground(Element.Background);
 			else if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
 				SetCornerRadius(Element.CornerRadius);
+			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+				SetBackground(Element.Background);
 			else if (e.PropertyName == VisualElement.IsVisibleProperty.PropertyName && Element.IsVisible)
 				SetNeedsDisplayInRect(Bounds);
 		}
 
-		protected override void SetBackgroundColor (Color color)
+		protected override void SetBackgroundColor(Color color)
 		{
 			if (Element == null || Control == null)
 				return;
 
-			(Control as FormsBoxView)?.SetColor (color.ToNSColor ());
+			(Control as FormsBoxView)?.SetColor(color.ToNSColor());
 		}
 
 		protected override void SetBackground(Brush brush)
@@ -63,9 +65,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (Element == null)
 				return;
 
-			if (Brush.IsNullOrEmpty(brush))
-				SetBackgroundColor(Element.BackgroundColor);
-			else
+			if (!Brush.IsNullOrEmpty(brush) || _hasBackgrondBrush)
 			{
 				if (brush is SolidColorBrush solidColorBrush)
 					(Control as FormsBoxView)?.SetColor(solidColorBrush.Color.ToNSColor());
@@ -74,6 +74,8 @@ namespace Xamarin.Forms.Platform.MacOS
 					var backgroundImage = this.GetBackgroundImage(brush);
 					(Control as FormsBoxView)?.SetBrush(backgroundImage != null ? NSColor.FromPatternImage(backgroundImage) : NSColor.Clear);
 				}
+
+				_hasBackgrondBrush = true;
 			}
 		}
 

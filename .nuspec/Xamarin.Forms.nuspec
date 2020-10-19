@@ -32,6 +32,7 @@
       </group>
       <group targetFramework="tizen40">
         <dependency id="Tizen.NET" version="4.0.0"/>
+        <dependency id="SkiaSharp.Views" version="2.80.2"/>
       </group>
     </dependencies>
 

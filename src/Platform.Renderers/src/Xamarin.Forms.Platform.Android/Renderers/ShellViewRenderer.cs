@@ -1,15 +1,15 @@
-﻿using Android.Content;
+﻿using System;
+using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Google.Android.Material.AppBar;
-using System;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	 // This is used to monitor an xplat View and apply layout changes
+	// This is used to monitor an xplat View and apply layout changes
 	internal class ShellViewRenderer
 	{
 		IVisualElementRenderer _renderer;
@@ -67,10 +67,10 @@ namespace Xamarin.Forms.Platform.Android
 			if (width == -1)
 				width = request.Request.Width;
 
-			if(layoutParams.Width != LP.MatchParent)
+			if (layoutParams.Width != LP.MatchParent)
 				layoutParams.Width = (int)context.ToPixels(width);
 
-			if(layoutParams.Height != LP.MatchParent)
+			if (layoutParams.Height != LP.MatchParent)
 				layoutParams.Height = (int)context.ToPixels(height);
 
 			NativeView.LayoutParameters = layoutParams;
@@ -105,7 +105,7 @@ namespace Xamarin.Forms.Platform.Android
 				Platform.SetRenderer(view, _renderer);
 				NativeView = _renderer.View;
 
-				if(View is VisualElement ve)
+				if (View is VisualElement ve)
 					ve.MeasureInvalidated += OnViewSizeChanged;
 				else
 					View.SizeChanged += OnViewSizeChanged;

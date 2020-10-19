@@ -34,6 +34,8 @@ namespace Xamarin.Forms.Platform.Tizen
 					if (Control is IEntry ie)
 					{
 						ie.TextBlockFocused -= OnTextBlockFocused;
+						ie.EntryLayoutFocused -= OnFocused;
+						ie.EntryLayoutUnfocused -= OnUnfocused;
 						if (Device.Idiom == TargetIdiom.TV)
 						{
 							ie.EntryLayoutFocused -= OnLayoutFocused;
@@ -55,6 +57,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (entry is IEntry ie)
 				{
 					ie.TextBlockFocused += OnTextBlockFocused;
+					ie.EntryLayoutFocused += OnFocused;
+					ie.EntryLayoutUnfocused += OnUnfocused;
 
 					if (Device.Idiom == TargetIdiom.TV)
 					{

@@ -271,9 +271,9 @@ namespace Xamarin.Forms.Core.UnitTests
 			var middlePage = new ContentPage();
 			var tab = (NavigationMonitoringTab)testShell.CurrentItem.CurrentItem;
 			await testShell.Navigation.PushAsync(middlePage);
-			await testShell.GoToAsync("ModalTestPage");			
+			await testShell.GoToAsync("ModalTestPage");
 			tab.NavigationsFired.Clear();
-						
+
 			await testShell.GoToAsync("../..");
 			Assert.That(testShell.CurrentState.Location.ToString(),
 				Is.EqualTo($"//rootpage"));
@@ -370,7 +370,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public class NavigationMonitoringTab : Tab
 		{
 			public List<string> NavigationsFired = new List<string>();
- 
+
 			public NavigationMonitoringTab()
 			{
 				Navigation = new NavigationImpl(this, Navigation);
@@ -400,7 +400,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				readonly INavigation _navigation;
 
 				public NavigationImpl(
-					NavigationMonitoringTab navigationMonitoringTab, 
+					NavigationMonitoringTab navigationMonitoringTab,
 					INavigation navigation)
 				{
 					_navigationMonitoringTab = navigationMonitoringTab;
@@ -422,7 +422,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				}
 
 				protected override Task OnPopToRootAsync(bool animated) => _navigation.PopToRootAsync(animated);
-				
+
 				protected override Task OnPushAsync(Page page, bool animated) => _navigation.PushAsync(page, animated);
 
 				protected override Task OnPushModal(Page modal, bool animated)

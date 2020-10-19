@@ -546,7 +546,7 @@ namespace Xamarin.Forms
 			bool weveGoneTotalModal = currentNavStack.Count > _navStack.Count;
 			int whereToStartNavigation = 0;
 
-			if(request.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
+			if (request.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 				whereToStartNavigation = currentNavStack.Count - 1;
 
 			for (int i = whereToStartNavigation; i < globalRoutes.Count; i++)
@@ -596,7 +596,7 @@ namespace Xamarin.Forms
 				}
 				else
 				{
-					if(activeModalNavigationPage != null)
+					if (activeModalNavigationPage != null)
 						await activeModalNavigationPage.Navigation.PushAsync(modalPage, animate ?? IsNavigationAnimated(modalPage));
 					else
 						await Navigation.PushModalAsync(modalPage, isAnimated);

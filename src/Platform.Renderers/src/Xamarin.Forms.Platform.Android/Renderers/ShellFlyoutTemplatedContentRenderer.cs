@@ -357,7 +357,7 @@ namespace Xamarin.Forms.Platform.Android
 					_appBar.RemoveView(_headerView);
 				}
 
-				if(_rootView != null && _footerView?.NativeView != null)
+				if (_rootView != null && _footerView?.NativeView != null)
 					_rootView.RemoveView(_footerView.NativeView);
 
 				if (_recycler != null)

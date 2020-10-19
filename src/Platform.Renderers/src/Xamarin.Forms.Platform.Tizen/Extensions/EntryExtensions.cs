@@ -1,4 +1,7 @@
-﻿using ElmSharp;
+﻿using System;
+using System.Runtime.InteropServices;
+using ElmSharp;
+using EEntry = ElmSharp.Entry;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -24,6 +27,12 @@ namespace Xamarin.Forms.Platform.Tizen
 					throw new System.NotImplementedException($"ReturnType {returnType} not supported");
 			}
 		}
+		public static void GetSelectRegion(this EEntry entry, out int start, out int end)
+		{
+			elm_entry_select_region_get(entry.RealHandle, out start, out end);
+		}
 
+		[DllImport("libelementary.so.1")]
+		static extern void elm_entry_select_region_get(IntPtr obj, out int start, out int end);
 	}
 }
