@@ -20,6 +20,9 @@ namespace Xamarin.Essentials
 #if __IOS__ || __TVOS__
         public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
             => WebAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
+
+        public static bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
+            => WebAuthenticator.OpenUrl(new Uri(userActivity?.WebPageUrl?.AbsoluteString));
 #endif
 
 #if __IOS__

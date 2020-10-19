@@ -56,6 +56,32 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="ContinueUserActivity">
+      <MemberSignature Language="C#" Value="public static bool ContinueUserActivity (UIKit.UIApplication application, Foundation.NSUserActivity userActivity, UIKit.UIApplicationRestorationHandler completionHandler);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool ContinueUserActivity(class UIKit.UIApplication application, class Foundation.NSUserActivity userActivity, class UIKit.UIApplicationRestorationHandler completionHandler) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.ContinueUserActivity(UIKit.UIApplication,Foundation.NSUserActivity,UIKit.UIApplicationRestorationHandler)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="application" Type="UIKit.UIApplication" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos" />
+        <Parameter Name="userActivity" Type="Foundation.NSUserActivity" Index="1" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos" />
+        <Parameter Name="completionHandler" Type="UIKit.UIApplicationRestorationHandler" Index="2" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos" />
+      </Parameters>
+      <Docs>
+        <param name="application">The application.</param>
+        <param name="userActivity">The user activity instance.</param>
+        <param name="completionHandler">The completion handler.</param>
+        <summary>Callback forwarded from the equivalent iOS AppDelegate method.</summary>
+        <returns>True if the callback was handled.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
     <Member MemberName="CurrentActivity">
       <MemberSignature Language="C#" Value="public static Android.App.Activity CurrentActivity { get; }" />
       <MemberSignature Language="ILAsm" Value=".property class Android.App.Activity CurrentActivity" />
