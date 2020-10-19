@@ -19,15 +19,11 @@
     <ProjectReference Include="..\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj">
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">
+  <ItemGroup>
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.1.0.1" />
     <PackageReference Include="Xamarin.Google.Android.Material" Version="1.0.0.1" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0.1" />
-    <PackageReference Include="Xamarin.AndroidX.Migration">
-      <Version>1.0.0.1</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="71.1610.0" />
+    <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="117.0.0" />
+    <PackageReference Include="Xamarin.AndroidX.Migration" Version="1.0.0.1" />
   </ItemGroup>
 </Project>
