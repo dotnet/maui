@@ -248,7 +248,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateSelectionLength(bool initialize)
 		{
-			if (initialize || _nativeSelectionIsUpdating )
+			if (initialize || _nativeSelectionIsUpdating)
 				return;
 
 			var start = GetSelectionStart();

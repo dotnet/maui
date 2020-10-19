@@ -4,7 +4,7 @@ namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 
 	public static class ScrollView
 	{
-		public static readonly BindableProperty VerticalScrollStepProperty = BindableProperty.Create("VerticalScrollStep", typeof(int), typeof(FormsElement), -1, 
+		public static readonly BindableProperty VerticalScrollStepProperty = BindableProperty.Create("VerticalScrollStep", typeof(int), typeof(FormsElement), -1,
 			coerceValue: (bindable, value) =>
 			{
 				return ((int)value < 0) ? -1 : value;
