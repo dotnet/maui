@@ -99,7 +99,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.Mac,Version=v2.0", FrameworkDisplayName="Xamarin.Mac")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+a0b12b46c8f7c223eea5c943deaec9724fe5098e")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>

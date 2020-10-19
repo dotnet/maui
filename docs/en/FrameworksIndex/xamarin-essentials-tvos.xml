@@ -748,6 +748,7 @@
       <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
+      <Member Id="M:Xamarin.Essentials.Platform.ContinueUserActivity(UIKit.UIApplication,Foundation.NSUserActivity,UIKit.UIApplicationRestorationHandler)" />
       <Member Id="M:Xamarin.Essentials.Platform.GetCurrentUIViewController" />
       <Member Id="M:Xamarin.Essentials.Platform.OpenUrl(UIKit.UIApplication,Foundation.NSUrl,Foundation.NSDictionary)" />
     </Type>
