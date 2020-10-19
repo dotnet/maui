@@ -29,23 +29,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			// - An enumeration value
 			// All other cases should throw
 
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-
-				//there's a test not resetting the values correctly, but can't find which one...
-#pragma warning disable 0618
-				Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
-				Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
-#pragma warning restore 0618
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Device.PlatformServices = null;
-			}
+			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
+			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[TestCase(false)]
 			[TestCase(true)]

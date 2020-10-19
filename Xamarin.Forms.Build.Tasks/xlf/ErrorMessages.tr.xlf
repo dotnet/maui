@@ -162,6 +162,11 @@
         <target state="translated">x:DataType için bir dize sabit değeri, {{x:Type}} işaretlemesi veya {{x:Nul}l} bekleniyor.</target>
         <note />
       </trans-unit>
+      <trans-unit id="XKeyNotLiteral">
+        <source>x:Key expects a string literal.</source>
+        <target state="new">x:Key expects a string literal.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="XStaticResolution">
         <source>x:Static: unable to find a public -- or accessible internal -- static field, static property, const or enum value named "{0}" in "{1}".</source>
         <target state="translated">x:Static: "{1}" içinde "{0}" adlı genel -- veya erişilebilir, dahili -- statik alan, statik özellik, sabit veya sabit listesi değeri bulunamıyor.</target>

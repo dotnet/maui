@@ -30,6 +30,20 @@ namespace Xamarin.Forms.Xaml.UnitTests
 #pragma warning restore 0618
 			}
 
+			[TearDown]
+			public void TearDown()
+			{
+				Device.PlatformServices = null;
+				XamlLoader.FallbackTypeResolver = null;
+				XamlLoader.ValueCreatedCallback = null;
+				XamlLoader.InstantiationFailedCallback = null;
+#pragma warning disable 0618
+				Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
+				Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
+#pragma warning restore 0618
+
+			}
+
 			[TestCase(false)]
 			[TestCase(true)]
 			public void XamlContentIsReplaced(bool useCompiledXaml)

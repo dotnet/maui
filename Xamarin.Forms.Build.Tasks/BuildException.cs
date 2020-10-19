@@ -88,6 +88,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public static BuildExceptionCode ResourceMissing = new BuildExceptionCode("XFC0124", nameof(ResourceMissing), "");
 		public static BuildExceptionCode ResourceDictDuplicateKey = new BuildExceptionCode("XFC0125", nameof(ResourceDictDuplicateKey), "");
 		public static BuildExceptionCode ResourceDictMissingKey = new BuildExceptionCode("XFC0126", nameof(ResourceDictMissingKey), "");
+		public static BuildExceptionCode XKeyNotLiteral = new BuildExceptionCode("XFC0127", nameof(XKeyNotLiteral), "");
 
 		public string Code { get; private set; }
 		public string ErrorMessageKey { get; private set; }

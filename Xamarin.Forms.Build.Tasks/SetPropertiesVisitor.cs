@@ -1429,7 +1429,8 @@ namespace Xamarin.Forms.Build.Tasks
 
 			if (node.Properties.ContainsKey(XmlName.xKey))
 			{
-				var key = (node.Properties[XmlName.xKey] as ValueNode).Value as string;
+				var valueNode = node.Properties[XmlName.xKey] as ValueNode ?? throw new BuildException(XKeyNotLiteral, lineInfo, null);
+				var key = (valueNode).Value as string;
 				if (!resourceNamesInUse.TryGetValue(parent, out var names))
 					resourceNamesInUse[parent] = (names = new List<string>());
 				if (names.Contains(key))
@@ -1482,7 +1483,8 @@ namespace Xamarin.Forms.Build.Tasks
 			if (node.Properties.ContainsKey(XmlName.xKey))
 			{
 				var names = resourceNamesInUse[parent];
-				var key = (node.Properties[XmlName.xKey] as ValueNode).Value as string;
+				var valueNode = node.Properties[XmlName.xKey] as ValueNode ?? throw new BuildException(XKeyNotLiteral, lineInfo, null);
+				var key = (valueNode).Value as string;
 				names.Add(key);
 
 				//				IL_0014:  ldstr "key"

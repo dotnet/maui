@@ -162,6 +162,11 @@
         <target state="translated">x:DataType에는 {{x:Type}} 태그 또는 {{x:Nul}l} 문자열 리터럴이 필요합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="XKeyNotLiteral">
+        <source>x:Key expects a string literal.</source>
+        <target state="new">x:Key expects a string literal.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="XStaticResolution">
         <source>x:Static: unable to find a public -- or accessible internal -- static field, static property, const or enum value named "{0}" in "{1}".</source>
         <target state="translated">x:Static: "{1}"에서 이름이 "{0}"인 public 또는 액세스 가능한 내부 정적 필드, 정적 속성, 상수 또는 열거형 값을 찾을 수 없습니다.</target>
