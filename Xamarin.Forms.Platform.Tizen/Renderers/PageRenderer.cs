@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Specialized;
 using ElmSharp.Wearable;
+using SkiaSharp.Views.Tizen;
 using Xamarin.Forms.Platform.Tizen.Native.Watch;
 using EColor = ElmSharp.Color;
 
@@ -9,17 +10,14 @@ namespace Xamarin.Forms.Platform.Tizen
 	/// <summary>
 	/// Renderer of ContentPage.
 	/// </summary>
-	public class PageRenderer : VisualElementRenderer<Page>
+	public class PageRenderer : VisualElementRenderer<Page>, SkiaSharp.IBackgroundCanvas
 	{
-		/// <summary>
-		/// Native control which holds the contents.
-		/// </summary>
 		Native.Page _page;
 		Lazy<MoreOption> _moreOption;
+		Lazy<SKCanvasView> _backgroundCanvas;
 
-		/// <summary>
-		/// Default constructor.
-		/// </summary>
+		public SKCanvasView BackgroundCanvas => _backgroundCanvas.Value;
+
 		public PageRenderer()
 		{
 			RegisterPropertyHandler(Page.BackgroundImageSourceProperty, UpdateBackgroundImage);
@@ -32,6 +30,20 @@ namespace Xamarin.Forms.Platform.Tizen
 				_page = new Native.Page(Forms.NativeParent);
 				_page.LayoutUpdated += OnLayoutUpdated;
 				SetNativeView(_page);
+			}
+
+			if (Forms.UseSkiaSharp)
+			{
+				_backgroundCanvas = new Lazy<SKCanvasView>(() =>
+				{
+					var canvas = new SKCanvasView(Forms.NativeParent);
+					canvas.PassEvents = true;
+					canvas.PaintSurface += OnBackgroundPaint;
+					canvas.Show();
+					_page.Children.Add(canvas);
+					canvas.Lower();
+					return canvas;
+				});
 			}
 			base.OnElementChanged(e);
 		}
@@ -75,6 +87,13 @@ namespace Xamarin.Forms.Platform.Tizen
 						_moreOption.Value.Opened -= SendMoreOptionOpened;
 						_moreOption.Value.Items.Clear();
 						_moreOption.Value.Unrealize();
+					}
+
+					if (_backgroundCanvas.IsValueCreated)
+					{
+						BackgroundCanvas.PaintSurface -= OnBackgroundPaint;
+						BackgroundCanvas.Unrealize();
+						_backgroundCanvas = null;
 					}
 				}
 			}
@@ -144,6 +163,29 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (_moreOption != null && _moreOption.IsValueCreated)
 			{
 				_moreOption.Value.Geometry = _page.Geometry;
+			}
+
+			if (_backgroundCanvas != null && _backgroundCanvas.IsValueCreated)
+			{
+				BackgroundCanvas.Geometry = _page.Geometry;
+			}
+		}
+
+		void OnBackgroundPaint(object sender, SKPaintSurfaceEventArgs e)
+		{
+			var canvas = e.Surface.Canvas;
+			canvas.Clear();
+
+			var bounds = e.Info.Rect;
+			var paint = Element.GetBackgroundPaint(bounds);
+
+			if (paint != null)
+			{
+				using (paint)
+				using (var path = bounds.ToPath())
+				{
+					canvas.DrawPath(path, paint);
+				}
 			}
 		}
 

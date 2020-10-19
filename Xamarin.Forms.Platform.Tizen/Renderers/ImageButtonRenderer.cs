@@ -38,6 +38,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				_button.Pressed += OnPressed;
 				_button.Released += OnReleased;
 				_button.Show();
+				_button.Focused += OnFocused;
+				_button.Unfocused += OnUnfocused;
 				Control.PackEnd(_round);
 				Control.PackEnd(_image);
 				Control.PackEnd(_border);
@@ -74,6 +76,8 @@ namespace Xamarin.Forms.Platform.Tizen
 					_button.Clicked -= OnClicked;
 					_button.Pressed -= OnPressed;
 					_button.Released -= OnReleased;
+					_button.Focused -= OnFocused;
+					_button.Unfocused -= OnUnfocused;
 					_button = null;
 				}
 			}

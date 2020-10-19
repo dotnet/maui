@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Linq;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using System.Threading;
-using System.ComponentModel;
-using System.Threading.Tasks;
 
 
 #if UITEST
@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Toggle Header/Footer Template",
 				Command = new Command(() =>
 				{
-					if(FlyoutHeaderTemplate == null)
+					if (FlyoutHeaderTemplate == null)
 					{
 						FlyoutHeaderTemplate = new DataTemplate(() => new Label() { Text = "Header Template" });
 						FlyoutFooterTemplate = new DataTemplate(() => new Label() { Text = "Footer Template" });

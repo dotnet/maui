@@ -605,7 +605,7 @@ namespace Xamarin.Forms
 					{
 						// remove all non visible pages first so the transition just smoothly goes from
 						// currently visible modal to base page
-						if(navigationRequest.Request.GlobalRoutes.Count == 0)
+						if (navigationRequest.Request.GlobalRoutes.Count == 0)
 						{
 							for (int i = currentShellSection.Stack.Count - 1; i >= 1; i--)
 								currentShellSection.Navigation.RemovePage(currentShellSection.Stack[i]);

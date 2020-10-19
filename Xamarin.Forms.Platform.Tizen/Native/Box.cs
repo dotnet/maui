@@ -33,11 +33,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 #endif
 
 		/// <summary>
-		/// The last processed geometry of the Box which was reported from the native layer.
-		/// </summary>
-		ERect _previousGeometry;
-
-		/// <summary>
 		/// Notifies that the layout has been updated.
 		/// </summary>
 		public event EventHandler<LayoutEventArgs> LayoutUpdated;
@@ -52,21 +47,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			if (null != LayoutUpdated)
 			{
-				var g = Geometry;
-
-				if (0 == g.Width || 0 == g.Height || g == _previousGeometry)
-				{
-					// ignore irrelevant dimensions
-					return;
-				}
-
-				LayoutUpdated(this, new LayoutEventArgs()
-				{
-					Geometry = g,
-				}
-				);
-
-				_previousGeometry = g;
+				LayoutUpdated(this, new LayoutEventArgs() { Geometry = Geometry });
 			}
 		}
 	}

@@ -138,6 +138,15 @@ namespace Xamarin.Forms.Platform.Tizen
 			DependencyService.Register<INativeBindingService, NativeBindingService>();
 			DependencyService.Register<INativeValueConverterService, NativeValueConverterService>();
 
+			//SkiaSharp Renderers
+			if (Forms.UseSkiaSharp)
+			{
+				// Register all skiasharp-based rednerers here for StaticRegistrar
+				Registered.Register(typeof(Frame), () => new SkiaSharp.FrameRenderer());
+				Registered.Register(typeof(BoxView), () => new SkiaSharp.BoxViewRenderer());
+				Registered.Register(typeof(Image), () => new SkiaSharp.ImageRenderer());
+			}
+
 			//Custom Handlers
 			if (customHandlers != null)
 			{

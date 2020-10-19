@@ -191,7 +191,7 @@ namespace Xamarin.Forms
 			if (valuearray != null && Converter != null)
 				value = Converter.Convert(valuearray, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
 
-			if (valuearray != null && StringFormat != null && TryFormat(StringFormat, valuearray, out var formatted))
+			if (valuearray != null && Converter == null && StringFormat != null && TryFormat(StringFormat, valuearray, out var formatted))
 				return formatted;
 
 			if (ReferenceEquals(BindableProperty.UnsetValue, value))
