@@ -65,14 +65,14 @@ namespace Xamarin.Forms.Controls.Issues
 		public void UnfocusingPasswordDoesNotHang()
 		{
 			RunningApp.WaitForElement(Entry);
-			RunningApp.Tap(Entry);
-			RunningApp.EnterText("test");
-
 			RunningApp.WaitForElement(Password);
-			RunningApp.Tap(Password);
-			RunningApp.EnterText("test");
+
+			RunningApp.EnterText(Entry, "test");
+			RunningApp.DismissKeyboard();
+			RunningApp.EnterText(Password, "test");
 
 			RunningApp.Tap(Entry);
+			RunningApp.DismissKeyboard();
 			RunningApp.WaitForElement(Success);
 		}
 #endif
