@@ -4,6 +4,7 @@ using Android.OS;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
 using static Android.Widget.CompoundButton;
+using Xamarin.Platform;
 
 namespace Xamarin.Forms.ControlGallery.Android
 {

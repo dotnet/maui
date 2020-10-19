@@ -14,11 +14,8 @@ namespace Sample
 
 			HasInit = true;
 
-			//RegistrarHandlers.Handlers.Register<Layout, LayoutHandler>();
-
 			RegistrarHandlers.Handlers.Register<Button, ButtonHandler>();
-			//RegistrarHandlers.Handlers.Register<Entry, EntryHandler>();
-			//RegistrarHandlers.Handlers.Register<Label, LabelHandler>();
+			RegistrarHandlers.Handlers.Register<Slider, SliderHandler>();
 		}
 	}
 }

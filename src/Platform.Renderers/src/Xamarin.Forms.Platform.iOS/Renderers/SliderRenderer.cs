@@ -4,6 +4,7 @@ using UIKit;
 using SizeF = CoreGraphics.CGSize;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific.Slider;
+using Xamarin.Platform;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -104,6 +105,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		private void UpdateMinimumTrackColor()
 		{
 			if (Element != null)
@@ -115,6 +117,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		private void UpdateMaximumTrackColor()
 		{
 			if (Element != null)
@@ -126,6 +129,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		private void UpdateThumbColor()
 		{
 			if (Element != null)
@@ -169,16 +173,19 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateTapRecognizer();
 		}
 
+		[PortHandler]
 		void OnControlValueChanged(object sender, EventArgs eventArgs)
 		{
 			((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, Control.Value);
 		}
 
+		[PortHandler]
 		void OnTouchDownControlEvent(object sender, EventArgs e)
 		{
 			((ISliderController)Element)?.SendDragStarted();
 		}
 
+		[PortHandler]
 		void OnTouchUpControlEvent(object sender, EventArgs e)
 		{
 			((ISliderController)Element)?.SendDragCompleted();
@@ -220,16 +227,19 @@ namespace Xamarin.Forms.Platform.iOS
 
 		}
 
+		[PortHandler]
 		void UpdateMaximum()
 		{
 			Control.MaxValue = (float)Element.Maximum;
 		}
 
+		[PortHandler]
 		void UpdateMinimum()
 		{
 			Control.MinValue = (float)Element.Minimum;
 		}
 
+		[PortHandler]
 		void UpdateValue()
 		{
 			if ((float)Element.Value != Control.Value)

@@ -13,7 +13,7 @@ namespace Sample
 
 		public IView CreateView()
 		{
-			return new Button() { Text = "Hello I'm a button" };
+			return new Slider();
 		}
 	}
 }

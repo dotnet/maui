@@ -17,7 +17,7 @@ namespace Xamarin.Platform
 				view.Handler = handler;
 			}
 
-			handler.SetView(view);
+			handler.SetVirtualView(view);
 
 			return handler.NativeView as UIView;
 		}
