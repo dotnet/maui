@@ -50,12 +50,12 @@ namespace Xamarin.Forms.Xaml
 			}
 
 			//Only proceed further if the node is a keyless RD
-			if (   parentNode is IElementNode
+			if (parentNode is IElementNode
 				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)
 				&& typeof(ResourceDictionary).IsAssignableFrom(parentType)
 				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
-			else if (   parentNode is ListNode
+			else if (parentNode is ListNode
 					 && typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
 					 && !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
@@ -73,12 +73,12 @@ namespace Xamarin.Forms.Xaml
 		{
 			if (!(node is ElementNode))
 				return false;
-			if (   parentNode is IElementNode
+			if (parentNode is IElementNode
 				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)
 				&& typeof(ResourceDictionary).IsAssignableFrom(parentType)
 				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
 				return true;
-			if (   parentNode is ListNode
+			if (parentNode is ListNode
 				&& typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
 				&& !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				return true;
