@@ -6,7 +6,7 @@ using Xamarin.Platform;
 
 namespace Sample
 {
-	public class Slider : View, ISlider
+	public class Slider : Xamarin.Forms.View, ISlider
 	{
 		double _value;
 

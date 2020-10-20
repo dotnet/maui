@@ -2,17 +2,8 @@
 
 namespace Xamarin.Platform
 {
-	public enum Alignment
+	public interface ILayout : IView
 	{
-		Start,
-		Center,
-		End,
-		Fill
-	}
-
-	public enum Orientation
-	{
-		Vertical,
-		Horizontal
+		IReadOnlyList<IView> Children { get; }
 	}
 }

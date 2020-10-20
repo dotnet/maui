@@ -46,29 +46,27 @@ namespace Xamarin.Platform.Handlers
 			nativeView.Layout((int)left, (int)top, (int)right, (int)bottom);
 		}
 
-		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (TypedNativeView == null)
 			{
-				return new SizeRequest(Size.Zero);
+				return Size.Zero;
 			}
 
 			if (Context == null)
 			{
-				return new SizeRequest(new Size(widthConstraint, heightConstraint));
+				return new Size(widthConstraint, heightConstraint);
 			}
 
 			var deviceWidthConstraint = Context.ToPixels(widthConstraint);
 			var deviceHeightConstraint = Context.ToPixels(heightConstraint);
 
-			var widthSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceWidthConstraint);
-			var heightSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceHeightConstraint);
+			var widthSpec = MeasureSpecMode.Exactly.MakeMeasureSpec((int)deviceWidthConstraint);
+			var heightSpec = MeasureSpecMode.Exactly.MakeMeasureSpec((int)deviceHeightConstraint);
 
 			TypedNativeView.Measure(widthSpec, heightSpec);
 
-			var deviceIndependentSize = Context.FromPixels(TypedNativeView.MeasuredWidth, TypedNativeView.MeasuredHeight);
-
-			return new SizeRequest(deviceIndependentSize);
+			return Context.FromPixels(TypedNativeView.MeasuredWidth, TypedNativeView.MeasuredHeight);
 		}
 
 		void SetupContainer()

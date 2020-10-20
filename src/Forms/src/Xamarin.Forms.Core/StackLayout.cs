@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Xamarin.Forms.Internals;
+using Xamarin.Platform;
 
 namespace Xamarin.Forms
 {
-	public class StackLayout : Layout<View>, IElementConfiguration<StackLayout>
+	public class StackLayout : Layout<View>, IElementConfiguration<StackLayout>, IFrameworkElement
 	{
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
@@ -64,6 +67,17 @@ namespace Xamarin.Forms
 				if (child.IsVisible && layoutInformationCopy.Plots != null)
 					LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
 			}
+		}
+
+		// IFrameworkElement Measure
+		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
+		{
+			if (!IsMeasureValid)
+#pragma warning disable CS0618 // Type or member is obsolete
+				DesiredSize = OnSizeRequest(widthConstraint, heightConstraint).Request;
+#pragma warning restore CS0618 // Type or member is obsolete
+			IsMeasureValid = true;
+			return DesiredSize;
 		}
 
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]

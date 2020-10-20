@@ -16,20 +16,18 @@ namespace Xamarin.Platform.Handlers
 				View.Frame = rect.ToCGRect();
 		}
 
-		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var sizeThatFits = TypedNativeView?.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
 
 			if (sizeThatFits.HasValue)
 			{
-				var request = new Size(
+				return new Size(
 					sizeThatFits.Value.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Value.Width,
 					sizeThatFits.Value.Height == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Value.Height);
-
-				return new SizeRequest(request);
 			}
 
-			return new SizeRequest(new Size(widthConstraint, heightConstraint));
+			return new Size(widthConstraint, heightConstraint);
 		}
 
 		void SetupContainer()

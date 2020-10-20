@@ -47,6 +47,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "src\Platform.Handlers\samples\Sample\Sample.csproj", "{28164E00-92FB-4EEE-927C-D0CF672A004D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Droid", "src\Platform.Handlers\samples\Sample.Droid\Sample.Droid.csproj", "{244483A1-4181-47C6-AE0E-04C35A3BACF7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0E16E70A-D6DD-4323-AD5D-363ABFF42D6A} = {0E16E70A-D6DD-4323-AD5D-363ABFF42D6A}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.Android.FormsViewGroup", "src\Platform.Renderers\src\Xamarin.Forms.Platform.Android.FormsViewGroup\Xamarin.Forms.Platform.Android.FormsViewGroup.csproj", "{3B72465B-ACAE-43AE-9327-10F372FE5F80}"
 EndProject

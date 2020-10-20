@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using Android.Content;
+using Android.Views;
 using static Android.Views.View;
 
 namespace Xamarin.Platform
@@ -21,6 +22,13 @@ namespace Xamarin.Platform
 		public static int MakeMeasureSpec(this MeasureSpecMode mode, int size)
 		{
 			return size + (int)mode;
+		}
+
+		public static double ToDouble(this int measureSpec, Context context) 
+		{
+			return measureSpec.GetMode() == MeasureSpecMode.Unspecified 
+				? double.PositiveInfinity 
+				: context.FromPixels(measureSpec.GetSize());
 		}
 	}
 }

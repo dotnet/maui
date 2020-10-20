@@ -9,7 +9,7 @@ namespace Xamarin.Platform
 		void DisconnectHandler();
 		object? NativeView { get; }
 		bool HasContainer { get; set; }
-		SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint);
+		Size GetDesiredSize(double widthConstraint, double heightConstraint);
 		void SetFrame(Rectangle frame);
 	}
 }

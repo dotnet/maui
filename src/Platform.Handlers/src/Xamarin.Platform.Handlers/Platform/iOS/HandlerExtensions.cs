@@ -1,13 +1,13 @@
-﻿using UIKit;
+﻿using System;
+using UIKit;
 
 namespace Xamarin.Platform
 {
 	public static class HandlerExtensions
 	{
-		public static UIView? ToNative(this IView view)
+		public static UIView ToNative(this IView view)
 		{
-			if (view == null)
-				return null;
+			_ = view ?? throw new ArgumentNullException(nameof(view));
 
 			var handler = view.Handler;
 
@@ -19,7 +19,12 @@ namespace Xamarin.Platform
 
 			handler.SetVirtualView(view);
 
-			return handler.NativeView as UIView;
+			if (!(handler.NativeView is UIView result))
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(UIView)}");
+			}
+
+			return result;
 		}
 	}
 }

@@ -4,7 +4,7 @@ using Xamarin.Platform;
 
 namespace Sample
 {
-	public class Button : View, IButton
+	public class Button : Xamarin.Forms.View, IButton
 	{
 		public const int DefaultCornerRadius = -1;
 
@@ -41,5 +41,17 @@ namespace Sample
 		void IButton.Pressed() => Pressed?.Invoke();
 		void IButton.Released() => Released?.Invoke();
 		void IButton.Clicked() => Clicked?.Invoke();
+
+		public new double Width 
+		{
+			get { return WidthRequest; }
+			set { WidthRequest = value; }
+		}
+
+		public new double Height
+		{
+			get { return HeightRequest; }
+			set { HeightRequest = value; }
+		}
 	}
 }
