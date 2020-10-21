@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			base.OnNavigated(args);
 
-			if(firstNavigated)
+			if (firstNavigated)
 			{
 				firstNavigated = false;
 				ContentPage contentPage = new ContentPage();
