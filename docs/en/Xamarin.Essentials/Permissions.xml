@@ -166,8 +166,8 @@
       </Docs>
     </Member>
     <Member MemberName="ShouldShowRationale&lt;TPermission&gt;">
-      <MemberSignature Language="C#" Value="public static void ShouldShowRationale&lt;TPermission&gt; () where TPermission : Xamarin.Essentials.Permissions.BasePermissionnew();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void ShouldShowRationale&lt;.ctor (class Xamarin.Essentials.Permissions/BasePermission) TPermission&gt;() cil managed" />
+      <MemberSignature Language="C#" Value="public static bool ShouldShowRationale&lt;TPermission&gt; () where TPermission : Xamarin.Essentials.Permissions.BasePermissionnew();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool ShouldShowRationale&lt;.ctor (class Xamarin.Essentials.Permissions/BasePermission) TPermission&gt;() cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.ShouldShowRationale``1" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
@@ -175,7 +175,7 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
+        <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <TypeParameters>
         <TypeParameter Name="TPermission">
@@ -187,9 +187,9 @@
       </TypeParameters>
       <Parameters />
       <Docs>
-        <typeparam name="TPermission">To be added.</typeparam>
+        <typeparam name="TPermission">The type of permission.</typeparam>
         <summary>Gets whether you should show UI with rationale for requesting a permission.</summary>
-        <remarks>To be added.</remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

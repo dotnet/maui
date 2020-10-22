@@ -14,6 +14,7 @@
         <FlexLayout Direction="Row" Wrap="Wrap">
             <Button Text="Pick file" Command="{Binding PickFileCommand}" HorizontalOptions="FillAndExpand" />
             <Button Text="Pick image" Command="{Binding PickImageCommand}" HorizontalOptions="FillAndExpand" />
+            <Button Text="Pick pdf" Command="{Binding PickPdfCommand}" HorizontalOptions="FillAndExpand" />
             <Button Text="Pick custom type" Command="{Binding PickCustomTypeCommand}" HorizontalOptions="FillAndExpand" />
             <Button Text="Pick image and send email" Command="{Binding PickAndSendCommand}" HorizontalOptions="FillAndExpand" />
             <Button Text="Pick multiple files" Command="{Binding PickMultipleFilesCommand}" HorizontalOptions="FillAndExpand" />

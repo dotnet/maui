@@ -19,7 +19,9 @@ namespace Xamarin.Essentials
     {
         public static readonly FilePickerFileType Images = PlatformImageFileType();
         public static readonly FilePickerFileType Png = PlatformPngFileType();
+        public static readonly FilePickerFileType Jpeg = PlatformJpegFileType();
         public static readonly FilePickerFileType Videos = PlatformVideoFileType();
+        public static readonly FilePickerFileType Pdf = PlatformPdfFileType();
 
         readonly IDictionary<DevicePlatform, IEnumerable<string>> fileTypes;
 

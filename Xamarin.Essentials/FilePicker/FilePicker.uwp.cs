@@ -64,22 +64,34 @@ namespace Xamarin.Essentials
 
     public partial class FilePickerFileType
     {
-        public static FilePickerFileType PlatformImageFileType() =>
+        static FilePickerFileType PlatformImageFileType() =>
             new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
                 { DevicePlatform.UWP, new[] { "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp" } }
             });
 
-        public static FilePickerFileType PlatformPngFileType() =>
+        static FilePickerFileType PlatformPngFileType() =>
             new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
                 { DevicePlatform.UWP, new[] { "*.png" } }
             });
 
-        public static FilePickerFileType PlatformVideoFileType() =>
+        static FilePickerFileType PlatformJpegFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                { DevicePlatform.UWP, new[] { "*.jpg", "*.jpeg" } }
+            });
+
+        static FilePickerFileType PlatformVideoFileType() =>
            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
            {
                 { DevicePlatform.UWP, new[] { "*.mp4", "*.mov", "*.avi", "*.wmv", "*.m4v", "*.mpg", "*.mpeg", "*.mp2", "*.mkv", "*.flv", "*.gifv", "*.qt" } }
            });
+
+        static FilePickerFileType PlatformPdfFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                { DevicePlatform.UWP, new[] { "*.pdf" } }
+            });
     }
 }

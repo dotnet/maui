@@ -391,14 +391,13 @@
     </Type>
     <Type Name="Xamarin.Essentials.FilePickerFileType" Id="T:Xamarin.Essentials.FilePickerFileType">
       <Member Id="F:Xamarin.Essentials.FilePickerFileType.Images" />
+      <Member Id="F:Xamarin.Essentials.FilePickerFileType.Jpeg" />
+      <Member Id="F:Xamarin.Essentials.FilePickerFileType.Pdf" />
       <Member Id="F:Xamarin.Essentials.FilePickerFileType.Png" />
       <Member Id="F:Xamarin.Essentials.FilePickerFileType.Videos" />
       <Member Id="M:Xamarin.Essentials.FilePickerFileType.#ctor" />
       <Member Id="M:Xamarin.Essentials.FilePickerFileType.#ctor(System.Collections.Generic.IDictionary{Xamarin.Essentials.DevicePlatform,System.Collections.Generic.IEnumerable{System.String}})" />
       <Member Id="M:Xamarin.Essentials.FilePickerFileType.GetPlatformFileType(Xamarin.Essentials.DevicePlatform)" />
-      <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformImageFileType" />
-      <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformPngFileType" />
-      <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformVideoFileType" />
       <Member Id="P:Xamarin.Essentials.FilePickerFileType.Value" />
     </Type>
     <Type Name="Xamarin.Essentials.FileResult" Id="T:Xamarin.Essentials.FileResult">
@@ -816,6 +815,7 @@
       <Member Id="F:Xamarin.Essentials.ScreenshotFormat.Png" />
     </Type>
     <Type Name="Xamarin.Essentials.ScreenshotResult" Id="T:Xamarin.Essentials.ScreenshotResult">
+      <Member Id="M:Xamarin.Essentials.ScreenshotResult.#ctor(System.Int32,System.Int32,Windows.Storage.Streams.IBuffer)" />
       <Member Id="M:Xamarin.Essentials.ScreenshotResult.OpenReadAsync(Xamarin.Essentials.ScreenshotFormat)" />
       <Member Id="P:Xamarin.Essentials.ScreenshotResult.Height" />
       <Member Id="P:Xamarin.Essentials.ScreenshotResult.Width" />

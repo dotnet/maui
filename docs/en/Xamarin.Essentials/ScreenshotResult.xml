@@ -15,6 +15,28 @@
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ScreenshotResult (int width, int height, Windows.Storage.Streams.IBuffer pixels);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(int32 width, int32 height, class Windows.Storage.Streams.IBuffer pixels) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ScreenshotResult.#ctor(System.Int32,System.Int32,Windows.Storage.Streams.IBuffer)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="width" Type="System.Int32" Index="0" FrameworkAlternate="xamarin-essentials-uwp" />
+        <Parameter Name="height" Type="System.Int32" Index="1" FrameworkAlternate="xamarin-essentials-uwp" />
+        <Parameter Name="pixels" Type="Windows.Storage.Streams.IBuffer" Index="2" FrameworkAlternate="xamarin-essentials-uwp" />
+      </Parameters>
+      <Docs>
+        <param name="width">To be added.</param>
+        <param name="height">To be added.</param>
+        <param name="pixels">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Height">
       <MemberSignature Language="C#" Value="public int Height { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance int32 Height" />

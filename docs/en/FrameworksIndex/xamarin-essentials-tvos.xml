@@ -389,6 +389,8 @@
     </Type>
     <Type Name="Xamarin.Essentials.FilePickerFileType" Id="T:Xamarin.Essentials.FilePickerFileType">
       <Member Id="F:Xamarin.Essentials.FilePickerFileType.Images" />
+      <Member Id="F:Xamarin.Essentials.FilePickerFileType.Jpeg" />
+      <Member Id="F:Xamarin.Essentials.FilePickerFileType.Pdf" />
       <Member Id="F:Xamarin.Essentials.FilePickerFileType.Png" />
       <Member Id="F:Xamarin.Essentials.FilePickerFileType.Videos" />
       <Member Id="M:Xamarin.Essentials.FilePickerFileType.#ctor" />

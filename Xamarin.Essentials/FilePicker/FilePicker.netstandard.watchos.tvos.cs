@@ -18,7 +18,13 @@ namespace Xamarin.Essentials
         static FilePickerFileType PlatformPngFileType()
             => throw new NotImplementedInReferenceAssemblyException();
 
+        static FilePickerFileType PlatformJpegFileType()
+            => throw new NotImplementedInReferenceAssemblyException();
+
         static FilePickerFileType PlatformVideoFileType()
+            => throw new NotImplementedInReferenceAssemblyException();
+
+        static FilePickerFileType PlatformPdfFileType()
             => throw new NotImplementedInReferenceAssemblyException();
     }
 }

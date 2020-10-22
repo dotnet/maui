@@ -19,6 +19,7 @@ namespace Samples.ViewModel
         {
             PickFileCommand = new Command(() => DoPickFile());
             PickImageCommand = new Command(() => DoPickImage());
+            PickPdfCommand = new Command(() => DoPickPdf());
             PickCustomTypeCommand = new Command(() => DoPickCustomType());
             PickAndSendCommand = new Command(() => DoPickAndSend());
             PickMultipleFilesCommand = new Command(() => DoPickMultipleFiles());
@@ -27,6 +28,8 @@ namespace Samples.ViewModel
         public ICommand PickFileCommand { get; }
 
         public ICommand PickImageCommand { get; }
+
+        public ICommand PickPdfCommand { get; }
 
         public ICommand PickCustomTypeCommand { get; }
 
@@ -63,6 +66,17 @@ namespace Samples.ViewModel
             {
                 PickerTitle = "Please select an image",
                 FileTypes = FilePickerFileType.Images,
+            };
+
+            await PickAndShow(options);
+        }
+
+        async void DoPickPdf()
+        {
+            var options = new PickOptions
+            {
+                PickerTitle = "Please select a pdf",
+                FileTypes = FilePickerFileType.Pdf,
             };
 
             await PickAndShow(options);
