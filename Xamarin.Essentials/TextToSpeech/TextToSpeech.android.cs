@@ -177,7 +177,7 @@ namespace Xamarin.Essentials
 
         public void OnInit(OperationResult status)
         {
-            if (status.Equals(OperationResult.Success))
+            if (status == OperationResult.Success)
                 tcsInitialize.TrySetResult(true);
             else
                 tcsInitialize.TrySetException(new ArgumentException("Failed to initialize Text to Speech engine."));
