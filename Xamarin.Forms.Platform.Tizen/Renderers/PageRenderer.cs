@@ -88,13 +88,13 @@ namespace Xamarin.Forms.Platform.Tizen
 						_moreOption.Value.Items.Clear();
 						_moreOption.Value.Unrealize();
 					}
+				}
 
-					if (_backgroundCanvas.IsValueCreated)
-					{
-						BackgroundCanvas.PaintSurface -= OnBackgroundPaint;
-						BackgroundCanvas.Unrealize();
-						_backgroundCanvas = null;
-					}
+				if (Forms.UseSkiaSharp && _backgroundCanvas.IsValueCreated)
+				{
+					BackgroundCanvas.PaintSurface -= OnBackgroundPaint;
+					BackgroundCanvas.Unrealize();
+					_backgroundCanvas = null;
 				}
 			}
 			base.Dispose(disposing);

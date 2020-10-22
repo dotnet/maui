@@ -189,7 +189,6 @@ namespace Xamarin.Forms.Platform
 	[RenderWith(typeof(SwipeViewRenderer))]
 	internal class _SwipeViewRenderer { }
 
-#if !TIZEN4_0
 	[RenderWith(typeof(PathRenderer))]
 	internal class _PathRenderer { }
 
@@ -207,7 +206,6 @@ namespace Xamarin.Forms.Platform
 
 	[RenderWith(typeof(RectangleRenderer))]
 	internal class _RectangleRenderer { }
-#endif
 }
 
 
