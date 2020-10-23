@@ -82,6 +82,6 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 		{
 			_y2 = Forms.ConvertToScaledPixel(y2);
 			UpdateShape();
-        }
-    }
+		}
+	}
 }

@@ -1,5 +1,5 @@
-using Xamarin.Forms.Shapes;
 using ElmSharp;
+using Xamarin.Forms.Shapes;
 using ELayout = ElmSharp.Layout;
 
 namespace Xamarin.Forms.Platform.Tizen

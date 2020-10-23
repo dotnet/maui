@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.Shapes;
 using SkiaSharp;
+using Xamarin.Forms.Shapes;
 using FormsRectangle = Xamarin.Forms.Rectangle;
 
 namespace Xamarin.Forms.Platform.Tizen
