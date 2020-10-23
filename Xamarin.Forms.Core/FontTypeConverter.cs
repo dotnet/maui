@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 
 namespace Xamarin.Forms
 {
@@ -25,14 +26,12 @@ namespace Xamarin.Forms
 				// check if last is a size
 				string last = parts.Last();
 
-				double trySize;
-				NamedSize tryNamedSize;
-				if (double.TryParse(last, NumberStyles.Number, CultureInfo.InvariantCulture, out trySize))
+				if (double.TryParse(last, NumberStyles.Number, CultureInfo.InvariantCulture, out var trySize))
 				{
 					size = trySize;
 					parts.RemoveAt(parts.Count - 1);
 				}
-				else if (Enum.TryParse(last, out tryNamedSize))
+				else if (Enum.TryParse(last, out NamedSize tryNamedSize))
 				{
 					namedSize = tryNamedSize;
 					parts.RemoveAt(parts.Count - 1);
@@ -41,8 +40,7 @@ namespace Xamarin.Forms
 				// check if first is a name
 				foreach (string part in parts)
 				{
-					FontAttributes tryAttibute;
-					if (Enum.TryParse(part, out tryAttibute))
+					if (Enum.TryParse(part, out FontAttributes tryAttibute))
 					{
 						// they did not provide a font name
 						if (tryAttibute == FontAttributes.Bold)
@@ -62,28 +60,39 @@ namespace Xamarin.Forms
 
 				FontAttributes attributes = 0;
 				if (bold)
-					attributes = attributes | FontAttributes.Bold;
+					attributes |= FontAttributes.Bold;
 				if (italic)
-					attributes = attributes | FontAttributes.Italic;
+					attributes |= FontAttributes.Italic;
 				if (size == -1 && namedSize == 0)
 					namedSize = NamedSize.Medium;
 
 				if (name != null)
 				{
 					if (size == -1)
-					{
 						return Font.OfSize(name, namedSize).WithAttributes(attributes);
-					}
 					return Font.OfSize(name, size).WithAttributes(attributes);
 				}
 				if (size == -1)
-				{
 					return Font.SystemFontOfSize(namedSize, attributes);
-				}
 				return Font.SystemFontOfSize(size, attributes);
 			}
 
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(Font)));
+		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is Font font))
+				throw new NotSupportedException();
+			var parts = new List<string>();
+			if (!string.IsNullOrEmpty(font.FontFamily))
+				parts.Add(font.FontFamily);
+			if ((font.FontAttributes & FontAttributes.Bold) == FontAttributes.Bold)
+				parts.Add("Bold");
+			if ((font.FontAttributes & FontAttributes.Italic) == FontAttributes.Italic)
+				parts.Add("Italic");
+			parts.Add($"{font.FontSize}");
+			return string.Join(", ", parts);
 		}
 	}
 }

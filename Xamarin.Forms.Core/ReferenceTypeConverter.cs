@@ -10,9 +10,7 @@ namespace Xamarin.Forms
 	public sealed class ReferenceTypeConverter : TypeConverter, IExtendedTypeConverter
 	{
 		object IExtendedTypeConverter.ConvertFrom(CultureInfo culture, object value, IServiceProvider serviceProvider)
-		{
-			return ((IExtendedTypeConverter)this).ConvertFromInvariantString(value as string, serviceProvider);
-		}
+			=> ((IExtendedTypeConverter)this).ConvertFromInvariantString(value as string, serviceProvider);
 
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
@@ -46,9 +44,8 @@ namespace Xamarin.Forms
 #pragma warning restore CS0612 // Type or member is obsolete
 		}
 
-		public override object ConvertFromInvariantString(string value)
-		{
-			throw new NotImplementedException();
-		}
+		public override object ConvertFromInvariantString(string value) => throw new NotImplementedException();
+
+		public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
 	}
 }

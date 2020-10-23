@@ -34,5 +34,7 @@ namespace Xamarin.Forms
 			return ConvertFrom(CultureInfo.InvariantCulture, value);
 #pragma warning restore
 		}
+
+		public virtual string ConvertToInvariantString(object value) => throw new NotSupportedException();
 	}
 }

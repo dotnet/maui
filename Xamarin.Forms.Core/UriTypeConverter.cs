@@ -13,14 +13,11 @@ namespace Xamarin.Forms
 			return new Uri(value, UriKind.RelativeOrAbsolute);
 		}
 
-		bool CanConvert(Type type)
+		public override string ConvertToInvariantString(object value)
 		{
-			if (type == typeof(string))
-				return true;
-			if (type == typeof(Uri))
-				return true;
-
-			return false;
+			if (!(value is Uri uri))
+				throw new NotSupportedException();
+			return uri.ToString();
 		}
 	}
 }

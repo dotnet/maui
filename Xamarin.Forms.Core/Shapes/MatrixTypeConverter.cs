@@ -27,5 +27,12 @@ namespace Xamarin.Forms.Shapes
 
 			return new Matrix(values[0], values[1], values[2], values[3], values[4], values[5]);
 		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is Matrix matrix))
+				throw new NotSupportedException();
+			return $"{matrix.M11}, {matrix.M12}, {matrix.M21}, {matrix.M22}, {matrix.OffsetX}, {matrix.OffsetY}";
+		}
 	}
 }

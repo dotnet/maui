@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Xamarin.Forms
 {
@@ -18,6 +19,15 @@ namespace Xamarin.Forms
 			}
 
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(ColumnDefinitionCollection)));
+		}
+
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is ColumnDefinitionCollection cdc))
+				throw new NotSupportedException();
+			var converter = new GridLengthTypeConverter();
+			return string.Join(", ", cdc.Select(cd => converter.ConvertToInvariantString(cd.Width)));
 		}
 	}
 }
