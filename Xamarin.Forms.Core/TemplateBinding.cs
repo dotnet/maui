@@ -22,7 +22,7 @@ namespace Xamarin.Forms
 			if (path == null)
 				throw new ArgumentNullException("path");
 			if (string.IsNullOrWhiteSpace(path))
-				throw new ArgumentException("path can not be an empty string", "path");
+				throw new ArgumentException("path cannot be an empty string", "path");
 
 			AllowChaining = true;
 			Path = path;

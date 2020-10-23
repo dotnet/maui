@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Internals
 				if (stack.Contains(ancestralNav))
 				{
 					if (stack.Count <= 1)
-						throw new InvalidNavigationException("Can not pop final item in stack");
+						throw new InvalidNavigationException("Cannot pop final item in stack");
 					Page result = stack.Last();
 					stack.Remove(result);
 					return result;
@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Internals
 				if (stack.Contains(ancestralNav))
 				{
 					if (stack.Count <= 1)
-						throw new InvalidNavigationException("Can not pop final item in stack");
+						throw new InvalidNavigationException("Cannot pop final item in stack");
 					stack.RemoveRange(1, stack.Count - 1);
 					return;
 				}

@@ -81,7 +81,7 @@ namespace Xamarin.Forms
 				}
 				else
 				{
-					Internals.Log.Warning("Warning", "Can not find CallingAssembly, pass resolvingType to FromResource to ensure proper resolution");
+					Internals.Log.Warning("Warning", "Cannot find CallingAssembly, pass resolvingType to FromResource to ensure proper resolution");
 					return null;
 				}
 			}

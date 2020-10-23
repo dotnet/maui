@@ -34,7 +34,7 @@ namespace Xamarin.Forms
 					return;
 
 				if (_source != null)
-					throw new ArgumentException("MergedWith can not be used with Source");
+					throw new ArgumentException("MergedWith cannot be used with Source");
 
 				if (!typeof(ResourceDictionary).GetTypeInfo().IsAssignableFrom(value.GetTypeInfo()))
 					throw new ArgumentException("MergedWith should inherit from ResourceDictionary");
@@ -66,7 +66,7 @@ namespace Xamarin.Forms
 		{
 			_source = value;
 			if (_mergedWith != null)
-				throw new ArgumentException("Source can not be used with MergedWith");
+				throw new ArgumentException("Source cannot be used with MergedWith");
 
 			//this will return a type if the RD as an x:Class element, and codebehind
 			var type = XamlResourceIdAttribute.GetTypeForPath(assembly, resourcePath);
