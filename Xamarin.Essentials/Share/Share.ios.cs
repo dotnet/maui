@@ -36,15 +36,19 @@ namespace Xamarin.Essentials
             return vc.PresentViewControllerAsync(activityController, true);
         }
 
-        static Task PlatformRequestAsync(ShareFileRequest request)
+        static Task PlatformRequestAsync(ShareMultipleFilesRequest request)
         {
             var items = new List<NSObject>();
 
-            var fileUrl = NSUrl.FromFilename(request.File.FullPath);
-            if (!string.IsNullOrEmpty(request.Title))
-                items.Add(new ShareActivityItemSource(fileUrl, request.Title)); // Share with title (subject)
-            else
-                items.Add(fileUrl); // No title specified
+            var hasTitel = !string.IsNullOrWhiteSpace(request.Title);
+            foreach (var file in request.Files)
+            {
+                var fileUrl = NSUrl.FromFilename(file.FullPath);
+                if (hasTitel)
+                    items.Add(new ShareActivityItemSource(fileUrl, request.Title)); // Share with title (subject)
+                else
+                    items.Add(fileUrl); // No title specified
+            }
 
             var activityController = new UIActivityViewController(items.ToArray(), null);
 

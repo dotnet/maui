@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
@@ -37,9 +38,11 @@ namespace Xamarin.Essentials
             return Task.CompletedTask;
         }
 
-        static async Task PlatformRequestAsync(ShareFileRequest request)
+        static async Task PlatformRequestAsync(ShareMultipleFilesRequest request)
         {
-            var storageFile = request.File.File ?? await StorageFile.GetFileFromPathAsync(request.File.FullPath);
+            var storageFiles = new List<IStorageFile>();
+            foreach (var file in request.Files)
+                storageFiles.Add(file.File ?? await StorageFile.GetFileFromPathAsync(file.FullPath));
 
             var dataTransferManager = DataTransferManager.GetForCurrentView();
 
@@ -51,7 +54,7 @@ namespace Xamarin.Essentials
             {
                 var newRequest = e.Request;
 
-                newRequest.Data.SetStorageItems(new IStorageItem[] { storageFile });
+                newRequest.Data.SetStorageItems(storageFiles.ToArray());
                 newRequest.Data.Properties.Title = request.Title ?? AppInfo.Name;
 
                 dataTransferManager.DataRequested -= ShareTextHandler;

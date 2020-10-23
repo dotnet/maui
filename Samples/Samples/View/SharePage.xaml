@@ -54,6 +54,27 @@
 
                 <Button Text="Share File" Command="{Binding RequestFileCommand}" CommandParameter="{Binding Source={RelativeSource Self}}" />
 
+                <BoxView Margin="0,4,0,4" HeightRequest="1" BackgroundColor="Gray" HorizontalOptions="FillAndExpand" />
+
+                <Label Text="Share Files" FontAttributes="Bold" Margin="0,6,0,0" />
+
+                <Label Text="Title (Optional)" />
+                <Entry Text="{Binding ShareFilesTitle}" />
+
+                <Label Text="File1 Name:" />
+                <Entry Text="{Binding ShareFile1AttachmentName}" />
+                <Label Text="File1 Contents:" />
+                <Editor Text="{Binding ShareFile1AttachmentContents}"
+                        Keyboard="Chat" AutoSize="TextChanges" />
+
+                <Label Text="File2 Name:" Margin="0,20,0,0"/>
+                <Entry Text="{Binding ShareFile2AttachmentName}" />
+                <Label Text="File2 Contents:" />
+                <Editor Text="{Binding ShareFile2AttachmentContents}"
+                        Keyboard="Chat" AutoSize="TextChanges" />
+
+                <Button Text="Share Files" Command="{Binding RequestFilesCommand}" CommandParameter="{Binding Source={RelativeSource Self}}" />
+
             </StackLayout>
         </ScrollView>
     </StackLayout>

@@ -66,6 +66,30 @@
       </Docs>
     </Member>
     <Member MemberName="RequestAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task RequestAsync (Xamarin.Essentials.ShareMultipleFilesRequest request);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task RequestAsync(class Xamarin.Essentials.ShareMultipleFilesRequest request) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareMultipleFilesRequest)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="request" Type="Xamarin.Essentials.ShareMultipleFilesRequest" />
+      </Parameters>
+      <Docs>
+        <param name="request">Multiple Files request to share.</param>
+        <summary>Show the user interface to share a multiple files.</summary>
+        <returns>Task when completed.</returns>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RequestAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task RequestAsync (Xamarin.Essentials.ShareTextRequest request);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task RequestAsync(class Xamarin.Essentials.ShareTextRequest request) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />

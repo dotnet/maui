@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.OS;
 
 namespace Xamarin.Essentials
 {
@@ -22,7 +24,7 @@ namespace Xamarin.Essentials
 
             var intent = new Intent(Intent.ActionSend);
             intent.SetType("text/plain");
-            intent.PutExtra(Intent.ExtraText, string.Join(Environment.NewLine, items));
+            intent.PutExtra(Intent.ExtraText, string.Join(System.Environment.NewLine, items));
 
             if (!string.IsNullOrWhiteSpace(request.Subject))
             {
@@ -37,19 +39,20 @@ namespace Xamarin.Essentials
             return Task.CompletedTask;
         }
 
-        static Task PlatformRequestAsync(ShareFileRequest request)
+        static Task PlatformRequestAsync(ShareMultipleFilesRequest request)
         {
-            var contentUri = Platform.GetShareableFileUri(request.File);
+            var contentUris = new List<IParcelable>();
+            var intent = new Intent(Intent.ActionSendMultiple);
+            foreach (var file in request.Files)
+                contentUris.Add(Platform.GetShareableFileUri(file));
 
-            var intent = new Intent(Intent.ActionSend);
-            intent.SetType(request.File.ContentType);
+            intent.SetType(request.Files.Count() > 1 ? "*/*" : request.Files.FirstOrDefault().ContentType);
+
             intent.SetFlags(ActivityFlags.GrantReadUriPermission);
-            intent.PutExtra(Intent.ExtraStream, contentUri);
+            intent.PutParcelableArrayListExtra(Intent.ExtraStream, contentUris);
 
             if (!string.IsNullOrEmpty(request.Title))
-            {
                 intent.PutExtra(Intent.ExtraTitle, request.Title);
-            }
 
             var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
             var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;

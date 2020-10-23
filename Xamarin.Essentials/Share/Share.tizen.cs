@@ -29,19 +29,20 @@ namespace Xamarin.Essentials
             return Task.CompletedTask;
         }
 
-        static Task PlatformRequestAsync(ShareFileRequest request)
+        static Task PlatformRequestAsync(ShareMultipleFilesRequest request)
         {
             Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
             var appControl = new AppControl
             {
-                Operation = AppControlOperations.ShareText,
+                Operation = AppControlOperations.Share,
             };
 
-            if (!string.IsNullOrEmpty(request.File.FullPath))
-                appControl.ExtraData.Add("http://tizen.org/appcontrol/data/path", request.File.FullPath);
             if (!string.IsNullOrEmpty(request.Title))
                 appControl.ExtraData.Add("http://tizen.org/appcontrol/data/title", request.Title);
+
+            foreach (var file in request.Files)
+                appControl.ExtraData.Add("http://tizen.org/appcontrol/data/path", file.FullPath);
 
             AppControl.SendLaunchRequest(appControl);
 

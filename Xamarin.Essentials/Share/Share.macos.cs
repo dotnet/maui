@@ -20,13 +20,15 @@ namespace Xamarin.Essentials
             return PlatformShowRequestAsync(request, items);
         }
 
-        static Task PlatformRequestAsync(ShareFileRequest request)
+        static Task PlatformRequestAsync(ShareMultipleFilesRequest request)
         {
             var items = new List<NSObject>();
+
             if (!string.IsNullOrWhiteSpace(request.Title))
                 items.Add(new NSString(request.Title));
-            if (request.File != null)
-                items.Add(NSUrl.FromFilename(request.File.FullPath));
+
+            foreach (var file in request.Files)
+                items.Add(NSUrl.FromFilename(file.FullPath));
 
             return PlatformShowRequestAsync(request, items);
         }

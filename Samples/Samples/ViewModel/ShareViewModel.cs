@@ -17,15 +17,23 @@ namespace Samples.ViewModel
         string shareFileAttachmentContents;
         string shareFileAttachmentName;
         string shareFileTitle;
+        string shareFilesTitle;
+        string shareFile1AttachmentContents;
+        string shareFile1AttachmentName;
+        string shareFile2AttachmentContents;
+        string shareFile2AttachmentName;
 
         public ICommand RequestCommand { get; }
 
         public ICommand RequestFileCommand { get; }
 
+        public ICommand RequestFilesCommand { get; }
+
         public ShareViewModel()
         {
             RequestCommand = new Command<Xamarin.Forms.View>(OnRequest);
             RequestFileCommand = new Command<Xamarin.Forms.View>(OnFileRequest);
+            RequestFilesCommand = new Command<Xamarin.Forms.View>(OnFilesRequest);
         }
 
         public bool ShareText
@@ -82,40 +90,86 @@ namespace Samples.ViewModel
             set => SetProperty(ref shareFileAttachmentName, value);
         }
 
-        async void OnRequest(Xamarin.Forms.View element)
+        public string ShareFilesTitle
         {
-            var bounds = element.GetAbsoluteBounds();
+            get => shareFilesTitle;
+            set => SetProperty(ref shareFilesTitle, value);
+        }
 
-            await Share.RequestAsync(new ShareTextRequest
+        public string ShareFile1AttachmentContents
+        {
+            get => shareFile1AttachmentContents;
+            set => SetProperty(ref shareFile1AttachmentContents, value);
+        }
+
+        public string ShareFile1AttachmentName
+        {
+            get => shareFile1AttachmentName;
+            set => SetProperty(ref shareFile1AttachmentName, value);
+        }
+
+        public string ShareFile2AttachmentContents
+        {
+            get => shareFile2AttachmentContents;
+            set => SetProperty(ref shareFile2AttachmentContents, value);
+        }
+
+        public string ShareFile2AttachmentName
+        {
+            get => shareFile2AttachmentName;
+            set => SetProperty(ref shareFile2AttachmentName, value);
+        }
+
+        async void OnRequest(Xamarin.Forms.View element)
+            => await Share.RequestAsync(new ShareTextRequest
             {
                 Subject = Subject,
                 Text = ShareText ? Text : null,
                 Uri = ShareUri ? Uri : null,
                 Title = Title,
-                PresentationSourceBounds = bounds.ToSystemRectangle()
+                PresentationSourceBounds = GetRectangle(element)
             });
-        }
 
         async void OnFileRequest(Xamarin.Forms.View element)
         {
             if (string.IsNullOrWhiteSpace(ShareFileAttachmentContents))
                 return;
 
-            // create a temprary file
-            var fn = string.IsNullOrWhiteSpace(ShareFileAttachmentName)
-                ? "Attachment.txt"
-                : ShareFileAttachmentName.Trim();
-            var file = Path.Combine(FileSystem.CacheDirectory, fn);
-            File.WriteAllText(file, ShareFileAttachmentContents);
-
-            var bounds = element.GetAbsoluteBounds();
+            var file = CreateFile(ShareFileAttachmentName, ShareFileAttachmentContents, "Attachment.txt");
 
             await Share.RequestAsync(new ShareFileRequest
             {
-                Title = Title,
+                Title = ShareFileTitle,
                 File = new ShareFile(file),
-                PresentationSourceBounds = bounds.ToSystemRectangle()
+                PresentationSourceBounds = GetRectangle(element)
             });
         }
+
+        async void OnFilesRequest(Xamarin.Forms.View element)
+        {
+            if (string.IsNullOrWhiteSpace(ShareFile1AttachmentContents) ||
+                string.IsNullOrWhiteSpace(ShareFile2AttachmentContents))
+                return;
+
+            var file1 = CreateFile(ShareFile1AttachmentName, ShareFile1AttachmentContents, "Attachment1.txt");
+            var file2 = CreateFile(ShareFile2AttachmentName, ShareFile2AttachmentContents, "Attachment2.txt");
+
+            await Share.RequestAsync(new ShareMultipleFilesRequest
+            {
+                Title = ShareFilesTitle,
+                Files = new ShareFile[] { new ShareFile(file1), new ShareFile(file2) },
+                PresentationSourceBounds = GetRectangle(element)
+            });
+        }
+
+        string CreateFile(string fileName, string fileContents, string emptyName)
+        {
+            var fn = string.IsNullOrWhiteSpace(fileName) ? emptyName : fileName.Trim();
+            var file = Path.Combine(FileSystem.CacheDirectory, fn);
+            File.WriteAllText(file, fileContents);
+            return file;
+        }
+
+        System.Drawing.Rectangle GetRectangle(Xamarin.Forms.View element) => element.GetAbsoluteBounds().ToSystemRectangle();
     }
 }
