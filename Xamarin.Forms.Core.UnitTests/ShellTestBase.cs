@@ -352,6 +352,38 @@ namespace Xamarin.Forms.Core.UnitTests
 				OnNavigatingCount++;
 			}
 
+
+
+			public void TestNavigationArgs(ShellNavigationSource source, string from, string to)
+			{
+				TestNavigatingArgs(source, from, to);
+				TestNavigatedArgs(source, from, to);
+			}
+
+			public void TestNavigatedArgs(ShellNavigationSource source, string from, string to)
+			{
+				Assert.AreEqual(source, this.LastShellNavigatedEventArgs.Source);
+
+				if (from == null)
+					Assert.AreEqual(LastShellNavigatedEventArgs.Previous, null);
+				else
+					Assert.AreEqual(from, this.LastShellNavigatedEventArgs.Previous.Location.ToString());
+
+				Assert.AreEqual(to, this.LastShellNavigatedEventArgs.Current.Location.ToString());
+			}
+
+			public void TestNavigatingArgs(ShellNavigationSource source, string from, string to)
+			{
+				Assert.AreEqual(source, this.LastShellNavigatingEventArgs.Source);
+
+				if (from == null)
+					Assert.AreEqual(LastShellNavigatingEventArgs.Current, null);
+				else
+					Assert.AreEqual(from, this.LastShellNavigatingEventArgs.Current.Location.ToString());
+
+				Assert.AreEqual(to, this.LastShellNavigatingEventArgs.Target.Location.ToString());
+			}
+
 			public Func<bool> OnBackButtonPressedFunc;
 			protected override bool OnBackButtonPressed()
 			{
