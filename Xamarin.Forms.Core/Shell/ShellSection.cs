@@ -358,7 +358,7 @@ namespace Xamarin.Forms
 							await Navigation.PushModalAsync(page, IsNavigationAnimated(page));
 							break;
 						}
-						else if(!isLast && navIndex < _navStack.Count)
+						else if (!isLast && navIndex < _navStack.Count)
 						{
 							Navigation.InsertPageBefore(page, _navStack[navIndex]);
 						}

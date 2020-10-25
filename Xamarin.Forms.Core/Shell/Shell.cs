@@ -659,13 +659,13 @@ namespace Xamarin.Forms
 				filteredQuery.Add(key, q.Value);
 			}
 
-			
+
 			if (baseShellItem is ShellContent)
 				baseShellItem.ApplyQueryAttributes(MergeData(element, filteredQuery, isPopping));
 			else if (isLastItem)
 				element.SetValue(ShellContent.QueryAttributesProperty, MergeData(element, query, isPopping));
 
-			IDictionary<string,string> MergeData(Element shellElement, IDictionary<string, string> data, bool isPopping)
+			IDictionary<string, string> MergeData(Element shellElement, IDictionary<string, string> data, bool isPopping)
 			{
 				if (!isPopping)
 					return data;
@@ -677,7 +677,7 @@ namespace Xamarin.Forms
 				if (existing == null)
 					return data;
 
-				foreach(var datum in existing)
+				foreach (var datum in existing)
 				{
 					if (!returnValue.ContainsKey(datum.Key))
 						returnValue[datum.Key] = datum.Value;
@@ -1285,7 +1285,7 @@ namespace Xamarin.Forms
 		{
 			if (_accumulateNavigatedEvents)
 			{
-				if(_accumulatedEvent == null)
+				if (_accumulatedEvent == null)
 					_accumulatedEvent = args;
 			}
 			else
@@ -1665,7 +1665,7 @@ namespace Xamarin.Forms
 
 			var targetUri = ShellUriHandler.ConvertToStandardFormat(this, request.Request.FullUri);
 			var currentUri = ShellUriHandler.ConvertToStandardFormat(this, current.FullLocation);
-			
+
 			var targetPaths = ShellUriHandler.RetrievePaths(targetUri.PathAndQuery);
 			var currentPaths = ShellUriHandler.RetrievePaths(currentUri.PathAndQuery);
 
@@ -1685,7 +1685,7 @@ namespace Xamarin.Forms
 			if (targetPathsLength == currentPathsLength)
 				return ShellNavigationSource.Unknown;
 
-			if(targetPathsLength < currentPathsLength)
+			if (targetPathsLength < currentPathsLength)
 			{
 				for (var i = 0; i < targetPathsLength; i++)
 				{
@@ -1710,7 +1710,7 @@ namespace Xamarin.Forms
 
 				return ShellNavigationSource.Pop;
 			}
-			else if(targetPathsLength > currentPathsLength)
+			else if (targetPathsLength > currentPathsLength)
 			{
 				for (var i = 0; i < currentPathsLength; i++)
 				{

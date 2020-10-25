@@ -390,7 +390,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public async Task PoppingSamePageSetsCorrectNavigationSource()
 		{
 			Routing.RegisterRoute("detailspage", typeof(ContentPage));
-			var shell = new TestShell(CreateShellItem(shellItemRoute:"item1"));
+			var shell = new TestShell(CreateShellItem(shellItemRoute: "item1"));
 			await shell.GoToAsync("detailspage/detailspage");
 			await shell.Navigation.PopAsync();
 
@@ -471,7 +471,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public async Task ChangingShellSectionSetsCorrectNavigationSource()
 		{
 			var shell = new TestShell(
-				CreateShellItem(shellSectionRoute:"item1")
+				CreateShellItem(shellSectionRoute: "item1")
 			);
 
 			shell.Items[0].Items.Add(CreateShellSection(shellContentRoute: "item2"));
@@ -486,7 +486,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public async Task ChangingShellContentSetsCorrectNavigationSource()
 		{
 			var shell = new TestShell(
-				CreateShellItem(shellContentRoute:"item1")
+				CreateShellItem(shellContentRoute: "item1")
 			);
 
 			shell.Items[0].Items[0].Items.Add(CreateShellContent(shellContentRoute: "item2"));

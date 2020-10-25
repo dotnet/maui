@@ -29,5 +29,5 @@ namespace Xamarin.Forms
 
 			return $"{r.X}, {r.Y}, {r.Width}, {r.Height}";
 		}
-	}	
+	}
 }

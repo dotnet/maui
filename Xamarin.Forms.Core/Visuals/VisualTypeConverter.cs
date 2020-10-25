@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
-using System.Linq;
 
 namespace Xamarin.Forms
 {

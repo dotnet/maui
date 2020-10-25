@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Platform.Android
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public override void OnReceivedError(WView view, ClientError errorCode, string description, string failingUrl)
 		{
-			if(failingUrl == _renderer?.Control.Url)
+			if (failingUrl == _renderer?.Control.Url)
 			{
 				_navigationResult = WebNavigationResult.Failure;
 				if (errorCode == ClientError.Timeout)
@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override void OnReceivedError(WView view, IWebResourceRequest request, WebResourceError error)
 		{
-			if(request.Url.ToString() == _renderer?.Control.Url)
+			if (request.Url.ToString() == _renderer?.Control.Url)
 			{
 				_navigationResult = WebNavigationResult.Failure;
 				if (error.ErrorCode == ClientError.Timeout)

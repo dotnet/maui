@@ -142,7 +142,7 @@ namespace Xamarin.Forms.Core.UITests
 		public void DragAndDrop(string from, string to)
 		{
 			DragAndDrop(
-				FindFirstElement(WinQuery.FromMarked(from)), 
+				FindFirstElement(WinQuery.FromMarked(from)),
 				FindFirstElement(WinQuery.FromMarked(to))
 			);
 		}

@@ -276,7 +276,7 @@ namespace Xamarin.Forms
 				if (basis.IsAuto)
 					return "auto";
 				if (basis.IsRelative)
-					return $"{basis.Length*100}%";
+					return $"{basis.Length * 100}%";
 				return $"{basis.Length}";
 			}
 		}

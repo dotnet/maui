@@ -260,7 +260,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public async Task NavigatingBackAbsolutelyClearsParametersFromPreviousPage()
 		{
-			var shell = new TestShell(CreateShellItem(shellItemRoute:"item"));
+			var shell = new TestShell(CreateShellItem(shellItemRoute: "item"));
 
 			Routing.RegisterRoute("details", typeof(ShellTestPage));
 
