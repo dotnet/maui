@@ -487,6 +487,7 @@
       <Member Id="M:Xamarin.Essentials.Location.#ctor" />
       <Member Id="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double,System.DateTimeOffset)" />
+      <Member Id="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Location.#ctor(Xamarin.Essentials.Location)" />
       <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
