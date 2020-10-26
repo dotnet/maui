@@ -18,7 +18,7 @@ namespace Xamarin.Essentials
             {
                 // The DataManager.Get call throws an exception if key does not exist. Not logging
                 // anything since this is an expected and normal situation (if the key did not exist).
-                return null;
+                return Task.FromResult<string>(null);
             }
             catch
             {
