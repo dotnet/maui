@@ -1607,6 +1607,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue11081.xaml.cs">
       <DependentUpon>Issue11081.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue12222.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

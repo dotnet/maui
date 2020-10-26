@@ -54,12 +54,13 @@ namespace Xamarin.Forms
 		const int TabletCrossover = 600;
 
 		static BuildVersionCodes? s_sdkInt;
-		static bool? s_isLollipopOrNewer;
 		static bool? s_is29OrNewer;
+		static bool? s_isJellyBeanMr1OrNewer;
+		static bool? s_isLollipopOrNewer;
 		static bool? s_isMarshmallowOrNewer;
 		static bool? s_isNougatOrNewer;
 		static bool? s_isOreoOrNewer;
-		static bool? s_isJellyBeanMr1OrNewer;
+		static bool? s_isPieOrNewer;
 
 		[Obsolete("Context is obsolete as of version 2.5. Please use a local context instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -142,6 +143,16 @@ namespace Xamarin.Forms
 				if (!s_isOreoOrNewer.HasValue)
 					s_isOreoOrNewer = SdkInt >= BuildVersionCodes.O;
 				return s_isOreoOrNewer.Value;
+			}
+		}
+
+		internal static bool IsPieOrNewer
+		{
+			get
+			{
+				if (!s_isPieOrNewer.HasValue)
+					s_isPieOrNewer = SdkInt >= BuildVersionCodes.P;
+				return s_isPieOrNewer.Value;
 			}
 		}
 
