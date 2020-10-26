@@ -12,5 +12,7 @@ namespace Xamarin.Forms.Shapes
 
 			return pathGeometry;
 		}
+
+		public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
 	}
 }

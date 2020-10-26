@@ -62,10 +62,10 @@ namespace Xamarin.Forms
 			_targetProperty = property;
 
 			if (_weakTarget != null && _weakTarget.TryGetTarget(out BindableObject prevTarget) && !ReferenceEquals(prevTarget, target))
-				throw new InvalidOperationException("Binding instances can not be reused");
+				throw new InvalidOperationException("Binding instances cannot be reused");
 
 			if (_weakSource != null && _weakSource.TryGetTarget(out var previousSource) && !ReferenceEquals(previousSource, sourceObject))
-				throw new InvalidOperationException("Binding instances can not be reused");
+				throw new InvalidOperationException("Binding instances cannot be reused");
 
 			_weakSource = new WeakReference<object>(sourceObject);
 			_weakTarget = new WeakReference<BindableObject>(target);
@@ -152,8 +152,8 @@ namespace Xamarin.Forms
 
 				if (!TryConvert(ref value, property, property.ReturnType, true))
 				{
-					Log.Warning("Binding", "'{0}' can not be converted to type '{1}'.", value, property.ReturnType);
-					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, null, "{0} can not be converted to type '{1}'", new[] { value, property.ReturnType });
+					Log.Warning("Binding", "'{0}' cannot be converted to type '{1}'.", value, property.ReturnType);
+					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, null, "{0} cannot be converted to type '{1}'", new[] { value, property.ReturnType });
 					return;
 				}
 
@@ -165,8 +165,8 @@ namespace Xamarin.Forms
 
 				if (!TryConvert(ref value, property, part.SetterType, false))
 				{
-					Log.Warning("Binding", "'{0}' can not be converted to type '{1}'.", value, part.SetterType);
-					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, null, "{0} can not be converted to type '{1}'", new[] { value, part.SetterType });
+					Log.Warning("Binding", "'{0}' cannot be converted to type '{1}'.", value, part.SetterType);
+					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, null, "{0} cannot be converted to type '{1}'", new[] { value, part.SetterType });
 					return;
 				}
 

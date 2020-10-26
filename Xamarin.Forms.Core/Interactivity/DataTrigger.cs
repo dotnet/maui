@@ -21,7 +21,7 @@ namespace Xamarin.Forms
 				if (((BindingCondition)Condition).Binding == value)
 					return;
 				if (IsSealed)
-					throw new InvalidOperationException("Can not change Binding once the Trigger has been applied.");
+					throw new InvalidOperationException("Cannot change Binding once the Trigger has been applied.");
 				OnPropertyChanging();
 				((BindingCondition)Condition).Binding = value;
 				OnPropertyChanged();
@@ -41,7 +41,7 @@ namespace Xamarin.Forms
 				if (((BindingCondition)Condition).Value == value)
 					return;
 				if (IsSealed)
-					throw new InvalidOperationException("Can not change Value once the Trigger has been applied.");
+					throw new InvalidOperationException("Cannot change Value once the Trigger has been applied.");
 				OnPropertyChanging();
 				((BindingCondition)Condition).Value = value;
 				OnPropertyChanged();

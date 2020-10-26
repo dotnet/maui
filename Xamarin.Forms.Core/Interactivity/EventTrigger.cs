@@ -69,7 +69,7 @@ namespace Xamarin.Forms
 			}
 			catch (Exception)
 			{
-				Log.Warning("EventTrigger", "Can not attach EventTrigger to {0}.{1}. Check if the handler exists and if the signature is right.", bindable.GetType(), Event);
+				Log.Warning("EventTrigger", "Cannot attach EventTrigger to {0}.{1}. Check if the handler exists and if the signature is right.", bindable.GetType(), Event);
 			}
 			if (_eventinfo != null && _handlerdelegate != null)
 				_eventinfo.AddEventHandler(bindable, _handlerdelegate);

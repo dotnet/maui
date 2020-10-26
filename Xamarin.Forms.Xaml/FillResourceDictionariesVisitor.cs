@@ -8,10 +8,7 @@ namespace Xamarin.Forms.Xaml
 {
 	class FillResourceDictionariesVisitor : IXamlNodeVisitor
 	{
-		public FillResourceDictionariesVisitor(HydrationContext context)
-		{
-			Context = context;
-		}
+		public FillResourceDictionariesVisitor(HydrationContext context) => Context = context;
 
 		HydrationContext Context { get; }
 		Dictionary<INode, object> Values => Context.Values;
@@ -74,8 +71,7 @@ namespace Xamarin.Forms.Xaml
 
 		public bool SkipChildren(INode node, INode parentNode)
 		{
-			var enode = node as ElementNode;
-			if (enode is null)
+			if (!(node is ElementNode))
 				return false;
 			if (parentNode is IElementNode
 				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)

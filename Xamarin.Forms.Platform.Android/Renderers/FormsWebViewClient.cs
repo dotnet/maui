@@ -85,9 +85,12 @@ namespace Xamarin.Forms.Platform.Android
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public override void OnReceivedError(WView view, ClientError errorCode, string description, string failingUrl)
 		{
-			_navigationResult = WebNavigationResult.Failure;
-			if (errorCode == ClientError.Timeout)
-				_navigationResult = WebNavigationResult.Timeout;
+			if (failingUrl == _renderer?.Control.Url)
+			{
+				_navigationResult = WebNavigationResult.Failure;
+				if (errorCode == ClientError.Timeout)
+					_navigationResult = WebNavigationResult.Timeout;
+			}
 #pragma warning disable 618
 			base.OnReceivedError(view, errorCode, description, failingUrl);
 #pragma warning restore 618
@@ -95,9 +98,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override void OnReceivedError(WView view, IWebResourceRequest request, WebResourceError error)
 		{
-			_navigationResult = WebNavigationResult.Failure;
-			if (error.ErrorCode == ClientError.Timeout)
-				_navigationResult = WebNavigationResult.Timeout;
+			if (request.Url.ToString() == _renderer?.Control.Url)
+			{
+				_navigationResult = WebNavigationResult.Failure;
+				if (error.ErrorCode == ClientError.Timeout)
+					_navigationResult = WebNavigationResult.Timeout;
+			}
 			base.OnReceivedError(view, request, error);
 		}
 

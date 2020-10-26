@@ -162,6 +162,11 @@
         <target state="translated">O x:DataType espera um literal de cadeia de caracteres, uma marcação {{x:Type}} ou um {{x:Nul}l}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="XKeyNotLiteral">
+        <source>x:Key expects a string literal.</source>
+        <target state="new">x:Key expects a string literal.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="XStaticResolution">
         <source>x:Static: unable to find a public -- or accessible internal -- static field, static property, const or enum value named "{0}" in "{1}".</source>
         <target state="translated">O x:Static: não pôde encontrar um campo estático, uma propriedade estática, um valor const ou enumerado público (ou interno acessível) denominado "{0}" em "{1}".</target>

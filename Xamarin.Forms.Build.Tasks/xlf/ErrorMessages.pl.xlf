@@ -162,6 +162,11 @@
         <target state="translated">Argument x:DataType oczekuje literału ciągu, znacznika {{x:Type}} lub {{x:Nul}l}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="XKeyNotLiteral">
+        <source>x:Key expects a string literal.</source>
+        <target state="new">x:Key expects a string literal.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="XStaticResolution">
         <source>x:Static: unable to find a public -- or accessible internal -- static field, static property, const or enum value named "{0}" in "{1}".</source>
         <target state="translated">x:Static: nie można odnaleźć publicznego — lub dostępnego wewnętrznie — pola statycznego, właściwości statycznej, stałej lub wartości wyliczenia o nazwie „{0}” w typie „{1}”.</target>

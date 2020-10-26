@@ -19,5 +19,12 @@ namespace Xamarin.Forms
 
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(Size)));
 		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is Size size))
+				throw new NotSupportedException();
+			return $"{size.Width}, {size.Height}";
+		}
 	}
 }

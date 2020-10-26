@@ -52,26 +52,37 @@ namespace Xamarin.Forms.Platform.Tizen
 				Style = SKPaintStyle.Fill
 			};
 
-			SKShader backgroundShader = null;
 			if (brush is GradientBrush fillGradientBrush)
 			{
-				if (fillGradientBrush is LinearGradientBrush linearGradientBrush)
-					backgroundShader = CreateLinearGradient(linearGradientBrush, bounds);
-
-				if (fillGradientBrush is RadialGradientBrush radialGradientBrush)
-					backgroundShader = CreateRadialGradient(radialGradientBrush, bounds);
-
-				paint.Shader = backgroundShader;
+				paint.Shader = fillGradientBrush.CreateShader(bounds);
 			}
-			else
+			else if (brush is SolidColorBrush solidColorBrush)
 			{
-				SKColor fillColor = Color.Default.ToNative().ToSKColor();
-				if (brush is SolidColorBrush solidColorBrush && solidColorBrush.Color != Color.Default)
-					fillColor = solidColorBrush.Color.ToNative().ToSKColor();
-
-				paint.Color = fillColor;
+				paint.Color = solidColorBrush.ToSolidColor();
 			}
 			return paint;
+		}
+
+		public static SKShader CreateShader(this GradientBrush gradientBrush, SKRect bounds)
+		{
+			SKShader shader = null;
+
+			if (gradientBrush is LinearGradientBrush linearGradientBrush)
+			{
+				shader = CreateLinearGradient(linearGradientBrush, bounds);
+			}
+
+			if (gradientBrush is RadialGradientBrush radialGradientBrush)
+			{
+				shader = CreateRadialGradient(radialGradientBrush, bounds);
+			}
+
+			return shader;
+		}
+
+		public static SKColor ToSolidColor(this SolidColorBrush solidColorBrush)
+		{
+			return solidColorBrush.Color != Color.Default ? solidColorBrush.Color.ToNative().ToSKColor() : SKColor.Empty;
 		}
 
 		static SKShader CreateLinearGradient(LinearGradientBrush linearGradientBrush, SKRect pathBounds)

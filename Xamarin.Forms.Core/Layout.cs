@@ -429,7 +429,7 @@ namespace Xamarin.Forms
 						continue;
 
 					if (item == this)
-						throw new InvalidOperationException("Can not add self to own child collection.");
+						throw new InvalidOperationException("Cannot add self to own child collection.");
 
 					OnInternalAdded(v);
 				}

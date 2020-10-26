@@ -38,7 +38,7 @@ namespace Xamarin.Forms
 				if (_isSealed == value)
 					return;
 				if (!value)
-					throw new InvalidOperationException("What is sealed can not be unsealed.");
+					throw new InvalidOperationException("What is sealed cannot be unsealed.");
 				_isSealed = value;
 				OnSeal();
 			}

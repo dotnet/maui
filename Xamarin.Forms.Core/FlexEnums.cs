@@ -34,6 +34,13 @@ namespace Xamarin.Forms
 			}
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexJustify)));
 		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is FlexJustify fj))
+				throw new NotSupportedException();
+			return fj.ToString();
+		}
 	}
 
 	public enum FlexPosition
@@ -66,6 +73,13 @@ namespace Xamarin.Forms
 					return FlexDirection.ColumnReverse;
 			}
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexDirection)));
+		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is FlexDirection fd))
+				throw new NotSupportedException();
+			return fd.ToString();
 		}
 	}
 
@@ -101,6 +115,13 @@ namespace Xamarin.Forms
 			}
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexAlignContent)));
 		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is FlexAlignContent fac))
+				throw new NotSupportedException();
+			return fac.ToString();
+		}
 	}
 
 	[TypeConverter(typeof(FlexAlignItemsTypeConverter))]
@@ -128,6 +149,13 @@ namespace Xamarin.Forms
 					return FlexAlignItems.End;
 			}
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexAlignItems)));
+		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is FlexAlignItems fai))
+				throw new NotSupportedException();
+			return fai.ToString();
 		}
 	}
 
@@ -158,6 +186,13 @@ namespace Xamarin.Forms
 			}
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexAlignSelf)));
 		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is FlexAlignSelf fes))
+				throw new NotSupportedException();
+			return fes.ToString();
+		}
 	}
 
 	[TypeConverter(typeof(FlexWrapTypeConverter))]
@@ -181,6 +216,13 @@ namespace Xamarin.Forms
 					return FlexWrap.Reverse;
 			}
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexWrap)));
+		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is FlexWrap fw))
+				throw new NotSupportedException();
+			return fw.ToString();
 		}
 	}
 
@@ -225,6 +267,17 @@ namespace Xamarin.Forms
 						return new FlexBasis(flex);
 				}
 				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexBasis)));
+			}
+
+			public override string ConvertToInvariantString(object value)
+			{
+				if (!(value is FlexBasis basis))
+					throw new NotSupportedException();
+				if (basis.IsAuto)
+					return "auto";
+				if (basis.IsRelative)
+					return $"{basis.Length * 100}%";
+				return $"{basis.Length}";
 			}
 		}
 	}

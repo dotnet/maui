@@ -244,5 +244,9 @@
   </data>
   <data name="XStaticSyntax" xml:space="preserve">
     <value>Syntax for x:Static is "[Member=][prefix:]typeName.staticMemberName".</value>
+  </data>  
+  <data name="XKeyNotLiteral" xml:space="preserve">
+    <value>x:Key expects a string literal.</value>
   </data>
+  
 </root>

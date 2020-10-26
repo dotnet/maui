@@ -53,5 +53,35 @@ namespace Xamarin.Forms
 
 			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Easing)}");
 		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is Easing easing))
+				throw new NotSupportedException();
+
+			if (easing == Linear)
+				return nameof(Linear);
+			if (easing == SinIn)
+				return nameof(SinIn);
+			if (easing == SinOut)
+				return nameof(SinOut);
+			if (easing == SinInOut)
+				return nameof(SinInOut);
+			if (easing == CubicIn)
+				return nameof(CubicIn);
+			if (easing == CubicOut)
+				return nameof(CubicOut);
+			if (easing == CubicInOut)
+				return nameof(CubicInOut);
+			if (easing == BounceIn)
+				return nameof(BounceIn);
+			if (easing == BounceOut)
+				return nameof(BounceOut);
+			if (easing == SpringIn)
+				return nameof(SpringIn);
+			if (easing == SpringOut)
+				return nameof(SpringOut);
+			throw new NotSupportedException();
+		}
 	}
 }

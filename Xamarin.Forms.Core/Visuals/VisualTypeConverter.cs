@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
@@ -119,14 +120,29 @@ namespace Xamarin.Forms
 
 			if (value != null)
 			{
-				IVisual returnValue = null;
-				if (_visualTypeMappings.TryGetValue(value, out returnValue))
+				if (_visualTypeMappings.TryGetValue(value, out IVisual returnValue))
 					return returnValue;
 
 				return VisualMarker.Default;
 			}
 
 			throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(IVisual)}");
+		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is IVisual visual))
+				throw new NotSupportedException();
+
+			if (_visualTypeMappings == null)
+				InitMappings();
+
+			if (visual == VisualMarker.Default)
+				return "default";
+
+			if (_visualTypeMappings.ContainsValue(visual))
+				return _visualTypeMappings.Keys.Skip(_visualTypeMappings.Values.IndexOf(visual)).First();
+			throw new NotSupportedException();
 		}
 	}
 }

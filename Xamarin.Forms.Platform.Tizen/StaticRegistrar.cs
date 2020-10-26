@@ -4,6 +4,7 @@ using System.Reflection;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Tizen.Native;
 using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using Xamarin.Forms.Shapes;
 using Xamarin.Forms.Xaml.Internals;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -145,6 +146,13 @@ namespace Xamarin.Forms.Platform.Tizen
 				Registered.Register(typeof(Frame), () => new SkiaSharp.FrameRenderer());
 				Registered.Register(typeof(BoxView), () => new SkiaSharp.BoxViewRenderer());
 				Registered.Register(typeof(Image), () => new SkiaSharp.ImageRenderer());
+
+				Registered.Register(typeof(Ellipse), () => new SkiaSharp.EllipseRenderer());
+				Registered.Register(typeof(Line), () => new SkiaSharp.LineRenderer());
+				Registered.Register(typeof(Path), () => new SkiaSharp.PathRenderer());
+				Registered.Register(typeof(Polygon), () => new SkiaSharp.PolygonRenderer());
+				Registered.Register(typeof(Polyline), () => new SkiaSharp.PolylineRenderer());
+				Registered.Register(typeof(Shapes.Rectangle), () => new SkiaSharp.RectangleRenderer());
 			}
 
 			//Custom Handlers

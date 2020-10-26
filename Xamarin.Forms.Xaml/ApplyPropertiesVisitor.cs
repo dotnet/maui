@@ -46,9 +46,8 @@ namespace Xamarin.Forms.Xaml
 			if (!Values.TryGetValue(parentNode, out var source) && Context.ExceptionHandler != null)
 				return;
 
-			XmlName propertyName;
 
-			if (TryGetPropertyName(node, parentNode, out propertyName))
+			if (TryGetPropertyName(node, parentNode, out XmlName propertyName))
 			{
 				if (TrySetRuntimeName(propertyName, source, value, node))
 					return;
@@ -82,8 +81,7 @@ namespace Xamarin.Forms.Xaml
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			XmlName propertyName;
-			if (TryGetPropertyName(node, parentNode, out propertyName) && propertyName == XmlName._CreateContent)
+			if (TryGetPropertyName(node, parentNode, out XmlName propertyName) && propertyName == XmlName._CreateContent)
 			{
 				var s0 = Values[parentNode];
 				if (s0 is ElementTemplate)
@@ -97,8 +95,7 @@ namespace Xamarin.Forms.Xaml
 			propertyName = XmlName.Empty;
 
 			//Simplify ListNodes with single elements
-			var pList = parentNode as ListNode;
-			if (pList != null && pList.CollectionItems.Count == 1)
+			if (parentNode is ListNode pList && pList.CollectionItems.Count == 1)
 			{
 				propertyName = pList.XmlName;
 				parentNode = parentNode.Parent;
@@ -127,7 +124,15 @@ namespace Xamarin.Forms.Xaml
 				ProvideValue(ref value, node, source, XmlName.Empty);
 				string contentProperty;
 				Exception xpe = null;
-				var xKey = node.Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)node.Properties[XmlName.xKey]).Value as string : null;
+
+				string xKey = null;
+				if (xpe == null && node.Properties.ContainsKey(XmlName.xKey))
+				{
+					if ((node.Properties[XmlName.xKey] is ValueNode valueNode))
+						xKey = valueNode.Value as string;
+					if (xKey == null)
+						xpe = new XamlParseException("x:Key expects a string literal.", node as IXmlLineInfo);
+				}
 
 				//ResourceDictionary
 				if (xpe == null && TryAddToResourceDictionary(source as ResourceDictionary, value, xKey, node, out xpe))
@@ -168,10 +173,17 @@ namespace Xamarin.Forms.Xaml
 				if (Skips.Contains(parentList.XmlName))
 					return;
 				Exception xpe = null;
-				var xKey = node.Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)node.Properties[XmlName.xKey]).Value as string : null;
+				string xKey = null;
+				if (xpe == null && node.Properties.ContainsKey(XmlName.xKey))
+				{
+					if ((node.Properties[XmlName.xKey] is ValueNode valueNode))
+						xKey = valueNode.Value as string;
+					if (xKey == null)
+						xpe = new XamlParseException("x:Key expects a string literal.", node as IXmlLineInfo);
+				}
 
 				var collection = GetPropertyValue(source, parentList.XmlName, Context.RootElement, parentList, out _, out _) as IEnumerable;
-				if (collection == null)
+				if (xpe == null && collection == null)
 					xpe = new XamlParseException($"Property {parentList.XmlName.LocalName} is null or is not IEnumerable", node);
 
 				if (xpe == null && TryAddToResourceDictionary(collection as ResourceDictionary, value, xKey, node, out xpe))
