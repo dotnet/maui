@@ -463,6 +463,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			if (itemContext != null && itemContext.Cell != null)
 			{
+				itemContext.Cell.SendSignalToItem(evt.Item);
 				(itemContext.Cell as ICellController).SendAppearing();
 			}
 		}
