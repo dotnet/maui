@@ -2,13 +2,13 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Text.Method;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
 using Xamarin.Forms.Internals;
 using AButton = Android.Widget.Button;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
-using Android.Text.Method;
 
 namespace Xamarin.Forms.Platform.Android
 {
