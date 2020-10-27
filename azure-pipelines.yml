@@ -59,9 +59,7 @@ stages:
       displayName: Sign Artifacts
       dependsOn: [ 'build' ]
       jobs:
-        - template: sign-artifacts/jobs/v1.yml@internal-templates
-          parameters:
-            additionalConditions: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+        - template: sign-artifacts/jobs/v2.yml@internal-templates
 
   - stage: devicetests
     displayName: Device Tests
