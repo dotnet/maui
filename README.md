@@ -69,11 +69,11 @@ Do you have questions? Do not worry, we have prepared a complete [FAQ](https://g
 
 ## How to Engage, Contribute, and Give Feedback
 
-Some of the best ways to [contribute](./CONTRIBUTING.md) are to try things out, file issues, join in design conversations,
+Some of the best ways to [contribute](./.github/CONTRIBUTING.md) are to try things out, file issues, join in design conversations,
 and make pull-requests. Proposals for changes specific to MAUI can be found [here for discussion](../../issues).
 
-See [CONTRIBUTING](./CONTRIBUTING.md)
+See [CONTRIBUTING](./.github/CONTRIBUTING.md)
 
 ## Code of conduct
 
-See [CODE-OF-CONDUCT](./CODE-OF-CONDUCT.md)
+See [CODE-OF-CONDUCT](./.github/CODE_OF_CONDUCT.md)
