@@ -10,7 +10,7 @@ using Xamarin.Forms.Controls.Issues;
 namespace Xamarin.Forms.ControlGallery.Android
 {
 		public class FlatButtonRenderer :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.ButtonRenderer
 #else
 		ButtonRenderer

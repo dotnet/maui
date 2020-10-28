@@ -156,7 +156,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 	}
 
 	public class AttachedStateEffectLabelRenderer :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.LabelRenderer
 #else
 		LabelRenderer

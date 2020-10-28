@@ -11,7 +11,7 @@ using Xamarin.Forms.Platform.Android;
 namespace Xamarin.Forms.ControlGallery.Android
 {
 	public class _60122ImageRenderer :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.ImageRenderer
 #else
 		ImageRenderer

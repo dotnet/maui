@@ -5,7 +5,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 {
 #pragma warning disable 618
 	public class DisposeLabelRenderer :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.LabelRenderer
 #else
 		LabelRenderer
