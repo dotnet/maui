@@ -183,6 +183,12 @@ namespace Xamarin.Forms.Platform.Android
 			if (View?.LayoutParameters == null && _hasLayoutOccurred)
 				return;
 
+			if (View != null && !_elementAlreadyChanged)
+			{
+				_defaultTransformationMethod = View.TransformationMethod;
+				_elementAlreadyChanged = true;
+			}
+
 			if (!UpdateTextAndImage())
 				UpdateImage();
 
@@ -201,12 +207,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_element = button;
 				_element.PropertyChanged += OnElementPropertyChanged;
-
-				if (!_elementAlreadyChanged)
-				{
-					_defaultTransformationMethod = _renderer.View.TransformationMethod;
-					_elementAlreadyChanged = true;
-				}
 			}
 
 			Update();
@@ -279,9 +279,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			// Use defaults only when user hasn't specified alternative TextTransform settings
 			if (textTransform == TextTransform.Default)
-				_renderer.View.TransformationMethod = _defaultTransformationMethod;
+				view.TransformationMethod = _defaultTransformationMethod;
 			else
-				_renderer.View.TransformationMethod = null;
+				view.TransformationMethod = null;
 
 			string oldText = view.Text;
 			view.Text = _element.UpdateFormsText(_element.Text, textTransform);

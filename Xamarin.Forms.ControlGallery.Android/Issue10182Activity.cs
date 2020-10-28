@@ -63,7 +63,9 @@ namespace Xamarin.Forms.ControlGallery.Android
 				finally
 				{
 					this.Finish();
+#if !FORMS_APPLICATION_ACTIVITY
 					_activity1.ReloadApplication();
+#endif
 					currentApplication.MainPage = new Issue10182.Issue10182SuccessPage();
 				}
 			});
