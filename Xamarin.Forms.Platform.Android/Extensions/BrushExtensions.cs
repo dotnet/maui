@@ -130,7 +130,14 @@ namespace Xamarin.Forms.Platform.Android
 				var y2 = (float)p2.Y;
 
 				const double Rad2Deg = 180.0 / Math.PI;
-				var angle = Math.Atan2(y2 - y1, x2 - x1) * Rad2Deg;
+
+				float xDiff = x2 - x1;
+				float yDiff = y2 - y1;
+
+				double angle = Math.Atan2(yDiff, xDiff) * Rad2Deg;
+
+				if (angle < 0)
+					angle += 360;
 
 				var gradientBrushData = linearGradientBrush.GetGradientBrushData();
 				var colors = gradientBrushData.Item1;
@@ -140,7 +147,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				gradientDrawable.SetGradientType(GradientType.LinearGradient);
 				gradientDrawable.SetColors(colors);
-				gradientDrawable.SetGradientOrientation(angle);
+				SetGradientOrientation(gradientDrawable, angle);
 			}
 
 			if (brush is RadialGradientBrush radialGradientBrush)
@@ -203,14 +210,35 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal static void SetGradientOrientation(this GradientDrawable drawable, double angle)
 		{
-			var orientation =
-				angle >= 0 && angle < 45 ? Orientation.LeftRight :
-				angle < 90 ? Orientation.TrBl :
-				angle < 135 ? Orientation.TopBottom :
-				angle < 180 ? Orientation.BrTl :
-				angle < 225 ? Orientation.RightLeft :
-				angle < 270 ? Orientation.BlTr :
-				angle < 315 ? Orientation.BottomTop : Orientation.TlBr;
+			Orientation orientation = Orientation.LeftRight;
+
+			switch (angle)
+			{
+				case 0:
+					orientation = Orientation.LeftRight;
+					break;
+				case 45:
+					orientation = Orientation.TlBr;
+					break;
+				case 90:
+					orientation = Orientation.TopBottom;
+					break;
+				case 135:
+					orientation = Orientation.TrBl;
+					break;
+				case 180:
+					orientation = Orientation.RightLeft;
+					break;
+				case 225:
+					orientation = Orientation.BrTl;
+					break;
+				case 270:
+					orientation = Orientation.BottomTop;
+					break;
+				case 315:
+					orientation = Orientation.BlTr;
+					break;
+			}
 
 			drawable.SetOrientation(orientation);
 		}
