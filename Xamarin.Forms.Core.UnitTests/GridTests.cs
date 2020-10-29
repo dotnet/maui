@@ -307,7 +307,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			innerGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
 			innerGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
 
-			var hugeLabel = new _12292TestLabel() {  };
+			var hugeLabel = new _12292TestLabel() { };
 			var tinyLabel = new ColumnTestLabel { Text = "label1" };
 
 			innerGrid.Children.Add(hugeLabel);

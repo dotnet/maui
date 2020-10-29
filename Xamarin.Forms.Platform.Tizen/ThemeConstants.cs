@@ -132,6 +132,15 @@ namespace Xamarin.Forms.Platform.Tizen
 				public const string BottomLine = "bottomline";
 				public const string Background = Common.ColorClass.BackGround;
 			}
+
+			public class Signals
+			{
+				public class TV
+				{
+					public const string SinglelineIconTextTheme = "theme,singleline,icon,text";
+					public const string SinglelineTextIconTheme = "theme,singleline,text,1icon";
+				}
+			}
 		}
 		#endregion
 

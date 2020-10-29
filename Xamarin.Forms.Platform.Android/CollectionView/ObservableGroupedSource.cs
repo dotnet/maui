@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			for (int groupIndex = 0; groupIndex < _groupSource.Count; groupIndex++)
 			{
-				if (_groupSource[groupIndex] == item)
+				if (_groupSource[groupIndex].Equals(item))
 				{
 					return AdjustPositionForHeader(groupIndex);
 				}
