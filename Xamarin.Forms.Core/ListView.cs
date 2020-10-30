@@ -470,7 +470,7 @@ namespace Xamarin.Forms
 			_previousGroupSelected = groupIndex;
 
 			// A11y: Keyboards and screen readers can deselect items, allowing -1 to be possible
-			if (cell == null && inGroupIndex != -1)
+			if (cell == null && inGroupIndex >= 0 && group.Count > inGroupIndex)
 			{
 				cell = group[inGroupIndex];
 			}
