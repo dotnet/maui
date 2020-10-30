@@ -182,8 +182,11 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdatePicker();
 		}
 
-        protected void UpdateCharacterSpacing()
-        {
+		protected void UpdateCharacterSpacing()
+		{
+			if (Control == null)
+				return;
+
 			var textAttr = Control.AttributedText.AddCharacterSpacing(Control.Text, Element.CharacterSpacing);
 
 			if (textAttr != null)
