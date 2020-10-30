@@ -16,6 +16,8 @@ namespace Xamarin.Forms
 	{
 		readonly List<Element> _logicalChildren = new List<Element>();
 
+		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => _logicalChildren;
+
 		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create("IsPullToRefreshEnabled", typeof(bool), typeof(ListView), false);
 
 		public static readonly BindableProperty IsRefreshingProperty = BindableProperty.Create("IsRefreshing", typeof(bool), typeof(ListView), false, BindingMode.TwoWay);
