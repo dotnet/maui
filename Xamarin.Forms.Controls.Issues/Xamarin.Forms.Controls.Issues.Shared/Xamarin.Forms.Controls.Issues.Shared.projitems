@@ -10,6 +10,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewGroupTypeIssue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue10897.xaml.cs">
+      <DependentUpon>Issue10897.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue12320.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue12153.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10324.cs" />
@@ -2434,6 +2437,12 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11794.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10897.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

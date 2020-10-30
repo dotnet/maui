@@ -515,7 +515,9 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (e.NewSize.Width > 0 && e.NewSize.Height > 0)
 			{
+				ListViewBase.SizeChanged -= InitialSetup;
 				_scrollViewer.SizeChanged -= InitialSetup;
+
 				UpdateItemsSource();
 				UpdateSnapPointsType();
 				UpdateSnapPointsAlignment();
