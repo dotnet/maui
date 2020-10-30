@@ -9,7 +9,7 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Issue(IssueTracker.Github,11715, "[Bug] Brushes API - Android's direction is inverted to iOS's",
+	[Issue(IssueTracker.Github, 11715, "[Bug] Brushes API - Android's direction is inverted to iOS's",
 		PlatformAffected.Android)]
 	public partial class Issue11715 : TestContentPage
 	{

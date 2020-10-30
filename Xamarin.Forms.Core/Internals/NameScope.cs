@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Internals
 		//used by VS Live Visual Tree
 		internal string NameOf(object scopedObject)
 			=> _values.TryGetValue(scopedObject, out var name) ? name : null;
-		
+
 
 		public static INameScope GetNameScope(BindableObject bindable) => (INameScope)bindable.GetValue(NameScopeProperty);
 
