@@ -51,12 +51,8 @@ using NestedScrollView = global::AndroidX.Core.Widget.NestedScrollView;
 [assembly: ExportRenderer(typeof(Issue8801.PopupStackLayout), typeof(Issue8801StackLayoutRenderer))]
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Tests.TestClasses.CustomButton), typeof(CustomButtonRenderer))]
 [assembly: ExportRenderer(typeof(ScrolView11185), typeof(ScrollViewFadeRenderer))]
-
-#if PRE_APPLICATION_CLASS
-#elif FORMS_APPLICATION_ACTIVITY
-#else
 [assembly: ExportRenderer(typeof(FlyoutPage), typeof(NativeDroidFlyoutPage))]
-#endif
+
 namespace Xamarin.Forms.ControlGallery.Android
 {
 	public sealed class ScrollViewFadeRenderer : ScrollViewRenderer
@@ -909,11 +905,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 #pragma warning disable CS0618 // Leaving in old constructor so we can verify it works
 	public class NoFlashTestNavigationPage
-#if FORMS_APPLICATION_ACTIVITY
-		: Xamarin.Forms.Platform.Android.NavigationRenderer
-#else
 		: Xamarin.Forms.Platform.Android.AppCompat.NavigationPageRenderer
-#endif
 	{
 #if !FORMS_APPLICATION_ACTIVITY
 		protected override void SetupPageTransition(FragmentTransaction transaction, bool isPush)
@@ -926,11 +918,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 #pragma warning disable CS0618 // Leaving in old constructor so we can verify it works
 	public class QuickCollectNavigationPageRenderer
-#if FORMS_APPLICATION_ACTIVITY
-		: Xamarin.Forms.Platform.Android.NavigationRenderer
-#else
 		: Xamarin.Forms.Platform.Android.AppCompat.NavigationPageRenderer
-#endif
 	{
 		bool _disposed;
 		NavigationPage _page;

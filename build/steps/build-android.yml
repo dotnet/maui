@@ -31,9 +31,6 @@ jobs:
         android_legacy:
           renderers: 'LEGACY'
           outputfolder: 'legacyRenderers'
-        android_preAppCompat:
-          renderers: 'PREAPPCOMPAT'
-          outputfolder: 'preAppCompat'
         android_newRenderers:
           renderers: 'FAST'
           outputfolder: 'newRenderers'

@@ -1,6 +1,4 @@
-﻿#if !FORMS_APPLICATION_ACTIVITY && !PRE_APPLICATION_CLASS
-
-using Android.Content;
+﻿using Android.Content;
 using Xamarin.Forms.Controls.Issues;
 using System;
 
@@ -19,5 +17,3 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 }
-
-#endif

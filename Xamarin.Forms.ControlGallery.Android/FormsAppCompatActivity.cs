@@ -1,6 +1,4 @@
-﻿#if !FORMS_APPLICATION_ACTIVITY && !PRE_APPLICATION_CLASS
-
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
@@ -9,7 +7,6 @@ using Xamarin.Forms.Controls;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms.Platform.Android.AppLinks;
-using System.Linq;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.ControlGallery.Android
@@ -142,5 +139,3 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 }
-
-#endif
