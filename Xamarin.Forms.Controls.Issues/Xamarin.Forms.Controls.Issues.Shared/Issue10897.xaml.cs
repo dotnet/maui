@@ -18,9 +18,9 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue10897()
 		{
 #if APP
-			InitializeComponent();    
-			
-			Issue10897ViewModel vm = new Issue10897ViewModel();  
+			InitializeComponent();
+
+			Issue10897ViewModel vm = new Issue10897ViewModel();
 			vm.CarouselItems = new List<Issue10897Items>();
 			vm.CarouselItems.Add(new Issue10897Items() { Items = new List<Issue10897Item>() { new Issue10897Item() { Text = "Item1" }, new Issue10897Item() { Text = "Item2" } } });
 			BindingContext = vm;
