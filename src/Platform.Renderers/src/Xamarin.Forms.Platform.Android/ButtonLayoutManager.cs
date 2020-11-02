@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Text.Method;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
 using Xamarin.Forms.Internals;
@@ -33,6 +34,8 @@ namespace Xamarin.Forms.Platform.Android
 		bool _borderAdjustsPadding;
 		bool _maintainLegacyMeasurements;
 		bool _hasLayoutOccurred;
+		ITransformationMethod _defaultTransformationMethod;
+		bool _elementAlreadyChanged = false;
 
 		public ButtonLayoutManager(IButtonLayoutRenderer renderer)
 			: this(renderer, false, false, false, true)
@@ -180,8 +183,15 @@ namespace Xamarin.Forms.Platform.Android
 			if (View?.LayoutParameters == null && _hasLayoutOccurred)
 				return;
 
+			if (View != null && !_elementAlreadyChanged)
+			{
+				_defaultTransformationMethod = View.TransformationMethod;
+				_elementAlreadyChanged = true;
+			}
+
 			if (!UpdateTextAndImage())
 				UpdateImage();
+
 			UpdatePadding();
 			UpdateLineBreakMode();
 		}
@@ -257,6 +267,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool UpdateTextAndImage()
 		{
+
 			if (_disposed || _renderer?.View == null || _element == null)
 				return false;
 
@@ -269,7 +280,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			var textTransform = _element.TextTransform;
 
-			_renderer.View.SetAllCaps(textTransform == TextTransform.Default);
+			// Use defaults only when user hasn't specified alternative TextTransform settings
+			if (textTransform == TextTransform.Default)
+				view.TransformationMethod = _defaultTransformationMethod;
+			else
+				view.TransformationMethod = null;
 
 			string oldText = view.Text;
 			view.Text = _element.UpdateFormsText(_element.Text, textTransform);

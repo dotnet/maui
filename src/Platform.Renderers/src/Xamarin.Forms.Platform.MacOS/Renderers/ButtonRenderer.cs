@@ -96,7 +96,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					var btn = new FormsNSButton();
 					btn.SetButtonType(NSButtonType.MomentaryPushIn);
-					btn.BezelStyle = NSBezelStyle.RoundRect;
+					btn.BezelStyle = NSBezelStyle.TexturedSquare;
+			
 					btn.Pressed += HandleButtonPressed;
 					btn.Released += HandleButtonReleased;
 					SetNativeControl(btn);
@@ -117,7 +118,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == Button.TextProperty.PropertyName || 
+			if (e.PropertyName == Button.TextProperty.PropertyName ||
 				e.PropertyName == Button.TextColorProperty.PropertyName ||
 				e.PropertyName == Button.TextTransformProperty.PropertyName)
 				UpdateText();
@@ -167,6 +168,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				else
 					Control.Cell.BackgroundColor = backgroundColor.ToNSColor();
 			}
+
+			UpdateBordered();
 		}
 
 		void UpdateBorder()
@@ -227,6 +230,13 @@ namespace Xamarin.Forms.Platform.MacOS
 		void UpdateCharacterSpacing()
 		{
 			Control.AttributedTitle = Control.AttributedTitle.AddCharacterSpacing(Element.Text ?? string.Empty, Element.CharacterSpacing);
+		}
+
+		void UpdateBordered()
+		{
+			bool hasBackground = Element.BackgroundColor != Color.Default || !Brush.IsNullOrEmpty(Element.Background);
+			bool hasBorder = Element.BorderColor != Color.Default && Element.BorderWidth > 0;
+			Control.Bordered = !(hasBackground || hasBorder);
 		}
 
 		void HandleButtonPressed()

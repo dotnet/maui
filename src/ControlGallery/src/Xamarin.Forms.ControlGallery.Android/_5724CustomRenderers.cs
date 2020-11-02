@@ -11,7 +11,7 @@ using System.ComponentModel;
 namespace Xamarin.Forms.ControlGallery.Android
 {
 	public class CustomButtonRenderer5724 :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.ButtonRenderer
 #else
 		ButtonRenderer
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 	}
 
 	public class CustomImageRenderer5724 :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.ImageRenderer
 #else
 		ImageRenderer
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 	}
 
 	public class CustomFrameRenderer5724 :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.FrameRenderer
 #else
 		FrameRenderer
@@ -76,7 +76,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 	}
 
 	public class CustomLabelRenderer5724 :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.LabelRenderer
 #else
 		LabelRenderer

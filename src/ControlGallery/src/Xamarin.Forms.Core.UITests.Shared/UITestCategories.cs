@@ -15,6 +15,7 @@
 		public const string CollectionView = "CollectionView";
 		public const string ContextActions = "ContextActions";
 		public const string DatePicker = "DatePicker";
+		public const string DragAndDrop = "DragAndDrop";
 		public const string DisplayAlert = "DisplayAlert";
 		public const string Editor = "Editor";
 		public const string Entry = "Entry";

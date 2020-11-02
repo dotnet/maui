@@ -162,6 +162,11 @@
         <target state="translated">x:DataType 需要字符串文本、{{x:Type}} 标记或 {{x:Nul}l}。</target>
         <note />
       </trans-unit>
+      <trans-unit id="XKeyNotLiteral">
+        <source>x:Key expects a string literal.</source>
+        <target state="new">x:Key expects a string literal.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="XStaticResolution">
         <source>x:Static: unable to find a public -- or accessible internal -- static field, static property, const or enum value named "{0}" in "{1}".</source>
         <target state="translated">x:Static: 在“{1}”中找不到公共(或可访问的内部)静态字段、静态属性、常量或枚举值“{0}”。</target>

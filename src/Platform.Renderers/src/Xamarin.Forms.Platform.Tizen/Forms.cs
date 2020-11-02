@@ -9,6 +9,7 @@ using ElmSharp.Wearable;
 using Tizen.Applications;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Tizen;
+using Xamarin.Forms.Shapes;
 using DeviceOrientation = Xamarin.Forms.Internals.DeviceOrientation;
 using ELayout = ElmSharp.Layout;
 using TSystemInfo = Tizen.System.Information;
@@ -581,6 +582,13 @@ namespace Xamarin.Forms
 			Registrar.Registered.Register(typeof(Frame), typeof(Platform.Tizen.SkiaSharp.FrameRenderer));
 			Registrar.Registered.Register(typeof(BoxView), typeof(Platform.Tizen.SkiaSharp.BoxViewRenderer));
 			Registrar.Registered.Register(typeof(Image), typeof(Platform.Tizen.SkiaSharp.ImageRenderer));
+
+			Registrar.Registered.Register(typeof(Ellipse), typeof(Platform.Tizen.SkiaSharp.EllipseRenderer));
+			Registrar.Registered.Register(typeof(Line), typeof(Platform.Tizen.SkiaSharp.LineRenderer));
+			Registrar.Registered.Register(typeof(Path), typeof(Platform.Tizen.SkiaSharp.PathRenderer));
+			Registrar.Registered.Register(typeof(Shapes.Polygon), typeof(Platform.Tizen.SkiaSharp.PolygonRenderer));
+			Registrar.Registered.Register(typeof(Polyline), typeof(Platform.Tizen.SkiaSharp.PolylineRenderer));
+			Registrar.Registered.Register(typeof(Shapes.Rectangle), typeof(Platform.Tizen.SkiaSharp.RectangleRenderer));
 		}
 
 		static Color GetAccentColor(string profile)

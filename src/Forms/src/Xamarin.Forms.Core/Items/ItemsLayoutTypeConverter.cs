@@ -9,21 +9,15 @@ namespace Xamarin.Forms
 		public override object ConvertFromInvariantString(string value)
 		{
 			if (value == null)
-			{
 				throw new ArgumentNullException(nameof(value));
-			}
 
 			ItemsLayoutOrientation? orientation = default(ItemsLayoutOrientation?);
 			int identifierLength = 0;
 
 			if (value == "VerticalList")
-			{
 				return LinearItemsLayout.Vertical;
-			}
 			else if (value == "HorizontalList")
-			{
 				return LinearItemsLayout.Horizontal;
-			}
 			else if (value.StartsWith("VerticalGrid", StringComparison.Ordinal))
 			{
 				orientation = ItemsLayoutOrientation.Vertical;
@@ -38,9 +32,7 @@ namespace Xamarin.Forms
 			if (orientation.HasValue)
 			{
 				if (value.Length == identifierLength)
-				{
 					return new GridItemsLayout(orientation.Value);
-				}
 				else if (value.Length > identifierLength + 1 && value[identifierLength] == ',')
 				{
 					var argument = value.Substring(identifierLength + 1);
@@ -50,6 +42,17 @@ namespace Xamarin.Forms
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(IItemsLayout)}");
+		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (value is LinearItemsLayout && value == LinearItemsLayout.Vertical)
+				return "VerticalList";
+			if (value is LinearItemsLayout && value == LinearItemsLayout.Horizontal)
+				return "HorizontalList";
+			if (value is GridItemsLayout gil)
+				return $"{gil.Orientation}Grid,{gil.Span}";
+			throw new NotSupportedException();
 		}
 	}
 }

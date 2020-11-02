@@ -65,5 +65,12 @@ namespace Xamarin.Forms
 
 			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Thickness)}");
 		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is Thickness t))
+				throw new NotSupportedException();
+			return $"{t.Left}, {t.Top}, {t.Right}, {t.Bottom}";
+		}
 	}
 }

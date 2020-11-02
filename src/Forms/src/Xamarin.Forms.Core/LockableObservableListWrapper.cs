@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Internals
 		void ThrowOnLocked()
 		{
 			if (IsLocked)
-				throw new InvalidOperationException("The Items list can not be manipulated if the ItemsSource property is set");
+				throw new InvalidOperationException("The Items list cannot be manipulated if the ItemsSource property is set");
 		}
 
 		public string this[int index]

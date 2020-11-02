@@ -162,6 +162,11 @@
         <target state="translated">x:DataType ожидает строковый литерал, разметку {{x:Type}} или {{x:Nul}l}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="XKeyNotLiteral">
+        <source>x:Key expects a string literal.</source>
+        <target state="new">x:Key expects a string literal.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="XStaticResolution">
         <source>x:Static: unable to find a public -- or accessible internal -- static field, static property, const or enum value named "{0}" in "{1}".</source>
         <target state="translated">x:Static: не удается найти статическое поле, статическое свойство, константу или значение перечисления с именем "{0}" в "{1}", которые являлись бы открытыми или были бы доступны внутренне.</target>

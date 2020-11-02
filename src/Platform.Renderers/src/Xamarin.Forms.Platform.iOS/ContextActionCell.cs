@@ -344,6 +344,9 @@ namespace Xamarin.Forms.Platform.iOS
 					var weakItem = new WeakReference<MenuItem>(item);
 					var action = UIAlertAction.Create(item.Text, UIAlertActionStyle.Default, a =>
 					{
+						if (_scroller == null)
+							return;
+
 						_scroller.SetContentOffset(new PointF(0, 0), true);
 						if (weakItem.TryGetTarget(out MenuItem mi))
 							((IMenuItemController)mi).Activate();

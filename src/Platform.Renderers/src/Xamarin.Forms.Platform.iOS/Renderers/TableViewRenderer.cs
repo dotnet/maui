@@ -60,13 +60,21 @@ namespace Xamarin.Forms.Platform.iOS
 			base.Dispose(disposing);
 		}
 
+		protected override UITableView CreateNativeControl()
+		{
+			return new UITableView(RectangleF.Empty, GetTableViewStyle(Element?.Intent ?? TableIntent.Data));
+		}
+
+		protected UITableViewStyle GetTableViewStyle(TableIntent intent)
+		{
+			return intent == TableIntent.Data ? UITableViewStyle.Plain : UITableViewStyle.Grouped;
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<TableView> e)
 		{
 			if (e.NewElement != null)
 			{
-				var style = UITableViewStyle.Plain;
-				if (e.NewElement.Intent != TableIntent.Data)
-					style = UITableViewStyle.Grouped;
+				var style = GetTableViewStyle(e.NewElement.Intent);
 
 				if (Control == null || Control.Style != style)
 				{
@@ -76,7 +84,7 @@ namespace Xamarin.Forms.Platform.iOS
 						Control.Dispose();
 					}
 
-					var tv = new UITableView(RectangleF.Empty, style);
+					var tv = CreateNativeControl();
 					_originalBackgroundView = tv.BackgroundView;
 
 					SetNativeControl(tv);

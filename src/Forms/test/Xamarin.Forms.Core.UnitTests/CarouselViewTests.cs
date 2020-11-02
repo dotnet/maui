@@ -112,5 +112,24 @@ namespace Xamarin.Forms.Core.UnitTests
 			carouselView.CurrentItem = source[gotoPosition];
 			Assert.IsTrue(countFired == 1);
 		}
+
+		[Test]
+		public void TestAddRemoveItems()
+		{
+			var source = new List<string>();
+
+			var carouselView = new CarouselView
+			{
+				ItemsSource = source
+			};
+
+			source.Add("1");
+			source.Add("2");
+
+			carouselView.ScrollTo(1, position: ScrollToPosition.Center, animate: false);
+			source.Remove("2");
+
+			Assert.AreEqual(0, carouselView.Position);
+		}
 	}
 }

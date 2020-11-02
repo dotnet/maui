@@ -143,13 +143,13 @@ namespace Xamarin.Forms.Platform.UWP
 			if (!_isLoaded)
 				return;
 
-			if (!Element.IsRefreshing)
+			if (!Element?.IsRefreshing??false)
 			{
 				CompleteRefresh();
 			}
 			else if (_refreshCompletionDeferral == null)
 			{
-				Control.RequestRefresh();
+				Control?.RequestRefresh();
 			}
 		}
 

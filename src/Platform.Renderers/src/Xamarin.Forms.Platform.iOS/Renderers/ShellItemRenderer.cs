@@ -49,7 +49,6 @@ namespace Xamarin.Forms.Platform.iOS
 		Page _displayedPage;
 		bool _disposed;
 		ShellItem _shellItem;
-		bool _switched = true;
 
 		IShellSectionRenderer CurrentRenderer { get; set; }
 
@@ -330,7 +329,6 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_currentSection != null)
 			{
 				((IShellSectionController)_currentSection).AddDisplayedPageObserver(this, OnDisplayedPageChanged);
-				_switched = true;
 			}
 		}
 
@@ -347,12 +345,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_displayedPage != null)
 			{
 				_displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
-
-				if (!_currentSection.Stack.Contains(_displayedPage) || _switched)
-				{
-					_switched = false;
-					UpdateTabBarHidden();
-				}
+				UpdateTabBarHidden();
 			}
 		}
 

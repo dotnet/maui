@@ -444,5 +444,13 @@ namespace Xamarin.Forms
 		{
 			return double.Parse(elem, NumberStyles.Number, CultureInfo.InvariantCulture).Clamp(0, 1);
 		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is Color color))
+				throw new NotSupportedException();
+
+			return color.ToHex();
+		}
 	}
 }

@@ -61,6 +61,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RotationTests.cs" />
     <Compile Include="ScaleTests.cs" />
+    <Compile Include="TestClasses\ClearTextTransform.cs" />
     <Compile Include="ToolbarExtensionsTests.cs" />
     <Compile Include="ShellTests.cs" />
     <Compile Include="TestClasses\_5560Model.cs" />
@@ -99,6 +100,9 @@
       <Project>{0e16e70a-d6dd-4323-ad5d-363abff42d6a}</Project>
       <Name>Xamarin.Forms.Platform.Android</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\values\styles.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>

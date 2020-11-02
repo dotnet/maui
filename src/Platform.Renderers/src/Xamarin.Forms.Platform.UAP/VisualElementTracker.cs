@@ -112,7 +112,8 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
 			var dragEventArgs = new DragEventArgs(package);
-			
+
+			dragEventArgs.AcceptedOperation = (DataPackageOperation)((int)dragEventArgs.AcceptedOperation);
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
 				if (!rec.AllowDrop)
@@ -120,8 +121,20 @@ namespace Xamarin.Forms.Platform.UWP
 					return;
 				}
 
-				e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
+				var operationPriorToSend = dragEventArgs.AcceptedOperation;
 				rec.SendDragLeave(dragEventArgs);
+
+				// If you set the AcceptedOperation to a value it was already set to
+				// it causes the related animation to remain visible when the dragging component leaves
+				// for example
+				// e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
+				// Even if AcceptedOperation is already set to Copy it will cause the copy animation
+				// to remain even after the the dragged element has left
+				if (operationPriorToSend != dragEventArgs.AcceptedOperation)
+				{
+					var result = (int)dragEventArgs.AcceptedOperation;
+					e.AcceptedOperation = (Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
+				}
 			});
 		}
 
@@ -138,8 +151,9 @@ namespace Xamarin.Forms.Platform.UWP
 					return;
 				}
 
-				e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
 				rec.SendDragOver(dragEventArgs);
+				var result = (int)dragEventArgs.AcceptedOperation;
+				e.AcceptedOperation = (Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
 			});
 		}
 

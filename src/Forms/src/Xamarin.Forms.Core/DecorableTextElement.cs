@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace Xamarin.Forms
 {
@@ -35,7 +34,21 @@ namespace Xamarin.Forms
 
 			return result;
 		}
-	}
 
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is TextDecorations td))
+				throw new NotSupportedException();
+			if (td == TextDecorations.None)
+				return nameof(TextDecorations.None);
+			if (td == TextDecorations.Underline)
+				return nameof(TextDecorations.Underline);
+			if (td == TextDecorations.Strikethrough)
+				return nameof(TextDecorations.Strikethrough);
+			if (td == (TextDecorations.Underline & TextDecorations.Strikethrough))
+				return $"{nameof(TextDecorations.Underline)}, {nameof(TextDecorations.Strikethrough)}";
+			throw new NotSupportedException();
+		}
+	}
 }
 
