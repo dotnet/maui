@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
@@ -19,13 +19,14 @@ namespace Xamarin.Forms.Controls.Issues
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 11572, "[Bug][Brushes] RadialGradientBrush platform differences", PlatformAffected.Android)]
-	public partial class Issue11572 : TestContentPage
+	[Issue(IssueTracker.Github, 11643, "[Bug] SwipeBehaviorOnInvoked=RemainOpen triggers event twice",
+		PlatformAffected.Android | PlatformAffected.iOS)]
+	public partial class Issue11643 : TestContentPage
 	{
-		public Issue11572()
+		public Issue11643()
 		{
 #if APP
-			Title = "Issue 11547";
+			Title = "Issue 11643";
 			InitializeComponent();
 #endif
 		}
@@ -34,5 +35,12 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 
 		}
+
+#if APP
+		void OnSwipeItemInvoked(object sender, EventArgs e)
+		{
+			DisplayAlert("SwipeView", "SwipeItem Invoked", "Ok");
+		}
+#endif
 	}
 }

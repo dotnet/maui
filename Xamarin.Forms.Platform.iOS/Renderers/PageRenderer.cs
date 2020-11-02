@@ -172,6 +172,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (_safeAreasSet || !Forms.IsiOS11OrNewer)
 				UpdateUseSafeArea();
+
+			if (Element.Background != null && !Element.Background.IsEmpty)
+				NativeView?.UpdateBackgroundLayer();
 		}
 
 		public override void ViewSafeAreaInsetsDidChange()

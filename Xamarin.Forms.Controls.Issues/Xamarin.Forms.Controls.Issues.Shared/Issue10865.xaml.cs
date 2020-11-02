@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 using System.Linq;
+using System.Windows.Input;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -16,8 +16,8 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[Category(UITestCategories.CarouselView)]
 #endif
-    [Preserve(AllMembers = true)]
-    [Issue(IssueTracker.Github, 10865, "[Bug] CarouselView Throws when removing an item", PlatformAffected.Android)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 10865, "[Bug] CarouselView Throws when removing an item", PlatformAffected.Android)]
 	public partial class Issue10865 : TestContentPage
 	{
 		public Issue10865()
@@ -31,35 +31,35 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 
 		}
-    }
+	}
 
-    [Preserve(AllMembers = true)]
-    public class Issue10865ViewModel
-    {
-        public Issue10865ViewModel()
-        {
-            AddCommand = new Command(() =>
-            {
-                Items.Add($"Items {Items.Count}");
-                ((Command)RemoveLastCommand).ChangeCanExecute();
-            });
-            RemoveLastCommand = new Command(() =>
-            {
-                Items.Remove(Items.Last());
-                ((Command)RemoveLastCommand).ChangeCanExecute();
+	[Preserve(AllMembers = true)]
+	public class Issue10865ViewModel
+	{
+		public Issue10865ViewModel()
+		{
+			AddCommand = new Command(() =>
+			{
+				Items.Add($"Items {Items.Count}");
+				((Command)RemoveLastCommand).ChangeCanExecute();
+			});
+			RemoveLastCommand = new Command(() =>
+			{
+				Items.Remove(Items.Last());
+				((Command)RemoveLastCommand).ChangeCanExecute();
 
-                // Workaround
-                //if(!(Items.Any()))
-                //{
-                //    Items = new ObservableCollection<string>();
-                //}
+				// Workaround
+				//if(!(Items.Any()))
+				//{
+				//    Items = new ObservableCollection<string>();
+				//}
 
-            }, () => Items.Any());
-        }
+			}, () => Items.Any());
+		}
 
-        public ObservableCollection<string> Items { get; set; } = new ObservableCollection<string>();
+		public ObservableCollection<string> Items { get; set; } = new ObservableCollection<string>();
 
-        public ICommand AddCommand { get; }
-        public ICommand RemoveLastCommand { get; }
-    }
+		public ICommand AddCommand { get; }
+		public ICommand RemoveLastCommand { get; }
+	}
 }

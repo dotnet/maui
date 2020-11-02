@@ -36,8 +36,8 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("Selected: Item: 2");
 
 			// Tapping Item 3 should select it and updating the binding
-			RunningApp.Tap("Item 3");	
-			RunningApp.WaitForElement("Selected: Item: 3");
+			RunningApp.Tap("Item 1");	
+			RunningApp.WaitForElement("Selected: Item: 1");
 		}
 #endif
 	}
