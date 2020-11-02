@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
@@ -80,6 +82,47 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			itemsView.AddLogicalChild(View);
+		}
+
+		protected override bool UseDefaultSelectionColor
+		{
+			get
+			{
+				if (View != null)
+				{
+					return !IsUsingVSMForSelectionColor(View);
+				}
+
+				return base.UseDefaultSelectionColor;
+			}
+		}
+
+		bool IsUsingVSMForSelectionColor(View view)
+		{
+			var groups = VisualStateManager.GetVisualStateGroups(view);
+			for (var groupIndex = 0; groupIndex < groups.Count; groupIndex++)
+			{
+				var group = groups[groupIndex];
+				for (var stateIndex = 0; stateIndex < group.States.Count; stateIndex++)
+				{
+					var state = group.States[stateIndex];
+					if (state.Name != VisualStateManager.CommonStates.Selected)
+					{
+						continue;
+					}
+
+					for (var setterIndex = 0; setterIndex < state.Setters.Count; setterIndex++)
+					{
+						var setter = state.Setters[setterIndex];
+						if (setter.Property.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+						{
+							return true;
+						}
+					}
+				}
+			}
+
+			return false;
 		}
 	}
 }

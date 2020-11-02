@@ -36,9 +36,9 @@ namespace Xamarin.Platform.Handlers
 		}
 
 #if MONOANDROID
-		protected override NativeView CreateView() => new NativeView(this.Context);
+		protected override NativeView CreateNativeView() => new NativeView(this.Context);
 #else
-		protected override NativeView CreateView() => new NativeView();
+		protected override NativeView CreateNativeView() => new NativeView();
 #endif
 
 		public ButtonHandler() : base(ButtonMapper)

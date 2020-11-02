@@ -6,11 +6,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class SetStyleIdFromXName : ContentPage
 	{
-		public SetStyleIdFromXName()
-		{
-			InitializeComponent();
-		}
-
+		public SetStyleIdFromXName() => InitializeComponent();
 		public SetStyleIdFromXName(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
@@ -19,17 +15,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Device.PlatformServices = null;
-			}
+			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
+			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[TestCase(false), TestCase(true)]
 			public void SetStyleId(bool useCompiledXaml)

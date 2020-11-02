@@ -1,13 +1,14 @@
 using System;
 using Android.Content;
-using Android.Content.Res;
-using Android.Graphics;
-using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Util;
-using Android.Views;
-using AColor = Android.Graphics.Color;
 using AProgressBar = Android.Widget.ProgressBar;
+using Android.Graphics.Drawables;
+using AColor = Android.Graphics.Color;
+using Android.Content.Res;
+using Android.Views;
+using Android.Graphics;
+using Xamarin.Platform;
 
 namespace Xamarin.Forms.Platform.Android
 {

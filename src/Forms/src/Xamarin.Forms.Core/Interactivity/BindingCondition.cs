@@ -25,7 +25,7 @@ namespace Xamarin.Forms
 				if (_binding == value)
 					return;
 				if (IsSealed)
-					throw new InvalidOperationException("Can not change Binding once the Condition has been applied.");
+					throw new InvalidOperationException("Cannot change Binding once the Condition has been applied.");
 				_binding = value;
 			}
 		}
@@ -38,7 +38,7 @@ namespace Xamarin.Forms
 				if (_triggerValue == value)
 					return;
 				if (IsSealed)
-					throw new InvalidOperationException("Can not change Value once the Condition has been applied.");
+					throw new InvalidOperationException("Cannot change Value once the Condition has been applied.");
 				_triggerValue = value;
 			}
 		}

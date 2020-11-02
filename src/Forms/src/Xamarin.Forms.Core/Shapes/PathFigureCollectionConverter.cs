@@ -563,5 +563,7 @@ namespace Xamarin.Forms.Shapes
 				_curIndex++;
 			}
 		}
+
+		public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
 	}
 }

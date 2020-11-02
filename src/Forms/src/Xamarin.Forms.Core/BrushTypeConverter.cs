@@ -49,6 +49,8 @@ namespace Xamarin.Forms
 			return new SolidColorBrush(Color.Default);
 		}
 
+		public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
+
 		public class GradientBrushParser
 		{
 			readonly ColorTypeConverter _colorConverter;

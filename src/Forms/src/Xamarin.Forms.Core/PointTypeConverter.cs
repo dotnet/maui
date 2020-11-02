@@ -10,13 +10,19 @@ namespace Xamarin.Forms
 		{
 			if (value != null)
 			{
-				double x, y;
 				string[] xy = value.Split(',');
-				if (xy.Length == 2 && double.TryParse(xy[0], NumberStyles.Number, CultureInfo.InvariantCulture, out x) && double.TryParse(xy[1], NumberStyles.Number, CultureInfo.InvariantCulture, out y))
+				if (xy.Length == 2 && double.TryParse(xy[0], NumberStyles.Number, CultureInfo.InvariantCulture, out var x) && double.TryParse(xy[1], NumberStyles.Number, CultureInfo.InvariantCulture, out var y))
 					return new Point(x, y);
 			}
 
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(Point)));
+		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is Point p))
+				throw new NotSupportedException();
+			return $"{p.X}, {p.Y}";
 		}
 	}
 }

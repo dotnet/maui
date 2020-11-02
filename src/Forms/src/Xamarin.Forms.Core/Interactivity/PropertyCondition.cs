@@ -27,7 +27,7 @@ namespace Xamarin.Forms
 				if (_property == value)
 					return;
 				if (IsSealed)
-					throw new InvalidOperationException("Can not change Property once the Trigger has been applied.");
+					throw new InvalidOperationException("Cannot change Property once the Trigger has been applied.");
 				_property = value;
 
 				//convert the value
@@ -57,7 +57,7 @@ namespace Xamarin.Forms
 				if (_triggerValue == value)
 					return;
 				if (IsSealed)
-					throw new InvalidOperationException("Can not change Value once the Trigger has been applied.");
+					throw new InvalidOperationException("Cannot change Value once the Trigger has been applied.");
 
 				//convert the value
 				if (_property != null && s_valueConverter != null)

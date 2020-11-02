@@ -33,6 +33,9 @@
     <!-- Styles Android.Support.V7.App.AlertDialog -->
     <item name="alertDialogTheme">@style/DayNightDialogStyle</item>
 
+    <!--Uncomment to test textAllCaps property for button-->
+    <!--<item name="android:textAllCaps">false</item>-->
+
 		<!--Uncomment to test exceptionally red button-->
 		<!--<item name="android:buttonStyle">@style/red_button_style</item>-->
   </style>

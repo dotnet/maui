@@ -44,17 +44,19 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				var layout = new Gh10803(useCompiledXaml);
 				var listview = layout.listview;
-				var cell = listview.ItemTemplate.CreateContent();
-				Assert.That(failures, Is.EqualTo(0), "one or more element without source info");
+				var cell = listview.TemplatedItems.GetOrCreateContent(0, null);
+				Assert.That(failures, Is.EqualTo(0), "one or more element without source info, or with invalid ChildIndex");
 			}
 
 			void VTChanged(object sender, VisualTreeChangeEventArgs e)
 			{
 				var parentSourInfo = e.Parent == null ? null : VisualDiagnostics.GetXamlSourceInfo(e.Parent);
-				var childSourInfo = VisualDiagnostics.GetXamlSourceInfo(e.Child);
-				if (childSourInfo == null)
+				var childSourceInfo = VisualDiagnostics.GetXamlSourceInfo(e.Child);
+				if (childSourceInfo == null)
 					failures++;
 				if (e.Parent != null && parentSourInfo == null)
+					failures++;
+				if (e.Parent != null && e.ChildIndex == -1)
 					failures++;
 			}
 		}

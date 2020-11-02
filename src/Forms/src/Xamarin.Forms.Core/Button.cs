@@ -405,10 +405,7 @@ namespace Xamarin.Forms
 
 			public double Spacing { get; }
 
-			public override string ToString()
-			{
-				return $"Image Position = {Position}, Spacing = {Spacing}";
-			}
+			public override string ToString() => $"Image Position = {Position}, Spacing = {Spacing}";
 		}
 
 		[Xaml.TypeConversion(typeof(ButtonContentLayout))]
@@ -417,16 +414,12 @@ namespace Xamarin.Forms
 			public override object ConvertFromInvariantString(string value)
 			{
 				if (value == null)
-				{
 					throw new InvalidOperationException($"Cannot convert null into {typeof(ButtonContentLayout)}");
-				}
 
 				string[] parts = value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
 				if (parts.Length != 1 && parts.Length != 2)
-				{
 					throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(ButtonContentLayout)}");
-				}
 
 				double spacing = DefaultSpacing;
 				var position = ButtonContentLayout.ImagePosition.Left;
@@ -437,18 +430,15 @@ namespace Xamarin.Forms
 				int spacingIndex = spacingFirst ? 0 : (parts.Length == 2 ? 1 : -1);
 
 				if (spacingIndex > -1)
-				{
 					spacing = double.Parse(parts[spacingIndex]);
-				}
 
 				if (positionIndex > -1)
-				{
-					position =
-						(ButtonContentLayout.ImagePosition)Enum.Parse(typeof(ButtonContentLayout.ImagePosition), parts[positionIndex], true);
-				}
+					position = (ButtonContentLayout.ImagePosition)Enum.Parse(typeof(ButtonContentLayout.ImagePosition), parts[positionIndex], true);
 
 				return new ButtonContentLayout(position, spacing);
 			}
+
+			public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
 		}
 	}
 }

@@ -21,10 +21,20 @@ namespace Xamarin.Forms.Platform.iOS
 			if (elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
 			{
 				var result = style.ToNativeModalPresentationStyle();
-				if (!Forms.IsiOS13OrNewer && result == UIKit.UIModalPresentationStyle.Automatic)
+		
+        if (!Forms.IsiOS13OrNewer && result == UIKit.UIModalPresentationStyle.Automatic)
 				{
 					result = UIKit.UIModalPresentationStyle.FullScreen;
 				}
+
+				if (result == UIKit.UIModalPresentationStyle.FullScreen)
+				{
+					Color modalBkgndColor = ((Page)_modal.Element).BackgroundColor;
+
+					if (modalBkgndColor.A > 0)
+						result = UIKit.UIModalPresentationStyle.OverFullScreen;
+				}
+
 				ModalPresentationStyle = result;
 			}
 

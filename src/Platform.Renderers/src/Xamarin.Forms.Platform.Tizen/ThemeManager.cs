@@ -631,6 +631,24 @@ namespace Xamarin.Forms.Platform.Tizen
 		}
 		#endregion
 
+		#region Cell
+		public static void SendSignalToItem(this Cell cell, GenListItem item)
+		{
+			// This is only required for TV profile.
+			if (Device.Idiom != TargetIdiom.TV)
+				return;
+
+			if (cell is ImageCell)
+			{
+				item.EmitSignal(ThemeConstants.GenListItem.Signals.TV.SinglelineIconTextTheme, "");
+			}
+			else if (cell is SwitchCell)
+			{
+				item.EmitSignal(ThemeConstants.GenListItem.Signals.TV.SinglelineTextIconTheme, "");
+			}
+		}
+		#endregion
+
 		#region CellRenderer
 		public static string GetTextCellRendererStyle()
 		{

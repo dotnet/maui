@@ -34,7 +34,7 @@ namespace Xamarin.Forms
 					return;
 
 				if (_source != null)
-					throw new ArgumentException("MergedWith can not be used with Source");
+					throw new ArgumentException("MergedWith cannot be used with Source");
 
 				if (!typeof(ResourceDictionary).GetTypeInfo().IsAssignableFrom(value.GetTypeInfo()))
 					throw new ArgumentException("MergedWith should inherit from ResourceDictionary");
@@ -66,7 +66,7 @@ namespace Xamarin.Forms
 		{
 			_source = value;
 			if (_mergedWith != null)
-				throw new ArgumentException("Source can not be used with MergedWith");
+				throw new ArgumentException("Source cannot be used with MergedWith");
 
 			//this will return a type if the RD as an x:Class element, and codebehind
 			var type = XamlResourceIdAttribute.GetTypeForPath(assembly, resourcePath);
@@ -352,6 +352,7 @@ namespace Xamarin.Forms
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 
 		[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.RDSourceTypeConverter")]
+		[TypeConversion(typeof(Uri))]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{
 			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
@@ -359,8 +360,7 @@ namespace Xamarin.Forms
 				if (serviceProvider == null)
 					throw new ArgumentNullException(nameof(serviceProvider));
 
-				var targetRD = (serviceProvider.GetService(typeof(Xaml.IProvideValueTarget)) as Xaml.IProvideValueTarget)?.TargetObject as ResourceDictionary;
-				if (targetRD == null)
+				if (!((serviceProvider.GetService(typeof(Xaml.IProvideValueTarget)) as Xaml.IProvideValueTarget)?.TargetObject is ResourceDictionary targetRD))
 					return null;
 
 				var rootObjectType = (serviceProvider.GetService(typeof(Xaml.IRootObjectProvider)) as Xaml.IRootObjectProvider)?.RootObject.GetType();
@@ -395,6 +395,13 @@ namespace Xamarin.Forms
 			public override object ConvertFromInvariantString(string value)
 			{
 				throw new NotImplementedException();
+			}
+
+			public override string ConvertToInvariantString(object value)
+			{
+				if (!(value is Uri uri))
+					throw new NotSupportedException();
+				return uri.ToString();
 			}
 		}
 	}

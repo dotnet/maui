@@ -9,8 +9,8 @@ namespace Xamarin.Platform.Handlers
 
 		}
 
-		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
-			=> new SizeRequest();
+		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint)
+			=> Size.Zero;
 
 		void SetupContainer()
 		{

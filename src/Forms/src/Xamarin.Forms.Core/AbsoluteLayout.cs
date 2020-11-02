@@ -27,10 +27,7 @@ namespace Xamarin.Forms
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		public static double AutoSize
-		{
-			get { return -1; }
-		}
+		public static double AutoSize => -1;
 
 		public new IAbsoluteList<View> Children
 		{

@@ -9,8 +9,11 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout<T> : Layout, IViewContainer<T> where T : View
+	public abstract class Layout<T> : Layout, Xamarin.Platform.ILayout, IViewContainer<T> where T : View
 	{
+		// TODO ezhart We should look for a way to optimize this a bit
+		IReadOnlyList<Xamarin.Platform.IView> Xamarin.Platform.ILayout.Children => _children.ToList<Xamarin.Platform.IView>().AsReadOnly();
+
 		readonly ElementCollection<T> _children;
 
 		protected Layout() => _children = new ElementCollection<T>(InternalChildren);
@@ -429,7 +432,7 @@ namespace Xamarin.Forms
 						continue;
 
 					if (item == this)
-						throw new InvalidOperationException("Can not add self to own child collection.");
+						throw new InvalidOperationException("Cannot add self to own child collection.");
 
 					OnInternalAdded(v);
 				}

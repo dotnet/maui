@@ -355,13 +355,13 @@ namespace Xamarin.Forms
 				throw new ArgumentNullException(nameof(property));
 			if (checkAccess && property.IsReadOnly)
 			{
-				Log.Warning("BindableObject", $"Can not set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
+				Log.Warning("BindableObject", $"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
 				return;
 			}
 
 			if (!converted && !property.TryConvert(ref value))
 			{
-				Log.Warning("SetValue", $"Can not convert {value} to type '{property.ReturnType}'");
+				Log.Warning("SetValue", $"Cannot convert {value} to type '{property.ReturnType}'");
 				return;
 			}
 

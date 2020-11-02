@@ -43,5 +43,20 @@ namespace Xamarin.Forms
 
 			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(LayoutOptions)}");
 		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is LayoutOptions options))
+				throw new NotSupportedException();
+			if (options.Alignment == LayoutAlignment.Start)
+				return $"{nameof(LayoutAlignment.Start)}{(options.Expands ? "AndExpand" : "")}";
+			if (options.Alignment == LayoutAlignment.Center)
+				return $"{nameof(LayoutAlignment.Center)}{(options.Expands ? "AndExpand" : "")}";
+			if (options.Alignment == LayoutAlignment.End)
+				return $"{nameof(LayoutAlignment.End)}{(options.Expands ? "AndExpand" : "")}";
+			if (options.Alignment == LayoutAlignment.Fill)
+				return $"{nameof(LayoutAlignment.Fill)}{(options.Expands ? "AndExpand" : "")}";
+			throw new NotSupportedException();
+		}
 	}
 }

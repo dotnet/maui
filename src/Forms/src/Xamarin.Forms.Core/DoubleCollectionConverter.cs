@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 
 namespace Xamarin.Forms
 {
@@ -19,6 +20,13 @@ namespace Xamarin.Forms
 			}
 
 			return doubleCollection;
+		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is DoubleCollection dc))
+				throw new NotSupportedException();
+			return string.Join(", ", dc);
 		}
 	}
 }

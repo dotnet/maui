@@ -1,14 +1,15 @@
-﻿using Android.Content;
+﻿using System;
+using Android.Content;
 using AView = Android.Views.View;
 
 namespace Xamarin.Platform
 {
 	public static class HandlerExtensions
 	{
-		public static AView? ToNative(this IView view, Context context)
+		public static AView ToNative(this IView view, Context context)
 		{
-			if (view == null)
-				return null;
+			_ = view ?? throw new ArgumentNullException(nameof(view));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
 
 			var handler = view.Handler;
 
@@ -22,9 +23,14 @@ namespace Xamarin.Platform
 				view.Handler = handler;
 			}
 
-			handler.SetView(view);
+			handler.SetVirtualView(view);
 
-			return handler.NativeView as AView;
+			if (!(handler.NativeView is AView result))
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(AView)}");
+			}
+
+			return result;
 		}
 	}
 }

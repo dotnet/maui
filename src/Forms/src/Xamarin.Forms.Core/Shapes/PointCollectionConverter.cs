@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 
 namespace Xamarin.Forms.Shapes
 {
@@ -38,7 +39,15 @@ namespace Xamarin.Forms.Shapes
 				throw new InvalidOperationException(string.Format("Cannot convert string into PointCollection"));
 
 			return pointCollection;
+		}
 
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is PointCollection pc))
+				throw new NotSupportedException();
+
+			var converter = new PointTypeConverter();
+			return string.Join(", ", pc.Select(p => converter.ConvertToInvariantString(p)));
 		}
 	}
 }

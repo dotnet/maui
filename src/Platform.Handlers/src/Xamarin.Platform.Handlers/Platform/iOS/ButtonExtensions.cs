@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Foundation;
+﻿using Foundation;
 using UIKit;
 using Xamarin.Forms;
 

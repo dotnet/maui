@@ -33,7 +33,7 @@ namespace Xamarin.Platform.Handlers
 			_mapper = _defaultMapper;
 		}
 
-		protected abstract TNativeView CreateView();
+		protected abstract TNativeView CreateNativeView();
 
 		protected TNativeView? TypedNativeView { get; private set; }
 
@@ -43,16 +43,30 @@ namespace Xamarin.Platform.Handlers
 
 		public object? NativeView => TypedNativeView;
 
-		public virtual void SetView(IView view)
+		public virtual void SetVirtualView(IView view)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
+			if (VirtualView?.Handler != null)
+				VirtualView.Handler = null;
+
+			bool setupNativeView = VirtualView == null;
+
 			VirtualView = view as TVirtualView;
-			TypedNativeView ??= CreateView();
+			TypedNativeView ??= CreateNativeView();
+
+			if(setupNativeView && TypedNativeView != null)
+			{
+				ConnectHandler(TypedNativeView);
+			}
 
 			if (!HasSetDefaults)
 			{
-				SetupDefaults();
+				if (TypedNativeView != null)
+				{
+					SetupDefaults(TypedNativeView);
+				}
+
 				HasSetDefaults = true;
 			}
 
@@ -75,15 +89,31 @@ namespace Xamarin.Platform.Handlers
 			_mapper.UpdateProperties(this, VirtualView);
 		}
 
-		public virtual void TearDown()
+		protected virtual void ConnectHandler(TNativeView nativeView)
 		{
+
+		}
+
+		protected virtual void DisconnectHandler(TNativeView nativeView)
+		{
+
+		}
+
+		void IViewHandler.DisconnectHandler()
+		{
+			if (TypedNativeView != null && VirtualView != null)
+				DisconnectHandler(TypedNativeView);
+
+			if (VirtualView != null)
+				VirtualView.Handler = null;
+
 			VirtualView = null;
 		}
 
 		public virtual void UpdateValue(string property)
 			=> _mapper?.UpdateProperty(this, VirtualView, property);
 
-		protected virtual void SetupDefaults() { }
+		protected virtual void SetupDefaults(TNativeView nativeView) { }
 
 		public bool HasContainer
 		{

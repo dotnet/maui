@@ -241,5 +241,65 @@ namespace Xamarin.Forms.Core.UnitTests
 			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
 			Assert.AreEqual(1234d, testPage.DoubleQueryParameter);
 		}
+
+		[Test]
+		public async Task NavigatingBackDoesntClearParametersFromPreviousPage()
+		{
+			var shell = new TestShell(CreateShellItem());
+
+			Routing.RegisterRoute("details", typeof(ShellTestPage));
+
+			await shell.GoToAsync($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1");
+			await shell.GoToAsync("details");
+			await shell.GoToAsync("..");
+			var testPage = shell.CurrentPage as ShellTestPage;
+			Assert.AreEqual("1", testPage.SomeQueryParameter);
+
+		}
+
+		[Test]
+		public async Task NavigatingBackAbsolutelyClearsParametersFromPreviousPage()
+		{
+			var shell = new TestShell(CreateShellItem(shellItemRoute: "item"));
+
+			Routing.RegisterRoute("details", typeof(ShellTestPage));
+
+			await shell.GoToAsync($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1");
+			await shell.GoToAsync("details");
+			await shell.GoToAsync("//item/details");
+			var testPage = shell.CurrentPage as ShellTestPage;
+			Assert.AreEqual(null, testPage.SomeQueryParameter);
+
+		}
+
+		[Test]
+		public async Task NavigatingBackToShellContentRetainsQueryParameter()
+		{
+			var shell = new Shell();
+			ShellTestPage pagetoTest = new ShellTestPage();
+			pagetoTest.BindingContext = pagetoTest;
+			var one = CreateShellItem(pagetoTest, shellContentRoute: "content");
+			shell.Items.Add(one);
+			ShellTestPage page = (ShellTestPage)shell.CurrentPage;
+			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}=1234");
+			await shell.Navigation.PushAsync(new ContentPage());
+			await shell.Navigation.PopAsync();
+			Assert.AreEqual("1234", page.SomeQueryParameter);
+		}
+
+		[Test]
+		public async Task NavigatingBackToShellContentAbsolutelyClearsQueryParameter()
+		{
+			var shell = new Shell();
+			ShellTestPage pagetoTest = new ShellTestPage();
+			pagetoTest.BindingContext = pagetoTest;
+			var one = CreateShellItem(pagetoTest, shellContentRoute: "content");
+			shell.Items.Add(one);
+			ShellTestPage page = (ShellTestPage)shell.CurrentPage;
+			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}=1234");
+			await shell.Navigation.PushAsync(new ContentPage());
+			await shell.GoToAsync($"//content");
+			Assert.AreEqual(null, page.SomeQueryParameter);
+		}
 	}
 }

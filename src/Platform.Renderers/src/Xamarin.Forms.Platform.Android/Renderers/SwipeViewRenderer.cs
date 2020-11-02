@@ -9,6 +9,7 @@ using AndroidX.AppCompat.Widget;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.AppCompat;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Xamarin.Platform;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using APointF = Android.Graphics.PointF;
 using ATextAlignment = Android.Views.TextAlignment;
@@ -768,23 +769,27 @@ namespace Xamarin.Forms.Platform.Android
 
 			_ = this.ApplyDrawableAsync(formsSwipeItem, MenuItem.IconImageSourceProperty, Context, drawable =>
 			{
-				int drawableWidth = drawable.IntrinsicWidth;
-				int drawableHeight = drawable.IntrinsicHeight;
-
-				if (drawableWidth > drawableHeight)
+				if (drawable != null)
 				{
-					var iconWidth = iconSize;
-					var iconHeight = drawableHeight * iconWidth / drawableWidth;
-					drawable.SetBounds(0, 0, iconWidth, iconHeight);
-				}
-				else
-				{
-					var iconHeight = iconSize;
-					var iconWidth = drawableWidth * iconHeight / drawableHeight;
-					drawable.SetBounds(0, 0, iconWidth, iconHeight);
+					int drawableWidth = drawable.IntrinsicWidth;
+					int drawableHeight = drawable.IntrinsicHeight;
+
+					if (drawableWidth > drawableHeight)
+					{
+						var iconWidth = iconSize;
+						var iconHeight = drawableHeight * iconWidth / drawableWidth;
+						drawable.SetBounds(0, 0, iconWidth, iconHeight);
+					}
+					else
+					{
+						var iconHeight = iconSize;
+						var iconWidth = drawableWidth * iconHeight / drawableHeight;
+						drawable.SetBounds(0, 0, iconWidth, iconHeight);
+					}
+										
+					drawable.SetColorFilter(textColor, FilterMode.SrcAtop);
 				}
 
-				drawable.SetColorFilter(textColor.ToAndroid(), FilterMode.SrcAtop);
 				swipeButton.SetCompoundDrawables(null, drawable, null, null);
 			});
 

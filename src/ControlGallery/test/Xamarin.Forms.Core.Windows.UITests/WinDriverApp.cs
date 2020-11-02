@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -132,12 +133,29 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void DragAndDrop(Func<AppQuery, AppQuery> from, Func<AppQuery, AppQuery> to)
 		{
-			throw new NotImplementedException();
+			DragAndDrop(
+				FindFirstElement(WinQuery.FromQuery(from)),
+				FindFirstElement(WinQuery.FromQuery(to))
+			);
 		}
 
 		public void DragAndDrop(string from, string to)
 		{
-			throw new NotImplementedException();
+			DragAndDrop(
+				FindFirstElement(WinQuery.FromMarked(from)),
+				FindFirstElement(WinQuery.FromMarked(to))
+			);
+		}
+
+		public void DragAndDrop(WindowsElement fromElement, WindowsElement toElement)
+		{
+			//Action Drag and Drop doesn't appear to work
+			// https://github.com/microsoft/WinAppDriver/issues/1223
+
+			var action = new Actions(_session);
+			action.MoveToElement(fromElement).Build().Perform();
+			action.ClickAndHold(fromElement).MoveByOffset(toElement.Location.X, toElement.Location.Y).Build().Perform();
+			action.Release().Perform();
 		}
 
 		public void DragCoordinates(float fromX, float fromY, float toX, float toY)

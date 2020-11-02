@@ -1,6 +1,4 @@
-﻿using Foundation;
-using UIKit;
-using Xamarin.Forms;
+﻿using UIKit;
 
 namespace Xamarin.Platform
 {

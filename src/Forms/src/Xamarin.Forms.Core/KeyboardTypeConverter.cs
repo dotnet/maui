@@ -27,5 +27,28 @@ namespace Xamarin.Forms
 
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(Keyboard)));
 		}
+
+		public override string ConvertToInvariantString(object value)
+		{
+			if (!(value is Keyboard keyboard))
+				throw new NotSupportedException();
+			if (keyboard == Keyboard.Plain)
+				return nameof(Keyboard.Plain);
+			if (keyboard == Keyboard.Chat)
+				return nameof(Keyboard.Chat);
+			if (keyboard == Keyboard.Default)
+				return nameof(Keyboard.Default);
+			if (keyboard == Keyboard.Email)
+				return nameof(Keyboard.Email);
+			if (keyboard == Keyboard.Numeric)
+				return nameof(Keyboard.Numeric);
+			if (keyboard == Keyboard.Telephone)
+				return nameof(Keyboard.Telephone);
+			if (keyboard == Keyboard.Text)
+				return nameof(Keyboard.Text);
+			if (keyboard == Keyboard.Url)
+				return nameof(Keyboard.Url);
+			throw new NotSupportedException();
+		}
 	}
 }

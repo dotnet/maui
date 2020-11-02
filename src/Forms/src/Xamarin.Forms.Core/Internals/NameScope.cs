@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Xamarin.Forms.Internals
 {
@@ -11,6 +12,7 @@ namespace Xamarin.Forms.Internals
 			BindableProperty.CreateAttached("NameScope", typeof(INameScope), typeof(NameScope), default(INameScope));
 
 		readonly Dictionary<string, object> _names = new Dictionary<string, object>();
+		readonly Dictionary<object, string> _values = new Dictionary<object, string>();
 
 		object INameScope.FindByName(string name)
 			=> _names.TryGetValue(name, out var element) ? element : null;
@@ -21,7 +23,13 @@ namespace Xamarin.Forms.Internals
 				throw new ArgumentException($"An element with the key '{name}' already exists in NameScope", nameof(name));
 
 			_names[name] = scopedElement;
+			_values[scopedElement] = name;
 		}
+
+		//used by VS Live Visual Tree
+		internal string NameOf(object scopedObject)
+			=> _values.TryGetValue(scopedObject, out var name) ? name : null;
+
 
 		public static INameScope GetNameScope(BindableObject bindable) => (INameScope)bindable.GetValue(NameScopeProperty);
 
@@ -42,6 +50,7 @@ namespace Xamarin.Forms.Internals
 			if (!_names.ContainsKey(name))
 				throw new ArgumentException("name provided had not been registered.", nameof(name));
 
+			_values.Remove(_names[name]);
 			_names.Remove(name);
 		}
 	}

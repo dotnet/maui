@@ -6,15 +6,12 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
 using Xamarin.Platform;
+using Xamarin.Platform.Layouts;
 
 namespace Xamarin.Forms
 {
 	public class View : VisualElement, IView, IViewController, IGestureController, IGestureRecognizers, IPropertyMapperView
 	{
-		SizeRequest _desiredSize;
-		bool _isMeasureValid;
-		bool _isArrangeValid;
-
 		protected internal IGestureController GestureController => this;
 
 		public static readonly BindableProperty VerticalOptionsProperty =
@@ -181,20 +178,7 @@ namespace Xamarin.Forms
 
 		Rectangle IFrameworkElement.Frame => Bounds;
 
-		protected IViewHandler Handler { get; set; }
-
-		IViewHandler IFrameworkElement.Handler
-		{
-			get
-			{
-				return Handler;
-			}
-
-			set
-			{
-				Handler = value;
-			}
-		}
+		public IViewHandler Handler { get; set; }
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
@@ -204,39 +188,63 @@ namespace Xamarin.Forms
 
 		IFrameworkElement IFrameworkElement.Parent => Parent as IView;
 
-		SizeRequest IFrameworkElement.DesiredSize => _desiredSize;
+		public Size DesiredSize { get; protected set; }
 
-		bool IFrameworkElement.IsMeasureValid => _isMeasureValid;
+		public bool IsMeasureValid { get; protected set; }
 
-		bool IFrameworkElement.IsArrangeValid => _isArrangeValid;
+		public bool IsArrangeValid { get; protected set; }
 
-
-		void IFrameworkElement.Arrange(Rectangle bounds)
+		public void Arrange(Rectangle bounds)
 		{
-			if (_isArrangeValid)
+			if (IsArrangeValid)
 				return;
-			_isArrangeValid = true;
+			IsArrangeValid = true;
 			Layout(bounds);
 		}
 
-		SizeRequest IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
+		protected override void OnSizeAllocated(double width, double height)
 		{
-			if (!_isMeasureValid)
-				_desiredSize = this.Handler.GetDesiredSize(widthConstraint, heightConstraint);// this.OnMeasure(widthConstraint, heightConstraint);
-			_isMeasureValid = true;
-			return _desiredSize;
+			base.OnSizeAllocated(width, height);
+			Handler?.SetFrame(Bounds);
+		}
+
+		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
+		{
+			if (!IsMeasureValid)
+			{
+				// TODO ezhart Adjust constraints to account for margins
+
+				// TODO ezhart If we can find reason to, we may need to add a MeasureFlags parameter to IFrameworkElement.Measure
+				// Forms has and (very occasionally) uses one. I'd rather not muddle this up with it, but if it's necessary
+				// we can add it. The default is MeasureFlags.None, but nearly every use of it is MeasureFlags.IncludeMargins,
+				// so it's an awkward default. 
+
+				// I'd much rather just get rid of all the uses of it which don't include the margins, and have "with margins"
+				// be the default. It's more intuitive and less code to write. Also, I sort of suspect that the uses which
+				// _don't_ include the margins are actually bugs.
+
+				var frameworkElement = this as IFrameworkElement;
+
+				widthConstraint = LayoutManager.ResolveConstraints(widthConstraint, frameworkElement.Width);
+				heightConstraint = LayoutManager.ResolveConstraints(heightConstraint, frameworkElement.Height);
+
+				DesiredSize = Handler.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+
+			IsMeasureValid = true;
+			return DesiredSize;
 		}
 
 		void IFrameworkElement.InvalidateMeasure()
 		{
-			_isMeasureValid = false;
-			_isArrangeValid = false;
-			this.InvalidateMeasure();
+			IsMeasureValid = false;
+			IsArrangeValid = false;
+			InvalidateMeasure();
 		}
 
 		void IFrameworkElement.InvalidateArrange()
 		{
-			_isArrangeValid = false;
+			IsArrangeValid = false;
 		}
 
 		protected PropertyMapper propertyMapper;
@@ -244,6 +252,8 @@ namespace Xamarin.Forms
 		protected PropertyMapper<T> GetRendererOverides<T>() where T : IView => (PropertyMapper<T>)(propertyMapper as PropertyMapper<T> ?? (propertyMapper = new PropertyMapper<T>()));
 		PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() => propertyMapper;
 
+		double IFrameworkElement.Width { get => WidthRequest; }
+		double IFrameworkElement.Height { get => HeightRequest; }
 
 		#endregion
 	}

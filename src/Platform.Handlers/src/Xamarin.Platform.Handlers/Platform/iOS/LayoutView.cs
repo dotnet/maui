@@ -17,9 +17,9 @@ namespace Xamarin.Platform
 			var width = size.Width;
 			var height = size.Height;
 
-			var sizeRequest = CrossPlatformMeasure(width, height);
+			var crossPlatformSize = CrossPlatformMeasure(width, height);
 
-			return base.SizeThatFits(sizeRequest.Request.ToCGSize());
+			return base.SizeThatFits(crossPlatformSize.ToCGSize());
 		}
 
 		public override void LayoutSubviews()
@@ -33,7 +33,7 @@ namespace Xamarin.Platform
 			CrossPlatformArrange?.Invoke(Frame.ToRectangle());
 		}
 
-		internal Func<double, double, SizeRequest>? CrossPlatformMeasure { get; set; }
+		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Action<Rectangle>? CrossPlatformArrange { get; set; }
 	}
 }

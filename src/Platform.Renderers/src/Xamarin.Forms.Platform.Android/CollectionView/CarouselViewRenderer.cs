@@ -619,8 +619,8 @@ namespace Xamarin.Forms.Platform.Android
 					var firstView = recyclerView.FindViewHolderForAdapterPosition(linearLayoutManager.FindFirstVisibleItemPosition());
 					var lastView = recyclerView.FindViewHolderForAdapterPosition(linearLayoutManager.FindLastVisibleItemPosition());
 					var centerView = recyclerView.GetCenteredView();
-					firstVisibleItemIndex = GetIndexFromTemplatedCell(firstView.ItemView);
-					lastVisibleItemIndex = GetIndexFromTemplatedCell(lastView.ItemView);
+					firstVisibleItemIndex = GetIndexFromTemplatedCell(firstView?.ItemView);
+					lastVisibleItemIndex = GetIndexFromTemplatedCell(lastView?.ItemView);
 					centerItemIndex = GetIndexFromTemplatedCell(centerView);
 				}
 

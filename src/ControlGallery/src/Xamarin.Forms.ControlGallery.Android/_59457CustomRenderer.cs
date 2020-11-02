@@ -7,6 +7,7 @@ using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
 using Android.Graphics.Drawables;
 using Android.Graphics;
+using Xamarin.Platform;
 
 [assembly: ExportRenderer(typeof(Bugzilla59457.Bugzilla59457Entry), typeof(_59457CustomRenderer))]
 namespace Xamarin.Forms.ControlGallery.Android

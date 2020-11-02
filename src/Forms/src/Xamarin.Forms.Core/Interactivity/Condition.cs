@@ -20,7 +20,7 @@ namespace Xamarin.Forms
 				if (_conditionChanged == value)
 					return;
 				if (_conditionChanged != null)
-					throw new InvalidOperationException("The same condition instance can not be reused");
+					throw new InvalidOperationException("The same condition instance cannot be reused");
 				_conditionChanged = value;
 			}
 		}
@@ -33,7 +33,7 @@ namespace Xamarin.Forms
 				if (_isSealed == value)
 					return;
 				if (!value)
-					throw new InvalidOperationException("What is sealed can not be unsealed.");
+					throw new InvalidOperationException("What is sealed cannot be unsealed.");
 				_isSealed = value;
 				OnSealed();
 			}

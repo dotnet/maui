@@ -2,6 +2,14 @@ using Android.Views;
 
 namespace Xamarin.Forms.Platform.Android
 {
+	// TODO ezhart We're still going to have to override the relevant methods in the various
+	// Android controls to accomplish the touch handling consistency hacks 
+	// But we can probably make this class static, make the methods static, and track the 
+	// two variables in the control subclasses. That way we don't have to create an instance of this
+	// class for every control.
+
+	// Also, we can probably do all that in Forms, too. 
+
 	internal class MotionEventHelper
 	{
 		VisualElement _element;

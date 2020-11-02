@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms
@@ -51,6 +52,33 @@ namespace Xamarin.Forms
 			return new Uri(path, UriKind.Relative);
 		}
 
+		public static bool IsTargetRelativePop(ShellNavigationParameters request)
+		{
+			if (request?.TargetState?.Location?.OriginalString == null)
+				return false;
+
+			bool isRelativePopping = false;
+
+			// If the user is popping with PopAsync or ".."
+			// we need to know this so we don't clear the query parameters off
+			// the destination location
+
+			var dest = request.TargetState?.Location?.OriginalString;
+
+			foreach (var path in RetrievePaths(dest))
+			{
+				if (path != "..")
+				{
+					isRelativePopping = false;
+					break;
+				}
+				else
+					isRelativePopping = true;
+			}
+
+			return isRelativePopping;
+		}
+
 		public static Uri ConvertToStandardFormat(Shell shell, Uri request)
 		{
 			request = FormatUri(request, shell);
@@ -69,7 +97,7 @@ namespace Xamarin.Forms
 			if (pathAndQuery.Length > 1)
 				query = $"?{pathAndQuery[1]}";
 
-			var segments = new List<string>(pathAndQuery[0].Split(_pathSeparators, StringSplitOptions.RemoveEmptyEntries));
+			var segments = new List<string>(RetrievePaths(pathAndQuery[0]));
 
 			if (segments[0] != routeHost)
 				segments.Insert(0, routeHost);
@@ -83,18 +111,25 @@ namespace Xamarin.Forms
 			return new Uri(uri);
 		}
 
+		static internal string[] RetrievePaths(string uri) => uri.Split(_pathSeparators, StringSplitOptions.RemoveEmptyEntries);
+
+		static internal NavigationRequest.WhatToDoWithTheStack CalculateStackRequest(Uri uri)
+		{
+			if (uri.IsAbsoluteUri)
+				return NavigationRequest.WhatToDoWithTheStack.ReplaceIt;
+			else if (uri.OriginalString.StartsWith("//", StringComparison.Ordinal) || uri.OriginalString.StartsWith("\\\\", StringComparison.Ordinal))
+				return NavigationRequest.WhatToDoWithTheStack.ReplaceIt;
+
+
+			return NavigationRequest.WhatToDoWithTheStack.PushToIt;
+		}
+
 		internal static NavigationRequest GetNavigationRequest(Shell shell, Uri uri, bool enableRelativeShellRoutes = false, bool throwNavigationErrorAsException = true, ShellNavigationParameters shellNavigationParameters = null)
 		{
 			uri = FormatUri(uri, shell);
 
 			// figure out the intent of the Uri
-			NavigationRequest.WhatToDoWithTheStack whatDoIDo = NavigationRequest.WhatToDoWithTheStack.PushToIt;
-			if (uri.IsAbsoluteUri)
-				whatDoIDo = NavigationRequest.WhatToDoWithTheStack.ReplaceIt;
-			else if (uri.OriginalString.StartsWith("//", StringComparison.Ordinal) || uri.OriginalString.StartsWith("\\\\", StringComparison.Ordinal))
-				whatDoIDo = NavigationRequest.WhatToDoWithTheStack.ReplaceIt;
-			else
-				whatDoIDo = NavigationRequest.WhatToDoWithTheStack.PushToIt;
+			NavigationRequest.WhatToDoWithTheStack whatDoIDo = CalculateStackRequest(uri);
 
 			Uri request = ConvertToStandardFormat(shell, uri);
 
@@ -128,13 +163,9 @@ namespace Xamarin.Forms
 			}
 
 			var theWinningRoute = possibleRouteMatches[0];
+
 			RequestDefinition definition =
-				new RequestDefinition(
-					ConvertToStandardFormat(shell, CreateUri(theWinningRoute.PathFull)),
-					theWinningRoute.Item,
-					theWinningRoute.Section,
-					theWinningRoute.Content,
-					theWinningRoute.GlobalRouteMatches);
+				new RequestDefinition(theWinningRoute, shell);
 
 			NavigationRequest navigationRequest = new NavigationRequest(definition, whatDoIDo, request.Query, request.Fragment);
 
@@ -174,7 +205,7 @@ namespace Xamarin.Forms
 				!originalRequest.OriginalString.StartsWith("//", StringComparison.Ordinal))
 				relativeMatch = true;
 
-			var segments = localPath.Split(_pathSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+			var segments = RetrievePaths(localPath);
 
 			if (!relativeMatch)
 			{
@@ -566,7 +597,7 @@ namespace Xamarin.Forms
 				if (key.StartsWith(_pathSeparator, StringComparison.Ordinal) && !(node is Shell))
 					continue;
 
-				var segments = key.Split(_pathSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+				var segments = RetrievePaths(key);
 
 				if (segments[0] == route)
 				{
@@ -589,7 +620,7 @@ namespace Xamarin.Forms
 			{
 				get
 				{
-					var segments = _path.Split(_pathSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries).ToList().Skip(1).ToList();
+					var segments = RetrievePaths(_path).ToList().Skip(1).ToList();
 
 					if (segments.Count == 0)
 						return new object[0];
@@ -604,7 +635,7 @@ namespace Xamarin.Forms
 			{
 				get
 				{
-					var segments = _path.Split(_pathSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+					var segments = RetrievePaths(_path);
 
 					if (segments.Length == 0)
 						return string.Empty;
@@ -617,7 +648,7 @@ namespace Xamarin.Forms
 			{
 				get
 				{
-					var segments = _path.Split(_pathSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries).ToList().Skip(1).ToList();
+					var segments = RetrievePaths(_path).ToList().Skip(1).ToList();
 
 					if (segments.Count == 0)
 						return true;
@@ -717,7 +748,6 @@ namespace Xamarin.Forms
 					}
 
 					break;
-
 			}
 
 			// if shellSegment == userSegment it means the implicit route is part of the request
@@ -750,6 +780,7 @@ namespace Xamarin.Forms
 				return Routing.FormatRoute(String.Join(_uriSeparator, _allSegments.Skip(nextMatch)));
 			}
 		}
+
 		public string[] RemainingSegments
 		{
 			get
@@ -776,7 +807,6 @@ namespace Xamarin.Forms
 		public bool IsFullMatch => _matchedSegments.Count == _allSegments.Length;
 		public List<string> GlobalRouteMatches => _globalRouteMatches;
 		public List<string> SegmentsMatched => _matchedSegments;
-
 	}
 
 
@@ -808,18 +838,38 @@ namespace Xamarin.Forms
 	[DebuggerDisplay("Full = {FullUri}, Short = {ShortUri}")]
 	internal class RequestDefinition
 	{
-		public RequestDefinition(Uri fullUri, ShellItem item, ShellSection section, ShellContent content, List<string> globalRoutes)
+		public RequestDefinition(RouteRequestBuilder theWinningRoute, Shell shell)
 		{
-			FullUri = fullUri;
-			Item = item;
-			Section = section;
-			Content = content;
-			GlobalRoutes = globalRoutes;
+			Item = theWinningRoute.Item;
+			Section = theWinningRoute.Section ?? Item?.CurrentItem;
+			Content = theWinningRoute.Content ?? Section?.CurrentItem;
+			GlobalRoutes = theWinningRoute.GlobalRouteMatches;
+
+			List<String> builder = new List<string>();
+			if (Item?.Route != null)
+				builder.Add(Item.Route);
+
+			if (Section?.Route != null)
+				builder.Add(Section?.Route);
+
+			if (Content?.Route != null)
+				builder.Add(Content?.Route);
+
+			if (GlobalRoutes != null)
+				builder.AddRange(GlobalRoutes);
+
+			var uriPath = MakeUriString(builder);
+			var uri = ShellUriHandler.CreateUri(uriPath);
+			FullUri = ShellUriHandler.ConvertToStandardFormat(shell, uri);
+
 		}
 
-		public RequestDefinition(string fullUri, ShellItem item, ShellSection section, ShellContent content, List<string> globalRoutes) :
-			this(new Uri(fullUri, UriKind.Absolute), item, section, content, globalRoutes)
+		string MakeUriString(List<string> segments)
 		{
+			if (segments[0].StartsWith("/", StringComparison.Ordinal) || segments[0].StartsWith("\\", StringComparison.Ordinal))
+				return String.Join("/", segments);
+
+			return $"//{String.Join("/", segments)}";
 		}
 
 		public Uri FullUri { get; }

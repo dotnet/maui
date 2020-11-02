@@ -191,19 +191,19 @@
 
   <!-- UWP Targets-->
   <Target Name="WinUICheckTargetPlatformVersion" BeforeTargets="PrepareForBuild"
-      Condition="'$(TargetPlatformVersion)' != '' and '$(TargetPlatformMinVersion)' != ''">
+      Condition="'$(TargetPlatformIdentifier)' == 'UAP' AND '$(TargetPlatformVersion)' != '' AND '$(TargetPlatformMinVersion)' != ''">
     <PropertyGroup>
       <MicrosoftUIXamlTargetPlatformMinCheckValue>$([System.Version]::Parse('$(TargetPlatformMinVersion)').Build)</MicrosoftUIXamlTargetPlatformMinCheckValue>
     </PropertyGroup>
     <Warning
-        Text="Xamarin.Forms recommends TargetPlatformMinVersion &gt;= 10.0.14393.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))"
-        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 14393" />
+        Text="Xamarin.Forms recommends TargetPlatformMinVersion &gt;= 10.0.15063.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))"
+        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 15063" />
     <PropertyGroup>
       <MicrosoftUIXamlTargetPlatformCheckValue>$([System.Version]::Parse('$(TargetPlatformVersion)').Build)</MicrosoftUIXamlTargetPlatformCheckValue>
     </PropertyGroup>
     <Warning
-        Text="Xamarin.Forms recommends TargetPlatformVersion &gt;= 10.0.17763.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
-        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 17763 AND '$(OutputType)'!='Library'" />
+        Text="Xamarin.Forms recommends TargetPlatformVersion &gt;= 10.0.18362.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
+        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 18362 AND '$(OutputType)'!='Library'" />
     <Warning
         Text="Xamarin.Forms recommends TargetPlatformVersion &gt;= 10.0.14393.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
         Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 14393 AND '$(OutputType)'=='Library'" />
