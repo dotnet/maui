@@ -373,8 +373,12 @@ namespace Xamarin.Forms.Xaml
 			var localName = propertyName.LocalName;
 			xpe = null;
 
-			var assemblyName = rootElement.GetType().GetTypeInfo().Assembly?.GetName().Name;
-			void registerSourceInfo(object target, string path) => VisualDiagnostics.RegisterSourceInfo(target, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), lineInfo.LineNumber, lineInfo.LinePosition);
+			void registerSourceInfo(object target, string path)
+			{
+				var assemblyName = rootElement.GetType().GetTypeInfo().Assembly?.GetName().Name;
+				if (lineInfo != null)
+					VisualDiagnostics.RegisterSourceInfo(target, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), lineInfo.LineNumber, lineInfo.LinePosition);
+			}
 
 			//If it's an attached BP, update elementType and propertyName
 			var bpOwnerType = element.GetType();
