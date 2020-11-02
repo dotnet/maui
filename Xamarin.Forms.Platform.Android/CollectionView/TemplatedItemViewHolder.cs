@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override bool UseDefaultSelectionColor
 		{
-			get 
+			get
 			{
 				if (View != null)
 				{
