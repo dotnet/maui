@@ -1,6 +1,9 @@
-﻿namespace Xamarin.Forms
+﻿using System.ComponentModel;
+
+namespace Xamarin.Forms
 {
-	interface IPaddingElement
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public interface IPaddingElement
 	{
 		//note to implementor: implement this property publicly
 		Thickness Padding { get; }
