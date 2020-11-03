@@ -532,7 +532,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void InvalidateLayout()
 		{
-			UpdateConstraints(CollectionView.Frame.Size);
+			if (CollectionView != null && CollectionView.Frame != null) {
+				UpdateConstraints(CollectionView.Frame.Size);
+			}
 			base.InvalidateLayout();
 		}
 	}
