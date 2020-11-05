@@ -49,73 +49,88 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			set
 			{
-				if (!_drawer.IsOpen && value)
-				{
-					_drawer.SetScrollableArea(_navigationViewRatio);
-				}
+				if (value)
+					ShowDrawer();
 
 				_drawer.IsOpen = value;
-
-				if (!_drawer.IsOpen)
-				{
-					_drawer.SetScrollableArea(0);
-				}
 			}
 		}
 
 		void Initialize(EvasObject parent)
 		{
-			/**
-			 *  /----------------/
-			 *  /     drawer     /
-			 *  / /------------/ /
-			 *  / /   content  / /
-			 *  / /------------/ /
-			 *  /----------------/
-			 *  /----------------/
-			 *  /     dim        /
-			 *  /----------------/
-			 *  /----------------/
-			 *  /      main      /
-			 *  /-------------- -/
-			 * 
-			 */
-
 			SetLayoutCallback(OnLayout);
 
 			_mainContainer = new EBox(parent);
 			_mainContainer.Show();
-			PackEnd(_mainContainer);
 
 			_dimArea = new EBox(parent)
 			{
 				BackgroundColor = ThemeConstants.Shell.ColorClass.DefaultDrawerDimBackgroundColor
 			};
-			PackEnd(_dimArea);
 
 			_drawer = new Panel(parent);
 
 			_drawer.SetScrollable(true);
-			_drawer.SetScrollableArea(0);
+			_drawer.SetScrollableArea(_navigationViewRatio);
 			_drawer.Direction = PanelDirection.Left;
 
 			_drawer.Toggled += (s, e) =>
 			{
-				UpdateDimArea();
-				Toggled?.Invoke(this, e);
 				if (!_drawer.IsOpen)
 				{
-					Device.StartTimer(TimeSpan.FromSeconds(1), () =>
-					{
-						if (!_drawer.IsOpen)
-							_drawer.SetScrollableArea(0);
-						return false;
-					});
+					HideDrawer();
 				}
+				Toggled?.Invoke(this, e);
 			};
 			_drawer.IsOpen = false;
 			_drawer.Show();
+
+			PackEnd(_dimArea);
 			PackEnd(_drawer);
+			PackEnd(_mainContainer);
+		}
+
+		void HideDrawer()
+		{
+			/**
+			*  /----------------/
+			*  /     main       /
+			*  /----------------/
+			*  /----------------/
+			*  /     drawer     /
+			*  / /------------/ /
+			*  / /   content  / /
+			*  / /------------/ /
+			*  /----------------/
+			*  /----------------/
+			*  /      dim       /
+			*  /----------------/
+			*/
+			_dimArea.Hide();
+			_drawer.Hide();
+			_mainContainer.RaiseTop();
+		}
+
+		void ShowDrawer()
+		{
+			/**
+			*  /----------------/
+			*  /     drawer     /
+			*  / /------------/ /
+			*  / /   content  / /
+			*  / /------------/ /
+			*  /----------------/
+			*  /----------------/
+			*  /      dim       /
+			*  /----------------/
+			*  /----------------/
+			*  /     main       /
+			*  /----------------/
+			*/
+			_dimArea.RaiseTop();
+			_dimArea.Show();
+			_drawer.RaiseTop();
+			_drawer.Show();
 		}
 
 		void UpdateNavigationView(EvasObject navigationView)
@@ -148,18 +163,6 @@ namespace Xamarin.Forms.Platform.Tizen
 				_main.SetWeight(1, 1);
 				_main.Show();
 				_mainContainer.PackEnd(_main);
-			}
-		}
-
-		void UpdateDimArea()
-		{
-			if (_drawer.IsOpen)
-			{
-				_dimArea.Show();
-			}
-			else
-			{
-				_dimArea.Hide();
 			}
 		}
 
