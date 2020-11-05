@@ -47,6 +47,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(VisualElement.InputTransparentProperty, UpdateInputTransparent);
 			RegisterPropertyHandler(VisualElement.BackgroundColorProperty, UpdateBackgroundColor);
 			RegisterPropertyHandler(VisualElement.BackgroundProperty, UpdateBackground);
+			RegisterPropertyHandler(VisualElement.ClipProperty, UpdateClip);
 
 			RegisterPropertyHandler(Specific.StyleProperty, UpdateThemeStyle);
 			RegisterPropertyHandler(Specific.IsFocusAllowedProperty, UpdateFocusAllowed);
@@ -664,6 +665,17 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (this is SkiaSharp.IBackgroundCanvas canvasRenderer)
 			{
 				canvasRenderer.BackgroundCanvas.Invalidate();
+			}
+		}
+
+		protected virtual void UpdateClip(bool initialize)
+		{
+			if (!Forms.UseSkiaSharp || (initialize && Element.Clip == null))
+				return;
+
+			if (this is SkiaSharp.IClipperCanvas canvasRenderer)
+			{
+				canvasRenderer.ClipperCanvas.Invalidate();
 			}
 		}
 

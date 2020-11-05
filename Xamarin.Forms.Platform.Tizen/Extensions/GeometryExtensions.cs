@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.Tizen
 	{
 		public static SKPath ToSKPath(this Geometry geometry)
 		{
-			return MakePath((dynamic)geometry);
+			return geometry == null ? MakePath(geometry) : MakePath((dynamic)geometry);
 		}
 
 		static SKPath MakePath(Geometry geometry)
