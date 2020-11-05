@@ -15,6 +15,12 @@ steps:
       SourceFolder: '$(Build.ArtifactsDirectory)/win_build'
       TargetFolder: '$(System.DefaultWorkingDirectory)'
 
+  - task: CopyFiles@2
+    displayName: 'Copy SignList.xml Files'
+    inputs:
+      Contents: build/SignList.xml
+      TargetFolder: '$(build.artifactstagingdirectory)/nuget'
+      flattenFolders: true
 
   - task: PowerShell@1
     displayName: 'Generate docs from docs repo'
@@ -38,6 +44,13 @@ steps:
       versioningScheme: byEnvVar
       versionEnvVar: nugetPackageVersion
       configuration: $(buildConfiguration)
+  
+  - task: CopyFiles@2
+    displayName: 'Copy SignList.xml Files'
+    inputs:
+      Contents: build/SignList.xml
+      TargetFolder: '$(build.artifactstagingdirectory)/nuget/debug'
+      flattenFolders: true
 
 
   - powershell: |
@@ -53,7 +66,7 @@ steps:
        }
     failOnStderr: true
     displayName: 'Update nuspecs'
-    condition: and(succeeded(), or(eq(variables['DefaultBuildConfiguration'], 'Release'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/')))
+    condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['DefaultBuildConfiguration'], 'Release'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
 
   - task: NuGetCommand@2
     displayName: 'Make NuGet Package Release'
@@ -64,7 +77,14 @@ steps:
       packDestination: '$(Build.ArtifactStagingDirectory)/nuget/release'
       versioningScheme: byEnvVar
       versionEnvVar: nugetPackageVersion
-    condition: and(succeeded(), or(eq(variables['DefaultBuildConfiguration'], 'Release'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/')))
+    condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['DefaultBuildConfiguration'], 'Release'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
+
+  - task: CopyFiles@2
+    displayName: 'Copy SignList.xml Files'
+    inputs:
+      Contents: build/SignList.xml
+      TargetFolder: '$(build.artifactstagingdirectory)/nuget/release'
+      flattenFolders: true
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: nuget'

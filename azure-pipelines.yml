@@ -26,7 +26,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/main # still defaults to master even though main is the main branch
+      ref: refs/heads/main
 
 trigger:
   branches:
@@ -310,14 +310,13 @@ stages:
       dependsOn: windows
       displayName: Sign Nuget
       jobs:
-        - job: nuget_sign
-          displayName: Sign Phase
-          pool:
-            name: $(signVmImage)
-            demands:
-              msbuild
-          steps:
-            - template: build/steps/build-sign.yml
-          condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
+        - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+          parameters:
+            targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+            artifactPath: release
+            signedArtifactName: nuget
+            signedArtifactPath: signed
+            displayName: Sign Phase
+            condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
 
 
