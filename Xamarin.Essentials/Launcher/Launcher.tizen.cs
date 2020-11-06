@@ -45,10 +45,9 @@ namespace Xamarin.Essentials
             var appControl = new AppControl
             {
                 Operation = AppControlOperations.View,
+                Mime = "*/*",
+                Uri = "file://" + request.File.FullPath,
             };
-
-            if (!string.IsNullOrEmpty(request.File.FullPath))
-                appControl.ExtraData.Add("http://tizen.org/appcontrol/data/path", request.File.FullPath);
 
             AppControl.SendLaunchRequest(appControl);
 

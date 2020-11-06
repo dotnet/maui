@@ -19,15 +19,15 @@ namespace Xamarin.Essentials
             };
 
             if (message.Bcc.Count > 0)
-                appControl.ExtraData.Add("http://tizen.org/appcontrol/data/bcc", message.Bcc);
+                appControl.ExtraData.Add(AppControlData.Bcc, message.Bcc);
             if (!string.IsNullOrEmpty(message.Body))
-                appControl.ExtraData.Add("http://tizen.org/appcontrol/data/text", message.Body);
+                appControl.ExtraData.Add(AppControlData.Text, message.Body);
             if (message.Cc.Count > 0)
-                appControl.ExtraData.Add("http://tizen.org/appcontrol/data/cc", message.Cc);
+                appControl.ExtraData.Add(AppControlData.Cc, message.Cc);
             if (!string.IsNullOrEmpty(message.Subject))
-                appControl.ExtraData.Add("http://tizen.org/appcontrol/data/subject", message.Subject);
+                appControl.ExtraData.Add(AppControlData.Subject, message.Subject);
             if (message.To.Count > 0)
-                appControl.ExtraData.Add("http://tizen.org/appcontrol/data/to", message.To);
+                appControl.ExtraData.Add(AppControlData.To, message.To);
 
             AppControl.SendLaunchRequest(appControl);
 

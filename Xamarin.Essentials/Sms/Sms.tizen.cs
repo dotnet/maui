@@ -19,7 +19,7 @@ namespace Xamarin.Essentials
             };
 
             if (!string.IsNullOrEmpty(message.Body))
-                appControl.ExtraData.Add("http://tizen.org/appcontrol/data/text", message.Body);
+                appControl.ExtraData.Add(AppControlData.Text, message.Body);
             if (message.Recipients.Count > 0)
                 appControl.Uri += string.Join(" ", message.Recipients);
 
