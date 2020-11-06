@@ -32,7 +32,7 @@ stages:
     jobs:
       - template: .ci/build.yml@components
         parameters:
-          areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
+          areaPath: 'DevDiv\Xamarin SDK'
           masterBranchName: 'main'
           preBuildSteps:
             - pwsh: |
