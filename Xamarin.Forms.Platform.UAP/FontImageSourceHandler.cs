@@ -5,7 +5,6 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using WFontIconSource = Microsoft.UI.Xaml.Controls.FontIconSource;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -23,19 +22,9 @@ namespace Xamarin.Forms.Platform.UWP
 			var device = CanvasDevice.GetSharedDevice();
 			var dpi = Math.Max(_minimumDpi, Windows.Graphics.Display.DisplayInformation.GetForCurrentView().LogicalDpi);
 
-			// There's really no perfect solution to handle font families with fallbacks (comma-separated)
-			// So if the font family has fallbacks, only the first one is taken, because CanvasTextFormat
-			// only supports one font family
-
-			var fontFamily = fontsource.FontFamily.ToFontFamily();
-			var allFamilies = fontFamily.Source.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-			if (allFamilies.Length < 1)
-				return null;
-
 			var textFormat = new CanvasTextFormat
 			{
-				FontFamily = allFamilies[0],
+				FontFamily = GetFontSource(fontsource),
 				FontSize = (float)fontsource.Size,
 				HorizontalAlignment = CanvasHorizontalAlignment.Center,
 				VerticalAlignment = CanvasVerticalAlignment.Center,
@@ -104,6 +93,37 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			return Task.FromResult(image);
+		}
+
+		string GetFontSource(FontImageSource fontImageSource)
+		{
+			if (fontImageSource == null)
+				return string.Empty;
+
+			var fontFamily = fontImageSource.FontFamily.ToFontFamily();
+
+			string fontSource = fontFamily.Source;
+
+			var allFamilies = fontFamily.Source.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+			if (allFamilies.Length > 1)
+			{       
+				// There's really no perfect solution to handle font families with fallbacks (comma-separated)	
+				// So if the font family has fallbacks, only one is taken, because CanvasTextFormat	
+				// only supports one font family
+				string source = fontImageSource.FontFamily;
+
+				foreach(var family in allFamilies)
+				{
+					if(family.Contains(source))
+					{
+						fontSource = family;
+						break;
+					}
+				}
+			}
+
+			return fontSource;
 		}
 	}
 }
