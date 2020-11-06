@@ -41,7 +41,7 @@ namespace Xamarin.Essentials
         }
 
         static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
-            => CaptureAsync(options, false);
+            => CaptureAsync(options, true);
 
         static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
             => CaptureAsync(options, false);
