@@ -16,7 +16,7 @@ namespace Xamarin.Essentials
         static NSObject observer;
 
         static bool PlatformHasText
-            => UIPasteboard.General.HasStrings;
+            => UIPasteboard.General.HasStrings && !string.IsNullOrEmpty(UIPasteboard.General.String);
 
         static Task<string> PlatformGetTextAsync()
             => Task.FromResult(UIPasteboard.General.String);

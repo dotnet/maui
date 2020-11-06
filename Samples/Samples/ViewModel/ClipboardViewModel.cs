@@ -14,11 +14,14 @@ namespace Samples.ViewModel
         {
             CopyCommand = new Command(OnCopy);
             PasteCommand = new Command(OnPaste);
+            CheckCommand = new Command(OnCheck);
         }
 
         public ICommand CopyCommand { get; }
 
         public ICommand PasteCommand { get; }
+
+        public ICommand CheckCommand { get; }
 
         public string FieldValue
         {
@@ -71,6 +74,11 @@ namespace Samples.ViewModel
             {
                 FieldValue = text;
             }
+        }
+
+        async void OnCheck()
+        {
+            await DisplayAlertAsync($"Has text: {Clipboard.HasText}");
         }
     }
 }

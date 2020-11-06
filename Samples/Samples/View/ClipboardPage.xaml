@@ -17,6 +17,7 @@
                 <Entry Placeholder="Enter text..." Text="{Binding FieldValue}" />
                 <Button Text="Copy to clipboard" Command="{Binding CopyCommand}" />
                 <Button Text="Paste from clipboard" Command="{Binding PasteCommand}" />
+                <Button Text="Check Status" Command="{Binding CheckCommand}" />
                 <Label Text="{Binding LastCopied}" />
             </StackLayout>
         </ScrollView>

@@ -17,7 +17,7 @@ namespace Xamarin.Essentials
         }
 
         static bool PlatformHasText
-            => Platform.ClipboardManager.HasPrimaryClip;
+            => Platform.ClipboardManager.HasPrimaryClip && !string.IsNullOrEmpty(Platform.ClipboardManager.PrimaryClip?.GetItemAt(0)?.Text);
 
         static Task<string> PlatformGetTextAsync()
             => Task.FromResult(Platform.ClipboardManager.PrimaryClip?.GetItemAt(0)?.Text);

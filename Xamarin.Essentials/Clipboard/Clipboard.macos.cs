@@ -22,7 +22,7 @@ namespace Xamarin.Essentials
         }
 
         static bool PlatformHasText =>
-            GetPasteboardText() != null;
+            !string.IsNullOrEmpty(GetPasteboardText());
 
         static Task<string> PlatformGetTextAsync()
             => Task.FromResult(GetPasteboardText());
