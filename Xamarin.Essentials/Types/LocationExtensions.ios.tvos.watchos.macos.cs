@@ -49,5 +49,20 @@ namespace Xamarin.Essentials
                 return DateTimeOffset.UtcNow;
             }
         }
+
+        internal static CLAuthorizationStatus GetAuthorizationStatus(this CLLocationManager locationManager)
+        {
+#if !__MACOS__ // this is coming in macOS 11
+#if __WATCHOS__
+            if (Platform.HasOSVersion(7, 0))
+#else
+            if (Platform.HasOSVersion(14, 0))
+#endif
+                return locationManager.AuthorizationStatus;
+
+#endif
+
+            return CLLocationManager.Status;
+        }
     }
 }

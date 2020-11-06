@@ -136,12 +136,13 @@ namespace Xamarin.Essentials
                     return Task.FromResult(PermissionStatus.Disabled);
 
                 locationManager = new CLLocationManager();
+                var previousState = locationManager.GetAuthorizationStatus();
 
                 var tcs = new TaskCompletionSource<PermissionStatus>(locationManager);
 
-                var previousState = CLLocationManager.Status;
-
-                locationManager.AuthorizationChanged += LocationAuthCallback;
+                var del = new ManagerDelegate();
+                del.AuthorizationStatusChanged += LocationAuthCallback;
+                locationManager.Delegate = del;
 
                 invokeRequest(locationManager);
 
@@ -165,7 +166,7 @@ namespace Xamarin.Essentials
                                         // Wait for a timeout to see if the check is complete
                                         if (tcs != null && !tcs.Task.IsCompleted)
                                         {
-                                            locationManager.AuthorizationChanged -= LocationAuthCallback;
+                                            del.AuthorizationStatusChanged -= LocationAuthCallback;
                                             tcs.TrySetResult(GetLocationStatus(whenInUse));
                                         }
                                     }
@@ -184,8 +185,7 @@ namespace Xamarin.Essentials
                             }
                         }
 
-                        locationManager.AuthorizationChanged -= LocationAuthCallback;
-
+                        del.AuthorizationStatusChanged -= LocationAuthCallback;
                         tcs.TrySetResult(GetLocationStatus(whenInUse));
                         locationManager?.Dispose();
                         locationManager = null;
@@ -198,6 +198,19 @@ namespace Xamarin.Essentials
                         locationManager = null;
                     }
                 }
+            }
+
+            class ManagerDelegate : NSObject, ICLLocationManagerDelegate
+            {
+                public event EventHandler<CLAuthorizationChangedEventArgs> AuthorizationStatusChanged;
+
+                [Export("locationManager:didChangeAuthorizationStatus:")]
+                public void AuthorizationChanged(CLLocationManager manager, CLAuthorizationStatus status) =>
+                    AuthorizationStatusChanged?.Invoke(this, new CLAuthorizationChangedEventArgs(status));
+
+                [Export("locationManagerDidChangeAuthorization:")]
+                public void DidChangeAuthorization(CLLocationManager manager) =>
+                    AuthorizationStatusChanged?.Invoke(this, new CLAuthorizationChangedEventArgs(manager.AuthorizationStatus));
             }
         }
 
