@@ -80,6 +80,7 @@
     <Compile Include="DropGestureRecognizerTests.cs" />
     <Compile Include="DragGestureRecognizerTests.cs" />
     <Compile Include="ItemsLayoutTypeConverterTests.cs" />
+    <Compile Include="FlyoutPageUnitTests.cs" />
     <Compile Include="MultiBindingTests.cs" />
     <Compile Include="Markup\DefaultBindablePropertiesTests.cs" />
     <Compile Include="Markup\BindableObjectExtensionsTests.cs" />
