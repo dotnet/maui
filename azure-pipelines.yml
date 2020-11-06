@@ -60,6 +60,8 @@ stages:
       dependsOn: [ 'build' ]
       jobs:
         - template: sign-artifacts/jobs/v2.yml@internal-templates
+          parameters:
+            condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
 
   - stage: devicetests
     displayName: Device Tests
