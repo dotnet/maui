@@ -476,6 +476,7 @@
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Top">
                                             <ScrollViewer
+                                                x:Name="LeftNavScrollViewer"
                                                 TabNavigation="Once"
                                                 VerticalScrollBarVisibility="Auto">
                                                 <winui:ItemsRepeater
