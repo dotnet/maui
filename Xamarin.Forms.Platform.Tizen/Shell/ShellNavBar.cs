@@ -222,7 +222,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			else if (ShellController.FlyoutIcon != null)
 			{
-				if(_isTV)
+				if (_isTV)
 				{
 					_menuButton.Style = ThemeConstants.Button.Styles.Circle;
 					_menuIcon = new EImage(Forms.NativeParent);
@@ -245,7 +245,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				}
 			}
 
-			if(source != null && _menuIcon != null)
+			if (source != null && _menuIcon != null)
 			{
 				_menuIcon.Show();
 				_ = _menuIcon.LoadFromImageSourceAsync(source);

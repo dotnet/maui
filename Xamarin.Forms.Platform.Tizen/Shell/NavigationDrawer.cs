@@ -2,8 +2,8 @@ using System;
 using System.Threading.Tasks;
 using ElmSharp;
 using EBox = ElmSharp.Box;
-using ERect = ElmSharp.Rect;
 using EGestureType = ElmSharp.GestureLayer.GestureType;
+using ERect = ElmSharp.Rect;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -132,7 +132,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			var drawerWidth = (int)(Geometry.Width * this.GetFlyoutRatio(Geometry.Width, Geometry.Height));
 			var bound = Geometry;
 			bound.Width = drawerWidth;
-			bound.X = _isOpen ? bound.X :  bound.X - drawerWidth;
+			bound.X = _isOpen ? bound.X : bound.X - drawerWidth;
 			_drawerBox.Geometry = bound;
 		}
 
@@ -164,7 +164,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			await MoveDrawerAsync(_drawerBox, dest);
 
-			if(!_isOpen)
+			if (!_isOpen)
 			{
 				_isOpen = true;
 				Toggled?.Invoke(this, EventArgs.Empty);
@@ -183,17 +183,17 @@ namespace Xamarin.Forms.Platform.Tizen
 				toMove.X += (int)(dx * (1 - progress));
 				target.Geometry = toMove;
 
-			}, easing: Easing.Linear).Commit(this, "Move", length: length, finished:(s, e)=>
-			{
-				target.Geometry = dest;
-				tcs.SetResult(true);
-			});
+			}, easing: Easing.Linear).Commit(this, "Move", length: length, finished: (s, e) =>
+			 {
+				 target.Geometry = dest;
+				 tcs.SetResult(true);
+			 });
 			return tcs.Task;
 		}
 
 		void OnTapped(GestureLayer.TapData data)
 		{
-			if(_isOpen)
+			if (_isOpen)
 			{
 				HideDrawer();
 			}
