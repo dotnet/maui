@@ -703,6 +703,16 @@ namespace Xamarin.Forms.Platform.iOS
 				_renderer.UpdateCanGoBackForward();
 			}
 
+			public override void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
+			{
+				var url = GetCurrentUrl();
+				WebView.SendNavigated(
+					new WebNavigatedEventArgs(_lastEvent, new UrlWebViewSource { Url = url }, url, WebNavigationResult.Failure)
+				);
+
+				_renderer.UpdateCanGoBackForward();
+			}
+
 			public override void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 			{
 				if (webView.IsLoading)

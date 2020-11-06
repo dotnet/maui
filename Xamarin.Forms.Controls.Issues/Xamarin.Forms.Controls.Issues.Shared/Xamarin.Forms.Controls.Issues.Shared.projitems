@@ -40,6 +40,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue11769.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue12060.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue12344.xaml.cs">
+      <DependentUpon>Issue12344.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue12246.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8613.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9137.cs" />
@@ -2443,6 +2446,10 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10897.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12344.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>

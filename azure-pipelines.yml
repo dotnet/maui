@@ -20,7 +20,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/main # still defaults to master even though main is the main branch
+      ref: refs/heads/main
 
 trigger:
   branches:
@@ -77,7 +77,7 @@ stages:
           - template: build/steps/build-windows.yml
             parameters:
               provisionatorPath : 'build/provisioning/provisioning.csx'
-     
+
       - job: nuget_pack_hosted
         workspace:
           clean: all
@@ -193,20 +193,20 @@ stages:
         cancelTimeoutInMinutes: 5
         steps:
           - checkout: self
-          
-          - template: security/policheck/v1.yml@xamarin-templates 
-          
+
+          - template: security/policheck/v1.yml@xamarin-templates
+
           - template: security/credscan/v2.yml@xamarin-templates
             parameters:
               suppressionsFile: $(System.DefaultWorkingDirectory)\build\automation\CredScanSuppressions.json
-          
+
           - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
             displayName: Run AntiMalware (Defender) Scan
             inputs:
               FileDirPath: $(System.DefaultWorkingDirectory)
               EnableServices: true
             condition: succeededOrFailed()
-          
+
           - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
             displayName: Create Security Analysis Report
             inputs:
@@ -234,7 +234,7 @@ stages:
       #   steps:
       #     - checkout: none
       #       clean: true
-          
+
       #     - task: DownloadBuildArtifacts@0
       #       displayName: 'Download build artifact win_build'
       #       inputs:
@@ -255,14 +255,13 @@ stages:
       dependsOn: windows
       displayName: Sign Nuget
       jobs:
-        - job: nuget_sign
-          displayName: Sign Phase
-          pool:
-            name: $(signVmImage)
-            demands:
-              msbuild
-          steps:
-            - template: build/steps/build-sign.yml
-          condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
+        - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+          parameters:
+            targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+            artifactPath: release
+            signedArtifactName: nuget
+            signedArtifactPath: signed
+            displayName: Sign Phase
+            condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
 
 
