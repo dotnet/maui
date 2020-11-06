@@ -51,7 +51,7 @@ namespace Xamarin.Essentials
 
             void TryCancel()
             {
-                ss.StopSpeaking(NSSpeechBoundary.hWord);
+                ss.StopSpeaking(NSSpeechBoundary.Word);
                 tcs.TrySetResult(true);
             }
 
