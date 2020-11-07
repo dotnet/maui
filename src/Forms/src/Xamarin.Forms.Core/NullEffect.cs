@@ -1,6 +1,6 @@
 namespace Xamarin.Forms
 {
-	internal class NullEffect : Effect
+	public class NullEffect : Effect
 	{
 		protected override void OnAttached()
 		{

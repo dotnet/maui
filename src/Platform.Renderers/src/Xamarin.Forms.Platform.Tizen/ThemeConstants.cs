@@ -576,6 +576,13 @@ namespace Xamarin.Forms.Platform.Tizen
 					public const int DefaultDrawerIconSize = 40;
 					public const string DefaultDrawerIcon = "Xamarin.Forms.Platform.Tizen.Resource.wc_visual_cue.png";
 				}
+
+				public class TV
+				{
+					public const string MenuIconCode = "\u2630";
+					public const string BackIconCode = "\u2190";
+					public const string DotsIconCode = "\u2026";
+				}
 			}
 
 			public class ColorClass

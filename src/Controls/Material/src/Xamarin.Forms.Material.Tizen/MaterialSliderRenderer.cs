@@ -8,13 +8,22 @@ namespace Xamarin.Forms.Material.Tizen
 {
 	public class MaterialSliderRenderer : SliderRenderer
 	{
-		protected override void OnElementChanged(ElementChangedEventArgs<Slider> e)
+		protected override ElmSharp.Slider CreateNativeControl()
 		{
-			if (Control == null)
-			{
-				SetNativeControl(new MSlider(Forms.NativeParent));
-			}
-			base.OnElementChanged(e);
+			return new MSlider(Forms.NativeParent);
+		}
+
+		protected override void UpdateMinimumTrackColor()
+		{
+			var color = Element.MinimumTrackColor.IsDefault ? MColors.Current.PrimaryColor : Element.MinimumTrackColor.ToNative();
+			Control.SetPartColor(Parts.Slider.Bar, color);
+			Control.SetPartColor(Parts.Slider.BarPressed, color);
+		}
+
+		protected override void UpdateMaximumTrackColor()
+		{
+			var color = Element.MaximumTrackColor.IsDefault ? MColors.Current.PrimaryColor.WithAlpha(0.5) : Element.MaximumTrackColor.ToNative();
+			Control.SetPartColor(Parts.Widget.Background, color);
 		}
 
 		protected override void UpdateThumbColor()
@@ -22,6 +31,8 @@ namespace Xamarin.Forms.Material.Tizen
 			var color = Element.ThumbColor.IsDefault ? MColors.Current.PrimaryColor : Element.ThumbColor.ToNative();
 			Control.SetPartColor(Parts.Slider.Handler, color);
 			Control.SetPartColor(Parts.Slider.HandlerPressed, color);
+			Control.SetPartColor(Parts.Slider.Handler2, color.WithAlpha(0.32));
 		}
+
 	}
 }

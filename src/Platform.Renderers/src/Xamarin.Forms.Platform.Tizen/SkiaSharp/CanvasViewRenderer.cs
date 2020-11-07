@@ -1,11 +1,13 @@
 using System;
 using System.Diagnostics;
 using ElmSharp;
+using SkiaSharp;
 using SkiaSharp.Views.Tizen;
+using Xamarin.Forms.Shapes;
 
 namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 {
-	public abstract class CanvasViewRenderer<TView, TNativeView> : ViewRenderer<TView, Native.Canvas>
+	public abstract class CanvasViewRenderer<TView, TNativeView> : ViewRenderer<TView, Native.Canvas>, IBackgroundCanvas, IClipperCanvas
 		where TView : View
 		where TNativeView : EvasObject
 	{
@@ -19,11 +21,17 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 
 		Lazy<SKCanvasView> _backgroundCanvas;
 
+		Lazy<SKCanvasView> _clipper;
+
 		public SKCanvasView BackgroundCanvas => _backgroundCanvas.Value;
+
+		public SKCanvasView ClipperCanvas => _clipper.Value;
 
 		public EvasObject RealNativeView { get; private set; }
 
 		public CornerRadius CornerRadius { get; set; }
+
+		public Geometry ClippingGeometry { get; set; }
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TView> e)
 		{
@@ -46,6 +54,19 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 				RealNativeView?.RaiseTop();
 				return canvas;
 			});
+
+			_clipper = new Lazy<SKCanvasView>(() =>
+			{
+				var clipper = new SKCanvasView(Forms.NativeParent);
+				clipper.PassEvents = true;
+				clipper.PaintSurface += OnClipperPaint;
+				clipper.Show();
+				Control.Children.Add(clipper);
+				clipper.Lower();
+				RealNativeView?.RaiseTop();
+				return clipper;
+			});
+
 			base.OnElementChanged(e);
 		}
 
@@ -55,6 +76,10 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 			if (_backgroundCanvas.IsValueCreated)
 			{
 				BackgroundCanvas.Geometry = Control.Geometry;
+			}
+			if (_clipper.IsValueCreated)
+			{
+				ClipperCanvas.Geometry = Control.Geometry;
 			}
 
 		}
@@ -80,6 +105,13 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 					BackgroundCanvas.Unrealize();
 					_backgroundCanvas = null;
 				}
+
+				if (_clipper.IsValueCreated)
+				{
+					ClipperCanvas.PaintSurface -= OnClipperPaint;
+					ClipperCanvas.Unrealize();
+					_clipper = null;
+				}
 			}
 			base.Dispose(disposing);
 		}
@@ -90,6 +122,10 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 			if (_backgroundCanvas.IsValueCreated)
 			{
 				BackgroundCanvas.Geometry = Control.Geometry;
+			}
+			if (_clipper.IsValueCreated)
+			{
+				ClipperCanvas.Geometry = Control.Geometry;
 			}
 		}
 
@@ -107,6 +143,34 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 				using (var path = bounds.ToRoundedRectPath(CornerRadius))
 				{
 					canvas.DrawPath(path, paint);
+				}
+			}
+		}
+
+		protected virtual void OnClipperPaint(object sender, SKPaintSurfaceEventArgs e)
+		{
+			var canvas = e.Surface.Canvas;
+			canvas.Clear();
+
+			ClippingGeometry = Element.Clip;
+			if (ClippingGeometry == null)
+				return;
+
+			using (var paint = new SKPaint
+			{
+				IsAntialias = true,
+				Style = SKPaintStyle.Fill,
+				Color = SKColors.White
+			})
+			{
+				canvas.DrawPath(ClippingGeometry.ToSKPath(), paint);
+				RealControl?.SetClip(null);
+				RealControl?.SetClip(ClipperCanvas);
+
+				if (_backgroundCanvas.IsValueCreated)
+				{
+					BackgroundCanvas.SetClip(null);
+					BackgroundCanvas.SetClip(ClipperCanvas);
 				}
 			}
 		}

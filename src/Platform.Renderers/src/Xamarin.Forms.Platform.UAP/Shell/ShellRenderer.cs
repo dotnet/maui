@@ -77,6 +77,7 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdatePaneButtonColor(NavigationViewBackButton, false);
 			UpdateFlyoutBackgroundColor();
 			UpdateFlyoutBackdrop();
+			UpdateFlyoutVerticalScrollMode();
 		}
 
 		void OnPaneOpened(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
@@ -187,6 +188,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		#endregion IVisualElementRenderer
 		ShellSplitView ShellSplitView => (ShellSplitView)GetTemplateChild("RootSplitView");
+		ScrollViewer ShellLeftNavScrollViewer => (ScrollViewer)GetTemplateChild("LeftNavScrollViewer");
 		protected internal Shell Element { get; set; }
 
 		internal Shell Shell => Element;
@@ -209,6 +211,33 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (e.PropertyName == Shell.FlyoutBackgroundColorProperty.PropertyName)
 			{
 				UpdateFlyoutBackgroundColor();
+			}
+			else if (e.PropertyName == Shell.FlyoutVerticalScrollModeProperty.PropertyName)
+			{
+				UpdateFlyoutVerticalScrollMode();
+			}
+		}
+
+		void UpdateFlyoutVerticalScrollMode()
+		{
+			var scrollViewer = ShellLeftNavScrollViewer;
+			if (scrollViewer != null)
+			{
+				switch (Shell.FlyoutVerticalScrollMode)
+				{
+					case ScrollMode.Disabled:
+						scrollViewer.VerticalScrollMode = Windows.UI.Xaml.Controls.ScrollMode.Disabled;
+						scrollViewer.VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Hidden;
+						break;
+					case ScrollMode.Enabled:
+						scrollViewer.VerticalScrollMode = Windows.UI.Xaml.Controls.ScrollMode.Enabled;
+						scrollViewer.VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Visible;
+						break;
+					default:
+						scrollViewer.VerticalScrollMode = Windows.UI.Xaml.Controls.ScrollMode.Auto;
+						scrollViewer.VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto;
+						break;
+				}
 			}
 		}
 

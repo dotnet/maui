@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7102, "[Bug] CollectionView Header cause delay to adding items.",

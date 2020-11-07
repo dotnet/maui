@@ -20,11 +20,11 @@ using Xamarin.Forms.ControlGallery.Android;
 using Xamarin.Forms.Controls;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
-using AMenuItemCompat = global::Android.Support.V4.View.MenuItemCompat;
-using AView = Android.Views.View;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
+using NestedScrollView = AndroidX.Core.Widget.NestedScrollView;
+using AMenuItemCompat = AndroidX.Core.View.MenuItemCompat;
 using IOPath = System.IO.Path;
-using NestedScrollView = global::AndroidX.Core.Widget.NestedScrollView;
+using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(Issue5461.ScrollbarFadingEnabledFalseScrollView), typeof(ScrollbarFadingEnabledFalseScrollViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1942.CustomGrid), typeof(Issue1942GridRenderer))]

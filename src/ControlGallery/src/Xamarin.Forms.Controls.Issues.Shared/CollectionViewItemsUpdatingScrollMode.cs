@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 8888888, "CollectionView ItemsUpdatingScrollMode", PlatformAffected.All)]

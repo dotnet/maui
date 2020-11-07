@@ -13,6 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.CarouselView)]
+	[Category(UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 10300, "ObservableCollection.RemoveAt(index) with a valid index raises ArgementOutOfRangeException", PlatformAffected.iOS)]

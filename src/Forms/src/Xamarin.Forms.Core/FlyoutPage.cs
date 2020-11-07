@@ -6,14 +6,15 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
+	[ContentProperty("Detail")]
 	public class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>
 	{
-		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create("IsGestureEnabled", typeof(bool), typeof(FlyoutPage), true);
+		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), true);
 
-		public static readonly BindableProperty IsPresentedProperty = BindableProperty.Create("IsPresented", typeof(bool), typeof(FlyoutPage), default(bool),
+		public static readonly BindableProperty IsPresentedProperty = BindableProperty.Create(nameof(IsPresented), typeof(bool), typeof(FlyoutPage), default(bool),
 			propertyChanged: OnIsPresentedPropertyChanged, propertyChanging: OnIsPresentedPropertyChanging, defaultValueCreator: GetDefaultValue);
 
-		public static readonly BindableProperty FlyoutLayoutBehaviorProperty = BindableProperty.Create("FlyoutLayoutBehavior", typeof(FlyoutLayoutBehavior), typeof(FlyoutPage), default(FlyoutLayoutBehavior),
+		public static readonly BindableProperty FlyoutLayoutBehaviorProperty = BindableProperty.Create(nameof(FlyoutLayoutBehavior), typeof(FlyoutLayoutBehavior), typeof(FlyoutPage), default(FlyoutLayoutBehavior),
 			propertyChanged: OnFlyoutLayoutBehaviorPropertyChanged);
 
 		Page _detail;
@@ -255,16 +256,20 @@ namespace Xamarin.Forms
 	[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
 	public class MasterDetailPage : FlyoutPage, IMasterDetailPageController
 	{
+		public static readonly BindableProperty MasterBehaviorProperty = BindableProperty.Create(nameof(MasterBehavior), typeof(MasterBehavior), typeof(MasterDetailPage), default(MasterBehavior),
+			propertyChanged: OnMasterBehaviorPropertyChanged);
 
-		public static readonly BindableProperty MasterBehaviorProperty = FlyoutPage.FlyoutLayoutBehaviorProperty;
-
+		static void OnMasterBehaviorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if ((int)bindable.GetValue(FlyoutLayoutBehaviorProperty) != (int)newValue)
+				bindable.SetValue(FlyoutLayoutBehaviorProperty, (FlyoutLayoutBehavior)((int)newValue));
+		}
 
 		public Page Master
 		{
 			get => base.Flyout;
 			set => base.Flyout = value;
 		}
-
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Rectangle MasterBounds
@@ -275,8 +280,8 @@ namespace Xamarin.Forms
 
 		public MasterBehavior MasterBehavior
 		{
-			get => (MasterBehavior)((int)FlyoutLayoutBehavior);
-			set => FlyoutLayoutBehavior = (FlyoutLayoutBehavior)((int)value);
+			get => (MasterBehavior)GetValue(MasterBehaviorProperty);
+			set => SetValue(MasterBehaviorProperty, value);
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -284,7 +289,6 @@ namespace Xamarin.Forms
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == nameof(Flyout))
 				OnPropertyChanged(nameof(Master));
-
 
 			if (propertyName == nameof(FlyoutLayoutBehavior))
 				OnPropertyChanged(nameof(Flyout));

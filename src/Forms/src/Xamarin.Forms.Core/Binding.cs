@@ -13,7 +13,7 @@ namespace Xamarin.Forms
 {
 	public sealed class Binding : BindingBase
 	{
-		internal const string SelfPath = ".";
+		public const string SelfPath = ".";
 		IValueConverter _converter;
 		object _converterParameter;
 

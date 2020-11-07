@@ -279,6 +279,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Fonts\materialdesignicons-webfont.ttf" />
     <None Include="Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

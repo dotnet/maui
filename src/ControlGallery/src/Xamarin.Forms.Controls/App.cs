@@ -14,7 +14,6 @@ using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
 namespace Xamarin.Forms.Controls
 {
-
 	public class App : Application
 	{
 		public const string AppName = "XamarinFormsControls";

@@ -32,7 +32,8 @@ namespace Xamarin.Forms.Xaml.Diagnostics
 			BindableObject target,
 			BindableProperty property,
 			string errorCode,
-			string message, object[] messageArgs) : base(xamlSourceInfo, binding, errorCode, message, messageArgs)
+			string message,
+			object[] messageArgs) : base(xamlSourceInfo, binding, errorCode, message, messageArgs)
 		{
 			Source = bindingsource;
 			Target = target;

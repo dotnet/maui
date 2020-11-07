@@ -1,6 +1,5 @@
 ﻿using System;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Markup;
 
 namespace Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries
 {

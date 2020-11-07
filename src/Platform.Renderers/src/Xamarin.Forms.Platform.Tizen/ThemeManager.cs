@@ -890,7 +890,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (s_shellNavBarDefaultMenuSize > 0)
 				return s_shellNavBarDefaultMenuSize;
-			return s_shellNavBarDefaultMenuSize = CalculateDoubleScaledSizeInLargeScreen(40);
+			return s_shellNavBarDefaultMenuSize = CalculateDoubleScaledSizeInLargeScreen(Device.Idiom == TargetIdiom.TV ? 70 : 40);
 		}
 
 		static double s_shellNavBarDefaultMargin = -1;
@@ -951,6 +951,15 @@ namespace Xamarin.Forms.Platform.Tizen
 			return s_navigationViewFlyoutItemFontSize = CalculateDoubleScaledSizeInLargeScreen(25);
 		}
 
+		#endregion
+
+		#region NavigationDrawer
+
+		static double s_navigationDrawerRatio = -1;
+		public static double GetFlyoutRatio(this NavigationDrawer drawer, int width, int height)
+		{
+			return s_navigationDrawerRatio = (width > height) ? 0.4 : 0.83;
+		}
 		#endregion
 
 		#region ShellMoreToolbar
