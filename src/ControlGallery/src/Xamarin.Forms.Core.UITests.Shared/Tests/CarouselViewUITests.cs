@@ -5,6 +5,7 @@ using Xamarin.UITest;
 namespace Xamarin.Forms.Core.UITests
 {
 	[Category(UITestCategories.CarouselView)]
+	[Category(UITestCategories.UwpIgnore)]
 	internal class CarouselViewUITests : BaseTestFixture
 	{
 		protected override void NavigateToGallery()

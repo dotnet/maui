@@ -5,30 +5,8 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
-	internal class TestDeviceInfo : DeviceInfo
-	{
-		public TestDeviceInfo()
-		{
-			CurrentOrientation = DeviceOrientation.Portrait;
-		}
-		public override Size PixelScreenSize
-		{
-			get { return new Size(100, 200); }
-		}
-
-		public override Size ScaledScreenSize
-		{
-			get { return new Size(50, 100); }
-		}
-
-		public override double ScalingFactor
-		{
-			get { return 2; }
-		}
-	}
-
 	[TestFixture]
-	public class MasterDetailPageUnitTests : BaseTestFixture
+	public class FlyoutPageUnitTests : BaseTestFixture
 	{
 		[SetUp]
 		public override void Setup()
@@ -42,46 +20,46 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void TestConstructor()
 		{
 
-			MasterDetailPage page = new MasterDetailPage();
+			FlyoutPage page = new FlyoutPage();
 
-			Assert.Null(page.Master);
+			Assert.Null(page.Flyout);
 			Assert.Null(page.Detail);
 		}
 
 		[Test]
-		public void TestMasterSetter()
+		public void TestFlyoutSetter()
 		{
-			MasterDetailPage page = new MasterDetailPage();
+			FlyoutPage page = new FlyoutPage();
 			var child = new ContentPage { Content = new Label(), Title = "Foo" };
-			page.Master = child;
+			page.Flyout = child;
 
-			Assert.AreEqual(child, page.Master);
+			Assert.AreEqual(child, page.Flyout);
 		}
 
 		[Test]
-		public void TestMasterSetNull()
+		public void TestFlyoutSetNull()
 		{
-			MasterDetailPage page = new MasterDetailPage();
+			FlyoutPage page = new FlyoutPage();
 			var child = new ContentPage { Content = new Label(), Title = "Foo" };
-			page.Master = child;
+			page.Flyout = child;
 
-			Assert.Throws<ArgumentNullException>(() => { page.Master = null; });
+			Assert.Throws<ArgumentNullException>(() => { page.Flyout = null; });
 		}
 
 		[Test]
-		public void TestMasterChanged()
+		public void TestFlyoutChanged()
 		{
-			MasterDetailPage page = new MasterDetailPage();
+			FlyoutPage page = new FlyoutPage();
 			var child = new ContentPage { Content = new Label(), Title = "Foo" };
 
 			bool changed = false;
 			page.PropertyChanged += (sender, e) =>
 			{
-				if (e.PropertyName == "Master")
+				if (e.PropertyName == "Flyout")
 					changed = true;
 			};
 
-			page.Master = child;
+			page.Flyout = child;
 
 			Assert.True(changed);
 		}
@@ -89,7 +67,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestDetailSetter()
 		{
-			MasterDetailPage page = new MasterDetailPage();
+			FlyoutPage page = new FlyoutPage();
 			var child = new ContentPage { Content = new Label() };
 			page.Detail = child;
 
@@ -99,7 +77,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestDetailSetNull()
 		{
-			MasterDetailPage page = new MasterDetailPage();
+			FlyoutPage page = new FlyoutPage();
 			var child = new ContentPage { Content = new Label() };
 			page.Detail = child;
 
@@ -109,7 +87,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestDetailChanged()
 		{
-			MasterDetailPage page = new MasterDetailPage();
+			FlyoutPage page = new FlyoutPage();
 			var child = new ContentPage { Content = new Label() };
 
 			bool changed = false;
@@ -125,41 +103,41 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void ThrowsWhenMasterSetWithoutValidTitle([Values(null, "")] string title)
+		public void ThrowsWhenFlyoutSetWithoutValidTitle([Values(null, "")] string title)
 		{
-			var page = new MasterDetailPage();
-			Assert.Throws<InvalidOperationException>(() => page.Master = new ContentPage { Title = title });
+			var page = new FlyoutPage();
+			Assert.Throws<InvalidOperationException>(() => page.Flyout = new ContentPage { Title = title });
 		}
 
 		[Test]
 		public void TestThrowsWhenPackedWithoutSetting()
 		{
-			MasterDetailPage page = new MasterDetailPage();
+			FlyoutPage page = new FlyoutPage();
 			Assert.Throws<InvalidOperationException>(() => new TabbedPage { Children = { page } });
 		}
 
 		[Test]
 		public void TestDoesNotThrowWhenPackedWithSetting()
 		{
-			MasterDetailPage page = new MasterDetailPage
+			FlyoutPage page = new FlyoutPage
 			{
-				Master = new ContentPage { Content = new View(), Title = "Foo" },
+				Flyout = new ContentPage { Content = new View(), Title = "Foo" },
 				Detail = new ContentPage { Content = new View() }
 			};
 			Assert.DoesNotThrow(() => new TabbedPage { Children = { page } });
 		}
 
 		[Test]
-		public void TestMasterVisible()
+		public void TestFlyoutVisible()
 		{
-			var page = new MasterDetailPage();
+			var page = new FlyoutPage();
 
 			Assert.AreEqual(false, page.IsPresented);
 
 			bool signaled = false;
 			page.PropertyChanged += (sender, args) =>
 			{
-				if (args.PropertyName == MasterDetailPage.IsPresentedProperty.PropertyName)
+				if (args.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName)
 					signaled = true;
 			};
 
@@ -170,14 +148,14 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestMasterVisibleDoubleSet()
+		public void TestFlyoutVisibleDoubleSet()
 		{
-			var page = new MasterDetailPage();
+			var page = new FlyoutPage();
 
 			bool signaled = false;
 			page.PropertyChanged += (sender, args) =>
 			{
-				if (args.PropertyName == MasterDetailPage.IsPresentedProperty.PropertyName)
+				if (args.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName)
 					signaled = true;
 			};
 
@@ -187,61 +165,61 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestSetMasterBounds()
+		public void TestSetFlyoutBounds()
 		{
-			var page = new MasterDetailPage
+			var page = new FlyoutPage
 			{
-				Master = new ContentPage { Content = new View(), Title = "Foo" },
+				Flyout = new ContentPage { Content = new View(), Title = "Foo" },
 				Detail = new ContentPage { Content = new View() }
 			};
 
-			((IMasterDetailPageController)page).MasterBounds = new Rectangle(0, 0, 100, 100);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), page.Master.Bounds);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), ((IMasterDetailPageController)page).MasterBounds);
+			((IFlyoutPageController)page).FlyoutBounds = new Rectangle(0, 0, 100, 100);
+			Assert.AreEqual(new Rectangle(0, 0, 100, 100), page.Flyout.Bounds);
+			Assert.AreEqual(new Rectangle(0, 0, 100, 100), ((IFlyoutPageController)page).FlyoutBounds);
 		}
 
 		[Test]
 		public void TestSetDetailBounds()
 		{
-			var page = new MasterDetailPage
+			var page = new FlyoutPage
 			{
-				Master = new ContentPage { Content = new View(), Title = "Foo" },
+				Flyout = new ContentPage { Content = new View(), Title = "Foo" },
 				Detail = new ContentPage { Content = new View() }
 			};
 
-			((IMasterDetailPageController)page).DetailBounds = new Rectangle(0, 0, 100, 100);
+			((IFlyoutPageController)page).DetailBounds = new Rectangle(0, 0, 100, 100);
 			Assert.AreEqual(new Rectangle(0, 0, 100, 100), page.Detail.Bounds);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), ((IMasterDetailPageController)page).DetailBounds);
+			Assert.AreEqual(new Rectangle(0, 0, 100, 100), ((IFlyoutPageController)page).DetailBounds);
 		}
 
 		[Test]
 		public void TestLayoutChildren()
 		{
-			var page = new MasterDetailPage
+			var page = new FlyoutPage
 			{
-				Master = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
+				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
 				Detail = new ContentPage { Content = new View(), IsPlatformEnabled = true },
 				IsPlatformEnabled = true,
 			};
 
-			((IMasterDetailPageController)page).MasterBounds = new Rectangle(0, 0, 100, 200);
-			((IMasterDetailPageController)page).DetailBounds = new Rectangle(0, 0, 100, 100);
+			((IFlyoutPageController)page).FlyoutBounds = new Rectangle(0, 0, 100, 200);
+			((IFlyoutPageController)page).DetailBounds = new Rectangle(0, 0, 100, 100);
 
-			page.Master.Layout(new Rectangle(0, 0, 1, 1));
+			page.Flyout.Layout(new Rectangle(0, 0, 1, 1));
 			page.Detail.Layout(new Rectangle(0, 0, 1, 1));
 
 			page.Layout(new Rectangle(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(0, 0, 100, 200), page.Master.Bounds);
+			Assert.AreEqual(new Rectangle(0, 0, 100, 200), page.Flyout.Bounds);
 			Assert.AreEqual(new Rectangle(0, 0, 100, 100), page.Detail.Bounds);
 		}
 
 		[Test]
 		public void ThorwsInLayoutChildrenWithNullDetail()
 		{
-			var page = new MasterDetailPage
+			var page = new FlyoutPage
 			{
-				Master = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
+				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
 				IsPlatformEnabled = true,
 			};
 
@@ -249,9 +227,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void ThorwsInLayoutChildrenWithNullMaster()
+		public void ThorwsInLayoutChildrenWithNullFlyout()
 		{
-			var page = new MasterDetailPage
+			var page = new FlyoutPage
 			{
 				Detail = new ContentPage { Content = new View(), IsPlatformEnabled = true },
 				IsPlatformEnabled = true,
@@ -263,37 +241,37 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void ThorwsInSetDetailBoundsWithNullDetail()
 		{
-			var page = new MasterDetailPage
+			var page = new FlyoutPage
 			{
-				Master = new ContentPage { Content = new View(), Title = "Foo" },
+				Flyout = new ContentPage { Content = new View(), Title = "Foo" },
 				IsPlatformEnabled = true,
 			};
 
-			Assert.Throws<InvalidOperationException>(() => ((IMasterDetailPageController)page).DetailBounds = new Rectangle(0, 0, 200, 200));
+			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).DetailBounds = new Rectangle(0, 0, 200, 200));
 		}
 
 		[Test]
-		public void ThrowsInSetMasterBoundsWithNullMaster()
+		public void ThrowsInSetFlyoutBoundsWithNullFlyout()
 		{
-			var page = new MasterDetailPage
+			var page = new FlyoutPage
 			{
 				Detail = new ContentPage { Content = new View() },
 				IsPlatformEnabled = true,
 			};
 
-			Assert.Throws<InvalidOperationException>(() => ((IMasterDetailPageController)page).MasterBounds = new Rectangle(0, 0, 200, 200));
+			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).FlyoutBounds = new Rectangle(0, 0, 200, 200));
 		}
 
 		[Test]
 		public void ThrowsInSetIsPresentOnSplitModeOnTablet()
 		{
 			Device.Idiom = TargetIdiom.Tablet;
-			var page = new MasterDetailPage
+			var page = new FlyoutPage
 			{
-				Master = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
+				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
 				Detail = new ContentPage { Content = new View(), IsPlatformEnabled = true },
 				IsPlatformEnabled = true,
-				MasterBehavior = MasterBehavior.Split
+				FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split
 			};
 
 			Assert.Throws<InvalidOperationException>(() => page.IsPresented = false);
@@ -305,12 +283,12 @@ namespace Xamarin.Forms.Core.UnitTests
 			Device.Idiom = TargetIdiom.Tablet;
 			Device.Info.CurrentOrientation = DeviceOrientation.Portrait;
 
-			var page = new MasterDetailPage
+			var page = new FlyoutPage
 			{
-				Master = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
+				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
 				Detail = new ContentPage { Content = new View(), IsPlatformEnabled = true },
 				IsPlatformEnabled = true,
-				MasterBehavior = MasterBehavior.SplitOnPortrait
+				FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnPortrait
 			};
 
 			Assert.Throws<InvalidOperationException>(() => page.IsPresented = false);
@@ -321,12 +299,12 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			Device.Info.CurrentOrientation = DeviceOrientation.Landscape;
 
-			var page = new MasterDetailPage
+			var page = new FlyoutPage
 			{
-				Master = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
+				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
 				Detail = new ContentPage { Content = new View(), IsPlatformEnabled = true },
 				IsPlatformEnabled = true,
-				MasterBehavior = MasterBehavior.Popover
+				FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover
 			};
 			page.IsPresented = true;
 
@@ -334,33 +312,33 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void SendsBackEventToPresentedMasterFirst()
+		public void SendsBackEventToPresentedFlyoutFirst()
 		{
 			var detail = new BackButtonPage() { Handle = true };
-			var master = new BackButtonPage() { Title = "Master" };
-			var mdp = new MasterDetailPage()
+			var Flyout = new BackButtonPage() { Title = "Flyout" };
+			var mdp = new FlyoutPage()
 			{
 				Detail = detail,
-				Master = master,
+				Flyout = Flyout,
 				IsPresented = true,
 				IsPlatformEnabled = true,
 			};
 
-			((IMasterDetailPageController)mdp).BackButtonPressed += (sender, args) =>
+			((IFlyoutPageController)mdp).BackButtonPressed += (sender, args) =>
 			{
 				args.Handled = mdp.IsPresented;
 				mdp.IsPresented = false;
 			};
 
 			var detailEmitted = false;
-			var masterEmitted = false;
+			var FlyoutEmitted = false;
 
 			detail.BackPressed += (sender, args) => detailEmitted = true;
-			master.BackPressed += (sender, args) => masterEmitted = true;
+			Flyout.BackPressed += (sender, args) => FlyoutEmitted = true;
 
 			var result = mdp.SendBackButtonPressed();
 
-			Assert.True(masterEmitted);
+			Assert.True(FlyoutEmitted);
 			Assert.False(detailEmitted);
 			Assert.True(result);
 		}
@@ -369,30 +347,30 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void EmitsCorrectlyWhenPresentedOnBackPressed()
 		{
 			var detail = new BackButtonPage();
-			var master = new BackButtonPage { Title = "Master" };
-			var mdp = new MasterDetailPage
+			var Flyout = new BackButtonPage { Title = "Flyout" };
+			var mdp = new FlyoutPage
 			{
 				Detail = detail,
-				Master = master,
+				Flyout = Flyout,
 				IsPresented = true,
 				IsPlatformEnabled = true,
 			};
 
-			((IMasterDetailPageController)mdp).BackButtonPressed += (sender, args) =>
+			((IFlyoutPageController)mdp).BackButtonPressed += (sender, args) =>
 			{
 				args.Handled = mdp.IsPresented;
 				mdp.IsPresented = false;
 			};
 
 			var detailEmitted = false;
-			var masterEmitted = false;
+			var FlyoutEmitted = false;
 
 			detail.BackPressed += (sender, args) => detailEmitted = true;
-			master.BackPressed += (sender, args) => masterEmitted = true;
+			Flyout.BackPressed += (sender, args) => FlyoutEmitted = true;
 
 			var result = mdp.SendBackButtonPressed();
 
-			Assert.True(masterEmitted);
+			Assert.True(FlyoutEmitted);
 			Assert.False(detailEmitted);
 			Assert.True(result);
 		}
@@ -405,32 +383,20 @@ namespace Xamarin.Forms.Core.UnitTests
 			// give detail a parent
 			var nav = new NavigationPage(detail);
 
-			var mdp = new MasterDetailPage();
+			var mdp = new FlyoutPage();
 			Assert.Throws<InvalidOperationException>(() => mdp.Detail = detail);
 		}
 
 		[Test]
-		public void ThrowsExceptionWhenAddingAlreadyParentedMaster()
+		public void ThrowsExceptionWhenAddingAlreadyParentedFlyout()
 		{
-			var master = new ContentPage { Title = "Foo" };
+			var Flyout = new ContentPage { Title = "Foo" };
 
-			// give master a parent
-			var nav = new NavigationPage(master);
+			// give Flyout a parent
+			var nav = new NavigationPage(Flyout);
 
-			var mdp = new MasterDetailPage();
-			Assert.Throws<InvalidOperationException>(() => mdp.Master = master);
-		}
-
-
-		[Test]
-		public void TestFlyoutLayoutBehaviorGetsSetViaBinding()
-		{
-			var master = new MasterDetailPage { Title = "Foo" };
-
-			master.SetValue(MasterDetailPage.MasterBehaviorProperty, MasterBehavior.Split);
-
-			Assert.AreEqual(MasterBehavior.Split, master.MasterBehavior);
-			Assert.AreEqual(FlyoutLayoutBehavior.Split, master.FlyoutLayoutBehavior);
+			var mdp = new FlyoutPage();
+			Assert.Throws<InvalidOperationException>(() => mdp.Flyout = Flyout);
 		}
 	}
 

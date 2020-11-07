@@ -278,16 +278,10 @@ namespace Xamarin.Forms.Platform.Android
 			if (view == null)
 				return false;
 
-			var textTransform = _element.TextTransform;
-
-			// Use defaults only when user hasn't specified alternative TextTransform settings
-			if (textTransform == TextTransform.Default)
-				view.TransformationMethod = _defaultTransformationMethod;
-			else
-				view.TransformationMethod = null;
+			UpdateTransformationMethod(view);
 
 			string oldText = view.Text;
-			view.Text = _element.UpdateFormsText(_element.Text, textTransform);
+			view.Text = _element.UpdateFormsText(_element.Text, _element.TextTransform);
 
 			// If we went from or to having no text, we need to update the image position
 			if (string.IsNullOrEmpty(oldText) != string.IsNullOrEmpty(view.Text))
@@ -297,6 +291,15 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			return false;
+		}
+
+		void UpdateTransformationMethod(AButton view)
+		{
+			// Use defaults only when user hasn't specified alternative TextTransform settings
+			if (_element.TextTransform == TextTransform.Default)
+				view.TransformationMethod = _defaultTransformationMethod;
+			else
+				view.TransformationMethod = null;
 		}
 
 		void UpdateImage()
@@ -374,7 +377,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			view.SetLineBreakMode(_element);
-			_renderer.View.SetAllCaps(_element.TextTransform == TextTransform.Default);
+			UpdateTransformationMethod(view);
 		}
 	}
 }

@@ -14,6 +14,8 @@ namespace Xamarin.Forms
 	internal class BindingExpression
 	{
 		internal const string PropertyNotFoundErrorMessage = "'{0}' property not found on '{1}', target property: '{2}.{3}'";
+		internal const string CannotConvertTypeErrorMessage = "'{0}' cannot be converted to type '{1}'";
+		internal const string ParseIndexErrorMessage = "'{0}' could not be parsed as an index for a '{1}'";
 		static readonly char[] ExpressionSplit = new[] { '.' };
 
 		readonly List<BindingExpressionPart> _parts = new List<BindingExpressionPart>();
@@ -129,8 +131,7 @@ namespace Xamarin.Forms
 					&& ((needsGetter && part.LastGetter == null)
 						|| (needsSetter && part.NextPart == null && part.LastSetter == null)))
 				{
-					Log.Warning("Binding", PropertyNotFoundErrorMessage, part.Content, current, target.GetType(), property.PropertyName);
-					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, null, PropertyNotFoundErrorMessage, new[] { part.Content, current, target.GetType(), property.PropertyName });
+					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, "Binding", PropertyNotFoundErrorMessage, part.Content, current, target.GetType(), property.PropertyName);
 					break;
 				}
 
@@ -152,8 +153,7 @@ namespace Xamarin.Forms
 
 				if (!TryConvert(ref value, property, property.ReturnType, true))
 				{
-					Log.Warning("Binding", "'{0}' cannot be converted to type '{1}'.", value, property.ReturnType);
-					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, null, "{0} cannot be converted to type '{1}'", new[] { value, property.ReturnType });
+					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, "Binding", CannotConvertTypeErrorMessage, value, property.ReturnType);
 					return;
 				}
 
@@ -165,8 +165,7 @@ namespace Xamarin.Forms
 
 				if (!TryConvert(ref value, property, part.SetterType, false))
 				{
-					Log.Warning("Binding", "'{0}' cannot be converted to type '{1}'.", value, part.SetterType);
-					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, null, "{0} cannot be converted to type '{1}'", new[] { value, part.SetterType });
+					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, "Binding", CannotConvertTypeErrorMessage, value, part.SetterType);
 					return;
 				}
 
@@ -313,8 +312,7 @@ namespace Xamarin.Forms
 				{
 					if (!int.TryParse(part.Content, out var index))
 					{
-						Log.Warning("Binding", "{0} could not be parsed as an index for a {1}", part.Content, sourceType);
-						BindingDiagnostics.SendBindingFailure(Binding, null, "{0} could not be parsed as an index for a {1}", new object[] { part.Content, sourceType });
+						BindingDiagnostics.SendBindingFailure(Binding, "Binding", ParseIndexErrorMessage, part.Content, sourceType);
 					}
 					else
 						part.Arguments = new object[] { index };

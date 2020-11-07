@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using ElmSharp;
+using Tizen.Common;
 using IOPath = System.IO.Path;
 using TApplication = Tizen.Applications.Application;
 
@@ -29,6 +30,12 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					font.ResourceStream.CopyTo(fileStream);
 				}
+
+				if (DotnetUtil.TizenAPIVersion > 5)
+				{
+					FontExtensions.FontReinit();
+				}
+
 				return (true, filePath);
 			}
 			catch (Exception ex)
