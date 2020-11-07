@@ -52,7 +52,8 @@ If you want to use the latest dev build then you should read [this blog post](ht
 
 VS 2019+ is required for developing Xamarin.Forms. If you do not already have it installed, you can download it [here](https://www.visualstudio.com/downloads/download-visual-studio-vs). VS 2019+ Community is completely free. If you are installing VS 2019+ for the first time, select the "Custom" installation type and select the following from the features list to install:
 
-- .NET desktop development - In the `Individual Components > .NET > .NET Framework 4.6.1 SDK, .NET Framework 4.6.1 targeting pack, .NET Framework 4.7.2 SDK, .NET Framework 4.7.2 targeting pack`.
+- .NET desktop development 
+  - `Individual Components > .NET > .NET Framework 4.6.1 SDK, .NET Framework 4.6.1 targeting pack, .NET Framework 4.7.2 SDK, .NET Framework 4.7.2 targeting pack`.
 - Universal Windows Platform Development  
   - `Individual Components > SDKs, libraries, and frameworks > Windows 10 SDK (10.0.19041.0), Windows 10 SDK (10.0.18362.0), Windows 10 SDK (10.0.16299.0)`.
   - Download and install 14393 from https://go.microsoft.com/fwlink/p/?LinkId=838916
@@ -64,14 +65,29 @@ VS 2019+ is required for developing Xamarin.Forms. If you do not already have it
 
 The Android 10.0 API 29 SDK and Android 9.0 API 28 SDK are required for developing Xamarin.Forms. They can be installed by using the [Xamarin Android SDK Manager](https://docs.microsoft.com/xamarin/android/get-started/installation/android-sdk).
 
-We also recommend installing [Xamarin Android Device Manager](https://developer.xamarin.com/guides/android/getting_started/installation/android-emulator/xamarin-device-manager/) This will use the HAXM tools installed above and allow you to configure Android Virtual Devices (AVDs) that emulate Android devices.
+We also recommend installing [Xamarin Android Device Manager](https://developer.xamarin.com/guides/android/getting_started/installation/android-emulator/xamarin-device-manager/). This will use the HAXM tools installed above and allow you to configure Android Virtual Devices (AVDs) that emulate Android devices.
 If you already have VS 2019+ installed, you can verify that these features are installed by modifying the VS 2019+ installation via the Visual Studio Installer.
 
 ##### Provisioning script
-If you are getting errors about missing SDks you can run our provisioning script in PowerShell or CMD
+If you are getting errors about missing SDKs, you can run our provisioning script. Note that it can take some time to run the whole script. To better understand how the script works, feel free to check out our [build.cake](https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/build.cake) file.
 
-- build.cmd -Target provision
-- ./build.ps1 -Target provision
+- On CMD
+    ```
+    build.cmd -Target provision
+    ```
+
+- On Powershell
+    ```
+    ./build.ps1 -Target provision
+    ```
+    _NOTE: If you encounter an error saying build.ps1 is not digitally signed, open Powershell as an administrator and resolve by running `Set-ExecutionPolicy RemoteSigned` first._
+
+
+- On CMD/Powershell/sh (New! More info [here](https://cakebuild.net/docs/running-builds/runners/dotnet-tool))
+    ```
+    dotnet tool install Cake.Tool -g
+    dotnet cake --target=provision
+    ```
 
 ### Mac ###
 #### Install Visual Studio for Mac 2019 ####
@@ -82,25 +98,29 @@ Because of current Multi-Targeting limitations with Visual Studio for Mac you wi
 
 Here are a few different options we've put together to help make this process easier
 - Branches 3.5+ come with a Cake script target that you can use to build and open VSMac
-```sh
-./build.sh --target vsmac
-```
-- When working on an earlier branch that does not have the cake scripts then you can use the following [build.sh] script(https://gist.github.com/PureWeen/92c1e1aff0c257c3decf0bcb8d6e9296)
+    ```sh
+    ./build.sh --target vsmac
+    ```
+    OR as mentioned above in the Windows section about provisioning, you can also use the new [Cake.Tool](https://cakebuild.net/docs/running-builds/runners/dotnet-tool)
+    ```
+    dotnet tool install Cake.Tool -g
+    dotnet cake --target=provision
+    ```
+    
+- When working on an earlier branch that does not have the cake scripts, you can use the following [build.sh](https://gist.github.com/PureWeen/92c1e1aff0c257c3decf0bcb8d6e9296) script
 
-- If you don't want to run any scripts then
+- If you don't want to run any scripts:
   - Open Xamarin.Forms.sln
   - Wait for VSMAC to finish restoring all projects
   - from the command line run:
     - `msbuild Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj`
   - Now you should be able to run and deploy everything. The only reason you would need to do this process again is if you clean the solution folder or delete the bin/obj folders that are part of the `Xamarin.Forms.Build.Tasks.csproj`
 
-If you are on Visual Studio for Mac 2017 you will need to turn off automatic package restore (Visual Studio => Preferences => Nuget => General => uncheck the Package Restore box) before working on the Xamarin.Forms solution. This step is no longer needed with Visual Studio for Mac 2019
-
 ##### Solution Configuration #####
 
 Upon opening the Xamarin.Forms solution, you will find that there are a number of errors and warnings under the Error List pane; you can resolve this by changing the filter of `Build + IntelliSense` to `Build Only`. At this point, you should be able to successfully build the solution.
 
-By default, the `Xamarin.Forms.Controls` project does not have a configuration for various API keys to access certain features on each platform (e.g. maps). When building the solution the first time, a `controlgallery.config` file will be generated inside that project, which looks like this:
+By default, the `Xamarin.Forms.Controls` project does not have a configuration for various API keys to access certain features on each platform (e.g. maps). When building the solution for the first time, a `controlgallery.config` file will be generated inside that project, which looks like this:
 
     UWPMapsAuthKey:
 
@@ -116,7 +136,7 @@ You can find out how to obtain a Google Maps API key [here](https://developer.xa
 
 ##### Build from the Command line #####
 
-Make sure you have nuget.exe 4.0 or above and the latest dotnet core sdk (2.0.3). On macOS you should specify the platform in the msbuild command (`/p:Platform=iPhoneSimulator`)
+Make sure you have nuget.exe 4.0 or above and the latest .NET Core SDK. On macOS you should specify the platform in the msbuild command (`/p:Platform=iPhoneSimulator`)
 
     msbuild /restore Xamarin.Forms.sln
 
@@ -128,7 +148,7 @@ Depending on your environment setup, you might need to configure a few things be
 
 - If you receive an error about ANDROID_HOME, please make sure to set your environment variable to the Android SDK directory (e.g. C:\Program Files (x86)\Android\android-sdk).
 - If you receive an error about JAVA_HOME, please install the latest Java JDK and set your environment variable to the JDK directory (e.g. C:\Program Files\Java\jdk-13).
-- If you receive an error about a missing ApkFile, please generate an APK file for Xamarin.Forms.ControlGallery.Android. The easiest way to do this is to right click the project and select "Deploy". Note that if you rebuild the solution, you might lose the APK and will need to generate it again.
+- If you receive an error about a missing ApkFile, please generate an APK file for `Xamarin.Forms.ControlGallery.Android`. The easiest way to do this is to right click the project and select "Deploy". Note that if you rebuild the solution, you might lose the APK and will need to generate it again.
 
 After these steps are taken care of, you should be good to go. You can see all UI tests in Test Explorer, search them for your own convenience, and quickly run individual tests.
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace Xamarin.Forms
 		object _inheritedContext;
 
 		public static readonly BindableProperty BindingContextProperty =
-			BindableProperty.Create("BindingContext", typeof(object), typeof(BindableObject), default(object),
+			BindableProperty.Create(nameof(BindingContext), typeof(object), typeof(BindableObject), default(object),
 									BindingMode.OneWay, null, BindingContextPropertyChanged, null, null, BindingContextPropertyBindingChanging);
 
 		public object BindingContext
@@ -106,6 +107,49 @@ namespace Xamarin.Forms
 			var context = property.DefaultValueCreator != null ? GetOrCreateContext(property) : GetContext(property);
 
 			return context == null ? property.DefaultValue : context.Value;
+		}
+
+		internal LocalValueEnumerator GetLocalValueEnumerator() => new LocalValueEnumerator(this);
+
+		internal class LocalValueEnumerator : IEnumerator<LocalValueEntry>
+		{
+			Dictionary<BindableProperty, BindablePropertyContext>.Enumerator _propertiesEnumerator;
+			internal LocalValueEnumerator(BindableObject bindableObject) => _propertiesEnumerator = bindableObject._properties.GetEnumerator();
+
+			object IEnumerator.Current => Current;
+			public LocalValueEntry Current { get; private set; }
+
+			public bool MoveNext()
+			{
+				if (_propertiesEnumerator.MoveNext())
+				{
+					Current = new LocalValueEntry(_propertiesEnumerator.Current.Key, _propertiesEnumerator.Current.Value.Value, _propertiesEnumerator.Current.Value.Attributes);
+					return true;
+				}
+				return false;
+			}
+
+			public void Dispose() => _propertiesEnumerator.Dispose();
+
+			void IEnumerator.Reset()
+			{
+				((IEnumerator)_propertiesEnumerator).Reset();
+				Current = null;
+			}
+		}
+
+		internal class LocalValueEntry
+		{
+			internal LocalValueEntry(BindableProperty property, object value, BindableContextAttributes attributes)
+			{
+				Property = property;
+				Value = value;
+				Attributes = attributes;
+			}
+
+			public BindableProperty Property { get; }
+			public object Value { get; }
+			public BindableContextAttributes Attributes { get; }
 		}
 
 		internal (bool IsSet, T Value)[] GetValues<T>(BindableProperty[] propArray)
@@ -565,7 +609,7 @@ namespace Xamarin.Forms
 		}
 
 		[Flags]
-		enum BindableContextAttributes
+		internal enum BindableContextAttributes
 		{
 			IsManuallySet = 1 << 0,
 			IsBeingSet = 1 << 1,

@@ -209,7 +209,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 
 			Point scrollPoint = (e.Mode == ScrollToMode.Position)
-				? new Point(e.ScrollX, Element.Height - e.ScrollY)
+				? new Point(e.ScrollX, e.ScrollY)
 				: ScrollView.GetScrollPositionForElement(e.Element as VisualElement, e.Position);
 
 			ContentView.ScrollToPoint(scrollPoint.ToPointF());

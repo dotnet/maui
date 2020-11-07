@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void VendorPlatformProperty()
 		{
-			var x = new MasterDetailPage();
+			var x = new FlyoutPage();
 
 			Assert.IsTrue(x.On<iOS>().GetVendorFoo());
 
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void ConsumeVendorSetting()
 		{
-			var x = new MasterDetailPage();
+			var x = new FlyoutPage();
 			x.On<iOS>().SetVendorFoo(false);
 
 			Assert.IsFalse(x.On<iOS>().GetVendorFoo());
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void Properties()
 		{
-			var x = new MasterDetailPage();
+			var x = new FlyoutPage();
 			x.On<Android>().SetSomeAndroidThing(42);
 
 			Assert.IsTrue(x.On<Android>().GetSomeAndroidThing() == 42);
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void ConvenienceConfiguration()
 		{
-			var x = new MasterDetailPage();
+			var x = new FlyoutPage();
 
 			x.On<Android>().UseTabletDefaults();
 
@@ -71,13 +71,13 @@ namespace ImAVendor.Forms.PlatformConfiguration.iOS
 {
 	using Xamarin.Forms;
 	using Xamarin.Forms.PlatformConfiguration;
-	using FormsElement = Xamarin.Forms.MasterDetailPage;
+	using FormsElement = Xamarin.Forms.FlyoutPage;
 
-	public static class MasterDetailPage
+	public static class FlyoutPage
 	{
 		public static readonly BindableProperty FooProperty =
 			BindableProperty.Create("VendorFoo", typeof(bool),
-			typeof(MasterDetailPage), true);
+			typeof(FlyoutPage), true);
 
 		public static void SetVendorFoo(BindableObject element, bool value)
 		{
@@ -155,17 +155,17 @@ namespace ImAVendor.Forms.PlatformConfiguration.iOS
 
 namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Xamarin.Forms.MasterDetailPage;
+	using FormsElement = Xamarin.Forms.FlyoutPage;
 
-	public static class MasterDetailPage
+	public static class FlyoutPage
 	{
 		public static readonly BindableProperty SomeAndroidThingProperty =
 			BindableProperty.Create("SomeAndroidThing", typeof(int),
-			typeof(MasterDetailPage), 1);
+			typeof(FlyoutPage), 1);
 
 		public static readonly BindableProperty SomeOtherAndroidThingProperty =
 			BindableProperty.Create("SomeOtherAndroidThing", typeof(int),
-			typeof(MasterDetailPage), 1);
+			typeof(FlyoutPage), 1);
 
 		public static int GetSomeAndroidThing(BindableObject element)
 		{

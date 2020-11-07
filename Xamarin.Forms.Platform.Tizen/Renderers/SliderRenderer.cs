@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new ESlider(Forms.NativeParent));
+				SetNativeControl(CreateNativeControl());
 				Control.ValueChanged += OnValueChanged;
 				Control.DragStarted += OnDragStarted;
 				Control.DragStopped += OnDragStopped;
@@ -24,11 +24,17 @@ namespace Xamarin.Forms.Platform.Tizen
 				_defaultMaxColor = Control.GetBackgroundColor();
 				_defaultThumbColor = Control.GetHandlerColor();
 			}
+
 			UpdateMinimum();
 			UpdateMaximum();
 			UpdateValue();
 			UpdateSliderColors();
 			base.OnElementChanged(e);
+		}
+
+		protected virtual ESlider CreateNativeControl()
+		{
+			return new ESlider(Forms.NativeParent);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -109,13 +115,13 @@ namespace Xamarin.Forms.Platform.Tizen
 			Control.Maximum = Element.Maximum;
 		}
 
-		protected void UpdateMinimumTrackColor()
+		protected virtual void UpdateMinimumTrackColor()
 		{
 			var color = Element.MinimumTrackColor.IsDefault ? _defaultMinColor : Element.MinimumTrackColor.ToNative();
 			Control.SetBarColor(color);
 		}
 
-		protected void UpdateMaximumTrackColor()
+		protected virtual void UpdateMaximumTrackColor()
 		{
 			Control.SetBackgroundColor(Element.MaximumTrackColor.IsDefault ? _defaultMaxColor : Element.MaximumTrackColor.ToNative());
 		}

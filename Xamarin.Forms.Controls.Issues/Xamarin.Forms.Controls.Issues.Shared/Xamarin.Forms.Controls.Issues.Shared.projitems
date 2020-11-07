@@ -41,6 +41,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue11769.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue12060.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue12344.xaml.cs">
+      <DependentUpon>Issue12344.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue12246.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8613.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9137.cs" />
@@ -1581,7 +1584,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue11572.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11571.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11715.xaml.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Issue11875.xaml.cs" >
+    <Compile Include="$(MSBuildThisFileDirectory)Issue11875.xaml.cs">
       <DependentUpon>Issue11875.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue11737.xaml.cs">
@@ -1608,7 +1611,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue11963.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue12126.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11831.xaml.cs" />
-     <Compile Include="$(MSBuildThisFileDirectory)Issue11938.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Issue11938.xaml.cs">
       <DependentUpon>Issue11938.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue11496.xaml.cs">
@@ -2445,7 +2448,11 @@
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10897.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12344.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

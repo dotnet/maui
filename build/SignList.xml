@@ -1,0 +1,22 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <FirstParty Include="Xamarin.Forms.*.dll" />
+    <FirstParty Include="FormsViewGroup.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ThirdParty Include="GMap.NET.Core.dll" />
+    <ThirdParty Include="GMap.NET.GTK.dll" />
+    <ThirdParty Include="webkit-sharp.dll" />
+    <ThirdParty Include="Mono.Cecil.dll" />
+    <ThirdParty Include="Mono.Cecil.*.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Skip Include="System.*.dll" />
+    <Skip Include="NuGet.*.dll" />
+    <Skip Include="Mono.*.dll" />
+  </ItemGroup>
+
+</Project>

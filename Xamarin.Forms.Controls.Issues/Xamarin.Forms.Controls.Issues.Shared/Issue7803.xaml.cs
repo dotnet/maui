@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.CollectionView)]
+	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 #endif
 #if APP
 	[XamlCompilation(XamlCompilationOptions.Compile)]

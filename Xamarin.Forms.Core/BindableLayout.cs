@@ -77,7 +77,7 @@ namespace Xamarin.Forms
 
 		public static void SetEmptyViewTemplate(BindableObject b, DataTemplate value)
 		{
-			b.SetValue(EmptyViewProperty, value);
+			b.SetValue(EmptyViewTemplateProperty, value);
 		}
 
 		static BindableLayoutController GetBindableLayoutController(BindableObject b)
