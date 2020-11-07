@@ -42,6 +42,9 @@ string workingDirectory = EnvironmentVariable("SYSTEM_DEFAULTWORKINGDIRECTORY", 
 var configuration = Argument("BUILD_CONFIGURATION", "Debug");
 
 var target = Argument("target", "Default");
+if(String.IsNullOrWhiteSpace(target))
+    target = "Default";
+
 var IOS_SIM_NAME = GetBuildVariable("IOS_SIM_NAME", "iPhone 7");
 var IOS_SIM_RUNTIME = GetBuildVariable("IOS_SIM_RUNTIME", "com.apple.CoreSimulator.SimRuntime.iOS-12-4");
 var IOS_TEST_PROJ = "./Xamarin.Forms.Core.iOS.UITests/Xamarin.Forms.Core.iOS.UITests.csproj";
@@ -648,6 +651,7 @@ Task("NuGetPack")
 
 
 Task("_NuGetPack")
+    .WithCriteria(IsRunningOnWindows())
     .Description("Create Nugets without building anything")
     .Does(() =>
     {
@@ -715,7 +719,6 @@ Task("BuildForNuget")
 {
     try
     {
-
         var msbuildSettings = GetMSBuildSettings();
         var binaryLogger = new MSBuildBinaryLogSettings {
             Enabled  = isCIBuild
@@ -784,37 +787,40 @@ Task("BuildForNuget")
         // }
 
         // dual screen
-        msbuildSettings = GetMSBuildSettings();
-        msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/dualscreen-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.DualScreen/Xamarin.Forms.DualScreen.csproj",
-                    msbuildSettings
-                        .WithRestore()
-                        .WithTarget("rebuild"));
 
+        if(IsRunningOnWindows())
+        {
+            msbuildSettings = GetMSBuildSettings();
+            msbuildSettings.BinaryLogger = binaryLogger;
+            binaryLogger.FileName = $"{artifactStagingDirectory}/dualscreen-{configuration}-csproj.binlog";
+            MSBuild("./Xamarin.Forms.DualScreen/Xamarin.Forms.DualScreen.csproj",
+                        msbuildSettings
+                            .WithRestore()
+                            .WithTarget("rebuild"));
 
-        msbuildSettings = GetMSBuildSettings();
-        msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.Platform.UAP/Xamarin.Forms.Platform.UAP.csproj",
-                    msbuildSettings
-                        .WithTarget("rebuild")
-                        .WithProperty("DisableEmbeddedXbf", "false")
-                        .WithProperty("EnableTypeInfoReflection", "false"));
+            msbuildSettings = GetMSBuildSettings();
+            msbuildSettings.BinaryLogger = binaryLogger;
+            binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}-csproj.binlog";
+            MSBuild("./Xamarin.Forms.Platform.UAP/Xamarin.Forms.Platform.UAP.csproj",
+                        msbuildSettings
+                            .WithTarget("rebuild")
+                            .WithProperty("DisableEmbeddedXbf", "false")
+                            .WithProperty("EnableTypeInfoReflection", "false"));
 
-        msbuildSettings = GetMSBuildSettings();
-        msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/ios-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.Platform.iOS/Xamarin.Forms.Platform.iOS.csproj",
-                    msbuildSettings
-                        .WithTarget("rebuild"));
+            msbuildSettings = GetMSBuildSettings();
+            msbuildSettings.BinaryLogger = binaryLogger;
+            binaryLogger.FileName = $"{artifactStagingDirectory}/ios-{configuration}-csproj.binlog";
+            MSBuild("./Xamarin.Forms.Platform.iOS/Xamarin.Forms.Platform.iOS.csproj",
+                        msbuildSettings
+                            .WithTarget("rebuild"));
 
-        msbuildSettings = GetMSBuildSettings();
-        msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/macos-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.Platform.MacOS/Xamarin.Forms.Platform.MacOS.csproj",
-                    msbuildSettings
-                        .WithTarget("rebuild"));
+            msbuildSettings = GetMSBuildSettings();
+            msbuildSettings.BinaryLogger = binaryLogger;
+            binaryLogger.FileName = $"{artifactStagingDirectory}/macos-{configuration}-csproj.binlog";
+            MSBuild("./Xamarin.Forms.Platform.MacOS/Xamarin.Forms.Platform.MacOS.csproj",
+                        msbuildSettings
+                            .WithTarget("rebuild"));
+        }
 
     }
     catch(Exception)
