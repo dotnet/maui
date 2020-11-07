@@ -13,6 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.LifeCycle)]
+	[Category(UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5376, "Call unfocus entry crashes app", PlatformAffected.Android)]
