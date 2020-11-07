@@ -23,7 +23,6 @@ namespace Xamarin.Essentials
 
             var intent = new Intent(action);
             intent.SetType("*/*");
-            intent.AddFlags(ActivityFlags.GrantPersistableUriPermission);
             intent.PutExtra(Intent.ExtraAllowMultiple, allowMultiple);
 
             var allowedTypes = options?.FileTypes?.Value?.ToArray();
@@ -50,13 +49,7 @@ namespace Xamarin.Essentials
                 }
 
                 foreach (var contentUri in clipData)
-                {
-                    Platform.AppContext.ContentResolver.TakePersistableUriPermission(
-                        contentUri,
-                        ActivityFlags.GrantReadUriPermission);
-
                     resultList.Add(new FileResult(contentUri));
-                }
 
                 return resultList;
             }
