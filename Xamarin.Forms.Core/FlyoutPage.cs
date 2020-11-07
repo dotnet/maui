@@ -264,7 +264,7 @@ namespace Xamarin.Forms
 
 		static void OnMasterBehaviorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if((int)bindable.GetValue(FlyoutLayoutBehaviorProperty) != (int)newValue)
+			if ((int)bindable.GetValue(FlyoutLayoutBehaviorProperty) != (int)newValue)
 				bindable.SetValue(FlyoutLayoutBehaviorProperty, (FlyoutLayoutBehavior)((int)newValue));
 		}
 
