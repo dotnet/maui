@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
@@ -255,7 +254,6 @@ namespace Xamarin.Forms
 	}
 
 	[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
-	[RenderWith(typeof(_MasterDetailPageRenderer))]
 	public class MasterDetailPage : FlyoutPage, IMasterDetailPageController
 	{
 		public static readonly BindableProperty MasterBehaviorProperty = BindableProperty.Create(nameof(MasterBehavior), typeof(MasterBehavior), typeof(MasterDetailPage), default(MasterBehavior),
