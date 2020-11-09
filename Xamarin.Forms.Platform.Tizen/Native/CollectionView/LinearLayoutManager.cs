@@ -344,9 +344,16 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				return CollectionView.Count - 1;
 
 			if (!_hasUnevenRows)
-				return coordinate / (BaseItemSize + ItemSpacing);
+			{
+				return Math.Min(Math.Max(0, (coordinate - ItemStartPoint) / (BaseItemSize + ItemSpacing)), CollectionView.Count - 1);
+			}
 			else
-				return _accumulatedItemSizes.FindIndex(current => coordinate <= current);
+			{
+				var index =  _accumulatedItemSizes.FindIndex(current => coordinate <= current);
+				if (index == -1)
+					index = CollectionView.Count - 1;
+				return index;
+			}
 		}
 
 		public int GetScrollBlockSize()
