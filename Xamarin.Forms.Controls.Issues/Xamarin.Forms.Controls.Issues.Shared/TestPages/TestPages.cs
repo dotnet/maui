@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Linq;
 using NUnit.Framework.Interfaces;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.CustomAttributes;
