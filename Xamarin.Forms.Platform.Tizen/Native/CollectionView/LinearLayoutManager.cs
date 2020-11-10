@@ -349,7 +349,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 			else
 			{
-				var index =  _accumulatedItemSizes.FindIndex(current => coordinate <= current);
+				var index = _accumulatedItemSizes.FindIndex(current => coordinate <= current);
 				if (index == -1)
 					index = CollectionView.Count - 1;
 				return index;
