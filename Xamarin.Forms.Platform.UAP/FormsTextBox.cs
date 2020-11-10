@@ -397,7 +397,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (ClearButtonVisible && !states.Contains(visibleState))
 					states.Add(visibleState);
-				else
+				else if(!ClearButtonVisible)
 					states.Remove(visibleState);
 			}
 		}

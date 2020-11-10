@@ -473,8 +473,37 @@ namespace Xamarin.Forms.Controls
 		}
 #endif
 
+		string[] GetTestCategories()
+		{
+			var testClassName = TestContext.CurrentContext.Test.ClassName;
+
+			// TestContext.CurrentContext.Test.Properties["Category"]
+			// Only gives you the categories on the test itself
+			// There isn't a property I could find that gives you the Categories
+			// on the Test Class
+			return GetType()
+						.Assembly
+						.GetType(testClassName)
+						.GetCustomAttributes(typeof(NUnit.Framework.CategoryAttribute), true)
+						.OfType<NUnit.Framework.CategoryAttribute>()
+						.Select(x => x.Name)
+						.Union(TestContext.CurrentContext.Test.Properties["Category"].OfType<string>())
+						.ToArray();
+		}
+
 		public void TestSetup(Type testType, bool isolate)
 		{
+			if (GetTestCategories().Contains(UITestCategories.RequiresInternetConnection))
+			{
+				var hasInternetAccess = $"{_app.Invoke("hasInternetAccess")}";
+				bool checkInternet;
+
+				if (bool.TryParse(hasInternetAccess, out checkInternet))
+				{
+					if (!checkInternet)
+						Assert.Inconclusive("Device Has No Internet Connection");
+				}
+			}
 
 #if __WINDOWS__
 			RestartIfAppIsClosed();

@@ -8,6 +8,8 @@ using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms.Platform.Android.AppLinks;
 using Xamarin.Forms.Internals;
+using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace Xamarin.Forms.ControlGallery.Android
 {
@@ -111,6 +113,27 @@ namespace Xamarin.Forms.ControlGallery.Android
 		{
 			base.OnResume();
 			Profile.Stop();
+		}
+
+		[Export("hasInternetAccess")]
+		public bool HasInternetAccess()
+		{
+			try
+			{
+				using (var httpClient = new HttpClient())
+				using (var httpResponse = httpClient.GetAsync(@"https://www.github.com"))
+				{
+					httpResponse.Wait();
+					if (httpResponse.Result.StatusCode == System.Net.HttpStatusCode.OK)
+						return true;
+					else
+						return false;
+				}
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		[Export("IsPreAppCompat")]

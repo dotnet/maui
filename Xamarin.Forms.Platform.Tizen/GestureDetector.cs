@@ -65,6 +65,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				}
 			}
 			_handlerCache.Clear();
+
+			if (Device.Idiom == TargetIdiom.TV)
+			{
+				_renderer.NativeView.KeyDown -= OnKeyDown;
+			}
 		}
 
 		public void AddGestures(IEnumerable<IGestureRecognizer> recognizers)
@@ -94,6 +99,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				Clear();
 			};
 			UpdateGestureLayerEnabled();
+
+			if (Device.Idiom == TargetIdiom.TV)
+			{
+				_renderer.NativeView.KeyDown += OnKeyDown;
+			}
 		}
 
 		void UpdateGestureLayerEnabled()
@@ -547,6 +557,22 @@ namespace Xamarin.Forms.Platform.Tizen
 
 					default:
 						break;
+				}
+			}
+		}
+
+		void OnKeyDown(object sender, EvasKeyEventArgs e)
+		{
+			if (e.KeyName == "Return" && _gestureLayer.IsEnabled)
+			{
+				var cache = _handlerCache;
+				if (cache.ContainsKey(EGestureType.Tap))
+				{
+					foreach (var handler in cache[EGestureType.Tap])
+					{
+						(handler as IGestureController)?.SendStarted(View, null);
+						(handler as IGestureController)?.SendCompleted(View, null);
+					}
 				}
 			}
 		}
