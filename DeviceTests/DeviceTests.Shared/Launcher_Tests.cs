@@ -74,7 +74,7 @@ namespace DeviceTests
         [InlineData("https://maps.apple.com", "https://maps.apple.com")]
         public void GetNativeUrl(string uri, string expected)
         {
-            var url = Launcher.GetNativeUrl(new Uri(uri));
+            var url = WebUtils.GetNativeUrl(new Uri(uri));
             Assert.Equal(expected, url.AbsoluteString);
         }
 #endif

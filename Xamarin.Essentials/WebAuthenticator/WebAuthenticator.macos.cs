@@ -8,10 +8,15 @@ namespace Xamarin.Essentials
 {
     public static partial class WebAuthenticator
     {
+        const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;
+        const string asWebAuthenticationSessionErrorDomain = "com.apple.AuthenticationServices.WebAuthenticationSession";
+
         static readonly CallBackHelper callbackHelper = new CallBackHelper();
 
         static TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
         static Uri redirectUri;
+
+        static ASWebAuthenticationSession was;
 
         static WebAuthenticator()
         {
@@ -20,50 +25,46 @@ namespace Xamarin.Essentials
 
         internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
         {
+            if (!AppInfo.VerifyHasUrlScheme(callbackUrl.Scheme))
+                throw new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist!");
+
             // Cancel any previous task that's still pending
             if (tcsResponse?.Task != null && !tcsResponse.Task.IsCompleted)
                 tcsResponse.TrySetCanceled();
 
             tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
             redirectUri = callbackUrl;
+            var scheme = redirectUri.Scheme;
 
-            try
+            if (DeviceInfo.Version >= new Version(10, 15))
             {
-                var scheme = redirectUri.Scheme;
-
-                if (!AppInfo.VerifyHasUrlScheme(scheme))
+                static void AuthSessionCallback(NSUrl cbUrl, NSError error)
                 {
-                    tcsResponse.TrySetException(new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist!"));
-                    return await tcsResponse.Task;
+                    if (error == null)
+                        OpenUrl(cbUrl);
+                    else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
+                        tcsResponse.TrySetCanceled();
+                    else
+                        tcsResponse.TrySetException(new NSErrorException(error));
+
+                    was = null;
                 }
 
-                if (DeviceInfo.Version >= new Version(10, 15))
+                was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
+
+                using (was)
                 {
-                    static void AuthSessionCallback(NSUrl cbUrl, NSError error)
-                    {
-                        if (error == null)
-                            OpenUrl(cbUrl);
-                        else
-                            tcsResponse.TrySetException(new NSErrorException(error));
-                    }
-
-                    var was = new ASWebAuthenticationSession(new NSUrl(url.OriginalString), scheme, AuthSessionCallback);
-
                     var ctx = new ContextProvider(Platform.GetCurrentWindow());
                     was.PresentationContextProvider = ctx;
 
                     was.Start();
                     return await tcsResponse.Task;
                 }
+            }
 
-                var opened = NSWorkspace.SharedWorkspace.OpenUrl(url);
-                if (!opened)
-                    tcsResponse.TrySetException(new Exception("Error opening Safari"));
-            }
-            catch (Exception ex)
-            {
-                tcsResponse.TrySetException(ex);
-            }
+            var opened = NSWorkspace.SharedWorkspace.OpenUrl(url);
+            if (!opened)
+                tcsResponse.TrySetException(new Exception("Error opening Safari"));
 
             return await tcsResponse.Task;
         }
@@ -116,7 +117,8 @@ namespace Xamarin.Essentials
             public void HandleAppleEvent(NSAppleEventDescriptor evt, NSAppleEventDescriptor replyEvt)
             {
                 var url = evt.ParamDescriptorForKeyword(DirectObject).StringValue;
-                OpenUrl(new NSUrl(url));
+                var uri = new Uri(url);
+                OpenUrl(WebUtils.GetNativeUrl(uri));
             }
 
             static uint GetDescriptor(string s) =>

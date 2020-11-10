@@ -56,8 +56,17 @@ namespace Samples.ViewModel
 
                 AuthToken = r?.AccessToken ?? r?.IdToken;
             }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("Login canceled.");
+
+                AuthToken = string.Empty;
+                await DisplayAlertAsync("Login canceled.");
+            }
             catch (Exception ex)
             {
+                Console.WriteLine($"Failed: {ex.Message}");
+
                 AuthToken = string.Empty;
                 await DisplayAlertAsync($"Failed: {ex.Message}");
             }
