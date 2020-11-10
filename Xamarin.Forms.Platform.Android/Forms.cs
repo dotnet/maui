@@ -377,7 +377,7 @@ namespace Xamarin.Forms
 
 			var currentIdiom = TargetIdiom.Unsupported;
 
-			// first try UIModeManager
+			// First try UIModeManager
 			using (var uiModeManager = UiModeManager.FromContext(ApplicationContext))
 			{
 				try
@@ -391,12 +391,32 @@ namespace Xamarin.Forms
 				}
 			}
 
+			// Then try Configuration
 			if (TargetIdiom.Unsupported == currentIdiom)
 			{
-				// This could change as a result of a config change, so we need to check it every time
-				int minWidthDp = activity.Resources.Configuration.SmallestScreenWidthDp;
-				Device.SetIdiom(minWidthDp >= TabletCrossover ? TargetIdiom.Tablet : TargetIdiom.Phone);
+				var configuration = activity.Resources.Configuration;
+
+				if (configuration != null)
+				{
+					var minWidth = configuration.SmallestScreenWidthDp;
+					var isWide = minWidth >= TabletCrossover;
+					currentIdiom = isWide ? TargetIdiom.Tablet : TargetIdiom.Phone;
+				}
+				else
+				{
+					// Start clutching at straws
+					var metrics = activity.Resources?.DisplayMetrics;
+
+					if (metrics != null)
+					{
+						var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
+						var isWide = minSize * metrics.Density >= TabletCrossover;
+						currentIdiom = isWide ? TargetIdiom.Tablet : TargetIdiom.Phone;
+					}
+				}
 			}
+
+			Device.SetIdiom(currentIdiom);
 
 			if (SdkInt >= BuildVersionCodes.JellyBeanMr1)
 				Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
@@ -411,13 +431,13 @@ namespace Xamarin.Forms
 		static TargetIdiom DetectIdiom(UiMode uiMode)
 		{
 			var returnValue = TargetIdiom.Unsupported;
-			if (uiMode.HasFlag(UiMode.TypeNormal))
+			if (uiMode == UiMode.TypeNormal)
 				returnValue = TargetIdiom.Unsupported;
-			else if (uiMode.HasFlag(UiMode.TypeTelevision))
+			else if (uiMode == UiMode.TypeTelevision)
 				returnValue = TargetIdiom.TV;
-			else if (uiMode.HasFlag(UiMode.TypeDesk))
+			else if (uiMode == UiMode.TypeDesk)
 				returnValue = TargetIdiom.Desktop;
-			else if (SdkInt >= BuildVersionCodes.KitkatWatch && uiMode.HasFlag(UiMode.TypeWatch))
+			else if (SdkInt >= BuildVersionCodes.KitkatWatch && uiMode == UiMode.TypeWatch)
 				returnValue = TargetIdiom.Watch;
 
 			Device.SetIdiom(returnValue);
