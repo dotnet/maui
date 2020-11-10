@@ -2,6 +2,7 @@
 using System.Reflection;
 using Xamarin.Forms.CustomAttributes;
 using IOPath = System.IO.Path;
+using System.Linq;
 using NUnit.Framework.Interfaces;
 using Xamarin.Forms.Controls.Issues;
 

@@ -203,6 +203,26 @@ namespace Xamarin.Forms.Core.UITests
 				ContextClick(arguments[0].ToString());
 				return null;
 			}
+			
+			if(methodName == "hasInternetAccess")
+			{
+				try
+				{
+					using (var httpClient = new System.Net.Http.HttpClient())
+					using (var httpResponse = httpClient.GetAsync(@"https://www.github.com"))
+					{
+						httpResponse.Wait();
+						if (httpResponse.Result.StatusCode == System.Net.HttpStatusCode.OK)
+							return true;
+						else
+							return false;
+					}
+				}
+				catch
+				{
+					return false;
+				}
+			}
 
 			return null;
 		}

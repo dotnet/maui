@@ -30,6 +30,7 @@
 		public const string MasterDetailPage = "MasterDetailPage";
 		public const string Picker = "Picker";
 		public const string ProgressBar = "ProgressBar";
+		public const string RequiresInternetConnection = "RequiresInternetConnection";
 		public const string RootGallery = "RootGallery";
 		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";

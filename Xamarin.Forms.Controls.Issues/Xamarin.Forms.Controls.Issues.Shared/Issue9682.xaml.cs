@@ -40,6 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test, NUnit.Framework.Category(UITestCategories.Image)]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void MonkiesShouldLoad()
 		{
 			RunningApp.WaitForElement("MonkeyLoadButton");
