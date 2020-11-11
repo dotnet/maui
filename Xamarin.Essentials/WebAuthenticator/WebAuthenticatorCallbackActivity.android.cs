@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Android.App;
+﻿using Android.App;
+using Android.Content;
 using Android.OS;
 
 namespace Xamarin.Essentials
@@ -12,8 +10,13 @@ namespace Xamarin.Essentials
         {
             base.OnCreate(savedInstanceState);
 
-            WebAuthenticator.OnResume(Intent);
+            // start the intermediate activity again with flags to close the custom tabs
+            var intent = new Intent(this, typeof(WebAuthenticatorIntermediateActivity));
+            intent.SetData(Intent.Data);
+            intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
+            StartActivity(intent);
 
+            // finish this activity
             Finish();
         }
     }

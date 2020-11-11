@@ -12,15 +12,7 @@ namespace Xamarin.Essentials
     public partial class WebAuthenticator
     {
         static TaskCompletionSource<WebAuthenticatorResult> tcsResponse = null;
-
-        static Uri uri = null;
-
-        static CustomTabsActivityManager CustomTabsActivityManager { get; set; }
-
-        static Uri RedirectUri { get; set; }
-
-        internal static Task<WebAuthenticatorResult> ResponseTask
-            => tcsResponse?.Task;
+        static Uri currentRedirectUri = null;
 
         internal static bool OnResume(Intent intent)
         {
@@ -28,7 +20,7 @@ namespace Xamarin.Essentials
             if (tcsResponse?.Task?.IsCompleted ?? true)
                 return false;
 
-            if (intent == null)
+            if (intent?.Data == null)
             {
                 tcsResponse.TrySetCanceled();
                 return false;
@@ -39,9 +31,9 @@ namespace Xamarin.Essentials
                 var intentUri = new Uri(intent.Data.ToString());
 
                 // Only handle schemes we expect
-                if (!WebUtils.CanHandleCallback(RedirectUri, intentUri))
+                if (!WebUtils.CanHandleCallback(currentRedirectUri, intentUri))
                 {
-                    tcsResponse.TrySetException(new InvalidOperationException($"Invalid Redirect URI, detected `{intentUri}` but expected a URI in the format of `{RedirectUri}`"));
+                    tcsResponse.TrySetException(new InvalidOperationException($"Invalid Redirect URI, detected `{intentUri}` but expected a URI in the format of `{currentRedirectUri}`"));
                     return false;
                 }
 
@@ -55,7 +47,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        static Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
+        static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
         {
             var packageName = Platform.AppContext.PackageName;
 
@@ -77,58 +69,63 @@ namespace Xamarin.Essentials
                 tcsResponse.TrySetCanceled();
 
             tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
-            tcsResponse.Task.ContinueWith(t =>
+            currentRedirectUri = callbackUrl;
+
+            var parentActivity = Platform.GetCurrentActivity(true);
+
+            var customTabsActivityManager = CustomTabsActivityManager.From(parentActivity);
+            try
             {
-                // Cleanup when done
-                if (CustomTabsActivityManager != null)
+                if (await BindServiceAsync(customTabsActivityManager))
                 {
-                    CustomTabsActivityManager.NavigationEvent -= CustomTabsActivityManager_NavigationEvent;
-                    CustomTabsActivityManager.CustomTabsServiceConnected -= CustomTabsActivityManager_CustomTabsServiceConnected;
+                    var customTabsIntent = new CustomTabsIntent.Builder(customTabsActivityManager.Session)
+                        .SetShowTitle(true)
+                        .Build();
 
-                    try
-                    {
-                        CustomTabsActivityManager?.Client?.Dispose();
-                    }
-                    finally
-                    {
-                        CustomTabsActivityManager = null;
-                    }
+                    customTabsIntent.Intent.SetData(global::Android.Net.Uri.Parse(url.OriginalString));
+
+                    WebAuthenticatorIntermediateActivity.StartActivity(parentActivity, customTabsIntent.Intent);
                 }
-            });
+                else
+                {
+                    // Fall back to opening the system browser if necessary
+                    var browserIntent = new Intent(Intent.ActionView, global::Android.Net.Uri.Parse(url.OriginalString));
+                    Platform.CurrentActivity.StartActivity(browserIntent);
+                }
 
-            uri = url;
-            RedirectUri = callbackUrl;
-
-            CustomTabsActivityManager = CustomTabsActivityManager.From(Platform.GetCurrentActivity(true));
-            CustomTabsActivityManager.NavigationEvent += CustomTabsActivityManager_NavigationEvent;
-            CustomTabsActivityManager.CustomTabsServiceConnected += CustomTabsActivityManager_CustomTabsServiceConnected;
-
-            if (!CustomTabsActivityManager.BindService())
+                return await tcsResponse.Task;
+            }
+            finally
             {
-                // Fall back to opening the system browser if necessary
-                var browserIntent = new Intent(Intent.ActionView, global::Android.Net.Uri.Parse(url.OriginalString));
-                Platform.CurrentActivity.StartActivity(browserIntent);
+                try
+                {
+                    customTabsActivityManager.Client?.Dispose();
+                }
+                finally
+                {
+                }
+            }
+        }
+
+        static Task<bool> BindServiceAsync(CustomTabsActivityManager manager)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            manager.CustomTabsServiceConnected += OnCustomTabsServiceConnected;
+
+            if (!manager.BindService())
+            {
+                manager.CustomTabsServiceConnected -= OnCustomTabsServiceConnected;
+                tcs.TrySetResult(false);
             }
 
-            return WebAuthenticator.ResponseTask;
+            return tcs.Task;
+
+            void OnCustomTabsServiceConnected(ComponentName name, CustomTabsClient client)
+            {
+                manager.CustomTabsServiceConnected -= OnCustomTabsServiceConnected;
+                tcs.TrySetResult(true);
+            }
         }
-
-        static void CustomTabsActivityManager_CustomTabsServiceConnected(ComponentName name, CustomTabsClient client)
-        {
-            var builder = new CustomTabsIntent.Builder(CustomTabsActivityManager.Session)
-                                                  .SetShowTitle(true);
-
-            var customTabsIntent = builder.Build();
-            customTabsIntent.Intent.AddFlags(ActivityFlags.SingleTop | ActivityFlags.NoHistory | ActivityFlags.NewTask);
-
-            var ctx = Platform.CurrentActivity;
-
-            CustomTabsHelper.AddKeepAliveExtra(ctx, customTabsIntent.Intent);
-
-            customTabsIntent.LaunchUrl(ctx, global::Android.Net.Uri.Parse(uri.OriginalString));
-        }
-
-        static void CustomTabsActivityManager_NavigationEvent(int navigationEvent, global::Android.OS.Bundle extras) =>
-            System.Diagnostics.Debug.WriteLine($"CustomTabs.NavigationEvent: {navigationEvent}");
     }
 }

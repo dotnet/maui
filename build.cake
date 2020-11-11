@@ -76,7 +76,7 @@ Task("docs")
 	.Does(() =>
 {
 	MSBuild("./Xamarin.Essentials/Xamarin.Essentials.csproj", new MSBuildSettings()
-		.EnableBinaryLogger("./output/binlogs/nugets.binlog")
+		.EnableBinaryLogger("./output/binlogs/docs.binlog")
 		.SetConfiguration("Release")
 		.WithRestore()
 		.WithTarget("mdocupdatedocs"));
