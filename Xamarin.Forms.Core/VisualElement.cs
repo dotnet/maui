@@ -216,6 +216,7 @@ namespace Xamarin.Forms
 		{
 			if (Background != null)
 			{
+				Background.Parent = this;
 				Background.PropertyChanged += OnBackgroundChanged;
 
 				if (Background is GradientBrush gradientBrush)
@@ -227,6 +228,7 @@ namespace Xamarin.Forms
 		{
 			if (Background != null)
 			{
+				Background.Parent = null;
 				Background.PropertyChanged -= OnBackgroundChanged;
 
 				if (Background is GradientBrush gradientBrush)
@@ -821,6 +823,7 @@ namespace Xamarin.Forms
 		protected override void OnBindingContextChanged()
 		{
 			PropagateBindingContextToStateTriggers();
+
 			base.OnBindingContextChanged();
 		}
 
@@ -983,7 +986,7 @@ namespace Xamarin.Forms
 					foreach (var stateTrigger in state.StateTriggers)
 						SetInheritedBindingContext(stateTrigger, BindingContext);
 		}
-
+		
 		void OnFocused() => Focused?.Invoke(this, new FocusEventArgs(this, true));
 
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
