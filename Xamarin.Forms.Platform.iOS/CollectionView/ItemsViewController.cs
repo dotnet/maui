@@ -393,6 +393,5 @@ namespace Xamarin.Forms.Platform.iOS
 				_emptyViewDisplayed = false;
 			}
 		}
-		
 	}
 }

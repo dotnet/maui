@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -15,7 +16,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		CarouselViewLoopManager _carouselViewLoopManager;
 		bool _initialPositionSet;
-		bool _viewInitialized;
 		bool _updatingScrollOffset;
 		List<View> _oldViews;
 		int _gotoPosition = -1;
@@ -64,23 +64,12 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
-			if (!_viewInitialized)
-			{
-				_viewInitialized = true;
-				_size = CollectionView.Bounds.Size;
-			}
-
 			UpdateVisualStates();
 		}
 
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			if (CollectionView.Bounds.Size != _size)
-			{
-				_size = CollectionView.Bounds.Size;
-				BoundsSizeChanged();
-			}
 
 			if (Carousel?.Loop == true && _carouselViewLoopManager != null)
 			{
@@ -88,7 +77,20 @@ namespace Xamarin.Forms.Platform.iOS
 				_carouselViewLoopManager.CenterIfNeeded(CollectionView, IsHorizontal);
 				_updatingScrollOffset = false;
 			}
+
 			UpdateInitialPosition();
+
+			if (CollectionView.Bounds.Size != _size)
+			{
+				_size = CollectionView.Bounds.Size;
+				BoundsSizeChanged();
+			}
+		}
+
+		void BoundsSizeChanged() 
+		{
+			//if the size changed center the item	
+			Carousel.ScrollTo(Carousel.Position, position: Xamarin.Forms.ScrollToPosition.Center, animate: false);
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
@@ -105,7 +107,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			base.UpdateItemsSource();
-			//we don't need to Subscribe becasse base calls CreateItemsViewSource
+			//we don't need to Subscribe because base calls CreateItemsViewSource
 			_carouselViewLoopManager?.SetItemsSource(LoopItemsSource);
 			_initialPositionSet = false;
 			UpdateInitialPosition();
@@ -135,18 +137,6 @@ namespace Xamarin.Forms.Platform.iOS
 			_carouselViewLoopManager?.SetItemsSource(itemsSource);
 			SubscribeCollectionItemsSourceChanged(itemsSource);
 			return itemsSource;
-		}
-
-		protected void BoundsSizeChanged()
-		{
-			//we might be rotating our phone
-			ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
-
-			//We call ReloadData so our VisibleCells also update their size
-			CollectionView.ReloadData();
-
-			//if the size changed center the item
-			Carousel.ScrollTo(Carousel.Position, position: Xamarin.Forms.ScrollToPosition.Center, animate: false);
 		}
 
 		internal void TearDown()
