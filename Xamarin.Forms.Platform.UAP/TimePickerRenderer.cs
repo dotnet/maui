@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == TimePicker.TimeProperty.PropertyName)
+			if (e.PropertyName == TimePicker.TimeProperty.PropertyName || e.PropertyName == TimePicker.FormatProperty.PropertyName)
 				UpdateTime();
 			else if (e.PropertyName == TimePicker.TextColorProperty.PropertyName)
 				UpdateTextColor();
@@ -164,6 +164,14 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateTime()
 		{
 			Control.Time = Element.Time;
+			if (Element.Format?.Contains('H') == true)
+			{
+				Control.ClockIdentifier = "24HourClock";
+			}
+			else
+			{
+				Control.ClockIdentifier = "12HourClock";
+			}
 		}
 
 		void UpdateCharacterSpacing()

@@ -1580,6 +1580,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue11430.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11247.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10608.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DateTimePickerLocalizationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11800.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11572.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11571.xaml.cs" />

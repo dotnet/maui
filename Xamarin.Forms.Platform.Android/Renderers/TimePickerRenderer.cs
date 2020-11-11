@@ -8,6 +8,7 @@ using Android.Util;
 using Android.Widget;
 using AColor = Android.Graphics.Color;
 using ATimePicker = Android.Widget.TimePicker;
+using System.Globalization;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -16,10 +17,10 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		AlertDialog _dialog;
 		bool _disposed;
-
+		
 		bool Is24HourView
 		{
-			get => (DateFormat.Is24HourFormat(Context) && Element.Format == (string)TimePicker.FormatProperty.DefaultValue) || Element.Format == "HH:mm";
+			get => (DateFormat.Is24HourFormat(Context) && Element.Format == (string)TimePicker.FormatProperty.DefaultValue) || Element.Format?.Contains('H') == true;
 		}
 
 		public TimePickerRendererBase(Context context) : base(context)
@@ -164,8 +165,17 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SetTime(TimeSpan time)
 		{
-			var timeFormat = Is24HourView ? "HH:mm" : Element.Format;
-			EditText.Text = DateTime.Today.Add(time).ToString(timeFormat);
+			if (String.IsNullOrEmpty(Element.Format))
+			{
+				var timeFormat = "t";
+				EditText.Text = DateTime.Today.Add(time).ToString(timeFormat);
+			}
+			else
+			{
+				var timeFormat = Element.Format;
+				EditText.Text = DateTime.Today.Add(time).ToString(timeFormat);
+			}
+
 			Element.InvalidateMeasureNonVirtual(Internals.InvalidationTrigger.MeasureChanged);
 		}
 
