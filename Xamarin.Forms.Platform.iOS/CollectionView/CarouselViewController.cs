@@ -35,12 +35,18 @@ namespace Xamarin.Forms.Platform.iOS
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
 			UICollectionViewCell cell;
+
 			if (Carousel?.Loop == true && _carouselViewLoopManager != null)
 			{
 				var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId());
 				cell = cellAndCorrectedIndex.cell;
 				var correctedIndexPath = NSIndexPath.FromRowSection(cellAndCorrectedIndex.correctedIndex, 0);
-				UpdateTemplatedCell(cell as TemplatedCell, correctedIndexPath);
+
+				if (cell is DefaultCell defaultCell)
+					UpdateDefaultCell(defaultCell, correctedIndexPath);
+
+				if (cell is TemplatedCell templatedCell)
+					UpdateTemplatedCell(templatedCell, correctedIndexPath);
 			}
 			else
 			{
@@ -48,8 +54,10 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			var element = (cell as TemplatedCell)?.VisualElementRenderer?.Element;
+
 			if (element != null)
 				VisualStateManager.GoToState(element, CarouselView.DefaultItemVisualState);
+
 			return cell;
 		}
 
