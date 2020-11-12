@@ -16,11 +16,6 @@ namespace Xamarin.Forms.Platform.iOS
 			_itemsLayout = itemsLayout;
 		}
 
-		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
-		{
-			return false;
-		}
-
 		public override void ConstrainTo(CGSize size)
 		{
 			//TODO: Should we scale the items 
@@ -35,12 +30,6 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				ItemSize = new CGSize(size.Width, height);
 			}
-		}
-
-		internal override void UpdateConstraints(CGSize size)
-		{
-			ConstrainTo(size);
-			UpdateCellConstraints();
 		}
 
 		public override nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)

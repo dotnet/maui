@@ -1,7 +1,7 @@
 ﻿namespace Xamarin.Forms
 {
 	[TypeConverter(typeof(BrushTypeConverter))]
-	public abstract class Brush : BindableObject
+	public abstract class Brush : Element
 	{
 		public static Brush Default
 		{

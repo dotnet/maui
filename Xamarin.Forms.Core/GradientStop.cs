@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms
 {
-	public class GradientStop : BindableObject
+	public class GradientStop : Element
 	{
 		public static readonly BindableProperty ColorProperty = BindableProperty.Create(
 			nameof(Color), typeof(Color), typeof(GradientStop), Color.Default);

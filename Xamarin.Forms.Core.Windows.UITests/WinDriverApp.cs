@@ -221,8 +221,8 @@ namespace Xamarin.Forms.Core.UITests
 				ContextClick(arguments[0].ToString());
 				return null;
 			}
-			
-			if(methodName == "hasInternetAccess")
+
+			if (methodName == "hasInternetAccess")
 			{
 				try
 				{

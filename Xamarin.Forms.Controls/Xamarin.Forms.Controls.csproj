@@ -38,6 +38,10 @@
     <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Remove="GalleryPages\DateTimePickerGalleries\DatesPage.xaml" />
+    <EmbeddedResource Remove="GalleryPages\DateTimePickerGalleries\MainTabbedPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="BuildNumber.txt" />
     <EmbeddedResource Include="GalleryPages\crimson.jpg" />
     <EmbeddedResource Include="coffee.png" />
@@ -115,6 +119,7 @@
   <ItemGroup>
     <Folder Include="Fonts\" />
     <Folder Include="GalleryPages\AppThemeGalleries\" />
+    <Folder Include="GalleryPages\DateTimePickerGalleries\" />
   </ItemGroup>
 
   <ItemGroup>
