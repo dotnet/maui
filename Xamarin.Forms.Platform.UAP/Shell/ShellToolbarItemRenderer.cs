@@ -10,6 +10,16 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	public class ShellToolbarItemRenderer : Windows.UI.Xaml.Controls.Button
 	{
+
+		public static readonly DependencyProperty ToolbarItemProperty =
+			DependencyProperty.Register("ToolbarItem", typeof(ToolbarItem), typeof(ShellToolbarItemRenderer), new PropertyMetadata(null, OnToolbarItemChanged));
+
+		static void OnToolbarItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			((ShellToolbarItemRenderer)d)
+				.ToolbarItemChanged(e.OldValue as ToolbarItem, e.NewValue as ToolbarItem);
+		}
+
 		public ShellToolbarItemRenderer()
 		{
 			Xamarin.Forms.Shell.VerifyShellUWPFlagEnabled(nameof(ShellToolbarItemRenderer));
@@ -28,7 +38,20 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(ToolbarItemProperty, value); }
 		}
 
-		public static readonly DependencyProperty ToolbarItemProperty =
-			DependencyProperty.Register("ToolbarItem", typeof(ToolbarItem), typeof(ShellToolbarItemRenderer), new PropertyMetadata(null));
+		void ToolbarItemChanged(ToolbarItem oldItem, ToolbarItem newItem)
+		{
+			if(oldItem != null)
+				oldItem.PropertyChanged -= ToolbarItemPropertyChanged;
+
+			this.SetAutomationProperties(newItem, defaultName: newItem?.Text);
+
+			if (newItem != null)
+				newItem.PropertyChanged += ToolbarItemPropertyChanged;
+
+			void ToolbarItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+			{
+				this.SetAutomationProperties(newItem, defaultName: newItem?.Text);
+			}
+		}
 	}
 }

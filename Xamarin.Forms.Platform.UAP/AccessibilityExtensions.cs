@@ -123,5 +123,16 @@ namespace Xamarin.Forms.Platform.UWP
 
 		}
 
+		internal static void SetAutomationProperties(
+			this FrameworkElement frameworkElement, 
+			Element element,
+			string defaultName = null)
+		{
+			frameworkElement.SetAutomationPropertiesAutomationId(element?.AutomationId);
+			 frameworkElement.SetAutomationPropertiesName(element, defaultName);
+			frameworkElement.SetAutomationPropertiesHelpText(element);
+			frameworkElement.SetAutomationPropertiesLabeledBy(element);
+			frameworkElement.SetAutomationPropertiesAccessibilityView(element);
+		}
 	}
 }
