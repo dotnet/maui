@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -8,7 +9,6 @@ using Android.Util;
 using Android.Widget;
 using AColor = Android.Graphics.Color;
 using ATimePicker = Android.Widget.TimePicker;
-using System.Globalization;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		AlertDialog _dialog;
 		bool _disposed;
-		
+
 		bool Is24HourView
 		{
 			get => (DateFormat.Is24HourFormat(Context) && Element.Format == (string)TimePicker.FormatProperty.DefaultValue) || Element.Format?.Contains('H') == true;

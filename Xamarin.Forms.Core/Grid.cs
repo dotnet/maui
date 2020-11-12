@@ -227,7 +227,7 @@ namespace Xamarin.Forms
 		{
 			InvalidateMeasureInternal(trigger);
 		}
-		
+
 		void OnDefinitionChanged(object sender, EventArgs args)
 		{
 			ComputeConstrainsForChildren();

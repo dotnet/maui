@@ -95,7 +95,7 @@ namespace Xamarin.Forms
 			public List<ColumnDefinition> Columns => _columns;
 			public List<RowDefinition> Rows => _rows;
 
-			public GridStructure(Grid grid) 
+			public GridStructure(Grid grid)
 			{
 				EnsureRowsColumnsInitialized(grid);
 			}

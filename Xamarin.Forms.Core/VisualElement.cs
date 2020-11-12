@@ -986,7 +986,7 @@ namespace Xamarin.Forms
 					foreach (var stateTrigger in state.StateTriggers)
 						SetInheritedBindingContext(stateTrigger, BindingContext);
 		}
-		
+
 		void OnFocused() => Focused?.Invoke(this, new FocusEventArgs(this, true));
 
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
