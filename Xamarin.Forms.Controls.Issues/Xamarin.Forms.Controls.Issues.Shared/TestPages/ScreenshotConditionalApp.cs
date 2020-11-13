@@ -463,6 +463,16 @@ namespace Xamarin.Forms.Controls
 		}
 
 #if __WINDOWS__
+		public string ReadDatePicker(string marked)
+		{
+			return ((WinDriverApp)_app).ReadDatePicker(marked).ToString();
+		}
+
+		public string ReadTimePicker(string marked)
+		{
+			return ((WinDriverApp)_app).ReadTimePicker(marked).ToString();
+		}
+
 		public bool RestartIfAppIsClosed()
 		{
 			return (_app as WinDriverApp).RestartIfAppIsClosed();

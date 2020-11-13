@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.ClearText("settingTime");
 			RunningApp.EnterText("settingTime", time);
 			RunningApp.PressEnter();
-			var text = RunningApp.WaitForElement("timeClockOptions")[0].ReadText();
+			var text = RunningApp.ReadTimePicker("timeClockOptions");
 			return text;
 		}
 
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.ClearText("settingDate");
 			RunningApp.EnterText("settingDate", date);
 			RunningApp.PressEnter();
-			var text = RunningApp.WaitForElement("dateCalendarOptions")[0].ReadText();
+			var text = RunningApp.ReadDatePicker("dateCalendarOptions");
 			return text;
 		}
 
@@ -57,12 +57,18 @@ namespace Xamarin.Forms.Controls.Issues
 		public void TimePicker24H()
 		{
 			RunningApp.Tap(x => x.Marked("TimePicker"));
+#if !__WINDOWS__
 			Assert.AreEqual("0.0.0 A", TimeString("H.m.s t", "0, 0"));
 			Assert.AreEqual("13:05 PM", TimeString("HH:mm tt", "13, 5"));
 			Assert.AreEqual("12 PM", TimeString("HH tt", "12, 0"));
 			Assert.AreEqual("5.", TimeString("H.", "5, 1"));
+#else
+			Assert.AreEqual("23:00", TimeString("HH", "23, 0"));
+			Assert.AreEqual("11:00:PM", TimeString("hh", "23, 0"));
+#endif
 		}
 
+#if !__WINDOWS__
 		[Test]
 		public void TimePicker12H()
 		{
@@ -83,26 +89,41 @@ namespace Xamarin.Forms.Controls.Issues
 			Assert.AreEqual("QRSTUVWXYZ", TimeString("QRSTUVWXYZ", "23, 59"));
 			Assert.AreEqual("abceijklnopqruvwx", TimeString("abceijklnopqruvwx", "23, 59"));
 		}
+#endif
 
 		[Test]
 		public void DatePickerDMY()
 		{
 			RunningApp.Tap(x => x.Marked("DatePicker"));
+#if !__WINDOWS__
 			Assert.AreEqual("31/1/99", DateString("d/M/y", "1999, 1, 31"));
 			Assert.AreEqual("02-29-00", DateString("MM-dd-yy", "2000, 2, 29"));
 			Assert.AreEqual("2010, Apr, Thu", DateString("yyy, MMM, ddd", "2010, 4, 15"));
 			Assert.AreEqual("August.Saturday.2015", DateString("MMMM.dddd.yyyy", "2015, 8, 1"));
+#else
+			Assert.AreEqual("31,1,99", DateString("d/M/y", "1999, 1, 31"));
+			Assert.AreEqual("29,2,00", DateString("MM-dd-yy", "2000, 2, 29"));
+			Assert.AreEqual("Thu 15,Apr,2010", DateString("yyy, MMM, ddd", "2010, 4, 15"));
+			Assert.AreEqual("Saturday,August,2015", DateString("MMMM.dddd.yyyy", "2015, 8, 1"));
+#endif
 		}
 
 		[Test]
 		public void DatePickerMissing()
 		{
 			RunningApp.Tap(x => x.Marked("DatePicker"));
+#if !__WINDOWS__
 			Assert.AreEqual("October 97", DateString("MMMM yy", "1997, 10, 30"));
 			Assert.AreEqual("Monday", DateString("dddd", "2020, 7, 20"));
 			Assert.AreEqual("2002: Dec", DateString("yyyy: MMM", "2002, 12, 31"));
+#else
+			Assert.AreEqual("October,97", DateString("MMMM yy", "1997, 10, 30"));
+			Assert.AreEqual("Monday", DateString("dddd", "2020, 7, 20"));
+			Assert.AreEqual("Dec,2002", DateString("yyyy: MMM", "2002, 12, 31"));
+#endif
 		}
 
+#if !__WINDOWS__
 		[Test]
 		public void DatePickerLetters()
 		{
@@ -111,7 +132,8 @@ namespace Xamarin.Forms.Controls.Issues
 			Assert.AreEqual("QRSTUVWXYZ", DateString("QRSTUVWXYZ", "2002, 12, 31"));
 			Assert.AreEqual("abceijklnopqruvwx", DateString("abceijklnopqruvwx", "2002, 12, 31"));
 		}
+#endif
 
 #endif
+		}
 	}
-}
