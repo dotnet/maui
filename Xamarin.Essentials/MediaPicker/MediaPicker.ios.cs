@@ -68,6 +68,15 @@ namespace Xamarin.Essentials
                     tcs.TrySetResult(DictionaryToMediaFile(info))
             };
 
+            if (picker.PresentationController != null)
+            {
+                picker.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
+                {
+                    CompletedHandler = info =>
+                        tcs.TrySetResult(DictionaryToMediaFile(info))
+                };
+            }
+
             await vc.PresentViewControllerAsync(picker, true);
 
             var result = await tcs.Task;
@@ -142,6 +151,14 @@ namespace Xamarin.Essentials
                 CompletedHandler?.Invoke(info);
 
             public override void Canceled(UIImagePickerController picker) =>
+                CompletedHandler?.Invoke(null);
+        }
+
+        class PhotoPickerPresentationControllerDelegate : UIAdaptivePresentationControllerDelegate
+        {
+            public Action<NSDictionary> CompletedHandler { get; set; }
+
+            public override void DidDismiss(UIPresentationController presentationController) =>
                 CompletedHandler?.Invoke(null);
         }
     }
