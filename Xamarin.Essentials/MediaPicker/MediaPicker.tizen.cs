@@ -13,19 +13,21 @@ namespace Xamarin.Essentials
                => true;
 
         static async Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options)
-            => new FileResult(await FilePicker.PickAsync(new PickOptions
+            => await FilePicker.PickAsync(new PickOptions
             {
+                PickerTitle = options?.Title,
                 FileTypes = FilePickerFileType.Images
-            }));
+            });
 
         static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
             => PlatformMediaAsync(options, true);
 
         static async Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options)
-            => new FileResult(await FilePicker.PickAsync(new PickOptions
+            => await FilePicker.PickAsync(new PickOptions
             {
+                PickerTitle = options?.Title,
                 FileTypes = FilePickerFileType.Videos
-            }));
+            });
 
         static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
             => PlatformMediaAsync(options, false);

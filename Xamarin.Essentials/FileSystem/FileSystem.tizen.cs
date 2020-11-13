@@ -28,6 +28,7 @@ namespace Xamarin.Essentials
     {
         static string PlatformGetContentType(string extension)
         {
+            extension = extension.TrimStart('.');
             return Tizen.Content.MimeType.MimeUtil.GetMimeType(extension);
         }
 
