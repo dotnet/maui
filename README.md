@@ -175,4 +175,4 @@ We follow the style used by the [.NET Foundation](https://github.com/dotnet/runt
 
 ### Reporting Bugs ###
 
-We use [GitHub Issues](https://github.com/xamarin/Xamarin.Forms/issues) to track issues. If at all possible, please submit a [reproduction of your bug](https://github.com/xamarin/Xamarin.Forms/blob/main/repro.md) along with your bug report.
+We use [GitHub Issues](https://github.com/xamarin/Xamarin.Forms/issues) to track issues. If at all possible, please submit a [reproduction of your bug](https://github.com/xamarin/Xamarin.Forms/blob/main/.github/repro.md) along with your bug report.
