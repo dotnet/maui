@@ -54,6 +54,8 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		// Tests runs locally without issues but doesn't run successfully in a hosted agent yet
+		[Category(UITestCategories.UwpIgnore)]
 		public void TimePicker24H()
 		{
 			RunningApp.Tap(x => x.Marked("TimePicker"));
@@ -92,6 +94,8 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 
 		[Test]
+		// Tests runs locally without issues but doesn't run successfully in a hosted agent yet
+		[Category(UITestCategories.UwpIgnore)]
 		public void DatePickerDMY()
 		{
 			RunningApp.Tap(x => x.Marked("DatePicker"));
@@ -109,6 +113,8 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		// Tests runs locally without issues but doesn't run successfully in a hosted agent yet
+		[Category(UITestCategories.UwpIgnore)]
 		public void DatePickerMissing()
 		{
 			RunningApp.Tap(x => x.Marked("DatePicker"));
