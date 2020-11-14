@@ -178,7 +178,7 @@ namespace Xamarin.Forms.Core.UITests
 			var pickerFlyout = _session.FindElementByAccessibilityId(flyoutPresenterName);
 			List<string> stringSelectors = new List<string>();
 
-			foreach(var selector in selectors)
+			foreach (var selector in selectors)
 				ReadSelector(selector, stringSelectors);
 
 			pickerFlyout.FindElementByAccessibilityId("AcceptButton").Click();
@@ -210,7 +210,7 @@ namespace Xamarin.Forms.Core.UITests
 		public string ReadDatePicker(string marked)
 		{
 			return ReadSelectorPicker(
-				marked, 
+				marked,
 				"DatePickerFlyoutPresenter",
 				",",
 				new[] {
