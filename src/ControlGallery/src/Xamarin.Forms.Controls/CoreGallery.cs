@@ -6,6 +6,7 @@ using Xamarin.Forms.Controls.GalleryPages;
 using Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using Xamarin.Forms.Controls.GalleryPages.DateTimePickerGalleries;
 using Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries;
 using Xamarin.Forms.Controls.GalleryPages.GradientGalleries;
 using Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery;
@@ -336,6 +337,7 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new AlertGallery(), "DisplayAlert Gallery"),
 				new GalleryPageFactory(() => new ToolbarItems(), "ToolbarItems Gallery"),
 				new GalleryPageFactory(() => new ActionSheetGallery(), "ActionSheet Gallery"),
+				new GalleryPageFactory(() => new DateTimePickerGallery(), "DateTime Picker Localization Gallery"),
 				new GalleryPageFactory(() => new ActivityIndicatorCoreGalleryPage(), "ActivityIndicator Gallery"),
 				new GalleryPageFactory(() => new BehaviorsAndTriggers(), "BehaviorsTriggers Gallery"),
 				new GalleryPageFactory(() => new ContextActionsGallery(), "ContextActions List Gallery"),

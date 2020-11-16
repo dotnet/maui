@@ -15,7 +15,7 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
-	[Category(UITestCategories.ManualReview)]
+	[Category(UITestCategories.WebView)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3262, "Adding Cookies ability to a WebView...")]
@@ -300,6 +300,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
 			RunningApp.Tap("PageWithoutCookies");
@@ -307,6 +308,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ChangeDuringNavigating()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -318,6 +320,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void AddAdditionalCookieToWebView()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -329,6 +332,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void SetToOneCookie()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -337,6 +341,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -348,6 +353,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void RemoveAllTheCookiesIAdded()
 		{
 			RunningApp.WaitForElement("Loaded");

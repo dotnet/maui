@@ -7,10 +7,12 @@
 		}
 
 		public static readonly BindableProperty FillProperty =
-			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(Shape), null);
+			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(Shape), null,
+				propertyChanged: OnBrushChanged);
 
 		public static readonly BindableProperty StrokeProperty =
-			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Shape), null);
+			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Shape), null,
+				propertyChanged: OnBrushChanged);
 
 		public static readonly BindableProperty StrokeThicknessProperty =
 			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Shape), 1.0);
@@ -86,6 +88,17 @@
 		{
 			set { SetValue(AspectProperty, value); }
 			get { return (Stretch)GetValue(AspectProperty); }
+		}
+
+		static void OnBrushChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((Shape)bindable).UpdateBrushParent((Brush)newValue);
+		}
+
+		void UpdateBrushParent(Brush brush)
+		{
+			if (brush != null)
+				brush.Parent = this;
 		}
 	}
 }

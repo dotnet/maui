@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms
 {
@@ -30,6 +29,14 @@ namespace Xamarin.Forms
 			(bindable as GradientBrush)?.UpdateGradientStops(oldValue as GradientStopCollection, newValue as GradientStopCollection);
 		}
 
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+
+			foreach (var gradientStop in GradientStops)
+				SetInheritedBindingContext(gradientStop, BindingContext);
+		}
+
 		void UpdateGradientStops(GradientStopCollection oldCollection, GradientStopCollection newCollection)
 		{
 			if (oldCollection != null)
@@ -38,6 +45,7 @@ namespace Xamarin.Forms
 
 				foreach (var oldStop in oldCollection)
 				{
+					oldStop.Parent = null;
 					oldStop.PropertyChanged -= OnGradientStopPropertyChanged;
 				}
 			}
@@ -49,6 +57,7 @@ namespace Xamarin.Forms
 
 			foreach (var newStop in newCollection)
 			{
+				newStop.Parent = this;
 				newStop.PropertyChanged += OnGradientStopPropertyChanged;
 			}
 		}
@@ -62,6 +71,7 @@ namespace Xamarin.Forms
 					if (!(oldItem is GradientStop oldStop))
 						continue;
 
+					oldStop.Parent = null;
 					oldStop.PropertyChanged -= OnGradientStopPropertyChanged;
 				}
 			}
@@ -73,6 +83,7 @@ namespace Xamarin.Forms
 					if (!(newItem is GradientStop newStop))
 						continue;
 
+					newStop.Parent = this;
 					newStop.PropertyChanged += OnGradientStopPropertyChanged;
 				}
 			}

@@ -70,6 +70,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 		[Test]
 		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void WebViewEvalCrashesOnAndroidWithLongString()
 		{
 			RunningApp.WaitForElement("navigatedLabel");

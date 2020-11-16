@@ -401,9 +401,17 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			if (_scrollCanvasSize.Width < x || _scrollCanvasSize.Height < y)
 				return CollectionView.Count - 1;
 
-			int first = (IsHorizontal ? x : y) / (BaseItemSize + ItemSpacing);
-			if (_hasUnevenRows)
+			int first = 0;
+			if (!_hasUnevenRows)
+			{
+				first = Math.Min(Math.Max(0, ((IsHorizontal ? x : y) - ItemStartPoint) / (BaseItemSize + ItemSpacing)), ((CollectionView.Count - 1) / Span));
+			}
+			else
+			{
 				first = _accumulatedItemSizes.FindIndex(current => (IsHorizontal ? x : y) <= current);
+				if (first == -1)
+					first = (CollectionView.Count - 1) / Span;
+			}
 
 			int second = (IsHorizontal ? y : x) / (ColumnSize + ColumnSpacing);
 			if (second == Span)

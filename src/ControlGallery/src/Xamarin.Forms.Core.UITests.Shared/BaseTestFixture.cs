@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using NUnit.Framework;
 using Xamarin.Forms.Controls;
+using Xamarin.Forms.Controls.Issues;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
@@ -46,6 +47,7 @@ namespace Xamarin.Forms.Core.UITests
 		protected virtual void TestSetup()
 		{
 			//EnsureMemory();
+			UITestHelper.MarkTestInconclusiveIfNoInternetConnectionIsPresent(GetType(), App);
 		}
 
 		[TearDown]

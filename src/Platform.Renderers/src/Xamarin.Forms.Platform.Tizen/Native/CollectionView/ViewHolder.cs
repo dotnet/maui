@@ -1,8 +1,6 @@
 using System;
 using ElmSharp;
 using EColor = ElmSharp.Color;
-using ERectangle = ElmSharp.Rectangle;
-
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
@@ -125,10 +123,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				_isSelected = true;
 			else if (State == ViewHolderState.Normal)
 				_isSelected = false;
+			else if (State == ViewHolderState.Focused)
+				RaiseTop();
 
 			StateUpdated?.Invoke(this, EventArgs.Empty);
 		}
-
 
 		void OnKeyUp(object sender, EvasKeyEventArgs e)
 		{
