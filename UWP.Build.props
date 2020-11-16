@@ -3,8 +3,7 @@
     <TargetFrameworks>$(UwpMinTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(UwpMinTargetFrameworks)' == '' ">
-    <TargetFrameworks Condition=" '$(BuildingInsideVisualStudio)' == 'true' AND '$(OS)' == 'Windows_NT' ">uap10.0.16299</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(BuildingInsideVisualStudio)' != 'true' AND '$(OS)' == 'Windows_NT' ">uap10.0.14393;uap10.0.16299</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">uap10.0.16299</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard2.0</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup>
