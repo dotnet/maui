@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using System.Diagnostics;
+﻿using System;
 using System.Collections.ObjectModel;
-using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -16,6 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.CarouselView)]
+	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 12574, "CarouselView Loop=True default freezes iOS app", PlatformAffected.Default)]

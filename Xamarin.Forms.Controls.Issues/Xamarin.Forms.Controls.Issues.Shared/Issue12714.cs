@@ -14,8 +14,8 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[Category(UITestCategories.CollectionView)]
 #endif
-	[Issue(IssueTracker.Github, 12714, 
-		"[Bug] iOS application suspended at UICollectionViewFlowLayout.PrepareLayout() when using IsVisible = false", 
+	[Issue(IssueTracker.Github, 12714,
+		"[Bug] iOS application suspended at UICollectionViewFlowLayout.PrepareLayout() when using IsVisible = false",
 		PlatformAffected.iOS)]
 	public class Issue12714 : TestContentPage
 	{

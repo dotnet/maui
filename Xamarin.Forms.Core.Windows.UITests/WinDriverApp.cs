@@ -170,6 +170,69 @@ namespace Xamarin.Forms.Core.UITests
 					.Perform();
 		}
 
+		public string ReadSelectorPicker(string marked, string flyoutPresenterName, string seperator, string[] selectors)
+		{
+			WaitForAtLeastOne(() => QueryWindows(marked))[0].SendKeys(Keys.Space);
+			var LTRCharacter = Convert.ToChar(8206);
+			var RTLCharacter = Convert.ToChar(8207);
+			var pickerFlyout = _session.FindElementByAccessibilityId(flyoutPresenterName);
+			List<string> stringSelectors = new List<string>();
+
+			foreach (var selector in selectors)
+				ReadSelector(selector, stringSelectors);
+
+			pickerFlyout.FindElementByAccessibilityId("AcceptButton").Click();
+			return String.Join(seperator, stringSelectors);
+
+			void ReadSelector(string marked, List<string> data)
+			{
+				try
+				{
+					var text = RemoveExtraCharacters(pickerFlyout.FindElementByAccessibilityId(marked).Text);
+					data.Add(text);
+				}
+				catch
+				{
+					// when the control isn't found an exception is thrown
+				}
+			}
+
+			string RemoveExtraCharacters(string text)
+			{
+				return
+					new String(text
+						.ToCharArray()
+						.Where(c => c != LTRCharacter && c != RTLCharacter)
+						.ToArray());
+			}
+		}
+
+		public string ReadDatePicker(string marked)
+		{
+			return ReadSelectorPicker(
+				marked,
+				"DatePickerFlyoutPresenter",
+				",",
+				new[] {
+					"DayLoopingSelector",
+					"MonthLoopingSelector",
+					"YearLoopingSelector",
+				});
+		}
+
+		public string ReadTimePicker(string marked)
+		{
+			return ReadSelectorPicker(
+				marked,
+				"TimePickerFlyoutPresenter",
+				":",
+				new[] {
+					"HourLoopingSelector",
+					"MinuteLoopingSelector",
+					"PeriodLoopingSelector",
+				});
+		}
+
 		static RemoteWebElement SwapInUsefulElement(WindowsElement element)
 		{
 			// AutoSuggestBox on UWP has some interaction issues with WebDriver
@@ -640,7 +703,9 @@ namespace Xamarin.Forms.Core.UITests
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			Func<ReadOnlyCollection<WindowsElement>> result = () => QueryWindows(marked);
-			return WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency).Select(ToAppResult).ToArray();
+			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency).Select(ToAppResult).ToArray();
+
+			return results;
 		}
 
 		public AppWebResult[] WaitForElement(Func<AppQuery, AppWebQuery> query,
@@ -1116,7 +1181,10 @@ namespace Xamarin.Forms.Core.UITests
 			TimeSpan? timeout = null,
 			TimeSpan? retryFrequency = null)
 		{
-			return Wait(query, i => i > 0, timeoutMessage, timeout, retryFrequency);
+			var results = Wait(query, i => i > 0, timeoutMessage, timeout, retryFrequency);
+
+
+			return results;
 		}
 
 		void WaitForNone(Func<ReadOnlyCollection<WindowsElement>> query,

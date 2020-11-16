@@ -242,8 +242,7 @@ namespace Xamarin.Forms.Platform.Android
 				catch (global::Android.Views.InflateException ie)
 				{
 					if ((ie.Cause is Java.Lang.ClassNotFoundException || ie.Cause.Cause is Java.Lang.ClassNotFoundException) &&
-						ie.Message.Contains("Error inflating class android.support.v7.widget.Toolbar") &&
-						this.TargetSdkVersion() >= 29)
+						ie.Message.Contains("Error inflating class android.support.v7.widget.Toolbar"))
 					{
 						Internals.Log.Warning(nameof(FormsAppCompatActivity),
 							"Toolbar layout needs to be updated from android.support.v7.widget.Toolbar to androidx.appcompat.widget.Toolbar. " +
