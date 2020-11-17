@@ -17,12 +17,12 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6184, "Throws exception when set isEnabled to false in ShellItem index > 5", PlatformAffected.iOS)]
 	public partial class Issue6184 : TestShell
-    {
-        public Issue6184()
+	{
+		public Issue6184()
 		{
 #if APP
 
-			InitializeComponent(); 
+			InitializeComponent();
 #endif
 		}
 
