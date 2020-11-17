@@ -1,0 +1,52 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphicsTester.Mac", "GraphicsTester.Mac.csproj", "{7564CFC0-035C-4720-B4EF-2A48AED6B2D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphicsTester.Portable", "..\GraphicsTester.Portable\GraphicsTester.Portable.csproj", "{C7BBB0EB-F729-449D-B279-5B1D4669CFC3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		AppStore|Any CPU = AppStore|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7564CFC0-035C-4720-B4EF-2A48AED6B2D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7564CFC0-035C-4720-B4EF-2A48AED6B2D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7564CFC0-035C-4720-B4EF-2A48AED6B2D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7564CFC0-035C-4720-B4EF-2A48AED6B2D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7564CFC0-035C-4720-B4EF-2A48AED6B2D7}.AppStore|Any CPU.ActiveCfg = AppStore|Any CPU
+		{7564CFC0-035C-4720-B4EF-2A48AED6B2D7}.AppStore|Any CPU.Build.0 = AppStore|Any CPU
+		{C7BBB0EB-F729-449D-B279-5B1D4669CFC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7BBB0EB-F729-449D-B279-5B1D4669CFC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7BBB0EB-F729-449D-B279-5B1D4669CFC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7BBB0EB-F729-449D-B279-5B1D4669CFC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7BBB0EB-F729-449D-B279-5B1D4669CFC3}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{C7BBB0EB-F729-449D-B279-5B1D4669CFC3}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{DE03D2AE-72AF-44BA-A223-C54B88E726BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE03D2AE-72AF-44BA-A223-C54B88E726BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE03D2AE-72AF-44BA-A223-C54B88E726BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE03D2AE-72AF-44BA-A223-C54B88E726BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE03D2AE-72AF-44BA-A223-C54B88E726BA}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{DE03D2AE-72AF-44BA-A223-C54B88E726BA}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{EDF26EBB-0AC3-4212-81D6-8DD08F5ACC17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDF26EBB-0AC3-4212-81D6-8DD08F5ACC17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDF26EBB-0AC3-4212-81D6-8DD08F5ACC17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDF26EBB-0AC3-4212-81D6-8DD08F5ACC17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDF26EBB-0AC3-4212-81D6-8DD08F5ACC17}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{EDF26EBB-0AC3-4212-81D6-8DD08F5ACC17}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{A6C6291F-5D7B-4911-993A-790992995CA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6C6291F-5D7B-4911-993A-790992995CA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6C6291F-5D7B-4911-993A-790992995CA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6C6291F-5D7B-4911-993A-790992995CA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6C6291F-5D7B-4911-993A-790992995CA8}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{A6C6291F-5D7B-4911-993A-790992995CA8}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{87E2FB65-B701-4009-9509-6EFACA2DDA7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87E2FB65-B701-4009-9509-6EFACA2DDA7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87E2FB65-B701-4009-9509-6EFACA2DDA7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87E2FB65-B701-4009-9509-6EFACA2DDA7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87E2FB65-B701-4009-9509-6EFACA2DDA7B}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{87E2FB65-B701-4009-9509-6EFACA2DDA7B}.AppStore|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <Version>2.0.0</Version>
+        <UseWPF>true</UseWPF>
+        <UseWindowsForms>true</UseWindowsForms>
+        <RootNamespace>System.Graphics.Skia</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="Properties\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="SkiaSharp" Version="2.80.2" />
+      <PackageReference Include="SkiaSharp.Views" Version="2.80.2" />
+      <PackageReference Include="SkiaSharp.Views.WPF" Version="2.80.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\System.Graphics.Core\System.Graphics.Core.csproj" />
+        <ProjectReference Include="..\System.Graphics.Skia.Core\System.Graphics.Skia.Core.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>GraphicsTester.Portable</AssemblyName>
+        <RootNamespace>GraphicsTester</RootNamespace>
+        <Version>2.0.0</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="Properties\" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Remove="Resources\royals.png" />
+        <None Remove="Resources\swirl_pattern.png" />
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\royals.png" />
+        <EmbeddedResource Include="Resources\swirl_pattern.png" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Markdig" Version="0.22.0" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\libraries\System.Graphics.Core\System.Graphics.Core.csproj" />
+      <ProjectReference Include="..\..\libraries\System.Graphics.Text.Markdig\System.Graphics.Text.Markdig.csproj" />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <RootNamespace>System.Graphics.Skia</RootNamespace>
+        <Version>2.0.0</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="Properties\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="SkiaSharp" Version="2.80.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\System.Graphics.Core\System.Graphics.Core.csproj" />
+    </ItemGroup>
+
+</Project>

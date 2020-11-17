@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectTypeGuids>{A3F8F2AB-B479-4A4A-A458-A89E7DC349F1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProjectGuid>{EDF26EBB-0AC3-4212-81D6-8DD08F5ACC17}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>System.Graphics.CoreGraphics</RootNamespace>
+    <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
+    <AssemblyName>System.Graphics.CoreGraphics.Mac</AssemblyName>
+    <TargetFrameworkIdentifier>Xamarin.Mac</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;MONOMAC;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <UseSGen>false</UseSGen>
+    <IncludeMonoRuntime>false</IncludeMonoRuntime>
+    <EnablePackageSigning>false</EnablePackageSigning>
+    <EnableCodeSigning>false</EnableCodeSigning>
+    <CreatePackage>false</CreatePackage>
+    <UseRefCounting>false</UseRefCounting>
+    <Profiling>true</Profiling>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <UseSGen>false</UseSGen>
+    <IncludeMonoRuntime>false</IncludeMonoRuntime>
+    <EnablePackageSigning>false</EnablePackageSigning>
+    <EnableCodeSigning>false</EnableCodeSigning>
+    <CreatePackage>false</CreatePackage>
+    <DefineConstants>MONOMAC;</DefineConstants>
+    <UseRefCounting>false</UseRefCounting>
+    <Profiling>false</Profiling>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Xamarin.Mac" />
+    <Reference Include="netstandard" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
+  <ItemGroup>
+    <Compile Include="AppKitConstants.cs" />
+    <Compile Include="CoreGraphicsExtensions.cs" />
+    <Compile Include="NativeImage.cs" />
+    <Compile Include="NativeGraphicsView.cs" />
+    <Compile Include="NativeGraphicsService.cs" />
+    <Compile Include="IGraphicsRenderer.cs" />
+    <Compile Include="NativeBitmapExportContext.cs" />
+    <Compile Include="DirectRenderer.cs" />
+    <Compile Include="GraphicsMac.Designer.cs">
+      <DependentUpon>GraphicsMac.resx</DependentUpon>
+    </Compile>
+    <Compile Include="NativeFontService.cs" />
+    <Compile Include="NativeFontFamily.cs" />
+    <Compile Include="NativeFontStyle.cs" />
+    <Compile Include="DrawableExtensions.cs" />
+    <Compile Include="NativeImageExtensions.cs" />
+    <Compile Include="NativePdfExportService.cs" />
+    <Compile Include="NativePdfExportContext.cs" />
+    <Compile Include="NativeFontRegistry.cs" />
+    <Compile Include="NSColorExtensions.cs" />
+    <Compile Include="NSImageExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GraphicsMac.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>GraphicsMac.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>System.Graphics.CoreGraphics</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\System.Graphics.Core\System.Graphics.Core.csproj">
+      <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
+      <Name>System.Graphics.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+  <Import Project="..\System.Graphics.CoreGraphics\System.Graphics.CoreGraphics.projitems" Label="Shared" />
+</Project>
