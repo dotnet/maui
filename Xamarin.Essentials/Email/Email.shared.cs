@@ -31,16 +31,19 @@ namespace Xamarin.Essentials
                 parts.Add("body=" + Uri.EscapeDataString(message.Body));
             if (!string.IsNullOrEmpty(message?.Subject))
                 parts.Add("subject=" + Uri.EscapeDataString(message.Subject));
-            if (message?.To?.Count > 0)
-                parts.Add("to=" + Uri.EscapeDataString(string.Join(",", message.To)));
             if (message?.Cc?.Count > 0)
                 parts.Add("cc=" + Uri.EscapeDataString(string.Join(",", message.Cc)));
             if (message?.Bcc?.Count > 0)
                 parts.Add("bcc=" + Uri.EscapeDataString(string.Join(",", message.Bcc)));
 
             var uri = "mailto:";
+
+            if (message?.To?.Count > 0)
+                uri += Uri.EscapeDataString(string.Join(",", message.To));
+
             if (parts.Count > 0)
                 uri += "?" + string.Join("&", parts);
+
             return uri;
         }
     }
