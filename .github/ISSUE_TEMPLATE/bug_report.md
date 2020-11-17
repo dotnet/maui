@@ -25,14 +25,45 @@ assignees: ''
 
 - Version with issue:
 - Last known good version:
-- IDE:
 - Platform Target Frameworks: <!-- All that apply -->
   - iOS:  <!-- The version of the iOS SDK you are compiling against, e.g. 11.1 -->
   - Android: <!-- The version of the Android SDK you are compiling against, e.g. 7.1 --> 
   - UWP:  <!-- The version of the UWP SDK you are compiling against, e.g. 16299 --> 
-- Android Support Library Version: <!-- if applicable -->
-- Nuget Packages:
+- Android Support Library / AndroidX Version: <!-- if applicable -->
+- NuGet Packages:
 - Affected Devices:
+
+### Environment
+
+<!--
+1.
+Visual Studio: Help > About Microsoft Visual Studio > Copy Info [button]
+Visual Studio for Mac: Visual Studio > About Visual Studio > Show Details > Copy Information [button]
+2. Paste into the code block below (between ```)
+-->
+
+```
+```
+
+### Build Logs
+
+<!--
+If your issue is related to a build error, be sure to attach build logs.
+
+Binary logs are preferred instead of text logs.  Please save and attach a .binlog if possible:
+(https://docs.microsoft.com/en-us/visualstudio/msbuild/obtaining-build-logs-with-msbuild?view=vs-2019#save-a-binary-log)
+
+Otherwise, a text log is still helpful:
+
+1. Place cursor below this comment block.
+2. Attach build log or link to gist (https://gist.github.com/) of the log.
+3. Logs can be found in the Build Output tab of the Errors pad in Visual Studio
+To get full build logs, set the log verbosity to diagnostic at the following locations:
+- On Visual Studio for Mac: Preferences > Projects > Build
+- On Visual Studio for Windows: Tools > Options > Projects and Solutions > Build and Run
+On Visual Studio for Windows you also want to add `-v -v -v -v` to the mtouch additional arguments by right-clicking the project in the solution explorer and selecting `Properties`.
+-->
+
 
 ### Screenshots
 
