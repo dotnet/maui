@@ -27,7 +27,7 @@ namespace Xamarin.Forms
 			if (!(value is Rect r))
 				throw new NotSupportedException();
 
-			return $"{r.X}, {r.Y}, {r.Width}, {r.Height}";
+			return $"{r.X.ToString(CultureInfo.InvariantCulture)}, {r.Y.ToString(CultureInfo.InvariantCulture)}, {r.Width.ToString(CultureInfo.InvariantCulture)}, {r.Height.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}
 }
