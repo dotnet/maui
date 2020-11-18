@@ -315,9 +315,6 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (Math.Abs(translationX) > epsilon || Math.Abs(translationY) > epsilon)
 					transform = transform.Translate(translationX, translationY, 0);
 
-				if (Math.Abs(scaleX - 1) > epsilon || Math.Abs(scaleY - 1) > epsilon)
-					transform = transform.Scale(scaleX, scaleY, scale);
-
 				// not just an optimization, iOS will not "pixel align" a view which has m34 set
 				if (Math.Abs(rotationY % 180) > epsilon || Math.Abs(rotationX % 180) > epsilon)
 					transform.m34 = 1.0f / -400f;
@@ -328,6 +325,9 @@ namespace Xamarin.Forms.Platform.MacOS
 					transform = transform.Rotate(rotationY * (float)Math.PI / 180.0f, 0.0f, 1.0f, 0.0f);
 
 				transform = transform.Rotate(rotation * (float)Math.PI / 180.0f, 0.0f, 0.0f, 1.0f);
+
+				if (Math.Abs(scaleX - 1) > epsilon || Math.Abs(scaleY - 1) > epsilon)
+					transform = transform.Scale(scaleX, scaleY, scale);
 
 				if (Foundation.NSThread.IsMain)
 				{
