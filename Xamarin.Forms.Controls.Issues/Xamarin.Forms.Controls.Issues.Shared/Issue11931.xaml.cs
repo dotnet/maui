@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.Internals;
+﻿using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Shapes;
-using System.Collections.Generic;
 
 #if UITEST
 using Xamarin.UITest;
@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 		IssueTracker.Github, 11931,
 		"[Bug] View translation is incorrectly calculated",
 		PlatformAffected.All)]
-	public partial class Issue11931: TestContentPage
+	public partial class Issue11931 : TestContentPage
 	{
 		public Issue11931()
 		{
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-		
+
 		}
 	}
 }
