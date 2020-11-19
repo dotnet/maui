@@ -44,7 +44,14 @@ namespace Samples.ViewModel
                     && DeviceInfo.Platform == DevicePlatform.iOS
                     && DeviceInfo.Version.Major >= 13)
                 {
-                    r = await AppleSignInAuthenticator.AuthenticateAsync();
+                    // Make sure to enable Apple Sign In in both the
+                    // entitlements and the provisioning profile.
+                    var options = new AppleSignInAuthenticator.Options
+                    {
+                        IncludeEmailScope = true,
+                        IncludeFullNameScope = true,
+                    };
+                    r = await AppleSignInAuthenticator.AuthenticateAsync(options);
                 }
                 else
                 {
@@ -54,7 +61,12 @@ namespace Samples.ViewModel
                     r = await WebAuthenticator.AuthenticateAsync(authUrl, callbackUrl);
                 }
 
-                AuthToken = r?.AccessToken ?? r?.IdToken;
+                AuthToken = string.Empty;
+                if (r.Properties.TryGetValue("name", out var name) && !string.IsNullOrEmpty(name))
+                    AuthToken += $"Name: {name}{Environment.NewLine}";
+                if (r.Properties.TryGetValue("email", out var email) && !string.IsNullOrEmpty(email))
+                    AuthToken += $"Email: {email}{Environment.NewLine}";
+                AuthToken += r?.AccessToken ?? r?.IdToken;
             }
             catch (OperationCanceledException)
             {

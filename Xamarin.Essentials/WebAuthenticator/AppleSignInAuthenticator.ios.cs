@@ -37,18 +37,22 @@ namespace Xamarin.Essentials
 
             controller.PerformRequests();
 
-            var creds = await authManager.Credentials;
+            var creds = await authManager.GetCredentialsAsync();
 
             if (creds == null)
                 return null;
 
+            var idToken = new NSString(creds.IdentityToken, NSStringEncoding.UTF8).ToString();
+            var authCode = new NSString(creds.AuthorizationCode, NSStringEncoding.UTF8).ToString();
+            var name = NSPersonNameComponentsFormatter.GetLocalizedString(creds.FullName, NSPersonNameComponentsFormatterStyle.Default, 0);
+
             var appleAccount = new WebAuthenticatorResult();
-            appleAccount.Properties.Add("id_token", new NSString(creds.IdentityToken, NSStringEncoding.UTF8).ToString());
-            appleAccount.Properties.Add("authorization_code", new NSString(creds.AuthorizationCode, NSStringEncoding.UTF8).ToString());
+            appleAccount.Properties.Add("id_token", idToken);
+            appleAccount.Properties.Add("authorization_code", authCode);
             appleAccount.Properties.Add("state", creds.State);
             appleAccount.Properties.Add("email", creds.Email);
             appleAccount.Properties.Add("user_id", creds.User);
-            appleAccount.Properties.Add("name", NSPersonNameComponentsFormatter.GetLocalizedString(creds.FullName, NSPersonNameComponentsFormatterStyle.Default, NSPersonNameComponentsFormatterOptions.Phonetic));
+            appleAccount.Properties.Add("name", name);
             appleAccount.Properties.Add("realuserstatus", creds.RealUserStatus.ToString());
 
             return appleAccount;
@@ -57,7 +61,7 @@ namespace Xamarin.Essentials
 
     class AuthManager : NSObject, IASAuthorizationControllerDelegate, IASAuthorizationControllerPresentationContextProviding
     {
-        public Task<ASAuthorizationAppleIdCredential> Credentials
+        public Task<ASAuthorizationAppleIdCredential> GetCredentialsAsync()
             => tcsCredential?.Task;
 
         TaskCompletionSource<ASAuthorizationAppleIdCredential> tcsCredential;
