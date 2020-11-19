@@ -25,9 +25,16 @@ namespace Samples.ViewModel
 
         internal event Func<string, Task> DoDisplayAlert;
 
+        internal event Func<BaseViewModel, bool, Task> DoNavigate;
+
         public Task DisplayAlertAsync(string message)
         {
             return DoDisplayAlert?.Invoke(message) ?? Task.CompletedTask;
+        }
+
+        public Task NavigateAsync(BaseViewModel vm, bool showModal = false)
+        {
+            return DoNavigate?.Invoke(vm, showModal) ?? Task.CompletedTask;
         }
     }
 }

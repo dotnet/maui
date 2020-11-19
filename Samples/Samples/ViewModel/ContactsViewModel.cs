@@ -7,44 +7,12 @@ namespace Samples.ViewModel
 {
     class ContactsViewModel : BaseViewModel
     {
-        string name;
-
-        public string Name
-        {
-            get => name;
-            set => SetProperty(ref name, value);
-        }
-
-        string phones;
-
-        public string Phones
-        {
-            get => phones;
-            set => SetProperty(ref phones, value);
-        }
-
-        string emails;
-
-        public string Emails
-        {
-            get => emails;
-            set => SetProperty(ref emails, value);
-        }
-
-        string contactType;
-
-        public string ContactType
-        {
-            get => contactType;
-            set => SetProperty(ref contactType, value);
-        }
-
-        public ICommand GetContactCommand { get; }
-
         public ContactsViewModel()
         {
             GetContactCommand = new Command(OnGetContact);
         }
+
+        public ICommand GetContactCommand { get; }
 
         async void OnGetContact()
         {
@@ -53,23 +21,12 @@ namespace Samples.ViewModel
             IsBusy = true;
             try
             {
-                Phones = string.Empty;
-                Emails = string.Empty;
-                Name = string.Empty;
-                ContactType = string.Empty;
-
                 var contact = await Contacts.PickContactAsync();
                 if (contact == null)
                     return;
 
-                foreach (var number in contact?.Numbers)
-                    Phones += $"{number.PhoneNumber} ({number.ContactType})" + Environment.NewLine;
-
-                foreach (var email in contact?.Emails)
-                    Emails += $"{email.EmailAddress} ({email.ContactType})" + Environment.NewLine;
-
-                Name = contact?.Name;
-                ContactType = contact?.ContactType.ToString();
+                var details = new ContactDetailsViewModel(contact);
+                await NavigateAsync(details);
             }
             catch (Exception ex)
             {

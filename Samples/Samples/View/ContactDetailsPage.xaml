@@ -1,0 +1,51 @@
+﻿<view:BasePage x:Class="Samples.View.ContactDetailsPage"
+               xmlns="http://xamarin.com/schemas/2014/forms"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:view="clr-namespace:Samples.View"
+               xmlns:viewmodel="clr-namespace:Samples.ViewModel"
+               Title="Contact Details">
+    
+    <StackLayout>
+        <Label Text="View contact details." FontAttributes="Bold" Margin="12" />
+
+        <StackLayout Padding="12,0,12,12" Spacing="6">
+
+            <Label FontAttributes="Bold" Text="Name:" />
+            <Label Text="{Binding Contact.Name}" />
+
+            <Label FontAttributes="Bold" Text="Numbers:" />
+            <StackLayout BindableLayout.ItemsSource="{Binding Contact.Numbers}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Label>
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding PhoneNumber}" />
+                                    <Span Text="{Binding ContactType, StringFormat=' ({0})'}" FontAttributes="Italic" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
+
+            <Label FontAttributes="Bold" Text="Emails:" />
+            <StackLayout BindableLayout.ItemsSource="{Binding Contact.Emails}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Label>
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding EmailAddress}" />
+                                    <Span Text="{Binding ContactType, StringFormat=' ({0})'}" FontAttributes="Italic" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
+
+        </StackLayout>
+    </StackLayout>
+
+</view:BasePage>
