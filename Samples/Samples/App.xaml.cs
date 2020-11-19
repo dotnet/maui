@@ -20,6 +20,8 @@ namespace Samples
 {
     public partial class App : Application
     {
+        public static IVisual PreferredVisual { get; set; } = VisualMarker.Material;
+
         public App()
         {
             InitializeComponent();

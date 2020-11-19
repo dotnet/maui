@@ -23,9 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Tizen.NET" Version="6.0.0.14995" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0">
-      <ExcludeAssets>Runtime</ExcludeAssets>
-    </PackageReference>
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" ExcludeAssets="runtime" />
     <PackageReference Include="Tizen.NET.MaterialComponents" Version="0.9.9-pre2" />
   </ItemGroup>
 

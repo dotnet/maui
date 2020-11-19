@@ -13,6 +13,10 @@ namespace Samples.iOS
 
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
+#if SKIP_MATERIAL // We can't use Material with iOS Hot Restart as the static linker does not run
+            App.PreferredVisual = Xamarin.Forms.VisualMarker.Default;
+#endif
+
             Xamarin.Forms.Forms.Init();
             Xamarin.Forms.FormsMaterial.Init();
 

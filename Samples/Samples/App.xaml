@@ -2,12 +2,13 @@
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:Samples.Converters"
+             xmlns:local="clr-namespace:Samples"
              x:Class="Samples.App">
     <Application.Resources>
         <ResourceDictionary>
             <converters:NegativeConverter x:Key="NegativeConverter" />
             <Style TargetType="Page" ApplyToDerivedTypes="True">
-                <Setter Property="Visual" Value="Material" />
+                <Setter Property="Visual" Value="{x:Static local:App.PreferredVisual}" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>
