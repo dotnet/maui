@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using Windows.ApplicationModel.Contacts;
@@ -22,6 +23,8 @@ namespace Xamarin.Forms.Platform.UWP
 		ShellSection ShellSection;
 		IShellSectionController ShellSectionController => ShellSection;
 		List<Page> FormsNavigationStack;
+
+		ObservableCollection<ShellContent> ShellContentMenuItems;
 		public ShellSectionRenderer()
 		{
 			Xamarin.Forms.Shell.VerifyShellUWPFlagEnabled(nameof(ShellSectionRenderer));
@@ -31,7 +34,8 @@ namespace Xamarin.Forms.Platform.UWP
 			AlwaysShowHeader = false;
 			PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top;
 			ItemInvoked += OnMenuItemInvoked;
-
+			ShellContentMenuItems = new ObservableCollection<ShellContent>();
+			MenuItemsSource = ShellContentMenuItems;
 			AutoSuggestBox = new Windows.UI.Xaml.Controls.AutoSuggestBox() { Width = 300 };
 			AutoSuggestBox.TextChanged += OnSearchBoxTextChanged;
 			AutoSuggestBox.QuerySubmitted += OnSearchBoxQuerySubmitted;
@@ -49,7 +53,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnShellSectionRendererSizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
 		{
-			if(Page != null)
+			if (Page != null)
 				Page.ContainerArea = new Rectangle(0, 0, e.NewSize.Width, e.NewSize.Height);
 		}
 
@@ -58,9 +62,13 @@ namespace Xamarin.Forms.Platform.UWP
 			var shellContent = args.InvokedItemContainer?.DataContext as ShellContent;
 			var shellItem = ShellSection.RealParent as ShellItem;
 
-			if(shellItem.RealParent is IShellController controller)
+			if (shellContent == null)
+				return;
+
+			if (shellItem.RealParent is Shell shell &&
+				shellItem.RealParent is IShellController controller)
 			{
-				var result = controller.ProposeNavigation(ShellNavigationSource.Pop, shellItem, ShellSection, shellContent, null, true);
+				var result = controller.ProposeNavigation(ShellNavigationSource.ShellContentChanged, shellItem, ShellSection, shellContent, null, true);
 				if (result)
 				{
 					ShellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, shellContent);
@@ -79,7 +87,6 @@ namespace Xamarin.Forms.Platform.UWP
 					ShellSection.PropertyChanged -= OnShellSectionPropertyChanged;
 					ShellSectionController.ItemsCollectionChanged -= OnShellSectionRendererCollectionChanged;
 					ShellSection = null;
-					MenuItemsSource = null;
 				}
 
 				ShellSection = section;
@@ -89,21 +96,35 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (section.CurrentItem != SelectedItem)
 			{
-				SelectedItem = null;
 				IsPaneVisible = ShellSectionController.GetItems().Count > 1;
-				MenuItemsSource = ShellSectionController.GetItems();
-				SelectedItem = section.CurrentItem;
 			}
 
+			SyncMenuItems();
 			NavigateToContent(source, section.CurrentItem, page, animate);
+		}
+
+		void SyncMenuItems()
+		{
+			var newItems = ShellSectionController.GetItems();
+			foreach (var item in newItems)
+			{
+				if (!ShellContentMenuItems.Contains(item))
+					ShellContentMenuItems.Add(item);
+			}
+
+			SelectedItem = ShellSection?.CurrentItem;
+
+			for (var i = ShellContentMenuItems.Count - 1; i >= 0; i--)
+			{
+				var item = ShellContentMenuItems[i];
+				if (!newItems.Contains(item))
+					ShellContentMenuItems.RemoveAt(i);
+			}
 		}
 
 		void OnShellSectionRendererCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
-			// This shouldn't be necessary, but MenuItemsSource doesn't appear to be listening for INCC
-			// Revisit once using WinUI instead.
-			MenuItemsSource = null;
-			MenuItemsSource = ShellSectionController?.GetItems();
+			SyncMenuItems();
 		}
 
 		void OnShellSectionPropertyChanged(object sender, PropertyChangedEventArgs e)

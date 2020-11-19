@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == DatePicker.DateProperty.PropertyName)
+			if (e.IsOneOf(DatePicker.DateProperty, DatePicker.FormatProperty))
 				UpdateDate(Element.Date);
 			else if (e.PropertyName == DatePicker.MaximumDateProperty.PropertyName)
 				UpdateMaximumDate();
@@ -138,10 +138,92 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
+		bool CheckDateFormat()
+		{
+			return String.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d");
+		}
+
 		void UpdateDate(DateTime date)
 		{
 			if (Control != null)
 				Control.Date = new DateTimeOffset(new DateTime(date.Ticks, DateTimeKind.Unspecified));
+
+			UpdateDay();
+			UpdateMonth();
+			UpdateYear();
+		}
+
+		void UpdateMonth()
+		{
+			Control.MonthVisible = true;
+			if (CheckDateFormat())
+			{
+				Control.MonthFormat = "month";
+			}
+			else if (Element.Format.Equals("D"))
+			{
+				Control.MonthFormat = "month.full";
+			}
+			else
+			{
+				var month = Element.Format.Count(x => x == 'M');
+				if (month == 0)
+					Control.MonthVisible = false;
+				else if (month <= 2)
+					Control.MonthFormat = "month.numeric";
+				else if (month == 3)
+					Control.MonthFormat = "month.abbreviated";
+				else
+					Control.MonthFormat = "month.full";
+			}
+		}
+
+		void UpdateDay()
+		{
+			Control.DayVisible = true;
+			if (CheckDateFormat())
+			{
+				Control.DayFormat = "day";
+			}
+			else if (Element.Format.Equals("D"))
+			{
+				Control.DayFormat = "dayofweek.full";
+			}
+			else
+			{
+				var day = Element.Format.Count(x => x == 'd');
+				if (day == 0)
+					Control.DayVisible = false;
+				else if (day == 3)
+					Control.DayFormat = "day dayofweek.abbreviated";
+				else if (day == 4)
+					Control.DayFormat = "dayofweek.full";
+				else
+					Control.DayFormat = "day";
+			}
+		}
+
+		void UpdateYear()
+		{
+			Control.YearVisible = true;
+			if (CheckDateFormat())
+			{
+				Control.YearFormat = "year";
+			}
+			else if (Element.Format.Equals("D"))
+			{
+				Control.YearFormat = "year.full";
+			}
+			else
+			{
+				var year = Element.Format.Count(x => x == 'y');
+				if (year == 0)
+					Control.YearVisible = false;
+				else if (year <= 2)
+					Control.YearFormat = "year.abbreviated";
+				else
+					Control.YearFormat = "year.full";
+			}
 		}
 
 		void UpdateFlowDirection()

@@ -224,17 +224,6 @@ namespace Xamarin.Forms.Xaml
 			while (piece.Length > 0 && char.IsWhiteSpace(piece[piece.Length - 1]))
 				piece.Length--;
 
-			if (piece.Length >= 2)
-			{
-				char first = piece[0];
-				char last = piece[piece.Length - 1];
-				if ((first == '\'' && last == '\'') || (first == '"' && last == '"'))
-				{
-					piece.Remove(piece.Length - 1, 1);
-					piece.Remove(0, 1);
-				}
-			}
-
 			return piece.ToString();
 		}
 

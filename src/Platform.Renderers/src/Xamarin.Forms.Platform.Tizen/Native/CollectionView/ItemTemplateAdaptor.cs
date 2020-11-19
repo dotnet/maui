@@ -134,7 +134,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				_footerCache.Parent = _itemsView;
 				var renderer = Platform.GetOrCreateRenderer(_footerCache);
-				(renderer as LayoutRenderer).RegisterOnLayoutUpdated();
+				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
 				return renderer.NativeView;
 			}
 			return null;

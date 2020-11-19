@@ -103,7 +103,7 @@ namespace Xamarin.Forms.Controls.Issues
 				IsToggled = false,
 				HeightRequest = 60
 			};
-			var sourceLabel = new Label { Text = _imageFromFile };
+			var sourceLabel = new Label { Text = _imageFromFile, AutomationId = "SourceLabel" };
 
 			switchToUri.Toggled += (_, e) =>
 			{
@@ -176,39 +176,42 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void ImageFromFileSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(Image), false);
+			RunTest(nameof(Image), true);
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageFromUriSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(Image), true);
+			RunTest(nameof(Image), false);
 		}
 
 
 		[Test]
 		public void ButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(Button), false);
+			RunTest(nameof(Button), true);
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ButtonFromUriSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(Button), true);
+			RunTest(nameof(Button), false);
 		}
 
 
 		[Test]
 		public void ImageButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(ImageButton), false);
+			RunTest(nameof(ImageButton), true);
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageButtonFromUriSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(ImageButton), true);
+			RunTest(nameof(ImageButton), false);
 		}
 
 		[Test]
@@ -218,6 +221,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageCellFromUriSourceAppearsAndDisappearsCorrectly()
 		{
 			ImageCellTest(false);
@@ -235,6 +239,7 @@ namespace Xamarin.Forms.Controls.Issues
 			SetImageSourceToNull();
 
 			imageVisible = GetImage();
+			Assert.AreEqual(0, imageVisible.Length);
 
 			UITest.Queries.AppResult[] GetImage()
 			{
@@ -301,11 +306,10 @@ namespace Xamarin.Forms.Controls.Issues
 				RunningApp.WaitForNoElement(activeTest);
 			}
 
-			var currentSetting = RunningApp.WaitForElement(_switchUriId)[0].ReadText();
-
-			if (fileSource && RunningApp.Query(_imageFromUri).Length == 0)
+			string sourceLabel = RunningApp.WaitForFirstElement("SourceLabel").ReadText();
+			if (fileSource && sourceLabel != _imageFromFile)
 				RunningApp.Tap(_switchUriId);
-			else if (!fileSource && RunningApp.Query(_imageFromFile).Length == 0)
+			else if (!fileSource && sourceLabel != _imageFromUri)
 				RunningApp.Tap(_switchUriId);
 		}
 #endif

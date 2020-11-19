@@ -31,6 +31,10 @@
     <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Remove="GalleryPages\DateTimePickerGalleries\DatesPage.xaml" />
+    <EmbeddedResource Remove="GalleryPages\DateTimePickerGalleries\MainTabbedPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="BuildNumber.txt" />
     <EmbeddedResource Include="GalleryPages\crimson.jpg" />
     <EmbeddedResource Include="coffee.png" />
@@ -83,6 +87,9 @@
     <Compile Update="GalleryPages\IndicatorViewGalleries\IndicatorGalleries.cs">
       <SubType></SubType>
     </Compile>
+    <Compile Update="XamStore\Controls\FlyoutFooter.xaml.cs">
+      <DependentUpon>FlyoutFooter.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="GalleryPages\RadioButtonGalleries\ScatteredRadioButtonGallery.xaml">
@@ -113,6 +120,7 @@
     <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Forms\test\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
     <ProjectReference Include="..\..\..\Platform.Handlers\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj" />
+    <Folder Include="GalleryPages\DateTimePickerGalleries\" />
   </ItemGroup>
 
   <ItemGroup>

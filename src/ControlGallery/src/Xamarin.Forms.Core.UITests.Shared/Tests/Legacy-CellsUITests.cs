@@ -140,6 +140,7 @@ namespace Xamarin.Forms.Core.UITests
 		[Description("ListView with ImageCells, file access problems")]
 		[UiTest(typeof(ListView))]
 		[UiTest(typeof(ImageCell))]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public async Task CellsGalleryImageUrlCellList()
 		{
 			SelectTest("ImageCell Url List");

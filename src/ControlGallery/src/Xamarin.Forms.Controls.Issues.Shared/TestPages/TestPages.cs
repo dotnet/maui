@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework.Interfaces;
 using Xamarin.Forms.Controls.Issues;
@@ -612,19 +613,19 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		public ContentPage AddTopTab(string title, string icon = null)
+		public ContentPage AddTopTab(string title, string icon = null, ShellSection root = null)
 		{
 			var page = new ContentPage()
 			{
 				Title = title
 			};
 
-			AddTopTab(page, title, icon);
+			AddTopTab(page, title, icon, root);
 			return page;
 		}
 
 
-		public void AddTopTab(ContentPage page, string title = null, string icon = null)
+		public void AddTopTab(ContentPage page, string title = null, string icon = null, ShellSection root = null)
 		{
 			if (Items.Count == 0)
 			{
@@ -633,14 +634,17 @@ namespace Xamarin.Forms.Controls
 				return;
 			}
 
+			root = Items[0].Items[0];
+			title = title ?? page.Title;
 			var content = new ShellContent()
 			{
-				Title = title ?? page.Title,
+				Title = title,
 				Content = page,
-				Icon = icon
+				Icon = icon,
+				AutomationId = title
 			};
 
-			Items[0].Items[0].Items.Add(content);
+			root.Items.Add(content);
 
 			if (!String.IsNullOrWhiteSpace(content.Title))
 				content.Route = content.Title;

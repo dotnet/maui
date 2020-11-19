@@ -233,7 +233,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.Dispose(disposing);
 		}
 
-		bool IsIndexPathValid(NSIndexPath indexPath)
+		protected bool IsIndexPathValid(NSIndexPath indexPath)
 		{
 			if (indexPath.Item < 0 || indexPath.Section < 0)
 			{

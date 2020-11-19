@@ -1,5 +1,7 @@
 using System;
 using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
 using Foundation;
 using UIKit;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -166,7 +168,31 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_picker.Date.ToDateTime().Date != Element.Date.Date)
 				_picker.SetDate(Element.Date.ToNSDate(), animate);
 
-			Control.Text = Element.Date.ToString(Element.Format);
+			//can't use Element.Format because it won't display the correct format if the region and language are set differently
+			if (String.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d") || Element.Format.Equals("D"))
+			{
+				NSDateFormatter dateFormatter = new NSDateFormatter();
+				if (Element.Format?.Equals("D") == true)
+				{
+					dateFormatter.DateStyle = NSDateFormatterStyle.Long;
+					var strDate = dateFormatter.StringFor(_picker.Date);
+					Control.Text = strDate;
+				}
+				else
+				{
+					dateFormatter.DateStyle = NSDateFormatterStyle.Short;
+					var strDate = dateFormatter.StringFor(_picker.Date);
+					Control.Text = strDate;
+				}
+			}
+			else if (Element.Format.Contains("/"))
+			{
+				Control.Text = Element.Date.ToString(Element.Format, CultureInfo.InvariantCulture);
+			}
+			else
+			{
+				Control.Text = Element.Date.ToString(Element.Format);
+			}
 		}
 
 		void UpdateElementDate()

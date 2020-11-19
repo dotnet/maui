@@ -103,6 +103,7 @@ namespace Xamarin.Forms
 			}
 		}
 
+
 		internal static bool RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden
 		{
 			get
@@ -162,7 +163,7 @@ namespace Xamarin.Forms
 			}
 
 			s_flags = (string[])flags.Clone();
-			if (s_flags.Contains ("Profile"))
+			if (s_flags.Contains("Profile"))
 				Profile.Enable();
 		}
 
@@ -736,9 +737,9 @@ namespace Xamarin.Forms
 			}
 
 			public OSAppTheme RequestedTheme
-            {
-                get
-                {
+			{
+				get
+				{
 #if __IOS__ || __TVOS__
 					if (!IsiOS13OrNewer)
 						return OSAppTheme.Unspecified;
