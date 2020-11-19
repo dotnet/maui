@@ -40,11 +40,12 @@ namespace Xamarin.Essentials
             if (!photo)
                 await Permissions.EnsureGrantedAsync<Permissions.Microphone>();
 
-            // permission is not required on iOS 11 for the picker
-            if (!Platform.HasOSVersion(11, 0))
-            {
+            // Check if picking existing or not and ensure permission accordingly as they can be set independently from each other
+            if (pickExisting && !Platform.HasOSVersion(11, 0))
                 await Permissions.EnsureGrantedAsync<Permissions.Photos>();
-            }
+
+            if (!pickExisting)
+                await Permissions.EnsureGrantedAsync<Permissions.Camera>();
 
             var vc = Platform.GetCurrentViewController(true);
 
