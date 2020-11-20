@@ -24,7 +24,7 @@ namespace Xamarin.Forms
 		{
 			if (!(value is Size size))
 				throw new NotSupportedException();
-			return $"{size.Width}, {size.Height}";
+			return $"{size.Width.ToString(CultureInfo.InvariantCulture)}, {size.Height.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}
 }

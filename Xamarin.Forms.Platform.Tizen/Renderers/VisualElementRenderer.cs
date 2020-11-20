@@ -740,7 +740,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// Adds a new child if it's derived from the VisualElement class. Otherwise this method does nothing.
 		/// </summary>
 		/// <param name="child">Child to be added.</param>
-		void AddChild(Element child)
+		protected virtual void AddChild(Element child)
 		{
 			VisualElement vElement = child as VisualElement;
 			if (vElement != null)
@@ -755,7 +755,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		void RemoveChild(VisualElement view)
+		protected virtual void RemoveChild(VisualElement view)
 		{
 			var renderer = Platform.GetRenderer(view);
 			var containerObject = NativeView as Native.IContainable<EvasObject>;
@@ -1111,8 +1111,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			map.PopulatePoints(geometry, 0);
 
 			bool changed = false;
-			ApplyRotation(map, geometry, ref changed);
 			ApplyScale(map, geometry, ref changed);
+			ApplyRotation(map, geometry, ref changed);
 			ApplyTranslation(map, geometry, ref changed);
 
 			NativeView.IsMapEnabled = changed;

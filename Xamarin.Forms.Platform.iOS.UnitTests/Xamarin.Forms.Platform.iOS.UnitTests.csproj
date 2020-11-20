@@ -65,6 +65,7 @@
     <Compile Include="ScaleTests.cs" />
     <Compile Include="TextTests.cs" />
     <Compile Include="BackgroundTests.cs" />
+    <Compile Include="TransformationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">

@@ -159,6 +159,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				_dataBindedViewTable[this[index]] = view;
 
 				view.MeasureInvalidated += OnItemMeasureInvalidated;
+				_itemsView.AddLogicalChild(view);
 			}
 		}
 
@@ -221,9 +222,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				{
 					case ViewHolderState.Focused:
 						VisualStateManager.GoToState(formsView, VisualStateManager.CommonStates.Focused);
+						formsView.SetValue(VisualElement.IsFocusedPropertyKey, true);
 						break;
 					case ViewHolderState.Normal:
 						VisualStateManager.GoToState(formsView, VisualStateManager.CommonStates.Normal);
+						formsView.SetValue(VisualElement.IsFocusedPropertyKey, false);
 						break;
 					case ViewHolderState.Selected:
 						if (IsSelectable)
@@ -282,6 +285,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			if (view.BindingContext != null && _dataBindedViewTable.ContainsKey(view.BindingContext))
 			{
 				_dataBindedViewTable[view.BindingContext] = null;
+				_itemsView.RemoveLogicalChild(view);
+				view.BindingContext = null;
 			}
 		}
 

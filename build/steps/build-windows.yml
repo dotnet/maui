@@ -1,5 +1,4 @@
 parameters:
-  slnPath : 'Xamarin.Forms.sln'
   msbuildExtraArguments : ''
   artifactsTargetFolder: '$(build.artifactstagingdirectory)'
   artifactsName: 'win_build'
@@ -7,7 +6,6 @@ parameters:
   includeUwp: 'true'
   includeAndroid: 'true'
   includeNonUwpAndNonAndroid: 'true'
-
 
 steps:
   - checkout: self
@@ -30,19 +28,6 @@ steps:
   #   inputs:
   #     version: $(DOTNET_VERSION)
   #     packageType: 'sdk'
-
-  - task: NuGetToolInstaller@1
-    displayName: 'Use NuGet $(NUGET_VERSION)'
-    condition: ne(variables['NUGET_VERSION'], '')
-    inputs:
-      versionSpec: $(NUGET_VERSION)
-
-  - task: NuGetCommand@2
-    displayName: 'NuGet restore ${{ parameters.slnPath }}'
-    inputs:
-      restoreSolution: ${{ parameters.slnPath }}
-      feedsToUse: config
-      nugetConfigPath: 'DevopsNuget.config'
 
   - script: build.cmd -Target BuildForNuget -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"','-Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
     name: winbuild

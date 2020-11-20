@@ -364,7 +364,9 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 
-			if (Forms.IsiOS13OrNewer && previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (Forms.IsiOS13OrNewer &&
+				previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle &&
+				UIApplication.SharedApplication.ApplicationState != UIApplicationState.Background)
 				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme));
 		}
 

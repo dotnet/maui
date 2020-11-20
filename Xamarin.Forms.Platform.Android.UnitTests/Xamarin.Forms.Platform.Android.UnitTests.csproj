@@ -70,6 +70,7 @@
     <Compile Include="ButtonTests.cs" />
     <Compile Include="BackgroundTests.cs" />
     <Compile Include="TestActivity.cs" />
+    <Compile Include="TransformationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NUnit">
