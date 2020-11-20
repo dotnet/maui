@@ -3,8 +3,6 @@ variables:
   value: 'any cpu'
 - name: ApkName
   value: AndroidControlGallery.AndroidControlGallery.apk
-- name: SolutionFile
-  value: Xamarin.Forms.sln
 - name: BuildVersion
   value: $[counter('nuget-counter', 126)]
 - name: BuildVersion42
@@ -101,7 +99,6 @@ stages:
         steps:
           - template: build/steps/build-windows.yml
             parameters:
-              slnPath: build/Xamarin.Forms.Pages.sln
               includeUwp: false
               includeAndroid: false
               includeNonUwpAndNonAndroid: false
@@ -168,7 +165,6 @@ stages:
         steps:
           - template: build/steps/build-windows.yml
             parameters:
-              slnPath: build/Xamarin.Forms.Pages.sln
               includeUwp: false
               includeAndroid: false
               includeNonUwpAndNonAndroid: false
@@ -271,7 +267,6 @@ stages:
         variables:
           provisionator.osxPath : 'build/provisioning/provisioning.csx'
           buildConfiguration: $(DefaultBuildConfiguration)
-          slnPath: $(SolutionFile)
           iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
           iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
           buildForVS2017: 'true'
