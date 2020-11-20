@@ -1,0 +1,53 @@
+<Project>
+  <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;Xamarin.iOS&apos;)) != true ">
+    <Compile Remove="**\*.iOS.cs"/>
+    <None Include="**\*.iOS.cs"/>
+    <Compile Remove="**\iOS\*.cs"/>
+    <None Include="**\iOS\*.cs"/>
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;Xamarin.Mac&apos;)) != true ">
+    <Compile Remove="**\*.Mac.cs"/>
+    <None Include="**\*.Mac.cs"/>
+    <Compile Remove="**\Mac\*.cs"/>
+    <None Include="**\Mac\*.cs"/>
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;Xamarin.Mac&apos;)) != true And $(TargetFramework.StartsWith(&apos;Xamarin.iOS&apos;)) != true ">
+    <Compile Remove="**\*.MaciOS.cs"/>
+    <None Include="**\*.MaciOS.cs"/>
+    <Compile Remove="**\MaciOS\*.cs"/>
+    <None Include="**\MaciOS\*.cs"/>
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;MonoAndroid&apos;)) != true ">
+    <Compile Remove="**\*.Android.cs"/>
+    <None Include="**\*.Android.cs"/>
+    <Compile Remove="**\Android\*.cs"/>
+    <None Include="**\Android\*.cs"/>
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;netstandard&apos;)) != true ">
+    <Compile Remove="**\*.Standard.cs"/>
+    <None Include="**\*.Standard.cs"/>
+    <Compile Remove="**\Standard\*.cs"/>
+    <None Include="**\Standard\*.cs"/>
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;netcoreapp&apos;)) != true ">
+    <Compile Remove="**\*.Win32.cs"/>
+    <None Include="**\*.Win32.cs"/>
+    <Compile Remove="**\*.xaml.cs"/>
+    <None Include="**\*.xaml.cs"/>
+    <Compile Remove="**\*.xaml"/>
+    <None Include="**\*.xaml"/>
+    <Compile Remove="**\Win32\*.cs"/>
+    <None Include="**\Win32\*.cs"/>
+  </ItemGroup>
+  <PropertyGroup Condition="$(TargetFramework.StartsWith(&apos;netcoreapp&apos;)) == true ">
+    <UseWpf>true</UseWpf>
+  </PropertyGroup>
+  <PropertyGroup Condition="&apos;$(Configuration)|$(TargetFramework)|$(Platform)&apos;==&apos;Debug|netstandard2.0|AnyCPU&apos;">
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup><!-- If this becomes part of the product we will remove these but for now it's useful having them all in one place -->
+  <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;MonoAndroid&apos;)) == true ">
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.2.0"/>
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.0.0.1"/>
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0.1"/>
+  </ItemGroup>
+</Project>

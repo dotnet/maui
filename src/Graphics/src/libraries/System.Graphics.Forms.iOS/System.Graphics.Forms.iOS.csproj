@@ -55,12 +55,6 @@
     <Compile Include="Forms.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\System.Graphics.CoreGraphics.iOS\System.Graphics.CoreGraphics.iOS.csproj">
-      <Project>{f8d43f64-af09-4e06-8473-5bdc37281908}</Project>
-      <Name>System.Graphics.CoreGraphics.iOS</Name>
-      <IsAppExtension>false</IsAppExtension>
-      <IsWatchApp>false</IsWatchApp>
-    </ProjectReference>
     <ProjectReference Include="..\System.Graphics.Core\System.Graphics.Core.csproj">
       <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
       <Name>System.Graphics.Core</Name>
@@ -68,6 +62,10 @@
     <ProjectReference Include="..\System.Graphics.Forms.Core\System.Graphics.Forms.Core.csproj">
       <Project>{be7203d5-b616-4f38-9d9f-b5d4d92dbdf3}</Project>
       <Name>System.Graphics.Forms.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Graphics.CoreGraphics\System.Graphics.CoreGraphics.csproj">
+      <Project>{D1C32399-E9A0-44AF-89DD-EC32B81A5211}</Project>
+      <Name>System.Graphics.CoreGraphics</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

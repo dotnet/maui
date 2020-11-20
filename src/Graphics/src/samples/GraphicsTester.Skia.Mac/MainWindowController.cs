@@ -26,5 +26,6 @@ namespace GraphicsTester.Skia
         }
 
         public new MainWindow Window => (MainWindow)base.Window;
+
     }
 }

@@ -9,16 +9,19 @@ namespace GraphicsTester.Skia
     {
         public MainWindow (IntPtr handle) : base (handle)
         {
+            Initialize ();
         }
 
         [Export ("initWithCoder:")]
         public MainWindow (NSCoder coder) : base (coder)
         {
+            Initialize ();
         }
 
-        public override void AwakeFromNib ()
-        {
-            base.AwakeFromNib ();
-        }
+        void Initialize()
+		{
+            ContentViewController = new TesterViewController ();
+		}
+        
     }
 }

@@ -1,4 +1,4 @@
-#if MONOMAC
+#if __MACOS__
 using AppKit;
 #else
 using UIKit;

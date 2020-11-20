@@ -57,7 +57,7 @@ namespace System.Graphics.CoreGraphics
             if (attrs.TryGetValue(NSStringAttributeKey.Font, out font))
             {
                 var actualFont = (NSFont) font;
-#if MONOMAC
+#if __MACOS__
 				var fontName = actualFont.FontName;
 #else
                 var fontName = actualFont.Name;

@@ -1,0 +1,15 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <TargetFrameworks>Xamarin.iOS10;Xamarin.Mac20;</TargetFrameworks>
+    <RootNamespace>System.Graphics.CoreGraphics</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
+    <PackageId>System.Graphics.CoreGraphics</PackageId>
+    <Product>System.Graphics.CoreGraphics</Product>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\System.Graphics.Core\System.Graphics.Core.csproj"/>
+  </ItemGroup>
+  <Import Project="..\..\targets\MultiTargeting.targets"/>
+</Project>
