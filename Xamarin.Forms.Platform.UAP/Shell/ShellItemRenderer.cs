@@ -308,23 +308,18 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected virtual void OnShellSectionChanged(ShellSection oldSection, ShellSection newSection)
 		{
-			SwitchSection(ShellNavigationSource.ShellSectionChanged, newSection, null, oldSection != null);
+			if (newSection == null)
+				throw new InvalidOperationException($"Content not found for active {ShellItem} - {ShellItem.Title}.");
+
+			if (newSection.CurrentItem == null)
+				throw new InvalidOperationException($"Content not found for active {newSection} - {newSection.Title}.");
+
+			SectionRenderer.NavigateToShellSection(newSection);
 		}
 
 		void OnShellStructureChanged(object sender, EventArgs e)
 		{
 			UpdateBottomBarVisibility();
-		}
-
-		void SwitchSection(ShellNavigationSource source, ShellSection section, Page page, bool animate = true)
-		{
-			if (section == null)
-				throw new InvalidOperationException($"Content not found for active {ShellItem} - {ShellItem.Title}.");
-
-			if (section.CurrentItem == null)
-				throw new InvalidOperationException($"Content not found for active {section} - {section.Title}.");
-
-			SectionRenderer.NavigateToShellSection(source, section, page, animate);
 		}
 
 		Page DisplayedPage { get; set; }
@@ -393,7 +388,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnNavigationRequested(object sender, NavigationRequestedEventArgs e)
 		{
-			SwitchSection((ShellNavigationSource)e.RequestType, (ShellSection)sender, e.Page, e.Animated);
+			SectionRenderer.NavigateToContent(e, (ShellSection)sender);
 		}
 
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
