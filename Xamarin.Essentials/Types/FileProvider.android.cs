@@ -28,6 +28,8 @@ namespace Xamarin.Essentials
         // We can choose external only, or internal only as alternative options
         public static FileProviderLocation TemporaryLocation { get; set; } = FileProviderLocation.PreferExternal;
 
+        internal static string Authority => Platform.AppContext.PackageName + ".fileProvider";
+
         internal static Java.IO.File GetTemporaryDirectory()
         {
             var root = GetTemporaryRootDirectory();

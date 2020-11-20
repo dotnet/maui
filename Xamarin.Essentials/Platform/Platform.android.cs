@@ -414,7 +414,7 @@ namespace Xamarin.Essentials
             if (!string.IsNullOrEmpty(output))
             {
                 var javaFile = new Java.IO.File(output);
-                var providerAuthority = Platform.AppContext.PackageName + ".fileProvider";
+                var providerAuthority = FileProvider.Authority;
                 outputUri = FileProvider.GetUriForFile(Platform.AppContext, providerAuthority, javaFile);
                 actualIntent.PutExtra(MediaStore.ExtraOutput, outputUri);
             }
