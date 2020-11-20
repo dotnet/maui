@@ -726,7 +726,7 @@ Task("BuildForNuget")
 
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}.binlog";
-        MSBuild("./Xamarin.Forms.sln", msbuildSettings);
+        MSBuild("./Xamarin.Forms.sln", msbuildSettings.WithRestore());
         
         // // This currently fails on CI will revisit later
         // if(isCIBuild)
@@ -843,6 +843,30 @@ Task("BuildForNuget")
                         msbuildSettings
                             .WithTarget("rebuild"));
         }
+
+    }
+    catch(Exception)
+    {
+        if(IsRunningOnWindows())
+            throw;
+    }
+});
+
+Task("BuildPages")
+    .IsDependentOn("BuildTasks")
+    .Description("Build Xamarin.Forms.Pages")
+    .Does(() =>
+{
+    try
+    {
+        var msbuildSettings = GetMSBuildSettings();
+        var binaryLogger = new MSBuildBinaryLogSettings {
+            Enabled  = isCIBuild
+        };
+
+        msbuildSettings.BinaryLogger = binaryLogger;
+        binaryLogger.FileName = $"{artifactStagingDirectory}/win-pages-{configuration}.binlog";
+        MSBuild("./build/Xamarin.Forms.Pages.sln", msbuildSettings.WithRestore());
 
     }
     catch(Exception)
@@ -1108,6 +1132,11 @@ MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarg
     if(!String.IsNullOrWhiteSpace(XamarinFormsVersion))
     {
         buildSettings = buildSettings.WithProperty("XamarinFormsVersion", XamarinFormsVersion);
+    }
+    
+    if(isCIBuild)
+    {
+        buildSettings = buildSettings.WithProperty("RestoreConfigFile", $"DevopsNuget.config");
     }
     
     buildSettings.ArgumentCustomization = args => args.Append($"/nowarn:VSX1000 {MSBuildArguments}");

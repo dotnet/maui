@@ -3,8 +3,6 @@ variables:
   value: 'any cpu'
 - name: ApkName
   value: AndroidControlGallery.AndroidControlGallery.apk
-- name: SolutionFile
-  value: Xamarin.Forms.sln
 - name: BuildVersion
   value: $[counter('nuget-counter', 126)]
 - name: NUGET_VERSION
@@ -77,7 +75,6 @@ stages:
           - template: build/steps/build-windows.yml
             parameters:
               provisionatorPath : 'build/provisioning/provisioning.csx'
-
       - job: nuget_pack_hosted
         workspace:
           clean: all
