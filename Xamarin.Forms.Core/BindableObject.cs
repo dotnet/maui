@@ -13,19 +13,8 @@ namespace Xamarin.Forms
 		IDispatcher _dispatcher;
 		public virtual IDispatcher Dispatcher
 		{
-			get
-			{
-				if (_dispatcher == null)
-				{
-					_dispatcher = this.GetDispatcher();
-				}
-
-				return _dispatcher;
-			}
-			internal set
-			{
-				_dispatcher = value;
-			}
+			get => _dispatcher ??= this.GetDispatcher();
+			internal set => _dispatcher = value;
 		}
 
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
@@ -70,24 +59,28 @@ namespace Xamarin.Forms
 			if (bpcontext == null)
 				return;
 
+			if (fromStyle)
+				bpcontext.StyleValueSet = false;
+
 			if (fromStyle && !CanBeSetFromStyle(property))
 				return;
 
 			object original = bpcontext.Value;
 
-			object newValue = property.GetDefaultValue(this);
+			object newValue = bpcontext.StyleValueSet ? bpcontext.StyleValue : property.GetDefaultValue(this);
 
 			bool same = Equals(original, newValue);
 			if (!same)
 			{
 				property.PropertyChanging?.Invoke(this, original, newValue);
-
 				OnPropertyChanging(property.PropertyName);
 			}
 
 			bpcontext.Attributes &= ~BindableContextAttributes.IsManuallySet;
 			bpcontext.Value = newValue;
-			if (property.DefaultValueCreator == null)
+			if (bpcontext.StyleValueSet)
+				bpcontext.Attributes |= BindableContextAttributes.IsSetFromStyle;
+			else if (property.DefaultValueCreator == null)
 				bpcontext.Attributes |= BindableContextAttributes.IsDefaultValue;
 			else
 				bpcontext.Attributes |= BindableContextAttributes.IsDefaultValueCreated;
@@ -373,6 +366,8 @@ namespace Xamarin.Forms
 			if (checkAccess && property.IsReadOnly)
 				throw new InvalidOperationException($"The BindableProperty \"{property.PropertyName}\" is readonly.");
 
+			if (fromStyle)
+				SetBackupStyleValue(property, value);
 			if (fromStyle && !CanBeSetFromStyle(property))
 				return;
 
@@ -386,6 +381,13 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueCore(BindableProperty property, object value, SetValueFlags attributes = SetValueFlags.None)
 			=> SetValueCore(property, value, attributes, SetValuePrivateFlags.Default);
+
+		void SetBackupStyleValue(BindableProperty property, object value)
+		{
+			var context = GetOrCreateContext(property);
+			context.StyleValueSet = true;
+			context.StyleValue = value;
+		}
 
 		internal void SetValueCore(BindableProperty property, object value, SetValueFlags attributes, SetValuePrivateFlags privateAttributes)
 		{
@@ -626,6 +628,9 @@ namespace Xamarin.Forms
 			public Queue<SetValueArgs> DelayedSetters;
 			public BindableProperty Property;
 			public object Value;
+
+			public bool StyleValueSet;
+			public object StyleValue;
 		}
 
 		[Flags]
