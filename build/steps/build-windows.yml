@@ -30,6 +30,22 @@ steps:
   #     version: $(DOTNET_VERSION)
   #     packageType: 'sdk'
 
+  
+  - script: build.cmd -Target cg-uwp-build-tests  -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"'
+    condition: and(eq(variables['BuildConfiguration'], 'Release'), ne('${{ parameters.includePages }}', true))
+    displayName: 'Build Tests and APPX'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Appx Packages'
+    condition: and(eq(variables['BuildConfiguration'], 'Release'), ne('${{ parameters.includePages }}', true))
+    inputs:
+      Contents: |
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/*
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/Add-AppDevPackage.resources/**
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/TelemetryDependencies/**
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/Dependencies/x86/**
+      TargetFolder: '$(build.artifactstagingdirectory)'
+
   - script: build.cmd -Target BuildForNuget -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"','-Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
     name: winbuild
     displayName: 'Build Projects For Nuget'
@@ -172,23 +188,6 @@ steps:
         **/*.binlog
 
       TargetFolder: ${{ parameters.artifactsTargetFolder }}
-  
-  - script: build.cmd -Target cg-uwp-build-tests  -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"'
-    condition: and(eq(variables['BuildConfiguration'], 'Release'), ne('${{ parameters.includePages }}', true))
-    displayName: 'Build Tests and APPX'
-
-  - task: CopyFiles@2
-    displayName: 'Copy Appx Packages'
-    condition: and(eq(variables['BuildConfiguration'], 'Release'), ne('${{ parameters.includePages }}', true))
-    inputs:
-      Contents: |
-        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/*
-        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/Add-AppDevPackage.resources/**
-        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/TelemetryDependencies/**
-        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/Dependencies/x86/**
-      TargetFolder: '$(build.artifactstagingdirectory)'
-      CleanTargetFolder: false
-      flattenFolders: false
 
   - task: CopyFiles@2
     displayName: 'Copy Cake File'
