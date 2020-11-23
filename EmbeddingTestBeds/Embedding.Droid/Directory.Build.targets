@@ -1,8 +1,5 @@
 <Project>
   <ItemGroup>
-    <PackageReference Include="Xamarin.AndroidX.Migration">
-      <Version>1.0.0.1</Version>
-    </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.0.0.1" />
     <PackageReference Include="Xamarin.AndroidX.Palette" Version="1.0.0.1" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.1.0.1" />

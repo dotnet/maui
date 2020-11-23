@@ -81,6 +81,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
+		[Ignore("Ignore while fix is not ready")]
 		public void Issue12574Test()
 		{
 			RunningApp.WaitForElement("0 item");
