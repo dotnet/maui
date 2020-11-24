@@ -4,7 +4,13 @@ Xamarin.Essentials gives developers essential cross-platform APIs for their mobi
 
 iOS, Android, and UWP offer unique operating system and platform APIs that developers have access to, all in C# leveraging Xamarin. It is great that developers have 100% API access in C# with Xamarin, but these APIs are different per platform. This means developers have to learn three different APIs to access platform-specific features. With Xamarin.Essentials, developers have a single cross-platform API that works with any iOS, Android, or UWP application that can be accessed from shared code no matter how the user interface is created.
 
-[![Discord](https://img.shields.io/discord/732297728826277939?label=discord&style=plastic)](https://discord.com/invite/Y8828kE)
+## Questions
+
+Get your technical questions answered by experts on [Microsoft Q&A](https://docs.microsoft.com/answers/topics/dotnet-xamarinessentials.html?WT.mc_id=friends-0000-jamont).
+
+## Contribution Discussion
+
+Contributing to Xamarin.Essentials? Join our [Discord server](https://discord.com/invite/Y8828kE) and chat with the team
 
 ## Build Status
 
@@ -27,15 +33,15 @@ Xamarin.Essentials is available via NuGet & is included in every template:
 * NuGet Official Releases: [![NuGet](https://img.shields.io/nuget/vpre/Xamarin.Essentials.svg?label=NuGet)](https://www.nuget.org/packages/Xamarin.Essentials)
 * Nightly / CI Releases: https://aka.ms/xamarin-essentials-ci/index.json
 
-Please read our [Getting Started with Xamarin.Essentials guide](https://docs.microsoft.com/xamarin/essentials/get-started) for full setup instructions.
+Please read our [Getting Started with Xamarin.Essentials guide](https://docs.microsoft.com/xamarin/essentials/get-started?WT.mc_id=friends-0000-jamont) for full setup instructions.
 
 ## Documentation
 
-Browse our [full documentation for Xamarin.Essentials](https://docs.microsoft.com/xamarin/essentials), including feature guides, on how to use each feature.
+Browse our [full documentation for Xamarin.Essentials](https://docs.microsoft.com/xamarin/essentials?WT.mc_id=friends-0000-jamont), including feature guides, on how to use each feature.
 
 ## Supported Platforms
 
-Platform support & feature support can be found on our [documentation](https://docs.microsoft.com/xamarin/essentials/platform-feature-support)
+Platform support & feature support can be found on our [documentation](https://docs.microsoft.com/xamarin/essentials/platform-feature-support?WT.mc_id=friends-0000-jamont)
 
 
 ## Contributing
@@ -50,7 +56,7 @@ Xamarin.Essentials is built with the new SDK-style projects with multi-targeting
 
 A minimum version of Visual Studio 2019 16.3 or Visual Studio for Mac 2019 8.3 are required to build and compile Xamarin.Essentials.
 
-### Workloads need:
+### Workloads needed:
 
 * Xamarin
 * .NET Core
