@@ -12,22 +12,21 @@ namespace Xamarin.Essentials
             Task.FromResult(UIApplication.SharedApplication.CanOpenUrl(WebUtils.GetNativeUrl(uri)));
 
         static Task PlatformOpenAsync(Uri uri) =>
-            UIApplication.SharedApplication.OpenUrlAsync(WebUtils.GetNativeUrl(uri), new UIApplicationOpenUrlOptions());
+            PlatformOpenAsync(WebUtils.GetNativeUrl(uri));
+
+        internal static Task<bool> PlatformOpenAsync(NSUrl nativeUrl) =>
+            Platform.HasOSVersion(10, 0)
+                ? UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions())
+                : Task.FromResult(UIApplication.SharedApplication.OpenUrl(nativeUrl));
 
         static Task<bool> PlatformTryOpenAsync(Uri uri)
         {
             var nativeUrl = WebUtils.GetNativeUrl(uri);
-            var canOpen = UIApplication.SharedApplication.CanOpenUrl(nativeUrl);
 
-            if (canOpen)
-            {
-                if (Platform.HasOSVersion(10, 0))
-                    return UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions());
+            if (UIApplication.SharedApplication.CanOpenUrl(nativeUrl))
+                return PlatformOpenAsync(nativeUrl);
 
-                UIApplication.SharedApplication.OpenUrl(nativeUrl);
-            }
-
-            return Task.FromResult(canOpen);
+            return Task.FromResult(false);
         }
 
 #if __IOS__

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Foundation;
 using MessageUI;
-using MobileCoreServices;
 using UIKit;
 
 namespace Xamarin.Essentials
@@ -60,14 +58,11 @@ namespace Xamarin.Essentials
             return tcs.Task;
         }
 
-        static Task ComposeWithUrl(EmailMessage message)
+        static async Task ComposeWithUrl(EmailMessage message)
         {
             var url = GetMailToUri(message);
-
-            var tcs = new TaskCompletionSource<bool>();
             var nsurl = NSUrl.FromString(url);
-            UIApplication.SharedApplication.OpenUrl(nsurl, new UIApplicationOpenUrlOptions(), r => tcs.TrySetResult(r));
-            return tcs.Task;
+            await Launcher.PlatformOpenAsync(nsurl);
         }
     }
 }

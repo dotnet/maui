@@ -11,12 +11,12 @@ namespace Xamarin.Essentials
 
         internal static bool IsSupported => UIApplication.SharedApplication.CanOpenUrl(CreateNsUrl(new string('0', 10)));
 
-        static void PlatformOpen(string number)
+        static async void PlatformOpen(string number)
         {
             ValidateOpen(number);
 
             var nsUrl = CreateNsUrl(number);
-            UIApplication.SharedApplication.OpenUrl(nsUrl);
+            await Launcher.PlatformOpenAsync(nsUrl);
         }
 
         static NSUrl CreateNsUrl(string number) => new NSUrl(new Uri($"tel:{number}").AbsoluteUri);

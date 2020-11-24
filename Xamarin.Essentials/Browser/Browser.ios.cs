@@ -10,11 +10,10 @@ namespace Xamarin.Essentials
     {
         static async Task<bool> PlatformOpenAsync(Uri uri, BrowserLaunchOptions options)
         {
-            var nativeUrl = new NSUrl(uri.AbsoluteUri);
-
             switch (options.LaunchMode)
             {
                 case BrowserLaunchMode.SystemPreferred:
+                    var nativeUrl = new NSUrl(uri.AbsoluteUri);
                     var sfViewController = new SFSafariViewController(nativeUrl, false);
                     var vc = Platform.GetCurrentViewController();
 
@@ -25,9 +24,7 @@ namespace Xamarin.Essentials
                         sfViewController.PreferredControlTintColor = options.PreferredControlColor.Value.ToPlatformColor();
 
                     if (sfViewController.PopoverPresentationController != null)
-                    {
                         sfViewController.PopoverPresentationController.SourceView = vc.View;
-                    }
 
                     if (options.HasFlag(BrowserLaunchFlags.PresentAsFormSheet))
                         sfViewController.ModalPresentationStyle = UIModalPresentationStyle.FormSheet;
@@ -37,15 +34,7 @@ namespace Xamarin.Essentials
                     await vc.PresentViewControllerAsync(sfViewController, true);
                     break;
                 case BrowserLaunchMode.External:
-                    if (Platform.HasOSVersion(10, 0))
-                    {
-                        return await UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions());
-                    }
-                    else
-                    {
-                        UIApplication.SharedApplication.OpenUrl(nativeUrl);
-                    }
-                    break;
+                    return await Launcher.PlatformOpenAsync(uri);
             }
 
             return true;
