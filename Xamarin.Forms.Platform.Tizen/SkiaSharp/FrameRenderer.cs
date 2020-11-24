@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 		static float s_borderWidth = 1.0f;
 		static SKColor s_defaultColor = SKColors.Transparent;
 
-		SKCanvasView _cliper;
+		SKClipperView _clipper;
 		new Frame Element => base.Element as Frame;
 
 		public FrameRenderer()
@@ -21,12 +21,13 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 		protected override void OnElementChanged(ElementChangedEventArgs<Layout> e)
 		{
 			base.OnElementChanged(e);
-			_cliper = new SKCanvasView(Forms.NativeParent);
-			_cliper.Show();
-			_cliper.PassEvents = true;
-			_cliper.PaintSurface += OnCliperPaint;
-			Control.Children.Add(_cliper);
-			BackgroundCanvas?.StackAbove(_cliper);
+			_clipper = new SKClipperView(Forms.NativeParent);
+			_clipper.Show();
+			_clipper.PassEvents = true;
+			_clipper.PaintSurface += OnCliperPaint;
+
+			Control.Children.Add(_clipper);
+			BackgroundCanvas?.StackAbove(_clipper);
 		}
 
 		protected override void UpdateBackgroundColor(bool initialize)
@@ -40,16 +41,8 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 		protected override void OnBackgroundLayoutUpdated(object sender, Native.LayoutEventArgs e)
 		{
 			base.OnBackgroundLayoutUpdated(sender, e);
-			if (_cliper != null)
-			{
-				_cliper.Geometry = Control.Geometry;
-				if (Element.Content != null)
-				{
-					var nativeView = Platform.GetOrCreateRenderer(Element.Content)?.NativeView;
-					nativeView?.SetClip(null);
-					nativeView?.SetClip(_cliper);
-				}
-			}
+			_clipper.Geometry = Control.Geometry;
+			_clipper.Invalidate();
 		}
 
 		protected override void OnBackgroundPaint(object sender, SKPaintSurfaceEventArgs e)
@@ -64,12 +57,12 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 			using (var paint = new SKPaint
 			{
 				IsAntialias = true,
-				Style = SKPaintStyle.Fill,
-				Color = bgColor,
 			})
 			{
 				if (Element.HasShadow)
 				{
+					paint.Color = SKColors.White;
+					paint.Style = SKPaintStyle.Stroke;
 					// Draw shadow
 					paint.ImageFilter = SKImageFilter.CreateDropShadowOnly(
 						Forms.ConvertToScaledPixel(0),
@@ -79,7 +72,11 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 						SKColors.Black);
 					canvas.DrawRoundRect(roundRect, paint);
 				}
+
 				paint.ImageFilter = null;
+				paint.Style = SKPaintStyle.Fill;
+				paint.Color = bgColor;
+
 				// Draw background color
 				canvas.DrawRoundRect(roundRect, paint);
 
@@ -116,12 +113,14 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 			{
 				canvas.DrawRoundRect(roundRect, paint);
 			}
+
+			Element.Content?.SetClipperCanvas(_clipper);
 		}
 
 		void UpdateCornerRadius()
 		{
 			BackgroundCanvas.Invalidate();
-			_cliper?.Invalidate();
+			_clipper?.Invalidate();
 		}
 
 		void UpdateBorderColor()
@@ -132,7 +131,7 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 		void UpdateHasShadow()
 		{
 			BackgroundCanvas.Invalidate();
-			_cliper?.Invalidate();
+			_clipper?.Invalidate();
 		}
 
 		SKRoundRect CreateRoundRect(SKRect bounds)
