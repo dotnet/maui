@@ -112,12 +112,12 @@
       <Parameters>
         <Parameter Name="latitude" Type="System.Double" />
         <Parameter Name="longitude" Type="System.Double" />
-        <Parameter Name="timestamp" Type="System.Double" />
+        <Parameter Name="altitude" Type="System.Double" />
       </Parameters>
       <Docs>
         <param name="latitude">Default latitude for location.</param>
         <param name="longitude">Default longitude for location.</param>
-        <param name="timestamp">Default altitude for the location.</param>
+        <param name="altitude">To be added.</param>
         <summary>Parametrized constructor with latitude, longitude and altitude parameters.</summary>
         <remarks>
           <para />

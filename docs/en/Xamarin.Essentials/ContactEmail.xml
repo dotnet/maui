@@ -11,30 +11,45 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>This type contains information about a particular email address.</summary>
+    <remarks></remarks>
   </Docs>
   <Members>
-    <Member MemberName="ContactType">
-      <MemberSignature Language="C#" Value="public Xamarin.Essentials.ContactType ContactType { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.ContactType ContactType" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ContactEmail.ContactType" />
-      <MemberType>Property</MemberType>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ContactEmail ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ContactEmail.#ctor" />
+      <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.ContactType</ReturnType>
-      </ReturnValue>
+      <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Constructs a new instance of <see cref="T:Xamarin.Essentials.ContactEmail" />.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ContactEmail (string emailAddress);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string emailAddress) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ContactEmail.#ctor(System.String)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="emailAddress" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="emailAddress">The email address.</param>
+        <summary>Constructs a new instance of <see cref="T:Xamarin.Essentials.ContactEmail" /> using the various parameters.</summary>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="EmailAddress">
-      <MemberSignature Language="C#" Value="public string EmailAddress { get; }" />
+      <MemberSignature Language="C#" Value="public string EmailAddress { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string EmailAddress" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ContactEmail.EmailAddress" />
       <MemberType>Property</MemberType>
@@ -46,9 +61,30 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets or sets the email address.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ContactEmail.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>
+          <see cref="P:Xamarin.Essentials.ContactEmail.EmailAddress" />
+        </summary>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

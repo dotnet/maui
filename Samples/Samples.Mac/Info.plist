@@ -43,5 +43,7 @@
 			<string>Editor</string>
 		</dict>
 	</array>
+	<key>NSContactsUsageDescription</key>
+	<string>Contacts</string>
 </dict>
 </plist>

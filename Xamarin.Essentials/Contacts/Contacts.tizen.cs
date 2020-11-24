@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Tizen.Applications;
 using Tizen.Pims.Contacts;
@@ -13,18 +13,23 @@ namespace Xamarin.Essentials
 {
     public static partial class Contacts
     {
+        static ContactsManager manager = new ContactsManager();
+
         static async Task<Contact> PlatformPickContactAsync()
         {
             Permissions.EnsureDeclared<Permissions.ContactsRead>();
+            Permissions.EnsureDeclared<Permissions.LaunchApp>();
             await Permissions.EnsureGrantedAsync<Permissions.ContactsRead>();
 
             var tcs = new TaskCompletionSource<Contact>();
 
-            var appControl = new AppControl();
-            appControl.Operation = AppControlOperations.Pick;
-            appControl.ExtraData.Add(AppControlData.SectionMode, "single");
-            appControl.LaunchMode = AppControlLaunchMode.Single;
-            appControl.Mime = "application/vnd.tizen.contact";
+            var appControl = new AppControl
+            {
+                Operation = AppControlOperations.Pick,
+                ExtraData.Add(AppControlData.SectionMode, "single"),
+                LaunchMode = AppControlLaunchMode.Single,
+                Mime = "application/vnd.tizen.contact",
+            };
 
             AppControl.SendLaunchRequest(appControl, (request, reply, result) =>
             {
@@ -36,81 +41,67 @@ namespace Xamarin.Essentials
 
                     if (int.TryParse(contactId, out var contactInt))
                     {
-                        var mgr = new ContactsManager();
-
-                        var record = mgr.Database.Get(TizenContact.Uri, contactInt);
-
+                        var record = manager.Database.Get(TizenContact.Uri, contactInt);
                         if (record != null)
-                        {
-                            string name = null;
-                            var emails = new List<ContactEmail>();
-                            var phones = new List<ContactPhone>();
-
-                            var recordName = record.GetChildRecord(TizenContact.Name, 0);
-                            if (recordName != null)
-                            {
-                                var first = recordName.Get<string>(TizenName.First) ?? string.Empty;
-                                var last = recordName.Get<string>(TizenName.Last) ?? string.Empty;
-
-                                name = $"{first} {last}".Trim();
-                            }
-
-                            var emailCount = record.GetChildRecordCount(TizenContact.Email);
-                            for (var i = 0; i < emailCount; i++)
-                            {
-                                var item = record.GetChildRecord(TizenContact.Email, i);
-                                var addr = item.Get<string>(TizenEmail.Address);
-                                var type = (TizenEmail.Types)item.Get<int>(TizenEmail.Type);
-
-                                emails.Add(new ContactEmail(addr, GetContactType(type)));
-                            }
-
-                            var phoneCount = record.GetChildRecordCount(TizenContact.Number);
-                            for (var i = 0; i < phoneCount; i++)
-                            {
-                                var item = record.GetChildRecord(TizenContact.Number, i);
-                                var number = item.Get<string>(TizenNumber.NumberData);
-                                var type = (TizenNumber.Types)item.Get<int>(TizenNumber.Type);
-
-                                phones.Add(new ContactPhone(number, GetContactType(type)));
-                            }
-
-                            contact = new Contact(name, phones, emails, ContactType.Unknown);
-                        }
+                            contact = ToContact(record);
                     }
                 }
-
                 tcs.TrySetResult(contact);
             });
 
             return await tcs.Task;
         }
 
-        static ContactType GetContactType(TizenEmail.Types emailType)
-            => emailType switch
-            {
-                TizenEmail.Types.Home => ContactType.Personal,
-                TizenEmail.Types.Mobile => ContactType.Personal,
-                TizenEmail.Types.Work => ContactType.Work,
-                _ => ContactType.Unknown
-            };
+        static Task<IEnumerable<Contact>> PlatformGetAllAsync(CancellationToken cancellationToken)
+        {
+            var contactsList = manager.Database.GetAll(TizenContact.Uri, 0, 0);
 
-        static ContactType GetContactType(TizenNumber.Types numberType)
-            => numberType switch
+            return Task.FromResult(GetEnumerable());
+
+            IEnumerable<Contact> GetEnumerable()
             {
-                TizenNumber.Types.Car => ContactType.Personal,
-                TizenNumber.Types.Cell => ContactType.Personal,
-                TizenNumber.Types.Home => ContactType.Personal,
-                TizenNumber.Types.Main => ContactType.Personal,
-                TizenNumber.Types.Message => ContactType.Personal,
-                TizenNumber.Types.Video => ContactType.Personal,
-                TizenNumber.Types.Voice => ContactType.Personal,
-                TizenNumber.Types.Work => ContactType.Work,
-                TizenNumber.Types.Pager => ContactType.Work,
-                TizenNumber.Types.Assistant => ContactType.Work,
-                TizenNumber.Types.Company => ContactType.Work,
-                TizenNumber.Types.Fax => ContactType.Work,
-                _ => ContactType.Unknown
-            };
+                for (var i = 0; i < contactsList?.Count; i++)
+                {
+                    yield return ToContact(contactsList.GetCurrentRecord());
+
+                    contactsList.MoveNext();
+                }
+            }
+        }
+
+        static Contact ToContact(ContactsRecord contactsRecord)
+        {
+            var record = contactsRecord.GetChildRecord(TizenContact.Name, 0);
+
+            var phones = new List<ContactPhone>();
+            var phonesCount = contactsRecord.GetChildRecordCount(TizenContact.Number);
+            for (var i = 0; i < phonesCount; i++)
+            {
+                var nameRecord = contactsRecord.GetChildRecord(TizenContact.Number, i);
+                var number = nameRecord.Get<string>(TizenNumber.NumberData);
+
+                phones.Add(new ContactPhone(number));
+            }
+
+            var emails = new List<ContactEmail>();
+            var emailCount = contactsRecord.GetChildRecordCount(TizenContact.Email);
+            for (var i = 0; i < emailCount; i++)
+            {
+                var emailRecord = contactsRecord.GetChildRecord(TizenContact.Email, i);
+                var addr = emailRecord.Get<string>(TizenEmail.Address);
+
+                emails.Add(new ContactEmail(addr));
+            }
+
+            return new Contact(
+                (record?.Get<int>(TizenName.ContactId))?.ToString(),
+                record?.Get<string>(TizenName.Prefix),
+                record?.Get<string>(TizenName.First),
+                record?.Get<string>(TizenName.Addition),
+                record?.Get<string>(TizenName.Last),
+                record?.Get<string>(TizenName.Suffix),
+                phones,
+                emails);
+        }
     }
 }

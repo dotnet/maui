@@ -217,26 +217,34 @@
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
     </Type>
     <Type Name="Xamarin.Essentials.Contact" Id="T:Xamarin.Essentials.Contact">
-      <Member Id="P:Xamarin.Essentials.Contact.ContactType" />
+      <Member Id="M:Xamarin.Essentials.Contact.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Contact.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable{Xamarin.Essentials.ContactPhone},System.Collections.Generic.IEnumerable{Xamarin.Essentials.ContactEmail},System.String)" />
+      <Member Id="M:Xamarin.Essentials.Contact.ToString" />
+      <Member Id="P:Xamarin.Essentials.Contact.DisplayName" />
       <Member Id="P:Xamarin.Essentials.Contact.Emails" />
-      <Member Id="P:Xamarin.Essentials.Contact.Name" />
-      <Member Id="P:Xamarin.Essentials.Contact.Numbers" />
+      <Member Id="P:Xamarin.Essentials.Contact.FamilyName" />
+      <Member Id="P:Xamarin.Essentials.Contact.GivenName" />
+      <Member Id="P:Xamarin.Essentials.Contact.Id" />
+      <Member Id="P:Xamarin.Essentials.Contact.MiddleName" />
+      <Member Id="P:Xamarin.Essentials.Contact.NamePrefix" />
+      <Member Id="P:Xamarin.Essentials.Contact.NameSuffix" />
+      <Member Id="P:Xamarin.Essentials.Contact.Phones" />
     </Type>
     <Type Name="Xamarin.Essentials.ContactEmail" Id="T:Xamarin.Essentials.ContactEmail">
-      <Member Id="P:Xamarin.Essentials.ContactEmail.ContactType" />
+      <Member Id="M:Xamarin.Essentials.ContactEmail.#ctor" />
+      <Member Id="M:Xamarin.Essentials.ContactEmail.#ctor(System.String)" />
+      <Member Id="M:Xamarin.Essentials.ContactEmail.ToString" />
       <Member Id="P:Xamarin.Essentials.ContactEmail.EmailAddress" />
     </Type>
     <Type Name="Xamarin.Essentials.ContactPhone" Id="T:Xamarin.Essentials.ContactPhone">
-      <Member Id="P:Xamarin.Essentials.ContactPhone.ContactType" />
+      <Member Id="M:Xamarin.Essentials.ContactPhone.#ctor" />
+      <Member Id="M:Xamarin.Essentials.ContactPhone.#ctor(System.String)" />
+      <Member Id="M:Xamarin.Essentials.ContactPhone.ToString" />
       <Member Id="P:Xamarin.Essentials.ContactPhone.PhoneNumber" />
     </Type>
     <Type Name="Xamarin.Essentials.Contacts" Id="T:Xamarin.Essentials.Contacts">
+      <Member Id="M:Xamarin.Essentials.Contacts.GetAllAsync(System.Threading.CancellationToken)" />
       <Member Id="M:Xamarin.Essentials.Contacts.PickContactAsync" />
-    </Type>
-    <Type Name="Xamarin.Essentials.ContactType" Id="T:Xamarin.Essentials.ContactType">
-      <Member Id="F:Xamarin.Essentials.ContactType.Personal" />
-      <Member Id="F:Xamarin.Essentials.ContactType.Unknown" />
-      <Member Id="F:Xamarin.Essentials.ContactType.Work" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceDisplay" Id="T:Xamarin.Essentials.DeviceDisplay">
       <Member Id="E:Xamarin.Essentials.DeviceDisplay.MainDisplayInfoChanged" />

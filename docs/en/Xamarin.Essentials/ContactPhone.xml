@@ -11,30 +11,45 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>This type contains information about a particular phone number.</summary>
+    <remarks></remarks>
   </Docs>
   <Members>
-    <Member MemberName="ContactType">
-      <MemberSignature Language="C#" Value="public Xamarin.Essentials.ContactType ContactType { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.ContactType ContactType" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ContactPhone.ContactType" />
-      <MemberType>Property</MemberType>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ContactPhone ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ContactPhone.#ctor" />
+      <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.ContactType</ReturnType>
-      </ReturnValue>
+      <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Constructs a new instance of <see cref="T:Xamarin.Essentials.ContactPhone" />.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ContactPhone (string phoneNumber);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string phoneNumber) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ContactPhone.#ctor(System.String)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="phoneNumber" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="phoneNumber">The phone number.</param>
+        <summary>Constructs a new instance of <see cref="T:Xamarin.Essentials.ContactPhone" /> using the various parameters.</summary>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="PhoneNumber">
-      <MemberSignature Language="C#" Value="public string PhoneNumber { get; }" />
+      <MemberSignature Language="C#" Value="public string PhoneNumber { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string PhoneNumber" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ContactPhone.PhoneNumber" />
       <MemberType>Property</MemberType>
@@ -46,9 +61,30 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets or sets the phone number.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ContactPhone.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>
+          <see cref="P:Xamarin.Essentials.ContactPhone.PhoneNumber" />
+        </summary>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

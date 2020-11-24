@@ -14,7 +14,20 @@
 
         <StackLayout Padding="12,0,12,12" Spacing="6">
             <Button Command="{Binding GetContactCommand}" Text="Pick Contact" />
+            <Button Command="{Binding GetAllContactCommand}" Text="Get All Contacts" />
         </StackLayout>
+
+        <ListView ItemsSource="{Binding ContactsList}" SelectedItem="{Binding SelectedContact}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid Padding="12">
+                            <Label Text="{Binding DisplayName}" LineBreakMode="TailTruncation"/>
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </StackLayout>
 
 </view:BasePage>

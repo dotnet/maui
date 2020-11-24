@@ -146,7 +146,6 @@
       <Type Name="ContactEmail" Kind="Class" />
       <Type Name="ContactPhone" Kind="Class" />
       <Type Name="Contacts" Kind="Class" />
-      <Type Name="ContactType" Kind="Enumeration" />
       <Type Name="DeviceDisplay" Kind="Class" />
       <Type Name="DeviceIdiom" Kind="Structure" />
       <Type Name="DeviceInfo" Kind="Class" />

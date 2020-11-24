@@ -11,50 +11,63 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>This type contains information about a particular contact.</summary>
+    <remarks></remarks>
   </Docs>
   <Members>
-    <Member MemberName="ContactType">
-      <MemberSignature Language="C#" Value="public Xamarin.Essentials.ContactType ContactType { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.ContactType ContactType" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.ContactType" />
-      <MemberType>Property</MemberType>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Contact ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Contact.#ctor" />
+      <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.ContactType</ReturnType>
-      </ReturnValue>
+      <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Constructs a new instance of <see cref="T:Xamarin.Essentials.Contact" />.</summary>
+        <remarks></remarks>
       </Docs>
     </Member>
-    <Member MemberName="Emails">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.IReadOnlyList&lt;Xamarin.Essentials.ContactEmail&gt; Emails { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IReadOnlyList`1&lt;class Xamarin.Essentials.ContactEmail&gt; Emails" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.Emails" />
-      <MemberType>Property</MemberType>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Contact (string id, string namePrefix, string givenName, string middleName, string familyName, string nameSuffix, System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ContactPhone&gt; phones, System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ContactEmail&gt; email, string displayName = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string id, string namePrefix, string givenName, string middleName, string familyName, string nameSuffix, class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.ContactPhone&gt; phones, class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.ContactEmail&gt; email, string displayName) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Contact.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable{Xamarin.Essentials.ContactPhone},System.Collections.Generic.IEnumerable{Xamarin.Essentials.ContactEmail},System.String)" />
+      <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Collections.Generic.IReadOnlyList&lt;Xamarin.Essentials.ContactEmail&gt;</ReturnType>
-      </ReturnValue>
+      <Parameters>
+        <Parameter Name="id" Type="System.String" />
+        <Parameter Name="namePrefix" Type="System.String" />
+        <Parameter Name="givenName" Type="System.String" />
+        <Parameter Name="middleName" Type="System.String" />
+        <Parameter Name="familyName" Type="System.String" />
+        <Parameter Name="nameSuffix" Type="System.String" />
+        <Parameter Name="phones" Type="System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ContactPhone&gt;" />
+        <Parameter Name="email" Type="System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ContactEmail&gt;" />
+        <Parameter Name="displayName" Type="System.String" />
+      </Parameters>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <param name="id">The identifier of the contact.</param>
+        <param name="namePrefix">The prefix of the contact.</param>
+        <param name="givenName">The given name or first name of the contact.</param>
+        <param name="middleName">The middle name(s) of the contact.</param>
+        <param name="familyName">The family name or last name of the contact.</param>
+        <param name="nameSuffix">The suffix of the contact.</param>
+        <param name="phones">A collection of phone numbers for the contact.</param>
+        <param name="email">A collection of email addresses for the contact.</param>
+        <param name="displayName">The display name of the contact.</param>
+        <summary>Constructs a new instance of <see cref="T:Xamarin.Essentials.Contact" /> using the various parameters.</summary>
+        <remarks></remarks>
       </Docs>
     </Member>
-    <Member MemberName="Name">
-      <MemberSignature Language="C#" Value="public string Name { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string Name" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.Name" />
+    <Member MemberName="DisplayName">
+      <MemberSignature Language="C#" Value="public string DisplayName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string DisplayName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.DisplayName" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -64,27 +77,174 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets or sets the display name of the contact.</summary>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
-    <Member MemberName="Numbers">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.IReadOnlyList&lt;Xamarin.Essentials.ContactPhone&gt; Numbers { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IReadOnlyList`1&lt;class Xamarin.Essentials.ContactPhone&gt; Numbers" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.Numbers" />
+    <Member MemberName="Emails">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.List&lt;Xamarin.Essentials.ContactEmail&gt; Emails { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.List`1&lt;class Xamarin.Essentials.ContactEmail&gt; Emails" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.Emails" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Collections.Generic.IReadOnlyList&lt;Xamarin.Essentials.ContactPhone&gt;</ReturnType>
+        <ReturnType>System.Collections.Generic.List&lt;Xamarin.Essentials.ContactEmail&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets or sets a collection of email addresses of the contact.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FamilyName">
+      <MemberSignature Language="C#" Value="public string FamilyName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string FamilyName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.FamilyName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the family name or last name of the contact.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GivenName">
+      <MemberSignature Language="C#" Value="public string GivenName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string GivenName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.GivenName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the given name or first name of the contact.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Id">
+      <MemberSignature Language="C#" Value="public string Id { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Id" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.Id" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the identifier of the contact.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MiddleName">
+      <MemberSignature Language="C#" Value="public string MiddleName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string MiddleName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.MiddleName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the middle name(s) of the contact.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="NamePrefix">
+      <MemberSignature Language="C#" Value="public string NamePrefix { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string NamePrefix" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.NamePrefix" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the name prefix of the contact.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="NameSuffix">
+      <MemberSignature Language="C#" Value="public string NameSuffix { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string NameSuffix" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.NameSuffix" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the name suffix of the contact.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Phones">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.List&lt;Xamarin.Essentials.ContactPhone&gt; Phones { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.List`1&lt;class Xamarin.Essentials.ContactPhone&gt; Phones" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.Phones" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.List&lt;Xamarin.Essentials.ContactPhone&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets a collection of phone numbers of the contact.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Contact.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>
+          <see cref="P:Xamarin.Essentials.Contact.DisplayName" />
+        </summary>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

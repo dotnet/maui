@@ -269,6 +269,9 @@ namespace Xamarin.Essentials
         internal static IWindowManager WindowManager =>
             AppContext.GetSystemService(Context.WindowService) as IWindowManager;
 
+        internal static ContentResolver ContentResolver =>
+            AppContext.ContentResolver;
+
         internal static Java.Util.Locale GetLocale()
         {
             var resources = AppContext.Resources;

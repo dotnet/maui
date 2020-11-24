@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
@@ -15,12 +14,8 @@ namespace Xamarin.Essentials
 
             return await PlatformPickContactAsync();
         }
-    }
 
-    public enum ContactType
-    {
-        Unknown = 0,
-        Personal = 1,
-        Work = 2
+        public static Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken = default)
+            => PlatformGetAllAsync(cancellationToken);
     }
 }
