@@ -23,13 +23,11 @@ namespace Xamarin.Essentials
 
             var tcs = new TaskCompletionSource<Contact>();
 
-            var appControl = new AppControl
-            {
-                Operation = AppControlOperations.Pick,
-                ExtraData.Add(AppControlData.SectionMode, "single"),
-                LaunchMode = AppControlLaunchMode.Single,
-                Mime = "application/vnd.tizen.contact",
-            };
+            var appControl = new AppControl();
+            appControl.Operation = AppControlOperations.Pick;
+            appControl.ExtraData.Add(AppControlData.SectionMode, "single");
+            appControl.LaunchMode = AppControlLaunchMode.Single;
+            appControl.Mime = "application/vnd.tizen.contact";
 
             AppControl.SendLaunchRequest(appControl, (request, reply, result) =>
             {
