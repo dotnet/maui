@@ -22,6 +22,13 @@ namespace Xamarin.Essentials
         static TizenOrientationSensor orientationSensor = null;
         static MapService mapService = null;
 
+        public static void Init(ElmSharp.Window window)
+        {
+            MainWindow = window;
+        }
+
+        internal static ElmSharp.Window MainWindow { get; private set; }
+
         internal static Package CurrentPackage
         {
             get

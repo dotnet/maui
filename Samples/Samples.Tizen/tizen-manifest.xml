@@ -23,6 +23,7 @@
         <privilege>http://tizen.org/privilege/message.read</privilege>
         <privilege>http://tizen.org/privilege/network.get</privilege>
         <privilege>http://tizen.org/privilege/systemsettings</privilege>
+        <privilege>http://tizen.org/privilege/display</privilege>
     </privileges>
     <dependencies />
     <provides-appdefined-privileges />
