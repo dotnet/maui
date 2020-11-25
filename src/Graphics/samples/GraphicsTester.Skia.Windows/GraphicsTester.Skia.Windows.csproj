@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -62,16 +62,12 @@
     <ProjectReference Include="..\..\libraries\System.Graphics.GDI.Winforms\System.Graphics.GDI.Winforms.csproj" />
     <ProjectReference Include="..\..\libraries\System.Graphics.Skia.WPF\System.Graphics.Skia.WPF.csproj" />
     <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj">
-      <Project>{5F0CD247-AFCB-4B1E-86E1-85D59E650FFF}</Project>
-      <Name>GraphicsTester.Portable</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="SkiaSharp">
-      <Version>2.80.2</Version>
+    <PackageReference Include="SkiaSharp" Version="2.80.2">
     </PackageReference>
-    <PackageReference Include="SkiaSharp.Views">
-      <Version>2.80.2</Version>
+    <PackageReference Include="SkiaSharp.Views" Version="2.80.2">
     </PackageReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

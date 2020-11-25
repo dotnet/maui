@@ -132,5 +132,5 @@
       <Generator></Generator>
     </EmbeddedResource>
   </ItemGroup>
-  <Import Project="..\..\targets\MultiTargeting.targets" />
+  <Import Project="..\targets\MultiTargeting.targets" />
 </Project>
