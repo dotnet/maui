@@ -4,30 +4,39 @@
     <None Include="**\*.iOS.cs"/>
     <Compile Remove="**\iOS\*.cs"/>
     <None Include="**\iOS\*.cs"/>
+    <Compile Remove="**\iOS\**\*.cs"/>
+    <None Include="**\iOS\**\*.cs"/>
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;Xamarin.Mac&apos;)) != true ">
     <Compile Remove="**\*.Mac.cs"/>
     <None Include="**\*.Mac.cs"/>
     <Compile Remove="**\Mac\*.cs"/>
     <None Include="**\Mac\*.cs"/>
+    <Compile Remove="**\Mac\**\*.cs"/>
+    <None Include="**\Mac\**\*.cs"/>
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;Xamarin.Mac&apos;)) != true And $(TargetFramework.StartsWith(&apos;Xamarin.iOS&apos;)) != true ">
     <Compile Remove="**\*.MaciOS.cs"/>
     <None Include="**\*.MaciOS.cs"/>
     <Compile Remove="**\MaciOS\*.cs"/>
     <None Include="**\MaciOS\*.cs"/>
+    <Compile Remove="**\MaciOS\**\*.cs"/>
+    <None Include="**\MaciOS\**\*.cs"/>
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;MonoAndroid&apos;)) != true ">
     <Compile Remove="**\*.Android.cs"/>
     <None Include="**\*.Android.cs"/>
     <Compile Remove="**\Android\*.cs"/>
     <None Include="**\Android\*.cs"/>
+    <Compile Remove="**\Android\**\*.cs"/>
+    <None Include="**\Android\**\*.cs"/>
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;netstandard&apos;)) != true ">
     <Compile Remove="**\*.Standard.cs"/>
     <None Include="**\*.Standard.cs"/>
     <Compile Remove="**\Standard\*.cs"/>
     <None Include="**\Standard\*.cs"/>
+    <Compile Remove="**\Standard\*.cs"/>
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;netcoreapp&apos;)) != true ">
     <Compile Remove="**\*.Win32.cs"/>

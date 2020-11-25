@@ -1,14 +1,147 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <RootNamespace>System.Graphics</RootNamespace>
-        <Version>2.0.0</Version>
-        <LangVersion>9</LangVersion>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <Folder Include="Properties\" />
-    </ItemGroup>
-
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0;Xamarin.Mac20;</TargetFrameworks>
+    <RootNamespace>System.Graphics</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
+    <PackageId>System.Graphics</PackageId>
+    <Product>System.Graphics</Product>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="Android\Text\ColorExtensions.cs">
+      <SubType></SubType>
+    </Compile>
+    <Compile Update="Android\Text\AttributedTextExtensions.cs">
+      <SubType></SubType>
+    </Compile>
+    <Compile Update="Android\Text\SpannableExtensions.cs">
+      <SubType></SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Android\Fonts\Tinos-Regular.ttf" />
+    <None Remove="Android\Fonts\TeXGyreHeros-BoldItalic.otf" />
+    <None Remove="Android\Fonts\TeXGyreCursor-BoldItalic.otf" />
+    <None Remove="Android\Fonts\Cousine-BoldItalic.ttf" />
+    <None Remove="Android\Fonts\Arimo-Bold.ttf" />
+    <None Remove="Android\Fonts\Tinos-Italic.ttf" />
+    <None Remove="Android\Fonts\TeXGyreTermes-BoldItalic.otf" />
+    <None Remove="Android\Fonts\Cousine-Bold.ttf" />
+    <None Remove="Android\Fonts\Arimo-Italic.ttf" />
+    <None Remove="Android\Fonts\TeXGyreTermes-Bold.otf" />
+    <None Remove="Android\Fonts\Arimo-Regular.ttf" />
+    <None Remove="Android\Fonts\TeXGyreCursor-Italic.otf" />
+    <None Remove="Android\Fonts\Cousine-Italic.ttf" />
+    <None Remove="Android\Fonts\TeXGyreCursor-Bold.otf" />
+    <None Remove="Android\Fonts\Tinos-Bold.ttf" />
+    <None Remove="Android\Fonts\TeXGyreTermes-Regular.otf" />
+    <None Remove="Android\Fonts\Tinos-BoldItalic.ttf" />
+    <None Remove="Android\Fonts\TeXGyreHeros-Bold.otf" />
+    <None Remove="Android\Fonts\Cousine-Regular.ttf" />
+    <None Remove="Android\Fonts\Arimo-BoldItalic.ttf" />
+    <None Remove="Android\Fonts\TeXGyreCursor-Regular.otf" />
+    <None Remove="Android\Fonts\TeXGyreHeros-Regular.otf" />
+    <None Remove="Android\Fonts\TeXGyreHeros-Italic.otf" />
+    <None Remove="Android\Fonts\TeXGyreTermes-Italic.otf" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Android\Fonts\Tinos-Regular.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreHeros-BoldItalic.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreCursor-BoldItalic.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\Cousine-BoldItalic.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\Arimo-Bold.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\Tinos-Italic.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreTermes-BoldItalic.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\Cousine-Bold.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\Arimo-Italic.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreTermes-Bold.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\Arimo-Regular.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreCursor-Italic.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\Cousine-Italic.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreCursor-Bold.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\Tinos-Bold.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreTermes-Regular.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\Tinos-BoldItalic.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreHeros-Bold.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\Cousine-Regular.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\Arimo-BoldItalic.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreCursor-Regular.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreHeros-Regular.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreHeros-Italic.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Android\Fonts\TeXGyreTermes-Italic.otf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="..\..\targets\MultiTargeting.targets" />
 </Project>
