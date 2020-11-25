@@ -25,6 +25,7 @@ namespace GraphicsTester.Android
 		
 		public static void UpdateIdValues()
 		{
+			global::System.Graphics.Android.Resource.String.library_name = global::GraphicsTester.Android.Resource.String.library_name;
 		}
 		
 		public partial class Attribute
@@ -96,6 +97,9 @@ namespace GraphicsTester.Android
 			
 			// aapt resource value: 0x7F040001
 			public const int hello = 2130968577;
+			
+			// aapt resource value: 0x7F040002
+			public const int library_name = 2130968578;
 			
 			static String()
 			{

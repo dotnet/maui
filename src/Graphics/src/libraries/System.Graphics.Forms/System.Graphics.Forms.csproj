@@ -1,12 +1,12 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <TargetFrameworks>Xamarin.iOS10;Xamarin.Mac20;</TargetFrameworks>
-    <RootNamespace>System.Graphics.CoreGraphics</RootNamespace>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0;Xamarin.Mac20;</TargetFrameworks>
+    <RootNamespace>System.Graphics.Forms</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>8.0</LangVersion>
-    <PackageId>System.Graphics.CoreGraphics</PackageId>
-    <Product>System.Graphics.CoreGraphics</Product>
+    <PackageId>System.Graphics.Forms</PackageId>
+    <Product>System.Graphics.Forms</Product>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\System.Graphics.Core\System.Graphics.Core.csproj" />
