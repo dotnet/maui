@@ -62,7 +62,7 @@
   <ItemGroup>
     <ProjectReference Include="..\System.Graphics.Core\System.Graphics.Core.csproj">
       <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
-      <Name>System.Graphics.Core</Name>
+      <Name>System.Graphics</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

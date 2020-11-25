@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Core", "src\libraries\System.Graphics.Core\System.Graphics.Core.csproj", "{76F3031E-341E-43CC-BD92-B23F83495DB7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics", "src\libraries\System.Graphics\System.Graphics.csproj", "{76F3031E-341E-43CC-BD92-B23F83495DB7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Text.Markdig", "src\libraries\System.Graphics.Text.Markdig\System.Graphics.Text.Markdig.csproj", "{ED36FB6D-7278-465D-9C44-D01927258BA1}"
 EndProject

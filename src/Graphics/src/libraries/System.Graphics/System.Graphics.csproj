@@ -9,17 +9,6 @@
     <Product>System.Graphics</Product>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Update="Android\Text\ColorExtensions.cs">
-      <SubType></SubType>
-    </Compile>
-    <Compile Update="Android\Text\AttributedTextExtensions.cs">
-      <SubType></SubType>
-    </Compile>
-    <Compile Update="Android\Text\SpannableExtensions.cs">
-      <SubType></SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="Android\Fonts\Tinos-Regular.ttf" />
     <None Remove="Android\Fonts\TeXGyreHeros-BoldItalic.otf" />
     <None Remove="Android\Fonts\TeXGyreCursor-BoldItalic.otf" />
