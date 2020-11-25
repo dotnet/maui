@@ -48,6 +48,14 @@ namespace Xamarin.Essentials
                 }
             };
 
+            if (documentPicker.PresentationController != null)
+            {
+                documentPicker.PresentationController.Delegate = new PickerPresentationControllerDelegate
+                {
+                    PickHandler = urls => tcs.TrySetResult(Enumerable.Empty<FileResult>())
+                };
+            }
+
             var parentController = Platform.GetCurrentViewController();
 
             parentController.PresentViewController(documentPicker, true, null);
@@ -67,6 +75,14 @@ namespace Xamarin.Essentials
 
             public override void DidPickDocument(UIDocumentPickerViewController controller, NSUrl url)
                 => PickHandler?.Invoke(new List<NSUrl> { url });
+        }
+
+        class PickerPresentationControllerDelegate : UIAdaptivePresentationControllerDelegate
+        {
+            public Action<IEnumerable<NSUrl>> PickHandler { get; set; }
+
+            public override void DidDismiss(UIPresentationController presentationController) =>
+                PickHandler?.Invoke(null);
         }
     }
 
