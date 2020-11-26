@@ -5,6 +5,7 @@ using NUnit.Framework.Interfaces;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.CustomAttributes;
 using IOPath = System.IO.Path;
+using System.Collections.Generic;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -575,7 +576,7 @@ namespace Xamarin.Forms.Controls
 	public abstract class TestShell : Shell
 	{
 		protected const string FlyoutIconAutomationId = "OK";
-#if __IOS__
+#if __IOS__ || __WINDOWS__
 		protected const string BackButtonAutomationId = "Back";
 #else
 		protected const string BackButtonAutomationId = "OK";
@@ -605,6 +606,7 @@ namespace Xamarin.Forms.Controls
 
 		protected TestShell() : base()
 		{
+			Device.SetFlags(new List<string> { ExperimentalFlags.ShellUWPExperimental });
 			Routing.Clear();
 #if APP
 			Init();

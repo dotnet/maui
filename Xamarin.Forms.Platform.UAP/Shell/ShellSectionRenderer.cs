@@ -106,8 +106,22 @@ namespace Xamarin.Forms.Platform.UWP
 			Page nextPage = (ShellSection as IShellSectionController)
 					.PresentedPage ?? ((IShellContentController)shellContent)?.GetOrCreateContent();
 
-			OnShellSectionChanged();
+			int currentIndex = Frame.BackStackDepth;
+
+			// Build up current stack
+			Frame.Navigate(typeof(ShellPageWrapper), GetTransitionInfo(ShellNavigationSource.ShellSectionChanged));
+
+			for (int i = 0; i < ShellSection.Stack.Count - 1; i++)
+				Frame.Navigate(typeof(ShellPageWrapper));
+
+			// remove old stack
+			for (int i = currentIndex - 1; i >= 0; i--)
+			{
+				Frame.BackStack.RemoveAt(i);
+			}
+
 			NavigateToContent(new NavigationRequestedEventArgs(nextPage, true), ShellSection);
+			OnShellSectionChanged();
 		}
 
 		void SyncMenuItems()
@@ -127,6 +141,8 @@ namespace Xamarin.Forms.Platform.UWP
 				if (!newItems.Contains(item))
 					ShellContentMenuItems.RemoveAt(i);
 			}
+
+			IsPaneVisible = ShellSectionController.GetItems().Count > 1;
 		}
 
 		void OnShellSectionRendererCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -240,7 +256,6 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected virtual void OnShellSectionChanged()
 		{
-			Frame.Navigate(typeof(ShellPageWrapper), GetTransitionInfo(ShellNavigationSource.ShellSectionChanged));
 		}
 
 		protected virtual NavigationTransitionInfo GetTransitionInfo(NavigationRequestedEventArgs e)
