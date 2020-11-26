@@ -267,7 +267,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		protected void OnElementChanged(VisualElementChangedEventArgs e)
+		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
 		{
 			EventHandler<VisualElementChangedEventArgs> changed = ElementChanged;
 			if (changed != null)
@@ -438,18 +438,18 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void OnPopRequested(object sender, NavigationRequestedEventArgs e)
+		protected virtual void OnPopRequested(object sender, NavigationRequestedEventArgs e)
 		{
 			var newCurrent = Element.Peek(1);
 			SetPage(newCurrent, e.Animated, true);
 		}
 
-		void OnPopToRootRequested(object sender, NavigationRequestedEventArgs e)
+		protected virtual void OnPopToRootRequested(object sender, NavigationRequestedEventArgs e)
 		{
 			SetPage(e.Page, e.Animated, true);
 		}
 
-		void OnPushRequested(object sender, NavigationRequestedEventArgs e)
+		protected virtual void OnPushRequested(object sender, NavigationRequestedEventArgs e)
 		{
 			SetPage(e.Page, e.Animated, false);
 		}
@@ -500,19 +500,30 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateTitleOnParents();
 			UpdateTitleView();
 
-			if (isAnimated && _transition == null)
-			{
-				_transition = new EntranceThemeTransition();
-				_container.ContentTransitions = new TransitionCollection();
-			}
-
-			if (!isAnimated && _transition != null)
-				_container.ContentTransitions.Remove(_transition);
-			else if (isAnimated && _container.ContentTransitions.Count == 0)
-				_container.ContentTransitions.Add(_transition);
+			SetupPageTransition(_transition, isAnimated, isPopping);
 
 			_container.Content = renderer.ContainerElement;
 			_container.DataContext = page;
+		}
+
+		protected virtual void SetupPageTransition(Transition transition, bool isAnimated, bool isPopping)
+		{
+			if (isAnimated && transition == null)
+			{
+				transition  = new EntranceThemeTransition();
+				_transition = (EntranceThemeTransition)transition;
+				_container.ContentTransitions = new TransitionCollection();
+			}
+
+			if (!isAnimated && _container.ContentTransitions?.Count > 0)
+			{
+				_container.ContentTransitions.Clear();
+			}
+			else if (isAnimated && _container.ContentTransitions.Contains(transition) == false)
+			{
+				_container.ContentTransitions.Clear();
+				_container.ContentTransitions.Add(transition);
+			}
 		}
 
 		void UpdateBackButtonTitle()
