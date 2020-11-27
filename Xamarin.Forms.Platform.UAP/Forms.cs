@@ -41,6 +41,13 @@ namespace Xamarin.Forms
 			try
 			{
 				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new Microsoft.UI.Xaml.Controls.XamlControlsResources());
+#if UWP_16299
+				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(
+					new Windows.UI.Xaml.ResourceDictionary
+					{
+						Source = new Uri("ms-appx:///Xamarin.Forms.Platform.UAP/Shell/ShellStyles.xbf")
+					});
+#endif
 			}
 			catch
 			{
