@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Xamarin.Forms.Shapes;
+using System.Collections.Specialized;
 
 #if WINDOWS_UWP
 using WFillRule = Windows.UI.Xaml.Media.FillRule;
@@ -16,6 +17,8 @@ namespace Xamarin.Forms.Platform.WPF
 {
 	public class PolylineRenderer : ShapeRenderer<Polyline, WPolyline>
 	{
+		PointCollection _points;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Polyline> args)
 		{
 			if (Control == null && args.NewElement != null)
@@ -42,9 +45,30 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateFillRule();
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+
+			if (disposing)
+			{
+				if (_points != null)
+				{
+					_points.CollectionChanged -= OnCollectionChanged;
+					_points = null;
+				}
+			}
+		}
+
 		void UpdatePoints()
 		{
-			Control.Points = Element.Points.ToWindows();
+			if (_points != null)
+				_points.CollectionChanged -= OnCollectionChanged;
+
+			_points = Element.Points;
+
+			_points.CollectionChanged += OnCollectionChanged;
+
+			Control.Points = _points.ToWindows();
 		}
 
 		void UpdateFillRule()
@@ -52,6 +76,11 @@ namespace Xamarin.Forms.Platform.WPF
 			Control.FillRule = Element.FillRule == FillRule.EvenOdd ?
 				WFillRule.EvenOdd :
 				WFillRule.Nonzero;
+		}
+
+		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			UpdatePoints();
 		}
 	}
 }

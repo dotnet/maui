@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Specialized;
+using System.ComponentModel;
 using Android.Content;
 using Xamarin.Forms.Shapes;
 using static Android.Graphics.Path;
@@ -8,6 +9,8 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class PolylineRenderer : ShapeRenderer<Polyline, PolylineView>
 	{
+		PointCollection _points;
+
 		public PolylineRenderer(Context context) : base(context)
 		{
 
@@ -39,14 +42,40 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateFillRule();
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+
+			if (disposing)
+			{
+				if (_points != null)
+				{
+					_points.CollectionChanged -= OnCollectionChanged;
+					_points = null;
+				}
+			}
+		}
+
 		void UpdatePoints()
 		{
-			Control.UpdatePoints(Element.Points);
+			if (_points != null)
+				_points.CollectionChanged -= OnCollectionChanged;
+
+			_points = Element.Points;
+
+			_points.CollectionChanged += OnCollectionChanged;
+
+			Control.UpdatePoints(_points);
 		}
 
 		void UpdateFillRule()
 		{
 			Control.UpdateFillMode(Element.FillRule == FillRule.Nonzero);
+		}
+
+		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			UpdatePoints();
 		}
 	}
 
