@@ -70,10 +70,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\libraries\System.Graphics.Android\System.Graphics.Android.csproj">
-      <Project>{f63d421b-a5e5-4107-9bac-9c45ed1363de}</Project>
-      <Name>System.Graphics.Android</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\libraries\System.Graphics.Core\System.Graphics.Core.csproj">
       <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
       <Name>System.Graphics</Name>

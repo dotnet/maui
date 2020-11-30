@@ -9,7 +9,7 @@
     <Product>System.Graphics.Forms</Product>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\System.Graphics.Core\System.Graphics.Core.csproj" />
+    <ProjectReference Include="..\System.Graphics\System.Graphics.csproj" />
   </ItemGroup>
     
     <ItemGroup>

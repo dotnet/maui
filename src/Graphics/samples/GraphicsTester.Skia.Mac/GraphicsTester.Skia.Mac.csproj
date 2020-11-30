@@ -51,9 +51,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.Mac" />
-    <Reference Include="Markdig">
-      <HintPath>..\..\..\packages\Markdig.0.22.0\lib\netstandard2.1\Markdig.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json" />
@@ -104,10 +101,6 @@
     <ProjectReference Include="..\..\libraries\System.Graphics.Text.Markdig\System.Graphics.Text.Markdig.csproj">
       <Project>{ED36FB6D-7278-465D-9C44-D01927258BA1}</Project>
       <Name>System.Graphics.Text.Markdig</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\libraries\System.Graphics.CoreGraphics\System.Graphics.CoreGraphics.csproj">
-      <Project>{D1C32399-E9A0-44AF-89DD-EC32B81A5211}</Project>
-      <Name>System.Graphics.CoreGraphics</Name>
     </ProjectReference>
   </ItemGroup>
     <ItemGroup>
