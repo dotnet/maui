@@ -66,7 +66,16 @@ namespace Xamarin.Essentials
             picker.Delegate = new PhotoPickerDelegate
             {
                 CompletedHandler = info =>
-                    tcs.TrySetResult(DictionaryToMediaFile(info))
+                {
+                    try
+                    {
+                        tcs.TrySetResult(DictionaryToMediaFile(info));
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.TrySetException(ex);
+                    }
+                }
             };
 
             if (picker.PresentationController != null)
@@ -74,7 +83,16 @@ namespace Xamarin.Essentials
                 picker.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
                 {
                     CompletedHandler = info =>
-                        tcs.TrySetResult(DictionaryToMediaFile(info))
+                    {
+                        try
+                        {
+                            tcs.TrySetResult(DictionaryToMediaFile(info));
+                        }
+                        catch (Exception ex)
+                        {
+                            tcs.TrySetException(ex);
+                        }
+                    }
                 };
             }
 

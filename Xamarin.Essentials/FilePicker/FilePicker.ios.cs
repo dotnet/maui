@@ -35,10 +35,7 @@ namespace Xamarin.Essentials
                     try
                     {
                         // there was a cancellation
-                        if (urls?.Any() ?? false)
-                            tcs.TrySetResult(urls.Select(url => new UIDocumentFileResult(url)));
-                        else
-                            tcs.TrySetResult(Enumerable.Empty<FileResult>());
+                        tcs.TrySetResult(GetFileResults(urls));
                     }
                     catch (Exception ex)
                     {
@@ -52,7 +49,19 @@ namespace Xamarin.Essentials
             {
                 documentPicker.PresentationController.Delegate = new PickerPresentationControllerDelegate
                 {
-                    PickHandler = urls => tcs.TrySetResult(Enumerable.Empty<FileResult>())
+                    PickHandler = urls =>
+                    {
+                        try
+                        {
+                            // there was a cancellation
+                            tcs.TrySetResult(GetFileResults(urls));
+                        }
+                        catch (Exception ex)
+                        {
+                            // pass exception to task so that it doesn't get lost in the UI main loop
+                            tcs.SetException(ex);
+                        }
+                    }
                 };
             }
 
@@ -63,9 +72,17 @@ namespace Xamarin.Essentials
             return tcs.Task;
         }
 
+        static IEnumerable<FileResult> GetFileResults(NSUrl[] urls)
+        {
+            if (urls?.Length > 0)
+                return urls.Select(url => new UIDocumentFileResult(url));
+            else
+                return Enumerable.Empty<FileResult>();
+        }
+
         class PickerDelegate : UIDocumentPickerDelegate
         {
-            public Action<IEnumerable<NSUrl>> PickHandler { get; set; }
+            public Action<NSUrl[]> PickHandler { get; set; }
 
             public override void WasCancelled(UIDocumentPickerViewController controller)
                 => PickHandler?.Invoke(null);
@@ -74,12 +91,12 @@ namespace Xamarin.Essentials
                 => PickHandler?.Invoke(urls);
 
             public override void DidPickDocument(UIDocumentPickerViewController controller, NSUrl url)
-                => PickHandler?.Invoke(new List<NSUrl> { url });
+                => PickHandler?.Invoke(new NSUrl[] { url });
         }
 
         class PickerPresentationControllerDelegate : UIAdaptivePresentationControllerDelegate
         {
-            public Action<IEnumerable<NSUrl>> PickHandler { get; set; }
+            public Action<NSUrl[]> PickHandler { get; set; }
 
             public override void DidDismiss(UIPresentationController presentationController) =>
                 PickHandler?.Invoke(null);

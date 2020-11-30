@@ -27,7 +27,16 @@ namespace Xamarin.Essentials
             var picker = new CNContactPickerViewController
             {
                 Delegate = new ContactPickerDelegate(phoneContact =>
-                    source?.TrySetResult(ConvertContact(phoneContact)))
+                {
+                    try
+                    {
+                        source?.TrySetResult(ConvertContact(phoneContact));
+                    }
+                    catch (Exception ex)
+                    {
+                        source?.TrySetException(ex);
+                    }
+                })
             };
 
             uiView.PresentViewController(picker, true, null);
@@ -80,31 +89,20 @@ namespace Xamarin.Essentials
             if (contact == null)
                 return default;
 
-            try
-            {
-                var phones = contact.PhoneNumbers?.Select(
-                   item => new ContactPhone(item?.Value?.StringValue));
-                var emails = contact.EmailAddresses?.Select(
-                   item => new ContactEmail(item?.Value?.ToString()));
+            var phones = contact.PhoneNumbers?.Select(
+                item => new ContactPhone(item?.Value?.StringValue));
+            var emails = contact.EmailAddresses?.Select(
+                item => new ContactEmail(item?.Value?.ToString()));
 
-                return new Contact(
-                    contact.Identifier,
-                    contact.NamePrefix,
-                    contact.GivenName,
-                    contact.MiddleName,
-                    contact.FamilyName,
-                    contact.NameSuffix,
-                    phones,
-                    emails);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-                contact.Dispose();
-            }
+            return new Contact(
+                contact.Identifier,
+                contact.NamePrefix,
+                contact.GivenName,
+                contact.MiddleName,
+                contact.FamilyName,
+                contact.NameSuffix,
+                phones,
+                emails);
         }
 
 #if __IOS__
