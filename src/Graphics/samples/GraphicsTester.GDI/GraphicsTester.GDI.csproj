@@ -95,11 +95,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\libraries\System.Graphics.Core\System.Graphics.Core.csproj">
+    <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj">
       <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
       <Name>System.Graphics</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\libraries\System.Graphics.GDI.Winforms\System.Graphics.GDI.Winforms.csproj">
+    <ProjectReference Include="..\..\src\System.Graphics.GDI.Winforms\System.Graphics.GDI.Winforms.csproj">
       <Project>{3c3bf90f-c579-463d-b33f-8b9b16d2dab7}</Project>
       <Name>System.Graphics.GDI.Winforms</Name>
     </ProjectReference>

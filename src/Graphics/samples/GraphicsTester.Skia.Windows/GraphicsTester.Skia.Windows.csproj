@@ -59,8 +59,8 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\libraries\System.Graphics.GDI.Winforms\System.Graphics.GDI.Winforms.csproj" />
-    <ProjectReference Include="..\..\libraries\System.Graphics.Skia.WPF\System.Graphics.Skia.WPF.csproj" />
+    <ProjectReference Include="..\..\src\System.Graphics.GDI.Winforms\System.Graphics.GDI.Winforms.csproj" />
+    <ProjectReference Include="..\..\src\System.Graphics.Skia.WPF\System.Graphics.Skia.WPF.csproj" />
     <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj">
     </ProjectReference>
   </ItemGroup>

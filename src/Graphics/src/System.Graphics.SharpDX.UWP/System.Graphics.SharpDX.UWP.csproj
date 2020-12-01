@@ -143,7 +143,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\System.Graphics.Core\System.Graphics.Core.csproj">
+    <ProjectReference Include="..\System.Graphics\System.Graphics.csproj">
       <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
       <Name>System.Graphics.Core</Name>
     </ProjectReference>

@@ -130,15 +130,15 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\libraries\System.Graphics.Core\System.Graphics.Core.csproj">
+    <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj">
       <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
       <Name>System.Graphics.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\libraries\System.Graphics.SharpDX.UWP\System.Graphics.SharpDX.UWP.csproj">
+    <ProjectReference Include="..\..\src\System.Graphics.SharpDX.UWP\System.Graphics.SharpDX.UWP.csproj">
       <Project>{694e970d-5c18-483f-bc48-d6d86da8e78f}</Project>
       <Name>System.Graphics.SharpDX.UWP</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\libraries\System.Graphics.Win2D.UWP\System.Graphics.Win2D.UWP.csproj">
+    <ProjectReference Include="..\..\src\System.Graphics.Win2D.UWP\System.Graphics.Win2D.UWP.csproj">
       <Project>{20794e60-3bfd-46f4-bc0b-87b3959aa3c7}</Project>
       <Name>System.Graphics.Win2D.UWP</Name>
     </ProjectReference>

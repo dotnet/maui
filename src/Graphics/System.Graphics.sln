@@ -57,16 +57,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpDX.Desktop", "src\exte
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "System.Graphics.SharpDX.Shared", "src\System.Graphics.SharpDX.Shared\System.Graphics.SharpDX.Shared.shproj", "{5163BCB2-4D70-42DA-975A-AF55D6B6A0B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Graphics.Forms", "src\System.Graphics.Forms\System.Graphics.Forms.csproj", "{7A1C8AB5-46EA-4B30-88A1-1564F32702BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Forms", "src\System.Graphics.Forms\System.Graphics.Forms.csproj", "{7A1C8AB5-46EA-4B30-88A1-1564F32702BA}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\System.Graphics.SharpDX.Shared\System.Graphics.SharpDX.Shared.projitems*{5163bcb2-4d70-42da-975a-af55d6b6a0b3}*SharedItemsImports = 13
 		src\System.Graphics.SharpDX.Shared\System.Graphics.SharpDX.Shared.projitems*{694e970d-5c18-483f-bc48-d6d86da8e78f}*SharedItemsImports = 4
-		src\System.Graphics.CoreGraphics\System.Graphics.CoreGraphics.projitems*{95a3e5f1-26b7-4bd8-8f01-48fe7bfd79fa}*SharedItemsImports = 13
 		src\System.Graphics.SharpDX.Shared\System.Graphics.SharpDX.Shared.projitems*{bc291304-fdc0-4e1d-a673-39f5e446b0e0}*SharedItemsImports = 5
-		src\System.Graphics.CoreGraphics\System.Graphics.CoreGraphics.projitems*{edf26ebb-0ac3-4212-81d6-8dd08f5acc17}*SharedItemsImports = 4
-		src\System.Graphics.CoreGraphics\System.Graphics.CoreGraphics.projitems*{f8d43f64-af09-4e06-8473-5bdc37281908}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

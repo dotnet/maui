@@ -90,7 +90,7 @@
     <InterfaceDefinition Include="MainWindow.xib" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\libraries\System.Graphics.Core\System.Graphics.Core.csproj">
+    <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj">
       <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
       <Name>System.Graphics</Name>
     </ProjectReference>
@@ -98,12 +98,12 @@
       <Project>{D1878E17-08A7-4858-94B8-DE8B38BE2632}</Project>
       <Name>GraphicsTester.Portable</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\libraries\System.Graphics.Text.Markdig\System.Graphics.Text.Markdig.csproj">
+    <ProjectReference Include="..\..\src\System.Graphics.Text.Markdig\System.Graphics.Text.Markdig.csproj">
       <Project>{ED36FB6D-7278-465D-9C44-D01927258BA1}</Project>
       <Name>System.Graphics.Text.Markdig</Name>
     </ProjectReference>
   </ItemGroup>
-    <ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Markdig">
       <Version>0.22.0</Version>
     </PackageReference>
