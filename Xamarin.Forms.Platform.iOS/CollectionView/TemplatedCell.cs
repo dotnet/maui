@@ -90,17 +90,6 @@ namespace Xamarin.Forms.Platform.iOS
 				// Create the content and renderer for the view 
 				var view = itemTemplate.CreateContent() as View;
 
-				// Prevents the use of default color when there are VisualStateManager with Selected state setting the background color
-				// First we check whether the cell has the default selected background color; if it does, then we should check
-				// to see if the cell content is the VSM to set a selected color 
-				if (SelectedBackgroundView.BackgroundColor == ColorExtensions.Gray && IsUsingVSMForSelectionColor(view))
-				{
-					SelectedBackgroundView = new UIView
-					{
-						BackgroundColor = UIColor.Clear
-					};
-				}
-
 				// Set the binding context _before_ we create the renderer; that way, it's available during OnElementChanged
 				view.BindingContext = bindingContext;
 
@@ -112,6 +101,17 @@ namespace Xamarin.Forms.Platform.iOS
 				// if we do it before, the element briefly inherits the ItemsView's bindingcontext and we 
 				// emit a bunch of needless binding errors
 				itemsView.AddLogicalChild(view);
+
+				// Prevents the use of default color when there are VisualStateManager with Selected state setting the background color
+				// First we check whether the cell has the default selected background color; if it does, then we should check
+				// to see if the cell content is the VSM to set a selected color 
+				if (SelectedBackgroundView.BackgroundColor == ColorExtensions.Gray && IsUsingVSMForSelectionColor(view))
+				{
+					SelectedBackgroundView = new UIView
+					{
+						BackgroundColor = UIColor.Clear
+					};
+				}
 			}
 			else
 			{

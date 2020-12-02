@@ -32,22 +32,12 @@
 				ItemsSource="{Binding Items}"
 				SelectionMode="Single"
 				SelectedItem="{Binding SelectedItem}">
-				<CollectionView.ItemTemplate>
-					<DataTemplate>
-						<Frame
-							HasShadow="False"
-							Margin="10"
-							BackgroundColor="LightBlue"
-							CornerRadius="20">
-							<StackLayout>
-								<Image
-									Source="{Binding Image}"
-									HeightRequest="50" />
-								<Label
-									Text="{Binding Caption}"></Label>
-							</StackLayout>
 
-							<VisualStateManager.VisualStateGroups>
+				<CollectionView.Resources>
+					<ResourceDictionary>
+						<Style TargetType="Frame">
+							<Setter Property="VisualStateManager.VisualStateGroups">
+
 								<VisualStateGroupList>
 									<VisualStateGroup x:Name="CommonStates">
 										<VisualState x:Name="Normal" />
@@ -63,7 +53,27 @@
 										</VisualState>
 									</VisualStateGroup>
 								</VisualStateGroupList>
-							</VisualStateManager.VisualStateGroups>
+
+							</Setter>
+						</Style>
+					</ResourceDictionary>
+
+				</CollectionView.Resources>
+
+				<CollectionView.ItemTemplate>
+					<DataTemplate>
+						<Frame
+							HasShadow="False"
+							Margin="10"
+							BackgroundColor="LightBlue"
+							CornerRadius="20">
+							<StackLayout>
+								<Image
+									Source="{Binding Image}"
+									HeightRequest="50" />
+								<Label
+									Text="{Binding Caption}"></Label>
+							</StackLayout>
 
 						</Frame>
 					</DataTemplate>
