@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework.Interfaces;
@@ -569,7 +570,7 @@ namespace Xamarin.Forms.Controls
 	public abstract class TestShell : Shell
 	{
 		protected const string FlyoutIconAutomationId = "OK";
-#if __IOS__
+#if __IOS__ || __WINDOWS__
 		protected const string BackButtonAutomationId = "Back";
 #else
 		protected const string BackButtonAutomationId = "OK";
@@ -599,6 +600,7 @@ namespace Xamarin.Forms.Controls
 
 		protected TestShell() : base()
 		{
+			Device.SetFlags(new List<string> { ExperimentalFlags.ShellUWPExperimental });
 			Routing.Clear();
 #if APP
 			Init();

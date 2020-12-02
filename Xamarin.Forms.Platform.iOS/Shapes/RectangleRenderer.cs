@@ -11,6 +11,9 @@ namespace Xamarin.Forms.Platform.MacOS
 {
     public class RectangleRenderer : ShapeRenderer<FormsRectangle, RectangleView>
     {
+        // Each corner of the rounded rectangle is one-quarter of an ellipse with axes equal to the RadiusX and Radius parameters.
+        const double MaximumRadius = 0.5d;
+
         [Internals.Preserve(Conditional = true)]
         public RectangleRenderer()
         {
@@ -48,13 +51,27 @@ namespace Xamarin.Forms.Platform.MacOS
         void UpdateRadiusX()
         {
             if (Element.Width > 0)
-                Control.UpdateRadiusX(Element.RadiusX / Element.Width);
+            {
+                var radiusX = ValidateRadius(Element.RadiusX / Element.Width);
+                Control.UpdateRadiusX(radiusX);
+            }
         }
 
         void UpdateRadiusY()
         {
             if (Element.Height > 0)
-                Control.UpdateRadiusY(Element.RadiusY / Element.Height);
+            {
+                var radiusY = ValidateRadius(Element.RadiusY / Element.Height);
+                Control.UpdateRadiusY(radiusY);
+            }
+        }
+
+        double ValidateRadius(double radius)
+        {
+            if (radius > MaximumRadius)
+                radius = MaximumRadius;
+
+            return radius;
         }
     }
 

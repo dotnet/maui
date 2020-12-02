@@ -52,6 +52,8 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				Internals.Log.Warning(nameof(Shell), $"Failed to Navigate Back: {exc}");
 			}
+
+			UpdateToolBar();
 		}
 
 		public WBrush FlyoutBackgroundColor
@@ -328,8 +330,8 @@ namespace Xamarin.Forms.Platform.UWP
 			switch (_flyoutBehavior)
 			{
 				case FlyoutBehavior.Disabled:
-					IsPaneToggleButtonVisible = false;
-					IsPaneVisible = false;
+					IsPaneVisible = IsBackEnabled;
+					IsPaneToggleButtonVisible = !IsBackEnabled;
 					PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
 					IsPaneOpen = false;
 					break;

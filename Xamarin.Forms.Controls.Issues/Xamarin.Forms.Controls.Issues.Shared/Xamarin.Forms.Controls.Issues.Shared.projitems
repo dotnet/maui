@@ -302,6 +302,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue9833.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9929.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9088.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavPageOverrideUWP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RefreshViewTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7338.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScrollToGroup.cs" />
@@ -1539,6 +1540,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue11031.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11018.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10940.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue11033.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10865.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11190.xaml.cs">
       <DependentUpon>Issue11190.xaml</DependentUpon>
@@ -1637,6 +1639,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue12374.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue12222.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue12541.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue12574.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue12777.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11911.xaml.cs" />
@@ -1972,6 +1975,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11081.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12541.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12374.xaml">

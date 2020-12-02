@@ -134,6 +134,7 @@
     <Compile Include="BorderEffect.cs" />
     <Compile Include="CustomSwitchRenderer.cs" />
     <Compile Include="DisposePageRenderer.cs" />
+    <Compile Include="NavPageOverrideRenderer.cs" />
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
     <Compile Include="RegistrarValidationService.cs" />
     <Compile Include="SampleNativeControl.cs" />
@@ -256,7 +257,7 @@
       <Version>6.2.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.4.2</Version>
+      <Version>2.4.3</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>

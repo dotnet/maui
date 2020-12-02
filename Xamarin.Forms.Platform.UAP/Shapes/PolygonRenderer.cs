@@ -17,6 +17,8 @@ namespace Xamarin.Forms.Platform.WPF
 {
 	public class PolygonRenderer : ShapeRenderer<Polygon, WPolygon>
 	{
+		PointCollection _points;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Polygon> args)
 		{
 			if (Control == null && args.NewElement != null)
@@ -52,17 +54,24 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (disposing)
 			{
-				if (Element != null)
+				if (_points != null)
 				{
-					var points = Element.Points;
-					points.CollectionChanged -= OnCollectionChanged;
+					_points.CollectionChanged -= OnCollectionChanged;
+					_points = null;
 				}
 			}
 		}
 
 		void UpdatePoints()
 		{
-			Control.Points = Element.Points.ToWindows();
+			if (_points != null)
+				_points.CollectionChanged -= OnCollectionChanged;
+
+			_points = Element.Points;
+
+			_points.CollectionChanged += OnCollectionChanged;
+
+			Control.Points = _points.ToWindows();
 		}
 
 		void UpdateFillRule()

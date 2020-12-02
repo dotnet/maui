@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap(ClearShellItems);
 
 			var label = RunningApp.WaitForElement(StatusLabel)[0];
-			Assert.AreEqual(label.Text, StatusLabelText);
+			Assert.AreEqual(StatusLabelText, label.ReadText());
 			RunningApp.Tap(PostClearTopTab);
 		}
 #endif

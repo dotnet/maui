@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 
-#if UITEST
+#if UITEST && __SHELL__
 		[Test]
 		public void LeftToolbarItemTextDisplaysWhenFlyoutIsDisabled()
 		{

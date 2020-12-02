@@ -70,7 +70,7 @@ bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.Starts
 string defaultUnitTestWhere = "";
 
 if(target.ToLower().Contains("uwp"))
-    defaultUnitTestWhere = "cat != Shell && cat != UwpIgnore";
+    defaultUnitTestWhere = "cat != UwpIgnore";
 
 var NUNIT_TEST_WHERE = Argument("NUNIT_TEST_WHERE", defaultUnitTestWhere);
 var ExcludeCategory = GetBuildVariable("ExcludeCategory", "")?.Replace("\"", "");
