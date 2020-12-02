@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Platform.Android
 	public class SwipeViewRenderer : ViewRenderer<SwipeView, AView>
 	{
 		const float OpenSwipeThresholdPercentage = 0.6f; // 60%
-		const int SwipeThreshold  = 250;
+		const int SwipeThreshold = 250;
 		const int SwipeItemWidth = 100;
 		const long SwipeAnimationDuration = 200;
 		const float SwipeMinimumDelta = 10f;
@@ -278,7 +278,7 @@ namespace Xamarin.Forms.Platform.Android
 				_initialPoint = new APointF(e.GetX() / _density, e.GetY() / _density);
 			}
 
-			if(e.Action == MotionEventActions.Move)
+			if (e.Action == MotionEventActions.Move)
 			{
 				ResetSwipe(e);
 			}
@@ -449,7 +449,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (_isSwiping || _isTouchDown || _contentView == null)
 				return false;
-			
+
 			_initialPoint = point;
 			_isTouchDown = true;
 
@@ -1298,7 +1298,7 @@ namespace Xamarin.Forms.Platform.Android
 
 						if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
 							ResetSwipe();
-						
+
 						break;
 					}
 				}
