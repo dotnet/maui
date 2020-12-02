@@ -4,6 +4,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using AndroidEnvironment = Android.OS.Environment;
+using AndroidUri = Android.Net.Uri;
 #if __ANDROID_29__
 using ContentFileProvider = AndroidX.Core.Content.FileProvider;
 #else
@@ -29,15 +30,6 @@ namespace Xamarin.Essentials
         public static FileProviderLocation TemporaryLocation { get; set; } = FileProviderLocation.PreferExternal;
 
         internal static string Authority => Platform.AppContext.PackageName + ".fileProvider";
-
-        internal static Java.IO.File GetTemporaryDirectory()
-        {
-            var root = GetTemporaryRootDirectory();
-            var dir = new Java.IO.File(root, "2203693cc04e0be7f4f024d5f9499e13");
-            dir.Mkdirs();
-            dir.DeleteOnExit();
-            return dir;
-        }
 
         internal static Java.IO.File GetTemporaryRootDirectory()
         {
@@ -124,6 +116,9 @@ namespace Xamarin.Essentials
 
             return false;
         }
+
+        internal static AndroidUri GetUriForFile(Java.IO.File file) =>
+            FileProvider.GetUriForFile(Platform.AppContext, Authority, file);
     }
 
     public enum FileProviderLocation

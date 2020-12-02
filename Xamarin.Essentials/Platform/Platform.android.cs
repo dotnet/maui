@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
@@ -12,7 +11,6 @@ using Android.Locations;
 using Android.Net;
 using Android.Net.Wifi;
 using Android.OS;
-using Android.Provider;
 using Android.Views;
 using AndroidIntent = Android.Content.Intent;
 using AndroidUri = Android.Net.Uri;
@@ -130,12 +128,11 @@ namespace Xamarin.Essentials
             return false;
         }
 
-        internal static bool IsIntentSupported(AndroidIntent intent)
-        {
-            var manager = AppContext.PackageManager;
-            var activities = manager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
-            return activities.Any();
-        }
+        internal static bool IsIntentSupported(AndroidIntent intent) =>
+            intent.ResolveActivity(AppContext.PackageManager) != null;
+
+        internal static bool IsIntentSupported(AndroidIntent intent, string expectedPackageName) =>
+            intent.ResolveActivity(AppContext.PackageManager) is ComponentName c && c.PackageName == expectedPackageName;
 
         internal static AndroidUri GetShareableFileUri(FileBase file)
         {
@@ -147,28 +144,11 @@ namespace Xamarin.Essentials
             }
             else
             {
-                var rootDir = FileProvider.GetTemporaryDirectory();
+                var root = FileProvider.GetTemporaryRootDirectory();
 
-                // create a unique directory just in case there are multiple file with the same name
-                var tmpDir = new Java.IO.File(rootDir, Guid.NewGuid().ToString("N"));
-                tmpDir.Mkdirs();
-                tmpDir.DeleteOnExit();
+                var tmpFile = FileSystem.GetEssentialsTemporaryFile(root, file.FileName);
 
-                // create the new temprary file
-                var tmpFile = new Java.IO.File(tmpDir, file.FileName);
-                tmpFile.DeleteOnExit();
-
-                var fileUri = AndroidUri.Parse(file.FullPath);
-                if (fileUri.Scheme == "content")
-                {
-                    using var stream = Application.Context.ContentResolver.OpenInputStream(fileUri);
-                    using var destStream = System.IO.File.Create(tmpFile.CanonicalPath);
-                    stream.CopyTo(destStream);
-                }
-                else
-                {
-                    System.IO.File.Copy(file.FullPath, tmpFile.CanonicalPath);
-                }
+                System.IO.File.Copy(file.FullPath, tmpFile.CanonicalPath);
 
                 sharedFile = tmpFile;
             }
@@ -187,47 +167,15 @@ namespace Xamarin.Essentials
             return AndroidUri.FromFile(sharedFile);
         }
 
-        internal static bool HasApiLevelN =>
-#if __ANDROID_24__
-            HasApiLevel(BuildVersionCodes.N);
-#else
-            false;
-#endif
+        internal static bool HasApiLevelKitKat => HasApiLevel(BuildVersionCodes.Kitkat);
 
-        internal static bool HasApiLevelNMr1 =>
-#if __ANDROID_25__
-        HasApiLevel(BuildVersionCodes.NMr1);
-#else
-        false;
-#endif
+        internal static bool HasApiLevelN => HasApiLevel(24);
 
-        internal static bool HasApiLevelO =>
-#if __ANDROID_26__
-            HasApiLevel(BuildVersionCodes.O);
-#else
-            false;
-#endif
+        internal static bool HasApiLevelNMr1 => HasApiLevel(25);
 
-        internal static bool HasApiLevelOMr1 =>
-#if __ANDROID_27__
-            HasApiLevel(BuildVersionCodes.OMr1);
-#else
-            false;
-#endif
+        internal static bool HasApiLevelO => HasApiLevel(26);
 
-        internal static bool HasApiLevelP =>
-#if __ANDROID_28__
-            HasApiLevel(BuildVersionCodes.P);
-#else
-            false;
-#endif
-
-        internal static bool HasApiLevelQ =>
-#if __ANDROID_29__
-            HasApiLevel(BuildVersionCodes.Q);
-#else
-            false;
-#endif
+        internal static bool HasApiLevelQ => HasApiLevel(29);
 
         static int? sdkInt;
 
@@ -236,6 +184,9 @@ namespace Xamarin.Essentials
 
         internal static bool HasApiLevel(BuildVersionCodes versionCode) =>
             SdkInt >= (int)versionCode;
+
+        internal static bool HasApiLevel(int apiLevel) =>
+            SdkInt >= apiLevel;
 
         internal static CameraManager CameraManager =>
             AppContext.GetSystemService(Context.CameraService) as CameraManager;
@@ -387,19 +338,14 @@ namespace Xamarin.Essentials
         const string actualIntentExtra = "actual_intent";
         const string guidExtra = "guid";
         const string requestCodeExtra = "request_code";
-        const string outputExtra = "output";
 
-        internal const string OutputUriExtra = "output_uri";
-
-        static readonly ConcurrentDictionary<string, TaskCompletionSource<Intent>> pendingTasks =
-            new ConcurrentDictionary<string, TaskCompletionSource<Intent>>();
+        static readonly ConcurrentDictionary<string, IntermediateTask> pendingTasks =
+            new ConcurrentDictionary<string, IntermediateTask>();
 
         bool launched;
         Intent actualIntent;
         string guid;
         int requestCode;
-        string output;
-        global::Android.Net.Uri outputUri;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -412,14 +358,10 @@ namespace Xamarin.Essentials
             actualIntent = extras.GetParcelable(actualIntentExtra) as Intent;
             guid = extras.GetString(guidExtra);
             requestCode = extras.GetInt(requestCodeExtra, -1);
-            output = extras.GetString(outputExtra, null);
 
-            if (!string.IsNullOrEmpty(output))
+            if (GetIntermediateTask(guid) is IntermediateTask task)
             {
-                var javaFile = new Java.IO.File(output);
-                var providerAuthority = FileProvider.Authority;
-                outputUri = FileProvider.GetUriForFile(Platform.AppContext, providerAuthority, javaFile);
-                actualIntent.PutExtra(MediaStore.ExtraOutput, outputUri);
+                task.OnCreate?.Invoke(actualIntent);
             }
 
             // if this is the first time, lauch the real activity
@@ -436,7 +378,6 @@ namespace Xamarin.Essentials
             outState.PutParcelable(actualIntentExtra, actualIntent);
             outState.PutString(guidExtra, guid);
             outState.PutInt(requestCodeExtra, requestCode);
-            outState.PutString(outputExtra, output);
 
             base.OnSaveInstanceState(outState);
         }
@@ -446,21 +387,26 @@ namespace Xamarin.Essentials
             base.OnActivityResult(requestCode, resultCode, data);
 
             // we have a valid GUID, so handle the task
-            if (!string.IsNullOrEmpty(guid) && pendingTasks.TryRemove(guid, out var tcs) && tcs != null)
+            if (GetIntermediateTask(guid, true) is IntermediateTask task)
             {
                 if (resultCode == Result.Canceled)
                 {
-                    tcs.TrySetCanceled();
+                    task.TaskCompletionSource.TrySetCanceled();
                 }
                 else
                 {
-                    if (outputUri != null)
+                    try
                     {
                         data ??= new AndroidIntent();
-                        data.PutExtra(OutputUriExtra, outputUri);
-                    }
 
-                    tcs.TrySetResult(data);
+                        task.OnResult?.Invoke(data);
+
+                        task.TaskCompletionSource.TrySetResult(data);
+                    }
+                    catch (Exception ex)
+                    {
+                        task.TaskCompletionSource.TrySetException(ex);
+                    }
                 }
             }
 
@@ -468,30 +414,60 @@ namespace Xamarin.Essentials
             Finish();
         }
 
-        public static Task<Intent> StartAsync(Intent intent, int requestCode, Java.IO.File extraOutput = null)
+        public static Task<Intent> StartAsync(Intent intent, int requestCode, Action<Intent> onCreate = null, Action<Intent> onResult = null)
         {
             // make sure we have the activity
             var activity = Platform.GetCurrentActivity(true);
 
-            var tcs = new TaskCompletionSource<Intent>();
-
             // create a new task
-            var guid = Guid.NewGuid().ToString();
-            pendingTasks[guid] = tcs;
+            var data = new IntermediateTask(onCreate, onResult);
+            pendingTasks[data.Id] = data;
 
             // create the intermediate intent, and add the real intent to it
             var intermediateIntent = new Intent(activity, typeof(IntermediateActivity));
             intermediateIntent.PutExtra(actualIntentExtra, intent);
-            intermediateIntent.PutExtra(guidExtra, guid);
+            intermediateIntent.PutExtra(guidExtra, data.Id);
             intermediateIntent.PutExtra(requestCodeExtra, requestCode);
-
-            if (extraOutput != null)
-                intermediateIntent.PutExtra(outputExtra, extraOutput.AbsolutePath);
 
             // start the intermediate activity
             activity.StartActivityForResult(intermediateIntent, requestCode);
 
-            return tcs.Task;
+            return data.TaskCompletionSource.Task;
+        }
+
+        static IntermediateTask GetIntermediateTask(string guid, bool remove = false)
+        {
+            if (string.IsNullOrEmpty(guid))
+                return null;
+
+            if (remove)
+            {
+                pendingTasks.TryRemove(guid, out var removedTask);
+                return removedTask;
+            }
+
+            pendingTasks.TryGetValue(guid, out var task);
+            return task;
+        }
+
+        class IntermediateTask
+        {
+            public IntermediateTask(Action<Intent> onCreate, Action<AndroidIntent> onResult)
+            {
+                Id = Guid.NewGuid().ToString();
+                TaskCompletionSource = new TaskCompletionSource<Intent>();
+
+                OnCreate = onCreate;
+                OnResult = onResult;
+            }
+
+            public string Id { get; }
+
+            public TaskCompletionSource<Intent> TaskCompletionSource { get; }
+
+            public Action<Intent> OnCreate { get; }
+
+            public Action<AndroidIntent> OnResult { get; }
         }
     }
 }

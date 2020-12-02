@@ -17,5 +17,26 @@ namespace Tests
         {
             await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => FileSystem.OpenAppPackageFileAsync("filename.txt"));
         }
+
+        [Theory]
+        [InlineData(null, "")]
+        [InlineData("", "")]
+        [InlineData(".", ".")]
+        [InlineData(".txt", ".txt")]
+        [InlineData("*.txt", ".txt")]
+        [InlineData("*.*", ".*")]
+        [InlineData("txt", ".txt")]
+        [InlineData("test.txt", ".test.txt")]
+        [InlineData("test.", ".test.")]
+        [InlineData("....txt", ".txt")]
+        [InlineData("******txt", ".txt")]
+        [InlineData("******.txt", ".txt")]
+        [InlineData("******.......txt", ".txt")]
+        public void Extensions_Clean_Correctly_Cleans_Extensions(string input, string output)
+        {
+            var cleaned = FileSystem.Extensions.Clean(input);
+
+            Assert.Equal(output, cleaned);
+        }
     }
 }

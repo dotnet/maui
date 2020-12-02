@@ -59,9 +59,7 @@ namespace Xamarin.Essentials
             intent.SetData(global::Android.Net.Uri.Parse(callbackUrl.OriginalString));
 
             // Try to find the activity for the callback intent
-            var c = intent.ResolveActivity(Platform.AppContext.PackageManager);
-
-            if (c == null || c.PackageName != packageName)
+            if (!Platform.IsIntentSupported(intent, packageName))
                 throw new InvalidOperationException($"You must subclass the `{nameof(WebAuthenticatorCallbackActivity)}` and create an IntentFilter for it which matches your `{nameof(callbackUrl)}`.");
 
             // Cancel any previous task that's still pending

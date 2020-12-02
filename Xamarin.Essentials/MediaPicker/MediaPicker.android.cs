@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Provider;
+using AndroidUri = Android.Net.Uri;
 
 namespace Xamarin.Essentials
 {
@@ -24,20 +20,30 @@ namespace Xamarin.Essentials
 
         static async Task<FileResult> PlatformPickAsync(MediaPickerOptions options, bool photo)
         {
-            // we only need the permission when accessing the file, but it's more natural
+            // We only need the permission when accessing the file, but it's more natural
             // to ask the user first, then show the picker.
             await Permissions.RequestAsync<Permissions.StorageRead>();
 
             var intent = new Intent(Intent.ActionGetContent);
-            intent.SetType(photo ? "image/*" : "video/*");
+            intent.SetType(photo ? FileSystem.MimeTypes.ImageAll : FileSystem.MimeTypes.VideoAll);
 
             var pickerIntent = Intent.CreateChooser(intent, options?.Title);
 
             try
             {
-                var result = await IntermediateActivity.StartAsync(pickerIntent, Platform.requestCodeMediaPicker);
+                string path = null;
+                void OnResult(Intent intent)
+                {
+                    // The uri returned is only temporary and only lives as long as the Activity that requested it,
+                    // so this means that it will always be cleaned up by the time we need it because we are using
+                    // an intermediate activity.
 
-                return new FileResult(result.Data);
+                    path = FileSystem.EnsurePhysicalPath(intent.Data);
+                }
+
+                await IntermediateActivity.StartAsync(pickerIntent, Platform.requestCodeMediaPicker, onResult: OnResult);
+
+                return new FileResult(path);
             }
             catch (OperationCanceledException)
             {
@@ -57,32 +63,47 @@ namespace Xamarin.Essentials
             await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
 
             var capturePhotoIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
-            if (capturePhotoIntent.ResolveActivity(Platform.AppContext.PackageManager) != null)
+
+            if (!Platform.IsIntentSupported(capturePhotoIntent))
+                throw new FeatureNotSupportedException($"Either there was no camera on the device or '{capturePhotoIntent.Action}' was not added to the <queries> element in the app's manifest file. See more: https://developer.android.com/about/versions/11/privacy/package-visibility");
+
+            capturePhotoIntent.AddFlags(ActivityFlags.GrantReadUriPermission);
+            capturePhotoIntent.AddFlags(ActivityFlags.GrantWriteUriPermission);
+
+            try
             {
-                try
+                var activity = Platform.GetCurrentActivity(true);
+
+                // Create the temporary file
+                var ext = photo
+                    ? FileSystem.Extensions.Jpg
+                    : FileSystem.Extensions.Mp4;
+                var fileName = Guid.NewGuid().ToString("N") + ext;
+                var tmpFile = FileSystem.GetEssentialsTemporaryFile(Platform.AppContext.CacheDir, fileName);
+
+                // Set up the content:// uri
+                AndroidUri outputUri = null;
+                void OnCreate(Intent intent)
                 {
-                    var activity = Platform.GetCurrentActivity(true);
+                    // Android requires that using a file provider to get a content:// uri for a file to be called
+                    // from within the context of the actual activity which may share that uri with another intent
+                    // it launches.
 
-                    var storageDir = Platform.AppContext.ExternalCacheDir;
-                    var tmpFile = Java.IO.File.CreateTempFile(Guid.NewGuid().ToString(), photo ? ".jpg" : ".mp4", storageDir);
-                    tmpFile.DeleteOnExit();
+                    outputUri ??= FileProvider.GetUriForFile(tmpFile);
 
-                    capturePhotoIntent.AddFlags(ActivityFlags.GrantReadUriPermission);
-                    capturePhotoIntent.AddFlags(ActivityFlags.GrantWriteUriPermission);
-
-                    var result = await IntermediateActivity.StartAsync(capturePhotoIntent, Platform.requestCodeMediaCapture, tmpFile);
-
-                    var outputUri = result.GetParcelableExtra(IntermediateActivity.OutputUriExtra) as global::Android.Net.Uri;
-
-                    return new FileResult(outputUri);
+                    intent.PutExtra(MediaStore.ExtraOutput, outputUri);
                 }
-                catch (OperationCanceledException)
-                {
-                    return null;
-                }
+
+                // Start the capture process
+                await IntermediateActivity.StartAsync(capturePhotoIntent, Platform.requestCodeMediaCapture, OnCreate);
+
+                // Return the file that we just captured
+                return new FileResult(tmpFile.AbsolutePath);
             }
-
-            return null;
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
         }
     }
 }

@@ -44,7 +44,7 @@ namespace Xamarin.Essentials
                 if (!string.IsNullOrWhiteSpace(packageName))
                 {
                     intent = new Intent(Intent.ActionSend);
-                    intent.SetType("text/plain");
+                    intent.SetType(FileSystem.MimeTypes.TextPlain);
                     intent.PutExtra(Intent.ExtraText, body);
                     intent.SetPackage(packageName);
 

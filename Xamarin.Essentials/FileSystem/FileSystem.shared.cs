@@ -14,11 +14,77 @@ namespace Xamarin.Essentials
 
         public static Task<Stream> OpenAppPackageFileAsync(string filename)
             => PlatformOpenAppPackageFileAsync(filename);
+
+        internal static class MimeTypes
+        {
+            internal const string All = "*/*";
+
+            internal const string ImageAll = "image/*";
+            internal const string ImagePng = "image/png";
+            internal const string ImageJpg = "image/jpeg";
+
+            internal const string VideoAll = "video/*";
+
+            internal const string EmailMessage = "message/rfc822";
+
+            internal const string Pdf = "application/pdf";
+
+            internal const string TextPlain = "text/plain";
+
+            internal const string OctetStream = "application/octet-stream";
+        }
+
+        internal static class Extensions
+        {
+            internal const string Png = ".png";
+            internal const string Jpg = ".jpg";
+            internal const string Jpeg = ".jpeg";
+            internal const string Gif = ".gif";
+            internal const string Bmp = ".bmp";
+
+            internal const string Avi = ".avi";
+            internal const string Flv = ".flv";
+            internal const string Gifv = ".gifv";
+            internal const string Mp4 = ".mp4";
+            internal const string M4v = ".m4v";
+            internal const string Mpg = ".mpg";
+            internal const string Mpeg = ".mpeg";
+            internal const string Mp2 = ".mp2";
+            internal const string Mkv = ".mkv";
+            internal const string Mov = ".mov";
+            internal const string Qt = ".qt";
+            internal const string Wmv = ".wmv";
+
+            internal const string Pdf = ".pdf";
+
+            internal static string[] AllImage =>
+                new[] { Png, Jpg, Jpeg, Gif, Bmp };
+
+            internal static string[] AllJpeg =>
+                new[] { Jpg, Jpeg };
+
+            internal static string[] AllVideo =>
+                new[] { Mp4, Mov, Avi, Wmv, M4v, Mpg, Mpeg, Mp2, Mkv, Flv, Gifv, Qt };
+
+            internal static string Clean(string extension, bool trimLeadingPeriod = false)
+            {
+                if (string.IsNullOrWhiteSpace(extension))
+                    return string.Empty;
+
+                extension = extension.TrimStart('*');
+                extension = extension.TrimStart('.');
+
+                if (!trimLeadingPeriod)
+                    extension = "." + extension;
+
+                return extension;
+            }
+        }
     }
 
     public abstract partial class FileBase
     {
-        internal const string DefaultContentType = "application/octet-stream";
+        internal const string DefaultContentType = FileSystem.MimeTypes.OctetStream;
 
         string contentType;
 
@@ -76,7 +142,8 @@ namespace Xamarin.Essentials
                 if (!string.IsNullOrWhiteSpace(content))
                     return content;
             }
-            return "application/octet-stream";
+
+            return DefaultContentType;
         }
 
         string fileName;

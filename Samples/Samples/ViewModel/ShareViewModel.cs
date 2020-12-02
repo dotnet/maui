@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Windows.Input;
 using Samples.Helpers;
 using Xamarin.Essentials;
@@ -157,7 +158,7 @@ namespace Samples.ViewModel
             await Share.RequestAsync(new ShareMultipleFilesRequest
             {
                 Title = ShareFilesTitle,
-                Files = new ShareFile[] { new ShareFile(file1), new ShareFile(file2) },
+                Files = new List<ShareFile> { new ShareFile(file1), new ShareFile(file2) },
                 PresentationSourceBounds = GetRectangle(element)
             });
         }

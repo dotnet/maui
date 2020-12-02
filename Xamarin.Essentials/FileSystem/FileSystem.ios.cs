@@ -45,7 +45,7 @@ namespace Xamarin.Essentials
         {
             uiImage = image;
 
-            FullPath = Guid.NewGuid().ToString() + ".png";
+            FullPath = Guid.NewGuid().ToString() + FileSystem.Extensions.Png;
             FileName = FullPath;
         }
 

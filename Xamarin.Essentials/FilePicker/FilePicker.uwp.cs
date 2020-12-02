@@ -49,9 +49,10 @@ namespace Xamarin.Essentials
             {
                 foreach (var type in options.FileTypes.Value)
                 {
-                    if (type.StartsWith(".") || type.StartsWith("*."))
+                    var ext = FileSystem.Extensions.Clean(type);
+                    if (!string.IsNullOrWhiteSpace(ext))
                     {
-                        picker.FileTypeFilter.Add(type.TrimStart('*'));
+                        picker.FileTypeFilter.Add(ext);
                         hasAtLeastOneType = true;
                     }
                 }
@@ -67,31 +68,31 @@ namespace Xamarin.Essentials
         static FilePickerFileType PlatformImageFileType() =>
             new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                { DevicePlatform.UWP, new[] { "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp" } }
+                { DevicePlatform.UWP, FileSystem.Extensions.AllImage }
             });
 
         static FilePickerFileType PlatformPngFileType() =>
             new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                { DevicePlatform.UWP, new[] { "*.png" } }
+                { DevicePlatform.UWP, new[] { FileSystem.Extensions.Png } }
             });
 
         static FilePickerFileType PlatformJpegFileType() =>
             new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                { DevicePlatform.UWP, new[] { "*.jpg", "*.jpeg" } }
+                { DevicePlatform.UWP, FileSystem.Extensions.AllJpeg }
             });
 
         static FilePickerFileType PlatformVideoFileType() =>
            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
            {
-                { DevicePlatform.UWP, new[] { "*.mp4", "*.mov", "*.avi", "*.wmv", "*.m4v", "*.mpg", "*.mpeg", "*.mp2", "*.mkv", "*.flv", "*.gifv", "*.qt" } }
+                { DevicePlatform.UWP, FileSystem.Extensions.AllVideo }
            });
 
         static FilePickerFileType PlatformPdfFileType() =>
             new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                { DevicePlatform.UWP, new[] { "*.pdf" } }
+                { DevicePlatform.UWP, new[] { FileSystem.Extensions.Pdf } }
             });
     }
 }

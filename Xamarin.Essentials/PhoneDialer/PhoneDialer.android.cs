@@ -16,9 +16,8 @@ namespace Xamarin.Essentials
         {
             get
             {
-                var packageManager = Platform.AppContext.PackageManager;
                 var dialIntent = ResolveDialIntent(intentCheck);
-                return dialIntent.ResolveActivity(packageManager) != null;
+                return Platform.IsIntentSupported(dialIntent);
             }
         }
 

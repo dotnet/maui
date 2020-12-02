@@ -34,7 +34,6 @@ namespace Xamarin.Essentials
                 {
                     try
                     {
-                        // there was a cancellation
                         tcs.TrySetResult(GetFileResults(urls));
                     }
                     catch (Exception ex)
@@ -72,13 +71,10 @@ namespace Xamarin.Essentials
             return tcs.Task;
         }
 
-        static IEnumerable<FileResult> GetFileResults(NSUrl[] urls)
-        {
-            if (urls?.Length > 0)
-                return urls.Select(url => new UIDocumentFileResult(url));
-            else
-                return Enumerable.Empty<FileResult>();
-        }
+        static IEnumerable<FileResult> GetFileResults(NSUrl[] urls) =>
+            urls?.Length > 0
+                ? urls.Select(url => new UIDocumentFileResult(url))
+                : Enumerable.Empty<FileResult>();
 
         class PickerDelegate : UIDocumentPickerDelegate
         {

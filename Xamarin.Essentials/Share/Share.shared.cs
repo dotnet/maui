@@ -116,7 +116,8 @@ namespace Xamarin.Essentials
         {
         }
 
-        public ShareMultipleFilesRequest(IEnumerable<ShareFile> files) => Files = files;
+        public ShareMultipleFilesRequest(IEnumerable<ShareFile> files) =>
+            Files = files.ToList();
 
         public ShareMultipleFilesRequest(IEnumerable<FileBase> files)
             : this(ConvertList(files))
@@ -131,7 +132,7 @@ namespace Xamarin.Essentials
         {
         }
 
-        public IEnumerable<ShareFile> Files { get; set; }
+        public List<ShareFile> Files { get; set; }
 
         public static explicit operator ShareMultipleFilesRequest(ShareFileRequest request)
         {

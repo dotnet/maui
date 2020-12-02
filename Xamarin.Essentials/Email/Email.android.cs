@@ -45,7 +45,7 @@ namespace Xamarin.Essentials
             if (action == Intent.ActionSendto)
                 intent.SetData(Uri.Parse("mailto:"));
             else
-                intent.SetType("message/rfc822");
+                intent.SetType(FileSystem.MimeTypes.EmailMessage);
 
             if (!string.IsNullOrEmpty(message?.Body))
             {

@@ -45,7 +45,7 @@ namespace Xamarin.Essentials
             var appControl = new AppControl
             {
                 Operation = AppControlOperations.View,
-                Mime = "*/*",
+                Mime = FileSystem.MimeTypes.All,
                 Uri = "file://" + request.File.FullPath,
             };
 
