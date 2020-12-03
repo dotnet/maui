@@ -42,7 +42,10 @@ namespace Xamarin.Essentials
         static Task PlatformRequestAsync(ShareMultipleFilesRequest request)
         {
             var contentUris = new List<IParcelable>();
-            var intent = new Intent(Intent.ActionSendMultiple);
+
+            var intentType = request.Files.Count > 1 ? Intent.ActionSendMultiple : Intent.ActionSend;
+            var intent = new Intent(intentType);
+
             foreach (var file in request.Files)
                 contentUris.Add(Platform.GetShareableFileUri(file));
 
