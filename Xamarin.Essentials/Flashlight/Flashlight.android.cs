@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Android.Content.PM;
 using Android.Graphics;
 using Android.Hardware.Camera2;
@@ -58,8 +59,15 @@ namespace Xamarin.Essentials
                             var hasFlash = cameraManager.GetCameraCharacteristics(id).Get(CameraCharacteristics.FlashInfoAvailable);
                             if (Java.Lang.Boolean.True.Equals(hasFlash))
                             {
-                                cameraManager.SetTorchMode(id, switchOn);
-                                break;
+                                try
+                                {
+                                    cameraManager.SetTorchMode(id, switchOn);
+                                    break;
+                                }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Unable to SetTorchMode on {id}: {ex.Message}");
+                                }
                             }
                         }
                     }
