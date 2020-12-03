@@ -305,7 +305,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var indexPath = NSIndexPath.Create(group, 0);
 
-			return GetCell(CollectionView, indexPath);
+			return CreateMeasurementCell(indexPath);
 		}
 
 		protected virtual void RegisterViewTypes()
@@ -443,6 +443,32 @@ namespace Xamarin.Forms.Platform.iOS
 
 				_emptyViewDisplayed = false;
 			}
+		}
+
+		TemplatedCell CreateAppropriateCellForLayout()
+		{
+			var frame = new CGRect(0, 0, ItemsViewLayout.EstimatedItemSize.Width, ItemsViewLayout.EstimatedItemSize.Height);
+
+			if (ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+			{
+				return new HorizontalCell(frame);
+			}
+
+			return new VerticalCell(frame);
+		}
+
+		public TemplatedCell CreateMeasurementCell(NSIndexPath indexPath)
+		{
+			if (ItemsView.ItemTemplate == null)
+			{
+				return null;
+			}
+
+			TemplatedCell templatedCell = CreateAppropriateCellForLayout();
+
+			UpdateTemplatedCell(templatedCell, indexPath);
+
+			return templatedCell;
 		}
 	}
 }

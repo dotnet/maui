@@ -13,34 +13,44 @@ namespace Xamarin.Forms.Core.UITests
 			App.NavigateToGallery(GalleryQueries.CarouselViewGallery);
 		}
 
+		void SwipeRightToLeft(int swipes = 1) 
+		{
+			var rect = App.Query(c => c.Marked("TheCarouselView")).First().Rect;
+			var fromX = rect.CenterX + 40;
+			var toX = rect.X - 5;
+			var fromY = rect.CenterY;
+			var toY = fromY;
+
+			for (int n = 0; n < swipes; n++)
+			{
+				App.DragCoordinates(fromX, fromY, toX, toY);
+			}
+		}
+
 		[TestCase("CarouselView (XAML, Horizontal)")]
 		[TestCase("CarouselView (XAML, Horizontal, Loop)")]
 		public void CarouselViewRemoveAndUpdateCurrentItem(string subgallery)
 		{
 			VisitSubGallery(subgallery);
 
-			CheckPositionValue("lblPosition", "0");
-			CheckPositionValue("lblCurrentItem", "0");
-			CheckPositionValue("lblSelected", "0");
+			CheckLabelValue("lblPosition", "0");
+			CheckLabelValue("lblCurrentItem", "0");
+			CheckLabelValue("lblSelected", "0");
 
-			var rect = App.Query(c => c.Marked("TheCarouselView")).First().Rect;
-			var centerX = rect.CenterX;
-			var rightX = rect.X - 5;
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
+			SwipeRightToLeft();
 
-			CheckPositionValue("lblPosition", "1");
-			CheckPositionValue("lblCurrentItem", "1");
-			CheckPositionValue("lblSelected", "1");
+			CheckLabelValue("lblPosition", "1");
+			CheckLabelValue("lblCurrentItem", "1");
+			CheckLabelValue("lblSelected", "1");
 
 			App.Tap(x => x.Marked("btnRemove"));
 
-			CheckPositionValue("lblPosition", "1");
-			CheckPositionValue("lblCurrentItem", "2");
-			CheckPositionValue("lblSelected", "2");
+			CheckLabelValue("lblPosition", "1");
+			CheckLabelValue("lblCurrentItem", "2");
+			CheckLabelValue("lblSelected", "2");
 
 			App.Back();
 		}
-
 
 		[TestCase("CarouselView (XAML, Horizontal)")]
 		[TestCase("CarouselView (XAML, Horizontal, Loop)")]
@@ -48,12 +58,12 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			VisitSubGallery(subgallery);
 
-			CheckPositionValue("lblPosition", "0");
-			CheckPositionValue("lblCurrentItem", "0");
+			CheckLabelValue("lblPosition", "0");
+			CheckLabelValue("lblCurrentItem", "0");
 			App.Tap(x => x.Marked("btnRemove"));
-			CheckPositionValue("lblPosition", "0");
-			CheckPositionValue("lblCurrentItem", "1");
-			CheckPositionValue("lblSelected", "1");
+			CheckLabelValue("lblPosition", "0");
+			CheckLabelValue("lblCurrentItem", "1");
+			CheckLabelValue("lblSelected", "1");
 
 			App.Back();
 		}
@@ -64,20 +74,19 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			VisitSubGallery(subgallery);
 
-			CheckPositionValue("lblPosition", "0");
-			CheckPositionValue("lblCurrentItem", "0");
+			CheckLabelValue("lblPosition", "0");
+			CheckLabelValue("lblCurrentItem", "0");
 			App.Tap(x => x.Marked("btnNext"));
-			CheckPositionValue("lblPosition", "1");
-			CheckPositionValue("lblCurrentItem", "1");
-			CheckPositionValue("lblSelected", "1");
+			CheckLabelValue("lblPosition", "1");
+			CheckLabelValue("lblCurrentItem", "1");
+			CheckLabelValue("lblSelected", "1");
 			App.Tap(x => x.Marked("btnPrev"));
-			CheckPositionValue("lblPosition", "0");
-			CheckPositionValue("lblCurrentItem", "0");
-			CheckPositionValue("lblSelected", "0");
+			CheckLabelValue("lblPosition", "0");
+			CheckLabelValue("lblCurrentItem", "0");
+			CheckLabelValue("lblSelected", "0");
 
 			App.Back();
 		}
-
 
 		[TestCase("CarouselView (XAML, Horizontal)")]
 		[TestCase("CarouselView (XAML, Horizontal, Loop)")]
@@ -85,27 +94,21 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			VisitSubGallery(subgallery);
 
-			CheckPositionValue("lblPosition", "0");
-			CheckPositionValue("lblCurrentItem", "0");
-			CheckPositionValue("lblSelected", "0");
+			CheckLabelValue("lblPosition", "0");
+			CheckLabelValue("lblCurrentItem", "0");
+			CheckLabelValue("lblSelected", "0");
 
-			var rect = App.Query(c => c.Marked("TheCarouselView")).First().Rect;
-			var centerX = rect.CenterX;
-			var rightX = rect.X - 5;
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
+			SwipeRightToLeft(4);
 
-			CheckPositionValue("lblPosition", "4");
-			CheckPositionValue("lblCurrentItem", "4");
-			CheckPositionValue("lblSelected", "4");
+			CheckLabelValue("lblPosition", "4");
+			CheckLabelValue("lblCurrentItem", "4");
+			CheckLabelValue("lblSelected", "4");
 
 			App.Tap(x => x.Marked("btnRemove"));
 
-			CheckPositionValue("lblPosition", "3");
-			CheckPositionValue("lblCurrentItem", "3");
-			CheckPositionValue("lblSelected", "3");
+			CheckLabelValue("lblPosition", "3");
+			CheckLabelValue("lblCurrentItem", "3");
+			CheckLabelValue("lblSelected", "3");
 
 			App.Back();
 		}
@@ -115,22 +118,15 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			VisitSubGallery(subgallery);
 
-			CheckPositionValue("lblPosition", "0");
-			CheckPositionValue("lblCurrentItem", "0");
-			CheckPositionValue("lblSelected", "0");
+			CheckLabelValue("lblPosition", "0");
+			CheckLabelValue("lblCurrentItem", "0");
+			CheckLabelValue("lblSelected", "0");
 
-			var rect = App.Query(c => c.Marked("TheCarouselView")).First().Rect;
-			var centerX = rect.CenterX;
-			var rightX = rect.X - 5;
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
+			SwipeRightToLeft(5);
 
-			CheckPositionValue("lblPosition", "0");
-			CheckPositionValue("lblCurrentItem", "0");
-			CheckPositionValue("lblSelected", "0");
+			CheckLabelValue("lblPosition", "0");
+			CheckLabelValue("lblCurrentItem", "0");
+			CheckLabelValue("lblSelected", "0");
 
 			App.Back();
 		}
@@ -140,18 +136,18 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			VisitSubGallery(subgallery);
 
-			CheckPositionValue("lblPosition", "0");
-			CheckPositionValue("lblCurrentItem", "0");
-			CheckPositionValue("lblSelected", "0");
+			CheckLabelValue("lblPosition", "0");
+			CheckLabelValue("lblCurrentItem", "0");
+			CheckLabelValue("lblSelected", "0");
 
 			var rect = App.Query(c => c.Marked("TheCarouselView")).First().Rect;
 			var centerX = rect.CenterX;
 			var rightX = rect.X - 5;
 			App.DragCoordinates(centerX - 50, rect.CenterY, centerX + rect.Width / 2 - 10, rect.CenterY);
 
-			CheckPositionValue("lblPosition", "4");
-			CheckPositionValue("lblCurrentItem", "4");
-			CheckPositionValue("lblSelected", "4");
+			CheckLabelValue("lblPosition", "4");
+			CheckLabelValue("lblCurrentItem", "4");
+			CheckLabelValue("lblSelected", "4");
 
 			App.Back();
 		}
@@ -274,16 +270,18 @@ namespace Xamarin.Forms.Core.UITests
 			Assert.AreEqual("0", App.Query(c => c.Marked("lblPosition")).First().Text);
 			App.Tap("btnNewObservable");
 			Assert.AreEqual("0", App.Query(c => c.Marked("lblPosition")).First().Text);
-			var rect = App.Query(c => c.Marked("TheCarouselView")).First().Rect;
-			var centerX = rect.CenterX;
-			var rightX = rect.X - 5;
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
+
+			SwipeRightToLeft();
+			
 			App.Tap("btnAddObservable");
 			Assert.AreEqual("0", App.Query(c => c.Marked("lblPosition")).First().Text);
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
+			
+			SwipeRightToLeft();
 			Assert.AreEqual("1", App.Query(c => c.Marked("lblPosition")).First().Text);
-			App.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
+
+			SwipeRightToLeft();
 			Assert.AreEqual("2", App.Query(c => c.Marked("lblPosition")).First().Text);
+			
 			App.Back();
 		}
 
@@ -306,17 +304,16 @@ namespace Xamarin.Forms.Core.UITests
 			App.Tap(t => t.Marked(galleryName));
 		}
 
-		static void CheckPositionValue(string marked, string value)
+		static void CheckLabelValue(string marked, string value)
 		{
 			var positionAfter = App.QueryUntilPresent(() =>
 			{
-				var positionLabel = App.WaitForElement(x => x.Marked(marked));
-				if (positionLabel.First().Text == value)
-					return positionLabel;
+				var label = App.WaitForElement(x => x.Marked(marked));
+				if (label.First().Text == value)
+					return label;
 				return null;
 			}, delayInMs: 1000);
 			Assert.IsTrue(positionAfter[0].Text == value);
 		}
-
 	}
 }

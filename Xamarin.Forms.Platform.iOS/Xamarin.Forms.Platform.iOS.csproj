@@ -127,6 +127,7 @@
     <Compile Include="CollectionView\HorizontalTemplatedHeaderView.cs" />
     <Compile Include="CollectionView\IItemsViewSource.cs" />
     <Compile Include="CollectionView\IndexPathExtensions.cs" />
+    <Compile Include="CollectionView\IndexPathHelpers.cs" />
     <Compile Include="CollectionView\ItemsSourceFactory.cs" />
     <Compile Include="CollectionView\ItemsViewCell.cs" />
     <Compile Include="CollectionView\ItemsViewRenderer.cs" />
