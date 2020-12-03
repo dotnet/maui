@@ -33,8 +33,7 @@ namespace Xamarin.Essentials
                 Uri = "geo:",
             };
 
-            placemark = placemark.Escape();
-            appControl.Uri += $"0,0?q={placemark.Thoroughfare} {placemark.Locality} {placemark.AdminArea} {placemark.PostalCode} {placemark.CountryName}";
+            appControl.Uri += $"0,0?q={placemark.GetEscapedAddress()}";
 
             AppControl.SendLaunchRequest(appControl);
 

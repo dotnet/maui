@@ -38,27 +38,15 @@ namespace Xamarin.Essentials
 
         internal static Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
         {
-            placemark = placemark.Escape();
             var uri = string.Empty;
 
             if (options.NavigationMode == NavigationMode.None)
             {
-                uri = $"bingmaps:?where=" +
-                    $"{placemark.Thoroughfare}" +
-                    $"%20{placemark.Locality}" +
-                    $"%20{placemark.AdminArea}" +
-                    $"%20{placemark.PostalCode}" +
-                    $"%20{placemark.CountryName}";
+                uri = $"bingmaps:?where={placemark.GetEscapedAddress()}";
             }
             else
             {
-                uri = $"bingmaps:?rtp=~adr." +
-                    $"{placemark.Thoroughfare}" +
-                    $"%20{placemark.Locality}" +
-                    $"%20{placemark.AdminArea}" +
-                    $"%20{placemark.PostalCode}" +
-                    $"%20{placemark.CountryName}" +
-                    $"{GetMode(options.NavigationMode)}";
+                uri = $"bingmaps:?rtp=~adr.{placemark.GetEscapedAddress()}{GetMode(options.NavigationMode)}";
             }
 
             return LaunchUri(new Uri(uri));

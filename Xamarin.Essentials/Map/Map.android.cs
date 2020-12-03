@@ -42,17 +42,16 @@ namespace Xamarin.Essentials
 
         internal static Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
         {
-            placemark = placemark.Escape();
             var uri = string.Empty;
             if (options.NavigationMode == NavigationMode.None)
             {
-                uri = $"geo:0,0?q={placemark.Thoroughfare} {placemark.Locality} {placemark.AdminArea} {placemark.PostalCode} {placemark.CountryName}";
+                uri = $"geo:0,0?q={placemark.GetEscapedAddress()}";
                 if (!string.IsNullOrWhiteSpace(options.Name))
                     uri += $"({AndroidUri.Encode(options.Name)})";
             }
             else
             {
-                uri = $"google.navigation:q={placemark.Thoroughfare} {placemark.Locality} {placemark.AdminArea} {placemark.PostalCode} {placemark.CountryName}{GetMode(options.NavigationMode)}";
+                uri = $"google.navigation:q={placemark.GetEscapedAddress()}{GetMode(options.NavigationMode)}";
             }
 
             StartIntent(uri);
