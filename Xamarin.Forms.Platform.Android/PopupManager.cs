@@ -96,7 +96,7 @@ namespace Xamarin.Forms.Platform.Android
 				builder.SetTitle(arguments.Title);
 				string[] items = arguments.Buttons.ToArray();
 				builder.SetItems(items, (o, args) => arguments.Result.TrySetResult(items[args.Which]));
-				
+
 				if (arguments.Cancel != null)
 					builder.SetPositiveButton(arguments.Cancel, (o, args) => arguments.Result.TrySetResult(arguments.Cancel));
 

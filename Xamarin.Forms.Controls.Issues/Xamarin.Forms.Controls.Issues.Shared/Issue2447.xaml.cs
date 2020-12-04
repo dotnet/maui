@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Windows.Input;
 using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
-using System.Windows.Input;
-using System.Diagnostics;
-
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues

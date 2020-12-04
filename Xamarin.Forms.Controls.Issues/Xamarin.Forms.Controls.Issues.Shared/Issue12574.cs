@@ -145,7 +145,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RemoveAllItemsCommand = new Command(() => ExecuteRemoveItemsCommand(), () => Items.Count > 0);
 			RemoveLastItemCommand = new Command(() => ExecuteRemoveLastItemCommand(), () => Items.Count > 0);
 		}
-		
+
 		void ExecuteRemoveItemsCommand()
 		{
 			while (Items.Count > 0)

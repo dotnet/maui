@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Core.UITests
 			App.NavigateToGallery(GalleryQueries.CarouselViewGallery);
 		}
 
-		void SwipeRightToLeft(int swipes = 1) 
+		void SwipeRightToLeft(int swipes = 1)
 		{
 			var rect = App.Query(c => c.Marked("TheCarouselView")).First().Rect;
 			var fromX = rect.CenterX + 40;
@@ -272,16 +272,16 @@ namespace Xamarin.Forms.Core.UITests
 			Assert.AreEqual("0", App.Query(c => c.Marked("lblPosition")).First().Text);
 
 			SwipeRightToLeft();
-			
+
 			App.Tap("btnAddObservable");
 			Assert.AreEqual("0", App.Query(c => c.Marked("lblPosition")).First().Text);
-			
+
 			SwipeRightToLeft();
 			Assert.AreEqual("1", App.Query(c => c.Marked("lblPosition")).First().Text);
 
 			SwipeRightToLeft();
 			Assert.AreEqual("2", App.Query(c => c.Marked("lblPosition")).First().Text);
-			
+
 			App.Back();
 		}
 
