@@ -1484,6 +1484,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Controls\INativeColorService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10337.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9794.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue9906.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10134.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10300.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10438.cs" />
@@ -1846,6 +1847,10 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9417.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9906.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8958.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
