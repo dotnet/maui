@@ -156,11 +156,7 @@ namespace Xamarin.Essentials
             // create the uri, if N use file provider
             if (HasApiLevelN)
             {
-                var providerAuthority = AppContext.PackageName + ".fileProvider";
-                return FileProvider.GetUriForFile(
-                    AppContext.ApplicationContext,
-                    providerAuthority,
-                    sharedFile);
+                return FileProvider.GetUriForFile(sharedFile);
             }
 
             // use the shared file path created

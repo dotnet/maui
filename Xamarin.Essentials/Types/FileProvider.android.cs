@@ -54,11 +54,7 @@ namespace Xamarin.Essentials
             }
 
             // make sure the external storage is available
-            var hasExternalMedia = Platform.HasApiLevel(BuildVersionCodes.Lollipop)
-                ? AndroidEnvironment.GetExternalStorageState(Platform.AppContext.ExternalCacheDir) == AndroidEnvironment.MediaMounted
-#pragma warning disable CS0618 // Type or member is obsolete
-                : AndroidEnvironment.GetStorageState(Platform.AppContext.ExternalCacheDir) == AndroidEnvironment.MediaMounted;
-#pragma warning restore CS0618 // Type or member is obsolete
+            var hasExternalMedia = Platform.AppContext.ExternalCacheDir != null && IsMediaMounted(Platform.AppContext.ExternalCacheDir);
 
             // undo all the work if we have requested a fail (mainly for testing)
             if (AlwaysFailExternalMediaAccess)
@@ -74,6 +70,13 @@ namespace Xamarin.Essentials
                 ? Platform.AppContext.ExternalCacheDir
                 : Platform.AppContext.CacheDir;
         }
+
+        static bool IsMediaMounted(Java.IO.File location) =>
+            Platform.HasApiLevel(BuildVersionCodes.Lollipop)
+                ? AndroidEnvironment.GetExternalStorageState(location) == AndroidEnvironment.MediaMounted
+#pragma warning disable CS0618 // Type or member is obsolete
+                : AndroidEnvironment.GetStorageState(location) == AndroidEnvironment.MediaMounted;
+#pragma warning restore CS0618 // Type or member is obsolete
 
         internal static bool IsFileInPublicLocation(string filename)
         {
