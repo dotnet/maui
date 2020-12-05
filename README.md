@@ -8,11 +8,29 @@
 * Evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms)
 * Targeting .NET 6, previews end of year
 
-## Status: Planning and Early Development
+## Current News
 
-While [Xamarin.Forms](https://github.com/xamarin/xamarin.forms) continues to be actively developed to meet customer needs today, we are [proposing evolutionary changes](../../issues) based on some early customer research of what would be most beneficial.
+[![](Assets/poster-standup.png)](https://www.youtube.com/watch?v=5bK2ICHtMxo)
 
-Active development is happening today to build Android and iOS SDKs against the next version of .NET. [Samples may be found here](https://github.com/xamarin/net5-samples).
+Watch our [December 2020 .NET Community Standup report](https://www.youtube.com/watch?v=5bK2ICHtMxo) for the latest information about our progress on .NET MAUI and .NET 6. 
+
+Additional live streams and presentations:
+
+* September 19, 2020 - Shane Neuville at ReactiveUI Virtual Conference: [Dual Screen, .NET MAUI, and RxUI](https://www.youtube.com/watch?v=Rkz6Dkk1uWU)
+* October 3, 2020 - James Clancey at Xamarin Expert Day: [.NET MAUI MVU](https://www.youtube.com/watch?v=9kwrgm_-FCk)
+* October 3, 2020 - David Ortinau at Xamarin Expert Day: [Introducing .NET MAUI](https://youtu.be/qbHO8J3bId0)
+* December 2, 2020 - Javier Suarez Ruiz at MonkeyConf: [.NET MAUI Handlers](https://youtu.be/o99qbIOc9X4?t=26040) (Spanish)
+
+## Status: Active Development
+
+While [Xamarin.Forms](https://github.com/xamarin/xamarin.forms) continues to be actively supported through November 2022, we are making evolutionary changes based on customer research of what would be most beneficial. Current areas of focus are:
+
+* Porting renderers to handlers ([spec](https://github.com/dotnet/maui/issues/28))
+* Adapting layouts for handlers
+* WinUI 3 preview 3 early spike
+* Mac Catalyst early evaluation
+
+Active development is happening today to build Android and iOS SDKs against .NET 6. [Samples may be found here](https://github.com/xamarin/net6-samples).
 
 ### Goals
 
@@ -44,12 +62,12 @@ Active development is happening today to build Android and iOS SDKs against the 
 |Android     |API 19+        |API 21+        |
 |iOS     |9-15         |10+         |
 |Linux     |Community         |Community         |
-|macOS     |Community         |Microsoft         |
+|macOS     |Community         |Microsoft<sup>*</sup>         |
 |Tizen     |Samsung           |Samsung           |
 |Windows     |UWP Microsoft<br/>WPF Community         |Microsoft         |
 |**Features**     |         |         |
 |Renderers     |Tightly coupled to BindableObject         |Loosely coupled, no Xamarin.Forms dependencies         |
-|App Models     |MVVM, RxUI         |MVVM, RxUI, MVU, Blazor         |
+|App Models     |MVVM<br/>RxUI         |MVVM</br>RxUI</br>MVU <sup>**</sup></br>Blazor <sup>**</sup>         |
 |Single Project     |No         |Yes         |
 |Multi-targeting     |No         |Yes         |
 |Multi-window     |No         |Yes         |
@@ -61,7 +79,13 @@ Active development is happening today to build Android and iOS SDKs against the 
 |**Tools**     |         |         |
 |Visual Studio 2019     |Yes         |Yes         |
 |Visual Studio 2019 for Mac     |Yes         |Yes         |
-|Visual Studio Code     |No         |Yes         |
+|Visual Studio Code     |No         |Experimental<sup>***</sup>         |
+
+<sup>*</sup> The Windows implementation is expected to be WinUI 3, pending GA release. 
+
+<sup>**</sup> These app models are experimental.
+
+<sup>***</sup> Visual Studio Code will work by virtue of .NET unification, however not all experiences that make .NET MAUI development delightful (intellisense for example) may be enabled at the time of .NET 6 release.
 
 ## FAQs
 
