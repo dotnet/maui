@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xunit;
 
@@ -66,11 +63,9 @@ namespace DeviceTests
 
             Assert.Equal(expectedStatus, status);
         }
-    }
 
-    public class A_Permissions_Tests
-    {
         [Fact]
+        [Trait(Traits.UI, Traits.FeatureSupport.Supported)]
         public async Task Request_NotMainThread()
         {
             await Task.Run(async () =>

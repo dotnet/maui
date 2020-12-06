@@ -14,6 +14,7 @@ variables:
   NUGET_VERSION: $[format('{0}-{1}.{2}', variables['BASE_VERSION'], variables['PREVIEW_LABEL'], variables['BUILD_NUMBER'])]
   GIT_SHA: $(Build.SourceVersion)
   GIT_BRANCH_NAME: $(Build.SourceBranchName)
+  AREA_PATH: 'DevDiv\Xamarin SDK\Build and Tools'
 
 resources:
   repositories:
@@ -70,7 +71,7 @@ stages:
       - job: devicetests_uwp
         displayName: UWP
         # skip for now
-        condition: and(succeeded(), not(succeeded()))
+        condition: false
         pool:
           vmImage: windows-2019
         steps:
@@ -92,21 +93,38 @@ stages:
           name: devicetests_ios
           runChecks: false
           displayName: iOS
+          publishOutputSuffix: '-ios'
           windowsImage: ''
-          areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
+          areaPath: $(AREA_PATH)
           verbosity: diagnostic
           cakeFile: DeviceTests/build.cake
           cakeTarget: test-ios-emu
+          cakeExtraArgs: --ios-device="`"iPhone 11`"" --ios-runtime="`"com.apple.CoreSimulator.SimRuntime.iOS-14-2`""
+
+      - template: .ci/build.yml@components
+        parameters:
+          name: devicetests_android_api_21
+          runChecks: false
+          displayName: Android API 21
+          publishOutputSuffix: '-android21'
+          windowsImage: ''
+          areaPath: $(AREA_PATH)
+          verbosity: diagnostic
+          cakeFile: DeviceTests/build.cake
+          cakeTarget: test-android-emu
+          cakeExtraArgs: --avd-target="`"system-images;android-21;google_apis;x86`""
+          preBuildSteps:
+            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-21;google_apis;x86\""
+              displayName: Install the Android emulators
 
       - template: .ci/build.yml@components
         parameters:
           name: devicetests_android_api_23
           runChecks: false
           displayName: Android API 23
+          publishOutputSuffix: '-android23'
           windowsImage: ''
-          macosImage: 'macos-10.14'
-          xcode: '11.3.1'
-          areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
+          areaPath: $(AREA_PATH)
           verbosity: diagnostic
           cakeFile: DeviceTests/build.cake
           cakeTarget: test-android-emu
@@ -117,13 +135,28 @@ stages:
 
       - template: .ci/build.yml@components
         parameters:
+          name: devicetests_android_api_24
+          runChecks: false
+          displayName: Android API 24
+          publishOutputSuffix: '-android24'
+          windowsImage: ''
+          areaPath: $(AREA_PATH)
+          verbosity: diagnostic
+          cakeFile: DeviceTests/build.cake
+          cakeTarget: test-android-emu
+          cakeExtraArgs: --avd-target="`"system-images;android-24;google_apis;x86`""
+          preBuildSteps:
+            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-24;google_apis;x86\""
+              displayName: Install the Android emulators
+
+      - template: .ci/build.yml@components
+        parameters:
           name: devicetests_android_api_26
           runChecks: false
           displayName: Android API 26
+          publishOutputSuffix: '-android26'
           windowsImage: ''
-          macosImage: 'macos-10.14'
-          xcode: '11.3.1'
-          areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
+          areaPath: $(AREA_PATH)
           verbosity: diagnostic
           cakeFile: DeviceTests/build.cake
           cakeTarget: test-android-emu
@@ -137,14 +170,29 @@ stages:
           name: devicetests_android_api_29
           runChecks: false
           displayName: Android API 29
+          publishOutputSuffix: '-android29'
           windowsImage: ''
-          macosImage: 'macos-10.14'
-          xcode: '11.3.1'
-          areaPath: 'DevDiv\Xamarin SDK\Build and Tools'
+          areaPath: $(AREA_PATH)
           verbosity: diagnostic
           cakeFile: DeviceTests/build.cake
           cakeTarget: test-android-emu
-          cakeExtraArgs: --avd-target="`"system-images;android-29;google_apis_playstore;x86`""
+          cakeExtraArgs: --avd-target="`"system-images;android-29;google_apis;x86`""
           preBuildSteps:
-            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-29;google_apis_playstore;x86\""
+            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-29;google_apis;x86\""
+              displayName: Install the Android emulators
+
+      - template: .ci/build.yml@components
+        parameters:
+          name: devicetests_android_api_30
+          runChecks: false
+          displayName: Android API 30
+          publishOutputSuffix: '-android30'
+          windowsImage: ''
+          areaPath: $(AREA_PATH)
+          verbosity: diagnostic
+          cakeFile: DeviceTests/build.cake
+          cakeTarget: test-android-emu
+          cakeExtraArgs: --avd-target="`"system-images;android-30;google_apis;x86`""
+          preBuildSteps:
+            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-30;google_apis;x86\""
               displayName: Install the Android emulators

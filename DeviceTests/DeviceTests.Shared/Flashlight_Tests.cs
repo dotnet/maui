@@ -16,17 +16,21 @@ namespace DeviceTests
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 #endif
         [Trait(Traits.Hardware.Flash, Traits.FeatureSupport.Supported)]
-        public async Task Turn_On_Off(bool oldCameraApi)
+        public Task Turn_On_Off(bool oldCameraApi)
         {
             // TODO: the test runner app (UI version) should do this, until then...
             if (!HardwareSupport.HasFlash)
-                return;
+                return Task.CompletedTask;
 
 #if __ANDROID__
             Flashlight.AlwaysUseCameraApi = oldCameraApi;
 #endif
-            await Flashlight.TurnOnAsync();
-            await Flashlight.TurnOffAsync();
+
+            return Utils.OnMainThread(async () =>
+            {
+                await Flashlight.TurnOnAsync();
+                await Flashlight.TurnOffAsync();
+            });
         }
     }
 }

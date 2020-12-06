@@ -62,6 +62,10 @@ namespace DeviceTests
         [InlineData("test.txt", "data")]
         public async Task Fix_Corrupt_Key(string key, string data)
         {
+            // this operation is only available on API level 23+ devices
+            if (!Platform.HasApiLevel(23))
+                return;
+
             // set a valid key
             SecureStorage.AlwaysUseAsymmetricKeyStorage = true;
             await SecureStorage.SetAsync(key, data);

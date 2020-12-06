@@ -9,6 +9,7 @@ namespace DeviceTests
         [Theory]
         [InlineData("text")]
         [InlineData("some really long test text")]
+        [Trait(Traits.UI, Traits.FeatureSupport.Supported)]
         public Task Set_Clipboard_Values(string text)
         {
             return Utils.OnMainThread(async () =>
@@ -21,6 +22,7 @@ namespace DeviceTests
         [Theory]
         [InlineData("text")]
         [InlineData("some really long test text")]
+        [Trait(Traits.UI, Traits.FeatureSupport.Supported)]
         public Task Get_Clipboard_Values(string text)
         {
             return Utils.OnMainThread(async () =>

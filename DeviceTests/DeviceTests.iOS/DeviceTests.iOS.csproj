@@ -80,7 +80,7 @@
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1687" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
-    <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
+    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.20602.1" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +100,7 @@
     <None Include="Entitlements.plist" />
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestApplicationDelegate.cs" />
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\Icon-60%402x.png" />
@@ -117,7 +118,6 @@
     <BundleResource Include="Resources\Folder\AppBundleFile_Nested.txt" />
     <BundleResource Include="Resources\Icon-60.png" />
     <BundleResource Include="Resources\Icon-76%403x.png" />
-    <BundleResource Include="tests.cfg" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />

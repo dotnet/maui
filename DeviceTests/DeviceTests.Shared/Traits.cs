@@ -10,6 +10,8 @@ namespace DeviceTests
     {
         public const string DeviceType = "DeviceType";
         public const string InteractionType = "InteractionType";
+        public const string UI = "UI";
+        public const string FileProvider = "FileProvider";
 
         internal static class Hardware
         {
@@ -44,8 +46,8 @@ namespace DeviceTests
             public const string Supported = "Supported";
             public const string NotSupported = "NotSupported";
 
-            internal static string ToExclude(bool hardware) =>
-                hardware ? NotSupported : Supported;
+            internal static string ToExclude(bool hasFeature) =>
+                hasFeature ? NotSupported : Supported;
         }
 
         internal static List<XUnitFilter> GetCommonTraits(params XUnitFilter[] additionalFilters)
@@ -66,6 +68,27 @@ namespace DeviceTests
                 filters.AddRange(additionalFilters);
 
             return filters;
+        }
+
+        internal static IEnumerable<string> GetSkipTraits(IEnumerable<string> additionalFilters = null)
+        {
+            yield return $"{DeviceType}={DeviceTypes.ToExclude}";
+            yield return $"{InteractionType}={InteractionTypes.ToExclude}";
+            yield return $"{UI}={FeatureSupport.ToExclude(false)}";
+            yield return $"{Hardware.Accelerometer}={FeatureSupport.ToExclude(HardwareSupport.HasAccelerometer)}";
+            yield return $"{Hardware.Compass}={FeatureSupport.ToExclude(HardwareSupport.HasCompass)}";
+            yield return $"{Hardware.Gyroscope}={FeatureSupport.ToExclude(HardwareSupport.HasGyroscope)}";
+            yield return $"{Hardware.Magnetometer}={FeatureSupport.ToExclude(HardwareSupport.HasMagnetometer)}";
+            yield return $"{Hardware.Battery}={FeatureSupport.ToExclude(HardwareSupport.HasBattery)}";
+            yield return $"{Hardware.Flash}={FeatureSupport.ToExclude(HardwareSupport.HasFlash)}";
+
+            if (additionalFilters != null)
+            {
+                foreach (var filter in additionalFilters)
+                {
+                    yield return filter;
+                }
+            }
         }
     }
 }

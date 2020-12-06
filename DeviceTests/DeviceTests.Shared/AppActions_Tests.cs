@@ -13,18 +13,15 @@ namespace DeviceTests
         {
             var expectSupported = false;
 
-#if __ANDROID_25__
-            expectSupported = true;
+#if __ANDROID__
+            expectSupported = Platform.SdkInt >= 25;
+#elif __IOS__
+            expectSupported = Platform.HasOSVersion(9, 0);
 #endif
 
-#if __IOS__
-            if (Platform.HasOSVersion(9, 0))
-                expectSupported = true;
-#endif
             Assert.Equal(expectSupported, AppActions.IsSupported);
         }
 
-#if __ANDROID_25__ || __IOS__
         [Fact]
         public async Task GetSetItems()
         {
@@ -43,6 +40,5 @@ namespace DeviceTests
 
             Assert.Contains(get, a => a.Id == "TEST1");
         }
-#endif
     }
 }

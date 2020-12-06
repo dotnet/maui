@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xunit;
@@ -25,7 +26,7 @@ namespace DeviceTests
                 Assert.NotNull(placemarks);
                 Assert.True(placemarks.Any());
             }
-            catch (System.Exception ex) when (ex.Message.ToLower().Contains("grpc"))
+            catch (System.Exception ex) when (IsEmulatorFailure(ex))
             {
             }
         }
@@ -41,7 +42,7 @@ namespace DeviceTests
                 Assert.NotNull(placemarks);
                 Assert.True(placemarks.Any());
             }
-            catch (System.Exception ex) when (ex.Message.ToLower().Contains("grpc"))
+            catch (System.Exception ex) when (IsEmulatorFailure(ex))
             {
             }
         }
@@ -57,9 +58,12 @@ namespace DeviceTests
                 Assert.NotNull(locations);
                 Assert.True(locations.Any());
             }
-            catch (System.Exception ex) when (ex.Message.ToLower().Contains("grpc"))
+            catch (System.Exception ex) when (IsEmulatorFailure(ex))
             {
             }
         }
+
+        static bool IsEmulatorFailure(Exception ex) =>
+            ex.Message.ToLower().Contains("grpc") || ex.Message.ToLower().Contains("service not available");
     }
 }

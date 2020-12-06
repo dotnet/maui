@@ -39,6 +39,7 @@ namespace DeviceTests.Shared
         [InlineData(true, FileProviderLocation.PreferExternal)]
         [InlineData(false, FileProviderLocation.Internal)]
         [InlineData(false, FileProviderLocation.PreferExternal)]
+        [Trait(Traits.FileProvider, Traits.FeatureSupport.Supported)]
         public void Get_Shareable_Uri(bool failAccess, FileProviderLocation location)
         {
             // Always fail to simulate unmounted media
@@ -84,6 +85,7 @@ namespace DeviceTests.Shared
         }
 
         [Fact]
+        [Trait(Traits.FileProvider, Traits.FeatureSupport.Supported)]
         public void No_Media_Fails_Get_External_Cache_Shareable_Uri()
         {
             // Always fail to simulate unmounted media
@@ -107,6 +109,7 @@ namespace DeviceTests.Shared
         }
 
         [Fact]
+        [Trait(Traits.FileProvider, Traits.FeatureSupport.Supported)]
         public void Get_External_Cache_Shareable_Uri()
         {
             // Save a local cache data directory file
@@ -138,6 +141,7 @@ namespace DeviceTests.Shared
         [InlineData(FileProviderLocation.External)]
         [InlineData(FileProviderLocation.Internal)]
         [InlineData(FileProviderLocation.PreferExternal)]
+        [Trait(Traits.FileProvider, Traits.FeatureSupport.Supported)]
         public void Get_Existing_Internal_Cache_Shareable_Uri(FileProviderLocation location)
         {
             // Save a local cache directory file
@@ -160,6 +164,7 @@ namespace DeviceTests.Shared
         [InlineData(FileProviderLocation.External)]
         [InlineData(FileProviderLocation.Internal)]
         [InlineData(FileProviderLocation.PreferExternal)]
+        [Trait(Traits.FileProvider, Traits.FeatureSupport.Supported)]
         public void Get_Existing_External_Cache_Shareable_Uri(FileProviderLocation location)
         {
             // Save an external cache directory file
@@ -182,14 +187,10 @@ namespace DeviceTests.Shared
         [InlineData(FileProviderLocation.External)]
         [InlineData(FileProviderLocation.Internal)]
         [InlineData(FileProviderLocation.PreferExternal)]
+        [Trait(Traits.FileProvider, Traits.FeatureSupport.Supported)]
         public void Get_Existing_External_Shareable_Uri(FileProviderLocation location)
         {
             // Save an external directory file
-
-            #if !__ANDROID_29__
-            var externalRoot = AndroidEnvironment.ExternalStorageDirectory.AbsolutePath;
-            #endif
-
             var root = Platform.AppContext.GetExternalFilesDir(null).AbsolutePath;
             var file = CreateFile(root);
 
@@ -204,12 +205,17 @@ namespace DeviceTests.Shared
             Assert.Equal("content", shareableUri.Scheme);
             Assert.Equal("com.xamarin.essentials.devicetests.fileProvider", shareableUri.Authority);
 
-            #if !__ANDROID_29__
-            // replace the real root with the providers "root"
-            var segements = Path.Combine(root.Replace(externalRoot, "external_files"), Path.GetFileName(file));
+            if (Platform.HasApiLevel(29))
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                var externalRoot = AndroidEnvironment.ExternalStorageDirectory.AbsolutePath;
+#pragma warning restore CS0618 // Type or member is obsolete
 
-            Assert.Equal(segements.Split(Path.DirectorySeparatorChar), shareableUri.PathSegments);
-            #endif
+                // replace the real root with the providers "root"
+                var segements = Path.Combine(root.Replace(externalRoot, "external_files"), Path.GetFileName(file));
+
+                Assert.Equal(segements.Split(Path.DirectorySeparatorChar), shareableUri.PathSegments);
+            }
         }
 
         static string CreateFile(string root, string name = "the-file.txt")
