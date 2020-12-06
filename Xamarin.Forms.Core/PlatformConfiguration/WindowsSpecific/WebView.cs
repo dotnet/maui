@@ -27,5 +27,30 @@ namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 			SetIsJavaScriptAlertEnabled(config.Element, value);
 			return config;
 		}
+
+
+
+		public static readonly BindableProperty ExecutionModeProperty = BindableProperty.Create("ExecutionMode", typeof(WebViewExecutionMode), typeof(WebView), WebViewExecutionMode.SameThread);
+
+		public static WebViewExecutionMode GetExecutionMode(BindableObject element)
+		{
+			return (WebViewExecutionMode)element.GetValue(ExecutionModeProperty);
+		}
+
+		public static void SetExecutionMode(BindableObject element, WebViewExecutionMode value)
+		{
+			element.SetValue(ExecutionModeProperty, value);
+		}
+
+		public static WebViewExecutionMode GetExecutionMode(this IPlatformElementConfiguration<Windows, FormsElement> config)
+		{
+			return GetExecutionMode(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<Windows, FormsElement> SetExecutionMode(this IPlatformElementConfiguration<Windows, FormsElement> config, WebViewExecutionMode value)
+		{
+			SetExecutionMode(config.Element, value);
+			return config;
+		}
 	}
 }

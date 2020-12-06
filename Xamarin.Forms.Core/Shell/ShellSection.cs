@@ -275,7 +275,12 @@ namespace Xamarin.Forms
 		{
 			if (shellContent.Parent != null)
 			{
-				return (ShellSection)shellContent.Parent;
+				var current = (ShellSection)shellContent.Parent;
+
+				if (current.Items.Contains(shellContent))
+					current.CurrentItem = shellContent;
+
+				return current;
 			}
 
 			var shellSection = new ShellSection();

@@ -401,11 +401,6 @@ namespace Xamarin.Forms.Platform.iOS
 			_isSwipeEnabled = Element.IsEnabled;
 		}
 
-		bool HasSwipeItems()
-		{
-			return Element != null && (IsValidSwipeItems(Element.LeftItems) || IsValidSwipeItems(Element.RightItems) || IsValidSwipeItems(Element.TopItems) || IsValidSwipeItems(Element.BottomItems));
-		}
-
 		bool IsHorizontalSwipe()
 		{
 			return _swipeDirection == SwipeDirection.Left || _swipeDirection == SwipeDirection.Right;
@@ -498,12 +493,12 @@ namespace Xamarin.Forms.Platform.iOS
 					switch (_swipeDirection)
 					{
 						case SwipeDirection.Left:
-							child.Frame = new CGRect(_contentView.Frame.Width - (swipeItemWidth + previousWidth), _originalBounds.Y, i + 1 * swipeItemWidth, swipeItemHeight);
+							child.Frame = new CGRect(_originalBounds.X + _contentView.Frame.Width - (swipeItemWidth + previousWidth), _originalBounds.Y, i + 1 * swipeItemWidth, swipeItemHeight);
 							break;
 						case SwipeDirection.Right:
 						case SwipeDirection.Up:
 						case SwipeDirection.Down:
-							child.Frame = new CGRect(previousWidth, _originalBounds.Y, i + 1 * swipeItemWidth, swipeItemHeight);
+							child.Frame = new CGRect(_originalBounds.X + previousWidth, _originalBounds.Y, i + 1 * swipeItemWidth, swipeItemHeight);
 							break;
 					}
 
@@ -712,7 +707,7 @@ namespace Xamarin.Forms.Platform.iOS
 					break;
 				case GestureStatus.Canceled:
 				case GestureStatus.Completed:
-					ProcessTouchUp(point);
+					ProcessTouchUp();
 					break;
 			}
 
@@ -766,7 +761,7 @@ namespace Xamarin.Forms.Platform.iOS
 			RaiseSwipeChanging();
 		}
 
-		void ProcessTouchUp(CGPoint point)
+		void ProcessTouchUp()
 		{
 			_isTouchDown = false;
 
@@ -800,19 +795,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (parent != null)
 				parent.ScrollEnabled = _isScrollEnabled;
-		}
-
-		bool CanProcessTouchSwipeItems(CGPoint point)
-		{
-			// We only invoke the SwipeItem command if we tap on the SwipeItems area
-			// and the SwipeView is fully open.
-			if (TouchInsideContent(point))
-				return false;
-
-			if (_swipeOffset == _swipeThreshold)
-				return true;
-
-			return false;
 		}
 
 		bool TouchInsideContent(CGPoint point)

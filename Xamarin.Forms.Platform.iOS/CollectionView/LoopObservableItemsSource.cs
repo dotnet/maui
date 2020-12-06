@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using Foundation;
 using UIKit;
 
@@ -20,22 +19,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override NSIndexPath[] CreateIndexesFrom(int startIndex, int count)
 		{
-			if (Loop)
-				count *= LoopBy;
-
-			var result = new NSIndexPath[count];
-
-			for (int n = 0; n < count; n++)
+			if (!Loop)
 			{
-				var index = startIndex + n;
-				if (Loop)
-				{
-					index = startIndex + n * Count;
-				}
-				result[n] = NSIndexPath.Create(Section, index);
+				return base.CreateIndexesFrom(startIndex, count);
 			}
 
-			return result;
+			return IndexPathHelpers.GenerateLoopedIndexPathRange(Section,
+				(int)CollectionView.NumberOfItemsInSection(Section), LoopBy, startIndex, count);
 		}
 	}
 }

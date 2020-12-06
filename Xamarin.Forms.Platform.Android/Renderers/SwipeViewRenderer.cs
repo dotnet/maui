@@ -102,29 +102,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateSwipeTransitionMode();
 		}
 
-		protected override void OnLayout(bool changed, int l, int t, int r, int b)
-		{
-			base.OnLayout(changed, l, t, r, b);
-
-			var width = r - l;
-			var height = b - t;
-
-			var pixelWidth = _context.FromPixels(width);
-			var pixelHeight = _context.FromPixels(height);
-
-			if (changed)
-			{
-				if (Element.Content != null)
-					Element.Content.Layout(new Rectangle(0, 0, pixelWidth, pixelHeight));
-
-				_contentView?.Layout(0, 0, width, height);
-			}
-		}
-
-		protected override Size MinimumSize()
-		{
-			return new Size(40, 40);
-		}
+		protected override Size MinimumSize() => new Size(40, 40);
 
 		protected override void UpdateBackgroundColor()
 		{
@@ -312,12 +290,19 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateContent()
 		{
+			if (_contentView != null)
+			{
+				_contentView.RemoveFromParent();
+				_contentView.Dispose();
+				_contentView = null;
+			}
+
 			if (Element.Content == null)
 				_contentView = CreateEmptyContent();
 			else
 				_contentView = CreateContent();
 
-			AddView(_contentView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));
+			AddView(_contentView);
 		}
 
 		AView CreateEmptyContent()
@@ -330,7 +315,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		AView CreateContent()
 		{
-			var renderer = AppCompat.Platform.CreateRenderer(Element.Content, _context);
+			var renderer = Element.Content.GetRenderer() ?? Platform.CreateRendererWithContext(Element.Content, Context);
 			AppCompat.Platform.SetRenderer(Element.Content, renderer);
 
 			return renderer?.View;
@@ -670,18 +655,22 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					var item = items[i];
 					var swipeItemSize = GetSwipeItemSize(item);
+
 					var swipeItemHeight = (int)_context.ToPixels(swipeItemSize.Height);
 					var swipeItemWidth = (int)_context.ToPixels(swipeItemSize.Width);
+
+					int contentX = (int)_contentView.GetX();
+					int contentY = (int)_contentView.GetY();
 
 					switch (_swipeDirection)
 					{
 						case SwipeDirection.Left:
-							child.Layout(_contentView.Width - (swipeItemWidth + previousWidth), 0, _contentView.Width - previousWidth, swipeItemHeight);
+							child.Layout(contentX + _contentView.Width - (swipeItemWidth + previousWidth), contentY, (_contentView.Width - previousWidth) + contentX, swipeItemHeight + contentY);
 							break;
 						case SwipeDirection.Right:
 						case SwipeDirection.Up:
 						case SwipeDirection.Down:
-							child.Layout(previousWidth, 0, (i + 1) * swipeItemWidth, swipeItemHeight);
+							child.Layout(contentX + previousWidth, contentY, ((i + 1) * swipeItemWidth) + contentX, swipeItemHeight + contentY);
 							break;
 					}
 
@@ -805,11 +794,8 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateSwipeItemViewLayout(SwipeItemView swipeItemView)
 		{
 			var swipeItemSize = GetSwipeItemSize(swipeItemView);
-			var swipeItemHeight = swipeItemSize.Height;
-			var swipeItemWidth = swipeItemSize.Width;
 
-			swipeItemView.Layout(new Rectangle(0, 0, swipeItemWidth, swipeItemHeight));
-			swipeItemView.Content?.Layout(new Rectangle(0, 0, swipeItemWidth, swipeItemHeight));
+			swipeItemView.Layout(new Rectangle(0, 0, swipeItemSize.Width, swipeItemSize.Height));
 		}
 
 		void UpdateIsSwipeEnabled()

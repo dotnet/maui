@@ -667,7 +667,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				return false;
 			}
 
-			if (touch.View.IsDescendantOfView(_renderer.NativeView) && touch.View.GestureRecognizers?.Length > 0)
+			if (touch.View.IsDescendantOfView(_renderer.NativeView) &&
+				(touch.View.GestureRecognizers?.Length > 0 || _renderer.NativeView.GestureRecognizers?.Length > 0))
 			{
 				return true;
 			}
