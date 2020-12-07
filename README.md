@@ -62,9 +62,9 @@ Active development is happening today to build Android and iOS SDKs against .NET
 |Android     |API 19+        |API 21+        |
 |iOS     |9-15         |10+         |
 |Linux     |Community         |Community         |
-|macOS     |Community         |Microsoft<sup>*</sup>         |
+|macOS     |Community         |Microsoft         |
 |Tizen     |Samsung           |Samsung           |
-|Windows     |UWP Microsoft<br/>WPF Community         |Microsoft         |
+|Windows     |UWP Microsoft<br/>WPF Community         |Microsoft<sup>*</sup>         |
 |**Features**     |         |         |
 |Renderers     |Tightly coupled to BindableObject         |Loosely coupled, no Xamarin.Forms dependencies         |
 |App Models     |MVVM<br/>RxUI         |MVVM</br>RxUI</br>MVU <sup>**</sup></br>Blazor <sup>**</sup>         |
