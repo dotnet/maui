@@ -67,7 +67,10 @@ Active development is happening today to build Android and iOS SDKs against .NET
 |Windows     |UWP Microsoft<br/>WPF Community         |Microsoft         |
 |**Features**     |         |         |
 |Renderers     |Tightly coupled to BindableObject         |Loosely coupled, no Xamarin.Forms dependencies         |
-|App Models     |MVVM<br/>RxUI         |MVVM</br>RxUI</br>MVU <sup>**</sup></br>Blazor <sup>**</sup>         |
+|App Models     |MVVM         |MVVM         |
+|     |RxUI         |RxUI         |
+|     |             |MVU <sup>**</sup> |
+|     |             |Blazor <sup>**</sup> |
 |Single Project     |No         |Yes         |
 |Multi-targeting     |No         |Yes         |
 |Multi-window     |No         |Yes         |
