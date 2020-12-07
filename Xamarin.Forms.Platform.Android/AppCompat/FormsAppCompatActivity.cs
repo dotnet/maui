@@ -310,7 +310,10 @@ namespace Xamarin.Forms.Platform.Android
 			PreviousActivityDestroying.Reset();
 
 			if (_application != null)
+			{
+				_application.PropertyChanging -= AppOnPropertyChanging;
 				_application.PropertyChanged -= AppOnPropertyChanged;
+			}
 
 			PopupManager.Unsubscribe(this);
 
