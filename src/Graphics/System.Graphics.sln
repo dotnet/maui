@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Blazor.JS",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Graphics.GDI.Winforms", "src\System.Graphics.GDI.Winforms\System.Graphics.GDI.Winforms.csproj", "{3C3BF90F-C579-463D-B33F-8B9B16D2DAB7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Skia.Core", "src\System.Graphics.Skia.Core\System.Graphics.Skia.Core.csproj", "{C7613109-6198-402E-953F-57EA81E8238E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Skia", "src\System.Graphics.Skia\System.Graphics.Skia.csproj", "{C7613109-6198-402E-953F-57EA81E8238E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Skia.WPF", "src\System.Graphics.Skia.WPF\System.Graphics.Skia.WPF.csproj", "{28044370-E6F2-43AA-A164-19B142503DAC}"
 EndProject
