@@ -25,10 +25,4272 @@ namespace GraphicsTester.Android
 		
 		public static void UpdateIdValues()
 		{
+			global::System.Graphics.Resource.Animation.abc_fade_in = global::GraphicsTester.Android.Resource.Animation.abc_fade_in;
+			global::System.Graphics.Resource.Animation.abc_fade_out = global::GraphicsTester.Android.Resource.Animation.abc_fade_out;
+			global::System.Graphics.Resource.Animation.abc_grow_fade_in_from_bottom = global::GraphicsTester.Android.Resource.Animation.abc_grow_fade_in_from_bottom;
+			global::System.Graphics.Resource.Animation.abc_popup_enter = global::GraphicsTester.Android.Resource.Animation.abc_popup_enter;
+			global::System.Graphics.Resource.Animation.abc_popup_exit = global::GraphicsTester.Android.Resource.Animation.abc_popup_exit;
+			global::System.Graphics.Resource.Animation.abc_shrink_fade_out_from_bottom = global::GraphicsTester.Android.Resource.Animation.abc_shrink_fade_out_from_bottom;
+			global::System.Graphics.Resource.Animation.abc_slide_in_bottom = global::GraphicsTester.Android.Resource.Animation.abc_slide_in_bottom;
+			global::System.Graphics.Resource.Animation.abc_slide_in_top = global::GraphicsTester.Android.Resource.Animation.abc_slide_in_top;
+			global::System.Graphics.Resource.Animation.abc_slide_out_bottom = global::GraphicsTester.Android.Resource.Animation.abc_slide_out_bottom;
+			global::System.Graphics.Resource.Animation.abc_slide_out_top = global::GraphicsTester.Android.Resource.Animation.abc_slide_out_top;
+			global::System.Graphics.Resource.Animation.abc_tooltip_enter = global::GraphicsTester.Android.Resource.Animation.abc_tooltip_enter;
+			global::System.Graphics.Resource.Animation.abc_tooltip_exit = global::GraphicsTester.Android.Resource.Animation.abc_tooltip_exit;
+			global::System.Graphics.Resource.Animation.btn_checkbox_to_checked_box_inner_merged_animation = global::GraphicsTester.Android.Resource.Animation.btn_checkbox_to_checked_box_inner_merged_animation;
+			global::System.Graphics.Resource.Animation.btn_checkbox_to_checked_box_outer_merged_animation = global::GraphicsTester.Android.Resource.Animation.btn_checkbox_to_checked_box_outer_merged_animation;
+			global::System.Graphics.Resource.Animation.btn_checkbox_to_checked_icon_null_animation = global::GraphicsTester.Android.Resource.Animation.btn_checkbox_to_checked_icon_null_animation;
+			global::System.Graphics.Resource.Animation.btn_checkbox_to_unchecked_box_inner_merged_animation = global::GraphicsTester.Android.Resource.Animation.btn_checkbox_to_unchecked_box_inner_merged_animation;
+			global::System.Graphics.Resource.Animation.btn_checkbox_to_unchecked_check_path_merged_animation = global::GraphicsTester.Android.Resource.Animation.btn_checkbox_to_unchecked_check_path_merged_animation;
+			global::System.Graphics.Resource.Animation.btn_checkbox_to_unchecked_icon_null_animation = global::GraphicsTester.Android.Resource.Animation.btn_checkbox_to_unchecked_icon_null_animation;
+			global::System.Graphics.Resource.Animation.btn_radio_to_off_mtrl_dot_group_animation = global::GraphicsTester.Android.Resource.Animation.btn_radio_to_off_mtrl_dot_group_animation;
+			global::System.Graphics.Resource.Animation.btn_radio_to_off_mtrl_ring_outer_animation = global::GraphicsTester.Android.Resource.Animation.btn_radio_to_off_mtrl_ring_outer_animation;
+			global::System.Graphics.Resource.Animation.btn_radio_to_off_mtrl_ring_outer_path_animation = global::GraphicsTester.Android.Resource.Animation.btn_radio_to_off_mtrl_ring_outer_path_animation;
+			global::System.Graphics.Resource.Animation.btn_radio_to_on_mtrl_dot_group_animation = global::GraphicsTester.Android.Resource.Animation.btn_radio_to_on_mtrl_dot_group_animation;
+			global::System.Graphics.Resource.Animation.btn_radio_to_on_mtrl_ring_outer_animation = global::GraphicsTester.Android.Resource.Animation.btn_radio_to_on_mtrl_ring_outer_animation;
+			global::System.Graphics.Resource.Animation.btn_radio_to_on_mtrl_ring_outer_path_animation = global::GraphicsTester.Android.Resource.Animation.btn_radio_to_on_mtrl_ring_outer_path_animation;
+			global::System.Graphics.Resource.Animation.design_bottom_sheet_slide_in = global::GraphicsTester.Android.Resource.Animation.design_bottom_sheet_slide_in;
+			global::System.Graphics.Resource.Animation.design_bottom_sheet_slide_out = global::GraphicsTester.Android.Resource.Animation.design_bottom_sheet_slide_out;
+			global::System.Graphics.Resource.Animation.design_snackbar_in = global::GraphicsTester.Android.Resource.Animation.design_snackbar_in;
+			global::System.Graphics.Resource.Animation.design_snackbar_out = global::GraphicsTester.Android.Resource.Animation.design_snackbar_out;
+			global::System.Graphics.Resource.Animator.design_appbar_state_list_animator = global::GraphicsTester.Android.Resource.Animator.design_appbar_state_list_animator;
+			global::System.Graphics.Resource.Animator.design_fab_hide_motion_spec = global::GraphicsTester.Android.Resource.Animator.design_fab_hide_motion_spec;
+			global::System.Graphics.Resource.Animator.design_fab_show_motion_spec = global::GraphicsTester.Android.Resource.Animator.design_fab_show_motion_spec;
+			global::System.Graphics.Resource.Animator.mtrl_btn_state_list_anim = global::GraphicsTester.Android.Resource.Animator.mtrl_btn_state_list_anim;
+			global::System.Graphics.Resource.Animator.mtrl_btn_unelevated_state_list_anim = global::GraphicsTester.Android.Resource.Animator.mtrl_btn_unelevated_state_list_anim;
+			global::System.Graphics.Resource.Animator.mtrl_chip_state_list_anim = global::GraphicsTester.Android.Resource.Animator.mtrl_chip_state_list_anim;
+			global::System.Graphics.Resource.Animator.mtrl_fab_hide_motion_spec = global::GraphicsTester.Android.Resource.Animator.mtrl_fab_hide_motion_spec;
+			global::System.Graphics.Resource.Animator.mtrl_fab_show_motion_spec = global::GraphicsTester.Android.Resource.Animator.mtrl_fab_show_motion_spec;
+			global::System.Graphics.Resource.Animator.mtrl_fab_transformation_sheet_collapse_spec = global::GraphicsTester.Android.Resource.Animator.mtrl_fab_transformation_sheet_collapse_spec;
+			global::System.Graphics.Resource.Animator.mtrl_fab_transformation_sheet_expand_spec = global::GraphicsTester.Android.Resource.Animator.mtrl_fab_transformation_sheet_expand_spec;
+			global::System.Graphics.Resource.Attribute.actionBarDivider = global::GraphicsTester.Android.Resource.Attribute.actionBarDivider;
+			global::System.Graphics.Resource.Attribute.actionBarItemBackground = global::GraphicsTester.Android.Resource.Attribute.actionBarItemBackground;
+			global::System.Graphics.Resource.Attribute.actionBarPopupTheme = global::GraphicsTester.Android.Resource.Attribute.actionBarPopupTheme;
+			global::System.Graphics.Resource.Attribute.actionBarSize = global::GraphicsTester.Android.Resource.Attribute.actionBarSize;
+			global::System.Graphics.Resource.Attribute.actionBarSplitStyle = global::GraphicsTester.Android.Resource.Attribute.actionBarSplitStyle;
+			global::System.Graphics.Resource.Attribute.actionBarStyle = global::GraphicsTester.Android.Resource.Attribute.actionBarStyle;
+			global::System.Graphics.Resource.Attribute.actionBarTabBarStyle = global::GraphicsTester.Android.Resource.Attribute.actionBarTabBarStyle;
+			global::System.Graphics.Resource.Attribute.actionBarTabStyle = global::GraphicsTester.Android.Resource.Attribute.actionBarTabStyle;
+			global::System.Graphics.Resource.Attribute.actionBarTabTextStyle = global::GraphicsTester.Android.Resource.Attribute.actionBarTabTextStyle;
+			global::System.Graphics.Resource.Attribute.actionBarTheme = global::GraphicsTester.Android.Resource.Attribute.actionBarTheme;
+			global::System.Graphics.Resource.Attribute.actionBarWidgetTheme = global::GraphicsTester.Android.Resource.Attribute.actionBarWidgetTheme;
+			global::System.Graphics.Resource.Attribute.actionButtonStyle = global::GraphicsTester.Android.Resource.Attribute.actionButtonStyle;
+			global::System.Graphics.Resource.Attribute.actionDropDownStyle = global::GraphicsTester.Android.Resource.Attribute.actionDropDownStyle;
+			global::System.Graphics.Resource.Attribute.actionLayout = global::GraphicsTester.Android.Resource.Attribute.actionLayout;
+			global::System.Graphics.Resource.Attribute.actionMenuTextAppearance = global::GraphicsTester.Android.Resource.Attribute.actionMenuTextAppearance;
+			global::System.Graphics.Resource.Attribute.actionMenuTextColor = global::GraphicsTester.Android.Resource.Attribute.actionMenuTextColor;
+			global::System.Graphics.Resource.Attribute.actionModeBackground = global::GraphicsTester.Android.Resource.Attribute.actionModeBackground;
+			global::System.Graphics.Resource.Attribute.actionModeCloseButtonStyle = global::GraphicsTester.Android.Resource.Attribute.actionModeCloseButtonStyle;
+			global::System.Graphics.Resource.Attribute.actionModeCloseDrawable = global::GraphicsTester.Android.Resource.Attribute.actionModeCloseDrawable;
+			global::System.Graphics.Resource.Attribute.actionModeCopyDrawable = global::GraphicsTester.Android.Resource.Attribute.actionModeCopyDrawable;
+			global::System.Graphics.Resource.Attribute.actionModeCutDrawable = global::GraphicsTester.Android.Resource.Attribute.actionModeCutDrawable;
+			global::System.Graphics.Resource.Attribute.actionModeFindDrawable = global::GraphicsTester.Android.Resource.Attribute.actionModeFindDrawable;
+			global::System.Graphics.Resource.Attribute.actionModePasteDrawable = global::GraphicsTester.Android.Resource.Attribute.actionModePasteDrawable;
+			global::System.Graphics.Resource.Attribute.actionModePopupWindowStyle = global::GraphicsTester.Android.Resource.Attribute.actionModePopupWindowStyle;
+			global::System.Graphics.Resource.Attribute.actionModeSelectAllDrawable = global::GraphicsTester.Android.Resource.Attribute.actionModeSelectAllDrawable;
+			global::System.Graphics.Resource.Attribute.actionModeShareDrawable = global::GraphicsTester.Android.Resource.Attribute.actionModeShareDrawable;
+			global::System.Graphics.Resource.Attribute.actionModeSplitBackground = global::GraphicsTester.Android.Resource.Attribute.actionModeSplitBackground;
+			global::System.Graphics.Resource.Attribute.actionModeStyle = global::GraphicsTester.Android.Resource.Attribute.actionModeStyle;
+			global::System.Graphics.Resource.Attribute.actionModeWebSearchDrawable = global::GraphicsTester.Android.Resource.Attribute.actionModeWebSearchDrawable;
+			global::System.Graphics.Resource.Attribute.actionOverflowButtonStyle = global::GraphicsTester.Android.Resource.Attribute.actionOverflowButtonStyle;
+			global::System.Graphics.Resource.Attribute.actionOverflowMenuStyle = global::GraphicsTester.Android.Resource.Attribute.actionOverflowMenuStyle;
+			global::System.Graphics.Resource.Attribute.actionProviderClass = global::GraphicsTester.Android.Resource.Attribute.actionProviderClass;
+			global::System.Graphics.Resource.Attribute.actionViewClass = global::GraphicsTester.Android.Resource.Attribute.actionViewClass;
+			global::System.Graphics.Resource.Attribute.activityChooserViewStyle = global::GraphicsTester.Android.Resource.Attribute.activityChooserViewStyle;
+			global::System.Graphics.Resource.Attribute.alertDialogButtonGroupStyle = global::GraphicsTester.Android.Resource.Attribute.alertDialogButtonGroupStyle;
+			global::System.Graphics.Resource.Attribute.alertDialogCenterButtons = global::GraphicsTester.Android.Resource.Attribute.alertDialogCenterButtons;
+			global::System.Graphics.Resource.Attribute.alertDialogStyle = global::GraphicsTester.Android.Resource.Attribute.alertDialogStyle;
+			global::System.Graphics.Resource.Attribute.alertDialogTheme = global::GraphicsTester.Android.Resource.Attribute.alertDialogTheme;
+			global::System.Graphics.Resource.Attribute.allowStacking = global::GraphicsTester.Android.Resource.Attribute.allowStacking;
+			global::System.Graphics.Resource.Attribute.alpha = global::GraphicsTester.Android.Resource.Attribute.alpha;
+			global::System.Graphics.Resource.Attribute.alphabeticModifiers = global::GraphicsTester.Android.Resource.Attribute.alphabeticModifiers;
+			global::System.Graphics.Resource.Attribute.arrowHeadLength = global::GraphicsTester.Android.Resource.Attribute.arrowHeadLength;
+			global::System.Graphics.Resource.Attribute.arrowShaftLength = global::GraphicsTester.Android.Resource.Attribute.arrowShaftLength;
+			global::System.Graphics.Resource.Attribute.autoCompleteTextViewStyle = global::GraphicsTester.Android.Resource.Attribute.autoCompleteTextViewStyle;
+			global::System.Graphics.Resource.Attribute.autoSizeMaxTextSize = global::GraphicsTester.Android.Resource.Attribute.autoSizeMaxTextSize;
+			global::System.Graphics.Resource.Attribute.autoSizeMinTextSize = global::GraphicsTester.Android.Resource.Attribute.autoSizeMinTextSize;
+			global::System.Graphics.Resource.Attribute.autoSizePresetSizes = global::GraphicsTester.Android.Resource.Attribute.autoSizePresetSizes;
+			global::System.Graphics.Resource.Attribute.autoSizeStepGranularity = global::GraphicsTester.Android.Resource.Attribute.autoSizeStepGranularity;
+			global::System.Graphics.Resource.Attribute.autoSizeTextType = global::GraphicsTester.Android.Resource.Attribute.autoSizeTextType;
+			global::System.Graphics.Resource.Attribute.background = global::GraphicsTester.Android.Resource.Attribute.background;
+			global::System.Graphics.Resource.Attribute.backgroundSplit = global::GraphicsTester.Android.Resource.Attribute.backgroundSplit;
+			global::System.Graphics.Resource.Attribute.backgroundStacked = global::GraphicsTester.Android.Resource.Attribute.backgroundStacked;
+			global::System.Graphics.Resource.Attribute.backgroundTint = global::GraphicsTester.Android.Resource.Attribute.backgroundTint;
+			global::System.Graphics.Resource.Attribute.backgroundTintMode = global::GraphicsTester.Android.Resource.Attribute.backgroundTintMode;
+			global::System.Graphics.Resource.Attribute.barLength = global::GraphicsTester.Android.Resource.Attribute.barLength;
+			global::System.Graphics.Resource.Attribute.behavior_autoHide = global::GraphicsTester.Android.Resource.Attribute.behavior_autoHide;
+			global::System.Graphics.Resource.Attribute.behavior_fitToContents = global::GraphicsTester.Android.Resource.Attribute.behavior_fitToContents;
+			global::System.Graphics.Resource.Attribute.behavior_hideable = global::GraphicsTester.Android.Resource.Attribute.behavior_hideable;
+			global::System.Graphics.Resource.Attribute.behavior_overlapTop = global::GraphicsTester.Android.Resource.Attribute.behavior_overlapTop;
+			global::System.Graphics.Resource.Attribute.behavior_peekHeight = global::GraphicsTester.Android.Resource.Attribute.behavior_peekHeight;
+			global::System.Graphics.Resource.Attribute.behavior_skipCollapsed = global::GraphicsTester.Android.Resource.Attribute.behavior_skipCollapsed;
+			global::System.Graphics.Resource.Attribute.borderlessButtonStyle = global::GraphicsTester.Android.Resource.Attribute.borderlessButtonStyle;
+			global::System.Graphics.Resource.Attribute.borderWidth = global::GraphicsTester.Android.Resource.Attribute.borderWidth;
+			global::System.Graphics.Resource.Attribute.bottomAppBarStyle = global::GraphicsTester.Android.Resource.Attribute.bottomAppBarStyle;
+			global::System.Graphics.Resource.Attribute.bottomNavigationStyle = global::GraphicsTester.Android.Resource.Attribute.bottomNavigationStyle;
+			global::System.Graphics.Resource.Attribute.bottomSheetDialogTheme = global::GraphicsTester.Android.Resource.Attribute.bottomSheetDialogTheme;
+			global::System.Graphics.Resource.Attribute.bottomSheetStyle = global::GraphicsTester.Android.Resource.Attribute.bottomSheetStyle;
+			global::System.Graphics.Resource.Attribute.boxBackgroundColor = global::GraphicsTester.Android.Resource.Attribute.boxBackgroundColor;
+			global::System.Graphics.Resource.Attribute.boxBackgroundMode = global::GraphicsTester.Android.Resource.Attribute.boxBackgroundMode;
+			global::System.Graphics.Resource.Attribute.boxCollapsedPaddingTop = global::GraphicsTester.Android.Resource.Attribute.boxCollapsedPaddingTop;
+			global::System.Graphics.Resource.Attribute.boxCornerRadiusBottomEnd = global::GraphicsTester.Android.Resource.Attribute.boxCornerRadiusBottomEnd;
+			global::System.Graphics.Resource.Attribute.boxCornerRadiusBottomStart = global::GraphicsTester.Android.Resource.Attribute.boxCornerRadiusBottomStart;
+			global::System.Graphics.Resource.Attribute.boxCornerRadiusTopEnd = global::GraphicsTester.Android.Resource.Attribute.boxCornerRadiusTopEnd;
+			global::System.Graphics.Resource.Attribute.boxCornerRadiusTopStart = global::GraphicsTester.Android.Resource.Attribute.boxCornerRadiusTopStart;
+			global::System.Graphics.Resource.Attribute.boxStrokeColor = global::GraphicsTester.Android.Resource.Attribute.boxStrokeColor;
+			global::System.Graphics.Resource.Attribute.boxStrokeWidth = global::GraphicsTester.Android.Resource.Attribute.boxStrokeWidth;
+			global::System.Graphics.Resource.Attribute.buttonBarButtonStyle = global::GraphicsTester.Android.Resource.Attribute.buttonBarButtonStyle;
+			global::System.Graphics.Resource.Attribute.buttonBarNegativeButtonStyle = global::GraphicsTester.Android.Resource.Attribute.buttonBarNegativeButtonStyle;
+			global::System.Graphics.Resource.Attribute.buttonBarNeutralButtonStyle = global::GraphicsTester.Android.Resource.Attribute.buttonBarNeutralButtonStyle;
+			global::System.Graphics.Resource.Attribute.buttonBarPositiveButtonStyle = global::GraphicsTester.Android.Resource.Attribute.buttonBarPositiveButtonStyle;
+			global::System.Graphics.Resource.Attribute.buttonBarStyle = global::GraphicsTester.Android.Resource.Attribute.buttonBarStyle;
+			global::System.Graphics.Resource.Attribute.buttonCompat = global::GraphicsTester.Android.Resource.Attribute.buttonCompat;
+			global::System.Graphics.Resource.Attribute.buttonGravity = global::GraphicsTester.Android.Resource.Attribute.buttonGravity;
+			global::System.Graphics.Resource.Attribute.buttonIconDimen = global::GraphicsTester.Android.Resource.Attribute.buttonIconDimen;
+			global::System.Graphics.Resource.Attribute.buttonPanelSideLayout = global::GraphicsTester.Android.Resource.Attribute.buttonPanelSideLayout;
+			global::System.Graphics.Resource.Attribute.buttonStyle = global::GraphicsTester.Android.Resource.Attribute.buttonStyle;
+			global::System.Graphics.Resource.Attribute.buttonStyleSmall = global::GraphicsTester.Android.Resource.Attribute.buttonStyleSmall;
+			global::System.Graphics.Resource.Attribute.buttonTint = global::GraphicsTester.Android.Resource.Attribute.buttonTint;
+			global::System.Graphics.Resource.Attribute.buttonTintMode = global::GraphicsTester.Android.Resource.Attribute.buttonTintMode;
+			global::System.Graphics.Resource.Attribute.cardBackgroundColor = global::GraphicsTester.Android.Resource.Attribute.cardBackgroundColor;
+			global::System.Graphics.Resource.Attribute.cardCornerRadius = global::GraphicsTester.Android.Resource.Attribute.cardCornerRadius;
+			global::System.Graphics.Resource.Attribute.cardElevation = global::GraphicsTester.Android.Resource.Attribute.cardElevation;
+			global::System.Graphics.Resource.Attribute.cardMaxElevation = global::GraphicsTester.Android.Resource.Attribute.cardMaxElevation;
+			global::System.Graphics.Resource.Attribute.cardPreventCornerOverlap = global::GraphicsTester.Android.Resource.Attribute.cardPreventCornerOverlap;
+			global::System.Graphics.Resource.Attribute.cardUseCompatPadding = global::GraphicsTester.Android.Resource.Attribute.cardUseCompatPadding;
+			global::System.Graphics.Resource.Attribute.cardViewStyle = global::GraphicsTester.Android.Resource.Attribute.cardViewStyle;
+			global::System.Graphics.Resource.Attribute.checkboxStyle = global::GraphicsTester.Android.Resource.Attribute.checkboxStyle;
+			global::System.Graphics.Resource.Attribute.checkedChip = global::GraphicsTester.Android.Resource.Attribute.checkedChip;
+			global::System.Graphics.Resource.Attribute.checkedIcon = global::GraphicsTester.Android.Resource.Attribute.checkedIcon;
+			global::System.Graphics.Resource.Attribute.checkedIconEnabled = global::GraphicsTester.Android.Resource.Attribute.checkedIconEnabled;
+			global::System.Graphics.Resource.Attribute.checkedIconVisible = global::GraphicsTester.Android.Resource.Attribute.checkedIconVisible;
+			global::System.Graphics.Resource.Attribute.checkedTextViewStyle = global::GraphicsTester.Android.Resource.Attribute.checkedTextViewStyle;
+			global::System.Graphics.Resource.Attribute.chipBackgroundColor = global::GraphicsTester.Android.Resource.Attribute.chipBackgroundColor;
+			global::System.Graphics.Resource.Attribute.chipCornerRadius = global::GraphicsTester.Android.Resource.Attribute.chipCornerRadius;
+			global::System.Graphics.Resource.Attribute.chipEndPadding = global::GraphicsTester.Android.Resource.Attribute.chipEndPadding;
+			global::System.Graphics.Resource.Attribute.chipGroupStyle = global::GraphicsTester.Android.Resource.Attribute.chipGroupStyle;
+			global::System.Graphics.Resource.Attribute.chipIcon = global::GraphicsTester.Android.Resource.Attribute.chipIcon;
+			global::System.Graphics.Resource.Attribute.chipIconEnabled = global::GraphicsTester.Android.Resource.Attribute.chipIconEnabled;
+			global::System.Graphics.Resource.Attribute.chipIconSize = global::GraphicsTester.Android.Resource.Attribute.chipIconSize;
+			global::System.Graphics.Resource.Attribute.chipIconTint = global::GraphicsTester.Android.Resource.Attribute.chipIconTint;
+			global::System.Graphics.Resource.Attribute.chipIconVisible = global::GraphicsTester.Android.Resource.Attribute.chipIconVisible;
+			global::System.Graphics.Resource.Attribute.chipMinHeight = global::GraphicsTester.Android.Resource.Attribute.chipMinHeight;
+			global::System.Graphics.Resource.Attribute.chipSpacing = global::GraphicsTester.Android.Resource.Attribute.chipSpacing;
+			global::System.Graphics.Resource.Attribute.chipSpacingHorizontal = global::GraphicsTester.Android.Resource.Attribute.chipSpacingHorizontal;
+			global::System.Graphics.Resource.Attribute.chipSpacingVertical = global::GraphicsTester.Android.Resource.Attribute.chipSpacingVertical;
+			global::System.Graphics.Resource.Attribute.chipStandaloneStyle = global::GraphicsTester.Android.Resource.Attribute.chipStandaloneStyle;
+			global::System.Graphics.Resource.Attribute.chipStartPadding = global::GraphicsTester.Android.Resource.Attribute.chipStartPadding;
+			global::System.Graphics.Resource.Attribute.chipStrokeColor = global::GraphicsTester.Android.Resource.Attribute.chipStrokeColor;
+			global::System.Graphics.Resource.Attribute.chipStrokeWidth = global::GraphicsTester.Android.Resource.Attribute.chipStrokeWidth;
+			global::System.Graphics.Resource.Attribute.chipStyle = global::GraphicsTester.Android.Resource.Attribute.chipStyle;
+			global::System.Graphics.Resource.Attribute.closeIcon = global::GraphicsTester.Android.Resource.Attribute.closeIcon;
+			global::System.Graphics.Resource.Attribute.closeIconEnabled = global::GraphicsTester.Android.Resource.Attribute.closeIconEnabled;
+			global::System.Graphics.Resource.Attribute.closeIconEndPadding = global::GraphicsTester.Android.Resource.Attribute.closeIconEndPadding;
+			global::System.Graphics.Resource.Attribute.closeIconSize = global::GraphicsTester.Android.Resource.Attribute.closeIconSize;
+			global::System.Graphics.Resource.Attribute.closeIconStartPadding = global::GraphicsTester.Android.Resource.Attribute.closeIconStartPadding;
+			global::System.Graphics.Resource.Attribute.closeIconTint = global::GraphicsTester.Android.Resource.Attribute.closeIconTint;
+			global::System.Graphics.Resource.Attribute.closeIconVisible = global::GraphicsTester.Android.Resource.Attribute.closeIconVisible;
+			global::System.Graphics.Resource.Attribute.closeItemLayout = global::GraphicsTester.Android.Resource.Attribute.closeItemLayout;
+			global::System.Graphics.Resource.Attribute.collapseContentDescription = global::GraphicsTester.Android.Resource.Attribute.collapseContentDescription;
+			global::System.Graphics.Resource.Attribute.collapsedTitleGravity = global::GraphicsTester.Android.Resource.Attribute.collapsedTitleGravity;
+			global::System.Graphics.Resource.Attribute.collapsedTitleTextAppearance = global::GraphicsTester.Android.Resource.Attribute.collapsedTitleTextAppearance;
+			global::System.Graphics.Resource.Attribute.collapseIcon = global::GraphicsTester.Android.Resource.Attribute.collapseIcon;
+			global::System.Graphics.Resource.Attribute.color = global::GraphicsTester.Android.Resource.Attribute.color;
+			global::System.Graphics.Resource.Attribute.colorAccent = global::GraphicsTester.Android.Resource.Attribute.colorAccent;
+			global::System.Graphics.Resource.Attribute.colorBackgroundFloating = global::GraphicsTester.Android.Resource.Attribute.colorBackgroundFloating;
+			global::System.Graphics.Resource.Attribute.colorButtonNormal = global::GraphicsTester.Android.Resource.Attribute.colorButtonNormal;
+			global::System.Graphics.Resource.Attribute.colorControlActivated = global::GraphicsTester.Android.Resource.Attribute.colorControlActivated;
+			global::System.Graphics.Resource.Attribute.colorControlHighlight = global::GraphicsTester.Android.Resource.Attribute.colorControlHighlight;
+			global::System.Graphics.Resource.Attribute.colorControlNormal = global::GraphicsTester.Android.Resource.Attribute.colorControlNormal;
+			global::System.Graphics.Resource.Attribute.colorError = global::GraphicsTester.Android.Resource.Attribute.colorError;
+			global::System.Graphics.Resource.Attribute.colorPrimary = global::GraphicsTester.Android.Resource.Attribute.colorPrimary;
+			global::System.Graphics.Resource.Attribute.colorPrimaryDark = global::GraphicsTester.Android.Resource.Attribute.colorPrimaryDark;
+			global::System.Graphics.Resource.Attribute.colorSecondary = global::GraphicsTester.Android.Resource.Attribute.colorSecondary;
+			global::System.Graphics.Resource.Attribute.colorSwitchThumbNormal = global::GraphicsTester.Android.Resource.Attribute.colorSwitchThumbNormal;
+			global::System.Graphics.Resource.Attribute.commitIcon = global::GraphicsTester.Android.Resource.Attribute.commitIcon;
+			global::System.Graphics.Resource.Attribute.contentDescription = global::GraphicsTester.Android.Resource.Attribute.contentDescription;
+			global::System.Graphics.Resource.Attribute.contentInsetEnd = global::GraphicsTester.Android.Resource.Attribute.contentInsetEnd;
+			global::System.Graphics.Resource.Attribute.contentInsetEndWithActions = global::GraphicsTester.Android.Resource.Attribute.contentInsetEndWithActions;
+			global::System.Graphics.Resource.Attribute.contentInsetLeft = global::GraphicsTester.Android.Resource.Attribute.contentInsetLeft;
+			global::System.Graphics.Resource.Attribute.contentInsetRight = global::GraphicsTester.Android.Resource.Attribute.contentInsetRight;
+			global::System.Graphics.Resource.Attribute.contentInsetStart = global::GraphicsTester.Android.Resource.Attribute.contentInsetStart;
+			global::System.Graphics.Resource.Attribute.contentInsetStartWithNavigation = global::GraphicsTester.Android.Resource.Attribute.contentInsetStartWithNavigation;
+			global::System.Graphics.Resource.Attribute.contentPadding = global::GraphicsTester.Android.Resource.Attribute.contentPadding;
+			global::System.Graphics.Resource.Attribute.contentPaddingBottom = global::GraphicsTester.Android.Resource.Attribute.contentPaddingBottom;
+			global::System.Graphics.Resource.Attribute.contentPaddingLeft = global::GraphicsTester.Android.Resource.Attribute.contentPaddingLeft;
+			global::System.Graphics.Resource.Attribute.contentPaddingRight = global::GraphicsTester.Android.Resource.Attribute.contentPaddingRight;
+			global::System.Graphics.Resource.Attribute.contentPaddingTop = global::GraphicsTester.Android.Resource.Attribute.contentPaddingTop;
+			global::System.Graphics.Resource.Attribute.contentScrim = global::GraphicsTester.Android.Resource.Attribute.contentScrim;
+			global::System.Graphics.Resource.Attribute.controlBackground = global::GraphicsTester.Android.Resource.Attribute.controlBackground;
+			global::System.Graphics.Resource.Attribute.coordinatorLayoutStyle = global::GraphicsTester.Android.Resource.Attribute.coordinatorLayoutStyle;
+			global::System.Graphics.Resource.Attribute.cornerRadius = global::GraphicsTester.Android.Resource.Attribute.cornerRadius;
+			global::System.Graphics.Resource.Attribute.counterEnabled = global::GraphicsTester.Android.Resource.Attribute.counterEnabled;
+			global::System.Graphics.Resource.Attribute.counterMaxLength = global::GraphicsTester.Android.Resource.Attribute.counterMaxLength;
+			global::System.Graphics.Resource.Attribute.counterOverflowTextAppearance = global::GraphicsTester.Android.Resource.Attribute.counterOverflowTextAppearance;
+			global::System.Graphics.Resource.Attribute.counterTextAppearance = global::GraphicsTester.Android.Resource.Attribute.counterTextAppearance;
+			global::System.Graphics.Resource.Attribute.customNavigationLayout = global::GraphicsTester.Android.Resource.Attribute.customNavigationLayout;
+			global::System.Graphics.Resource.Attribute.defaultQueryHint = global::GraphicsTester.Android.Resource.Attribute.defaultQueryHint;
+			global::System.Graphics.Resource.Attribute.dialogCornerRadius = global::GraphicsTester.Android.Resource.Attribute.dialogCornerRadius;
+			global::System.Graphics.Resource.Attribute.dialogPreferredPadding = global::GraphicsTester.Android.Resource.Attribute.dialogPreferredPadding;
+			global::System.Graphics.Resource.Attribute.dialogTheme = global::GraphicsTester.Android.Resource.Attribute.dialogTheme;
+			global::System.Graphics.Resource.Attribute.displayOptions = global::GraphicsTester.Android.Resource.Attribute.displayOptions;
+			global::System.Graphics.Resource.Attribute.divider = global::GraphicsTester.Android.Resource.Attribute.divider;
+			global::System.Graphics.Resource.Attribute.dividerHorizontal = global::GraphicsTester.Android.Resource.Attribute.dividerHorizontal;
+			global::System.Graphics.Resource.Attribute.dividerPadding = global::GraphicsTester.Android.Resource.Attribute.dividerPadding;
+			global::System.Graphics.Resource.Attribute.dividerVertical = global::GraphicsTester.Android.Resource.Attribute.dividerVertical;
+			global::System.Graphics.Resource.Attribute.drawableBottomCompat = global::GraphicsTester.Android.Resource.Attribute.drawableBottomCompat;
+			global::System.Graphics.Resource.Attribute.drawableEndCompat = global::GraphicsTester.Android.Resource.Attribute.drawableEndCompat;
+			global::System.Graphics.Resource.Attribute.drawableLeftCompat = global::GraphicsTester.Android.Resource.Attribute.drawableLeftCompat;
+			global::System.Graphics.Resource.Attribute.drawableRightCompat = global::GraphicsTester.Android.Resource.Attribute.drawableRightCompat;
+			global::System.Graphics.Resource.Attribute.drawableSize = global::GraphicsTester.Android.Resource.Attribute.drawableSize;
+			global::System.Graphics.Resource.Attribute.drawableStartCompat = global::GraphicsTester.Android.Resource.Attribute.drawableStartCompat;
+			global::System.Graphics.Resource.Attribute.drawableTint = global::GraphicsTester.Android.Resource.Attribute.drawableTint;
+			global::System.Graphics.Resource.Attribute.drawableTintMode = global::GraphicsTester.Android.Resource.Attribute.drawableTintMode;
+			global::System.Graphics.Resource.Attribute.drawableTopCompat = global::GraphicsTester.Android.Resource.Attribute.drawableTopCompat;
+			global::System.Graphics.Resource.Attribute.drawerArrowStyle = global::GraphicsTester.Android.Resource.Attribute.drawerArrowStyle;
+			global::System.Graphics.Resource.Attribute.dropdownListPreferredItemHeight = global::GraphicsTester.Android.Resource.Attribute.dropdownListPreferredItemHeight;
+			global::System.Graphics.Resource.Attribute.dropDownListViewStyle = global::GraphicsTester.Android.Resource.Attribute.dropDownListViewStyle;
+			global::System.Graphics.Resource.Attribute.editTextBackground = global::GraphicsTester.Android.Resource.Attribute.editTextBackground;
+			global::System.Graphics.Resource.Attribute.editTextColor = global::GraphicsTester.Android.Resource.Attribute.editTextColor;
+			global::System.Graphics.Resource.Attribute.editTextStyle = global::GraphicsTester.Android.Resource.Attribute.editTextStyle;
+			global::System.Graphics.Resource.Attribute.elevation = global::GraphicsTester.Android.Resource.Attribute.elevation;
+			global::System.Graphics.Resource.Attribute.enforceMaterialTheme = global::GraphicsTester.Android.Resource.Attribute.enforceMaterialTheme;
+			global::System.Graphics.Resource.Attribute.enforceTextAppearance = global::GraphicsTester.Android.Resource.Attribute.enforceTextAppearance;
+			global::System.Graphics.Resource.Attribute.errorEnabled = global::GraphicsTester.Android.Resource.Attribute.errorEnabled;
+			global::System.Graphics.Resource.Attribute.errorTextAppearance = global::GraphicsTester.Android.Resource.Attribute.errorTextAppearance;
+			global::System.Graphics.Resource.Attribute.expandActivityOverflowButtonDrawable = global::GraphicsTester.Android.Resource.Attribute.expandActivityOverflowButtonDrawable;
+			global::System.Graphics.Resource.Attribute.expanded = global::GraphicsTester.Android.Resource.Attribute.expanded;
+			global::System.Graphics.Resource.Attribute.expandedTitleGravity = global::GraphicsTester.Android.Resource.Attribute.expandedTitleGravity;
+			global::System.Graphics.Resource.Attribute.expandedTitleMargin = global::GraphicsTester.Android.Resource.Attribute.expandedTitleMargin;
+			global::System.Graphics.Resource.Attribute.expandedTitleMarginBottom = global::GraphicsTester.Android.Resource.Attribute.expandedTitleMarginBottom;
+			global::System.Graphics.Resource.Attribute.expandedTitleMarginEnd = global::GraphicsTester.Android.Resource.Attribute.expandedTitleMarginEnd;
+			global::System.Graphics.Resource.Attribute.expandedTitleMarginStart = global::GraphicsTester.Android.Resource.Attribute.expandedTitleMarginStart;
+			global::System.Graphics.Resource.Attribute.expandedTitleMarginTop = global::GraphicsTester.Android.Resource.Attribute.expandedTitleMarginTop;
+			global::System.Graphics.Resource.Attribute.expandedTitleTextAppearance = global::GraphicsTester.Android.Resource.Attribute.expandedTitleTextAppearance;
+			global::System.Graphics.Resource.Attribute.fabAlignmentMode = global::GraphicsTester.Android.Resource.Attribute.fabAlignmentMode;
+			global::System.Graphics.Resource.Attribute.fabCradleMargin = global::GraphicsTester.Android.Resource.Attribute.fabCradleMargin;
+			global::System.Graphics.Resource.Attribute.fabCradleRoundedCornerRadius = global::GraphicsTester.Android.Resource.Attribute.fabCradleRoundedCornerRadius;
+			global::System.Graphics.Resource.Attribute.fabCradleVerticalOffset = global::GraphicsTester.Android.Resource.Attribute.fabCradleVerticalOffset;
+			global::System.Graphics.Resource.Attribute.fabCustomSize = global::GraphicsTester.Android.Resource.Attribute.fabCustomSize;
+			global::System.Graphics.Resource.Attribute.fabSize = global::GraphicsTester.Android.Resource.Attribute.fabSize;
+			global::System.Graphics.Resource.Attribute.fastScrollEnabled = global::GraphicsTester.Android.Resource.Attribute.fastScrollEnabled;
+			global::System.Graphics.Resource.Attribute.fastScrollHorizontalThumbDrawable = global::GraphicsTester.Android.Resource.Attribute.fastScrollHorizontalThumbDrawable;
+			global::System.Graphics.Resource.Attribute.fastScrollHorizontalTrackDrawable = global::GraphicsTester.Android.Resource.Attribute.fastScrollHorizontalTrackDrawable;
+			global::System.Graphics.Resource.Attribute.fastScrollVerticalThumbDrawable = global::GraphicsTester.Android.Resource.Attribute.fastScrollVerticalThumbDrawable;
+			global::System.Graphics.Resource.Attribute.fastScrollVerticalTrackDrawable = global::GraphicsTester.Android.Resource.Attribute.fastScrollVerticalTrackDrawable;
+			global::System.Graphics.Resource.Attribute.firstBaselineToTopHeight = global::GraphicsTester.Android.Resource.Attribute.firstBaselineToTopHeight;
+			global::System.Graphics.Resource.Attribute.floatingActionButtonStyle = global::GraphicsTester.Android.Resource.Attribute.floatingActionButtonStyle;
+			global::System.Graphics.Resource.Attribute.font = global::GraphicsTester.Android.Resource.Attribute.font;
+			global::System.Graphics.Resource.Attribute.fontFamily = global::GraphicsTester.Android.Resource.Attribute.fontFamily;
+			global::System.Graphics.Resource.Attribute.fontProviderAuthority = global::GraphicsTester.Android.Resource.Attribute.fontProviderAuthority;
+			global::System.Graphics.Resource.Attribute.fontProviderCerts = global::GraphicsTester.Android.Resource.Attribute.fontProviderCerts;
+			global::System.Graphics.Resource.Attribute.fontProviderFetchStrategy = global::GraphicsTester.Android.Resource.Attribute.fontProviderFetchStrategy;
+			global::System.Graphics.Resource.Attribute.fontProviderFetchTimeout = global::GraphicsTester.Android.Resource.Attribute.fontProviderFetchTimeout;
+			global::System.Graphics.Resource.Attribute.fontProviderPackage = global::GraphicsTester.Android.Resource.Attribute.fontProviderPackage;
+			global::System.Graphics.Resource.Attribute.fontProviderQuery = global::GraphicsTester.Android.Resource.Attribute.fontProviderQuery;
+			global::System.Graphics.Resource.Attribute.fontStyle = global::GraphicsTester.Android.Resource.Attribute.fontStyle;
+			global::System.Graphics.Resource.Attribute.fontVariationSettings = global::GraphicsTester.Android.Resource.Attribute.fontVariationSettings;
+			global::System.Graphics.Resource.Attribute.fontWeight = global::GraphicsTester.Android.Resource.Attribute.fontWeight;
+			global::System.Graphics.Resource.Attribute.foregroundInsidePadding = global::GraphicsTester.Android.Resource.Attribute.foregroundInsidePadding;
+			global::System.Graphics.Resource.Attribute.gapBetweenBars = global::GraphicsTester.Android.Resource.Attribute.gapBetweenBars;
+			global::System.Graphics.Resource.Attribute.goIcon = global::GraphicsTester.Android.Resource.Attribute.goIcon;
+			global::System.Graphics.Resource.Attribute.headerLayout = global::GraphicsTester.Android.Resource.Attribute.headerLayout;
+			global::System.Graphics.Resource.Attribute.height = global::GraphicsTester.Android.Resource.Attribute.height;
+			global::System.Graphics.Resource.Attribute.helperText = global::GraphicsTester.Android.Resource.Attribute.helperText;
+			global::System.Graphics.Resource.Attribute.helperTextEnabled = global::GraphicsTester.Android.Resource.Attribute.helperTextEnabled;
+			global::System.Graphics.Resource.Attribute.helperTextTextAppearance = global::GraphicsTester.Android.Resource.Attribute.helperTextTextAppearance;
+			global::System.Graphics.Resource.Attribute.hideMotionSpec = global::GraphicsTester.Android.Resource.Attribute.hideMotionSpec;
+			global::System.Graphics.Resource.Attribute.hideOnContentScroll = global::GraphicsTester.Android.Resource.Attribute.hideOnContentScroll;
+			global::System.Graphics.Resource.Attribute.hideOnScroll = global::GraphicsTester.Android.Resource.Attribute.hideOnScroll;
+			global::System.Graphics.Resource.Attribute.hintAnimationEnabled = global::GraphicsTester.Android.Resource.Attribute.hintAnimationEnabled;
+			global::System.Graphics.Resource.Attribute.hintEnabled = global::GraphicsTester.Android.Resource.Attribute.hintEnabled;
+			global::System.Graphics.Resource.Attribute.hintTextAppearance = global::GraphicsTester.Android.Resource.Attribute.hintTextAppearance;
+			global::System.Graphics.Resource.Attribute.homeAsUpIndicator = global::GraphicsTester.Android.Resource.Attribute.homeAsUpIndicator;
+			global::System.Graphics.Resource.Attribute.homeLayout = global::GraphicsTester.Android.Resource.Attribute.homeLayout;
+			global::System.Graphics.Resource.Attribute.hoveredFocusedTranslationZ = global::GraphicsTester.Android.Resource.Attribute.hoveredFocusedTranslationZ;
+			global::System.Graphics.Resource.Attribute.icon = global::GraphicsTester.Android.Resource.Attribute.icon;
+			global::System.Graphics.Resource.Attribute.iconEndPadding = global::GraphicsTester.Android.Resource.Attribute.iconEndPadding;
+			global::System.Graphics.Resource.Attribute.iconGravity = global::GraphicsTester.Android.Resource.Attribute.iconGravity;
+			global::System.Graphics.Resource.Attribute.iconifiedByDefault = global::GraphicsTester.Android.Resource.Attribute.iconifiedByDefault;
+			global::System.Graphics.Resource.Attribute.iconPadding = global::GraphicsTester.Android.Resource.Attribute.iconPadding;
+			global::System.Graphics.Resource.Attribute.iconSize = global::GraphicsTester.Android.Resource.Attribute.iconSize;
+			global::System.Graphics.Resource.Attribute.iconStartPadding = global::GraphicsTester.Android.Resource.Attribute.iconStartPadding;
+			global::System.Graphics.Resource.Attribute.iconTint = global::GraphicsTester.Android.Resource.Attribute.iconTint;
+			global::System.Graphics.Resource.Attribute.iconTintMode = global::GraphicsTester.Android.Resource.Attribute.iconTintMode;
+			global::System.Graphics.Resource.Attribute.imageButtonStyle = global::GraphicsTester.Android.Resource.Attribute.imageButtonStyle;
+			global::System.Graphics.Resource.Attribute.indeterminateProgressStyle = global::GraphicsTester.Android.Resource.Attribute.indeterminateProgressStyle;
+			global::System.Graphics.Resource.Attribute.initialActivityCount = global::GraphicsTester.Android.Resource.Attribute.initialActivityCount;
+			global::System.Graphics.Resource.Attribute.insetForeground = global::GraphicsTester.Android.Resource.Attribute.insetForeground;
+			global::System.Graphics.Resource.Attribute.isLightTheme = global::GraphicsTester.Android.Resource.Attribute.isLightTheme;
+			global::System.Graphics.Resource.Attribute.itemBackground = global::GraphicsTester.Android.Resource.Attribute.itemBackground;
+			global::System.Graphics.Resource.Attribute.itemHorizontalPadding = global::GraphicsTester.Android.Resource.Attribute.itemHorizontalPadding;
+			global::System.Graphics.Resource.Attribute.itemHorizontalTranslationEnabled = global::GraphicsTester.Android.Resource.Attribute.itemHorizontalTranslationEnabled;
+			global::System.Graphics.Resource.Attribute.itemIconPadding = global::GraphicsTester.Android.Resource.Attribute.itemIconPadding;
+			global::System.Graphics.Resource.Attribute.itemIconSize = global::GraphicsTester.Android.Resource.Attribute.itemIconSize;
+			global::System.Graphics.Resource.Attribute.itemIconTint = global::GraphicsTester.Android.Resource.Attribute.itemIconTint;
+			global::System.Graphics.Resource.Attribute.itemPadding = global::GraphicsTester.Android.Resource.Attribute.itemPadding;
+			global::System.Graphics.Resource.Attribute.itemSpacing = global::GraphicsTester.Android.Resource.Attribute.itemSpacing;
+			global::System.Graphics.Resource.Attribute.itemTextAppearance = global::GraphicsTester.Android.Resource.Attribute.itemTextAppearance;
+			global::System.Graphics.Resource.Attribute.itemTextAppearanceActive = global::GraphicsTester.Android.Resource.Attribute.itemTextAppearanceActive;
+			global::System.Graphics.Resource.Attribute.itemTextAppearanceInactive = global::GraphicsTester.Android.Resource.Attribute.itemTextAppearanceInactive;
+			global::System.Graphics.Resource.Attribute.itemTextColor = global::GraphicsTester.Android.Resource.Attribute.itemTextColor;
+			global::System.Graphics.Resource.Attribute.keylines = global::GraphicsTester.Android.Resource.Attribute.keylines;
+			global::System.Graphics.Resource.Attribute.labelVisibilityMode = global::GraphicsTester.Android.Resource.Attribute.labelVisibilityMode;
+			global::System.Graphics.Resource.Attribute.lastBaselineToBottomHeight = global::GraphicsTester.Android.Resource.Attribute.lastBaselineToBottomHeight;
+			global::System.Graphics.Resource.Attribute.layout = global::GraphicsTester.Android.Resource.Attribute.layout;
+			global::System.Graphics.Resource.Attribute.layoutManager = global::GraphicsTester.Android.Resource.Attribute.layoutManager;
+			global::System.Graphics.Resource.Attribute.layout_anchor = global::GraphicsTester.Android.Resource.Attribute.layout_anchor;
+			global::System.Graphics.Resource.Attribute.layout_anchorGravity = global::GraphicsTester.Android.Resource.Attribute.layout_anchorGravity;
+			global::System.Graphics.Resource.Attribute.layout_behavior = global::GraphicsTester.Android.Resource.Attribute.layout_behavior;
+			global::System.Graphics.Resource.Attribute.layout_collapseMode = global::GraphicsTester.Android.Resource.Attribute.layout_collapseMode;
+			global::System.Graphics.Resource.Attribute.layout_collapseParallaxMultiplier = global::GraphicsTester.Android.Resource.Attribute.layout_collapseParallaxMultiplier;
+			global::System.Graphics.Resource.Attribute.layout_dodgeInsetEdges = global::GraphicsTester.Android.Resource.Attribute.layout_dodgeInsetEdges;
+			global::System.Graphics.Resource.Attribute.layout_insetEdge = global::GraphicsTester.Android.Resource.Attribute.layout_insetEdge;
+			global::System.Graphics.Resource.Attribute.layout_keyline = global::GraphicsTester.Android.Resource.Attribute.layout_keyline;
+			global::System.Graphics.Resource.Attribute.layout_scrollFlags = global::GraphicsTester.Android.Resource.Attribute.layout_scrollFlags;
+			global::System.Graphics.Resource.Attribute.layout_scrollInterpolator = global::GraphicsTester.Android.Resource.Attribute.layout_scrollInterpolator;
+			global::System.Graphics.Resource.Attribute.liftOnScroll = global::GraphicsTester.Android.Resource.Attribute.liftOnScroll;
+			global::System.Graphics.Resource.Attribute.lineHeight = global::GraphicsTester.Android.Resource.Attribute.lineHeight;
+			global::System.Graphics.Resource.Attribute.lineSpacing = global::GraphicsTester.Android.Resource.Attribute.lineSpacing;
+			global::System.Graphics.Resource.Attribute.listChoiceBackgroundIndicator = global::GraphicsTester.Android.Resource.Attribute.listChoiceBackgroundIndicator;
+			global::System.Graphics.Resource.Attribute.listChoiceIndicatorMultipleAnimated = global::GraphicsTester.Android.Resource.Attribute.listChoiceIndicatorMultipleAnimated;
+			global::System.Graphics.Resource.Attribute.listChoiceIndicatorSingleAnimated = global::GraphicsTester.Android.Resource.Attribute.listChoiceIndicatorSingleAnimated;
+			global::System.Graphics.Resource.Attribute.listDividerAlertDialog = global::GraphicsTester.Android.Resource.Attribute.listDividerAlertDialog;
+			global::System.Graphics.Resource.Attribute.listItemLayout = global::GraphicsTester.Android.Resource.Attribute.listItemLayout;
+			global::System.Graphics.Resource.Attribute.listLayout = global::GraphicsTester.Android.Resource.Attribute.listLayout;
+			global::System.Graphics.Resource.Attribute.listMenuViewStyle = global::GraphicsTester.Android.Resource.Attribute.listMenuViewStyle;
+			global::System.Graphics.Resource.Attribute.listPopupWindowStyle = global::GraphicsTester.Android.Resource.Attribute.listPopupWindowStyle;
+			global::System.Graphics.Resource.Attribute.listPreferredItemHeight = global::GraphicsTester.Android.Resource.Attribute.listPreferredItemHeight;
+			global::System.Graphics.Resource.Attribute.listPreferredItemHeightLarge = global::GraphicsTester.Android.Resource.Attribute.listPreferredItemHeightLarge;
+			global::System.Graphics.Resource.Attribute.listPreferredItemHeightSmall = global::GraphicsTester.Android.Resource.Attribute.listPreferredItemHeightSmall;
+			global::System.Graphics.Resource.Attribute.listPreferredItemPaddingEnd = global::GraphicsTester.Android.Resource.Attribute.listPreferredItemPaddingEnd;
+			global::System.Graphics.Resource.Attribute.listPreferredItemPaddingLeft = global::GraphicsTester.Android.Resource.Attribute.listPreferredItemPaddingLeft;
+			global::System.Graphics.Resource.Attribute.listPreferredItemPaddingRight = global::GraphicsTester.Android.Resource.Attribute.listPreferredItemPaddingRight;
+			global::System.Graphics.Resource.Attribute.listPreferredItemPaddingStart = global::GraphicsTester.Android.Resource.Attribute.listPreferredItemPaddingStart;
+			global::System.Graphics.Resource.Attribute.logo = global::GraphicsTester.Android.Resource.Attribute.logo;
+			global::System.Graphics.Resource.Attribute.logoDescription = global::GraphicsTester.Android.Resource.Attribute.logoDescription;
+			global::System.Graphics.Resource.Attribute.materialButtonStyle = global::GraphicsTester.Android.Resource.Attribute.materialButtonStyle;
+			global::System.Graphics.Resource.Attribute.materialCardViewStyle = global::GraphicsTester.Android.Resource.Attribute.materialCardViewStyle;
+			global::System.Graphics.Resource.Attribute.maxActionInlineWidth = global::GraphicsTester.Android.Resource.Attribute.maxActionInlineWidth;
+			global::System.Graphics.Resource.Attribute.maxButtonHeight = global::GraphicsTester.Android.Resource.Attribute.maxButtonHeight;
+			global::System.Graphics.Resource.Attribute.maxImageSize = global::GraphicsTester.Android.Resource.Attribute.maxImageSize;
+			global::System.Graphics.Resource.Attribute.measureWithLargestChild = global::GraphicsTester.Android.Resource.Attribute.measureWithLargestChild;
+			global::System.Graphics.Resource.Attribute.menu = global::GraphicsTester.Android.Resource.Attribute.menu;
+			global::System.Graphics.Resource.Attribute.multiChoiceItemLayout = global::GraphicsTester.Android.Resource.Attribute.multiChoiceItemLayout;
+			global::System.Graphics.Resource.Attribute.navigationContentDescription = global::GraphicsTester.Android.Resource.Attribute.navigationContentDescription;
+			global::System.Graphics.Resource.Attribute.navigationIcon = global::GraphicsTester.Android.Resource.Attribute.navigationIcon;
+			global::System.Graphics.Resource.Attribute.navigationMode = global::GraphicsTester.Android.Resource.Attribute.navigationMode;
+			global::System.Graphics.Resource.Attribute.navigationViewStyle = global::GraphicsTester.Android.Resource.Attribute.navigationViewStyle;
+			global::System.Graphics.Resource.Attribute.numericModifiers = global::GraphicsTester.Android.Resource.Attribute.numericModifiers;
+			global::System.Graphics.Resource.Attribute.overlapAnchor = global::GraphicsTester.Android.Resource.Attribute.overlapAnchor;
+			global::System.Graphics.Resource.Attribute.paddingBottomNoButtons = global::GraphicsTester.Android.Resource.Attribute.paddingBottomNoButtons;
+			global::System.Graphics.Resource.Attribute.paddingEnd = global::GraphicsTester.Android.Resource.Attribute.paddingEnd;
+			global::System.Graphics.Resource.Attribute.paddingStart = global::GraphicsTester.Android.Resource.Attribute.paddingStart;
+			global::System.Graphics.Resource.Attribute.paddingTopNoTitle = global::GraphicsTester.Android.Resource.Attribute.paddingTopNoTitle;
+			global::System.Graphics.Resource.Attribute.panelBackground = global::GraphicsTester.Android.Resource.Attribute.panelBackground;
+			global::System.Graphics.Resource.Attribute.panelMenuListTheme = global::GraphicsTester.Android.Resource.Attribute.panelMenuListTheme;
+			global::System.Graphics.Resource.Attribute.panelMenuListWidth = global::GraphicsTester.Android.Resource.Attribute.panelMenuListWidth;
+			global::System.Graphics.Resource.Attribute.passwordToggleContentDescription = global::GraphicsTester.Android.Resource.Attribute.passwordToggleContentDescription;
+			global::System.Graphics.Resource.Attribute.passwordToggleDrawable = global::GraphicsTester.Android.Resource.Attribute.passwordToggleDrawable;
+			global::System.Graphics.Resource.Attribute.passwordToggleEnabled = global::GraphicsTester.Android.Resource.Attribute.passwordToggleEnabled;
+			global::System.Graphics.Resource.Attribute.passwordToggleTint = global::GraphicsTester.Android.Resource.Attribute.passwordToggleTint;
+			global::System.Graphics.Resource.Attribute.passwordToggleTintMode = global::GraphicsTester.Android.Resource.Attribute.passwordToggleTintMode;
+			global::System.Graphics.Resource.Attribute.popupMenuStyle = global::GraphicsTester.Android.Resource.Attribute.popupMenuStyle;
+			global::System.Graphics.Resource.Attribute.popupTheme = global::GraphicsTester.Android.Resource.Attribute.popupTheme;
+			global::System.Graphics.Resource.Attribute.popupWindowStyle = global::GraphicsTester.Android.Resource.Attribute.popupWindowStyle;
+			global::System.Graphics.Resource.Attribute.preserveIconSpacing = global::GraphicsTester.Android.Resource.Attribute.preserveIconSpacing;
+			global::System.Graphics.Resource.Attribute.pressedTranslationZ = global::GraphicsTester.Android.Resource.Attribute.pressedTranslationZ;
+			global::System.Graphics.Resource.Attribute.progressBarPadding = global::GraphicsTester.Android.Resource.Attribute.progressBarPadding;
+			global::System.Graphics.Resource.Attribute.progressBarStyle = global::GraphicsTester.Android.Resource.Attribute.progressBarStyle;
+			global::System.Graphics.Resource.Attribute.queryBackground = global::GraphicsTester.Android.Resource.Attribute.queryBackground;
+			global::System.Graphics.Resource.Attribute.queryHint = global::GraphicsTester.Android.Resource.Attribute.queryHint;
+			global::System.Graphics.Resource.Attribute.radioButtonStyle = global::GraphicsTester.Android.Resource.Attribute.radioButtonStyle;
+			global::System.Graphics.Resource.Attribute.ratingBarStyle = global::GraphicsTester.Android.Resource.Attribute.ratingBarStyle;
+			global::System.Graphics.Resource.Attribute.ratingBarStyleIndicator = global::GraphicsTester.Android.Resource.Attribute.ratingBarStyleIndicator;
+			global::System.Graphics.Resource.Attribute.ratingBarStyleSmall = global::GraphicsTester.Android.Resource.Attribute.ratingBarStyleSmall;
+			global::System.Graphics.Resource.Attribute.recyclerViewStyle = global::GraphicsTester.Android.Resource.Attribute.recyclerViewStyle;
+			global::System.Graphics.Resource.Attribute.reverseLayout = global::GraphicsTester.Android.Resource.Attribute.reverseLayout;
+			global::System.Graphics.Resource.Attribute.rippleColor = global::GraphicsTester.Android.Resource.Attribute.rippleColor;
+			global::System.Graphics.Resource.Attribute.scrimAnimationDuration = global::GraphicsTester.Android.Resource.Attribute.scrimAnimationDuration;
+			global::System.Graphics.Resource.Attribute.scrimBackground = global::GraphicsTester.Android.Resource.Attribute.scrimBackground;
+			global::System.Graphics.Resource.Attribute.scrimVisibleHeightTrigger = global::GraphicsTester.Android.Resource.Attribute.scrimVisibleHeightTrigger;
+			global::System.Graphics.Resource.Attribute.searchHintIcon = global::GraphicsTester.Android.Resource.Attribute.searchHintIcon;
+			global::System.Graphics.Resource.Attribute.searchIcon = global::GraphicsTester.Android.Resource.Attribute.searchIcon;
+			global::System.Graphics.Resource.Attribute.searchViewStyle = global::GraphicsTester.Android.Resource.Attribute.searchViewStyle;
+			global::System.Graphics.Resource.Attribute.seekBarStyle = global::GraphicsTester.Android.Resource.Attribute.seekBarStyle;
+			global::System.Graphics.Resource.Attribute.selectableItemBackground = global::GraphicsTester.Android.Resource.Attribute.selectableItemBackground;
+			global::System.Graphics.Resource.Attribute.selectableItemBackgroundBorderless = global::GraphicsTester.Android.Resource.Attribute.selectableItemBackgroundBorderless;
+			global::System.Graphics.Resource.Attribute.showAsAction = global::GraphicsTester.Android.Resource.Attribute.showAsAction;
+			global::System.Graphics.Resource.Attribute.showDividers = global::GraphicsTester.Android.Resource.Attribute.showDividers;
+			global::System.Graphics.Resource.Attribute.showMotionSpec = global::GraphicsTester.Android.Resource.Attribute.showMotionSpec;
+			global::System.Graphics.Resource.Attribute.showText = global::GraphicsTester.Android.Resource.Attribute.showText;
+			global::System.Graphics.Resource.Attribute.showTitle = global::GraphicsTester.Android.Resource.Attribute.showTitle;
+			global::System.Graphics.Resource.Attribute.singleChoiceItemLayout = global::GraphicsTester.Android.Resource.Attribute.singleChoiceItemLayout;
+			global::System.Graphics.Resource.Attribute.singleLine = global::GraphicsTester.Android.Resource.Attribute.singleLine;
+			global::System.Graphics.Resource.Attribute.singleSelection = global::GraphicsTester.Android.Resource.Attribute.singleSelection;
+			global::System.Graphics.Resource.Attribute.snackbarButtonStyle = global::GraphicsTester.Android.Resource.Attribute.snackbarButtonStyle;
+			global::System.Graphics.Resource.Attribute.snackbarStyle = global::GraphicsTester.Android.Resource.Attribute.snackbarStyle;
+			global::System.Graphics.Resource.Attribute.spanCount = global::GraphicsTester.Android.Resource.Attribute.spanCount;
+			global::System.Graphics.Resource.Attribute.spinBars = global::GraphicsTester.Android.Resource.Attribute.spinBars;
+			global::System.Graphics.Resource.Attribute.spinnerDropDownItemStyle = global::GraphicsTester.Android.Resource.Attribute.spinnerDropDownItemStyle;
+			global::System.Graphics.Resource.Attribute.spinnerStyle = global::GraphicsTester.Android.Resource.Attribute.spinnerStyle;
+			global::System.Graphics.Resource.Attribute.splitTrack = global::GraphicsTester.Android.Resource.Attribute.splitTrack;
+			global::System.Graphics.Resource.Attribute.srcCompat = global::GraphicsTester.Android.Resource.Attribute.srcCompat;
+			global::System.Graphics.Resource.Attribute.stackFromEnd = global::GraphicsTester.Android.Resource.Attribute.stackFromEnd;
+			global::System.Graphics.Resource.Attribute.state_above_anchor = global::GraphicsTester.Android.Resource.Attribute.state_above_anchor;
+			global::System.Graphics.Resource.Attribute.state_collapsed = global::GraphicsTester.Android.Resource.Attribute.state_collapsed;
+			global::System.Graphics.Resource.Attribute.state_collapsible = global::GraphicsTester.Android.Resource.Attribute.state_collapsible;
+			global::System.Graphics.Resource.Attribute.state_liftable = global::GraphicsTester.Android.Resource.Attribute.state_liftable;
+			global::System.Graphics.Resource.Attribute.state_lifted = global::GraphicsTester.Android.Resource.Attribute.state_lifted;
+			global::System.Graphics.Resource.Attribute.statusBarBackground = global::GraphicsTester.Android.Resource.Attribute.statusBarBackground;
+			global::System.Graphics.Resource.Attribute.statusBarScrim = global::GraphicsTester.Android.Resource.Attribute.statusBarScrim;
+			global::System.Graphics.Resource.Attribute.strokeColor = global::GraphicsTester.Android.Resource.Attribute.strokeColor;
+			global::System.Graphics.Resource.Attribute.strokeWidth = global::GraphicsTester.Android.Resource.Attribute.strokeWidth;
+			global::System.Graphics.Resource.Attribute.subMenuArrow = global::GraphicsTester.Android.Resource.Attribute.subMenuArrow;
+			global::System.Graphics.Resource.Attribute.submitBackground = global::GraphicsTester.Android.Resource.Attribute.submitBackground;
+			global::System.Graphics.Resource.Attribute.subtitle = global::GraphicsTester.Android.Resource.Attribute.subtitle;
+			global::System.Graphics.Resource.Attribute.subtitleTextAppearance = global::GraphicsTester.Android.Resource.Attribute.subtitleTextAppearance;
+			global::System.Graphics.Resource.Attribute.subtitleTextColor = global::GraphicsTester.Android.Resource.Attribute.subtitleTextColor;
+			global::System.Graphics.Resource.Attribute.subtitleTextStyle = global::GraphicsTester.Android.Resource.Attribute.subtitleTextStyle;
+			global::System.Graphics.Resource.Attribute.suggestionRowLayout = global::GraphicsTester.Android.Resource.Attribute.suggestionRowLayout;
+			global::System.Graphics.Resource.Attribute.switchMinWidth = global::GraphicsTester.Android.Resource.Attribute.switchMinWidth;
+			global::System.Graphics.Resource.Attribute.switchPadding = global::GraphicsTester.Android.Resource.Attribute.switchPadding;
+			global::System.Graphics.Resource.Attribute.switchStyle = global::GraphicsTester.Android.Resource.Attribute.switchStyle;
+			global::System.Graphics.Resource.Attribute.switchTextAppearance = global::GraphicsTester.Android.Resource.Attribute.switchTextAppearance;
+			global::System.Graphics.Resource.Attribute.tabBackground = global::GraphicsTester.Android.Resource.Attribute.tabBackground;
+			global::System.Graphics.Resource.Attribute.tabContentStart = global::GraphicsTester.Android.Resource.Attribute.tabContentStart;
+			global::System.Graphics.Resource.Attribute.tabGravity = global::GraphicsTester.Android.Resource.Attribute.tabGravity;
+			global::System.Graphics.Resource.Attribute.tabIconTint = global::GraphicsTester.Android.Resource.Attribute.tabIconTint;
+			global::System.Graphics.Resource.Attribute.tabIconTintMode = global::GraphicsTester.Android.Resource.Attribute.tabIconTintMode;
+			global::System.Graphics.Resource.Attribute.tabIndicator = global::GraphicsTester.Android.Resource.Attribute.tabIndicator;
+			global::System.Graphics.Resource.Attribute.tabIndicatorAnimationDuration = global::GraphicsTester.Android.Resource.Attribute.tabIndicatorAnimationDuration;
+			global::System.Graphics.Resource.Attribute.tabIndicatorColor = global::GraphicsTester.Android.Resource.Attribute.tabIndicatorColor;
+			global::System.Graphics.Resource.Attribute.tabIndicatorFullWidth = global::GraphicsTester.Android.Resource.Attribute.tabIndicatorFullWidth;
+			global::System.Graphics.Resource.Attribute.tabIndicatorGravity = global::GraphicsTester.Android.Resource.Attribute.tabIndicatorGravity;
+			global::System.Graphics.Resource.Attribute.tabIndicatorHeight = global::GraphicsTester.Android.Resource.Attribute.tabIndicatorHeight;
+			global::System.Graphics.Resource.Attribute.tabInlineLabel = global::GraphicsTester.Android.Resource.Attribute.tabInlineLabel;
+			global::System.Graphics.Resource.Attribute.tabMaxWidth = global::GraphicsTester.Android.Resource.Attribute.tabMaxWidth;
+			global::System.Graphics.Resource.Attribute.tabMinWidth = global::GraphicsTester.Android.Resource.Attribute.tabMinWidth;
+			global::System.Graphics.Resource.Attribute.tabMode = global::GraphicsTester.Android.Resource.Attribute.tabMode;
+			global::System.Graphics.Resource.Attribute.tabPadding = global::GraphicsTester.Android.Resource.Attribute.tabPadding;
+			global::System.Graphics.Resource.Attribute.tabPaddingBottom = global::GraphicsTester.Android.Resource.Attribute.tabPaddingBottom;
+			global::System.Graphics.Resource.Attribute.tabPaddingEnd = global::GraphicsTester.Android.Resource.Attribute.tabPaddingEnd;
+			global::System.Graphics.Resource.Attribute.tabPaddingStart = global::GraphicsTester.Android.Resource.Attribute.tabPaddingStart;
+			global::System.Graphics.Resource.Attribute.tabPaddingTop = global::GraphicsTester.Android.Resource.Attribute.tabPaddingTop;
+			global::System.Graphics.Resource.Attribute.tabRippleColor = global::GraphicsTester.Android.Resource.Attribute.tabRippleColor;
+			global::System.Graphics.Resource.Attribute.tabSelectedTextColor = global::GraphicsTester.Android.Resource.Attribute.tabSelectedTextColor;
+			global::System.Graphics.Resource.Attribute.tabStyle = global::GraphicsTester.Android.Resource.Attribute.tabStyle;
+			global::System.Graphics.Resource.Attribute.tabTextAppearance = global::GraphicsTester.Android.Resource.Attribute.tabTextAppearance;
+			global::System.Graphics.Resource.Attribute.tabTextColor = global::GraphicsTester.Android.Resource.Attribute.tabTextColor;
+			global::System.Graphics.Resource.Attribute.tabUnboundedRipple = global::GraphicsTester.Android.Resource.Attribute.tabUnboundedRipple;
+			global::System.Graphics.Resource.Attribute.textAllCaps = global::GraphicsTester.Android.Resource.Attribute.textAllCaps;
+			global::System.Graphics.Resource.Attribute.textAppearanceBody1 = global::GraphicsTester.Android.Resource.Attribute.textAppearanceBody1;
+			global::System.Graphics.Resource.Attribute.textAppearanceBody2 = global::GraphicsTester.Android.Resource.Attribute.textAppearanceBody2;
+			global::System.Graphics.Resource.Attribute.textAppearanceButton = global::GraphicsTester.Android.Resource.Attribute.textAppearanceButton;
+			global::System.Graphics.Resource.Attribute.textAppearanceCaption = global::GraphicsTester.Android.Resource.Attribute.textAppearanceCaption;
+			global::System.Graphics.Resource.Attribute.textAppearanceHeadline1 = global::GraphicsTester.Android.Resource.Attribute.textAppearanceHeadline1;
+			global::System.Graphics.Resource.Attribute.textAppearanceHeadline2 = global::GraphicsTester.Android.Resource.Attribute.textAppearanceHeadline2;
+			global::System.Graphics.Resource.Attribute.textAppearanceHeadline3 = global::GraphicsTester.Android.Resource.Attribute.textAppearanceHeadline3;
+			global::System.Graphics.Resource.Attribute.textAppearanceHeadline4 = global::GraphicsTester.Android.Resource.Attribute.textAppearanceHeadline4;
+			global::System.Graphics.Resource.Attribute.textAppearanceHeadline5 = global::GraphicsTester.Android.Resource.Attribute.textAppearanceHeadline5;
+			global::System.Graphics.Resource.Attribute.textAppearanceHeadline6 = global::GraphicsTester.Android.Resource.Attribute.textAppearanceHeadline6;
+			global::System.Graphics.Resource.Attribute.textAppearanceLargePopupMenu = global::GraphicsTester.Android.Resource.Attribute.textAppearanceLargePopupMenu;
+			global::System.Graphics.Resource.Attribute.textAppearanceListItem = global::GraphicsTester.Android.Resource.Attribute.textAppearanceListItem;
+			global::System.Graphics.Resource.Attribute.textAppearanceListItemSecondary = global::GraphicsTester.Android.Resource.Attribute.textAppearanceListItemSecondary;
+			global::System.Graphics.Resource.Attribute.textAppearanceListItemSmall = global::GraphicsTester.Android.Resource.Attribute.textAppearanceListItemSmall;
+			global::System.Graphics.Resource.Attribute.textAppearanceOverline = global::GraphicsTester.Android.Resource.Attribute.textAppearanceOverline;
+			global::System.Graphics.Resource.Attribute.textAppearancePopupMenuHeader = global::GraphicsTester.Android.Resource.Attribute.textAppearancePopupMenuHeader;
+			global::System.Graphics.Resource.Attribute.textAppearanceSearchResultSubtitle = global::GraphicsTester.Android.Resource.Attribute.textAppearanceSearchResultSubtitle;
+			global::System.Graphics.Resource.Attribute.textAppearanceSearchResultTitle = global::GraphicsTester.Android.Resource.Attribute.textAppearanceSearchResultTitle;
+			global::System.Graphics.Resource.Attribute.textAppearanceSmallPopupMenu = global::GraphicsTester.Android.Resource.Attribute.textAppearanceSmallPopupMenu;
+			global::System.Graphics.Resource.Attribute.textAppearanceSubtitle1 = global::GraphicsTester.Android.Resource.Attribute.textAppearanceSubtitle1;
+			global::System.Graphics.Resource.Attribute.textAppearanceSubtitle2 = global::GraphicsTester.Android.Resource.Attribute.textAppearanceSubtitle2;
+			global::System.Graphics.Resource.Attribute.textColorAlertDialogListItem = global::GraphicsTester.Android.Resource.Attribute.textColorAlertDialogListItem;
+			global::System.Graphics.Resource.Attribute.textColorSearchUrl = global::GraphicsTester.Android.Resource.Attribute.textColorSearchUrl;
+			global::System.Graphics.Resource.Attribute.textEndPadding = global::GraphicsTester.Android.Resource.Attribute.textEndPadding;
+			global::System.Graphics.Resource.Attribute.textInputStyle = global::GraphicsTester.Android.Resource.Attribute.textInputStyle;
+			global::System.Graphics.Resource.Attribute.textLocale = global::GraphicsTester.Android.Resource.Attribute.textLocale;
+			global::System.Graphics.Resource.Attribute.textStartPadding = global::GraphicsTester.Android.Resource.Attribute.textStartPadding;
+			global::System.Graphics.Resource.Attribute.theme = global::GraphicsTester.Android.Resource.Attribute.theme;
+			global::System.Graphics.Resource.Attribute.thickness = global::GraphicsTester.Android.Resource.Attribute.thickness;
+			global::System.Graphics.Resource.Attribute.thumbTextPadding = global::GraphicsTester.Android.Resource.Attribute.thumbTextPadding;
+			global::System.Graphics.Resource.Attribute.thumbTint = global::GraphicsTester.Android.Resource.Attribute.thumbTint;
+			global::System.Graphics.Resource.Attribute.thumbTintMode = global::GraphicsTester.Android.Resource.Attribute.thumbTintMode;
+			global::System.Graphics.Resource.Attribute.tickMark = global::GraphicsTester.Android.Resource.Attribute.tickMark;
+			global::System.Graphics.Resource.Attribute.tickMarkTint = global::GraphicsTester.Android.Resource.Attribute.tickMarkTint;
+			global::System.Graphics.Resource.Attribute.tickMarkTintMode = global::GraphicsTester.Android.Resource.Attribute.tickMarkTintMode;
+			global::System.Graphics.Resource.Attribute.tint = global::GraphicsTester.Android.Resource.Attribute.tint;
+			global::System.Graphics.Resource.Attribute.tintMode = global::GraphicsTester.Android.Resource.Attribute.tintMode;
+			global::System.Graphics.Resource.Attribute.title = global::GraphicsTester.Android.Resource.Attribute.title;
+			global::System.Graphics.Resource.Attribute.titleEnabled = global::GraphicsTester.Android.Resource.Attribute.titleEnabled;
+			global::System.Graphics.Resource.Attribute.titleMargin = global::GraphicsTester.Android.Resource.Attribute.titleMargin;
+			global::System.Graphics.Resource.Attribute.titleMarginBottom = global::GraphicsTester.Android.Resource.Attribute.titleMarginBottom;
+			global::System.Graphics.Resource.Attribute.titleMarginEnd = global::GraphicsTester.Android.Resource.Attribute.titleMarginEnd;
+			global::System.Graphics.Resource.Attribute.titleMargins = global::GraphicsTester.Android.Resource.Attribute.titleMargins;
+			global::System.Graphics.Resource.Attribute.titleMarginStart = global::GraphicsTester.Android.Resource.Attribute.titleMarginStart;
+			global::System.Graphics.Resource.Attribute.titleMarginTop = global::GraphicsTester.Android.Resource.Attribute.titleMarginTop;
+			global::System.Graphics.Resource.Attribute.titleTextAppearance = global::GraphicsTester.Android.Resource.Attribute.titleTextAppearance;
+			global::System.Graphics.Resource.Attribute.titleTextColor = global::GraphicsTester.Android.Resource.Attribute.titleTextColor;
+			global::System.Graphics.Resource.Attribute.titleTextStyle = global::GraphicsTester.Android.Resource.Attribute.titleTextStyle;
+			global::System.Graphics.Resource.Attribute.toolbarId = global::GraphicsTester.Android.Resource.Attribute.toolbarId;
+			global::System.Graphics.Resource.Attribute.toolbarNavigationButtonStyle = global::GraphicsTester.Android.Resource.Attribute.toolbarNavigationButtonStyle;
+			global::System.Graphics.Resource.Attribute.toolbarStyle = global::GraphicsTester.Android.Resource.Attribute.toolbarStyle;
+			global::System.Graphics.Resource.Attribute.tooltipForegroundColor = global::GraphicsTester.Android.Resource.Attribute.tooltipForegroundColor;
+			global::System.Graphics.Resource.Attribute.tooltipFrameBackground = global::GraphicsTester.Android.Resource.Attribute.tooltipFrameBackground;
+			global::System.Graphics.Resource.Attribute.tooltipText = global::GraphicsTester.Android.Resource.Attribute.tooltipText;
+			global::System.Graphics.Resource.Attribute.track = global::GraphicsTester.Android.Resource.Attribute.track;
+			global::System.Graphics.Resource.Attribute.trackTint = global::GraphicsTester.Android.Resource.Attribute.trackTint;
+			global::System.Graphics.Resource.Attribute.trackTintMode = global::GraphicsTester.Android.Resource.Attribute.trackTintMode;
+			global::System.Graphics.Resource.Attribute.ttcIndex = global::GraphicsTester.Android.Resource.Attribute.ttcIndex;
+			global::System.Graphics.Resource.Attribute.useCompatPadding = global::GraphicsTester.Android.Resource.Attribute.useCompatPadding;
+			global::System.Graphics.Resource.Attribute.viewInflaterClass = global::GraphicsTester.Android.Resource.Attribute.viewInflaterClass;
+			global::System.Graphics.Resource.Attribute.voiceIcon = global::GraphicsTester.Android.Resource.Attribute.voiceIcon;
+			global::System.Graphics.Resource.Attribute.windowActionBar = global::GraphicsTester.Android.Resource.Attribute.windowActionBar;
+			global::System.Graphics.Resource.Attribute.windowActionBarOverlay = global::GraphicsTester.Android.Resource.Attribute.windowActionBarOverlay;
+			global::System.Graphics.Resource.Attribute.windowActionModeOverlay = global::GraphicsTester.Android.Resource.Attribute.windowActionModeOverlay;
+			global::System.Graphics.Resource.Attribute.windowFixedHeightMajor = global::GraphicsTester.Android.Resource.Attribute.windowFixedHeightMajor;
+			global::System.Graphics.Resource.Attribute.windowFixedHeightMinor = global::GraphicsTester.Android.Resource.Attribute.windowFixedHeightMinor;
+			global::System.Graphics.Resource.Attribute.windowFixedWidthMajor = global::GraphicsTester.Android.Resource.Attribute.windowFixedWidthMajor;
+			global::System.Graphics.Resource.Attribute.windowFixedWidthMinor = global::GraphicsTester.Android.Resource.Attribute.windowFixedWidthMinor;
+			global::System.Graphics.Resource.Attribute.windowMinWidthMajor = global::GraphicsTester.Android.Resource.Attribute.windowMinWidthMajor;
+			global::System.Graphics.Resource.Attribute.windowMinWidthMinor = global::GraphicsTester.Android.Resource.Attribute.windowMinWidthMinor;
+			global::System.Graphics.Resource.Attribute.windowNoTitle = global::GraphicsTester.Android.Resource.Attribute.windowNoTitle;
+			global::System.Graphics.Resource.Boolean.abc_action_bar_embed_tabs = global::GraphicsTester.Android.Resource.Boolean.abc_action_bar_embed_tabs;
+			global::System.Graphics.Resource.Boolean.abc_allow_stacked_button_bar = global::GraphicsTester.Android.Resource.Boolean.abc_allow_stacked_button_bar;
+			global::System.Graphics.Resource.Boolean.abc_config_actionMenuItemAllCaps = global::GraphicsTester.Android.Resource.Boolean.abc_config_actionMenuItemAllCaps;
+			global::System.Graphics.Resource.Boolean.mtrl_btn_textappearance_all_caps = global::GraphicsTester.Android.Resource.Boolean.mtrl_btn_textappearance_all_caps;
+			global::System.Graphics.Resource.Color.abc_background_cache_hint_selector_material_dark = global::GraphicsTester.Android.Resource.Color.abc_background_cache_hint_selector_material_dark;
+			global::System.Graphics.Resource.Color.abc_background_cache_hint_selector_material_light = global::GraphicsTester.Android.Resource.Color.abc_background_cache_hint_selector_material_light;
+			global::System.Graphics.Resource.Color.abc_btn_colored_borderless_text_material = global::GraphicsTester.Android.Resource.Color.abc_btn_colored_borderless_text_material;
+			global::System.Graphics.Resource.Color.abc_btn_colored_text_material = global::GraphicsTester.Android.Resource.Color.abc_btn_colored_text_material;
+			global::System.Graphics.Resource.Color.abc_color_highlight_material = global::GraphicsTester.Android.Resource.Color.abc_color_highlight_material;
+			global::System.Graphics.Resource.Color.abc_hint_foreground_material_dark = global::GraphicsTester.Android.Resource.Color.abc_hint_foreground_material_dark;
+			global::System.Graphics.Resource.Color.abc_hint_foreground_material_light = global::GraphicsTester.Android.Resource.Color.abc_hint_foreground_material_light;
+			global::System.Graphics.Resource.Color.abc_input_method_navigation_guard = global::GraphicsTester.Android.Resource.Color.abc_input_method_navigation_guard;
+			global::System.Graphics.Resource.Color.abc_primary_text_disable_only_material_dark = global::GraphicsTester.Android.Resource.Color.abc_primary_text_disable_only_material_dark;
+			global::System.Graphics.Resource.Color.abc_primary_text_disable_only_material_light = global::GraphicsTester.Android.Resource.Color.abc_primary_text_disable_only_material_light;
+			global::System.Graphics.Resource.Color.abc_primary_text_material_dark = global::GraphicsTester.Android.Resource.Color.abc_primary_text_material_dark;
+			global::System.Graphics.Resource.Color.abc_primary_text_material_light = global::GraphicsTester.Android.Resource.Color.abc_primary_text_material_light;
+			global::System.Graphics.Resource.Color.abc_search_url_text = global::GraphicsTester.Android.Resource.Color.abc_search_url_text;
+			global::System.Graphics.Resource.Color.abc_search_url_text_normal = global::GraphicsTester.Android.Resource.Color.abc_search_url_text_normal;
+			global::System.Graphics.Resource.Color.abc_search_url_text_pressed = global::GraphicsTester.Android.Resource.Color.abc_search_url_text_pressed;
+			global::System.Graphics.Resource.Color.abc_search_url_text_selected = global::GraphicsTester.Android.Resource.Color.abc_search_url_text_selected;
+			global::System.Graphics.Resource.Color.abc_secondary_text_material_dark = global::GraphicsTester.Android.Resource.Color.abc_secondary_text_material_dark;
+			global::System.Graphics.Resource.Color.abc_secondary_text_material_light = global::GraphicsTester.Android.Resource.Color.abc_secondary_text_material_light;
+			global::System.Graphics.Resource.Color.abc_tint_btn_checkable = global::GraphicsTester.Android.Resource.Color.abc_tint_btn_checkable;
+			global::System.Graphics.Resource.Color.abc_tint_default = global::GraphicsTester.Android.Resource.Color.abc_tint_default;
+			global::System.Graphics.Resource.Color.abc_tint_edittext = global::GraphicsTester.Android.Resource.Color.abc_tint_edittext;
+			global::System.Graphics.Resource.Color.abc_tint_seek_thumb = global::GraphicsTester.Android.Resource.Color.abc_tint_seek_thumb;
+			global::System.Graphics.Resource.Color.abc_tint_spinner = global::GraphicsTester.Android.Resource.Color.abc_tint_spinner;
+			global::System.Graphics.Resource.Color.abc_tint_switch_track = global::GraphicsTester.Android.Resource.Color.abc_tint_switch_track;
+			global::System.Graphics.Resource.Color.accent_material_dark = global::GraphicsTester.Android.Resource.Color.accent_material_dark;
+			global::System.Graphics.Resource.Color.accent_material_light = global::GraphicsTester.Android.Resource.Color.accent_material_light;
+			global::System.Graphics.Resource.Color.background_floating_material_dark = global::GraphicsTester.Android.Resource.Color.background_floating_material_dark;
+			global::System.Graphics.Resource.Color.background_floating_material_light = global::GraphicsTester.Android.Resource.Color.background_floating_material_light;
+			global::System.Graphics.Resource.Color.background_material_dark = global::GraphicsTester.Android.Resource.Color.background_material_dark;
+			global::System.Graphics.Resource.Color.background_material_light = global::GraphicsTester.Android.Resource.Color.background_material_light;
+			global::System.Graphics.Resource.Color.bright_foreground_disabled_material_dark = global::GraphicsTester.Android.Resource.Color.bright_foreground_disabled_material_dark;
+			global::System.Graphics.Resource.Color.bright_foreground_disabled_material_light = global::GraphicsTester.Android.Resource.Color.bright_foreground_disabled_material_light;
+			global::System.Graphics.Resource.Color.bright_foreground_inverse_material_dark = global::GraphicsTester.Android.Resource.Color.bright_foreground_inverse_material_dark;
+			global::System.Graphics.Resource.Color.bright_foreground_inverse_material_light = global::GraphicsTester.Android.Resource.Color.bright_foreground_inverse_material_light;
+			global::System.Graphics.Resource.Color.bright_foreground_material_dark = global::GraphicsTester.Android.Resource.Color.bright_foreground_material_dark;
+			global::System.Graphics.Resource.Color.bright_foreground_material_light = global::GraphicsTester.Android.Resource.Color.bright_foreground_material_light;
+			global::System.Graphics.Resource.Color.button_material_dark = global::GraphicsTester.Android.Resource.Color.button_material_dark;
+			global::System.Graphics.Resource.Color.button_material_light = global::GraphicsTester.Android.Resource.Color.button_material_light;
+			global::System.Graphics.Resource.Color.cardview_dark_background = global::GraphicsTester.Android.Resource.Color.cardview_dark_background;
+			global::System.Graphics.Resource.Color.cardview_light_background = global::GraphicsTester.Android.Resource.Color.cardview_light_background;
+			global::System.Graphics.Resource.Color.cardview_shadow_end_color = global::GraphicsTester.Android.Resource.Color.cardview_shadow_end_color;
+			global::System.Graphics.Resource.Color.cardview_shadow_start_color = global::GraphicsTester.Android.Resource.Color.cardview_shadow_start_color;
+			global::System.Graphics.Resource.Color.design_bottom_navigation_shadow_color = global::GraphicsTester.Android.Resource.Color.design_bottom_navigation_shadow_color;
+			global::System.Graphics.Resource.Color.design_default_color_primary = global::GraphicsTester.Android.Resource.Color.design_default_color_primary;
+			global::System.Graphics.Resource.Color.design_default_color_primary_dark = global::GraphicsTester.Android.Resource.Color.design_default_color_primary_dark;
+			global::System.Graphics.Resource.Color.design_error = global::GraphicsTester.Android.Resource.Color.design_error;
+			global::System.Graphics.Resource.Color.design_fab_shadow_end_color = global::GraphicsTester.Android.Resource.Color.design_fab_shadow_end_color;
+			global::System.Graphics.Resource.Color.design_fab_shadow_mid_color = global::GraphicsTester.Android.Resource.Color.design_fab_shadow_mid_color;
+			global::System.Graphics.Resource.Color.design_fab_shadow_start_color = global::GraphicsTester.Android.Resource.Color.design_fab_shadow_start_color;
+			global::System.Graphics.Resource.Color.design_fab_stroke_end_inner_color = global::GraphicsTester.Android.Resource.Color.design_fab_stroke_end_inner_color;
+			global::System.Graphics.Resource.Color.design_fab_stroke_end_outer_color = global::GraphicsTester.Android.Resource.Color.design_fab_stroke_end_outer_color;
+			global::System.Graphics.Resource.Color.design_fab_stroke_top_inner_color = global::GraphicsTester.Android.Resource.Color.design_fab_stroke_top_inner_color;
+			global::System.Graphics.Resource.Color.design_fab_stroke_top_outer_color = global::GraphicsTester.Android.Resource.Color.design_fab_stroke_top_outer_color;
+			global::System.Graphics.Resource.Color.design_snackbar_background_color = global::GraphicsTester.Android.Resource.Color.design_snackbar_background_color;
+			global::System.Graphics.Resource.Color.design_tint_password_toggle = global::GraphicsTester.Android.Resource.Color.design_tint_password_toggle;
+			global::System.Graphics.Resource.Color.dim_foreground_disabled_material_dark = global::GraphicsTester.Android.Resource.Color.dim_foreground_disabled_material_dark;
+			global::System.Graphics.Resource.Color.dim_foreground_disabled_material_light = global::GraphicsTester.Android.Resource.Color.dim_foreground_disabled_material_light;
+			global::System.Graphics.Resource.Color.dim_foreground_material_dark = global::GraphicsTester.Android.Resource.Color.dim_foreground_material_dark;
+			global::System.Graphics.Resource.Color.dim_foreground_material_light = global::GraphicsTester.Android.Resource.Color.dim_foreground_material_light;
+			global::System.Graphics.Resource.Color.error_color_material_dark = global::GraphicsTester.Android.Resource.Color.error_color_material_dark;
+			global::System.Graphics.Resource.Color.error_color_material_light = global::GraphicsTester.Android.Resource.Color.error_color_material_light;
+			global::System.Graphics.Resource.Color.foreground_material_dark = global::GraphicsTester.Android.Resource.Color.foreground_material_dark;
+			global::System.Graphics.Resource.Color.foreground_material_light = global::GraphicsTester.Android.Resource.Color.foreground_material_light;
+			global::System.Graphics.Resource.Color.highlighted_text_material_dark = global::GraphicsTester.Android.Resource.Color.highlighted_text_material_dark;
+			global::System.Graphics.Resource.Color.highlighted_text_material_light = global::GraphicsTester.Android.Resource.Color.highlighted_text_material_light;
+			global::System.Graphics.Resource.Color.material_blue_grey_800 = global::GraphicsTester.Android.Resource.Color.material_blue_grey_800;
+			global::System.Graphics.Resource.Color.material_blue_grey_900 = global::GraphicsTester.Android.Resource.Color.material_blue_grey_900;
+			global::System.Graphics.Resource.Color.material_blue_grey_950 = global::GraphicsTester.Android.Resource.Color.material_blue_grey_950;
+			global::System.Graphics.Resource.Color.material_deep_teal_200 = global::GraphicsTester.Android.Resource.Color.material_deep_teal_200;
+			global::System.Graphics.Resource.Color.material_deep_teal_500 = global::GraphicsTester.Android.Resource.Color.material_deep_teal_500;
+			global::System.Graphics.Resource.Color.material_grey_100 = global::GraphicsTester.Android.Resource.Color.material_grey_100;
+			global::System.Graphics.Resource.Color.material_grey_300 = global::GraphicsTester.Android.Resource.Color.material_grey_300;
+			global::System.Graphics.Resource.Color.material_grey_50 = global::GraphicsTester.Android.Resource.Color.material_grey_50;
+			global::System.Graphics.Resource.Color.material_grey_600 = global::GraphicsTester.Android.Resource.Color.material_grey_600;
+			global::System.Graphics.Resource.Color.material_grey_800 = global::GraphicsTester.Android.Resource.Color.material_grey_800;
+			global::System.Graphics.Resource.Color.material_grey_850 = global::GraphicsTester.Android.Resource.Color.material_grey_850;
+			global::System.Graphics.Resource.Color.material_grey_900 = global::GraphicsTester.Android.Resource.Color.material_grey_900;
+			global::System.Graphics.Resource.Color.mtrl_bottom_nav_colored_item_tint = global::GraphicsTester.Android.Resource.Color.mtrl_bottom_nav_colored_item_tint;
+			global::System.Graphics.Resource.Color.mtrl_bottom_nav_item_tint = global::GraphicsTester.Android.Resource.Color.mtrl_bottom_nav_item_tint;
+			global::System.Graphics.Resource.Color.mtrl_btn_bg_color_disabled = global::GraphicsTester.Android.Resource.Color.mtrl_btn_bg_color_disabled;
+			global::System.Graphics.Resource.Color.mtrl_btn_bg_color_selector = global::GraphicsTester.Android.Resource.Color.mtrl_btn_bg_color_selector;
+			global::System.Graphics.Resource.Color.mtrl_btn_ripple_color = global::GraphicsTester.Android.Resource.Color.mtrl_btn_ripple_color;
+			global::System.Graphics.Resource.Color.mtrl_btn_stroke_color_selector = global::GraphicsTester.Android.Resource.Color.mtrl_btn_stroke_color_selector;
+			global::System.Graphics.Resource.Color.mtrl_btn_text_btn_ripple_color = global::GraphicsTester.Android.Resource.Color.mtrl_btn_text_btn_ripple_color;
+			global::System.Graphics.Resource.Color.mtrl_btn_text_color_disabled = global::GraphicsTester.Android.Resource.Color.mtrl_btn_text_color_disabled;
+			global::System.Graphics.Resource.Color.mtrl_btn_text_color_selector = global::GraphicsTester.Android.Resource.Color.mtrl_btn_text_color_selector;
+			global::System.Graphics.Resource.Color.mtrl_btn_transparent_bg_color = global::GraphicsTester.Android.Resource.Color.mtrl_btn_transparent_bg_color;
+			global::System.Graphics.Resource.Color.mtrl_chip_background_color = global::GraphicsTester.Android.Resource.Color.mtrl_chip_background_color;
+			global::System.Graphics.Resource.Color.mtrl_chip_close_icon_tint = global::GraphicsTester.Android.Resource.Color.mtrl_chip_close_icon_tint;
+			global::System.Graphics.Resource.Color.mtrl_chip_ripple_color = global::GraphicsTester.Android.Resource.Color.mtrl_chip_ripple_color;
+			global::System.Graphics.Resource.Color.mtrl_chip_text_color = global::GraphicsTester.Android.Resource.Color.mtrl_chip_text_color;
+			global::System.Graphics.Resource.Color.mtrl_fab_ripple_color = global::GraphicsTester.Android.Resource.Color.mtrl_fab_ripple_color;
+			global::System.Graphics.Resource.Color.mtrl_scrim_color = global::GraphicsTester.Android.Resource.Color.mtrl_scrim_color;
+			global::System.Graphics.Resource.Color.mtrl_tabs_colored_ripple_color = global::GraphicsTester.Android.Resource.Color.mtrl_tabs_colored_ripple_color;
+			global::System.Graphics.Resource.Color.mtrl_tabs_icon_color_selector = global::GraphicsTester.Android.Resource.Color.mtrl_tabs_icon_color_selector;
+			global::System.Graphics.Resource.Color.mtrl_tabs_icon_color_selector_colored = global::GraphicsTester.Android.Resource.Color.mtrl_tabs_icon_color_selector_colored;
+			global::System.Graphics.Resource.Color.mtrl_tabs_legacy_text_color_selector = global::GraphicsTester.Android.Resource.Color.mtrl_tabs_legacy_text_color_selector;
+			global::System.Graphics.Resource.Color.mtrl_tabs_ripple_color = global::GraphicsTester.Android.Resource.Color.mtrl_tabs_ripple_color;
+			global::System.Graphics.Resource.Color.mtrl_textinput_default_box_stroke_color = global::GraphicsTester.Android.Resource.Color.mtrl_textinput_default_box_stroke_color;
+			global::System.Graphics.Resource.Color.mtrl_textinput_disabled_color = global::GraphicsTester.Android.Resource.Color.mtrl_textinput_disabled_color;
+			global::System.Graphics.Resource.Color.mtrl_textinput_filled_box_default_background_color = global::GraphicsTester.Android.Resource.Color.mtrl_textinput_filled_box_default_background_color;
+			global::System.Graphics.Resource.Color.mtrl_textinput_hovered_box_stroke_color = global::GraphicsTester.Android.Resource.Color.mtrl_textinput_hovered_box_stroke_color;
+			global::System.Graphics.Resource.Color.mtrl_text_btn_text_color_selector = global::GraphicsTester.Android.Resource.Color.mtrl_text_btn_text_color_selector;
+			global::System.Graphics.Resource.Color.notification_action_color_filter = global::GraphicsTester.Android.Resource.Color.notification_action_color_filter;
+			global::System.Graphics.Resource.Color.notification_icon_bg_color = global::GraphicsTester.Android.Resource.Color.notification_icon_bg_color;
+			global::System.Graphics.Resource.Color.notification_material_background_media_default_color = global::GraphicsTester.Android.Resource.Color.notification_material_background_media_default_color;
+			global::System.Graphics.Resource.Color.primary_dark_material_dark = global::GraphicsTester.Android.Resource.Color.primary_dark_material_dark;
+			global::System.Graphics.Resource.Color.primary_dark_material_light = global::GraphicsTester.Android.Resource.Color.primary_dark_material_light;
+			global::System.Graphics.Resource.Color.primary_material_dark = global::GraphicsTester.Android.Resource.Color.primary_material_dark;
+			global::System.Graphics.Resource.Color.primary_material_light = global::GraphicsTester.Android.Resource.Color.primary_material_light;
+			global::System.Graphics.Resource.Color.primary_text_default_material_dark = global::GraphicsTester.Android.Resource.Color.primary_text_default_material_dark;
+			global::System.Graphics.Resource.Color.primary_text_default_material_light = global::GraphicsTester.Android.Resource.Color.primary_text_default_material_light;
+			global::System.Graphics.Resource.Color.primary_text_disabled_material_dark = global::GraphicsTester.Android.Resource.Color.primary_text_disabled_material_dark;
+			global::System.Graphics.Resource.Color.primary_text_disabled_material_light = global::GraphicsTester.Android.Resource.Color.primary_text_disabled_material_light;
+			global::System.Graphics.Resource.Color.ripple_material_dark = global::GraphicsTester.Android.Resource.Color.ripple_material_dark;
+			global::System.Graphics.Resource.Color.ripple_material_light = global::GraphicsTester.Android.Resource.Color.ripple_material_light;
+			global::System.Graphics.Resource.Color.secondary_text_default_material_dark = global::GraphicsTester.Android.Resource.Color.secondary_text_default_material_dark;
+			global::System.Graphics.Resource.Color.secondary_text_default_material_light = global::GraphicsTester.Android.Resource.Color.secondary_text_default_material_light;
+			global::System.Graphics.Resource.Color.secondary_text_disabled_material_dark = global::GraphicsTester.Android.Resource.Color.secondary_text_disabled_material_dark;
+			global::System.Graphics.Resource.Color.secondary_text_disabled_material_light = global::GraphicsTester.Android.Resource.Color.secondary_text_disabled_material_light;
+			global::System.Graphics.Resource.Color.switch_thumb_disabled_material_dark = global::GraphicsTester.Android.Resource.Color.switch_thumb_disabled_material_dark;
+			global::System.Graphics.Resource.Color.switch_thumb_disabled_material_light = global::GraphicsTester.Android.Resource.Color.switch_thumb_disabled_material_light;
+			global::System.Graphics.Resource.Color.switch_thumb_material_dark = global::GraphicsTester.Android.Resource.Color.switch_thumb_material_dark;
+			global::System.Graphics.Resource.Color.switch_thumb_material_light = global::GraphicsTester.Android.Resource.Color.switch_thumb_material_light;
+			global::System.Graphics.Resource.Color.switch_thumb_normal_material_dark = global::GraphicsTester.Android.Resource.Color.switch_thumb_normal_material_dark;
+			global::System.Graphics.Resource.Color.switch_thumb_normal_material_light = global::GraphicsTester.Android.Resource.Color.switch_thumb_normal_material_light;
+			global::System.Graphics.Resource.Color.tooltip_background_dark = global::GraphicsTester.Android.Resource.Color.tooltip_background_dark;
+			global::System.Graphics.Resource.Color.tooltip_background_light = global::GraphicsTester.Android.Resource.Color.tooltip_background_light;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_content_inset_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_content_inset_material;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_content_inset_with_nav = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_content_inset_with_nav;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_default_height_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_default_height_material;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_default_padding_end_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_default_padding_end_material;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_default_padding_start_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_default_padding_start_material;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_elevation_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_elevation_material;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_icon_vertical_padding_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_icon_vertical_padding_material;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_overflow_padding_end_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_overflow_padding_end_material;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_overflow_padding_start_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_overflow_padding_start_material;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_stacked_max_height = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_stacked_max_height;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_stacked_tab_max_width = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_stacked_tab_max_width;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_subtitle_bottom_margin_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_subtitle_bottom_margin_material;
+			global::System.Graphics.Resource.Dimension.abc_action_bar_subtitle_top_margin_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_bar_subtitle_top_margin_material;
+			global::System.Graphics.Resource.Dimension.abc_action_button_min_height_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_button_min_height_material;
+			global::System.Graphics.Resource.Dimension.abc_action_button_min_width_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_button_min_width_material;
+			global::System.Graphics.Resource.Dimension.abc_action_button_min_width_overflow_material = global::GraphicsTester.Android.Resource.Dimension.abc_action_button_min_width_overflow_material;
+			global::System.Graphics.Resource.Dimension.abc_alert_dialog_button_bar_height = global::GraphicsTester.Android.Resource.Dimension.abc_alert_dialog_button_bar_height;
+			global::System.Graphics.Resource.Dimension.abc_alert_dialog_button_dimen = global::GraphicsTester.Android.Resource.Dimension.abc_alert_dialog_button_dimen;
+			global::System.Graphics.Resource.Dimension.abc_button_inset_horizontal_material = global::GraphicsTester.Android.Resource.Dimension.abc_button_inset_horizontal_material;
+			global::System.Graphics.Resource.Dimension.abc_button_inset_vertical_material = global::GraphicsTester.Android.Resource.Dimension.abc_button_inset_vertical_material;
+			global::System.Graphics.Resource.Dimension.abc_button_padding_horizontal_material = global::GraphicsTester.Android.Resource.Dimension.abc_button_padding_horizontal_material;
+			global::System.Graphics.Resource.Dimension.abc_button_padding_vertical_material = global::GraphicsTester.Android.Resource.Dimension.abc_button_padding_vertical_material;
+			global::System.Graphics.Resource.Dimension.abc_cascading_menus_min_smallest_width = global::GraphicsTester.Android.Resource.Dimension.abc_cascading_menus_min_smallest_width;
+			global::System.Graphics.Resource.Dimension.abc_config_prefDialogWidth = global::GraphicsTester.Android.Resource.Dimension.abc_config_prefDialogWidth;
+			global::System.Graphics.Resource.Dimension.abc_control_corner_material = global::GraphicsTester.Android.Resource.Dimension.abc_control_corner_material;
+			global::System.Graphics.Resource.Dimension.abc_control_inset_material = global::GraphicsTester.Android.Resource.Dimension.abc_control_inset_material;
+			global::System.Graphics.Resource.Dimension.abc_control_padding_material = global::GraphicsTester.Android.Resource.Dimension.abc_control_padding_material;
+			global::System.Graphics.Resource.Dimension.abc_dialog_corner_radius_material = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_corner_radius_material;
+			global::System.Graphics.Resource.Dimension.abc_dialog_fixed_height_major = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_fixed_height_major;
+			global::System.Graphics.Resource.Dimension.abc_dialog_fixed_height_minor = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_fixed_height_minor;
+			global::System.Graphics.Resource.Dimension.abc_dialog_fixed_width_major = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_fixed_width_major;
+			global::System.Graphics.Resource.Dimension.abc_dialog_fixed_width_minor = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_fixed_width_minor;
+			global::System.Graphics.Resource.Dimension.abc_dialog_list_padding_bottom_no_buttons = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_list_padding_bottom_no_buttons;
+			global::System.Graphics.Resource.Dimension.abc_dialog_list_padding_top_no_title = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_list_padding_top_no_title;
+			global::System.Graphics.Resource.Dimension.abc_dialog_min_width_major = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_min_width_major;
+			global::System.Graphics.Resource.Dimension.abc_dialog_min_width_minor = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_min_width_minor;
+			global::System.Graphics.Resource.Dimension.abc_dialog_padding_material = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_padding_material;
+			global::System.Graphics.Resource.Dimension.abc_dialog_padding_top_material = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_padding_top_material;
+			global::System.Graphics.Resource.Dimension.abc_dialog_title_divider_material = global::GraphicsTester.Android.Resource.Dimension.abc_dialog_title_divider_material;
+			global::System.Graphics.Resource.Dimension.abc_disabled_alpha_material_dark = global::GraphicsTester.Android.Resource.Dimension.abc_disabled_alpha_material_dark;
+			global::System.Graphics.Resource.Dimension.abc_disabled_alpha_material_light = global::GraphicsTester.Android.Resource.Dimension.abc_disabled_alpha_material_light;
+			global::System.Graphics.Resource.Dimension.abc_dropdownitem_icon_width = global::GraphicsTester.Android.Resource.Dimension.abc_dropdownitem_icon_width;
+			global::System.Graphics.Resource.Dimension.abc_dropdownitem_text_padding_left = global::GraphicsTester.Android.Resource.Dimension.abc_dropdownitem_text_padding_left;
+			global::System.Graphics.Resource.Dimension.abc_dropdownitem_text_padding_right = global::GraphicsTester.Android.Resource.Dimension.abc_dropdownitem_text_padding_right;
+			global::System.Graphics.Resource.Dimension.abc_edit_text_inset_bottom_material = global::GraphicsTester.Android.Resource.Dimension.abc_edit_text_inset_bottom_material;
+			global::System.Graphics.Resource.Dimension.abc_edit_text_inset_horizontal_material = global::GraphicsTester.Android.Resource.Dimension.abc_edit_text_inset_horizontal_material;
+			global::System.Graphics.Resource.Dimension.abc_edit_text_inset_top_material = global::GraphicsTester.Android.Resource.Dimension.abc_edit_text_inset_top_material;
+			global::System.Graphics.Resource.Dimension.abc_floating_window_z = global::GraphicsTester.Android.Resource.Dimension.abc_floating_window_z;
+			global::System.Graphics.Resource.Dimension.abc_list_item_height_large_material = global::GraphicsTester.Android.Resource.Dimension.abc_list_item_height_large_material;
+			global::System.Graphics.Resource.Dimension.abc_list_item_height_material = global::GraphicsTester.Android.Resource.Dimension.abc_list_item_height_material;
+			global::System.Graphics.Resource.Dimension.abc_list_item_height_small_material = global::GraphicsTester.Android.Resource.Dimension.abc_list_item_height_small_material;
+			global::System.Graphics.Resource.Dimension.abc_list_item_padding_horizontal_material = global::GraphicsTester.Android.Resource.Dimension.abc_list_item_padding_horizontal_material;
+			global::System.Graphics.Resource.Dimension.abc_panel_menu_list_width = global::GraphicsTester.Android.Resource.Dimension.abc_panel_menu_list_width;
+			global::System.Graphics.Resource.Dimension.abc_progress_bar_height_material = global::GraphicsTester.Android.Resource.Dimension.abc_progress_bar_height_material;
+			global::System.Graphics.Resource.Dimension.abc_search_view_preferred_height = global::GraphicsTester.Android.Resource.Dimension.abc_search_view_preferred_height;
+			global::System.Graphics.Resource.Dimension.abc_search_view_preferred_width = global::GraphicsTester.Android.Resource.Dimension.abc_search_view_preferred_width;
+			global::System.Graphics.Resource.Dimension.abc_seekbar_track_background_height_material = global::GraphicsTester.Android.Resource.Dimension.abc_seekbar_track_background_height_material;
+			global::System.Graphics.Resource.Dimension.abc_seekbar_track_progress_height_material = global::GraphicsTester.Android.Resource.Dimension.abc_seekbar_track_progress_height_material;
+			global::System.Graphics.Resource.Dimension.abc_select_dialog_padding_start_material = global::GraphicsTester.Android.Resource.Dimension.abc_select_dialog_padding_start_material;
+			global::System.Graphics.Resource.Dimension.abc_switch_padding = global::GraphicsTester.Android.Resource.Dimension.abc_switch_padding;
+			global::System.Graphics.Resource.Dimension.abc_text_size_body_1_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_body_1_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_body_2_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_body_2_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_button_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_button_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_caption_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_caption_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_display_1_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_display_1_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_display_2_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_display_2_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_display_3_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_display_3_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_display_4_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_display_4_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_headline_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_headline_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_large_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_large_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_medium_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_medium_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_menu_header_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_menu_header_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_menu_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_menu_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_small_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_small_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_subhead_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_subhead_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_subtitle_material_toolbar = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_subtitle_material_toolbar;
+			global::System.Graphics.Resource.Dimension.abc_text_size_title_material = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_title_material;
+			global::System.Graphics.Resource.Dimension.abc_text_size_title_material_toolbar = global::GraphicsTester.Android.Resource.Dimension.abc_text_size_title_material_toolbar;
+			global::System.Graphics.Resource.Dimension.cardview_compat_inset_shadow = global::GraphicsTester.Android.Resource.Dimension.cardview_compat_inset_shadow;
+			global::System.Graphics.Resource.Dimension.cardview_default_elevation = global::GraphicsTester.Android.Resource.Dimension.cardview_default_elevation;
+			global::System.Graphics.Resource.Dimension.cardview_default_radius = global::GraphicsTester.Android.Resource.Dimension.cardview_default_radius;
+			global::System.Graphics.Resource.Dimension.compat_button_inset_horizontal_material = global::GraphicsTester.Android.Resource.Dimension.compat_button_inset_horizontal_material;
+			global::System.Graphics.Resource.Dimension.compat_button_inset_vertical_material = global::GraphicsTester.Android.Resource.Dimension.compat_button_inset_vertical_material;
+			global::System.Graphics.Resource.Dimension.compat_button_padding_horizontal_material = global::GraphicsTester.Android.Resource.Dimension.compat_button_padding_horizontal_material;
+			global::System.Graphics.Resource.Dimension.compat_button_padding_vertical_material = global::GraphicsTester.Android.Resource.Dimension.compat_button_padding_vertical_material;
+			global::System.Graphics.Resource.Dimension.compat_control_corner_material = global::GraphicsTester.Android.Resource.Dimension.compat_control_corner_material;
+			global::System.Graphics.Resource.Dimension.compat_notification_large_icon_max_height = global::GraphicsTester.Android.Resource.Dimension.compat_notification_large_icon_max_height;
+			global::System.Graphics.Resource.Dimension.compat_notification_large_icon_max_width = global::GraphicsTester.Android.Resource.Dimension.compat_notification_large_icon_max_width;
+			global::System.Graphics.Resource.Dimension.design_appbar_elevation = global::GraphicsTester.Android.Resource.Dimension.design_appbar_elevation;
+			global::System.Graphics.Resource.Dimension.design_bottom_navigation_active_item_max_width = global::GraphicsTester.Android.Resource.Dimension.design_bottom_navigation_active_item_max_width;
+			global::System.Graphics.Resource.Dimension.design_bottom_navigation_active_item_min_width = global::GraphicsTester.Android.Resource.Dimension.design_bottom_navigation_active_item_min_width;
+			global::System.Graphics.Resource.Dimension.design_bottom_navigation_active_text_size = global::GraphicsTester.Android.Resource.Dimension.design_bottom_navigation_active_text_size;
+			global::System.Graphics.Resource.Dimension.design_bottom_navigation_elevation = global::GraphicsTester.Android.Resource.Dimension.design_bottom_navigation_elevation;
+			global::System.Graphics.Resource.Dimension.design_bottom_navigation_height = global::GraphicsTester.Android.Resource.Dimension.design_bottom_navigation_height;
+			global::System.Graphics.Resource.Dimension.design_bottom_navigation_icon_size = global::GraphicsTester.Android.Resource.Dimension.design_bottom_navigation_icon_size;
+			global::System.Graphics.Resource.Dimension.design_bottom_navigation_item_max_width = global::GraphicsTester.Android.Resource.Dimension.design_bottom_navigation_item_max_width;
+			global::System.Graphics.Resource.Dimension.design_bottom_navigation_item_min_width = global::GraphicsTester.Android.Resource.Dimension.design_bottom_navigation_item_min_width;
+			global::System.Graphics.Resource.Dimension.design_bottom_navigation_margin = global::GraphicsTester.Android.Resource.Dimension.design_bottom_navigation_margin;
+			global::System.Graphics.Resource.Dimension.design_bottom_navigation_shadow_height = global::GraphicsTester.Android.Resource.Dimension.design_bottom_navigation_shadow_height;
+			global::System.Graphics.Resource.Dimension.design_bottom_navigation_text_size = global::GraphicsTester.Android.Resource.Dimension.design_bottom_navigation_text_size;
+			global::System.Graphics.Resource.Dimension.design_bottom_sheet_modal_elevation = global::GraphicsTester.Android.Resource.Dimension.design_bottom_sheet_modal_elevation;
+			global::System.Graphics.Resource.Dimension.design_bottom_sheet_peek_height_min = global::GraphicsTester.Android.Resource.Dimension.design_bottom_sheet_peek_height_min;
+			global::System.Graphics.Resource.Dimension.design_fab_border_width = global::GraphicsTester.Android.Resource.Dimension.design_fab_border_width;
+			global::System.Graphics.Resource.Dimension.design_fab_elevation = global::GraphicsTester.Android.Resource.Dimension.design_fab_elevation;
+			global::System.Graphics.Resource.Dimension.design_fab_image_size = global::GraphicsTester.Android.Resource.Dimension.design_fab_image_size;
+			global::System.Graphics.Resource.Dimension.design_fab_size_mini = global::GraphicsTester.Android.Resource.Dimension.design_fab_size_mini;
+			global::System.Graphics.Resource.Dimension.design_fab_size_normal = global::GraphicsTester.Android.Resource.Dimension.design_fab_size_normal;
+			global::System.Graphics.Resource.Dimension.design_fab_translation_z_hovered_focused = global::GraphicsTester.Android.Resource.Dimension.design_fab_translation_z_hovered_focused;
+			global::System.Graphics.Resource.Dimension.design_fab_translation_z_pressed = global::GraphicsTester.Android.Resource.Dimension.design_fab_translation_z_pressed;
+			global::System.Graphics.Resource.Dimension.design_navigation_elevation = global::GraphicsTester.Android.Resource.Dimension.design_navigation_elevation;
+			global::System.Graphics.Resource.Dimension.design_navigation_icon_padding = global::GraphicsTester.Android.Resource.Dimension.design_navigation_icon_padding;
+			global::System.Graphics.Resource.Dimension.design_navigation_icon_size = global::GraphicsTester.Android.Resource.Dimension.design_navigation_icon_size;
+			global::System.Graphics.Resource.Dimension.design_navigation_item_horizontal_padding = global::GraphicsTester.Android.Resource.Dimension.design_navigation_item_horizontal_padding;
+			global::System.Graphics.Resource.Dimension.design_navigation_item_icon_padding = global::GraphicsTester.Android.Resource.Dimension.design_navigation_item_icon_padding;
+			global::System.Graphics.Resource.Dimension.design_navigation_max_width = global::GraphicsTester.Android.Resource.Dimension.design_navigation_max_width;
+			global::System.Graphics.Resource.Dimension.design_navigation_padding_bottom = global::GraphicsTester.Android.Resource.Dimension.design_navigation_padding_bottom;
+			global::System.Graphics.Resource.Dimension.design_navigation_separator_vertical_padding = global::GraphicsTester.Android.Resource.Dimension.design_navigation_separator_vertical_padding;
+			global::System.Graphics.Resource.Dimension.design_snackbar_action_inline_max_width = global::GraphicsTester.Android.Resource.Dimension.design_snackbar_action_inline_max_width;
+			global::System.Graphics.Resource.Dimension.design_snackbar_background_corner_radius = global::GraphicsTester.Android.Resource.Dimension.design_snackbar_background_corner_radius;
+			global::System.Graphics.Resource.Dimension.design_snackbar_elevation = global::GraphicsTester.Android.Resource.Dimension.design_snackbar_elevation;
+			global::System.Graphics.Resource.Dimension.design_snackbar_extra_spacing_horizontal = global::GraphicsTester.Android.Resource.Dimension.design_snackbar_extra_spacing_horizontal;
+			global::System.Graphics.Resource.Dimension.design_snackbar_max_width = global::GraphicsTester.Android.Resource.Dimension.design_snackbar_max_width;
+			global::System.Graphics.Resource.Dimension.design_snackbar_min_width = global::GraphicsTester.Android.Resource.Dimension.design_snackbar_min_width;
+			global::System.Graphics.Resource.Dimension.design_snackbar_padding_horizontal = global::GraphicsTester.Android.Resource.Dimension.design_snackbar_padding_horizontal;
+			global::System.Graphics.Resource.Dimension.design_snackbar_padding_vertical = global::GraphicsTester.Android.Resource.Dimension.design_snackbar_padding_vertical;
+			global::System.Graphics.Resource.Dimension.design_snackbar_padding_vertical_2lines = global::GraphicsTester.Android.Resource.Dimension.design_snackbar_padding_vertical_2lines;
+			global::System.Graphics.Resource.Dimension.design_snackbar_text_size = global::GraphicsTester.Android.Resource.Dimension.design_snackbar_text_size;
+			global::System.Graphics.Resource.Dimension.design_tab_max_width = global::GraphicsTester.Android.Resource.Dimension.design_tab_max_width;
+			global::System.Graphics.Resource.Dimension.design_tab_scrollable_min_width = global::GraphicsTester.Android.Resource.Dimension.design_tab_scrollable_min_width;
+			global::System.Graphics.Resource.Dimension.design_tab_text_size = global::GraphicsTester.Android.Resource.Dimension.design_tab_text_size;
+			global::System.Graphics.Resource.Dimension.design_tab_text_size_2line = global::GraphicsTester.Android.Resource.Dimension.design_tab_text_size_2line;
+			global::System.Graphics.Resource.Dimension.design_textinput_caption_translate_y = global::GraphicsTester.Android.Resource.Dimension.design_textinput_caption_translate_y;
+			global::System.Graphics.Resource.Dimension.disabled_alpha_material_dark = global::GraphicsTester.Android.Resource.Dimension.disabled_alpha_material_dark;
+			global::System.Graphics.Resource.Dimension.disabled_alpha_material_light = global::GraphicsTester.Android.Resource.Dimension.disabled_alpha_material_light;
+			global::System.Graphics.Resource.Dimension.fastscroll_default_thickness = global::GraphicsTester.Android.Resource.Dimension.fastscroll_default_thickness;
+			global::System.Graphics.Resource.Dimension.fastscroll_margin = global::GraphicsTester.Android.Resource.Dimension.fastscroll_margin;
+			global::System.Graphics.Resource.Dimension.fastscroll_minimum_range = global::GraphicsTester.Android.Resource.Dimension.fastscroll_minimum_range;
+			global::System.Graphics.Resource.Dimension.highlight_alpha_material_colored = global::GraphicsTester.Android.Resource.Dimension.highlight_alpha_material_colored;
+			global::System.Graphics.Resource.Dimension.highlight_alpha_material_dark = global::GraphicsTester.Android.Resource.Dimension.highlight_alpha_material_dark;
+			global::System.Graphics.Resource.Dimension.highlight_alpha_material_light = global::GraphicsTester.Android.Resource.Dimension.highlight_alpha_material_light;
+			global::System.Graphics.Resource.Dimension.hint_alpha_material_dark = global::GraphicsTester.Android.Resource.Dimension.hint_alpha_material_dark;
+			global::System.Graphics.Resource.Dimension.hint_alpha_material_light = global::GraphicsTester.Android.Resource.Dimension.hint_alpha_material_light;
+			global::System.Graphics.Resource.Dimension.hint_pressed_alpha_material_dark = global::GraphicsTester.Android.Resource.Dimension.hint_pressed_alpha_material_dark;
+			global::System.Graphics.Resource.Dimension.hint_pressed_alpha_material_light = global::GraphicsTester.Android.Resource.Dimension.hint_pressed_alpha_material_light;
+			global::System.Graphics.Resource.Dimension.item_touch_helper_max_drag_scroll_per_frame = global::GraphicsTester.Android.Resource.Dimension.item_touch_helper_max_drag_scroll_per_frame;
+			global::System.Graphics.Resource.Dimension.item_touch_helper_swipe_escape_max_velocity = global::GraphicsTester.Android.Resource.Dimension.item_touch_helper_swipe_escape_max_velocity;
+			global::System.Graphics.Resource.Dimension.item_touch_helper_swipe_escape_velocity = global::GraphicsTester.Android.Resource.Dimension.item_touch_helper_swipe_escape_velocity;
+			global::System.Graphics.Resource.Dimension.mtrl_bottomappbar_fabOffsetEndMode = global::GraphicsTester.Android.Resource.Dimension.mtrl_bottomappbar_fabOffsetEndMode;
+			global::System.Graphics.Resource.Dimension.mtrl_bottomappbar_fab_cradle_margin = global::GraphicsTester.Android.Resource.Dimension.mtrl_bottomappbar_fab_cradle_margin;
+			global::System.Graphics.Resource.Dimension.mtrl_bottomappbar_fab_cradle_rounded_corner_radius = global::GraphicsTester.Android.Resource.Dimension.mtrl_bottomappbar_fab_cradle_rounded_corner_radius;
+			global::System.Graphics.Resource.Dimension.mtrl_bottomappbar_fab_cradle_vertical_offset = global::GraphicsTester.Android.Resource.Dimension.mtrl_bottomappbar_fab_cradle_vertical_offset;
+			global::System.Graphics.Resource.Dimension.mtrl_bottomappbar_height = global::GraphicsTester.Android.Resource.Dimension.mtrl_bottomappbar_height;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_corner_radius = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_corner_radius;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_dialog_btn_min_width = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_dialog_btn_min_width;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_disabled_elevation = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_disabled_elevation;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_disabled_z = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_disabled_z;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_elevation = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_elevation;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_focused_z = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_focused_z;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_hovered_z = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_hovered_z;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_icon_btn_padding_left = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_icon_btn_padding_left;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_icon_padding = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_icon_padding;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_inset = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_inset;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_letter_spacing = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_letter_spacing;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_padding_bottom = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_padding_bottom;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_padding_left = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_padding_left;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_padding_right = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_padding_right;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_padding_top = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_padding_top;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_pressed_z = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_pressed_z;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_stroke_size = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_stroke_size;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_text_btn_icon_padding = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_text_btn_icon_padding;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_text_btn_padding_left = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_text_btn_padding_left;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_text_btn_padding_right = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_text_btn_padding_right;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_text_size = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_text_size;
+			global::System.Graphics.Resource.Dimension.mtrl_btn_z = global::GraphicsTester.Android.Resource.Dimension.mtrl_btn_z;
+			global::System.Graphics.Resource.Dimension.mtrl_card_elevation = global::GraphicsTester.Android.Resource.Dimension.mtrl_card_elevation;
+			global::System.Graphics.Resource.Dimension.mtrl_card_spacing = global::GraphicsTester.Android.Resource.Dimension.mtrl_card_spacing;
+			global::System.Graphics.Resource.Dimension.mtrl_chip_pressed_translation_z = global::GraphicsTester.Android.Resource.Dimension.mtrl_chip_pressed_translation_z;
+			global::System.Graphics.Resource.Dimension.mtrl_chip_text_size = global::GraphicsTester.Android.Resource.Dimension.mtrl_chip_text_size;
+			global::System.Graphics.Resource.Dimension.mtrl_fab_elevation = global::GraphicsTester.Android.Resource.Dimension.mtrl_fab_elevation;
+			global::System.Graphics.Resource.Dimension.mtrl_fab_translation_z_hovered_focused = global::GraphicsTester.Android.Resource.Dimension.mtrl_fab_translation_z_hovered_focused;
+			global::System.Graphics.Resource.Dimension.mtrl_fab_translation_z_pressed = global::GraphicsTester.Android.Resource.Dimension.mtrl_fab_translation_z_pressed;
+			global::System.Graphics.Resource.Dimension.mtrl_navigation_elevation = global::GraphicsTester.Android.Resource.Dimension.mtrl_navigation_elevation;
+			global::System.Graphics.Resource.Dimension.mtrl_navigation_item_horizontal_padding = global::GraphicsTester.Android.Resource.Dimension.mtrl_navigation_item_horizontal_padding;
+			global::System.Graphics.Resource.Dimension.mtrl_navigation_item_icon_padding = global::GraphicsTester.Android.Resource.Dimension.mtrl_navigation_item_icon_padding;
+			global::System.Graphics.Resource.Dimension.mtrl_snackbar_background_corner_radius = global::GraphicsTester.Android.Resource.Dimension.mtrl_snackbar_background_corner_radius;
+			global::System.Graphics.Resource.Dimension.mtrl_snackbar_margin = global::GraphicsTester.Android.Resource.Dimension.mtrl_snackbar_margin;
+			global::System.Graphics.Resource.Dimension.mtrl_textinput_box_bottom_offset = global::GraphicsTester.Android.Resource.Dimension.mtrl_textinput_box_bottom_offset;
+			global::System.Graphics.Resource.Dimension.mtrl_textinput_box_corner_radius_medium = global::GraphicsTester.Android.Resource.Dimension.mtrl_textinput_box_corner_radius_medium;
+			global::System.Graphics.Resource.Dimension.mtrl_textinput_box_corner_radius_small = global::GraphicsTester.Android.Resource.Dimension.mtrl_textinput_box_corner_radius_small;
+			global::System.Graphics.Resource.Dimension.mtrl_textinput_box_label_cutout_padding = global::GraphicsTester.Android.Resource.Dimension.mtrl_textinput_box_label_cutout_padding;
+			global::System.Graphics.Resource.Dimension.mtrl_textinput_box_padding_end = global::GraphicsTester.Android.Resource.Dimension.mtrl_textinput_box_padding_end;
+			global::System.Graphics.Resource.Dimension.mtrl_textinput_box_stroke_width_default = global::GraphicsTester.Android.Resource.Dimension.mtrl_textinput_box_stroke_width_default;
+			global::System.Graphics.Resource.Dimension.mtrl_textinput_box_stroke_width_focused = global::GraphicsTester.Android.Resource.Dimension.mtrl_textinput_box_stroke_width_focused;
+			global::System.Graphics.Resource.Dimension.mtrl_textinput_outline_box_expanded_padding = global::GraphicsTester.Android.Resource.Dimension.mtrl_textinput_outline_box_expanded_padding;
+			global::System.Graphics.Resource.Dimension.mtrl_toolbar_default_height = global::GraphicsTester.Android.Resource.Dimension.mtrl_toolbar_default_height;
+			global::System.Graphics.Resource.Dimension.notification_action_icon_size = global::GraphicsTester.Android.Resource.Dimension.notification_action_icon_size;
+			global::System.Graphics.Resource.Dimension.notification_action_text_size = global::GraphicsTester.Android.Resource.Dimension.notification_action_text_size;
+			global::System.Graphics.Resource.Dimension.notification_big_circle_margin = global::GraphicsTester.Android.Resource.Dimension.notification_big_circle_margin;
+			global::System.Graphics.Resource.Dimension.notification_content_margin_start = global::GraphicsTester.Android.Resource.Dimension.notification_content_margin_start;
+			global::System.Graphics.Resource.Dimension.notification_large_icon_height = global::GraphicsTester.Android.Resource.Dimension.notification_large_icon_height;
+			global::System.Graphics.Resource.Dimension.notification_large_icon_width = global::GraphicsTester.Android.Resource.Dimension.notification_large_icon_width;
+			global::System.Graphics.Resource.Dimension.notification_main_column_padding_top = global::GraphicsTester.Android.Resource.Dimension.notification_main_column_padding_top;
+			global::System.Graphics.Resource.Dimension.notification_media_narrow_margin = global::GraphicsTester.Android.Resource.Dimension.notification_media_narrow_margin;
+			global::System.Graphics.Resource.Dimension.notification_right_icon_size = global::GraphicsTester.Android.Resource.Dimension.notification_right_icon_size;
+			global::System.Graphics.Resource.Dimension.notification_right_side_padding_top = global::GraphicsTester.Android.Resource.Dimension.notification_right_side_padding_top;
+			global::System.Graphics.Resource.Dimension.notification_small_icon_background_padding = global::GraphicsTester.Android.Resource.Dimension.notification_small_icon_background_padding;
+			global::System.Graphics.Resource.Dimension.notification_small_icon_size_as_large = global::GraphicsTester.Android.Resource.Dimension.notification_small_icon_size_as_large;
+			global::System.Graphics.Resource.Dimension.notification_subtext_size = global::GraphicsTester.Android.Resource.Dimension.notification_subtext_size;
+			global::System.Graphics.Resource.Dimension.notification_top_pad = global::GraphicsTester.Android.Resource.Dimension.notification_top_pad;
+			global::System.Graphics.Resource.Dimension.notification_top_pad_large_text = global::GraphicsTester.Android.Resource.Dimension.notification_top_pad_large_text;
+			global::System.Graphics.Resource.Dimension.subtitle_corner_radius = global::GraphicsTester.Android.Resource.Dimension.subtitle_corner_radius;
+			global::System.Graphics.Resource.Dimension.subtitle_outline_width = global::GraphicsTester.Android.Resource.Dimension.subtitle_outline_width;
+			global::System.Graphics.Resource.Dimension.subtitle_shadow_offset = global::GraphicsTester.Android.Resource.Dimension.subtitle_shadow_offset;
+			global::System.Graphics.Resource.Dimension.subtitle_shadow_radius = global::GraphicsTester.Android.Resource.Dimension.subtitle_shadow_radius;
+			global::System.Graphics.Resource.Dimension.tooltip_corner_radius = global::GraphicsTester.Android.Resource.Dimension.tooltip_corner_radius;
+			global::System.Graphics.Resource.Dimension.tooltip_horizontal_padding = global::GraphicsTester.Android.Resource.Dimension.tooltip_horizontal_padding;
+			global::System.Graphics.Resource.Dimension.tooltip_margin = global::GraphicsTester.Android.Resource.Dimension.tooltip_margin;
+			global::System.Graphics.Resource.Dimension.tooltip_precise_anchor_extra_offset = global::GraphicsTester.Android.Resource.Dimension.tooltip_precise_anchor_extra_offset;
+			global::System.Graphics.Resource.Dimension.tooltip_precise_anchor_threshold = global::GraphicsTester.Android.Resource.Dimension.tooltip_precise_anchor_threshold;
+			global::System.Graphics.Resource.Dimension.tooltip_vertical_padding = global::GraphicsTester.Android.Resource.Dimension.tooltip_vertical_padding;
+			global::System.Graphics.Resource.Dimension.tooltip_y_offset_non_touch = global::GraphicsTester.Android.Resource.Dimension.tooltip_y_offset_non_touch;
+			global::System.Graphics.Resource.Dimension.tooltip_y_offset_touch = global::GraphicsTester.Android.Resource.Dimension.tooltip_y_offset_touch;
+			global::System.Graphics.Resource.Drawable.abc_ab_share_pack_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_ab_share_pack_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_action_bar_item_background_material = global::GraphicsTester.Android.Resource.Drawable.abc_action_bar_item_background_material;
+			global::System.Graphics.Resource.Drawable.abc_btn_borderless_material = global::GraphicsTester.Android.Resource.Drawable.abc_btn_borderless_material;
+			global::System.Graphics.Resource.Drawable.abc_btn_check_material = global::GraphicsTester.Android.Resource.Drawable.abc_btn_check_material;
+			global::System.Graphics.Resource.Drawable.abc_btn_check_material_anim = global::GraphicsTester.Android.Resource.Drawable.abc_btn_check_material_anim;
+			global::System.Graphics.Resource.Drawable.abc_btn_check_to_on_mtrl_000 = global::GraphicsTester.Android.Resource.Drawable.abc_btn_check_to_on_mtrl_000;
+			global::System.Graphics.Resource.Drawable.abc_btn_check_to_on_mtrl_015 = global::GraphicsTester.Android.Resource.Drawable.abc_btn_check_to_on_mtrl_015;
+			global::System.Graphics.Resource.Drawable.abc_btn_colored_material = global::GraphicsTester.Android.Resource.Drawable.abc_btn_colored_material;
+			global::System.Graphics.Resource.Drawable.abc_btn_default_mtrl_shape = global::GraphicsTester.Android.Resource.Drawable.abc_btn_default_mtrl_shape;
+			global::System.Graphics.Resource.Drawable.abc_btn_radio_material = global::GraphicsTester.Android.Resource.Drawable.abc_btn_radio_material;
+			global::System.Graphics.Resource.Drawable.abc_btn_radio_material_anim = global::GraphicsTester.Android.Resource.Drawable.abc_btn_radio_material_anim;
+			global::System.Graphics.Resource.Drawable.abc_btn_radio_to_on_mtrl_000 = global::GraphicsTester.Android.Resource.Drawable.abc_btn_radio_to_on_mtrl_000;
+			global::System.Graphics.Resource.Drawable.abc_btn_radio_to_on_mtrl_015 = global::GraphicsTester.Android.Resource.Drawable.abc_btn_radio_to_on_mtrl_015;
+			global::System.Graphics.Resource.Drawable.abc_btn_switch_to_on_mtrl_00001 = global::GraphicsTester.Android.Resource.Drawable.abc_btn_switch_to_on_mtrl_00001;
+			global::System.Graphics.Resource.Drawable.abc_btn_switch_to_on_mtrl_00012 = global::GraphicsTester.Android.Resource.Drawable.abc_btn_switch_to_on_mtrl_00012;
+			global::System.Graphics.Resource.Drawable.abc_cab_background_internal_bg = global::GraphicsTester.Android.Resource.Drawable.abc_cab_background_internal_bg;
+			global::System.Graphics.Resource.Drawable.abc_cab_background_top_material = global::GraphicsTester.Android.Resource.Drawable.abc_cab_background_top_material;
+			global::System.Graphics.Resource.Drawable.abc_cab_background_top_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_cab_background_top_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_control_background_material = global::GraphicsTester.Android.Resource.Drawable.abc_control_background_material;
+			global::System.Graphics.Resource.Drawable.abc_dialog_material_background = global::GraphicsTester.Android.Resource.Drawable.abc_dialog_material_background;
+			global::System.Graphics.Resource.Drawable.abc_edit_text_material = global::GraphicsTester.Android.Resource.Drawable.abc_edit_text_material;
+			global::System.Graphics.Resource.Drawable.abc_ic_ab_back_material = global::GraphicsTester.Android.Resource.Drawable.abc_ic_ab_back_material;
+			global::System.Graphics.Resource.Drawable.abc_ic_arrow_drop_right_black_24dp = global::GraphicsTester.Android.Resource.Drawable.abc_ic_arrow_drop_right_black_24dp;
+			global::System.Graphics.Resource.Drawable.abc_ic_clear_material = global::GraphicsTester.Android.Resource.Drawable.abc_ic_clear_material;
+			global::System.Graphics.Resource.Drawable.abc_ic_commit_search_api_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_ic_commit_search_api_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_ic_go_search_api_material = global::GraphicsTester.Android.Resource.Drawable.abc_ic_go_search_api_material;
+			global::System.Graphics.Resource.Drawable.abc_ic_menu_copy_mtrl_am_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_ic_menu_copy_mtrl_am_alpha;
+			global::System.Graphics.Resource.Drawable.abc_ic_menu_cut_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_ic_menu_cut_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_ic_menu_overflow_material = global::GraphicsTester.Android.Resource.Drawable.abc_ic_menu_overflow_material;
+			global::System.Graphics.Resource.Drawable.abc_ic_menu_paste_mtrl_am_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_ic_menu_paste_mtrl_am_alpha;
+			global::System.Graphics.Resource.Drawable.abc_ic_menu_selectall_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_ic_menu_selectall_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_ic_menu_share_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_ic_menu_share_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_ic_search_api_material = global::GraphicsTester.Android.Resource.Drawable.abc_ic_search_api_material;
+			global::System.Graphics.Resource.Drawable.abc_ic_star_black_16dp = global::GraphicsTester.Android.Resource.Drawable.abc_ic_star_black_16dp;
+			global::System.Graphics.Resource.Drawable.abc_ic_star_black_36dp = global::GraphicsTester.Android.Resource.Drawable.abc_ic_star_black_36dp;
+			global::System.Graphics.Resource.Drawable.abc_ic_star_black_48dp = global::GraphicsTester.Android.Resource.Drawable.abc_ic_star_black_48dp;
+			global::System.Graphics.Resource.Drawable.abc_ic_star_half_black_16dp = global::GraphicsTester.Android.Resource.Drawable.abc_ic_star_half_black_16dp;
+			global::System.Graphics.Resource.Drawable.abc_ic_star_half_black_36dp = global::GraphicsTester.Android.Resource.Drawable.abc_ic_star_half_black_36dp;
+			global::System.Graphics.Resource.Drawable.abc_ic_star_half_black_48dp = global::GraphicsTester.Android.Resource.Drawable.abc_ic_star_half_black_48dp;
+			global::System.Graphics.Resource.Drawable.abc_ic_voice_search_api_material = global::GraphicsTester.Android.Resource.Drawable.abc_ic_voice_search_api_material;
+			global::System.Graphics.Resource.Drawable.abc_item_background_holo_dark = global::GraphicsTester.Android.Resource.Drawable.abc_item_background_holo_dark;
+			global::System.Graphics.Resource.Drawable.abc_item_background_holo_light = global::GraphicsTester.Android.Resource.Drawable.abc_item_background_holo_light;
+			global::System.Graphics.Resource.Drawable.abc_list_divider_material = global::GraphicsTester.Android.Resource.Drawable.abc_list_divider_material;
+			global::System.Graphics.Resource.Drawable.abc_list_divider_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_list_divider_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_list_focused_holo = global::GraphicsTester.Android.Resource.Drawable.abc_list_focused_holo;
+			global::System.Graphics.Resource.Drawable.abc_list_longpressed_holo = global::GraphicsTester.Android.Resource.Drawable.abc_list_longpressed_holo;
+			global::System.Graphics.Resource.Drawable.abc_list_pressed_holo_dark = global::GraphicsTester.Android.Resource.Drawable.abc_list_pressed_holo_dark;
+			global::System.Graphics.Resource.Drawable.abc_list_pressed_holo_light = global::GraphicsTester.Android.Resource.Drawable.abc_list_pressed_holo_light;
+			global::System.Graphics.Resource.Drawable.abc_list_selector_background_transition_holo_dark = global::GraphicsTester.Android.Resource.Drawable.abc_list_selector_background_transition_holo_dark;
+			global::System.Graphics.Resource.Drawable.abc_list_selector_background_transition_holo_light = global::GraphicsTester.Android.Resource.Drawable.abc_list_selector_background_transition_holo_light;
+			global::System.Graphics.Resource.Drawable.abc_list_selector_disabled_holo_dark = global::GraphicsTester.Android.Resource.Drawable.abc_list_selector_disabled_holo_dark;
+			global::System.Graphics.Resource.Drawable.abc_list_selector_disabled_holo_light = global::GraphicsTester.Android.Resource.Drawable.abc_list_selector_disabled_holo_light;
+			global::System.Graphics.Resource.Drawable.abc_list_selector_holo_dark = global::GraphicsTester.Android.Resource.Drawable.abc_list_selector_holo_dark;
+			global::System.Graphics.Resource.Drawable.abc_list_selector_holo_light = global::GraphicsTester.Android.Resource.Drawable.abc_list_selector_holo_light;
+			global::System.Graphics.Resource.Drawable.abc_menu_hardkey_panel_mtrl_mult = global::GraphicsTester.Android.Resource.Drawable.abc_menu_hardkey_panel_mtrl_mult;
+			global::System.Graphics.Resource.Drawable.abc_popup_background_mtrl_mult = global::GraphicsTester.Android.Resource.Drawable.abc_popup_background_mtrl_mult;
+			global::System.Graphics.Resource.Drawable.abc_ratingbar_indicator_material = global::GraphicsTester.Android.Resource.Drawable.abc_ratingbar_indicator_material;
+			global::System.Graphics.Resource.Drawable.abc_ratingbar_material = global::GraphicsTester.Android.Resource.Drawable.abc_ratingbar_material;
+			global::System.Graphics.Resource.Drawable.abc_ratingbar_small_material = global::GraphicsTester.Android.Resource.Drawable.abc_ratingbar_small_material;
+			global::System.Graphics.Resource.Drawable.abc_scrubber_control_off_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_scrubber_control_off_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_scrubber_control_to_pressed_mtrl_000 = global::GraphicsTester.Android.Resource.Drawable.abc_scrubber_control_to_pressed_mtrl_000;
+			global::System.Graphics.Resource.Drawable.abc_scrubber_control_to_pressed_mtrl_005 = global::GraphicsTester.Android.Resource.Drawable.abc_scrubber_control_to_pressed_mtrl_005;
+			global::System.Graphics.Resource.Drawable.abc_scrubber_primary_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_scrubber_primary_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_scrubber_track_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_scrubber_track_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_seekbar_thumb_material = global::GraphicsTester.Android.Resource.Drawable.abc_seekbar_thumb_material;
+			global::System.Graphics.Resource.Drawable.abc_seekbar_tick_mark_material = global::GraphicsTester.Android.Resource.Drawable.abc_seekbar_tick_mark_material;
+			global::System.Graphics.Resource.Drawable.abc_seekbar_track_material = global::GraphicsTester.Android.Resource.Drawable.abc_seekbar_track_material;
+			global::System.Graphics.Resource.Drawable.abc_spinner_mtrl_am_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_spinner_mtrl_am_alpha;
+			global::System.Graphics.Resource.Drawable.abc_spinner_textfield_background_material = global::GraphicsTester.Android.Resource.Drawable.abc_spinner_textfield_background_material;
+			global::System.Graphics.Resource.Drawable.abc_switch_thumb_material = global::GraphicsTester.Android.Resource.Drawable.abc_switch_thumb_material;
+			global::System.Graphics.Resource.Drawable.abc_switch_track_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_switch_track_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_tab_indicator_material = global::GraphicsTester.Android.Resource.Drawable.abc_tab_indicator_material;
+			global::System.Graphics.Resource.Drawable.abc_tab_indicator_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_tab_indicator_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_textfield_activated_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_textfield_activated_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_textfield_default_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_textfield_default_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_textfield_search_activated_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_textfield_search_activated_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_textfield_search_default_mtrl_alpha = global::GraphicsTester.Android.Resource.Drawable.abc_textfield_search_default_mtrl_alpha;
+			global::System.Graphics.Resource.Drawable.abc_textfield_search_material = global::GraphicsTester.Android.Resource.Drawable.abc_textfield_search_material;
+			global::System.Graphics.Resource.Drawable.abc_text_cursor_material = global::GraphicsTester.Android.Resource.Drawable.abc_text_cursor_material;
+			global::System.Graphics.Resource.Drawable.abc_text_select_handle_left_mtrl_dark = global::GraphicsTester.Android.Resource.Drawable.abc_text_select_handle_left_mtrl_dark;
+			global::System.Graphics.Resource.Drawable.abc_text_select_handle_left_mtrl_light = global::GraphicsTester.Android.Resource.Drawable.abc_text_select_handle_left_mtrl_light;
+			global::System.Graphics.Resource.Drawable.abc_text_select_handle_middle_mtrl_dark = global::GraphicsTester.Android.Resource.Drawable.abc_text_select_handle_middle_mtrl_dark;
+			global::System.Graphics.Resource.Drawable.abc_text_select_handle_middle_mtrl_light = global::GraphicsTester.Android.Resource.Drawable.abc_text_select_handle_middle_mtrl_light;
+			global::System.Graphics.Resource.Drawable.abc_text_select_handle_right_mtrl_dark = global::GraphicsTester.Android.Resource.Drawable.abc_text_select_handle_right_mtrl_dark;
+			global::System.Graphics.Resource.Drawable.abc_text_select_handle_right_mtrl_light = global::GraphicsTester.Android.Resource.Drawable.abc_text_select_handle_right_mtrl_light;
+			global::System.Graphics.Resource.Drawable.abc_vector_test = global::GraphicsTester.Android.Resource.Drawable.abc_vector_test;
+			global::System.Graphics.Resource.Drawable.avd_hide_password = global::GraphicsTester.Android.Resource.Drawable.avd_hide_password;
+			global::System.Graphics.Resource.Drawable.avd_show_password = global::GraphicsTester.Android.Resource.Drawable.avd_show_password;
+			global::System.Graphics.Resource.Drawable.btn_checkbox_checked_mtrl = global::GraphicsTester.Android.Resource.Drawable.btn_checkbox_checked_mtrl;
+			global::System.Graphics.Resource.Drawable.btn_checkbox_checked_to_unchecked_mtrl_animation = global::GraphicsTester.Android.Resource.Drawable.btn_checkbox_checked_to_unchecked_mtrl_animation;
+			global::System.Graphics.Resource.Drawable.btn_checkbox_unchecked_mtrl = global::GraphicsTester.Android.Resource.Drawable.btn_checkbox_unchecked_mtrl;
+			global::System.Graphics.Resource.Drawable.btn_checkbox_unchecked_to_checked_mtrl_animation = global::GraphicsTester.Android.Resource.Drawable.btn_checkbox_unchecked_to_checked_mtrl_animation;
+			global::System.Graphics.Resource.Drawable.btn_radio_off_mtrl = global::GraphicsTester.Android.Resource.Drawable.btn_radio_off_mtrl;
+			global::System.Graphics.Resource.Drawable.btn_radio_off_to_on_mtrl_animation = global::GraphicsTester.Android.Resource.Drawable.btn_radio_off_to_on_mtrl_animation;
+			global::System.Graphics.Resource.Drawable.btn_radio_on_mtrl = global::GraphicsTester.Android.Resource.Drawable.btn_radio_on_mtrl;
+			global::System.Graphics.Resource.Drawable.btn_radio_on_to_off_mtrl_animation = global::GraphicsTester.Android.Resource.Drawable.btn_radio_on_to_off_mtrl_animation;
+			global::System.Graphics.Resource.Drawable.design_bottom_navigation_item_background = global::GraphicsTester.Android.Resource.Drawable.design_bottom_navigation_item_background;
+			global::System.Graphics.Resource.Drawable.design_fab_background = global::GraphicsTester.Android.Resource.Drawable.design_fab_background;
+			global::System.Graphics.Resource.Drawable.design_ic_visibility = global::GraphicsTester.Android.Resource.Drawable.design_ic_visibility;
+			global::System.Graphics.Resource.Drawable.design_ic_visibility_off = global::GraphicsTester.Android.Resource.Drawable.design_ic_visibility_off;
+			global::System.Graphics.Resource.Drawable.design_password_eye = global::GraphicsTester.Android.Resource.Drawable.design_password_eye;
+			global::System.Graphics.Resource.Drawable.design_snackbar_background = global::GraphicsTester.Android.Resource.Drawable.design_snackbar_background;
+			global::System.Graphics.Resource.Drawable.ic_mtrl_chip_checked_black = global::GraphicsTester.Android.Resource.Drawable.ic_mtrl_chip_checked_black;
+			global::System.Graphics.Resource.Drawable.ic_mtrl_chip_checked_circle = global::GraphicsTester.Android.Resource.Drawable.ic_mtrl_chip_checked_circle;
+			global::System.Graphics.Resource.Drawable.ic_mtrl_chip_close_circle = global::GraphicsTester.Android.Resource.Drawable.ic_mtrl_chip_close_circle;
+			global::System.Graphics.Resource.Drawable.mtrl_snackbar_background = global::GraphicsTester.Android.Resource.Drawable.mtrl_snackbar_background;
+			global::System.Graphics.Resource.Drawable.mtrl_tabs_default_indicator = global::GraphicsTester.Android.Resource.Drawable.mtrl_tabs_default_indicator;
+			global::System.Graphics.Resource.Drawable.navigation_empty_icon = global::GraphicsTester.Android.Resource.Drawable.navigation_empty_icon;
+			global::System.Graphics.Resource.Drawable.notification_action_background = global::GraphicsTester.Android.Resource.Drawable.notification_action_background;
+			global::System.Graphics.Resource.Drawable.notification_bg = global::GraphicsTester.Android.Resource.Drawable.notification_bg;
+			global::System.Graphics.Resource.Drawable.notification_bg_low = global::GraphicsTester.Android.Resource.Drawable.notification_bg_low;
+			global::System.Graphics.Resource.Drawable.notification_bg_low_normal = global::GraphicsTester.Android.Resource.Drawable.notification_bg_low_normal;
+			global::System.Graphics.Resource.Drawable.notification_bg_low_pressed = global::GraphicsTester.Android.Resource.Drawable.notification_bg_low_pressed;
+			global::System.Graphics.Resource.Drawable.notification_bg_normal = global::GraphicsTester.Android.Resource.Drawable.notification_bg_normal;
+			global::System.Graphics.Resource.Drawable.notification_bg_normal_pressed = global::GraphicsTester.Android.Resource.Drawable.notification_bg_normal_pressed;
+			global::System.Graphics.Resource.Drawable.notification_icon_background = global::GraphicsTester.Android.Resource.Drawable.notification_icon_background;
+			global::System.Graphics.Resource.Drawable.notification_template_icon_bg = global::GraphicsTester.Android.Resource.Drawable.notification_template_icon_bg;
+			global::System.Graphics.Resource.Drawable.notification_template_icon_low_bg = global::GraphicsTester.Android.Resource.Drawable.notification_template_icon_low_bg;
+			global::System.Graphics.Resource.Drawable.notification_tile_bg = global::GraphicsTester.Android.Resource.Drawable.notification_tile_bg;
+			global::System.Graphics.Resource.Drawable.notify_panel_notification_icon_bg = global::GraphicsTester.Android.Resource.Drawable.notify_panel_notification_icon_bg;
+			global::System.Graphics.Resource.Drawable.tooltip_frame_dark = global::GraphicsTester.Android.Resource.Drawable.tooltip_frame_dark;
+			global::System.Graphics.Resource.Drawable.tooltip_frame_light = global::GraphicsTester.Android.Resource.Drawable.tooltip_frame_light;
+			global::System.Graphics.Resource.Id.accessibility_action_clickable_span = global::GraphicsTester.Android.Resource.Id.accessibility_action_clickable_span;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_0 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_0;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_1 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_1;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_10 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_10;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_11 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_11;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_12 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_12;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_13 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_13;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_14 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_14;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_15 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_15;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_16 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_16;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_17 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_17;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_18 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_18;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_19 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_19;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_2 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_2;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_20 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_20;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_21 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_21;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_22 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_22;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_23 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_23;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_24 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_24;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_25 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_25;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_26 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_26;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_27 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_27;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_28 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_28;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_29 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_29;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_3 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_3;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_30 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_30;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_31 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_31;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_4 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_4;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_5 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_5;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_6 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_6;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_7 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_7;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_8 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_8;
+			global::System.Graphics.Resource.Id.accessibility_custom_action_9 = global::GraphicsTester.Android.Resource.Id.accessibility_custom_action_9;
+			global::System.Graphics.Resource.Id.action0 = global::GraphicsTester.Android.Resource.Id.action0;
+			global::System.Graphics.Resource.Id.actions = global::GraphicsTester.Android.Resource.Id.actions;
+			global::System.Graphics.Resource.Id.action_bar = global::GraphicsTester.Android.Resource.Id.action_bar;
+			global::System.Graphics.Resource.Id.action_bar_activity_content = global::GraphicsTester.Android.Resource.Id.action_bar_activity_content;
+			global::System.Graphics.Resource.Id.action_bar_container = global::GraphicsTester.Android.Resource.Id.action_bar_container;
+			global::System.Graphics.Resource.Id.action_bar_root = global::GraphicsTester.Android.Resource.Id.action_bar_root;
+			global::System.Graphics.Resource.Id.action_bar_spinner = global::GraphicsTester.Android.Resource.Id.action_bar_spinner;
+			global::System.Graphics.Resource.Id.action_bar_subtitle = global::GraphicsTester.Android.Resource.Id.action_bar_subtitle;
+			global::System.Graphics.Resource.Id.action_bar_title = global::GraphicsTester.Android.Resource.Id.action_bar_title;
+			global::System.Graphics.Resource.Id.action_container = global::GraphicsTester.Android.Resource.Id.action_container;
+			global::System.Graphics.Resource.Id.action_context_bar = global::GraphicsTester.Android.Resource.Id.action_context_bar;
+			global::System.Graphics.Resource.Id.action_divider = global::GraphicsTester.Android.Resource.Id.action_divider;
+			global::System.Graphics.Resource.Id.action_image = global::GraphicsTester.Android.Resource.Id.action_image;
+			global::System.Graphics.Resource.Id.action_menu_divider = global::GraphicsTester.Android.Resource.Id.action_menu_divider;
+			global::System.Graphics.Resource.Id.action_menu_presenter = global::GraphicsTester.Android.Resource.Id.action_menu_presenter;
+			global::System.Graphics.Resource.Id.action_mode_bar = global::GraphicsTester.Android.Resource.Id.action_mode_bar;
+			global::System.Graphics.Resource.Id.action_mode_bar_stub = global::GraphicsTester.Android.Resource.Id.action_mode_bar_stub;
+			global::System.Graphics.Resource.Id.action_mode_close_button = global::GraphicsTester.Android.Resource.Id.action_mode_close_button;
+			global::System.Graphics.Resource.Id.action_text = global::GraphicsTester.Android.Resource.Id.action_text;
+			global::System.Graphics.Resource.Id.activity_chooser_view_content = global::GraphicsTester.Android.Resource.Id.activity_chooser_view_content;
+			global::System.Graphics.Resource.Id.add = global::GraphicsTester.Android.Resource.Id.add;
+			global::System.Graphics.Resource.Id.alertTitle = global::GraphicsTester.Android.Resource.Id.alertTitle;
+			global::System.Graphics.Resource.Id.all = global::GraphicsTester.Android.Resource.Id.all;
+			global::System.Graphics.Resource.Id.ALT = global::GraphicsTester.Android.Resource.Id.ALT;
+			global::System.Graphics.Resource.Id.always = global::GraphicsTester.Android.Resource.Id.always;
+			global::System.Graphics.Resource.Id.async = global::GraphicsTester.Android.Resource.Id.async;
+			global::System.Graphics.Resource.Id.auto = global::GraphicsTester.Android.Resource.Id.auto;
+			global::System.Graphics.Resource.Id.beginning = global::GraphicsTester.Android.Resource.Id.beginning;
+			global::System.Graphics.Resource.Id.blocking = global::GraphicsTester.Android.Resource.Id.blocking;
+			global::System.Graphics.Resource.Id.bottom = global::GraphicsTester.Android.Resource.Id.bottom;
+			global::System.Graphics.Resource.Id.buttonPanel = global::GraphicsTester.Android.Resource.Id.buttonPanel;
+			global::System.Graphics.Resource.Id.cancel_action = global::GraphicsTester.Android.Resource.Id.cancel_action;
+			global::System.Graphics.Resource.Id.center = global::GraphicsTester.Android.Resource.Id.center;
+			global::System.Graphics.Resource.Id.center_horizontal = global::GraphicsTester.Android.Resource.Id.center_horizontal;
+			global::System.Graphics.Resource.Id.center_vertical = global::GraphicsTester.Android.Resource.Id.center_vertical;
+			global::System.Graphics.Resource.Id.checkbox = global::GraphicsTester.Android.Resource.Id.checkbox;
+			global::System.Graphics.Resource.Id.@checked = global::GraphicsTester.Android.Resource.Id.@checked;
+			global::System.Graphics.Resource.Id.chronometer = global::GraphicsTester.Android.Resource.Id.chronometer;
+			global::System.Graphics.Resource.Id.clip_horizontal = global::GraphicsTester.Android.Resource.Id.clip_horizontal;
+			global::System.Graphics.Resource.Id.clip_vertical = global::GraphicsTester.Android.Resource.Id.clip_vertical;
+			global::System.Graphics.Resource.Id.collapseActionView = global::GraphicsTester.Android.Resource.Id.collapseActionView;
+			global::System.Graphics.Resource.Id.container = global::GraphicsTester.Android.Resource.Id.container;
+			global::System.Graphics.Resource.Id.content = global::GraphicsTester.Android.Resource.Id.content;
+			global::System.Graphics.Resource.Id.contentPanel = global::GraphicsTester.Android.Resource.Id.contentPanel;
+			global::System.Graphics.Resource.Id.coordinator = global::GraphicsTester.Android.Resource.Id.coordinator;
+			global::System.Graphics.Resource.Id.CTRL = global::GraphicsTester.Android.Resource.Id.CTRL;
+			global::System.Graphics.Resource.Id.custom = global::GraphicsTester.Android.Resource.Id.custom;
+			global::System.Graphics.Resource.Id.customPanel = global::GraphicsTester.Android.Resource.Id.customPanel;
+			global::System.Graphics.Resource.Id.decor_content_parent = global::GraphicsTester.Android.Resource.Id.decor_content_parent;
+			global::System.Graphics.Resource.Id.default_activity_button = global::GraphicsTester.Android.Resource.Id.default_activity_button;
+			global::System.Graphics.Resource.Id.design_bottom_sheet = global::GraphicsTester.Android.Resource.Id.design_bottom_sheet;
+			global::System.Graphics.Resource.Id.design_menu_item_action_area = global::GraphicsTester.Android.Resource.Id.design_menu_item_action_area;
+			global::System.Graphics.Resource.Id.design_menu_item_action_area_stub = global::GraphicsTester.Android.Resource.Id.design_menu_item_action_area_stub;
+			global::System.Graphics.Resource.Id.design_menu_item_text = global::GraphicsTester.Android.Resource.Id.design_menu_item_text;
+			global::System.Graphics.Resource.Id.design_navigation_view = global::GraphicsTester.Android.Resource.Id.design_navigation_view;
+			global::System.Graphics.Resource.Id.dialog_button = global::GraphicsTester.Android.Resource.Id.dialog_button;
+			global::System.Graphics.Resource.Id.disableHome = global::GraphicsTester.Android.Resource.Id.disableHome;
+			global::System.Graphics.Resource.Id.edit_query = global::GraphicsTester.Android.Resource.Id.edit_query;
+			global::System.Graphics.Resource.Id.end = global::GraphicsTester.Android.Resource.Id.end;
+			global::System.Graphics.Resource.Id.end_padder = global::GraphicsTester.Android.Resource.Id.end_padder;
+			global::System.Graphics.Resource.Id.enterAlways = global::GraphicsTester.Android.Resource.Id.enterAlways;
+			global::System.Graphics.Resource.Id.enterAlwaysCollapsed = global::GraphicsTester.Android.Resource.Id.enterAlwaysCollapsed;
+			global::System.Graphics.Resource.Id.exitUntilCollapsed = global::GraphicsTester.Android.Resource.Id.exitUntilCollapsed;
+			global::System.Graphics.Resource.Id.expanded_menu = global::GraphicsTester.Android.Resource.Id.expanded_menu;
+			global::System.Graphics.Resource.Id.expand_activities_button = global::GraphicsTester.Android.Resource.Id.expand_activities_button;
+			global::System.Graphics.Resource.Id.fill = global::GraphicsTester.Android.Resource.Id.fill;
+			global::System.Graphics.Resource.Id.filled = global::GraphicsTester.Android.Resource.Id.filled;
+			global::System.Graphics.Resource.Id.fill_horizontal = global::GraphicsTester.Android.Resource.Id.fill_horizontal;
+			global::System.Graphics.Resource.Id.fill_vertical = global::GraphicsTester.Android.Resource.Id.fill_vertical;
+			global::System.Graphics.Resource.Id.@fixed = global::GraphicsTester.Android.Resource.Id.@fixed;
+			global::System.Graphics.Resource.Id.forever = global::GraphicsTester.Android.Resource.Id.forever;
+			global::System.Graphics.Resource.Id.FUNCTION = global::GraphicsTester.Android.Resource.Id.FUNCTION;
+			global::System.Graphics.Resource.Id.ghost_view = global::GraphicsTester.Android.Resource.Id.ghost_view;
+			global::System.Graphics.Resource.Id.ghost_view_holder = global::GraphicsTester.Android.Resource.Id.ghost_view_holder;
+			global::System.Graphics.Resource.Id.group_divider = global::GraphicsTester.Android.Resource.Id.group_divider;
+			global::System.Graphics.Resource.Id.home = global::GraphicsTester.Android.Resource.Id.home;
+			global::System.Graphics.Resource.Id.homeAsUp = global::GraphicsTester.Android.Resource.Id.homeAsUp;
+			global::System.Graphics.Resource.Id.icon = global::GraphicsTester.Android.Resource.Id.icon;
+			global::System.Graphics.Resource.Id.icon_group = global::GraphicsTester.Android.Resource.Id.icon_group;
+			global::System.Graphics.Resource.Id.ifRoom = global::GraphicsTester.Android.Resource.Id.ifRoom;
+			global::System.Graphics.Resource.Id.image = global::GraphicsTester.Android.Resource.Id.image;
+			global::System.Graphics.Resource.Id.info = global::GraphicsTester.Android.Resource.Id.info;
+			global::System.Graphics.Resource.Id.italic = global::GraphicsTester.Android.Resource.Id.italic;
+			global::System.Graphics.Resource.Id.item_touch_helper_previous_elevation = global::GraphicsTester.Android.Resource.Id.item_touch_helper_previous_elevation;
+			global::System.Graphics.Resource.Id.labeled = global::GraphicsTester.Android.Resource.Id.labeled;
+			global::System.Graphics.Resource.Id.largeLabel = global::GraphicsTester.Android.Resource.Id.largeLabel;
+			global::System.Graphics.Resource.Id.left = global::GraphicsTester.Android.Resource.Id.left;
+			global::System.Graphics.Resource.Id.line1 = global::GraphicsTester.Android.Resource.Id.line1;
+			global::System.Graphics.Resource.Id.line3 = global::GraphicsTester.Android.Resource.Id.line3;
+			global::System.Graphics.Resource.Id.listMode = global::GraphicsTester.Android.Resource.Id.listMode;
+			global::System.Graphics.Resource.Id.list_item = global::GraphicsTester.Android.Resource.Id.list_item;
+			global::System.Graphics.Resource.Id.masked = global::GraphicsTester.Android.Resource.Id.masked;
+			global::System.Graphics.Resource.Id.media_actions = global::GraphicsTester.Android.Resource.Id.media_actions;
+			global::System.Graphics.Resource.Id.message = global::GraphicsTester.Android.Resource.Id.message;
+			global::System.Graphics.Resource.Id.META = global::GraphicsTester.Android.Resource.Id.META;
+			global::System.Graphics.Resource.Id.middle = global::GraphicsTester.Android.Resource.Id.middle;
+			global::System.Graphics.Resource.Id.mini = global::GraphicsTester.Android.Resource.Id.mini;
+			global::System.Graphics.Resource.Id.mtrl_child_content_container = global::GraphicsTester.Android.Resource.Id.mtrl_child_content_container;
+			global::System.Graphics.Resource.Id.mtrl_internal_children_alpha_tag = global::GraphicsTester.Android.Resource.Id.mtrl_internal_children_alpha_tag;
+			global::System.Graphics.Resource.Id.multiply = global::GraphicsTester.Android.Resource.Id.multiply;
+			global::System.Graphics.Resource.Id.navigation_header_container = global::GraphicsTester.Android.Resource.Id.navigation_header_container;
+			global::System.Graphics.Resource.Id.never = global::GraphicsTester.Android.Resource.Id.never;
+			global::System.Graphics.Resource.Id.none = global::GraphicsTester.Android.Resource.Id.none;
+			global::System.Graphics.Resource.Id.normal = global::GraphicsTester.Android.Resource.Id.normal;
+			global::System.Graphics.Resource.Id.notification_background = global::GraphicsTester.Android.Resource.Id.notification_background;
+			global::System.Graphics.Resource.Id.notification_main_column = global::GraphicsTester.Android.Resource.Id.notification_main_column;
+			global::System.Graphics.Resource.Id.notification_main_column_container = global::GraphicsTester.Android.Resource.Id.notification_main_column_container;
+			global::System.Graphics.Resource.Id.off = global::GraphicsTester.Android.Resource.Id.off;
+			global::System.Graphics.Resource.Id.on = global::GraphicsTester.Android.Resource.Id.on;
+			global::System.Graphics.Resource.Id.outline = global::GraphicsTester.Android.Resource.Id.outline;
+			global::System.Graphics.Resource.Id.parallax = global::GraphicsTester.Android.Resource.Id.parallax;
+			global::System.Graphics.Resource.Id.parentPanel = global::GraphicsTester.Android.Resource.Id.parentPanel;
+			global::System.Graphics.Resource.Id.parent_matrix = global::GraphicsTester.Android.Resource.Id.parent_matrix;
+			global::System.Graphics.Resource.Id.pin = global::GraphicsTester.Android.Resource.Id.pin;
+			global::System.Graphics.Resource.Id.progress_circular = global::GraphicsTester.Android.Resource.Id.progress_circular;
+			global::System.Graphics.Resource.Id.progress_horizontal = global::GraphicsTester.Android.Resource.Id.progress_horizontal;
+			global::System.Graphics.Resource.Id.radio = global::GraphicsTester.Android.Resource.Id.radio;
+			global::System.Graphics.Resource.Id.right = global::GraphicsTester.Android.Resource.Id.right;
+			global::System.Graphics.Resource.Id.right_icon = global::GraphicsTester.Android.Resource.Id.right_icon;
+			global::System.Graphics.Resource.Id.right_side = global::GraphicsTester.Android.Resource.Id.right_side;
+			global::System.Graphics.Resource.Id.save_non_transition_alpha = global::GraphicsTester.Android.Resource.Id.save_non_transition_alpha;
+			global::System.Graphics.Resource.Id.save_overlay_view = global::GraphicsTester.Android.Resource.Id.save_overlay_view;
+			global::System.Graphics.Resource.Id.screen = global::GraphicsTester.Android.Resource.Id.screen;
+			global::System.Graphics.Resource.Id.scroll = global::GraphicsTester.Android.Resource.Id.scroll;
+			global::System.Graphics.Resource.Id.scrollable = global::GraphicsTester.Android.Resource.Id.scrollable;
+			global::System.Graphics.Resource.Id.scrollIndicatorDown = global::GraphicsTester.Android.Resource.Id.scrollIndicatorDown;
+			global::System.Graphics.Resource.Id.scrollIndicatorUp = global::GraphicsTester.Android.Resource.Id.scrollIndicatorUp;
+			global::System.Graphics.Resource.Id.scrollView = global::GraphicsTester.Android.Resource.Id.scrollView;
+			global::System.Graphics.Resource.Id.search_badge = global::GraphicsTester.Android.Resource.Id.search_badge;
+			global::System.Graphics.Resource.Id.search_bar = global::GraphicsTester.Android.Resource.Id.search_bar;
+			global::System.Graphics.Resource.Id.search_button = global::GraphicsTester.Android.Resource.Id.search_button;
+			global::System.Graphics.Resource.Id.search_close_btn = global::GraphicsTester.Android.Resource.Id.search_close_btn;
+			global::System.Graphics.Resource.Id.search_edit_frame = global::GraphicsTester.Android.Resource.Id.search_edit_frame;
+			global::System.Graphics.Resource.Id.search_go_btn = global::GraphicsTester.Android.Resource.Id.search_go_btn;
+			global::System.Graphics.Resource.Id.search_mag_icon = global::GraphicsTester.Android.Resource.Id.search_mag_icon;
+			global::System.Graphics.Resource.Id.search_plate = global::GraphicsTester.Android.Resource.Id.search_plate;
+			global::System.Graphics.Resource.Id.search_src_text = global::GraphicsTester.Android.Resource.Id.search_src_text;
+			global::System.Graphics.Resource.Id.search_voice_btn = global::GraphicsTester.Android.Resource.Id.search_voice_btn;
+			global::System.Graphics.Resource.Id.selected = global::GraphicsTester.Android.Resource.Id.selected;
+			global::System.Graphics.Resource.Id.select_dialog_listview = global::GraphicsTester.Android.Resource.Id.select_dialog_listview;
+			global::System.Graphics.Resource.Id.SHIFT = global::GraphicsTester.Android.Resource.Id.SHIFT;
+			global::System.Graphics.Resource.Id.shortcut = global::GraphicsTester.Android.Resource.Id.shortcut;
+			global::System.Graphics.Resource.Id.showCustom = global::GraphicsTester.Android.Resource.Id.showCustom;
+			global::System.Graphics.Resource.Id.showHome = global::GraphicsTester.Android.Resource.Id.showHome;
+			global::System.Graphics.Resource.Id.showTitle = global::GraphicsTester.Android.Resource.Id.showTitle;
+			global::System.Graphics.Resource.Id.smallLabel = global::GraphicsTester.Android.Resource.Id.smallLabel;
+			global::System.Graphics.Resource.Id.snackbar_action = global::GraphicsTester.Android.Resource.Id.snackbar_action;
+			global::System.Graphics.Resource.Id.snackbar_text = global::GraphicsTester.Android.Resource.Id.snackbar_text;
+			global::System.Graphics.Resource.Id.snap = global::GraphicsTester.Android.Resource.Id.snap;
+			global::System.Graphics.Resource.Id.snapMargins = global::GraphicsTester.Android.Resource.Id.snapMargins;
+			global::System.Graphics.Resource.Id.spacer = global::GraphicsTester.Android.Resource.Id.spacer;
+			global::System.Graphics.Resource.Id.split_action_bar = global::GraphicsTester.Android.Resource.Id.split_action_bar;
+			global::System.Graphics.Resource.Id.src_atop = global::GraphicsTester.Android.Resource.Id.src_atop;
+			global::System.Graphics.Resource.Id.src_in = global::GraphicsTester.Android.Resource.Id.src_in;
+			global::System.Graphics.Resource.Id.src_over = global::GraphicsTester.Android.Resource.Id.src_over;
+			global::System.Graphics.Resource.Id.start = global::GraphicsTester.Android.Resource.Id.start;
+			global::System.Graphics.Resource.Id.status_bar_latest_event_content = global::GraphicsTester.Android.Resource.Id.status_bar_latest_event_content;
+			global::System.Graphics.Resource.Id.stretch = global::GraphicsTester.Android.Resource.Id.stretch;
+			global::System.Graphics.Resource.Id.submenuarrow = global::GraphicsTester.Android.Resource.Id.submenuarrow;
+			global::System.Graphics.Resource.Id.submit_area = global::GraphicsTester.Android.Resource.Id.submit_area;
+			global::System.Graphics.Resource.Id.SYM = global::GraphicsTester.Android.Resource.Id.SYM;
+			global::System.Graphics.Resource.Id.tabMode = global::GraphicsTester.Android.Resource.Id.tabMode;
+			global::System.Graphics.Resource.Id.tag_accessibility_actions = global::GraphicsTester.Android.Resource.Id.tag_accessibility_actions;
+			global::System.Graphics.Resource.Id.tag_accessibility_clickable_spans = global::GraphicsTester.Android.Resource.Id.tag_accessibility_clickable_spans;
+			global::System.Graphics.Resource.Id.tag_accessibility_heading = global::GraphicsTester.Android.Resource.Id.tag_accessibility_heading;
+			global::System.Graphics.Resource.Id.tag_accessibility_pane_title = global::GraphicsTester.Android.Resource.Id.tag_accessibility_pane_title;
+			global::System.Graphics.Resource.Id.tag_screen_reader_focusable = global::GraphicsTester.Android.Resource.Id.tag_screen_reader_focusable;
+			global::System.Graphics.Resource.Id.tag_transition_group = global::GraphicsTester.Android.Resource.Id.tag_transition_group;
+			global::System.Graphics.Resource.Id.tag_unhandled_key_event_manager = global::GraphicsTester.Android.Resource.Id.tag_unhandled_key_event_manager;
+			global::System.Graphics.Resource.Id.tag_unhandled_key_listeners = global::GraphicsTester.Android.Resource.Id.tag_unhandled_key_listeners;
+			global::System.Graphics.Resource.Id.text = global::GraphicsTester.Android.Resource.Id.text;
+			global::System.Graphics.Resource.Id.text2 = global::GraphicsTester.Android.Resource.Id.text2;
+			global::System.Graphics.Resource.Id.textinput_counter = global::GraphicsTester.Android.Resource.Id.textinput_counter;
+			global::System.Graphics.Resource.Id.textinput_error = global::GraphicsTester.Android.Resource.Id.textinput_error;
+			global::System.Graphics.Resource.Id.textinput_helper_text = global::GraphicsTester.Android.Resource.Id.textinput_helper_text;
+			global::System.Graphics.Resource.Id.textSpacerNoButtons = global::GraphicsTester.Android.Resource.Id.textSpacerNoButtons;
+			global::System.Graphics.Resource.Id.textSpacerNoTitle = global::GraphicsTester.Android.Resource.Id.textSpacerNoTitle;
+			global::System.Graphics.Resource.Id.textStart = global::GraphicsTester.Android.Resource.Id.textStart;
+			global::System.Graphics.Resource.Id.text_input_password_toggle = global::GraphicsTester.Android.Resource.Id.text_input_password_toggle;
+			global::System.Graphics.Resource.Id.time = global::GraphicsTester.Android.Resource.Id.time;
+			global::System.Graphics.Resource.Id.title = global::GraphicsTester.Android.Resource.Id.title;
+			global::System.Graphics.Resource.Id.titleDividerNoCustom = global::GraphicsTester.Android.Resource.Id.titleDividerNoCustom;
+			global::System.Graphics.Resource.Id.title_template = global::GraphicsTester.Android.Resource.Id.title_template;
+			global::System.Graphics.Resource.Id.top = global::GraphicsTester.Android.Resource.Id.top;
+			global::System.Graphics.Resource.Id.topPanel = global::GraphicsTester.Android.Resource.Id.topPanel;
+			global::System.Graphics.Resource.Id.touch_outside = global::GraphicsTester.Android.Resource.Id.touch_outside;
+			global::System.Graphics.Resource.Id.transition_current_scene = global::GraphicsTester.Android.Resource.Id.transition_current_scene;
+			global::System.Graphics.Resource.Id.transition_layout_save = global::GraphicsTester.Android.Resource.Id.transition_layout_save;
+			global::System.Graphics.Resource.Id.transition_position = global::GraphicsTester.Android.Resource.Id.transition_position;
+			global::System.Graphics.Resource.Id.transition_scene_layoutid_cache = global::GraphicsTester.Android.Resource.Id.transition_scene_layoutid_cache;
+			global::System.Graphics.Resource.Id.transition_transform = global::GraphicsTester.Android.Resource.Id.transition_transform;
+			global::System.Graphics.Resource.Id.@unchecked = global::GraphicsTester.Android.Resource.Id.@unchecked;
+			global::System.Graphics.Resource.Id.uniform = global::GraphicsTester.Android.Resource.Id.uniform;
+			global::System.Graphics.Resource.Id.unlabeled = global::GraphicsTester.Android.Resource.Id.unlabeled;
+			global::System.Graphics.Resource.Id.up = global::GraphicsTester.Android.Resource.Id.up;
+			global::System.Graphics.Resource.Id.useLogo = global::GraphicsTester.Android.Resource.Id.useLogo;
+			global::System.Graphics.Resource.Id.view_offset_helper = global::GraphicsTester.Android.Resource.Id.view_offset_helper;
+			global::System.Graphics.Resource.Id.visible = global::GraphicsTester.Android.Resource.Id.visible;
+			global::System.Graphics.Resource.Id.withText = global::GraphicsTester.Android.Resource.Id.withText;
+			global::System.Graphics.Resource.Id.wrap_content = global::GraphicsTester.Android.Resource.Id.wrap_content;
+			global::System.Graphics.Resource.Integer.abc_config_activityDefaultDur = global::GraphicsTester.Android.Resource.Integer.abc_config_activityDefaultDur;
+			global::System.Graphics.Resource.Integer.abc_config_activityShortDur = global::GraphicsTester.Android.Resource.Integer.abc_config_activityShortDur;
+			global::System.Graphics.Resource.Integer.app_bar_elevation_anim_duration = global::GraphicsTester.Android.Resource.Integer.app_bar_elevation_anim_duration;
+			global::System.Graphics.Resource.Integer.bottom_sheet_slide_duration = global::GraphicsTester.Android.Resource.Integer.bottom_sheet_slide_duration;
+			global::System.Graphics.Resource.Integer.cancel_button_image_alpha = global::GraphicsTester.Android.Resource.Integer.cancel_button_image_alpha;
+			global::System.Graphics.Resource.Integer.config_tooltipAnimTime = global::GraphicsTester.Android.Resource.Integer.config_tooltipAnimTime;
+			global::System.Graphics.Resource.Integer.design_snackbar_text_max_lines = global::GraphicsTester.Android.Resource.Integer.design_snackbar_text_max_lines;
+			global::System.Graphics.Resource.Integer.design_tab_indicator_anim_duration_ms = global::GraphicsTester.Android.Resource.Integer.design_tab_indicator_anim_duration_ms;
+			global::System.Graphics.Resource.Integer.hide_password_duration = global::GraphicsTester.Android.Resource.Integer.hide_password_duration;
+			global::System.Graphics.Resource.Integer.mtrl_btn_anim_delay_ms = global::GraphicsTester.Android.Resource.Integer.mtrl_btn_anim_delay_ms;
+			global::System.Graphics.Resource.Integer.mtrl_btn_anim_duration_ms = global::GraphicsTester.Android.Resource.Integer.mtrl_btn_anim_duration_ms;
+			global::System.Graphics.Resource.Integer.mtrl_chip_anim_duration = global::GraphicsTester.Android.Resource.Integer.mtrl_chip_anim_duration;
+			global::System.Graphics.Resource.Integer.mtrl_tab_indicator_anim_duration_ms = global::GraphicsTester.Android.Resource.Integer.mtrl_tab_indicator_anim_duration_ms;
+			global::System.Graphics.Resource.Integer.show_password_duration = global::GraphicsTester.Android.Resource.Integer.show_password_duration;
+			global::System.Graphics.Resource.Integer.status_bar_notification_info_maxnum = global::GraphicsTester.Android.Resource.Integer.status_bar_notification_info_maxnum;
+			global::System.Graphics.Resource.Interpolator.btn_checkbox_checked_mtrl_animation_interpolator_0 = global::GraphicsTester.Android.Resource.Interpolator.btn_checkbox_checked_mtrl_animation_interpolator_0;
+			global::System.Graphics.Resource.Interpolator.btn_checkbox_checked_mtrl_animation_interpolator_1 = global::GraphicsTester.Android.Resource.Interpolator.btn_checkbox_checked_mtrl_animation_interpolator_1;
+			global::System.Graphics.Resource.Interpolator.btn_checkbox_unchecked_mtrl_animation_interpolator_0 = global::GraphicsTester.Android.Resource.Interpolator.btn_checkbox_unchecked_mtrl_animation_interpolator_0;
+			global::System.Graphics.Resource.Interpolator.btn_checkbox_unchecked_mtrl_animation_interpolator_1 = global::GraphicsTester.Android.Resource.Interpolator.btn_checkbox_unchecked_mtrl_animation_interpolator_1;
+			global::System.Graphics.Resource.Interpolator.btn_radio_to_off_mtrl_animation_interpolator_0 = global::GraphicsTester.Android.Resource.Interpolator.btn_radio_to_off_mtrl_animation_interpolator_0;
+			global::System.Graphics.Resource.Interpolator.btn_radio_to_on_mtrl_animation_interpolator_0 = global::GraphicsTester.Android.Resource.Interpolator.btn_radio_to_on_mtrl_animation_interpolator_0;
+			global::System.Graphics.Resource.Interpolator.fast_out_slow_in = global::GraphicsTester.Android.Resource.Interpolator.fast_out_slow_in;
+			global::System.Graphics.Resource.Interpolator.mtrl_fast_out_linear_in = global::GraphicsTester.Android.Resource.Interpolator.mtrl_fast_out_linear_in;
+			global::System.Graphics.Resource.Interpolator.mtrl_fast_out_slow_in = global::GraphicsTester.Android.Resource.Interpolator.mtrl_fast_out_slow_in;
+			global::System.Graphics.Resource.Interpolator.mtrl_linear = global::GraphicsTester.Android.Resource.Interpolator.mtrl_linear;
+			global::System.Graphics.Resource.Interpolator.mtrl_linear_out_slow_in = global::GraphicsTester.Android.Resource.Interpolator.mtrl_linear_out_slow_in;
+			global::System.Graphics.Resource.Layout.abc_action_bar_title_item = global::GraphicsTester.Android.Resource.Layout.abc_action_bar_title_item;
+			global::System.Graphics.Resource.Layout.abc_action_bar_up_container = global::GraphicsTester.Android.Resource.Layout.abc_action_bar_up_container;
+			global::System.Graphics.Resource.Layout.abc_action_menu_item_layout = global::GraphicsTester.Android.Resource.Layout.abc_action_menu_item_layout;
+			global::System.Graphics.Resource.Layout.abc_action_menu_layout = global::GraphicsTester.Android.Resource.Layout.abc_action_menu_layout;
+			global::System.Graphics.Resource.Layout.abc_action_mode_bar = global::GraphicsTester.Android.Resource.Layout.abc_action_mode_bar;
+			global::System.Graphics.Resource.Layout.abc_action_mode_close_item_material = global::GraphicsTester.Android.Resource.Layout.abc_action_mode_close_item_material;
+			global::System.Graphics.Resource.Layout.abc_activity_chooser_view = global::GraphicsTester.Android.Resource.Layout.abc_activity_chooser_view;
+			global::System.Graphics.Resource.Layout.abc_activity_chooser_view_list_item = global::GraphicsTester.Android.Resource.Layout.abc_activity_chooser_view_list_item;
+			global::System.Graphics.Resource.Layout.abc_alert_dialog_button_bar_material = global::GraphicsTester.Android.Resource.Layout.abc_alert_dialog_button_bar_material;
+			global::System.Graphics.Resource.Layout.abc_alert_dialog_material = global::GraphicsTester.Android.Resource.Layout.abc_alert_dialog_material;
+			global::System.Graphics.Resource.Layout.abc_alert_dialog_title_material = global::GraphicsTester.Android.Resource.Layout.abc_alert_dialog_title_material;
+			global::System.Graphics.Resource.Layout.abc_cascading_menu_item_layout = global::GraphicsTester.Android.Resource.Layout.abc_cascading_menu_item_layout;
+			global::System.Graphics.Resource.Layout.abc_dialog_title_material = global::GraphicsTester.Android.Resource.Layout.abc_dialog_title_material;
+			global::System.Graphics.Resource.Layout.abc_expanded_menu_layout = global::GraphicsTester.Android.Resource.Layout.abc_expanded_menu_layout;
+			global::System.Graphics.Resource.Layout.abc_list_menu_item_checkbox = global::GraphicsTester.Android.Resource.Layout.abc_list_menu_item_checkbox;
+			global::System.Graphics.Resource.Layout.abc_list_menu_item_icon = global::GraphicsTester.Android.Resource.Layout.abc_list_menu_item_icon;
+			global::System.Graphics.Resource.Layout.abc_list_menu_item_layout = global::GraphicsTester.Android.Resource.Layout.abc_list_menu_item_layout;
+			global::System.Graphics.Resource.Layout.abc_list_menu_item_radio = global::GraphicsTester.Android.Resource.Layout.abc_list_menu_item_radio;
+			global::System.Graphics.Resource.Layout.abc_popup_menu_header_item_layout = global::GraphicsTester.Android.Resource.Layout.abc_popup_menu_header_item_layout;
+			global::System.Graphics.Resource.Layout.abc_popup_menu_item_layout = global::GraphicsTester.Android.Resource.Layout.abc_popup_menu_item_layout;
+			global::System.Graphics.Resource.Layout.abc_screen_content_include = global::GraphicsTester.Android.Resource.Layout.abc_screen_content_include;
+			global::System.Graphics.Resource.Layout.abc_screen_simple = global::GraphicsTester.Android.Resource.Layout.abc_screen_simple;
+			global::System.Graphics.Resource.Layout.abc_screen_simple_overlay_action_mode = global::GraphicsTester.Android.Resource.Layout.abc_screen_simple_overlay_action_mode;
+			global::System.Graphics.Resource.Layout.abc_screen_toolbar = global::GraphicsTester.Android.Resource.Layout.abc_screen_toolbar;
+			global::System.Graphics.Resource.Layout.abc_search_dropdown_item_icons_2line = global::GraphicsTester.Android.Resource.Layout.abc_search_dropdown_item_icons_2line;
+			global::System.Graphics.Resource.Layout.abc_search_view = global::GraphicsTester.Android.Resource.Layout.abc_search_view;
+			global::System.Graphics.Resource.Layout.abc_select_dialog_material = global::GraphicsTester.Android.Resource.Layout.abc_select_dialog_material;
+			global::System.Graphics.Resource.Layout.abc_tooltip = global::GraphicsTester.Android.Resource.Layout.abc_tooltip;
+			global::System.Graphics.Resource.Layout.custom_dialog = global::GraphicsTester.Android.Resource.Layout.custom_dialog;
+			global::System.Graphics.Resource.Layout.design_bottom_navigation_item = global::GraphicsTester.Android.Resource.Layout.design_bottom_navigation_item;
+			global::System.Graphics.Resource.Layout.design_bottom_sheet_dialog = global::GraphicsTester.Android.Resource.Layout.design_bottom_sheet_dialog;
+			global::System.Graphics.Resource.Layout.design_layout_snackbar = global::GraphicsTester.Android.Resource.Layout.design_layout_snackbar;
+			global::System.Graphics.Resource.Layout.design_layout_snackbar_include = global::GraphicsTester.Android.Resource.Layout.design_layout_snackbar_include;
+			global::System.Graphics.Resource.Layout.design_layout_tab_icon = global::GraphicsTester.Android.Resource.Layout.design_layout_tab_icon;
+			global::System.Graphics.Resource.Layout.design_layout_tab_text = global::GraphicsTester.Android.Resource.Layout.design_layout_tab_text;
+			global::System.Graphics.Resource.Layout.design_menu_item_action_area = global::GraphicsTester.Android.Resource.Layout.design_menu_item_action_area;
+			global::System.Graphics.Resource.Layout.design_navigation_item = global::GraphicsTester.Android.Resource.Layout.design_navigation_item;
+			global::System.Graphics.Resource.Layout.design_navigation_item_header = global::GraphicsTester.Android.Resource.Layout.design_navigation_item_header;
+			global::System.Graphics.Resource.Layout.design_navigation_item_separator = global::GraphicsTester.Android.Resource.Layout.design_navigation_item_separator;
+			global::System.Graphics.Resource.Layout.design_navigation_item_subheader = global::GraphicsTester.Android.Resource.Layout.design_navigation_item_subheader;
+			global::System.Graphics.Resource.Layout.design_navigation_menu = global::GraphicsTester.Android.Resource.Layout.design_navigation_menu;
+			global::System.Graphics.Resource.Layout.design_navigation_menu_item = global::GraphicsTester.Android.Resource.Layout.design_navigation_menu_item;
+			global::System.Graphics.Resource.Layout.design_text_input_password_icon = global::GraphicsTester.Android.Resource.Layout.design_text_input_password_icon;
+			global::System.Graphics.Resource.Layout.mtrl_layout_snackbar = global::GraphicsTester.Android.Resource.Layout.mtrl_layout_snackbar;
+			global::System.Graphics.Resource.Layout.mtrl_layout_snackbar_include = global::GraphicsTester.Android.Resource.Layout.mtrl_layout_snackbar_include;
+			global::System.Graphics.Resource.Layout.notification_action = global::GraphicsTester.Android.Resource.Layout.notification_action;
+			global::System.Graphics.Resource.Layout.notification_action_tombstone = global::GraphicsTester.Android.Resource.Layout.notification_action_tombstone;
+			global::System.Graphics.Resource.Layout.notification_media_action = global::GraphicsTester.Android.Resource.Layout.notification_media_action;
+			global::System.Graphics.Resource.Layout.notification_media_cancel_action = global::GraphicsTester.Android.Resource.Layout.notification_media_cancel_action;
+			global::System.Graphics.Resource.Layout.notification_template_big_media = global::GraphicsTester.Android.Resource.Layout.notification_template_big_media;
+			global::System.Graphics.Resource.Layout.notification_template_big_media_custom = global::GraphicsTester.Android.Resource.Layout.notification_template_big_media_custom;
+			global::System.Graphics.Resource.Layout.notification_template_big_media_narrow = global::GraphicsTester.Android.Resource.Layout.notification_template_big_media_narrow;
+			global::System.Graphics.Resource.Layout.notification_template_big_media_narrow_custom = global::GraphicsTester.Android.Resource.Layout.notification_template_big_media_narrow_custom;
+			global::System.Graphics.Resource.Layout.notification_template_custom_big = global::GraphicsTester.Android.Resource.Layout.notification_template_custom_big;
+			global::System.Graphics.Resource.Layout.notification_template_icon_group = global::GraphicsTester.Android.Resource.Layout.notification_template_icon_group;
+			global::System.Graphics.Resource.Layout.notification_template_lines_media = global::GraphicsTester.Android.Resource.Layout.notification_template_lines_media;
+			global::System.Graphics.Resource.Layout.notification_template_media = global::GraphicsTester.Android.Resource.Layout.notification_template_media;
+			global::System.Graphics.Resource.Layout.notification_template_media_custom = global::GraphicsTester.Android.Resource.Layout.notification_template_media_custom;
+			global::System.Graphics.Resource.Layout.notification_template_part_chronometer = global::GraphicsTester.Android.Resource.Layout.notification_template_part_chronometer;
+			global::System.Graphics.Resource.Layout.notification_template_part_time = global::GraphicsTester.Android.Resource.Layout.notification_template_part_time;
+			global::System.Graphics.Resource.Layout.select_dialog_item_material = global::GraphicsTester.Android.Resource.Layout.select_dialog_item_material;
+			global::System.Graphics.Resource.Layout.select_dialog_multichoice_material = global::GraphicsTester.Android.Resource.Layout.select_dialog_multichoice_material;
+			global::System.Graphics.Resource.Layout.select_dialog_singlechoice_material = global::GraphicsTester.Android.Resource.Layout.select_dialog_singlechoice_material;
+			global::System.Graphics.Resource.Layout.support_simple_spinner_dropdown_item = global::GraphicsTester.Android.Resource.Layout.support_simple_spinner_dropdown_item;
+			global::System.Graphics.Resource.String.abc_action_bar_home_description = global::GraphicsTester.Android.Resource.String.abc_action_bar_home_description;
+			global::System.Graphics.Resource.String.abc_action_bar_up_description = global::GraphicsTester.Android.Resource.String.abc_action_bar_up_description;
+			global::System.Graphics.Resource.String.abc_action_menu_overflow_description = global::GraphicsTester.Android.Resource.String.abc_action_menu_overflow_description;
+			global::System.Graphics.Resource.String.abc_action_mode_done = global::GraphicsTester.Android.Resource.String.abc_action_mode_done;
+			global::System.Graphics.Resource.String.abc_activitychooserview_choose_application = global::GraphicsTester.Android.Resource.String.abc_activitychooserview_choose_application;
+			global::System.Graphics.Resource.String.abc_activity_chooser_view_see_all = global::GraphicsTester.Android.Resource.String.abc_activity_chooser_view_see_all;
+			global::System.Graphics.Resource.String.abc_capital_off = global::GraphicsTester.Android.Resource.String.abc_capital_off;
+			global::System.Graphics.Resource.String.abc_capital_on = global::GraphicsTester.Android.Resource.String.abc_capital_on;
+			global::System.Graphics.Resource.String.abc_menu_alt_shortcut_label = global::GraphicsTester.Android.Resource.String.abc_menu_alt_shortcut_label;
+			global::System.Graphics.Resource.String.abc_menu_ctrl_shortcut_label = global::GraphicsTester.Android.Resource.String.abc_menu_ctrl_shortcut_label;
+			global::System.Graphics.Resource.String.abc_menu_delete_shortcut_label = global::GraphicsTester.Android.Resource.String.abc_menu_delete_shortcut_label;
+			global::System.Graphics.Resource.String.abc_menu_enter_shortcut_label = global::GraphicsTester.Android.Resource.String.abc_menu_enter_shortcut_label;
+			global::System.Graphics.Resource.String.abc_menu_function_shortcut_label = global::GraphicsTester.Android.Resource.String.abc_menu_function_shortcut_label;
+			global::System.Graphics.Resource.String.abc_menu_meta_shortcut_label = global::GraphicsTester.Android.Resource.String.abc_menu_meta_shortcut_label;
+			global::System.Graphics.Resource.String.abc_menu_shift_shortcut_label = global::GraphicsTester.Android.Resource.String.abc_menu_shift_shortcut_label;
+			global::System.Graphics.Resource.String.abc_menu_space_shortcut_label = global::GraphicsTester.Android.Resource.String.abc_menu_space_shortcut_label;
+			global::System.Graphics.Resource.String.abc_menu_sym_shortcut_label = global::GraphicsTester.Android.Resource.String.abc_menu_sym_shortcut_label;
+			global::System.Graphics.Resource.String.abc_prepend_shortcut_label = global::GraphicsTester.Android.Resource.String.abc_prepend_shortcut_label;
+			global::System.Graphics.Resource.String.abc_searchview_description_clear = global::GraphicsTester.Android.Resource.String.abc_searchview_description_clear;
+			global::System.Graphics.Resource.String.abc_searchview_description_query = global::GraphicsTester.Android.Resource.String.abc_searchview_description_query;
+			global::System.Graphics.Resource.String.abc_searchview_description_search = global::GraphicsTester.Android.Resource.String.abc_searchview_description_search;
+			global::System.Graphics.Resource.String.abc_searchview_description_submit = global::GraphicsTester.Android.Resource.String.abc_searchview_description_submit;
+			global::System.Graphics.Resource.String.abc_searchview_description_voice = global::GraphicsTester.Android.Resource.String.abc_searchview_description_voice;
+			global::System.Graphics.Resource.String.abc_search_hint = global::GraphicsTester.Android.Resource.String.abc_search_hint;
+			global::System.Graphics.Resource.String.abc_shareactionprovider_share_with = global::GraphicsTester.Android.Resource.String.abc_shareactionprovider_share_with;
+			global::System.Graphics.Resource.String.abc_shareactionprovider_share_with_application = global::GraphicsTester.Android.Resource.String.abc_shareactionprovider_share_with_application;
+			global::System.Graphics.Resource.String.abc_toolbar_collapse_description = global::GraphicsTester.Android.Resource.String.abc_toolbar_collapse_description;
+			global::System.Graphics.Resource.String.appbar_scrolling_view_behavior = global::GraphicsTester.Android.Resource.String.appbar_scrolling_view_behavior;
+			global::System.Graphics.Resource.String.bottom_sheet_behavior = global::GraphicsTester.Android.Resource.String.bottom_sheet_behavior;
+			global::System.Graphics.Resource.String.character_counter_content_description = global::GraphicsTester.Android.Resource.String.character_counter_content_description;
+			global::System.Graphics.Resource.String.character_counter_pattern = global::GraphicsTester.Android.Resource.String.character_counter_pattern;
+			global::System.Graphics.Resource.String.fab_transformation_scrim_behavior = global::GraphicsTester.Android.Resource.String.fab_transformation_scrim_behavior;
+			global::System.Graphics.Resource.String.fab_transformation_sheet_behavior = global::GraphicsTester.Android.Resource.String.fab_transformation_sheet_behavior;
+			global::System.Graphics.Resource.String.hide_bottom_view_on_scroll_behavior = global::GraphicsTester.Android.Resource.String.hide_bottom_view_on_scroll_behavior;
+			global::System.Graphics.Resource.String.mtrl_chip_close_icon_content_description = global::GraphicsTester.Android.Resource.String.mtrl_chip_close_icon_content_description;
+			global::System.Graphics.Resource.String.password_toggle_content_description = global::GraphicsTester.Android.Resource.String.password_toggle_content_description;
+			global::System.Graphics.Resource.String.path_password_eye = global::GraphicsTester.Android.Resource.String.path_password_eye;
+			global::System.Graphics.Resource.String.path_password_eye_mask_strike_through = global::GraphicsTester.Android.Resource.String.path_password_eye_mask_strike_through;
+			global::System.Graphics.Resource.String.path_password_eye_mask_visible = global::GraphicsTester.Android.Resource.String.path_password_eye_mask_visible;
+			global::System.Graphics.Resource.String.path_password_strike_through = global::GraphicsTester.Android.Resource.String.path_password_strike_through;
+			global::System.Graphics.Resource.String.search_menu_title = global::GraphicsTester.Android.Resource.String.search_menu_title;
+			global::System.Graphics.Resource.String.status_bar_notification_info_overflow = global::GraphicsTester.Android.Resource.String.status_bar_notification_info_overflow;
+			global::System.Graphics.Resource.Style.AlertDialog_AppCompat = global::GraphicsTester.Android.Resource.Style.AlertDialog_AppCompat;
+			global::System.Graphics.Resource.Style.AlertDialog_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.AlertDialog_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Animation_AppCompat_Dialog = global::GraphicsTester.Android.Resource.Style.Animation_AppCompat_Dialog;
+			global::System.Graphics.Resource.Style.Animation_AppCompat_DropDownUp = global::GraphicsTester.Android.Resource.Style.Animation_AppCompat_DropDownUp;
+			global::System.Graphics.Resource.Style.Animation_AppCompat_Tooltip = global::GraphicsTester.Android.Resource.Style.Animation_AppCompat_Tooltip;
+			global::System.Graphics.Resource.Style.Animation_Design_BottomSheetDialog = global::GraphicsTester.Android.Resource.Style.Animation_Design_BottomSheetDialog;
+			global::System.Graphics.Resource.Style.Base_AlertDialog_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_AlertDialog_AppCompat;
+			global::System.Graphics.Resource.Style.Base_AlertDialog_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Base_AlertDialog_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Base_Animation_AppCompat_Dialog = global::GraphicsTester.Android.Resource.Style.Base_Animation_AppCompat_Dialog;
+			global::System.Graphics.Resource.Style.Base_Animation_AppCompat_DropDownUp = global::GraphicsTester.Android.Resource.Style.Base_Animation_AppCompat_DropDownUp;
+			global::System.Graphics.Resource.Style.Base_Animation_AppCompat_Tooltip = global::GraphicsTester.Android.Resource.Style.Base_Animation_AppCompat_Tooltip;
+			global::System.Graphics.Resource.Style.Base_CardView = global::GraphicsTester.Android.Resource.Style.Base_CardView;
+			global::System.Graphics.Resource.Style.Base_DialogWindowTitleBackground_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_DialogWindowTitleBackground_AppCompat;
+			global::System.Graphics.Resource.Style.Base_DialogWindowTitle_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_DialogWindowTitle_AppCompat;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Body1 = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Body1;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Body2 = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Body2;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Button = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Button;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Caption = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Caption;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Display1 = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Display1;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Display2 = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Display2;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Display3 = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Display3;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Display4 = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Display4;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Headline = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Headline;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Inverse = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Inverse;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Large = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Large;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Large_Inverse = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Large_Inverse;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Light_Widget_PopupMenu_Large = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Light_Widget_PopupMenu_Large;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Light_Widget_PopupMenu_Small = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Light_Widget_PopupMenu_Small;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Medium = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Medium;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Medium_Inverse = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Medium_Inverse;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Menu = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Menu;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_SearchResult = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_SearchResult;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_SearchResult_Subtitle = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_SearchResult_Subtitle;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_SearchResult_Title = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_SearchResult_Title;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Small = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Small;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Small_Inverse = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Small_Inverse;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Subhead = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Subhead;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Subhead_Inverse = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Subhead_Inverse;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Title = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Title;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Title_Inverse = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Title_Inverse;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Tooltip = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Tooltip;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionBar_Menu = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionBar_Menu;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionBar_Subtitle = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionBar_Subtitle;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionBar_Subtitle_Inverse = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionBar_Subtitle_Inverse;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionBar_Title = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionBar_Title;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionBar_Title_Inverse = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionBar_Title_Inverse;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionMode_Subtitle = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionMode_Subtitle;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionMode_Title = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_ActionMode_Title;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_Button = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_Button;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_Button_Borderless_Colored = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_Button_Borderless_Colored;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_Button_Colored = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_Button_Colored;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_Button_Inverse = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_Button_Inverse;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_DropDownItem = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_DropDownItem;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_PopupMenu_Header = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_PopupMenu_Header;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_PopupMenu_Large = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_PopupMenu_Large;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_PopupMenu_Small = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_PopupMenu_Small;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_Switch = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_Switch;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_AppCompat_Widget_TextView_SpinnerItem = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_AppCompat_Widget_TextView_SpinnerItem;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_Widget_AppCompat_ExpandedMenu_Item = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_Widget_AppCompat_ExpandedMenu_Item;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_Widget_AppCompat_Toolbar_Subtitle = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_Widget_AppCompat_Toolbar_Subtitle;
+			global::System.Graphics.Resource.Style.Base_TextAppearance_Widget_AppCompat_Toolbar_Title = global::GraphicsTester.Android.Resource.Style.Base_TextAppearance_Widget_AppCompat_Toolbar_Title;
+			global::System.Graphics.Resource.Style.Base_ThemeOverlay_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_ThemeOverlay_AppCompat;
+			global::System.Graphics.Resource.Style.Base_ThemeOverlay_AppCompat_ActionBar = global::GraphicsTester.Android.Resource.Style.Base_ThemeOverlay_AppCompat_ActionBar;
+			global::System.Graphics.Resource.Style.Base_ThemeOverlay_AppCompat_Dark = global::GraphicsTester.Android.Resource.Style.Base_ThemeOverlay_AppCompat_Dark;
+			global::System.Graphics.Resource.Style.Base_ThemeOverlay_AppCompat_Dark_ActionBar = global::GraphicsTester.Android.Resource.Style.Base_ThemeOverlay_AppCompat_Dark_ActionBar;
+			global::System.Graphics.Resource.Style.Base_ThemeOverlay_AppCompat_Dialog = global::GraphicsTester.Android.Resource.Style.Base_ThemeOverlay_AppCompat_Dialog;
+			global::System.Graphics.Resource.Style.Base_ThemeOverlay_AppCompat_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Base_ThemeOverlay_AppCompat_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Base_ThemeOverlay_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Base_ThemeOverlay_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Base_ThemeOverlay_MaterialComponents_Dialog = global::GraphicsTester.Android.Resource.Style.Base_ThemeOverlay_MaterialComponents_Dialog;
+			global::System.Graphics.Resource.Style.Base_ThemeOverlay_MaterialComponents_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Base_ThemeOverlay_MaterialComponents_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_CompactMenu = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_CompactMenu;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_Dialog = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_Dialog;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_DialogWhenLarge = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_DialogWhenLarge;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_Dialog_FixedSize = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_Dialog_FixedSize;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_Dialog_MinWidth = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_Dialog_MinWidth;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_Light_DarkActionBar = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_Light_DarkActionBar;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_Light_Dialog = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_Light_Dialog;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_Light_DialogWhenLarge = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_Light_DialogWhenLarge;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_Light_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_Light_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_Light_Dialog_FixedSize = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_Light_Dialog_FixedSize;
+			global::System.Graphics.Resource.Style.Base_Theme_AppCompat_Light_Dialog_MinWidth = global::GraphicsTester.Android.Resource.Style.Base_Theme_AppCompat_Light_Dialog_MinWidth;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Bridge = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Bridge;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_CompactMenu = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_CompactMenu;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Dialog = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Dialog;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_DialogWhenLarge = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_DialogWhenLarge;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Dialog_FixedSize = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Dialog_FixedSize;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Dialog_MinWidth = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Dialog_MinWidth;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Light = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Light;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Light_Bridge = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Light_Bridge;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Light_DarkActionBar = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Light_DarkActionBar;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Light_DarkActionBar_Bridge = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Light_DarkActionBar_Bridge;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Light_Dialog = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Light_Dialog;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Light_DialogWhenLarge = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Light_DialogWhenLarge;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Light_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Light_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Light_Dialog_FixedSize = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Light_Dialog_FixedSize;
+			global::System.Graphics.Resource.Style.Base_Theme_MaterialComponents_Light_Dialog_MinWidth = global::GraphicsTester.Android.Resource.Style.Base_Theme_MaterialComponents_Light_Dialog_MinWidth;
+			global::System.Graphics.Resource.Style.Base_V14_ThemeOverlay_MaterialComponents_Dialog = global::GraphicsTester.Android.Resource.Style.Base_V14_ThemeOverlay_MaterialComponents_Dialog;
+			global::System.Graphics.Resource.Style.Base_V14_ThemeOverlay_MaterialComponents_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Base_V14_ThemeOverlay_MaterialComponents_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Base_V14_Theme_MaterialComponents = global::GraphicsTester.Android.Resource.Style.Base_V14_Theme_MaterialComponents;
+			global::System.Graphics.Resource.Style.Base_V14_Theme_MaterialComponents_Bridge = global::GraphicsTester.Android.Resource.Style.Base_V14_Theme_MaterialComponents_Bridge;
+			global::System.Graphics.Resource.Style.Base_V14_Theme_MaterialComponents_Dialog = global::GraphicsTester.Android.Resource.Style.Base_V14_Theme_MaterialComponents_Dialog;
+			global::System.Graphics.Resource.Style.Base_V14_Theme_MaterialComponents_Light = global::GraphicsTester.Android.Resource.Style.Base_V14_Theme_MaterialComponents_Light;
+			global::System.Graphics.Resource.Style.Base_V14_Theme_MaterialComponents_Light_Bridge = global::GraphicsTester.Android.Resource.Style.Base_V14_Theme_MaterialComponents_Light_Bridge;
+			global::System.Graphics.Resource.Style.Base_V14_Theme_MaterialComponents_Light_DarkActionBar_Bridge = global::GraphicsTester.Android.Resource.Style.Base_V14_Theme_MaterialComponents_Light_DarkActionBar_Bridge;
+			global::System.Graphics.Resource.Style.Base_V14_Theme_MaterialComponents_Light_Dialog = global::GraphicsTester.Android.Resource.Style.Base_V14_Theme_MaterialComponents_Light_Dialog;
+			global::System.Graphics.Resource.Style.Base_V21_ThemeOverlay_AppCompat_Dialog = global::GraphicsTester.Android.Resource.Style.Base_V21_ThemeOverlay_AppCompat_Dialog;
+			global::System.Graphics.Resource.Style.Base_V21_Theme_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_V21_Theme_AppCompat;
+			global::System.Graphics.Resource.Style.Base_V21_Theme_AppCompat_Dialog = global::GraphicsTester.Android.Resource.Style.Base_V21_Theme_AppCompat_Dialog;
+			global::System.Graphics.Resource.Style.Base_V21_Theme_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Base_V21_Theme_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Base_V21_Theme_AppCompat_Light_Dialog = global::GraphicsTester.Android.Resource.Style.Base_V21_Theme_AppCompat_Light_Dialog;
+			global::System.Graphics.Resource.Style.Base_V22_Theme_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_V22_Theme_AppCompat;
+			global::System.Graphics.Resource.Style.Base_V22_Theme_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Base_V22_Theme_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Base_V23_Theme_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_V23_Theme_AppCompat;
+			global::System.Graphics.Resource.Style.Base_V23_Theme_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Base_V23_Theme_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Base_V26_Theme_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_V26_Theme_AppCompat;
+			global::System.Graphics.Resource.Style.Base_V26_Theme_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Base_V26_Theme_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Base_V26_Widget_AppCompat_Toolbar = global::GraphicsTester.Android.Resource.Style.Base_V26_Widget_AppCompat_Toolbar;
+			global::System.Graphics.Resource.Style.Base_V28_Theme_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_V28_Theme_AppCompat;
+			global::System.Graphics.Resource.Style.Base_V28_Theme_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Base_V28_Theme_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Base_V7_ThemeOverlay_AppCompat_Dialog = global::GraphicsTester.Android.Resource.Style.Base_V7_ThemeOverlay_AppCompat_Dialog;
+			global::System.Graphics.Resource.Style.Base_V7_Theme_AppCompat = global::GraphicsTester.Android.Resource.Style.Base_V7_Theme_AppCompat;
+			global::System.Graphics.Resource.Style.Base_V7_Theme_AppCompat_Dialog = global::GraphicsTester.Android.Resource.Style.Base_V7_Theme_AppCompat_Dialog;
+			global::System.Graphics.Resource.Style.Base_V7_Theme_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Base_V7_Theme_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Base_V7_Theme_AppCompat_Light_Dialog = global::GraphicsTester.Android.Resource.Style.Base_V7_Theme_AppCompat_Light_Dialog;
+			global::System.Graphics.Resource.Style.Base_V7_Widget_AppCompat_AutoCompleteTextView = global::GraphicsTester.Android.Resource.Style.Base_V7_Widget_AppCompat_AutoCompleteTextView;
+			global::System.Graphics.Resource.Style.Base_V7_Widget_AppCompat_EditText = global::GraphicsTester.Android.Resource.Style.Base_V7_Widget_AppCompat_EditText;
+			global::System.Graphics.Resource.Style.Base_V7_Widget_AppCompat_Toolbar = global::GraphicsTester.Android.Resource.Style.Base_V7_Widget_AppCompat_Toolbar;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ActionBar = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ActionBar;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ActionBar_Solid = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ActionBar_Solid;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ActionBar_TabBar = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ActionBar_TabBar;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ActionBar_TabText = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ActionBar_TabText;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ActionBar_TabView = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ActionBar_TabView;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ActionButton = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ActionButton;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ActionButton_CloseMode = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ActionButton_CloseMode;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ActionButton_Overflow = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ActionButton_Overflow;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ActionMode = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ActionMode;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ActivityChooserView = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ActivityChooserView;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_AutoCompleteTextView = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_AutoCompleteTextView;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Button = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Button;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ButtonBar = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ButtonBar;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ButtonBar_AlertDialog = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ButtonBar_AlertDialog;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Button_Borderless = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Button_Borderless;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Button_Borderless_Colored = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Button_Borderless_Colored;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Button_ButtonBar_AlertDialog = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Button_ButtonBar_AlertDialog;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Button_Colored = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Button_Colored;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Button_Small = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Button_Small;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_CompoundButton_CheckBox = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_CompoundButton_CheckBox;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_CompoundButton_RadioButton = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_CompoundButton_RadioButton;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_CompoundButton_Switch = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_CompoundButton_Switch;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_DrawerArrowToggle = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_DrawerArrowToggle;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_DrawerArrowToggle_Common = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_DrawerArrowToggle_Common;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_DropDownItem_Spinner = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_DropDownItem_Spinner;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_EditText = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_EditText;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ImageButton = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ImageButton;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Light_ActionBar = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Light_ActionBar;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Light_ActionBar_Solid = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Light_ActionBar_Solid;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Light_ActionBar_TabBar = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Light_ActionBar_TabBar;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Light_ActionBar_TabText = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Light_ActionBar_TabText;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Light_ActionBar_TabText_Inverse = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Light_ActionBar_TabText_Inverse;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Light_ActionBar_TabView = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Light_ActionBar_TabView;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Light_PopupMenu = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Light_PopupMenu;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Light_PopupMenu_Overflow = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Light_PopupMenu_Overflow;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ListMenuView = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ListMenuView;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ListPopupWindow = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ListPopupWindow;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ListView = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ListView;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ListView_DropDown = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ListView_DropDown;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ListView_Menu = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ListView_Menu;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_PopupMenu = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_PopupMenu;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_PopupMenu_Overflow = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_PopupMenu_Overflow;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_PopupWindow = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_PopupWindow;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ProgressBar = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ProgressBar;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_ProgressBar_Horizontal = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_ProgressBar_Horizontal;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_RatingBar = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_RatingBar;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_RatingBar_Indicator = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_RatingBar_Indicator;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_RatingBar_Small = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_RatingBar_Small;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_SearchView = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_SearchView;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_SearchView_ActionBar = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_SearchView_ActionBar;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_SeekBar = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_SeekBar;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_SeekBar_Discrete = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_SeekBar_Discrete;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Spinner = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Spinner;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Spinner_Underlined = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Spinner_Underlined;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_TextView = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_TextView;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_TextView_SpinnerItem = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_TextView_SpinnerItem;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Toolbar = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Toolbar;
+			global::System.Graphics.Resource.Style.Base_Widget_AppCompat_Toolbar_Button_Navigation = global::GraphicsTester.Android.Resource.Style.Base_Widget_AppCompat_Toolbar_Button_Navigation;
+			global::System.Graphics.Resource.Style.Base_Widget_Design_TabLayout = global::GraphicsTester.Android.Resource.Style.Base_Widget_Design_TabLayout;
+			global::System.Graphics.Resource.Style.Base_Widget_MaterialComponents_Chip = global::GraphicsTester.Android.Resource.Style.Base_Widget_MaterialComponents_Chip;
+			global::System.Graphics.Resource.Style.Base_Widget_MaterialComponents_TextInputEditText = global::GraphicsTester.Android.Resource.Style.Base_Widget_MaterialComponents_TextInputEditText;
+			global::System.Graphics.Resource.Style.Base_Widget_MaterialComponents_TextInputLayout = global::GraphicsTester.Android.Resource.Style.Base_Widget_MaterialComponents_TextInputLayout;
+			global::System.Graphics.Resource.Style.CardView = global::GraphicsTester.Android.Resource.Style.CardView;
+			global::System.Graphics.Resource.Style.CardView_Dark = global::GraphicsTester.Android.Resource.Style.CardView_Dark;
+			global::System.Graphics.Resource.Style.CardView_Light = global::GraphicsTester.Android.Resource.Style.CardView_Light;
+			global::System.Graphics.Resource.Style.Platform_AppCompat = global::GraphicsTester.Android.Resource.Style.Platform_AppCompat;
+			global::System.Graphics.Resource.Style.Platform_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Platform_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Platform_MaterialComponents = global::GraphicsTester.Android.Resource.Style.Platform_MaterialComponents;
+			global::System.Graphics.Resource.Style.Platform_MaterialComponents_Dialog = global::GraphicsTester.Android.Resource.Style.Platform_MaterialComponents_Dialog;
+			global::System.Graphics.Resource.Style.Platform_MaterialComponents_Light = global::GraphicsTester.Android.Resource.Style.Platform_MaterialComponents_Light;
+			global::System.Graphics.Resource.Style.Platform_MaterialComponents_Light_Dialog = global::GraphicsTester.Android.Resource.Style.Platform_MaterialComponents_Light_Dialog;
+			global::System.Graphics.Resource.Style.Platform_ThemeOverlay_AppCompat = global::GraphicsTester.Android.Resource.Style.Platform_ThemeOverlay_AppCompat;
+			global::System.Graphics.Resource.Style.Platform_ThemeOverlay_AppCompat_Dark = global::GraphicsTester.Android.Resource.Style.Platform_ThemeOverlay_AppCompat_Dark;
+			global::System.Graphics.Resource.Style.Platform_ThemeOverlay_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Platform_ThemeOverlay_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Platform_V21_AppCompat = global::GraphicsTester.Android.Resource.Style.Platform_V21_AppCompat;
+			global::System.Graphics.Resource.Style.Platform_V21_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Platform_V21_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Platform_V25_AppCompat = global::GraphicsTester.Android.Resource.Style.Platform_V25_AppCompat;
+			global::System.Graphics.Resource.Style.Platform_V25_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Platform_V25_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Platform_Widget_AppCompat_Spinner = global::GraphicsTester.Android.Resource.Style.Platform_Widget_AppCompat_Spinner;
+			global::System.Graphics.Resource.Style.RtlOverlay_DialogWindowTitle_AppCompat = global::GraphicsTester.Android.Resource.Style.RtlOverlay_DialogWindowTitle_AppCompat;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_ActionBar_TitleItem = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_ActionBar_TitleItem;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_DialogTitle_Icon = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_DialogTitle_Icon;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem_InternalGroup = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem_InternalGroup;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem_Shortcut = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem_Shortcut;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem_SubmenuArrow = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem_SubmenuArrow;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem_Text = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem_Text;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem_Title = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_PopupMenuItem_Title;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_SearchView_MagIcon = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_SearchView_MagIcon;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_Search_DropDown = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_Search_DropDown;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_Search_DropDown_Icon1 = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_Search_DropDown_Icon1;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_Search_DropDown_Icon2 = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_Search_DropDown_Icon2;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_Search_DropDown_Query = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_Search_DropDown_Query;
+			global::System.Graphics.Resource.Style.RtlOverlay_Widget_AppCompat_Search_DropDown_Text = global::GraphicsTester.Android.Resource.Style.RtlOverlay_Widget_AppCompat_Search_DropDown_Text;
+			global::System.Graphics.Resource.Style.RtlUnderlay_Widget_AppCompat_ActionButton = global::GraphicsTester.Android.Resource.Style.RtlUnderlay_Widget_AppCompat_ActionButton;
+			global::System.Graphics.Resource.Style.RtlUnderlay_Widget_AppCompat_ActionButton_Overflow = global::GraphicsTester.Android.Resource.Style.RtlUnderlay_Widget_AppCompat_ActionButton_Overflow;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Body1 = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Body1;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Body2 = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Body2;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Button = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Button;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Caption = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Caption;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Display1 = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Display1;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Display2 = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Display2;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Display3 = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Display3;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Display4 = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Display4;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Headline = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Headline;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Inverse = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Inverse;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Large = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Large;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Large_Inverse = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Large_Inverse;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Light_SearchResult_Subtitle = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Light_SearchResult_Subtitle;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Light_SearchResult_Title = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Light_SearchResult_Title;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Light_Widget_PopupMenu_Large = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Light_Widget_PopupMenu_Large;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Light_Widget_PopupMenu_Small = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Light_Widget_PopupMenu_Small;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Medium = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Medium;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Medium_Inverse = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Medium_Inverse;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Menu = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Menu;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_SearchResult_Subtitle = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_SearchResult_Subtitle;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_SearchResult_Title = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_SearchResult_Title;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Small = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Small;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Small_Inverse = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Small_Inverse;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Subhead = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Subhead;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Subhead_Inverse = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Subhead_Inverse;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Title = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Title;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Title_Inverse = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Title_Inverse;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Tooltip = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Tooltip;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_ActionBar_Menu = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_ActionBar_Menu;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_ActionBar_Subtitle = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_ActionBar_Subtitle;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_ActionBar_Subtitle_Inverse = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_ActionBar_Subtitle_Inverse;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_ActionBar_Title = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_ActionBar_Title;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_ActionBar_Title_Inverse = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_ActionBar_Title_Inverse;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_ActionMode_Subtitle = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_ActionMode_Subtitle;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_ActionMode_Subtitle_Inverse = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_ActionMode_Subtitle_Inverse;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_ActionMode_Title = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_ActionMode_Title;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_ActionMode_Title_Inverse = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_ActionMode_Title_Inverse;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_Button = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_Button;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_Button_Borderless_Colored = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_Button_Borderless_Colored;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_Button_Colored = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_Button_Colored;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_Button_Inverse = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_Button_Inverse;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_DropDownItem = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_DropDownItem;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_PopupMenu_Header = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_PopupMenu_Header;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_PopupMenu_Large = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_PopupMenu_Large;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_PopupMenu_Small = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_PopupMenu_Small;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_Switch = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_Switch;
+			global::System.Graphics.Resource.Style.TextAppearance_AppCompat_Widget_TextView_SpinnerItem = global::GraphicsTester.Android.Resource.Style.TextAppearance_AppCompat_Widget_TextView_SpinnerItem;
+			global::System.Graphics.Resource.Style.TextAppearance_Compat_Notification = global::GraphicsTester.Android.Resource.Style.TextAppearance_Compat_Notification;
+			global::System.Graphics.Resource.Style.TextAppearance_Compat_Notification_Info = global::GraphicsTester.Android.Resource.Style.TextAppearance_Compat_Notification_Info;
+			global::System.Graphics.Resource.Style.TextAppearance_Compat_Notification_Info_Media = global::GraphicsTester.Android.Resource.Style.TextAppearance_Compat_Notification_Info_Media;
+			global::System.Graphics.Resource.Style.TextAppearance_Compat_Notification_Line2 = global::GraphicsTester.Android.Resource.Style.TextAppearance_Compat_Notification_Line2;
+			global::System.Graphics.Resource.Style.TextAppearance_Compat_Notification_Line2_Media = global::GraphicsTester.Android.Resource.Style.TextAppearance_Compat_Notification_Line2_Media;
+			global::System.Graphics.Resource.Style.TextAppearance_Compat_Notification_Media = global::GraphicsTester.Android.Resource.Style.TextAppearance_Compat_Notification_Media;
+			global::System.Graphics.Resource.Style.TextAppearance_Compat_Notification_Time = global::GraphicsTester.Android.Resource.Style.TextAppearance_Compat_Notification_Time;
+			global::System.Graphics.Resource.Style.TextAppearance_Compat_Notification_Time_Media = global::GraphicsTester.Android.Resource.Style.TextAppearance_Compat_Notification_Time_Media;
+			global::System.Graphics.Resource.Style.TextAppearance_Compat_Notification_Title = global::GraphicsTester.Android.Resource.Style.TextAppearance_Compat_Notification_Title;
+			global::System.Graphics.Resource.Style.TextAppearance_Compat_Notification_Title_Media = global::GraphicsTester.Android.Resource.Style.TextAppearance_Compat_Notification_Title_Media;
+			global::System.Graphics.Resource.Style.TextAppearance_Design_CollapsingToolbar_Expanded = global::GraphicsTester.Android.Resource.Style.TextAppearance_Design_CollapsingToolbar_Expanded;
+			global::System.Graphics.Resource.Style.TextAppearance_Design_Counter = global::GraphicsTester.Android.Resource.Style.TextAppearance_Design_Counter;
+			global::System.Graphics.Resource.Style.TextAppearance_Design_Counter_Overflow = global::GraphicsTester.Android.Resource.Style.TextAppearance_Design_Counter_Overflow;
+			global::System.Graphics.Resource.Style.TextAppearance_Design_Error = global::GraphicsTester.Android.Resource.Style.TextAppearance_Design_Error;
+			global::System.Graphics.Resource.Style.TextAppearance_Design_HelperText = global::GraphicsTester.Android.Resource.Style.TextAppearance_Design_HelperText;
+			global::System.Graphics.Resource.Style.TextAppearance_Design_Hint = global::GraphicsTester.Android.Resource.Style.TextAppearance_Design_Hint;
+			global::System.Graphics.Resource.Style.TextAppearance_Design_Snackbar_Message = global::GraphicsTester.Android.Resource.Style.TextAppearance_Design_Snackbar_Message;
+			global::System.Graphics.Resource.Style.TextAppearance_Design_Tab = global::GraphicsTester.Android.Resource.Style.TextAppearance_Design_Tab;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Body1 = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Body1;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Body2 = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Body2;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Button = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Button;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Caption = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Caption;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Chip = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Chip;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Headline1 = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Headline1;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Headline2 = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Headline2;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Headline3 = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Headline3;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Headline4 = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Headline4;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Headline5 = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Headline5;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Headline6 = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Headline6;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Overline = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Overline;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Subtitle1 = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Subtitle1;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Subtitle2 = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Subtitle2;
+			global::System.Graphics.Resource.Style.TextAppearance_MaterialComponents_Tab = global::GraphicsTester.Android.Resource.Style.TextAppearance_MaterialComponents_Tab;
+			global::System.Graphics.Resource.Style.TextAppearance_Widget_AppCompat_ExpandedMenu_Item = global::GraphicsTester.Android.Resource.Style.TextAppearance_Widget_AppCompat_ExpandedMenu_Item;
+			global::System.Graphics.Resource.Style.TextAppearance_Widget_AppCompat_Toolbar_Subtitle = global::GraphicsTester.Android.Resource.Style.TextAppearance_Widget_AppCompat_Toolbar_Subtitle;
+			global::System.Graphics.Resource.Style.TextAppearance_Widget_AppCompat_Toolbar_Title = global::GraphicsTester.Android.Resource.Style.TextAppearance_Widget_AppCompat_Toolbar_Title;
+			global::System.Graphics.Resource.Style.ThemeOverlay_AppCompat = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_AppCompat;
+			global::System.Graphics.Resource.Style.ThemeOverlay_AppCompat_ActionBar = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_AppCompat_ActionBar;
+			global::System.Graphics.Resource.Style.ThemeOverlay_AppCompat_Dark = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_AppCompat_Dark;
+			global::System.Graphics.Resource.Style.ThemeOverlay_AppCompat_Dark_ActionBar = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_AppCompat_Dark_ActionBar;
+			global::System.Graphics.Resource.Style.ThemeOverlay_AppCompat_DayNight = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_AppCompat_DayNight;
+			global::System.Graphics.Resource.Style.ThemeOverlay_AppCompat_DayNight_ActionBar = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_AppCompat_DayNight_ActionBar;
+			global::System.Graphics.Resource.Style.ThemeOverlay_AppCompat_Dialog = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_AppCompat_Dialog;
+			global::System.Graphics.Resource.Style.ThemeOverlay_AppCompat_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_AppCompat_Dialog_Alert;
+			global::System.Graphics.Resource.Style.ThemeOverlay_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_AppCompat_Light;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents_ActionBar = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents_ActionBar;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents_Dark = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents_Dark;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents_Dark_ActionBar = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents_Dark_ActionBar;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents_Dialog = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents_Dialog;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents_Dialog_Alert;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents_Light = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents_Light;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents_TextInputEditText = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents_TextInputEditText;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents_TextInputEditText_FilledBox = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents_TextInputEditText_FilledBox;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents_TextInputEditText_FilledBox_Dense = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents_TextInputEditText_FilledBox_Dense;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents_TextInputEditText_OutlinedBox = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents_TextInputEditText_OutlinedBox;
+			global::System.Graphics.Resource.Style.ThemeOverlay_MaterialComponents_TextInputEditText_OutlinedBox_Dense = global::GraphicsTester.Android.Resource.Style.ThemeOverlay_MaterialComponents_TextInputEditText_OutlinedBox_Dense;
+			global::System.Graphics.Resource.Style.Theme_AppCompat = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_CompactMenu = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_CompactMenu;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_DayNight = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_DayNight;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_DayNight_DarkActionBar = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_DayNight_DarkActionBar;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_DayNight_Dialog = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_DayNight_Dialog;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_DayNight_DialogWhenLarge = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_DayNight_DialogWhenLarge;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_DayNight_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_DayNight_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_DayNight_Dialog_MinWidth = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_DayNight_Dialog_MinWidth;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_DayNight_NoActionBar = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_DayNight_NoActionBar;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_Dialog = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_Dialog;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_DialogWhenLarge = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_DialogWhenLarge;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_Dialog_MinWidth = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_Dialog_MinWidth;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_Light = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_Light;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_Light_DarkActionBar = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_Light_DarkActionBar;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_Light_Dialog = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_Light_Dialog;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_Light_DialogWhenLarge = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_Light_DialogWhenLarge;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_Light_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_Light_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_Light_Dialog_MinWidth = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_Light_Dialog_MinWidth;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_Light_NoActionBar = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_Light_NoActionBar;
+			global::System.Graphics.Resource.Style.Theme_AppCompat_NoActionBar = global::GraphicsTester.Android.Resource.Style.Theme_AppCompat_NoActionBar;
+			global::System.Graphics.Resource.Style.Theme_Design = global::GraphicsTester.Android.Resource.Style.Theme_Design;
+			global::System.Graphics.Resource.Style.Theme_Design_BottomSheetDialog = global::GraphicsTester.Android.Resource.Style.Theme_Design_BottomSheetDialog;
+			global::System.Graphics.Resource.Style.Theme_Design_Light = global::GraphicsTester.Android.Resource.Style.Theme_Design_Light;
+			global::System.Graphics.Resource.Style.Theme_Design_Light_BottomSheetDialog = global::GraphicsTester.Android.Resource.Style.Theme_Design_Light_BottomSheetDialog;
+			global::System.Graphics.Resource.Style.Theme_Design_Light_NoActionBar = global::GraphicsTester.Android.Resource.Style.Theme_Design_Light_NoActionBar;
+			global::System.Graphics.Resource.Style.Theme_Design_NoActionBar = global::GraphicsTester.Android.Resource.Style.Theme_Design_NoActionBar;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_BottomSheetDialog = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_BottomSheetDialog;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Bridge = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Bridge;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_CompactMenu = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_CompactMenu;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Dialog = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Dialog;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_DialogWhenLarge = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_DialogWhenLarge;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Dialog_MinWidth = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Dialog_MinWidth;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Light = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Light;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Light_BottomSheetDialog = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Light_BottomSheetDialog;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Light_Bridge = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Light_Bridge;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Light_DarkActionBar = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Light_DarkActionBar;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Light_DarkActionBar_Bridge = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Light_DarkActionBar_Bridge;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Light_Dialog = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Light_Dialog;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Light_DialogWhenLarge = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Light_DialogWhenLarge;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Light_Dialog_Alert = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Light_Dialog_Alert;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Light_Dialog_MinWidth = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Light_Dialog_MinWidth;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Light_NoActionBar = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Light_NoActionBar;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_Light_NoActionBar_Bridge = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_Light_NoActionBar_Bridge;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_NoActionBar = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_NoActionBar;
+			global::System.Graphics.Resource.Style.Theme_MaterialComponents_NoActionBar_Bridge = global::GraphicsTester.Android.Resource.Style.Theme_MaterialComponents_NoActionBar_Bridge;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ActionBar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ActionBar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ActionBar_Solid = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ActionBar_Solid;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ActionBar_TabBar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ActionBar_TabBar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ActionBar_TabText = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ActionBar_TabText;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ActionBar_TabView = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ActionBar_TabView;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ActionButton = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ActionButton;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ActionButton_CloseMode = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ActionButton_CloseMode;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ActionButton_Overflow = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ActionButton_Overflow;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ActionMode = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ActionMode;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ActivityChooserView = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ActivityChooserView;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_AutoCompleteTextView = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_AutoCompleteTextView;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Button = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Button;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ButtonBar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ButtonBar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ButtonBar_AlertDialog = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ButtonBar_AlertDialog;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Button_Borderless = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Button_Borderless;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Button_Borderless_Colored = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Button_Borderless_Colored;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Button_ButtonBar_AlertDialog = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Button_ButtonBar_AlertDialog;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Button_Colored = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Button_Colored;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Button_Small = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Button_Small;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_CompoundButton_CheckBox = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_CompoundButton_CheckBox;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_CompoundButton_RadioButton = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_CompoundButton_RadioButton;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_CompoundButton_Switch = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_CompoundButton_Switch;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_DrawerArrowToggle = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_DrawerArrowToggle;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_DropDownItem_Spinner = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_DropDownItem_Spinner;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_EditText = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_EditText;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ImageButton = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ImageButton;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionBar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionBar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionBar_Solid = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionBar_Solid;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionBar_Solid_Inverse = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionBar_Solid_Inverse;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionBar_TabBar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionBar_TabBar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionBar_TabBar_Inverse = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionBar_TabBar_Inverse;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionBar_TabText = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionBar_TabText;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionBar_TabText_Inverse = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionBar_TabText_Inverse;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionBar_TabView = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionBar_TabView;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionBar_TabView_Inverse = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionBar_TabView_Inverse;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionButton = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionButton;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionButton_CloseMode = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionButton_CloseMode;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionButton_Overflow = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionButton_Overflow;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActionMode_Inverse = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActionMode_Inverse;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ActivityChooserView = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ActivityChooserView;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_AutoCompleteTextView = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_AutoCompleteTextView;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_DropDownItem_Spinner = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_DropDownItem_Spinner;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ListPopupWindow = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ListPopupWindow;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_ListView_DropDown = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_ListView_DropDown;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_PopupMenu = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_PopupMenu;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_PopupMenu_Overflow = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_PopupMenu_Overflow;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_SearchView = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_SearchView;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Light_Spinner_DropDown_ActionBar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Light_Spinner_DropDown_ActionBar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ListMenuView = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ListMenuView;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ListPopupWindow = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ListPopupWindow;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ListView = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ListView;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ListView_DropDown = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ListView_DropDown;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ListView_Menu = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ListView_Menu;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_PopupMenu = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_PopupMenu;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_PopupMenu_Overflow = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_PopupMenu_Overflow;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_PopupWindow = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_PopupWindow;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ProgressBar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ProgressBar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_ProgressBar_Horizontal = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_ProgressBar_Horizontal;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_RatingBar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_RatingBar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_RatingBar_Indicator = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_RatingBar_Indicator;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_RatingBar_Small = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_RatingBar_Small;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_SearchView = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_SearchView;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_SearchView_ActionBar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_SearchView_ActionBar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_SeekBar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_SeekBar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_SeekBar_Discrete = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_SeekBar_Discrete;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Spinner = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Spinner;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Spinner_DropDown = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Spinner_DropDown;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Spinner_DropDown_ActionBar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Spinner_DropDown_ActionBar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Spinner_Underlined = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Spinner_Underlined;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_TextView = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_TextView;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_TextView_SpinnerItem = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_TextView_SpinnerItem;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Toolbar = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Toolbar;
+			global::System.Graphics.Resource.Style.Widget_AppCompat_Toolbar_Button_Navigation = global::GraphicsTester.Android.Resource.Style.Widget_AppCompat_Toolbar_Button_Navigation;
+			global::System.Graphics.Resource.Style.Widget_Compat_NotificationActionContainer = global::GraphicsTester.Android.Resource.Style.Widget_Compat_NotificationActionContainer;
+			global::System.Graphics.Resource.Style.Widget_Compat_NotificationActionText = global::GraphicsTester.Android.Resource.Style.Widget_Compat_NotificationActionText;
+			global::System.Graphics.Resource.Style.Widget_Design_AppBarLayout = global::GraphicsTester.Android.Resource.Style.Widget_Design_AppBarLayout;
+			global::System.Graphics.Resource.Style.Widget_Design_BottomNavigationView = global::GraphicsTester.Android.Resource.Style.Widget_Design_BottomNavigationView;
+			global::System.Graphics.Resource.Style.Widget_Design_BottomSheet_Modal = global::GraphicsTester.Android.Resource.Style.Widget_Design_BottomSheet_Modal;
+			global::System.Graphics.Resource.Style.Widget_Design_CollapsingToolbar = global::GraphicsTester.Android.Resource.Style.Widget_Design_CollapsingToolbar;
+			global::System.Graphics.Resource.Style.Widget_Design_FloatingActionButton = global::GraphicsTester.Android.Resource.Style.Widget_Design_FloatingActionButton;
+			global::System.Graphics.Resource.Style.Widget_Design_NavigationView = global::GraphicsTester.Android.Resource.Style.Widget_Design_NavigationView;
+			global::System.Graphics.Resource.Style.Widget_Design_ScrimInsetsFrameLayout = global::GraphicsTester.Android.Resource.Style.Widget_Design_ScrimInsetsFrameLayout;
+			global::System.Graphics.Resource.Style.Widget_Design_Snackbar = global::GraphicsTester.Android.Resource.Style.Widget_Design_Snackbar;
+			global::System.Graphics.Resource.Style.Widget_Design_TabLayout = global::GraphicsTester.Android.Resource.Style.Widget_Design_TabLayout;
+			global::System.Graphics.Resource.Style.Widget_Design_TextInputLayout = global::GraphicsTester.Android.Resource.Style.Widget_Design_TextInputLayout;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_BottomAppBar = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_BottomAppBar;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_BottomAppBar_Colored = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_BottomAppBar_Colored;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_BottomNavigationView = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_BottomNavigationView;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_BottomNavigationView_Colored = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_BottomNavigationView_Colored;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_BottomSheet_Modal = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_BottomSheet_Modal;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Button = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Button;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Button_Icon = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Button_Icon;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Button_OutlinedButton = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Button_OutlinedButton;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Button_OutlinedButton_Icon = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Button_OutlinedButton_Icon;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Button_TextButton = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Button_TextButton;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Button_TextButton_Dialog = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Button_TextButton_Dialog;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Button_TextButton_Dialog_Icon = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Button_TextButton_Dialog_Icon;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Button_TextButton_Icon = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Button_TextButton_Icon;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Button_UnelevatedButton = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Button_UnelevatedButton;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Button_UnelevatedButton_Icon = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Button_UnelevatedButton_Icon;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_CardView = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_CardView;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_ChipGroup = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_ChipGroup;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Chip_Action = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Chip_Action;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Chip_Choice = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Chip_Choice;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Chip_Entry = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Chip_Entry;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Chip_Filter = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Chip_Filter;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_FloatingActionButton = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_FloatingActionButton;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_NavigationView = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_NavigationView;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Snackbar = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Snackbar;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Snackbar_FullWidth = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Snackbar_FullWidth;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_TabLayout = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_TabLayout;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_TabLayout_Colored = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_TabLayout_Colored;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_TextInputEditText_FilledBox = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_TextInputEditText_FilledBox;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_TextInputEditText_FilledBox_Dense = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_TextInputEditText_FilledBox_Dense;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_TextInputEditText_OutlinedBox = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_TextInputEditText_OutlinedBox;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_TextInputEditText_OutlinedBox_Dense = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_TextInputEditText_OutlinedBox_Dense;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_TextInputLayout_FilledBox = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_TextInputLayout_FilledBox;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_TextInputLayout_FilledBox_Dense = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_TextInputLayout_FilledBox_Dense;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_TextInputLayout_OutlinedBox = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_TextInputLayout_OutlinedBox;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_TextInputLayout_OutlinedBox_Dense = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_TextInputLayout_OutlinedBox_Dense;
+			global::System.Graphics.Resource.Style.Widget_MaterialComponents_Toolbar = global::GraphicsTester.Android.Resource.Style.Widget_MaterialComponents_Toolbar;
+			global::System.Graphics.Resource.Style.Widget_Support_CoordinatorLayout = global::GraphicsTester.Android.Resource.Style.Widget_Support_CoordinatorLayout;
+			global::System.Graphics.Resource.Styleable.ActionBar = global::GraphicsTester.Android.Resource.Styleable.ActionBar;
+			global::System.Graphics.Resource.Styleable.ActionBarLayout = global::GraphicsTester.Android.Resource.Styleable.ActionBarLayout;
+			global::System.Graphics.Resource.Styleable.ActionBarLayout_android_layout_gravity = global::GraphicsTester.Android.Resource.Styleable.ActionBarLayout_android_layout_gravity;
+			global::System.Graphics.Resource.Styleable.ActionBar_background = global::GraphicsTester.Android.Resource.Styleable.ActionBar_background;
+			global::System.Graphics.Resource.Styleable.ActionBar_backgroundSplit = global::GraphicsTester.Android.Resource.Styleable.ActionBar_backgroundSplit;
+			global::System.Graphics.Resource.Styleable.ActionBar_backgroundStacked = global::GraphicsTester.Android.Resource.Styleable.ActionBar_backgroundStacked;
+			global::System.Graphics.Resource.Styleable.ActionBar_contentInsetEnd = global::GraphicsTester.Android.Resource.Styleable.ActionBar_contentInsetEnd;
+			global::System.Graphics.Resource.Styleable.ActionBar_contentInsetEndWithActions = global::GraphicsTester.Android.Resource.Styleable.ActionBar_contentInsetEndWithActions;
+			global::System.Graphics.Resource.Styleable.ActionBar_contentInsetLeft = global::GraphicsTester.Android.Resource.Styleable.ActionBar_contentInsetLeft;
+			global::System.Graphics.Resource.Styleable.ActionBar_contentInsetRight = global::GraphicsTester.Android.Resource.Styleable.ActionBar_contentInsetRight;
+			global::System.Graphics.Resource.Styleable.ActionBar_contentInsetStart = global::GraphicsTester.Android.Resource.Styleable.ActionBar_contentInsetStart;
+			global::System.Graphics.Resource.Styleable.ActionBar_contentInsetStartWithNavigation = global::GraphicsTester.Android.Resource.Styleable.ActionBar_contentInsetStartWithNavigation;
+			global::System.Graphics.Resource.Styleable.ActionBar_customNavigationLayout = global::GraphicsTester.Android.Resource.Styleable.ActionBar_customNavigationLayout;
+			global::System.Graphics.Resource.Styleable.ActionBar_displayOptions = global::GraphicsTester.Android.Resource.Styleable.ActionBar_displayOptions;
+			global::System.Graphics.Resource.Styleable.ActionBar_divider = global::GraphicsTester.Android.Resource.Styleable.ActionBar_divider;
+			global::System.Graphics.Resource.Styleable.ActionBar_elevation = global::GraphicsTester.Android.Resource.Styleable.ActionBar_elevation;
+			global::System.Graphics.Resource.Styleable.ActionBar_height = global::GraphicsTester.Android.Resource.Styleable.ActionBar_height;
+			global::System.Graphics.Resource.Styleable.ActionBar_hideOnContentScroll = global::GraphicsTester.Android.Resource.Styleable.ActionBar_hideOnContentScroll;
+			global::System.Graphics.Resource.Styleable.ActionBar_homeAsUpIndicator = global::GraphicsTester.Android.Resource.Styleable.ActionBar_homeAsUpIndicator;
+			global::System.Graphics.Resource.Styleable.ActionBar_homeLayout = global::GraphicsTester.Android.Resource.Styleable.ActionBar_homeLayout;
+			global::System.Graphics.Resource.Styleable.ActionBar_icon = global::GraphicsTester.Android.Resource.Styleable.ActionBar_icon;
+			global::System.Graphics.Resource.Styleable.ActionBar_indeterminateProgressStyle = global::GraphicsTester.Android.Resource.Styleable.ActionBar_indeterminateProgressStyle;
+			global::System.Graphics.Resource.Styleable.ActionBar_itemPadding = global::GraphicsTester.Android.Resource.Styleable.ActionBar_itemPadding;
+			global::System.Graphics.Resource.Styleable.ActionBar_logo = global::GraphicsTester.Android.Resource.Styleable.ActionBar_logo;
+			global::System.Graphics.Resource.Styleable.ActionBar_navigationMode = global::GraphicsTester.Android.Resource.Styleable.ActionBar_navigationMode;
+			global::System.Graphics.Resource.Styleable.ActionBar_popupTheme = global::GraphicsTester.Android.Resource.Styleable.ActionBar_popupTheme;
+			global::System.Graphics.Resource.Styleable.ActionBar_progressBarPadding = global::GraphicsTester.Android.Resource.Styleable.ActionBar_progressBarPadding;
+			global::System.Graphics.Resource.Styleable.ActionBar_progressBarStyle = global::GraphicsTester.Android.Resource.Styleable.ActionBar_progressBarStyle;
+			global::System.Graphics.Resource.Styleable.ActionBar_subtitle = global::GraphicsTester.Android.Resource.Styleable.ActionBar_subtitle;
+			global::System.Graphics.Resource.Styleable.ActionBar_subtitleTextStyle = global::GraphicsTester.Android.Resource.Styleable.ActionBar_subtitleTextStyle;
+			global::System.Graphics.Resource.Styleable.ActionBar_title = global::GraphicsTester.Android.Resource.Styleable.ActionBar_title;
+			global::System.Graphics.Resource.Styleable.ActionBar_titleTextStyle = global::GraphicsTester.Android.Resource.Styleable.ActionBar_titleTextStyle;
+			global::System.Graphics.Resource.Styleable.ActionMenuItemView = global::GraphicsTester.Android.Resource.Styleable.ActionMenuItemView;
+			global::System.Graphics.Resource.Styleable.ActionMenuItemView_android_minWidth = global::GraphicsTester.Android.Resource.Styleable.ActionMenuItemView_android_minWidth;
+			global::System.Graphics.Resource.Styleable.ActionMenuView = global::GraphicsTester.Android.Resource.Styleable.ActionMenuView;
+			global::System.Graphics.Resource.Styleable.ActionMode = global::GraphicsTester.Android.Resource.Styleable.ActionMode;
+			global::System.Graphics.Resource.Styleable.ActionMode_background = global::GraphicsTester.Android.Resource.Styleable.ActionMode_background;
+			global::System.Graphics.Resource.Styleable.ActionMode_backgroundSplit = global::GraphicsTester.Android.Resource.Styleable.ActionMode_backgroundSplit;
+			global::System.Graphics.Resource.Styleable.ActionMode_closeItemLayout = global::GraphicsTester.Android.Resource.Styleable.ActionMode_closeItemLayout;
+			global::System.Graphics.Resource.Styleable.ActionMode_height = global::GraphicsTester.Android.Resource.Styleable.ActionMode_height;
+			global::System.Graphics.Resource.Styleable.ActionMode_subtitleTextStyle = global::GraphicsTester.Android.Resource.Styleable.ActionMode_subtitleTextStyle;
+			global::System.Graphics.Resource.Styleable.ActionMode_titleTextStyle = global::GraphicsTester.Android.Resource.Styleable.ActionMode_titleTextStyle;
+			global::System.Graphics.Resource.Styleable.ActivityChooserView = global::GraphicsTester.Android.Resource.Styleable.ActivityChooserView;
+			global::System.Graphics.Resource.Styleable.ActivityChooserView_expandActivityOverflowButtonDrawable = global::GraphicsTester.Android.Resource.Styleable.ActivityChooserView_expandActivityOverflowButtonDrawable;
+			global::System.Graphics.Resource.Styleable.ActivityChooserView_initialActivityCount = global::GraphicsTester.Android.Resource.Styleable.ActivityChooserView_initialActivityCount;
+			global::System.Graphics.Resource.Styleable.AlertDialog = global::GraphicsTester.Android.Resource.Styleable.AlertDialog;
+			global::System.Graphics.Resource.Styleable.AlertDialog_android_layout = global::GraphicsTester.Android.Resource.Styleable.AlertDialog_android_layout;
+			global::System.Graphics.Resource.Styleable.AlertDialog_buttonIconDimen = global::GraphicsTester.Android.Resource.Styleable.AlertDialog_buttonIconDimen;
+			global::System.Graphics.Resource.Styleable.AlertDialog_buttonPanelSideLayout = global::GraphicsTester.Android.Resource.Styleable.AlertDialog_buttonPanelSideLayout;
+			global::System.Graphics.Resource.Styleable.AlertDialog_listItemLayout = global::GraphicsTester.Android.Resource.Styleable.AlertDialog_listItemLayout;
+			global::System.Graphics.Resource.Styleable.AlertDialog_listLayout = global::GraphicsTester.Android.Resource.Styleable.AlertDialog_listLayout;
+			global::System.Graphics.Resource.Styleable.AlertDialog_multiChoiceItemLayout = global::GraphicsTester.Android.Resource.Styleable.AlertDialog_multiChoiceItemLayout;
+			global::System.Graphics.Resource.Styleable.AlertDialog_showTitle = global::GraphicsTester.Android.Resource.Styleable.AlertDialog_showTitle;
+			global::System.Graphics.Resource.Styleable.AlertDialog_singleChoiceItemLayout = global::GraphicsTester.Android.Resource.Styleable.AlertDialog_singleChoiceItemLayout;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableCompat = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableCompat;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableCompat_android_constantSize = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableCompat_android_constantSize;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableCompat_android_dither = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableCompat_android_dither;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableCompat_android_enterFadeDuration = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableCompat_android_enterFadeDuration;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableCompat_android_exitFadeDuration = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableCompat_android_exitFadeDuration;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableCompat_android_variablePadding = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableCompat_android_variablePadding;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableCompat_android_visible = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableCompat_android_visible;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableItem = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableItem;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableItem_android_drawable = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableItem_android_drawable;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableItem_android_id = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableItem_android_id;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableTransition = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableTransition;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableTransition_android_drawable = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableTransition_android_drawable;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableTransition_android_fromId = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableTransition_android_fromId;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableTransition_android_reversible = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableTransition_android_reversible;
+			global::System.Graphics.Resource.Styleable.AnimatedStateListDrawableTransition_android_toId = global::GraphicsTester.Android.Resource.Styleable.AnimatedStateListDrawableTransition_android_toId;
+			global::System.Graphics.Resource.Styleable.AppBarLayout = global::GraphicsTester.Android.Resource.Styleable.AppBarLayout;
+			global::System.Graphics.Resource.Styleable.AppBarLayoutStates = global::GraphicsTester.Android.Resource.Styleable.AppBarLayoutStates;
+			global::System.Graphics.Resource.Styleable.AppBarLayoutStates_state_collapsed = global::GraphicsTester.Android.Resource.Styleable.AppBarLayoutStates_state_collapsed;
+			global::System.Graphics.Resource.Styleable.AppBarLayoutStates_state_collapsible = global::GraphicsTester.Android.Resource.Styleable.AppBarLayoutStates_state_collapsible;
+			global::System.Graphics.Resource.Styleable.AppBarLayoutStates_state_liftable = global::GraphicsTester.Android.Resource.Styleable.AppBarLayoutStates_state_liftable;
+			global::System.Graphics.Resource.Styleable.AppBarLayoutStates_state_lifted = global::GraphicsTester.Android.Resource.Styleable.AppBarLayoutStates_state_lifted;
+			global::System.Graphics.Resource.Styleable.AppBarLayout_android_background = global::GraphicsTester.Android.Resource.Styleable.AppBarLayout_android_background;
+			global::System.Graphics.Resource.Styleable.AppBarLayout_android_keyboardNavigationCluster = global::GraphicsTester.Android.Resource.Styleable.AppBarLayout_android_keyboardNavigationCluster;
+			global::System.Graphics.Resource.Styleable.AppBarLayout_android_touchscreenBlocksFocus = global::GraphicsTester.Android.Resource.Styleable.AppBarLayout_android_touchscreenBlocksFocus;
+			global::System.Graphics.Resource.Styleable.AppBarLayout_elevation = global::GraphicsTester.Android.Resource.Styleable.AppBarLayout_elevation;
+			global::System.Graphics.Resource.Styleable.AppBarLayout_expanded = global::GraphicsTester.Android.Resource.Styleable.AppBarLayout_expanded;
+			global::System.Graphics.Resource.Styleable.AppBarLayout_Layout = global::GraphicsTester.Android.Resource.Styleable.AppBarLayout_Layout;
+			global::System.Graphics.Resource.Styleable.AppBarLayout_Layout_layout_scrollFlags = global::GraphicsTester.Android.Resource.Styleable.AppBarLayout_Layout_layout_scrollFlags;
+			global::System.Graphics.Resource.Styleable.AppBarLayout_Layout_layout_scrollInterpolator = global::GraphicsTester.Android.Resource.Styleable.AppBarLayout_Layout_layout_scrollInterpolator;
+			global::System.Graphics.Resource.Styleable.AppBarLayout_liftOnScroll = global::GraphicsTester.Android.Resource.Styleable.AppBarLayout_liftOnScroll;
+			global::System.Graphics.Resource.Styleable.AppCompatImageView = global::GraphicsTester.Android.Resource.Styleable.AppCompatImageView;
+			global::System.Graphics.Resource.Styleable.AppCompatImageView_android_src = global::GraphicsTester.Android.Resource.Styleable.AppCompatImageView_android_src;
+			global::System.Graphics.Resource.Styleable.AppCompatImageView_srcCompat = global::GraphicsTester.Android.Resource.Styleable.AppCompatImageView_srcCompat;
+			global::System.Graphics.Resource.Styleable.AppCompatImageView_tint = global::GraphicsTester.Android.Resource.Styleable.AppCompatImageView_tint;
+			global::System.Graphics.Resource.Styleable.AppCompatImageView_tintMode = global::GraphicsTester.Android.Resource.Styleable.AppCompatImageView_tintMode;
+			global::System.Graphics.Resource.Styleable.AppCompatSeekBar = global::GraphicsTester.Android.Resource.Styleable.AppCompatSeekBar;
+			global::System.Graphics.Resource.Styleable.AppCompatSeekBar_android_thumb = global::GraphicsTester.Android.Resource.Styleable.AppCompatSeekBar_android_thumb;
+			global::System.Graphics.Resource.Styleable.AppCompatSeekBar_tickMark = global::GraphicsTester.Android.Resource.Styleable.AppCompatSeekBar_tickMark;
+			global::System.Graphics.Resource.Styleable.AppCompatSeekBar_tickMarkTint = global::GraphicsTester.Android.Resource.Styleable.AppCompatSeekBar_tickMarkTint;
+			global::System.Graphics.Resource.Styleable.AppCompatSeekBar_tickMarkTintMode = global::GraphicsTester.Android.Resource.Styleable.AppCompatSeekBar_tickMarkTintMode;
+			global::System.Graphics.Resource.Styleable.AppCompatTextHelper = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextHelper;
+			global::System.Graphics.Resource.Styleable.AppCompatTextHelper_android_drawableBottom = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextHelper_android_drawableBottom;
+			global::System.Graphics.Resource.Styleable.AppCompatTextHelper_android_drawableEnd = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextHelper_android_drawableEnd;
+			global::System.Graphics.Resource.Styleable.AppCompatTextHelper_android_drawableLeft = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextHelper_android_drawableLeft;
+			global::System.Graphics.Resource.Styleable.AppCompatTextHelper_android_drawableRight = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextHelper_android_drawableRight;
+			global::System.Graphics.Resource.Styleable.AppCompatTextHelper_android_drawableStart = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextHelper_android_drawableStart;
+			global::System.Graphics.Resource.Styleable.AppCompatTextHelper_android_drawableTop = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextHelper_android_drawableTop;
+			global::System.Graphics.Resource.Styleable.AppCompatTextHelper_android_textAppearance = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextHelper_android_textAppearance;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_android_textAppearance = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_android_textAppearance;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_autoSizeMaxTextSize = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_autoSizeMaxTextSize;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_autoSizeMinTextSize = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_autoSizeMinTextSize;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_autoSizePresetSizes = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_autoSizePresetSizes;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_autoSizeStepGranularity = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_autoSizeStepGranularity;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_autoSizeTextType = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_autoSizeTextType;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_drawableBottomCompat = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_drawableBottomCompat;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_drawableEndCompat = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_drawableEndCompat;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_drawableLeftCompat = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_drawableLeftCompat;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_drawableRightCompat = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_drawableRightCompat;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_drawableStartCompat = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_drawableStartCompat;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_drawableTint = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_drawableTint;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_drawableTintMode = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_drawableTintMode;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_drawableTopCompat = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_drawableTopCompat;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_firstBaselineToTopHeight = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_firstBaselineToTopHeight;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_fontFamily = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_fontFamily;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_fontVariationSettings = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_fontVariationSettings;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_lastBaselineToBottomHeight = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_lastBaselineToBottomHeight;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_lineHeight = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_lineHeight;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_textAllCaps = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_textAllCaps;
+			global::System.Graphics.Resource.Styleable.AppCompatTextView_textLocale = global::GraphicsTester.Android.Resource.Styleable.AppCompatTextView_textLocale;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionBarDivider = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionBarDivider;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionBarItemBackground = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionBarItemBackground;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionBarPopupTheme = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionBarPopupTheme;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionBarSize = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionBarSize;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionBarSplitStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionBarSplitStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionBarStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionBarStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionBarTabBarStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionBarTabBarStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionBarTabStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionBarTabStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionBarTabTextStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionBarTabTextStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionBarTheme = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionBarTheme;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionBarWidgetTheme = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionBarWidgetTheme;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionButtonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionButtonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionDropDownStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionDropDownStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionMenuTextAppearance = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionMenuTextAppearance;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionMenuTextColor = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionMenuTextColor;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModeBackground = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModeBackground;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModeCloseButtonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModeCloseButtonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModeCloseDrawable = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModeCloseDrawable;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModeCopyDrawable = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModeCopyDrawable;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModeCutDrawable = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModeCutDrawable;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModeFindDrawable = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModeFindDrawable;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModePasteDrawable = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModePasteDrawable;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModePopupWindowStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModePopupWindowStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModeSelectAllDrawable = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModeSelectAllDrawable;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModeShareDrawable = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModeShareDrawable;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModeSplitBackground = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModeSplitBackground;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModeStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModeStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionModeWebSearchDrawable = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionModeWebSearchDrawable;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionOverflowButtonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionOverflowButtonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_actionOverflowMenuStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_actionOverflowMenuStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_activityChooserViewStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_activityChooserViewStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_alertDialogButtonGroupStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_alertDialogButtonGroupStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_alertDialogCenterButtons = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_alertDialogCenterButtons;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_alertDialogStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_alertDialogStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_alertDialogTheme = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_alertDialogTheme;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_android_windowAnimationStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_android_windowAnimationStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_android_windowIsFloating = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_android_windowIsFloating;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_autoCompleteTextViewStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_autoCompleteTextViewStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_borderlessButtonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_borderlessButtonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_buttonBarButtonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_buttonBarButtonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_buttonBarNegativeButtonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_buttonBarNegativeButtonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_buttonBarNeutralButtonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_buttonBarNeutralButtonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_buttonBarPositiveButtonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_buttonBarPositiveButtonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_buttonBarStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_buttonBarStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_buttonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_buttonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_buttonStyleSmall = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_buttonStyleSmall;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_checkboxStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_checkboxStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_checkedTextViewStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_checkedTextViewStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_colorAccent = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_colorAccent;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_colorBackgroundFloating = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_colorBackgroundFloating;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_colorButtonNormal = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_colorButtonNormal;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_colorControlActivated = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_colorControlActivated;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_colorControlHighlight = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_colorControlHighlight;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_colorControlNormal = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_colorControlNormal;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_colorError = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_colorError;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_colorPrimary = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_colorPrimary;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_colorPrimaryDark = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_colorPrimaryDark;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_colorSwitchThumbNormal = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_colorSwitchThumbNormal;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_controlBackground = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_controlBackground;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_dialogCornerRadius = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_dialogCornerRadius;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_dialogPreferredPadding = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_dialogPreferredPadding;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_dialogTheme = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_dialogTheme;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_dividerHorizontal = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_dividerHorizontal;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_dividerVertical = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_dividerVertical;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_dropdownListPreferredItemHeight = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_dropdownListPreferredItemHeight;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_dropDownListViewStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_dropDownListViewStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_editTextBackground = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_editTextBackground;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_editTextColor = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_editTextColor;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_editTextStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_editTextStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_homeAsUpIndicator = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_homeAsUpIndicator;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_imageButtonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_imageButtonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listChoiceBackgroundIndicator = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listChoiceBackgroundIndicator;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listChoiceIndicatorMultipleAnimated = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listChoiceIndicatorMultipleAnimated;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listChoiceIndicatorSingleAnimated = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listChoiceIndicatorSingleAnimated;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listDividerAlertDialog = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listDividerAlertDialog;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listMenuViewStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listMenuViewStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listPopupWindowStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listPopupWindowStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listPreferredItemHeight = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listPreferredItemHeight;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listPreferredItemHeightLarge = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listPreferredItemHeightLarge;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listPreferredItemHeightSmall = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listPreferredItemHeightSmall;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listPreferredItemPaddingEnd = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listPreferredItemPaddingEnd;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listPreferredItemPaddingLeft = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listPreferredItemPaddingLeft;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listPreferredItemPaddingRight = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listPreferredItemPaddingRight;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_listPreferredItemPaddingStart = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_listPreferredItemPaddingStart;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_panelBackground = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_panelBackground;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_panelMenuListTheme = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_panelMenuListTheme;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_panelMenuListWidth = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_panelMenuListWidth;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_popupMenuStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_popupMenuStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_popupWindowStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_popupWindowStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_radioButtonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_radioButtonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_ratingBarStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_ratingBarStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_ratingBarStyleIndicator = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_ratingBarStyleIndicator;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_ratingBarStyleSmall = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_ratingBarStyleSmall;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_searchViewStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_searchViewStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_seekBarStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_seekBarStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_selectableItemBackground = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_selectableItemBackground;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_selectableItemBackgroundBorderless = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_selectableItemBackgroundBorderless;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_spinnerDropDownItemStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_spinnerDropDownItemStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_spinnerStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_spinnerStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_switchStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_switchStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_textAppearanceLargePopupMenu = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_textAppearanceLargePopupMenu;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_textAppearanceListItem = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_textAppearanceListItem;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_textAppearanceListItemSecondary = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_textAppearanceListItemSecondary;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_textAppearanceListItemSmall = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_textAppearanceListItemSmall;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_textAppearancePopupMenuHeader = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_textAppearancePopupMenuHeader;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_textAppearanceSearchResultSubtitle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_textAppearanceSearchResultSubtitle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_textAppearanceSearchResultTitle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_textAppearanceSearchResultTitle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_textAppearanceSmallPopupMenu = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_textAppearanceSmallPopupMenu;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_textColorAlertDialogListItem = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_textColorAlertDialogListItem;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_textColorSearchUrl = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_textColorSearchUrl;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_toolbarNavigationButtonStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_toolbarNavigationButtonStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_toolbarStyle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_toolbarStyle;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_tooltipForegroundColor = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_tooltipForegroundColor;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_tooltipFrameBackground = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_tooltipFrameBackground;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_viewInflaterClass = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_viewInflaterClass;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_windowActionBar = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_windowActionBar;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_windowActionBarOverlay = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_windowActionBarOverlay;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_windowActionModeOverlay = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_windowActionModeOverlay;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_windowFixedHeightMajor = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_windowFixedHeightMajor;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_windowFixedHeightMinor = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_windowFixedHeightMinor;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_windowFixedWidthMajor = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_windowFixedWidthMajor;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_windowFixedWidthMinor = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_windowFixedWidthMinor;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_windowMinWidthMajor = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_windowMinWidthMajor;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_windowMinWidthMinor = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_windowMinWidthMinor;
+			global::System.Graphics.Resource.Styleable.AppCompatTheme_windowNoTitle = global::GraphicsTester.Android.Resource.Styleable.AppCompatTheme_windowNoTitle;
+			global::System.Graphics.Resource.Styleable.BottomAppBar = global::GraphicsTester.Android.Resource.Styleable.BottomAppBar;
+			global::System.Graphics.Resource.Styleable.BottomAppBar_backgroundTint = global::GraphicsTester.Android.Resource.Styleable.BottomAppBar_backgroundTint;
+			global::System.Graphics.Resource.Styleable.BottomAppBar_fabAlignmentMode = global::GraphicsTester.Android.Resource.Styleable.BottomAppBar_fabAlignmentMode;
+			global::System.Graphics.Resource.Styleable.BottomAppBar_fabCradleMargin = global::GraphicsTester.Android.Resource.Styleable.BottomAppBar_fabCradleMargin;
+			global::System.Graphics.Resource.Styleable.BottomAppBar_fabCradleRoundedCornerRadius = global::GraphicsTester.Android.Resource.Styleable.BottomAppBar_fabCradleRoundedCornerRadius;
+			global::System.Graphics.Resource.Styleable.BottomAppBar_fabCradleVerticalOffset = global::GraphicsTester.Android.Resource.Styleable.BottomAppBar_fabCradleVerticalOffset;
+			global::System.Graphics.Resource.Styleable.BottomAppBar_hideOnScroll = global::GraphicsTester.Android.Resource.Styleable.BottomAppBar_hideOnScroll;
+			global::System.Graphics.Resource.Styleable.BottomNavigationView = global::GraphicsTester.Android.Resource.Styleable.BottomNavigationView;
+			global::System.Graphics.Resource.Styleable.BottomNavigationView_elevation = global::GraphicsTester.Android.Resource.Styleable.BottomNavigationView_elevation;
+			global::System.Graphics.Resource.Styleable.BottomNavigationView_itemBackground = global::GraphicsTester.Android.Resource.Styleable.BottomNavigationView_itemBackground;
+			global::System.Graphics.Resource.Styleable.BottomNavigationView_itemHorizontalTranslationEnabled = global::GraphicsTester.Android.Resource.Styleable.BottomNavigationView_itemHorizontalTranslationEnabled;
+			global::System.Graphics.Resource.Styleable.BottomNavigationView_itemIconSize = global::GraphicsTester.Android.Resource.Styleable.BottomNavigationView_itemIconSize;
+			global::System.Graphics.Resource.Styleable.BottomNavigationView_itemIconTint = global::GraphicsTester.Android.Resource.Styleable.BottomNavigationView_itemIconTint;
+			global::System.Graphics.Resource.Styleable.BottomNavigationView_itemTextAppearanceActive = global::GraphicsTester.Android.Resource.Styleable.BottomNavigationView_itemTextAppearanceActive;
+			global::System.Graphics.Resource.Styleable.BottomNavigationView_itemTextAppearanceInactive = global::GraphicsTester.Android.Resource.Styleable.BottomNavigationView_itemTextAppearanceInactive;
+			global::System.Graphics.Resource.Styleable.BottomNavigationView_itemTextColor = global::GraphicsTester.Android.Resource.Styleable.BottomNavigationView_itemTextColor;
+			global::System.Graphics.Resource.Styleable.BottomNavigationView_labelVisibilityMode = global::GraphicsTester.Android.Resource.Styleable.BottomNavigationView_labelVisibilityMode;
+			global::System.Graphics.Resource.Styleable.BottomNavigationView_menu = global::GraphicsTester.Android.Resource.Styleable.BottomNavigationView_menu;
+			global::System.Graphics.Resource.Styleable.BottomSheetBehavior_Layout = global::GraphicsTester.Android.Resource.Styleable.BottomSheetBehavior_Layout;
+			global::System.Graphics.Resource.Styleable.BottomSheetBehavior_Layout_behavior_fitToContents = global::GraphicsTester.Android.Resource.Styleable.BottomSheetBehavior_Layout_behavior_fitToContents;
+			global::System.Graphics.Resource.Styleable.BottomSheetBehavior_Layout_behavior_hideable = global::GraphicsTester.Android.Resource.Styleable.BottomSheetBehavior_Layout_behavior_hideable;
+			global::System.Graphics.Resource.Styleable.BottomSheetBehavior_Layout_behavior_peekHeight = global::GraphicsTester.Android.Resource.Styleable.BottomSheetBehavior_Layout_behavior_peekHeight;
+			global::System.Graphics.Resource.Styleable.BottomSheetBehavior_Layout_behavior_skipCollapsed = global::GraphicsTester.Android.Resource.Styleable.BottomSheetBehavior_Layout_behavior_skipCollapsed;
+			global::System.Graphics.Resource.Styleable.ButtonBarLayout = global::GraphicsTester.Android.Resource.Styleable.ButtonBarLayout;
+			global::System.Graphics.Resource.Styleable.ButtonBarLayout_allowStacking = global::GraphicsTester.Android.Resource.Styleable.ButtonBarLayout_allowStacking;
+			global::System.Graphics.Resource.Styleable.CardView = global::GraphicsTester.Android.Resource.Styleable.CardView;
+			global::System.Graphics.Resource.Styleable.CardView_android_minHeight = global::GraphicsTester.Android.Resource.Styleable.CardView_android_minHeight;
+			global::System.Graphics.Resource.Styleable.CardView_android_minWidth = global::GraphicsTester.Android.Resource.Styleable.CardView_android_minWidth;
+			global::System.Graphics.Resource.Styleable.CardView_cardBackgroundColor = global::GraphicsTester.Android.Resource.Styleable.CardView_cardBackgroundColor;
+			global::System.Graphics.Resource.Styleable.CardView_cardCornerRadius = global::GraphicsTester.Android.Resource.Styleable.CardView_cardCornerRadius;
+			global::System.Graphics.Resource.Styleable.CardView_cardElevation = global::GraphicsTester.Android.Resource.Styleable.CardView_cardElevation;
+			global::System.Graphics.Resource.Styleable.CardView_cardMaxElevation = global::GraphicsTester.Android.Resource.Styleable.CardView_cardMaxElevation;
+			global::System.Graphics.Resource.Styleable.CardView_cardPreventCornerOverlap = global::GraphicsTester.Android.Resource.Styleable.CardView_cardPreventCornerOverlap;
+			global::System.Graphics.Resource.Styleable.CardView_cardUseCompatPadding = global::GraphicsTester.Android.Resource.Styleable.CardView_cardUseCompatPadding;
+			global::System.Graphics.Resource.Styleable.CardView_contentPadding = global::GraphicsTester.Android.Resource.Styleable.CardView_contentPadding;
+			global::System.Graphics.Resource.Styleable.CardView_contentPaddingBottom = global::GraphicsTester.Android.Resource.Styleable.CardView_contentPaddingBottom;
+			global::System.Graphics.Resource.Styleable.CardView_contentPaddingLeft = global::GraphicsTester.Android.Resource.Styleable.CardView_contentPaddingLeft;
+			global::System.Graphics.Resource.Styleable.CardView_contentPaddingRight = global::GraphicsTester.Android.Resource.Styleable.CardView_contentPaddingRight;
+			global::System.Graphics.Resource.Styleable.CardView_contentPaddingTop = global::GraphicsTester.Android.Resource.Styleable.CardView_contentPaddingTop;
+			global::System.Graphics.Resource.Styleable.Chip = global::GraphicsTester.Android.Resource.Styleable.Chip;
+			global::System.Graphics.Resource.Styleable.ChipGroup = global::GraphicsTester.Android.Resource.Styleable.ChipGroup;
+			global::System.Graphics.Resource.Styleable.ChipGroup_checkedChip = global::GraphicsTester.Android.Resource.Styleable.ChipGroup_checkedChip;
+			global::System.Graphics.Resource.Styleable.ChipGroup_chipSpacing = global::GraphicsTester.Android.Resource.Styleable.ChipGroup_chipSpacing;
+			global::System.Graphics.Resource.Styleable.ChipGroup_chipSpacingHorizontal = global::GraphicsTester.Android.Resource.Styleable.ChipGroup_chipSpacingHorizontal;
+			global::System.Graphics.Resource.Styleable.ChipGroup_chipSpacingVertical = global::GraphicsTester.Android.Resource.Styleable.ChipGroup_chipSpacingVertical;
+			global::System.Graphics.Resource.Styleable.ChipGroup_singleLine = global::GraphicsTester.Android.Resource.Styleable.ChipGroup_singleLine;
+			global::System.Graphics.Resource.Styleable.ChipGroup_singleSelection = global::GraphicsTester.Android.Resource.Styleable.ChipGroup_singleSelection;
+			global::System.Graphics.Resource.Styleable.Chip_android_checkable = global::GraphicsTester.Android.Resource.Styleable.Chip_android_checkable;
+			global::System.Graphics.Resource.Styleable.Chip_android_ellipsize = global::GraphicsTester.Android.Resource.Styleable.Chip_android_ellipsize;
+			global::System.Graphics.Resource.Styleable.Chip_android_maxWidth = global::GraphicsTester.Android.Resource.Styleable.Chip_android_maxWidth;
+			global::System.Graphics.Resource.Styleable.Chip_android_text = global::GraphicsTester.Android.Resource.Styleable.Chip_android_text;
+			global::System.Graphics.Resource.Styleable.Chip_android_textAppearance = global::GraphicsTester.Android.Resource.Styleable.Chip_android_textAppearance;
+			global::System.Graphics.Resource.Styleable.Chip_checkedIcon = global::GraphicsTester.Android.Resource.Styleable.Chip_checkedIcon;
+			global::System.Graphics.Resource.Styleable.Chip_checkedIconEnabled = global::GraphicsTester.Android.Resource.Styleable.Chip_checkedIconEnabled;
+			global::System.Graphics.Resource.Styleable.Chip_checkedIconVisible = global::GraphicsTester.Android.Resource.Styleable.Chip_checkedIconVisible;
+			global::System.Graphics.Resource.Styleable.Chip_chipBackgroundColor = global::GraphicsTester.Android.Resource.Styleable.Chip_chipBackgroundColor;
+			global::System.Graphics.Resource.Styleable.Chip_chipCornerRadius = global::GraphicsTester.Android.Resource.Styleable.Chip_chipCornerRadius;
+			global::System.Graphics.Resource.Styleable.Chip_chipEndPadding = global::GraphicsTester.Android.Resource.Styleable.Chip_chipEndPadding;
+			global::System.Graphics.Resource.Styleable.Chip_chipIcon = global::GraphicsTester.Android.Resource.Styleable.Chip_chipIcon;
+			global::System.Graphics.Resource.Styleable.Chip_chipIconEnabled = global::GraphicsTester.Android.Resource.Styleable.Chip_chipIconEnabled;
+			global::System.Graphics.Resource.Styleable.Chip_chipIconSize = global::GraphicsTester.Android.Resource.Styleable.Chip_chipIconSize;
+			global::System.Graphics.Resource.Styleable.Chip_chipIconTint = global::GraphicsTester.Android.Resource.Styleable.Chip_chipIconTint;
+			global::System.Graphics.Resource.Styleable.Chip_chipIconVisible = global::GraphicsTester.Android.Resource.Styleable.Chip_chipIconVisible;
+			global::System.Graphics.Resource.Styleable.Chip_chipMinHeight = global::GraphicsTester.Android.Resource.Styleable.Chip_chipMinHeight;
+			global::System.Graphics.Resource.Styleable.Chip_chipStartPadding = global::GraphicsTester.Android.Resource.Styleable.Chip_chipStartPadding;
+			global::System.Graphics.Resource.Styleable.Chip_chipStrokeColor = global::GraphicsTester.Android.Resource.Styleable.Chip_chipStrokeColor;
+			global::System.Graphics.Resource.Styleable.Chip_chipStrokeWidth = global::GraphicsTester.Android.Resource.Styleable.Chip_chipStrokeWidth;
+			global::System.Graphics.Resource.Styleable.Chip_closeIcon = global::GraphicsTester.Android.Resource.Styleable.Chip_closeIcon;
+			global::System.Graphics.Resource.Styleable.Chip_closeIconEnabled = global::GraphicsTester.Android.Resource.Styleable.Chip_closeIconEnabled;
+			global::System.Graphics.Resource.Styleable.Chip_closeIconEndPadding = global::GraphicsTester.Android.Resource.Styleable.Chip_closeIconEndPadding;
+			global::System.Graphics.Resource.Styleable.Chip_closeIconSize = global::GraphicsTester.Android.Resource.Styleable.Chip_closeIconSize;
+			global::System.Graphics.Resource.Styleable.Chip_closeIconStartPadding = global::GraphicsTester.Android.Resource.Styleable.Chip_closeIconStartPadding;
+			global::System.Graphics.Resource.Styleable.Chip_closeIconTint = global::GraphicsTester.Android.Resource.Styleable.Chip_closeIconTint;
+			global::System.Graphics.Resource.Styleable.Chip_closeIconVisible = global::GraphicsTester.Android.Resource.Styleable.Chip_closeIconVisible;
+			global::System.Graphics.Resource.Styleable.Chip_hideMotionSpec = global::GraphicsTester.Android.Resource.Styleable.Chip_hideMotionSpec;
+			global::System.Graphics.Resource.Styleable.Chip_iconEndPadding = global::GraphicsTester.Android.Resource.Styleable.Chip_iconEndPadding;
+			global::System.Graphics.Resource.Styleable.Chip_iconStartPadding = global::GraphicsTester.Android.Resource.Styleable.Chip_iconStartPadding;
+			global::System.Graphics.Resource.Styleable.Chip_rippleColor = global::GraphicsTester.Android.Resource.Styleable.Chip_rippleColor;
+			global::System.Graphics.Resource.Styleable.Chip_showMotionSpec = global::GraphicsTester.Android.Resource.Styleable.Chip_showMotionSpec;
+			global::System.Graphics.Resource.Styleable.Chip_textEndPadding = global::GraphicsTester.Android.Resource.Styleable.Chip_textEndPadding;
+			global::System.Graphics.Resource.Styleable.Chip_textStartPadding = global::GraphicsTester.Android.Resource.Styleable.Chip_textStartPadding;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_collapsedTitleGravity = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_collapsedTitleGravity;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_collapsedTitleTextAppearance = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_collapsedTitleTextAppearance;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_contentScrim = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_contentScrim;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_expandedTitleGravity = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_expandedTitleGravity;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_expandedTitleMargin = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_expandedTitleMargin;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_expandedTitleMarginBottom = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_expandedTitleMarginBottom;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_expandedTitleMarginEnd = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_expandedTitleMarginEnd;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_expandedTitleMarginStart = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_expandedTitleMarginStart;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_expandedTitleMarginTop = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_expandedTitleMarginTop;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_expandedTitleTextAppearance = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_expandedTitleTextAppearance;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_Layout = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_Layout;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_Layout_layout_collapseMode = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_Layout_layout_collapseMode;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_Layout_layout_collapseParallaxMultiplier = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_Layout_layout_collapseParallaxMultiplier;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_scrimAnimationDuration = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_scrimAnimationDuration;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_scrimVisibleHeightTrigger = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_scrimVisibleHeightTrigger;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_statusBarScrim = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_statusBarScrim;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_title = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_title;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_titleEnabled = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_titleEnabled;
+			global::System.Graphics.Resource.Styleable.CollapsingToolbarLayout_toolbarId = global::GraphicsTester.Android.Resource.Styleable.CollapsingToolbarLayout_toolbarId;
+			global::System.Graphics.Resource.Styleable.ColorStateListItem = global::GraphicsTester.Android.Resource.Styleable.ColorStateListItem;
+			global::System.Graphics.Resource.Styleable.ColorStateListItem_alpha = global::GraphicsTester.Android.Resource.Styleable.ColorStateListItem_alpha;
+			global::System.Graphics.Resource.Styleable.ColorStateListItem_android_alpha = global::GraphicsTester.Android.Resource.Styleable.ColorStateListItem_android_alpha;
+			global::System.Graphics.Resource.Styleable.ColorStateListItem_android_color = global::GraphicsTester.Android.Resource.Styleable.ColorStateListItem_android_color;
+			global::System.Graphics.Resource.Styleable.CompoundButton = global::GraphicsTester.Android.Resource.Styleable.CompoundButton;
+			global::System.Graphics.Resource.Styleable.CompoundButton_android_button = global::GraphicsTester.Android.Resource.Styleable.CompoundButton_android_button;
+			global::System.Graphics.Resource.Styleable.CompoundButton_buttonCompat = global::GraphicsTester.Android.Resource.Styleable.CompoundButton_buttonCompat;
+			global::System.Graphics.Resource.Styleable.CompoundButton_buttonTint = global::GraphicsTester.Android.Resource.Styleable.CompoundButton_buttonTint;
+			global::System.Graphics.Resource.Styleable.CompoundButton_buttonTintMode = global::GraphicsTester.Android.Resource.Styleable.CompoundButton_buttonTintMode;
+			global::System.Graphics.Resource.Styleable.CoordinatorLayout = global::GraphicsTester.Android.Resource.Styleable.CoordinatorLayout;
+			global::System.Graphics.Resource.Styleable.CoordinatorLayout_keylines = global::GraphicsTester.Android.Resource.Styleable.CoordinatorLayout_keylines;
+			global::System.Graphics.Resource.Styleable.CoordinatorLayout_Layout = global::GraphicsTester.Android.Resource.Styleable.CoordinatorLayout_Layout;
+			global::System.Graphics.Resource.Styleable.CoordinatorLayout_Layout_android_layout_gravity = global::GraphicsTester.Android.Resource.Styleable.CoordinatorLayout_Layout_android_layout_gravity;
+			global::System.Graphics.Resource.Styleable.CoordinatorLayout_Layout_layout_anchor = global::GraphicsTester.Android.Resource.Styleable.CoordinatorLayout_Layout_layout_anchor;
+			global::System.Graphics.Resource.Styleable.CoordinatorLayout_Layout_layout_anchorGravity = global::GraphicsTester.Android.Resource.Styleable.CoordinatorLayout_Layout_layout_anchorGravity;
+			global::System.Graphics.Resource.Styleable.CoordinatorLayout_Layout_layout_behavior = global::GraphicsTester.Android.Resource.Styleable.CoordinatorLayout_Layout_layout_behavior;
+			global::System.Graphics.Resource.Styleable.CoordinatorLayout_Layout_layout_dodgeInsetEdges = global::GraphicsTester.Android.Resource.Styleable.CoordinatorLayout_Layout_layout_dodgeInsetEdges;
+			global::System.Graphics.Resource.Styleable.CoordinatorLayout_Layout_layout_insetEdge = global::GraphicsTester.Android.Resource.Styleable.CoordinatorLayout_Layout_layout_insetEdge;
+			global::System.Graphics.Resource.Styleable.CoordinatorLayout_Layout_layout_keyline = global::GraphicsTester.Android.Resource.Styleable.CoordinatorLayout_Layout_layout_keyline;
+			global::System.Graphics.Resource.Styleable.CoordinatorLayout_statusBarBackground = global::GraphicsTester.Android.Resource.Styleable.CoordinatorLayout_statusBarBackground;
+			global::System.Graphics.Resource.Styleable.DesignTheme = global::GraphicsTester.Android.Resource.Styleable.DesignTheme;
+			global::System.Graphics.Resource.Styleable.DesignTheme_bottomSheetDialogTheme = global::GraphicsTester.Android.Resource.Styleable.DesignTheme_bottomSheetDialogTheme;
+			global::System.Graphics.Resource.Styleable.DesignTheme_bottomSheetStyle = global::GraphicsTester.Android.Resource.Styleable.DesignTheme_bottomSheetStyle;
+			global::System.Graphics.Resource.Styleable.DrawerArrowToggle = global::GraphicsTester.Android.Resource.Styleable.DrawerArrowToggle;
+			global::System.Graphics.Resource.Styleable.DrawerArrowToggle_arrowHeadLength = global::GraphicsTester.Android.Resource.Styleable.DrawerArrowToggle_arrowHeadLength;
+			global::System.Graphics.Resource.Styleable.DrawerArrowToggle_arrowShaftLength = global::GraphicsTester.Android.Resource.Styleable.DrawerArrowToggle_arrowShaftLength;
+			global::System.Graphics.Resource.Styleable.DrawerArrowToggle_barLength = global::GraphicsTester.Android.Resource.Styleable.DrawerArrowToggle_barLength;
+			global::System.Graphics.Resource.Styleable.DrawerArrowToggle_color = global::GraphicsTester.Android.Resource.Styleable.DrawerArrowToggle_color;
+			global::System.Graphics.Resource.Styleable.DrawerArrowToggle_drawableSize = global::GraphicsTester.Android.Resource.Styleable.DrawerArrowToggle_drawableSize;
+			global::System.Graphics.Resource.Styleable.DrawerArrowToggle_gapBetweenBars = global::GraphicsTester.Android.Resource.Styleable.DrawerArrowToggle_gapBetweenBars;
+			global::System.Graphics.Resource.Styleable.DrawerArrowToggle_spinBars = global::GraphicsTester.Android.Resource.Styleable.DrawerArrowToggle_spinBars;
+			global::System.Graphics.Resource.Styleable.DrawerArrowToggle_thickness = global::GraphicsTester.Android.Resource.Styleable.DrawerArrowToggle_thickness;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_backgroundTint = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_backgroundTint;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_backgroundTintMode = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_backgroundTintMode;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_Behavior_Layout = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_Behavior_Layout;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_Behavior_Layout_behavior_autoHide = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_Behavior_Layout_behavior_autoHide;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_borderWidth = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_borderWidth;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_elevation = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_elevation;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_fabCustomSize = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_fabCustomSize;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_fabSize = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_fabSize;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_hideMotionSpec = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_hideMotionSpec;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_hoveredFocusedTranslationZ = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_hoveredFocusedTranslationZ;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_maxImageSize = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_maxImageSize;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_pressedTranslationZ = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_pressedTranslationZ;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_rippleColor = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_rippleColor;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_showMotionSpec = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_showMotionSpec;
+			global::System.Graphics.Resource.Styleable.FloatingActionButton_useCompatPadding = global::GraphicsTester.Android.Resource.Styleable.FloatingActionButton_useCompatPadding;
+			global::System.Graphics.Resource.Styleable.FlowLayout = global::GraphicsTester.Android.Resource.Styleable.FlowLayout;
+			global::System.Graphics.Resource.Styleable.FlowLayout_itemSpacing = global::GraphicsTester.Android.Resource.Styleable.FlowLayout_itemSpacing;
+			global::System.Graphics.Resource.Styleable.FlowLayout_lineSpacing = global::GraphicsTester.Android.Resource.Styleable.FlowLayout_lineSpacing;
+			global::System.Graphics.Resource.Styleable.FontFamily = global::GraphicsTester.Android.Resource.Styleable.FontFamily;
+			global::System.Graphics.Resource.Styleable.FontFamilyFont = global::GraphicsTester.Android.Resource.Styleable.FontFamilyFont;
+			global::System.Graphics.Resource.Styleable.FontFamilyFont_android_font = global::GraphicsTester.Android.Resource.Styleable.FontFamilyFont_android_font;
+			global::System.Graphics.Resource.Styleable.FontFamilyFont_android_fontStyle = global::GraphicsTester.Android.Resource.Styleable.FontFamilyFont_android_fontStyle;
+			global::System.Graphics.Resource.Styleable.FontFamilyFont_android_fontVariationSettings = global::GraphicsTester.Android.Resource.Styleable.FontFamilyFont_android_fontVariationSettings;
+			global::System.Graphics.Resource.Styleable.FontFamilyFont_android_fontWeight = global::GraphicsTester.Android.Resource.Styleable.FontFamilyFont_android_fontWeight;
+			global::System.Graphics.Resource.Styleable.FontFamilyFont_android_ttcIndex = global::GraphicsTester.Android.Resource.Styleable.FontFamilyFont_android_ttcIndex;
+			global::System.Graphics.Resource.Styleable.FontFamilyFont_font = global::GraphicsTester.Android.Resource.Styleable.FontFamilyFont_font;
+			global::System.Graphics.Resource.Styleable.FontFamilyFont_fontStyle = global::GraphicsTester.Android.Resource.Styleable.FontFamilyFont_fontStyle;
+			global::System.Graphics.Resource.Styleable.FontFamilyFont_fontVariationSettings = global::GraphicsTester.Android.Resource.Styleable.FontFamilyFont_fontVariationSettings;
+			global::System.Graphics.Resource.Styleable.FontFamilyFont_fontWeight = global::GraphicsTester.Android.Resource.Styleable.FontFamilyFont_fontWeight;
+			global::System.Graphics.Resource.Styleable.FontFamilyFont_ttcIndex = global::GraphicsTester.Android.Resource.Styleable.FontFamilyFont_ttcIndex;
+			global::System.Graphics.Resource.Styleable.FontFamily_fontProviderAuthority = global::GraphicsTester.Android.Resource.Styleable.FontFamily_fontProviderAuthority;
+			global::System.Graphics.Resource.Styleable.FontFamily_fontProviderCerts = global::GraphicsTester.Android.Resource.Styleable.FontFamily_fontProviderCerts;
+			global::System.Graphics.Resource.Styleable.FontFamily_fontProviderFetchStrategy = global::GraphicsTester.Android.Resource.Styleable.FontFamily_fontProviderFetchStrategy;
+			global::System.Graphics.Resource.Styleable.FontFamily_fontProviderFetchTimeout = global::GraphicsTester.Android.Resource.Styleable.FontFamily_fontProviderFetchTimeout;
+			global::System.Graphics.Resource.Styleable.FontFamily_fontProviderPackage = global::GraphicsTester.Android.Resource.Styleable.FontFamily_fontProviderPackage;
+			global::System.Graphics.Resource.Styleable.FontFamily_fontProviderQuery = global::GraphicsTester.Android.Resource.Styleable.FontFamily_fontProviderQuery;
+			global::System.Graphics.Resource.Styleable.ForegroundLinearLayout = global::GraphicsTester.Android.Resource.Styleable.ForegroundLinearLayout;
+			global::System.Graphics.Resource.Styleable.ForegroundLinearLayout_android_foreground = global::GraphicsTester.Android.Resource.Styleable.ForegroundLinearLayout_android_foreground;
+			global::System.Graphics.Resource.Styleable.ForegroundLinearLayout_android_foregroundGravity = global::GraphicsTester.Android.Resource.Styleable.ForegroundLinearLayout_android_foregroundGravity;
+			global::System.Graphics.Resource.Styleable.ForegroundLinearLayout_foregroundInsidePadding = global::GraphicsTester.Android.Resource.Styleable.ForegroundLinearLayout_foregroundInsidePadding;
+			global::System.Graphics.Resource.Styleable.GradientColor = global::GraphicsTester.Android.Resource.Styleable.GradientColor;
+			global::System.Graphics.Resource.Styleable.GradientColorItem = global::GraphicsTester.Android.Resource.Styleable.GradientColorItem;
+			global::System.Graphics.Resource.Styleable.GradientColorItem_android_color = global::GraphicsTester.Android.Resource.Styleable.GradientColorItem_android_color;
+			global::System.Graphics.Resource.Styleable.GradientColorItem_android_offset = global::GraphicsTester.Android.Resource.Styleable.GradientColorItem_android_offset;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_centerColor = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_centerColor;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_centerX = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_centerX;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_centerY = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_centerY;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_endColor = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_endColor;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_endX = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_endX;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_endY = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_endY;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_gradientRadius = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_gradientRadius;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_startColor = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_startColor;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_startX = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_startX;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_startY = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_startY;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_tileMode = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_tileMode;
+			global::System.Graphics.Resource.Styleable.GradientColor_android_type = global::GraphicsTester.Android.Resource.Styleable.GradientColor_android_type;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_android_baselineAligned = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_android_baselineAligned;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_android_baselineAlignedChildIndex = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_android_baselineAlignedChildIndex;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_android_gravity = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_android_gravity;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_android_orientation = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_android_orientation;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_android_weightSum = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_android_weightSum;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_divider = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_divider;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_dividerPadding = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_dividerPadding;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_Layout = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_Layout;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_Layout_android_layout_gravity = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_Layout_android_layout_gravity;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_Layout_android_layout_height = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_Layout_android_layout_height;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_Layout_android_layout_weight = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_Layout_android_layout_weight;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_Layout_android_layout_width = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_Layout_android_layout_width;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_measureWithLargestChild = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_measureWithLargestChild;
+			global::System.Graphics.Resource.Styleable.LinearLayoutCompat_showDividers = global::GraphicsTester.Android.Resource.Styleable.LinearLayoutCompat_showDividers;
+			global::System.Graphics.Resource.Styleable.ListPopupWindow = global::GraphicsTester.Android.Resource.Styleable.ListPopupWindow;
+			global::System.Graphics.Resource.Styleable.ListPopupWindow_android_dropDownHorizontalOffset = global::GraphicsTester.Android.Resource.Styleable.ListPopupWindow_android_dropDownHorizontalOffset;
+			global::System.Graphics.Resource.Styleable.ListPopupWindow_android_dropDownVerticalOffset = global::GraphicsTester.Android.Resource.Styleable.ListPopupWindow_android_dropDownVerticalOffset;
+			global::System.Graphics.Resource.Styleable.MaterialButton = global::GraphicsTester.Android.Resource.Styleable.MaterialButton;
+			global::System.Graphics.Resource.Styleable.MaterialButton_android_insetBottom = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_android_insetBottom;
+			global::System.Graphics.Resource.Styleable.MaterialButton_android_insetLeft = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_android_insetLeft;
+			global::System.Graphics.Resource.Styleable.MaterialButton_android_insetRight = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_android_insetRight;
+			global::System.Graphics.Resource.Styleable.MaterialButton_android_insetTop = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_android_insetTop;
+			global::System.Graphics.Resource.Styleable.MaterialButton_backgroundTint = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_backgroundTint;
+			global::System.Graphics.Resource.Styleable.MaterialButton_backgroundTintMode = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_backgroundTintMode;
+			global::System.Graphics.Resource.Styleable.MaterialButton_cornerRadius = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_cornerRadius;
+			global::System.Graphics.Resource.Styleable.MaterialButton_icon = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_icon;
+			global::System.Graphics.Resource.Styleable.MaterialButton_iconGravity = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_iconGravity;
+			global::System.Graphics.Resource.Styleable.MaterialButton_iconPadding = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_iconPadding;
+			global::System.Graphics.Resource.Styleable.MaterialButton_iconSize = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_iconSize;
+			global::System.Graphics.Resource.Styleable.MaterialButton_iconTint = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_iconTint;
+			global::System.Graphics.Resource.Styleable.MaterialButton_iconTintMode = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_iconTintMode;
+			global::System.Graphics.Resource.Styleable.MaterialButton_rippleColor = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_rippleColor;
+			global::System.Graphics.Resource.Styleable.MaterialButton_strokeColor = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_strokeColor;
+			global::System.Graphics.Resource.Styleable.MaterialButton_strokeWidth = global::GraphicsTester.Android.Resource.Styleable.MaterialButton_strokeWidth;
+			global::System.Graphics.Resource.Styleable.MaterialCardView = global::GraphicsTester.Android.Resource.Styleable.MaterialCardView;
+			global::System.Graphics.Resource.Styleable.MaterialCardView_strokeColor = global::GraphicsTester.Android.Resource.Styleable.MaterialCardView_strokeColor;
+			global::System.Graphics.Resource.Styleable.MaterialCardView_strokeWidth = global::GraphicsTester.Android.Resource.Styleable.MaterialCardView_strokeWidth;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_bottomSheetDialogTheme = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_bottomSheetDialogTheme;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_bottomSheetStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_bottomSheetStyle;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_chipGroupStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_chipGroupStyle;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_chipStandaloneStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_chipStandaloneStyle;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_chipStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_chipStyle;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_colorAccent = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_colorAccent;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_colorBackgroundFloating = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_colorBackgroundFloating;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_colorPrimary = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_colorPrimary;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_colorPrimaryDark = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_colorPrimaryDark;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_colorSecondary = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_colorSecondary;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_editTextStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_editTextStyle;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_floatingActionButtonStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_floatingActionButtonStyle;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_materialButtonStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_materialButtonStyle;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_materialCardViewStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_materialCardViewStyle;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_navigationViewStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_navigationViewStyle;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_scrimBackground = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_scrimBackground;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_snackbarButtonStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_snackbarButtonStyle;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_tabStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_tabStyle;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceBody1 = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceBody1;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceBody2 = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceBody2;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceButton = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceButton;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceCaption = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceCaption;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline1 = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline1;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline2 = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline2;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline3 = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline3;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline4 = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline4;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline5 = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline5;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline6 = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceHeadline6;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceOverline = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceOverline;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceSubtitle1 = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceSubtitle1;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textAppearanceSubtitle2 = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textAppearanceSubtitle2;
+			global::System.Graphics.Resource.Styleable.MaterialComponentsTheme_textInputStyle = global::GraphicsTester.Android.Resource.Styleable.MaterialComponentsTheme_textInputStyle;
+			global::System.Graphics.Resource.Styleable.MenuGroup = global::GraphicsTester.Android.Resource.Styleable.MenuGroup;
+			global::System.Graphics.Resource.Styleable.MenuGroup_android_checkableBehavior = global::GraphicsTester.Android.Resource.Styleable.MenuGroup_android_checkableBehavior;
+			global::System.Graphics.Resource.Styleable.MenuGroup_android_enabled = global::GraphicsTester.Android.Resource.Styleable.MenuGroup_android_enabled;
+			global::System.Graphics.Resource.Styleable.MenuGroup_android_id = global::GraphicsTester.Android.Resource.Styleable.MenuGroup_android_id;
+			global::System.Graphics.Resource.Styleable.MenuGroup_android_menuCategory = global::GraphicsTester.Android.Resource.Styleable.MenuGroup_android_menuCategory;
+			global::System.Graphics.Resource.Styleable.MenuGroup_android_orderInCategory = global::GraphicsTester.Android.Resource.Styleable.MenuGroup_android_orderInCategory;
+			global::System.Graphics.Resource.Styleable.MenuGroup_android_visible = global::GraphicsTester.Android.Resource.Styleable.MenuGroup_android_visible;
+			global::System.Graphics.Resource.Styleable.MenuItem = global::GraphicsTester.Android.Resource.Styleable.MenuItem;
+			global::System.Graphics.Resource.Styleable.MenuItem_actionLayout = global::GraphicsTester.Android.Resource.Styleable.MenuItem_actionLayout;
+			global::System.Graphics.Resource.Styleable.MenuItem_actionProviderClass = global::GraphicsTester.Android.Resource.Styleable.MenuItem_actionProviderClass;
+			global::System.Graphics.Resource.Styleable.MenuItem_actionViewClass = global::GraphicsTester.Android.Resource.Styleable.MenuItem_actionViewClass;
+			global::System.Graphics.Resource.Styleable.MenuItem_alphabeticModifiers = global::GraphicsTester.Android.Resource.Styleable.MenuItem_alphabeticModifiers;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_alphabeticShortcut = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_alphabeticShortcut;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_checkable = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_checkable;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_checked = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_checked;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_enabled = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_enabled;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_icon = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_icon;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_id = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_id;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_menuCategory = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_menuCategory;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_numericShortcut = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_numericShortcut;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_onClick = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_onClick;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_orderInCategory = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_orderInCategory;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_title = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_title;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_titleCondensed = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_titleCondensed;
+			global::System.Graphics.Resource.Styleable.MenuItem_android_visible = global::GraphicsTester.Android.Resource.Styleable.MenuItem_android_visible;
+			global::System.Graphics.Resource.Styleable.MenuItem_contentDescription = global::GraphicsTester.Android.Resource.Styleable.MenuItem_contentDescription;
+			global::System.Graphics.Resource.Styleable.MenuItem_iconTint = global::GraphicsTester.Android.Resource.Styleable.MenuItem_iconTint;
+			global::System.Graphics.Resource.Styleable.MenuItem_iconTintMode = global::GraphicsTester.Android.Resource.Styleable.MenuItem_iconTintMode;
+			global::System.Graphics.Resource.Styleable.MenuItem_numericModifiers = global::GraphicsTester.Android.Resource.Styleable.MenuItem_numericModifiers;
+			global::System.Graphics.Resource.Styleable.MenuItem_showAsAction = global::GraphicsTester.Android.Resource.Styleable.MenuItem_showAsAction;
+			global::System.Graphics.Resource.Styleable.MenuItem_tooltipText = global::GraphicsTester.Android.Resource.Styleable.MenuItem_tooltipText;
+			global::System.Graphics.Resource.Styleable.MenuView = global::GraphicsTester.Android.Resource.Styleable.MenuView;
+			global::System.Graphics.Resource.Styleable.MenuView_android_headerBackground = global::GraphicsTester.Android.Resource.Styleable.MenuView_android_headerBackground;
+			global::System.Graphics.Resource.Styleable.MenuView_android_horizontalDivider = global::GraphicsTester.Android.Resource.Styleable.MenuView_android_horizontalDivider;
+			global::System.Graphics.Resource.Styleable.MenuView_android_itemBackground = global::GraphicsTester.Android.Resource.Styleable.MenuView_android_itemBackground;
+			global::System.Graphics.Resource.Styleable.MenuView_android_itemIconDisabledAlpha = global::GraphicsTester.Android.Resource.Styleable.MenuView_android_itemIconDisabledAlpha;
+			global::System.Graphics.Resource.Styleable.MenuView_android_itemTextAppearance = global::GraphicsTester.Android.Resource.Styleable.MenuView_android_itemTextAppearance;
+			global::System.Graphics.Resource.Styleable.MenuView_android_verticalDivider = global::GraphicsTester.Android.Resource.Styleable.MenuView_android_verticalDivider;
+			global::System.Graphics.Resource.Styleable.MenuView_android_windowAnimationStyle = global::GraphicsTester.Android.Resource.Styleable.MenuView_android_windowAnimationStyle;
+			global::System.Graphics.Resource.Styleable.MenuView_preserveIconSpacing = global::GraphicsTester.Android.Resource.Styleable.MenuView_preserveIconSpacing;
+			global::System.Graphics.Resource.Styleable.MenuView_subMenuArrow = global::GraphicsTester.Android.Resource.Styleable.MenuView_subMenuArrow;
+			global::System.Graphics.Resource.Styleable.NavigationView = global::GraphicsTester.Android.Resource.Styleable.NavigationView;
+			global::System.Graphics.Resource.Styleable.NavigationView_android_background = global::GraphicsTester.Android.Resource.Styleable.NavigationView_android_background;
+			global::System.Graphics.Resource.Styleable.NavigationView_android_fitsSystemWindows = global::GraphicsTester.Android.Resource.Styleable.NavigationView_android_fitsSystemWindows;
+			global::System.Graphics.Resource.Styleable.NavigationView_android_maxWidth = global::GraphicsTester.Android.Resource.Styleable.NavigationView_android_maxWidth;
+			global::System.Graphics.Resource.Styleable.NavigationView_elevation = global::GraphicsTester.Android.Resource.Styleable.NavigationView_elevation;
+			global::System.Graphics.Resource.Styleable.NavigationView_headerLayout = global::GraphicsTester.Android.Resource.Styleable.NavigationView_headerLayout;
+			global::System.Graphics.Resource.Styleable.NavigationView_itemBackground = global::GraphicsTester.Android.Resource.Styleable.NavigationView_itemBackground;
+			global::System.Graphics.Resource.Styleable.NavigationView_itemHorizontalPadding = global::GraphicsTester.Android.Resource.Styleable.NavigationView_itemHorizontalPadding;
+			global::System.Graphics.Resource.Styleable.NavigationView_itemIconPadding = global::GraphicsTester.Android.Resource.Styleable.NavigationView_itemIconPadding;
+			global::System.Graphics.Resource.Styleable.NavigationView_itemIconTint = global::GraphicsTester.Android.Resource.Styleable.NavigationView_itemIconTint;
+			global::System.Graphics.Resource.Styleable.NavigationView_itemTextAppearance = global::GraphicsTester.Android.Resource.Styleable.NavigationView_itemTextAppearance;
+			global::System.Graphics.Resource.Styleable.NavigationView_itemTextColor = global::GraphicsTester.Android.Resource.Styleable.NavigationView_itemTextColor;
+			global::System.Graphics.Resource.Styleable.NavigationView_menu = global::GraphicsTester.Android.Resource.Styleable.NavigationView_menu;
+			global::System.Graphics.Resource.Styleable.PopupWindow = global::GraphicsTester.Android.Resource.Styleable.PopupWindow;
+			global::System.Graphics.Resource.Styleable.PopupWindowBackgroundState = global::GraphicsTester.Android.Resource.Styleable.PopupWindowBackgroundState;
+			global::System.Graphics.Resource.Styleable.PopupWindowBackgroundState_state_above_anchor = global::GraphicsTester.Android.Resource.Styleable.PopupWindowBackgroundState_state_above_anchor;
+			global::System.Graphics.Resource.Styleable.PopupWindow_android_popupAnimationStyle = global::GraphicsTester.Android.Resource.Styleable.PopupWindow_android_popupAnimationStyle;
+			global::System.Graphics.Resource.Styleable.PopupWindow_android_popupBackground = global::GraphicsTester.Android.Resource.Styleable.PopupWindow_android_popupBackground;
+			global::System.Graphics.Resource.Styleable.PopupWindow_overlapAnchor = global::GraphicsTester.Android.Resource.Styleable.PopupWindow_overlapAnchor;
+			global::System.Graphics.Resource.Styleable.RecycleListView = global::GraphicsTester.Android.Resource.Styleable.RecycleListView;
+			global::System.Graphics.Resource.Styleable.RecycleListView_paddingBottomNoButtons = global::GraphicsTester.Android.Resource.Styleable.RecycleListView_paddingBottomNoButtons;
+			global::System.Graphics.Resource.Styleable.RecycleListView_paddingTopNoTitle = global::GraphicsTester.Android.Resource.Styleable.RecycleListView_paddingTopNoTitle;
+			global::System.Graphics.Resource.Styleable.RecyclerView = global::GraphicsTester.Android.Resource.Styleable.RecyclerView;
+			global::System.Graphics.Resource.Styleable.RecyclerView_android_clipToPadding = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_android_clipToPadding;
+			global::System.Graphics.Resource.Styleable.RecyclerView_android_descendantFocusability = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_android_descendantFocusability;
+			global::System.Graphics.Resource.Styleable.RecyclerView_android_orientation = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_android_orientation;
+			global::System.Graphics.Resource.Styleable.RecyclerView_fastScrollEnabled = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_fastScrollEnabled;
+			global::System.Graphics.Resource.Styleable.RecyclerView_fastScrollHorizontalThumbDrawable = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_fastScrollHorizontalThumbDrawable;
+			global::System.Graphics.Resource.Styleable.RecyclerView_fastScrollHorizontalTrackDrawable = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_fastScrollHorizontalTrackDrawable;
+			global::System.Graphics.Resource.Styleable.RecyclerView_fastScrollVerticalThumbDrawable = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_fastScrollVerticalThumbDrawable;
+			global::System.Graphics.Resource.Styleable.RecyclerView_fastScrollVerticalTrackDrawable = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_fastScrollVerticalTrackDrawable;
+			global::System.Graphics.Resource.Styleable.RecyclerView_layoutManager = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_layoutManager;
+			global::System.Graphics.Resource.Styleable.RecyclerView_reverseLayout = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_reverseLayout;
+			global::System.Graphics.Resource.Styleable.RecyclerView_spanCount = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_spanCount;
+			global::System.Graphics.Resource.Styleable.RecyclerView_stackFromEnd = global::GraphicsTester.Android.Resource.Styleable.RecyclerView_stackFromEnd;
+			global::System.Graphics.Resource.Styleable.ScrimInsetsFrameLayout = global::GraphicsTester.Android.Resource.Styleable.ScrimInsetsFrameLayout;
+			global::System.Graphics.Resource.Styleable.ScrimInsetsFrameLayout_insetForeground = global::GraphicsTester.Android.Resource.Styleable.ScrimInsetsFrameLayout_insetForeground;
+			global::System.Graphics.Resource.Styleable.ScrollingViewBehavior_Layout = global::GraphicsTester.Android.Resource.Styleable.ScrollingViewBehavior_Layout;
+			global::System.Graphics.Resource.Styleable.ScrollingViewBehavior_Layout_behavior_overlapTop = global::GraphicsTester.Android.Resource.Styleable.ScrollingViewBehavior_Layout_behavior_overlapTop;
+			global::System.Graphics.Resource.Styleable.SearchView = global::GraphicsTester.Android.Resource.Styleable.SearchView;
+			global::System.Graphics.Resource.Styleable.SearchView_android_focusable = global::GraphicsTester.Android.Resource.Styleable.SearchView_android_focusable;
+			global::System.Graphics.Resource.Styleable.SearchView_android_imeOptions = global::GraphicsTester.Android.Resource.Styleable.SearchView_android_imeOptions;
+			global::System.Graphics.Resource.Styleable.SearchView_android_inputType = global::GraphicsTester.Android.Resource.Styleable.SearchView_android_inputType;
+			global::System.Graphics.Resource.Styleable.SearchView_android_maxWidth = global::GraphicsTester.Android.Resource.Styleable.SearchView_android_maxWidth;
+			global::System.Graphics.Resource.Styleable.SearchView_closeIcon = global::GraphicsTester.Android.Resource.Styleable.SearchView_closeIcon;
+			global::System.Graphics.Resource.Styleable.SearchView_commitIcon = global::GraphicsTester.Android.Resource.Styleable.SearchView_commitIcon;
+			global::System.Graphics.Resource.Styleable.SearchView_defaultQueryHint = global::GraphicsTester.Android.Resource.Styleable.SearchView_defaultQueryHint;
+			global::System.Graphics.Resource.Styleable.SearchView_goIcon = global::GraphicsTester.Android.Resource.Styleable.SearchView_goIcon;
+			global::System.Graphics.Resource.Styleable.SearchView_iconifiedByDefault = global::GraphicsTester.Android.Resource.Styleable.SearchView_iconifiedByDefault;
+			global::System.Graphics.Resource.Styleable.SearchView_layout = global::GraphicsTester.Android.Resource.Styleable.SearchView_layout;
+			global::System.Graphics.Resource.Styleable.SearchView_queryBackground = global::GraphicsTester.Android.Resource.Styleable.SearchView_queryBackground;
+			global::System.Graphics.Resource.Styleable.SearchView_queryHint = global::GraphicsTester.Android.Resource.Styleable.SearchView_queryHint;
+			global::System.Graphics.Resource.Styleable.SearchView_searchHintIcon = global::GraphicsTester.Android.Resource.Styleable.SearchView_searchHintIcon;
+			global::System.Graphics.Resource.Styleable.SearchView_searchIcon = global::GraphicsTester.Android.Resource.Styleable.SearchView_searchIcon;
+			global::System.Graphics.Resource.Styleable.SearchView_submitBackground = global::GraphicsTester.Android.Resource.Styleable.SearchView_submitBackground;
+			global::System.Graphics.Resource.Styleable.SearchView_suggestionRowLayout = global::GraphicsTester.Android.Resource.Styleable.SearchView_suggestionRowLayout;
+			global::System.Graphics.Resource.Styleable.SearchView_voiceIcon = global::GraphicsTester.Android.Resource.Styleable.SearchView_voiceIcon;
+			global::System.Graphics.Resource.Styleable.Snackbar = global::GraphicsTester.Android.Resource.Styleable.Snackbar;
+			global::System.Graphics.Resource.Styleable.SnackbarLayout = global::GraphicsTester.Android.Resource.Styleable.SnackbarLayout;
+			global::System.Graphics.Resource.Styleable.SnackbarLayout_android_maxWidth = global::GraphicsTester.Android.Resource.Styleable.SnackbarLayout_android_maxWidth;
+			global::System.Graphics.Resource.Styleable.SnackbarLayout_elevation = global::GraphicsTester.Android.Resource.Styleable.SnackbarLayout_elevation;
+			global::System.Graphics.Resource.Styleable.SnackbarLayout_maxActionInlineWidth = global::GraphicsTester.Android.Resource.Styleable.SnackbarLayout_maxActionInlineWidth;
+			global::System.Graphics.Resource.Styleable.Snackbar_snackbarButtonStyle = global::GraphicsTester.Android.Resource.Styleable.Snackbar_snackbarButtonStyle;
+			global::System.Graphics.Resource.Styleable.Snackbar_snackbarStyle = global::GraphicsTester.Android.Resource.Styleable.Snackbar_snackbarStyle;
+			global::System.Graphics.Resource.Styleable.Spinner = global::GraphicsTester.Android.Resource.Styleable.Spinner;
+			global::System.Graphics.Resource.Styleable.Spinner_android_dropDownWidth = global::GraphicsTester.Android.Resource.Styleable.Spinner_android_dropDownWidth;
+			global::System.Graphics.Resource.Styleable.Spinner_android_entries = global::GraphicsTester.Android.Resource.Styleable.Spinner_android_entries;
+			global::System.Graphics.Resource.Styleable.Spinner_android_popupBackground = global::GraphicsTester.Android.Resource.Styleable.Spinner_android_popupBackground;
+			global::System.Graphics.Resource.Styleable.Spinner_android_prompt = global::GraphicsTester.Android.Resource.Styleable.Spinner_android_prompt;
+			global::System.Graphics.Resource.Styleable.Spinner_popupTheme = global::GraphicsTester.Android.Resource.Styleable.Spinner_popupTheme;
+			global::System.Graphics.Resource.Styleable.StateListDrawable = global::GraphicsTester.Android.Resource.Styleable.StateListDrawable;
+			global::System.Graphics.Resource.Styleable.StateListDrawableItem = global::GraphicsTester.Android.Resource.Styleable.StateListDrawableItem;
+			global::System.Graphics.Resource.Styleable.StateListDrawableItem_android_drawable = global::GraphicsTester.Android.Resource.Styleable.StateListDrawableItem_android_drawable;
+			global::System.Graphics.Resource.Styleable.StateListDrawable_android_constantSize = global::GraphicsTester.Android.Resource.Styleable.StateListDrawable_android_constantSize;
+			global::System.Graphics.Resource.Styleable.StateListDrawable_android_dither = global::GraphicsTester.Android.Resource.Styleable.StateListDrawable_android_dither;
+			global::System.Graphics.Resource.Styleable.StateListDrawable_android_enterFadeDuration = global::GraphicsTester.Android.Resource.Styleable.StateListDrawable_android_enterFadeDuration;
+			global::System.Graphics.Resource.Styleable.StateListDrawable_android_exitFadeDuration = global::GraphicsTester.Android.Resource.Styleable.StateListDrawable_android_exitFadeDuration;
+			global::System.Graphics.Resource.Styleable.StateListDrawable_android_variablePadding = global::GraphicsTester.Android.Resource.Styleable.StateListDrawable_android_variablePadding;
+			global::System.Graphics.Resource.Styleable.StateListDrawable_android_visible = global::GraphicsTester.Android.Resource.Styleable.StateListDrawable_android_visible;
+			global::System.Graphics.Resource.Styleable.SwitchCompat = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_android_textOff = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_android_textOff;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_android_textOn = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_android_textOn;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_android_thumb = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_android_thumb;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_showText = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_showText;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_splitTrack = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_splitTrack;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_switchMinWidth = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_switchMinWidth;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_switchPadding = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_switchPadding;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_switchTextAppearance = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_switchTextAppearance;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_thumbTextPadding = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_thumbTextPadding;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_thumbTint = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_thumbTint;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_thumbTintMode = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_thumbTintMode;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_track = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_track;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_trackTint = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_trackTint;
+			global::System.Graphics.Resource.Styleable.SwitchCompat_trackTintMode = global::GraphicsTester.Android.Resource.Styleable.SwitchCompat_trackTintMode;
+			global::System.Graphics.Resource.Styleable.TabItem = global::GraphicsTester.Android.Resource.Styleable.TabItem;
+			global::System.Graphics.Resource.Styleable.TabItem_android_icon = global::GraphicsTester.Android.Resource.Styleable.TabItem_android_icon;
+			global::System.Graphics.Resource.Styleable.TabItem_android_layout = global::GraphicsTester.Android.Resource.Styleable.TabItem_android_layout;
+			global::System.Graphics.Resource.Styleable.TabItem_android_text = global::GraphicsTester.Android.Resource.Styleable.TabItem_android_text;
+			global::System.Graphics.Resource.Styleable.TabLayout = global::GraphicsTester.Android.Resource.Styleable.TabLayout;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabBackground = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabBackground;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabContentStart = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabContentStart;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabGravity = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabGravity;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabIconTint = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabIconTint;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabIconTintMode = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabIconTintMode;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabIndicator = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabIndicator;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabIndicatorAnimationDuration = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabIndicatorAnimationDuration;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabIndicatorColor = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabIndicatorColor;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabIndicatorFullWidth = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabIndicatorFullWidth;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabIndicatorGravity = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabIndicatorGravity;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabIndicatorHeight = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabIndicatorHeight;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabInlineLabel = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabInlineLabel;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabMaxWidth = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabMaxWidth;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabMinWidth = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabMinWidth;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabMode = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabMode;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabPadding = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabPadding;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabPaddingBottom = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabPaddingBottom;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabPaddingEnd = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabPaddingEnd;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabPaddingStart = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabPaddingStart;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabPaddingTop = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabPaddingTop;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabRippleColor = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabRippleColor;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabSelectedTextColor = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabSelectedTextColor;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabTextAppearance = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabTextAppearance;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabTextColor = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabTextColor;
+			global::System.Graphics.Resource.Styleable.TabLayout_tabUnboundedRipple = global::GraphicsTester.Android.Resource.Styleable.TabLayout_tabUnboundedRipple;
+			global::System.Graphics.Resource.Styleable.TextAppearance = global::GraphicsTester.Android.Resource.Styleable.TextAppearance;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_fontFamily = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_fontFamily;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_shadowColor = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_shadowColor;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_shadowDx = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_shadowDx;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_shadowDy = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_shadowDy;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_shadowRadius = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_shadowRadius;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_textColor = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_textColor;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_textColorHint = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_textColorHint;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_textColorLink = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_textColorLink;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_textFontWeight = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_textFontWeight;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_textSize = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_textSize;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_textStyle = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_textStyle;
+			global::System.Graphics.Resource.Styleable.TextAppearance_android_typeface = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_android_typeface;
+			global::System.Graphics.Resource.Styleable.TextAppearance_fontFamily = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_fontFamily;
+			global::System.Graphics.Resource.Styleable.TextAppearance_fontVariationSettings = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_fontVariationSettings;
+			global::System.Graphics.Resource.Styleable.TextAppearance_textAllCaps = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_textAllCaps;
+			global::System.Graphics.Resource.Styleable.TextAppearance_textLocale = global::GraphicsTester.Android.Resource.Styleable.TextAppearance_textLocale;
+			global::System.Graphics.Resource.Styleable.TextInputLayout = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_android_hint = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_android_hint;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_android_textColorHint = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_android_textColorHint;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_boxBackgroundColor = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_boxBackgroundColor;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_boxBackgroundMode = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_boxBackgroundMode;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_boxCollapsedPaddingTop = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_boxCollapsedPaddingTop;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_boxCornerRadiusBottomEnd = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_boxCornerRadiusBottomEnd;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_boxCornerRadiusBottomStart = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_boxCornerRadiusBottomStart;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_boxCornerRadiusTopEnd = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_boxCornerRadiusTopEnd;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_boxCornerRadiusTopStart = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_boxCornerRadiusTopStart;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_boxStrokeColor = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_boxStrokeColor;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_boxStrokeWidth = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_boxStrokeWidth;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_counterEnabled = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_counterEnabled;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_counterMaxLength = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_counterMaxLength;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_counterOverflowTextAppearance = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_counterOverflowTextAppearance;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_counterTextAppearance = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_counterTextAppearance;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_errorEnabled = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_errorEnabled;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_errorTextAppearance = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_errorTextAppearance;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_helperText = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_helperText;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_helperTextEnabled = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_helperTextEnabled;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_helperTextTextAppearance = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_helperTextTextAppearance;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_hintAnimationEnabled = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_hintAnimationEnabled;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_hintEnabled = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_hintEnabled;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_hintTextAppearance = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_hintTextAppearance;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_passwordToggleContentDescription = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_passwordToggleContentDescription;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_passwordToggleDrawable = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_passwordToggleDrawable;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_passwordToggleEnabled = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_passwordToggleEnabled;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_passwordToggleTint = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_passwordToggleTint;
+			global::System.Graphics.Resource.Styleable.TextInputLayout_passwordToggleTintMode = global::GraphicsTester.Android.Resource.Styleable.TextInputLayout_passwordToggleTintMode;
+			global::System.Graphics.Resource.Styleable.ThemeEnforcement = global::GraphicsTester.Android.Resource.Styleable.ThemeEnforcement;
+			global::System.Graphics.Resource.Styleable.ThemeEnforcement_android_textAppearance = global::GraphicsTester.Android.Resource.Styleable.ThemeEnforcement_android_textAppearance;
+			global::System.Graphics.Resource.Styleable.ThemeEnforcement_enforceMaterialTheme = global::GraphicsTester.Android.Resource.Styleable.ThemeEnforcement_enforceMaterialTheme;
+			global::System.Graphics.Resource.Styleable.ThemeEnforcement_enforceTextAppearance = global::GraphicsTester.Android.Resource.Styleable.ThemeEnforcement_enforceTextAppearance;
+			global::System.Graphics.Resource.Styleable.Toolbar = global::GraphicsTester.Android.Resource.Styleable.Toolbar;
+			global::System.Graphics.Resource.Styleable.Toolbar_android_gravity = global::GraphicsTester.Android.Resource.Styleable.Toolbar_android_gravity;
+			global::System.Graphics.Resource.Styleable.Toolbar_android_minHeight = global::GraphicsTester.Android.Resource.Styleable.Toolbar_android_minHeight;
+			global::System.Graphics.Resource.Styleable.Toolbar_buttonGravity = global::GraphicsTester.Android.Resource.Styleable.Toolbar_buttonGravity;
+			global::System.Graphics.Resource.Styleable.Toolbar_collapseContentDescription = global::GraphicsTester.Android.Resource.Styleable.Toolbar_collapseContentDescription;
+			global::System.Graphics.Resource.Styleable.Toolbar_collapseIcon = global::GraphicsTester.Android.Resource.Styleable.Toolbar_collapseIcon;
+			global::System.Graphics.Resource.Styleable.Toolbar_contentInsetEnd = global::GraphicsTester.Android.Resource.Styleable.Toolbar_contentInsetEnd;
+			global::System.Graphics.Resource.Styleable.Toolbar_contentInsetEndWithActions = global::GraphicsTester.Android.Resource.Styleable.Toolbar_contentInsetEndWithActions;
+			global::System.Graphics.Resource.Styleable.Toolbar_contentInsetLeft = global::GraphicsTester.Android.Resource.Styleable.Toolbar_contentInsetLeft;
+			global::System.Graphics.Resource.Styleable.Toolbar_contentInsetRight = global::GraphicsTester.Android.Resource.Styleable.Toolbar_contentInsetRight;
+			global::System.Graphics.Resource.Styleable.Toolbar_contentInsetStart = global::GraphicsTester.Android.Resource.Styleable.Toolbar_contentInsetStart;
+			global::System.Graphics.Resource.Styleable.Toolbar_contentInsetStartWithNavigation = global::GraphicsTester.Android.Resource.Styleable.Toolbar_contentInsetStartWithNavigation;
+			global::System.Graphics.Resource.Styleable.Toolbar_logo = global::GraphicsTester.Android.Resource.Styleable.Toolbar_logo;
+			global::System.Graphics.Resource.Styleable.Toolbar_logoDescription = global::GraphicsTester.Android.Resource.Styleable.Toolbar_logoDescription;
+			global::System.Graphics.Resource.Styleable.Toolbar_maxButtonHeight = global::GraphicsTester.Android.Resource.Styleable.Toolbar_maxButtonHeight;
+			global::System.Graphics.Resource.Styleable.Toolbar_menu = global::GraphicsTester.Android.Resource.Styleable.Toolbar_menu;
+			global::System.Graphics.Resource.Styleable.Toolbar_navigationContentDescription = global::GraphicsTester.Android.Resource.Styleable.Toolbar_navigationContentDescription;
+			global::System.Graphics.Resource.Styleable.Toolbar_navigationIcon = global::GraphicsTester.Android.Resource.Styleable.Toolbar_navigationIcon;
+			global::System.Graphics.Resource.Styleable.Toolbar_popupTheme = global::GraphicsTester.Android.Resource.Styleable.Toolbar_popupTheme;
+			global::System.Graphics.Resource.Styleable.Toolbar_subtitle = global::GraphicsTester.Android.Resource.Styleable.Toolbar_subtitle;
+			global::System.Graphics.Resource.Styleable.Toolbar_subtitleTextAppearance = global::GraphicsTester.Android.Resource.Styleable.Toolbar_subtitleTextAppearance;
+			global::System.Graphics.Resource.Styleable.Toolbar_subtitleTextColor = global::GraphicsTester.Android.Resource.Styleable.Toolbar_subtitleTextColor;
+			global::System.Graphics.Resource.Styleable.Toolbar_title = global::GraphicsTester.Android.Resource.Styleable.Toolbar_title;
+			global::System.Graphics.Resource.Styleable.Toolbar_titleMargin = global::GraphicsTester.Android.Resource.Styleable.Toolbar_titleMargin;
+			global::System.Graphics.Resource.Styleable.Toolbar_titleMarginBottom = global::GraphicsTester.Android.Resource.Styleable.Toolbar_titleMarginBottom;
+			global::System.Graphics.Resource.Styleable.Toolbar_titleMarginEnd = global::GraphicsTester.Android.Resource.Styleable.Toolbar_titleMarginEnd;
+			global::System.Graphics.Resource.Styleable.Toolbar_titleMargins = global::GraphicsTester.Android.Resource.Styleable.Toolbar_titleMargins;
+			global::System.Graphics.Resource.Styleable.Toolbar_titleMarginStart = global::GraphicsTester.Android.Resource.Styleable.Toolbar_titleMarginStart;
+			global::System.Graphics.Resource.Styleable.Toolbar_titleMarginTop = global::GraphicsTester.Android.Resource.Styleable.Toolbar_titleMarginTop;
+			global::System.Graphics.Resource.Styleable.Toolbar_titleTextAppearance = global::GraphicsTester.Android.Resource.Styleable.Toolbar_titleTextAppearance;
+			global::System.Graphics.Resource.Styleable.Toolbar_titleTextColor = global::GraphicsTester.Android.Resource.Styleable.Toolbar_titleTextColor;
+			global::System.Graphics.Resource.Styleable.View = global::GraphicsTester.Android.Resource.Styleable.View;
+			global::System.Graphics.Resource.Styleable.ViewBackgroundHelper = global::GraphicsTester.Android.Resource.Styleable.ViewBackgroundHelper;
+			global::System.Graphics.Resource.Styleable.ViewBackgroundHelper_android_background = global::GraphicsTester.Android.Resource.Styleable.ViewBackgroundHelper_android_background;
+			global::System.Graphics.Resource.Styleable.ViewBackgroundHelper_backgroundTint = global::GraphicsTester.Android.Resource.Styleable.ViewBackgroundHelper_backgroundTint;
+			global::System.Graphics.Resource.Styleable.ViewBackgroundHelper_backgroundTintMode = global::GraphicsTester.Android.Resource.Styleable.ViewBackgroundHelper_backgroundTintMode;
+			global::System.Graphics.Resource.Styleable.ViewStubCompat = global::GraphicsTester.Android.Resource.Styleable.ViewStubCompat;
+			global::System.Graphics.Resource.Styleable.ViewStubCompat_android_id = global::GraphicsTester.Android.Resource.Styleable.ViewStubCompat_android_id;
+			global::System.Graphics.Resource.Styleable.ViewStubCompat_android_inflatedId = global::GraphicsTester.Android.Resource.Styleable.ViewStubCompat_android_inflatedId;
+			global::System.Graphics.Resource.Styleable.ViewStubCompat_android_layout = global::GraphicsTester.Android.Resource.Styleable.ViewStubCompat_android_layout;
+			global::System.Graphics.Resource.Styleable.View_android_focusable = global::GraphicsTester.Android.Resource.Styleable.View_android_focusable;
+			global::System.Graphics.Resource.Styleable.View_android_theme = global::GraphicsTester.Android.Resource.Styleable.View_android_theme;
+			global::System.Graphics.Resource.Styleable.View_paddingEnd = global::GraphicsTester.Android.Resource.Styleable.View_paddingEnd;
+			global::System.Graphics.Resource.Styleable.View_paddingStart = global::GraphicsTester.Android.Resource.Styleable.View_paddingStart;
+			global::System.Graphics.Resource.Styleable.View_theme = global::GraphicsTester.Android.Resource.Styleable.View_theme;
+		}
+		
+		public partial class Animation
+		{
+			
+			// aapt resource value: 0x7F010000
+			public const int abc_fade_in = 2130771968;
+			
+			// aapt resource value: 0x7F010001
+			public const int abc_fade_out = 2130771969;
+			
+			// aapt resource value: 0x7F010002
+			public const int abc_grow_fade_in_from_bottom = 2130771970;
+			
+			// aapt resource value: 0x7F010003
+			public const int abc_popup_enter = 2130771971;
+			
+			// aapt resource value: 0x7F010004
+			public const int abc_popup_exit = 2130771972;
+			
+			// aapt resource value: 0x7F010005
+			public const int abc_shrink_fade_out_from_bottom = 2130771973;
+			
+			// aapt resource value: 0x7F010006
+			public const int abc_slide_in_bottom = 2130771974;
+			
+			// aapt resource value: 0x7F010007
+			public const int abc_slide_in_top = 2130771975;
+			
+			// aapt resource value: 0x7F010008
+			public const int abc_slide_out_bottom = 2130771976;
+			
+			// aapt resource value: 0x7F010009
+			public const int abc_slide_out_top = 2130771977;
+			
+			// aapt resource value: 0x7F01000A
+			public const int abc_tooltip_enter = 2130771978;
+			
+			// aapt resource value: 0x7F01000B
+			public const int abc_tooltip_exit = 2130771979;
+			
+			// aapt resource value: 0x7F01000C
+			public const int btn_checkbox_to_checked_box_inner_merged_animation = 2130771980;
+			
+			// aapt resource value: 0x7F01000D
+			public const int btn_checkbox_to_checked_box_outer_merged_animation = 2130771981;
+			
+			// aapt resource value: 0x7F01000E
+			public const int btn_checkbox_to_checked_icon_null_animation = 2130771982;
+			
+			// aapt resource value: 0x7F01000F
+			public const int btn_checkbox_to_unchecked_box_inner_merged_animation = 2130771983;
+			
+			// aapt resource value: 0x7F010010
+			public const int btn_checkbox_to_unchecked_check_path_merged_animation = 2130771984;
+			
+			// aapt resource value: 0x7F010011
+			public const int btn_checkbox_to_unchecked_icon_null_animation = 2130771985;
+			
+			// aapt resource value: 0x7F010012
+			public const int btn_radio_to_off_mtrl_dot_group_animation = 2130771986;
+			
+			// aapt resource value: 0x7F010013
+			public const int btn_radio_to_off_mtrl_ring_outer_animation = 2130771987;
+			
+			// aapt resource value: 0x7F010014
+			public const int btn_radio_to_off_mtrl_ring_outer_path_animation = 2130771988;
+			
+			// aapt resource value: 0x7F010015
+			public const int btn_radio_to_on_mtrl_dot_group_animation = 2130771989;
+			
+			// aapt resource value: 0x7F010016
+			public const int btn_radio_to_on_mtrl_ring_outer_animation = 2130771990;
+			
+			// aapt resource value: 0x7F010017
+			public const int btn_radio_to_on_mtrl_ring_outer_path_animation = 2130771991;
+			
+			// aapt resource value: 0x7F010018
+			public const int design_bottom_sheet_slide_in = 2130771992;
+			
+			// aapt resource value: 0x7F010019
+			public const int design_bottom_sheet_slide_out = 2130771993;
+			
+			// aapt resource value: 0x7F01001A
+			public const int design_snackbar_in = 2130771994;
+			
+			// aapt resource value: 0x7F01001B
+			public const int design_snackbar_out = 2130771995;
+			
+			static Animation()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Animation()
+			{
+			}
+		}
+		
+		public partial class Animator
+		{
+			
+			// aapt resource value: 0x7F020000
+			public const int design_appbar_state_list_animator = 2130837504;
+			
+			// aapt resource value: 0x7F020001
+			public const int design_fab_hide_motion_spec = 2130837505;
+			
+			// aapt resource value: 0x7F020002
+			public const int design_fab_show_motion_spec = 2130837506;
+			
+			// aapt resource value: 0x7F020003
+			public const int mtrl_btn_state_list_anim = 2130837507;
+			
+			// aapt resource value: 0x7F020004
+			public const int mtrl_btn_unelevated_state_list_anim = 2130837508;
+			
+			// aapt resource value: 0x7F020005
+			public const int mtrl_chip_state_list_anim = 2130837509;
+			
+			// aapt resource value: 0x7F020006
+			public const int mtrl_fab_hide_motion_spec = 2130837510;
+			
+			// aapt resource value: 0x7F020007
+			public const int mtrl_fab_show_motion_spec = 2130837511;
+			
+			// aapt resource value: 0x7F020008
+			public const int mtrl_fab_transformation_sheet_collapse_spec = 2130837512;
+			
+			// aapt resource value: 0x7F020009
+			public const int mtrl_fab_transformation_sheet_expand_spec = 2130837513;
+			
+			static Animator()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Animator()
+			{
+			}
 		}
 		
 		public partial class Attribute
 		{
+			
+			// aapt resource value: 0x7F030000
+			public const int actionBarDivider = 2130903040;
+			
+			// aapt resource value: 0x7F030001
+			public const int actionBarItemBackground = 2130903041;
+			
+			// aapt resource value: 0x7F030002
+			public const int actionBarPopupTheme = 2130903042;
+			
+			// aapt resource value: 0x7F030003
+			public const int actionBarSize = 2130903043;
+			
+			// aapt resource value: 0x7F030004
+			public const int actionBarSplitStyle = 2130903044;
+			
+			// aapt resource value: 0x7F030005
+			public const int actionBarStyle = 2130903045;
+			
+			// aapt resource value: 0x7F030006
+			public const int actionBarTabBarStyle = 2130903046;
+			
+			// aapt resource value: 0x7F030007
+			public const int actionBarTabStyle = 2130903047;
+			
+			// aapt resource value: 0x7F030008
+			public const int actionBarTabTextStyle = 2130903048;
+			
+			// aapt resource value: 0x7F030009
+			public const int actionBarTheme = 2130903049;
+			
+			// aapt resource value: 0x7F03000A
+			public const int actionBarWidgetTheme = 2130903050;
+			
+			// aapt resource value: 0x7F03000B
+			public const int actionButtonStyle = 2130903051;
+			
+			// aapt resource value: 0x7F03000C
+			public const int actionDropDownStyle = 2130903052;
+			
+			// aapt resource value: 0x7F03000D
+			public const int actionLayout = 2130903053;
+			
+			// aapt resource value: 0x7F03000E
+			public const int actionMenuTextAppearance = 2130903054;
+			
+			// aapt resource value: 0x7F03000F
+			public const int actionMenuTextColor = 2130903055;
+			
+			// aapt resource value: 0x7F030010
+			public const int actionModeBackground = 2130903056;
+			
+			// aapt resource value: 0x7F030011
+			public const int actionModeCloseButtonStyle = 2130903057;
+			
+			// aapt resource value: 0x7F030012
+			public const int actionModeCloseDrawable = 2130903058;
+			
+			// aapt resource value: 0x7F030013
+			public const int actionModeCopyDrawable = 2130903059;
+			
+			// aapt resource value: 0x7F030014
+			public const int actionModeCutDrawable = 2130903060;
+			
+			// aapt resource value: 0x7F030015
+			public const int actionModeFindDrawable = 2130903061;
+			
+			// aapt resource value: 0x7F030016
+			public const int actionModePasteDrawable = 2130903062;
+			
+			// aapt resource value: 0x7F030017
+			public const int actionModePopupWindowStyle = 2130903063;
+			
+			// aapt resource value: 0x7F030018
+			public const int actionModeSelectAllDrawable = 2130903064;
+			
+			// aapt resource value: 0x7F030019
+			public const int actionModeShareDrawable = 2130903065;
+			
+			// aapt resource value: 0x7F03001A
+			public const int actionModeSplitBackground = 2130903066;
+			
+			// aapt resource value: 0x7F03001B
+			public const int actionModeStyle = 2130903067;
+			
+			// aapt resource value: 0x7F03001C
+			public const int actionModeWebSearchDrawable = 2130903068;
+			
+			// aapt resource value: 0x7F03001D
+			public const int actionOverflowButtonStyle = 2130903069;
+			
+			// aapt resource value: 0x7F03001E
+			public const int actionOverflowMenuStyle = 2130903070;
+			
+			// aapt resource value: 0x7F03001F
+			public const int actionProviderClass = 2130903071;
+			
+			// aapt resource value: 0x7F030020
+			public const int actionViewClass = 2130903072;
+			
+			// aapt resource value: 0x7F030021
+			public const int activityChooserViewStyle = 2130903073;
+			
+			// aapt resource value: 0x7F030022
+			public const int alertDialogButtonGroupStyle = 2130903074;
+			
+			// aapt resource value: 0x7F030023
+			public const int alertDialogCenterButtons = 2130903075;
+			
+			// aapt resource value: 0x7F030024
+			public const int alertDialogStyle = 2130903076;
+			
+			// aapt resource value: 0x7F030025
+			public const int alertDialogTheme = 2130903077;
+			
+			// aapt resource value: 0x7F030026
+			public const int allowStacking = 2130903078;
+			
+			// aapt resource value: 0x7F030027
+			public const int alpha = 2130903079;
+			
+			// aapt resource value: 0x7F030028
+			public const int alphabeticModifiers = 2130903080;
+			
+			// aapt resource value: 0x7F030029
+			public const int arrowHeadLength = 2130903081;
+			
+			// aapt resource value: 0x7F03002A
+			public const int arrowShaftLength = 2130903082;
+			
+			// aapt resource value: 0x7F03002B
+			public const int autoCompleteTextViewStyle = 2130903083;
+			
+			// aapt resource value: 0x7F03002C
+			public const int autoSizeMaxTextSize = 2130903084;
+			
+			// aapt resource value: 0x7F03002D
+			public const int autoSizeMinTextSize = 2130903085;
+			
+			// aapt resource value: 0x7F03002E
+			public const int autoSizePresetSizes = 2130903086;
+			
+			// aapt resource value: 0x7F03002F
+			public const int autoSizeStepGranularity = 2130903087;
+			
+			// aapt resource value: 0x7F030030
+			public const int autoSizeTextType = 2130903088;
+			
+			// aapt resource value: 0x7F030031
+			public const int background = 2130903089;
+			
+			// aapt resource value: 0x7F030032
+			public const int backgroundSplit = 2130903090;
+			
+			// aapt resource value: 0x7F030033
+			public const int backgroundStacked = 2130903091;
+			
+			// aapt resource value: 0x7F030034
+			public const int backgroundTint = 2130903092;
+			
+			// aapt resource value: 0x7F030035
+			public const int backgroundTintMode = 2130903093;
+			
+			// aapt resource value: 0x7F030036
+			public const int barLength = 2130903094;
+			
+			// aapt resource value: 0x7F030037
+			public const int behavior_autoHide = 2130903095;
+			
+			// aapt resource value: 0x7F030038
+			public const int behavior_fitToContents = 2130903096;
+			
+			// aapt resource value: 0x7F030039
+			public const int behavior_hideable = 2130903097;
+			
+			// aapt resource value: 0x7F03003A
+			public const int behavior_overlapTop = 2130903098;
+			
+			// aapt resource value: 0x7F03003B
+			public const int behavior_peekHeight = 2130903099;
+			
+			// aapt resource value: 0x7F03003C
+			public const int behavior_skipCollapsed = 2130903100;
+			
+			// aapt resource value: 0x7F03003E
+			public const int borderlessButtonStyle = 2130903102;
+			
+			// aapt resource value: 0x7F03003D
+			public const int borderWidth = 2130903101;
+			
+			// aapt resource value: 0x7F03003F
+			public const int bottomAppBarStyle = 2130903103;
+			
+			// aapt resource value: 0x7F030040
+			public const int bottomNavigationStyle = 2130903104;
+			
+			// aapt resource value: 0x7F030041
+			public const int bottomSheetDialogTheme = 2130903105;
+			
+			// aapt resource value: 0x7F030042
+			public const int bottomSheetStyle = 2130903106;
+			
+			// aapt resource value: 0x7F030043
+			public const int boxBackgroundColor = 2130903107;
+			
+			// aapt resource value: 0x7F030044
+			public const int boxBackgroundMode = 2130903108;
+			
+			// aapt resource value: 0x7F030045
+			public const int boxCollapsedPaddingTop = 2130903109;
+			
+			// aapt resource value: 0x7F030046
+			public const int boxCornerRadiusBottomEnd = 2130903110;
+			
+			// aapt resource value: 0x7F030047
+			public const int boxCornerRadiusBottomStart = 2130903111;
+			
+			// aapt resource value: 0x7F030048
+			public const int boxCornerRadiusTopEnd = 2130903112;
+			
+			// aapt resource value: 0x7F030049
+			public const int boxCornerRadiusTopStart = 2130903113;
+			
+			// aapt resource value: 0x7F03004A
+			public const int boxStrokeColor = 2130903114;
+			
+			// aapt resource value: 0x7F03004B
+			public const int boxStrokeWidth = 2130903115;
+			
+			// aapt resource value: 0x7F03004C
+			public const int buttonBarButtonStyle = 2130903116;
+			
+			// aapt resource value: 0x7F03004D
+			public const int buttonBarNegativeButtonStyle = 2130903117;
+			
+			// aapt resource value: 0x7F03004E
+			public const int buttonBarNeutralButtonStyle = 2130903118;
+			
+			// aapt resource value: 0x7F03004F
+			public const int buttonBarPositiveButtonStyle = 2130903119;
+			
+			// aapt resource value: 0x7F030050
+			public const int buttonBarStyle = 2130903120;
+			
+			// aapt resource value: 0x7F030051
+			public const int buttonCompat = 2130903121;
+			
+			// aapt resource value: 0x7F030052
+			public const int buttonGravity = 2130903122;
+			
+			// aapt resource value: 0x7F030053
+			public const int buttonIconDimen = 2130903123;
+			
+			// aapt resource value: 0x7F030054
+			public const int buttonPanelSideLayout = 2130903124;
+			
+			// aapt resource value: 0x7F030055
+			public const int buttonStyle = 2130903125;
+			
+			// aapt resource value: 0x7F030056
+			public const int buttonStyleSmall = 2130903126;
+			
+			// aapt resource value: 0x7F030057
+			public const int buttonTint = 2130903127;
+			
+			// aapt resource value: 0x7F030058
+			public const int buttonTintMode = 2130903128;
+			
+			// aapt resource value: 0x7F030059
+			public const int cardBackgroundColor = 2130903129;
+			
+			// aapt resource value: 0x7F03005A
+			public const int cardCornerRadius = 2130903130;
+			
+			// aapt resource value: 0x7F03005B
+			public const int cardElevation = 2130903131;
+			
+			// aapt resource value: 0x7F03005C
+			public const int cardMaxElevation = 2130903132;
+			
+			// aapt resource value: 0x7F03005D
+			public const int cardPreventCornerOverlap = 2130903133;
+			
+			// aapt resource value: 0x7F03005E
+			public const int cardUseCompatPadding = 2130903134;
+			
+			// aapt resource value: 0x7F03005F
+			public const int cardViewStyle = 2130903135;
+			
+			// aapt resource value: 0x7F030060
+			public const int checkboxStyle = 2130903136;
+			
+			// aapt resource value: 0x7F030061
+			public const int checkedChip = 2130903137;
+			
+			// aapt resource value: 0x7F030062
+			public const int checkedIcon = 2130903138;
+			
+			// aapt resource value: 0x7F030063
+			public const int checkedIconEnabled = 2130903139;
+			
+			// aapt resource value: 0x7F030064
+			public const int checkedIconVisible = 2130903140;
+			
+			// aapt resource value: 0x7F030065
+			public const int checkedTextViewStyle = 2130903141;
+			
+			// aapt resource value: 0x7F030066
+			public const int chipBackgroundColor = 2130903142;
+			
+			// aapt resource value: 0x7F030067
+			public const int chipCornerRadius = 2130903143;
+			
+			// aapt resource value: 0x7F030068
+			public const int chipEndPadding = 2130903144;
+			
+			// aapt resource value: 0x7F030069
+			public const int chipGroupStyle = 2130903145;
+			
+			// aapt resource value: 0x7F03006A
+			public const int chipIcon = 2130903146;
+			
+			// aapt resource value: 0x7F03006B
+			public const int chipIconEnabled = 2130903147;
+			
+			// aapt resource value: 0x7F03006C
+			public const int chipIconSize = 2130903148;
+			
+			// aapt resource value: 0x7F03006D
+			public const int chipIconTint = 2130903149;
+			
+			// aapt resource value: 0x7F03006E
+			public const int chipIconVisible = 2130903150;
+			
+			// aapt resource value: 0x7F03006F
+			public const int chipMinHeight = 2130903151;
+			
+			// aapt resource value: 0x7F030070
+			public const int chipSpacing = 2130903152;
+			
+			// aapt resource value: 0x7F030071
+			public const int chipSpacingHorizontal = 2130903153;
+			
+			// aapt resource value: 0x7F030072
+			public const int chipSpacingVertical = 2130903154;
+			
+			// aapt resource value: 0x7F030073
+			public const int chipStandaloneStyle = 2130903155;
+			
+			// aapt resource value: 0x7F030074
+			public const int chipStartPadding = 2130903156;
+			
+			// aapt resource value: 0x7F030075
+			public const int chipStrokeColor = 2130903157;
+			
+			// aapt resource value: 0x7F030076
+			public const int chipStrokeWidth = 2130903158;
+			
+			// aapt resource value: 0x7F030077
+			public const int chipStyle = 2130903159;
+			
+			// aapt resource value: 0x7F030078
+			public const int closeIcon = 2130903160;
+			
+			// aapt resource value: 0x7F030079
+			public const int closeIconEnabled = 2130903161;
+			
+			// aapt resource value: 0x7F03007A
+			public const int closeIconEndPadding = 2130903162;
+			
+			// aapt resource value: 0x7F03007B
+			public const int closeIconSize = 2130903163;
+			
+			// aapt resource value: 0x7F03007C
+			public const int closeIconStartPadding = 2130903164;
+			
+			// aapt resource value: 0x7F03007D
+			public const int closeIconTint = 2130903165;
+			
+			// aapt resource value: 0x7F03007E
+			public const int closeIconVisible = 2130903166;
+			
+			// aapt resource value: 0x7F03007F
+			public const int closeItemLayout = 2130903167;
+			
+			// aapt resource value: 0x7F030080
+			public const int collapseContentDescription = 2130903168;
+			
+			// aapt resource value: 0x7F030082
+			public const int collapsedTitleGravity = 2130903170;
+			
+			// aapt resource value: 0x7F030083
+			public const int collapsedTitleTextAppearance = 2130903171;
+			
+			// aapt resource value: 0x7F030081
+			public const int collapseIcon = 2130903169;
+			
+			// aapt resource value: 0x7F030084
+			public const int color = 2130903172;
+			
+			// aapt resource value: 0x7F030085
+			public const int colorAccent = 2130903173;
+			
+			// aapt resource value: 0x7F030086
+			public const int colorBackgroundFloating = 2130903174;
+			
+			// aapt resource value: 0x7F030087
+			public const int colorButtonNormal = 2130903175;
+			
+			// aapt resource value: 0x7F030088
+			public const int colorControlActivated = 2130903176;
+			
+			// aapt resource value: 0x7F030089
+			public const int colorControlHighlight = 2130903177;
+			
+			// aapt resource value: 0x7F03008A
+			public const int colorControlNormal = 2130903178;
+			
+			// aapt resource value: 0x7F03008B
+			public const int colorError = 2130903179;
+			
+			// aapt resource value: 0x7F03008C
+			public const int colorPrimary = 2130903180;
+			
+			// aapt resource value: 0x7F03008D
+			public const int colorPrimaryDark = 2130903181;
+			
+			// aapt resource value: 0x7F03008E
+			public const int colorSecondary = 2130903182;
+			
+			// aapt resource value: 0x7F03008F
+			public const int colorSwitchThumbNormal = 2130903183;
+			
+			// aapt resource value: 0x7F030090
+			public const int commitIcon = 2130903184;
+			
+			// aapt resource value: 0x7F030091
+			public const int contentDescription = 2130903185;
+			
+			// aapt resource value: 0x7F030092
+			public const int contentInsetEnd = 2130903186;
+			
+			// aapt resource value: 0x7F030093
+			public const int contentInsetEndWithActions = 2130903187;
+			
+			// aapt resource value: 0x7F030094
+			public const int contentInsetLeft = 2130903188;
+			
+			// aapt resource value: 0x7F030095
+			public const int contentInsetRight = 2130903189;
+			
+			// aapt resource value: 0x7F030096
+			public const int contentInsetStart = 2130903190;
+			
+			// aapt resource value: 0x7F030097
+			public const int contentInsetStartWithNavigation = 2130903191;
+			
+			// aapt resource value: 0x7F030098
+			public const int contentPadding = 2130903192;
+			
+			// aapt resource value: 0x7F030099
+			public const int contentPaddingBottom = 2130903193;
+			
+			// aapt resource value: 0x7F03009A
+			public const int contentPaddingLeft = 2130903194;
+			
+			// aapt resource value: 0x7F03009B
+			public const int contentPaddingRight = 2130903195;
+			
+			// aapt resource value: 0x7F03009C
+			public const int contentPaddingTop = 2130903196;
+			
+			// aapt resource value: 0x7F03009D
+			public const int contentScrim = 2130903197;
+			
+			// aapt resource value: 0x7F03009E
+			public const int controlBackground = 2130903198;
+			
+			// aapt resource value: 0x7F03009F
+			public const int coordinatorLayoutStyle = 2130903199;
+			
+			// aapt resource value: 0x7F0300A0
+			public const int cornerRadius = 2130903200;
+			
+			// aapt resource value: 0x7F0300A1
+			public const int counterEnabled = 2130903201;
+			
+			// aapt resource value: 0x7F0300A2
+			public const int counterMaxLength = 2130903202;
+			
+			// aapt resource value: 0x7F0300A3
+			public const int counterOverflowTextAppearance = 2130903203;
+			
+			// aapt resource value: 0x7F0300A4
+			public const int counterTextAppearance = 2130903204;
+			
+			// aapt resource value: 0x7F0300A5
+			public const int customNavigationLayout = 2130903205;
+			
+			// aapt resource value: 0x7F0300A6
+			public const int defaultQueryHint = 2130903206;
+			
+			// aapt resource value: 0x7F0300A7
+			public const int dialogCornerRadius = 2130903207;
+			
+			// aapt resource value: 0x7F0300A8
+			public const int dialogPreferredPadding = 2130903208;
+			
+			// aapt resource value: 0x7F0300A9
+			public const int dialogTheme = 2130903209;
+			
+			// aapt resource value: 0x7F0300AA
+			public const int displayOptions = 2130903210;
+			
+			// aapt resource value: 0x7F0300AB
+			public const int divider = 2130903211;
+			
+			// aapt resource value: 0x7F0300AC
+			public const int dividerHorizontal = 2130903212;
+			
+			// aapt resource value: 0x7F0300AD
+			public const int dividerPadding = 2130903213;
+			
+			// aapt resource value: 0x7F0300AE
+			public const int dividerVertical = 2130903214;
+			
+			// aapt resource value: 0x7F0300AF
+			public const int drawableBottomCompat = 2130903215;
+			
+			// aapt resource value: 0x7F0300B0
+			public const int drawableEndCompat = 2130903216;
+			
+			// aapt resource value: 0x7F0300B1
+			public const int drawableLeftCompat = 2130903217;
+			
+			// aapt resource value: 0x7F0300B2
+			public const int drawableRightCompat = 2130903218;
+			
+			// aapt resource value: 0x7F0300B3
+			public const int drawableSize = 2130903219;
+			
+			// aapt resource value: 0x7F0300B4
+			public const int drawableStartCompat = 2130903220;
+			
+			// aapt resource value: 0x7F0300B5
+			public const int drawableTint = 2130903221;
+			
+			// aapt resource value: 0x7F0300B6
+			public const int drawableTintMode = 2130903222;
+			
+			// aapt resource value: 0x7F0300B7
+			public const int drawableTopCompat = 2130903223;
+			
+			// aapt resource value: 0x7F0300B8
+			public const int drawerArrowStyle = 2130903224;
+			
+			// aapt resource value: 0x7F0300BA
+			public const int dropdownListPreferredItemHeight = 2130903226;
+			
+			// aapt resource value: 0x7F0300B9
+			public const int dropDownListViewStyle = 2130903225;
+			
+			// aapt resource value: 0x7F0300BB
+			public const int editTextBackground = 2130903227;
+			
+			// aapt resource value: 0x7F0300BC
+			public const int editTextColor = 2130903228;
+			
+			// aapt resource value: 0x7F0300BD
+			public const int editTextStyle = 2130903229;
+			
+			// aapt resource value: 0x7F0300BE
+			public const int elevation = 2130903230;
+			
+			// aapt resource value: 0x7F0300BF
+			public const int enforceMaterialTheme = 2130903231;
+			
+			// aapt resource value: 0x7F0300C0
+			public const int enforceTextAppearance = 2130903232;
+			
+			// aapt resource value: 0x7F0300C1
+			public const int errorEnabled = 2130903233;
+			
+			// aapt resource value: 0x7F0300C2
+			public const int errorTextAppearance = 2130903234;
+			
+			// aapt resource value: 0x7F0300C3
+			public const int expandActivityOverflowButtonDrawable = 2130903235;
+			
+			// aapt resource value: 0x7F0300C4
+			public const int expanded = 2130903236;
+			
+			// aapt resource value: 0x7F0300C5
+			public const int expandedTitleGravity = 2130903237;
+			
+			// aapt resource value: 0x7F0300C6
+			public const int expandedTitleMargin = 2130903238;
+			
+			// aapt resource value: 0x7F0300C7
+			public const int expandedTitleMarginBottom = 2130903239;
+			
+			// aapt resource value: 0x7F0300C8
+			public const int expandedTitleMarginEnd = 2130903240;
+			
+			// aapt resource value: 0x7F0300C9
+			public const int expandedTitleMarginStart = 2130903241;
+			
+			// aapt resource value: 0x7F0300CA
+			public const int expandedTitleMarginTop = 2130903242;
+			
+			// aapt resource value: 0x7F0300CB
+			public const int expandedTitleTextAppearance = 2130903243;
+			
+			// aapt resource value: 0x7F0300CC
+			public const int fabAlignmentMode = 2130903244;
+			
+			// aapt resource value: 0x7F0300CD
+			public const int fabCradleMargin = 2130903245;
+			
+			// aapt resource value: 0x7F0300CE
+			public const int fabCradleRoundedCornerRadius = 2130903246;
+			
+			// aapt resource value: 0x7F0300CF
+			public const int fabCradleVerticalOffset = 2130903247;
+			
+			// aapt resource value: 0x7F0300D0
+			public const int fabCustomSize = 2130903248;
+			
+			// aapt resource value: 0x7F0300D1
+			public const int fabSize = 2130903249;
+			
+			// aapt resource value: 0x7F0300D2
+			public const int fastScrollEnabled = 2130903250;
+			
+			// aapt resource value: 0x7F0300D3
+			public const int fastScrollHorizontalThumbDrawable = 2130903251;
+			
+			// aapt resource value: 0x7F0300D4
+			public const int fastScrollHorizontalTrackDrawable = 2130903252;
+			
+			// aapt resource value: 0x7F0300D5
+			public const int fastScrollVerticalThumbDrawable = 2130903253;
+			
+			// aapt resource value: 0x7F0300D6
+			public const int fastScrollVerticalTrackDrawable = 2130903254;
+			
+			// aapt resource value: 0x7F0300D7
+			public const int firstBaselineToTopHeight = 2130903255;
+			
+			// aapt resource value: 0x7F0300D8
+			public const int floatingActionButtonStyle = 2130903256;
+			
+			// aapt resource value: 0x7F0300D9
+			public const int font = 2130903257;
+			
+			// aapt resource value: 0x7F0300DA
+			public const int fontFamily = 2130903258;
+			
+			// aapt resource value: 0x7F0300DB
+			public const int fontProviderAuthority = 2130903259;
+			
+			// aapt resource value: 0x7F0300DC
+			public const int fontProviderCerts = 2130903260;
+			
+			// aapt resource value: 0x7F0300DD
+			public const int fontProviderFetchStrategy = 2130903261;
+			
+			// aapt resource value: 0x7F0300DE
+			public const int fontProviderFetchTimeout = 2130903262;
+			
+			// aapt resource value: 0x7F0300DF
+			public const int fontProviderPackage = 2130903263;
+			
+			// aapt resource value: 0x7F0300E0
+			public const int fontProviderQuery = 2130903264;
+			
+			// aapt resource value: 0x7F0300E1
+			public const int fontStyle = 2130903265;
+			
+			// aapt resource value: 0x7F0300E2
+			public const int fontVariationSettings = 2130903266;
+			
+			// aapt resource value: 0x7F0300E3
+			public const int fontWeight = 2130903267;
+			
+			// aapt resource value: 0x7F0300E4
+			public const int foregroundInsidePadding = 2130903268;
+			
+			// aapt resource value: 0x7F0300E5
+			public const int gapBetweenBars = 2130903269;
+			
+			// aapt resource value: 0x7F0300E6
+			public const int goIcon = 2130903270;
+			
+			// aapt resource value: 0x7F0300E7
+			public const int headerLayout = 2130903271;
+			
+			// aapt resource value: 0x7F0300E8
+			public const int height = 2130903272;
+			
+			// aapt resource value: 0x7F0300E9
+			public const int helperText = 2130903273;
+			
+			// aapt resource value: 0x7F0300EA
+			public const int helperTextEnabled = 2130903274;
+			
+			// aapt resource value: 0x7F0300EB
+			public const int helperTextTextAppearance = 2130903275;
+			
+			// aapt resource value: 0x7F0300EC
+			public const int hideMotionSpec = 2130903276;
+			
+			// aapt resource value: 0x7F0300ED
+			public const int hideOnContentScroll = 2130903277;
+			
+			// aapt resource value: 0x7F0300EE
+			public const int hideOnScroll = 2130903278;
+			
+			// aapt resource value: 0x7F0300EF
+			public const int hintAnimationEnabled = 2130903279;
+			
+			// aapt resource value: 0x7F0300F0
+			public const int hintEnabled = 2130903280;
+			
+			// aapt resource value: 0x7F0300F1
+			public const int hintTextAppearance = 2130903281;
+			
+			// aapt resource value: 0x7F0300F2
+			public const int homeAsUpIndicator = 2130903282;
+			
+			// aapt resource value: 0x7F0300F3
+			public const int homeLayout = 2130903283;
+			
+			// aapt resource value: 0x7F0300F4
+			public const int hoveredFocusedTranslationZ = 2130903284;
+			
+			// aapt resource value: 0x7F0300F5
+			public const int icon = 2130903285;
+			
+			// aapt resource value: 0x7F0300F6
+			public const int iconEndPadding = 2130903286;
+			
+			// aapt resource value: 0x7F0300F7
+			public const int iconGravity = 2130903287;
+			
+			// aapt resource value: 0x7F0300FD
+			public const int iconifiedByDefault = 2130903293;
+			
+			// aapt resource value: 0x7F0300F8
+			public const int iconPadding = 2130903288;
+			
+			// aapt resource value: 0x7F0300F9
+			public const int iconSize = 2130903289;
+			
+			// aapt resource value: 0x7F0300FA
+			public const int iconStartPadding = 2130903290;
+			
+			// aapt resource value: 0x7F0300FB
+			public const int iconTint = 2130903291;
+			
+			// aapt resource value: 0x7F0300FC
+			public const int iconTintMode = 2130903292;
+			
+			// aapt resource value: 0x7F0300FE
+			public const int imageButtonStyle = 2130903294;
+			
+			// aapt resource value: 0x7F0300FF
+			public const int indeterminateProgressStyle = 2130903295;
+			
+			// aapt resource value: 0x7F030100
+			public const int initialActivityCount = 2130903296;
+			
+			// aapt resource value: 0x7F030101
+			public const int insetForeground = 2130903297;
+			
+			// aapt resource value: 0x7F030102
+			public const int isLightTheme = 2130903298;
+			
+			// aapt resource value: 0x7F030103
+			public const int itemBackground = 2130903299;
+			
+			// aapt resource value: 0x7F030104
+			public const int itemHorizontalPadding = 2130903300;
+			
+			// aapt resource value: 0x7F030105
+			public const int itemHorizontalTranslationEnabled = 2130903301;
+			
+			// aapt resource value: 0x7F030106
+			public const int itemIconPadding = 2130903302;
+			
+			// aapt resource value: 0x7F030107
+			public const int itemIconSize = 2130903303;
+			
+			// aapt resource value: 0x7F030108
+			public const int itemIconTint = 2130903304;
+			
+			// aapt resource value: 0x7F030109
+			public const int itemPadding = 2130903305;
+			
+			// aapt resource value: 0x7F03010A
+			public const int itemSpacing = 2130903306;
+			
+			// aapt resource value: 0x7F03010B
+			public const int itemTextAppearance = 2130903307;
+			
+			// aapt resource value: 0x7F03010C
+			public const int itemTextAppearanceActive = 2130903308;
+			
+			// aapt resource value: 0x7F03010D
+			public const int itemTextAppearanceInactive = 2130903309;
+			
+			// aapt resource value: 0x7F03010E
+			public const int itemTextColor = 2130903310;
+			
+			// aapt resource value: 0x7F03010F
+			public const int keylines = 2130903311;
+			
+			// aapt resource value: 0x7F030110
+			public const int labelVisibilityMode = 2130903312;
+			
+			// aapt resource value: 0x7F030111
+			public const int lastBaselineToBottomHeight = 2130903313;
+			
+			// aapt resource value: 0x7F030112
+			public const int layout = 2130903314;
+			
+			// aapt resource value: 0x7F030113
+			public const int layoutManager = 2130903315;
+			
+			// aapt resource value: 0x7F030114
+			public const int layout_anchor = 2130903316;
+			
+			// aapt resource value: 0x7F030115
+			public const int layout_anchorGravity = 2130903317;
+			
+			// aapt resource value: 0x7F030116
+			public const int layout_behavior = 2130903318;
+			
+			// aapt resource value: 0x7F030117
+			public const int layout_collapseMode = 2130903319;
+			
+			// aapt resource value: 0x7F030118
+			public const int layout_collapseParallaxMultiplier = 2130903320;
+			
+			// aapt resource value: 0x7F030119
+			public const int layout_dodgeInsetEdges = 2130903321;
+			
+			// aapt resource value: 0x7F03011A
+			public const int layout_insetEdge = 2130903322;
+			
+			// aapt resource value: 0x7F03011B
+			public const int layout_keyline = 2130903323;
+			
+			// aapt resource value: 0x7F03011C
+			public const int layout_scrollFlags = 2130903324;
+			
+			// aapt resource value: 0x7F03011D
+			public const int layout_scrollInterpolator = 2130903325;
+			
+			// aapt resource value: 0x7F03011E
+			public const int liftOnScroll = 2130903326;
+			
+			// aapt resource value: 0x7F03011F
+			public const int lineHeight = 2130903327;
+			
+			// aapt resource value: 0x7F030120
+			public const int lineSpacing = 2130903328;
+			
+			// aapt resource value: 0x7F030121
+			public const int listChoiceBackgroundIndicator = 2130903329;
+			
+			// aapt resource value: 0x7F030122
+			public const int listChoiceIndicatorMultipleAnimated = 2130903330;
+			
+			// aapt resource value: 0x7F030123
+			public const int listChoiceIndicatorSingleAnimated = 2130903331;
+			
+			// aapt resource value: 0x7F030124
+			public const int listDividerAlertDialog = 2130903332;
+			
+			// aapt resource value: 0x7F030125
+			public const int listItemLayout = 2130903333;
+			
+			// aapt resource value: 0x7F030126
+			public const int listLayout = 2130903334;
+			
+			// aapt resource value: 0x7F030127
+			public const int listMenuViewStyle = 2130903335;
+			
+			// aapt resource value: 0x7F030128
+			public const int listPopupWindowStyle = 2130903336;
+			
+			// aapt resource value: 0x7F030129
+			public const int listPreferredItemHeight = 2130903337;
+			
+			// aapt resource value: 0x7F03012A
+			public const int listPreferredItemHeightLarge = 2130903338;
+			
+			// aapt resource value: 0x7F03012B
+			public const int listPreferredItemHeightSmall = 2130903339;
+			
+			// aapt resource value: 0x7F03012C
+			public const int listPreferredItemPaddingEnd = 2130903340;
+			
+			// aapt resource value: 0x7F03012D
+			public const int listPreferredItemPaddingLeft = 2130903341;
+			
+			// aapt resource value: 0x7F03012E
+			public const int listPreferredItemPaddingRight = 2130903342;
+			
+			// aapt resource value: 0x7F03012F
+			public const int listPreferredItemPaddingStart = 2130903343;
+			
+			// aapt resource value: 0x7F030130
+			public const int logo = 2130903344;
+			
+			// aapt resource value: 0x7F030131
+			public const int logoDescription = 2130903345;
+			
+			// aapt resource value: 0x7F030132
+			public const int materialButtonStyle = 2130903346;
+			
+			// aapt resource value: 0x7F030133
+			public const int materialCardViewStyle = 2130903347;
+			
+			// aapt resource value: 0x7F030134
+			public const int maxActionInlineWidth = 2130903348;
+			
+			// aapt resource value: 0x7F030135
+			public const int maxButtonHeight = 2130903349;
+			
+			// aapt resource value: 0x7F030136
+			public const int maxImageSize = 2130903350;
+			
+			// aapt resource value: 0x7F030137
+			public const int measureWithLargestChild = 2130903351;
+			
+			// aapt resource value: 0x7F030138
+			public const int menu = 2130903352;
+			
+			// aapt resource value: 0x7F030139
+			public const int multiChoiceItemLayout = 2130903353;
+			
+			// aapt resource value: 0x7F03013A
+			public const int navigationContentDescription = 2130903354;
+			
+			// aapt resource value: 0x7F03013B
+			public const int navigationIcon = 2130903355;
+			
+			// aapt resource value: 0x7F03013C
+			public const int navigationMode = 2130903356;
+			
+			// aapt resource value: 0x7F03013D
+			public const int navigationViewStyle = 2130903357;
+			
+			// aapt resource value: 0x7F03013E
+			public const int numericModifiers = 2130903358;
+			
+			// aapt resource value: 0x7F03013F
+			public const int overlapAnchor = 2130903359;
+			
+			// aapt resource value: 0x7F030140
+			public const int paddingBottomNoButtons = 2130903360;
+			
+			// aapt resource value: 0x7F030141
+			public const int paddingEnd = 2130903361;
+			
+			// aapt resource value: 0x7F030142
+			public const int paddingStart = 2130903362;
+			
+			// aapt resource value: 0x7F030143
+			public const int paddingTopNoTitle = 2130903363;
+			
+			// aapt resource value: 0x7F030144
+			public const int panelBackground = 2130903364;
+			
+			// aapt resource value: 0x7F030145
+			public const int panelMenuListTheme = 2130903365;
+			
+			// aapt resource value: 0x7F030146
+			public const int panelMenuListWidth = 2130903366;
+			
+			// aapt resource value: 0x7F030147
+			public const int passwordToggleContentDescription = 2130903367;
+			
+			// aapt resource value: 0x7F030148
+			public const int passwordToggleDrawable = 2130903368;
+			
+			// aapt resource value: 0x7F030149
+			public const int passwordToggleEnabled = 2130903369;
+			
+			// aapt resource value: 0x7F03014A
+			public const int passwordToggleTint = 2130903370;
+			
+			// aapt resource value: 0x7F03014B
+			public const int passwordToggleTintMode = 2130903371;
+			
+			// aapt resource value: 0x7F03014C
+			public const int popupMenuStyle = 2130903372;
+			
+			// aapt resource value: 0x7F03014D
+			public const int popupTheme = 2130903373;
+			
+			// aapt resource value: 0x7F03014E
+			public const int popupWindowStyle = 2130903374;
+			
+			// aapt resource value: 0x7F03014F
+			public const int preserveIconSpacing = 2130903375;
+			
+			// aapt resource value: 0x7F030150
+			public const int pressedTranslationZ = 2130903376;
+			
+			// aapt resource value: 0x7F030151
+			public const int progressBarPadding = 2130903377;
+			
+			// aapt resource value: 0x7F030152
+			public const int progressBarStyle = 2130903378;
+			
+			// aapt resource value: 0x7F030153
+			public const int queryBackground = 2130903379;
+			
+			// aapt resource value: 0x7F030154
+			public const int queryHint = 2130903380;
+			
+			// aapt resource value: 0x7F030155
+			public const int radioButtonStyle = 2130903381;
+			
+			// aapt resource value: 0x7F030156
+			public const int ratingBarStyle = 2130903382;
+			
+			// aapt resource value: 0x7F030157
+			public const int ratingBarStyleIndicator = 2130903383;
+			
+			// aapt resource value: 0x7F030158
+			public const int ratingBarStyleSmall = 2130903384;
+			
+			// aapt resource value: 0x7F030159
+			public const int recyclerViewStyle = 2130903385;
+			
+			// aapt resource value: 0x7F03015A
+			public const int reverseLayout = 2130903386;
+			
+			// aapt resource value: 0x7F03015B
+			public const int rippleColor = 2130903387;
+			
+			// aapt resource value: 0x7F03015C
+			public const int scrimAnimationDuration = 2130903388;
+			
+			// aapt resource value: 0x7F03015D
+			public const int scrimBackground = 2130903389;
+			
+			// aapt resource value: 0x7F03015E
+			public const int scrimVisibleHeightTrigger = 2130903390;
+			
+			// aapt resource value: 0x7F03015F
+			public const int searchHintIcon = 2130903391;
+			
+			// aapt resource value: 0x7F030160
+			public const int searchIcon = 2130903392;
+			
+			// aapt resource value: 0x7F030161
+			public const int searchViewStyle = 2130903393;
+			
+			// aapt resource value: 0x7F030162
+			public const int seekBarStyle = 2130903394;
+			
+			// aapt resource value: 0x7F030163
+			public const int selectableItemBackground = 2130903395;
+			
+			// aapt resource value: 0x7F030164
+			public const int selectableItemBackgroundBorderless = 2130903396;
+			
+			// aapt resource value: 0x7F030165
+			public const int showAsAction = 2130903397;
+			
+			// aapt resource value: 0x7F030166
+			public const int showDividers = 2130903398;
+			
+			// aapt resource value: 0x7F030167
+			public const int showMotionSpec = 2130903399;
+			
+			// aapt resource value: 0x7F030168
+			public const int showText = 2130903400;
+			
+			// aapt resource value: 0x7F030169
+			public const int showTitle = 2130903401;
+			
+			// aapt resource value: 0x7F03016A
+			public const int singleChoiceItemLayout = 2130903402;
+			
+			// aapt resource value: 0x7F03016B
+			public const int singleLine = 2130903403;
+			
+			// aapt resource value: 0x7F03016C
+			public const int singleSelection = 2130903404;
+			
+			// aapt resource value: 0x7F03016D
+			public const int snackbarButtonStyle = 2130903405;
+			
+			// aapt resource value: 0x7F03016E
+			public const int snackbarStyle = 2130903406;
+			
+			// aapt resource value: 0x7F03016F
+			public const int spanCount = 2130903407;
+			
+			// aapt resource value: 0x7F030170
+			public const int spinBars = 2130903408;
+			
+			// aapt resource value: 0x7F030171
+			public const int spinnerDropDownItemStyle = 2130903409;
+			
+			// aapt resource value: 0x7F030172
+			public const int spinnerStyle = 2130903410;
+			
+			// aapt resource value: 0x7F030173
+			public const int splitTrack = 2130903411;
+			
+			// aapt resource value: 0x7F030174
+			public const int srcCompat = 2130903412;
+			
+			// aapt resource value: 0x7F030175
+			public const int stackFromEnd = 2130903413;
+			
+			// aapt resource value: 0x7F030176
+			public const int state_above_anchor = 2130903414;
+			
+			// aapt resource value: 0x7F030177
+			public const int state_collapsed = 2130903415;
+			
+			// aapt resource value: 0x7F030178
+			public const int state_collapsible = 2130903416;
+			
+			// aapt resource value: 0x7F030179
+			public const int state_liftable = 2130903417;
+			
+			// aapt resource value: 0x7F03017A
+			public const int state_lifted = 2130903418;
+			
+			// aapt resource value: 0x7F03017B
+			public const int statusBarBackground = 2130903419;
+			
+			// aapt resource value: 0x7F03017C
+			public const int statusBarScrim = 2130903420;
+			
+			// aapt resource value: 0x7F03017D
+			public const int strokeColor = 2130903421;
+			
+			// aapt resource value: 0x7F03017E
+			public const int strokeWidth = 2130903422;
+			
+			// aapt resource value: 0x7F03017F
+			public const int subMenuArrow = 2130903423;
+			
+			// aapt resource value: 0x7F030180
+			public const int submitBackground = 2130903424;
+			
+			// aapt resource value: 0x7F030181
+			public const int subtitle = 2130903425;
+			
+			// aapt resource value: 0x7F030182
+			public const int subtitleTextAppearance = 2130903426;
+			
+			// aapt resource value: 0x7F030183
+			public const int subtitleTextColor = 2130903427;
+			
+			// aapt resource value: 0x7F030184
+			public const int subtitleTextStyle = 2130903428;
+			
+			// aapt resource value: 0x7F030185
+			public const int suggestionRowLayout = 2130903429;
+			
+			// aapt resource value: 0x7F030186
+			public const int switchMinWidth = 2130903430;
+			
+			// aapt resource value: 0x7F030187
+			public const int switchPadding = 2130903431;
+			
+			// aapt resource value: 0x7F030188
+			public const int switchStyle = 2130903432;
+			
+			// aapt resource value: 0x7F030189
+			public const int switchTextAppearance = 2130903433;
+			
+			// aapt resource value: 0x7F03018A
+			public const int tabBackground = 2130903434;
+			
+			// aapt resource value: 0x7F03018B
+			public const int tabContentStart = 2130903435;
+			
+			// aapt resource value: 0x7F03018C
+			public const int tabGravity = 2130903436;
+			
+			// aapt resource value: 0x7F03018D
+			public const int tabIconTint = 2130903437;
+			
+			// aapt resource value: 0x7F03018E
+			public const int tabIconTintMode = 2130903438;
+			
+			// aapt resource value: 0x7F03018F
+			public const int tabIndicator = 2130903439;
+			
+			// aapt resource value: 0x7F030190
+			public const int tabIndicatorAnimationDuration = 2130903440;
+			
+			// aapt resource value: 0x7F030191
+			public const int tabIndicatorColor = 2130903441;
+			
+			// aapt resource value: 0x7F030192
+			public const int tabIndicatorFullWidth = 2130903442;
+			
+			// aapt resource value: 0x7F030193
+			public const int tabIndicatorGravity = 2130903443;
+			
+			// aapt resource value: 0x7F030194
+			public const int tabIndicatorHeight = 2130903444;
+			
+			// aapt resource value: 0x7F030195
+			public const int tabInlineLabel = 2130903445;
+			
+			// aapt resource value: 0x7F030196
+			public const int tabMaxWidth = 2130903446;
+			
+			// aapt resource value: 0x7F030197
+			public const int tabMinWidth = 2130903447;
+			
+			// aapt resource value: 0x7F030198
+			public const int tabMode = 2130903448;
+			
+			// aapt resource value: 0x7F030199
+			public const int tabPadding = 2130903449;
+			
+			// aapt resource value: 0x7F03019A
+			public const int tabPaddingBottom = 2130903450;
+			
+			// aapt resource value: 0x7F03019B
+			public const int tabPaddingEnd = 2130903451;
+			
+			// aapt resource value: 0x7F03019C
+			public const int tabPaddingStart = 2130903452;
+			
+			// aapt resource value: 0x7F03019D
+			public const int tabPaddingTop = 2130903453;
+			
+			// aapt resource value: 0x7F03019E
+			public const int tabRippleColor = 2130903454;
+			
+			// aapt resource value: 0x7F03019F
+			public const int tabSelectedTextColor = 2130903455;
+			
+			// aapt resource value: 0x7F0301A0
+			public const int tabStyle = 2130903456;
+			
+			// aapt resource value: 0x7F0301A1
+			public const int tabTextAppearance = 2130903457;
+			
+			// aapt resource value: 0x7F0301A2
+			public const int tabTextColor = 2130903458;
+			
+			// aapt resource value: 0x7F0301A3
+			public const int tabUnboundedRipple = 2130903459;
+			
+			// aapt resource value: 0x7F0301A4
+			public const int textAllCaps = 2130903460;
+			
+			// aapt resource value: 0x7F0301A5
+			public const int textAppearanceBody1 = 2130903461;
+			
+			// aapt resource value: 0x7F0301A6
+			public const int textAppearanceBody2 = 2130903462;
+			
+			// aapt resource value: 0x7F0301A7
+			public const int textAppearanceButton = 2130903463;
+			
+			// aapt resource value: 0x7F0301A8
+			public const int textAppearanceCaption = 2130903464;
+			
+			// aapt resource value: 0x7F0301A9
+			public const int textAppearanceHeadline1 = 2130903465;
+			
+			// aapt resource value: 0x7F0301AA
+			public const int textAppearanceHeadline2 = 2130903466;
+			
+			// aapt resource value: 0x7F0301AB
+			public const int textAppearanceHeadline3 = 2130903467;
+			
+			// aapt resource value: 0x7F0301AC
+			public const int textAppearanceHeadline4 = 2130903468;
+			
+			// aapt resource value: 0x7F0301AD
+			public const int textAppearanceHeadline5 = 2130903469;
+			
+			// aapt resource value: 0x7F0301AE
+			public const int textAppearanceHeadline6 = 2130903470;
+			
+			// aapt resource value: 0x7F0301AF
+			public const int textAppearanceLargePopupMenu = 2130903471;
+			
+			// aapt resource value: 0x7F0301B0
+			public const int textAppearanceListItem = 2130903472;
+			
+			// aapt resource value: 0x7F0301B1
+			public const int textAppearanceListItemSecondary = 2130903473;
+			
+			// aapt resource value: 0x7F0301B2
+			public const int textAppearanceListItemSmall = 2130903474;
+			
+			// aapt resource value: 0x7F0301B3
+			public const int textAppearanceOverline = 2130903475;
+			
+			// aapt resource value: 0x7F0301B4
+			public const int textAppearancePopupMenuHeader = 2130903476;
+			
+			// aapt resource value: 0x7F0301B5
+			public const int textAppearanceSearchResultSubtitle = 2130903477;
+			
+			// aapt resource value: 0x7F0301B6
+			public const int textAppearanceSearchResultTitle = 2130903478;
+			
+			// aapt resource value: 0x7F0301B7
+			public const int textAppearanceSmallPopupMenu = 2130903479;
+			
+			// aapt resource value: 0x7F0301B8
+			public const int textAppearanceSubtitle1 = 2130903480;
+			
+			// aapt resource value: 0x7F0301B9
+			public const int textAppearanceSubtitle2 = 2130903481;
+			
+			// aapt resource value: 0x7F0301BA
+			public const int textColorAlertDialogListItem = 2130903482;
+			
+			// aapt resource value: 0x7F0301BB
+			public const int textColorSearchUrl = 2130903483;
+			
+			// aapt resource value: 0x7F0301BC
+			public const int textEndPadding = 2130903484;
+			
+			// aapt resource value: 0x7F0301BD
+			public const int textInputStyle = 2130903485;
+			
+			// aapt resource value: 0x7F0301BE
+			public const int textLocale = 2130903486;
+			
+			// aapt resource value: 0x7F0301BF
+			public const int textStartPadding = 2130903487;
+			
+			// aapt resource value: 0x7F0301C0
+			public const int theme = 2130903488;
+			
+			// aapt resource value: 0x7F0301C1
+			public const int thickness = 2130903489;
+			
+			// aapt resource value: 0x7F0301C2
+			public const int thumbTextPadding = 2130903490;
+			
+			// aapt resource value: 0x7F0301C3
+			public const int thumbTint = 2130903491;
+			
+			// aapt resource value: 0x7F0301C4
+			public const int thumbTintMode = 2130903492;
+			
+			// aapt resource value: 0x7F0301C5
+			public const int tickMark = 2130903493;
+			
+			// aapt resource value: 0x7F0301C6
+			public const int tickMarkTint = 2130903494;
+			
+			// aapt resource value: 0x7F0301C7
+			public const int tickMarkTintMode = 2130903495;
+			
+			// aapt resource value: 0x7F0301C8
+			public const int tint = 2130903496;
+			
+			// aapt resource value: 0x7F0301C9
+			public const int tintMode = 2130903497;
+			
+			// aapt resource value: 0x7F0301CA
+			public const int title = 2130903498;
+			
+			// aapt resource value: 0x7F0301CB
+			public const int titleEnabled = 2130903499;
+			
+			// aapt resource value: 0x7F0301CC
+			public const int titleMargin = 2130903500;
+			
+			// aapt resource value: 0x7F0301CD
+			public const int titleMarginBottom = 2130903501;
+			
+			// aapt resource value: 0x7F0301CE
+			public const int titleMarginEnd = 2130903502;
+			
+			// aapt resource value: 0x7F0301D1
+			public const int titleMargins = 2130903505;
+			
+			// aapt resource value: 0x7F0301CF
+			public const int titleMarginStart = 2130903503;
+			
+			// aapt resource value: 0x7F0301D0
+			public const int titleMarginTop = 2130903504;
+			
+			// aapt resource value: 0x7F0301D2
+			public const int titleTextAppearance = 2130903506;
+			
+			// aapt resource value: 0x7F0301D3
+			public const int titleTextColor = 2130903507;
+			
+			// aapt resource value: 0x7F0301D4
+			public const int titleTextStyle = 2130903508;
+			
+			// aapt resource value: 0x7F0301D5
+			public const int toolbarId = 2130903509;
+			
+			// aapt resource value: 0x7F0301D6
+			public const int toolbarNavigationButtonStyle = 2130903510;
+			
+			// aapt resource value: 0x7F0301D7
+			public const int toolbarStyle = 2130903511;
+			
+			// aapt resource value: 0x7F0301D8
+			public const int tooltipForegroundColor = 2130903512;
+			
+			// aapt resource value: 0x7F0301D9
+			public const int tooltipFrameBackground = 2130903513;
+			
+			// aapt resource value: 0x7F0301DA
+			public const int tooltipText = 2130903514;
+			
+			// aapt resource value: 0x7F0301DB
+			public const int track = 2130903515;
+			
+			// aapt resource value: 0x7F0301DC
+			public const int trackTint = 2130903516;
+			
+			// aapt resource value: 0x7F0301DD
+			public const int trackTintMode = 2130903517;
+			
+			// aapt resource value: 0x7F0301DE
+			public const int ttcIndex = 2130903518;
+			
+			// aapt resource value: 0x7F0301DF
+			public const int useCompatPadding = 2130903519;
+			
+			// aapt resource value: 0x7F0301E0
+			public const int viewInflaterClass = 2130903520;
+			
+			// aapt resource value: 0x7F0301E1
+			public const int voiceIcon = 2130903521;
+			
+			// aapt resource value: 0x7F0301E2
+			public const int windowActionBar = 2130903522;
+			
+			// aapt resource value: 0x7F0301E3
+			public const int windowActionBarOverlay = 2130903523;
+			
+			// aapt resource value: 0x7F0301E4
+			public const int windowActionModeOverlay = 2130903524;
+			
+			// aapt resource value: 0x7F0301E5
+			public const int windowFixedHeightMajor = 2130903525;
+			
+			// aapt resource value: 0x7F0301E6
+			public const int windowFixedHeightMinor = 2130903526;
+			
+			// aapt resource value: 0x7F0301E7
+			public const int windowFixedWidthMajor = 2130903527;
+			
+			// aapt resource value: 0x7F0301E8
+			public const int windowFixedWidthMinor = 2130903528;
+			
+			// aapt resource value: 0x7F0301E9
+			public const int windowMinWidthMajor = 2130903529;
+			
+			// aapt resource value: 0x7F0301EA
+			public const int windowMinWidthMinor = 2130903530;
+			
+			// aapt resource value: 0x7F0301EB
+			public const int windowNoTitle = 2130903531;
 			
 			static Attribute()
 			{
@@ -40,11 +4302,1478 @@ namespace GraphicsTester.Android
 			}
 		}
 		
+		public partial class Boolean
+		{
+			
+			// aapt resource value: 0x7F040000
+			public const int abc_action_bar_embed_tabs = 2130968576;
+			
+			// aapt resource value: 0x7F040001
+			public const int abc_allow_stacked_button_bar = 2130968577;
+			
+			// aapt resource value: 0x7F040002
+			public const int abc_config_actionMenuItemAllCaps = 2130968578;
+			
+			// aapt resource value: 0x7F040003
+			public const int mtrl_btn_textappearance_all_caps = 2130968579;
+			
+			static Boolean()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Boolean()
+			{
+			}
+		}
+		
+		public partial class Color
+		{
+			
+			// aapt resource value: 0x7F050000
+			public const int abc_background_cache_hint_selector_material_dark = 2131034112;
+			
+			// aapt resource value: 0x7F050001
+			public const int abc_background_cache_hint_selector_material_light = 2131034113;
+			
+			// aapt resource value: 0x7F050002
+			public const int abc_btn_colored_borderless_text_material = 2131034114;
+			
+			// aapt resource value: 0x7F050003
+			public const int abc_btn_colored_text_material = 2131034115;
+			
+			// aapt resource value: 0x7F050004
+			public const int abc_color_highlight_material = 2131034116;
+			
+			// aapt resource value: 0x7F050005
+			public const int abc_hint_foreground_material_dark = 2131034117;
+			
+			// aapt resource value: 0x7F050006
+			public const int abc_hint_foreground_material_light = 2131034118;
+			
+			// aapt resource value: 0x7F050007
+			public const int abc_input_method_navigation_guard = 2131034119;
+			
+			// aapt resource value: 0x7F050008
+			public const int abc_primary_text_disable_only_material_dark = 2131034120;
+			
+			// aapt resource value: 0x7F050009
+			public const int abc_primary_text_disable_only_material_light = 2131034121;
+			
+			// aapt resource value: 0x7F05000A
+			public const int abc_primary_text_material_dark = 2131034122;
+			
+			// aapt resource value: 0x7F05000B
+			public const int abc_primary_text_material_light = 2131034123;
+			
+			// aapt resource value: 0x7F05000C
+			public const int abc_search_url_text = 2131034124;
+			
+			// aapt resource value: 0x7F05000D
+			public const int abc_search_url_text_normal = 2131034125;
+			
+			// aapt resource value: 0x7F05000E
+			public const int abc_search_url_text_pressed = 2131034126;
+			
+			// aapt resource value: 0x7F05000F
+			public const int abc_search_url_text_selected = 2131034127;
+			
+			// aapt resource value: 0x7F050010
+			public const int abc_secondary_text_material_dark = 2131034128;
+			
+			// aapt resource value: 0x7F050011
+			public const int abc_secondary_text_material_light = 2131034129;
+			
+			// aapt resource value: 0x7F050012
+			public const int abc_tint_btn_checkable = 2131034130;
+			
+			// aapt resource value: 0x7F050013
+			public const int abc_tint_default = 2131034131;
+			
+			// aapt resource value: 0x7F050014
+			public const int abc_tint_edittext = 2131034132;
+			
+			// aapt resource value: 0x7F050015
+			public const int abc_tint_seek_thumb = 2131034133;
+			
+			// aapt resource value: 0x7F050016
+			public const int abc_tint_spinner = 2131034134;
+			
+			// aapt resource value: 0x7F050017
+			public const int abc_tint_switch_track = 2131034135;
+			
+			// aapt resource value: 0x7F050018
+			public const int accent_material_dark = 2131034136;
+			
+			// aapt resource value: 0x7F050019
+			public const int accent_material_light = 2131034137;
+			
+			// aapt resource value: 0x7F05001A
+			public const int background_floating_material_dark = 2131034138;
+			
+			// aapt resource value: 0x7F05001B
+			public const int background_floating_material_light = 2131034139;
+			
+			// aapt resource value: 0x7F05001C
+			public const int background_material_dark = 2131034140;
+			
+			// aapt resource value: 0x7F05001D
+			public const int background_material_light = 2131034141;
+			
+			// aapt resource value: 0x7F05001E
+			public const int bright_foreground_disabled_material_dark = 2131034142;
+			
+			// aapt resource value: 0x7F05001F
+			public const int bright_foreground_disabled_material_light = 2131034143;
+			
+			// aapt resource value: 0x7F050020
+			public const int bright_foreground_inverse_material_dark = 2131034144;
+			
+			// aapt resource value: 0x7F050021
+			public const int bright_foreground_inverse_material_light = 2131034145;
+			
+			// aapt resource value: 0x7F050022
+			public const int bright_foreground_material_dark = 2131034146;
+			
+			// aapt resource value: 0x7F050023
+			public const int bright_foreground_material_light = 2131034147;
+			
+			// aapt resource value: 0x7F050024
+			public const int button_material_dark = 2131034148;
+			
+			// aapt resource value: 0x7F050025
+			public const int button_material_light = 2131034149;
+			
+			// aapt resource value: 0x7F050026
+			public const int cardview_dark_background = 2131034150;
+			
+			// aapt resource value: 0x7F050027
+			public const int cardview_light_background = 2131034151;
+			
+			// aapt resource value: 0x7F050028
+			public const int cardview_shadow_end_color = 2131034152;
+			
+			// aapt resource value: 0x7F050029
+			public const int cardview_shadow_start_color = 2131034153;
+			
+			// aapt resource value: 0x7F05002A
+			public const int design_bottom_navigation_shadow_color = 2131034154;
+			
+			// aapt resource value: 0x7F05002B
+			public const int design_default_color_primary = 2131034155;
+			
+			// aapt resource value: 0x7F05002C
+			public const int design_default_color_primary_dark = 2131034156;
+			
+			// aapt resource value: 0x7F05002D
+			public const int design_error = 2131034157;
+			
+			// aapt resource value: 0x7F05002E
+			public const int design_fab_shadow_end_color = 2131034158;
+			
+			// aapt resource value: 0x7F05002F
+			public const int design_fab_shadow_mid_color = 2131034159;
+			
+			// aapt resource value: 0x7F050030
+			public const int design_fab_shadow_start_color = 2131034160;
+			
+			// aapt resource value: 0x7F050031
+			public const int design_fab_stroke_end_inner_color = 2131034161;
+			
+			// aapt resource value: 0x7F050032
+			public const int design_fab_stroke_end_outer_color = 2131034162;
+			
+			// aapt resource value: 0x7F050033
+			public const int design_fab_stroke_top_inner_color = 2131034163;
+			
+			// aapt resource value: 0x7F050034
+			public const int design_fab_stroke_top_outer_color = 2131034164;
+			
+			// aapt resource value: 0x7F050035
+			public const int design_snackbar_background_color = 2131034165;
+			
+			// aapt resource value: 0x7F050036
+			public const int design_tint_password_toggle = 2131034166;
+			
+			// aapt resource value: 0x7F050037
+			public const int dim_foreground_disabled_material_dark = 2131034167;
+			
+			// aapt resource value: 0x7F050038
+			public const int dim_foreground_disabled_material_light = 2131034168;
+			
+			// aapt resource value: 0x7F050039
+			public const int dim_foreground_material_dark = 2131034169;
+			
+			// aapt resource value: 0x7F05003A
+			public const int dim_foreground_material_light = 2131034170;
+			
+			// aapt resource value: 0x7F05003B
+			public const int error_color_material_dark = 2131034171;
+			
+			// aapt resource value: 0x7F05003C
+			public const int error_color_material_light = 2131034172;
+			
+			// aapt resource value: 0x7F05003D
+			public const int foreground_material_dark = 2131034173;
+			
+			// aapt resource value: 0x7F05003E
+			public const int foreground_material_light = 2131034174;
+			
+			// aapt resource value: 0x7F05003F
+			public const int highlighted_text_material_dark = 2131034175;
+			
+			// aapt resource value: 0x7F050040
+			public const int highlighted_text_material_light = 2131034176;
+			
+			// aapt resource value: 0x7F050041
+			public const int material_blue_grey_800 = 2131034177;
+			
+			// aapt resource value: 0x7F050042
+			public const int material_blue_grey_900 = 2131034178;
+			
+			// aapt resource value: 0x7F050043
+			public const int material_blue_grey_950 = 2131034179;
+			
+			// aapt resource value: 0x7F050044
+			public const int material_deep_teal_200 = 2131034180;
+			
+			// aapt resource value: 0x7F050045
+			public const int material_deep_teal_500 = 2131034181;
+			
+			// aapt resource value: 0x7F050046
+			public const int material_grey_100 = 2131034182;
+			
+			// aapt resource value: 0x7F050047
+			public const int material_grey_300 = 2131034183;
+			
+			// aapt resource value: 0x7F050048
+			public const int material_grey_50 = 2131034184;
+			
+			// aapt resource value: 0x7F050049
+			public const int material_grey_600 = 2131034185;
+			
+			// aapt resource value: 0x7F05004A
+			public const int material_grey_800 = 2131034186;
+			
+			// aapt resource value: 0x7F05004B
+			public const int material_grey_850 = 2131034187;
+			
+			// aapt resource value: 0x7F05004C
+			public const int material_grey_900 = 2131034188;
+			
+			// aapt resource value: 0x7F05004D
+			public const int mtrl_bottom_nav_colored_item_tint = 2131034189;
+			
+			// aapt resource value: 0x7F05004E
+			public const int mtrl_bottom_nav_item_tint = 2131034190;
+			
+			// aapt resource value: 0x7F05004F
+			public const int mtrl_btn_bg_color_disabled = 2131034191;
+			
+			// aapt resource value: 0x7F050050
+			public const int mtrl_btn_bg_color_selector = 2131034192;
+			
+			// aapt resource value: 0x7F050051
+			public const int mtrl_btn_ripple_color = 2131034193;
+			
+			// aapt resource value: 0x7F050052
+			public const int mtrl_btn_stroke_color_selector = 2131034194;
+			
+			// aapt resource value: 0x7F050053
+			public const int mtrl_btn_text_btn_ripple_color = 2131034195;
+			
+			// aapt resource value: 0x7F050054
+			public const int mtrl_btn_text_color_disabled = 2131034196;
+			
+			// aapt resource value: 0x7F050055
+			public const int mtrl_btn_text_color_selector = 2131034197;
+			
+			// aapt resource value: 0x7F050056
+			public const int mtrl_btn_transparent_bg_color = 2131034198;
+			
+			// aapt resource value: 0x7F050057
+			public const int mtrl_chip_background_color = 2131034199;
+			
+			// aapt resource value: 0x7F050058
+			public const int mtrl_chip_close_icon_tint = 2131034200;
+			
+			// aapt resource value: 0x7F050059
+			public const int mtrl_chip_ripple_color = 2131034201;
+			
+			// aapt resource value: 0x7F05005A
+			public const int mtrl_chip_text_color = 2131034202;
+			
+			// aapt resource value: 0x7F05005B
+			public const int mtrl_fab_ripple_color = 2131034203;
+			
+			// aapt resource value: 0x7F05005C
+			public const int mtrl_scrim_color = 2131034204;
+			
+			// aapt resource value: 0x7F05005D
+			public const int mtrl_tabs_colored_ripple_color = 2131034205;
+			
+			// aapt resource value: 0x7F05005E
+			public const int mtrl_tabs_icon_color_selector = 2131034206;
+			
+			// aapt resource value: 0x7F05005F
+			public const int mtrl_tabs_icon_color_selector_colored = 2131034207;
+			
+			// aapt resource value: 0x7F050060
+			public const int mtrl_tabs_legacy_text_color_selector = 2131034208;
+			
+			// aapt resource value: 0x7F050061
+			public const int mtrl_tabs_ripple_color = 2131034209;
+			
+			// aapt resource value: 0x7F050063
+			public const int mtrl_textinput_default_box_stroke_color = 2131034211;
+			
+			// aapt resource value: 0x7F050064
+			public const int mtrl_textinput_disabled_color = 2131034212;
+			
+			// aapt resource value: 0x7F050065
+			public const int mtrl_textinput_filled_box_default_background_color = 2131034213;
+			
+			// aapt resource value: 0x7F050066
+			public const int mtrl_textinput_hovered_box_stroke_color = 2131034214;
+			
+			// aapt resource value: 0x7F050062
+			public const int mtrl_text_btn_text_color_selector = 2131034210;
+			
+			// aapt resource value: 0x7F050067
+			public const int notification_action_color_filter = 2131034215;
+			
+			// aapt resource value: 0x7F050068
+			public const int notification_icon_bg_color = 2131034216;
+			
+			// aapt resource value: 0x7F050069
+			public const int notification_material_background_media_default_color = 2131034217;
+			
+			// aapt resource value: 0x7F05006A
+			public const int primary_dark_material_dark = 2131034218;
+			
+			// aapt resource value: 0x7F05006B
+			public const int primary_dark_material_light = 2131034219;
+			
+			// aapt resource value: 0x7F05006C
+			public const int primary_material_dark = 2131034220;
+			
+			// aapt resource value: 0x7F05006D
+			public const int primary_material_light = 2131034221;
+			
+			// aapt resource value: 0x7F05006E
+			public const int primary_text_default_material_dark = 2131034222;
+			
+			// aapt resource value: 0x7F05006F
+			public const int primary_text_default_material_light = 2131034223;
+			
+			// aapt resource value: 0x7F050070
+			public const int primary_text_disabled_material_dark = 2131034224;
+			
+			// aapt resource value: 0x7F050071
+			public const int primary_text_disabled_material_light = 2131034225;
+			
+			// aapt resource value: 0x7F050072
+			public const int ripple_material_dark = 2131034226;
+			
+			// aapt resource value: 0x7F050073
+			public const int ripple_material_light = 2131034227;
+			
+			// aapt resource value: 0x7F050074
+			public const int secondary_text_default_material_dark = 2131034228;
+			
+			// aapt resource value: 0x7F050075
+			public const int secondary_text_default_material_light = 2131034229;
+			
+			// aapt resource value: 0x7F050076
+			public const int secondary_text_disabled_material_dark = 2131034230;
+			
+			// aapt resource value: 0x7F050077
+			public const int secondary_text_disabled_material_light = 2131034231;
+			
+			// aapt resource value: 0x7F050078
+			public const int switch_thumb_disabled_material_dark = 2131034232;
+			
+			// aapt resource value: 0x7F050079
+			public const int switch_thumb_disabled_material_light = 2131034233;
+			
+			// aapt resource value: 0x7F05007A
+			public const int switch_thumb_material_dark = 2131034234;
+			
+			// aapt resource value: 0x7F05007B
+			public const int switch_thumb_material_light = 2131034235;
+			
+			// aapt resource value: 0x7F05007C
+			public const int switch_thumb_normal_material_dark = 2131034236;
+			
+			// aapt resource value: 0x7F05007D
+			public const int switch_thumb_normal_material_light = 2131034237;
+			
+			// aapt resource value: 0x7F05007E
+			public const int tooltip_background_dark = 2131034238;
+			
+			// aapt resource value: 0x7F05007F
+			public const int tooltip_background_light = 2131034239;
+			
+			static Color()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Color()
+			{
+			}
+		}
+		
+		public partial class Dimension
+		{
+			
+			// aapt resource value: 0x7F060000
+			public const int abc_action_bar_content_inset_material = 2131099648;
+			
+			// aapt resource value: 0x7F060001
+			public const int abc_action_bar_content_inset_with_nav = 2131099649;
+			
+			// aapt resource value: 0x7F060002
+			public const int abc_action_bar_default_height_material = 2131099650;
+			
+			// aapt resource value: 0x7F060003
+			public const int abc_action_bar_default_padding_end_material = 2131099651;
+			
+			// aapt resource value: 0x7F060004
+			public const int abc_action_bar_default_padding_start_material = 2131099652;
+			
+			// aapt resource value: 0x7F060005
+			public const int abc_action_bar_elevation_material = 2131099653;
+			
+			// aapt resource value: 0x7F060006
+			public const int abc_action_bar_icon_vertical_padding_material = 2131099654;
+			
+			// aapt resource value: 0x7F060007
+			public const int abc_action_bar_overflow_padding_end_material = 2131099655;
+			
+			// aapt resource value: 0x7F060008
+			public const int abc_action_bar_overflow_padding_start_material = 2131099656;
+			
+			// aapt resource value: 0x7F060009
+			public const int abc_action_bar_stacked_max_height = 2131099657;
+			
+			// aapt resource value: 0x7F06000A
+			public const int abc_action_bar_stacked_tab_max_width = 2131099658;
+			
+			// aapt resource value: 0x7F06000B
+			public const int abc_action_bar_subtitle_bottom_margin_material = 2131099659;
+			
+			// aapt resource value: 0x7F06000C
+			public const int abc_action_bar_subtitle_top_margin_material = 2131099660;
+			
+			// aapt resource value: 0x7F06000D
+			public const int abc_action_button_min_height_material = 2131099661;
+			
+			// aapt resource value: 0x7F06000E
+			public const int abc_action_button_min_width_material = 2131099662;
+			
+			// aapt resource value: 0x7F06000F
+			public const int abc_action_button_min_width_overflow_material = 2131099663;
+			
+			// aapt resource value: 0x7F060010
+			public const int abc_alert_dialog_button_bar_height = 2131099664;
+			
+			// aapt resource value: 0x7F060011
+			public const int abc_alert_dialog_button_dimen = 2131099665;
+			
+			// aapt resource value: 0x7F060012
+			public const int abc_button_inset_horizontal_material = 2131099666;
+			
+			// aapt resource value: 0x7F060013
+			public const int abc_button_inset_vertical_material = 2131099667;
+			
+			// aapt resource value: 0x7F060014
+			public const int abc_button_padding_horizontal_material = 2131099668;
+			
+			// aapt resource value: 0x7F060015
+			public const int abc_button_padding_vertical_material = 2131099669;
+			
+			// aapt resource value: 0x7F060016
+			public const int abc_cascading_menus_min_smallest_width = 2131099670;
+			
+			// aapt resource value: 0x7F060017
+			public const int abc_config_prefDialogWidth = 2131099671;
+			
+			// aapt resource value: 0x7F060018
+			public const int abc_control_corner_material = 2131099672;
+			
+			// aapt resource value: 0x7F060019
+			public const int abc_control_inset_material = 2131099673;
+			
+			// aapt resource value: 0x7F06001A
+			public const int abc_control_padding_material = 2131099674;
+			
+			// aapt resource value: 0x7F06001B
+			public const int abc_dialog_corner_radius_material = 2131099675;
+			
+			// aapt resource value: 0x7F06001C
+			public const int abc_dialog_fixed_height_major = 2131099676;
+			
+			// aapt resource value: 0x7F06001D
+			public const int abc_dialog_fixed_height_minor = 2131099677;
+			
+			// aapt resource value: 0x7F06001E
+			public const int abc_dialog_fixed_width_major = 2131099678;
+			
+			// aapt resource value: 0x7F06001F
+			public const int abc_dialog_fixed_width_minor = 2131099679;
+			
+			// aapt resource value: 0x7F060020
+			public const int abc_dialog_list_padding_bottom_no_buttons = 2131099680;
+			
+			// aapt resource value: 0x7F060021
+			public const int abc_dialog_list_padding_top_no_title = 2131099681;
+			
+			// aapt resource value: 0x7F060022
+			public const int abc_dialog_min_width_major = 2131099682;
+			
+			// aapt resource value: 0x7F060023
+			public const int abc_dialog_min_width_minor = 2131099683;
+			
+			// aapt resource value: 0x7F060024
+			public const int abc_dialog_padding_material = 2131099684;
+			
+			// aapt resource value: 0x7F060025
+			public const int abc_dialog_padding_top_material = 2131099685;
+			
+			// aapt resource value: 0x7F060026
+			public const int abc_dialog_title_divider_material = 2131099686;
+			
+			// aapt resource value: 0x7F060027
+			public const int abc_disabled_alpha_material_dark = 2131099687;
+			
+			// aapt resource value: 0x7F060028
+			public const int abc_disabled_alpha_material_light = 2131099688;
+			
+			// aapt resource value: 0x7F060029
+			public const int abc_dropdownitem_icon_width = 2131099689;
+			
+			// aapt resource value: 0x7F06002A
+			public const int abc_dropdownitem_text_padding_left = 2131099690;
+			
+			// aapt resource value: 0x7F06002B
+			public const int abc_dropdownitem_text_padding_right = 2131099691;
+			
+			// aapt resource value: 0x7F06002C
+			public const int abc_edit_text_inset_bottom_material = 2131099692;
+			
+			// aapt resource value: 0x7F06002D
+			public const int abc_edit_text_inset_horizontal_material = 2131099693;
+			
+			// aapt resource value: 0x7F06002E
+			public const int abc_edit_text_inset_top_material = 2131099694;
+			
+			// aapt resource value: 0x7F06002F
+			public const int abc_floating_window_z = 2131099695;
+			
+			// aapt resource value: 0x7F060030
+			public const int abc_list_item_height_large_material = 2131099696;
+			
+			// aapt resource value: 0x7F060031
+			public const int abc_list_item_height_material = 2131099697;
+			
+			// aapt resource value: 0x7F060032
+			public const int abc_list_item_height_small_material = 2131099698;
+			
+			// aapt resource value: 0x7F060033
+			public const int abc_list_item_padding_horizontal_material = 2131099699;
+			
+			// aapt resource value: 0x7F060034
+			public const int abc_panel_menu_list_width = 2131099700;
+			
+			// aapt resource value: 0x7F060035
+			public const int abc_progress_bar_height_material = 2131099701;
+			
+			// aapt resource value: 0x7F060036
+			public const int abc_search_view_preferred_height = 2131099702;
+			
+			// aapt resource value: 0x7F060037
+			public const int abc_search_view_preferred_width = 2131099703;
+			
+			// aapt resource value: 0x7F060038
+			public const int abc_seekbar_track_background_height_material = 2131099704;
+			
+			// aapt resource value: 0x7F060039
+			public const int abc_seekbar_track_progress_height_material = 2131099705;
+			
+			// aapt resource value: 0x7F06003A
+			public const int abc_select_dialog_padding_start_material = 2131099706;
+			
+			// aapt resource value: 0x7F06003B
+			public const int abc_switch_padding = 2131099707;
+			
+			// aapt resource value: 0x7F06003C
+			public const int abc_text_size_body_1_material = 2131099708;
+			
+			// aapt resource value: 0x7F06003D
+			public const int abc_text_size_body_2_material = 2131099709;
+			
+			// aapt resource value: 0x7F06003E
+			public const int abc_text_size_button_material = 2131099710;
+			
+			// aapt resource value: 0x7F06003F
+			public const int abc_text_size_caption_material = 2131099711;
+			
+			// aapt resource value: 0x7F060040
+			public const int abc_text_size_display_1_material = 2131099712;
+			
+			// aapt resource value: 0x7F060041
+			public const int abc_text_size_display_2_material = 2131099713;
+			
+			// aapt resource value: 0x7F060042
+			public const int abc_text_size_display_3_material = 2131099714;
+			
+			// aapt resource value: 0x7F060043
+			public const int abc_text_size_display_4_material = 2131099715;
+			
+			// aapt resource value: 0x7F060044
+			public const int abc_text_size_headline_material = 2131099716;
+			
+			// aapt resource value: 0x7F060045
+			public const int abc_text_size_large_material = 2131099717;
+			
+			// aapt resource value: 0x7F060046
+			public const int abc_text_size_medium_material = 2131099718;
+			
+			// aapt resource value: 0x7F060047
+			public const int abc_text_size_menu_header_material = 2131099719;
+			
+			// aapt resource value: 0x7F060048
+			public const int abc_text_size_menu_material = 2131099720;
+			
+			// aapt resource value: 0x7F060049
+			public const int abc_text_size_small_material = 2131099721;
+			
+			// aapt resource value: 0x7F06004A
+			public const int abc_text_size_subhead_material = 2131099722;
+			
+			// aapt resource value: 0x7F06004B
+			public const int abc_text_size_subtitle_material_toolbar = 2131099723;
+			
+			// aapt resource value: 0x7F06004C
+			public const int abc_text_size_title_material = 2131099724;
+			
+			// aapt resource value: 0x7F06004D
+			public const int abc_text_size_title_material_toolbar = 2131099725;
+			
+			// aapt resource value: 0x7F06004E
+			public const int cardview_compat_inset_shadow = 2131099726;
+			
+			// aapt resource value: 0x7F06004F
+			public const int cardview_default_elevation = 2131099727;
+			
+			// aapt resource value: 0x7F060050
+			public const int cardview_default_radius = 2131099728;
+			
+			// aapt resource value: 0x7F060051
+			public const int compat_button_inset_horizontal_material = 2131099729;
+			
+			// aapt resource value: 0x7F060052
+			public const int compat_button_inset_vertical_material = 2131099730;
+			
+			// aapt resource value: 0x7F060053
+			public const int compat_button_padding_horizontal_material = 2131099731;
+			
+			// aapt resource value: 0x7F060054
+			public const int compat_button_padding_vertical_material = 2131099732;
+			
+			// aapt resource value: 0x7F060055
+			public const int compat_control_corner_material = 2131099733;
+			
+			// aapt resource value: 0x7F060056
+			public const int compat_notification_large_icon_max_height = 2131099734;
+			
+			// aapt resource value: 0x7F060057
+			public const int compat_notification_large_icon_max_width = 2131099735;
+			
+			// aapt resource value: 0x7F060058
+			public const int design_appbar_elevation = 2131099736;
+			
+			// aapt resource value: 0x7F060059
+			public const int design_bottom_navigation_active_item_max_width = 2131099737;
+			
+			// aapt resource value: 0x7F06005A
+			public const int design_bottom_navigation_active_item_min_width = 2131099738;
+			
+			// aapt resource value: 0x7F06005B
+			public const int design_bottom_navigation_active_text_size = 2131099739;
+			
+			// aapt resource value: 0x7F06005C
+			public const int design_bottom_navigation_elevation = 2131099740;
+			
+			// aapt resource value: 0x7F06005D
+			public const int design_bottom_navigation_height = 2131099741;
+			
+			// aapt resource value: 0x7F06005E
+			public const int design_bottom_navigation_icon_size = 2131099742;
+			
+			// aapt resource value: 0x7F06005F
+			public const int design_bottom_navigation_item_max_width = 2131099743;
+			
+			// aapt resource value: 0x7F060060
+			public const int design_bottom_navigation_item_min_width = 2131099744;
+			
+			// aapt resource value: 0x7F060061
+			public const int design_bottom_navigation_margin = 2131099745;
+			
+			// aapt resource value: 0x7F060062
+			public const int design_bottom_navigation_shadow_height = 2131099746;
+			
+			// aapt resource value: 0x7F060063
+			public const int design_bottom_navigation_text_size = 2131099747;
+			
+			// aapt resource value: 0x7F060064
+			public const int design_bottom_sheet_modal_elevation = 2131099748;
+			
+			// aapt resource value: 0x7F060065
+			public const int design_bottom_sheet_peek_height_min = 2131099749;
+			
+			// aapt resource value: 0x7F060066
+			public const int design_fab_border_width = 2131099750;
+			
+			// aapt resource value: 0x7F060067
+			public const int design_fab_elevation = 2131099751;
+			
+			// aapt resource value: 0x7F060068
+			public const int design_fab_image_size = 2131099752;
+			
+			// aapt resource value: 0x7F060069
+			public const int design_fab_size_mini = 2131099753;
+			
+			// aapt resource value: 0x7F06006A
+			public const int design_fab_size_normal = 2131099754;
+			
+			// aapt resource value: 0x7F06006B
+			public const int design_fab_translation_z_hovered_focused = 2131099755;
+			
+			// aapt resource value: 0x7F06006C
+			public const int design_fab_translation_z_pressed = 2131099756;
+			
+			// aapt resource value: 0x7F06006D
+			public const int design_navigation_elevation = 2131099757;
+			
+			// aapt resource value: 0x7F06006E
+			public const int design_navigation_icon_padding = 2131099758;
+			
+			// aapt resource value: 0x7F06006F
+			public const int design_navigation_icon_size = 2131099759;
+			
+			// aapt resource value: 0x7F060070
+			public const int design_navigation_item_horizontal_padding = 2131099760;
+			
+			// aapt resource value: 0x7F060071
+			public const int design_navigation_item_icon_padding = 2131099761;
+			
+			// aapt resource value: 0x7F060072
+			public const int design_navigation_max_width = 2131099762;
+			
+			// aapt resource value: 0x7F060073
+			public const int design_navigation_padding_bottom = 2131099763;
+			
+			// aapt resource value: 0x7F060074
+			public const int design_navigation_separator_vertical_padding = 2131099764;
+			
+			// aapt resource value: 0x7F060075
+			public const int design_snackbar_action_inline_max_width = 2131099765;
+			
+			// aapt resource value: 0x7F060076
+			public const int design_snackbar_background_corner_radius = 2131099766;
+			
+			// aapt resource value: 0x7F060077
+			public const int design_snackbar_elevation = 2131099767;
+			
+			// aapt resource value: 0x7F060078
+			public const int design_snackbar_extra_spacing_horizontal = 2131099768;
+			
+			// aapt resource value: 0x7F060079
+			public const int design_snackbar_max_width = 2131099769;
+			
+			// aapt resource value: 0x7F06007A
+			public const int design_snackbar_min_width = 2131099770;
+			
+			// aapt resource value: 0x7F06007B
+			public const int design_snackbar_padding_horizontal = 2131099771;
+			
+			// aapt resource value: 0x7F06007C
+			public const int design_snackbar_padding_vertical = 2131099772;
+			
+			// aapt resource value: 0x7F06007D
+			public const int design_snackbar_padding_vertical_2lines = 2131099773;
+			
+			// aapt resource value: 0x7F06007E
+			public const int design_snackbar_text_size = 2131099774;
+			
+			// aapt resource value: 0x7F06007F
+			public const int design_tab_max_width = 2131099775;
+			
+			// aapt resource value: 0x7F060080
+			public const int design_tab_scrollable_min_width = 2131099776;
+			
+			// aapt resource value: 0x7F060081
+			public const int design_tab_text_size = 2131099777;
+			
+			// aapt resource value: 0x7F060082
+			public const int design_tab_text_size_2line = 2131099778;
+			
+			// aapt resource value: 0x7F060083
+			public const int design_textinput_caption_translate_y = 2131099779;
+			
+			// aapt resource value: 0x7F060084
+			public const int disabled_alpha_material_dark = 2131099780;
+			
+			// aapt resource value: 0x7F060085
+			public const int disabled_alpha_material_light = 2131099781;
+			
+			// aapt resource value: 0x7F060086
+			public const int fastscroll_default_thickness = 2131099782;
+			
+			// aapt resource value: 0x7F060087
+			public const int fastscroll_margin = 2131099783;
+			
+			// aapt resource value: 0x7F060088
+			public const int fastscroll_minimum_range = 2131099784;
+			
+			// aapt resource value: 0x7F060089
+			public const int highlight_alpha_material_colored = 2131099785;
+			
+			// aapt resource value: 0x7F06008A
+			public const int highlight_alpha_material_dark = 2131099786;
+			
+			// aapt resource value: 0x7F06008B
+			public const int highlight_alpha_material_light = 2131099787;
+			
+			// aapt resource value: 0x7F06008C
+			public const int hint_alpha_material_dark = 2131099788;
+			
+			// aapt resource value: 0x7F06008D
+			public const int hint_alpha_material_light = 2131099789;
+			
+			// aapt resource value: 0x7F06008E
+			public const int hint_pressed_alpha_material_dark = 2131099790;
+			
+			// aapt resource value: 0x7F06008F
+			public const int hint_pressed_alpha_material_light = 2131099791;
+			
+			// aapt resource value: 0x7F060090
+			public const int item_touch_helper_max_drag_scroll_per_frame = 2131099792;
+			
+			// aapt resource value: 0x7F060091
+			public const int item_touch_helper_swipe_escape_max_velocity = 2131099793;
+			
+			// aapt resource value: 0x7F060092
+			public const int item_touch_helper_swipe_escape_velocity = 2131099794;
+			
+			// aapt resource value: 0x7F060093
+			public const int mtrl_bottomappbar_fabOffsetEndMode = 2131099795;
+			
+			// aapt resource value: 0x7F060094
+			public const int mtrl_bottomappbar_fab_cradle_margin = 2131099796;
+			
+			// aapt resource value: 0x7F060095
+			public const int mtrl_bottomappbar_fab_cradle_rounded_corner_radius = 2131099797;
+			
+			// aapt resource value: 0x7F060096
+			public const int mtrl_bottomappbar_fab_cradle_vertical_offset = 2131099798;
+			
+			// aapt resource value: 0x7F060097
+			public const int mtrl_bottomappbar_height = 2131099799;
+			
+			// aapt resource value: 0x7F060098
+			public const int mtrl_btn_corner_radius = 2131099800;
+			
+			// aapt resource value: 0x7F060099
+			public const int mtrl_btn_dialog_btn_min_width = 2131099801;
+			
+			// aapt resource value: 0x7F06009A
+			public const int mtrl_btn_disabled_elevation = 2131099802;
+			
+			// aapt resource value: 0x7F06009B
+			public const int mtrl_btn_disabled_z = 2131099803;
+			
+			// aapt resource value: 0x7F06009C
+			public const int mtrl_btn_elevation = 2131099804;
+			
+			// aapt resource value: 0x7F06009D
+			public const int mtrl_btn_focused_z = 2131099805;
+			
+			// aapt resource value: 0x7F06009E
+			public const int mtrl_btn_hovered_z = 2131099806;
+			
+			// aapt resource value: 0x7F06009F
+			public const int mtrl_btn_icon_btn_padding_left = 2131099807;
+			
+			// aapt resource value: 0x7F0600A0
+			public const int mtrl_btn_icon_padding = 2131099808;
+			
+			// aapt resource value: 0x7F0600A1
+			public const int mtrl_btn_inset = 2131099809;
+			
+			// aapt resource value: 0x7F0600A2
+			public const int mtrl_btn_letter_spacing = 2131099810;
+			
+			// aapt resource value: 0x7F0600A3
+			public const int mtrl_btn_padding_bottom = 2131099811;
+			
+			// aapt resource value: 0x7F0600A4
+			public const int mtrl_btn_padding_left = 2131099812;
+			
+			// aapt resource value: 0x7F0600A5
+			public const int mtrl_btn_padding_right = 2131099813;
+			
+			// aapt resource value: 0x7F0600A6
+			public const int mtrl_btn_padding_top = 2131099814;
+			
+			// aapt resource value: 0x7F0600A7
+			public const int mtrl_btn_pressed_z = 2131099815;
+			
+			// aapt resource value: 0x7F0600A8
+			public const int mtrl_btn_stroke_size = 2131099816;
+			
+			// aapt resource value: 0x7F0600A9
+			public const int mtrl_btn_text_btn_icon_padding = 2131099817;
+			
+			// aapt resource value: 0x7F0600AA
+			public const int mtrl_btn_text_btn_padding_left = 2131099818;
+			
+			// aapt resource value: 0x7F0600AB
+			public const int mtrl_btn_text_btn_padding_right = 2131099819;
+			
+			// aapt resource value: 0x7F0600AC
+			public const int mtrl_btn_text_size = 2131099820;
+			
+			// aapt resource value: 0x7F0600AD
+			public const int mtrl_btn_z = 2131099821;
+			
+			// aapt resource value: 0x7F0600AE
+			public const int mtrl_card_elevation = 2131099822;
+			
+			// aapt resource value: 0x7F0600AF
+			public const int mtrl_card_spacing = 2131099823;
+			
+			// aapt resource value: 0x7F0600B0
+			public const int mtrl_chip_pressed_translation_z = 2131099824;
+			
+			// aapt resource value: 0x7F0600B1
+			public const int mtrl_chip_text_size = 2131099825;
+			
+			// aapt resource value: 0x7F0600B2
+			public const int mtrl_fab_elevation = 2131099826;
+			
+			// aapt resource value: 0x7F0600B3
+			public const int mtrl_fab_translation_z_hovered_focused = 2131099827;
+			
+			// aapt resource value: 0x7F0600B4
+			public const int mtrl_fab_translation_z_pressed = 2131099828;
+			
+			// aapt resource value: 0x7F0600B5
+			public const int mtrl_navigation_elevation = 2131099829;
+			
+			// aapt resource value: 0x7F0600B6
+			public const int mtrl_navigation_item_horizontal_padding = 2131099830;
+			
+			// aapt resource value: 0x7F0600B7
+			public const int mtrl_navigation_item_icon_padding = 2131099831;
+			
+			// aapt resource value: 0x7F0600B8
+			public const int mtrl_snackbar_background_corner_radius = 2131099832;
+			
+			// aapt resource value: 0x7F0600B9
+			public const int mtrl_snackbar_margin = 2131099833;
+			
+			// aapt resource value: 0x7F0600BA
+			public const int mtrl_textinput_box_bottom_offset = 2131099834;
+			
+			// aapt resource value: 0x7F0600BB
+			public const int mtrl_textinput_box_corner_radius_medium = 2131099835;
+			
+			// aapt resource value: 0x7F0600BC
+			public const int mtrl_textinput_box_corner_radius_small = 2131099836;
+			
+			// aapt resource value: 0x7F0600BD
+			public const int mtrl_textinput_box_label_cutout_padding = 2131099837;
+			
+			// aapt resource value: 0x7F0600BE
+			public const int mtrl_textinput_box_padding_end = 2131099838;
+			
+			// aapt resource value: 0x7F0600BF
+			public const int mtrl_textinput_box_stroke_width_default = 2131099839;
+			
+			// aapt resource value: 0x7F0600C0
+			public const int mtrl_textinput_box_stroke_width_focused = 2131099840;
+			
+			// aapt resource value: 0x7F0600C1
+			public const int mtrl_textinput_outline_box_expanded_padding = 2131099841;
+			
+			// aapt resource value: 0x7F0600C2
+			public const int mtrl_toolbar_default_height = 2131099842;
+			
+			// aapt resource value: 0x7F0600C3
+			public const int notification_action_icon_size = 2131099843;
+			
+			// aapt resource value: 0x7F0600C4
+			public const int notification_action_text_size = 2131099844;
+			
+			// aapt resource value: 0x7F0600C5
+			public const int notification_big_circle_margin = 2131099845;
+			
+			// aapt resource value: 0x7F0600C6
+			public const int notification_content_margin_start = 2131099846;
+			
+			// aapt resource value: 0x7F0600C7
+			public const int notification_large_icon_height = 2131099847;
+			
+			// aapt resource value: 0x7F0600C8
+			public const int notification_large_icon_width = 2131099848;
+			
+			// aapt resource value: 0x7F0600C9
+			public const int notification_main_column_padding_top = 2131099849;
+			
+			// aapt resource value: 0x7F0600CA
+			public const int notification_media_narrow_margin = 2131099850;
+			
+			// aapt resource value: 0x7F0600CB
+			public const int notification_right_icon_size = 2131099851;
+			
+			// aapt resource value: 0x7F0600CC
+			public const int notification_right_side_padding_top = 2131099852;
+			
+			// aapt resource value: 0x7F0600CD
+			public const int notification_small_icon_background_padding = 2131099853;
+			
+			// aapt resource value: 0x7F0600CE
+			public const int notification_small_icon_size_as_large = 2131099854;
+			
+			// aapt resource value: 0x7F0600CF
+			public const int notification_subtext_size = 2131099855;
+			
+			// aapt resource value: 0x7F0600D0
+			public const int notification_top_pad = 2131099856;
+			
+			// aapt resource value: 0x7F0600D1
+			public const int notification_top_pad_large_text = 2131099857;
+			
+			// aapt resource value: 0x7F0600D2
+			public const int subtitle_corner_radius = 2131099858;
+			
+			// aapt resource value: 0x7F0600D3
+			public const int subtitle_outline_width = 2131099859;
+			
+			// aapt resource value: 0x7F0600D4
+			public const int subtitle_shadow_offset = 2131099860;
+			
+			// aapt resource value: 0x7F0600D5
+			public const int subtitle_shadow_radius = 2131099861;
+			
+			// aapt resource value: 0x7F0600D6
+			public const int tooltip_corner_radius = 2131099862;
+			
+			// aapt resource value: 0x7F0600D7
+			public const int tooltip_horizontal_padding = 2131099863;
+			
+			// aapt resource value: 0x7F0600D8
+			public const int tooltip_margin = 2131099864;
+			
+			// aapt resource value: 0x7F0600D9
+			public const int tooltip_precise_anchor_extra_offset = 2131099865;
+			
+			// aapt resource value: 0x7F0600DA
+			public const int tooltip_precise_anchor_threshold = 2131099866;
+			
+			// aapt resource value: 0x7F0600DB
+			public const int tooltip_vertical_padding = 2131099867;
+			
+			// aapt resource value: 0x7F0600DC
+			public const int tooltip_y_offset_non_touch = 2131099868;
+			
+			// aapt resource value: 0x7F0600DD
+			public const int tooltip_y_offset_touch = 2131099869;
+			
+			static Dimension()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Dimension()
+			{
+			}
+		}
+		
 		public partial class Drawable
 		{
 			
-			// aapt resource value: 0x7F010000
-			public const int Icon = 2130771968;
+			// aapt resource value: 0x7F070006
+			public const int abc_ab_share_pack_mtrl_alpha = 2131165190;
+			
+			// aapt resource value: 0x7F070007
+			public const int abc_action_bar_item_background_material = 2131165191;
+			
+			// aapt resource value: 0x7F070008
+			public const int abc_btn_borderless_material = 2131165192;
+			
+			// aapt resource value: 0x7F070009
+			public const int abc_btn_check_material = 2131165193;
+			
+			// aapt resource value: 0x7F07000A
+			public const int abc_btn_check_material_anim = 2131165194;
+			
+			// aapt resource value: 0x7F07000B
+			public const int abc_btn_check_to_on_mtrl_000 = 2131165195;
+			
+			// aapt resource value: 0x7F07000C
+			public const int abc_btn_check_to_on_mtrl_015 = 2131165196;
+			
+			// aapt resource value: 0x7F07000D
+			public const int abc_btn_colored_material = 2131165197;
+			
+			// aapt resource value: 0x7F07000E
+			public const int abc_btn_default_mtrl_shape = 2131165198;
+			
+			// aapt resource value: 0x7F07000F
+			public const int abc_btn_radio_material = 2131165199;
+			
+			// aapt resource value: 0x7F070010
+			public const int abc_btn_radio_material_anim = 2131165200;
+			
+			// aapt resource value: 0x7F070011
+			public const int abc_btn_radio_to_on_mtrl_000 = 2131165201;
+			
+			// aapt resource value: 0x7F070012
+			public const int abc_btn_radio_to_on_mtrl_015 = 2131165202;
+			
+			// aapt resource value: 0x7F070013
+			public const int abc_btn_switch_to_on_mtrl_00001 = 2131165203;
+			
+			// aapt resource value: 0x7F070014
+			public const int abc_btn_switch_to_on_mtrl_00012 = 2131165204;
+			
+			// aapt resource value: 0x7F070015
+			public const int abc_cab_background_internal_bg = 2131165205;
+			
+			// aapt resource value: 0x7F070016
+			public const int abc_cab_background_top_material = 2131165206;
+			
+			// aapt resource value: 0x7F070017
+			public const int abc_cab_background_top_mtrl_alpha = 2131165207;
+			
+			// aapt resource value: 0x7F070018
+			public const int abc_control_background_material = 2131165208;
+			
+			// aapt resource value: 0x7F070019
+			public const int abc_dialog_material_background = 2131165209;
+			
+			// aapt resource value: 0x7F07001A
+			public const int abc_edit_text_material = 2131165210;
+			
+			// aapt resource value: 0x7F07001B
+			public const int abc_ic_ab_back_material = 2131165211;
+			
+			// aapt resource value: 0x7F07001C
+			public const int abc_ic_arrow_drop_right_black_24dp = 2131165212;
+			
+			// aapt resource value: 0x7F07001D
+			public const int abc_ic_clear_material = 2131165213;
+			
+			// aapt resource value: 0x7F07001E
+			public const int abc_ic_commit_search_api_mtrl_alpha = 2131165214;
+			
+			// aapt resource value: 0x7F07001F
+			public const int abc_ic_go_search_api_material = 2131165215;
+			
+			// aapt resource value: 0x7F070020
+			public const int abc_ic_menu_copy_mtrl_am_alpha = 2131165216;
+			
+			// aapt resource value: 0x7F070021
+			public const int abc_ic_menu_cut_mtrl_alpha = 2131165217;
+			
+			// aapt resource value: 0x7F070022
+			public const int abc_ic_menu_overflow_material = 2131165218;
+			
+			// aapt resource value: 0x7F070023
+			public const int abc_ic_menu_paste_mtrl_am_alpha = 2131165219;
+			
+			// aapt resource value: 0x7F070024
+			public const int abc_ic_menu_selectall_mtrl_alpha = 2131165220;
+			
+			// aapt resource value: 0x7F070025
+			public const int abc_ic_menu_share_mtrl_alpha = 2131165221;
+			
+			// aapt resource value: 0x7F070026
+			public const int abc_ic_search_api_material = 2131165222;
+			
+			// aapt resource value: 0x7F070027
+			public const int abc_ic_star_black_16dp = 2131165223;
+			
+			// aapt resource value: 0x7F070028
+			public const int abc_ic_star_black_36dp = 2131165224;
+			
+			// aapt resource value: 0x7F070029
+			public const int abc_ic_star_black_48dp = 2131165225;
+			
+			// aapt resource value: 0x7F07002A
+			public const int abc_ic_star_half_black_16dp = 2131165226;
+			
+			// aapt resource value: 0x7F07002B
+			public const int abc_ic_star_half_black_36dp = 2131165227;
+			
+			// aapt resource value: 0x7F07002C
+			public const int abc_ic_star_half_black_48dp = 2131165228;
+			
+			// aapt resource value: 0x7F07002D
+			public const int abc_ic_voice_search_api_material = 2131165229;
+			
+			// aapt resource value: 0x7F07002E
+			public const int abc_item_background_holo_dark = 2131165230;
+			
+			// aapt resource value: 0x7F07002F
+			public const int abc_item_background_holo_light = 2131165231;
+			
+			// aapt resource value: 0x7F070030
+			public const int abc_list_divider_material = 2131165232;
+			
+			// aapt resource value: 0x7F070031
+			public const int abc_list_divider_mtrl_alpha = 2131165233;
+			
+			// aapt resource value: 0x7F070032
+			public const int abc_list_focused_holo = 2131165234;
+			
+			// aapt resource value: 0x7F070033
+			public const int abc_list_longpressed_holo = 2131165235;
+			
+			// aapt resource value: 0x7F070034
+			public const int abc_list_pressed_holo_dark = 2131165236;
+			
+			// aapt resource value: 0x7F070035
+			public const int abc_list_pressed_holo_light = 2131165237;
+			
+			// aapt resource value: 0x7F070036
+			public const int abc_list_selector_background_transition_holo_dark = 2131165238;
+			
+			// aapt resource value: 0x7F070037
+			public const int abc_list_selector_background_transition_holo_light = 2131165239;
+			
+			// aapt resource value: 0x7F070038
+			public const int abc_list_selector_disabled_holo_dark = 2131165240;
+			
+			// aapt resource value: 0x7F070039
+			public const int abc_list_selector_disabled_holo_light = 2131165241;
+			
+			// aapt resource value: 0x7F07003A
+			public const int abc_list_selector_holo_dark = 2131165242;
+			
+			// aapt resource value: 0x7F07003B
+			public const int abc_list_selector_holo_light = 2131165243;
+			
+			// aapt resource value: 0x7F07003C
+			public const int abc_menu_hardkey_panel_mtrl_mult = 2131165244;
+			
+			// aapt resource value: 0x7F07003D
+			public const int abc_popup_background_mtrl_mult = 2131165245;
+			
+			// aapt resource value: 0x7F07003E
+			public const int abc_ratingbar_indicator_material = 2131165246;
+			
+			// aapt resource value: 0x7F07003F
+			public const int abc_ratingbar_material = 2131165247;
+			
+			// aapt resource value: 0x7F070040
+			public const int abc_ratingbar_small_material = 2131165248;
+			
+			// aapt resource value: 0x7F070041
+			public const int abc_scrubber_control_off_mtrl_alpha = 2131165249;
+			
+			// aapt resource value: 0x7F070042
+			public const int abc_scrubber_control_to_pressed_mtrl_000 = 2131165250;
+			
+			// aapt resource value: 0x7F070043
+			public const int abc_scrubber_control_to_pressed_mtrl_005 = 2131165251;
+			
+			// aapt resource value: 0x7F070044
+			public const int abc_scrubber_primary_mtrl_alpha = 2131165252;
+			
+			// aapt resource value: 0x7F070045
+			public const int abc_scrubber_track_mtrl_alpha = 2131165253;
+			
+			// aapt resource value: 0x7F070046
+			public const int abc_seekbar_thumb_material = 2131165254;
+			
+			// aapt resource value: 0x7F070047
+			public const int abc_seekbar_tick_mark_material = 2131165255;
+			
+			// aapt resource value: 0x7F070048
+			public const int abc_seekbar_track_material = 2131165256;
+			
+			// aapt resource value: 0x7F070049
+			public const int abc_spinner_mtrl_am_alpha = 2131165257;
+			
+			// aapt resource value: 0x7F07004A
+			public const int abc_spinner_textfield_background_material = 2131165258;
+			
+			// aapt resource value: 0x7F07004B
+			public const int abc_switch_thumb_material = 2131165259;
+			
+			// aapt resource value: 0x7F07004C
+			public const int abc_switch_track_mtrl_alpha = 2131165260;
+			
+			// aapt resource value: 0x7F07004D
+			public const int abc_tab_indicator_material = 2131165261;
+			
+			// aapt resource value: 0x7F07004E
+			public const int abc_tab_indicator_mtrl_alpha = 2131165262;
+			
+			// aapt resource value: 0x7F070056
+			public const int abc_textfield_activated_mtrl_alpha = 2131165270;
+			
+			// aapt resource value: 0x7F070057
+			public const int abc_textfield_default_mtrl_alpha = 2131165271;
+			
+			// aapt resource value: 0x7F070058
+			public const int abc_textfield_search_activated_mtrl_alpha = 2131165272;
+			
+			// aapt resource value: 0x7F070059
+			public const int abc_textfield_search_default_mtrl_alpha = 2131165273;
+			
+			// aapt resource value: 0x7F07005A
+			public const int abc_textfield_search_material = 2131165274;
+			
+			// aapt resource value: 0x7F07004F
+			public const int abc_text_cursor_material = 2131165263;
+			
+			// aapt resource value: 0x7F070050
+			public const int abc_text_select_handle_left_mtrl_dark = 2131165264;
+			
+			// aapt resource value: 0x7F070051
+			public const int abc_text_select_handle_left_mtrl_light = 2131165265;
+			
+			// aapt resource value: 0x7F070052
+			public const int abc_text_select_handle_middle_mtrl_dark = 2131165266;
+			
+			// aapt resource value: 0x7F070053
+			public const int abc_text_select_handle_middle_mtrl_light = 2131165267;
+			
+			// aapt resource value: 0x7F070054
+			public const int abc_text_select_handle_right_mtrl_dark = 2131165268;
+			
+			// aapt resource value: 0x7F070055
+			public const int abc_text_select_handle_right_mtrl_light = 2131165269;
+			
+			// aapt resource value: 0x7F07005B
+			public const int abc_vector_test = 2131165275;
+			
+			// aapt resource value: 0x7F07005C
+			public const int avd_hide_password = 2131165276;
+			
+			// aapt resource value: 0x7F07005D
+			public const int avd_show_password = 2131165277;
+			
+			// aapt resource value: 0x7F07005E
+			public const int btn_checkbox_checked_mtrl = 2131165278;
+			
+			// aapt resource value: 0x7F07005F
+			public const int btn_checkbox_checked_to_unchecked_mtrl_animation = 2131165279;
+			
+			// aapt resource value: 0x7F070060
+			public const int btn_checkbox_unchecked_mtrl = 2131165280;
+			
+			// aapt resource value: 0x7F070061
+			public const int btn_checkbox_unchecked_to_checked_mtrl_animation = 2131165281;
+			
+			// aapt resource value: 0x7F070062
+			public const int btn_radio_off_mtrl = 2131165282;
+			
+			// aapt resource value: 0x7F070063
+			public const int btn_radio_off_to_on_mtrl_animation = 2131165283;
+			
+			// aapt resource value: 0x7F070064
+			public const int btn_radio_on_mtrl = 2131165284;
+			
+			// aapt resource value: 0x7F070065
+			public const int btn_radio_on_to_off_mtrl_animation = 2131165285;
+			
+			// aapt resource value: 0x7F070066
+			public const int design_bottom_navigation_item_background = 2131165286;
+			
+			// aapt resource value: 0x7F070067
+			public const int design_fab_background = 2131165287;
+			
+			// aapt resource value: 0x7F070068
+			public const int design_ic_visibility = 2131165288;
+			
+			// aapt resource value: 0x7F070069
+			public const int design_ic_visibility_off = 2131165289;
+			
+			// aapt resource value: 0x7F07006A
+			public const int design_password_eye = 2131165290;
+			
+			// aapt resource value: 0x7F07006B
+			public const int design_snackbar_background = 2131165291;
+			
+			// aapt resource value: 0x7F07006F
+			public const int Icon = 2131165295;
+			
+			// aapt resource value: 0x7F07006C
+			public const int ic_mtrl_chip_checked_black = 2131165292;
+			
+			// aapt resource value: 0x7F07006D
+			public const int ic_mtrl_chip_checked_circle = 2131165293;
+			
+			// aapt resource value: 0x7F07006E
+			public const int ic_mtrl_chip_close_circle = 2131165294;
+			
+			// aapt resource value: 0x7F070070
+			public const int mtrl_snackbar_background = 2131165296;
+			
+			// aapt resource value: 0x7F070071
+			public const int mtrl_tabs_default_indicator = 2131165297;
+			
+			// aapt resource value: 0x7F070072
+			public const int navigation_empty_icon = 2131165298;
+			
+			// aapt resource value: 0x7F070073
+			public const int notification_action_background = 2131165299;
+			
+			// aapt resource value: 0x7F070074
+			public const int notification_bg = 2131165300;
+			
+			// aapt resource value: 0x7F070075
+			public const int notification_bg_low = 2131165301;
+			
+			// aapt resource value: 0x7F070076
+			public const int notification_bg_low_normal = 2131165302;
+			
+			// aapt resource value: 0x7F070077
+			public const int notification_bg_low_pressed = 2131165303;
+			
+			// aapt resource value: 0x7F070078
+			public const int notification_bg_normal = 2131165304;
+			
+			// aapt resource value: 0x7F070079
+			public const int notification_bg_normal_pressed = 2131165305;
+			
+			// aapt resource value: 0x7F07007A
+			public const int notification_icon_background = 2131165306;
+			
+			// aapt resource value: 0x7F07007B
+			public const int notification_template_icon_bg = 2131165307;
+			
+			// aapt resource value: 0x7F07007C
+			public const int notification_template_icon_low_bg = 2131165308;
+			
+			// aapt resource value: 0x7F07007D
+			public const int notification_tile_bg = 2131165309;
+			
+			// aapt resource value: 0x7F07007E
+			public const int notify_panel_notification_icon_bg = 2131165310;
+			
+			// aapt resource value: 0x7F07007F
+			public const int tooltip_frame_dark = 2131165311;
+			
+			// aapt resource value: 0x7F070080
+			public const int tooltip_frame_light = 2131165312;
 			
 			static Drawable()
 			{
@@ -59,8 +5788,707 @@ namespace GraphicsTester.Android
 		public partial class Id
 		{
 			
-			// aapt resource value: 0x7F020000
-			public const int textItem = 2130837504;
+			// aapt resource value: 0x7F080006
+			public const int accessibility_action_clickable_span = 2131230726;
+			
+			// aapt resource value: 0x7F080007
+			public const int accessibility_custom_action_0 = 2131230727;
+			
+			// aapt resource value: 0x7F080008
+			public const int accessibility_custom_action_1 = 2131230728;
+			
+			// aapt resource value: 0x7F080009
+			public const int accessibility_custom_action_10 = 2131230729;
+			
+			// aapt resource value: 0x7F08000A
+			public const int accessibility_custom_action_11 = 2131230730;
+			
+			// aapt resource value: 0x7F08000B
+			public const int accessibility_custom_action_12 = 2131230731;
+			
+			// aapt resource value: 0x7F08000C
+			public const int accessibility_custom_action_13 = 2131230732;
+			
+			// aapt resource value: 0x7F08000D
+			public const int accessibility_custom_action_14 = 2131230733;
+			
+			// aapt resource value: 0x7F08000E
+			public const int accessibility_custom_action_15 = 2131230734;
+			
+			// aapt resource value: 0x7F08000F
+			public const int accessibility_custom_action_16 = 2131230735;
+			
+			// aapt resource value: 0x7F080010
+			public const int accessibility_custom_action_17 = 2131230736;
+			
+			// aapt resource value: 0x7F080011
+			public const int accessibility_custom_action_18 = 2131230737;
+			
+			// aapt resource value: 0x7F080012
+			public const int accessibility_custom_action_19 = 2131230738;
+			
+			// aapt resource value: 0x7F080013
+			public const int accessibility_custom_action_2 = 2131230739;
+			
+			// aapt resource value: 0x7F080014
+			public const int accessibility_custom_action_20 = 2131230740;
+			
+			// aapt resource value: 0x7F080015
+			public const int accessibility_custom_action_21 = 2131230741;
+			
+			// aapt resource value: 0x7F080016
+			public const int accessibility_custom_action_22 = 2131230742;
+			
+			// aapt resource value: 0x7F080017
+			public const int accessibility_custom_action_23 = 2131230743;
+			
+			// aapt resource value: 0x7F080018
+			public const int accessibility_custom_action_24 = 2131230744;
+			
+			// aapt resource value: 0x7F080019
+			public const int accessibility_custom_action_25 = 2131230745;
+			
+			// aapt resource value: 0x7F08001A
+			public const int accessibility_custom_action_26 = 2131230746;
+			
+			// aapt resource value: 0x7F08001B
+			public const int accessibility_custom_action_27 = 2131230747;
+			
+			// aapt resource value: 0x7F08001C
+			public const int accessibility_custom_action_28 = 2131230748;
+			
+			// aapt resource value: 0x7F08001D
+			public const int accessibility_custom_action_29 = 2131230749;
+			
+			// aapt resource value: 0x7F08001E
+			public const int accessibility_custom_action_3 = 2131230750;
+			
+			// aapt resource value: 0x7F08001F
+			public const int accessibility_custom_action_30 = 2131230751;
+			
+			// aapt resource value: 0x7F080020
+			public const int accessibility_custom_action_31 = 2131230752;
+			
+			// aapt resource value: 0x7F080021
+			public const int accessibility_custom_action_4 = 2131230753;
+			
+			// aapt resource value: 0x7F080022
+			public const int accessibility_custom_action_5 = 2131230754;
+			
+			// aapt resource value: 0x7F080023
+			public const int accessibility_custom_action_6 = 2131230755;
+			
+			// aapt resource value: 0x7F080024
+			public const int accessibility_custom_action_7 = 2131230756;
+			
+			// aapt resource value: 0x7F080025
+			public const int accessibility_custom_action_8 = 2131230757;
+			
+			// aapt resource value: 0x7F080026
+			public const int accessibility_custom_action_9 = 2131230758;
+			
+			// aapt resource value: 0x7F080027
+			public const int action0 = 2131230759;
+			
+			// aapt resource value: 0x7F080039
+			public const int actions = 2131230777;
+			
+			// aapt resource value: 0x7F080028
+			public const int action_bar = 2131230760;
+			
+			// aapt resource value: 0x7F080029
+			public const int action_bar_activity_content = 2131230761;
+			
+			// aapt resource value: 0x7F08002A
+			public const int action_bar_container = 2131230762;
+			
+			// aapt resource value: 0x7F08002B
+			public const int action_bar_root = 2131230763;
+			
+			// aapt resource value: 0x7F08002C
+			public const int action_bar_spinner = 2131230764;
+			
+			// aapt resource value: 0x7F08002D
+			public const int action_bar_subtitle = 2131230765;
+			
+			// aapt resource value: 0x7F08002E
+			public const int action_bar_title = 2131230766;
+			
+			// aapt resource value: 0x7F08002F
+			public const int action_container = 2131230767;
+			
+			// aapt resource value: 0x7F080030
+			public const int action_context_bar = 2131230768;
+			
+			// aapt resource value: 0x7F080031
+			public const int action_divider = 2131230769;
+			
+			// aapt resource value: 0x7F080032
+			public const int action_image = 2131230770;
+			
+			// aapt resource value: 0x7F080033
+			public const int action_menu_divider = 2131230771;
+			
+			// aapt resource value: 0x7F080034
+			public const int action_menu_presenter = 2131230772;
+			
+			// aapt resource value: 0x7F080035
+			public const int action_mode_bar = 2131230773;
+			
+			// aapt resource value: 0x7F080036
+			public const int action_mode_bar_stub = 2131230774;
+			
+			// aapt resource value: 0x7F080037
+			public const int action_mode_close_button = 2131230775;
+			
+			// aapt resource value: 0x7F080038
+			public const int action_text = 2131230776;
+			
+			// aapt resource value: 0x7F08003A
+			public const int activity_chooser_view_content = 2131230778;
+			
+			// aapt resource value: 0x7F08003B
+			public const int add = 2131230779;
+			
+			// aapt resource value: 0x7F08003C
+			public const int alertTitle = 2131230780;
+			
+			// aapt resource value: 0x7F08003D
+			public const int all = 2131230781;
+			
+			// aapt resource value: 0x7F080000
+			public const int ALT = 2131230720;
+			
+			// aapt resource value: 0x7F08003E
+			public const int always = 2131230782;
+			
+			// aapt resource value: 0x7F08003F
+			public const int async = 2131230783;
+			
+			// aapt resource value: 0x7F080040
+			public const int auto = 2131230784;
+			
+			// aapt resource value: 0x7F080041
+			public const int beginning = 2131230785;
+			
+			// aapt resource value: 0x7F080042
+			public const int blocking = 2131230786;
+			
+			// aapt resource value: 0x7F080043
+			public const int bottom = 2131230787;
+			
+			// aapt resource value: 0x7F080044
+			public const int buttonPanel = 2131230788;
+			
+			// aapt resource value: 0x7F080045
+			public const int cancel_action = 2131230789;
+			
+			// aapt resource value: 0x7F080046
+			public const int center = 2131230790;
+			
+			// aapt resource value: 0x7F080047
+			public const int center_horizontal = 2131230791;
+			
+			// aapt resource value: 0x7F080048
+			public const int center_vertical = 2131230792;
+			
+			// aapt resource value: 0x7F080049
+			public const int checkbox = 2131230793;
+			
+			// aapt resource value: 0x7F08004A
+			public const int @checked = 2131230794;
+			
+			// aapt resource value: 0x7F08004B
+			public const int chronometer = 2131230795;
+			
+			// aapt resource value: 0x7F08004C
+			public const int clip_horizontal = 2131230796;
+			
+			// aapt resource value: 0x7F08004D
+			public const int clip_vertical = 2131230797;
+			
+			// aapt resource value: 0x7F08004E
+			public const int collapseActionView = 2131230798;
+			
+			// aapt resource value: 0x7F08004F
+			public const int container = 2131230799;
+			
+			// aapt resource value: 0x7F080050
+			public const int content = 2131230800;
+			
+			// aapt resource value: 0x7F080051
+			public const int contentPanel = 2131230801;
+			
+			// aapt resource value: 0x7F080052
+			public const int coordinator = 2131230802;
+			
+			// aapt resource value: 0x7F080001
+			public const int CTRL = 2131230721;
+			
+			// aapt resource value: 0x7F080053
+			public const int custom = 2131230803;
+			
+			// aapt resource value: 0x7F080054
+			public const int customPanel = 2131230804;
+			
+			// aapt resource value: 0x7F080055
+			public const int decor_content_parent = 2131230805;
+			
+			// aapt resource value: 0x7F080056
+			public const int default_activity_button = 2131230806;
+			
+			// aapt resource value: 0x7F080057
+			public const int design_bottom_sheet = 2131230807;
+			
+			// aapt resource value: 0x7F080058
+			public const int design_menu_item_action_area = 2131230808;
+			
+			// aapt resource value: 0x7F080059
+			public const int design_menu_item_action_area_stub = 2131230809;
+			
+			// aapt resource value: 0x7F08005A
+			public const int design_menu_item_text = 2131230810;
+			
+			// aapt resource value: 0x7F08005B
+			public const int design_navigation_view = 2131230811;
+			
+			// aapt resource value: 0x7F08005C
+			public const int dialog_button = 2131230812;
+			
+			// aapt resource value: 0x7F08005D
+			public const int disableHome = 2131230813;
+			
+			// aapt resource value: 0x7F08005E
+			public const int edit_query = 2131230814;
+			
+			// aapt resource value: 0x7F08005F
+			public const int end = 2131230815;
+			
+			// aapt resource value: 0x7F080060
+			public const int end_padder = 2131230816;
+			
+			// aapt resource value: 0x7F080061
+			public const int enterAlways = 2131230817;
+			
+			// aapt resource value: 0x7F080062
+			public const int enterAlwaysCollapsed = 2131230818;
+			
+			// aapt resource value: 0x7F080063
+			public const int exitUntilCollapsed = 2131230819;
+			
+			// aapt resource value: 0x7F080065
+			public const int expanded_menu = 2131230821;
+			
+			// aapt resource value: 0x7F080064
+			public const int expand_activities_button = 2131230820;
+			
+			// aapt resource value: 0x7F080066
+			public const int fill = 2131230822;
+			
+			// aapt resource value: 0x7F080069
+			public const int filled = 2131230825;
+			
+			// aapt resource value: 0x7F080067
+			public const int fill_horizontal = 2131230823;
+			
+			// aapt resource value: 0x7F080068
+			public const int fill_vertical = 2131230824;
+			
+			// aapt resource value: 0x7F08006A
+			public const int @fixed = 2131230826;
+			
+			// aapt resource value: 0x7F08006B
+			public const int forever = 2131230827;
+			
+			// aapt resource value: 0x7F080002
+			public const int FUNCTION = 2131230722;
+			
+			// aapt resource value: 0x7F08006C
+			public const int ghost_view = 2131230828;
+			
+			// aapt resource value: 0x7F08006D
+			public const int ghost_view_holder = 2131230829;
+			
+			// aapt resource value: 0x7F08006E
+			public const int group_divider = 2131230830;
+			
+			// aapt resource value: 0x7F08006F
+			public const int home = 2131230831;
+			
+			// aapt resource value: 0x7F080070
+			public const int homeAsUp = 2131230832;
+			
+			// aapt resource value: 0x7F080071
+			public const int icon = 2131230833;
+			
+			// aapt resource value: 0x7F080072
+			public const int icon_group = 2131230834;
+			
+			// aapt resource value: 0x7F080073
+			public const int ifRoom = 2131230835;
+			
+			// aapt resource value: 0x7F080074
+			public const int image = 2131230836;
+			
+			// aapt resource value: 0x7F080075
+			public const int info = 2131230837;
+			
+			// aapt resource value: 0x7F080076
+			public const int italic = 2131230838;
+			
+			// aapt resource value: 0x7F080077
+			public const int item_touch_helper_previous_elevation = 2131230839;
+			
+			// aapt resource value: 0x7F080078
+			public const int labeled = 2131230840;
+			
+			// aapt resource value: 0x7F080079
+			public const int largeLabel = 2131230841;
+			
+			// aapt resource value: 0x7F08007A
+			public const int left = 2131230842;
+			
+			// aapt resource value: 0x7F08007B
+			public const int line1 = 2131230843;
+			
+			// aapt resource value: 0x7F08007C
+			public const int line3 = 2131230844;
+			
+			// aapt resource value: 0x7F08007D
+			public const int listMode = 2131230845;
+			
+			// aapt resource value: 0x7F08007E
+			public const int list_item = 2131230846;
+			
+			// aapt resource value: 0x7F08007F
+			public const int masked = 2131230847;
+			
+			// aapt resource value: 0x7F080080
+			public const int media_actions = 2131230848;
+			
+			// aapt resource value: 0x7F080081
+			public const int message = 2131230849;
+			
+			// aapt resource value: 0x7F080003
+			public const int META = 2131230723;
+			
+			// aapt resource value: 0x7F080082
+			public const int middle = 2131230850;
+			
+			// aapt resource value: 0x7F080083
+			public const int mini = 2131230851;
+			
+			// aapt resource value: 0x7F080084
+			public const int mtrl_child_content_container = 2131230852;
+			
+			// aapt resource value: 0x7F080085
+			public const int mtrl_internal_children_alpha_tag = 2131230853;
+			
+			// aapt resource value: 0x7F080086
+			public const int multiply = 2131230854;
+			
+			// aapt resource value: 0x7F080087
+			public const int navigation_header_container = 2131230855;
+			
+			// aapt resource value: 0x7F080088
+			public const int never = 2131230856;
+			
+			// aapt resource value: 0x7F080089
+			public const int none = 2131230857;
+			
+			// aapt resource value: 0x7F08008A
+			public const int normal = 2131230858;
+			
+			// aapt resource value: 0x7F08008B
+			public const int notification_background = 2131230859;
+			
+			// aapt resource value: 0x7F08008C
+			public const int notification_main_column = 2131230860;
+			
+			// aapt resource value: 0x7F08008D
+			public const int notification_main_column_container = 2131230861;
+			
+			// aapt resource value: 0x7F08008E
+			public const int off = 2131230862;
+			
+			// aapt resource value: 0x7F08008F
+			public const int on = 2131230863;
+			
+			// aapt resource value: 0x7F080090
+			public const int outline = 2131230864;
+			
+			// aapt resource value: 0x7F080091
+			public const int parallax = 2131230865;
+			
+			// aapt resource value: 0x7F080092
+			public const int parentPanel = 2131230866;
+			
+			// aapt resource value: 0x7F080093
+			public const int parent_matrix = 2131230867;
+			
+			// aapt resource value: 0x7F080094
+			public const int pin = 2131230868;
+			
+			// aapt resource value: 0x7F080095
+			public const int progress_circular = 2131230869;
+			
+			// aapt resource value: 0x7F080096
+			public const int progress_horizontal = 2131230870;
+			
+			// aapt resource value: 0x7F080097
+			public const int radio = 2131230871;
+			
+			// aapt resource value: 0x7F080098
+			public const int right = 2131230872;
+			
+			// aapt resource value: 0x7F080099
+			public const int right_icon = 2131230873;
+			
+			// aapt resource value: 0x7F08009A
+			public const int right_side = 2131230874;
+			
+			// aapt resource value: 0x7F08009B
+			public const int save_non_transition_alpha = 2131230875;
+			
+			// aapt resource value: 0x7F08009C
+			public const int save_overlay_view = 2131230876;
+			
+			// aapt resource value: 0x7F08009D
+			public const int screen = 2131230877;
+			
+			// aapt resource value: 0x7F08009E
+			public const int scroll = 2131230878;
+			
+			// aapt resource value: 0x7F0800A2
+			public const int scrollable = 2131230882;
+			
+			// aapt resource value: 0x7F08009F
+			public const int scrollIndicatorDown = 2131230879;
+			
+			// aapt resource value: 0x7F0800A0
+			public const int scrollIndicatorUp = 2131230880;
+			
+			// aapt resource value: 0x7F0800A1
+			public const int scrollView = 2131230881;
+			
+			// aapt resource value: 0x7F0800A3
+			public const int search_badge = 2131230883;
+			
+			// aapt resource value: 0x7F0800A4
+			public const int search_bar = 2131230884;
+			
+			// aapt resource value: 0x7F0800A5
+			public const int search_button = 2131230885;
+			
+			// aapt resource value: 0x7F0800A6
+			public const int search_close_btn = 2131230886;
+			
+			// aapt resource value: 0x7F0800A7
+			public const int search_edit_frame = 2131230887;
+			
+			// aapt resource value: 0x7F0800A8
+			public const int search_go_btn = 2131230888;
+			
+			// aapt resource value: 0x7F0800A9
+			public const int search_mag_icon = 2131230889;
+			
+			// aapt resource value: 0x7F0800AA
+			public const int search_plate = 2131230890;
+			
+			// aapt resource value: 0x7F0800AB
+			public const int search_src_text = 2131230891;
+			
+			// aapt resource value: 0x7F0800AC
+			public const int search_voice_btn = 2131230892;
+			
+			// aapt resource value: 0x7F0800AE
+			public const int selected = 2131230894;
+			
+			// aapt resource value: 0x7F0800AD
+			public const int select_dialog_listview = 2131230893;
+			
+			// aapt resource value: 0x7F080004
+			public const int SHIFT = 2131230724;
+			
+			// aapt resource value: 0x7F0800AF
+			public const int shortcut = 2131230895;
+			
+			// aapt resource value: 0x7F0800B0
+			public const int showCustom = 2131230896;
+			
+			// aapt resource value: 0x7F0800B1
+			public const int showHome = 2131230897;
+			
+			// aapt resource value: 0x7F0800B2
+			public const int showTitle = 2131230898;
+			
+			// aapt resource value: 0x7F0800B3
+			public const int smallLabel = 2131230899;
+			
+			// aapt resource value: 0x7F0800B4
+			public const int snackbar_action = 2131230900;
+			
+			// aapt resource value: 0x7F0800B5
+			public const int snackbar_text = 2131230901;
+			
+			// aapt resource value: 0x7F0800B6
+			public const int snap = 2131230902;
+			
+			// aapt resource value: 0x7F0800B7
+			public const int snapMargins = 2131230903;
+			
+			// aapt resource value: 0x7F0800B8
+			public const int spacer = 2131230904;
+			
+			// aapt resource value: 0x7F0800B9
+			public const int split_action_bar = 2131230905;
+			
+			// aapt resource value: 0x7F0800BA
+			public const int src_atop = 2131230906;
+			
+			// aapt resource value: 0x7F0800BB
+			public const int src_in = 2131230907;
+			
+			// aapt resource value: 0x7F0800BC
+			public const int src_over = 2131230908;
+			
+			// aapt resource value: 0x7F0800BD
+			public const int start = 2131230909;
+			
+			// aapt resource value: 0x7F0800BE
+			public const int status_bar_latest_event_content = 2131230910;
+			
+			// aapt resource value: 0x7F0800BF
+			public const int stretch = 2131230911;
+			
+			// aapt resource value: 0x7F0800C0
+			public const int submenuarrow = 2131230912;
+			
+			// aapt resource value: 0x7F0800C1
+			public const int submit_area = 2131230913;
+			
+			// aapt resource value: 0x7F080005
+			public const int SYM = 2131230725;
+			
+			// aapt resource value: 0x7F0800C2
+			public const int tabMode = 2131230914;
+			
+			// aapt resource value: 0x7F0800C3
+			public const int tag_accessibility_actions = 2131230915;
+			
+			// aapt resource value: 0x7F0800C4
+			public const int tag_accessibility_clickable_spans = 2131230916;
+			
+			// aapt resource value: 0x7F0800C5
+			public const int tag_accessibility_heading = 2131230917;
+			
+			// aapt resource value: 0x7F0800C6
+			public const int tag_accessibility_pane_title = 2131230918;
+			
+			// aapt resource value: 0x7F0800C7
+			public const int tag_screen_reader_focusable = 2131230919;
+			
+			// aapt resource value: 0x7F0800C8
+			public const int tag_transition_group = 2131230920;
+			
+			// aapt resource value: 0x7F0800C9
+			public const int tag_unhandled_key_event_manager = 2131230921;
+			
+			// aapt resource value: 0x7F0800CA
+			public const int tag_unhandled_key_listeners = 2131230922;
+			
+			// aapt resource value: 0x7F0800CB
+			public const int text = 2131230923;
+			
+			// aapt resource value: 0x7F0800CC
+			public const int text2 = 2131230924;
+			
+			// aapt resource value: 0x7F0800D2
+			public const int textinput_counter = 2131230930;
+			
+			// aapt resource value: 0x7F0800D3
+			public const int textinput_error = 2131230931;
+			
+			// aapt resource value: 0x7F0800D4
+			public const int textinput_helper_text = 2131230932;
+			
+			// aapt resource value: 0x7F0800CD
+			public const int textItem = 2131230925;
+			
+			// aapt resource value: 0x7F0800CE
+			public const int textSpacerNoButtons = 2131230926;
+			
+			// aapt resource value: 0x7F0800CF
+			public const int textSpacerNoTitle = 2131230927;
+			
+			// aapt resource value: 0x7F0800D0
+			public const int textStart = 2131230928;
+			
+			// aapt resource value: 0x7F0800D1
+			public const int text_input_password_toggle = 2131230929;
+			
+			// aapt resource value: 0x7F0800D5
+			public const int time = 2131230933;
+			
+			// aapt resource value: 0x7F0800D6
+			public const int title = 2131230934;
+			
+			// aapt resource value: 0x7F0800D7
+			public const int titleDividerNoCustom = 2131230935;
+			
+			// aapt resource value: 0x7F0800D8
+			public const int title_template = 2131230936;
+			
+			// aapt resource value: 0x7F0800D9
+			public const int top = 2131230937;
+			
+			// aapt resource value: 0x7F0800DA
+			public const int topPanel = 2131230938;
+			
+			// aapt resource value: 0x7F0800DB
+			public const int touch_outside = 2131230939;
+			
+			// aapt resource value: 0x7F0800DC
+			public const int transition_current_scene = 2131230940;
+			
+			// aapt resource value: 0x7F0800DD
+			public const int transition_layout_save = 2131230941;
+			
+			// aapt resource value: 0x7F0800DE
+			public const int transition_position = 2131230942;
+			
+			// aapt resource value: 0x7F0800DF
+			public const int transition_scene_layoutid_cache = 2131230943;
+			
+			// aapt resource value: 0x7F0800E0
+			public const int transition_transform = 2131230944;
+			
+			// aapt resource value: 0x7F0800E1
+			public const int @unchecked = 2131230945;
+			
+			// aapt resource value: 0x7F0800E2
+			public const int uniform = 2131230946;
+			
+			// aapt resource value: 0x7F0800E3
+			public const int unlabeled = 2131230947;
+			
+			// aapt resource value: 0x7F0800E4
+			public const int up = 2131230948;
+			
+			// aapt resource value: 0x7F0800E5
+			public const int useLogo = 2131230949;
+			
+			// aapt resource value: 0x7F0800E6
+			public const int view_offset_helper = 2131230950;
+			
+			// aapt resource value: 0x7F0800E7
+			public const int visible = 2131230951;
+			
+			// aapt resource value: 0x7F0800E8
+			public const int withText = 2131230952;
+			
+			// aapt resource value: 0x7F0800E9
+			public const int wrap_content = 2131230953;
 			
 			static Id()
 			{
@@ -72,11 +6500,307 @@ namespace GraphicsTester.Android
 			}
 		}
 		
+		public partial class Integer
+		{
+			
+			// aapt resource value: 0x7F090000
+			public const int abc_config_activityDefaultDur = 2131296256;
+			
+			// aapt resource value: 0x7F090001
+			public const int abc_config_activityShortDur = 2131296257;
+			
+			// aapt resource value: 0x7F090002
+			public const int app_bar_elevation_anim_duration = 2131296258;
+			
+			// aapt resource value: 0x7F090003
+			public const int bottom_sheet_slide_duration = 2131296259;
+			
+			// aapt resource value: 0x7F090004
+			public const int cancel_button_image_alpha = 2131296260;
+			
+			// aapt resource value: 0x7F090005
+			public const int config_tooltipAnimTime = 2131296261;
+			
+			// aapt resource value: 0x7F090006
+			public const int design_snackbar_text_max_lines = 2131296262;
+			
+			// aapt resource value: 0x7F090007
+			public const int design_tab_indicator_anim_duration_ms = 2131296263;
+			
+			// aapt resource value: 0x7F090008
+			public const int hide_password_duration = 2131296264;
+			
+			// aapt resource value: 0x7F090009
+			public const int mtrl_btn_anim_delay_ms = 2131296265;
+			
+			// aapt resource value: 0x7F09000A
+			public const int mtrl_btn_anim_duration_ms = 2131296266;
+			
+			// aapt resource value: 0x7F09000B
+			public const int mtrl_chip_anim_duration = 2131296267;
+			
+			// aapt resource value: 0x7F09000C
+			public const int mtrl_tab_indicator_anim_duration_ms = 2131296268;
+			
+			// aapt resource value: 0x7F09000D
+			public const int show_password_duration = 2131296269;
+			
+			// aapt resource value: 0x7F09000E
+			public const int status_bar_notification_info_maxnum = 2131296270;
+			
+			static Integer()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Integer()
+			{
+			}
+		}
+		
+		public partial class Interpolator
+		{
+			
+			// aapt resource value: 0x7F0A0000
+			public const int btn_checkbox_checked_mtrl_animation_interpolator_0 = 2131361792;
+			
+			// aapt resource value: 0x7F0A0001
+			public const int btn_checkbox_checked_mtrl_animation_interpolator_1 = 2131361793;
+			
+			// aapt resource value: 0x7F0A0002
+			public const int btn_checkbox_unchecked_mtrl_animation_interpolator_0 = 2131361794;
+			
+			// aapt resource value: 0x7F0A0003
+			public const int btn_checkbox_unchecked_mtrl_animation_interpolator_1 = 2131361795;
+			
+			// aapt resource value: 0x7F0A0004
+			public const int btn_radio_to_off_mtrl_animation_interpolator_0 = 2131361796;
+			
+			// aapt resource value: 0x7F0A0005
+			public const int btn_radio_to_on_mtrl_animation_interpolator_0 = 2131361797;
+			
+			// aapt resource value: 0x7F0A0006
+			public const int fast_out_slow_in = 2131361798;
+			
+			// aapt resource value: 0x7F0A0007
+			public const int mtrl_fast_out_linear_in = 2131361799;
+			
+			// aapt resource value: 0x7F0A0008
+			public const int mtrl_fast_out_slow_in = 2131361800;
+			
+			// aapt resource value: 0x7F0A0009
+			public const int mtrl_linear = 2131361801;
+			
+			// aapt resource value: 0x7F0A000A
+			public const int mtrl_linear_out_slow_in = 2131361802;
+			
+			static Interpolator()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Interpolator()
+			{
+			}
+		}
+		
 		public partial class Layout
 		{
 			
-			// aapt resource value: 0x7F030000
-			public const int ListViewItem = 2130903040;
+			// aapt resource value: 0x7F0B0000
+			public const int abc_action_bar_title_item = 2131427328;
+			
+			// aapt resource value: 0x7F0B0001
+			public const int abc_action_bar_up_container = 2131427329;
+			
+			// aapt resource value: 0x7F0B0002
+			public const int abc_action_menu_item_layout = 2131427330;
+			
+			// aapt resource value: 0x7F0B0003
+			public const int abc_action_menu_layout = 2131427331;
+			
+			// aapt resource value: 0x7F0B0004
+			public const int abc_action_mode_bar = 2131427332;
+			
+			// aapt resource value: 0x7F0B0005
+			public const int abc_action_mode_close_item_material = 2131427333;
+			
+			// aapt resource value: 0x7F0B0006
+			public const int abc_activity_chooser_view = 2131427334;
+			
+			// aapt resource value: 0x7F0B0007
+			public const int abc_activity_chooser_view_list_item = 2131427335;
+			
+			// aapt resource value: 0x7F0B0008
+			public const int abc_alert_dialog_button_bar_material = 2131427336;
+			
+			// aapt resource value: 0x7F0B0009
+			public const int abc_alert_dialog_material = 2131427337;
+			
+			// aapt resource value: 0x7F0B000A
+			public const int abc_alert_dialog_title_material = 2131427338;
+			
+			// aapt resource value: 0x7F0B000B
+			public const int abc_cascading_menu_item_layout = 2131427339;
+			
+			// aapt resource value: 0x7F0B000C
+			public const int abc_dialog_title_material = 2131427340;
+			
+			// aapt resource value: 0x7F0B000D
+			public const int abc_expanded_menu_layout = 2131427341;
+			
+			// aapt resource value: 0x7F0B000E
+			public const int abc_list_menu_item_checkbox = 2131427342;
+			
+			// aapt resource value: 0x7F0B000F
+			public const int abc_list_menu_item_icon = 2131427343;
+			
+			// aapt resource value: 0x7F0B0010
+			public const int abc_list_menu_item_layout = 2131427344;
+			
+			// aapt resource value: 0x7F0B0011
+			public const int abc_list_menu_item_radio = 2131427345;
+			
+			// aapt resource value: 0x7F0B0012
+			public const int abc_popup_menu_header_item_layout = 2131427346;
+			
+			// aapt resource value: 0x7F0B0013
+			public const int abc_popup_menu_item_layout = 2131427347;
+			
+			// aapt resource value: 0x7F0B0014
+			public const int abc_screen_content_include = 2131427348;
+			
+			// aapt resource value: 0x7F0B0015
+			public const int abc_screen_simple = 2131427349;
+			
+			// aapt resource value: 0x7F0B0016
+			public const int abc_screen_simple_overlay_action_mode = 2131427350;
+			
+			// aapt resource value: 0x7F0B0017
+			public const int abc_screen_toolbar = 2131427351;
+			
+			// aapt resource value: 0x7F0B0018
+			public const int abc_search_dropdown_item_icons_2line = 2131427352;
+			
+			// aapt resource value: 0x7F0B0019
+			public const int abc_search_view = 2131427353;
+			
+			// aapt resource value: 0x7F0B001A
+			public const int abc_select_dialog_material = 2131427354;
+			
+			// aapt resource value: 0x7F0B001B
+			public const int abc_tooltip = 2131427355;
+			
+			// aapt resource value: 0x7F0B001C
+			public const int custom_dialog = 2131427356;
+			
+			// aapt resource value: 0x7F0B001D
+			public const int design_bottom_navigation_item = 2131427357;
+			
+			// aapt resource value: 0x7F0B001E
+			public const int design_bottom_sheet_dialog = 2131427358;
+			
+			// aapt resource value: 0x7F0B001F
+			public const int design_layout_snackbar = 2131427359;
+			
+			// aapt resource value: 0x7F0B0020
+			public const int design_layout_snackbar_include = 2131427360;
+			
+			// aapt resource value: 0x7F0B0021
+			public const int design_layout_tab_icon = 2131427361;
+			
+			// aapt resource value: 0x7F0B0022
+			public const int design_layout_tab_text = 2131427362;
+			
+			// aapt resource value: 0x7F0B0023
+			public const int design_menu_item_action_area = 2131427363;
+			
+			// aapt resource value: 0x7F0B0024
+			public const int design_navigation_item = 2131427364;
+			
+			// aapt resource value: 0x7F0B0025
+			public const int design_navigation_item_header = 2131427365;
+			
+			// aapt resource value: 0x7F0B0026
+			public const int design_navigation_item_separator = 2131427366;
+			
+			// aapt resource value: 0x7F0B0027
+			public const int design_navigation_item_subheader = 2131427367;
+			
+			// aapt resource value: 0x7F0B0028
+			public const int design_navigation_menu = 2131427368;
+			
+			// aapt resource value: 0x7F0B0029
+			public const int design_navigation_menu_item = 2131427369;
+			
+			// aapt resource value: 0x7F0B002A
+			public const int design_text_input_password_icon = 2131427370;
+			
+			// aapt resource value: 0x7F0B002B
+			public const int ListViewItem = 2131427371;
+			
+			// aapt resource value: 0x7F0B002C
+			public const int mtrl_layout_snackbar = 2131427372;
+			
+			// aapt resource value: 0x7F0B002D
+			public const int mtrl_layout_snackbar_include = 2131427373;
+			
+			// aapt resource value: 0x7F0B002E
+			public const int notification_action = 2131427374;
+			
+			// aapt resource value: 0x7F0B002F
+			public const int notification_action_tombstone = 2131427375;
+			
+			// aapt resource value: 0x7F0B0030
+			public const int notification_media_action = 2131427376;
+			
+			// aapt resource value: 0x7F0B0031
+			public const int notification_media_cancel_action = 2131427377;
+			
+			// aapt resource value: 0x7F0B0032
+			public const int notification_template_big_media = 2131427378;
+			
+			// aapt resource value: 0x7F0B0033
+			public const int notification_template_big_media_custom = 2131427379;
+			
+			// aapt resource value: 0x7F0B0034
+			public const int notification_template_big_media_narrow = 2131427380;
+			
+			// aapt resource value: 0x7F0B0035
+			public const int notification_template_big_media_narrow_custom = 2131427381;
+			
+			// aapt resource value: 0x7F0B0036
+			public const int notification_template_custom_big = 2131427382;
+			
+			// aapt resource value: 0x7F0B0037
+			public const int notification_template_icon_group = 2131427383;
+			
+			// aapt resource value: 0x7F0B0038
+			public const int notification_template_lines_media = 2131427384;
+			
+			// aapt resource value: 0x7F0B0039
+			public const int notification_template_media = 2131427385;
+			
+			// aapt resource value: 0x7F0B003A
+			public const int notification_template_media_custom = 2131427386;
+			
+			// aapt resource value: 0x7F0B003B
+			public const int notification_template_part_chronometer = 2131427387;
+			
+			// aapt resource value: 0x7F0B003C
+			public const int notification_template_part_time = 2131427388;
+			
+			// aapt resource value: 0x7F0B003D
+			public const int select_dialog_item_material = 2131427389;
+			
+			// aapt resource value: 0x7F0B003E
+			public const int select_dialog_multichoice_material = 2131427390;
+			
+			// aapt resource value: 0x7F0B003F
+			public const int select_dialog_singlechoice_material = 2131427391;
+			
+			// aapt resource value: 0x7F0B0040
+			public const int support_simple_spinner_dropdown_item = 2131427392;
 			
 			static Layout()
 			{
@@ -91,11 +6815,137 @@ namespace GraphicsTester.Android
 		public partial class String
 		{
 			
-			// aapt resource value: 0x7F040000
-			public const int app_name = 2130968576;
+			// aapt resource value: 0x7F0C0000
+			public const int abc_action_bar_home_description = 2131492864;
 			
-			// aapt resource value: 0x7F040001
-			public const int hello = 2130968577;
+			// aapt resource value: 0x7F0C0001
+			public const int abc_action_bar_up_description = 2131492865;
+			
+			// aapt resource value: 0x7F0C0002
+			public const int abc_action_menu_overflow_description = 2131492866;
+			
+			// aapt resource value: 0x7F0C0003
+			public const int abc_action_mode_done = 2131492867;
+			
+			// aapt resource value: 0x7F0C0005
+			public const int abc_activitychooserview_choose_application = 2131492869;
+			
+			// aapt resource value: 0x7F0C0004
+			public const int abc_activity_chooser_view_see_all = 2131492868;
+			
+			// aapt resource value: 0x7F0C0006
+			public const int abc_capital_off = 2131492870;
+			
+			// aapt resource value: 0x7F0C0007
+			public const int abc_capital_on = 2131492871;
+			
+			// aapt resource value: 0x7F0C0008
+			public const int abc_menu_alt_shortcut_label = 2131492872;
+			
+			// aapt resource value: 0x7F0C0009
+			public const int abc_menu_ctrl_shortcut_label = 2131492873;
+			
+			// aapt resource value: 0x7F0C000A
+			public const int abc_menu_delete_shortcut_label = 2131492874;
+			
+			// aapt resource value: 0x7F0C000B
+			public const int abc_menu_enter_shortcut_label = 2131492875;
+			
+			// aapt resource value: 0x7F0C000C
+			public const int abc_menu_function_shortcut_label = 2131492876;
+			
+			// aapt resource value: 0x7F0C000D
+			public const int abc_menu_meta_shortcut_label = 2131492877;
+			
+			// aapt resource value: 0x7F0C000E
+			public const int abc_menu_shift_shortcut_label = 2131492878;
+			
+			// aapt resource value: 0x7F0C000F
+			public const int abc_menu_space_shortcut_label = 2131492879;
+			
+			// aapt resource value: 0x7F0C0010
+			public const int abc_menu_sym_shortcut_label = 2131492880;
+			
+			// aapt resource value: 0x7F0C0011
+			public const int abc_prepend_shortcut_label = 2131492881;
+			
+			// aapt resource value: 0x7F0C0013
+			public const int abc_searchview_description_clear = 2131492883;
+			
+			// aapt resource value: 0x7F0C0014
+			public const int abc_searchview_description_query = 2131492884;
+			
+			// aapt resource value: 0x7F0C0015
+			public const int abc_searchview_description_search = 2131492885;
+			
+			// aapt resource value: 0x7F0C0016
+			public const int abc_searchview_description_submit = 2131492886;
+			
+			// aapt resource value: 0x7F0C0017
+			public const int abc_searchview_description_voice = 2131492887;
+			
+			// aapt resource value: 0x7F0C0012
+			public const int abc_search_hint = 2131492882;
+			
+			// aapt resource value: 0x7F0C0018
+			public const int abc_shareactionprovider_share_with = 2131492888;
+			
+			// aapt resource value: 0x7F0C0019
+			public const int abc_shareactionprovider_share_with_application = 2131492889;
+			
+			// aapt resource value: 0x7F0C001A
+			public const int abc_toolbar_collapse_description = 2131492890;
+			
+			// aapt resource value: 0x7F0C001C
+			public const int appbar_scrolling_view_behavior = 2131492892;
+			
+			// aapt resource value: 0x7F0C001B
+			public const int app_name = 2131492891;
+			
+			// aapt resource value: 0x7F0C001D
+			public const int bottom_sheet_behavior = 2131492893;
+			
+			// aapt resource value: 0x7F0C001E
+			public const int character_counter_content_description = 2131492894;
+			
+			// aapt resource value: 0x7F0C001F
+			public const int character_counter_pattern = 2131492895;
+			
+			// aapt resource value: 0x7F0C0020
+			public const int fab_transformation_scrim_behavior = 2131492896;
+			
+			// aapt resource value: 0x7F0C0021
+			public const int fab_transformation_sheet_behavior = 2131492897;
+			
+			// aapt resource value: 0x7F0C0022
+			public const int hello = 2131492898;
+			
+			// aapt resource value: 0x7F0C0023
+			public const int hide_bottom_view_on_scroll_behavior = 2131492899;
+			
+			// aapt resource value: 0x7F0C0024
+			public const int mtrl_chip_close_icon_content_description = 2131492900;
+			
+			// aapt resource value: 0x7F0C0025
+			public const int password_toggle_content_description = 2131492901;
+			
+			// aapt resource value: 0x7F0C0026
+			public const int path_password_eye = 2131492902;
+			
+			// aapt resource value: 0x7F0C0027
+			public const int path_password_eye_mask_strike_through = 2131492903;
+			
+			// aapt resource value: 0x7F0C0028
+			public const int path_password_eye_mask_visible = 2131492904;
+			
+			// aapt resource value: 0x7F0C0029
+			public const int path_password_strike_through = 2131492905;
+			
+			// aapt resource value: 0x7F0C002A
+			public const int search_menu_title = 2131492906;
+			
+			// aapt resource value: 0x7F0C002B
+			public const int status_bar_notification_info_overflow = 2131492907;
 			
 			static String()
 			{
@@ -103,6 +6953,4556 @@ namespace GraphicsTester.Android
 			}
 			
 			private String()
+			{
+			}
+		}
+		
+		public partial class Style
+		{
+			
+			// aapt resource value: 0x7F0D0000
+			public const int AlertDialog_AppCompat = 2131558400;
+			
+			// aapt resource value: 0x7F0D0001
+			public const int AlertDialog_AppCompat_Light = 2131558401;
+			
+			// aapt resource value: 0x7F0D0002
+			public const int Animation_AppCompat_Dialog = 2131558402;
+			
+			// aapt resource value: 0x7F0D0003
+			public const int Animation_AppCompat_DropDownUp = 2131558403;
+			
+			// aapt resource value: 0x7F0D0004
+			public const int Animation_AppCompat_Tooltip = 2131558404;
+			
+			// aapt resource value: 0x7F0D0005
+			public const int Animation_Design_BottomSheetDialog = 2131558405;
+			
+			// aapt resource value: 0x7F0D0006
+			public const int Base_AlertDialog_AppCompat = 2131558406;
+			
+			// aapt resource value: 0x7F0D0007
+			public const int Base_AlertDialog_AppCompat_Light = 2131558407;
+			
+			// aapt resource value: 0x7F0D0008
+			public const int Base_Animation_AppCompat_Dialog = 2131558408;
+			
+			// aapt resource value: 0x7F0D0009
+			public const int Base_Animation_AppCompat_DropDownUp = 2131558409;
+			
+			// aapt resource value: 0x7F0D000A
+			public const int Base_Animation_AppCompat_Tooltip = 2131558410;
+			
+			// aapt resource value: 0x7F0D000B
+			public const int Base_CardView = 2131558411;
+			
+			// aapt resource value: 0x7F0D000D
+			public const int Base_DialogWindowTitleBackground_AppCompat = 2131558413;
+			
+			// aapt resource value: 0x7F0D000C
+			public const int Base_DialogWindowTitle_AppCompat = 2131558412;
+			
+			// aapt resource value: 0x7F0D000E
+			public const int Base_TextAppearance_AppCompat = 2131558414;
+			
+			// aapt resource value: 0x7F0D000F
+			public const int Base_TextAppearance_AppCompat_Body1 = 2131558415;
+			
+			// aapt resource value: 0x7F0D0010
+			public const int Base_TextAppearance_AppCompat_Body2 = 2131558416;
+			
+			// aapt resource value: 0x7F0D0011
+			public const int Base_TextAppearance_AppCompat_Button = 2131558417;
+			
+			// aapt resource value: 0x7F0D0012
+			public const int Base_TextAppearance_AppCompat_Caption = 2131558418;
+			
+			// aapt resource value: 0x7F0D0013
+			public const int Base_TextAppearance_AppCompat_Display1 = 2131558419;
+			
+			// aapt resource value: 0x7F0D0014
+			public const int Base_TextAppearance_AppCompat_Display2 = 2131558420;
+			
+			// aapt resource value: 0x7F0D0015
+			public const int Base_TextAppearance_AppCompat_Display3 = 2131558421;
+			
+			// aapt resource value: 0x7F0D0016
+			public const int Base_TextAppearance_AppCompat_Display4 = 2131558422;
+			
+			// aapt resource value: 0x7F0D0017
+			public const int Base_TextAppearance_AppCompat_Headline = 2131558423;
+			
+			// aapt resource value: 0x7F0D0018
+			public const int Base_TextAppearance_AppCompat_Inverse = 2131558424;
+			
+			// aapt resource value: 0x7F0D0019
+			public const int Base_TextAppearance_AppCompat_Large = 2131558425;
+			
+			// aapt resource value: 0x7F0D001A
+			public const int Base_TextAppearance_AppCompat_Large_Inverse = 2131558426;
+			
+			// aapt resource value: 0x7F0D001B
+			public const int Base_TextAppearance_AppCompat_Light_Widget_PopupMenu_Large = 2131558427;
+			
+			// aapt resource value: 0x7F0D001C
+			public const int Base_TextAppearance_AppCompat_Light_Widget_PopupMenu_Small = 2131558428;
+			
+			// aapt resource value: 0x7F0D001D
+			public const int Base_TextAppearance_AppCompat_Medium = 2131558429;
+			
+			// aapt resource value: 0x7F0D001E
+			public const int Base_TextAppearance_AppCompat_Medium_Inverse = 2131558430;
+			
+			// aapt resource value: 0x7F0D001F
+			public const int Base_TextAppearance_AppCompat_Menu = 2131558431;
+			
+			// aapt resource value: 0x7F0D0020
+			public const int Base_TextAppearance_AppCompat_SearchResult = 2131558432;
+			
+			// aapt resource value: 0x7F0D0021
+			public const int Base_TextAppearance_AppCompat_SearchResult_Subtitle = 2131558433;
+			
+			// aapt resource value: 0x7F0D0022
+			public const int Base_TextAppearance_AppCompat_SearchResult_Title = 2131558434;
+			
+			// aapt resource value: 0x7F0D0023
+			public const int Base_TextAppearance_AppCompat_Small = 2131558435;
+			
+			// aapt resource value: 0x7F0D0024
+			public const int Base_TextAppearance_AppCompat_Small_Inverse = 2131558436;
+			
+			// aapt resource value: 0x7F0D0025
+			public const int Base_TextAppearance_AppCompat_Subhead = 2131558437;
+			
+			// aapt resource value: 0x7F0D0026
+			public const int Base_TextAppearance_AppCompat_Subhead_Inverse = 2131558438;
+			
+			// aapt resource value: 0x7F0D0027
+			public const int Base_TextAppearance_AppCompat_Title = 2131558439;
+			
+			// aapt resource value: 0x7F0D0028
+			public const int Base_TextAppearance_AppCompat_Title_Inverse = 2131558440;
+			
+			// aapt resource value: 0x7F0D0029
+			public const int Base_TextAppearance_AppCompat_Tooltip = 2131558441;
+			
+			// aapt resource value: 0x7F0D002A
+			public const int Base_TextAppearance_AppCompat_Widget_ActionBar_Menu = 2131558442;
+			
+			// aapt resource value: 0x7F0D002B
+			public const int Base_TextAppearance_AppCompat_Widget_ActionBar_Subtitle = 2131558443;
+			
+			// aapt resource value: 0x7F0D002C
+			public const int Base_TextAppearance_AppCompat_Widget_ActionBar_Subtitle_Inverse = 2131558444;
+			
+			// aapt resource value: 0x7F0D002D
+			public const int Base_TextAppearance_AppCompat_Widget_ActionBar_Title = 2131558445;
+			
+			// aapt resource value: 0x7F0D002E
+			public const int Base_TextAppearance_AppCompat_Widget_ActionBar_Title_Inverse = 2131558446;
+			
+			// aapt resource value: 0x7F0D002F
+			public const int Base_TextAppearance_AppCompat_Widget_ActionMode_Subtitle = 2131558447;
+			
+			// aapt resource value: 0x7F0D0030
+			public const int Base_TextAppearance_AppCompat_Widget_ActionMode_Title = 2131558448;
+			
+			// aapt resource value: 0x7F0D0031
+			public const int Base_TextAppearance_AppCompat_Widget_Button = 2131558449;
+			
+			// aapt resource value: 0x7F0D0032
+			public const int Base_TextAppearance_AppCompat_Widget_Button_Borderless_Colored = 2131558450;
+			
+			// aapt resource value: 0x7F0D0033
+			public const int Base_TextAppearance_AppCompat_Widget_Button_Colored = 2131558451;
+			
+			// aapt resource value: 0x7F0D0034
+			public const int Base_TextAppearance_AppCompat_Widget_Button_Inverse = 2131558452;
+			
+			// aapt resource value: 0x7F0D0035
+			public const int Base_TextAppearance_AppCompat_Widget_DropDownItem = 2131558453;
+			
+			// aapt resource value: 0x7F0D0036
+			public const int Base_TextAppearance_AppCompat_Widget_PopupMenu_Header = 2131558454;
+			
+			// aapt resource value: 0x7F0D0037
+			public const int Base_TextAppearance_AppCompat_Widget_PopupMenu_Large = 2131558455;
+			
+			// aapt resource value: 0x7F0D0038
+			public const int Base_TextAppearance_AppCompat_Widget_PopupMenu_Small = 2131558456;
+			
+			// aapt resource value: 0x7F0D0039
+			public const int Base_TextAppearance_AppCompat_Widget_Switch = 2131558457;
+			
+			// aapt resource value: 0x7F0D003A
+			public const int Base_TextAppearance_AppCompat_Widget_TextView_SpinnerItem = 2131558458;
+			
+			// aapt resource value: 0x7F0D003B
+			public const int Base_TextAppearance_Widget_AppCompat_ExpandedMenu_Item = 2131558459;
+			
+			// aapt resource value: 0x7F0D003C
+			public const int Base_TextAppearance_Widget_AppCompat_Toolbar_Subtitle = 2131558460;
+			
+			// aapt resource value: 0x7F0D003D
+			public const int Base_TextAppearance_Widget_AppCompat_Toolbar_Title = 2131558461;
+			
+			// aapt resource value: 0x7F0D005D
+			public const int Base_ThemeOverlay_AppCompat = 2131558493;
+			
+			// aapt resource value: 0x7F0D005E
+			public const int Base_ThemeOverlay_AppCompat_ActionBar = 2131558494;
+			
+			// aapt resource value: 0x7F0D005F
+			public const int Base_ThemeOverlay_AppCompat_Dark = 2131558495;
+			
+			// aapt resource value: 0x7F0D0060
+			public const int Base_ThemeOverlay_AppCompat_Dark_ActionBar = 2131558496;
+			
+			// aapt resource value: 0x7F0D0061
+			public const int Base_ThemeOverlay_AppCompat_Dialog = 2131558497;
+			
+			// aapt resource value: 0x7F0D0062
+			public const int Base_ThemeOverlay_AppCompat_Dialog_Alert = 2131558498;
+			
+			// aapt resource value: 0x7F0D0063
+			public const int Base_ThemeOverlay_AppCompat_Light = 2131558499;
+			
+			// aapt resource value: 0x7F0D0064
+			public const int Base_ThemeOverlay_MaterialComponents_Dialog = 2131558500;
+			
+			// aapt resource value: 0x7F0D0065
+			public const int Base_ThemeOverlay_MaterialComponents_Dialog_Alert = 2131558501;
+			
+			// aapt resource value: 0x7F0D003E
+			public const int Base_Theme_AppCompat = 2131558462;
+			
+			// aapt resource value: 0x7F0D003F
+			public const int Base_Theme_AppCompat_CompactMenu = 2131558463;
+			
+			// aapt resource value: 0x7F0D0040
+			public const int Base_Theme_AppCompat_Dialog = 2131558464;
+			
+			// aapt resource value: 0x7F0D0044
+			public const int Base_Theme_AppCompat_DialogWhenLarge = 2131558468;
+			
+			// aapt resource value: 0x7F0D0041
+			public const int Base_Theme_AppCompat_Dialog_Alert = 2131558465;
+			
+			// aapt resource value: 0x7F0D0042
+			public const int Base_Theme_AppCompat_Dialog_FixedSize = 2131558466;
+			
+			// aapt resource value: 0x7F0D0043
+			public const int Base_Theme_AppCompat_Dialog_MinWidth = 2131558467;
+			
+			// aapt resource value: 0x7F0D0045
+			public const int Base_Theme_AppCompat_Light = 2131558469;
+			
+			// aapt resource value: 0x7F0D0046
+			public const int Base_Theme_AppCompat_Light_DarkActionBar = 2131558470;
+			
+			// aapt resource value: 0x7F0D0047
+			public const int Base_Theme_AppCompat_Light_Dialog = 2131558471;
+			
+			// aapt resource value: 0x7F0D004B
+			public const int Base_Theme_AppCompat_Light_DialogWhenLarge = 2131558475;
+			
+			// aapt resource value: 0x7F0D0048
+			public const int Base_Theme_AppCompat_Light_Dialog_Alert = 2131558472;
+			
+			// aapt resource value: 0x7F0D0049
+			public const int Base_Theme_AppCompat_Light_Dialog_FixedSize = 2131558473;
+			
+			// aapt resource value: 0x7F0D004A
+			public const int Base_Theme_AppCompat_Light_Dialog_MinWidth = 2131558474;
+			
+			// aapt resource value: 0x7F0D004C
+			public const int Base_Theme_MaterialComponents = 2131558476;
+			
+			// aapt resource value: 0x7F0D004D
+			public const int Base_Theme_MaterialComponents_Bridge = 2131558477;
+			
+			// aapt resource value: 0x7F0D004E
+			public const int Base_Theme_MaterialComponents_CompactMenu = 2131558478;
+			
+			// aapt resource value: 0x7F0D004F
+			public const int Base_Theme_MaterialComponents_Dialog = 2131558479;
+			
+			// aapt resource value: 0x7F0D0053
+			public const int Base_Theme_MaterialComponents_DialogWhenLarge = 2131558483;
+			
+			// aapt resource value: 0x7F0D0050
+			public const int Base_Theme_MaterialComponents_Dialog_Alert = 2131558480;
+			
+			// aapt resource value: 0x7F0D0051
+			public const int Base_Theme_MaterialComponents_Dialog_FixedSize = 2131558481;
+			
+			// aapt resource value: 0x7F0D0052
+			public const int Base_Theme_MaterialComponents_Dialog_MinWidth = 2131558482;
+			
+			// aapt resource value: 0x7F0D0054
+			public const int Base_Theme_MaterialComponents_Light = 2131558484;
+			
+			// aapt resource value: 0x7F0D0055
+			public const int Base_Theme_MaterialComponents_Light_Bridge = 2131558485;
+			
+			// aapt resource value: 0x7F0D0056
+			public const int Base_Theme_MaterialComponents_Light_DarkActionBar = 2131558486;
+			
+			// aapt resource value: 0x7F0D0057
+			public const int Base_Theme_MaterialComponents_Light_DarkActionBar_Bridge = 2131558487;
+			
+			// aapt resource value: 0x7F0D0058
+			public const int Base_Theme_MaterialComponents_Light_Dialog = 2131558488;
+			
+			// aapt resource value: 0x7F0D005C
+			public const int Base_Theme_MaterialComponents_Light_DialogWhenLarge = 2131558492;
+			
+			// aapt resource value: 0x7F0D0059
+			public const int Base_Theme_MaterialComponents_Light_Dialog_Alert = 2131558489;
+			
+			// aapt resource value: 0x7F0D005A
+			public const int Base_Theme_MaterialComponents_Light_Dialog_FixedSize = 2131558490;
+			
+			// aapt resource value: 0x7F0D005B
+			public const int Base_Theme_MaterialComponents_Light_Dialog_MinWidth = 2131558491;
+			
+			// aapt resource value: 0x7F0D006D
+			public const int Base_V14_ThemeOverlay_MaterialComponents_Dialog = 2131558509;
+			
+			// aapt resource value: 0x7F0D006E
+			public const int Base_V14_ThemeOverlay_MaterialComponents_Dialog_Alert = 2131558510;
+			
+			// aapt resource value: 0x7F0D0066
+			public const int Base_V14_Theme_MaterialComponents = 2131558502;
+			
+			// aapt resource value: 0x7F0D0067
+			public const int Base_V14_Theme_MaterialComponents_Bridge = 2131558503;
+			
+			// aapt resource value: 0x7F0D0068
+			public const int Base_V14_Theme_MaterialComponents_Dialog = 2131558504;
+			
+			// aapt resource value: 0x7F0D0069
+			public const int Base_V14_Theme_MaterialComponents_Light = 2131558505;
+			
+			// aapt resource value: 0x7F0D006A
+			public const int Base_V14_Theme_MaterialComponents_Light_Bridge = 2131558506;
+			
+			// aapt resource value: 0x7F0D006B
+			public const int Base_V14_Theme_MaterialComponents_Light_DarkActionBar_Bridge = 2131558507;
+			
+			// aapt resource value: 0x7F0D006C
+			public const int Base_V14_Theme_MaterialComponents_Light_Dialog = 2131558508;
+			
+			// aapt resource value: 0x7F0D0073
+			public const int Base_V21_ThemeOverlay_AppCompat_Dialog = 2131558515;
+			
+			// aapt resource value: 0x7F0D006F
+			public const int Base_V21_Theme_AppCompat = 2131558511;
+			
+			// aapt resource value: 0x7F0D0070
+			public const int Base_V21_Theme_AppCompat_Dialog = 2131558512;
+			
+			// aapt resource value: 0x7F0D0071
+			public const int Base_V21_Theme_AppCompat_Light = 2131558513;
+			
+			// aapt resource value: 0x7F0D0072
+			public const int Base_V21_Theme_AppCompat_Light_Dialog = 2131558514;
+			
+			// aapt resource value: 0x7F0D0074
+			public const int Base_V22_Theme_AppCompat = 2131558516;
+			
+			// aapt resource value: 0x7F0D0075
+			public const int Base_V22_Theme_AppCompat_Light = 2131558517;
+			
+			// aapt resource value: 0x7F0D0076
+			public const int Base_V23_Theme_AppCompat = 2131558518;
+			
+			// aapt resource value: 0x7F0D0077
+			public const int Base_V23_Theme_AppCompat_Light = 2131558519;
+			
+			// aapt resource value: 0x7F0D0078
+			public const int Base_V26_Theme_AppCompat = 2131558520;
+			
+			// aapt resource value: 0x7F0D0079
+			public const int Base_V26_Theme_AppCompat_Light = 2131558521;
+			
+			// aapt resource value: 0x7F0D007A
+			public const int Base_V26_Widget_AppCompat_Toolbar = 2131558522;
+			
+			// aapt resource value: 0x7F0D007B
+			public const int Base_V28_Theme_AppCompat = 2131558523;
+			
+			// aapt resource value: 0x7F0D007C
+			public const int Base_V28_Theme_AppCompat_Light = 2131558524;
+			
+			// aapt resource value: 0x7F0D0081
+			public const int Base_V7_ThemeOverlay_AppCompat_Dialog = 2131558529;
+			
+			// aapt resource value: 0x7F0D007D
+			public const int Base_V7_Theme_AppCompat = 2131558525;
+			
+			// aapt resource value: 0x7F0D007E
+			public const int Base_V7_Theme_AppCompat_Dialog = 2131558526;
+			
+			// aapt resource value: 0x7F0D007F
+			public const int Base_V7_Theme_AppCompat_Light = 2131558527;
+			
+			// aapt resource value: 0x7F0D0080
+			public const int Base_V7_Theme_AppCompat_Light_Dialog = 2131558528;
+			
+			// aapt resource value: 0x7F0D0082
+			public const int Base_V7_Widget_AppCompat_AutoCompleteTextView = 2131558530;
+			
+			// aapt resource value: 0x7F0D0083
+			public const int Base_V7_Widget_AppCompat_EditText = 2131558531;
+			
+			// aapt resource value: 0x7F0D0084
+			public const int Base_V7_Widget_AppCompat_Toolbar = 2131558532;
+			
+			// aapt resource value: 0x7F0D0085
+			public const int Base_Widget_AppCompat_ActionBar = 2131558533;
+			
+			// aapt resource value: 0x7F0D0086
+			public const int Base_Widget_AppCompat_ActionBar_Solid = 2131558534;
+			
+			// aapt resource value: 0x7F0D0087
+			public const int Base_Widget_AppCompat_ActionBar_TabBar = 2131558535;
+			
+			// aapt resource value: 0x7F0D0088
+			public const int Base_Widget_AppCompat_ActionBar_TabText = 2131558536;
+			
+			// aapt resource value: 0x7F0D0089
+			public const int Base_Widget_AppCompat_ActionBar_TabView = 2131558537;
+			
+			// aapt resource value: 0x7F0D008A
+			public const int Base_Widget_AppCompat_ActionButton = 2131558538;
+			
+			// aapt resource value: 0x7F0D008B
+			public const int Base_Widget_AppCompat_ActionButton_CloseMode = 2131558539;
+			
+			// aapt resource value: 0x7F0D008C
+			public const int Base_Widget_AppCompat_ActionButton_Overflow = 2131558540;
+			
+			// aapt resource value: 0x7F0D008D
+			public const int Base_Widget_AppCompat_ActionMode = 2131558541;
+			
+			// aapt resource value: 0x7F0D008E
+			public const int Base_Widget_AppCompat_ActivityChooserView = 2131558542;
+			
+			// aapt resource value: 0x7F0D008F
+			public const int Base_Widget_AppCompat_AutoCompleteTextView = 2131558543;
+			
+			// aapt resource value: 0x7F0D0090
+			public const int Base_Widget_AppCompat_Button = 2131558544;
+			
+			// aapt resource value: 0x7F0D0096
+			public const int Base_Widget_AppCompat_ButtonBar = 2131558550;
+			
+			// aapt resource value: 0x7F0D0097
+			public const int Base_Widget_AppCompat_ButtonBar_AlertDialog = 2131558551;
+			
+			// aapt resource value: 0x7F0D0091
+			public const int Base_Widget_AppCompat_Button_Borderless = 2131558545;
+			
+			// aapt resource value: 0x7F0D0092
+			public const int Base_Widget_AppCompat_Button_Borderless_Colored = 2131558546;
+			
+			// aapt resource value: 0x7F0D0093
+			public const int Base_Widget_AppCompat_Button_ButtonBar_AlertDialog = 2131558547;
+			
+			// aapt resource value: 0x7F0D0094
+			public const int Base_Widget_AppCompat_Button_Colored = 2131558548;
+			
+			// aapt resource value: 0x7F0D0095
+			public const int Base_Widget_AppCompat_Button_Small = 2131558549;
+			
+			// aapt resource value: 0x7F0D0098
+			public const int Base_Widget_AppCompat_CompoundButton_CheckBox = 2131558552;
+			
+			// aapt resource value: 0x7F0D0099
+			public const int Base_Widget_AppCompat_CompoundButton_RadioButton = 2131558553;
+			
+			// aapt resource value: 0x7F0D009A
+			public const int Base_Widget_AppCompat_CompoundButton_Switch = 2131558554;
+			
+			// aapt resource value: 0x7F0D009B
+			public const int Base_Widget_AppCompat_DrawerArrowToggle = 2131558555;
+			
+			// aapt resource value: 0x7F0D009C
+			public const int Base_Widget_AppCompat_DrawerArrowToggle_Common = 2131558556;
+			
+			// aapt resource value: 0x7F0D009D
+			public const int Base_Widget_AppCompat_DropDownItem_Spinner = 2131558557;
+			
+			// aapt resource value: 0x7F0D009E
+			public const int Base_Widget_AppCompat_EditText = 2131558558;
+			
+			// aapt resource value: 0x7F0D009F
+			public const int Base_Widget_AppCompat_ImageButton = 2131558559;
+			
+			// aapt resource value: 0x7F0D00A0
+			public const int Base_Widget_AppCompat_Light_ActionBar = 2131558560;
+			
+			// aapt resource value: 0x7F0D00A1
+			public const int Base_Widget_AppCompat_Light_ActionBar_Solid = 2131558561;
+			
+			// aapt resource value: 0x7F0D00A2
+			public const int Base_Widget_AppCompat_Light_ActionBar_TabBar = 2131558562;
+			
+			// aapt resource value: 0x7F0D00A3
+			public const int Base_Widget_AppCompat_Light_ActionBar_TabText = 2131558563;
+			
+			// aapt resource value: 0x7F0D00A4
+			public const int Base_Widget_AppCompat_Light_ActionBar_TabText_Inverse = 2131558564;
+			
+			// aapt resource value: 0x7F0D00A5
+			public const int Base_Widget_AppCompat_Light_ActionBar_TabView = 2131558565;
+			
+			// aapt resource value: 0x7F0D00A6
+			public const int Base_Widget_AppCompat_Light_PopupMenu = 2131558566;
+			
+			// aapt resource value: 0x7F0D00A7
+			public const int Base_Widget_AppCompat_Light_PopupMenu_Overflow = 2131558567;
+			
+			// aapt resource value: 0x7F0D00A8
+			public const int Base_Widget_AppCompat_ListMenuView = 2131558568;
+			
+			// aapt resource value: 0x7F0D00A9
+			public const int Base_Widget_AppCompat_ListPopupWindow = 2131558569;
+			
+			// aapt resource value: 0x7F0D00AA
+			public const int Base_Widget_AppCompat_ListView = 2131558570;
+			
+			// aapt resource value: 0x7F0D00AB
+			public const int Base_Widget_AppCompat_ListView_DropDown = 2131558571;
+			
+			// aapt resource value: 0x7F0D00AC
+			public const int Base_Widget_AppCompat_ListView_Menu = 2131558572;
+			
+			// aapt resource value: 0x7F0D00AD
+			public const int Base_Widget_AppCompat_PopupMenu = 2131558573;
+			
+			// aapt resource value: 0x7F0D00AE
+			public const int Base_Widget_AppCompat_PopupMenu_Overflow = 2131558574;
+			
+			// aapt resource value: 0x7F0D00AF
+			public const int Base_Widget_AppCompat_PopupWindow = 2131558575;
+			
+			// aapt resource value: 0x7F0D00B0
+			public const int Base_Widget_AppCompat_ProgressBar = 2131558576;
+			
+			// aapt resource value: 0x7F0D00B1
+			public const int Base_Widget_AppCompat_ProgressBar_Horizontal = 2131558577;
+			
+			// aapt resource value: 0x7F0D00B2
+			public const int Base_Widget_AppCompat_RatingBar = 2131558578;
+			
+			// aapt resource value: 0x7F0D00B3
+			public const int Base_Widget_AppCompat_RatingBar_Indicator = 2131558579;
+			
+			// aapt resource value: 0x7F0D00B4
+			public const int Base_Widget_AppCompat_RatingBar_Small = 2131558580;
+			
+			// aapt resource value: 0x7F0D00B5
+			public const int Base_Widget_AppCompat_SearchView = 2131558581;
+			
+			// aapt resource value: 0x7F0D00B6
+			public const int Base_Widget_AppCompat_SearchView_ActionBar = 2131558582;
+			
+			// aapt resource value: 0x7F0D00B7
+			public const int Base_Widget_AppCompat_SeekBar = 2131558583;
+			
+			// aapt resource value: 0x7F0D00B8
+			public const int Base_Widget_AppCompat_SeekBar_Discrete = 2131558584;
+			
+			// aapt resource value: 0x7F0D00B9
+			public const int Base_Widget_AppCompat_Spinner = 2131558585;
+			
+			// aapt resource value: 0x7F0D00BA
+			public const int Base_Widget_AppCompat_Spinner_Underlined = 2131558586;
+			
+			// aapt resource value: 0x7F0D00BB
+			public const int Base_Widget_AppCompat_TextView = 2131558587;
+			
+			// aapt resource value: 0x7F0D00BC
+			public const int Base_Widget_AppCompat_TextView_SpinnerItem = 2131558588;
+			
+			// aapt resource value: 0x7F0D00BD
+			public const int Base_Widget_AppCompat_Toolbar = 2131558589;
+			
+			// aapt resource value: 0x7F0D00BE
+			public const int Base_Widget_AppCompat_Toolbar_Button_Navigation = 2131558590;
+			
+			// aapt resource value: 0x7F0D00BF
+			public const int Base_Widget_Design_TabLayout = 2131558591;
+			
+			// aapt resource value: 0x7F0D00C0
+			public const int Base_Widget_MaterialComponents_Chip = 2131558592;
+			
+			// aapt resource value: 0x7F0D00C1
+			public const int Base_Widget_MaterialComponents_TextInputEditText = 2131558593;
+			
+			// aapt resource value: 0x7F0D00C2
+			public const int Base_Widget_MaterialComponents_TextInputLayout = 2131558594;
+			
+			// aapt resource value: 0x7F0D00C3
+			public const int CardView = 2131558595;
+			
+			// aapt resource value: 0x7F0D00C4
+			public const int CardView_Dark = 2131558596;
+			
+			// aapt resource value: 0x7F0D00C5
+			public const int CardView_Light = 2131558597;
+			
+			// aapt resource value: 0x7F0D00C6
+			public const int Platform_AppCompat = 2131558598;
+			
+			// aapt resource value: 0x7F0D00C7
+			public const int Platform_AppCompat_Light = 2131558599;
+			
+			// aapt resource value: 0x7F0D00C8
+			public const int Platform_MaterialComponents = 2131558600;
+			
+			// aapt resource value: 0x7F0D00C9
+			public const int Platform_MaterialComponents_Dialog = 2131558601;
+			
+			// aapt resource value: 0x7F0D00CA
+			public const int Platform_MaterialComponents_Light = 2131558602;
+			
+			// aapt resource value: 0x7F0D00CB
+			public const int Platform_MaterialComponents_Light_Dialog = 2131558603;
+			
+			// aapt resource value: 0x7F0D00CC
+			public const int Platform_ThemeOverlay_AppCompat = 2131558604;
+			
+			// aapt resource value: 0x7F0D00CD
+			public const int Platform_ThemeOverlay_AppCompat_Dark = 2131558605;
+			
+			// aapt resource value: 0x7F0D00CE
+			public const int Platform_ThemeOverlay_AppCompat_Light = 2131558606;
+			
+			// aapt resource value: 0x7F0D00CF
+			public const int Platform_V21_AppCompat = 2131558607;
+			
+			// aapt resource value: 0x7F0D00D0
+			public const int Platform_V21_AppCompat_Light = 2131558608;
+			
+			// aapt resource value: 0x7F0D00D1
+			public const int Platform_V25_AppCompat = 2131558609;
+			
+			// aapt resource value: 0x7F0D00D2
+			public const int Platform_V25_AppCompat_Light = 2131558610;
+			
+			// aapt resource value: 0x7F0D00D3
+			public const int Platform_Widget_AppCompat_Spinner = 2131558611;
+			
+			// aapt resource value: 0x7F0D00D4
+			public const int RtlOverlay_DialogWindowTitle_AppCompat = 2131558612;
+			
+			// aapt resource value: 0x7F0D00D5
+			public const int RtlOverlay_Widget_AppCompat_ActionBar_TitleItem = 2131558613;
+			
+			// aapt resource value: 0x7F0D00D6
+			public const int RtlOverlay_Widget_AppCompat_DialogTitle_Icon = 2131558614;
+			
+			// aapt resource value: 0x7F0D00D7
+			public const int RtlOverlay_Widget_AppCompat_PopupMenuItem = 2131558615;
+			
+			// aapt resource value: 0x7F0D00D8
+			public const int RtlOverlay_Widget_AppCompat_PopupMenuItem_InternalGroup = 2131558616;
+			
+			// aapt resource value: 0x7F0D00D9
+			public const int RtlOverlay_Widget_AppCompat_PopupMenuItem_Shortcut = 2131558617;
+			
+			// aapt resource value: 0x7F0D00DA
+			public const int RtlOverlay_Widget_AppCompat_PopupMenuItem_SubmenuArrow = 2131558618;
+			
+			// aapt resource value: 0x7F0D00DB
+			public const int RtlOverlay_Widget_AppCompat_PopupMenuItem_Text = 2131558619;
+			
+			// aapt resource value: 0x7F0D00DC
+			public const int RtlOverlay_Widget_AppCompat_PopupMenuItem_Title = 2131558620;
+			
+			// aapt resource value: 0x7F0D00E2
+			public const int RtlOverlay_Widget_AppCompat_SearchView_MagIcon = 2131558626;
+			
+			// aapt resource value: 0x7F0D00DD
+			public const int RtlOverlay_Widget_AppCompat_Search_DropDown = 2131558621;
+			
+			// aapt resource value: 0x7F0D00DE
+			public const int RtlOverlay_Widget_AppCompat_Search_DropDown_Icon1 = 2131558622;
+			
+			// aapt resource value: 0x7F0D00DF
+			public const int RtlOverlay_Widget_AppCompat_Search_DropDown_Icon2 = 2131558623;
+			
+			// aapt resource value: 0x7F0D00E0
+			public const int RtlOverlay_Widget_AppCompat_Search_DropDown_Query = 2131558624;
+			
+			// aapt resource value: 0x7F0D00E1
+			public const int RtlOverlay_Widget_AppCompat_Search_DropDown_Text = 2131558625;
+			
+			// aapt resource value: 0x7F0D00E3
+			public const int RtlUnderlay_Widget_AppCompat_ActionButton = 2131558627;
+			
+			// aapt resource value: 0x7F0D00E4
+			public const int RtlUnderlay_Widget_AppCompat_ActionButton_Overflow = 2131558628;
+			
+			// aapt resource value: 0x7F0D00E5
+			public const int TextAppearance_AppCompat = 2131558629;
+			
+			// aapt resource value: 0x7F0D00E6
+			public const int TextAppearance_AppCompat_Body1 = 2131558630;
+			
+			// aapt resource value: 0x7F0D00E7
+			public const int TextAppearance_AppCompat_Body2 = 2131558631;
+			
+			// aapt resource value: 0x7F0D00E8
+			public const int TextAppearance_AppCompat_Button = 2131558632;
+			
+			// aapt resource value: 0x7F0D00E9
+			public const int TextAppearance_AppCompat_Caption = 2131558633;
+			
+			// aapt resource value: 0x7F0D00EA
+			public const int TextAppearance_AppCompat_Display1 = 2131558634;
+			
+			// aapt resource value: 0x7F0D00EB
+			public const int TextAppearance_AppCompat_Display2 = 2131558635;
+			
+			// aapt resource value: 0x7F0D00EC
+			public const int TextAppearance_AppCompat_Display3 = 2131558636;
+			
+			// aapt resource value: 0x7F0D00ED
+			public const int TextAppearance_AppCompat_Display4 = 2131558637;
+			
+			// aapt resource value: 0x7F0D00EE
+			public const int TextAppearance_AppCompat_Headline = 2131558638;
+			
+			// aapt resource value: 0x7F0D00EF
+			public const int TextAppearance_AppCompat_Inverse = 2131558639;
+			
+			// aapt resource value: 0x7F0D00F0
+			public const int TextAppearance_AppCompat_Large = 2131558640;
+			
+			// aapt resource value: 0x7F0D00F1
+			public const int TextAppearance_AppCompat_Large_Inverse = 2131558641;
+			
+			// aapt resource value: 0x7F0D00F2
+			public const int TextAppearance_AppCompat_Light_SearchResult_Subtitle = 2131558642;
+			
+			// aapt resource value: 0x7F0D00F3
+			public const int TextAppearance_AppCompat_Light_SearchResult_Title = 2131558643;
+			
+			// aapt resource value: 0x7F0D00F4
+			public const int TextAppearance_AppCompat_Light_Widget_PopupMenu_Large = 2131558644;
+			
+			// aapt resource value: 0x7F0D00F5
+			public const int TextAppearance_AppCompat_Light_Widget_PopupMenu_Small = 2131558645;
+			
+			// aapt resource value: 0x7F0D00F6
+			public const int TextAppearance_AppCompat_Medium = 2131558646;
+			
+			// aapt resource value: 0x7F0D00F7
+			public const int TextAppearance_AppCompat_Medium_Inverse = 2131558647;
+			
+			// aapt resource value: 0x7F0D00F8
+			public const int TextAppearance_AppCompat_Menu = 2131558648;
+			
+			// aapt resource value: 0x7F0D00F9
+			public const int TextAppearance_AppCompat_SearchResult_Subtitle = 2131558649;
+			
+			// aapt resource value: 0x7F0D00FA
+			public const int TextAppearance_AppCompat_SearchResult_Title = 2131558650;
+			
+			// aapt resource value: 0x7F0D00FB
+			public const int TextAppearance_AppCompat_Small = 2131558651;
+			
+			// aapt resource value: 0x7F0D00FC
+			public const int TextAppearance_AppCompat_Small_Inverse = 2131558652;
+			
+			// aapt resource value: 0x7F0D00FD
+			public const int TextAppearance_AppCompat_Subhead = 2131558653;
+			
+			// aapt resource value: 0x7F0D00FE
+			public const int TextAppearance_AppCompat_Subhead_Inverse = 2131558654;
+			
+			// aapt resource value: 0x7F0D00FF
+			public const int TextAppearance_AppCompat_Title = 2131558655;
+			
+			// aapt resource value: 0x7F0D0100
+			public const int TextAppearance_AppCompat_Title_Inverse = 2131558656;
+			
+			// aapt resource value: 0x7F0D0101
+			public const int TextAppearance_AppCompat_Tooltip = 2131558657;
+			
+			// aapt resource value: 0x7F0D0102
+			public const int TextAppearance_AppCompat_Widget_ActionBar_Menu = 2131558658;
+			
+			// aapt resource value: 0x7F0D0103
+			public const int TextAppearance_AppCompat_Widget_ActionBar_Subtitle = 2131558659;
+			
+			// aapt resource value: 0x7F0D0104
+			public const int TextAppearance_AppCompat_Widget_ActionBar_Subtitle_Inverse = 2131558660;
+			
+			// aapt resource value: 0x7F0D0105
+			public const int TextAppearance_AppCompat_Widget_ActionBar_Title = 2131558661;
+			
+			// aapt resource value: 0x7F0D0106
+			public const int TextAppearance_AppCompat_Widget_ActionBar_Title_Inverse = 2131558662;
+			
+			// aapt resource value: 0x7F0D0107
+			public const int TextAppearance_AppCompat_Widget_ActionMode_Subtitle = 2131558663;
+			
+			// aapt resource value: 0x7F0D0108
+			public const int TextAppearance_AppCompat_Widget_ActionMode_Subtitle_Inverse = 2131558664;
+			
+			// aapt resource value: 0x7F0D0109
+			public const int TextAppearance_AppCompat_Widget_ActionMode_Title = 2131558665;
+			
+			// aapt resource value: 0x7F0D010A
+			public const int TextAppearance_AppCompat_Widget_ActionMode_Title_Inverse = 2131558666;
+			
+			// aapt resource value: 0x7F0D010B
+			public const int TextAppearance_AppCompat_Widget_Button = 2131558667;
+			
+			// aapt resource value: 0x7F0D010C
+			public const int TextAppearance_AppCompat_Widget_Button_Borderless_Colored = 2131558668;
+			
+			// aapt resource value: 0x7F0D010D
+			public const int TextAppearance_AppCompat_Widget_Button_Colored = 2131558669;
+			
+			// aapt resource value: 0x7F0D010E
+			public const int TextAppearance_AppCompat_Widget_Button_Inverse = 2131558670;
+			
+			// aapt resource value: 0x7F0D010F
+			public const int TextAppearance_AppCompat_Widget_DropDownItem = 2131558671;
+			
+			// aapt resource value: 0x7F0D0110
+			public const int TextAppearance_AppCompat_Widget_PopupMenu_Header = 2131558672;
+			
+			// aapt resource value: 0x7F0D0111
+			public const int TextAppearance_AppCompat_Widget_PopupMenu_Large = 2131558673;
+			
+			// aapt resource value: 0x7F0D0112
+			public const int TextAppearance_AppCompat_Widget_PopupMenu_Small = 2131558674;
+			
+			// aapt resource value: 0x7F0D0113
+			public const int TextAppearance_AppCompat_Widget_Switch = 2131558675;
+			
+			// aapt resource value: 0x7F0D0114
+			public const int TextAppearance_AppCompat_Widget_TextView_SpinnerItem = 2131558676;
+			
+			// aapt resource value: 0x7F0D0115
+			public const int TextAppearance_Compat_Notification = 2131558677;
+			
+			// aapt resource value: 0x7F0D0116
+			public const int TextAppearance_Compat_Notification_Info = 2131558678;
+			
+			// aapt resource value: 0x7F0D0117
+			public const int TextAppearance_Compat_Notification_Info_Media = 2131558679;
+			
+			// aapt resource value: 0x7F0D0118
+			public const int TextAppearance_Compat_Notification_Line2 = 2131558680;
+			
+			// aapt resource value: 0x7F0D0119
+			public const int TextAppearance_Compat_Notification_Line2_Media = 2131558681;
+			
+			// aapt resource value: 0x7F0D011A
+			public const int TextAppearance_Compat_Notification_Media = 2131558682;
+			
+			// aapt resource value: 0x7F0D011B
+			public const int TextAppearance_Compat_Notification_Time = 2131558683;
+			
+			// aapt resource value: 0x7F0D011C
+			public const int TextAppearance_Compat_Notification_Time_Media = 2131558684;
+			
+			// aapt resource value: 0x7F0D011D
+			public const int TextAppearance_Compat_Notification_Title = 2131558685;
+			
+			// aapt resource value: 0x7F0D011E
+			public const int TextAppearance_Compat_Notification_Title_Media = 2131558686;
+			
+			// aapt resource value: 0x7F0D011F
+			public const int TextAppearance_Design_CollapsingToolbar_Expanded = 2131558687;
+			
+			// aapt resource value: 0x7F0D0120
+			public const int TextAppearance_Design_Counter = 2131558688;
+			
+			// aapt resource value: 0x7F0D0121
+			public const int TextAppearance_Design_Counter_Overflow = 2131558689;
+			
+			// aapt resource value: 0x7F0D0122
+			public const int TextAppearance_Design_Error = 2131558690;
+			
+			// aapt resource value: 0x7F0D0123
+			public const int TextAppearance_Design_HelperText = 2131558691;
+			
+			// aapt resource value: 0x7F0D0124
+			public const int TextAppearance_Design_Hint = 2131558692;
+			
+			// aapt resource value: 0x7F0D0125
+			public const int TextAppearance_Design_Snackbar_Message = 2131558693;
+			
+			// aapt resource value: 0x7F0D0126
+			public const int TextAppearance_Design_Tab = 2131558694;
+			
+			// aapt resource value: 0x7F0D0127
+			public const int TextAppearance_MaterialComponents_Body1 = 2131558695;
+			
+			// aapt resource value: 0x7F0D0128
+			public const int TextAppearance_MaterialComponents_Body2 = 2131558696;
+			
+			// aapt resource value: 0x7F0D0129
+			public const int TextAppearance_MaterialComponents_Button = 2131558697;
+			
+			// aapt resource value: 0x7F0D012A
+			public const int TextAppearance_MaterialComponents_Caption = 2131558698;
+			
+			// aapt resource value: 0x7F0D012B
+			public const int TextAppearance_MaterialComponents_Chip = 2131558699;
+			
+			// aapt resource value: 0x7F0D012C
+			public const int TextAppearance_MaterialComponents_Headline1 = 2131558700;
+			
+			// aapt resource value: 0x7F0D012D
+			public const int TextAppearance_MaterialComponents_Headline2 = 2131558701;
+			
+			// aapt resource value: 0x7F0D012E
+			public const int TextAppearance_MaterialComponents_Headline3 = 2131558702;
+			
+			// aapt resource value: 0x7F0D012F
+			public const int TextAppearance_MaterialComponents_Headline4 = 2131558703;
+			
+			// aapt resource value: 0x7F0D0130
+			public const int TextAppearance_MaterialComponents_Headline5 = 2131558704;
+			
+			// aapt resource value: 0x7F0D0131
+			public const int TextAppearance_MaterialComponents_Headline6 = 2131558705;
+			
+			// aapt resource value: 0x7F0D0132
+			public const int TextAppearance_MaterialComponents_Overline = 2131558706;
+			
+			// aapt resource value: 0x7F0D0133
+			public const int TextAppearance_MaterialComponents_Subtitle1 = 2131558707;
+			
+			// aapt resource value: 0x7F0D0134
+			public const int TextAppearance_MaterialComponents_Subtitle2 = 2131558708;
+			
+			// aapt resource value: 0x7F0D0135
+			public const int TextAppearance_MaterialComponents_Tab = 2131558709;
+			
+			// aapt resource value: 0x7F0D0136
+			public const int TextAppearance_Widget_AppCompat_ExpandedMenu_Item = 2131558710;
+			
+			// aapt resource value: 0x7F0D0137
+			public const int TextAppearance_Widget_AppCompat_Toolbar_Subtitle = 2131558711;
+			
+			// aapt resource value: 0x7F0D0138
+			public const int TextAppearance_Widget_AppCompat_Toolbar_Title = 2131558712;
+			
+			// aapt resource value: 0x7F0D0169
+			public const int ThemeOverlay_AppCompat = 2131558761;
+			
+			// aapt resource value: 0x7F0D016A
+			public const int ThemeOverlay_AppCompat_ActionBar = 2131558762;
+			
+			// aapt resource value: 0x7F0D016B
+			public const int ThemeOverlay_AppCompat_Dark = 2131558763;
+			
+			// aapt resource value: 0x7F0D016C
+			public const int ThemeOverlay_AppCompat_Dark_ActionBar = 2131558764;
+			
+			// aapt resource value: 0x7F0D016D
+			public const int ThemeOverlay_AppCompat_DayNight = 2131558765;
+			
+			// aapt resource value: 0x7F0D016E
+			public const int ThemeOverlay_AppCompat_DayNight_ActionBar = 2131558766;
+			
+			// aapt resource value: 0x7F0D016F
+			public const int ThemeOverlay_AppCompat_Dialog = 2131558767;
+			
+			// aapt resource value: 0x7F0D0170
+			public const int ThemeOverlay_AppCompat_Dialog_Alert = 2131558768;
+			
+			// aapt resource value: 0x7F0D0171
+			public const int ThemeOverlay_AppCompat_Light = 2131558769;
+			
+			// aapt resource value: 0x7F0D0172
+			public const int ThemeOverlay_MaterialComponents = 2131558770;
+			
+			// aapt resource value: 0x7F0D0173
+			public const int ThemeOverlay_MaterialComponents_ActionBar = 2131558771;
+			
+			// aapt resource value: 0x7F0D0174
+			public const int ThemeOverlay_MaterialComponents_Dark = 2131558772;
+			
+			// aapt resource value: 0x7F0D0175
+			public const int ThemeOverlay_MaterialComponents_Dark_ActionBar = 2131558773;
+			
+			// aapt resource value: 0x7F0D0176
+			public const int ThemeOverlay_MaterialComponents_Dialog = 2131558774;
+			
+			// aapt resource value: 0x7F0D0177
+			public const int ThemeOverlay_MaterialComponents_Dialog_Alert = 2131558775;
+			
+			// aapt resource value: 0x7F0D0178
+			public const int ThemeOverlay_MaterialComponents_Light = 2131558776;
+			
+			// aapt resource value: 0x7F0D0179
+			public const int ThemeOverlay_MaterialComponents_TextInputEditText = 2131558777;
+			
+			// aapt resource value: 0x7F0D017A
+			public const int ThemeOverlay_MaterialComponents_TextInputEditText_FilledBox = 2131558778;
+			
+			// aapt resource value: 0x7F0D017B
+			public const int ThemeOverlay_MaterialComponents_TextInputEditText_FilledBox_Dense = 2131558779;
+			
+			// aapt resource value: 0x7F0D017C
+			public const int ThemeOverlay_MaterialComponents_TextInputEditText_OutlinedBox = 2131558780;
+			
+			// aapt resource value: 0x7F0D017D
+			public const int ThemeOverlay_MaterialComponents_TextInputEditText_OutlinedBox_Dense = 2131558781;
+			
+			// aapt resource value: 0x7F0D0139
+			public const int Theme_AppCompat = 2131558713;
+			
+			// aapt resource value: 0x7F0D013A
+			public const int Theme_AppCompat_CompactMenu = 2131558714;
+			
+			// aapt resource value: 0x7F0D013B
+			public const int Theme_AppCompat_DayNight = 2131558715;
+			
+			// aapt resource value: 0x7F0D013C
+			public const int Theme_AppCompat_DayNight_DarkActionBar = 2131558716;
+			
+			// aapt resource value: 0x7F0D013D
+			public const int Theme_AppCompat_DayNight_Dialog = 2131558717;
+			
+			// aapt resource value: 0x7F0D0140
+			public const int Theme_AppCompat_DayNight_DialogWhenLarge = 2131558720;
+			
+			// aapt resource value: 0x7F0D013E
+			public const int Theme_AppCompat_DayNight_Dialog_Alert = 2131558718;
+			
+			// aapt resource value: 0x7F0D013F
+			public const int Theme_AppCompat_DayNight_Dialog_MinWidth = 2131558719;
+			
+			// aapt resource value: 0x7F0D0141
+			public const int Theme_AppCompat_DayNight_NoActionBar = 2131558721;
+			
+			// aapt resource value: 0x7F0D0142
+			public const int Theme_AppCompat_Dialog = 2131558722;
+			
+			// aapt resource value: 0x7F0D0145
+			public const int Theme_AppCompat_DialogWhenLarge = 2131558725;
+			
+			// aapt resource value: 0x7F0D0143
+			public const int Theme_AppCompat_Dialog_Alert = 2131558723;
+			
+			// aapt resource value: 0x7F0D0144
+			public const int Theme_AppCompat_Dialog_MinWidth = 2131558724;
+			
+			// aapt resource value: 0x7F0D0146
+			public const int Theme_AppCompat_Light = 2131558726;
+			
+			// aapt resource value: 0x7F0D0147
+			public const int Theme_AppCompat_Light_DarkActionBar = 2131558727;
+			
+			// aapt resource value: 0x7F0D0148
+			public const int Theme_AppCompat_Light_Dialog = 2131558728;
+			
+			// aapt resource value: 0x7F0D014B
+			public const int Theme_AppCompat_Light_DialogWhenLarge = 2131558731;
+			
+			// aapt resource value: 0x7F0D0149
+			public const int Theme_AppCompat_Light_Dialog_Alert = 2131558729;
+			
+			// aapt resource value: 0x7F0D014A
+			public const int Theme_AppCompat_Light_Dialog_MinWidth = 2131558730;
+			
+			// aapt resource value: 0x7F0D014C
+			public const int Theme_AppCompat_Light_NoActionBar = 2131558732;
+			
+			// aapt resource value: 0x7F0D014D
+			public const int Theme_AppCompat_NoActionBar = 2131558733;
+			
+			// aapt resource value: 0x7F0D014E
+			public const int Theme_Design = 2131558734;
+			
+			// aapt resource value: 0x7F0D014F
+			public const int Theme_Design_BottomSheetDialog = 2131558735;
+			
+			// aapt resource value: 0x7F0D0150
+			public const int Theme_Design_Light = 2131558736;
+			
+			// aapt resource value: 0x7F0D0151
+			public const int Theme_Design_Light_BottomSheetDialog = 2131558737;
+			
+			// aapt resource value: 0x7F0D0152
+			public const int Theme_Design_Light_NoActionBar = 2131558738;
+			
+			// aapt resource value: 0x7F0D0153
+			public const int Theme_Design_NoActionBar = 2131558739;
+			
+			// aapt resource value: 0x7F0D0154
+			public const int Theme_MaterialComponents = 2131558740;
+			
+			// aapt resource value: 0x7F0D0155
+			public const int Theme_MaterialComponents_BottomSheetDialog = 2131558741;
+			
+			// aapt resource value: 0x7F0D0156
+			public const int Theme_MaterialComponents_Bridge = 2131558742;
+			
+			// aapt resource value: 0x7F0D0157
+			public const int Theme_MaterialComponents_CompactMenu = 2131558743;
+			
+			// aapt resource value: 0x7F0D0158
+			public const int Theme_MaterialComponents_Dialog = 2131558744;
+			
+			// aapt resource value: 0x7F0D015B
+			public const int Theme_MaterialComponents_DialogWhenLarge = 2131558747;
+			
+			// aapt resource value: 0x7F0D0159
+			public const int Theme_MaterialComponents_Dialog_Alert = 2131558745;
+			
+			// aapt resource value: 0x7F0D015A
+			public const int Theme_MaterialComponents_Dialog_MinWidth = 2131558746;
+			
+			// aapt resource value: 0x7F0D015C
+			public const int Theme_MaterialComponents_Light = 2131558748;
+			
+			// aapt resource value: 0x7F0D015D
+			public const int Theme_MaterialComponents_Light_BottomSheetDialog = 2131558749;
+			
+			// aapt resource value: 0x7F0D015E
+			public const int Theme_MaterialComponents_Light_Bridge = 2131558750;
+			
+			// aapt resource value: 0x7F0D015F
+			public const int Theme_MaterialComponents_Light_DarkActionBar = 2131558751;
+			
+			// aapt resource value: 0x7F0D0160
+			public const int Theme_MaterialComponents_Light_DarkActionBar_Bridge = 2131558752;
+			
+			// aapt resource value: 0x7F0D0161
+			public const int Theme_MaterialComponents_Light_Dialog = 2131558753;
+			
+			// aapt resource value: 0x7F0D0164
+			public const int Theme_MaterialComponents_Light_DialogWhenLarge = 2131558756;
+			
+			// aapt resource value: 0x7F0D0162
+			public const int Theme_MaterialComponents_Light_Dialog_Alert = 2131558754;
+			
+			// aapt resource value: 0x7F0D0163
+			public const int Theme_MaterialComponents_Light_Dialog_MinWidth = 2131558755;
+			
+			// aapt resource value: 0x7F0D0165
+			public const int Theme_MaterialComponents_Light_NoActionBar = 2131558757;
+			
+			// aapt resource value: 0x7F0D0166
+			public const int Theme_MaterialComponents_Light_NoActionBar_Bridge = 2131558758;
+			
+			// aapt resource value: 0x7F0D0167
+			public const int Theme_MaterialComponents_NoActionBar = 2131558759;
+			
+			// aapt resource value: 0x7F0D0168
+			public const int Theme_MaterialComponents_NoActionBar_Bridge = 2131558760;
+			
+			// aapt resource value: 0x7F0D017E
+			public const int Widget_AppCompat_ActionBar = 2131558782;
+			
+			// aapt resource value: 0x7F0D017F
+			public const int Widget_AppCompat_ActionBar_Solid = 2131558783;
+			
+			// aapt resource value: 0x7F0D0180
+			public const int Widget_AppCompat_ActionBar_TabBar = 2131558784;
+			
+			// aapt resource value: 0x7F0D0181
+			public const int Widget_AppCompat_ActionBar_TabText = 2131558785;
+			
+			// aapt resource value: 0x7F0D0182
+			public const int Widget_AppCompat_ActionBar_TabView = 2131558786;
+			
+			// aapt resource value: 0x7F0D0183
+			public const int Widget_AppCompat_ActionButton = 2131558787;
+			
+			// aapt resource value: 0x7F0D0184
+			public const int Widget_AppCompat_ActionButton_CloseMode = 2131558788;
+			
+			// aapt resource value: 0x7F0D0185
+			public const int Widget_AppCompat_ActionButton_Overflow = 2131558789;
+			
+			// aapt resource value: 0x7F0D0186
+			public const int Widget_AppCompat_ActionMode = 2131558790;
+			
+			// aapt resource value: 0x7F0D0187
+			public const int Widget_AppCompat_ActivityChooserView = 2131558791;
+			
+			// aapt resource value: 0x7F0D0188
+			public const int Widget_AppCompat_AutoCompleteTextView = 2131558792;
+			
+			// aapt resource value: 0x7F0D0189
+			public const int Widget_AppCompat_Button = 2131558793;
+			
+			// aapt resource value: 0x7F0D018F
+			public const int Widget_AppCompat_ButtonBar = 2131558799;
+			
+			// aapt resource value: 0x7F0D0190
+			public const int Widget_AppCompat_ButtonBar_AlertDialog = 2131558800;
+			
+			// aapt resource value: 0x7F0D018A
+			public const int Widget_AppCompat_Button_Borderless = 2131558794;
+			
+			// aapt resource value: 0x7F0D018B
+			public const int Widget_AppCompat_Button_Borderless_Colored = 2131558795;
+			
+			// aapt resource value: 0x7F0D018C
+			public const int Widget_AppCompat_Button_ButtonBar_AlertDialog = 2131558796;
+			
+			// aapt resource value: 0x7F0D018D
+			public const int Widget_AppCompat_Button_Colored = 2131558797;
+			
+			// aapt resource value: 0x7F0D018E
+			public const int Widget_AppCompat_Button_Small = 2131558798;
+			
+			// aapt resource value: 0x7F0D0191
+			public const int Widget_AppCompat_CompoundButton_CheckBox = 2131558801;
+			
+			// aapt resource value: 0x7F0D0192
+			public const int Widget_AppCompat_CompoundButton_RadioButton = 2131558802;
+			
+			// aapt resource value: 0x7F0D0193
+			public const int Widget_AppCompat_CompoundButton_Switch = 2131558803;
+			
+			// aapt resource value: 0x7F0D0194
+			public const int Widget_AppCompat_DrawerArrowToggle = 2131558804;
+			
+			// aapt resource value: 0x7F0D0195
+			public const int Widget_AppCompat_DropDownItem_Spinner = 2131558805;
+			
+			// aapt resource value: 0x7F0D0196
+			public const int Widget_AppCompat_EditText = 2131558806;
+			
+			// aapt resource value: 0x7F0D0197
+			public const int Widget_AppCompat_ImageButton = 2131558807;
+			
+			// aapt resource value: 0x7F0D0198
+			public const int Widget_AppCompat_Light_ActionBar = 2131558808;
+			
+			// aapt resource value: 0x7F0D0199
+			public const int Widget_AppCompat_Light_ActionBar_Solid = 2131558809;
+			
+			// aapt resource value: 0x7F0D019A
+			public const int Widget_AppCompat_Light_ActionBar_Solid_Inverse = 2131558810;
+			
+			// aapt resource value: 0x7F0D019B
+			public const int Widget_AppCompat_Light_ActionBar_TabBar = 2131558811;
+			
+			// aapt resource value: 0x7F0D019C
+			public const int Widget_AppCompat_Light_ActionBar_TabBar_Inverse = 2131558812;
+			
+			// aapt resource value: 0x7F0D019D
+			public const int Widget_AppCompat_Light_ActionBar_TabText = 2131558813;
+			
+			// aapt resource value: 0x7F0D019E
+			public const int Widget_AppCompat_Light_ActionBar_TabText_Inverse = 2131558814;
+			
+			// aapt resource value: 0x7F0D019F
+			public const int Widget_AppCompat_Light_ActionBar_TabView = 2131558815;
+			
+			// aapt resource value: 0x7F0D01A0
+			public const int Widget_AppCompat_Light_ActionBar_TabView_Inverse = 2131558816;
+			
+			// aapt resource value: 0x7F0D01A1
+			public const int Widget_AppCompat_Light_ActionButton = 2131558817;
+			
+			// aapt resource value: 0x7F0D01A2
+			public const int Widget_AppCompat_Light_ActionButton_CloseMode = 2131558818;
+			
+			// aapt resource value: 0x7F0D01A3
+			public const int Widget_AppCompat_Light_ActionButton_Overflow = 2131558819;
+			
+			// aapt resource value: 0x7F0D01A4
+			public const int Widget_AppCompat_Light_ActionMode_Inverse = 2131558820;
+			
+			// aapt resource value: 0x7F0D01A5
+			public const int Widget_AppCompat_Light_ActivityChooserView = 2131558821;
+			
+			// aapt resource value: 0x7F0D01A6
+			public const int Widget_AppCompat_Light_AutoCompleteTextView = 2131558822;
+			
+			// aapt resource value: 0x7F0D01A7
+			public const int Widget_AppCompat_Light_DropDownItem_Spinner = 2131558823;
+			
+			// aapt resource value: 0x7F0D01A8
+			public const int Widget_AppCompat_Light_ListPopupWindow = 2131558824;
+			
+			// aapt resource value: 0x7F0D01A9
+			public const int Widget_AppCompat_Light_ListView_DropDown = 2131558825;
+			
+			// aapt resource value: 0x7F0D01AA
+			public const int Widget_AppCompat_Light_PopupMenu = 2131558826;
+			
+			// aapt resource value: 0x7F0D01AB
+			public const int Widget_AppCompat_Light_PopupMenu_Overflow = 2131558827;
+			
+			// aapt resource value: 0x7F0D01AC
+			public const int Widget_AppCompat_Light_SearchView = 2131558828;
+			
+			// aapt resource value: 0x7F0D01AD
+			public const int Widget_AppCompat_Light_Spinner_DropDown_ActionBar = 2131558829;
+			
+			// aapt resource value: 0x7F0D01AE
+			public const int Widget_AppCompat_ListMenuView = 2131558830;
+			
+			// aapt resource value: 0x7F0D01AF
+			public const int Widget_AppCompat_ListPopupWindow = 2131558831;
+			
+			// aapt resource value: 0x7F0D01B0
+			public const int Widget_AppCompat_ListView = 2131558832;
+			
+			// aapt resource value: 0x7F0D01B1
+			public const int Widget_AppCompat_ListView_DropDown = 2131558833;
+			
+			// aapt resource value: 0x7F0D01B2
+			public const int Widget_AppCompat_ListView_Menu = 2131558834;
+			
+			// aapt resource value: 0x7F0D01B3
+			public const int Widget_AppCompat_PopupMenu = 2131558835;
+			
+			// aapt resource value: 0x7F0D01B4
+			public const int Widget_AppCompat_PopupMenu_Overflow = 2131558836;
+			
+			// aapt resource value: 0x7F0D01B5
+			public const int Widget_AppCompat_PopupWindow = 2131558837;
+			
+			// aapt resource value: 0x7F0D01B6
+			public const int Widget_AppCompat_ProgressBar = 2131558838;
+			
+			// aapt resource value: 0x7F0D01B7
+			public const int Widget_AppCompat_ProgressBar_Horizontal = 2131558839;
+			
+			// aapt resource value: 0x7F0D01B8
+			public const int Widget_AppCompat_RatingBar = 2131558840;
+			
+			// aapt resource value: 0x7F0D01B9
+			public const int Widget_AppCompat_RatingBar_Indicator = 2131558841;
+			
+			// aapt resource value: 0x7F0D01BA
+			public const int Widget_AppCompat_RatingBar_Small = 2131558842;
+			
+			// aapt resource value: 0x7F0D01BB
+			public const int Widget_AppCompat_SearchView = 2131558843;
+			
+			// aapt resource value: 0x7F0D01BC
+			public const int Widget_AppCompat_SearchView_ActionBar = 2131558844;
+			
+			// aapt resource value: 0x7F0D01BD
+			public const int Widget_AppCompat_SeekBar = 2131558845;
+			
+			// aapt resource value: 0x7F0D01BE
+			public const int Widget_AppCompat_SeekBar_Discrete = 2131558846;
+			
+			// aapt resource value: 0x7F0D01BF
+			public const int Widget_AppCompat_Spinner = 2131558847;
+			
+			// aapt resource value: 0x7F0D01C0
+			public const int Widget_AppCompat_Spinner_DropDown = 2131558848;
+			
+			// aapt resource value: 0x7F0D01C1
+			public const int Widget_AppCompat_Spinner_DropDown_ActionBar = 2131558849;
+			
+			// aapt resource value: 0x7F0D01C2
+			public const int Widget_AppCompat_Spinner_Underlined = 2131558850;
+			
+			// aapt resource value: 0x7F0D01C3
+			public const int Widget_AppCompat_TextView = 2131558851;
+			
+			// aapt resource value: 0x7F0D01C4
+			public const int Widget_AppCompat_TextView_SpinnerItem = 2131558852;
+			
+			// aapt resource value: 0x7F0D01C5
+			public const int Widget_AppCompat_Toolbar = 2131558853;
+			
+			// aapt resource value: 0x7F0D01C6
+			public const int Widget_AppCompat_Toolbar_Button_Navigation = 2131558854;
+			
+			// aapt resource value: 0x7F0D01C7
+			public const int Widget_Compat_NotificationActionContainer = 2131558855;
+			
+			// aapt resource value: 0x7F0D01C8
+			public const int Widget_Compat_NotificationActionText = 2131558856;
+			
+			// aapt resource value: 0x7F0D01C9
+			public const int Widget_Design_AppBarLayout = 2131558857;
+			
+			// aapt resource value: 0x7F0D01CA
+			public const int Widget_Design_BottomNavigationView = 2131558858;
+			
+			// aapt resource value: 0x7F0D01CB
+			public const int Widget_Design_BottomSheet_Modal = 2131558859;
+			
+			// aapt resource value: 0x7F0D01CC
+			public const int Widget_Design_CollapsingToolbar = 2131558860;
+			
+			// aapt resource value: 0x7F0D01CD
+			public const int Widget_Design_FloatingActionButton = 2131558861;
+			
+			// aapt resource value: 0x7F0D01CE
+			public const int Widget_Design_NavigationView = 2131558862;
+			
+			// aapt resource value: 0x7F0D01CF
+			public const int Widget_Design_ScrimInsetsFrameLayout = 2131558863;
+			
+			// aapt resource value: 0x7F0D01D0
+			public const int Widget_Design_Snackbar = 2131558864;
+			
+			// aapt resource value: 0x7F0D01D1
+			public const int Widget_Design_TabLayout = 2131558865;
+			
+			// aapt resource value: 0x7F0D01D2
+			public const int Widget_Design_TextInputLayout = 2131558866;
+			
+			// aapt resource value: 0x7F0D01D3
+			public const int Widget_MaterialComponents_BottomAppBar = 2131558867;
+			
+			// aapt resource value: 0x7F0D01D4
+			public const int Widget_MaterialComponents_BottomAppBar_Colored = 2131558868;
+			
+			// aapt resource value: 0x7F0D01D5
+			public const int Widget_MaterialComponents_BottomNavigationView = 2131558869;
+			
+			// aapt resource value: 0x7F0D01D6
+			public const int Widget_MaterialComponents_BottomNavigationView_Colored = 2131558870;
+			
+			// aapt resource value: 0x7F0D01D7
+			public const int Widget_MaterialComponents_BottomSheet_Modal = 2131558871;
+			
+			// aapt resource value: 0x7F0D01D8
+			public const int Widget_MaterialComponents_Button = 2131558872;
+			
+			// aapt resource value: 0x7F0D01D9
+			public const int Widget_MaterialComponents_Button_Icon = 2131558873;
+			
+			// aapt resource value: 0x7F0D01DA
+			public const int Widget_MaterialComponents_Button_OutlinedButton = 2131558874;
+			
+			// aapt resource value: 0x7F0D01DB
+			public const int Widget_MaterialComponents_Button_OutlinedButton_Icon = 2131558875;
+			
+			// aapt resource value: 0x7F0D01DC
+			public const int Widget_MaterialComponents_Button_TextButton = 2131558876;
+			
+			// aapt resource value: 0x7F0D01DD
+			public const int Widget_MaterialComponents_Button_TextButton_Dialog = 2131558877;
+			
+			// aapt resource value: 0x7F0D01DE
+			public const int Widget_MaterialComponents_Button_TextButton_Dialog_Icon = 2131558878;
+			
+			// aapt resource value: 0x7F0D01DF
+			public const int Widget_MaterialComponents_Button_TextButton_Icon = 2131558879;
+			
+			// aapt resource value: 0x7F0D01E0
+			public const int Widget_MaterialComponents_Button_UnelevatedButton = 2131558880;
+			
+			// aapt resource value: 0x7F0D01E1
+			public const int Widget_MaterialComponents_Button_UnelevatedButton_Icon = 2131558881;
+			
+			// aapt resource value: 0x7F0D01E2
+			public const int Widget_MaterialComponents_CardView = 2131558882;
+			
+			// aapt resource value: 0x7F0D01E7
+			public const int Widget_MaterialComponents_ChipGroup = 2131558887;
+			
+			// aapt resource value: 0x7F0D01E3
+			public const int Widget_MaterialComponents_Chip_Action = 2131558883;
+			
+			// aapt resource value: 0x7F0D01E4
+			public const int Widget_MaterialComponents_Chip_Choice = 2131558884;
+			
+			// aapt resource value: 0x7F0D01E5
+			public const int Widget_MaterialComponents_Chip_Entry = 2131558885;
+			
+			// aapt resource value: 0x7F0D01E6
+			public const int Widget_MaterialComponents_Chip_Filter = 2131558886;
+			
+			// aapt resource value: 0x7F0D01E8
+			public const int Widget_MaterialComponents_FloatingActionButton = 2131558888;
+			
+			// aapt resource value: 0x7F0D01E9
+			public const int Widget_MaterialComponents_NavigationView = 2131558889;
+			
+			// aapt resource value: 0x7F0D01EA
+			public const int Widget_MaterialComponents_Snackbar = 2131558890;
+			
+			// aapt resource value: 0x7F0D01EB
+			public const int Widget_MaterialComponents_Snackbar_FullWidth = 2131558891;
+			
+			// aapt resource value: 0x7F0D01EC
+			public const int Widget_MaterialComponents_TabLayout = 2131558892;
+			
+			// aapt resource value: 0x7F0D01ED
+			public const int Widget_MaterialComponents_TabLayout_Colored = 2131558893;
+			
+			// aapt resource value: 0x7F0D01EE
+			public const int Widget_MaterialComponents_TextInputEditText_FilledBox = 2131558894;
+			
+			// aapt resource value: 0x7F0D01EF
+			public const int Widget_MaterialComponents_TextInputEditText_FilledBox_Dense = 2131558895;
+			
+			// aapt resource value: 0x7F0D01F0
+			public const int Widget_MaterialComponents_TextInputEditText_OutlinedBox = 2131558896;
+			
+			// aapt resource value: 0x7F0D01F1
+			public const int Widget_MaterialComponents_TextInputEditText_OutlinedBox_Dense = 2131558897;
+			
+			// aapt resource value: 0x7F0D01F2
+			public const int Widget_MaterialComponents_TextInputLayout_FilledBox = 2131558898;
+			
+			// aapt resource value: 0x7F0D01F3
+			public const int Widget_MaterialComponents_TextInputLayout_FilledBox_Dense = 2131558899;
+			
+			// aapt resource value: 0x7F0D01F4
+			public const int Widget_MaterialComponents_TextInputLayout_OutlinedBox = 2131558900;
+			
+			// aapt resource value: 0x7F0D01F5
+			public const int Widget_MaterialComponents_TextInputLayout_OutlinedBox_Dense = 2131558901;
+			
+			// aapt resource value: 0x7F0D01F6
+			public const int Widget_MaterialComponents_Toolbar = 2131558902;
+			
+			// aapt resource value: 0x7F0D01F7
+			public const int Widget_Support_CoordinatorLayout = 2131558903;
+			
+			static Style()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Style()
+			{
+			}
+		}
+		
+		public partial class Styleable
+		{
+			
+			// aapt resource value: { 0x7F030031,0x7F030032,0x7F030033,0x7F030092,0x7F030093,0x7F030094,0x7F030095,0x7F030096,0x7F030097,0x7F0300A5,0x7F0300AA,0x7F0300AB,0x7F0300BE,0x7F0300E8,0x7F0300ED,0x7F0300F2,0x7F0300F3,0x7F0300F5,0x7F0300FF,0x7F030109,0x7F030130,0x7F03013C,0x7F03014D,0x7F030151,0x7F030152,0x7F030181,0x7F030184,0x7F0301CA,0x7F0301D4 }
+			public static int[] ActionBar = new int[] {
+					2130903089,
+					2130903090,
+					2130903091,
+					2130903186,
+					2130903187,
+					2130903188,
+					2130903189,
+					2130903190,
+					2130903191,
+					2130903205,
+					2130903210,
+					2130903211,
+					2130903230,
+					2130903272,
+					2130903277,
+					2130903282,
+					2130903283,
+					2130903285,
+					2130903295,
+					2130903305,
+					2130903344,
+					2130903356,
+					2130903373,
+					2130903377,
+					2130903378,
+					2130903425,
+					2130903428,
+					2130903498,
+					2130903508};
+			
+			// aapt resource value: { 0x10100B3 }
+			public static int[] ActionBarLayout = new int[] {
+					16842931};
+			
+			// aapt resource value: 0
+			public const int ActionBarLayout_android_layout_gravity = 0;
+			
+			// aapt resource value: 0
+			public const int ActionBar_background = 0;
+			
+			// aapt resource value: 1
+			public const int ActionBar_backgroundSplit = 1;
+			
+			// aapt resource value: 2
+			public const int ActionBar_backgroundStacked = 2;
+			
+			// aapt resource value: 3
+			public const int ActionBar_contentInsetEnd = 3;
+			
+			// aapt resource value: 4
+			public const int ActionBar_contentInsetEndWithActions = 4;
+			
+			// aapt resource value: 5
+			public const int ActionBar_contentInsetLeft = 5;
+			
+			// aapt resource value: 6
+			public const int ActionBar_contentInsetRight = 6;
+			
+			// aapt resource value: 7
+			public const int ActionBar_contentInsetStart = 7;
+			
+			// aapt resource value: 8
+			public const int ActionBar_contentInsetStartWithNavigation = 8;
+			
+			// aapt resource value: 9
+			public const int ActionBar_customNavigationLayout = 9;
+			
+			// aapt resource value: 10
+			public const int ActionBar_displayOptions = 10;
+			
+			// aapt resource value: 11
+			public const int ActionBar_divider = 11;
+			
+			// aapt resource value: 12
+			public const int ActionBar_elevation = 12;
+			
+			// aapt resource value: 13
+			public const int ActionBar_height = 13;
+			
+			// aapt resource value: 14
+			public const int ActionBar_hideOnContentScroll = 14;
+			
+			// aapt resource value: 15
+			public const int ActionBar_homeAsUpIndicator = 15;
+			
+			// aapt resource value: 16
+			public const int ActionBar_homeLayout = 16;
+			
+			// aapt resource value: 17
+			public const int ActionBar_icon = 17;
+			
+			// aapt resource value: 18
+			public const int ActionBar_indeterminateProgressStyle = 18;
+			
+			// aapt resource value: 19
+			public const int ActionBar_itemPadding = 19;
+			
+			// aapt resource value: 20
+			public const int ActionBar_logo = 20;
+			
+			// aapt resource value: 21
+			public const int ActionBar_navigationMode = 21;
+			
+			// aapt resource value: 22
+			public const int ActionBar_popupTheme = 22;
+			
+			// aapt resource value: 23
+			public const int ActionBar_progressBarPadding = 23;
+			
+			// aapt resource value: 24
+			public const int ActionBar_progressBarStyle = 24;
+			
+			// aapt resource value: 25
+			public const int ActionBar_subtitle = 25;
+			
+			// aapt resource value: 26
+			public const int ActionBar_subtitleTextStyle = 26;
+			
+			// aapt resource value: 27
+			public const int ActionBar_title = 27;
+			
+			// aapt resource value: 28
+			public const int ActionBar_titleTextStyle = 28;
+			
+			// aapt resource value: { 0x101013F }
+			public static int[] ActionMenuItemView = new int[] {
+					16843071};
+			
+			// aapt resource value: 0
+			public const int ActionMenuItemView_android_minWidth = 0;
+			
+			// aapt resource value: { 0xFFFFFFFF }
+			public static int[] ActionMenuView = new int[] {
+					-1};
+			
+			// aapt resource value: { 0x7F030031,0x7F030032,0x7F03007F,0x7F0300E8,0x7F030184,0x7F0301D4 }
+			public static int[] ActionMode = new int[] {
+					2130903089,
+					2130903090,
+					2130903167,
+					2130903272,
+					2130903428,
+					2130903508};
+			
+			// aapt resource value: 0
+			public const int ActionMode_background = 0;
+			
+			// aapt resource value: 1
+			public const int ActionMode_backgroundSplit = 1;
+			
+			// aapt resource value: 2
+			public const int ActionMode_closeItemLayout = 2;
+			
+			// aapt resource value: 3
+			public const int ActionMode_height = 3;
+			
+			// aapt resource value: 4
+			public const int ActionMode_subtitleTextStyle = 4;
+			
+			// aapt resource value: 5
+			public const int ActionMode_titleTextStyle = 5;
+			
+			// aapt resource value: { 0x7F0300C3,0x7F030100 }
+			public static int[] ActivityChooserView = new int[] {
+					2130903235,
+					2130903296};
+			
+			// aapt resource value: 0
+			public const int ActivityChooserView_expandActivityOverflowButtonDrawable = 0;
+			
+			// aapt resource value: 1
+			public const int ActivityChooserView_initialActivityCount = 1;
+			
+			// aapt resource value: { 0x10100F2,0x7F030053,0x7F030054,0x7F030125,0x7F030126,0x7F030139,0x7F030169,0x7F03016A }
+			public static int[] AlertDialog = new int[] {
+					16842994,
+					2130903123,
+					2130903124,
+					2130903333,
+					2130903334,
+					2130903353,
+					2130903401,
+					2130903402};
+			
+			// aapt resource value: 0
+			public const int AlertDialog_android_layout = 0;
+			
+			// aapt resource value: 1
+			public const int AlertDialog_buttonIconDimen = 1;
+			
+			// aapt resource value: 2
+			public const int AlertDialog_buttonPanelSideLayout = 2;
+			
+			// aapt resource value: 3
+			public const int AlertDialog_listItemLayout = 3;
+			
+			// aapt resource value: 4
+			public const int AlertDialog_listLayout = 4;
+			
+			// aapt resource value: 5
+			public const int AlertDialog_multiChoiceItemLayout = 5;
+			
+			// aapt resource value: 6
+			public const int AlertDialog_showTitle = 6;
+			
+			// aapt resource value: 7
+			public const int AlertDialog_singleChoiceItemLayout = 7;
+			
+			// aapt resource value: { 0x101011C,0x1010194,0x1010195,0x1010196,0x101030C,0x101030D }
+			public static int[] AnimatedStateListDrawableCompat = new int[] {
+					16843036,
+					16843156,
+					16843157,
+					16843158,
+					16843532,
+					16843533};
+			
+			// aapt resource value: 3
+			public const int AnimatedStateListDrawableCompat_android_constantSize = 3;
+			
+			// aapt resource value: 0
+			public const int AnimatedStateListDrawableCompat_android_dither = 0;
+			
+			// aapt resource value: 4
+			public const int AnimatedStateListDrawableCompat_android_enterFadeDuration = 4;
+			
+			// aapt resource value: 5
+			public const int AnimatedStateListDrawableCompat_android_exitFadeDuration = 5;
+			
+			// aapt resource value: 2
+			public const int AnimatedStateListDrawableCompat_android_variablePadding = 2;
+			
+			// aapt resource value: 1
+			public const int AnimatedStateListDrawableCompat_android_visible = 1;
+			
+			// aapt resource value: { 0x10100D0,0x1010199 }
+			public static int[] AnimatedStateListDrawableItem = new int[] {
+					16842960,
+					16843161};
+			
+			// aapt resource value: 1
+			public const int AnimatedStateListDrawableItem_android_drawable = 1;
+			
+			// aapt resource value: 0
+			public const int AnimatedStateListDrawableItem_android_id = 0;
+			
+			// aapt resource value: { 0x1010199,0x1010449,0x101044A,0x101044B }
+			public static int[] AnimatedStateListDrawableTransition = new int[] {
+					16843161,
+					16843849,
+					16843850,
+					16843851};
+			
+			// aapt resource value: 0
+			public const int AnimatedStateListDrawableTransition_android_drawable = 0;
+			
+			// aapt resource value: 2
+			public const int AnimatedStateListDrawableTransition_android_fromId = 2;
+			
+			// aapt resource value: 3
+			public const int AnimatedStateListDrawableTransition_android_reversible = 3;
+			
+			// aapt resource value: 1
+			public const int AnimatedStateListDrawableTransition_android_toId = 1;
+			
+			// aapt resource value: { 0x10100D4,0x101048F,0x1010540,0x7F0300BE,0x7F0300C4,0x7F03011E }
+			public static int[] AppBarLayout = new int[] {
+					16842964,
+					16843919,
+					16844096,
+					2130903230,
+					2130903236,
+					2130903326};
+			
+			// aapt resource value: { 0x7F030177,0x7F030178,0x7F030179,0x7F03017A }
+			public static int[] AppBarLayoutStates = new int[] {
+					2130903415,
+					2130903416,
+					2130903417,
+					2130903418};
+			
+			// aapt resource value: 0
+			public const int AppBarLayoutStates_state_collapsed = 0;
+			
+			// aapt resource value: 1
+			public const int AppBarLayoutStates_state_collapsible = 1;
+			
+			// aapt resource value: 2
+			public const int AppBarLayoutStates_state_liftable = 2;
+			
+			// aapt resource value: 3
+			public const int AppBarLayoutStates_state_lifted = 3;
+			
+			// aapt resource value: 0
+			public const int AppBarLayout_android_background = 0;
+			
+			// aapt resource value: 2
+			public const int AppBarLayout_android_keyboardNavigationCluster = 2;
+			
+			// aapt resource value: 1
+			public const int AppBarLayout_android_touchscreenBlocksFocus = 1;
+			
+			// aapt resource value: 3
+			public const int AppBarLayout_elevation = 3;
+			
+			// aapt resource value: 4
+			public const int AppBarLayout_expanded = 4;
+			
+			// aapt resource value: { 0x7F03011C,0x7F03011D }
+			public static int[] AppBarLayout_Layout = new int[] {
+					2130903324,
+					2130903325};
+			
+			// aapt resource value: 0
+			public const int AppBarLayout_Layout_layout_scrollFlags = 0;
+			
+			// aapt resource value: 1
+			public const int AppBarLayout_Layout_layout_scrollInterpolator = 1;
+			
+			// aapt resource value: 5
+			public const int AppBarLayout_liftOnScroll = 5;
+			
+			// aapt resource value: { 0x1010119,0x7F030174,0x7F0301C8,0x7F0301C9 }
+			public static int[] AppCompatImageView = new int[] {
+					16843033,
+					2130903412,
+					2130903496,
+					2130903497};
+			
+			// aapt resource value: 0
+			public const int AppCompatImageView_android_src = 0;
+			
+			// aapt resource value: 1
+			public const int AppCompatImageView_srcCompat = 1;
+			
+			// aapt resource value: 2
+			public const int AppCompatImageView_tint = 2;
+			
+			// aapt resource value: 3
+			public const int AppCompatImageView_tintMode = 3;
+			
+			// aapt resource value: { 0x1010142,0x7F0301C5,0x7F0301C6,0x7F0301C7 }
+			public static int[] AppCompatSeekBar = new int[] {
+					16843074,
+					2130903493,
+					2130903494,
+					2130903495};
+			
+			// aapt resource value: 0
+			public const int AppCompatSeekBar_android_thumb = 0;
+			
+			// aapt resource value: 1
+			public const int AppCompatSeekBar_tickMark = 1;
+			
+			// aapt resource value: 2
+			public const int AppCompatSeekBar_tickMarkTint = 2;
+			
+			// aapt resource value: 3
+			public const int AppCompatSeekBar_tickMarkTintMode = 3;
+			
+			// aapt resource value: { 0x1010034,0x101016D,0x101016E,0x101016F,0x1010170,0x1010392,0x1010393 }
+			public static int[] AppCompatTextHelper = new int[] {
+					16842804,
+					16843117,
+					16843118,
+					16843119,
+					16843120,
+					16843666,
+					16843667};
+			
+			// aapt resource value: 2
+			public const int AppCompatTextHelper_android_drawableBottom = 2;
+			
+			// aapt resource value: 6
+			public const int AppCompatTextHelper_android_drawableEnd = 6;
+			
+			// aapt resource value: 3
+			public const int AppCompatTextHelper_android_drawableLeft = 3;
+			
+			// aapt resource value: 4
+			public const int AppCompatTextHelper_android_drawableRight = 4;
+			
+			// aapt resource value: 5
+			public const int AppCompatTextHelper_android_drawableStart = 5;
+			
+			// aapt resource value: 1
+			public const int AppCompatTextHelper_android_drawableTop = 1;
+			
+			// aapt resource value: 0
+			public const int AppCompatTextHelper_android_textAppearance = 0;
+			
+			// aapt resource value: { 0x1010034,0x7F03002C,0x7F03002D,0x7F03002E,0x7F03002F,0x7F030030,0x7F0300AF,0x7F0300B0,0x7F0300B1,0x7F0300B2,0x7F0300B4,0x7F0300B5,0x7F0300B6,0x7F0300B7,0x7F0300D7,0x7F0300DA,0x7F0300E2,0x7F030111,0x7F03011F,0x7F0301A4,0x7F0301BE }
+			public static int[] AppCompatTextView = new int[] {
+					16842804,
+					2130903084,
+					2130903085,
+					2130903086,
+					2130903087,
+					2130903088,
+					2130903215,
+					2130903216,
+					2130903217,
+					2130903218,
+					2130903220,
+					2130903221,
+					2130903222,
+					2130903223,
+					2130903255,
+					2130903258,
+					2130903266,
+					2130903313,
+					2130903327,
+					2130903460,
+					2130903486};
+			
+			// aapt resource value: 0
+			public const int AppCompatTextView_android_textAppearance = 0;
+			
+			// aapt resource value: 1
+			public const int AppCompatTextView_autoSizeMaxTextSize = 1;
+			
+			// aapt resource value: 2
+			public const int AppCompatTextView_autoSizeMinTextSize = 2;
+			
+			// aapt resource value: 3
+			public const int AppCompatTextView_autoSizePresetSizes = 3;
+			
+			// aapt resource value: 4
+			public const int AppCompatTextView_autoSizeStepGranularity = 4;
+			
+			// aapt resource value: 5
+			public const int AppCompatTextView_autoSizeTextType = 5;
+			
+			// aapt resource value: 6
+			public const int AppCompatTextView_drawableBottomCompat = 6;
+			
+			// aapt resource value: 7
+			public const int AppCompatTextView_drawableEndCompat = 7;
+			
+			// aapt resource value: 8
+			public const int AppCompatTextView_drawableLeftCompat = 8;
+			
+			// aapt resource value: 9
+			public const int AppCompatTextView_drawableRightCompat = 9;
+			
+			// aapt resource value: 10
+			public const int AppCompatTextView_drawableStartCompat = 10;
+			
+			// aapt resource value: 11
+			public const int AppCompatTextView_drawableTint = 11;
+			
+			// aapt resource value: 12
+			public const int AppCompatTextView_drawableTintMode = 12;
+			
+			// aapt resource value: 13
+			public const int AppCompatTextView_drawableTopCompat = 13;
+			
+			// aapt resource value: 14
+			public const int AppCompatTextView_firstBaselineToTopHeight = 14;
+			
+			// aapt resource value: 15
+			public const int AppCompatTextView_fontFamily = 15;
+			
+			// aapt resource value: 16
+			public const int AppCompatTextView_fontVariationSettings = 16;
+			
+			// aapt resource value: 17
+			public const int AppCompatTextView_lastBaselineToBottomHeight = 17;
+			
+			// aapt resource value: 18
+			public const int AppCompatTextView_lineHeight = 18;
+			
+			// aapt resource value: 19
+			public const int AppCompatTextView_textAllCaps = 19;
+			
+			// aapt resource value: 20
+			public const int AppCompatTextView_textLocale = 20;
+			
+			// aapt resource value: { 0x1010057,0x10100AE,0x7F030000,0x7F030001,0x7F030002,0x7F030003,0x7F030004,0x7F030005,0x7F030006,0x7F030007,0x7F030008,0x7F030009,0x7F03000A,0x7F03000B,0x7F03000C,0x7F03000E,0x7F03000F,0x7F030010,0x7F030011,0x7F030012,0x7F030013,0x7F030014,0x7F030015,0x7F030016,0x7F030017,0x7F030018,0x7F030019,0x7F03001A,0x7F03001B,0x7F03001C,0x7F03001D,0x7F03001E,0x7F030021,0x7F030022,0x7F030023,0x7F030024,0x7F030025,0x7F03002B,0x7F03003E,0x7F03004C,0x7F03004D,0x7F03004E,0x7F03004F,0x7F030050,0x7F030055,0x7F030056,0x7F030060,0x7F030065,0x7F030085,0x7F030086,0x7F030087,0x7F030088,0x7F030089,0x7F03008A,0x7F03008B,0x7F03008C,0x7F03008D,0x7F03008F,0x7F03009E,0x7F0300A7,0x7F0300A8,0x7F0300A9,0x7F0300AC,0x7F0300AE,0x7F0300B9,0x7F0300BA,0x7F0300BB,0x7F0300BC,0x7F0300BD,0x7F0300F2,0x7F0300FE,0x7F030121,0x7F030122,0x7F030123,0x7F030124,0x7F030127,0x7F030128,0x7F030129,0x7F03012A,0x7F03012B,0x7F03012C,0x7F03012D,0x7F03012E,0x7F03012F,0x7F030144,0x7F030145,0x7F030146,0x7F03014C,0x7F03014E,0x7F030155,0x7F030156,0x7F030157,0x7F030158,0x7F030161,0x7F030162,0x7F030163,0x7F030164,0x7F030171,0x7F030172,0x7F030188,0x7F0301AF,0x7F0301B0,0x7F0301B1,0x7F0301B2,0x7F0301B4,0x7F0301B5,0x7F0301B6,0x7F0301B7,0x7F0301BA,0x7F0301BB,0x7F0301D6,0x7F0301D7,0x7F0301D8,0x7F0301D9,0x7F0301E0,0x7F0301E2,0x7F0301E3,0x7F0301E4,0x7F0301E5,0x7F0301E6,0x7F0301E7,0x7F0301E8,0x7F0301E9,0x7F0301EA,0x7F0301EB }
+			public static int[] AppCompatTheme = new int[] {
+					16842839,
+					16842926,
+					2130903040,
+					2130903041,
+					2130903042,
+					2130903043,
+					2130903044,
+					2130903045,
+					2130903046,
+					2130903047,
+					2130903048,
+					2130903049,
+					2130903050,
+					2130903051,
+					2130903052,
+					2130903054,
+					2130903055,
+					2130903056,
+					2130903057,
+					2130903058,
+					2130903059,
+					2130903060,
+					2130903061,
+					2130903062,
+					2130903063,
+					2130903064,
+					2130903065,
+					2130903066,
+					2130903067,
+					2130903068,
+					2130903069,
+					2130903070,
+					2130903073,
+					2130903074,
+					2130903075,
+					2130903076,
+					2130903077,
+					2130903083,
+					2130903102,
+					2130903116,
+					2130903117,
+					2130903118,
+					2130903119,
+					2130903120,
+					2130903125,
+					2130903126,
+					2130903136,
+					2130903141,
+					2130903173,
+					2130903174,
+					2130903175,
+					2130903176,
+					2130903177,
+					2130903178,
+					2130903179,
+					2130903180,
+					2130903181,
+					2130903183,
+					2130903198,
+					2130903207,
+					2130903208,
+					2130903209,
+					2130903212,
+					2130903214,
+					2130903225,
+					2130903226,
+					2130903227,
+					2130903228,
+					2130903229,
+					2130903282,
+					2130903294,
+					2130903329,
+					2130903330,
+					2130903331,
+					2130903332,
+					2130903335,
+					2130903336,
+					2130903337,
+					2130903338,
+					2130903339,
+					2130903340,
+					2130903341,
+					2130903342,
+					2130903343,
+					2130903364,
+					2130903365,
+					2130903366,
+					2130903372,
+					2130903374,
+					2130903381,
+					2130903382,
+					2130903383,
+					2130903384,
+					2130903393,
+					2130903394,
+					2130903395,
+					2130903396,
+					2130903409,
+					2130903410,
+					2130903432,
+					2130903471,
+					2130903472,
+					2130903473,
+					2130903474,
+					2130903476,
+					2130903477,
+					2130903478,
+					2130903479,
+					2130903482,
+					2130903483,
+					2130903510,
+					2130903511,
+					2130903512,
+					2130903513,
+					2130903520,
+					2130903522,
+					2130903523,
+					2130903524,
+					2130903525,
+					2130903526,
+					2130903527,
+					2130903528,
+					2130903529,
+					2130903530,
+					2130903531};
+			
+			// aapt resource value: 2
+			public const int AppCompatTheme_actionBarDivider = 2;
+			
+			// aapt resource value: 3
+			public const int AppCompatTheme_actionBarItemBackground = 3;
+			
+			// aapt resource value: 4
+			public const int AppCompatTheme_actionBarPopupTheme = 4;
+			
+			// aapt resource value: 5
+			public const int AppCompatTheme_actionBarSize = 5;
+			
+			// aapt resource value: 6
+			public const int AppCompatTheme_actionBarSplitStyle = 6;
+			
+			// aapt resource value: 7
+			public const int AppCompatTheme_actionBarStyle = 7;
+			
+			// aapt resource value: 8
+			public const int AppCompatTheme_actionBarTabBarStyle = 8;
+			
+			// aapt resource value: 9
+			public const int AppCompatTheme_actionBarTabStyle = 9;
+			
+			// aapt resource value: 10
+			public const int AppCompatTheme_actionBarTabTextStyle = 10;
+			
+			// aapt resource value: 11
+			public const int AppCompatTheme_actionBarTheme = 11;
+			
+			// aapt resource value: 12
+			public const int AppCompatTheme_actionBarWidgetTheme = 12;
+			
+			// aapt resource value: 13
+			public const int AppCompatTheme_actionButtonStyle = 13;
+			
+			// aapt resource value: 14
+			public const int AppCompatTheme_actionDropDownStyle = 14;
+			
+			// aapt resource value: 15
+			public const int AppCompatTheme_actionMenuTextAppearance = 15;
+			
+			// aapt resource value: 16
+			public const int AppCompatTheme_actionMenuTextColor = 16;
+			
+			// aapt resource value: 17
+			public const int AppCompatTheme_actionModeBackground = 17;
+			
+			// aapt resource value: 18
+			public const int AppCompatTheme_actionModeCloseButtonStyle = 18;
+			
+			// aapt resource value: 19
+			public const int AppCompatTheme_actionModeCloseDrawable = 19;
+			
+			// aapt resource value: 20
+			public const int AppCompatTheme_actionModeCopyDrawable = 20;
+			
+			// aapt resource value: 21
+			public const int AppCompatTheme_actionModeCutDrawable = 21;
+			
+			// aapt resource value: 22
+			public const int AppCompatTheme_actionModeFindDrawable = 22;
+			
+			// aapt resource value: 23
+			public const int AppCompatTheme_actionModePasteDrawable = 23;
+			
+			// aapt resource value: 24
+			public const int AppCompatTheme_actionModePopupWindowStyle = 24;
+			
+			// aapt resource value: 25
+			public const int AppCompatTheme_actionModeSelectAllDrawable = 25;
+			
+			// aapt resource value: 26
+			public const int AppCompatTheme_actionModeShareDrawable = 26;
+			
+			// aapt resource value: 27
+			public const int AppCompatTheme_actionModeSplitBackground = 27;
+			
+			// aapt resource value: 28
+			public const int AppCompatTheme_actionModeStyle = 28;
+			
+			// aapt resource value: 29
+			public const int AppCompatTheme_actionModeWebSearchDrawable = 29;
+			
+			// aapt resource value: 30
+			public const int AppCompatTheme_actionOverflowButtonStyle = 30;
+			
+			// aapt resource value: 31
+			public const int AppCompatTheme_actionOverflowMenuStyle = 31;
+			
+			// aapt resource value: 32
+			public const int AppCompatTheme_activityChooserViewStyle = 32;
+			
+			// aapt resource value: 33
+			public const int AppCompatTheme_alertDialogButtonGroupStyle = 33;
+			
+			// aapt resource value: 34
+			public const int AppCompatTheme_alertDialogCenterButtons = 34;
+			
+			// aapt resource value: 35
+			public const int AppCompatTheme_alertDialogStyle = 35;
+			
+			// aapt resource value: 36
+			public const int AppCompatTheme_alertDialogTheme = 36;
+			
+			// aapt resource value: 1
+			public const int AppCompatTheme_android_windowAnimationStyle = 1;
+			
+			// aapt resource value: 0
+			public const int AppCompatTheme_android_windowIsFloating = 0;
+			
+			// aapt resource value: 37
+			public const int AppCompatTheme_autoCompleteTextViewStyle = 37;
+			
+			// aapt resource value: 38
+			public const int AppCompatTheme_borderlessButtonStyle = 38;
+			
+			// aapt resource value: 39
+			public const int AppCompatTheme_buttonBarButtonStyle = 39;
+			
+			// aapt resource value: 40
+			public const int AppCompatTheme_buttonBarNegativeButtonStyle = 40;
+			
+			// aapt resource value: 41
+			public const int AppCompatTheme_buttonBarNeutralButtonStyle = 41;
+			
+			// aapt resource value: 42
+			public const int AppCompatTheme_buttonBarPositiveButtonStyle = 42;
+			
+			// aapt resource value: 43
+			public const int AppCompatTheme_buttonBarStyle = 43;
+			
+			// aapt resource value: 44
+			public const int AppCompatTheme_buttonStyle = 44;
+			
+			// aapt resource value: 45
+			public const int AppCompatTheme_buttonStyleSmall = 45;
+			
+			// aapt resource value: 46
+			public const int AppCompatTheme_checkboxStyle = 46;
+			
+			// aapt resource value: 47
+			public const int AppCompatTheme_checkedTextViewStyle = 47;
+			
+			// aapt resource value: 48
+			public const int AppCompatTheme_colorAccent = 48;
+			
+			// aapt resource value: 49
+			public const int AppCompatTheme_colorBackgroundFloating = 49;
+			
+			// aapt resource value: 50
+			public const int AppCompatTheme_colorButtonNormal = 50;
+			
+			// aapt resource value: 51
+			public const int AppCompatTheme_colorControlActivated = 51;
+			
+			// aapt resource value: 52
+			public const int AppCompatTheme_colorControlHighlight = 52;
+			
+			// aapt resource value: 53
+			public const int AppCompatTheme_colorControlNormal = 53;
+			
+			// aapt resource value: 54
+			public const int AppCompatTheme_colorError = 54;
+			
+			// aapt resource value: 55
+			public const int AppCompatTheme_colorPrimary = 55;
+			
+			// aapt resource value: 56
+			public const int AppCompatTheme_colorPrimaryDark = 56;
+			
+			// aapt resource value: 57
+			public const int AppCompatTheme_colorSwitchThumbNormal = 57;
+			
+			// aapt resource value: 58
+			public const int AppCompatTheme_controlBackground = 58;
+			
+			// aapt resource value: 59
+			public const int AppCompatTheme_dialogCornerRadius = 59;
+			
+			// aapt resource value: 60
+			public const int AppCompatTheme_dialogPreferredPadding = 60;
+			
+			// aapt resource value: 61
+			public const int AppCompatTheme_dialogTheme = 61;
+			
+			// aapt resource value: 62
+			public const int AppCompatTheme_dividerHorizontal = 62;
+			
+			// aapt resource value: 63
+			public const int AppCompatTheme_dividerVertical = 63;
+			
+			// aapt resource value: 65
+			public const int AppCompatTheme_dropdownListPreferredItemHeight = 65;
+			
+			// aapt resource value: 64
+			public const int AppCompatTheme_dropDownListViewStyle = 64;
+			
+			// aapt resource value: 66
+			public const int AppCompatTheme_editTextBackground = 66;
+			
+			// aapt resource value: 67
+			public const int AppCompatTheme_editTextColor = 67;
+			
+			// aapt resource value: 68
+			public const int AppCompatTheme_editTextStyle = 68;
+			
+			// aapt resource value: 69
+			public const int AppCompatTheme_homeAsUpIndicator = 69;
+			
+			// aapt resource value: 70
+			public const int AppCompatTheme_imageButtonStyle = 70;
+			
+			// aapt resource value: 71
+			public const int AppCompatTheme_listChoiceBackgroundIndicator = 71;
+			
+			// aapt resource value: 72
+			public const int AppCompatTheme_listChoiceIndicatorMultipleAnimated = 72;
+			
+			// aapt resource value: 73
+			public const int AppCompatTheme_listChoiceIndicatorSingleAnimated = 73;
+			
+			// aapt resource value: 74
+			public const int AppCompatTheme_listDividerAlertDialog = 74;
+			
+			// aapt resource value: 75
+			public const int AppCompatTheme_listMenuViewStyle = 75;
+			
+			// aapt resource value: 76
+			public const int AppCompatTheme_listPopupWindowStyle = 76;
+			
+			// aapt resource value: 77
+			public const int AppCompatTheme_listPreferredItemHeight = 77;
+			
+			// aapt resource value: 78
+			public const int AppCompatTheme_listPreferredItemHeightLarge = 78;
+			
+			// aapt resource value: 79
+			public const int AppCompatTheme_listPreferredItemHeightSmall = 79;
+			
+			// aapt resource value: 80
+			public const int AppCompatTheme_listPreferredItemPaddingEnd = 80;
+			
+			// aapt resource value: 81
+			public const int AppCompatTheme_listPreferredItemPaddingLeft = 81;
+			
+			// aapt resource value: 82
+			public const int AppCompatTheme_listPreferredItemPaddingRight = 82;
+			
+			// aapt resource value: 83
+			public const int AppCompatTheme_listPreferredItemPaddingStart = 83;
+			
+			// aapt resource value: 84
+			public const int AppCompatTheme_panelBackground = 84;
+			
+			// aapt resource value: 85
+			public const int AppCompatTheme_panelMenuListTheme = 85;
+			
+			// aapt resource value: 86
+			public const int AppCompatTheme_panelMenuListWidth = 86;
+			
+			// aapt resource value: 87
+			public const int AppCompatTheme_popupMenuStyle = 87;
+			
+			// aapt resource value: 88
+			public const int AppCompatTheme_popupWindowStyle = 88;
+			
+			// aapt resource value: 89
+			public const int AppCompatTheme_radioButtonStyle = 89;
+			
+			// aapt resource value: 90
+			public const int AppCompatTheme_ratingBarStyle = 90;
+			
+			// aapt resource value: 91
+			public const int AppCompatTheme_ratingBarStyleIndicator = 91;
+			
+			// aapt resource value: 92
+			public const int AppCompatTheme_ratingBarStyleSmall = 92;
+			
+			// aapt resource value: 93
+			public const int AppCompatTheme_searchViewStyle = 93;
+			
+			// aapt resource value: 94
+			public const int AppCompatTheme_seekBarStyle = 94;
+			
+			// aapt resource value: 95
+			public const int AppCompatTheme_selectableItemBackground = 95;
+			
+			// aapt resource value: 96
+			public const int AppCompatTheme_selectableItemBackgroundBorderless = 96;
+			
+			// aapt resource value: 97
+			public const int AppCompatTheme_spinnerDropDownItemStyle = 97;
+			
+			// aapt resource value: 98
+			public const int AppCompatTheme_spinnerStyle = 98;
+			
+			// aapt resource value: 99
+			public const int AppCompatTheme_switchStyle = 99;
+			
+			// aapt resource value: 100
+			public const int AppCompatTheme_textAppearanceLargePopupMenu = 100;
+			
+			// aapt resource value: 101
+			public const int AppCompatTheme_textAppearanceListItem = 101;
+			
+			// aapt resource value: 102
+			public const int AppCompatTheme_textAppearanceListItemSecondary = 102;
+			
+			// aapt resource value: 103
+			public const int AppCompatTheme_textAppearanceListItemSmall = 103;
+			
+			// aapt resource value: 104
+			public const int AppCompatTheme_textAppearancePopupMenuHeader = 104;
+			
+			// aapt resource value: 105
+			public const int AppCompatTheme_textAppearanceSearchResultSubtitle = 105;
+			
+			// aapt resource value: 106
+			public const int AppCompatTheme_textAppearanceSearchResultTitle = 106;
+			
+			// aapt resource value: 107
+			public const int AppCompatTheme_textAppearanceSmallPopupMenu = 107;
+			
+			// aapt resource value: 108
+			public const int AppCompatTheme_textColorAlertDialogListItem = 108;
+			
+			// aapt resource value: 109
+			public const int AppCompatTheme_textColorSearchUrl = 109;
+			
+			// aapt resource value: 110
+			public const int AppCompatTheme_toolbarNavigationButtonStyle = 110;
+			
+			// aapt resource value: 111
+			public const int AppCompatTheme_toolbarStyle = 111;
+			
+			// aapt resource value: 112
+			public const int AppCompatTheme_tooltipForegroundColor = 112;
+			
+			// aapt resource value: 113
+			public const int AppCompatTheme_tooltipFrameBackground = 113;
+			
+			// aapt resource value: 114
+			public const int AppCompatTheme_viewInflaterClass = 114;
+			
+			// aapt resource value: 115
+			public const int AppCompatTheme_windowActionBar = 115;
+			
+			// aapt resource value: 116
+			public const int AppCompatTheme_windowActionBarOverlay = 116;
+			
+			// aapt resource value: 117
+			public const int AppCompatTheme_windowActionModeOverlay = 117;
+			
+			// aapt resource value: 118
+			public const int AppCompatTheme_windowFixedHeightMajor = 118;
+			
+			// aapt resource value: 119
+			public const int AppCompatTheme_windowFixedHeightMinor = 119;
+			
+			// aapt resource value: 120
+			public const int AppCompatTheme_windowFixedWidthMajor = 120;
+			
+			// aapt resource value: 121
+			public const int AppCompatTheme_windowFixedWidthMinor = 121;
+			
+			// aapt resource value: 122
+			public const int AppCompatTheme_windowMinWidthMajor = 122;
+			
+			// aapt resource value: 123
+			public const int AppCompatTheme_windowMinWidthMinor = 123;
+			
+			// aapt resource value: 124
+			public const int AppCompatTheme_windowNoTitle = 124;
+			
+			// aapt resource value: { 0x7F030034,0x7F0300CC,0x7F0300CD,0x7F0300CE,0x7F0300CF,0x7F0300EE }
+			public static int[] BottomAppBar = new int[] {
+					2130903092,
+					2130903244,
+					2130903245,
+					2130903246,
+					2130903247,
+					2130903278};
+			
+			// aapt resource value: 0
+			public const int BottomAppBar_backgroundTint = 0;
+			
+			// aapt resource value: 1
+			public const int BottomAppBar_fabAlignmentMode = 1;
+			
+			// aapt resource value: 2
+			public const int BottomAppBar_fabCradleMargin = 2;
+			
+			// aapt resource value: 3
+			public const int BottomAppBar_fabCradleRoundedCornerRadius = 3;
+			
+			// aapt resource value: 4
+			public const int BottomAppBar_fabCradleVerticalOffset = 4;
+			
+			// aapt resource value: 5
+			public const int BottomAppBar_hideOnScroll = 5;
+			
+			// aapt resource value: { 0x7F0300BE,0x7F030103,0x7F030105,0x7F030107,0x7F030108,0x7F03010C,0x7F03010D,0x7F03010E,0x7F030110,0x7F030138 }
+			public static int[] BottomNavigationView = new int[] {
+					2130903230,
+					2130903299,
+					2130903301,
+					2130903303,
+					2130903304,
+					2130903308,
+					2130903309,
+					2130903310,
+					2130903312,
+					2130903352};
+			
+			// aapt resource value: 0
+			public const int BottomNavigationView_elevation = 0;
+			
+			// aapt resource value: 1
+			public const int BottomNavigationView_itemBackground = 1;
+			
+			// aapt resource value: 2
+			public const int BottomNavigationView_itemHorizontalTranslationEnabled = 2;
+			
+			// aapt resource value: 3
+			public const int BottomNavigationView_itemIconSize = 3;
+			
+			// aapt resource value: 4
+			public const int BottomNavigationView_itemIconTint = 4;
+			
+			// aapt resource value: 5
+			public const int BottomNavigationView_itemTextAppearanceActive = 5;
+			
+			// aapt resource value: 6
+			public const int BottomNavigationView_itemTextAppearanceInactive = 6;
+			
+			// aapt resource value: 7
+			public const int BottomNavigationView_itemTextColor = 7;
+			
+			// aapt resource value: 8
+			public const int BottomNavigationView_labelVisibilityMode = 8;
+			
+			// aapt resource value: 9
+			public const int BottomNavigationView_menu = 9;
+			
+			// aapt resource value: { 0x7F030038,0x7F030039,0x7F03003B,0x7F03003C }
+			public static int[] BottomSheetBehavior_Layout = new int[] {
+					2130903096,
+					2130903097,
+					2130903099,
+					2130903100};
+			
+			// aapt resource value: 0
+			public const int BottomSheetBehavior_Layout_behavior_fitToContents = 0;
+			
+			// aapt resource value: 1
+			public const int BottomSheetBehavior_Layout_behavior_hideable = 1;
+			
+			// aapt resource value: 2
+			public const int BottomSheetBehavior_Layout_behavior_peekHeight = 2;
+			
+			// aapt resource value: 3
+			public const int BottomSheetBehavior_Layout_behavior_skipCollapsed = 3;
+			
+			// aapt resource value: { 0x7F030026 }
+			public static int[] ButtonBarLayout = new int[] {
+					2130903078};
+			
+			// aapt resource value: 0
+			public const int ButtonBarLayout_allowStacking = 0;
+			
+			// aapt resource value: { 0x101013F,0x1010140,0x7F030059,0x7F03005A,0x7F03005B,0x7F03005C,0x7F03005D,0x7F03005E,0x7F030098,0x7F030099,0x7F03009A,0x7F03009B,0x7F03009C }
+			public static int[] CardView = new int[] {
+					16843071,
+					16843072,
+					2130903129,
+					2130903130,
+					2130903131,
+					2130903132,
+					2130903133,
+					2130903134,
+					2130903192,
+					2130903193,
+					2130903194,
+					2130903195,
+					2130903196};
+			
+			// aapt resource value: 1
+			public const int CardView_android_minHeight = 1;
+			
+			// aapt resource value: 0
+			public const int CardView_android_minWidth = 0;
+			
+			// aapt resource value: 2
+			public const int CardView_cardBackgroundColor = 2;
+			
+			// aapt resource value: 3
+			public const int CardView_cardCornerRadius = 3;
+			
+			// aapt resource value: 4
+			public const int CardView_cardElevation = 4;
+			
+			// aapt resource value: 5
+			public const int CardView_cardMaxElevation = 5;
+			
+			// aapt resource value: 6
+			public const int CardView_cardPreventCornerOverlap = 6;
+			
+			// aapt resource value: 7
+			public const int CardView_cardUseCompatPadding = 7;
+			
+			// aapt resource value: 8
+			public const int CardView_contentPadding = 8;
+			
+			// aapt resource value: 9
+			public const int CardView_contentPaddingBottom = 9;
+			
+			// aapt resource value: 10
+			public const int CardView_contentPaddingLeft = 10;
+			
+			// aapt resource value: 11
+			public const int CardView_contentPaddingRight = 11;
+			
+			// aapt resource value: 12
+			public const int CardView_contentPaddingTop = 12;
+			
+			// aapt resource value: { 0x1010034,0x10100AB,0x101011F,0x101014F,0x10101E5,0x7F030062,0x7F030063,0x7F030064,0x7F030066,0x7F030067,0x7F030068,0x7F03006A,0x7F03006B,0x7F03006C,0x7F03006D,0x7F03006E,0x7F03006F,0x7F030074,0x7F030075,0x7F030076,0x7F030078,0x7F030079,0x7F03007A,0x7F03007B,0x7F03007C,0x7F03007D,0x7F03007E,0x7F0300EC,0x7F0300F6,0x7F0300FA,0x7F03015B,0x7F030167,0x7F0301BC,0x7F0301BF }
+			public static int[] Chip = new int[] {
+					16842804,
+					16842923,
+					16843039,
+					16843087,
+					16843237,
+					2130903138,
+					2130903139,
+					2130903140,
+					2130903142,
+					2130903143,
+					2130903144,
+					2130903146,
+					2130903147,
+					2130903148,
+					2130903149,
+					2130903150,
+					2130903151,
+					2130903156,
+					2130903157,
+					2130903158,
+					2130903160,
+					2130903161,
+					2130903162,
+					2130903163,
+					2130903164,
+					2130903165,
+					2130903166,
+					2130903276,
+					2130903286,
+					2130903290,
+					2130903387,
+					2130903399,
+					2130903484,
+					2130903487};
+			
+			// aapt resource value: { 0x7F030061,0x7F030070,0x7F030071,0x7F030072,0x7F03016B,0x7F03016C }
+			public static int[] ChipGroup = new int[] {
+					2130903137,
+					2130903152,
+					2130903153,
+					2130903154,
+					2130903403,
+					2130903404};
+			
+			// aapt resource value: 0
+			public const int ChipGroup_checkedChip = 0;
+			
+			// aapt resource value: 1
+			public const int ChipGroup_chipSpacing = 1;
+			
+			// aapt resource value: 2
+			public const int ChipGroup_chipSpacingHorizontal = 2;
+			
+			// aapt resource value: 3
+			public const int ChipGroup_chipSpacingVertical = 3;
+			
+			// aapt resource value: 4
+			public const int ChipGroup_singleLine = 4;
+			
+			// aapt resource value: 5
+			public const int ChipGroup_singleSelection = 5;
+			
+			// aapt resource value: 4
+			public const int Chip_android_checkable = 4;
+			
+			// aapt resource value: 1
+			public const int Chip_android_ellipsize = 1;
+			
+			// aapt resource value: 2
+			public const int Chip_android_maxWidth = 2;
+			
+			// aapt resource value: 3
+			public const int Chip_android_text = 3;
+			
+			// aapt resource value: 0
+			public const int Chip_android_textAppearance = 0;
+			
+			// aapt resource value: 5
+			public const int Chip_checkedIcon = 5;
+			
+			// aapt resource value: 6
+			public const int Chip_checkedIconEnabled = 6;
+			
+			// aapt resource value: 7
+			public const int Chip_checkedIconVisible = 7;
+			
+			// aapt resource value: 8
+			public const int Chip_chipBackgroundColor = 8;
+			
+			// aapt resource value: 9
+			public const int Chip_chipCornerRadius = 9;
+			
+			// aapt resource value: 10
+			public const int Chip_chipEndPadding = 10;
+			
+			// aapt resource value: 11
+			public const int Chip_chipIcon = 11;
+			
+			// aapt resource value: 12
+			public const int Chip_chipIconEnabled = 12;
+			
+			// aapt resource value: 13
+			public const int Chip_chipIconSize = 13;
+			
+			// aapt resource value: 14
+			public const int Chip_chipIconTint = 14;
+			
+			// aapt resource value: 15
+			public const int Chip_chipIconVisible = 15;
+			
+			// aapt resource value: 16
+			public const int Chip_chipMinHeight = 16;
+			
+			// aapt resource value: 17
+			public const int Chip_chipStartPadding = 17;
+			
+			// aapt resource value: 18
+			public const int Chip_chipStrokeColor = 18;
+			
+			// aapt resource value: 19
+			public const int Chip_chipStrokeWidth = 19;
+			
+			// aapt resource value: 20
+			public const int Chip_closeIcon = 20;
+			
+			// aapt resource value: 21
+			public const int Chip_closeIconEnabled = 21;
+			
+			// aapt resource value: 22
+			public const int Chip_closeIconEndPadding = 22;
+			
+			// aapt resource value: 23
+			public const int Chip_closeIconSize = 23;
+			
+			// aapt resource value: 24
+			public const int Chip_closeIconStartPadding = 24;
+			
+			// aapt resource value: 25
+			public const int Chip_closeIconTint = 25;
+			
+			// aapt resource value: 26
+			public const int Chip_closeIconVisible = 26;
+			
+			// aapt resource value: 27
+			public const int Chip_hideMotionSpec = 27;
+			
+			// aapt resource value: 28
+			public const int Chip_iconEndPadding = 28;
+			
+			// aapt resource value: 29
+			public const int Chip_iconStartPadding = 29;
+			
+			// aapt resource value: 30
+			public const int Chip_rippleColor = 30;
+			
+			// aapt resource value: 31
+			public const int Chip_showMotionSpec = 31;
+			
+			// aapt resource value: 32
+			public const int Chip_textEndPadding = 32;
+			
+			// aapt resource value: 33
+			public const int Chip_textStartPadding = 33;
+			
+			// aapt resource value: { 0x7F030082,0x7F030083,0x7F03009D,0x7F0300C5,0x7F0300C6,0x7F0300C7,0x7F0300C8,0x7F0300C9,0x7F0300CA,0x7F0300CB,0x7F03015C,0x7F03015E,0x7F03017C,0x7F0301CA,0x7F0301CB,0x7F0301D5 }
+			public static int[] CollapsingToolbarLayout = new int[] {
+					2130903170,
+					2130903171,
+					2130903197,
+					2130903237,
+					2130903238,
+					2130903239,
+					2130903240,
+					2130903241,
+					2130903242,
+					2130903243,
+					2130903388,
+					2130903390,
+					2130903420,
+					2130903498,
+					2130903499,
+					2130903509};
+			
+			// aapt resource value: 0
+			public const int CollapsingToolbarLayout_collapsedTitleGravity = 0;
+			
+			// aapt resource value: 1
+			public const int CollapsingToolbarLayout_collapsedTitleTextAppearance = 1;
+			
+			// aapt resource value: 2
+			public const int CollapsingToolbarLayout_contentScrim = 2;
+			
+			// aapt resource value: 3
+			public const int CollapsingToolbarLayout_expandedTitleGravity = 3;
+			
+			// aapt resource value: 4
+			public const int CollapsingToolbarLayout_expandedTitleMargin = 4;
+			
+			// aapt resource value: 5
+			public const int CollapsingToolbarLayout_expandedTitleMarginBottom = 5;
+			
+			// aapt resource value: 6
+			public const int CollapsingToolbarLayout_expandedTitleMarginEnd = 6;
+			
+			// aapt resource value: 7
+			public const int CollapsingToolbarLayout_expandedTitleMarginStart = 7;
+			
+			// aapt resource value: 8
+			public const int CollapsingToolbarLayout_expandedTitleMarginTop = 8;
+			
+			// aapt resource value: 9
+			public const int CollapsingToolbarLayout_expandedTitleTextAppearance = 9;
+			
+			// aapt resource value: { 0x7F030117,0x7F030118 }
+			public static int[] CollapsingToolbarLayout_Layout = new int[] {
+					2130903319,
+					2130903320};
+			
+			// aapt resource value: 0
+			public const int CollapsingToolbarLayout_Layout_layout_collapseMode = 0;
+			
+			// aapt resource value: 1
+			public const int CollapsingToolbarLayout_Layout_layout_collapseParallaxMultiplier = 1;
+			
+			// aapt resource value: 10
+			public const int CollapsingToolbarLayout_scrimAnimationDuration = 10;
+			
+			// aapt resource value: 11
+			public const int CollapsingToolbarLayout_scrimVisibleHeightTrigger = 11;
+			
+			// aapt resource value: 12
+			public const int CollapsingToolbarLayout_statusBarScrim = 12;
+			
+			// aapt resource value: 13
+			public const int CollapsingToolbarLayout_title = 13;
+			
+			// aapt resource value: 14
+			public const int CollapsingToolbarLayout_titleEnabled = 14;
+			
+			// aapt resource value: 15
+			public const int CollapsingToolbarLayout_toolbarId = 15;
+			
+			// aapt resource value: { 0x10101A5,0x101031F,0x7F030027 }
+			public static int[] ColorStateListItem = new int[] {
+					16843173,
+					16843551,
+					2130903079};
+			
+			// aapt resource value: 2
+			public const int ColorStateListItem_alpha = 2;
+			
+			// aapt resource value: 1
+			public const int ColorStateListItem_android_alpha = 1;
+			
+			// aapt resource value: 0
+			public const int ColorStateListItem_android_color = 0;
+			
+			// aapt resource value: { 0x1010107,0x7F030051,0x7F030057,0x7F030058 }
+			public static int[] CompoundButton = new int[] {
+					16843015,
+					2130903121,
+					2130903127,
+					2130903128};
+			
+			// aapt resource value: 0
+			public const int CompoundButton_android_button = 0;
+			
+			// aapt resource value: 1
+			public const int CompoundButton_buttonCompat = 1;
+			
+			// aapt resource value: 2
+			public const int CompoundButton_buttonTint = 2;
+			
+			// aapt resource value: 3
+			public const int CompoundButton_buttonTintMode = 3;
+			
+			// aapt resource value: { 0x7F03010F,0x7F03017B }
+			public static int[] CoordinatorLayout = new int[] {
+					2130903311,
+					2130903419};
+			
+			// aapt resource value: 0
+			public const int CoordinatorLayout_keylines = 0;
+			
+			// aapt resource value: { 0x10100B3,0x7F030114,0x7F030115,0x7F030116,0x7F030119,0x7F03011A,0x7F03011B }
+			public static int[] CoordinatorLayout_Layout = new int[] {
+					16842931,
+					2130903316,
+					2130903317,
+					2130903318,
+					2130903321,
+					2130903322,
+					2130903323};
+			
+			// aapt resource value: 0
+			public const int CoordinatorLayout_Layout_android_layout_gravity = 0;
+			
+			// aapt resource value: 1
+			public const int CoordinatorLayout_Layout_layout_anchor = 1;
+			
+			// aapt resource value: 2
+			public const int CoordinatorLayout_Layout_layout_anchorGravity = 2;
+			
+			// aapt resource value: 3
+			public const int CoordinatorLayout_Layout_layout_behavior = 3;
+			
+			// aapt resource value: 4
+			public const int CoordinatorLayout_Layout_layout_dodgeInsetEdges = 4;
+			
+			// aapt resource value: 5
+			public const int CoordinatorLayout_Layout_layout_insetEdge = 5;
+			
+			// aapt resource value: 6
+			public const int CoordinatorLayout_Layout_layout_keyline = 6;
+			
+			// aapt resource value: 1
+			public const int CoordinatorLayout_statusBarBackground = 1;
+			
+			// aapt resource value: { 0x7F030041,0x7F030042 }
+			public static int[] DesignTheme = new int[] {
+					2130903105,
+					2130903106};
+			
+			// aapt resource value: 0
+			public const int DesignTheme_bottomSheetDialogTheme = 0;
+			
+			// aapt resource value: 1
+			public const int DesignTheme_bottomSheetStyle = 1;
+			
+			// aapt resource value: { 0x7F030029,0x7F03002A,0x7F030036,0x7F030084,0x7F0300B3,0x7F0300E5,0x7F030170,0x7F0301C1 }
+			public static int[] DrawerArrowToggle = new int[] {
+					2130903081,
+					2130903082,
+					2130903094,
+					2130903172,
+					2130903219,
+					2130903269,
+					2130903408,
+					2130903489};
+			
+			// aapt resource value: 0
+			public const int DrawerArrowToggle_arrowHeadLength = 0;
+			
+			// aapt resource value: 1
+			public const int DrawerArrowToggle_arrowShaftLength = 1;
+			
+			// aapt resource value: 2
+			public const int DrawerArrowToggle_barLength = 2;
+			
+			// aapt resource value: 3
+			public const int DrawerArrowToggle_color = 3;
+			
+			// aapt resource value: 4
+			public const int DrawerArrowToggle_drawableSize = 4;
+			
+			// aapt resource value: 5
+			public const int DrawerArrowToggle_gapBetweenBars = 5;
+			
+			// aapt resource value: 6
+			public const int DrawerArrowToggle_spinBars = 6;
+			
+			// aapt resource value: 7
+			public const int DrawerArrowToggle_thickness = 7;
+			
+			// aapt resource value: { 0x7F030034,0x7F030035,0x7F03003D,0x7F0300BE,0x7F0300D0,0x7F0300D1,0x7F0300EC,0x7F0300F4,0x7F030136,0x7F030150,0x7F03015B,0x7F030167,0x7F0301DF }
+			public static int[] FloatingActionButton = new int[] {
+					2130903092,
+					2130903093,
+					2130903101,
+					2130903230,
+					2130903248,
+					2130903249,
+					2130903276,
+					2130903284,
+					2130903350,
+					2130903376,
+					2130903387,
+					2130903399,
+					2130903519};
+			
+			// aapt resource value: 0
+			public const int FloatingActionButton_backgroundTint = 0;
+			
+			// aapt resource value: 1
+			public const int FloatingActionButton_backgroundTintMode = 1;
+			
+			// aapt resource value: { 0x7F030037 }
+			public static int[] FloatingActionButton_Behavior_Layout = new int[] {
+					2130903095};
+			
+			// aapt resource value: 0
+			public const int FloatingActionButton_Behavior_Layout_behavior_autoHide = 0;
+			
+			// aapt resource value: 2
+			public const int FloatingActionButton_borderWidth = 2;
+			
+			// aapt resource value: 3
+			public const int FloatingActionButton_elevation = 3;
+			
+			// aapt resource value: 4
+			public const int FloatingActionButton_fabCustomSize = 4;
+			
+			// aapt resource value: 5
+			public const int FloatingActionButton_fabSize = 5;
+			
+			// aapt resource value: 6
+			public const int FloatingActionButton_hideMotionSpec = 6;
+			
+			// aapt resource value: 7
+			public const int FloatingActionButton_hoveredFocusedTranslationZ = 7;
+			
+			// aapt resource value: 8
+			public const int FloatingActionButton_maxImageSize = 8;
+			
+			// aapt resource value: 9
+			public const int FloatingActionButton_pressedTranslationZ = 9;
+			
+			// aapt resource value: 10
+			public const int FloatingActionButton_rippleColor = 10;
+			
+			// aapt resource value: 11
+			public const int FloatingActionButton_showMotionSpec = 11;
+			
+			// aapt resource value: 12
+			public const int FloatingActionButton_useCompatPadding = 12;
+			
+			// aapt resource value: { 0x7F03010A,0x7F030120 }
+			public static int[] FlowLayout = new int[] {
+					2130903306,
+					2130903328};
+			
+			// aapt resource value: 0
+			public const int FlowLayout_itemSpacing = 0;
+			
+			// aapt resource value: 1
+			public const int FlowLayout_lineSpacing = 1;
+			
+			// aapt resource value: { 0x7F0300DB,0x7F0300DC,0x7F0300DD,0x7F0300DE,0x7F0300DF,0x7F0300E0 }
+			public static int[] FontFamily = new int[] {
+					2130903259,
+					2130903260,
+					2130903261,
+					2130903262,
+					2130903263,
+					2130903264};
+			
+			// aapt resource value: { 0x1010532,0x1010533,0x101053F,0x101056F,0x1010570,0x7F0300D9,0x7F0300E1,0x7F0300E2,0x7F0300E3,0x7F0301DE }
+			public static int[] FontFamilyFont = new int[] {
+					16844082,
+					16844083,
+					16844095,
+					16844143,
+					16844144,
+					2130903257,
+					2130903265,
+					2130903266,
+					2130903267,
+					2130903518};
+			
+			// aapt resource value: 0
+			public const int FontFamilyFont_android_font = 0;
+			
+			// aapt resource value: 2
+			public const int FontFamilyFont_android_fontStyle = 2;
+			
+			// aapt resource value: 4
+			public const int FontFamilyFont_android_fontVariationSettings = 4;
+			
+			// aapt resource value: 1
+			public const int FontFamilyFont_android_fontWeight = 1;
+			
+			// aapt resource value: 3
+			public const int FontFamilyFont_android_ttcIndex = 3;
+			
+			// aapt resource value: 5
+			public const int FontFamilyFont_font = 5;
+			
+			// aapt resource value: 6
+			public const int FontFamilyFont_fontStyle = 6;
+			
+			// aapt resource value: 7
+			public const int FontFamilyFont_fontVariationSettings = 7;
+			
+			// aapt resource value: 8
+			public const int FontFamilyFont_fontWeight = 8;
+			
+			// aapt resource value: 9
+			public const int FontFamilyFont_ttcIndex = 9;
+			
+			// aapt resource value: 0
+			public const int FontFamily_fontProviderAuthority = 0;
+			
+			// aapt resource value: 1
+			public const int FontFamily_fontProviderCerts = 1;
+			
+			// aapt resource value: 2
+			public const int FontFamily_fontProviderFetchStrategy = 2;
+			
+			// aapt resource value: 3
+			public const int FontFamily_fontProviderFetchTimeout = 3;
+			
+			// aapt resource value: 4
+			public const int FontFamily_fontProviderPackage = 4;
+			
+			// aapt resource value: 5
+			public const int FontFamily_fontProviderQuery = 5;
+			
+			// aapt resource value: { 0x1010109,0x1010200,0x7F0300E4 }
+			public static int[] ForegroundLinearLayout = new int[] {
+					16843017,
+					16843264,
+					2130903268};
+			
+			// aapt resource value: 0
+			public const int ForegroundLinearLayout_android_foreground = 0;
+			
+			// aapt resource value: 1
+			public const int ForegroundLinearLayout_android_foregroundGravity = 1;
+			
+			// aapt resource value: 2
+			public const int ForegroundLinearLayout_foregroundInsidePadding = 2;
+			
+			// aapt resource value: { 0x101019D,0x101019E,0x10101A1,0x10101A2,0x10101A3,0x10101A4,0x1010201,0x101020B,0x1010510,0x1010511,0x1010512,0x1010513 }
+			public static int[] GradientColor = new int[] {
+					16843165,
+					16843166,
+					16843169,
+					16843170,
+					16843171,
+					16843172,
+					16843265,
+					16843275,
+					16844048,
+					16844049,
+					16844050,
+					16844051};
+			
+			// aapt resource value: { 0x10101A5,0x1010514 }
+			public static int[] GradientColorItem = new int[] {
+					16843173,
+					16844052};
+			
+			// aapt resource value: 0
+			public const int GradientColorItem_android_color = 0;
+			
+			// aapt resource value: 1
+			public const int GradientColorItem_android_offset = 1;
+			
+			// aapt resource value: 7
+			public const int GradientColor_android_centerColor = 7;
+			
+			// aapt resource value: 3
+			public const int GradientColor_android_centerX = 3;
+			
+			// aapt resource value: 4
+			public const int GradientColor_android_centerY = 4;
+			
+			// aapt resource value: 1
+			public const int GradientColor_android_endColor = 1;
+			
+			// aapt resource value: 10
+			public const int GradientColor_android_endX = 10;
+			
+			// aapt resource value: 11
+			public const int GradientColor_android_endY = 11;
+			
+			// aapt resource value: 5
+			public const int GradientColor_android_gradientRadius = 5;
+			
+			// aapt resource value: 0
+			public const int GradientColor_android_startColor = 0;
+			
+			// aapt resource value: 8
+			public const int GradientColor_android_startX = 8;
+			
+			// aapt resource value: 9
+			public const int GradientColor_android_startY = 9;
+			
+			// aapt resource value: 6
+			public const int GradientColor_android_tileMode = 6;
+			
+			// aapt resource value: 2
+			public const int GradientColor_android_type = 2;
+			
+			// aapt resource value: { 0x10100AF,0x10100C4,0x1010126,0x1010127,0x1010128,0x7F0300AB,0x7F0300AD,0x7F030137,0x7F030166 }
+			public static int[] LinearLayoutCompat = new int[] {
+					16842927,
+					16842948,
+					16843046,
+					16843047,
+					16843048,
+					2130903211,
+					2130903213,
+					2130903351,
+					2130903398};
+			
+			// aapt resource value: 2
+			public const int LinearLayoutCompat_android_baselineAligned = 2;
+			
+			// aapt resource value: 3
+			public const int LinearLayoutCompat_android_baselineAlignedChildIndex = 3;
+			
+			// aapt resource value: 0
+			public const int LinearLayoutCompat_android_gravity = 0;
+			
+			// aapt resource value: 1
+			public const int LinearLayoutCompat_android_orientation = 1;
+			
+			// aapt resource value: 4
+			public const int LinearLayoutCompat_android_weightSum = 4;
+			
+			// aapt resource value: 5
+			public const int LinearLayoutCompat_divider = 5;
+			
+			// aapt resource value: 6
+			public const int LinearLayoutCompat_dividerPadding = 6;
+			
+			// aapt resource value: { 0x10100B3,0x10100F4,0x10100F5,0x1010181 }
+			public static int[] LinearLayoutCompat_Layout = new int[] {
+					16842931,
+					16842996,
+					16842997,
+					16843137};
+			
+			// aapt resource value: 0
+			public const int LinearLayoutCompat_Layout_android_layout_gravity = 0;
+			
+			// aapt resource value: 2
+			public const int LinearLayoutCompat_Layout_android_layout_height = 2;
+			
+			// aapt resource value: 3
+			public const int LinearLayoutCompat_Layout_android_layout_weight = 3;
+			
+			// aapt resource value: 1
+			public const int LinearLayoutCompat_Layout_android_layout_width = 1;
+			
+			// aapt resource value: 7
+			public const int LinearLayoutCompat_measureWithLargestChild = 7;
+			
+			// aapt resource value: 8
+			public const int LinearLayoutCompat_showDividers = 8;
+			
+			// aapt resource value: { 0x10102AC,0x10102AD }
+			public static int[] ListPopupWindow = new int[] {
+					16843436,
+					16843437};
+			
+			// aapt resource value: 0
+			public const int ListPopupWindow_android_dropDownHorizontalOffset = 0;
+			
+			// aapt resource value: 1
+			public const int ListPopupWindow_android_dropDownVerticalOffset = 1;
+			
+			// aapt resource value: { 0x10101B7,0x10101B8,0x10101B9,0x10101BA,0x7F030034,0x7F030035,0x7F0300A0,0x7F0300F5,0x7F0300F7,0x7F0300F8,0x7F0300F9,0x7F0300FB,0x7F0300FC,0x7F03015B,0x7F03017D,0x7F03017E }
+			public static int[] MaterialButton = new int[] {
+					16843191,
+					16843192,
+					16843193,
+					16843194,
+					2130903092,
+					2130903093,
+					2130903200,
+					2130903285,
+					2130903287,
+					2130903288,
+					2130903289,
+					2130903291,
+					2130903292,
+					2130903387,
+					2130903421,
+					2130903422};
+			
+			// aapt resource value: 3
+			public const int MaterialButton_android_insetBottom = 3;
+			
+			// aapt resource value: 0
+			public const int MaterialButton_android_insetLeft = 0;
+			
+			// aapt resource value: 1
+			public const int MaterialButton_android_insetRight = 1;
+			
+			// aapt resource value: 2
+			public const int MaterialButton_android_insetTop = 2;
+			
+			// aapt resource value: 4
+			public const int MaterialButton_backgroundTint = 4;
+			
+			// aapt resource value: 5
+			public const int MaterialButton_backgroundTintMode = 5;
+			
+			// aapt resource value: 6
+			public const int MaterialButton_cornerRadius = 6;
+			
+			// aapt resource value: 7
+			public const int MaterialButton_icon = 7;
+			
+			// aapt resource value: 8
+			public const int MaterialButton_iconGravity = 8;
+			
+			// aapt resource value: 9
+			public const int MaterialButton_iconPadding = 9;
+			
+			// aapt resource value: 10
+			public const int MaterialButton_iconSize = 10;
+			
+			// aapt resource value: 11
+			public const int MaterialButton_iconTint = 11;
+			
+			// aapt resource value: 12
+			public const int MaterialButton_iconTintMode = 12;
+			
+			// aapt resource value: 13
+			public const int MaterialButton_rippleColor = 13;
+			
+			// aapt resource value: 14
+			public const int MaterialButton_strokeColor = 14;
+			
+			// aapt resource value: 15
+			public const int MaterialButton_strokeWidth = 15;
+			
+			// aapt resource value: { 0x7F03017D,0x7F03017E }
+			public static int[] MaterialCardView = new int[] {
+					2130903421,
+					2130903422};
+			
+			// aapt resource value: 0
+			public const int MaterialCardView_strokeColor = 0;
+			
+			// aapt resource value: 1
+			public const int MaterialCardView_strokeWidth = 1;
+			
+			// aapt resource value: { 0x7F030041,0x7F030042,0x7F030069,0x7F030073,0x7F030077,0x7F030085,0x7F030086,0x7F03008C,0x7F03008D,0x7F03008E,0x7F0300BD,0x7F0300D8,0x7F030132,0x7F030133,0x7F03013D,0x7F03015D,0x7F03016D,0x7F0301A0,0x7F0301A5,0x7F0301A6,0x7F0301A7,0x7F0301A8,0x7F0301A9,0x7F0301AA,0x7F0301AB,0x7F0301AC,0x7F0301AD,0x7F0301AE,0x7F0301B3,0x7F0301B8,0x7F0301B9,0x7F0301BD }
+			public static int[] MaterialComponentsTheme = new int[] {
+					2130903105,
+					2130903106,
+					2130903145,
+					2130903155,
+					2130903159,
+					2130903173,
+					2130903174,
+					2130903180,
+					2130903181,
+					2130903182,
+					2130903229,
+					2130903256,
+					2130903346,
+					2130903347,
+					2130903357,
+					2130903389,
+					2130903405,
+					2130903456,
+					2130903461,
+					2130903462,
+					2130903463,
+					2130903464,
+					2130903465,
+					2130903466,
+					2130903467,
+					2130903468,
+					2130903469,
+					2130903470,
+					2130903475,
+					2130903480,
+					2130903481,
+					2130903485};
+			
+			// aapt resource value: 0
+			public const int MaterialComponentsTheme_bottomSheetDialogTheme = 0;
+			
+			// aapt resource value: 1
+			public const int MaterialComponentsTheme_bottomSheetStyle = 1;
+			
+			// aapt resource value: 2
+			public const int MaterialComponentsTheme_chipGroupStyle = 2;
+			
+			// aapt resource value: 3
+			public const int MaterialComponentsTheme_chipStandaloneStyle = 3;
+			
+			// aapt resource value: 4
+			public const int MaterialComponentsTheme_chipStyle = 4;
+			
+			// aapt resource value: 5
+			public const int MaterialComponentsTheme_colorAccent = 5;
+			
+			// aapt resource value: 6
+			public const int MaterialComponentsTheme_colorBackgroundFloating = 6;
+			
+			// aapt resource value: 7
+			public const int MaterialComponentsTheme_colorPrimary = 7;
+			
+			// aapt resource value: 8
+			public const int MaterialComponentsTheme_colorPrimaryDark = 8;
+			
+			// aapt resource value: 9
+			public const int MaterialComponentsTheme_colorSecondary = 9;
+			
+			// aapt resource value: 10
+			public const int MaterialComponentsTheme_editTextStyle = 10;
+			
+			// aapt resource value: 11
+			public const int MaterialComponentsTheme_floatingActionButtonStyle = 11;
+			
+			// aapt resource value: 12
+			public const int MaterialComponentsTheme_materialButtonStyle = 12;
+			
+			// aapt resource value: 13
+			public const int MaterialComponentsTheme_materialCardViewStyle = 13;
+			
+			// aapt resource value: 14
+			public const int MaterialComponentsTheme_navigationViewStyle = 14;
+			
+			// aapt resource value: 15
+			public const int MaterialComponentsTheme_scrimBackground = 15;
+			
+			// aapt resource value: 16
+			public const int MaterialComponentsTheme_snackbarButtonStyle = 16;
+			
+			// aapt resource value: 17
+			public const int MaterialComponentsTheme_tabStyle = 17;
+			
+			// aapt resource value: 18
+			public const int MaterialComponentsTheme_textAppearanceBody1 = 18;
+			
+			// aapt resource value: 19
+			public const int MaterialComponentsTheme_textAppearanceBody2 = 19;
+			
+			// aapt resource value: 20
+			public const int MaterialComponentsTheme_textAppearanceButton = 20;
+			
+			// aapt resource value: 21
+			public const int MaterialComponentsTheme_textAppearanceCaption = 21;
+			
+			// aapt resource value: 22
+			public const int MaterialComponentsTheme_textAppearanceHeadline1 = 22;
+			
+			// aapt resource value: 23
+			public const int MaterialComponentsTheme_textAppearanceHeadline2 = 23;
+			
+			// aapt resource value: 24
+			public const int MaterialComponentsTheme_textAppearanceHeadline3 = 24;
+			
+			// aapt resource value: 25
+			public const int MaterialComponentsTheme_textAppearanceHeadline4 = 25;
+			
+			// aapt resource value: 26
+			public const int MaterialComponentsTheme_textAppearanceHeadline5 = 26;
+			
+			// aapt resource value: 27
+			public const int MaterialComponentsTheme_textAppearanceHeadline6 = 27;
+			
+			// aapt resource value: 28
+			public const int MaterialComponentsTheme_textAppearanceOverline = 28;
+			
+			// aapt resource value: 29
+			public const int MaterialComponentsTheme_textAppearanceSubtitle1 = 29;
+			
+			// aapt resource value: 30
+			public const int MaterialComponentsTheme_textAppearanceSubtitle2 = 30;
+			
+			// aapt resource value: 31
+			public const int MaterialComponentsTheme_textInputStyle = 31;
+			
+			// aapt resource value: { 0x101000E,0x10100D0,0x1010194,0x10101DE,0x10101DF,0x10101E0 }
+			public static int[] MenuGroup = new int[] {
+					16842766,
+					16842960,
+					16843156,
+					16843230,
+					16843231,
+					16843232};
+			
+			// aapt resource value: 5
+			public const int MenuGroup_android_checkableBehavior = 5;
+			
+			// aapt resource value: 0
+			public const int MenuGroup_android_enabled = 0;
+			
+			// aapt resource value: 1
+			public const int MenuGroup_android_id = 1;
+			
+			// aapt resource value: 3
+			public const int MenuGroup_android_menuCategory = 3;
+			
+			// aapt resource value: 4
+			public const int MenuGroup_android_orderInCategory = 4;
+			
+			// aapt resource value: 2
+			public const int MenuGroup_android_visible = 2;
+			
+			// aapt resource value: { 0x1010002,0x101000E,0x10100D0,0x1010106,0x1010194,0x10101DE,0x10101DF,0x10101E1,0x10101E2,0x10101E3,0x10101E4,0x10101E5,0x101026F,0x7F03000D,0x7F03001F,0x7F030020,0x7F030028,0x7F030091,0x7F0300FB,0x7F0300FC,0x7F03013E,0x7F030165,0x7F0301DA }
+			public static int[] MenuItem = new int[] {
+					16842754,
+					16842766,
+					16842960,
+					16843014,
+					16843156,
+					16843230,
+					16843231,
+					16843233,
+					16843234,
+					16843235,
+					16843236,
+					16843237,
+					16843375,
+					2130903053,
+					2130903071,
+					2130903072,
+					2130903080,
+					2130903185,
+					2130903291,
+					2130903292,
+					2130903358,
+					2130903397,
+					2130903514};
+			
+			// aapt resource value: 13
+			public const int MenuItem_actionLayout = 13;
+			
+			// aapt resource value: 14
+			public const int MenuItem_actionProviderClass = 14;
+			
+			// aapt resource value: 15
+			public const int MenuItem_actionViewClass = 15;
+			
+			// aapt resource value: 16
+			public const int MenuItem_alphabeticModifiers = 16;
+			
+			// aapt resource value: 9
+			public const int MenuItem_android_alphabeticShortcut = 9;
+			
+			// aapt resource value: 11
+			public const int MenuItem_android_checkable = 11;
+			
+			// aapt resource value: 3
+			public const int MenuItem_android_checked = 3;
+			
+			// aapt resource value: 1
+			public const int MenuItem_android_enabled = 1;
+			
+			// aapt resource value: 0
+			public const int MenuItem_android_icon = 0;
+			
+			// aapt resource value: 2
+			public const int MenuItem_android_id = 2;
+			
+			// aapt resource value: 5
+			public const int MenuItem_android_menuCategory = 5;
+			
+			// aapt resource value: 10
+			public const int MenuItem_android_numericShortcut = 10;
+			
+			// aapt resource value: 12
+			public const int MenuItem_android_onClick = 12;
+			
+			// aapt resource value: 6
+			public const int MenuItem_android_orderInCategory = 6;
+			
+			// aapt resource value: 7
+			public const int MenuItem_android_title = 7;
+			
+			// aapt resource value: 8
+			public const int MenuItem_android_titleCondensed = 8;
+			
+			// aapt resource value: 4
+			public const int MenuItem_android_visible = 4;
+			
+			// aapt resource value: 17
+			public const int MenuItem_contentDescription = 17;
+			
+			// aapt resource value: 18
+			public const int MenuItem_iconTint = 18;
+			
+			// aapt resource value: 19
+			public const int MenuItem_iconTintMode = 19;
+			
+			// aapt resource value: 20
+			public const int MenuItem_numericModifiers = 20;
+			
+			// aapt resource value: 21
+			public const int MenuItem_showAsAction = 21;
+			
+			// aapt resource value: 22
+			public const int MenuItem_tooltipText = 22;
+			
+			// aapt resource value: { 0x10100AE,0x101012C,0x101012D,0x101012E,0x101012F,0x1010130,0x1010131,0x7F03014F,0x7F03017F }
+			public static int[] MenuView = new int[] {
+					16842926,
+					16843052,
+					16843053,
+					16843054,
+					16843055,
+					16843056,
+					16843057,
+					2130903375,
+					2130903423};
+			
+			// aapt resource value: 4
+			public const int MenuView_android_headerBackground = 4;
+			
+			// aapt resource value: 2
+			public const int MenuView_android_horizontalDivider = 2;
+			
+			// aapt resource value: 5
+			public const int MenuView_android_itemBackground = 5;
+			
+			// aapt resource value: 6
+			public const int MenuView_android_itemIconDisabledAlpha = 6;
+			
+			// aapt resource value: 1
+			public const int MenuView_android_itemTextAppearance = 1;
+			
+			// aapt resource value: 3
+			public const int MenuView_android_verticalDivider = 3;
+			
+			// aapt resource value: 0
+			public const int MenuView_android_windowAnimationStyle = 0;
+			
+			// aapt resource value: 7
+			public const int MenuView_preserveIconSpacing = 7;
+			
+			// aapt resource value: 8
+			public const int MenuView_subMenuArrow = 8;
+			
+			// aapt resource value: { 0x10100D4,0x10100DD,0x101011F,0x7F0300BE,0x7F0300E7,0x7F030103,0x7F030104,0x7F030106,0x7F030108,0x7F03010B,0x7F03010E,0x7F030138 }
+			public static int[] NavigationView = new int[] {
+					16842964,
+					16842973,
+					16843039,
+					2130903230,
+					2130903271,
+					2130903299,
+					2130903300,
+					2130903302,
+					2130903304,
+					2130903307,
+					2130903310,
+					2130903352};
+			
+			// aapt resource value: 0
+			public const int NavigationView_android_background = 0;
+			
+			// aapt resource value: 1
+			public const int NavigationView_android_fitsSystemWindows = 1;
+			
+			// aapt resource value: 2
+			public const int NavigationView_android_maxWidth = 2;
+			
+			// aapt resource value: 3
+			public const int NavigationView_elevation = 3;
+			
+			// aapt resource value: 4
+			public const int NavigationView_headerLayout = 4;
+			
+			// aapt resource value: 5
+			public const int NavigationView_itemBackground = 5;
+			
+			// aapt resource value: 6
+			public const int NavigationView_itemHorizontalPadding = 6;
+			
+			// aapt resource value: 7
+			public const int NavigationView_itemIconPadding = 7;
+			
+			// aapt resource value: 8
+			public const int NavigationView_itemIconTint = 8;
+			
+			// aapt resource value: 9
+			public const int NavigationView_itemTextAppearance = 9;
+			
+			// aapt resource value: 10
+			public const int NavigationView_itemTextColor = 10;
+			
+			// aapt resource value: 11
+			public const int NavigationView_menu = 11;
+			
+			// aapt resource value: { 0x1010176,0x10102C9,0x7F03013F }
+			public static int[] PopupWindow = new int[] {
+					16843126,
+					16843465,
+					2130903359};
+			
+			// aapt resource value: { 0x7F030176 }
+			public static int[] PopupWindowBackgroundState = new int[] {
+					2130903414};
+			
+			// aapt resource value: 0
+			public const int PopupWindowBackgroundState_state_above_anchor = 0;
+			
+			// aapt resource value: 1
+			public const int PopupWindow_android_popupAnimationStyle = 1;
+			
+			// aapt resource value: 0
+			public const int PopupWindow_android_popupBackground = 0;
+			
+			// aapt resource value: 2
+			public const int PopupWindow_overlapAnchor = 2;
+			
+			// aapt resource value: { 0x7F030140,0x7F030143 }
+			public static int[] RecycleListView = new int[] {
+					2130903360,
+					2130903363};
+			
+			// aapt resource value: 0
+			public const int RecycleListView_paddingBottomNoButtons = 0;
+			
+			// aapt resource value: 1
+			public const int RecycleListView_paddingTopNoTitle = 1;
+			
+			// aapt resource value: { 0x10100C4,0x10100EB,0x10100F1,0x7F0300D2,0x7F0300D3,0x7F0300D4,0x7F0300D5,0x7F0300D6,0x7F030113,0x7F03015A,0x7F03016F,0x7F030175 }
+			public static int[] RecyclerView = new int[] {
+					16842948,
+					16842987,
+					16842993,
+					2130903250,
+					2130903251,
+					2130903252,
+					2130903253,
+					2130903254,
+					2130903315,
+					2130903386,
+					2130903407,
+					2130903413};
+			
+			// aapt resource value: 1
+			public const int RecyclerView_android_clipToPadding = 1;
+			
+			// aapt resource value: 2
+			public const int RecyclerView_android_descendantFocusability = 2;
+			
+			// aapt resource value: 0
+			public const int RecyclerView_android_orientation = 0;
+			
+			// aapt resource value: 3
+			public const int RecyclerView_fastScrollEnabled = 3;
+			
+			// aapt resource value: 4
+			public const int RecyclerView_fastScrollHorizontalThumbDrawable = 4;
+			
+			// aapt resource value: 5
+			public const int RecyclerView_fastScrollHorizontalTrackDrawable = 5;
+			
+			// aapt resource value: 6
+			public const int RecyclerView_fastScrollVerticalThumbDrawable = 6;
+			
+			// aapt resource value: 7
+			public const int RecyclerView_fastScrollVerticalTrackDrawable = 7;
+			
+			// aapt resource value: 8
+			public const int RecyclerView_layoutManager = 8;
+			
+			// aapt resource value: 9
+			public const int RecyclerView_reverseLayout = 9;
+			
+			// aapt resource value: 10
+			public const int RecyclerView_spanCount = 10;
+			
+			// aapt resource value: 11
+			public const int RecyclerView_stackFromEnd = 11;
+			
+			// aapt resource value: { 0x7F030101 }
+			public static int[] ScrimInsetsFrameLayout = new int[] {
+					2130903297};
+			
+			// aapt resource value: 0
+			public const int ScrimInsetsFrameLayout_insetForeground = 0;
+			
+			// aapt resource value: { 0x7F03003A }
+			public static int[] ScrollingViewBehavior_Layout = new int[] {
+					2130903098};
+			
+			// aapt resource value: 0
+			public const int ScrollingViewBehavior_Layout_behavior_overlapTop = 0;
+			
+			// aapt resource value: { 0x10100DA,0x101011F,0x1010220,0x1010264,0x7F030078,0x7F030090,0x7F0300A6,0x7F0300E6,0x7F0300FD,0x7F030112,0x7F030153,0x7F030154,0x7F03015F,0x7F030160,0x7F030180,0x7F030185,0x7F0301E1 }
+			public static int[] SearchView = new int[] {
+					16842970,
+					16843039,
+					16843296,
+					16843364,
+					2130903160,
+					2130903184,
+					2130903206,
+					2130903270,
+					2130903293,
+					2130903314,
+					2130903379,
+					2130903380,
+					2130903391,
+					2130903392,
+					2130903424,
+					2130903429,
+					2130903521};
+			
+			// aapt resource value: 0
+			public const int SearchView_android_focusable = 0;
+			
+			// aapt resource value: 3
+			public const int SearchView_android_imeOptions = 3;
+			
+			// aapt resource value: 2
+			public const int SearchView_android_inputType = 2;
+			
+			// aapt resource value: 1
+			public const int SearchView_android_maxWidth = 1;
+			
+			// aapt resource value: 4
+			public const int SearchView_closeIcon = 4;
+			
+			// aapt resource value: 5
+			public const int SearchView_commitIcon = 5;
+			
+			// aapt resource value: 6
+			public const int SearchView_defaultQueryHint = 6;
+			
+			// aapt resource value: 7
+			public const int SearchView_goIcon = 7;
+			
+			// aapt resource value: 8
+			public const int SearchView_iconifiedByDefault = 8;
+			
+			// aapt resource value: 9
+			public const int SearchView_layout = 9;
+			
+			// aapt resource value: 10
+			public const int SearchView_queryBackground = 10;
+			
+			// aapt resource value: 11
+			public const int SearchView_queryHint = 11;
+			
+			// aapt resource value: 12
+			public const int SearchView_searchHintIcon = 12;
+			
+			// aapt resource value: 13
+			public const int SearchView_searchIcon = 13;
+			
+			// aapt resource value: 14
+			public const int SearchView_submitBackground = 14;
+			
+			// aapt resource value: 15
+			public const int SearchView_suggestionRowLayout = 15;
+			
+			// aapt resource value: 16
+			public const int SearchView_voiceIcon = 16;
+			
+			// aapt resource value: { 0x7F03016D,0x7F03016E }
+			public static int[] Snackbar = new int[] {
+					2130903405,
+					2130903406};
+			
+			// aapt resource value: { 0x101011F,0x7F0300BE,0x7F030134 }
+			public static int[] SnackbarLayout = new int[] {
+					16843039,
+					2130903230,
+					2130903348};
+			
+			// aapt resource value: 0
+			public const int SnackbarLayout_android_maxWidth = 0;
+			
+			// aapt resource value: 1
+			public const int SnackbarLayout_elevation = 1;
+			
+			// aapt resource value: 2
+			public const int SnackbarLayout_maxActionInlineWidth = 2;
+			
+			// aapt resource value: 0
+			public const int Snackbar_snackbarButtonStyle = 0;
+			
+			// aapt resource value: 1
+			public const int Snackbar_snackbarStyle = 1;
+			
+			// aapt resource value: { 0x10100B2,0x1010176,0x101017B,0x1010262,0x7F03014D }
+			public static int[] Spinner = new int[] {
+					16842930,
+					16843126,
+					16843131,
+					16843362,
+					2130903373};
+			
+			// aapt resource value: 3
+			public const int Spinner_android_dropDownWidth = 3;
+			
+			// aapt resource value: 0
+			public const int Spinner_android_entries = 0;
+			
+			// aapt resource value: 1
+			public const int Spinner_android_popupBackground = 1;
+			
+			// aapt resource value: 2
+			public const int Spinner_android_prompt = 2;
+			
+			// aapt resource value: 4
+			public const int Spinner_popupTheme = 4;
+			
+			// aapt resource value: { 0x101011C,0x1010194,0x1010195,0x1010196,0x101030C,0x101030D }
+			public static int[] StateListDrawable = new int[] {
+					16843036,
+					16843156,
+					16843157,
+					16843158,
+					16843532,
+					16843533};
+			
+			// aapt resource value: { 0x1010199 }
+			public static int[] StateListDrawableItem = new int[] {
+					16843161};
+			
+			// aapt resource value: 0
+			public const int StateListDrawableItem_android_drawable = 0;
+			
+			// aapt resource value: 3
+			public const int StateListDrawable_android_constantSize = 3;
+			
+			// aapt resource value: 0
+			public const int StateListDrawable_android_dither = 0;
+			
+			// aapt resource value: 4
+			public const int StateListDrawable_android_enterFadeDuration = 4;
+			
+			// aapt resource value: 5
+			public const int StateListDrawable_android_exitFadeDuration = 5;
+			
+			// aapt resource value: 2
+			public const int StateListDrawable_android_variablePadding = 2;
+			
+			// aapt resource value: 1
+			public const int StateListDrawable_android_visible = 1;
+			
+			// aapt resource value: { 0x1010124,0x1010125,0x1010142,0x7F030168,0x7F030173,0x7F030186,0x7F030187,0x7F030189,0x7F0301C2,0x7F0301C3,0x7F0301C4,0x7F0301DB,0x7F0301DC,0x7F0301DD }
+			public static int[] SwitchCompat = new int[] {
+					16843044,
+					16843045,
+					16843074,
+					2130903400,
+					2130903411,
+					2130903430,
+					2130903431,
+					2130903433,
+					2130903490,
+					2130903491,
+					2130903492,
+					2130903515,
+					2130903516,
+					2130903517};
+			
+			// aapt resource value: 1
+			public const int SwitchCompat_android_textOff = 1;
+			
+			// aapt resource value: 0
+			public const int SwitchCompat_android_textOn = 0;
+			
+			// aapt resource value: 2
+			public const int SwitchCompat_android_thumb = 2;
+			
+			// aapt resource value: 3
+			public const int SwitchCompat_showText = 3;
+			
+			// aapt resource value: 4
+			public const int SwitchCompat_splitTrack = 4;
+			
+			// aapt resource value: 5
+			public const int SwitchCompat_switchMinWidth = 5;
+			
+			// aapt resource value: 6
+			public const int SwitchCompat_switchPadding = 6;
+			
+			// aapt resource value: 7
+			public const int SwitchCompat_switchTextAppearance = 7;
+			
+			// aapt resource value: 8
+			public const int SwitchCompat_thumbTextPadding = 8;
+			
+			// aapt resource value: 9
+			public const int SwitchCompat_thumbTint = 9;
+			
+			// aapt resource value: 10
+			public const int SwitchCompat_thumbTintMode = 10;
+			
+			// aapt resource value: 11
+			public const int SwitchCompat_track = 11;
+			
+			// aapt resource value: 12
+			public const int SwitchCompat_trackTint = 12;
+			
+			// aapt resource value: 13
+			public const int SwitchCompat_trackTintMode = 13;
+			
+			// aapt resource value: { 0x1010002,0x10100F2,0x101014F }
+			public static int[] TabItem = new int[] {
+					16842754,
+					16842994,
+					16843087};
+			
+			// aapt resource value: 0
+			public const int TabItem_android_icon = 0;
+			
+			// aapt resource value: 1
+			public const int TabItem_android_layout = 1;
+			
+			// aapt resource value: 2
+			public const int TabItem_android_text = 2;
+			
+			// aapt resource value: { 0x7F03018A,0x7F03018B,0x7F03018C,0x7F03018D,0x7F03018E,0x7F03018F,0x7F030190,0x7F030191,0x7F030192,0x7F030193,0x7F030194,0x7F030195,0x7F030196,0x7F030197,0x7F030198,0x7F030199,0x7F03019A,0x7F03019B,0x7F03019C,0x7F03019D,0x7F03019E,0x7F03019F,0x7F0301A1,0x7F0301A2,0x7F0301A3 }
+			public static int[] TabLayout = new int[] {
+					2130903434,
+					2130903435,
+					2130903436,
+					2130903437,
+					2130903438,
+					2130903439,
+					2130903440,
+					2130903441,
+					2130903442,
+					2130903443,
+					2130903444,
+					2130903445,
+					2130903446,
+					2130903447,
+					2130903448,
+					2130903449,
+					2130903450,
+					2130903451,
+					2130903452,
+					2130903453,
+					2130903454,
+					2130903455,
+					2130903457,
+					2130903458,
+					2130903459};
+			
+			// aapt resource value: 0
+			public const int TabLayout_tabBackground = 0;
+			
+			// aapt resource value: 1
+			public const int TabLayout_tabContentStart = 1;
+			
+			// aapt resource value: 2
+			public const int TabLayout_tabGravity = 2;
+			
+			// aapt resource value: 3
+			public const int TabLayout_tabIconTint = 3;
+			
+			// aapt resource value: 4
+			public const int TabLayout_tabIconTintMode = 4;
+			
+			// aapt resource value: 5
+			public const int TabLayout_tabIndicator = 5;
+			
+			// aapt resource value: 6
+			public const int TabLayout_tabIndicatorAnimationDuration = 6;
+			
+			// aapt resource value: 7
+			public const int TabLayout_tabIndicatorColor = 7;
+			
+			// aapt resource value: 8
+			public const int TabLayout_tabIndicatorFullWidth = 8;
+			
+			// aapt resource value: 9
+			public const int TabLayout_tabIndicatorGravity = 9;
+			
+			// aapt resource value: 10
+			public const int TabLayout_tabIndicatorHeight = 10;
+			
+			// aapt resource value: 11
+			public const int TabLayout_tabInlineLabel = 11;
+			
+			// aapt resource value: 12
+			public const int TabLayout_tabMaxWidth = 12;
+			
+			// aapt resource value: 13
+			public const int TabLayout_tabMinWidth = 13;
+			
+			// aapt resource value: 14
+			public const int TabLayout_tabMode = 14;
+			
+			// aapt resource value: 15
+			public const int TabLayout_tabPadding = 15;
+			
+			// aapt resource value: 16
+			public const int TabLayout_tabPaddingBottom = 16;
+			
+			// aapt resource value: 17
+			public const int TabLayout_tabPaddingEnd = 17;
+			
+			// aapt resource value: 18
+			public const int TabLayout_tabPaddingStart = 18;
+			
+			// aapt resource value: 19
+			public const int TabLayout_tabPaddingTop = 19;
+			
+			// aapt resource value: 20
+			public const int TabLayout_tabRippleColor = 20;
+			
+			// aapt resource value: 21
+			public const int TabLayout_tabSelectedTextColor = 21;
+			
+			// aapt resource value: 22
+			public const int TabLayout_tabTextAppearance = 22;
+			
+			// aapt resource value: 23
+			public const int TabLayout_tabTextColor = 23;
+			
+			// aapt resource value: 24
+			public const int TabLayout_tabUnboundedRipple = 24;
+			
+			// aapt resource value: { 0x1010095,0x1010096,0x1010097,0x1010098,0x101009A,0x101009B,0x1010161,0x1010162,0x1010163,0x1010164,0x10103AC,0x1010585,0x7F0300DA,0x7F0300E2,0x7F0301A4,0x7F0301BE }
+			public static int[] TextAppearance = new int[] {
+					16842901,
+					16842902,
+					16842903,
+					16842904,
+					16842906,
+					16842907,
+					16843105,
+					16843106,
+					16843107,
+					16843108,
+					16843692,
+					16844165,
+					2130903258,
+					2130903266,
+					2130903460,
+					2130903486};
+			
+			// aapt resource value: 10
+			public const int TextAppearance_android_fontFamily = 10;
+			
+			// aapt resource value: 6
+			public const int TextAppearance_android_shadowColor = 6;
+			
+			// aapt resource value: 7
+			public const int TextAppearance_android_shadowDx = 7;
+			
+			// aapt resource value: 8
+			public const int TextAppearance_android_shadowDy = 8;
+			
+			// aapt resource value: 9
+			public const int TextAppearance_android_shadowRadius = 9;
+			
+			// aapt resource value: 3
+			public const int TextAppearance_android_textColor = 3;
+			
+			// aapt resource value: 4
+			public const int TextAppearance_android_textColorHint = 4;
+			
+			// aapt resource value: 5
+			public const int TextAppearance_android_textColorLink = 5;
+			
+			// aapt resource value: 11
+			public const int TextAppearance_android_textFontWeight = 11;
+			
+			// aapt resource value: 0
+			public const int TextAppearance_android_textSize = 0;
+			
+			// aapt resource value: 2
+			public const int TextAppearance_android_textStyle = 2;
+			
+			// aapt resource value: 1
+			public const int TextAppearance_android_typeface = 1;
+			
+			// aapt resource value: 12
+			public const int TextAppearance_fontFamily = 12;
+			
+			// aapt resource value: 13
+			public const int TextAppearance_fontVariationSettings = 13;
+			
+			// aapt resource value: 14
+			public const int TextAppearance_textAllCaps = 14;
+			
+			// aapt resource value: 15
+			public const int TextAppearance_textLocale = 15;
+			
+			// aapt resource value: { 0x101009A,0x1010150,0x7F030043,0x7F030044,0x7F030045,0x7F030046,0x7F030047,0x7F030048,0x7F030049,0x7F03004A,0x7F03004B,0x7F0300A1,0x7F0300A2,0x7F0300A3,0x7F0300A4,0x7F0300C1,0x7F0300C2,0x7F0300E9,0x7F0300EA,0x7F0300EB,0x7F0300EF,0x7F0300F0,0x7F0300F1,0x7F030147,0x7F030148,0x7F030149,0x7F03014A,0x7F03014B }
+			public static int[] TextInputLayout = new int[] {
+					16842906,
+					16843088,
+					2130903107,
+					2130903108,
+					2130903109,
+					2130903110,
+					2130903111,
+					2130903112,
+					2130903113,
+					2130903114,
+					2130903115,
+					2130903201,
+					2130903202,
+					2130903203,
+					2130903204,
+					2130903233,
+					2130903234,
+					2130903273,
+					2130903274,
+					2130903275,
+					2130903279,
+					2130903280,
+					2130903281,
+					2130903367,
+					2130903368,
+					2130903369,
+					2130903370,
+					2130903371};
+			
+			// aapt resource value: 1
+			public const int TextInputLayout_android_hint = 1;
+			
+			// aapt resource value: 0
+			public const int TextInputLayout_android_textColorHint = 0;
+			
+			// aapt resource value: 2
+			public const int TextInputLayout_boxBackgroundColor = 2;
+			
+			// aapt resource value: 3
+			public const int TextInputLayout_boxBackgroundMode = 3;
+			
+			// aapt resource value: 4
+			public const int TextInputLayout_boxCollapsedPaddingTop = 4;
+			
+			// aapt resource value: 5
+			public const int TextInputLayout_boxCornerRadiusBottomEnd = 5;
+			
+			// aapt resource value: 6
+			public const int TextInputLayout_boxCornerRadiusBottomStart = 6;
+			
+			// aapt resource value: 7
+			public const int TextInputLayout_boxCornerRadiusTopEnd = 7;
+			
+			// aapt resource value: 8
+			public const int TextInputLayout_boxCornerRadiusTopStart = 8;
+			
+			// aapt resource value: 9
+			public const int TextInputLayout_boxStrokeColor = 9;
+			
+			// aapt resource value: 10
+			public const int TextInputLayout_boxStrokeWidth = 10;
+			
+			// aapt resource value: 11
+			public const int TextInputLayout_counterEnabled = 11;
+			
+			// aapt resource value: 12
+			public const int TextInputLayout_counterMaxLength = 12;
+			
+			// aapt resource value: 13
+			public const int TextInputLayout_counterOverflowTextAppearance = 13;
+			
+			// aapt resource value: 14
+			public const int TextInputLayout_counterTextAppearance = 14;
+			
+			// aapt resource value: 15
+			public const int TextInputLayout_errorEnabled = 15;
+			
+			// aapt resource value: 16
+			public const int TextInputLayout_errorTextAppearance = 16;
+			
+			// aapt resource value: 17
+			public const int TextInputLayout_helperText = 17;
+			
+			// aapt resource value: 18
+			public const int TextInputLayout_helperTextEnabled = 18;
+			
+			// aapt resource value: 19
+			public const int TextInputLayout_helperTextTextAppearance = 19;
+			
+			// aapt resource value: 20
+			public const int TextInputLayout_hintAnimationEnabled = 20;
+			
+			// aapt resource value: 21
+			public const int TextInputLayout_hintEnabled = 21;
+			
+			// aapt resource value: 22
+			public const int TextInputLayout_hintTextAppearance = 22;
+			
+			// aapt resource value: 23
+			public const int TextInputLayout_passwordToggleContentDescription = 23;
+			
+			// aapt resource value: 24
+			public const int TextInputLayout_passwordToggleDrawable = 24;
+			
+			// aapt resource value: 25
+			public const int TextInputLayout_passwordToggleEnabled = 25;
+			
+			// aapt resource value: 26
+			public const int TextInputLayout_passwordToggleTint = 26;
+			
+			// aapt resource value: 27
+			public const int TextInputLayout_passwordToggleTintMode = 27;
+			
+			// aapt resource value: { 0x1010034,0x7F0300BF,0x7F0300C0 }
+			public static int[] ThemeEnforcement = new int[] {
+					16842804,
+					2130903231,
+					2130903232};
+			
+			// aapt resource value: 0
+			public const int ThemeEnforcement_android_textAppearance = 0;
+			
+			// aapt resource value: 1
+			public const int ThemeEnforcement_enforceMaterialTheme = 1;
+			
+			// aapt resource value: 2
+			public const int ThemeEnforcement_enforceTextAppearance = 2;
+			
+			// aapt resource value: { 0x10100AF,0x1010140,0x7F030052,0x7F030080,0x7F030081,0x7F030092,0x7F030093,0x7F030094,0x7F030095,0x7F030096,0x7F030097,0x7F030130,0x7F030131,0x7F030135,0x7F030138,0x7F03013A,0x7F03013B,0x7F03014D,0x7F030181,0x7F030182,0x7F030183,0x7F0301CA,0x7F0301CC,0x7F0301CD,0x7F0301CE,0x7F0301CF,0x7F0301D0,0x7F0301D1,0x7F0301D2,0x7F0301D3 }
+			public static int[] Toolbar = new int[] {
+					16842927,
+					16843072,
+					2130903122,
+					2130903168,
+					2130903169,
+					2130903186,
+					2130903187,
+					2130903188,
+					2130903189,
+					2130903190,
+					2130903191,
+					2130903344,
+					2130903345,
+					2130903349,
+					2130903352,
+					2130903354,
+					2130903355,
+					2130903373,
+					2130903425,
+					2130903426,
+					2130903427,
+					2130903498,
+					2130903500,
+					2130903501,
+					2130903502,
+					2130903503,
+					2130903504,
+					2130903505,
+					2130903506,
+					2130903507};
+			
+			// aapt resource value: 0
+			public const int Toolbar_android_gravity = 0;
+			
+			// aapt resource value: 1
+			public const int Toolbar_android_minHeight = 1;
+			
+			// aapt resource value: 2
+			public const int Toolbar_buttonGravity = 2;
+			
+			// aapt resource value: 3
+			public const int Toolbar_collapseContentDescription = 3;
+			
+			// aapt resource value: 4
+			public const int Toolbar_collapseIcon = 4;
+			
+			// aapt resource value: 5
+			public const int Toolbar_contentInsetEnd = 5;
+			
+			// aapt resource value: 6
+			public const int Toolbar_contentInsetEndWithActions = 6;
+			
+			// aapt resource value: 7
+			public const int Toolbar_contentInsetLeft = 7;
+			
+			// aapt resource value: 8
+			public const int Toolbar_contentInsetRight = 8;
+			
+			// aapt resource value: 9
+			public const int Toolbar_contentInsetStart = 9;
+			
+			// aapt resource value: 10
+			public const int Toolbar_contentInsetStartWithNavigation = 10;
+			
+			// aapt resource value: 11
+			public const int Toolbar_logo = 11;
+			
+			// aapt resource value: 12
+			public const int Toolbar_logoDescription = 12;
+			
+			// aapt resource value: 13
+			public const int Toolbar_maxButtonHeight = 13;
+			
+			// aapt resource value: 14
+			public const int Toolbar_menu = 14;
+			
+			// aapt resource value: 15
+			public const int Toolbar_navigationContentDescription = 15;
+			
+			// aapt resource value: 16
+			public const int Toolbar_navigationIcon = 16;
+			
+			// aapt resource value: 17
+			public const int Toolbar_popupTheme = 17;
+			
+			// aapt resource value: 18
+			public const int Toolbar_subtitle = 18;
+			
+			// aapt resource value: 19
+			public const int Toolbar_subtitleTextAppearance = 19;
+			
+			// aapt resource value: 20
+			public const int Toolbar_subtitleTextColor = 20;
+			
+			// aapt resource value: 21
+			public const int Toolbar_title = 21;
+			
+			// aapt resource value: 22
+			public const int Toolbar_titleMargin = 22;
+			
+			// aapt resource value: 23
+			public const int Toolbar_titleMarginBottom = 23;
+			
+			// aapt resource value: 24
+			public const int Toolbar_titleMarginEnd = 24;
+			
+			// aapt resource value: 27
+			public const int Toolbar_titleMargins = 27;
+			
+			// aapt resource value: 25
+			public const int Toolbar_titleMarginStart = 25;
+			
+			// aapt resource value: 26
+			public const int Toolbar_titleMarginTop = 26;
+			
+			// aapt resource value: 28
+			public const int Toolbar_titleTextAppearance = 28;
+			
+			// aapt resource value: 29
+			public const int Toolbar_titleTextColor = 29;
+			
+			// aapt resource value: { 0x1010000,0x10100DA,0x7F030141,0x7F030142,0x7F0301C0 }
+			public static int[] View = new int[] {
+					16842752,
+					16842970,
+					2130903361,
+					2130903362,
+					2130903488};
+			
+			// aapt resource value: { 0x10100D4,0x7F030034,0x7F030035 }
+			public static int[] ViewBackgroundHelper = new int[] {
+					16842964,
+					2130903092,
+					2130903093};
+			
+			// aapt resource value: 0
+			public const int ViewBackgroundHelper_android_background = 0;
+			
+			// aapt resource value: 1
+			public const int ViewBackgroundHelper_backgroundTint = 1;
+			
+			// aapt resource value: 2
+			public const int ViewBackgroundHelper_backgroundTintMode = 2;
+			
+			// aapt resource value: { 0x10100D0,0x10100F2,0x10100F3 }
+			public static int[] ViewStubCompat = new int[] {
+					16842960,
+					16842994,
+					16842995};
+			
+			// aapt resource value: 0
+			public const int ViewStubCompat_android_id = 0;
+			
+			// aapt resource value: 2
+			public const int ViewStubCompat_android_inflatedId = 2;
+			
+			// aapt resource value: 1
+			public const int ViewStubCompat_android_layout = 1;
+			
+			// aapt resource value: 1
+			public const int View_android_focusable = 1;
+			
+			// aapt resource value: 0
+			public const int View_android_theme = 0;
+			
+			// aapt resource value: 2
+			public const int View_paddingEnd = 2;
+			
+			// aapt resource value: 3
+			public const int View_paddingStart = 3;
+			
+			// aapt resource value: 4
+			public const int View_theme = 4;
+			
+			static Styleable()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Styleable()
 			{
 			}
 		}

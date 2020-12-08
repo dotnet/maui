@@ -19,7 +19,7 @@
         <EmbeddedResource Include="Resources\swirl_pattern.png" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Markdig" Version="0.22.0" />
+        <PackageReference Include="Markdig" Version="0.22.1" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj" />

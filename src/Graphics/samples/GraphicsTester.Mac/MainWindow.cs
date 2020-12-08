@@ -26,13 +26,8 @@ namespace GraphicsTester.Mac
         // Shared initialization code
         void Initialize ()
         {
-            var bounds = Frame;
-
-            testerView = new TesterView (new CGRect (0, 0, bounds.Width, bounds.Height));
-            testerView.AutoresizingMask = NSViewResizingMask.HeightSizable | NSViewResizingMask.WidthSizable;
-
-            ContentView.AutoresizesSubviews = true;
-            ContentView.AddSubview (testerView);
+            ContentViewController = new TesterViewController();
+            base.SetFrame(new CGRect(0, 0, 1024, 1024), true);
         }
     }
 }

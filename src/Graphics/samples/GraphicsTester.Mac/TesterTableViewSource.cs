@@ -8,29 +8,30 @@ namespace GraphicsTester.Mac
 {
     public class TesterTableViewSource : NSTableViewSource
     {
-        public event Action<EWDrawable> ScenarioSelected;
+        public event Action<IDrawable> ScenarioSelected;
 
-        public override NSObject GetObjectValue (NSTableView tableView, NSTableColumn tableColumn, nint row)
+        public override NSObject GetObjectValue(NSTableView tableView, NSTableColumn tableColumn, nint row)
         {
-            return new NSString ((string)ScenarioList.Scenarios [(int)row].ToString());
+            return new NSString(ScenarioList.Scenarios[(int)row].ToString());
         }
 
-        public override nint GetRowCount (NSTableView tableView)
+        public override nint GetRowCount(NSTableView tableView)
         {
             return ScenarioList.Scenarios.Count;
         }
 
-        public override void SelectionDidChange (NSNotification notification)
+        public override void SelectionDidChange(NSNotification notification)
         {
             if (ScenarioSelected != null)
             {
-                if (notification.Object is NSTableView tableView)
+                var tableView = notification.Object as NSTableView;
+                if (tableView != null)
                 {
                     var row = tableView.SelectedRow;
                     if (row >= 0)
                     {
-                        var scenario = ScenarioList.Scenarios [(int)row];
-                        ScenarioSelected (scenario);
+                        var scenario = ScenarioList.Scenarios[(int)row];
+                        ScenarioSelected(scenario);
                     }
                 }
             }
