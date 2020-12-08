@@ -84,6 +84,7 @@
     </Compile>
     <Compile Include="TesterView.cs" />
     <Compile Include="TesterTableViewSource.cs" />
+    <Compile Include="SkiaGraphicsView.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="MainMenu.xib" />
@@ -102,10 +103,20 @@
       <Project>{ED36FB6D-7278-465D-9C44-D01927258BA1}</Project>
       <Name>System.Graphics.Text.Markdig</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\System.Graphics.Skia.Core\System.Graphics.Skia.Core.csproj">
+      <Project>{C7613109-6198-402E-953F-57EA81E8238E}</Project>
+      <Name>System.Graphics.Skia.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Markdig">
       <Version>0.22.1</Version>
+    </PackageReference>
+    <PackageReference Include="SkiaSharp">
+      <Version>2.80.2</Version>
+    </PackageReference>
+    <PackageReference Include="SkiaSharp.Views">
+      <Version>2.80.2</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />

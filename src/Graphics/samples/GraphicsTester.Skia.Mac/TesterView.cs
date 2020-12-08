@@ -22,7 +22,7 @@ namespace GraphicsTester.Skia {
 
     public class TesterView : NSView {
         private readonly NSTableView tableView;
-        private readonly NativeGraphicsView graphicsView;
+        private readonly SkiaGraphicsView graphicsView;
         private readonly TesterTableViewSource tableSource;
 
         public TesterView () : base ()
@@ -32,7 +32,6 @@ namespace GraphicsTester.Skia {
             tableSource = new TesterTableViewSource ();
             tableSource.ScenarioSelected += (drawable) => {
                 graphicsView.Drawable = drawable;
-                graphicsView.InvalidateDrawable ();
             };
 
             tableView = new NSTableView ();
@@ -44,7 +43,7 @@ namespace GraphicsTester.Skia {
 
             AddSubview (tableView);
 
-            graphicsView = new NativeGraphicsView ();
+            graphicsView = new SkiaGraphicsView ();
             AddSubview (graphicsView);
 
             Layout ();
