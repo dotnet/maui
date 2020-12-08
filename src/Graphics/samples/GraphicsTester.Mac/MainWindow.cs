@@ -27,7 +27,6 @@ namespace GraphicsTester.Mac
         void Initialize ()
         {
             ContentViewController = new TesterViewController();
-            base.SetFrame(new CGRect(0, 0, 1024, 1024), true);
         }
     }
 }

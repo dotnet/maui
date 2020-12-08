@@ -11,6 +11,13 @@ namespace GraphicsTester.Skia {
             View = new TesterView ();
         }
 
+        public override void ViewDidAppear()
+        {
+            base.ViewDidAppear();
+            var frame = View.Window.Frame;
+            frame.Size = new CGSize(1024, 1024);
+            View.Window.SetFrame(frame, false);
+        }
     }
 
     public class TesterView : NSView {
@@ -50,8 +57,8 @@ namespace GraphicsTester.Skia {
         public override void Layout ()
         {
             var bounds = Bounds;
-            tableView.Frame = new CGRect (0, 24, 300, bounds.Height - 24);
-            graphicsView.Frame = new CGRect (300, 24, bounds.Width - 300, bounds.Height - 24);
+            tableView.Frame = new CGRect (0, 0, 300, bounds.Height);
+            graphicsView.Frame = new CGRect (300, 0, bounds.Width - 300, bounds.Height);
         }
 
         public override CGRect Frame {
