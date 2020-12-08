@@ -72,45 +72,51 @@ namespace Xamarin.Essentials
             return tmpFile;
         }
 
-        internal static string EnsurePhysicalPath(AndroidUri uri)
+        internal static string EnsurePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
         {
             // if this is a file, use that
             if (uri.Scheme.Equals(UriSchemeFile, StringComparison.OrdinalIgnoreCase))
                 return uri.Path;
 
             // try resolve using the content provider
-            var absolute = ResolvePhysicalPath(uri);
+            var absolute = ResolvePhysicalPath(uri, requireExtendedAccess);
             if (!string.IsNullOrWhiteSpace(absolute) && Path.IsPathRooted(absolute))
                 return absolute;
 
             // fall back to just copying it
-            absolute = CacheContentFile(uri);
-            if (!string.IsNullOrWhiteSpace(absolute) && Path.IsPathRooted(absolute))
-                return absolute;
+            var cached = CacheContentFile(uri);
+            if (!string.IsNullOrWhiteSpace(cached) && Path.IsPathRooted(cached))
+                return cached;
 
             throw new FileNotFoundException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
         }
 
-        static string ResolvePhysicalPath(AndroidUri uri)
+        static string ResolvePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
         {
-            if (Platform.HasApiLevelKitKat && DocumentsContract.IsDocumentUri(Platform.AppContext, uri))
+            if (uri.Scheme.Equals(UriSchemeFile, StringComparison.OrdinalIgnoreCase))
             {
-                var resolved = ResolveDocumentPath(uri);
-                if (File.Exists(resolved))
-                    return resolved;
-            }
+                // if it is a file, then return directly
 
-            if (uri.Scheme.Equals(UriSchemeContent, StringComparison.OrdinalIgnoreCase))
-            {
-                var resolved = ResolveContentPath(uri);
-                if (File.Exists(resolved))
-                    return resolved;
-            }
-            else if (uri.Scheme.Equals(UriSchemeFile, StringComparison.OrdinalIgnoreCase))
-            {
                 var resolved = uri.Path;
                 if (File.Exists(resolved))
                     return resolved;
+            }
+            else if (!requireExtendedAccess || !Platform.HasApiLevel(29))
+            {
+                // if this is on an older OS version, or we just need it now
+
+                if (Platform.HasApiLevelKitKat && DocumentsContract.IsDocumentUri(Platform.AppContext, uri))
+                {
+                    var resolved = ResolveDocumentPath(uri);
+                    if (File.Exists(resolved))
+                        return resolved;
+                }
+                else if (uri.Scheme.Equals(UriSchemeContent, StringComparison.OrdinalIgnoreCase))
+                {
+                    var resolved = ResolveContentPath(uri);
+                    if (File.Exists(resolved))
+                        return resolved;
+                }
             }
 
             return null;
@@ -236,7 +242,11 @@ namespace Xamarin.Essentials
                 filename = Path.ChangeExtension(filename, extension);
 
             // create a temporary file
-            var tmpFile = GetEssentialsTemporaryFile(Platform.AppContext.CacheDir, filename);
+            var hasPermission = Permissions.IsDeclaredInManifest(global::Android.Manifest.Permission.WriteExternalStorage);
+            var root = hasPermission
+                ? Platform.AppContext.ExternalCacheDir
+                : Platform.AppContext.CacheDir;
+            var tmpFile = GetEssentialsTemporaryFile(root, filename);
 
             // copy to the destination
             using var dstStream = File.Create(tmpFile.CanonicalPath);
