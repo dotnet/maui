@@ -84,7 +84,6 @@
     </Compile>
     <Compile Include="TesterView.cs" />
     <Compile Include="TesterTableViewSource.cs" />
-    <Compile Include="SkiaGraphicsView.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="MainMenu.xib" />
@@ -103,9 +102,9 @@
       <Project>{ED36FB6D-7278-465D-9C44-D01927258BA1}</Project>
       <Name>System.Graphics.Text.Markdig</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\System.Graphics.Skia.Core\System.Graphics.Skia.Core.csproj">
+    <ProjectReference Include="..\..\src\System.Graphics.Skia\System.Graphics.Skia.csproj">
       <Project>{C7613109-6198-402E-953F-57EA81E8238E}</Project>
-      <Name>System.Graphics.Skia.Core</Name>
+      <Name>System.Graphics.Skia</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
