@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Blazor", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Blazor.JS", "src\System.Graphics.Blazor.JS\System.Graphics.Blazor.JS.csproj", "{0E1E4EF4-9415-43FF-971F-204311403A2D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Skia.Core", "src\System.Graphics.Skia.Core\System.Graphics.Skia.Core.csproj", "{C7613109-6198-402E-953F-57EA81E8238E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Graphics.Skia", "src\System.Graphics.Skia.Core\System.Graphics.Skia.csproj", "{C7613109-6198-402E-953F-57EA81E8238E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}"
 EndProject
