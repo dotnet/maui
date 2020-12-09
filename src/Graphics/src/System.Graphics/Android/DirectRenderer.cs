@@ -40,7 +40,7 @@ namespace System.Graphics.Android
             set => _backgroundColor = value;
         }
 
-        public void Draw(Canvas androidCanvas, RectangleF dirtyRect, bool inPanOrZoom)
+        public void Draw(Canvas androidCanvas, RectangleF dirtyRect)
         {
             _canvas.Canvas = androidCanvas;
 

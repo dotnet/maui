@@ -11,7 +11,6 @@ namespace System.Graphics.Android
         private IGraphicsRenderer _renderer;
         private IDrawable _drawable;
         private int _width, _height;
-        private bool _inPanOrZoom;
 
         public GraphicsView(Context context, IAttributeSet attrs, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(context, attrs)
         {
@@ -23,12 +22,6 @@ namespace System.Graphics.Android
         {
             Drawable = drawable;
             Renderer = renderer;
-        }
-
-        public bool InPanOrZoom
-        {
-            get => _inPanOrZoom;
-            set => _inPanOrZoom = value;
         }
 
         public IGraphicsRenderer Renderer
@@ -77,7 +70,7 @@ namespace System.Graphics.Android
 
             _dirtyRect.Width = Width;
             _dirtyRect.Height = Height;
-            _renderer.Draw(androidCanvas, _dirtyRect, _inPanOrZoom);
+            _renderer.Draw(androidCanvas, _dirtyRect);
         }
 
         protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)

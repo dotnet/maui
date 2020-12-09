@@ -10,7 +10,6 @@ namespace System.Graphics.CoreGraphics
         private IGraphicsRenderer _renderer;
         private CGColorSpace _colorSpace;
         private IDrawable _drawable;
-        private bool _inPanOrZoom;
         private CGRect _lastBounds;
         private Color _backgroundColor;
 
@@ -22,12 +21,6 @@ namespace System.Graphics.CoreGraphics
 
         public NativeGraphicsView(IntPtr handle) : base(handle)
         {
-        }
-
-        public bool InPanOrZoom
-        {
-            get => _inPanOrZoom;
-            set => _inPanOrZoom = value;
         }
 
         public Color BackgroundColor
@@ -113,7 +106,7 @@ namespace System.Graphics.CoreGraphics
                 nsGraphicsContext.GraphicsPort.FillRect(dirtyRect);
             }
 
-            _renderer.Draw(nsGraphicsContext.GraphicsPort, dirtyRect.AsRectangleF(), _inPanOrZoom);
+            _renderer.Draw(nsGraphicsContext.GraphicsPort, dirtyRect.AsRectangleF());
         }
 
         protected virtual CGSize PatternPhase

@@ -27,7 +27,7 @@ namespace System.Graphics.CoreGraphics
             set => _graphicsView = value;
         }
 
-        public void Draw(CGContext coreGraphics, RectangleF dirtyRect, bool inPanOrZoom)
+        public void Draw(CGContext coreGraphics, RectangleF dirtyRect)
         {
             _canvas.Context = coreGraphics;
 

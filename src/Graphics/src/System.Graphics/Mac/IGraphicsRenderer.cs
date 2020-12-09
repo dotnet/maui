@@ -7,7 +7,7 @@ namespace System.Graphics.CoreGraphics
         NativeGraphicsView GraphicsView { set; }
         ICanvas Canvas { get; }
         IDrawable Drawable { get; set; }
-        void Draw(CGContext nativeCanvas, RectangleF dirtyRect, bool inPanOrZoom);
+        void Draw(CGContext nativeCanvas, RectangleF dirtyRect);
         void SizeChanged(float width, float height);
         void Detached();
         void Invalidate();

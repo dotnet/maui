@@ -11,7 +11,6 @@ namespace System.Graphics.CoreGraphics
         private IGraphicsRenderer _renderer;
         private CGColorSpace _colorSpace;
         private IDrawable _drawable;
-        private bool _inPanOrZoom;
         private CGRect _lastBounds;
 
         public NativeGraphicsView(Drawing.RectangleF frame, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(frame)
@@ -31,12 +30,6 @@ namespace System.Graphics.CoreGraphics
         public NativeGraphicsView(IntPtr aPtr) : base(aPtr)
         {
             BackgroundColor = UIColor.White;
-        }
-
-        public bool InPanOrZoom
-        {
-            get => _inPanOrZoom;
-            set => _inPanOrZoom = value;
         }
 
         public IGraphicsRenderer Renderer
@@ -112,7 +105,7 @@ namespace System.Graphics.CoreGraphics
             coreGraphics.SetStrokeColorSpace(_colorSpace);
             coreGraphics.SetPatternPhase(PatternPhase);
 
-            _renderer.Draw(coreGraphics, dirtyRect.AsRectangleF(), _inPanOrZoom);
+            _renderer.Draw(coreGraphics, dirtyRect.AsRectangleF());
         }
 
         public override CGRect Bounds
