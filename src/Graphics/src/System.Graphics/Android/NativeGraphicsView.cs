@@ -5,20 +5,20 @@ using Android.Views;
 
 namespace System.Graphics.Android
 {
-    public class GraphicsView : View
+    public class NativeGraphicsView : View
     {
         private RectangleF _dirtyRect;
         private IGraphicsRenderer _renderer;
         private IDrawable _drawable;
         private int _width, _height;
 
-        public GraphicsView(Context context, IAttributeSet attrs, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(context, attrs)
+        public NativeGraphicsView(Context context, IAttributeSet attrs, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(context, attrs)
         {
             Drawable = drawable;
             Renderer = renderer;
         }
 
-        public GraphicsView(Context context, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(context)
+        public NativeGraphicsView(Context context, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(context)
         {
             Drawable = drawable;
             Renderer = renderer;
