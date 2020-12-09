@@ -186,7 +186,7 @@ namespace Xamarin.Forms
 			{
 				var current = (ShellItem)shellSection.Parent;
 
-				if(current.Items.Contains(shellSection))
+				if (current.Items.Contains(shellSection))
 					current.CurrentItem = shellSection;
 
 				return current;
