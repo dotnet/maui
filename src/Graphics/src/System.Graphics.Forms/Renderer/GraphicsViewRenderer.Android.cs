@@ -1,17 +1,22 @@
 ﻿using System.ComponentModel;
-using System.Graphics.CoreGraphics;
-using System.Graphics.Forms;
-using System.Graphics.Forms.iOS;
-using Foundation;
+using System.Graphics.Android;
+using System.Graphics.Forms.Android;
+using Android.Content;
 using Xamarin.Forms;
-using Xamarin.Forms.Platform.iOS;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform.Android;
 
-[assembly: ExportRenderer(typeof(GraphicsView), typeof(GraphicsViewRenderer))]
-namespace System.Graphics.Forms.iOS
+[assembly: ExportRenderer(typeof(System.Graphics.Forms.GraphicsView), typeof(GraphicsViewRenderer))]
+namespace System.Graphics.Forms.Android
 {
     [Preserve]
-    public class GraphicsViewRenderer : ViewRenderer<GraphicsView, NativeGraphicsView>
+    public class GraphicsViewRenderer : ViewRenderer<System.Graphics.Forms.GraphicsView, NativeGraphicsView>
     {
+        public GraphicsViewRenderer(Context context) : base(context)
+        {
+
+        }
+
         protected override void OnElementChanged(ElementChangedEventArgs<GraphicsView> e)
         {
             base.OnElementChanged(e);
@@ -24,7 +29,7 @@ namespace System.Graphics.Forms.iOS
 
             if (e.NewElement != null)
             {
-                SetNativeControl(new NativeGraphicsView());
+                SetNativeControl(new NativeGraphicsView(Context));
             }
         }
 

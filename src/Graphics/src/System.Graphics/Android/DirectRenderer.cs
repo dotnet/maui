@@ -8,7 +8,7 @@ namespace System.Graphics.Android
         private readonly NativeCanvas _canvas;
         private readonly ScalingCanvas _scalingCanvas;
         private IDrawable _drawable;
-        private GraphicsView _graphicsView;
+        private NativeGraphicsView _graphicsView;
         private Color _backgroundColor;
 
         public DirectRenderer(Context context)
@@ -29,7 +29,7 @@ namespace System.Graphics.Android
             }
         }
 
-        public GraphicsView GraphicsView
+        public NativeGraphicsView GraphicsView
         {
             set => _graphicsView = value;
         }

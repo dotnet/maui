@@ -12,7 +12,7 @@ namespace GraphicsTester.Android
     public class MainView : LinearLayout
     {
         private readonly ListView _listView;
-        private readonly GraphicsView _graphicsView;
+        private readonly NativeGraphicsView _graphicsView;
 
         public MainView (IntPtr javaReference, JniHandleOwnership transfer) : base (javaReference, transfer)
         {
@@ -29,7 +29,7 @@ namespace GraphicsTester.Android
                 2.5f);
             base.AddView (_listView);
 
-            _graphicsView = new GraphicsView (context);
+            _graphicsView = new NativeGraphicsView (context);
             _graphicsView.BackgroundColor = Colors.White;
             _graphicsView.LayoutParameters = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WrapContent,

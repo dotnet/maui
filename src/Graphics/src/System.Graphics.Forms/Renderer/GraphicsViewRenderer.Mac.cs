@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel;
 using System.Graphics.CoreGraphics;
 using System.Graphics.Forms;
-using System.Graphics.Forms.iOS;
+using System.Graphics.Forms.Mac;
 using Foundation;
 using Xamarin.Forms;
-using Xamarin.Forms.Platform.iOS;
+using Xamarin.Forms.Platform.MacOS;
 
 [assembly: ExportRenderer(typeof(GraphicsView), typeof(GraphicsViewRenderer))]
-namespace System.Graphics.Forms.iOS
+namespace System.Graphics.Forms.Mac
 {
     [Preserve]
     public class GraphicsViewRenderer : ViewRenderer<GraphicsView, NativeGraphicsView>

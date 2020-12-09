@@ -4,7 +4,7 @@ namespace System.Graphics.Android
 {
     public interface IGraphicsRenderer : IDisposable
     {
-        GraphicsView GraphicsView { set; }
+        NativeGraphicsView GraphicsView { set; }
         ICanvas Canvas { get; }
         IDrawable Drawable { get; set; }
         Color BackgroundColor { get; set; }
