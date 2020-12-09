@@ -172,17 +172,20 @@ namespace System.Graphics
 
         public void DrawPath(PathF path)
         {
-            _canvas.DrawPath(path);
+            var scaledPath = path.AsScaledPath(_scaleX);
+            _canvas.DrawPath(scaledPath);
         }
 
         public void FillPath(PathF path, WindingMode windingMode)
         {
-            _canvas.FillPath(path, windingMode);
+            var scaledPath = path.AsScaledPath(_scaleX);
+            _canvas.FillPath(scaledPath, windingMode);
         }
 
         public void ClipPath(PathF path, WindingMode windingMode = WindingMode.NonZero)
         {
-            _canvas.ClipPath(path, windingMode);
+            var scaledPath = path.AsScaledPath(_scaleX);
+            _canvas.ClipPath(scaledPath, windingMode);
         }
 
         public void ClipRectangle(float x, float y, float width, float height)

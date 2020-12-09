@@ -23,14 +23,14 @@ namespace System.Graphics
             _subPathsClosed = new List<bool>();
 
             var subPathIndex = 0;
-            foreach (var vSegmentType in _operations)
+            foreach (var operation in _operations)
             {
-                if (vSegmentType == PathOperation.Move)
+                if (operation == PathOperation.Move)
                 {
                     subPathIndex++;
                     _subPathsClosed.Add(false);
                 }
-                else if (vSegmentType == PathOperation.Close)
+                else if (operation == PathOperation.Close)
                 {
                     _subPathsClosed.RemoveAt(subPathIndex - 1);
                     _subPathsClosed.Add(true);
@@ -38,28 +38,16 @@ namespace System.Graphics
             }
         }
 
-        public PathF(PathF aPath) : this()
+        public PathF(PathF path) : this()
         {
-            _operations.AddRange(aPath._operations);
-            foreach (var point in aPath.Points)
-                _points.Add(point);
+            _operations.AddRange(path._operations);
+            _points = new List<PointF>(path._points);
 
-            _arcAngles.AddRange(aPath._arcAngles);
-            _arcClockwise.AddRange(aPath._arcClockwise);
+            _arcAngles.AddRange(path._arcAngles);
+            _arcClockwise.AddRange(path._arcClockwise);
 
-            foreach (var pathOperation in _operations)
-            {
-                if (pathOperation == PathOperation.Move)
-                {
-                    _subPathCount++;
-                    _subPathsClosed.Add(false);
-                }
-                else if (pathOperation == PathOperation.Close)
-                {
-                    _subPathsClosed.RemoveAt(_subPathCount - 1);
-                    _subPathsClosed.Add(true);
-                }
-            }
+            _subPathCount = path._subPathCount;
+            _subPathsClosed = new List<bool>(path._subPathsClosed);
         }
 
         public PathF(PointF point) : this()
@@ -121,45 +109,6 @@ namespace System.Graphics
             {
                 for (var i = 0; i < _points.Count; i++)
                     yield return _points[i];
-            }
-        }
-
-        public IEnumerable<PointF> SegmentIntersectionPoints
-        {
-            get
-            {
-                var vIndex = 0;
-                //int vArcIndex = 0;
-                var vSegmentCount = _operations.Count;
-
-                for (var s = 0; s < vSegmentCount; s++)
-                {
-                    var vType = _operations[s];
-
-                    if (vType == PathOperation.Move)
-                    {
-                        yield return _points[vIndex++];
-                    }
-                    else if (vType == PathOperation.Line)
-                    {
-                        yield return _points[vIndex++];
-                    }
-                    else if (vType == PathOperation.Quad)
-                    {
-                        vIndex++;
-                        yield return _points[vIndex++];
-                    }
-                    else if (vType == PathOperation.Cubic)
-                    {
-                        vIndex += 2;
-                        yield return _points[vIndex++];
-                    }
-                    else if (vType == PathOperation.Arc)
-                    {
-                        vIndex++;
-                        yield return _points[vIndex++];
-                    }
-                }
             }
         }
         
