@@ -13,6 +13,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.DrawerLayout.Widget;
 using AndroidX.Legacy.App;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.AppCompat;
@@ -793,7 +794,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void GetNewFlyoutPageToggle()
 		{
-			var drawer = GetRenderer(CurrentFlyoutPage) as FlyoutPageRenderer;
+			var drawer = GetRenderer(CurrentFlyoutPage) as DrawerLayout;
 			if (drawer == null)
 				return;
 
