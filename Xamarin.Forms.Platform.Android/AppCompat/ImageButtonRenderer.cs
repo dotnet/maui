@@ -202,6 +202,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (Element == null)
 				return;
+
+			canvas.ClipShape(Context, Element);
+
 			var backgroundDrawable = _backgroundTracker?.BackgroundDrawable;
 			RectF drawableBounds = null;
 
