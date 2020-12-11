@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			get
 			{
-				if (Element.IsSet(PlatformConfiguration.iOSSpecific.VisualElement.CanBecomeFirstResponderProperty))
+				if (Element != null && Element.IsSet(PlatformConfiguration.iOSSpecific.VisualElement.CanBecomeFirstResponderProperty))
 					return PlatformConfiguration.iOSSpecific.VisualElement.GetCanBecomeFirstResponder(Element);
 
 				return base.CanBecomeFirstResponder;
