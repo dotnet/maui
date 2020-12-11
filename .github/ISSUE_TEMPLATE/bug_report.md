@@ -42,8 +42,12 @@ Visual Studio for Mac: Visual Studio > About Visual Studio > Show Details > Copy
 2. Paste into the code block below (between ```)
 -->
 
+<details><summary>Show/Hide Visual Studio info</summary>
+
 ```
 ```
+
+</details>
 
 ### Build Logs
 
