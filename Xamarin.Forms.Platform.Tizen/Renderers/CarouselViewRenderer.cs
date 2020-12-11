@@ -41,7 +41,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				_animationStart = new SmartEvent(Control.Scroll, Control.Scroll.RealHandle, ThemeConstants.Scroller.Signals.StartScrollAnimation);
 				_animationStart.On += OnScrollStart;
 			}
-			Device.BeginInvokeOnMainThread(() => {
+			Device.BeginInvokeOnMainThread(() =>
+			{
 				UpdatePositionFromElement(false);
 				UpdateCurrentItemFromElement(false);
 			});
