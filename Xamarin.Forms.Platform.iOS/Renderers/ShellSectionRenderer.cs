@@ -68,7 +68,15 @@ namespace Xamarin.Forms.Platform.iOS
 		ShellSection _shellSection;
 		bool _ignorePopCall;
 
-		public ShellSectionRenderer(IShellContext context)
+		public ShellSectionRenderer(IShellContext context) : base()
+		{
+			Delegate = new NavDelegate(this);
+			_context = context;
+			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
+		}
+
+		public ShellSectionRenderer(IShellContext context, Type navigationBarType, Type toolbarType) 
+			: base(navigationBarType, toolbarType)
 		{
 			Delegate = new NavDelegate(this);
 			_context = context;

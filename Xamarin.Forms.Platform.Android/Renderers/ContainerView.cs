@@ -37,6 +37,9 @@ namespace Xamarin.Forms.Platform.Android
 			get { return _view; }
 			set
 			{
+				if (_view == value)
+					return;
+
 				_view = value;
 				OnViewSet(value);
 			}
@@ -98,6 +101,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (_renderer != null)
 			{
+				_renderer.Element.MeasureInvalidated -= ElementMeasureInvalidated;
 				_renderer.View.RemoveFromParent();
 				_renderer.Dispose();
 				_renderer = null;
@@ -107,8 +111,20 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_renderer = Platform.CreateRenderer(view, Context);
 				Platform.SetRenderer(view, _renderer);
-
 				AddView(_renderer.View);
+				view.MeasureInvalidated += ElementMeasureInvalidated;
+			}
+		}
+
+		void ElementMeasureInvalidated(object sender, EventArgs e)
+		{
+			if (this.IsAlive())
+			{
+				RequestLayout();
+			}
+			else if (sender is VisualElement ve)
+			{
+				ve.MeasureInvalidated -= ElementMeasureInvalidated;
 			}
 		}
 	}

@@ -800,12 +800,41 @@ namespace Xamarin.Forms.Controls
 		}
 
 
-		public void TapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, string timeoutMessage = null)
+		public void TapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, string timeoutMessage = null, bool makeSureFlyoutStaysOpen = false)
 		{
 			timeoutMessage = timeoutMessage ?? text;
-			ShowFlyout(flyoutIcon, usingSwipe);
-			RunningApp.WaitForElement(text, timeoutMessage);
-			RunningApp.Tap(text);
+#if __WINDOWS__
+			RunningApp.WaitForElement(flyoutIcon);
+#endif
+
+			System.Threading.Thread.Sleep(500);
+			CheckIfOpen();
+			try
+			{
+				RunningApp.Tap(text);
+			}
+			catch
+			{
+				// Give it one more try
+				CheckIfOpen();
+				RunningApp.Tap(text);
+			}
+
+			if (makeSureFlyoutStaysOpen)
+			{
+				System.Threading.Thread.Sleep(500);
+				if(RunningApp.Query(text).Count() == 0)
+					this.ShowFlyout(flyoutIcon);
+			}
+
+			void CheckIfOpen()
+			{
+				if (RunningApp.Query(text).Count() == 0)
+				{
+					ShowFlyout(flyoutIcon, usingSwipe);
+					RunningApp.WaitForElement(text, timeoutMessage);
+				}
+			}
 		}
 
 		public void DoubleTapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, string timeoutMessage = null)

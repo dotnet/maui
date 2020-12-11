@@ -355,9 +355,39 @@ namespace Xamarin.Forms.Controls.XamStore
 					() => Shell.SetNavBarHasShadow(this, false)),
 				1, 21);
 
-			grid.Children.Add(MakeButton("Show Nav Shadow",
-					() => Shell.SetNavBarHasShadow(this, true)),
-				2, 21);
+            grid.Children.Add(MakeButton("Show Nav Shadow",
+                    () => Shell.SetNavBarHasShadow(this, true)),
+                2, 21);
+
+			Entry flyoutWidth = new Entry();
+			Entry flyoutHeight = new Entry();
+
+			flyoutWidth.TextChanged += FlyoutSizeTextChanged;
+			flyoutHeight.TextChanged += FlyoutSizeTextChanged;
+
+			grid.Children.Add(new Label() { Text = "Flyout WxH:" },
+				0, 22);
+
+			grid.Children.Add(flyoutWidth,
+				1, 22);
+
+			grid.Children.Add(flyoutHeight,
+				2, 22);
+
+			void FlyoutSizeTextChanged(object sender, TextChangedEventArgs e)
+			{
+				double result;
+
+				if (double.TryParse(flyoutWidth.Text, out result))
+				{
+					Shell.Current.FlyoutWidth = result;
+				}
+
+				if (double.TryParse(flyoutHeight.Text, out result))
+				{
+					Shell.Current.FlyoutHeight = result;
+				}
+			}
 		}
 
 		Switch _navBarVisibleSwitch;
