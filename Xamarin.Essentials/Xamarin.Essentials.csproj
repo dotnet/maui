@@ -87,7 +87,7 @@
   </ItemGroup>
   <!-- NOTE: When Android 11.x comes out we neeed to make this check more robust -->
   <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">
-    <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.0.0" />
+    <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.3.0" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
     <Compile Include="**\*.ios.cs" />

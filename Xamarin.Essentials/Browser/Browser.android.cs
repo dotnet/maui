@@ -22,7 +22,9 @@ namespace Xamarin.Essentials
                     var tabsBuilder = new CustomTabsIntent.Builder();
                     tabsBuilder.SetShowTitle(true);
                     if (options.PreferredToolbarColor.HasValue)
+#pragma warning disable CS0618 // Type or member is obsolete
                         tabsBuilder.SetToolbarColor(options.PreferredToolbarColor.Value.ToInt());
+#pragma warning restore CS0618 // Type or member is obsolete
                     if (options.TitleMode != BrowserTitleMode.Default)
                         tabsBuilder.SetShowTitle(options.TitleMode == BrowserTitleMode.Show);
 
