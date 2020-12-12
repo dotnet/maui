@@ -136,12 +136,15 @@ namespace Samples.ViewModel
 
                 if (result != null)
                 {
-                    Text = $"File Name: {result.FileName}";
+                    var size = await GetStreamSizeAsync(result);
 
-                    if (result.FileName.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) ||
-                        result.FileName.EndsWith("png", StringComparison.OrdinalIgnoreCase))
+                    Text = $"File Name: {result.FileName} ({size:0.00} KB)";
+
+                    var ext = Path.GetExtension(result.FileName).ToLowerInvariant();
+                    if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif")
                     {
                         var stream = await result.OpenReadAsync();
+
                         Image = ImageSource.FromStream(() => stream);
                         IsImageVisible = true;
                     }
@@ -162,6 +165,19 @@ namespace Samples.ViewModel
                 Text = ex.ToString();
                 IsImageVisible = false;
                 return null;
+            }
+        }
+
+        async Task<double> GetStreamSizeAsync(FileResult result)
+        {
+            try
+            {
+                using var stream = await result.OpenReadAsync();
+                return stream.Length / 1024.0;
+            }
+            catch
+            {
+                return 0.0;
             }
         }
 
@@ -193,6 +209,7 @@ namespace Samples.ViewModel
                 else
                 {
                     Text = $"Pick cancelled.";
+                    IsImageVisible = false;
                 }
             }
             catch (Exception ex)

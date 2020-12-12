@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+        static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
             var allowedUtis = options?.FileTypes?.Value?.ToArray() ?? new string[]
             {
@@ -22,45 +22,21 @@ namespace Xamarin.Essentials
 
             var tcs = new TaskCompletionSource<IEnumerable<FileResult>>();
 
-            // Note: Importing (UIDocumentPickerMode.Import) makes a local copy of the document,
-            // while opening (UIDocumentPickerMode.Open) opens the document directly. We do the
-            // latter, so the user accesses the original file.
-            var documentPicker = new UIDocumentPickerViewController(allowedUtis, UIDocumentPickerMode.Open);
+            // Use Open instead of Import so that we can attempt to use the original file.
+            // If the file is from an external provider, then it will be downloaded.
+            using var documentPicker = new UIDocumentPickerViewController(allowedUtis, UIDocumentPickerMode.Open);
             if (Platform.HasOSVersion(11, 0))
                 documentPicker.AllowsMultipleSelection = allowMultiple;
             documentPicker.Delegate = new PickerDelegate
             {
-                PickHandler = urls =>
-                {
-                    try
-                    {
-                        tcs.TrySetResult(GetFileResults(urls));
-                    }
-                    catch (Exception ex)
-                    {
-                        // pass exception to task so that it doesn't get lost in the UI main loop
-                        tcs.SetException(ex);
-                    }
-                }
+                PickHandler = urls => GetFileResults(urls, tcs)
             };
 
             if (documentPicker.PresentationController != null)
             {
                 documentPicker.PresentationController.Delegate = new PickerPresentationControllerDelegate
                 {
-                    PickHandler = urls =>
-                    {
-                        try
-                        {
-                            // there was a cancellation
-                            tcs.TrySetResult(GetFileResults(urls));
-                        }
-                        catch (Exception ex)
-                        {
-                            // pass exception to task so that it doesn't get lost in the UI main loop
-                            tcs.SetException(ex);
-                        }
-                    }
+                    PickHandler = urls => GetFileResults(urls, tcs)
                 };
             }
 
@@ -68,13 +44,22 @@ namespace Xamarin.Essentials
 
             parentController.PresentViewController(documentPicker, true, null);
 
-            return tcs.Task;
+            return await tcs.Task;
         }
 
-        static IEnumerable<FileResult> GetFileResults(NSUrl[] urls) =>
-            urls?.Length > 0
-                ? urls.Select(url => new UIDocumentFileResult(url))
-                : Enumerable.Empty<FileResult>();
+        static async void GetFileResults(NSUrl[] urls, TaskCompletionSource<IEnumerable<FileResult>> tcs)
+        {
+            try
+            {
+                var results = await FileSystem.EnsurePhysicalFileResultsAsync(urls);
+
+                tcs.TrySetResult(results);
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
+        }
 
         class PickerDelegate : UIDocumentPickerDelegate
         {

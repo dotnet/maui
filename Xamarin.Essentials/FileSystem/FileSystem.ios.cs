@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
 using Photos;
@@ -7,29 +9,168 @@ using UIKit;
 
 namespace Xamarin.Essentials
 {
-    class UIDocumentFileResult : FileResult
+    public partial class FileSystem
     {
-        readonly Stream fileStream;
+        internal static async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
+        {
+            if (urls == null || urls.Length == 0)
+                return Array.Empty<FileResult>();
 
-        internal UIDocumentFileResult(NSUrl url)
+            var opts = NSFileCoordinatorReadingOptions.WithoutChanges;
+            var intents = urls.Select(x => NSFileAccessIntent.CreateReadingIntent(x, opts)).ToArray();
+
+            using var coordinator = new NSFileCoordinator();
+
+            var tcs = new TaskCompletionSource<FileResult[]>();
+
+            coordinator.CoordinateAccess(intents, new NSOperationQueue(), error =>
+            {
+                if (error != null)
+                {
+                    tcs.TrySetException(new NSErrorException(error));
+                    return;
+                }
+
+                var bookmarks = new List<FileResult>();
+
+                foreach (var intent in intents)
+                {
+                    var url = intent.Url;
+                    var result = new BookmarkDataFileResult(url);
+                    bookmarks.Add(result);
+                }
+
+                tcs.TrySetResult(bookmarks.ToArray());
+            });
+
+            return await tcs.Task;
+        }
+    }
+
+    class BookmarkDataFileResult : FileResult
+    {
+        NSData bookmark;
+
+        internal BookmarkDataFileResult(NSUrl url)
             : base()
         {
-            url.StartAccessingSecurityScopedResource();
+            try
+            {
+                url.StartAccessingSecurityScopedResource();
+
+                var newBookmark = url.CreateBookmarkData(0, Array.Empty<string>(), null, out var bookmarkError);
+                if (bookmarkError != null)
+                    throw new NSErrorException(bookmarkError);
+
+                UpdateBookmark(url, newBookmark);
+            }
+            finally
+            {
+                url.StopAccessingSecurityScopedResource();
+            }
+        }
+
+        void UpdateBookmark(NSUrl url, NSData newBookmark)
+        {
+            bookmark = newBookmark;
 
             var doc = new UIDocument(url);
             FullPath = doc.FileUrl?.Path;
             FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
-
-            // immediately open a file stream, in case iOS cleans up the picked file
-            fileStream = File.OpenRead(FullPath);
-
-            url.StopAccessingSecurityScopedResource();
         }
 
         internal override Task<Stream> PlatformOpenReadAsync()
         {
-            // make sure we are at he beginning
-            fileStream.Seek(0, SeekOrigin.Begin);
+            var url = NSUrl.FromBookmarkData(bookmark, 0, null, out var isStale, out var error);
+
+            if (error != null)
+                throw new NSErrorException(error);
+
+            url.StartAccessingSecurityScopedResource();
+
+            if (isStale)
+            {
+                var newBookmark = url.CreateBookmarkData(NSUrlBookmarkCreationOptions.SuitableForBookmarkFile, Array.Empty<string>(), null, out error);
+                if (error != null)
+                    throw new NSErrorException(error);
+
+                UpdateBookmark(url, newBookmark);
+            }
+
+            var fileStream = File.OpenRead(FullPath);
+            Stream stream = new SecurityScopedStream(fileStream, url);
+            return Task.FromResult(stream);
+        }
+
+        class SecurityScopedStream : Stream
+        {
+            FileStream stream;
+            NSUrl url;
+
+            internal SecurityScopedStream(FileStream stream, NSUrl url)
+            {
+                this.stream = stream;
+                this.url = url;
+            }
+
+            public override bool CanRead => stream.CanRead;
+
+            public override bool CanSeek => stream.CanSeek;
+
+            public override bool CanWrite => stream.CanWrite;
+
+            public override long Length => stream.Length;
+
+            public override long Position
+            {
+                get => stream.Position;
+                set => stream.Position = value;
+            }
+
+            public override void Flush() =>
+                stream.Flush();
+
+            public override int Read(byte[] buffer, int offset, int count) =>
+                stream.Read(buffer, offset, count);
+
+            public override long Seek(long offset, SeekOrigin origin) =>
+                stream.Seek(offset, origin);
+
+            public override void SetLength(long value) =>
+                stream.SetLength(value);
+
+            public override void Write(byte[] buffer, int offset, int count) =>
+                stream.Write(buffer, offset, count);
+
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+
+                if (disposing)
+                {
+                    stream?.Dispose();
+                    stream = null;
+
+                    url?.StopAccessingSecurityScopedResource();
+                    url = null;
+                }
+            }
+        }
+    }
+
+    class UIDocumentFileResult : FileResult
+    {
+        internal UIDocumentFileResult(NSUrl url)
+            : base()
+        {
+            var doc = new UIDocument(url);
+            FullPath = doc.FileUrl?.Path;
+            FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
+        }
+
+        internal override Task<Stream> PlatformOpenReadAsync()
+        {
+            Stream fileStream = File.OpenRead(FullPath);
 
             return Task.FromResult(fileStream);
         }

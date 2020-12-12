@@ -65,34 +65,14 @@ namespace Xamarin.Essentials
             var tcs = new TaskCompletionSource<FileResult>(picker);
             picker.Delegate = new PhotoPickerDelegate
             {
-                CompletedHandler = info =>
-                {
-                    try
-                    {
-                        tcs.TrySetResult(DictionaryToMediaFile(info));
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.TrySetException(ex);
-                    }
-                }
+                CompletedHandler = info => GetFileResult(info, tcs)
             };
 
             if (picker.PresentationController != null)
             {
                 picker.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
                 {
-                    CompletedHandler = info =>
-                    {
-                        try
-                        {
-                            tcs.TrySetResult(DictionaryToMediaFile(info));
-                        }
-                        catch (Exception ex)
-                        {
-                            tcs.TrySetException(ex);
-                        }
-                    }
+                    CompletedHandler = info => GetFileResult(info, tcs)
                 };
             }
 
@@ -106,6 +86,18 @@ namespace Xamarin.Essentials
             picker = null;
 
             return result;
+        }
+
+        static void GetFileResult(NSDictionary info, TaskCompletionSource<FileResult> tcs)
+        {
+            try
+            {
+                tcs.TrySetResult(DictionaryToMediaFile(info));
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
         }
 
         static FileResult DictionaryToMediaFile(NSDictionary info)
