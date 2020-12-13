@@ -241,7 +241,7 @@ namespace Xamarin.Forms.Platform.Android
 		void OnDualScreenServiceScreenChanged(object sender, EventArgs e)
 		{
 			UpdateFlyoutSize();
-			if(_content != null)
+			if (_content != null)
 				UpdateDrawerLockMode(_behavior);
 		}
 
@@ -280,7 +280,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateFlyoutSize()
 		{
-			if (_flyoutContent?.AndroidView != null && 
+			if (_flyoutContent?.AndroidView != null &&
 				(_previouslyMeasuredFlyoutWidth != FlyoutWidth || _previouslyMeasuredFlyoutHeight != FlyoutHeight))
 			{
 				_previouslyMeasuredFlyoutWidth = FlyoutWidth;

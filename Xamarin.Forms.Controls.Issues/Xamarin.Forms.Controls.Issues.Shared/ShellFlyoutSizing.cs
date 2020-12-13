@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var scale = 10d;
 
 			if (Device.RuntimePlatform == Device.Android)
-				scale = scale  / Device.info.ScalingFactor;
+				scale = scale / Device.info.ScalingFactor;
 
 			var increaseMenuItem = new MenuItem()
 			{
@@ -92,8 +92,9 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 
-			Items.Add(new MenuItem() { 
-				Text = "Change Height and Width", 
+			Items.Add(new MenuItem()
+			{
+				Text = "Change Height and Width",
 				Command = new Command(() =>
 				{
 					FlyoutWidth = 350;

@@ -81,7 +81,7 @@ namespace Xamarin.Forms
 				_brushArray[i] = Brush.Default;
 
 			for (int i = 0; i < _doubleArray.Length; i++)
-				_doubleArray[i] = -1;			
+				_doubleArray[i] = -1;
 		}
 
 		public override bool Equals(object obj)

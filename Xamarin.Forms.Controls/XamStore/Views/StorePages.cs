@@ -355,9 +355,9 @@ namespace Xamarin.Forms.Controls.XamStore
 					() => Shell.SetNavBarHasShadow(this, false)),
 				1, 21);
 
-            grid.Children.Add(MakeButton("Show Nav Shadow",
-                    () => Shell.SetNavBarHasShadow(this, true)),
-                2, 21);
+			grid.Children.Add(MakeButton("Show Nav Shadow",
+					() => Shell.SetNavBarHasShadow(this, true)),
+				2, 21);
 
 			Entry flyoutWidth = new Entry();
 			Entry flyoutHeight = new Entry();
