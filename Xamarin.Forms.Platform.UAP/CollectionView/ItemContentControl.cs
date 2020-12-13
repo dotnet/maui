@@ -140,6 +140,14 @@ namespace Xamarin.Forms.Platform.UWP
 				_renderer = Platform.CreateRenderer(_visualElement);
 				Platform.SetRenderer(_visualElement, _renderer);
 
+				// We need to set IsNativeStateConsistent explicitly; otherwise, it won't be set until the renderer's Loaded 
+				// event. If the CollectionView is in a Layout, the Layout won't measure or layout the CollectionView until
+				// every visible descendant has `IsNativeStateConsistent == true`. And the problem that Layout is trying
+				// to avoid by skipping layout for controls with not-yet-loaded children does not apply to CollectionView
+				// items. If we don't set this, the CollectionView just won't get layout at all, and will be invisible until
+				// the window is resized. 
+				SetNativeStateConsistent(_visualElement);
+
 				// Keep track of the template in case this instance gets reused later
 				_currentTemplate = formsTemplate;
 			}
@@ -152,6 +160,21 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Content = _renderer.ContainerElement;
 			itemsView?.AddLogicalChild(_visualElement);
+		}
+
+		void SetNativeStateConsistent(VisualElement visualElement) 
+		{
+			visualElement.IsNativeStateConsistent = true;
+
+			foreach (var child in visualElement.LogicalChildren)
+			{
+				if (!(child is VisualElement ve))
+				{
+					continue;
+				}
+
+				SetNativeStateConsistent(ve);
+			}
 		}
 
 		internal void UpdateIsSelected(bool isSelected)
