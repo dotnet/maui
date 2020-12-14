@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -81,6 +82,13 @@ namespace Xamarin.Forms
 		public static FlyoutBehavior GetFlyoutBehavior(BindableObject obj) => (FlyoutBehavior)obj.GetValue(FlyoutBehaviorProperty);
 		public static void SetFlyoutBehavior(BindableObject obj, FlyoutBehavior value) => obj.SetValue(FlyoutBehaviorProperty, value);
 
+		public static double GetFlyoutWidth(BindableObject obj) => (double)obj.GetValue(FlyoutWidthProperty);
+		public static void SetFlyoutWidth(BindableObject obj, double value) => obj.SetValue(FlyoutWidthProperty, value);
+
+		public static double GetFlyoutHeight(BindableObject obj) => (double)obj.GetValue(FlyoutHeightProperty);
+		public static void SetFlyoutHeight(BindableObject obj, double value) => obj.SetValue(FlyoutHeightProperty, value);
+
+
 		public static bool GetNavBarIsVisible(BindableObject obj) => (bool)obj.GetValue(NavBarIsVisibleProperty);
 		public static void SetNavBarIsVisible(BindableObject obj, bool value) => obj.SetValue(NavBarIsVisibleProperty, value);
 
@@ -110,47 +118,55 @@ namespace Xamarin.Forms
 
 		public static readonly new BindableProperty BackgroundColorProperty =
 			BindableProperty.CreateAttached("BackgroundColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnColorValueChanged);
+				propertyChanged: OnShellAppearanceValueChanged);
 
 		public static readonly BindableProperty DisabledColorProperty =
 			BindableProperty.CreateAttached("DisabledColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnColorValueChanged);
+				propertyChanged: OnShellAppearanceValueChanged);
 
 		public static readonly BindableProperty ForegroundColorProperty =
 			BindableProperty.CreateAttached("ForegroundColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnColorValueChanged);
+				propertyChanged: OnShellAppearanceValueChanged);
 
 		public static readonly BindableProperty TabBarBackgroundColorProperty =
 			BindableProperty.CreateAttached("TabBarBackgroundColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnColorValueChanged);
+				propertyChanged: OnShellAppearanceValueChanged);
 
 		public static readonly BindableProperty TabBarDisabledColorProperty =
 			BindableProperty.CreateAttached("TabBarDisabledColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnColorValueChanged);
+				propertyChanged: OnShellAppearanceValueChanged);
 
 		public static readonly BindableProperty TabBarForegroundColorProperty =
 			BindableProperty.CreateAttached("TabBarForegroundColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnColorValueChanged);
+				propertyChanged: OnShellAppearanceValueChanged);
 
 		public static readonly BindableProperty TabBarTitleColorProperty =
 			BindableProperty.CreateAttached("TabBarTitleColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnColorValueChanged);
+				propertyChanged: OnShellAppearanceValueChanged);
 
 		public static readonly BindableProperty TabBarUnselectedColorProperty =
 			BindableProperty.CreateAttached("TabBarUnselectedColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnColorValueChanged);
+				propertyChanged: OnShellAppearanceValueChanged);
 
 		public static readonly BindableProperty TitleColorProperty =
 			BindableProperty.CreateAttached("TitleColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnColorValueChanged);
+				propertyChanged: OnShellAppearanceValueChanged);
 
 		public static readonly BindableProperty UnselectedColorProperty =
 			BindableProperty.CreateAttached("UnselectedColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnColorValueChanged);
+				propertyChanged: OnShellAppearanceValueChanged);
 
 		public static readonly BindableProperty FlyoutBackdropProperty =
 			BindableProperty.CreateAttached("FlyoutBackdrop", typeof(Brush), typeof(Shell), Brush.Default,
-				propertyChanged: OnColorValueChanged);
+				propertyChanged: OnShellAppearanceValueChanged);
+
+		public static readonly BindableProperty FlyoutWidthProperty =
+			BindableProperty.CreateAttached("FlyoutWidth", typeof(double), typeof(Shell), -1d,
+				propertyChanged: OnShellAppearanceValueChanged);
+
+		public static readonly BindableProperty FlyoutHeightProperty =
+			BindableProperty.CreateAttached("FlyoutHeight", typeof(double), typeof(Shell), -1d,
+				propertyChanged: OnShellAppearanceValueChanged);
 
 		public static Color GetBackgroundColor(BindableObject obj) => (Color)obj.GetValue(BackgroundColorProperty);
 		public static void SetBackgroundColor(BindableObject obj, Color value) => obj.SetValue(BackgroundColorProperty, value);
@@ -185,7 +201,7 @@ namespace Xamarin.Forms
 		public static Brush GetFlyoutBackdrop(BindableObject obj) => (Brush)obj.GetValue(FlyoutBackdropProperty);
 		public static void SetFlyoutBackdrop(BindableObject obj, Brush value) => obj.SetValue(FlyoutBackdropProperty, value);
 
-		static void OnColorValueChanged(BindableObject bindable, object oldValue, object newValue)
+		static void OnShellAppearanceValueChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var item = (Element)bindable;
 			var source = item;
@@ -978,6 +994,18 @@ namespace Xamarin.Forms
 		{
 			get => (Brush)GetValue(FlyoutBackdropProperty);
 			set => SetValue(FlyoutBackdropProperty, value);
+		}
+
+		public double FlyoutWidth
+		{
+			get => (double)GetValue(FlyoutWidthProperty);
+			set => SetValue(FlyoutWidthProperty, value);
+		}
+
+		public double FlyoutHeight
+		{
+			get => (double)GetValue(FlyoutHeightProperty);
+			set => SetValue(FlyoutHeightProperty, value);
 		}
 
 		public FlyoutBehavior FlyoutBehavior

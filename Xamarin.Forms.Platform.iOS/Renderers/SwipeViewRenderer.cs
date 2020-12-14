@@ -354,7 +354,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void HandlePan(UIPanGestureRecognizer panGestureRecognizer)
 		{
-			if (panGestureRecognizer != null)
+			if (_isSwipeEnabled && panGestureRecognizer != null)
 			{
 				CGPoint point = panGestureRecognizer.LocationInView(this);
 				var navigationController = GetUINavigationController(GetViewController());
@@ -817,9 +817,17 @@ namespace Xamarin.Forms.Platform.iOS
 
 		SwipeItems GetSwipeItemsByDirection()
 		{
+			if (_swipeDirection.HasValue)
+				return GetSwipeItemsByDirection(_swipeDirection.Value);
+
+			return null;
+		}
+
+		SwipeItems GetSwipeItemsByDirection(SwipeDirection swipeDirection)
+		{
 			SwipeItems swipeItems = null;
 
-			switch (_swipeDirection)
+			switch (swipeDirection)
 			{
 				case SwipeDirection.Left:
 					swipeItems = Element.RightItems;
@@ -1172,26 +1180,50 @@ namespace Xamarin.Forms.Platform.iOS
 					swipeThreshold = GetSwipeItemHeight();
 			}
 			else
-			{
-				if (isHorizontal)
-					swipeThreshold = CalculateSwipeThreshold();
-				else
-				{
-					var contentHeight = _contentView.Frame.Height;
-					swipeThreshold = (SwipeThreshold > contentHeight) ? contentHeight : SwipeThreshold;
-				}
-			}
+				swipeThreshold = GetRevealModeSwipeThreshold();
 
 			return ValidateSwipeThreshold(swipeThreshold);
 		}
 
-		double CalculateSwipeThreshold()
+		double GetRevealModeSwipeThreshold()
 		{
-			if (_contentView != null)
-			{
-				var swipeThreshold = _contentView.Frame.Width * 0.8;
+			var swipeItems = GetSwipeItemsByDirection();
+			bool isHorizontal = IsHorizontalSwipe();
 
-				return swipeThreshold;
+			float swipeItemsSize = 0;
+			bool hasSwipeItemView = false;
+
+			foreach (var swipeItem in swipeItems)
+			{
+				if (swipeItem is SwipeItemView)
+					hasSwipeItemView = true;
+
+				if (swipeItem.IsVisible)
+				{
+					var swipeItemSize = GetSwipeItemSize(swipeItem);
+
+					if (isHorizontal)
+						swipeItemsSize += (float)swipeItemSize.Width;
+					else
+						swipeItemsSize += (float)swipeItemSize.Height;
+				}
+			}
+
+			if (hasSwipeItemView)
+			{
+				var swipeItemsWidthSwipeThreshold = swipeItemsSize * 0.8f;
+
+				return swipeItemsWidthSwipeThreshold;
+			}
+			else
+			{
+				if (_contentView != null)
+				{
+					var contentSize = isHorizontal ? _contentView.Frame.Width : _contentView.Frame.Height;
+					var contentSizeSwipeThreshold = contentSize * 0.8f;
+
+					return contentSizeSwipeThreshold;
+				}
 			}
 
 			return SwipeThreshold;

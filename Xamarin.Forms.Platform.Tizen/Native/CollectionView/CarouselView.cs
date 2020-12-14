@@ -10,6 +10,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			SelectionMode = CollectionViewSelectionMode.Single;
 			Scroll.ScrollBlock = ScrollBlock.None;
+			SnapPointsType = SnapPointsType.MandatorySingle;
 		}
 
 		public EScroller Scroll => base.Scroller;

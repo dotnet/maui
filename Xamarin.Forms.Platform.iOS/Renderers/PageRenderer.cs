@@ -490,7 +490,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
 			{
-				if (v is UITableView || v is UITableViewCell || v.CanBecomeFirstResponder)
+				if (v != null && (v is UITableView || v is UITableViewCell || v.CanBecomeFirstResponder))
 					return false;
 			}
 			return true;

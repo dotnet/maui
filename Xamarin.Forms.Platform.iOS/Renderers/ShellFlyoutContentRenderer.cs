@@ -175,7 +175,10 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual void UpdateBackground()
 		{
 			var color = _shellContext.Shell.FlyoutBackgroundColor;
-			View.BackgroundColor = color.ToUIColor(ColorExtensions.BackgroundColor);
+			var brush = _shellContext.Shell.FlyoutBackground;
+
+			var backgroundImage = View.GetBackgroundImage(brush);
+			View.BackgroundColor = backgroundImage != null ? UIColor.FromPatternImage(backgroundImage) : color.ToUIColor(ColorExtensions.BackgroundColor);
 
 			if (View.BackgroundColor.CGColor.Alpha < 1)
 			{
@@ -186,9 +189,6 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_blurView.Superview != null)
 					_blurView.RemoveFromSuperview();
 			}
-
-			var brush = _shellContext.Shell.FlyoutBackground;
-			View.UpdateBackground(brush);
 
 			UpdateFlyoutBgImageAsync();
 		}

@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using System.Threading;
+﻿using System;
 using System.Diagnostics;
-using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms.Controls.GalleryPages;
+using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
 #if UITEST
@@ -90,7 +90,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			void ChangeExecutionModeClicked(object sender, EventArgs e)
 			{
-				if(_webView.On<PlatformConfiguration.Windows>().GetExecutionMode() == WebViewExecutionMode.SameThread)
+				if (_webView.On<PlatformConfiguration.Windows>().GetExecutionMode() == WebViewExecutionMode.SameThread)
 					_webView.On<PlatformConfiguration.Windows>().SetExecutionMode(WebViewExecutionMode.SeparateProcess);
 				else
 					_webView.On<PlatformConfiguration.Windows>().SetExecutionMode(WebViewExecutionMode.SameThread);
