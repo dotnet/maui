@@ -204,7 +204,8 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_renderers.TryGetValue(shellContent, out var renderer))
 				{
 					var view = renderer.NativeView;
-					view.Frame = new CGRect(0, 0, View.Bounds.Width, View.Bounds.Height);
+					if(view != null)
+						view.Frame = new CGRect(0, 0, View.Bounds.Width, View.Bounds.Height);
 				}
 			}
 		}
