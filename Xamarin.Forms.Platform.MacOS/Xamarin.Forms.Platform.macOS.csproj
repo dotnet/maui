@@ -302,6 +302,9 @@
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Shapes\ShapeRenderer.cs">
       <Link>Shapes\ShapeRenderer.cs</Link>
     </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\BrushExtensions.shared.cs">
+      <Link>Extensions\BrushExtensions.shared.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
