@@ -527,13 +527,23 @@ namespace Xamarin.Forms.Platform.iOS
 				return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
 			}
 
+
+			if (Forms.IsiOS11OrNewer)
+			{
+				UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
+			}
+			else
+			{
+				UpdateConstraints(CollectionView.Bounds.Size);
+			}
+
 			return true;
 		}
 
-		public override void InvalidateLayout()
-		{
-			UpdateConstraints(CollectionView.Frame.Size);
-			base.InvalidateLayout();
-		}
+		//public override void InvalidateLayout()
+		//{
+		//	UpdateConstraints(CollectionView.Frame.Size);
+		//	base.InvalidateLayout();
+		//}
 	}
 }
