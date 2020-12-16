@@ -591,6 +591,47 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(column0Height, Is.EqualTo(column1Height / 2));
 		}
 
+		[Test]
+		public void Issue13127() 
+		{
+			var scrollView = new ScrollView() { IsPlatformEnabled = true };
+			var outerGrid = new Grid() { RowSpacing = 0, IsPlatformEnabled = true };
+			var outerStackLayout = new StackLayout() { Spacing = 0, IsPlatformEnabled = true };
+
+			var innerGrid = new Grid() { RowSpacing = 0, IsPlatformEnabled = true };
+			innerGrid.RowDefinitions = new RowDefinitionCollection() {
+				new RowDefinition(){ Height = new GridLength(6, GridUnitType.Star)},
+				new RowDefinition(){ Height = new GridLength(4, GridUnitType.Star)},
+			};
+
+			// Set up the background view, only covers the first row
+			var background = new BoxView() { IsPlatformEnabled = true };
+			Grid.SetRowSpan(background, 1);
+
+			// Create the foreground, which spans both rows
+			var foreground = new StackLayout() { Spacing = 0, IsPlatformEnabled = true };
+			var view1 = new FixedSizeLabel(new Size(200, 50)) { IsPlatformEnabled = true };
+			var view2 = new FixedSizeLabel(new Size(200, 100)) { IsPlatformEnabled = true };
+			foreground.Children.Add(view1);
+			foreground.Children.Add(view2);
+			Grid.SetRowSpan(foreground, 2);
+
+			innerGrid.Children.Add(background);
+			innerGrid.Children.Add(foreground);
+
+			outerStackLayout.Children.Add(innerGrid);
+			outerGrid.Children.Add(outerStackLayout);
+			scrollView.Content = outerGrid;
+
+			var sizeRequest = scrollView.Measure(500, 1000);
+			scrollView.Layout(new Rectangle(0, 0, sizeRequest.Request.Width, 1000));
+
+			Assert.That(innerGrid.Height, Is.EqualTo(foreground.Height));
+			Assert.That(background.Height, Is.EqualTo(foreground.Height * 0.6).Within(0.01));
+
+			Assert.That(background.Height, Is.EqualTo(165));
+		}
+
 		abstract class TestLabel : Label
 		{
 			protected TestLabel()

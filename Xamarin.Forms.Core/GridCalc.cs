@@ -689,8 +689,8 @@ namespace Xamarin.Forms
 					if (!col.Width.IsStar || col.Width.Value == 0 || col.ActualWidth <= 0)
 						continue;
 
-					starColRequestWidth = Math.Max(starColRequestWidth, col.ActualWidth);
-					starColMinWidth = Math.Max(starColMinWidth, col.MinimumWidth);
+					starColRequestWidth = Math.Max(starColRequestWidth, col.ActualWidth / col.Width.Value);
+					starColMinWidth = Math.Max(starColMinWidth, col.MinimumWidth / col.Width.Value);
 				}
 
 				if (starColRequestWidth * totalStarsWidth <= widthConstraint)
@@ -750,8 +750,8 @@ namespace Xamarin.Forms
 					if (!row.Height.IsStar || row.Height.Value == 0 || row.ActualHeight <= 0)
 						continue;
 
-					starRowRequestHeight = Math.Max(starRowRequestHeight, row.ActualHeight);
-					starRowMinHeight = Math.Max(starRowMinHeight, row.MinimumHeight);
+					starRowRequestHeight = Math.Max(starRowRequestHeight, row.ActualHeight / row.Height.Value);
+					starRowMinHeight = Math.Max(starRowMinHeight, row.MinimumHeight / row.Height.Value);
 				}
 
 				if (starRowRequestHeight * totalStarsHeight <= heightConstraint)
