@@ -2,11 +2,10 @@
 using AppKit;
 using CoreAnimation;
 using CoreGraphics;
-using Foundation;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
-	public static class BrushExtensions
+	public static partial class BrushExtensions
 	{
 		const string BackgroundLayer = "BackgroundLayer";
 		const string SolidColorBrushLayer = "SolidColorBrushLayer";
@@ -76,7 +75,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					var orderedStops = linearGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
 					linearGradientLayer.Colors = orderedStops.Select(x => x.Color.ToCGColor()).ToArray();
-					linearGradientLayer.Locations = orderedStops.Select(x => new NSNumber(x.Offset)).ToArray();
+					linearGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
 				}
 
 				return linearGradientLayer;
@@ -103,7 +102,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					var orderedStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
 					radialGradientLayer.Colors = orderedStops.Select(x => x.Color.ToCGColor()).ToArray();
-					radialGradientLayer.Locations = orderedStops.Select(x => new NSNumber(x.Offset)).ToArray();
+					radialGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
 				}
 
 				return radialGradientLayer;
@@ -176,25 +175,6 @@ namespace Xamarin.Forms.Platform.MacOS
 			return false;
 		}
 
-		static CGPoint GetRadialGradientBrushEndPoint(Point startPoint, double radius)
-		{
-			double x = startPoint.X == 1 ? (startPoint.X - radius) : (startPoint.X + radius);
-
-			if (x < 0)
-				x = 0;
-
-			if (x > 1)
-				x = 1;
-
-			double y = startPoint.Y == 1 ? (startPoint.Y - radius) : (startPoint.Y + radius);
-
-			if (y < 0)
-				y = 0;
-
-			if (y > 1)
-				y = 1;
-
-			return new CGPoint(x, y);
-		}
+	
 	}
 }

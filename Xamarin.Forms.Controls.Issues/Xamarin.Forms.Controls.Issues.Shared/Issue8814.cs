@@ -26,7 +26,8 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var cv = new CollectionView();
 			var items = new List<string>() { Success, "two", "three" };
-			cv.ItemTemplate = new DataTemplate(() => {
+			cv.ItemTemplate = new DataTemplate(() =>
+			{
 
 				var layout = new StackLayout();
 
@@ -34,7 +35,7 @@ namespace Xamarin.Forms.Controls.Issues
 				label.SetBinding(Label.TextProperty, new Binding("."));
 
 				layout.Children.Add(label);
-				
+
 				return layout;
 			});
 
@@ -54,7 +55,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
-#if UITEST 
+#if UITEST
 		[Test]
 		public void CollectionViewInShellShouldBeVisible()
 		{

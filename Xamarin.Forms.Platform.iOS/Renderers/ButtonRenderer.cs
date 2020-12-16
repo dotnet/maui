@@ -1,12 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using Foundation;
 using UIKit;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using SizeF = CoreGraphics.CGSize;
 using PreserveAttribute = Foundation.PreserveAttribute;
 using CoreGraphics;
@@ -84,9 +79,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void LayoutSubviews()
 		{
-			if (_previousSize != Bounds.Size)
+			if (Element != null && _previousSize != Bounds.Size)
 			{
-				SetBackground(Element.Background);
+				Brush brush = Element.Background;
+
+				if (!Brush.IsNullOrEmpty(brush))
+					SetBackground(brush);
+
 				SetNeedsDisplay();
 			}
 

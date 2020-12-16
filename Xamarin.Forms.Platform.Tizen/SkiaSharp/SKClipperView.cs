@@ -9,9 +9,13 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 	{
 		public SKClipperView(EvasObject parent) : base(parent) { }
 
+		public bool ClippingRequired { get; set; }
+
 		public new void Invalidate()
 		{
+			ClippingRequired = true;
 			OnDrawFrame();
+			ClippingRequired = false;
 		}
 	}
 
@@ -19,7 +23,7 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 	{
 		public static void SetClipperCanvas(this VisualElement target, SKClipperView clipper)
 		{
-			if (target != null)
+			if (target != null && clipper.ClippingRequired)
 			{
 				var nativeView = Platform.GetOrCreateRenderer(target)?.NativeView;
 				var realHandle = elm_object_part_content_get(clipper, "elm.swallow.content");
@@ -31,7 +35,7 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 
 		public static void SetClipperCanvas(this EvasObject target, SKClipperView clipper)
 		{
-			if (target != null)
+			if (target != null && clipper.ClippingRequired)
 			{
 				var realHandle = elm_object_part_content_get(clipper, "elm.swallow.content");
 
