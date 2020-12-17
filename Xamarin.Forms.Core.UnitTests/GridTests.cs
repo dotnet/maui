@@ -127,7 +127,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void StarRowsDoNotOverlapWithStackLayoutOnBottom()
 		{
-			SetupStarRowOverlapTest(rowAIsOnTop: true, out VisualElement rowAControl, 
+			SetupStarRowOverlapTest(rowAIsOnTop: true, out VisualElement rowAControl,
 				out VisualElement rowBControl, out Label lastLabel);
 
 			var topOfRowB = rowBControl.Y;
@@ -174,8 +174,8 @@ namespace Xamarin.Forms.Core.UnitTests
 				"A is before B, so the end of A should be the start of B");
 		}
 
-		void SetupStarRowOverlapTest(bool rowAIsOnTop, out VisualElement rowAControl, 
-			out VisualElement rowBControl, out Label lastLabel) 
+		void SetupStarRowOverlapTest(bool rowAIsOnTop, out VisualElement rowAControl,
+			out VisualElement rowBControl, out Label lastLabel)
 		{
 			var grid = new Grid
 			{
@@ -592,7 +592,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void Issue13127() 
+		public void Issue13127()
 		{
 			var scrollView = new ScrollView() { IsPlatformEnabled = true };
 			var outerGrid = new Grid() { RowSpacing = 0, IsPlatformEnabled = true };
