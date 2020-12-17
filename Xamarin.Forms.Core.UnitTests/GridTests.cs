@@ -108,6 +108,168 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(column0Height, Is.LessThan(gridHeight));
 		}
 
+		[Test]
+		public void StarRowsDoNotOverlapWithStackLayoutOnTop()
+		{
+			SetupStarRowOverlapTest(rowAIsOnTop: false, out VisualElement rowAControl,
+				out VisualElement rowBControl, out Label lastLabel);
+
+			var bottomOfRowB = rowBControl.Y + rowBControl.Height;
+			var bottomOfLastLabelInRowB = rowBControl.Y + lastLabel.Y + lastLabel.Height;
+			var topOfRowA = rowAControl.Y;
+
+			Assert.That(bottomOfRowB, Is.EqualTo(bottomOfLastLabelInRowB));
+
+			Assert.That(topOfRowA, Is.EqualTo(bottomOfRowB),
+				"B is on top of A, so the top of A should be the bottom of B");
+		}
+
+		[Test]
+		public void StarRowsDoNotOverlapWithStackLayoutOnBottom()
+		{
+			SetupStarRowOverlapTest(rowAIsOnTop: true, out VisualElement rowAControl, 
+				out VisualElement rowBControl, out Label lastLabel);
+
+			var topOfRowB = rowBControl.Y;
+			var bottomOfRowB = rowBControl.Y + rowBControl.Height;
+			var bottomOfLastLabelInRowB = rowBControl.Y + lastLabel.Y + lastLabel.Height;
+			var bottomOfRowA = rowAControl.Y + rowAControl.Height;
+
+			Assert.That(bottomOfRowB, Is.EqualTo(bottomOfLastLabelInRowB));
+
+			Assert.That(topOfRowB, Is.EqualTo(bottomOfRowA),
+				"A is on top of B, so the top of B should be the bottom of A");
+		}
+
+		[Test]
+		public void StarColumnsDoNotOverlapWithStackLayoutAtStart()
+		{
+			SetupStarColumnOverlapTest(colAIsAtStart: false, out VisualElement colAControl,
+				out VisualElement colBControl, out Label lastLabel);
+
+			var endOfColB = colBControl.X + colBControl.Width;
+			var endOfLastLabelInColB = colBControl.X + lastLabel.X + lastLabel.Width;
+			var startOfColA = colAControl.X;
+
+			Assert.That(endOfColB, Is.EqualTo(endOfLastLabelInColB));
+
+			Assert.That(startOfColA, Is.EqualTo(endOfColB),
+				"B is before A, so the start of A should be the end of B");
+		}
+
+		[Test]
+		public void StarColumnsDoNotOverlapWithStackLayoutAtEnd()
+		{
+			SetupStarColumnOverlapTest(colAIsAtStart: true, out VisualElement colAControl,
+				out VisualElement colBControl, out Label lastLabel);
+
+			var startOfColB = colBControl.X;
+			var endOfColB = colBControl.X + colBControl.Width;
+			var endOfLastLabelInColB = colBControl.X + lastLabel.X + lastLabel.Width;
+			var endOfColA = colAControl.X + colAControl.Width;
+
+			Assert.That(endOfColB, Is.EqualTo(endOfLastLabelInColB));
+
+			Assert.That(endOfColA, Is.EqualTo(startOfColB),
+				"A is before B, so the end of A should be the start of B");
+		}
+
+		void SetupStarRowOverlapTest(bool rowAIsOnTop, out VisualElement rowAControl, 
+			out VisualElement rowBControl, out Label lastLabel) 
+		{
+			var grid = new Grid
+			{
+				RowSpacing = 0,
+				RowDefinitions = new RowDefinitionCollection
+				{
+					new RowDefinition() { Height = GridLength.Star },
+					new RowDefinition() { Height = GridLength.Star }
+				}
+			};
+
+			var labelSize = new Size(100, 20);
+
+			Label label;
+			rowAControl = label = new FixedSizeLabel(labelSize) { Text = "Hello" };
+
+			StackLayout stackLayout;
+			rowBControl = stackLayout = new StackLayout() { Spacing = 0, IsPlatformEnabled = true };
+
+			for (int n = 0; n < 14; n++)
+			{
+				var labelInStack = new FixedSizeLabel(labelSize) { Text = "Hello" };
+				stackLayout.Children.Add(labelInStack);
+			}
+
+			lastLabel = new FixedSizeLabel(labelSize) { Text = "Hello" };
+			stackLayout.Children.Add(lastLabel);
+
+			grid.Children.Add(stackLayout);
+			grid.Children.Add(label);
+
+			if (rowAIsOnTop)
+			{
+				Grid.SetRow(rowAControl, 0);
+				Grid.SetRow(rowBControl, 1);
+			}
+			else
+			{
+				Grid.SetRow(rowBControl, 0);
+				Grid.SetRow(rowAControl, 1);
+			}
+
+			var sizeRequest = grid.Measure(300, double.PositiveInfinity);
+			grid.Layout(new Rectangle(0, 0, sizeRequest.Request.Width, sizeRequest.Request.Height));
+		}
+
+		void SetupStarColumnOverlapTest(bool colAIsAtStart, out VisualElement colAControl,
+				out VisualElement colBControl, out Label lastLabel)
+		{
+			var grid = new Grid
+			{
+				ColumnSpacing = 0,
+				ColumnDefinitions = new ColumnDefinitionCollection
+				{
+					new ColumnDefinition() { Width = GridLength.Star },
+					new ColumnDefinition() { Width = GridLength.Star }
+				}
+			};
+
+			var labelSize = new Size(20, 100);
+
+			Label label;
+			colAControl = label = new FixedSizeLabel(labelSize) { Text = "Hello" };
+
+			StackLayout stackLayout;
+			colBControl = stackLayout = new StackLayout() { Spacing = 0, Orientation = StackOrientation.Horizontal, IsPlatformEnabled = true };
+
+			for (int n = 0; n < 14; n++)
+			{
+				var labelInStack = new FixedSizeLabel(labelSize) { Text = "Hello" };
+				stackLayout.Children.Add(labelInStack);
+			}
+
+			lastLabel = new FixedSizeLabel(labelSize) { Text = "Hello" };
+			stackLayout.Children.Add(lastLabel);
+
+			grid.Children.Add(stackLayout);
+			grid.Children.Add(label);
+
+			if (colAIsAtStart)
+			{
+				Grid.SetColumn(colAControl, 0);
+				Grid.SetColumn(colBControl, 1);
+			}
+			else
+			{
+				Grid.SetColumn(colBControl, 0);
+				Grid.SetColumn(colAControl, 1);
+			}
+
+			var sizeRequest = grid.Measure(double.PositiveInfinity, 300);
+			grid.Layout(new Rectangle(0, 0, sizeRequest.Request.Width, sizeRequest.Request.Height));
+		}
+
 		[Test(Description = "Columns with a Star width less than one should not cause the Grid to contract below the target width; see https://github.com/xamarin/Xamarin.Forms/issues/11742")]
 		public void StarWidthsLessThanOneShouldNotContractGrid()
 		{
@@ -429,6 +591,47 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(column0Height, Is.EqualTo(column1Height / 2));
 		}
 
+		[Test]
+		public void Issue13127() 
+		{
+			var scrollView = new ScrollView() { IsPlatformEnabled = true };
+			var outerGrid = new Grid() { RowSpacing = 0, IsPlatformEnabled = true };
+			var outerStackLayout = new StackLayout() { Spacing = 0, IsPlatformEnabled = true };
+
+			var innerGrid = new Grid() { RowSpacing = 0, IsPlatformEnabled = true };
+			innerGrid.RowDefinitions = new RowDefinitionCollection() {
+				new RowDefinition(){ Height = new GridLength(6, GridUnitType.Star)},
+				new RowDefinition(){ Height = new GridLength(4, GridUnitType.Star)},
+			};
+
+			// Set up the background view, only covers the first row
+			var background = new BoxView() { IsPlatformEnabled = true };
+			Grid.SetRowSpan(background, 1);
+
+			// Create the foreground, which spans both rows
+			var foreground = new StackLayout() { Spacing = 0, IsPlatformEnabled = true };
+			var view1 = new FixedSizeLabel(new Size(200, 50)) { IsPlatformEnabled = true };
+			var view2 = new FixedSizeLabel(new Size(200, 100)) { IsPlatformEnabled = true };
+			foreground.Children.Add(view1);
+			foreground.Children.Add(view2);
+			Grid.SetRowSpan(foreground, 2);
+
+			innerGrid.Children.Add(background);
+			innerGrid.Children.Add(foreground);
+
+			outerStackLayout.Children.Add(innerGrid);
+			outerGrid.Children.Add(outerStackLayout);
+			scrollView.Content = outerGrid;
+
+			var sizeRequest = scrollView.Measure(500, 1000);
+			scrollView.Layout(new Rectangle(0, 0, sizeRequest.Request.Width, 1000));
+
+			Assert.That(innerGrid.Height, Is.EqualTo(foreground.Height));
+			Assert.That(background.Height, Is.EqualTo(foreground.Height * 0.6).Within(0.01));
+
+			Assert.That(background.Height, Is.EqualTo(165));
+		}
+
 		abstract class TestLabel : Label
 		{
 			protected TestLabel()
@@ -447,6 +650,8 @@ namespace Xamarin.Forms.Core.UnitTests
 				_minimumSize = minimumSize;
 				_requestedSize = requestedSize;
 			}
+
+			public FixedSizeLabel(Size size) : this(size, size) { }
 
 			protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 			{
