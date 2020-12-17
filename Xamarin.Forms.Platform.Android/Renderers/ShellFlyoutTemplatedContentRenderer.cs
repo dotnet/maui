@@ -38,6 +38,10 @@ namespace Xamarin.Forms.Platform.Android
 		int _actionBarHeight;
 		ScrollLayoutManager _layoutManager;
 
+		protected IShellContext ShellContext => _shellContext;
+		protected AView FooterView => _footerView?.NativeView;
+		protected AView View => _rootView;
+
 		public ShellFlyoutTemplatedContentRenderer(IShellContext shellContext)
 		{
 			_shellContext = shellContext;
@@ -152,7 +156,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateFlyoutFooter();
 		}
 
-		void UpdateFlyoutHeader()
+		protected virtual void UpdateFlyoutHeader()
 		{
 			if (_headerView != null)
 			{
@@ -184,7 +188,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateFlyoutHeaderBehavior();
 		}
 
-		void UpdateFlyoutFooter()
+		protected virtual void UpdateFlyoutFooter()
 		{
 			if (_footerView != null)
 			{
@@ -201,14 +205,17 @@ namespace Xamarin.Forms.Platform.Android
 
 			_footerView = new ShellViewRenderer(_shellContext.AndroidContext, footer);
 
-
 			_footerView.NativeView.LayoutParameters = new CoordinatorLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
 			{
 				Gravity = (int)(GravityFlags.Bottom | GravityFlags.End)
 			};
 
-			_footerView.LayoutView(_shellContext.AndroidContext.FromPixels(_rootView.LayoutParameters.Width), -1);
+			_footerView.LayoutView(_shellContext.AndroidContext.FromPixels(_rootView.LayoutParameters.Width), double.PositiveInfinity);
 			_rootView.AddView(_footerView.NativeView);
+			if(_recycler?.LayoutParameters is CoordinatorLayout.LayoutParams cl)
+			{
+				cl.BottomMargin = (int)_shellContext.AndroidContext.ToPixels(_footerView.View.Height);
+			}
 		}
 
 		void UpdateVerticalScrollMode()
