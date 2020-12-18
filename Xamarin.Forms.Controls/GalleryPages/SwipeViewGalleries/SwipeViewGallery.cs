@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
  						GalleryBuilder.NavButton("SwipeItem IsVisible Gallery", () => new SwipeItemIsVisibleGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeTransitionMode Gallery", () => new SwipeTransitionModeGallery(), Navigation),
 						GalleryBuilder.NavButton("Add/Remove SwipeItems Gallery", () => new AddRemoveSwipeItemsGallery(), Navigation),
-						GalleryBuilder.NavButton("Open/Close SwipeView Gallery", () => new CloseSwipeGallery(), Navigation),
+						GalleryBuilder.NavButton("Open/Close SwipeView Gallery", () => new OpenCloseSwipeGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeItems Dispose Gallery", () => new SwipeItemsDisposeGallery(), Navigation)
 					}
 				}
