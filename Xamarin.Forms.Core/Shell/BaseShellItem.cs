@@ -394,6 +394,9 @@ namespace Xamarin.Forms
 
 				if (Device.RuntimePlatform == Device.Android)
 					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 50 });
+				else
+					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 44 });
+
 
 				ColumnDefinitionCollection columnDefinitions = new ColumnDefinitionCollection();
 

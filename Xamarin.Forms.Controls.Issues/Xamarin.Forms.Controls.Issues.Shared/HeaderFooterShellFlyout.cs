@@ -150,10 +150,46 @@ namespace Xamarin.Forms.Controls.Issues
 				}),
 				AutomationId = "ResizeHeaderFooter"
 			});
+
+			if (Device.RuntimePlatform == Device.iOS)
+			{
+				Items.Add(new MenuItem()
+				{
+					Text = "Zero Margin Header Test",
+					Command = new Command(() =>
+					{
+						FlyoutHeader =
+							new StackLayout()
+							{
+								AutomationId = "ZeroMarginLayout",
+								Margin = 0,
+								Children =
+								{
+								new Label() { Text = "Header View" }
+								}
+							};
+
+						FlyoutHeaderTemplate = null;
+						FlyoutBehavior = FlyoutBehavior.Locked;
+					}),
+					AutomationId = "ZeroMarginHeader"
+				});
+			}
 		}
 
 
 #if UITEST
+
+#if __IOS__
+		[Test]
+		public void FlyoutHeaderWithZeroMarginShouldHaveNoY()
+		{
+			RunningApp.WaitForElement("PageLoaded");
+			this.TapInFlyout("ZeroMarginHeader", makeSureFlyoutStaysOpen: true);
+			var layout = RunningApp.WaitForElement("ZeroMarginLayout")[0].Rect.Y;
+			Assert.AreEqual(0, layout);
+		}
+#endif
 
 		[Test]
 		public void FlyoutTests()

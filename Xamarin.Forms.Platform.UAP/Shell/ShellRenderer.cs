@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.UWP
 			IsPaneOpen = false;
 			Content = ItemRenderer = CreateShellItemRenderer();
 			MenuItemTemplateSelector = CreateShellFlyoutTemplateSelector();
-			Style = Windows.UI.Xaml.Application.Current.Resources["ShellNavigationView"] as Windows.UI.Xaml.Style;
+			Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["ShellNavigationView"];
 		}
 
 		async void OnBackRequested(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewBackRequestedEventArgs args)
@@ -193,7 +193,7 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 		#endregion IVisualElementRenderer
-		ShellSplitView ShellSplitView => (ShellSplitView)GetTemplateChild("RootSplitView");
+		ShellSplitView ShellSplitView => GetTemplateChild("RootSplitView") as ShellSplitView;
 		ScrollViewer ShellLeftNavScrollViewer => (ScrollViewer)GetTemplateChild("LeftNavScrollViewer");
 		protected internal Shell Element { get; set; }
 
@@ -257,7 +257,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				splitView.SetFlyoutSizes(_flyoutHeight, _flyoutWidth);
 				if (IsPaneOpen)
-					ShellSplitView.RefreshFlyoutPosition();
+					ShellSplitView?.RefreshFlyoutPosition();
 			}
 		}
 		
@@ -271,7 +271,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				splitView.FlyoutBackdrop = _flyoutBackdrop;
 				if (IsPaneOpen)
-					ShellSplitView.RefreshFlyoutBackdrop();
+					ShellSplitView?.RefreshFlyoutBackdrop();
 			}
 		}
 

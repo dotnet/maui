@@ -1,4 +1,6 @@
-﻿using UIKit;
+﻿using System;
+using Foundation;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -6,20 +8,51 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		IVisualElementRenderer _renderer;
 		object _bindingContext;
+		internal Action<UIContainerCell> ViewMeasureInvalidated { get; set; }
+		internal NSIndexPath IndexPath { get; set; }
+		internal UITableView TableView { get; set; }
 
 		public UIContainerCell(string cellId, View view) : base(UITableViewCellStyle.Default, cellId)
 		{
 			View = view;
-
+			View.MeasureInvalidated += MeasureInvalidated;
 			SelectionStyle = UITableViewCellSelectionStyle.None;
 
 			_renderer = Platform.CreateRenderer(view);
 			Platform.SetRenderer(view, _renderer);
 
-			AddSubview(_renderer.NativeView);
+			ContentView.AddSubview(_renderer.NativeView);
+			_renderer.NativeView.ClipsToBounds = true;
+			ContentView.ClipsToBounds = true;
 		}
 
-		public View View { get; }
+		void MeasureInvalidated(object sender, System.EventArgs e)
+		{
+			if (View == null || TableView == null)
+				return;
+
+			ViewMeasureInvalidated?.Invoke(this);
+		}
+
+		internal void ReloadRow()
+		{
+			TableView.ReloadRows(new[] { IndexPath }, UITableViewRowAnimation.Automatic);
+		}
+
+		internal void Disconnect()
+		{
+			ViewMeasureInvalidated = null;
+			View.MeasureInvalidated -= MeasureInvalidated;
+			if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
+				baseShell.PropertyChanged -= OnElementPropertyChanged;
+
+			_bindingContext = null;
+			Platform.SetRenderer(View, null);
+			View = null;
+			TableView = null;
+		}
+
+		public View View { get; private set; }
 
 		public object BindingContext
 		{
@@ -46,7 +79,8 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
-			View.Layout(Bounds.ToRectangle());
+			if(View != null)
+				View.Layout(Bounds.ToRectangle());
 		}
 
 		void UpdateVisualState()

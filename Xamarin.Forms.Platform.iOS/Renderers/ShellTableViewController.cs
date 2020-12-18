@@ -131,7 +131,7 @@ namespace Xamarin.Forms.Platform.iOS
 			TableView.Frame =
 					new CGRect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight);
 
-			if (HeaderView != null)
+			if (HeaderView != null && !double.IsNaN(_headerSize))
 			{
 				var margin = HeaderView.Margin;
 				var leftMargin = margin.Left - margin.Right;

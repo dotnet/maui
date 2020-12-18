@@ -395,7 +395,7 @@
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties TriggeredFromHotReload="False" XamarinHotReloadUnhandledDeviceExceptionXamarinFormsControlGalleryAndroidHideInfoBar="True" />
+      <UserProperties XamarinHotReloadUnhandledDeviceExceptionXamarinFormsControlGalleryAndroidHideInfoBar="True" TriggeredFromHotReload="False" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
