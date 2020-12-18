@@ -349,6 +349,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			var index = Carousel.Loop ? itemCount * 5000 + _oldPosition : _oldPosition;
 			ScrollHelper.JumpScrollToPosition(index, Xamarin.Forms.ScrollToPosition.Center);
+			_gotoPosition = -1;
 		}
 
 		void UpdatePositionFromVisibilityChanges()

@@ -68,22 +68,27 @@ namespace Xamarin.Forms.Core.UITests
 			App.Back();
 		}
 
-		[TestCase("CarouselView (XAML, Horizontal)")]
-		[TestCase("CarouselView (XAML, Horizontal, Loop)")]
-		public void CarouselViewGoToNextCurrentItem(string subgallery)
+		[TestCase("CarouselView (XAML, Horizontal)", 0)]
+		[TestCase("CarouselView (XAML, Horizontal, Loop)", 0)]
+		[TestCase("CarouselView Set CurrentItem", 3)]
+		[TestCase("CarouselView Set CurrentItem Loop", 3)]
+		public void CarouselViewGoToNextCurrentItem(string subgallery, int indexToTest)
 		{
 			VisitSubGallery(subgallery);
 
-			CheckLabelValue("lblPosition", "0");
-			CheckLabelValue("lblCurrentItem", "0");
+			var index = indexToTest.ToString();
+			var nextIndex = (indexToTest + 1).ToString();
+
+			CheckLabelValue("lblPosition", index);
+			CheckLabelValue("lblCurrentItem", index);
 			App.Tap(x => x.Marked("btnNext"));
-			CheckLabelValue("lblPosition", "1");
-			CheckLabelValue("lblCurrentItem", "1");
-			CheckLabelValue("lblSelected", "1");
+			CheckLabelValue("lblPosition", nextIndex);
+			CheckLabelValue("lblCurrentItem", nextIndex);
+			CheckLabelValue("lblSelected", nextIndex);
 			App.Tap(x => x.Marked("btnPrev"));
-			CheckLabelValue("lblPosition", "0");
-			CheckLabelValue("lblCurrentItem", "0");
-			CheckLabelValue("lblSelected", "0");
+			CheckLabelValue("lblPosition", index);
+			CheckLabelValue("lblCurrentItem", index);
+			CheckLabelValue("lblSelected", index);
 
 			App.Back();
 		}
