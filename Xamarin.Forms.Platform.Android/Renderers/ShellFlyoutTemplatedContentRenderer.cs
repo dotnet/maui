@@ -212,7 +212,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			_footerView.LayoutView(_shellContext.AndroidContext.FromPixels(_rootView.LayoutParameters.Width), double.PositiveInfinity);
 			_rootView.AddView(_footerView.NativeView);
-			if(_recycler?.LayoutParameters is CoordinatorLayout.LayoutParams cl)
+			if (_recycler?.LayoutParameters is CoordinatorLayout.LayoutParams cl)
 			{
 				cl.BottomMargin = (int)_shellContext.AndroidContext.ToPixels(_footerView.View.Height);
 			}
