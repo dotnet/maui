@@ -55,6 +55,19 @@ namespace Xamarin.Forms
 				SetInheritedBindingContext(newHandler, bindable.BindingContext);
 		}
 
+		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
+			BindableProperty.CreateAttached(nameof(IsVisible), typeof(bool), typeof(Shell), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
+		public static bool GetFlyoutItemIsVisible(BindableObject obj) => (bool)obj.GetValue(FlyoutItemIsVisibleProperty);
+		public static void SetFlyoutItemIsVisible(BindableObject obj, bool isVisible) => obj.SetValue(FlyoutItemIsVisibleProperty, isVisible);
+
+		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is Element element)
+				element
+					.FindParentOfType<Shell>()
+					?.SendStructureChanged();
+		}
+
 		public static readonly BindableProperty TabBarIsVisibleProperty =
 			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), true);
 
@@ -1236,9 +1249,9 @@ namespace Xamarin.Forms
 			bool ShowInFlyoutMenu(BindableObject bo)
 			{
 				if (bo is MenuShellItem msi)
-					return FlyoutItem.GetIsVisible(msi.MenuItem);
+					return Shell.GetFlyoutItemIsVisible(msi.MenuItem);
 
-				return FlyoutItem.GetIsVisible(bo);
+				return Shell.GetFlyoutItemIsVisible(bo);
 			}
 
 			void AddMenuItems(MenuItemCollection menuItems)

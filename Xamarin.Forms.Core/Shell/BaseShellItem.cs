@@ -126,6 +126,12 @@ namespace Xamarin.Forms
 			set => SetValue(IsVisibleProperty, value);
 		}
 
+		public bool FlyoutItemIsVisible
+		{
+			get => (bool)GetValue(Shell.FlyoutItemIsVisibleProperty);
+			set => SetValue(Shell.FlyoutItemIsVisibleProperty, value);
+		}
+
 		internal bool IsPartOfVisibleTree()
 		{
 			if (Parent is IShellController shell)

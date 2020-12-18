@@ -224,7 +224,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		MenuItem CreateNonVisibleMenuItem()
 		{
 			MenuItem item = new MenuItem();
-			FlyoutItem.SetIsVisible(item, false);
+			Shell.SetFlyoutItemIsVisible(item, false);
 			return item;
 		}
 	}

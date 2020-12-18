@@ -960,7 +960,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.Items.Add(item1);
 			shell.Items.Add(item2);
 
-			FlyoutItem.SetIsVisible(item1, false);
+			Shell.SetFlyoutItemIsVisible(item1, false);
 			Assert.IsTrue(GetItems(shell).Contains(item1));
 
 			bool hasFlyoutItem =
