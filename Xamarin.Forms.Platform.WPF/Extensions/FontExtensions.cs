@@ -127,6 +127,13 @@ namespace Xamarin.Forms.Platform.WPF
 				return f;
 			}
 
+			const string packUri = "pack://application:,,,/";
+			if (fontFamily.StartsWith(packUri))
+			{
+				var fontName = fontFamily.Remove(0, packUri.Length);
+				return new FontFamily(new Uri(packUri), fontName);
+			}
+
 			var embeddedResult = fontFamily.TryGetFromAssets();
 
 			if (embeddedResult.success)
