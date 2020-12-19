@@ -20,8 +20,8 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	public partial class Issue12429 : TestShell
 	{
-		public double SmallFlyoutItem { get;  }
-		public double SizeToModifyBy { get;  }
+		public double SmallFlyoutItem { get; }
+		public double SizeToModifyBy { get; }
 
 		public Issue12429()
 		{

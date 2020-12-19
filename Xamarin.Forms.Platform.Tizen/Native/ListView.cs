@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using ElmSharp;
 using Xamarin.Forms.Internals;
+using EColor = ElmSharp.Color;
 using ERect = ElmSharp.Rect;
 using EScroller = ElmSharp.Scroller;
-using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {

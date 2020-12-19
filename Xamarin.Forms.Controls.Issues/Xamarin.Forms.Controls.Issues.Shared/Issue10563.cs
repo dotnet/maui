@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public Issue10563()
 		{
-			
+
 		}
 
 		protected override void Init()

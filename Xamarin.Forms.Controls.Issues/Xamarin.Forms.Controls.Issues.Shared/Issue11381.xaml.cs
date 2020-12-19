@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Linq;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -27,20 +27,21 @@ namespace Xamarin.Forms.Controls.Issues
 #if APP
 			InitializeComponent();
 
-			grouped = new ObservableCollection<GroupedIssue11381Model> ();
+			grouped = new ObservableCollection<GroupedIssue11381Model>();
 
-			var g1Group = new GroupedIssue11381Model () { LongName = "Group1", ShortName="g1" };
-			var g2Group = new GroupedIssue11381Model () { LongName = "Group2", ShortName = "g2" };
+			var g1Group = new GroupedIssue11381Model() { LongName = "Group1", ShortName = "g1" };
+			var g2Group = new GroupedIssue11381Model() { LongName = "Group2", ShortName = "g2" };
 
-			g1Group.Add (new Issue11381Model () { Name = "G1I1", IsReallyAVeggie = true, Comment = "Lorem ipsum dolor sit amet" });
-			g1Group.Add (new Issue11381Model () { Name = "G1I2", IsReallyAVeggie = false, Comment = "Lorem ipsum dolor sit amet" });
-			g1Group.Add (new Issue11381Model () { Name = "G1I3", IsReallyAVeggie = true, Comment = "Lorem ipsum dolor sit amet" });
-			g1Group.Add (new Issue11381Model () { Name = "G1I4", IsReallyAVeggie = true, Comment = "Lorem ipsum dolor sit amet" });
+			g1Group.Add(new Issue11381Model() { Name = "G1I1", IsReallyAVeggie = true, Comment = "Lorem ipsum dolor sit amet" });
+			g1Group.Add(new Issue11381Model() { Name = "G1I2", IsReallyAVeggie = false, Comment = "Lorem ipsum dolor sit amet" });
+			g1Group.Add(new Issue11381Model() { Name = "G1I3", IsReallyAVeggie = true, Comment = "Lorem ipsum dolor sit amet" });
+			g1Group.Add(new Issue11381Model() { Name = "G1I4", IsReallyAVeggie = true, Comment = "Lorem ipsum dolor sit amet" });
 
-			g2Group.Add (new Issue11381Model () {Name = "G2I1", IsReallyAVeggie = false,Comment = "Lorem ipsum dolor sit amet" });
-			g2Group.Add (new Issue11381Model () {Name = "G2I2", IsReallyAVeggie = false,Comment = "Lorem ipsum dolor sit amet" });
+			g2Group.Add(new Issue11381Model() { Name = "G2I1", IsReallyAVeggie = false, Comment = "Lorem ipsum dolor sit amet" });
+			g2Group.Add(new Issue11381Model() { Name = "G2I2", IsReallyAVeggie = false, Comment = "Lorem ipsum dolor sit amet" });
 
-			grouped.Add (g1Group); grouped.Add (g2Group);
+			grouped.Add(g1Group);
+			grouped.Add(g2Group);
 
 			Issue11381ListView.ItemsSource = grouped;
 #endif

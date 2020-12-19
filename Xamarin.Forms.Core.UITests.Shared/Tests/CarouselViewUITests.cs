@@ -89,18 +89,18 @@ namespace Xamarin.Forms.Core.UITests
 			try
 			{
 				var index = indexToTest.ToString();
-			  var nextIndex = (indexToTest + 1).ToString();
+				var nextIndex = (indexToTest + 1).ToString();
 
-			  CheckLabelValue("lblPosition", index);
-			  CheckLabelValue("lblCurrentItem", index);
-			  App.Tap(x => x.Marked("btnNext"));
-			  CheckLabelValue("lblPosition", nextIndex);
-			  CheckLabelValue("lblCurrentItem", nextIndex);
-			  CheckLabelValue("lblSelected", nextIndex);
-			  App.Tap(x => x.Marked("btnPrev"));
-			  CheckLabelValue("lblPosition", index);
-			  CheckLabelValue("lblCurrentItem", index);
-			  CheckLabelValue("lblSelected", index);
+				CheckLabelValue("lblPosition", index);
+				CheckLabelValue("lblCurrentItem", index);
+				App.Tap(x => x.Marked("btnNext"));
+				CheckLabelValue("lblPosition", nextIndex);
+				CheckLabelValue("lblCurrentItem", nextIndex);
+				CheckLabelValue("lblSelected", nextIndex);
+				App.Tap(x => x.Marked("btnPrev"));
+				CheckLabelValue("lblPosition", index);
+				CheckLabelValue("lblCurrentItem", index);
+				CheckLabelValue("lblSelected", index);
 			}
 			finally
 			{

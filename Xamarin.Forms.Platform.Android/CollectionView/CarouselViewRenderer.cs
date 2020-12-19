@@ -268,8 +268,8 @@ namespace Xamarin.Forms.Platform.Android
 			bool removingCurrentElement = currentItemPosition == -1;
 			bool removingLastElement = e.OldStartingIndex == count;
 			bool removingFirstElement = e.OldStartingIndex == 0;
-			bool removingAnyPrevious = 
-				e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove 
+			bool removingAnyPrevious =
+				e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove
 				&& e.OldStartingIndex < carouselPosition;
 
 			_noNeedForScroll = true;
@@ -307,7 +307,8 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			Device.BeginInvokeOnMainThread(() => {
+			Device.BeginInvokeOnMainThread(() =>
+			{
 
 				SetCurrentItem(carouselPosition);
 				UpdatePosition(carouselPosition);
@@ -357,12 +358,12 @@ namespace Xamarin.Forms.Platform.Android
 
 			SetCurrentItem(_oldPosition);
 
-			var index = Carousel.Loop ?  LoopedPosition(itemCount) + _oldPosition : _oldPosition;
+			var index = Carousel.Loop ? LoopedPosition(itemCount) + _oldPosition : _oldPosition;
 			ScrollHelper.JumpScrollToPosition(index, Xamarin.Forms.ScrollToPosition.Center);
 			_gotoPosition = -1;
 		}
 
-		int LoopedPosition(int itemCount) 
+		int LoopedPosition(int itemCount)
 		{
 			if (itemCount == 0)
 			{

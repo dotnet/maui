@@ -16,13 +16,13 @@ namespace Xamarin.Forms.Controls.Issues
 	[NUnit.Framework.Category(UITestCategories.Shell)]
 #endif
 	public partial class ShellFlyoutItemIsVisible : TestShell
-    {
+	{
 		public bool ItemIsVisible { get; } = false;
 		public bool FlyoutItemNotVisible { get; } = false;
 		public bool FlyoutItemVisible { get; } = true;
 
 		public ShellFlyoutItemIsVisible()
-        {
+		{
 #if APP
 			InitializeComponent();
 #endif
