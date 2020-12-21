@@ -65,15 +65,12 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST && __IOS__
 		[Test]
 		[Category(UITestCategories.SwipeView)]
-		public void SwipeDisableChildButton()
+		public void SwipeDisableChildButtonTest()
 		{
+			RunningApp.WaitForElement(q => q.Marked(Failed));
 			RunningApp.WaitForElement(SwipeViewId);
-			RunningApp.Tap(SwipeButtonId);
-			RunningApp.WaitForElement(q => q.Marked(Failed));
 			RunningApp.Tap("SwipeViewCheckBoxId");
-			RunningApp.Tap(SwipeButtonId);
-			RunningApp.WaitForElement(q => q.Marked(Failed));
-			RunningApp.Tap("SwipeViewContentCheckBox");
+			RunningApp.Tap("SwipeViewContentCheckBoxId");
 			RunningApp.Tap(SwipeButtonId);
 			RunningApp.WaitForElement(q => q.Marked(Success));
 		}
