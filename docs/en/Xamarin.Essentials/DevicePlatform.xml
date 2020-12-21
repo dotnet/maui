@@ -21,9 +21,7 @@
   </Attributes>
   <Docs>
     <summary>The device platform that the application is running on.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Android">

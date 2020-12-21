@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Represents a single SMS message.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -29,9 +27,7 @@
       <Parameters />
       <Docs>
         <summary>Creates a new instance of SmsMessage</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -51,9 +47,7 @@
         <param name="body">Content of the message</param>
         <param name="recipients">Recipients to receive the message.</param>
         <summary>Creates a new instance of SmsMessage</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -73,9 +67,7 @@
         <param name="body">Content of the message</param>
         <param name="recipient">Recipient to receive the message.</param>
         <summary>Creates a new instance of SmsMessage</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Body">
@@ -92,12 +84,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the body of the message.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Recipients">
@@ -114,12 +102,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the recipient of the message.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

@@ -21,9 +21,7 @@
   </Attributes>
   <Docs>
     <summary>The idiom (form factor) of the device.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Create">
@@ -44,12 +42,8 @@
       <Docs>
         <param name="deviceIdiom">The idiom name of the device</param>
         <summary>Creates a new device idiom.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Desktop">
@@ -66,9 +60,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the desktop idiom.</summary>
-        <value>
-          <para></para>
-        </value>
+        <value></value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

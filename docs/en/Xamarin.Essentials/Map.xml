@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Map helpers to open a route to specified places via default platforms maps implementation.</summary>
-    <remarks>
-      <para />
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="OpenAsync">
@@ -36,9 +34,7 @@
         <param name="location">Location to open on maps.</param>
         <summary>Open the installed application to a specific location.</summary>
         <returns>Task to be completed.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
@@ -60,9 +56,7 @@
         <param name="placemark">Placemark to open on maps.</param>
         <summary>Open the installed application to a specific placemark.</summary>
         <returns>Task to be completed.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
@@ -86,9 +80,7 @@
         <param name="longitude">Longitude to open to.</param>
         <summary>Open the installed application to a specific location.</summary>
         <returns>Task to be completed.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
@@ -112,9 +104,7 @@
         <param name="options">Launch options to use.</param>
         <summary>Open the installed application to a specific location with launch options.</summary>
         <returns>Task to be completed.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
@@ -138,9 +128,7 @@
         <param name="options">Launch options to use.</param>
         <summary>Open the installed application to a specific placemark with launch options.</summary>
         <returns>Task to be completed.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
@@ -166,9 +154,7 @@
         <param name="options">Launch options to use.</param>
         <summary>Open the installed application to a specific location.</summary>
         <returns>Task to be completed.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

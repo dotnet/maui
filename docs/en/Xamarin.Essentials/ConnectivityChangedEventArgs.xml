@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>The current connectivity information from the change event.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -34,9 +32,7 @@
         <param name="access">The current access of the network</param>
         <param name="connectionProfiles">The connection profiles of the events changing</param>
         <summary>Public constructor</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ConnectionProfiles">
@@ -54,9 +50,7 @@
       <Docs>
         <summary>Gets the active connectivity types for the device.</summary>
         <value>List of all connection profiles.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="NetworkAccess">
@@ -74,9 +68,7 @@
       <Docs>
         <summary>Gets the current state of network access. Does not guarantee full access to the internet.</summary>
         <value>The current network access state.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -94,12 +86,8 @@
       <Parameters />
       <Docs>
         <summary>The string representation of the event.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

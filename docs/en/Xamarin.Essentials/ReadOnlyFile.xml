@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>A representation of a file and its content type.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -32,9 +30,7 @@
       <Docs>
         <param name="fullPath">Full file path.</param>
         <summary>Construct a file taking in file path.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -52,9 +48,7 @@
       <Docs>
         <param name="file">File to use for ReadOnlyFile</param>
         <summary>Construct a file taking in file.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -74,9 +68,7 @@
         <param name="fullPath">Full file path.</param>
         <param name="contentType">Content type (MIME type) of the file (eg: `image/png`).</param>
         <summary>Construct a file taking in file path and content type (MIME type).</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

@@ -33,9 +33,7 @@
       <Docs>
         <param name="placemark">The placemark to open the map to.</param>
         <summary>Open the map to the placemark.</summary>
-        <returns>
-          <para />
-        </returns>
+        <returns></returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

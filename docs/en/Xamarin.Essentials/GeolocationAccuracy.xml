@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>Represents levels of accuracy when determining location.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Best">

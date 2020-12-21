@@ -46,9 +46,7 @@
       <Docs>
         <summary>Check status of Battery permission.</summary>
         <returns>Task of PermissionStatus for Battery.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="RequiredPermissions">

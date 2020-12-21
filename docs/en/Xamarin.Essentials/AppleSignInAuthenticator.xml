@@ -33,12 +33,8 @@
       <Docs>
         <param name="options">Additional Sign In options.</param>
         <summary>Performs a native Apple Sign In authentication request.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

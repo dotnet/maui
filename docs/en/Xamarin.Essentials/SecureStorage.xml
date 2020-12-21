@@ -66,9 +66,7 @@
         <param name="key">Storage Key.</param>
         <summary>Gets the decrypted value for a given Key.</summary>
         <returns>Decrypted string or null if key does not exist.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="LegacyKeyHashFallback">
@@ -108,9 +106,7 @@
         <param name="key">The key to remove.</param>
         <summary>Removes the encrypted key/value pair for the given key.</summary>
         <returns>Returns true if the key value pair was removed.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="RemoveAll">
@@ -128,9 +124,7 @@
       <Parameters />
       <Docs>
         <summary>Removes all of the stored encrypted key/value pairs.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAsync">
@@ -153,12 +147,8 @@
         <param name="key">Storage Key.</param>
         <param name="value">The value to be encrypted.</param>
         <summary>Stores the value which is encrypted, for a given Key.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAsync">
@@ -183,12 +173,8 @@
         <param name="value">The value to be encrypted.</param>
         <param name="accessible">The KeyChain accessibility to create the encrypted record with.</param>
         <summary>Stores the value which is encrypted, for a given Key. iOS override to specify SecAccessible for the KeyChain.</summary>
-        <returns>
-          <para></para>
-        </returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

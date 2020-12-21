@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>Display rotation.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Rotation0">

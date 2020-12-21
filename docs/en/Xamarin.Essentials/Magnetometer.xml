@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Detect device's orentation relative to Earth's magnetic field in microteslas (µ).</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="IsMonitoring">
@@ -32,9 +30,7 @@
       <Docs>
         <summary>Gets if magnetometer is being monitored.</summary>
         <value>If monitoring.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ReadingChanged">
@@ -51,9 +47,7 @@
       </ReturnValue>
       <Docs>
         <summary>Event triggered when reading of sensor changes.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Start">
@@ -92,9 +86,7 @@
       <Parameters />
       <Docs>
         <summary>Stop monitoring for changes to magnetometer.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Provides an easy way to make the device vibrate.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Cancel">
@@ -32,9 +30,7 @@
       <Parameters />
       <Docs>
         <summary>Cancel any current vibrations.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Vibrate">
@@ -52,9 +48,7 @@
       <Parameters />
       <Docs>
         <summary>Vibrate the device fo 500ms.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Vibrate">

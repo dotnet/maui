@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Standard request for sharing a multiple files to another application.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -29,15 +27,13 @@
       <Parameters />
       <Docs>
         <summary>Default constructor.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public ShareMultipleFilesRequest (System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FileBase&gt; files);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FileBase&gt; files) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FileBase&gt;)" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.FileBase&gt; files) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.Collections.Generic.IEnumerable{Xamarin.Essentials.FileBase})" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -49,15 +45,13 @@
       <Docs>
         <param name="files">Existing files.</param>
         <summary>Share request with an existing files.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public ShareMultipleFilesRequest (System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ShareFile&gt; files);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ShareFile&gt; files) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ShareFile&gt;)" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.ShareFile&gt; files) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.Collections.Generic.IEnumerable{Xamarin.Essentials.ShareFile})" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -69,15 +63,13 @@
       <Docs>
         <param name="files">Existing files.</param>
         <summary>Share request with an existing files.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public ShareMultipleFilesRequest (string title, System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FileBase&gt; files);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, class System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FileBase&gt; files) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.String,System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FileBase&gt;)" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.FileBase&gt; files) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.String,System.Collections.Generic.IEnumerable{Xamarin.Essentials.FileBase})" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -91,15 +83,13 @@
         <param name="title">Title to use on the share user interface.</param>
         <param name="files">Existing files.</param>
         <summary>Share request with an existing files.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public ShareMultipleFilesRequest (string title, System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ShareFile&gt; files);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, class System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ShareFile&gt; files) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.String,System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ShareFile&gt;)" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.ShareFile&gt; files) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.String,System.Collections.Generic.IEnumerable{Xamarin.Essentials.ShareFile})" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -113,14 +103,12 @@
         <param name="title">Title to use on the share user interface.</param>
         <param name="files">Existing files.</param>
         <summary>Share requerst with an existing files.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Files">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ShareFile&gt; Files { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ShareFile&gt; Files" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.List&lt;Xamarin.Essentials.ShareFile&gt; Files { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.List`1&lt;class Xamarin.Essentials.ShareFile&gt; Files" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ShareMultipleFilesRequest.Files" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
@@ -128,16 +116,34 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ShareFile&gt;</ReturnType>
+        <ReturnType>System.Collections.Generic.List&lt;Xamarin.Essentials.ShareFile&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the files to share.</summary>
-        <value>
-          <para></para>
-        </value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Explicit">
+      <MemberSignature Language="C#" Value="public static explicit operator Xamarin.Essentials.ShareMultipleFilesRequest (Xamarin.Essentials.ShareFileRequest request);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname class Xamarin.Essentials.ShareMultipleFilesRequest op_Explicit(class Xamarin.Essentials.ShareFileRequest request) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareMultipleFilesRequest.op_Explicit(Xamarin.Essentials.ShareFileRequest)~Xamarin.Essentials.ShareMultipleFilesRequest" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ShareMultipleFilesRequest</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="request" Type="Xamarin.Essentials.ShareFileRequest" />
+      </Parameters>
+      <Docs>
+        <param name="request">The request to convert into a multi-file request.</param>
+        <summary>Convert a single file share request into a multi-file share request.</summary>
+        <returns>Returns a multi-file share request containing the single file.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Main display information event arguments.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

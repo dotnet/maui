@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Provides methods to control HapticFeedback responses</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Perform">
@@ -35,9 +33,7 @@
       <Docs>
         <param name="type">The type of a HapticFeedback response that will be called</param>
         <summary>Calls the platform-oriented method to cause a HapticFeedback response of the specified type</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Exception that occurs when an attempt is made to use a feature on a platform that does not support it.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -29,9 +27,7 @@
       <Parameters />
       <Docs>
         <summary>Creates a new instance of FeatureNotSupportedException.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -49,9 +45,7 @@
       <Docs>
         <param name="message">The exception message.</param>
         <summary>Creates a new instance of FeatureNotSupportedException with the specified message.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -71,9 +65,7 @@
         <param name="message">The exception message.</param>
         <param name="innerException">The inner exception.</param>
         <summary>Creates a new instance of FeatureNotSupportedException with the specified message and inner exception.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

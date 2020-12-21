@@ -50,7 +50,6 @@
       <Docs>
         <summary>
           <para>Get a list of required permissions.</para>
-          <para></para>
         </summary>
         <value>List of required permissions.</value>
         <remarks>To be added.</remarks>

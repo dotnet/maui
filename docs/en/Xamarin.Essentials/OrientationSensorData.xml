@@ -21,9 +21,7 @@
   </Attributes>
   <Docs>
     <summary>Sensor data for orientation.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -93,9 +91,7 @@
         <param name="obj">Object to compare</param>
         <summary>If equal to another object</summary>
         <returns>If equal</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Equals">
@@ -120,9 +116,7 @@
         <param name="other">Other OrientationSensorData to compare with.</param>
         <summary>Compares the underlying Quaternion instances.</summary>
         <returns>True if they match, otherwise false.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHashCode">
@@ -141,9 +135,7 @@
       <Docs>
         <summary>Get the hash code for object.</summary>
         <returns>The hash code</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Equality">
@@ -167,9 +159,7 @@
         <param name="right">Right to compare</param>
         <summary>Equality operator for equals</summary>
         <returns>If equal</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Inequality">
@@ -193,9 +183,7 @@
         <param name="right">Right to check</param>
         <summary>Inequality check</summary>
         <returns>If not equal</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Orientation">
@@ -213,9 +201,7 @@
       <Docs>
         <summary>Gets the current orientation that represents a Quaternion.</summary>
         <value>Gets the current orientation</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">

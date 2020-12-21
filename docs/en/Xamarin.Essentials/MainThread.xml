@@ -33,9 +33,7 @@
       <Docs>
         <param name="action">Action to execute.</param>
         <summary>Invokes an action on the main thread of the application.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="GetMainThreadSynchronizationContextAsync">
@@ -168,9 +166,7 @@
       <Docs>
         <summary>Gets if it is the current main UI thread.</summary>
         <value>If main thread.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

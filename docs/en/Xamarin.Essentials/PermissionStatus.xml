@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>Status of the permission.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Denied">

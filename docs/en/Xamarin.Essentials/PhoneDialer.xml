@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Open the platform phone dialer to place a call.</summary>
-    <remarks>
-      <para />
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Open">

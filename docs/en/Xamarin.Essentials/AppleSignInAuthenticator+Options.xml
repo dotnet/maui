@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Options for Native Apple Sign In</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -28,9 +26,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>
-          <para />
-        </summary>
+        <summary></summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -48,12 +44,8 @@
       </ReturnValue>
       <Docs>
         <summary>Include email scope.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="IncludeFullNameScope">
@@ -70,12 +62,8 @@
       </ReturnValue>
       <Docs>
         <summary>Include full name scope.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

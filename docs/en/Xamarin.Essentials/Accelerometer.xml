@@ -14,9 +14,7 @@
     <summary>
       <para>Accelerometer data of the acceleration of the device in three dimensional space.</para>
     </summary>
-    <remarks>
-      <para />
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="IsMonitoring">
@@ -34,9 +32,7 @@
       <Docs>
         <summary>Gets if accelerometer is being monitored.</summary>
         <value>If monitoring.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ReadingChanged">
@@ -53,9 +49,7 @@
       </ReturnValue>
       <Docs>
         <summary>Event triggered when reading of sensor changes.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ShakeDetected">
@@ -72,9 +66,7 @@
       </ReturnValue>
       <Docs>
         <summary>Event triggered when a shake has been detected on the device.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Start">
@@ -115,9 +107,7 @@
       <Parameters />
       <Docs>
         <summary>Stop monitoring for changes to accelerometer.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

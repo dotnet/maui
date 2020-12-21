@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Event arguments containing the current reading.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -50,9 +48,7 @@
       <Docs>
         <summary>The current values of accelerometer.</summary>
         <value>The reading.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

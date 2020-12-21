@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Speak text to Speech</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="GetLocalesAsync">
@@ -32,12 +30,8 @@
       <Parameters />
       <Docs>
         <summary>Gets a list of Locales supported by Text to Speech.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="SpeakAsync">
@@ -60,12 +54,8 @@
         <param name="text">The text to speak..</param>
         <param name="cancelToken">Optional cancellation token to stop speaking.</param>
         <summary>Speaks the given text with default options.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="SpeakAsync">
@@ -90,12 +80,8 @@
         <param name="options">The options to use for speaking.</param>
         <param name="cancelToken">Optional cancellation token to stop speaking.</param>
         <summary>Speaks the given text with the specified options.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

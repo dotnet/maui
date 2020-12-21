@@ -21,9 +21,7 @@
   </Attributes>
   <Docs>
     <summary>Represents information about the screen.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -93,9 +91,7 @@
         <param name="obj">Object to compare.</param>
         <summary>If equal to another object.</summary>
         <returns>If equal.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Equals">
@@ -120,9 +116,7 @@
         <param name="other">The other display info to compare.</param>
         <summary>If equal to another object.</summary>
         <returns>If equal.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHashCode">
@@ -141,9 +135,7 @@
       <Docs>
         <summary>Gets the hash code for object.</summary>
         <returns>The hash code.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Height">
@@ -161,9 +153,7 @@
       <Docs>
         <summary>Gets the height of the screen for the current orientation.</summary>
         <value>The height in pixels.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Equality">
@@ -187,9 +177,7 @@
         <param name="right">Right to compare.</param>
         <summary>If equal to another object.</summary>
         <returns>If equal</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Inequality">
@@ -213,9 +201,7 @@
         <param name="right">Right to compare</param>
         <summary>If not equal to another object.</summary>
         <returns>If not equal</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Orientation">
@@ -233,9 +219,7 @@
       <Docs>
         <summary>Gets the orientation of the device.</summary>
         <value>The orientation.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Rotation">
@@ -253,9 +237,7 @@
       <Docs>
         <summary>Gets the rotation from the designated orientation.</summary>
         <value>The rotation</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -274,9 +256,7 @@
       <Docs>
         <summary>String representation of information.</summary>
         <returns>String information about display info.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Width">
@@ -294,9 +274,7 @@
       <Docs>
         <summary>Gets the width of the scrreen for the current orientation.</summary>
         <value>The width in pixels.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

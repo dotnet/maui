@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Connectivity and networking helpers.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="ConnectionProfiles">

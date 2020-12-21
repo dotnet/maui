@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Event arguments when compass reading changes.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -50,9 +48,7 @@
       <Docs>
         <summary>Gets the current reading.</summary>
         <value>The reading.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

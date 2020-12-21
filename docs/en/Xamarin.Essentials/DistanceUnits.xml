@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>Distance Unit for use in conversion.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Kilometers">

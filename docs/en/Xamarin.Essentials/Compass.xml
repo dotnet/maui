@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Monitor changes to the orientation of the user's device.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="IsMonitoring">
@@ -32,9 +30,7 @@
       <Docs>
         <summary>Gets if compass is actively being monitored.</summary>
         <value>If compass is being monitored.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ReadingChanged">
@@ -51,9 +47,7 @@
       </ReturnValue>
       <Docs>
         <summary>Event triggered when compass reading changes.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ShouldDisplayHeadingCalibration">
@@ -133,9 +127,7 @@
       <Parameters />
       <Docs>
         <summary>Stop monitoring for changes to the compass.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

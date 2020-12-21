@@ -77,9 +77,7 @@
       <Docs>
         <param name="uri">string uri scheme</param>
         <summary>Launches the app specified by the uri scheme</summary>
-        <returns>
-          <para></para>
-        </returns>
+        <returns></returns>
         <remarks>May throw System.UriFormatException if uri is malformed. Verify if the uri scheme is supported before calling this method</remarks>
       </Docs>
     </Member>
@@ -101,9 +99,7 @@
       <Docs>
         <param name="uri">uri scheme</param>
         <summary>Launches the app specified by the uri scheme</summary>
-        <returns>
-          <para></para>
-        </returns>
+        <returns></returns>
         <remarks>May throw System.UriFormatException if uri is malformed. Verify if the uri scheme is supported before calling this method</remarks>
       </Docs>
     </Member>
@@ -125,12 +121,8 @@
       <Docs>
         <param name="request">Request that contains information on the file to open.</param>
         <summary>Requests to open a file in an application based on content type.</summary>
-        <returns>
-          <para></para>
-        </returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="TryOpenAsync">

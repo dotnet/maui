@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Represents a specific geographical, political, or cultural region.</summary>
-    <remarks>
-      <para />
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Country">
@@ -31,9 +29,7 @@
       </ReturnValue>
       <Docs>
         <summary>Country name or code.</summary>
-        <value>
-          <para />
-        </value>
+        <value></value>
         <remarks>This value may vary between platforms.</remarks>
       </Docs>
     </Member>
@@ -51,12 +47,8 @@
       </ReturnValue>
       <Docs>
         <summary>Unique Id of the Locale.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Language">
@@ -73,9 +65,7 @@
       </ReturnValue>
       <Docs>
         <summary>Language name or code.</summary>
-        <value>
-          <para />
-        </value>
+        <value></value>
         <remarks>This value may vary between platforms.</remarks>
       </Docs>
     </Member>
@@ -93,12 +83,8 @@
       </ReturnValue>
       <Docs>
         <summary>Display name of the Locale.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

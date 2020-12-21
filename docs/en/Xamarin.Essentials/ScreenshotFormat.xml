@@ -10,8 +10,8 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>The format to read screenshot images.</summary>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Jpeg">
@@ -28,7 +28,7 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Read the screenshot image as a JPEG.</summary>
       </Docs>
     </Member>
     <Member MemberName="Png">
@@ -45,7 +45,7 @@
       </ReturnValue>
       <MemberValue>0</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Read the screenshot image as a PNG.</summary>
       </Docs>
     </Member>
   </Members>

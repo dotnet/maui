@@ -45,9 +45,7 @@
       <Docs>
         <summary>Name of destination to display to user.</summary>
         <value>Gets the name.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="NavigationMode">
@@ -65,9 +63,7 @@
       <Docs>
         <summary>The navigation mode to use.</summary>
         <value>Gets the navigation mode.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

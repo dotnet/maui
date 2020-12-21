@@ -20,9 +20,7 @@
   </Attributes>
   <Docs>
     <summary>Android FileProvider implementation for creating Content URIs to share files with other applications.</summary>
-    <remarks>
-      <para />
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -37,9 +35,7 @@
       <Parameters />
       <Docs>
         <summary>Default constructor.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="TemporaryLocation">
@@ -56,9 +52,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the temporary location for file sharing.</summary>
-        <value>
-          <para />
-        </value>
+        <value></value>
         <remarks>The default is to prefer external and fallback to internal.</remarks>
       </Docs>
     </Member>

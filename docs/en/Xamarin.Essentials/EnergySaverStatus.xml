@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>Status of energy saver on the device.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Off">

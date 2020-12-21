@@ -12,7 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Take a screenshot depicting the current View.</summary>
-    <remarks>Output is always a PNG file.</remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="CaptureAsync">
@@ -29,9 +29,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Capture the screen.</summary>
+        <returns>Returns the caprured screenshot.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="IsCaptureSupported">
@@ -47,9 +47,9 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets a value indicating whether capturing screenshots are supported.</summary>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

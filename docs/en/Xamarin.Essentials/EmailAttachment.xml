@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Email file attachment.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -32,9 +30,7 @@
       <Docs>
         <param name="fullPath">Full path and filename to file.</param>
         <summary>Email attachment from filename.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -52,9 +48,7 @@
       <Docs>
         <param name="file">Existing file.</param>
         <summary>Email attachment from existing file.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -74,9 +68,7 @@
         <param name="fullPath">Full path and filename to file.</param>
         <param name="contentType">Content type (MIME type) of the file (eg: `image/png`).</param>
         <summary>Explicit content type (MIME type) of file.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

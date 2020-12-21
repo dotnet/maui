@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Standard request for sharing text to other applications.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -29,9 +27,7 @@
       <Parameters />
       <Docs>
         <summary>Default constructor.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -49,9 +45,7 @@
       <Docs>
         <param name="text">Text to share.</param>
         <summary>Share request with text.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -71,9 +65,7 @@
         <param name="text">Text to share.</param>
         <param name="title">Title for share user interface.</param>
         <summary>Share request with text and title.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Subject">
@@ -91,9 +83,7 @@
       <Docs>
         <summary>Gets or sets the subject that is sometimes used for applications such as mail clients.</summary>
         <value>The subject.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Text">
@@ -111,9 +101,7 @@
       <Docs>
         <summary>Gets or sets the main text or message to share.</summary>
         <value>The main text.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Uri">

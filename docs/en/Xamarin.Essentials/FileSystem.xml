@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Provides an easy way to access the locations for device folders.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="AppDataDirectory">
@@ -72,9 +70,7 @@
         <param name="filename">the name of the file to load from the app package.</param>
         <summary>Opens a stream to a file contained within the app package.</summary>
         <returns>Returns a stream to the file.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

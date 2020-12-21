@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Device orientation (quaternion) relative to magnetic fields.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="IsMonitoring">
@@ -32,9 +30,7 @@
       <Docs>
         <summary>Gets of currently monitoring the sensor.</summary>
         <value>If monitoring.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ReadingChanged">
@@ -53,9 +49,7 @@
         <summary>
           <para>Event triggered when reading of sensor changes.</para>
         </summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Start">
@@ -76,9 +70,7 @@
       <Docs>
         <param name="sensorSpeed">Sensor speed to use.</param>
         <summary>Starts monitoring orientation sensor with specific speed.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Stop">
@@ -96,9 +88,7 @@
       <Parameters />
       <Docs>
         <summary>Stops monitoring.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

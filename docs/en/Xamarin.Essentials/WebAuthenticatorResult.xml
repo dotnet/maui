@@ -26,9 +26,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>
-          <para></para>
-        </summary>
+        <summary></summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -83,9 +81,7 @@
       <Docs>
         <summary>The value for the `access_token` key.</summary>
         <value>Access Token parsed from the callback URI access_token parameter.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ExpiresIn">
@@ -103,9 +99,7 @@
       <Docs>
         <summary>The expiry date as calculated by the timestamp of when the result was created plus the value in seconds for the `expires_in` key.</summary>
         <value>Timestamp of the creation of the object instance plus the expires_in seconds parsed from the callback URI.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -126,12 +120,8 @@
       <Docs>
         <param name="key">Key from the callback URI's query string.</param>
         <summary>Gets a value for a given key from the dictionary.</summary>
-        <returns>
-          <para></para>
-        </returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="IdToken">
@@ -166,12 +156,8 @@
       </ReturnValue>
       <Docs>
         <summary>The dictionary of key/value pairs parsed form the callback URI's querystring.</summary>
-        <value>
-          <para></para>
-        </value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Put">
@@ -191,16 +177,10 @@
         <Parameter Name="value" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">
-          <para></para>
-        </param>
-        <param name="value">
-          <para></para>
-        </param>
+        <param name="key"></param>
+        <param name="value"></param>
         <summary>Puts a key/value pair into the dictionary.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="RefreshToken">
@@ -218,9 +198,7 @@
       <Docs>
         <summary>The value for the `refresh_token` key.</summary>
         <value>Refresh Token parsed from the callback URI refresh_token parameter.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="RefreshTokenExpiresIn">
@@ -238,9 +216,7 @@
       <Docs>
         <summary>The refresh token expiry date as calculated by the timestamp of when the result was created plus the value in seconds for the refresh_token_expires_in key.</summary>
         <value>Timestamp of the creation of the object instance plus the expires_in seconds parsed from the callback URI.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Timestamp">
@@ -257,12 +233,8 @@
       </ReturnValue>
       <Docs>
         <summary>The timestamp when the class was instantiated, which usually corresponds with the parsed result of a request.</summary>
-        <value>
-          <para></para>
-        </value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

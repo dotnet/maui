@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Represents information about the device.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="DeviceType">
@@ -32,9 +30,7 @@
       <Docs>
         <summary>Gets the type of device the application is running on.</summary>
         <value>The device type.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Idiom">
@@ -52,9 +48,7 @@
       <Docs>
         <summary>Gets the idiom of the device. </summary>
         <value>The idiom.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Manufacturer">
@@ -72,9 +66,7 @@
       <Docs>
         <summary>Gets the manufacturer of the device.</summary>
         <value>Device manufacturer.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Model">
@@ -92,9 +84,7 @@
       <Docs>
         <summary>Gets the model of the device.</summary>
         <value>Device model.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Name">
@@ -112,9 +102,7 @@
       <Docs>
         <summary>Gets the name of the device.</summary>
         <value>The name of the device (often specified by the user).</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Platform">
@@ -132,9 +120,7 @@
       <Docs>
         <summary>Gets the platform or operating system of the device.</summary>
         <value>The platform of device.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Version">
@@ -152,9 +138,7 @@
       <Docs>
         <summary>Gets the version of the operating system.</summary>
         <value>The device operating system.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="VersionString">
@@ -172,9 +156,7 @@
       <Docs>
         <summary>Gets the version of the operating system.</summary>
         <value>The version of the operating system.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

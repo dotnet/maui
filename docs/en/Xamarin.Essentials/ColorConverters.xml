@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Contains several helper methods to convert System.Drawing.Color</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="FromHex">
@@ -36,9 +34,7 @@
         <param name="hex">A string value similar to the syntax used in HTML, eg "00FF00". Alpha can optionally be specified as the first pair of the characters ("CC00FF00").</param>
         <summary>Creates a new Color from a Hex string.</summary>
         <returns>A color from the Hex string.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="FromHsl">
@@ -64,9 +60,7 @@
         <param name="luminosity">The luminosity of the color from 0-100.</param>
         <summary>Creates a new Color from hue, saturation, and lightness.</summary>
         <returns>A new color from the Hsla.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="FromHsla">
@@ -94,9 +88,7 @@
         <param name="alpha">The alpha of the color from 0-255.</param>
         <summary>Creates a new Color from hue, saturation, luminosity, and alpha.</summary>
         <returns>A new color from the Hsla.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="FromUInt">
@@ -118,9 +110,7 @@
         <param name="argb">A single value representing argb.</param>
         <summary>Creates a new Color from an UInt.</summary>
         <returns>A new color from the Uint</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

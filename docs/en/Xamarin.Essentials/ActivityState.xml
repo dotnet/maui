@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>A state of an Android Activity.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Created">

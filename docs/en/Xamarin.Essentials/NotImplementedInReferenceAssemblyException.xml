@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Exception that occurs when executed from a reference assembly. This usually means that the NuGet was not installed into the app project.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -29,9 +27,7 @@
       <Parameters />
       <Docs>
         <summary>Default constructor.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

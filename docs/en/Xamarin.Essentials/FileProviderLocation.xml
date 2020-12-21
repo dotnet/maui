@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>Location to save temporary files to for sharing.</summary>
-    <remarks>
-      <para />
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="External">

@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>Sensor speed to monitor for changes.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Default">

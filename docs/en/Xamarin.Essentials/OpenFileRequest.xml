@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Standard request for opening a file to another application.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -29,9 +27,7 @@
       <Parameters />
       <Docs>
         <summary>Open request with an existing file.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -51,9 +47,7 @@
         <param name="title">Title to display on open dialog if available.</param>
         <param name="file">File to open.</param>
         <summary>Open request with an existing file.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -73,9 +67,7 @@
         <param name="title">Title to display on open dialog if available.</param>
         <param name="file">File to open.</param>
         <summary>Open request with an existing file.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="File">
@@ -92,12 +84,8 @@
       </ReturnValue>
       <Docs>
         <summary>File to open.</summary>
-        <value>
-          <para></para>
-        </value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Title">
@@ -114,12 +102,8 @@
       </ReturnValue>
       <Docs>
         <summary>Title to display on open dialog if available.</summary>
-        <value>
-          <para></para>
-        </value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

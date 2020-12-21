@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Platform specific helpers.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="ActivityStateChanged">
@@ -31,9 +29,7 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is triggered when any Android Activity's state changes.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="AppContext">
@@ -51,9 +47,7 @@
       <Docs>
         <summary>The current application's context.</summary>
         <value>The applications context.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ContinueUserActivity">
@@ -97,9 +91,7 @@
       <Docs>
         <summary>Gets the current Activity. This value is set OnCreate, OnPause, and OnResume.</summary>
         <value>The current Activity or null if none or Init was not called.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="GetCurrentUIViewController">
@@ -118,9 +110,7 @@
       <Docs>
         <summary>Get the currently visible UIViewController.</summary>
         <returns>The visible UIViewController or null if not found.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Init">
@@ -141,9 +131,7 @@
       <Docs>
         <param name="application">Application to initialize with.</param>
         <summary>Initialize Xamarin.Essentials with Android's application class.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Init">
@@ -166,9 +154,7 @@
         <param name="activity">Activity to use for initialization.</param>
         <param name="bundle">Bundle of the activity.</param>
         <summary>Initialize Xamarin.Essentials with Android's activity and bundle.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="MapServiceToken">
@@ -253,9 +239,7 @@
         <param name="permissions">The permissions from the corresponding overridden method in an activity.</param>
         <param name="grantResults">The grantResults from the corresponding overridden method in an activity.</param>
         <summary>Pass permission request results from an activity's overridden method to the library for handling internal permission requests.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OnResume">
@@ -349,9 +333,7 @@
         <param name="cancelToken">Cancellation token to stop waiting for Activity to be created or active.</param>
         <summary>Wait for an Activity to be create or active.</summary>
         <returns>The current Android Activity.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

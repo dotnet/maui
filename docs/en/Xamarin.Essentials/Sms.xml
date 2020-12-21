@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Provides an easy way to allow the user to send SMS messages.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="ComposeAsync">
@@ -32,12 +30,8 @@
       <Parameters />
       <Docs>
         <summary>Opens the default SMS client to allow the user to send the message.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ComposeAsync">
@@ -58,12 +52,8 @@
       <Docs>
         <param name="message">The message to send.</param>
         <summary>Opens the default SMS client to allow the user to send the message.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

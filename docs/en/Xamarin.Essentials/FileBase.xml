@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>A representation of a file and its content type.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -32,9 +30,7 @@
       <Docs>
         <param name="file">An existing FileBase instance to use.</param>
         <summary>FileBase from an existing instance.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ContentType">
@@ -51,12 +47,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the file's content type as a MIME type (eg: `image/png`).</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="FileName">
@@ -91,12 +83,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the full path and filename.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenReadAsync">

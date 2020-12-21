@@ -494,6 +494,7 @@
       <Member Id="M:Xamarin.Essentials.Location.#ctor" />
       <Member Id="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double,System.DateTimeOffset)" />
+      <Member Id="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Location.#ctor(Xamarin.Essentials.Location)" />
       <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
@@ -836,6 +837,7 @@
       <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareFileRequest)" />
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareMultipleFilesRequest)" />
       <Member Id="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
     </Type>
     <Type Name="Xamarin.Essentials.ShareFile" Id="T:Xamarin.Essentials.ShareFile">
@@ -850,6 +852,15 @@
       <Member Id="M:Xamarin.Essentials.ShareFileRequest.#ctor(Xamarin.Essentials.FileBase)" />
       <Member Id="M:Xamarin.Essentials.ShareFileRequest.#ctor(Xamarin.Essentials.ShareFile)" />
       <Member Id="P:Xamarin.Essentials.ShareFileRequest.File" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ShareMultipleFilesRequest" Id="T:Xamarin.Essentials.ShareMultipleFilesRequest">
+      <Member Id="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor" />
+      <Member Id="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.Collections.Generic.IEnumerable{Xamarin.Essentials.FileBase})" />
+      <Member Id="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.Collections.Generic.IEnumerable{Xamarin.Essentials.ShareFile})" />
+      <Member Id="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.String,System.Collections.Generic.IEnumerable{Xamarin.Essentials.FileBase})" />
+      <Member Id="M:Xamarin.Essentials.ShareMultipleFilesRequest.#ctor(System.String,System.Collections.Generic.IEnumerable{Xamarin.Essentials.ShareFile})" />
+      <Member Id="M:Xamarin.Essentials.ShareMultipleFilesRequest.op_Explicit(Xamarin.Essentials.ShareFileRequest)~Xamarin.Essentials.ShareMultipleFilesRequest" />
+      <Member Id="P:Xamarin.Essentials.ShareMultipleFilesRequest.Files" />
     </Type>
     <Type Name="Xamarin.Essentials.ShareRequestBase" Id="T:Xamarin.Essentials.ShareRequestBase">
       <Member Id="M:Xamarin.Essentials.ShareRequestBase.#ctor" />

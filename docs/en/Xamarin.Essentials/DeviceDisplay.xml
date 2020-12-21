@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Represents information about the device screen.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="KeepScreenOn">
@@ -32,9 +30,7 @@
       <Docs>
         <summary>Gets or sets if the screen shold be kept on.</summary>
         <value>If the screen keep on is set.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="MainDisplayInfo">
@@ -52,9 +48,7 @@
       <Docs>
         <summary>Gets the main screens display info.</summary>
         <value>The main screen display info.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="MainDisplayInfoChanged">
@@ -71,9 +65,7 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is triggered when the main display info changes.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Event argments when an Android Activity's state changes.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Activity">
@@ -32,9 +30,7 @@
       <Docs>
         <summary>Gets the Activity of which the state changed.</summary>
         <value>The Activity for the event.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="State">
@@ -52,9 +48,7 @@
       <Docs>
         <summary>The state of the Activity.</summary>
         <value>The state of the Activity for the event.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

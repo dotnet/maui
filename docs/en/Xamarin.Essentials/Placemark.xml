@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>User-friendly description of a geographic coordinate. This contains information such as the name of the place, its address, and other information.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -29,9 +27,7 @@
       <Parameters />
       <Docs>
         <summary>Default constructor for placemark.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -49,9 +45,7 @@
       <Docs>
         <param name="placemark">Placemark to copy.</param>
         <summary>Constructor to create a deep copy.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="AdminArea">
@@ -69,9 +63,7 @@
       <Docs>
         <summary>Gets or sets the administrative area name of the address, for example, "CA", or null if it is unknown.</summary>
         <value>The admin area.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="CountryCode">
@@ -89,9 +81,7 @@
       <Docs>
         <summary>Gets or sets the country ISO code.</summary>
         <value>The country ISO code.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="CountryName">
@@ -109,9 +99,7 @@
       <Docs>
         <summary>Gets or sets the country name.</summary>
         <value>The country name.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="FeatureName">
@@ -129,9 +117,7 @@
       <Docs>
         <summary>Gets or sets the feature name.</summary>
         <value>The feature name.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Locality">
@@ -149,9 +135,7 @@
       <Docs>
         <summary>Gets or sets the city or town.</summary>
         <value>The city or town of the locality.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Location">
@@ -169,9 +153,7 @@
       <Docs>
         <summary>Gets or sets the location of the placemark.</summary>
         <value>The location of the placemark.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="PostalCode">
@@ -189,9 +171,7 @@
       <Docs>
         <summary>Gets or sets the postal code.</summary>
         <value>The postal code.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="SubAdminArea">
@@ -209,9 +189,7 @@
       <Docs>
         <summary>Gets or sets the sub-administrative area name of the address, for example, "Santa Clara County", or null if it is unknown.</summary>
         <value>The sub-admin area.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="SubLocality">
@@ -229,9 +207,7 @@
       <Docs>
         <summary>Gets or sets the sub locality.</summary>
         <value>The sub locality.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="SubThoroughfare">
@@ -249,9 +225,7 @@
       <Docs>
         <summary>Gets or sets optional info: sub street or region.</summary>
         <value>The sub thoroughfare.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Thoroughfare">
@@ -269,9 +243,7 @@
       <Docs>
         <summary>Gets or sets the street name.</summary>
         <value>The street name.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -289,8 +261,8 @@
       <Parameters />
       <Docs>
         <summary>A string representation of the placemark.</summary>
-        <returns>A string representation of the placemark.</returns>
-        <remarks>To be added.</remarks>
+        <returns>Returns a string representation of the placemark.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

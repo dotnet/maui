@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Represents the criteria for a location request.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -29,9 +27,7 @@
       <Parameters />
       <Docs>
         <summary>Creates a new instance of GeolocationRequest.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -49,9 +45,7 @@
       <Docs>
         <param name="accuracy">The desired accuracy.</param>
         <summary>Creates a new instance of GeolocationRequest with the specified accuracy.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -71,9 +65,7 @@
         <param name="accuracy">The desired accuracy.</param>
         <param name="timeout">The request timeout.</param>
         <summary>Creates a new instance of GeolocationRequest with the specified accuracy and timeout.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="DesiredAccuracy">
@@ -91,9 +83,7 @@
       <Docs>
         <summary>Gets or sets the desired accuracy of the resulting location.</summary>
         <value>The desired accuracy of the location.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Timeout">
@@ -111,9 +101,7 @@
       <Docs>
         <summary>Gets or sets the location request timeout.</summary>
         <value>The location request timeout.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">

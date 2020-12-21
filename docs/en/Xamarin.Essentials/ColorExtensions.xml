@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Extension methods for System.Drawing.Color</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="AddLuminosity">
@@ -38,9 +36,7 @@
         <param name="delta">The delta to add to the current luminosity.</param>
         <summary>Adds luminosity to the existing color</summary>
         <returns>The new color.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="FromHsva">
@@ -68,9 +64,7 @@
         <param name="a">The Alpha value in double.</param>
         <summary>Convert HSVa color into System.Drawing.Color.</summary>
         <returns>System.Drawing.Color.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="GetComplementary">
@@ -92,9 +86,7 @@
         <param name="color">A color to obtain the complement for.</param>
         <summary>Returns a new color that is on the opposite side of the color wheel from the original.</summary>
         <returns>A color that is the complement of the value passed in.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="MultiplyAlpha">
@@ -118,9 +110,7 @@
         <param name="percentage">The percentage from 0-1f</param>
         <summary>Multiplies the current alpha by a percentage (0-1f)</summary>
         <returns>The new color.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToHsv">
@@ -147,9 +137,7 @@
         <param name="color">The current color to manipulate.</param>
         <summary>Convert a System.Drawing.Color struct into HSV Color.</summary>
         <returns>A tuple of doubles with the values of Hue, Saturation and Value, respectively.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToInt">
@@ -193,9 +181,7 @@
         <param name="color">The color to use as a base.</param>
         <summary>Converts the color to the system specific color.</summary>
         <returns>The system color.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemColor">
@@ -239,9 +225,7 @@
         <param name="color">The color to use as a base.</param>
         <summary>Converts the color to the system specific color.</summary>
         <returns>The system color.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemColor">
@@ -263,9 +247,7 @@
         <param name="color">The color to use as a base.</param>
         <summary>Converts the color to the system specific color.</summary>
         <returns>The system color.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToUInt">
@@ -287,9 +269,7 @@
         <param name="color">The color to use as a base.</param>
         <summary>Converts the color to a UInt representation.</summary>
         <returns>The UInt representation.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="WithAlpha">
@@ -313,9 +293,7 @@
         <param name="alpha">The alpha to set 0-255.</param>
         <summary>Creates a new color based on this color, but with a new alpha (0-255).</summary>
         <returns>The new color.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="WithHue">
@@ -339,9 +317,7 @@
         <param name="hue">The hue to set 0-360.</param>
         <summary>Creates a new color based on this color, but with a new hue (0-360).</summary>
         <returns>The new color.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="WithLuminosity">
@@ -365,9 +341,7 @@
         <param name="luminosity">The luminosity to set 0-100.</param>
         <summary>Creates a new color based on this color, but with a new luminosity (0-100).</summary>
         <returns>The new color.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="WithSaturation">
@@ -391,9 +365,7 @@
         <param name="saturation">The saturation to set 0-100.</param>
         <summary>Creates a new color based on this color, but with a new saturation (0-100).</summary>
         <returns>The new color.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

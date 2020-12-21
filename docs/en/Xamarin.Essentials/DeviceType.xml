@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>Various types of devices.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Physical">

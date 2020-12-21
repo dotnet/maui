@@ -65,7 +65,7 @@
       </Docs>
     </Member>
     <Member MemberName="DisplayName">
-      <MemberSignature Language="C#" Value="public string DisplayName { get; set; }" />
+      <MemberSignature Language="C#" Value="public string DisplayName { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string DisplayName" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Contact.DisplayName" />
       <MemberType>Property</MemberType>

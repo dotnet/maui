@@ -11,12 +11,8 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>
-      <para></para>
-    </summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <summary></summary>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -30,12 +26,8 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>
-          <para />
-        </summary>
-        <remarks>
-          <para />
-        </remarks>
+        <summary></summary>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="PresentationSourceBounds">
@@ -52,9 +44,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the source rectangle to display the Share UI from.</summary>
-        <value>
-          <para />
-        </value>
+        <value></value>
         <remarks>This is only used on iOS currently.</remarks>
       </Docs>
     </Member>
@@ -73,9 +63,7 @@
       <Docs>
         <summary>Gets or sets the title to use on the share user interface</summary>
         <value>The title to be displayed.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

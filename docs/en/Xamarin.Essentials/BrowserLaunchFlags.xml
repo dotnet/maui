@@ -16,9 +16,7 @@
   </Attributes>
   <Docs>
     <summary>Additional flags that can be set to control how the browser opens.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="LaunchAdjacent">

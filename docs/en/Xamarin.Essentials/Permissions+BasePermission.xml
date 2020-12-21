@@ -85,7 +85,6 @@
       <Docs>
         <summary>
           <para>Request a specific permission from the user.</para>
-          <para></para>
         </summary>
         <returns>The status of the permission that was requested.</returns>
         <remarks>The request will be prompted to the user if it hasn't been granted. iOS only allows the permission to be requested once, any additional requests will return immediatelly.</remarks>

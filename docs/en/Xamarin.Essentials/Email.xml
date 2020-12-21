@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Provides an easy way to allow the user to send emails.</summary>
-    <remarks>
-      <para />
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="ComposeAsync">
@@ -32,12 +30,8 @@
       <Parameters />
       <Docs>
         <summary>Opens the default email client to allow the user to send the message.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ComposeAsync">
@@ -58,12 +52,8 @@
       <Docs>
         <param name="message">The email message.</param>
         <summary>Opens the default email client to allow the user to send the message.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ComposeAsync">
@@ -94,12 +84,8 @@
         <param name="body">The email body.</param>
         <param name="to">The email recipients.</param>
         <summary>Opens the default email client to allow the user to send the message with the provided subject, body and recipients.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

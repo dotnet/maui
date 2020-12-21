@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Represents a single email message.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -29,9 +27,7 @@
       <Parameters />
       <Docs>
         <summary>Creates a new instance of EmailMessage.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -59,9 +55,7 @@
         <param name="body">The email body.</param>
         <param name="to">The email's recipients.</param>
         <summary>Creates a new instance of EmailMessage with the specified subject, body and recipients.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Attachments">
@@ -78,12 +72,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a list of file attachments.</summary>
-        <value>
-          <para></para>
-        </value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Bcc">
@@ -100,12 +90,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the email's BCC recipients.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Body">
@@ -122,12 +108,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the email's body.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="BodyFormat">
@@ -144,12 +126,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a value indicating whether the message is in plain text or HTML (not supported on UWP).</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Cc">
@@ -166,12 +144,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the email's CC recipients.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Subject">
@@ -188,12 +162,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the email's subject.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="To">
@@ -210,12 +180,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the email's recipients.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

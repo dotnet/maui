@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>A file to be shared.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -32,9 +30,7 @@
       <Docs>
         <param name="fullPath">The full path and filename.</param>
         <summary>File to be shared.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -52,9 +48,7 @@
       <Docs>
         <param name="file">Existing file to be shared.</param>
         <summary>Shares an existing file.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -73,12 +67,8 @@
       <Docs>
         <param name="fullPath">Full path and filename.</param>
         <param name="contentType">Explicit content type (MIME type) of the file (eg: `image/png`).</param>
-        <summary>
-          <para />
-        </summary>
-        <remarks>
-          <para />
-        </remarks>
+        <summary></summary>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Turn the Flashlight / Torch / Lamp On and Off.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="TurnOffAsync">
@@ -32,12 +30,8 @@
       <Parameters />
       <Docs>
         <summary>Turns the Flashlight Off.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="TurnOnAsync">
@@ -55,12 +49,8 @@
       <Parameters />
       <Docs>
         <summary>Turns the Flashlight On.</summary>
-        <returns>
-          <para />
-        </returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>Application Theme Type</summary>
-    <remarks>
-      <para />
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Dark">

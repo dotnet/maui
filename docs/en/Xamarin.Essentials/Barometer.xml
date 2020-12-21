@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Monitor changes to the atmospheric pressure.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="IsMonitoring">
@@ -32,9 +30,7 @@
       <Docs>
         <summary>Gets if barometer is actively being monitored.</summary>
         <value>If barometer is being monitored.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ReadingChanged">
@@ -51,9 +47,7 @@
       </ReturnValue>
       <Docs>
         <summary>Event triggered when barometer reading changes.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Start">
@@ -92,9 +86,7 @@
       <Parameters />
       <Docs>
         <summary>Stop monitoring for changes to the barometer.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

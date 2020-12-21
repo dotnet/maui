@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Gyroscope data of the rotation around the device's three primary axis.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="IsMonitoring">
@@ -32,9 +30,7 @@
       <Docs>
         <summary>Gets if gyro is being monitored.</summary>
         <value>If monitoring.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ReadingChanged">
@@ -51,9 +47,7 @@
       </ReturnValue>
       <Docs>
         <summary>Event triggered when reading of sensor changes.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Start">
@@ -92,9 +86,7 @@
       <Parameters />
       <Docs>
         <summary>Stop monitoring for changes to gyro.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

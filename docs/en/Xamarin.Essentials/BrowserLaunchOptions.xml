@@ -27,9 +27,7 @@
       <Parameters />
       <Docs>
         <summary>Default constructor.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Flags">
@@ -65,9 +63,7 @@
       <Docs>
         <summary>Launch type of the browser.</summary>
         <value>The launch type.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="PreferredControlColor">
@@ -85,9 +81,7 @@
       <Docs>
         <summary>Preferred color of the controls on the browser.</summary>
         <value>Gets the color for controls.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="PreferredToolbarColor">
@@ -105,9 +99,7 @@
       <Docs>
         <summary>Preferred color of the background toolbar.</summary>
         <value>Gets the toolbar color.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="TitleMode">
@@ -125,9 +117,7 @@
       <Docs>
         <summary>Preferred mode for the title display.</summary>
         <value>Gets the title display mode.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

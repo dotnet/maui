@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Access to checking and requesting application permissions.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="CheckStatusAsync&lt;TPermission&gt;">
@@ -39,12 +37,10 @@
       </TypeParameters>
       <Parameters />
       <Docs>
-        <typeparam name="TPermission">To be added.</typeparam>
+        <typeparam name="TPermission">The permission to check.</typeparam>
         <summary>Checks the status of a specific permission.</summary>
         <returns>The current status of the permission.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="IsCapabilityDeclared">
@@ -66,9 +62,7 @@
         <param name="capabilityName">Name of the capability on UWP.</param>
         <summary>Checks if a specific capability name is declared.</summary>
         <returns>If the capability is declared.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="IsDeclaredInManifest">
@@ -90,9 +84,7 @@
         <param name="permission">The name of the specific permission in the manifest to check.</param>
         <summary>Checks if a permission is declared in the Android manifest file.</summary>
         <returns>If the permission is declared or not.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="IsKeyDeclaredInInfoPlist">
@@ -114,9 +106,7 @@
         <param name="usageKey">The usage key to check in the info.plist.</param>
         <summary>Check if a usage key is specified in the info.plist file.</summary>
         <returns>If it is declared in the info.plist.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="LocationTimeout">
@@ -159,7 +149,7 @@
       </TypeParameters>
       <Parameters />
       <Docs>
-        <typeparam name="TPermission">To be added.</typeparam>
+        <typeparam name="TPermission">The permission to request.</typeparam>
         <summary>Request a specific permission from the user.</summary>
         <returns>The status of the permission that was requested.</returns>
         <remarks>The request will be prompted to the user if it hasn't been granted. iOS only allows the permission to be requested once, any additional requests will return immediatelly.</remarks>
@@ -189,6 +179,7 @@
       <Docs>
         <typeparam name="TPermission">The type of permission.</typeparam>
         <summary>Gets whether you should show UI with rationale for requesting a permission.</summary>
+        <returns>Returns true if rationale should be displayed, otherwise false.</returns>
         <remarks></remarks>
       </Docs>
     </Member>

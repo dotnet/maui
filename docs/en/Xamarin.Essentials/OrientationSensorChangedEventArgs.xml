@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Orientation event args when reading changes.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -50,9 +48,7 @@
       <Docs>
         <summary>Gets the reading when it changes.</summary>
         <value>The current Reading</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Extension methods for Rectangle.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="ToSystemRectangle">
@@ -36,9 +34,7 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangle">
@@ -60,9 +56,7 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangle">
@@ -84,9 +78,7 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangleF">
@@ -108,9 +100,7 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangleF">
@@ -132,9 +122,7 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangleF">
@@ -156,9 +144,7 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>
