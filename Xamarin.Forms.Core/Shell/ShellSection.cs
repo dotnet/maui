@@ -400,7 +400,7 @@ namespace Xamarin.Forms
 							// if the routes do match and this is the last in the loop
 							// pop everything after this route
 							popCount = i + 2;
-							Shell.ApplyQueryAttributes(navPage, queryData, isLast, isRelativePopping);
+							ShellNavigationManager.ApplyQueryAttributes(navPage, queryData, isLast, isRelativePopping);
 
 							// If we're not on the last loop of the stack then continue
 							// otherwise pop the rest of the stack
@@ -501,7 +501,7 @@ namespace Xamarin.Forms
 				Internals.Log.Warning(nameof(Shell), $"Failed to Create Content For: {route}");
 			}
 
-			Shell.ApplyQueryAttributes(content, queryData, isLast, isPopping);
+			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);
 			return content;
 		}
 
@@ -1082,7 +1082,7 @@ namespace Xamarin.Forms
 				};
 
 				var returnedPage = (_owner as IShellSectionController).PresentedPage;
-				await _owner.Shell.GoToAsync(navigationParameters);
+				await _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
 
 				// This means the page wasn't popped and navigation was cancelled
 				if ((_owner as IShellSectionController).PresentedPage == returnedPage)
@@ -1100,7 +1100,7 @@ namespace Xamarin.Forms
 
 				var shell = _owner.Shell;
 				var targetState =
-					Shell.GetNavigationState(
+					ShellNavigationManager.GetNavigationState(
 						shell.CurrentItem,
 						_owner,
 						_owner.CurrentItem,
@@ -1114,7 +1114,7 @@ namespace Xamarin.Forms
 					PopAllPagesNotSpecifiedOnTargetState = true
 				};
 
-				return _owner.Shell.GoToAsync(navigationParameters);
+				return _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
 			}
 
 			protected override Task OnPushAsync(Page page, bool animated)
@@ -1128,7 +1128,7 @@ namespace Xamarin.Forms
 					PagePushing = page
 				};
 
-				return (_owner.Shell).GoToAsync(navigationParameters);
+				return _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
 			}
 
 			protected override void OnRemovePage(Page page) => _owner.OnRemovePage(page);

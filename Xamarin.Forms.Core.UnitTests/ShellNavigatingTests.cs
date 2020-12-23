@@ -47,6 +47,102 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assume.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//one/tabone/content"));
 		}
 
+		[Test]
+		public void CancelNavigationOccurringOutsideGotoAsyncWithoutDelay()
+		{
+			var flyoutItem = CreateShellItem<FlyoutItem>();
+			TestShell shell = new TestShell()
+			{
+				Items = { flyoutItem }
+			};
+
+			var navigatingToShellContent = CreateShellContent();
+			shell.Items[0].Items[0].Items.Add(navigatingToShellContent);
+
+			bool executed = false;
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			ShellContent contentActiveBeforeCompletingDeferral = null;
+			shell.Navigating += (_, args) =>
+			{
+				var deferral = args.GetDeferral();
+				contentActiveBeforeCompletingDeferral = flyoutItem.Items[0].Items[0];
+				args.Cancel();
+				deferral.Complete();
+				executed = true;
+			};
+
+			bool result = shell.Controller.ProposeNavigation(
+				ShellNavigationSource.ShellContentChanged, flyoutItem, flyoutItem.Items[0], navigatingToShellContent, flyoutItem.Items[0].Stack, true);
+
+			Assert.IsTrue(executed);
+			Assert.IsFalse(result);
+		}
+
+		[Test]
+		public async Task CancelNavigationOccurringOutsideGotoAsync()
+		{
+			var flyoutItem = CreateShellItem<FlyoutItem>();
+			TestShell shell = new TestShell()
+			{
+				Items = { flyoutItem }
+			};
+
+			var navigatingToShellContent = CreateShellContent();
+			shell.Items[0].Items[0].Items.Add(navigatingToShellContent);
+
+			bool executed = false;
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			ShellContent contentActiveBeforeCompletingDeferral = null;
+
+			shell.Navigating += async (_, args) =>
+			{
+				var deferral = args.GetDeferral();
+				await Task.Delay(100);
+
+				contentActiveBeforeCompletingDeferral = flyoutItem.Items[0].Items[0];
+				executed = true;
+				deferral.Complete();
+			};
+
+			shell.Navigated += (_, args) =>
+			{
+				taskCompletionSource.SetResult(true);
+			};
+
+			shell.Controller.ProposeNavigation(
+				ShellNavigationSource.ShellContentChanged, flyoutItem, flyoutItem.Items[0], navigatingToShellContent, flyoutItem.Items[0].Stack, true);
+
+			await taskCompletionSource.Task;
+
+			Assert.IsTrue(executed);
+			Assert.AreNotEqual(contentActiveBeforeCompletingDeferral, navigatingToShellContent);
+			Assert.AreEqual(flyoutItem.Items[0].Items[0], contentActiveBeforeCompletingDeferral, "Navigation to new Content was not deferred");
+			Assert.AreEqual(flyoutItem.Items[0].CurrentItem, navigatingToShellContent, "Navigation after completing the deferral failed");
+		}
+
+		[Test]
+		public async Task ImmediatelyCompleteDeferral()
+		{
+			TestShell shell = new TestShell()
+			{
+				Items = { CreateShellItem<FlyoutItem>() }
+			};
+
+			bool executed = false;
+			shell.Navigating += (_, args) =>
+			{
+				var deferral = args.GetDeferral();
+				executed = true;
+				deferral.Complete();
+			};
+
+			await shell.Navigation.PushAsync(new ContentPage());
+			Assert.IsTrue(executed);
+			Assert.AreEqual(2, shell.Navigation.NavigationStack.Count);
+		}
+
 		[TestCase("PopToRoot")]
 		[TestCase("Pop")]
 		public async Task DeferPopNavigation(string testCase)
@@ -92,9 +188,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		[TestCase("Pop")]
 		[TestCase("GoToAsync")]
 		[TestCase("Push")]
-		public async Task NavigationTaskCompletesAfterDeferalHasFinished(string testCase)
+		public async Task NavigationTaskCompletesAfterDeferralHasFinished(string testCase)
 		{
-			Routing.RegisterRoute(nameof(NavigationTaskCompletesAfterDeferalHasFinished), typeof(ContentPage));
+			Routing.RegisterRoute(nameof(NavigationTaskCompletesAfterDeferralHasFinished), typeof(ContentPage));
 			var shell = new TestShell()
 			{
 				Items = { CreateShellItem<FlyoutItem>() }
@@ -117,7 +213,7 @@ namespace Xamarin.Forms.Core.UnitTests
 					await shell.Navigation.PopAsync();
 					break;
 				case "GoToAsync":
-					await shell.GoToAsync(nameof(NavigationTaskCompletesAfterDeferalHasFinished));
+					await shell.GoToAsync(nameof(NavigationTaskCompletesAfterDeferralHasFinished));
 					break;
 				case "Push":
 					await shell.Navigation.PushAsync(new ContentPage());
@@ -128,7 +224,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void CompletingTheSameDeferalTokenTwiceDoesntDoAnything()
+		public void CompletingTheSameDeferralTokenTwiceDoesntDoAnything()
 		{
 			var args = CreateShellNavigatedEventArgs();
 			var token = args.GetDeferral();
