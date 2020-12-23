@@ -56,7 +56,12 @@ namespace Xamarin.Forms.Platform.UWP
 			if (fileSource == null || fileSource.File == null)
 				return;
 
-			var imageDirectory = Application.Current.OnThisPlatform().GetImageDirectory();
+			var currentApp = Application.Current;
+
+			if (currentApp == null)
+				return;
+
+			var imageDirectory = currentApp.OnThisPlatform().GetImageDirectory();
 
 			if (!string.IsNullOrEmpty(imageDirectory))
 			{
