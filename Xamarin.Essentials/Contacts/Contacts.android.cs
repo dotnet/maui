@@ -5,22 +5,31 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Database;
 using Android.Provider;
+using CommonDataKinds = Android.Provider.ContactsContract.CommonDataKinds;
+using StructuredName = Android.Provider.ContactsContract.CommonDataKinds.StructuredName;
 
 namespace Xamarin.Essentials
 {
     public static partial class Contacts
     {
+        const string idCol = ContactsContract.Contacts.InterfaceConsts.Id;
+        const string displayNameCol = ContactsContract.Contacts.InterfaceConsts.DisplayName;
+        const string mimetypeCol = ContactsContract.Data.InterfaceConsts.Mimetype;
+
+        const string contactIdCol = CommonDataKinds.Phone.InterfaceConsts.ContactId;
+
         static async Task<Contact> PlatformPickContactAsync()
         {
-            var intent = new Intent(Intent.ActionPick);
-            intent.SetType(ContactsContract.CommonDataKinds.Phone.ContentType);
-
+            var intent = new Intent(Intent.ActionPick, ContactsContract.Contacts.ContentUri);
             var result = await IntermediateActivity.StartAsync(intent, Platform.requestCodePickContact).ConfigureAwait(false);
+            if (result?.Data == null)
+                return null;
 
-            if (result?.Data != null)
-                return GetContact(result.Data);
+            using var cursor = Platform.ContentResolver.Query(result?.Data, null, null, null, null);
+            if (cursor?.MoveToFirst() != true)
+                return null;
 
-            return null;
+            return GetContact(cursor);
         }
 
         static Task<IEnumerable<Contact>> PlatformGetAllAsync(CancellationToken cancellationToken)
@@ -30,106 +39,95 @@ namespace Xamarin.Essentials
 
             IEnumerable<Contact> GetEnumerable()
             {
-                if (cursor?.MoveToFirst() ?? false)
+                if (cursor?.MoveToFirst() == true)
                 {
                     do
                     {
-                        var contact = GetContact(cursor, ContactsContract.Contacts.InterfaceConsts.Id);
+                        var contact = GetContact(cursor);
                         if (contact != null)
                             yield return contact;
                     }
                     while (cursor.MoveToNext());
                 }
 
-                cursor.Close();
+                cursor?.Close();
             }
         }
 
-        internal static Contact GetContact(global::Android.Net.Uri contactUri)
+        static Contact GetContact(ICursor cursor)
         {
-            if (contactUri == null)
-                return default;
+            var id = GetString(cursor, idCol);
+            var displayName = GetString(cursor, displayNameCol);
+            var phones = GetNumbers(id)?.Select(p => new ContactPhone(p));
+            var emails = GetEmails(id)?.Select(e => new ContactEmail(e));
+            var (prefix, given, middle, family, suffix) = GetName(id);
 
-            using var cursor = Platform.ContentResolver.Query(contactUri, null, null, null, null);
-
-            if (cursor.MoveToFirst())
-            {
-                return GetContact(
-                    cursor,
-                    ContactsContract.CommonDataKinds.Phone.InterfaceConsts.ContactId);
-            }
-
-            return default;
+            return new Contact(id, prefix, given, middle, family, suffix, phones, emails, displayName);
         }
 
-        static Contact GetContact(ICursor cursor, string idKey)
+        static IEnumerable<string> GetNumbers(string id)
         {
-            var displayName = cursor.GetString(cursor.GetColumnIndex(ContactsContract.Contacts.InterfaceConsts.DisplayName));
-            var idQ = new string[1] { cursor.GetString(cursor.GetColumnIndex(idKey)) };
-            var phones = GetNumbers(idQ)?.Select(
-                item => new ContactPhone(item.data));
-            var emails = GetEmails(idQ)?.Select(
-                item => new ContactEmail(item.data));
-            var name = GetName(idQ[0]);
+            var uri = CommonDataKinds.Phone.ContentUri
+                .BuildUpon()
+                .AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1")
+                .Build();
 
-            return new Contact(idQ[0], name.Prefix, name.Given, name.Middle, name.Family, name.Suffix, phones, emails, displayName);
+            var cursor = Platform.ContentResolver.Query(uri, null, $"{contactIdCol}=?", new[] { id }, null);
+
+            return ReadCursorItems(cursor, CommonDataKinds.Phone.Number);
         }
 
-        static IEnumerable<(string data, string type)> GetNumbers(string[] idQ)
+        static IEnumerable<string> GetEmails(string id)
         {
-            var uri = ContactsContract.CommonDataKinds.Phone.ContentUri.BuildUpon().AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1").Build();
-            var cursor = Platform.ContentResolver.Query(uri, null, $"{ContactsContract.CommonDataKinds.Phone.InterfaceConsts.ContactId}=?", idQ, null);
+            var uri = CommonDataKinds.Email.ContentUri
+                .BuildUpon()
+                .AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1")
+                .Build();
 
-            return ReadCursorItems(cursor, ContactsContract.CommonDataKinds.Phone.Number, ContactsContract.CommonDataKinds.Phone.InterfaceConsts.Type);
+            var cursor = Platform.ContentResolver.Query(uri, null, $"{contactIdCol}=?", new[] { id }, null);
+
+            return ReadCursorItems(cursor, CommonDataKinds.Email.Address);
         }
 
-        static IEnumerable<(string data, string type)> GetEmails(string[] idQ)
+        static IEnumerable<string> ReadCursorItems(ICursor cursor, string dataKey)
         {
-            var uri = ContactsContract.CommonDataKinds.Email.ContentUri.BuildUpon().AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1").Build();
-            var cursor = Platform.ContentResolver.Query(uri, null, $"{ContactsContract.CommonDataKinds.Phone.InterfaceConsts.ContactId}=?", idQ, null);
-
-            return ReadCursorItems(cursor, ContactsContract.CommonDataKinds.Email.Address, ContactsContract.CommonDataKinds.Email.InterfaceConsts.Type);
-        }
-
-        static IEnumerable<(string data, string type)> ReadCursorItems(ICursor cursor, string dataKey, string typeKey)
-        {
-            if (cursor?.MoveToFirst() ?? false)
+            if (cursor?.MoveToFirst() == true)
             {
                 do
                 {
-                    var data = cursor.GetString(cursor.GetColumnIndex(dataKey));
-                    var type = cursor.GetString(cursor.GetColumnIndex(typeKey));
-
+                    var data = GetString(cursor, dataKey);
                     if (data != null)
-                        yield return (data, type);
+                        yield return data;
                 }
                 while (cursor.MoveToNext());
             }
             cursor?.Close();
         }
 
-        static (string Prefix, string Given, string Middle, string Family, string Suffix) GetName(string idQ)
+        static (string Prefix, string Given, string Middle, string Family, string Suffix) GetName(string id)
         {
-            var whereNameParams = new string[] { ContactsContract.CommonDataKinds.StructuredName.ContentItemType };
-            var whereName = $"{ContactsContract.Data.InterfaceConsts.Mimetype} = ? AND {ContactsContract.CommonDataKinds.StructuredName.InterfaceConsts.ContactId} = {idQ}";
+            var selection = $"{mimetypeCol}=? AND {contactIdCol}=?";
+            var selectionArgs = new string[] { StructuredName.ContentItemType, id };
+
             using var cursor = Platform.ContentResolver.Query(
                 ContactsContract.Data.ContentUri,
                 null,
-                whereName,
-                whereNameParams,
+                selection,
+                selectionArgs,
                 null);
 
-            if (cursor?.MoveToFirst() ?? false)
-            {
-                return (
-                    cursor.GetString(cursor.GetColumnIndex(ContactsContract.CommonDataKinds.StructuredName.Prefix)),
-                    cursor.GetString(cursor.GetColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GivenName)),
-                    cursor.GetString(cursor.GetColumnIndex(ContactsContract.CommonDataKinds.StructuredName.MiddleName)),
-                    cursor.GetString(cursor.GetColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FamilyName)),
-                    cursor.GetString(cursor.GetColumnIndex(ContactsContract.CommonDataKinds.StructuredName.Suffix)));
-            }
+            if (cursor?.MoveToFirst() != true)
+                return (null, null, null, null, null);
 
-            return (null, null, null, null, null);
+            return (
+                GetString(cursor, StructuredName.Prefix),
+                GetString(cursor, StructuredName.GivenName),
+                GetString(cursor, StructuredName.MiddleName),
+                GetString(cursor, StructuredName.FamilyName),
+                GetString(cursor, StructuredName.Suffix));
         }
+
+        static string GetString(ICursor cursor, string column) =>
+            cursor.GetString(cursor.GetColumnIndex(column));
     }
 }
