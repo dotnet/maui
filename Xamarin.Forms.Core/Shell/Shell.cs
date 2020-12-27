@@ -1042,7 +1042,7 @@ namespace Xamarin.Forms
 
 			if (!shell.Items.Contains(shellItem))
 				shell.Items.Add(shellItem);
-			
+
 			var shellSection = shellItem.CurrentItem;
 			var shellContent = shellSection.CurrentItem;
 			var stack = shellSection.Stack;

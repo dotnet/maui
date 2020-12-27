@@ -309,7 +309,7 @@ namespace Xamarin.Forms
 
 			var navArgs = new ShellNavigatingEventArgs(_shell.CurrentState, proposedState, source, canCancel);
 			HandleNavigating(navArgs);
-			
+
 			return navArgs;
 		}
 
