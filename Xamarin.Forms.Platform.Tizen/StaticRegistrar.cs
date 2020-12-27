@@ -70,7 +70,14 @@ namespace Xamarin.Forms.Platform.Tizen
 		public static void RegisterHandlers(Dictionary<Type, Func<IRegisterable>> customHandlers)
 		{
 			//Renderers
-			Registered.Register(typeof(Layout), () => new LayoutRenderer());
+			if (Forms.UseFastLayout)
+			{
+				Registered.Register(typeof(Layout), () => new FastLayoutRenderer());
+			}
+			else
+			{
+				Registered.Register(typeof(Layout), () => new LayoutRenderer());
+			}
 			Registered.Register(typeof(ScrollView), () => new ScrollViewRenderer());
 			Registered.Register(typeof(CarouselPage), () => new CarouselPageRenderer());
 			Registered.Register(typeof(Page), () => new PageRenderer());
