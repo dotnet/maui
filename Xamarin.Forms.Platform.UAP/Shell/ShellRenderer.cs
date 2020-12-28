@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using Windows.Foundation.Metadata;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -32,6 +34,7 @@ namespace Xamarin.Forms.Platform.UWP
 		List<List<Element>> _flyoutGrouping;
 		ShellItemRenderer ItemRenderer { get; }
 		IShellController ShellController => (IShellController)_shell;
+		ObservableCollection<object> FlyoutItems = new ObservableCollection<object>();
 
 		public ShellRenderer()
 		{
@@ -43,6 +46,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Content = ItemRenderer = CreateShellItemRenderer();
 			MenuItemTemplateSelector = CreateShellFlyoutTemplateSelector();
 			Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["ShellNavigationView"];
+			MenuItemsSource = FlyoutItems;
 		}
 
 		async void OnBackRequested(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewBackRequestedEventArgs args)
@@ -317,7 +321,7 @@ namespace Xamarin.Forms.Platform.UWP
 			ShellController.AddFlyoutBehaviorObserver(this);
 			ShellController.AddAppearanceObserver(this, shell);
 			ShellController.ItemsCollectionChanged += OnItemsCollectionChanged;
-			ShellController.StructureChanged += OnStructureChanged;
+			ShellController.FlyoutItemsChanged += OnFlyoutItemsChanged;
 			UpdateFlyoutBackgroundColor();
 
 			_shell.Navigated += OnShellNavigated;
@@ -370,7 +374,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void OnStructureChanged(object sender, EventArgs e)
+		void OnFlyoutItemsChanged(object sender, EventArgs e)
 		{
 			UpdateMenuItemSource();
 		}
@@ -386,23 +390,50 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_flyoutGrouping != newGrouping)
 			{
 				_flyoutGrouping = newGrouping;
-				MenuItemsSource = IterateItems(newGrouping);
+				var newItems = IterateItems(newGrouping).ToList();
+
+				foreach (var item in newItems)
+				{
+					if (!FlyoutItems.Contains(item))
+						FlyoutItems.Add(item);
+				}
+
+				for (var i = FlyoutItems.Count - 1; i >= 0; i--)
+				{
+					var item = FlyoutItems[i];
+					if (!newItems.Contains(item))
+						FlyoutItems.RemoveAt(i);
+				}
 			}
 		}
 
 		IEnumerable<object> IterateItems(List<List<Element>> groups)
 		{
+			int separatorNumber = 0;
 			foreach (var group in groups)
 			{
 				if (group.Count > 0 && group != groups[0])
 				{
-					yield return new MenuFlyoutSeparator(); // Creates a separator
+					yield return new FlyoutItemMenuSeparator(separatorNumber++); // Creates a separator
 				}
 				foreach (var item in group)
 				{
 					yield return item;
 				}
 			}
+		}
+
+		class FlyoutItemMenuSeparator : MenuFlyoutSeparator
+		{
+			public FlyoutItemMenuSeparator(int separatorNumber)
+			{
+				Id = separatorNumber;
+			}
+
+			public int Id { get; set; }
+			public override int GetHashCode() => Id.GetHashCode();
+			public override bool Equals(object obj) =>
+				obj is FlyoutItemMenuSeparator fim && fim.Id == Id;
 		}
 
 		void SwitchShellItem(ShellItem newItem, bool animate = true)

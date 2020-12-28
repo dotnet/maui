@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_shellContext = shellContext;
 
-			ShellController.StructureChanged += OnShellStructureChanged;
+			ShellController.FlyoutItemsChanged += OnFlyoutItemsChanged;
 
 			_listItems = GenerateItemList();
 			_selectedCallback = selectedCallback;
@@ -197,7 +197,7 @@ namespace Xamarin.Forms.Platform.Android
 			return result;
 		}
 
-		protected virtual void OnShellStructureChanged(object sender, EventArgs e)
+		protected virtual void OnFlyoutItemsChanged(object sender, EventArgs e)
 		{
 			var newListItems = GenerateItemList();
 
@@ -217,7 +217,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
-				((IShellController)Shell).StructureChanged -= OnShellStructureChanged;
+				((IShellController)Shell).FlyoutItemsChanged -= OnFlyoutItemsChanged;
 
 				_elementViewHolder?.Dispose();
 

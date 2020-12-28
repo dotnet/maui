@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.iOS
 		List<List<Element>> _groups;
 		Dictionary<Element, UIContainerCell> _cells;
 
-		IShellController ShellController => (IShellController)_context.Shell;
+		IShellController ShellController => _context.Shell;
 
 		public ShellTableViewSource(IShellContext context, Action<Element> onElementSelected)
 		{
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (_groups == null)
 				{
-					_groups = ((IShellController)_context.Shell).GenerateFlyoutGrouping();
+					_groups = ShellController.GenerateFlyoutGrouping();
 
 					if (_cells != null)
 					{

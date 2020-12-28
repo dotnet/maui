@@ -164,9 +164,12 @@ namespace Xamarin.Forms
 
 		internal void SendStructureChanged()
 		{
-			if (Parent is Shell shell && IsVisibleItem)
+			if (Parent is Shell shell)
 			{
-				shell.SendStructureChanged();
+				if (IsVisibleItem)
+					shell.SendStructureChanged();
+
+				shell.SendFlyoutItemsChanged();
 			}
 		}
 
