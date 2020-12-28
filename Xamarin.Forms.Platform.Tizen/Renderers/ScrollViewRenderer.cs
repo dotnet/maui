@@ -2,8 +2,8 @@
 using System.ComponentModel;
 using ElmSharp;
 using Xamarin.Forms.Platform.Tizen.Native;
-using ERect = ElmSharp.Rect;
 using EContainer = ElmSharp.Container;
+using ERect = ElmSharp.Rect;
 using NBox = Xamarin.Forms.Platform.Tizen.Native.Box;
 using NScroller = Xamarin.Forms.Platform.Tizen.Native.Scroller;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.ScrollView;
