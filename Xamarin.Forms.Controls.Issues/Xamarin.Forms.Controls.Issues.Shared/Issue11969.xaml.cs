@@ -73,6 +73,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap("SwipeViewContentCheckBoxId");
 			RunningApp.Tap(SwipeButtonId);
 			RunningApp.WaitForElement(q => q.Marked(Success));
+			RunningApp.Tap("Ok");
 		}
 #endif
 	}
