@@ -59,12 +59,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1687" />
+    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
     <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.20602.1" />
-    <PackageReference Include="Xamarin.AndroidX.MediaRouter" Version="1.1.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.MediaRouter" Version="1.2.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Palette" Version="1.0.0.6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj">

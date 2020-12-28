@@ -114,7 +114,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1687" />
+    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.9" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.devices" Version="2.5.25" />

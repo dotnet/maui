@@ -10,6 +10,21 @@
             <Style TargetType="Page" ApplyToDerivedTypes="True">
                 <Setter Property="Visual" Value="{x:Static local:App.PreferredVisual}" />
             </Style>
+            <Style TargetType="Editor">
+                <Setter Property="TextColor" Value="{OnPlatform iOS='Black'}" />
+            </Style>
+            <Style TargetType="Entry">
+                <Setter Property="TextColor" Value="{OnPlatform iOS='Black'}" />
+            </Style>
+            <Style TargetType="Picker">
+                <Setter Property="TextColor" Value="{OnPlatform iOS='Black'}" />
+            </Style>
+            <Style TargetType="DatePicker">
+                <Setter Property="TextColor" Value="{OnPlatform iOS='Black'}" />
+            </Style>
+            <Style TargetType="TimePicker">
+                <Setter Property="TextColor" Value="{OnPlatform iOS='Black'}" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
