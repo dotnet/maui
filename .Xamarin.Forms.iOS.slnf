@@ -3,8 +3,6 @@
     "path": "Xamarin.Forms.sln",
     "projects": [
       "Stubs\\Xamarin.Forms.Platform.iOS\\Xamarin.Forms.Platform.iOS (Forwarders).csproj",
-      "XFCorePostProcessor.Tasks\\XFCorePostProcessor.Tasks.csproj",
-      "Xamarin.Flex\\Xamarin.Flex.shproj",
       "Xamarin.Forms.Build.Tasks\\Xamarin.Forms.Build.Tasks.csproj",
       "Xamarin.Forms.ControlGallery.iOS\\Xamarin.Forms.ControlGallery.iOS.csproj",
       "Xamarin.Forms.Controls.Issues\\Xamarin.Forms.Controls.Issues.Shared\\Xamarin.Forms.Controls.Issues.Shared.shproj",
@@ -18,8 +16,6 @@
       "Xamarin.Forms.Maps.iOS\\Xamarin.Forms.Maps.iOS.csproj",
       "Xamarin.Forms.Maps\\Xamarin.Forms.Maps.csproj",
       "Xamarin.Forms.Material.iOS\\Xamarin.Forms.Material.iOS.csproj",
-      "Xamarin.Forms.Pages.Azure\\Xamarin.Forms.Pages.Azure.csproj",
-      "Xamarin.Forms.Pages\\Xamarin.Forms.Pages.csproj",
       "Xamarin.Forms.Platform.iOS.UnitTests\\Xamarin.Forms.Platform.iOS.UnitTests.csproj",
       "Xamarin.Forms.Platform.iOS\\Xamarin.Forms.Platform.iOS.csproj",
       "Xamarin.Forms.Platform\\Xamarin.Forms.Platform.csproj",

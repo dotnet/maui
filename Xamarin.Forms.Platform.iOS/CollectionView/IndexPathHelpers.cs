@@ -32,5 +32,20 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return result;
 		}
+
+		public static bool IsIndexPathValid(this IItemsViewSource source, NSIndexPath indexPath) 
+		{
+			if (indexPath.Section >= source.GroupCount)
+			{
+				return false;
+			}
+
+			if (indexPath.Item >= source.ItemCountInGroup(indexPath.Section))
+			{
+				return false;
+			}
+
+			return true;
+		}
 	}
 }

@@ -134,6 +134,7 @@
     <Compile Include="CollectionView\DefaultCell.cs" />
     <Compile Include="CollectionView\HorizontalDefaultCell.cs" />
     <Compile Include="CollectionView\ItemsViewController.cs" />
+    <Compile Include="CollectionView\LayoutAttributesChangedEventArgs.cs" />
     <Compile Include="CollectionView\ObservableGroupedSource.cs" />
     <Compile Include="CollectionView\ScrollToPositionExtensions.cs" />
     <Compile Include="CollectionView\SelectableItemsViewController.cs" />
