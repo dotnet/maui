@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			AddFlyoutItem(contentPage, "Top Item");
-			
+
 			var flyoutItem = AddFlyoutItem("Click Me and You Should see 2 Items show up");
 			flyoutItem.Route = "ExpandMe";
 			flyoutItem.AutomationId = "ExpandMe";
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			base.OnNavigating(args);
 
-			if(!args.Target.FullLocation.ToString().Contains("ExpandMe"))
+			if (!args.Target.FullLocation.ToString().Contains("ExpandMe"))
 			{
 				return;
 			}

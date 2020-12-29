@@ -823,7 +823,7 @@ namespace Xamarin.Forms
 			if (FlyoutFooterView != null)
 				SetInheritedBindingContext(FlyoutFooterView, BindingContext);
 		}
-		
+
 
 		internal void SendFlyoutItemsChanged()
 		{
@@ -833,7 +833,7 @@ namespace Xamarin.Forms
 
 		List<List<Element>> IShellController.GenerateFlyoutGrouping()
 		{
-			if(_currentFlyoutViews == null)
+			if (_currentFlyoutViews == null)
 				UpdateFlyoutGroupings();
 
 			return _currentFlyoutViews;
