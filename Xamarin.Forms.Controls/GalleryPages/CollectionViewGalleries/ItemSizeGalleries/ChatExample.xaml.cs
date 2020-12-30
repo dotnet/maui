@@ -38,10 +38,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ItemSizeGa
 			_vm.ChatMessages.Clear();
 		}
 
-		ChatMessage GenerateRandomMessage() 
+		ChatMessage GenerateRandomMessage()
 		{
-			const string lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut " 
-				+ "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip " 
+			const string lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut "
+				+ "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
 				+ "ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat "
 				+ "nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
@@ -67,13 +67,13 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ItemSizeGa
 	{
 		public ObservableCollection<ChatMessage> ChatMessages { get; }
 
-		public ChatExampleViewModel() 
+		public ChatExampleViewModel()
 		{
 			ChatMessages = new ObservableCollection<ChatMessage>();
 		}
 
-		public ChatExampleViewModel(IEnumerable<ChatMessage> chatMessages) 
-		{ 
+		public ChatExampleViewModel(IEnumerable<ChatMessage> chatMessages)
+		{
 			ChatMessages = new ObservableCollection<ChatMessage>(chatMessages);
 		}
 	}
