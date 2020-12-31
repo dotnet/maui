@@ -22,6 +22,7 @@ using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using R = Android.Resource;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
+using Xamarin.Platform;
 
 namespace Xamarin.Forms.Platform.Android
 {

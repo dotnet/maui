@@ -19,6 +19,7 @@ using ATextAlignment = Android.Views.TextAlignment;
 using AView = Android.Views.View;
 using AWebView = Android.Webkit.WebView;
 using Specifics = Xamarin.Forms.PlatformConfiguration.AndroidSpecific.SwipeView;
+using Xamarin.Platform;
 
 namespace Xamarin.Forms.Platform.Android
 {
