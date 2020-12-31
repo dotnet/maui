@@ -19,14 +19,13 @@ namespace Xamarin.Forms.Platform.Android
 		int _currentLockMode = -1;
 		MasterDetailContainer _detailLayout;
 		bool _isPresentingFromCore;
+		bool _defaultAutomationSet;
 		MasterDetailContainer _masterLayout;
 		MasterDetailPage _page;
 		bool _presented;
 		Platform _platform;
 
 		string _defaultContentDescription;
-		string _defaultHint;
-
 		public MasterDetailRenderer(Context context) : base(context)
 		{
 		}
@@ -173,12 +172,26 @@ namespace Xamarin.Forms.Platform.Android
 			SetContentDescription();
 		}
 
+		void SetupAutomationDefaults()
+		{
+			if (!_defaultAutomationSet)
+			{
+				_defaultAutomationSet = true;
+				AutomationPropertiesProvider.SetupDefaults(this, ref _defaultContentDescription);
+			}
+		}
+
 		protected virtual void SetAutomationId(string id)
-		=> AutomationPropertiesProvider.SetAutomationId(this, Element, id);
+		{
+			SetupAutomationDefaults();
+			AutomationPropertiesProvider.SetAutomationId(this, Element, id);
+		}
 
 		protected virtual void SetContentDescription()
-			=> AutomationPropertiesProvider.SetContentDescription(this, Element, ref _defaultContentDescription, ref _defaultHint);
-
+		{
+			SetupAutomationDefaults();
+			AutomationPropertiesProvider.SetContentDescription(this, Element, _defaultContentDescription, null);
+		}
 
 		public VisualElementTracker Tracker { get; private set; }
 

@@ -47,6 +47,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		ViewGroup _container;
+		bool _defaultAutomationSet;
 		string _defaultContentDescription;
 		bool? _defaultFocusable;
 		ImportantForAccessibility? _defaultImportantForAccessibility;
@@ -214,6 +215,15 @@ namespace Xamarin.Forms.Platform.Android
 			effect.SetControl(Control);
 		}
 
+		void SetupAutomationDefaults()
+		{
+			if (!_defaultAutomationSet)
+			{
+				_defaultAutomationSet = true;
+				AutomationPropertiesProvider.SetupDefaults(ControlUsedForAutomation, ref _defaultContentDescription, ref _defaultHint);
+			}
+		}
+
 		protected override void SetAutomationId(string id)
 		{
 			if (Control == null)
@@ -222,8 +232,27 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			ContentDescription = id + "_Container";
+			SetupAutomationDefaults();
+
+			if (this != ControlUsedForAutomation)
+			{
+				ContentDescription = id + "_Container";
+				ImportantForAccessibility = ImportantForAccessibility.No;
+			}
+
 			AutomationPropertiesProvider.SetAutomationId(ControlUsedForAutomation, Element, id);
+		}
+
+		private protected void SetContentDescription(bool includeHint)
+		{
+			SetupAutomationDefaults();
+
+			if(includeHint)
+				AutomationPropertiesProvider.SetContentDescription(
+					ControlUsedForAutomation, Element, _defaultContentDescription, _defaultHint);
+			else
+				AutomationPropertiesProvider.SetBasicContentDescription(
+					ControlUsedForAutomation, Element, _defaultContentDescription);
 		}
 
 		protected override void SetContentDescription()
@@ -234,8 +263,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			AutomationPropertiesProvider.SetContentDescription(
-				ControlUsedForAutomation, Element, ref _defaultContentDescription, ref _defaultHint);
+			SetContentDescription(true);
 		}
 
 		protected override void SetFocusable()

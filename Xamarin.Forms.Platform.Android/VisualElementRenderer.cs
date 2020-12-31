@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 		ImportantForAccessibility? _defaultImportantForAccessibility;
 		string _defaultHint;
 		bool _cascadeInputTransparent = true;
-
+		bool _defaultAutomationSet;
 		VisualElementPackager _packager;
 		PropertyChangedEventHandler _propertyChangeHandler;
 
@@ -434,11 +434,26 @@ namespace Xamarin.Forms.Platform.Android
 			effect.SetContainer(this);
 		}
 
+		void SetupAutomationDefaults()
+		{
+			if (!_defaultAutomationSet)
+			{
+				_defaultAutomationSet = true;
+				AutomationPropertiesProvider.SetupDefaults(this, ref _defaultContentDescription, ref _defaultHint);
+			}
+		}
+
 		protected virtual void SetAutomationId(string id)
-			=> AutomationPropertiesProvider.SetAutomationId(this, Element, id);
+		{
+			SetupAutomationDefaults();
+			AutomationPropertiesProvider.SetAutomationId(this, Element, id);
+		}
 
 		protected virtual void SetContentDescription()
-			=> AutomationPropertiesProvider.SetContentDescription(this, Element, ref _defaultContentDescription, ref _defaultHint);
+		{
+			SetupAutomationDefaults();
+			AutomationPropertiesProvider.SetContentDescription(this, Element, _defaultContentDescription, _defaultHint);
+		}
 
 		protected virtual void SetFocusable()
 			=> AutomationPropertiesProvider.SetFocusable(this, Element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
