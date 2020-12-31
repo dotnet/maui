@@ -1060,7 +1060,7 @@ MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarg
     
     if(isCIBuild)
     {
-        buildSettings = buildSettings.WithProperty("RestoreConfigFile", $"DevopsNuget.config");
+        buildSettings = buildSettings.WithProperty("RestoreConfigFile", $"eng/DevopsNuget.config");
     }
     
     buildSettings.ArgumentCustomization = args => args.Append($"/nowarn:VSX1000 {MSBuildArguments}");
