@@ -25,6 +25,8 @@ namespace Xamarin.Forms
 
 		View FlyoutFooter { get; }
 
+		View FlyoutContent { get; }
+
 		ImageSource FlyoutIcon { get; }
 
 		void AddAppearanceObserver(IAppearanceObserver observer, Element pivot);

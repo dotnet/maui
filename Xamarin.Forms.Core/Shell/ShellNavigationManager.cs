@@ -51,7 +51,7 @@ namespace Xamarin.Forms
 			// This scenario only comes up from UI iniated navigation (i.e. switching tabs)
 			if (deferredArgs == null)
 			{
-				var navigatingArgs = ProposeNavigation(source, state, _shell.CurrentState != null);
+				var navigatingArgs = ProposeNavigation(source, state, _shell.CurrentState != null, animate ?? true);
 
 				bool accept = !navigatingArgs.NavigationDelayedOrCancelled;
 				if (navigatingArgs.DeferredTask != null)
@@ -273,13 +273,20 @@ namespace Xamarin.Forms
 		// This is used for cases where the user is navigating via native UI navigation i.e. clicking on Tabs
 		// If the user defers this type of navigation we generate the equivalent GotoAsync call
 		// so when the deferral is completed the same navigation can complete
-		public bool ProposeNavigationOutsideGotoAsync(ShellNavigationSource source, ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> stack, bool canCancel)
+		public bool ProposeNavigationOutsideGotoAsync(
+			ShellNavigationSource source, 
+			ShellItem shellItem, 
+			ShellSection shellSection, 
+			ShellContent shellContent, 
+			IReadOnlyList<Page> stack, 
+			bool canCancel, 
+			bool isAnimated)
 		{
 			if (_accumulateNavigatedEvents)
 				return true;
 
 			var proposedState = GetNavigationState(shellItem, shellSection, shellContent, stack, shellSection.Navigation.ModalStack);
-			var navArgs = ProposeNavigation(source, proposedState, canCancel);
+			var navArgs = ProposeNavigation(source, proposedState, canCancel, isAnimated);
 
 			if (navArgs.DeferralCount > 0)
 			{
@@ -302,12 +309,20 @@ namespace Xamarin.Forms
 			return !navArgs.NavigationDelayedOrCancelled;
 		}
 
-		ShellNavigatingEventArgs ProposeNavigation(ShellNavigationSource source, ShellNavigationState proposedState, bool canCancel)
+		ShellNavigatingEventArgs ProposeNavigation(
+			ShellNavigationSource source, 
+			ShellNavigationState proposedState, 
+			bool canCancel, 
+			bool isAnimated)
 		{
 			if (_accumulateNavigatedEvents)
 				return null;
 
-			var navArgs = new ShellNavigatingEventArgs(_shell.CurrentState, proposedState, source, canCancel);
+			var navArgs = new ShellNavigatingEventArgs(_shell.CurrentState, proposedState, source, canCancel)
+			{
+				Animate = isAnimated
+			};
+
 			HandleNavigating(navArgs);
 
 			return navArgs;

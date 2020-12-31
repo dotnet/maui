@@ -18,6 +18,8 @@ namespace Xamarin.Forms.Platform.UWP
 			new PropertyMetadata(default(bool), IsSelectedChanged));
 
 		View _content;
+		object _previousDataContext;
+		double _previousWidth;
 		FrameworkElement FrameworkElement { get; set; }
 
 		public ShellFlyoutItemRenderer()
@@ -34,6 +36,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnDataContextChanged(Windows.UI.Xaml.FrameworkElement sender, Windows.UI.Xaml.DataContextChangedEventArgs args)
 		{
+			if (_previousDataContext == args.NewValue)
+				return;
+
+			_previousWidth = -1;
+			_previousDataContext = args.NewValue;
 			if (_content != null)
 			{
 				if (_content.BindingContext is INotifyPropertyChanged inpc)
@@ -95,12 +102,6 @@ namespace Xamarin.Forms.Platform.UWP
 			OnMeasureInvalidated();
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
-		{
-			return base.MeasureOverride(availableSize);
-		}
-
-		double _previousWidth;
 		private void OnLayoutUpdated(object sender, object e)
 		{
 			if (this.ActualWidth > 0 && this.ActualWidth != _content.Width && _previousWidth != this.ActualWidth)

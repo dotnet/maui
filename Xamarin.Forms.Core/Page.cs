@@ -165,7 +165,6 @@ namespace Xamarin.Forms
 
 				if (titleViewPart2TheNavBar != null)
 					yield return titleViewPart2TheNavBar;
-
 			}
 		}
 

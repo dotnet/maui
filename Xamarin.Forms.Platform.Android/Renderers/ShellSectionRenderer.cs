@@ -128,6 +128,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		Fragment IShellObservableFragment.Fragment => this;
 		public ShellSection ShellSection { get; set; }
+		protected IShellContext ShellContext => _shellContext;
 		IShellSectionController SectionController => (IShellSectionController)ShellSection;
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
