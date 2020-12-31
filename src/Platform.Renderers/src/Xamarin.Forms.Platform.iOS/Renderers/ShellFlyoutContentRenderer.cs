@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Platform.iOS
 		UIView _footerView;
 		View _footer;
 		ShellTableViewController _tableViewController;
+		ShellFlyoutLayoutManager _shellFlyoutContentManager;
 
 		public event EventHandler WillAppear;
 		public event EventHandler WillDisappear;
@@ -22,10 +23,10 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_shellContext = context;
 			_tableViewController = CreateShellTableViewController();
+			_shellFlyoutContentManager = _tableViewController?.ShellFlyoutContentManager;
 			AddChildViewController(_tableViewController);
 
 			context.Shell.PropertyChanged += HandleShellPropertyChanged;
-
 		}
 
 		protected virtual ShellTableViewController CreateShellTableViewController()
@@ -54,6 +55,12 @@ namespace Xamarin.Forms.Platform.iOS
 				Shell.FlyoutFooterTemplateProperty))
 			{
 				UpdateFlyoutFooter();
+			}
+			else if (e.IsOneOf(
+				Shell.FlyoutContentProperty,
+				Shell.FlyoutContentTemplateProperty))
+			{
+				UpdateFlyoutContent();
 			}
 		}
 
@@ -123,7 +130,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 				View.AddSubview(_footerView);
 				_footerView.ClipsToBounds = true;
-				_tableViewController.FooterView = _footerView;
 				_footer.MeasureInvalidated += OnFooterMeasureInvalidated;
 			}
 
@@ -170,12 +176,16 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewWillLayoutSubviews();
 			UpdateFooterPosition();
+			UpdateFlyoutContent();
 		}
 
 		protected virtual void UpdateBackground()
 		{
 			var color = _shellContext.Shell.FlyoutBackgroundColor;
-			View.BackgroundColor = color.ToUIColor(ColorExtensions.BackgroundColor);
+			var brush = _shellContext.Shell.FlyoutBackground;
+
+			var backgroundImage = View.GetBackgroundImage(brush);
+			View.BackgroundColor = backgroundImage != null ? UIColor.FromPatternImage(backgroundImage) : color.ToUIColor(ColorExtensions.BackgroundColor);
 
 			if (View.BackgroundColor.CGColor.Alpha < 1)
 			{
@@ -186,9 +196,6 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_blurView.Superview != null)
 					_blurView.RemoveFromSuperview();
 			}
-
-			var brush = _shellContext.Shell.FlyoutBackground;
-			View.UpdateBackground(brush);
 
 			UpdateFlyoutBgImageAsync();
 		}
@@ -251,7 +258,6 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLoad();
 
-			View.AddSubview(_tableViewController.View);
 
 			UpdateFlyoutHeader();
 			UpdateFlyoutFooter();
@@ -271,6 +277,19 @@ namespace Xamarin.Forms.Platform.iOS
 
 			UpdateBackground();
 			UpdateFlowDirection();
+		}
+
+		void UpdateFlyoutContent()
+		{
+			var view = (_shellContext.Shell as IShellController).FlyoutContent;
+
+			if (view != null)
+				_shellFlyoutContentManager.SetCustomContent(view);
+			else
+				_shellFlyoutContentManager.SetDefaultContent(_tableViewController.TableView);
+
+			if(_shellFlyoutContentManager.ContentView != null)
+				View.InsertSubview(_shellFlyoutContentManager.ContentView, 0);
 		}
 
 		public override void ViewWillAppear(bool animated)

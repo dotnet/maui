@@ -75,6 +75,15 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
+		protected override void AddChild(Element child)
+		{
+			// empty on purpose
+		}
+		protected override void RemoveChild(VisualElement view)
+		{
+			// empty on purpose
+		}
+
 		protected virtual void OnLayoutPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(Xamarin.Forms.ItemsLayout.SnapPointsType))

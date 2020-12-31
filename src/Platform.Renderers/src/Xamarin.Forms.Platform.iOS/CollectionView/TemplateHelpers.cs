@@ -36,9 +36,9 @@ namespace Xamarin.Forms.Platform.iOS
 				PropertyPropagationExtensions.PropagatePropertyChanged(null, templateElement, itemsView);
 
 				var renderer = CreateRenderer(templateElement);
-				
-				// and set the EmptyView as its BindingContext
-				BindableObject.SetInheritedBindingContext(renderer.Element, view);
+
+				// and set the view as its BindingContext
+				renderer.Element.BindingContext = view;
 
 				return (renderer.NativeView, renderer.Element);
 			}

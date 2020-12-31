@@ -330,13 +330,13 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			await shell.GoToAsync("//two/tab21/");
 
-			await shell.GoToAsync("/tab22", false, true);
+			await shell.NavigationManager.GoToAsync("/tab22", false, true);
 			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tab22/content"));
 
-			await shell.GoToAsync("tab21", false, true);
+			await shell.NavigationManager.GoToAsync("tab21", false, true);
 			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tab21/content"));
 
-			await shell.GoToAsync("/tab23", false, true);
+			await shell.NavigationManager.GoToAsync("/tab23", false, true);
 			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tab23/content"));
 
 			await shell.GoToAsync("RelativeGoTo_Page1", false);
@@ -960,7 +960,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.Items.Add(item1);
 			shell.Items.Add(item2);
 
-			FlyoutItem.SetIsVisible(item1, false);
+			Shell.SetFlyoutItemIsVisible(item1, false);
 			Assert.IsTrue(GetItems(shell).Contains(item1));
 
 			bool hasFlyoutItem =

@@ -1,6 +1,7 @@
 ﻿using System;
 using CoreGraphics;
 using Foundation;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -34,6 +35,11 @@ namespace Xamarin.Forms.Platform.iOS
 		protected override (bool, Size) NeedsContentSizeUpdate(Size currentSize)
 		{
 			return (false, Size.Zero);
+		}
+
+		protected override bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes)
+		{
+			return false;
 		}
 	}
 }

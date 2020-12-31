@@ -1,5 +1,6 @@
 ﻿using CoreGraphics;
 using Foundation;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -19,6 +20,11 @@ namespace Xamarin.Forms.Platform.iOS
 				double.PositiveInfinity, MeasureFlags.IncludeMargins);
 
 			return new CGSize(ConstrainedDimension, measure.Request.Height);
+		}
+
+		protected override bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes)
+		{
+			return attributes.Frame.Width == ConstrainedDimension;
 		}
 	}
 }

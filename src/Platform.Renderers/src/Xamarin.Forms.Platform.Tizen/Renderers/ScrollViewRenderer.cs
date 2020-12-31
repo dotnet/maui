@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using ElmSharp;
+using Xamarin.Forms.Platform.Tizen.Native;
+using EContainer = ElmSharp.Container;
 using ERect = ElmSharp.Rect;
 using NBox = Xamarin.Forms.Platform.Tizen.Native.Box;
 using NScroller = Xamarin.Forms.Platform.Tizen.Native.Scroller;
@@ -10,9 +12,13 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ScrollViewRenderer : ViewRenderer<ScrollView, NScroller>
 	{
-		NBox _scrollCanvas;
+		EContainer _scrollCanvas;
 		int _defaultVerticalStepSize;
 		int _defaultHorizontalStepSize;
+
+		EvasFormsCanvas EvasFormsCanvas => _scrollCanvas as EvasFormsCanvas;
+
+		Canvas Canvas => _scrollCanvas as Canvas;
 
 		public ScrollViewRenderer()
 		{
@@ -26,7 +32,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		public override ERect GetNativeContentGeometry()
 		{
-			return _scrollCanvas.Geometry;
+			return Forms.UseFastLayout ? EvasFormsCanvas.Geometry : Canvas.Geometry;
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ScrollView> e)
@@ -35,8 +41,18 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				SetNativeControl(CreateNativeControl());
 				Control.Scrolled += OnScrolled;
-				_scrollCanvas = new NBox(Control);
-				_scrollCanvas.LayoutUpdated += OnContentLayoutUpdated;
+
+				if (Forms.UseFastLayout)
+				{
+					_scrollCanvas = new EvasBox(Control);
+					EvasFormsCanvas.LayoutUpdated += OnContentLayoutUpdated;
+				}
+				else
+				{
+					_scrollCanvas = new NBox(Control);
+					Canvas.LayoutUpdated += OnContentLayoutUpdated;
+				}
+
 				Control.SetContent(_scrollCanvas);
 				_defaultVerticalStepSize = Control.VerticalStepSize;
 				_defaultHorizontalStepSize = Control.HorizontalStepSize;
@@ -92,9 +108,13 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					Control.Scrolled -= OnScrolled;
 				}
-				if (_scrollCanvas != null)
+				if (Canvas != null)
 				{
-					_scrollCanvas.LayoutUpdated -= OnContentLayoutUpdated;
+					Canvas.LayoutUpdated -= OnContentLayoutUpdated;
+				}
+				if (EvasFormsCanvas != null)
+				{
+					EvasFormsCanvas.LayoutUpdated -= OnContentLayoutUpdated;
 				}
 			}
 
@@ -103,13 +123,24 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void FillContent()
 		{
-			_scrollCanvas.UnPackAll();
-			if (Element.Content != null)
+			if (Forms.UseFastLayout)
 			{
-				_scrollCanvas.PackEnd(Platform.GetOrCreateRenderer(Element.Content).NativeView);
-				UpdateContentSize();
+				EvasFormsCanvas.UnPackAll();
+				if (Element.Content != null)
+				{
+					EvasFormsCanvas.PackEnd(Platform.GetOrCreateRenderer(Element.Content).NativeView);
+					UpdateContentSize();
+				}
 			}
-
+			else
+			{
+				Canvas.UnPackAll();
+				if (Element.Content != null)
+				{
+					Canvas.PackEnd(Platform.GetOrCreateRenderer(Element.Content).NativeView);
+					UpdateContentSize();
+				}
+			}
 		}
 
 		void OnContentLayoutUpdated(object sender, Native.LayoutEventArgs e)

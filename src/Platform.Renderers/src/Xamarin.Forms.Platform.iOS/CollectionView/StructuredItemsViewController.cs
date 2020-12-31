@@ -92,7 +92,7 @@ namespace Xamarin.Forms.Platform.iOS
 				else
 				{
 					if (_footerUIView.Frame.Y != ItemsViewLayout.CollectionViewContentSize.Height ||
-						_footerUIView.Frame.Y < emptyView?.Frame.Y)
+						_footerUIView.Frame.Y < (emptyView?.Frame.Y + emptyView?.Frame.Height))
 						UpdateHeaderFooterPosition();
 				}
 			}

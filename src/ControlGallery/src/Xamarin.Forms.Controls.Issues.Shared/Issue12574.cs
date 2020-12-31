@@ -25,8 +25,10 @@ namespace Xamarin.Forms.Controls.Issues
 		ViewModelIssue12574 viewModel;
 		CarouselView _carouselView;
 		Button _btn;
+		Button _btn2;
 		string carouselAutomationId = "carouselView";
 		string btnRemoveAutomationId = "btnRemove";
+		string btnRemoveAllAutomationId = "btnRemoveAll";
 
 		protected override void Init()
 		{
@@ -35,8 +37,15 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Remove Last",
 				AutomationId = btnRemoveAutomationId
 			};
-			_btn.SetBinding(Button.CommandProperty, "RemoveItemsCommand");
-			// Initialize ui here instead of ctor
+			_btn.SetBinding(Button.CommandProperty, "RemoveLastItemCommand");
+
+			_btn2 = new Button
+			{
+				Text = "Remove All",
+				AutomationId = btnRemoveAllAutomationId
+			};
+			_btn2.SetBinding(Button.CommandProperty, "RemoveAllItemsCommand");
+
 			_carouselView = new CarouselView
 			{
 				AutomationId = carouselAutomationId,
@@ -64,9 +73,12 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var layout = new Grid();
 			layout.RowDefinitions.Add(new RowDefinition { Height = 100 });
+			layout.RowDefinitions.Add(new RowDefinition { Height = 100 });
 			layout.RowDefinitions.Add(new RowDefinition());
-			Grid.SetRow(_carouselView, 1);
+			Grid.SetRow(_btn2, 1);
+			Grid.SetRow(_carouselView, 2);
 			layout.Children.Add(_btn);
+			layout.Children.Add(_btn2);
 			layout.Children.Add(_carouselView);
 
 			BindingContext = viewModel = new ViewModelIssue12574();
@@ -101,31 +113,58 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("1 item");
 
 			rightX = rect.X + rect.Width - 1;
-			RunningApp.DragCoordinates(centerX, rect.CenterY, rightX, rect.CenterY);
+			RunningApp.DragCoordinates(rect.X, rect.CenterY, rightX, rect.CenterY);
 
 			RunningApp.WaitForElement("0 item");
+		}
+
+		[Test]
+		public void RemoveItemsQuickly()
+		{
+			RunningApp.WaitForElement("0 item");
+			RunningApp.Tap(btnRemoveAllAutomationId);
+
+			// If we haven't crashed, then the other button should be here
+			RunningApp.WaitForElement(btnRemoveAutomationId);
 		}
 #endif
 	}
 
-	[Preserve(AllMembers = true)]
 	class ViewModelIssue12574 : BaseViewModel1
 	{
 		public ObservableCollection<ModelIssue12574> Items { get; set; }
 		public Command LoadItemsCommand { get; set; }
-		public Command RemoveItemsCommand { get; set; }
+		public Command RemoveAllItemsCommand { get; set; }
+		public Command RemoveLastItemCommand { get; set; }
 
 		public ViewModelIssue12574()
 		{
 			Title = "CarouselView Looping";
 			Items = new ObservableCollection<ModelIssue12574>();
 			LoadItemsCommand = new Command(() => ExecuteLoadItemsCommand());
-			RemoveItemsCommand = new Command(() => ExecuteRemoveItemsCommand());
+			RemoveAllItemsCommand = new Command(() => ExecuteRemoveItemsCommand(), () => Items.Count > 0);
+			RemoveLastItemCommand = new Command(() => ExecuteRemoveLastItemCommand(), () => Items.Count > 0);
 		}
+
 		void ExecuteRemoveItemsCommand()
 		{
-			Items.Remove(Items.Last());
+			while (Items.Count > 0)
+			{
+				Items.Remove(Items.Last());
+				Items.Remove(Items.Last());
+				Items.Remove(Items.Last());
+			}
+			RemoveAllItemsCommand.ChangeCanExecute();
+			RemoveLastItemCommand.ChangeCanExecute();
 		}
+
+		void ExecuteRemoveLastItemCommand()
+		{
+			Items.Remove(Items.Last());
+			RemoveAllItemsCommand.ChangeCanExecute();
+			RemoveLastItemCommand.ChangeCanExecute();
+		}
+
 		void ExecuteLoadItemsCommand()
 		{
 			IsBusy = true;
@@ -145,6 +184,8 @@ namespace Xamarin.Forms.Controls.Issues
 			finally
 			{
 				IsBusy = false;
+				RemoveAllItemsCommand.ChangeCanExecute();
+				RemoveLastItemCommand.ChangeCanExecute();
 			}
 		}
 
@@ -155,7 +196,6 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	class ModelIssue12574
 	{
 		public string Id { get; set; }

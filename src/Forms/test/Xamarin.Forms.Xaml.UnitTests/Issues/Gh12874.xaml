@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Xamarin.Forms.Xaml.UnitTests.Gh12874">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style x:Key="S0" TargetType="Label">
+                <Setter Property="FontSize" Value="40" />
+                <Setter Property="TextColor" Value="Blue" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <StackLayout>
+        <Grid>
+            <Grid.Resources>
+                <ResourceDictionary>
+                    <Style x:Key="S1" TargetType="Label">
+                        <Setter Property="FontSize" Value="40" />
+                        <Setter Property="TextColor" Value="Blue" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                    </Style>
+                </ResourceDictionary>
+            </Grid.Resources>
+            <Label x:Name='label0' FontSize='40'
+                   Style='{StaticResource S0}'
+                   HorizontalOptions='Start'/>
+            <Label x:Name='label1' FontSize='40'
+                   Style='{StaticResource S1}'
+                   HorizontalOptions='Start'/>
+        </Grid>
+    </StackLayout>
+</ContentPage>

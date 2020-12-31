@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			base.Layout();
 
-			if (_previousSize != Bounds.Size)
+			if (Element != null && _previousSize != Bounds.Size)
 				SetBackground(Element.Background);
 
 			_previousSize = Bounds.Size;

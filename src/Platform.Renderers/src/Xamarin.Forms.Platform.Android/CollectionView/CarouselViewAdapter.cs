@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
+using static Xamarin.Forms.Platform.Android.CarouselViewRenderer;
 
 namespace Xamarin.Forms.Platform.Android.CollectionView
 {
@@ -14,7 +15,8 @@ namespace Xamarin.Forms.Platform.Android.CollectionView
 			CarouselView = itemsView;
 		}
 
-		public override int ItemCount => CarouselView.Loop && !(ItemsSource is EmptySource) && ItemsSource.Count > 0 ? int.MaxValue : ItemsSource.Count;
+		public override int ItemCount => CarouselView.Loop && !(ItemsSource is EmptySource)
+			&& ItemsSource.Count > 0 ? CarouselViewLoopManager.LoopScale : ItemsSource.Count;
 
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
 		{

@@ -142,14 +142,25 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public void SetElementSize(Size size)
 		{
+			// In Split Mode the Frame will occasionally get set to the wrong value
+			var rect = new CoreGraphics.CGRect(Element.X, Element.Y, size.Width, size.Height);
+			if (rect != _pageContainer.Frame)
+				_pageContainer.Frame = rect;
+
 			Element.Layout(new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public override void LoadView()
 		{
+
 			//by default use the MainScreen Bounds so Effects can access the Container size
 			if (_pageContainer == null)
-				_pageContainer = new PageContainer(this) { Frame = UIScreen.MainScreen.Bounds };
+			{
+				var bounds = UIApplication.SharedApplication?.GetKeyWindow()?.Bounds ??
+					UIScreen.MainScreen.Bounds;
+
+				_pageContainer = new PageContainer(this) { Frame = bounds };
+			}
 
 			View = _pageContainer;
 		}
@@ -360,15 +371,15 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		/*
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 
-			if (Forms.IsiOS13OrNewer && previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (Forms.IsiOS13OrNewer &&
+				previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle &&
+				UIApplication.SharedApplication.ApplicationState != UIApplicationState.Background)
 				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme));
 		}
-		*/
 
 		bool ShouldUseSafeArea()
 		{
@@ -479,7 +490,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
 			{
-				if (v is UITableView || v is UITableViewCell || v.CanBecomeFirstResponder)
+				if (v != null && (v is UITableView || v is UITableViewCell || v.CanBecomeFirstResponder))
 					return false;
 			}
 			return true;

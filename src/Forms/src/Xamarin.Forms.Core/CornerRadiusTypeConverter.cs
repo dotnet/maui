@@ -58,7 +58,7 @@ namespace Xamarin.Forms
 		{
 			if (!(value is CornerRadius cr))
 				throw new NotSupportedException();
-			return $"{cr.TopLeft}, {cr.TopRight}, {cr.BottomLeft}, {cr.BottomRight}";
+			return $"{cr.TopLeft.ToString(CultureInfo.InvariantCulture)}, {cr.TopRight.ToString(CultureInfo.InvariantCulture)}, {cr.BottomLeft.ToString(CultureInfo.InvariantCulture)}, {cr.BottomRight.ToString(CultureInfo.InvariantCulture)}";
 
 		}
 	}

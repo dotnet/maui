@@ -70,7 +70,7 @@ namespace Xamarin.Forms
 		{
 			if (!(value is Thickness t))
 				throw new NotSupportedException();
-			return $"{t.Left}, {t.Top}, {t.Right}, {t.Bottom}";
+			return $"{t.Left.ToString(CultureInfo.InvariantCulture)}, {t.Top.ToString(CultureInfo.InvariantCulture)}, {t.Right.ToString(CultureInfo.InvariantCulture)}, {t.Bottom.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}
 }

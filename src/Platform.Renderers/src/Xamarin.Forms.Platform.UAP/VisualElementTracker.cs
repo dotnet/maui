@@ -744,8 +744,8 @@ namespace Xamarin.Forms.Platform.UWP
 					{
 						CenterOfRotationX = anchorX,
 						CenterOfRotationY = anchorY,
-						GlobalOffsetX = scaleX == 0 ? 0 : translationX / scaleX,
-						GlobalOffsetY = scaleY == 0 ? 0 : translationY / scaleY,
+						GlobalOffsetX = translationX,
+						GlobalOffsetY = translationY,
 						RotationX = -rotationX,
 						RotationY = -rotationY,
 						RotationZ = -rotation
@@ -760,8 +760,8 @@ namespace Xamarin.Forms.Platform.UWP
 						Rotation = rotation,
 						ScaleX = scaleX,
 						ScaleY = scaleY,
-						TranslateX = scaleX == 0 ? 0 : translationX / scaleX,
-						TranslateY = scaleY == 0 ? 0 : translationY / scaleY
+						TranslateX = translationX,
+						TranslateY = translationY
 					};
 				}
 			}

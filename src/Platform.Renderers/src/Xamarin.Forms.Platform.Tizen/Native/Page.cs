@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Exposes the Children property, mapping it to the _canvas' Children property.
 		/// </summary>
-		public new IList<EvasObject> Children => _canvas.Children;
+		public new IList<EvasObject> Children => Forms.UseFastLayout ? EvasFormsCanvas?.Children : Canvas?.Children;
 
 		/// <summary>
 		/// The canvas, used as a container for other objects.
@@ -26,14 +26,21 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <remarks>
 		/// The canvas holds all the Views that the ContentPage is composed of.
 		/// </remarks>
-		internal Canvas _canvas;
+		internal Container _canvas;
+
+		EvasFormsCanvas EvasFormsCanvas => _canvas as EvasFormsCanvas;
+
+		Canvas Canvas => _canvas as Canvas;
 
 		/// <summary>
 		/// Initializes a new instance of the ContentPage class.
 		/// </summary>
 		public Page(EvasObject parent) : base(parent)
 		{
-			_canvas = new Canvas(this);
+			if (Forms.UseFastLayout)
+				_canvas = new EvasFormsCanvas(this);
+			else
+				_canvas = new Canvas(this);
 			this.SetOverlayPart(_canvas);
 		}
 
@@ -44,11 +51,18 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			add
 			{
-				_canvas.LayoutUpdated += value;
+				if (Forms.UseFastLayout)
+					EvasFormsCanvas.LayoutUpdated += value;
+				else
+					Canvas.LayoutUpdated += value;
+
 			}
 			remove
 			{
-				_canvas.LayoutUpdated -= value;
+				if (Forms.UseFastLayout)
+					EvasFormsCanvas.LayoutUpdated -= value;
+				else
+					Canvas.LayoutUpdated -= value;
 			}
 		}
 

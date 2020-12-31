@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using WRect = Windows.Foundation.Rect;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -17,11 +18,14 @@ namespace Xamarin.Forms.Platform.UWP
 			new PropertyMetadata(default(bool), IsSelectedChanged));
 
 		View _content;
+		object _previousDataContext;
+		double _previousWidth;
 		FrameworkElement FrameworkElement { get; set; }
 
 		public ShellFlyoutItemRenderer()
 		{
 			this.DataContextChanged += OnDataContextChanged;
+			this.LayoutUpdated += OnLayoutUpdated;
 		}
 
 		public bool IsSelected
@@ -32,9 +36,14 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnDataContextChanged(Windows.UI.Xaml.FrameworkElement sender, Windows.UI.Xaml.DataContextChangedEventArgs args)
 		{
+			if (_previousDataContext == args.NewValue)
+				return;
+
+			_previousWidth = -1;
+			_previousDataContext = args.NewValue;
 			if (_content != null)
 			{
-				if(_content.BindingContext is INotifyPropertyChanged inpc)
+				if (_content.BindingContext is INotifyPropertyChanged inpc)
 					inpc.PropertyChanged -= ShellElementPropertyChanged;
 
 				_content.Cleanup();
@@ -49,10 +58,10 @@ namespace Xamarin.Forms.Platform.UWP
 			var shell = element?.FindParent<Shell>();
 			DataTemplate dataTemplate = (shell as IShellController)?.GetFlyoutItemDataTemplate(bo);
 
-			if(bo != null)
+			if (bo != null)
 				bo.PropertyChanged += ShellElementPropertyChanged;
 
-			if(dataTemplate != null)
+			if (dataTemplate != null)
 			{
 				_content = (View)dataTemplate.CreateContent();
 				_content.BindingContext = bo;
@@ -78,9 +87,6 @@ namespace Xamarin.Forms.Platform.UWP
 
 				UpdateVisualState();
 				OnMeasureInvalidated();
-
-				if (renderer.ContainerElement != null)
-					renderer.ContainerElement.SetAutomationPropertiesAutomationId(element.AutomationId);
 			}
 		}
 
@@ -88,7 +94,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (e.Is(BaseShellItem.IsCheckedProperty))
 				UpdateVisualState();
-			
+
 		}
 
 		void OnMeasureInvalidated(object sender, EventArgs e)
@@ -96,9 +102,37 @@ namespace Xamarin.Forms.Platform.UWP
 			OnMeasureInvalidated();
 		}
 
+		private void OnLayoutUpdated(object sender, object e)
+		{
+			if (this.ActualWidth > 0 && this.ActualWidth != _content.Width && _previousWidth != this.ActualWidth)
+			{
+				_previousWidth = this.ActualWidth;
+				OnMeasureInvalidated();
+			}
+		}
+
 		void OnMeasureInvalidated()
 		{
-			Size request = _content.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request;
+			if (this.ActualWidth <= 0)
+				return;
+
+			if (Parent is FrameworkElement fe)
+			{
+				if (!_content.IsVisible)
+				{
+					fe.Visibility = Visibility.Collapsed;
+				}
+				else
+				{
+					fe.Visibility = Visibility.Visible;
+				}
+			}
+
+
+			double height = (_content.HeightRequest < -1) ? _content.HeightRequest : double.PositiveInfinity;
+			double width = this.ActualWidth;
+
+			Size request = _content.Measure(width, height, MeasureFlags.IncludeMargins).Request;
 
 			var minSize = (double)Windows.UI.Xaml.Application.Current.Resources["NavigationViewItemOnLeftMinHeight"];
 
@@ -111,6 +145,7 @@ namespace Xamarin.Forms.Platform.UWP
 				request.Width = this.ActualWidth;
 
 			Layout.LayoutChildIntoBoundingRegion(_content, new Rectangle(0, 0, request.Width, request.Height));
+			Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
 		}
 
 		void UpdateVisualState()

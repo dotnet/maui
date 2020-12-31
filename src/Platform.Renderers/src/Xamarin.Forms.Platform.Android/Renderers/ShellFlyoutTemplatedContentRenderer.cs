@@ -31,12 +31,17 @@ namespace Xamarin.Forms.Platform.Android
 		Drawable _defaultBackgroundColor;
 		ImageView _bgImage;
 		AppBarLayout _appBar;
-		RecyclerView _recycler;
-		ShellFlyoutRecyclerAdapter _adapter;
+		AView _flyoutContentView;
+		ShellViewRenderer _contentView;
 		View _flyoutHeader;
 		ShellViewRenderer _footerView;
 		int _actionBarHeight;
-		ScrollLayoutManager _layoutManager;
+		int _flyoutHeight;
+		int _flyoutWidth;
+
+		protected IShellContext ShellContext => _shellContext;
+		protected AView FooterView => _footerView?.NativeView;
+		protected AView View => _rootView;
 
 		public ShellFlyoutTemplatedContentRenderer(IShellContext shellContext)
 		{
@@ -58,10 +63,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			var coordinator = LayoutInflater.FromContext(context).Inflate(Resource.Layout.FlyoutContent, null);
-
-			Profile.FramePartition("Find Recycler");
-			_recycler = coordinator.FindViewById<RecyclerView>(Resource.Id.flyoutcontent_recycler);
+			var coordinator = (ViewGroup)LayoutInflater.FromContext(context).Inflate(Resource.Layout.FlyoutContent, null);
 
 			Profile.FramePartition("Find AppBar");
 			_appBar = coordinator.FindViewById<AppBarLayout>(Resource.Id.flyoutcontent_appbar);
@@ -75,12 +77,7 @@ namespace Xamarin.Forms.Platform.Android
 			_actionBarHeight = (int)context.ToPixels(56);
 			UpdateFlyoutHeader();
 
-			Profile.FramePartition("Recycler.SetAdapter");
-			_adapter = new ShellFlyoutRecyclerAdapter(shellContext, OnElementSelected);
-			_recycler.SetClipToPadding(false);
-			_recycler.SetLayoutManager(_layoutManager = new ScrollLayoutManager(context, (int)Orientation.Vertical, false));
-			_recycler.SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
-			_recycler.SetAdapter(_adapter);
+			UpdateFlyoutContent();
 
 			Profile.FramePartition("Initialize BgImage");
 			var metrics = context.Resources.DisplayMetrics;
@@ -117,6 +114,9 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateFlyoutFooter();
 
 			Profile.FrameEnd();
+
+			if (View is ShellFlyoutLayout sfl)
+				sfl.LayoutChanging += OnFlyoutViewLayoutChanged;
 		}
 
 		void OnFlyoutHeaderMeasureInvalidated(object sender, EventArgs e)
@@ -150,9 +150,68 @@ namespace Xamarin.Forms.Platform.Android
 				Shell.FlyoutFooterProperty,
 				Shell.FlyoutFooterTemplateProperty))
 				UpdateFlyoutFooter();
+			else if (e.IsOneOf(
+				Shell.FlyoutContentProperty,
+				Shell.FlyoutContentTemplateProperty))
+				UpdateFlyoutContent();
 		}
 
-		void UpdateFlyoutHeader()
+		protected virtual void UpdateFlyoutContent()
+		{
+			if (!_rootView.IsAlive())
+				return;
+
+			var index = 0;
+			if (_flyoutContentView != null)
+			{
+				index = _rootView.IndexOfChild(_flyoutContentView);
+				_rootView.RemoveView(_flyoutContentView);
+			}
+
+			_flyoutContentView = CreateFlyoutContent(_rootView);
+			if (_flyoutContentView == null)
+				return;
+
+			_rootView.AddView(_flyoutContentView, index);
+			UpdateContentLayout();
+		}
+
+		AView CreateFlyoutContent(ViewGroup rootView)
+		{
+			_rootView = rootView;
+			if (_contentView != null)
+			{
+				var oldContentView = _contentView;
+				_contentView = null;
+				oldContentView.TearDown();
+			}
+
+			var content = ((IShellController)ShellContext.Shell).FlyoutContent;
+			if (content == null)
+			{
+				var lp = new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent);
+				lp.Behavior = new AppBarLayout.ScrollingViewBehavior();
+				var context = ShellContext.AndroidContext;
+				Profile.FramePartition("Recycler.SetAdapter");
+				var recyclerView = new RecyclerViewContainer(context, new ShellFlyoutRecyclerAdapter(ShellContext, OnElementSelected))
+				{
+					LayoutParameters = lp
+				};
+
+				return recyclerView;
+			}
+
+			_contentView = new ShellViewRenderer(ShellContext.AndroidContext, content);
+
+			_contentView.NativeView.LayoutParameters = new CoordinatorLayout.LayoutParams(LP.MatchParent, LP.MatchParent)
+			{
+				Behavior = new AppBarLayout.ScrollingViewBehavior()
+			};
+
+			return _contentView.NativeView;
+		}
+
+		protected virtual void UpdateFlyoutHeader()
 		{
 			if (_headerView != null)
 			{
@@ -182,9 +241,11 @@ namespace Xamarin.Forms.Platform.Android
 			};
 			_appBar.AddView(_headerView);
 			UpdateFlyoutHeaderBehavior();
+
+			UpdateContentLayout();
 		}
 
-		void UpdateFlyoutFooter()
+		protected virtual void UpdateFlyoutFooter()
 		{
 			if (_footerView != null)
 			{
@@ -201,20 +262,76 @@ namespace Xamarin.Forms.Platform.Android
 
 			_footerView = new ShellViewRenderer(_shellContext.AndroidContext, footer);
 
-
-			_footerView.NativeView.LayoutParameters = new CoordinatorLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
-			{
-				Gravity = (int)(GravityFlags.Bottom | GravityFlags.End)
-			};
-
-			_footerView.LayoutView(_shellContext.AndroidContext.FromPixels(_rootView.LayoutParameters.Width), -1);
 			_rootView.AddView(_footerView.NativeView);
+
+			if (_footerView.NativeView.LayoutParameters is CoordinatorLayout.LayoutParams cl)
+				cl.Gravity = (int)(GravityFlags.Bottom | GravityFlags.End);
+			
+			UpdateFooterLayout();
+			UpdateContentLayout();
+			UpdateContentBottomMargin();
+		}
+
+		void UpdateFooterLayout()
+		{
+			if (_footerView != null)
+			{
+				_footerView.LayoutView(_shellContext.AndroidContext.FromPixels(_rootView.LayoutParameters.Width), double.PositiveInfinity);
+			}
+		}
+
+		void UpdateContentLayout()
+		{
+			if (_contentView != null)
+			{
+				if (_contentView == null)
+					return;
+
+				var height =
+					(View.MeasuredHeight) -
+					(FooterView?.MeasuredHeight ?? 0) -
+					(_headerView?.MeasuredHeight ?? 0);
+
+				var width = View.MeasuredWidth;
+
+				_contentView.LayoutView(
+					ShellContext.AndroidContext.FromPixels(width),
+					ShellContext.AndroidContext.FromPixels(height));
+			}
+		}
+
+		void UpdateContentBottomMargin()
+		{
+			if (_flyoutContentView?.LayoutParameters is CoordinatorLayout.LayoutParams cl)
+			{
+				cl.BottomMargin = (int)_shellContext.AndroidContext.ToPixels(_footerView?.View.Height ?? 0);
+			}
+		}
+
+		void OnFlyoutViewLayoutChanged()
+		{
+
+			if (View?.MeasuredHeight > 0 &&
+				View?.MeasuredWidth > 0 &&
+				(_flyoutHeight != View.MeasuredHeight ||
+				_flyoutWidth != View.MeasuredWidth)
+			)
+			{
+				_flyoutHeight = View.MeasuredHeight;
+				_flyoutWidth = View.MeasuredWidth;
+
+				UpdateFooterLayout();
+				UpdateContentLayout();
+				UpdateContentBottomMargin();
+			}
 		}
 
 		void UpdateVerticalScrollMode()
 		{
-			if (_layoutManager != null)
-				_layoutManager.ScrollVertically = _shellContext.Shell.FlyoutVerticalScrollMode;
+			if (_flyoutContentView is RecyclerView rv && rv.GetLayoutManager() is ScrollLayoutManager lm)
+			{
+				lm.ScrollVertically = _shellContext.Shell.FlyoutVerticalScrollMode;
+			}
 		}
 
 		protected virtual void UpdateFlyoutBackground()
@@ -360,30 +477,25 @@ namespace Xamarin.Forms.Platform.Android
 				if (_rootView != null && _footerView?.NativeView != null)
 					_rootView.RemoveView(_footerView.NativeView);
 
-				if (_recycler != null)
-				{
-					_recycler.SetLayoutManager(null);
-					_recycler.SetAdapter(null);
-					_recycler.Dispose();
-				}
+				if (View != null && View is ShellFlyoutLayout sfl)
+					sfl.LayoutChanging -= OnFlyoutViewLayoutChanged;
 
-				_adapter?.Dispose();
+				_contentView?.TearDown();
+				_flyoutContentView?.Dispose();
 				_headerView.Dispose();
 				_footerView?.TearDown();
 				_rootView.Dispose();
-				_layoutManager?.Dispose();
 				_defaultBackgroundColor?.Dispose();
 				_bgImage?.Dispose();
 
+				_contentView = null;
 				_flyoutHeader = null;
 				_rootView = null;
 				_headerView = null;
 				_shellContext = null;
 				_appBar = null;
-				_recycler = null;
-				_adapter = null;
+				_flyoutContentView = null;
 				_defaultBackgroundColor = null;
-				_layoutManager = null;
 				_bgImage = null;
 				_footerView = null;
 			}
@@ -468,6 +580,41 @@ namespace Xamarin.Forms.Platform.Android
 
 				base.Dispose(disposing);
 			}
+		}
+	}
+
+	class RecyclerViewContainer : RecyclerView
+	{
+		bool _disposed;
+		ShellFlyoutRecyclerAdapter _shellFlyoutRecyclerAdapter;
+		ScrollLayoutManager _layoutManager;
+
+		public RecyclerViewContainer(Context context, ShellFlyoutRecyclerAdapter shellFlyoutRecyclerAdapter) : base(context)
+		{
+			_shellFlyoutRecyclerAdapter = shellFlyoutRecyclerAdapter;
+			SetClipToPadding(false);
+			SetLayoutManager(_layoutManager = new ScrollLayoutManager(context, (int)Orientation.Vertical, false));
+			SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
+			SetAdapter(_shellFlyoutRecyclerAdapter);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (_disposed)
+				return;
+
+			_disposed = true;
+			if (disposing)
+			{
+				SetLayoutManager(null);
+				SetAdapter(null);
+				_shellFlyoutRecyclerAdapter?.Dispose();
+				_layoutManager?.Dispose();
+				_shellFlyoutRecyclerAdapter = null;
+				_layoutManager = null;
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 

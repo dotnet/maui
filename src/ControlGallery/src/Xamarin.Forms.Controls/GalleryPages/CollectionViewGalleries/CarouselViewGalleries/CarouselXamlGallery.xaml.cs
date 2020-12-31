@@ -8,10 +8,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 	[Preserve(AllMembers = true)]
 	public partial class CarouselXamlGallery : ContentPage
 	{
-		public CarouselXamlGallery(bool useLooping)
+		public CarouselXamlGallery(bool useLooping, int startCurrentItem = -1)
 		{
 			InitializeComponent();
-			BindingContext = new CarouselViewModel(CarouselXamlSampleType.Peek, useLooping);
+			BindingContext = new CarouselViewModel(CarouselXamlSampleType.Peek, useLooping, startCurrentItem: startCurrentItem);
 		}
 	}
 
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 		int _position;
 		ObservableCollection<CarouselItem> _items;
 		CarouselXamlSampleType _type;
-		public CarouselViewModel(CarouselXamlSampleType type, bool loop, int initialItems = 5)
+		public CarouselViewModel(CarouselXamlSampleType type, bool loop, int initialItems = 5, int startCurrentItem = -1)
 		{
 			IsLoop = loop;
 			_type = type;
@@ -53,6 +53,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			Items = new ObservableCollection<CarouselItem>(items);
 			Count = Items.Count - 1;
+
+			if (startCurrentItem != -1)
+				Selected = Items[startCurrentItem];
 		}
 
 		public bool IsLoop

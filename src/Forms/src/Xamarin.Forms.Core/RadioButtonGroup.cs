@@ -26,6 +26,11 @@ namespace Xamarin.Forms
 			return (string)b.GetValue(GroupNameProperty);
 		}
 
+		public static void SetGroupName(BindableObject bindable, string groupName)
+		{
+			bindable.SetValue(GroupNameProperty, groupName);
+		}
+
 		public static readonly BindableProperty SelectedValueProperty =
 			BindableProperty.Create("SelectedValue", typeof(object), typeof(Layout<View>), null,
 			defaultBindingMode: BindingMode.TwoWay,
@@ -34,6 +39,11 @@ namespace Xamarin.Forms
 		public static object GetSelectedValue(BindableObject bindableObject)
 		{
 			return bindableObject.GetValue(SelectedValueProperty);
+		}
+
+		public static void SetSelectedValue(BindableObject bindable, object selectedValue)
+		{
+			bindable.SetValue(SelectedValueProperty, selectedValue);
 		}
 
 		internal static void UpdateRadioButtonGroup(RadioButton radioButton)

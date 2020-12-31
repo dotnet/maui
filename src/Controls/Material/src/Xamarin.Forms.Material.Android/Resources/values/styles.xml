@@ -6,7 +6,7 @@
     <attr name="materialProgressBarCircularStyle" format="reference" />
     <attr name="materialCheckBoxStyle" format="reference" />
     <!-- Material Base Theme -->
-    <style name="XamarinFormsMaterialTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+    <style name="XamarinFormsMaterialTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <item name="materialButtonStyle">@style/XamarinFormsMaterialButton</item>
         <item name="materialOutlinedButtonStyle">@style/XamarinFormsMaterialButtonOutlined</item>
         <item name="materialSliderStyle">@style/XamarinFormsMaterialSlider</item>
@@ -40,7 +40,6 @@
         <item name="android:paddingBottom">8dp</item>
     </style>
     <style name="XamarinFormsMaterialEntryFilled" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
-        <item name="boxCollapsedPaddingTop">8dp</item>
     </style>
     <!-- Material Checkbox -->
     <style name="Widget.MaterialComponents.CompoundButton.CheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">

@@ -1,5 +1,6 @@
 ﻿using CoreGraphics;
 using Foundation;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -27,6 +28,11 @@ namespace Xamarin.Forms.Platform.iOS
 				? VisualElementRenderer.Element.Height : measure.Request.Height;
 
 			return new CGSize(ConstrainedDimension, height);
+		}
+
+		protected override bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes)
+		{
+			return attributes.Frame.Width == ConstrainedDimension;
 		}
 	}
 }

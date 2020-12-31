@@ -56,5 +56,26 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			return Color.FromUint((uint)color.ToArgb());
 		}
+
+		internal static ColorStateList ToDefaultColorStateList(this Color color)
+		{
+			return ToDefaultColorStateList(color.ToAndroid());
+		}
+
+		internal static ColorStateList ToDefaultColorStateList(int aColor)
+		{
+			int[][] States =
+			{
+				new int[0] { }
+			};
+
+			var colors = new int[] { aColor };
+			return new ColorStateList(States, colors);
+		}
+
+		internal static ColorStateList ToDefaultOnlyColorStateList(this ColorStateList stateList)
+		{
+			return ToDefaultColorStateList(stateList.DefaultColor);
+		}
 	}
 }

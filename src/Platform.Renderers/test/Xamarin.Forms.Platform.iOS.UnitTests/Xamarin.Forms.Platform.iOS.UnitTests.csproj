@@ -58,6 +58,7 @@
     <Compile Include="IsEnabledTests.cs" />
     <Compile Include="IsVisibleTests.cs" />
     <Compile Include="NavigationTests.cs" />
+    <Compile Include="ObservableItemsSourceTests.cs" />
     <Compile Include="OpacityTests.cs" />
     <Compile Include="PlatformTestFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="ScaleTests.cs" />
     <Compile Include="TextTests.cs" />
     <Compile Include="BackgroundTests.cs" />
+    <Compile Include="TransformationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">

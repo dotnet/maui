@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage
+    xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Xamarin.Forms.Controls.Issues.Issue12809"
+    Visual="Material">
+    <StackLayout>
+        <Label
+            Padding="12"
+            BackgroundColor="Black"
+            TextColor="White"
+            Text="Write in each Entry and verify that the text color is always visible."/>
+        <Entry
+            Placeholder="Using default color"/>
+        <Entry
+            TextColor="Black"
+            Placeholder="Using Black color"/>
+        <Entry
+            TextColor="Red"
+            Placeholder="Using Red color"/>
+    </StackLayout>
+</controls:TestContentPage>

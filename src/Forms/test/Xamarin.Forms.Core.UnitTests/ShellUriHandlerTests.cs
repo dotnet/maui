@@ -251,7 +251,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			await shell.GoToAsync("//rootlevelcontent1");
 			var location = shell.CurrentState.FullLocation;
-			await shell.GoToAsync("edit", false, true);
+			await shell.NavigationManager.GoToAsync("edit", false, true);
 
 			Assert.AreEqual(editShellContent, shell.CurrentItem.CurrentItem.CurrentItem);
 		}

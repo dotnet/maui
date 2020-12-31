@@ -313,10 +313,8 @@ namespace Xamarin.Forms.Platform.Android
 			result.Focusable = false;
 			result.SetScaleType(ImageView.ScaleType.FitCenter);
 
-			string defaultHint = null;
-			string defaultDescription = null;
 			if (bindable.GetValue(property) is ImageSource image)
-				AutomationPropertiesProvider.SetContentDescription(result, image, ref defaultDescription, ref defaultHint);
+				AutomationPropertiesProvider.SetContentDescription(result, image, null, null);
 
 			_shellContext.ApplyDrawableAsync(bindable, property, drawable =>
 			{

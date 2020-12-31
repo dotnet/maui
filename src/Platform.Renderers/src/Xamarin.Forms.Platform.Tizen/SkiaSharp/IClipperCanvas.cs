@@ -4,6 +4,6 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 {
 	public interface IClipperCanvas
 	{
-		public SKCanvasView ClipperCanvas { get; }
+		public SKClipperView ClipperCanvas { get; }
 	}
 }
