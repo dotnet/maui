@@ -1,5 +1,6 @@
 ﻿using CoreGraphics;
 using Foundation;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -20,13 +21,18 @@ namespace Xamarin.Forms.Platform.iOS
 				return CGSize.Empty;
 			}
 
-			var measure = VisualElementRenderer.Element.Measure(double.PositiveInfinity, 
+			var measure = VisualElementRenderer.Element.Measure(double.PositiveInfinity,
 				ConstrainedDimension, MeasureFlags.IncludeMargins);
 
-			var width = VisualElementRenderer.Element.Width > 0 
+			var width = VisualElementRenderer.Element.Width > 0
 				? VisualElementRenderer.Element.Width : measure.Request.Width;
 
 			return new CGSize(width, ConstrainedDimension);
+		}
+
+		protected override bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes)
+		{
+			return attributes.Frame.Height == ConstrainedDimension;
 		}
 	}
 }

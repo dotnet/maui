@@ -134,6 +134,7 @@
     <Compile Include="CollectionView\DefaultCell.cs" />
     <Compile Include="CollectionView\HorizontalDefaultCell.cs" />
     <Compile Include="CollectionView\ItemsViewController.cs" />
+    <Compile Include="CollectionView\LayoutAttributesChangedEventArgs.cs" />
     <Compile Include="CollectionView\ObservableGroupedSource.cs" />
     <Compile Include="CollectionView\ScrollToPositionExtensions.cs" />
     <Compile Include="CollectionView\SelectableItemsViewController.cs" />
@@ -191,6 +192,7 @@
     <Compile Include="Renderers\PageContainer.cs" />
     <Compile Include="Renderers\CheckBoxRendererBase.cs" />
     <Compile Include="Renderers\PhoneFlyoutPageRenderer.cs" />
+    <Compile Include="Renderers\ShellFlyoutLayoutManager.cs" />
     <Compile Include="Renderers\TabletFlyoutPageRenderer.cs" />
     <Compile Include="Renderers\WkWebViewRenderer.cs" />
     <Compile Include="Renderers\ElementSelectedEventArgs.cs" />

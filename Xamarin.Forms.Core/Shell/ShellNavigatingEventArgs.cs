@@ -6,12 +6,19 @@ namespace Xamarin.Forms
 {
 	public class ShellNavigatingEventArgs : EventArgs
 	{
-		int _deferalCount;
+		int _deferralCount;
 		Func<Task> _deferralFinishedTask;
 		TaskCompletionSource<bool> _deferredTaskCompletionSource;
+		bool _deferralCompleted = false;
 
 		public ShellNavigatingEventArgs(ShellNavigationState current, ShellNavigationState target, ShellNavigationSource source, bool canCancel)
 		{
+
+#if NETSTANDARD2_0
+			_deferralFinishedTask = () => Task.CompletedTask;
+#else
+			_deferralFinishedTask = () => Task.Delay(0);
+#endif
 			Current = current;
 			Target = target;
 			Source = source;
@@ -40,11 +47,14 @@ namespace Xamarin.Forms
 
 		public ShellNavigatingDeferral GetDeferral()
 		{
+			if (_deferralCompleted)
+				throw new InvalidOperationException("Deferral has already been completed");
+
 			if (!CanCancel)
 				return null;
 
 			DeferredEventArgs = true;
-			var currentCount = Interlocked.Increment(ref _deferalCount);
+			var currentCount = Interlocked.Increment(ref _deferralCount);
 			if (currentCount == 1)
 			{
 				_deferredTaskCompletionSource = new TaskCompletionSource<bool>();
@@ -55,15 +65,16 @@ namespace Xamarin.Forms
 
 		async void DecrementDeferral()
 		{
-			if (Interlocked.Decrement(ref _deferalCount) == 0)
+			if (Interlocked.Decrement(ref _deferralCount) == 0)
 			{
-				var task = _deferralFinishedTask();
-				_deferralFinishedTask = null;
+				_deferralCompleted = true;
 
 				try
 				{
+					var task = _deferralFinishedTask();
+					_deferralFinishedTask = null;
 					await task;
-					_deferredTaskCompletionSource.SetResult(true);
+					_deferredTaskCompletionSource.SetResult(!Cancelled);
 				}
 				catch (TaskCanceledException)
 				{
@@ -82,7 +93,10 @@ namespace Xamarin.Forms
 		internal bool Animate { get; set; }
 		internal bool DeferredEventArgs { get; set; }
 
-		internal int DeferralCount => _deferalCount;
+		internal int DeferralCount => _deferralCount;
+
+		internal bool NavigationDelayedOrCancelled =>
+			Cancelled || DeferralCount > 0;
 
 		internal void RegisterDeferralCompletedCallBack(Func<Task> deferralFinishedTask)
 		{

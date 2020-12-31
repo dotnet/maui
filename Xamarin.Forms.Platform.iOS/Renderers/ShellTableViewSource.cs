@@ -11,9 +11,8 @@ namespace Xamarin.Forms.Platform.iOS
 		readonly IShellContext _context;
 		readonly Action<Element> _onElementSelected;
 		List<List<Element>> _groups;
-		Dictionary<Element, View> _views;
-
-		IShellController ShellController => (IShellController)_context.Shell;
+		Dictionary<Element, UIContainerCell> _cells;
+		IShellController ShellController => _context.Shell;
 
 		public ShellTableViewSource(IShellContext context, Action<Element> onElementSelected)
 		{
@@ -29,8 +28,15 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (_groups == null)
 				{
-					_groups = ((IShellController)_context.Shell).GenerateFlyoutGrouping();
-					_views = new Dictionary<Element, View>();
+					_groups = ShellController.GenerateFlyoutGrouping();
+
+					if (_cells != null)
+					{
+						foreach (var cell in _cells.Values)
+							cell.Disconnect();
+					}
+
+					_cells = new Dictionary<Element, UIContainerCell>();
 				}
 
 				return _groups;
@@ -48,7 +54,12 @@ namespace Xamarin.Forms.Platform.iOS
 			if(newGroups != _groups)
 			{
 				_groups = newGroups;
-				_views = new Dictionary<Element, View>();
+				if (_cells != null)
+				{
+					foreach (var cell in _cells.Values)
+						cell.Disconnect();
+				}
+				_cells = new Dictionary<Element, UIContainerCell>();
 			}
 		}
 
@@ -57,19 +68,21 @@ namespace Xamarin.Forms.Platform.iOS
 			int section = indexPath.Section;
 			int row = indexPath.Row;
 			var context = Groups[section][row];
-			View view;
 
-			if (!_views.TryGetValue(context, out view))
+			if (!_cells.TryGetValue(context, out var view))
 				return UITableView.AutomaticDimension;
 
-			nfloat defaultHeight = tableView.EstimatedRowHeight == -1 ? 44 : tableView.EstimatedRowHeight;
+			if (!view.View.IsVisible)
+				return 0;
+
+			nfloat defaultHeight = tableView.EstimatedRowHeight == -1 ? 0 : tableView.EstimatedRowHeight;
 			nfloat height = -1;
 
-			if (view.HeightRequest >= 0)
-				height = (float)view.HeightRequest;
+			if (view.View.HeightRequest >= 0)
+				height = (float)view.View.HeightRequest;
 			else
 			{
-				var request = view.Measure(tableView.Bounds.Width, double.PositiveInfinity, MeasureFlags.None);
+				var request = view.View.Measure(tableView.Bounds.Width, double.PositiveInfinity, MeasureFlags.None);
 
 				if (request.Request.Height > defaultHeight)
 					height = (float)request.Request.Height;
@@ -103,26 +116,37 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var cellId = ((IDataTemplateController)template.SelectDataTemplate(context, _context.Shell)).IdString;
 
-			var cell = (UIContainerCell)tableView.DequeueReusableCell(cellId);
-
-			if (cell == null)
+			UIContainerCell cell;
+			if (!_cells.TryGetValue(context, out cell))
 			{
 				var view = (View)template.CreateContent(context, _context.Shell);
 				cell = new UIContainerCell(cellId, view);
-				
+
 				// Set Parent after binding context so parent binding context doesn't propagate to view
 				cell.BindingContext = context;
 				view.Parent = _context.Shell;
 			}
 			else
 			{
+				var view = _cells[context].View;
+				cell.Disconnect();
+				cell = new UIContainerCell(cellId, view);
 				cell.BindingContext = context;
 			}
 
 			cell.SetAccessibilityProperties(context);
 
-			_views[context] = cell.View;
+			_cells[context] = cell;
+			cell.TableView = tableView;
+			cell.IndexPath = indexPath;
+			cell.ViewMeasureInvalidated += OnViewMeasureInvalidated;
+
 			return cell;
+		}
+
+		void OnViewMeasureInvalidated(UIContainerCell cell)
+		{
+			cell.ReloadRow();
 		}
 
 		public override nfloat GetHeightForFooter(UITableView tableView, nint section)

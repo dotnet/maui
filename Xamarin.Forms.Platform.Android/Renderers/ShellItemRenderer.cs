@@ -407,7 +407,7 @@ namespace Xamarin.Forms.Platform.Android
 				SetupMenu(menu, _bottomView.MaxItemCount, ShellItem);
 		}
 
-		void UpdateTabBarVisibility()
+		protected virtual void UpdateTabBarVisibility()
 		{
 			if (DisplayedPage == null)
 				return;

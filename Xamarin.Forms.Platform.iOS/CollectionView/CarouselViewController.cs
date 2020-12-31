@@ -156,6 +156,12 @@ namespace Xamarin.Forms.Platform.iOS
 			return itemsSource;
 		}
 
+		protected override void CacheCellAttributes(NSIndexPath indexPath, CGSize size)
+		{
+			var itemIndex = GetIndexFromIndexPath(indexPath);
+			base.CacheCellAttributes(NSIndexPath.FromItemSection(itemIndex, 0), size);
+		}
+
 		internal void TearDown()
 		{
 			Carousel.PropertyChanged -= CarouselViewPropertyChanged;

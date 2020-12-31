@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Foundation;
+using NUnit.Framework;
 
 namespace Xamarin.Forms.Platform.iOS.UnitTests
 {
@@ -57,6 +60,27 @@ namespace Xamarin.Forms.Platform.iOS.UnitTests
 			Assert.That((int)result[6].Item, Is.EqualTo(12));
 			Assert.That((int)result[7].Item, Is.EqualTo(13));
 			Assert.That((int)result[8].Item, Is.EqualTo(14));
+		}
+
+		[Test]
+		public void IndexPathValidTest() 
+		{
+			var list = new List<string>
+			{
+				"one",
+				"two",
+				"three"
+			};
+
+			var source = new ListSource(list);
+
+			var valid = NSIndexPath.FromItemSection(2, 0);
+			var invalidItem = NSIndexPath.FromItemSection(7, 0);
+			var invalidSection = NSIndexPath.FromItemSection(1, 9);
+
+			Assert.IsTrue(source.IsIndexPathValid(valid));
+			Assert.IsFalse(source.IsIndexPathValid(invalidItem));
+			Assert.IsFalse(source.IsIndexPathValid(invalidSection));
 		}
 	}
 }

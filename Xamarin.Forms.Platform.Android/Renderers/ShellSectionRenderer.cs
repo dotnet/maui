@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			var stack = shellSection.Stack.ToList();
-			bool result = ((IShellController)_shellContext.Shell).ProposeNavigation(ShellNavigationSource.ShellContentChanged,
+			bool result = ShellController.ProposeNavigation(ShellNavigationSource.ShellContentChanged,
 				(ShellItem)shellSection.Parent, shellSection, shellContent, stack, true);
 
 			if (result)
@@ -118,7 +118,7 @@ namespace Xamarin.Forms.Platform.Android
 		IShellToolbarTracker _toolbarTracker;
 		FormsViewPager _viewPager;
 		bool _disposed;
-
+		IShellController ShellController => _shellContext.Shell;
 		public ShellSectionRenderer(IShellContext shellContext)
 		{
 			_shellContext = shellContext;
@@ -128,6 +128,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		Fragment IShellObservableFragment.Fragment => this;
 		public ShellSection ShellSection { get; set; }
+		protected IShellContext ShellContext => _shellContext;
 		IShellSectionController SectionController => (IShellSectionController)ShellSection;
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)

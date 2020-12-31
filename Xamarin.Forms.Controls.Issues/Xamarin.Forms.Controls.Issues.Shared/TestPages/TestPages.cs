@@ -657,7 +657,7 @@ namespace Xamarin.Forms.Controls
 			ContentPage page = new ContentPage();
 			if (Items.Count == 0)
 			{
-				var item = AddContentPage(page);
+				var item = AddContentPage(page, title);
 				item.Items[0].Items[0].Title = title ?? page.Title;
 				item.Items[0].Title = title ?? page.Title;
 				return page;

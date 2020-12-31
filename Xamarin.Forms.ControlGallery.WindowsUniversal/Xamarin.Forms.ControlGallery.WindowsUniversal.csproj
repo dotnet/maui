@@ -141,6 +141,7 @@
     <Compile Include="SecondaryWindowService.cs" />
     <Compile Include="Tests\PlatformTestSettings.cs" />
     <Compile Include="Tests\TestingPlatformService.cs" />
+    <Compile Include="_13109IssueHelper.cs" />
     <Compile Include="_2489CustomRenderer.cs" />
     <Compile Include="_57114Renderer.cs" />
     <Compile Include="_58406EffectRenderer.cs" />

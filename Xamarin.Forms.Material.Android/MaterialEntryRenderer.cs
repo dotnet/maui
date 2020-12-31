@@ -28,7 +28,6 @@ namespace Xamarin.Forms.Material.Android
 			var view = inflater.Inflate(Resource.Layout.TextInputLayoutFilledBox, null);
 			_textInputLayout = (MaterialFormsTextInputLayout)view;
 			_textInputEditText = _textInputLayout.FindViewById<MaterialFormsEditText>(Resource.Id.materialformsedittext);
-
 			return _textInputLayout;
 		}
 

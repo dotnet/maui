@@ -2,13 +2,7 @@
   "solution": {
     "path": "Xamarin.Forms.sln",
     "projects": [
-      "EmbeddingTestBeds\\Embedding.XF\\Embedding.XF.csproj",
-      "EmbeddingTestBeds\\Embedding.iOS\\Embedding.iOS.csproj",
-      "PagesGallery\\PagesGallery.iOS\\PagesGallery.iOS.csproj",
-      "PagesGallery\\PagesGallery\\PagesGallery.csproj",
       "Stubs\\Xamarin.Forms.Platform.iOS\\Xamarin.Forms.Platform.iOS (Forwarders).csproj",
-      "XFCorePostProcessor.Tasks\\XFCorePostProcessor.Tasks.csproj",
-      "Xamarin.Flex\\Xamarin.Flex.shproj",
       "Xamarin.Forms.Build.Tasks\\Xamarin.Forms.Build.Tasks.csproj",
       "Xamarin.Forms.ControlGallery.iOS\\Xamarin.Forms.ControlGallery.iOS.csproj",
       "Xamarin.Forms.Controls.Issues\\Xamarin.Forms.Controls.Issues.Shared\\Xamarin.Forms.Controls.Issues.Shared.shproj",
@@ -22,13 +16,9 @@
       "Xamarin.Forms.Maps.iOS\\Xamarin.Forms.Maps.iOS.csproj",
       "Xamarin.Forms.Maps\\Xamarin.Forms.Maps.csproj",
       "Xamarin.Forms.Material.iOS\\Xamarin.Forms.Material.iOS.csproj",
-      "Xamarin.Forms.Pages.Azure\\Xamarin.Forms.Pages.Azure.csproj",
-      "Xamarin.Forms.Pages.UnitTests\\Xamarin.Forms.Pages.UnitTests.csproj",
-      "Xamarin.Forms.Pages\\Xamarin.Forms.Pages.csproj",
+      "Xamarin.Forms.Platform.iOS.UnitTests\\Xamarin.Forms.Platform.iOS.UnitTests.csproj",
       "Xamarin.Forms.Platform.iOS\\Xamarin.Forms.Platform.iOS.csproj",
       "Xamarin.Forms.Platform\\Xamarin.Forms.Platform.csproj",
-      "Xamarin.Forms.Sandbox.iOS\\Xamarin.Forms.Sandbox.iOS.csproj",
-      "Xamarin.Forms.Sandbox\\Xamarin.Forms.Sandbox.csproj",
       "Xamarin.Forms.Xaml.Design\\Xamarin.Forms.Xaml.Design.csproj",
       "Xamarin.Forms.Xaml.UnitTests\\Xamarin.Forms.Xaml.UnitTests.csproj",
       "Xamarin.Forms.Xaml\\Xamarin.Forms.Xaml.csproj"

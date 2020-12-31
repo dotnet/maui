@@ -1,15 +1,14 @@
 ﻿
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.StyleSheets;
 
 namespace Xamarin.Forms
 {
@@ -53,6 +52,19 @@ namespace Xamarin.Forms
 				SetInheritedBindingContext(oldHandler, null);
 			if (newValue is SearchHandler newHandler)
 				SetInheritedBindingContext(newHandler, bindable.BindingContext);
+		}
+
+		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
+			BindableProperty.CreateAttached(nameof(IsVisible), typeof(bool), typeof(Shell), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
+		public static bool GetFlyoutItemIsVisible(BindableObject obj) => (bool)obj.GetValue(FlyoutItemIsVisibleProperty);
+		public static void SetFlyoutItemIsVisible(BindableObject obj, bool isVisible) => obj.SetValue(FlyoutItemIsVisibleProperty, isVisible);
+
+		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is Element element)
+				element
+					.FindParentOfType<Shell>()
+					?.SendFlyoutItemsChanged();
 		}
 
 		public static readonly BindableProperty TabBarIsVisibleProperty =
@@ -225,7 +237,6 @@ namespace Xamarin.Forms
 
 		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
-		ShellNavigatingEventArgs _deferredEventArgs;
 
 
 		internal static BindableObject GetBindableObjectWithFlyoutItemTemplate(BindableObject bo)
@@ -282,8 +293,15 @@ namespace Xamarin.Forms
 
 		event EventHandler _structureChanged;
 
+		event EventHandler IShellController.FlyoutItemsChanged
+		{
+			add { _flyoutManager.FlyoutItemsChanged += value; }
+			remove { _flyoutManager.FlyoutItemsChanged -= value; }
+		}
+
 		View IShellController.FlyoutHeader => FlyoutHeaderView;
 		View IShellController.FlyoutFooter => FlyoutFooterView;
+		View IShellController.FlyoutContent => FlyoutContentView;
 
 		IShellController ShellController => this;
 
@@ -352,7 +370,7 @@ namespace Xamarin.Forms
 		}
 
 		ShellNavigationState IShellController.GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, bool includeStack)
-			=> GetNavigationState(shellItem, shellSection, shellContent, includeStack ? shellSection.Stack.ToList() : null, includeStack ? shellSection.Navigation.ModalStack.ToList() : null);
+			=> ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, includeStack ? shellSection.Stack.ToList() : null, includeStack ? shellSection.Navigation.ModalStack.ToList() : null);
 
 		async void IShellController.OnFlyoutItemSelected(Element element)
 		{
@@ -393,7 +411,7 @@ namespace Xamarin.Forms
 			shellSection = shellSection ?? shellItem.CurrentItem;
 			shellContent = shellContent ?? shellSection?.CurrentItem;
 
-			var state = GetNavigationState(shellItem, shellSection, shellContent, null, null);
+			var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, null, null);
 
 			if (FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
 				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
@@ -420,8 +438,7 @@ namespace Xamarin.Forms
 
 		bool IShellController.ProposeNavigation(ShellNavigationSource source, ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> stack, bool canCancel)
 		{
-			var proposedState = GetNavigationState(shellItem, shellSection, shellContent, stack, shellSection.Navigation.ModalStack);
-			return ProposeNavigation(source, proposedState, canCancel, null);
+			return _navigationManager.ProposeNavigationOutsideGotoAsync(source, shellItem, shellSection, shellContent, stack, canCancel, true);
 		}
 
 		bool IShellController.RemoveAppearanceObserver(IAppearanceObserver observer)
@@ -448,11 +465,11 @@ namespace Xamarin.Forms
 			var shellContent = shellSection?.CurrentItem;
 			var stack = shellSection?.Stack;
 			var modalStack = shellSection?.Navigation?.ModalStack;
-			var result = GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
+			var result = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
 
 			SetValueFromRenderer(CurrentStatePropertyKey, result);
 
-			HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+			_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 		}
 		ReadOnlyCollection<ShellItem> IShellController.GetItems() =>
 			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItemsReadOnly.ToList());
@@ -465,339 +482,15 @@ namespace Xamarin.Forms
 
 		public static Shell Current => Application.Current?.MainPage as Shell;
 
-		internal Task CompleteDeferredNavigating(ShellNavigatingEventArgs deferredArgs)
-		{
-			return GoToAsync(deferredArgs.Target, deferredArgs.Animate, false, deferredArgs);
-		}
-
+		internal ShellNavigationManager NavigationManager => _navigationManager;
 		public Task GoToAsync(ShellNavigationState state)
 		{
-			return GoToAsync(state, null, false);
+			return _navigationManager.GoToAsync(state, null, false);
 		}
 
 		public Task GoToAsync(ShellNavigationState state, bool animate)
 		{
-			return GoToAsync(state, animate, false);
-		}
-
-		internal Task GoToAsync(ShellNavigationState state, bool? animate, bool enableRelativeShellRoutes, ShellNavigatingEventArgs deferredArgs = null)
-		{
-			return GoToAsync(new ShellNavigationParameters
-			{
-				TargetState = state,
-				Animated = animate,
-				EnableRelativeShellRoutes = enableRelativeShellRoutes,
-				DeferredArgs = deferredArgs
-			});
-		}
-
-		internal async Task GoToAsync(ShellNavigationParameters shellNavigationParameters)
-		{
-			if (shellNavigationParameters.PagePushing != null)
-				Routing.RegisterImplicitPageRoute(shellNavigationParameters.PagePushing);
-
-			ShellNavigationState state = shellNavigationParameters.TargetState ?? Routing.GetRoute(shellNavigationParameters.PagePushing);
-			bool? animate = shellNavigationParameters.Animated;
-			bool enableRelativeShellRoutes = shellNavigationParameters.EnableRelativeShellRoutes;
-			ShellNavigatingEventArgs deferredArgs = shellNavigationParameters.DeferredArgs;
-
-			if (_deferredEventArgs != null && _deferredEventArgs != deferredArgs)
-			{
-				throw new InvalidOperationException("Not all ShellNavigatingDeferrals have been completed from the previous operation");
-			}
-
-			var navigationRequest = ShellUriHandler.GetNavigationRequest(this, state.FullLocation, enableRelativeShellRoutes, shellNavigationParameters: shellNavigationParameters);
-			bool isRelativePopping = ShellUriHandler.IsTargetRelativePop(shellNavigationParameters);
-
-			ShellNavigationSource source = CalculateNavigationSource(CurrentState, navigationRequest);
-
-			var accept = ProposeNavigation(source, state, this.CurrentState != null, deferredArgs);
-
-			if (deferredArgs == null && _deferredEventArgs != null)
-			{
-				await _deferredEventArgs.DeferredTask.ConfigureAwait(false);
-				return;
-			}
-
-			if (!accept)
-			{
-				return;
-			}
-
-			Routing.RegisterImplicitPageRoutes(this);
-
-
-			_accumulateNavigatedEvents = true;
-
-			var uri = navigationRequest.Request.FullUri;
-			var queryString = navigationRequest.Query;
-			var queryData = ParseQueryString(queryString);
-
-			ApplyQueryAttributes(this, queryData, false, false);
-
-			var shellItem = navigationRequest.Request.Item;
-			var shellSection = navigationRequest.Request.Section;
-			var currentShellSection = CurrentItem?.CurrentItem;
-			var nextActiveSection = shellSection ?? shellItem?.CurrentItem;
-
-
-			ShellContent shellContent = navigationRequest.Request.Content;
-			bool modalStackPreBuilt = false;
-
-
-
-			// If we're replacing the whole stack and there are global routes then build the navigation stack before setting the shell section visible
-			if (navigationRequest.Request.GlobalRoutes.Count > 0 &&
-				nextActiveSection != null &&
-				navigationRequest.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
-			{
-				modalStackPreBuilt = true;
-
-				bool? isAnimated = (nextActiveSection != currentShellSection) ? false : animate;
-				await nextActiveSection.GoToAsync(navigationRequest, queryData, isAnimated, isRelativePopping);
-			}
-
-			if (shellItem != null)
-			{
-				ApplyQueryAttributes(shellItem, queryData, navigationRequest.Request.Section == null, false);
-				bool navigatedToNewShellElement = false;
-
-				if (shellSection != null && shellContent != null)
-				{
-					ApplyQueryAttributes(shellContent, queryData, navigationRequest.Request.GlobalRoutes.Count == 0, isRelativePopping);
-					if (shellSection.CurrentItem != shellContent)
-					{
-						shellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, shellContent);
-						navigatedToNewShellElement = true;
-					}
-				}
-
-				if (shellSection != null)
-				{
-					Shell.ApplyQueryAttributes(shellSection, queryData, navigationRequest.Request.Content == null, false);
-					if (shellItem.CurrentItem != shellSection)
-					{
-						shellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, shellSection);
-						navigatedToNewShellElement = true;
-					}
-				}
-
-				if (CurrentItem != shellItem)
-				{
-					SetValueFromRenderer(CurrentItemProperty, shellItem);
-					navigatedToNewShellElement = true;
-				}
-
-				if (!modalStackPreBuilt && currentShellSection?.Navigation.ModalStack.Count > 0)
-				{
-					// - navigating to new shell element so just pop everything
-					// - or route contains no global route requests
-					if (navigatedToNewShellElement || navigationRequest.Request.GlobalRoutes.Count == 0)
-					{
-						// remove all non visible pages first so the transition just smoothly goes from
-						// currently visible modal to base page
-						if (navigationRequest.Request.GlobalRoutes.Count == 0)
-						{
-							for (int i = currentShellSection.Stack.Count - 1; i >= 1; i--)
-								currentShellSection.Navigation.RemovePage(currentShellSection.Stack[i]);
-						}
-
-						await currentShellSection.PopModalStackToPage(null, animate);
-					}
-				}
-
-				if (navigationRequest.Request.GlobalRoutes.Count > 0 && navigationRequest.StackRequest != NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
-				{
-					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
-					await Device.InvokeOnMainThreadAsync(() =>
-					{
-						return CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, animate, isRelativePopping);
-					});
-				}
-				else if (navigationRequest.Request.GlobalRoutes.Count == 0 &&
-					navigationRequest.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt &&
-					currentShellSection?.Navigation?.NavigationStack?.Count > 1)
-				{
-					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
-					await Device.InvokeOnMainThreadAsync(() =>
-					{
-						return CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, animate, isRelativePopping);
-					});
-				}
-			}
-			else
-			{
-				await CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, animate, isRelativePopping);
-			}
-
-			_accumulateNavigatedEvents = false;
-
-			// this can be null in the event that no navigation actually took place!
-			if (_accumulatedEvent != null)
-				HandleNavigated(_accumulatedEvent);
-		}
-
-		internal static void ApplyQueryAttributes(Element element, IDictionary<string, string> query, bool isLastItem, bool isPopping)
-		{
-			string prefix = "";
-			if (!isLastItem)
-			{
-				var route = Routing.GetRoute(element);
-				if (string.IsNullOrEmpty(route) || Routing.IsImplicit(route))
-					return;
-				prefix = route + ".";
-			}
-
-			//if the lastItem is implicitly wrapped, get the actual ShellContent
-			if (isLastItem)
-			{
-				if (element is IShellItemController shellitem && shellitem.GetItems().FirstOrDefault() is ShellSection section)
-					element = section;
-				if (element is IShellSectionController shellsection && shellsection.GetItems().FirstOrDefault() is ShellContent content)
-					element = content;
-				if (element is ShellContent shellcontent && shellcontent.Content is Element e)
-					element = e;
-			}
-
-			if (!(element is BaseShellItem baseShellItem))
-				baseShellItem = element?.Parent as BaseShellItem;
-
-			//filter the query to only apply the keys with matching prefix
-			var filteredQuery = new Dictionary<string, string>(query.Count);
-
-			foreach (var q in query)
-			{
-				if (!q.Key.StartsWith(prefix, StringComparison.Ordinal))
-					continue;
-				var key = q.Key.Substring(prefix.Length);
-				if (key.Contains("."))
-					continue;
-				filteredQuery.Add(key, q.Value);
-			}
-
-
-			if (baseShellItem is ShellContent)
-				baseShellItem.ApplyQueryAttributes(MergeData(element, filteredQuery, isPopping));
-			else if (isLastItem)
-				element.SetValue(ShellContent.QueryAttributesProperty, MergeData(element, query, isPopping));
-
-			IDictionary<string, string> MergeData(Element shellElement, IDictionary<string, string> data, bool isPopping)
-			{
-				if (!isPopping)
-					return data;
-
-				var returnValue = new Dictionary<string, string>(data);
-
-				var existing = (IDictionary<string, string>)shellElement.GetValue(ShellContent.QueryAttributesProperty);
-
-				if (existing == null)
-					return data;
-
-				foreach (var datum in existing)
-				{
-					if (!returnValue.ContainsKey(datum.Key))
-						returnValue[datum.Key] = datum.Value;
-				}
-
-				return returnValue;
-			}
-		}
-
-		internal static ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack, IReadOnlyList<Page> modalStack)
-		{
-			List<string> routeStack = new List<string>();
-
-			bool stackAtRoot = sectionStack == null || sectionStack.Count <= 1;
-			bool hasUserDefinedRoute =
-				(Routing.IsUserDefined(shellItem)) ||
-				(Routing.IsUserDefined(shellSection)) ||
-				(Routing.IsUserDefined(shellContent));
-
-			if (shellItem != null)
-			{
-				var shellItemRoute = shellItem.Route;
-				routeStack.Add(shellItemRoute);
-
-				if (shellSection != null)
-				{
-					var shellSectionRoute = shellSection.Route;
-					routeStack.Add(shellSectionRoute);
-
-					if (shellContent != null)
-					{
-						var shellContentRoute = shellContent.Route;
-						routeStack.Add(shellContentRoute);
-					}
-
-					if (!stackAtRoot)
-					{
-						for (int i = 1; i < sectionStack.Count; i++)
-						{
-							var page = sectionStack[i];
-							routeStack.AddRange(CollapsePath(Routing.GetRoute(page), routeStack, hasUserDefinedRoute));
-						}
-					}
-
-					if (modalStack != null && modalStack.Count > 0)
-					{
-						for (int i = 0; i < modalStack.Count; i++)
-						{
-							var topPage = modalStack[i];
-
-							routeStack.AddRange(CollapsePath(Routing.GetRoute(topPage), routeStack, hasUserDefinedRoute));
-
-							for (int j = 1; j < topPage.Navigation.NavigationStack.Count; j++)
-							{
-								routeStack.AddRange(CollapsePath(Routing.GetRoute(topPage.Navigation.NavigationStack[j]), routeStack, hasUserDefinedRoute));
-							}
-						}
-					}
-				}
-			}
-
-			if (routeStack.Count > 0)
-				routeStack.Insert(0, "/");
-
-			return new ShellNavigationState(String.Join("/", routeStack), true);
-
-
-			List<string> CollapsePath(
-				string myRoute,
-				IEnumerable<string> currentRouteStack,
-				bool userDefinedRoute)
-			{
-				var localRouteStack = currentRouteStack.ToList();
-				for (var i = localRouteStack.Count - 1; i >= 0; i--)
-				{
-					var route = localRouteStack[i];
-					if (Routing.IsImplicit(route) ||
-						(Routing.IsDefault(route) && userDefinedRoute))
-					{
-						localRouteStack.RemoveAt(i);
-					}
-				}
-
-				var paths = myRoute.Split('/').ToList();
-
-				// collapse similar leaves
-				int walkBackCurrentStackIndex = localRouteStack.Count - (paths.Count - 1);
-
-				while (paths.Count > 1 && walkBackCurrentStackIndex >= 0)
-				{
-					if (paths[0] == localRouteStack[walkBackCurrentStackIndex])
-					{
-						paths.RemoveAt(0);
-					}
-					else
-					{
-						break;
-					}
-
-					walkBackCurrentStackIndex++;
-				}
-
-				return paths;
-			}
+			return _navigationManager.GoToAsync(state, animate, false);
 		}
 
 		public static readonly BindableProperty CurrentItemProperty =
@@ -849,14 +542,27 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty FlyoutVerticalScrollModeProperty =
 			BindableProperty.Create(nameof(FlyoutVerticalScrollMode), typeof(ScrollMode), typeof(Shell), ScrollMode.Auto);
 
-		ShellNavigatedEventArgs _accumulatedEvent;
-		bool _accumulateNavigatedEvents;
 		View _flyoutHeaderView;
 		View _flyoutFooterView;
-		List<List<Element>> _currentFlyoutViews;
+		ShellNavigationManager _navigationManager;
+		ShellFlyoutItemsManager _flyoutManager;
 
 		public Shell()
 		{
+			_navigationManager = new ShellNavigationManager(this);
+			_navigationManager.Navigated += (_, args) =>
+			{
+				OnNavigated(args);
+				Navigated?.Invoke(this, args);
+			};
+
+			_navigationManager.Navigating += (_, args) =>
+			{
+				Navigating?.Invoke(this, args);
+				OnNavigating(args);
+			};
+
+			_flyoutManager = new ShellFlyoutItemsManager(this);
 			Navigation = new NavigationImpl(this);
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
@@ -871,6 +577,7 @@ namespace Xamarin.Forms
 			{
 				SetCurrentItem();
 				SendStructureChanged();
+				SendFlyoutItemsChanged();
 			};
 
 			async void SetCurrentItem()
@@ -1114,151 +821,18 @@ namespace Xamarin.Forms
 
 			if (FlyoutFooterView != null)
 				SetInheritedBindingContext(FlyoutFooterView, BindingContext);
+
+			if (FlyoutContentView != null)
+				SetInheritedBindingContext(FlyoutContentView, BindingContext);
 		}
 
-		List<List<Element>> IShellController.GenerateFlyoutGrouping()
-		{
-			// The idea here is to create grouping such that the Flyout would
-			// render correctly if it renderered each item in the groups in order
-			// but put a line between the groups. This is needed because our grouping can
-			// actually go 3 layers deep.
 
-			// Ideally this lets us control where lines are drawn in the core code
-			// just by changing how we generate these groupings
+		internal void SendFlyoutItemsChanged() => _flyoutManager.CheckIfFlyoutItemsChanged();
 
-			var result = new List<List<Element>>();
+		public IEnumerable FlyoutItems => _flyoutManager.FlyoutItems;
 
-			var currentGroup = new List<Element>();
-
-			foreach (var shellItem in ShellController.GetItems())
-			{
-				if (!ShowInFlyoutMenu(shellItem))
-					continue;
-
-				if (Routing.IsImplicit(shellItem) || shellItem.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
-				{
-					if (shellItem.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
-						IncrementGroup();
-
-					foreach (var shellSection in (shellItem as IShellItemController).GetItems())
-					{
-						if (!ShowInFlyoutMenu(shellSection))
-							continue;
-
-						var shellContents = ((IShellSectionController)shellSection).GetItems();
-						if (Routing.IsImplicit(shellSection) || shellSection.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
-						{
-							foreach (var shellContent in shellContents)
-							{
-								if (!ShowInFlyoutMenu(shellContent))
-									continue;
-
-								currentGroup.Add(shellContent);
-								if (shellContent == shellSection.CurrentItem)
-								{
-									AddMenuItems(shellContent.MenuItems);
-								}
-							}
-
-							if (shellSection.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
-								IncrementGroup();
-						}
-						else
-						{
-							if (!(shellSection.Parent is TabBar))
-							{
-								if (Routing.IsImplicit(shellSection) && shellContents.Count == 1)
-								{
-									if (!ShowInFlyoutMenu(shellContents[0]))
-										continue;
-
-									currentGroup.Add(shellContents[0]);
-								}
-								else
-									currentGroup.Add(shellSection);
-							}
-
-							// If we have only a single child we will also show the items menu items
-							if (shellContents.Count == 1 && shellSection == shellItem.CurrentItem && shellSection.CurrentItem.MenuItems.Count > 0)
-							{
-								AddMenuItems(shellSection.CurrentItem.MenuItems);
-							}
-						}
-					}
-
-					if (shellItem.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
-						IncrementGroup();
-				}
-				else
-				{
-					if (!(shellItem is TabBar))
-						currentGroup.Add(shellItem);
-				}
-			}
-
-			IncrementGroup();
-
-			// If the flyout groupings haven't changed just return
-			// the same instance so the caller knows it hasn't changed
-			// at a later point this will all get converted to an observable collection
-			if (_currentFlyoutViews?.Count == result.Count)
-			{
-				bool hasChanged = false;
-				for (var i = 0; i < result.Count && !hasChanged; i++)
-				{
-					var topLevelNew = result[i];
-					var topLevelPrevious = _currentFlyoutViews[i];
-
-					if (topLevelNew.Count != topLevelPrevious.Count)
-					{
-						hasChanged = true;
-						break;
-					}
-
-					for (var j = 0; j > topLevelNew.Count; j++)
-					{
-						if (topLevelNew[j] != topLevelPrevious[j])
-						{
-							hasChanged = true;
-							break;
-						}
-					}
-
-				}
-
-				if (!hasChanged)
-					return _currentFlyoutViews;
-			}
-
-			_currentFlyoutViews = result;
-			return result;
-
-			bool ShowInFlyoutMenu(BindableObject bo)
-			{
-				if (bo is MenuShellItem msi)
-					return FlyoutItem.GetIsVisible(msi.MenuItem);
-
-				return FlyoutItem.GetIsVisible(bo);
-			}
-
-			void AddMenuItems(MenuItemCollection menuItems)
-			{
-				foreach (var item in menuItems)
-				{
-					if (ShowInFlyoutMenu(item))
-						currentGroup.Add(item);
-				}
-			}
-
-			void IncrementGroup()
-			{
-				if (currentGroup.Count > 0)
-				{
-					result.Add(currentGroup);
-					currentGroup = new List<Element>();
-				}
-			}
-		}
+		List<List<Element>> IShellController.GenerateFlyoutGrouping() =>
+			_flyoutManager.GenerateFlyoutGrouping();
 
 		internal void SendStructureChanged()
 		{
@@ -1279,7 +853,7 @@ namespace Xamarin.Forms
 			}
 
 			var args = new ShellNavigatingEventArgs(this.CurrentState, "", ShellNavigationSource.Pop, true);
-			HandleNavigating(args);
+			_navigationManager.HandleNavigating(args);
 			return args.Cancelled;
 
 			async void NavigationPop()
@@ -1309,42 +883,6 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal void HandleNavigated(ShellNavigatedEventArgs args)
-		{
-			if (_accumulateNavigatedEvents)
-			{
-				if (_accumulatedEvent == null)
-					_accumulatedEvent = args;
-			}
-			else
-			{
-				_accumulatedEvent = null;
-				BaseShellItem baseShellItem = CurrentItem?.CurrentItem?.CurrentItem;
-
-				if (baseShellItem != null)
-				{
-					baseShellItem.OnAppearing(() =>
-					{
-						FireNavigatedEvents(args, this);
-					});
-				}
-				else
-				{
-					FireNavigatedEvents(args, this);
-				}
-
-				void FireNavigatedEvents(ShellNavigatedEventArgs a, Shell shell)
-				{
-					shell.OnNavigated(a);
-					shell.Navigated?.Invoke(this, args);
-					// reset active page route tree
-					Routing.ClearImplicitPageRoutes();
-					Routing.RegisterImplicitPageRoutes(this);
-				}
-			}
-
-		}
-
 		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
 		{
 		}
@@ -1352,35 +890,6 @@ namespace Xamarin.Forms
 		protected virtual void OnNavigating(ShellNavigatingEventArgs args)
 		{
 
-		}
-
-		void HandleNavigating(ShellNavigatingEventArgs args)
-		{
-			if (!args.DeferredEventArgs)
-			{
-				_deferredEventArgs = null;
-				Navigating?.Invoke(this, args);
-				OnNavigating(args);
-			}
-			else
-			{
-				return;
-			}
-
-			if (args.DeferralCount > 0 && args.CanCancel)
-			{
-				_deferredEventArgs = args;
-				args.RegisterDeferralCompletedCallBack(async () =>
-				{
-					_deferredEventArgs = null;
-					if (args.Cancelled)
-					{
-						return;
-					}
-
-					await CompleteDeferredNavigating(args);
-				});
-			}
 		}
 
 		static void OnCurrentItemChanged(BindableObject bindable, object oldValue, object newValue)
@@ -1409,16 +918,10 @@ namespace Xamarin.Forms
 			if (!shell.Items.Contains(shellItem))
 				shell.Items.Add(shellItem);
 
-			if (!shell._accumulateNavigatedEvents)
-			{
-				// We are not in the middle of a GoToAsync so this is a user requested change.
-				// We need to emit the Navigating event since GoToAsync wont be emitting it.
-
-				var shellSection = shellItem.CurrentItem;
-				var shellContent = shellSection.CurrentItem;
-				var stack = shellSection.Stack;
-				shell.ShellController.ProposeNavigation(ShellNavigationSource.ShellItemChanged, shellItem, shellSection, shellContent, stack, false);
-			}
+			var shellSection = shellItem.CurrentItem;
+			var shellContent = shellSection.CurrentItem;
+			var stack = shellSection.Stack;
+			shell._navigationManager.ProposeNavigationOutsideGotoAsync(ShellNavigationSource.ShellItemChanged, shellItem, shellSection, shellContent, stack, false, true);
 		}
 
 		static void UpdateChecked(Element root, bool isChecked = true)
@@ -1502,24 +1005,6 @@ namespace Xamarin.Forms
 
 			if (newView != null)
 				newView.Parent = owner;
-		}
-
-		static Dictionary<string, string> ParseQueryString(string query)
-		{
-			if (query.StartsWith("?", StringComparison.Ordinal))
-				query = query.Substring(1);
-			Dictionary<string, string> lookupDict = new Dictionary<string, string>();
-			if (query == null)
-				return lookupDict;
-			foreach (var part in query.Split('&'))
-			{
-				var p = part.Split('=');
-				if (p.Length != 2)
-					continue;
-				lookupDict[p[0]] = p[1];
-			}
-
-			return lookupDict;
 		}
 
 		internal FlyoutBehavior GetEffectiveFlyoutBehavior()
@@ -1673,89 +1158,6 @@ namespace Xamarin.Forms
 			}
 		}
 
-		bool ProposeNavigation(ShellNavigationSource source, ShellNavigationState proposedState, bool canCancel, ShellNavigatingEventArgs deferredArgs)
-		{
-			if (_accumulateNavigatedEvents)
-				return true;
-
-			var navArgs = deferredArgs ?? new ShellNavigatingEventArgs(CurrentState, proposedState, source, canCancel);
-			HandleNavigating(navArgs);
-			return !navArgs.Cancelled && navArgs.DeferralCount == 0;
-		}
-
-		ShellNavigationSource CalculateNavigationSource(ShellNavigationState current, NavigationRequest request)
-		{
-			if (request.StackRequest == NavigationRequest.WhatToDoWithTheStack.PushToIt)
-				return ShellNavigationSource.Push;
-
-			if (current == null)
-				return ShellNavigationSource.ShellItemChanged;
-
-			var targetUri = ShellUriHandler.ConvertToStandardFormat(this, request.Request.FullUri);
-			var currentUri = ShellUriHandler.ConvertToStandardFormat(this, current.FullLocation);
-
-			var targetPaths = ShellUriHandler.RetrievePaths(targetUri.PathAndQuery);
-			var currentPaths = ShellUriHandler.RetrievePaths(currentUri.PathAndQuery);
-
-			var targetPathsLength = targetPaths.Length;
-			var currentPathsLength = currentPaths.Length;
-
-			if (targetPathsLength < 4 || currentPathsLength < 4)
-				return ShellNavigationSource.Unknown;
-
-			if (targetPaths[1] != currentPaths[1])
-				return ShellNavigationSource.ShellItemChanged;
-			if (targetPaths[2] != currentPaths[2])
-				return ShellNavigationSource.ShellSectionChanged;
-			if (targetPaths[3] != currentPaths[3])
-				return ShellNavigationSource.ShellContentChanged;
-
-			if (targetPathsLength == currentPathsLength)
-				return ShellNavigationSource.Unknown;
-
-			if (targetPathsLength < currentPathsLength)
-			{
-				for (var i = 0; i < targetPathsLength; i++)
-				{
-					var targetPath = targetPaths[i];
-					if (targetPath != currentPaths[i])
-						break;
-
-					if (i == targetPathsLength - 1)
-					{
-						if (targetPathsLength == 4)
-							return ShellNavigationSource.PopToRoot;
-
-						return ShellNavigationSource.Pop;
-					}
-				}
-
-				if (targetPaths[targetPathsLength - 1] == currentPaths[currentPathsLength - 1])
-					return ShellNavigationSource.Remove;
-
-				if (targetPathsLength == 4)
-					return ShellNavigationSource.PopToRoot;
-
-				return ShellNavigationSource.Pop;
-			}
-			else if (targetPathsLength > currentPathsLength)
-			{
-				for (var i = 0; i < currentPathsLength; i++)
-				{
-					if (targetPaths[i] != currentPaths[i])
-						break;
-
-					if (i == targetPathsLength - 1)
-						return ShellNavigationSource.Push;
-				}
-			}
-
-			if (targetPaths[targetPathsLength - 1] == currentPaths[currentPathsLength - 1])
-				return ShellNavigationSource.Insert;
-
-			return ShellNavigationSource.Push;
-		}
-
 		internal Element GetVisiblePage()
 		{
 			if (CurrentItem?.CurrentItem is IShellSectionController scc)
@@ -1794,6 +1196,85 @@ namespace Xamarin.Forms
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutFooterView });
 		}
 
+
+		#region Shell Flyout Content
+
+
+		public static readonly BindableProperty FlyoutContentProperty = 
+			BindableProperty.Create(nameof(FlyoutContent), typeof(object), typeof(Shell), null, BindingMode.OneTime, propertyChanging: OnFlyoutContentChanging);
+
+		public static readonly BindableProperty FlyoutContentTemplateProperty =
+			BindableProperty.Create(nameof(FlyoutContentTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime, propertyChanging: OnFlyoutContentTemplateChanging);
+
+		View _flyoutContentView;
+
+		public View FlyoutContent
+		{
+			get => (View)GetValue(FlyoutContentProperty);
+			set => SetValue(FlyoutContentProperty, value);
+		}
+
+		public DataTemplate FlyoutContentTemplate
+		{
+			get => (DataTemplate)GetValue(FlyoutContentTemplateProperty);
+			set => SetValue(FlyoutContentTemplateProperty, value);
+		}
+
+		View FlyoutContentView
+		{
+			get => _flyoutContentView;
+			set
+			{
+				if (_flyoutContentView == value)
+					return;
+
+				if (_flyoutContentView != null)
+					OnChildRemoved(_flyoutContentView, -1);
+				_flyoutContentView = value;
+				if (_flyoutContentView != null)
+					OnChildAdded(_flyoutContentView);
+			}
+		}
+
+		void OnFlyoutContentChanged(object oldVal, object newVal)
+		{
+			if (FlyoutContentTemplate == null)
+			{
+				if (newVal is View newFlyoutContent)
+					FlyoutContentView = newFlyoutContent;
+				else
+					FlyoutContentView = null;
+			}
+		}
+
+		void OnFlyoutContentTemplateChanged(DataTemplate oldValue, DataTemplate newValue)
+		{
+			if (newValue == null)
+			{
+				if (FlyoutContent is View flyoutContentView)
+					FlyoutContentView = flyoutContentView;
+				else
+					FlyoutContentView = null;
+			}
+			else
+			{
+				var newContentView = (View)newValue.CreateContent(FlyoutContent, this);
+				FlyoutContentView = newContentView;
+			}
+		}
+
+		static void OnFlyoutContentChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			var shell = (Shell)bindable;
+			shell.OnFlyoutContentChanged(oldValue, newValue);
+		}
+
+		static void OnFlyoutContentTemplateChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			var shell = (Shell)bindable;
+			shell.OnFlyoutContentTemplateChanged((DataTemplate)oldValue, (DataTemplate)newValue);
+		}
+		#endregion
 
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

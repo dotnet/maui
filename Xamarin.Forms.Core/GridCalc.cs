@@ -642,7 +642,6 @@ namespace Xamarin.Forms
 
 			double MeasuredStarredColumns(Grid grid, double widthConstraint, double heightConstraint, double totalStarsWidth)
 			{
-				double starColWidth;
 				for (var iteration = 0; iteration < 2; iteration++)
 				{
 					for (var colspan = 1; colspan <= _columns.Count; colspan++)
@@ -682,22 +681,28 @@ namespace Xamarin.Forms
 					}
 				}
 
-				starColWidth = 0;
+				double starColRequestWidth = 0;
+				double starColMinWidth = 0;
 				for (var index = 0; index < _columns.Count; index++)
 				{
 					ColumnDefinition col = _columns[index];
 					if (!col.Width.IsStar || col.Width.Value == 0 || col.ActualWidth <= 0)
 						continue;
 
-					starColWidth += col.ActualWidth;
+					starColRequestWidth = Math.Max(starColRequestWidth, col.ActualWidth / col.Width.Value);
+					starColMinWidth = Math.Max(starColMinWidth, col.MinimumWidth / col.Width.Value);
 				}
 
-				return Math.Max(starColWidth / totalStarsWidth, 1);
+				if (starColRequestWidth * totalStarsWidth <= widthConstraint)
+				{
+					return starColRequestWidth;
+				}
+
+				return Math.Max(widthConstraint / totalStarsWidth, starColMinWidth);
 			}
 
 			double MeasureStarredRows(Grid grid, double widthConstraint, double heightConstraint, double totalStarsHeight)
 			{
-				double starRowHeight;
 				for (var iteration = 0; iteration < 2; iteration++)
 				{
 					for (var rowspan = 1; rowspan <= _rows.Count; rowspan++)
@@ -737,17 +742,24 @@ namespace Xamarin.Forms
 					}
 				}
 
-				starRowHeight = 0;
+				double starRowRequestHeight = 0;
+				double starRowMinHeight = 0;
 				for (var index = 0; index < _rows.Count; index++)
 				{
 					RowDefinition row = _rows[index];
 					if (!row.Height.IsStar || row.Height.Value == 0 || row.ActualHeight <= 0)
 						continue;
 
-					starRowHeight += row.ActualHeight;
+					starRowRequestHeight = Math.Max(starRowRequestHeight, row.ActualHeight / row.Height.Value);
+					starRowMinHeight = Math.Max(starRowMinHeight, row.MinimumHeight / row.Height.Value);
 				}
 
-				return Math.Max(starRowHeight / totalStarsHeight, 1);
+				if (starRowRequestHeight * totalStarsHeight <= heightConstraint)
+				{
+					return starRowRequestHeight;
+				}
+
+				return Math.Max(heightConstraint / totalStarsHeight, starRowMinHeight);
 			}
 
 			void ZeroUnassignedCells()

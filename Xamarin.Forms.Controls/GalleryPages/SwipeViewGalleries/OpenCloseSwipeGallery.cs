@@ -1,8 +1,8 @@
 ﻿namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 {
-	public class CloseSwipeGallery : ContentPage
+	public class OpenCloseSwipeGallery : ContentPage
 	{
-		public CloseSwipeGallery()
+		public OpenCloseSwipeGallery()
 		{
 			Title = "Open/Close SwipeView Gallery";
 
@@ -13,14 +13,40 @@
 
 			var openButton = new Button
 			{
+				HorizontalOptions = LayoutOptions.Start,
 				Text = "Open SwipeView"
 			};
 
 			var closeButton = new Button
 			{
+				HorizontalOptions = LayoutOptions.Start,
 				Text = "Close SwipeView"
 			};
 
+			var animatedLayout = new StackLayout
+			{
+				HorizontalOptions = LayoutOptions.Start,
+				Orientation = StackOrientation.Horizontal
+			};
+
+			var animatedCheckBox = new CheckBox
+			{
+				IsChecked = true,
+				VerticalOptions = LayoutOptions.Center
+			};
+
+			animatedLayout.Children.Add(animatedCheckBox);
+			animatedLayout.Children.Add(animatedCheckBox);
+
+			var animatedLabel = new Label
+			{
+				Text = "Animated",
+				VerticalOptions = LayoutOptions.Center
+			};
+
+			animatedLayout.Children.Add(animatedLabel);
+
+			swipeLayout.Children.Add(animatedLayout);
 			swipeLayout.Children.Add(openButton);
 			swipeLayout.Children.Add(closeButton);
 
@@ -65,12 +91,14 @@
 
 			openButton.Clicked += (sender, e) =>
 			{
-				swipeView.Open(OpenSwipeItem.LeftItems);
+				bool animated = animatedCheckBox.IsChecked;
+				swipeView.Open(OpenSwipeItem.LeftItems, animated);
 			};
 
 			closeButton.Clicked += (sender, e) =>
 			{
-				swipeView.Close();
+				bool animated = animatedCheckBox.IsChecked;
+				swipeView.Close(animated);
 			};
 		}
 	}

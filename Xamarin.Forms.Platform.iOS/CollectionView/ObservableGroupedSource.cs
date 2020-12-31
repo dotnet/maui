@@ -337,9 +337,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		bool ReloadRequired()
 		{
-			// If the UICollectionView has never been loaded, or doesn't yet have any sections, or has no actual
-			// cells (just supplementary views like Header/Footer), any insert/delete operations are gonna crash
-			// hard. We'll need to reload the data instead.
+			// If the UICollectionView has never been loaded, or doesn't yet have any sections, any insert/delete operations 
+			// are gonna crash hard. We'll need to reload the data instead.
 
 			return NotLoadedYet()
 				|| _collectionView.NumberOfSections() == 0;

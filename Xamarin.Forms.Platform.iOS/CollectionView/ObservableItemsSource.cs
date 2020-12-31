@@ -276,7 +276,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return -1;
 		}
-
 		void Update(Action update, NotifyCollectionChangedEventArgs args)
 		{
 			OnCollectionViewUpdating(args); 

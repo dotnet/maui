@@ -21,7 +21,9 @@
 						GalleryBuilder.NavButton("Expanding Text (Horizontal List)", () =>
 							new DynamicItemSizeGallery(LinearItemsLayout.Horizontal), Navigation),
 						GalleryBuilder.NavButton("ItemSizing Strategy", () =>
-							new VariableSizeTemplateGridGallery (ItemsLayoutOrientation.Horizontal), Navigation)
+							new VariableSizeTemplateGridGallery (ItemsLayoutOrientation.Horizontal), Navigation),
+						GalleryBuilder.NavButton("Chat Example (Randomly Sized Items)", () =>
+							new ChatExample(), Navigation)
 					}
 				}
 			};

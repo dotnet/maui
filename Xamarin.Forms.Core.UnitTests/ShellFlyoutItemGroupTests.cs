@@ -165,9 +165,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			flyoutItem.CurrentItem.CurrentItem.MenuItems.Add(CreateNonVisibleMenuItem());
 			shell.Items.Add(flyoutItem);
 
-
-			IShellController shellController = (IShellController)shell;
-			var groups = shellController.GenerateFlyoutGrouping();
+			var groups = shell.Controller.GenerateFlyoutGrouping();
 			Assert.AreEqual(groups.SelectMany(x => x.OfType<IMenuItemController>()).Count(), 0);
 		}
 
@@ -221,10 +219,93 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreNotSame(flyoutItems, flyoutItems2);
 		}
 
+		[Test]
+		public void FlyoutItemsBasicSyncTest()
+		{
+			var shell = new TestShell();
+			shell.Items.Add(CreateShellItem<FlyoutItem>());
+			shell.Items.Add(CreateShellItem<FlyoutItem>());
+			shell.Items.Add(CreateShellItem<FlyoutItem>());
+			shell.Items.Add(CreateShellItem<FlyoutItem>());
+			shell.Items[3].IsVisible = false;
+
+			var flyoutItems = shell.GenerateTestFlyoutItems();
+			Assert.AreEqual(shell.Items[0], flyoutItems[0][0]);
+			Assert.AreEqual(shell.Items[1], flyoutItems[0][1]);
+			Assert.AreEqual(shell.Items[2], flyoutItems[0][2]);
+			Assert.AreEqual(3, flyoutItems[0].Count);
+			Assert.AreEqual(1, flyoutItems.Count);
+		}
+
+		[Test]
+		public void FlyoutItemsGroupTest()
+		{
+			var shell = new TestShell();
+			shell.Items.Add(CreateShellItem<FlyoutItem>());
+			shell.Items.Add(CreateShellItem<FlyoutItem>());
+			var sec1 = shell.Items[0].Items[0];
+			var sec2 = CreateShellSection<Tab>();
+			var sec3 = CreateShellSection<Tab>();
+
+			shell.Items[0].FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems;
+			shell.Items[0].Items.Add(sec2);
+			shell.Items[0].Items.Add(sec3);
+
+			var flyoutItems = shell.GenerateTestFlyoutItems();
+			Assert.AreEqual(sec1, flyoutItems[0][0]);
+			Assert.AreEqual(sec2, flyoutItems[0][1]);
+			Assert.AreEqual(sec3, flyoutItems[0][2]);
+			Assert.AreEqual(shell.Items[1], flyoutItems[1][0]);
+		}
+
+		[Test]
+		public void FlyoutItemsGroupTestWithRemove()
+		{
+			var shell = new TestShell();
+			shell.Items.Add(CreateShellItem<FlyoutItem>());
+			shell.Items.Add(CreateShellItem<FlyoutItem>());
+			var sec1 = shell.Items[0].Items[0];
+			var sec2 = CreateShellSection<Tab>();
+			var sec3 = CreateShellSection<Tab>();
+
+			shell.Items[0].FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems;
+			shell.Items[0].Items.Add(sec2);
+			shell.Items[0].Items.Add(sec3);
+			shell.Items.RemoveAt(0);
+
+			var flyoutItems = shell.GenerateTestFlyoutItems();
+			Assert.AreEqual(shell.Items[0], flyoutItems[0][0]);
+			Assert.AreEqual(1, flyoutItems.Count);
+		}
+
+		[Test]
+		public void FlyoutItemsGroupTestMoveGroup()
+		{
+			var shell = new TestShell();
+			shell.Items.Add(CreateShellItem<FlyoutItem>());
+			shell.Items.Add(CreateShellItem<FlyoutItem>());
+			var sec1 = shell.Items[0].Items[0];
+			var sec2 = CreateShellSection<Tab>();
+			var sec3 = CreateShellSection<Tab>();
+
+			shell.Items[0].FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems;
+			shell.Items[0].Items.Add(sec2);
+			shell.Items[0].Items.Add(sec3);
+
+			var item1 = shell.Items[0];
+			shell.Items.RemoveAt(0);
+			shell.Items.Add(item1);
+			var flyoutItems = shell.GenerateTestFlyoutItems();
+			Assert.AreEqual(sec1, flyoutItems[1][0]);
+			Assert.AreEqual(sec2, flyoutItems[1][1]);
+			Assert.AreEqual(sec3, flyoutItems[1][2]);
+			Assert.AreEqual(shell.Items[0], flyoutItems[0][0]);
+		}
+
 		MenuItem CreateNonVisibleMenuItem()
 		{
 			MenuItem item = new MenuItem();
-			FlyoutItem.SetIsVisible(item, false);
+			Shell.SetFlyoutItemIsVisible(item, false);
 			return item;
 		}
 	}

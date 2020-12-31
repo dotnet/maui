@@ -52,8 +52,15 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					if (FlyoutHeaderTemplate == null)
 					{
-						FlyoutHeaderTemplate = new DataTemplate(() => new Label() { Text = "Header Template" });
-						FlyoutFooterTemplate = new DataTemplate(() => new Label() { Text = "Footer Template" });
+						FlyoutHeaderTemplate = new DataTemplate(() =>
+						{
+							return new Label() { Text = "Header Template" };
+						});
+
+						FlyoutFooterTemplate = new DataTemplate(() =>
+						{
+							return new Label() { Text = "Footer Template" };
+						});
 					}
 					else if (FlyoutHeaderTemplate != null)
 					{
@@ -76,8 +83,22 @@ namespace Xamarin.Forms.Controls.Issues
 					}
 					else
 					{
-						FlyoutHeader = new Label() { Text = "Header View" };
-						FlyoutFooter = new Label() { Text = "Footer View" };
+						FlyoutHeader = new StackLayout()
+						{
+							Children = {
+								new Label() { Text = "Header" }
+							},
+							AutomationId = "Header View"
+						};
+
+						FlyoutFooter = new StackLayout()
+						{
+							Orientation = StackOrientation.Horizontal,
+							Children = {
+								new Label() { Text = "Footer" }
+							},
+							AutomationId = "Footer View"
+						};
 					}
 				}),
 				AutomationId = "ToggleHeaderFooter"
@@ -129,52 +150,87 @@ namespace Xamarin.Forms.Controls.Issues
 				}),
 				AutomationId = "ResizeHeaderFooter"
 			});
+
+			if (Device.RuntimePlatform == Device.iOS)
+			{
+				Items.Add(new MenuItem()
+				{
+					Text = "Zero Margin Header Test",
+					Command = new Command(() =>
+					{
+						FlyoutHeader =
+							new StackLayout()
+							{
+								AutomationId = "ZeroMarginLayout",
+								Margin = 0,
+								Children =
+								{
+								new Label() { Text = "Header View" }
+								}
+							};
+
+						FlyoutHeaderTemplate = null;
+						FlyoutBehavior = FlyoutBehavior.Locked;
+					}),
+					AutomationId = "ZeroMarginHeader"
+				});
+			}
 		}
 
 
 #if UITEST
 
+#if __IOS__
+		[Test]
+		public void FlyoutHeaderWithZeroMarginShouldHaveNoY()
+		{
+			RunningApp.WaitForElement("PageLoaded");
+			this.TapInFlyout("ZeroMarginHeader", makeSureFlyoutStaysOpen: true);
+			var layout = RunningApp.WaitForElement("ZeroMarginLayout")[0].Rect.Y;
+			Assert.AreEqual(0, layout);
+		}
+#endif
+
 		[Test]
 		public void FlyoutTests()
 		{
 			RunningApp.WaitForElement("PageLoaded");
-			ShowFlyout();
 
 			// Verify Header an Footer show up at all
-			OpenFlyout("ToggleHeaderFooter");
+			TapInFlyout("ToggleHeaderFooter", makeSureFlyoutStaysOpen: true);
 			RunningApp.WaitForElement("Header View");
 			RunningApp.WaitForElement("Footer View");
 
 			// Verify Template takes priority over header footer
-			OpenFlyout("ToggleHeaderFooterTemplate");
+			TapInFlyout("ToggleHeaderFooterTemplate", makeSureFlyoutStaysOpen: true);
 			RunningApp.WaitForElement("Header Template");
 			RunningApp.WaitForElement("Footer Template");
 			RunningApp.WaitForNoElement("Header View");
 			RunningApp.WaitForNoElement("Footer View");
 
 			// Verify turning off Template shows Views again
-			OpenFlyout("ToggleHeaderFooterTemplate");
+			TapInFlyout("ToggleHeaderFooterTemplate", makeSureFlyoutStaysOpen: true);
 			RunningApp.WaitForElement("Header View");
 			RunningApp.WaitForElement("Footer View");
 			RunningApp.WaitForNoElement("Header Template");
 			RunningApp.WaitForNoElement("Footer Template");
 
 			// Verify turning off header/footer clear out views correctly
-			OpenFlyout("ToggleHeaderFooter");
+			TapInFlyout("ToggleHeaderFooter", makeSureFlyoutStaysOpen: true);
 			RunningApp.WaitForNoElement("Header Template");
 			RunningApp.WaitForNoElement("Footer Template");
 			RunningApp.WaitForNoElement("Header View");
 			RunningApp.WaitForNoElement("Footer View");
 
 			// verify header and footer react to size changes
-			OpenFlyout("ResizeHeaderFooter");
+			TapInFlyout("ResizeHeaderFooter", makeSureFlyoutStaysOpen: true);
 			var headerSizeSmall = RunningApp.WaitForElement("Header View")[0].Rect;
 			var footerSizeSmall = RunningApp.WaitForElement("Footer View")[0].Rect;
-			OpenFlyout("ResizeHeaderFooter");
+			TapInFlyout("ResizeHeaderFooter", makeSureFlyoutStaysOpen: true);
 			var headerSizeLarge = RunningApp.WaitForElement("Header View")[0].Rect;
 			var footerSizeLarge = RunningApp.WaitForElement("Footer View")[0].Rect;
 
-			OpenFlyout("ResizeHeaderFooter");
+			TapInFlyout("ResizeHeaderFooter", makeSureFlyoutStaysOpen: true);
 			var headerSizeSmall2 = RunningApp.WaitForElement("Header View")[0].Rect;
 			var footerSizeSmall2 = RunningApp.WaitForElement("Footer View")[0].Rect;
 
@@ -183,19 +239,6 @@ namespace Xamarin.Forms.Controls.Issues
 			Assert.AreEqual(headerSizeSmall2.Height, headerSizeSmall.Height);
 			Assert.AreEqual(footerSizeSmall2.Height, footerSizeSmall.Height);
 		}
-
-		void OpenFlyout(string text)
-		{
-			RunningApp.Tap(text);
-
-#if __WINDOWS__
-			// UWP closes the flyout after selecting an item
-			System.Threading.Thread.Sleep(1000);
-			ShowFlyout();
-#endif
-		}
-
-
 #endif
 	}
 }
