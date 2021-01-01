@@ -247,7 +247,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			SetupAutomationDefaults();
 
-			if(includeHint)
+			if (includeHint)
 				AutomationPropertiesProvider.SetContentDescription(
 					ControlUsedForAutomation, Element, _defaultContentDescription, _defaultHint);
 			else

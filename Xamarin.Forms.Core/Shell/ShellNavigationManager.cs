@@ -274,12 +274,12 @@ namespace Xamarin.Forms
 		// If the user defers this type of navigation we generate the equivalent GotoAsync call
 		// so when the deferral is completed the same navigation can complete
 		public bool ProposeNavigationOutsideGotoAsync(
-			ShellNavigationSource source, 
-			ShellItem shellItem, 
-			ShellSection shellSection, 
-			ShellContent shellContent, 
-			IReadOnlyList<Page> stack, 
-			bool canCancel, 
+			ShellNavigationSource source,
+			ShellItem shellItem,
+			ShellSection shellSection,
+			ShellContent shellContent,
+			IReadOnlyList<Page> stack,
+			bool canCancel,
 			bool isAnimated)
 		{
 			if (_accumulateNavigatedEvents)
@@ -310,9 +310,9 @@ namespace Xamarin.Forms
 		}
 
 		ShellNavigatingEventArgs ProposeNavigation(
-			ShellNavigationSource source, 
-			ShellNavigationState proposedState, 
-			bool canCancel, 
+			ShellNavigationSource source,
+			ShellNavigationState proposedState,
+			bool canCancel,
 			bool isAnimated)
 		{
 			if (_accumulateNavigatedEvents)
