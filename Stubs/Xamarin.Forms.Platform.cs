@@ -163,7 +163,11 @@ namespace Xamarin.Forms.Platform
 
 
 
-#if !__IOS__
+#if __ANDROID__
+	// current previewer doesn't work with appcompat so this renderer is here for the previewer only
+	// once previewer switches to appcompat then we can remove this
+	[RenderWith(typeof(FlyoutPageRendererNonAppCompat))]
+#elif !__IOS__
 	[RenderWith(typeof(FlyoutPageRenderer))]
 #else
 	[RenderWith (typeof (PhoneFlyoutPageRenderer))]
