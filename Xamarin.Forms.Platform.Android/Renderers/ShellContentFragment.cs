@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Platform.Android
 		public event EventHandler AnimationFinished;
 
 		public Fragment Fragment => this;
-
+				
 		public override AndroidAnimation OnCreateAnimation(int transit, bool enter, int nextAnim)
 		{
 			var result = base.OnCreateAnimation(transit, enter, nextAnim);
@@ -82,7 +82,10 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			if (result == null)
+			{
+				AnimationFinished?.Invoke(this, EventArgs.Empty);
 				return result;
+			}
 
 			// we only want to use a hardware layer for the entering view because its quite likely
 			// the view exiting is animating a button press of some sort. This means lots of GPU

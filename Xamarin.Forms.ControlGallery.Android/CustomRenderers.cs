@@ -52,6 +52,8 @@ using IOPath = System.IO.Path;
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Tests.TestClasses.CustomButton), typeof(CustomButtonRenderer))]
 [assembly: ExportRenderer(typeof(ScrolView11185), typeof(ScrollViewFadeRenderer))]
 
+[assembly: ExportRenderer(typeof(ShellWithCustomRendererDisabledAnimations), typeof(ShellWithCustomRendererDisabledAnimationsRenderer))]
+
 #if PRE_APPLICATION_CLASS
 #elif FORMS_APPLICATION_ACTIVITY
 #else
@@ -59,6 +61,30 @@ using IOPath = System.IO.Path;
 #endif
 namespace Xamarin.Forms.ControlGallery.Android
 {
+	public class ShellWithCustomRendererDisabledAnimationsRenderer : ShellRenderer
+	{
+		public ShellWithCustomRendererDisabledAnimationsRenderer(Context context) : base(context)
+		{
+		}
+
+		protected override IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
+		{
+			return new ShellWithCustomRendererDisabledAnimationsShellItemRenderer(this);
+		}
+
+		public class ShellWithCustomRendererDisabledAnimationsShellItemRenderer : ShellItemRenderer
+		{
+			public ShellWithCustomRendererDisabledAnimationsShellItemRenderer(IShellContext shellContext) : base(shellContext)
+			{
+			}
+
+			protected override void SetupAnimation(ShellNavigationSource navSource, AndroidX.Fragment.App.FragmentTransaction t, Page page)
+			{
+				// Don't setup any animations
+			}
+		}
+	}
+
 	public sealed class ScrollViewFadeRenderer : ScrollViewRenderer
 	{
 		public ScrollViewFadeRenderer(Context context) : base(context)

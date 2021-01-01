@@ -53,12 +53,15 @@ namespace Xamarin.Forms
 			{
 				var navigatingArgs = ProposeNavigation(source, state, _shell.CurrentState != null, animate ?? true);
 
-				bool accept = !navigatingArgs.NavigationDelayedOrCancelled;
-				if (navigatingArgs.DeferredTask != null)
-					accept = await navigatingArgs.DeferredTask;
+				if (navigatingArgs != null)
+				{
+					bool accept = !navigatingArgs.NavigationDelayedOrCancelled;
+					if (navigatingArgs.DeferredTask != null)
+						accept = await navigatingArgs.DeferredTask;
 
-				if (!accept)
-					return;
+					if (!accept)
+						return;
+				}
 			}
 
 			Routing.RegisterImplicitPageRoutes(_shell);
