@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Platform.Android
 		public event EventHandler AnimationFinished;
 
 		public Fragment Fragment => this;
-				
+
 		public override AndroidAnimation OnCreateAnimation(int transit, bool enter, int nextAnim)
 		{
 			var result = base.OnCreateAnimation(transit, enter, nextAnim);

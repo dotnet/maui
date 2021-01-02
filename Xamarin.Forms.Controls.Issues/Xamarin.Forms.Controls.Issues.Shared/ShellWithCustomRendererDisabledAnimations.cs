@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 					new Button()
 					{
 						Text = "Go Back",
-						Command	= new Command(async () =>
+						Command = new Command(async () =>
 						{
 							await GoToAsync("..");
 						}),
@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Controls.Issues
 			return page;
 		}
 
-#if UITEST  && __ANDROID__
+#if UITEST && __ANDROID__
 		[Test]
 		public void NavigationWithACustomRendererThatDoesntSetAnAnimationStillWorks()
 		{
