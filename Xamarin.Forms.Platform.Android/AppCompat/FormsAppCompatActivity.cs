@@ -123,9 +123,6 @@ namespace Xamarin.Forms.Platform.Android
 			RegisterHandler(typeof(Picker), typeof(AppCompat.PickerRenderer), typeof(PickerRenderer));
 			RegisterHandler(typeof(CarouselPage), typeof(AppCompat.CarouselPageRenderer), typeof(CarouselPageRenderer));
 			RegisterHandler(typeof(FlyoutPage), typeof(FlyoutPageRenderer), typeof(FlyoutPageRendererNonAppCompat));
-#pragma warning disable CS0618 // Type or member is obsolete
-			RegisterHandler(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer), typeof(MasterDetailRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (Forms.Flags.Contains(Flags.UseLegacyRenderers))
 			{
