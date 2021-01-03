@@ -82,7 +82,10 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			if (result == null)
+			{
+				AnimationFinished?.Invoke(this, EventArgs.Empty);
 				return result;
+			}
 
 			// we only want to use a hardware layer for the entering view because its quite likely
 			// the view exiting is animating a button press of some sort. This means lots of GPU

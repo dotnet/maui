@@ -58,13 +58,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var contentDescriptionLabel = new Label();
 			contentDescriptionLabel.AutomationId = $"{labelPrefix}-contentDescriptionLabel";
-			
+
 			var nameAndHelpTextLabel = new Label();
 			nameAndHelpTextLabel.AutomationId = $"{labelPrefix}-nameAndHelpTextLabel";
 
 			view.AutomationId = automationId;
 			view.Effects.Add(new ContentDescriptionEffect());
-			view.PropertyChanged += (object sender, PropertyChangedEventArgs e) => {
+			view.PropertyChanged += (object sender, PropertyChangedEventArgs e) =>
+			{
 				if (e.PropertyName == ContentDescriptionEffectProperties.ContentDescriptionProperty.PropertyName)
 				{
 					contentDescriptionLabel.Text = $"ContentDescription = {ContentDescriptionEffectProperties.GetContentDescription(view)}";
@@ -108,7 +109,7 @@ namespace Xamarin.Forms.Controls.Issues
 			AddButton(layout, "button1prop", "button1", "Button 1", "Name 1");
 			AddButton(layout, "button2prop", "button2", "Button 2", buttonHelp: "Help 2.");
 			AddButton(layout, "button3prop", "button3", "Button 3", "Name 3", "Help 3.");
-			AddButton(layout, "button4prop", "button4", null , buttonHelp: "Help 4.");
+			AddButton(layout, "button4prop", "button4", null, buttonHelp: "Help 4.");
 
 			AddView(layout, new Switch(), "switch1prop", "switch1", "Switch 1 Name", "Switch Help 1.");
 

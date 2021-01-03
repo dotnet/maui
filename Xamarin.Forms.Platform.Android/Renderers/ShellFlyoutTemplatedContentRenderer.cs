@@ -266,7 +266,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (_footerView.NativeView.LayoutParameters is CoordinatorLayout.LayoutParams cl)
 				cl.Gravity = (int)(GravityFlags.Bottom | GravityFlags.End);
-			
+
 			UpdateFooterLayout();
 			UpdateContentLayout();
 			UpdateContentBottomMargin();
