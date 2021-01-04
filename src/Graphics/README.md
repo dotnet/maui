@@ -16,7 +16,7 @@ This is an experimental library; however it's based on code that's been in use i
 # Disclaimer
 There is no official support. Use at your own Risk.
 
-# Support Platforms
+# Supported Platforms
 Platform               | Supported Abstractions |
 -----------------------|-------------------------------------------|
 Xamarin.iOS            | CoreGraphics & SkiaSharp | 
