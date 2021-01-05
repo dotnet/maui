@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewGroupTypeIssue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11214.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue13109.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RadioButtonTemplateFromStyle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellWithCustomRendererDisabledAnimations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4720.cs" />

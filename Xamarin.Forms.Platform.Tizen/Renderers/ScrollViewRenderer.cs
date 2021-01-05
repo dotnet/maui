@@ -16,9 +16,9 @@ namespace Xamarin.Forms.Platform.Tizen
 		int _defaultVerticalStepSize;
 		int _defaultHorizontalStepSize;
 
-		EvasFormsCanvas EvasFormsCanvas => _scrollCanvas as EvasFormsCanvas;
+		EvasBox EvasFormsCanvas => _scrollCanvas as EvasBox;
 
-		Canvas Canvas => _scrollCanvas as Canvas;
+		NBox Canvas => _scrollCanvas as NBox;
 
 		public ScrollViewRenderer()
 		{
