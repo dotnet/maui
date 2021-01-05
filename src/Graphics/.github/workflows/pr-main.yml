@@ -1,0 +1,25 @@
+name: Build
+
+on: [pull_request]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+              
+    - name: Install NuGet
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: '5.x'
+            
+    - name: NuGet Restore
+      run: nuget restore build/Build.System.Graphics.Mac.sln
+    
+    - name: Build
+      run: msbuild build/Build.System.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+  
+      

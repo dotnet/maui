@@ -2,9 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [ release/github-packages ]
 
 jobs:
   build:
