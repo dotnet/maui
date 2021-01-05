@@ -22,7 +22,7 @@ jobs:
       uses: roryprimrose/set-vs-sdk-project-version@v1
       with:
         projectFilter: 'src/*/*.csproj'
-        version: '0.1.${{ github.run_id }}'              
+        version: '0.1.${{ github.run_number }}'              
               
     - name: NuGet Restore
       run: nuget restore build/Build.System.Graphics.Mac.sln
@@ -31,19 +31,19 @@ jobs:
       run: msbuild build/Build.System.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
     
     - name: NuGet Pack
-      run: nuget pack build/System.Graphics.nuspec -Version 0.1.${{ github.run_id }} -OutputDirectory . -BasePath .
+      run: nuget pack build/System.Graphics.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/System.Graphics.Skia.nuspec -Version 0.1.${{ github.run_id }} -OutputDirectory . -BasePath .
+      run: nuget pack build/System.Graphics.Skia.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/System.Graphics.Forms.nuspec -Version 0.1.${{ github.run_id }} -OutputDirectory . -BasePath .
+      run: nuget pack build/System.Graphics.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/System.Graphics.Skia.Forms.nuspec -Version 0.1.${{ github.run_id }} -OutputDirectory . -BasePath .
+      run: nuget pack build/System.Graphics.Skia.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/System.Graphics.Text.Markdig.nuspec -Version 0.1.${{ github.run_id }} -OutputDirectory . -BasePath .
+      run: nuget pack build/System.Graphics.Text.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: Install GPR
       run: dotnet tool install -g gpr --no-cache -v q
