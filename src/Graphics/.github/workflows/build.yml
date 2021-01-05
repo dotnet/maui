@@ -33,11 +33,20 @@ jobs:
       run: msbuild build/Build.System.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
     
     - name: NuGet Pack
-      run: nuget pack build/System.Graphics.nuspec -Suffix alpha -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/System.Graphics.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/System.Graphics.Skia.nuspec -Suffix alpha -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
-      
+      run: nuget pack build/System.Graphics.Skia.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/System.Graphics.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/System.Graphics.Skia.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/System.Graphics.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
     - name: Install GPR
       run: dotnet tool install -g gpr --no-cache -v q
       

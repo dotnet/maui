@@ -3,15 +3,15 @@
   <metadata>
     <id>System.Graphics.Skia</id>
     <version>$version$</version>
-    <title>System.Graphics</title>
+    <title>System.Graphics.Skia</title>
     <authors>Jon Lipsky</authors>
     <owners>jonlipsky</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Skia Implementation for System.Graphics</description>
     <summary>This allows you to use Skia as a System.Graphics target.</summary>
     <copyright>Jon Lipsky</copyright>
-    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
+    <projectUrl>https://github.com/jonlipsky/System.Graphics.Skia</projectUrl>
+    <repository type="git" url="https://github.com/jonlipsky/System.Graphics.Skia"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
