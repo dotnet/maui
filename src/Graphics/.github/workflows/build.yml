@@ -36,7 +36,7 @@ jobs:
       run: nuget pack build/System.Graphics.nuspec -Suffix alpha -Version 0.1.${{ github.run_number }} -OutputDirectory .
 
     - name: NuGet Pack
-      run: nuget pack build/System.Graphics.Skia.nuspec -Suffix alpha -Version 0.1.${{ github.run_number }} -OutputDirectory .
+      run: nuget pack build/System.Graphics.Skia.nuspec -Suffix alpha -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
       
     - name: Install GPR
       run: dotnet tool install -g gpr --no-cache -v q
