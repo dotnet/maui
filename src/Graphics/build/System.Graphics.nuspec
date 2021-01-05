@@ -22,11 +22,11 @@
     <file src="src/System.Graphics/bin/Release/netstandard2.0/System.Graphics.pdb" target="lib/netstandard2.0/System.Graphics.pdb"/>
     <file src="src/System.Graphics/bin/Release/netstandard2.1/System.Graphics.dll" target="lib/netstandard2.1/System.Graphics.dll"/>
     <file src="src/System.Graphics/bin/Release/netstandard2.1/System.Graphics.pdb" target="lib/netstandard2.1/System.Graphics.pdb"/>
-    <file src="src/System.Graphics.iOS/bin/Release/System.Graphics.dll" target="lib/xamarinios10/System.Graphics.dll"/>
-    <file src="src/System.Graphics.iOS/bin/Release/System.Graphics.pdb" target="lib/xamarinios10/System.Graphics.pdb"/>
-    <file src="src/System.Graphics.Android/bin/Release/System.Graphics.dll" target="lib/monoandroid81/System.Graphics.dll"/>
-    <file src="src/System.Graphics.Android/bin/Release/System.Graphics.pdb" target="lib/monoandroid81/System.Graphics.pdb"/>
-    <file src="src/System.Graphics.Mac/bin/Release/System.Graphics.dll" target="lib/Xamarin.Mac20/System.Graphics.dll"/>
-    <file src="src/System.Graphics.Mac/bin/Release/System.Graphics.pdb" target="lib/Xamarin.Mac20/System.Graphics.pdb"/>
+    <file src="src/System.Graphics/bin/Release/System.Graphics.dll" target="lib/xamarinios10/System.Graphics.dll"/>
+    <file src="src/System.Graphics/bin/Release/System.Graphics.pdb" target="lib/xamarinios10/System.Graphics.pdb"/>
+    <file src="src/System.Graphics/bin/Release/System.Graphics.dll" target="lib/monoandroid81/System.Graphics.dll"/>
+    <file src="src/System.Graphics/bin/Release/System.Graphics.pdb" target="lib/monoandroid81/System.Graphics.pdb"/>
+    <file src="src/System.Graphics/bin/Release/System.Graphics.dll" target="lib/Xamarin.Mac20/System.Graphics.dll"/>
+    <file src="src/System.Graphics/bin/Release/System.Graphics.pdb" target="lib/Xamarin.Mac20/System.Graphics.pdb"/>
   </files>
 </package>

@@ -30,7 +30,7 @@
     <file src="src/System.Graphics.Skia/bin/Release/xamarinios10/System.Graphics.Skia.dll" target="lib/xamarinios10/System.Graphics.Skia.dll"/>
     <file src="src/System.Graphics.Skia/bin/Release/xamarinios10/System.Graphics.Skia.pdb" target="lib/xamarinios10/System.Graphics.Skia.pdb"/>
     <file src="src/System.Graphics.Skia/bin/Release/System.Graphics.Skia.dll" target="lib/xamarinios10/System.Graphics.Skia.dll"/>
-    <file src="src/System.Graphics.Skia./bin/Release/System.Graphics.Skia.pdb" target="lib/xamarinios10/System.Graphics.Skia.pdb"/>
+    <file src="src/System.Graphics.Skia/bin/Release/System.Graphics.Skia.pdb" target="lib/xamarinios10/System.Graphics.Skia.pdb"/>
     <file src="src/System.Graphics.Skia/bin/Release/System.Graphics.Skia.dll" target="lib/monoandroid81/System.Graphics.Skia.dll"/>
     <file src="src/System.Graphics.Skia/bin/Release/System.Graphics.Skia.pdb" target="lib/monoandroid81/System.Graphics.Skia.pdb"/>
     <file src="src/System.Graphics.Skia/bin/Release/Xamarin.Mac20/System.Graphics.Skia.dll" target="lib/Xamarin.Mac20/System.Graphics.Skia.dll"/>
