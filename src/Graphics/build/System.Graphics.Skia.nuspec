@@ -10,8 +10,8 @@
     <description>Skia Implementation for System.Graphics</description>
     <summary>This allows you to use Skia as a System.Graphics target.</summary>
     <copyright>Jon Lipsky</copyright>
-    <projectUrl>https://github.com/jonlipsky/System.Graphics.Skia</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics.Skia"/>
+    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>

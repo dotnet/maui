@@ -10,8 +10,8 @@
     <description>System.Graphics support for Xamarin.Forms</description>
     <summary>This allows you to use System.Graphics within Xamarin.Forms.</summary>
     <copyright>Jon Lipsky</copyright>
-    <projectUrl>https://github.com/jonlipsky/System.Graphics.Forms</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics.Forms"/>
+    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>

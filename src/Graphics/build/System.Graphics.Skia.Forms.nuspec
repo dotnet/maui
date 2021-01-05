@@ -10,8 +10,8 @@
     <description>Support for System.Graphics using Skia on Xamarin.Forms</description>
     <summary>This allows you to use Skia as a System.Graphics target in Xamarin.Forms.</summary>
     <copyright>Jon Lipsky</copyright>
-    <projectUrl>https://github.com/jonlipsky/System.Graphics.Skia.Forms</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics.Skia.Forms"/>
+    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>

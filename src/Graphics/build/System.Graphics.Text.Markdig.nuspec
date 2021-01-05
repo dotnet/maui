@@ -11,7 +11,7 @@
     <summary>Markdown support for System.Graphics attributed text powered by Markdig</summary>
     <copyright>Jon Lipsky</copyright>
     <projectUrl>https://github.com/jonlipsky/System.Graphics.Text.Markdig</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics.Text.Markdig"/>
+    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
