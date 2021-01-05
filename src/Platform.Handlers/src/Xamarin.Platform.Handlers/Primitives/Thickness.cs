@@ -95,5 +95,7 @@ namespace Xamarin.Forms
 			right = Right;
 			bottom = Bottom;
 		}
+
+		public static Thickness Zero = new Thickness(0);
 	}
 }

@@ -13,10 +13,11 @@ namespace Sample
 
 		public IView CreateView()
 		{
-			var verticalStack = new Xamarin.Platform.VerticalStackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
-			var horizontalStack = new Xamarin.Platform.HorizontalStackLayout() { Spacing = 2 };
+			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
+			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
 
-			var label = new Label { Text = "This top part is a Xamarin.Platform.VerticalStackLayout" };
+			var label = new Label { Text = "This should have a margin", BackgroundColor = Color.Fuchsia };
+			label.Margin = new Thickness(15, 10, 20, 15);
 
 			verticalStack.Add(label);
 
@@ -25,7 +26,8 @@ namespace Sample
 			{
 				Color = Color.Green,
 				Text = "Hello I'm a button",
-				BackgroundColor = Color.Purple
+				BackgroundColor = Color.Purple,
+				Margin = new Thickness(12)
 			};
 
 			horizontalStack.Add(button);

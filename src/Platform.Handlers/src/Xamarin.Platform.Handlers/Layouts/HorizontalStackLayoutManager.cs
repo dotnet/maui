@@ -12,11 +12,6 @@ namespace Xamarin.Platform.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			if (Stack.IsMeasureValid)
-			{
-				return Stack.DesiredSize;
-			}
-
 			var heightMeasureConstraint = ResolveConstraints(heightConstraint, Stack.Height);
 
 			var measure = Measure(heightMeasureConstraint, Stack.Spacing, Stack.Children);
@@ -26,7 +21,7 @@ namespace Xamarin.Platform.Layouts
 			return new Size(finalWidth, measure.Height);
 		}
 
-		public override void Arrange(Rectangle bounds) => Arrange(bounds.Height, Stack.Spacing, Stack.Children);
+		public override void Arrange(Rectangle bounds) => Arrange(Stack.Spacing, Stack.Children);
 
 		static Size Measure(double heightConstraint, int spacing, IReadOnlyList<IView> views)
 		{
@@ -35,11 +30,8 @@ namespace Xamarin.Platform.Layouts
 
 			foreach (var child in views)
 			{
-				// TODO check child.IsVisible
-
 				var measure = child.IsMeasureValid ? child.DesiredSize : child.Measure(double.PositiveInfinity, heightConstraint);
 				totalRequestedWidth += measure.Width;
-
 				requestedHeight = Math.Max(requestedHeight, measure.Height);
 			}
 
@@ -49,13 +41,13 @@ namespace Xamarin.Platform.Layouts
 			return new Size(totalRequestedWidth, requestedHeight);
 		}
 
-		static void Arrange(double heightConstraint, int spacing, IEnumerable<IView> views)
+		static void Arrange(int spacing, IEnumerable<IView> views)
 		{
 			double stackWidth = 0;
 
 			foreach (var child in views)
 			{
-				var destination = new Rectangle(stackWidth, 0, child.DesiredSize.Width, heightConstraint);
+				var destination = new Rectangle(stackWidth, 0, child.DesiredSize.Width, child.DesiredSize.Height);
 				child.Arrange(destination);
 
 				stackWidth += destination.Width + spacing;
