@@ -1,4 +1,4 @@
-name: Build
+name: Build and Release to GitHub Packages
 
 on:
   push:
