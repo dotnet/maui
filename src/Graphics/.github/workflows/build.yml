@@ -45,7 +45,7 @@ jobs:
       run: nuget pack build/System.Graphics.Skia.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/System.Graphics.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/System.Graphics.Text.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: Install GPR
       run: dotnet tool install -g gpr --no-cache -v q
