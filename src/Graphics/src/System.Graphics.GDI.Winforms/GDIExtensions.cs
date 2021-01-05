@@ -10,12 +10,12 @@ namespace System.Graphics.GDI
             return new Drawing.RectangleF(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
         }
 
-        public static RectangleF AsEWRectangle(this Drawing.RectangleF target)
+        public static RectangleF AsRectangleF(this Drawing.RectangleF target)
         {
             return new RectangleF(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
         }
 
-        public static RectangleF AsEWRectangle(this Rectangle target)
+        public static RectangleF AsRectangleF(this Rectangle target)
         {
             return new RectangleF(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
         }
@@ -25,7 +25,7 @@ namespace System.Graphics.GDI
             return new Drawing.SizeF(target.Width, target.Height);
         }
 
-        public static SizeF AsEWSize(this Drawing.SizeF target)
+        public static SizeF AsSizeF(this Drawing.SizeF target)
         {
             return new SizeF(target.Width, target.Height);
         }

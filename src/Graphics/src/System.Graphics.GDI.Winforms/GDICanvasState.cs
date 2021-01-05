@@ -293,7 +293,7 @@ namespace System.Graphics.GDI
             Matrix = Matrix3x2.Identity;
 
             IsShadowed = false;
-            sourceShadowColor = EWCanvas.DEFAULT_SHADOW_COLOR;
+            sourceShadowColor = Canvas.DefaultShadowColor;
 
             alpha = 1;
 

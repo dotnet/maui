@@ -22,13 +22,13 @@ namespace System.Graphics.Xaml
             return new SolidColorBrush(target.AsColor());
         }
 
-        public static PointF AsEWPoint(this PointerPoint target)
+        public static PointF AsPointF(this PointerPoint target)
         {
             var position = target.Position;
             return new PointF((float)position.X, (float)position.Y);
         }
 
-        public static PointF AsEWPoint(this Point target)
+        public static PointF AsPointF(this Point target)
         {
             return new PointF((float)target.X, (float)target.Y);
         }

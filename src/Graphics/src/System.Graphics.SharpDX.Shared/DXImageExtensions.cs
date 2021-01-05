@@ -23,7 +23,7 @@ namespace System.Graphics.SharpDX
             if (image != null)
             {
                 Logger.Warn(
-                    "DXImageExtensions.AsBitmap: Unable to get Bitmap from EWImage. Expected an image of type DXImage however an image of type {0} was received.",
+                    "DXImageExtensions.AsBitmap: Unable to get Bitmap from Image. Expected an image of type DXImage however an image of type {0} was received.",
                     image.GetType());
             }
 

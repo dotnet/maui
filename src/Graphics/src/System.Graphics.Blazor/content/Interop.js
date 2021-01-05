@@ -1,4 +1,4 @@
-﻿window.EWGraphicsInterop = {
+﻿window.JavascriptInterop = {
     SetupCanvas: function (id)
     {
         var canvas = document.getElementById(id);

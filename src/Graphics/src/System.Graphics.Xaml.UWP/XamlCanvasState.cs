@@ -85,7 +85,7 @@ namespace System.Graphics.Xaml
 						return brush;
 					}
 
-					/*if (fillPaint.PaintType == EWPaintType.RADIAL_GRADIENT)
+					/*if (fillPaint.PaintType == PaintType.RadialGraident)
 					{
 						var brush = new RadialGradientBrush();
 						brush.MappingMode = BrushMappingMode.Absolute;

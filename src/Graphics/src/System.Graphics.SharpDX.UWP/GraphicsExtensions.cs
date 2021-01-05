@@ -6,7 +6,7 @@ namespace System.Graphics.SharpDX
 {
     public static class GraphicsExtensions
     {
-        public static PointF AsEWPoint(this PointerPoint point, float scale = 1)
+        public static PointF AsPointF(this PointerPoint point, float scale = 1)
         {
             var position = point.Position;
             return new PointF((float)position.X * scale, (float)position.Y * scale);

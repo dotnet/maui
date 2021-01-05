@@ -495,7 +495,7 @@ namespace System.Graphics.GDI
                 return;
             }
 
-/*            if (paint.PaintType == EWPaintType.LINEAR_GRADIENT)
+/*            if (paint.PaintType == PaintType.LinearGradient)
             {
                 point1.X = x1;
                 point1.Y = y1;

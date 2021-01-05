@@ -97,12 +97,13 @@ namespace System.Graphics.Skia
 
         public void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
         {
+            throw new NotImplementedException();
             // todo: implement me
 
             /*    
          switch (format)
          {
-            case EWImageFormat.Jpeg:
+            case ImageFormat.Jpeg:
                image.Compress (Bitmap.CompressFormat.Jpeg, (int)(quality * 100), stream);
                break;
             default:
@@ -112,14 +113,15 @@ namespace System.Graphics.Skia
             */
         }
 
-        public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
+        public Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
         {
+            throw new NotImplementedException();
             // todo: implement me
 
             /*
          switch (format)
          {
-            case EWImageFormat.Jpeg:
+            case ImageFormat.Jpeg:
                await image.CompressAsync (Bitmap.CompressFormat.Jpeg, (int)(quality * 100), stream);
                break;
             default:
@@ -149,7 +151,7 @@ namespace System.Graphics.Skia
                 return skiaImage.NativeImage;
 
             if (image != null)
-                Logger.Warn("SkiaImageExtensions.AsBitmap: Unable to get SKBitmap from EWImage. Expected an image of type SkiaImage however an image of type {0} was received.", image.GetType());
+                Logger.Warn("SkiaImageExtensions.AsBitmap: Unable to get SKBitmap from Image. Expected an image of type SkiaImage however an image of type {0} was received.", image.GetType());
 
             return null;
         }

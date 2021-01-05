@@ -10,7 +10,7 @@ namespace System.Graphics.Blazor
             string id)
         {
             return runtime.InvokeAsync<float>(
-                "EWGraphicsInterop.SetupCanvas",
+                "SystemDrawingInterop.SetupCanvas",
                 id );
         }
         
@@ -31,7 +31,7 @@ namespace System.Graphics.Blazor
             float y)
         {
             return runtime.InvokeAsync<bool>(
-                "EWGraphicsInterop.PointIsInPath",
+                "SystemDrawingInterop.PointIsInPath",
                 path,
                 x,
                 y);

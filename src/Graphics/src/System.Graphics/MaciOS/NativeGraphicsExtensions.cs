@@ -310,7 +310,7 @@ namespace System.Graphics.CoreGraphics
             return new CGSize(target.Width, target.Height);
         }
 
-        public static PointF AsEWPoint(this CGPoint target)
+        public static PointF AsPointF(this CGPoint target)
         {
             return new PointF((float) target.X, (float) target.Y);
         }
@@ -328,19 +328,19 @@ namespace System.Graphics.CoreGraphics
             {
                 if (element.Type == CGPathElementType.MoveToPoint)
                 {
-                    _path.MoveTo(element.Point1.AsEWPoint());
+                    _path.MoveTo(element.Point1.AsPointF());
                 }
                 else if (element.Type == CGPathElementType.AddLineToPoint)
                 {
-                    _path.LineTo(element.Point1.AsEWPoint());
+                    _path.LineTo(element.Point1.AsPointF());
                 }
                 else if (element.Type == CGPathElementType.AddQuadCurveToPoint)
                 {
-                    _path.QuadTo(element.Point1.AsEWPoint(), element.Point2.AsEWPoint());
+                    _path.QuadTo(element.Point1.AsPointF(), element.Point2.AsPointF());
                 }
                 else if (element.Type == CGPathElementType.AddCurveToPoint)
                 {
-                    _path.CurveTo(element.Point1.AsEWPoint(), element.Point2.AsEWPoint(), element.Point3.AsEWPoint());
+                    _path.CurveTo(element.Point1.AsPointF(), element.Point2.AsPointF(), element.Point3.AsPointF());
                 }
                 else if (element.Type == CGPathElementType.CloseSubpath)
                 {
