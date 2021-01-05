@@ -16,8 +16,8 @@ jobs:
       uses: actions/checkout@v2
               
     - name: Restore dependencies
-      run: dotnet restore System.Graphics.Mac.sln
+      run: dotnet restore Build.System.Graphics.Mac.sln
     
     - name: Build
-      run: msbuild System.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+      run: msbuild Build.System.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
     
