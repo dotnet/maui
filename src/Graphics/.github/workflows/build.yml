@@ -15,9 +15,34 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v2
               
-    - name: Restore dependencies
-      run: dotnet restore build/Build.System.Graphics.Mac.sln
+    - name: Install NuGet
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: '5.x'
+              
+    - name: Update project version
+      uses: roryprimrose/set-vs-sdk-project-version@v1
+      with:
+        projectFilter: 'src/*/*.csproj'
+        version: '0.1.${{ github.run_number }}'              
+              
+    - name: NuGet Restore
+      run: nuget restore build/Build.System.Graphics.Mac.sln
     
     - name: Build
       run: msbuild build/Build.System.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
     
+    - name: NuGet Pack
+      run: nuget pack build/System.Graphics.nuspec -Suffix alpha -Version 0.1.${{ github.run_number }} -OutputDirectory .
+
+    - name: NuGet Pack
+      run: nuget pack build/System.Graphics.Skia.nuspec -Suffix alpha -Version 0.1.${{ github.run_number }} -OutputDirectory .
+      
+    - name: Install GPR
+      run: dotnet tool install -g gpr --no-cache -v q
+      
+    - name: Publish package to GitHub registry
+      run: gpr push *.nupkg --api-key ${{ github.token }}   
+      working-directory: .    
+      
+      
