@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>System.Graphics.Skia</id>
+    <version>$version$</version>
+    <title>System.Graphics</title>
+    <authors>Jon Lipsky</authors>
+    <owners>jonlipsky</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Skia Implementation for System.Graphics</description>
+    <summary>This allows you to use Skia as a System.Graphics target.</summary>
+    <copyright>Jon Lipsky</copyright>
+    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
+    <license type="expression">MIT</license>
+    <language>C#</language>
+    <dependencies>
+      <group>
+        <dependency id="System.Graphics" version="$version$"/>
+        <dependency id="SkiaSharp" version="2.80.2"/>
+        <dependency id="SkiaSharp.Views" version="2.80.2"/>
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="src/System.Graphics.Skia/bin/Release/netstandard2.0/System.Graphics.Skia.dll" target="lib/netstandard2.0/System.Graphics.Skia.dll"/>
+    <file src="src/System.Graphics.Skia/bin/Release/netstandard2.0/System.Graphics.Skia.pdb" target="lib/netstandard2.0/System.Graphics.Skia.pdb"/>
+    <file src="src/System.Graphics.Skia/bin/Release/netstandard2.1/System.Graphics.Skia.dll" target="lib/netstandard2.1/System.Graphics.Skia.dll"/>
+    <file src="src/System.Graphics.Skia/bin/Release/netstandard2.1/System.Graphics.Skia.pdb" target="lib/netstandard2.1/System.Graphics.Skia.pdb"/>
+    <file src="src/System.Graphics.Skia/bin/Release/xamarinios10/System.Graphics.Skia.dll" target="lib/xamarinios10/System.Graphics.Skia.dll"/>
+    <file src="src/System.Graphics.Skia/bin/Release/xamarinios10/System.Graphics.Skia.pdb" target="lib/xamarinios10/System.Graphics.Skia.pdb"/>
+    <file src="src/System.Graphics.Skia/bin/Release/System.Graphics.Skia.dll" target="lib/xamarinios10/System.Graphics.Skia.dll"/>
+    <file src="src/System.Graphics.Skia./bin/Release/System.Graphics.Skia.pdb" target="lib/xamarinios10/System.Graphics.Skia.pdb"/>
+    <file src="src/System.Graphics.Skia/bin/Release/System.Graphics.Skia.dll" target="lib/monoandroid81/System.Graphics.Skia.dll"/>
+    <file src="src/System.Graphics.Skia/bin/Release/System.Graphics.Skia.pdb" target="lib/monoandroid81/System.Graphics.Skia.pdb"/>
+    <file src="src/System.Graphics.Skia/bin/Release/Xamarin.Mac20/System.Graphics.Skia.dll" target="lib/Xamarin.Mac20/System.Graphics.Skia.dll"/>
+    <file src="src/System.Graphics.Skia/bin/Release/Xamarin.Mac20/System.Graphics.Skia.pdb" target="lib/Xamarin.Mac20/System.Graphics.Skia.pdb"/>
+  </files>
+</package>
