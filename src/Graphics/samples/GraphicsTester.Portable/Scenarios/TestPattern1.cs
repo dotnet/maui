@@ -57,7 +57,7 @@ namespace GraphicsTester.Scenarios
             canvas.FillColor = Colors.White;
 
             //
-            // EWStrokeLocation.CENTER
+            //StrokeLocation.CENTER
             //
             canvas.StrokeSize = 10;
             canvas.DrawRectangle(50, 400, 100, 50);

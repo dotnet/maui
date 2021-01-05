@@ -85,7 +85,7 @@ namespace System.Graphics
 
         public override string ToString()
         {
-            return $"[EWInsets: Top={_top}, Left={_left}, Bottom={_bottom}, Right={_right}]";
+            return $"[Insets: Top={_top}, Left={_left}, Bottom={_bottom}, Right={_right}]";
         }
 
         public static InsetsF Parse(string value)

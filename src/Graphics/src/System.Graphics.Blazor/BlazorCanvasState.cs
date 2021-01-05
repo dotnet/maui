@@ -221,7 +221,7 @@ namespace System.Graphics.Blazor
                 else if (_fillPaint != null)
                 {
                     /*
-                    if (_fillPaint.PaintType == EWPaintType.LINEAR_GRADIENT)
+                    if (_fillPaint.PaintType == PaintType.LinearGradient)
                     {
                         var gradient = context.CreateLinearGradient(_fillX1, _fillY1, _fillX2, _fillY2);
                         for (int i = 0; i < _fillPaint.Stops.Length; i++)
@@ -234,7 +234,7 @@ namespace System.Graphics.Blazor
                         }
                         context.FillStyle = gradient;
                     }
-                    else if (_fillPaint.PaintType == EWPaintType.RADIAL_GRADIENT)
+                    else if (_fillPaint.PaintType == PaintType.RadialGradient)
                     {
 
                     }*/

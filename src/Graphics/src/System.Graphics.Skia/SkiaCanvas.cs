@@ -108,97 +108,97 @@ namespace System.Graphics.Skia
             set
             {
                 /* todo: implement this 
-                CGBlendMode vBlendMode = CGBlendMode.Normal;
+                CGBlendMode blendMode = CGBlendMode.Normal;
     
                 switch (value)
                 {
-                    case EWBlendMode.Clear:
-                        vBlendMode = CGBlendMode.Clear;
+                    case BlendMode.Clear:
+                        blendMode = CGBlendMode.Clear;
                         break;
-                    case EWBlendMode.Color:
-                        vBlendMode = CGBlendMode.Color;
+                    case BlendMode.Color:
+                        blendMode = CGBlendMode.Color;
                         break;
-                    case EWBlendMode.ColorBurn:
-                        vBlendMode = CGBlendMode.ColorBurn;
+                    case BlendMode.ColorBurn:
+                        blendMode = CGBlendMode.ColorBurn;
                         break;
-                    case EWBlendMode.ColorDodge:
-                        vBlendMode = CGBlendMode.ColorDodge;
+                    case BlendMode.ColorDodge:
+                        blendMode = CGBlendMode.ColorDodge;
                         break;
-                    case EWBlendMode.Copy:
-                        vBlendMode = CGBlendMode.Copy;
+                    case BlendMode.Copy:
+                        blendMode = CGBlendMode.Copy;
                         break;
-                    case EWBlendMode.Darken:
-                        vBlendMode = CGBlendMode.Darken;
+                    case BlendMode.Darken:
+                        blendMode = CGBlendMode.Darken;
                         break;
-                    case EWBlendMode.DestinationAtop:
-                        vBlendMode = CGBlendMode.DestinationAtop;
+                    case BlendMode.DestinationAtop:
+                        blendMode = CGBlendMode.DestinationAtop;
                         break;
-                    case EWBlendMode.DestinationIn:
-                        vBlendMode = CGBlendMode.DestinationIn;
+                    case BlendMode.DestinationIn:
+                        blendMode = CGBlendMode.DestinationIn;
                         break;
-                    case EWBlendMode.DestinationOut:
-                        vBlendMode = CGBlendMode.DestinationOut;
+                    case BlendMode.DestinationOut:
+                        blendMode = CGBlendMode.DestinationOut;
                         break;
-                    case EWBlendMode.DestinationOver:
-                        vBlendMode = CGBlendMode.DestinationOver;
+                    case BlendMode.DestinationOver:
+                        blendMode = CGBlendMode.DestinationOver;
                         break;
-                    case EWBlendMode.Difference:
-                        vBlendMode = CGBlendMode.Difference;
+                    case BlendMode.Difference:
+                        blendMode = CGBlendMode.Difference;
                         break;
-                    case EWBlendMode.Exclusion:
-                        vBlendMode = CGBlendMode.Exclusion;
+                    case BlendMode.Exclusion:
+                        blendMode = CGBlendMode.Exclusion;
                         break;
-                    case EWBlendMode.HardLight:
-                        vBlendMode = CGBlendMode.HardLight;
+                    case BlendMode.HardLight:
+                        blendMode = CGBlendMode.HardLight;
                         break;
-                    case EWBlendMode.Hue:
-                        vBlendMode = CGBlendMode.Hue;
+                    case BlendMode.Hue:
+                        blendMode = CGBlendMode.Hue;
                         break;
-                    case EWBlendMode.Lighten:
-                        vBlendMode = CGBlendMode.Lighten;
+                    case BlendMode.Lighten:
+                        blendMode = CGBlendMode.Lighten;
                         break;
-                    case EWBlendMode.Luminosity:
-                        vBlendMode = CGBlendMode.Luminosity;
+                    case BlendMode.Luminosity:
+                        blendMode = CGBlendMode.Luminosity;
                         break;
-                    case EWBlendMode.Multiply:
-                        vBlendMode = CGBlendMode.Multiply;
+                    case BlendMode.Multiply:
+                        blendMode = CGBlendMode.Multiply;
                         break;
-                    case EWBlendMode.Normal:
-                        vBlendMode = CGBlendMode.Normal;
+                    case BlendMode.Normal:
+                        blendMode = CGBlendMode.Normal;
                         break;
-                    case EWBlendMode.Overlay:
-                        vBlendMode = CGBlendMode.Overlay;
+                    case BlendMode.Overlay:
+                        blendMode = CGBlendMode.Overlay;
                         break;
-                    case EWBlendMode.PlusDarker:
-                        vBlendMode = CGBlendMode.PlusDarker;
+                    case BlendMode.PlusDarker:
+                        blendMode = CGBlendMode.PlusDarker;
                         break;
-                    case EWBlendMode.PlusLighter:
-                        vBlendMode = CGBlendMode.PlusLighter;
+                    case BlendMode.PlusLighter:
+                        blendMode = CGBlendMode.PlusLighter;
                         break;
-                    case EWBlendMode.Saturation:
-                        vBlendMode = CGBlendMode.Saturation;
+                    case BlendMode.Saturation:
+                        blendMode = CGBlendMode.Saturation;
                         break;
-                    case EWBlendMode.Screen:
-                        vBlendMode = CGBlendMode.Screen;
+                    case BlendMode.Screen:
+                        blendMode = CGBlendMode.Screen;
                         break;
-                    case EWBlendMode.SoftLight:
-                        vBlendMode = CGBlendMode.SoftLight;
+                    case BlendMode.SoftLight:
+                        blendMode = CGBlendMode.SoftLight;
                         break;
-                    case EWBlendMode.SourceAtop:
-                        vBlendMode = CGBlendMode.SourceAtop;
+                    case BlendMode.SourceAtop:
+                        blendMode = CGBlendMode.SourceAtop;
                         break;
-                    case EWBlendMode.SourceIn:
-                        vBlendMode = CGBlendMode.SourceIn;
+                    case BlendMode.SourceIn:
+                        blendMode = CGBlendMode.SourceIn;
                         break;
-                    case EWBlendMode.SourceOut:
-                        vBlendMode = CGBlendMode.SourceOut;
+                    case BlendMode.SourceOut:
+                        blendMode = CGBlendMode.SourceOut;
                         break;
-                    case EWBlendMode.XOR:
-                        vBlendMode = CGBlendMode.XOR;
+                    case BlendMode.XOR:
+                        blendMode = CGBlendMode.XOR;
                         break; 
                 }
     
-                canvas.SetBlendMode(vBlendMode);*/
+                canvas.SetBlendMode(blendMode);*/
 
                 //CurrentState.FillPaint.SetXfermode(new 
             }

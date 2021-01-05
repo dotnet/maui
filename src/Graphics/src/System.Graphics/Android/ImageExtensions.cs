@@ -13,7 +13,7 @@ namespace System.Graphics.Android
 
             if (image != null)
             {
-                Logger.Warn("MDImageExtensions.AsBitmap: Unable to get Bitmap from EWImage. Expected an image of type MDImage however an image of type {0} was received.", image.GetType());
+                Logger.Warn("MDImageExtensions.AsBitmap: Unable to get Bitmap from Image. Expected an image of type NativeImage however an image of type {0} was received.", image.GetType());
             }
 
             return null;

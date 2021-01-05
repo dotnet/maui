@@ -53,7 +53,7 @@ namespace System.Graphics.Android
             textPaint.SetTypeface(NativeFontService.Instance.GetTypeface(fontName));
 
             var staticLayout = TextLayoutUtils.CreateLayout(value, textPaint, null, Layout.Alignment.AlignNormal);
-            var size = staticLayout.GetTextSizeAsEWSize(false);
+            var size = staticLayout.GetTextSizeAsSizeF(false);
             staticLayout.Dispose();
             return size;
         }
@@ -82,7 +82,7 @@ namespace System.Graphics.Android
             }
 
             StaticLayout vLayout = TextLayoutUtils.CreateLayout(aString, vTextPaint, null, vAlignment);
-            SizeF vSize = vLayout.GetTextSizeAsEWSize(false);
+            SizeF vSize = vLayout.GetTextSizeAsSizeF(false);
             vLayout.Dispose();
             return vSize;
         }

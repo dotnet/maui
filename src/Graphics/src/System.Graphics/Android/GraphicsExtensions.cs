@@ -91,16 +91,6 @@ namespace System.Graphics.Android
             return new global::Android.Graphics.PointF(target.X, target.Y);
         }
 
-        /* public static EWPath AsEWPath(this global::Android.Graphics.Path target)
-        {
-            var vPath = new EWPath();
-  
-            var vConverter = new PathConverter(vPath);
-            target.Apply(vConverter.ApplyCGPathFunction);
-  
-            return vPath;
-        } */
-
         public static Matrix AsMatrix(this AffineTransform transform)
         {
             var values = new float[9];
@@ -403,7 +393,7 @@ namespace System.Graphics.Android
             }
         }
 
-        public static SizeF GetTextSizeAsEWSize(this StaticLayout target, bool hasBoundedWidth)
+        public static SizeF GetTextSizeAsSizeF(this StaticLayout target, bool hasBoundedWidth)
         {
             // We need to know if the static layout was created with a bounded width, as this is what 
             // StaticLayout.Width returns.

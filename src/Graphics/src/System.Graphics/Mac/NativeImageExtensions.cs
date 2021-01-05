@@ -10,7 +10,7 @@ namespace System.Graphics.CoreGraphics
                 return macImage.NativeRepresentation;
 
             if (image != null)
-                Logger.Warn("MMImageExtensions.AsNSImage: Unable to get NSImage from EWImage. Expected an image of type MMImage however an image of type {0} was received.", image.GetType());
+                Logger.Warn("MMImageExtensions.AsNSImage: Unable to get NSImage from Image. Expected an image of type NativeImage however an image of type {0} was received.", image.GetType());
 
             return null;
         }

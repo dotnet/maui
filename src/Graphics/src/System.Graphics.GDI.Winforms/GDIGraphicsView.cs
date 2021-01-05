@@ -29,7 +29,7 @@ namespace System.Graphics.GDI
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            renderer.Draw(e.Graphics, e.ClipRectangle.AsEWRectangle());
+            renderer.Draw(e.Graphics, e.ClipRectangle.AsRectangleF());
         }
 
         public bool Dirty

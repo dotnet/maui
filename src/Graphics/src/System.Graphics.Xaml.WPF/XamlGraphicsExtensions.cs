@@ -15,7 +15,7 @@ namespace System.Graphics.Xaml
                 (byte) (255 * target.Blue));
         }
 
-        public static PointF AsEWPoint(this Point point)
+        public static PointF AsPointF(this Point point)
         {
             return new PointF((float) point.X, (float) point.Y);
         }

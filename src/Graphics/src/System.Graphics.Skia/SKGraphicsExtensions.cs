@@ -73,16 +73,6 @@ namespace System.Graphics.Skia
             return new SKPoint(target.X, target.Y);
         }
 
-        /* public static EWPath AsEWPath(this global::Android.Graphics.Path target)
-        {
-            var vPath = new EWPath();
-  
-            var vConverter = new PathConverter(vPath);
-            target.Apply(vConverter.ApplyCGPathFunction);
-  
-            return vPath;
-        } */
-
         public static SKMatrix AsMatrix(this AffineTransform transform)
         {
             var matrix = new SKMatrix
@@ -356,7 +346,7 @@ namespace System.Graphics.Skia
             return new SKSize(target.Width, target.Height);
         }
 
-        public static PointF AsEWPoint(this SKPoint target)
+        public static PointF AsPointF(this SKPoint target)
         {
             return new PointF(target.X, target.Y);
         }
@@ -405,103 +395,5 @@ namespace System.Graphics.Skia
                 return context.Bitmap;
             }
         }
-
-        /*
-        public static EWSize GetTextSizeAsEWSize(this StaticLayout target, bool hasBoundedWidth)
-        {
-            // We need to know if the static layout was created with a bounded width, as this is what 
-            // StaticLayout.Width returns.
-            if (hasBoundedWidth)
-                return new EWSize(target.Width, target.Height);
-  
-            float maxWidth = 0;
-            int lineCount = target.LineCount;
-  
-            for (int i = 0; i < lineCount; i++)
-            {
-                float lineWidth = target.GetLineWidth(i);
-                if (lineWidth > maxWidth)
-                {
-                    maxWidth = lineWidth;
-                }
-            }
-  
-            return new EWSize(maxWidth, target.Height);
-        }*/
-
-        /*
-        public static SKSize GetOffsetsToDrawText(
-            this StaticLayout target, 
-            float x, 
-            float y, 
-            float width, 
-            float height, 
-            float margin, 
-            EWHorizontalAlignment horizontalAlignment, 
-            EWVerticalAlignment verticalAlignment)
-        {
-            if (verticalAlignment != EWVerticalAlignment.TOP)
-            {
-                SizeF vTextFrameSize = target.GetTextSize();
-  
-                float vOffsetX = margin;
-                float vOffsetY = margin;
-  
-                if (height > 0)
-                {
-                    if (verticalAlignment == EWVerticalAlignment.BOTTOM)
-                        vOffsetY = height - vTextFrameSize.Height - margin;
-                    else
-                        vOffsetY = (height - vTextFrameSize.Height)/2;
-                }
-  
-                return new SizeF(x + vOffsetX, y + vOffsetY);
-            }
-  
-            return new SizeF(x + margin, y + margin);
-        }*/
-
-        /*
-        public static Bitmap Downsize(this Bitmap target, int maxSize, bool dispose = true)
-        {
-            if (target.Width > maxSize || target.Height > maxSize)
-            {
-                float factor = 1;
-  
-                if (target.Width > target.Height)
-                {
-                    factor = (float)maxSize / (float)target.Width;   
-                }
-                else
-                {
-                    factor = (float)maxSize / (float)target.Height;                      
-                }
-  
-                var w = (int)Math.Round(factor * (float)target.Width);
-                var h = (int)Math.Round(factor * (float)target.Height);
-  
-                var newImage = Bitmap.CreateScaledBitmap(target, w, h, true);
-                if (dispose) 
-                {
-                    target.Recycle ();
-                    target.Dispose ();
-                }
-                return newImage;
-            }
-  
-            return target;
-        }*/
-
-        /*
-        public static Bitmap Downsize(this Bitmap target, int maxWidth, int maxHeight, bool dispose = true)
-        {
-            var newImage = Bitmap.CreateScaledBitmap(target, maxWidth, maxHeight, true);
-            if (dispose) 
-            {
-                target.Recycle ();
-                target.Dispose ();
-            }
-            return newImage;
-        }*/
     }
 }
