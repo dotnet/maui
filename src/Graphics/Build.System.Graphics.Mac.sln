@@ -1,0 +1,84 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30523.141
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Graphics", "src\System.Graphics\System.Graphics.csproj", "{76F3031E-341E-43CC-BD92-B23F83495DB7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Text.Markdig", "src\System.Graphics.Text.Markdig\System.Graphics.Text.Markdig.csproj", "{ED36FB6D-7278-465D-9C44-D01927258BA1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Graphics.Skia", "src\System.Graphics.Skia\System.Graphics.Skia.csproj", "{C7613109-6198-402E-953F-57EA81E8238E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D6F0522F-3BB5-4A10-953F-CA047F3D881A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2BAF0999-6876-4091-9FCE-CBC56D80BEC3}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Graphics.Forms", "src\System.Graphics.Forms\System.Graphics.Forms.csproj", "{05D753E7-C4B3-4DA7-97E0-66E5FF695F42}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Graphics.Skia.Forms", "src\System.Graphics.Skia.Forms\System.Graphics.Skia.Forms.csproj", "{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\System.Graphics.SharpDX.Shared\System.Graphics.SharpDX.Shared.projitems*{5163bcb2-4d70-42da-975a-af55d6b6a0b3}*SharedItemsImports = 13
+		src\System.Graphics.SharpDX.Shared\System.Graphics.SharpDX.Shared.projitems*{694e970d-5c18-483f-bc48-d6d86da8e78f}*SharedItemsImports = 4
+		src\System.Graphics.CoreGraphics\System.Graphics.CoreGraphics.projitems*{95a3e5f1-26b7-4bd8-8f01-48fe7bfd79fa}*SharedItemsImports = 13
+		src\System.Graphics.SharpDX.Shared\System.Graphics.SharpDX.Shared.projitems*{bc291304-fdc0-4e1d-a673-39f5e446b0e0}*SharedItemsImports = 5
+		src\System.Graphics.CoreGraphics\System.Graphics.CoreGraphics.projitems*{edf26ebb-0ac3-4212-81d6-8dd08f5acc17}*SharedItemsImports = 4
+		src\System.Graphics.CoreGraphics\System.Graphics.CoreGraphics.projitems*{f8d43f64-af09-4e06-8473-5bdc37281908}*SharedItemsImports = 4
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		AppStore|Any CPU = AppStore|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{76F3031E-341E-43CC-BD92-B23F83495DB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76F3031E-341E-43CC-BD92-B23F83495DB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76F3031E-341E-43CC-BD92-B23F83495DB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76F3031E-341E-43CC-BD92-B23F83495DB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76F3031E-341E-43CC-BD92-B23F83495DB7}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{76F3031E-341E-43CC-BD92-B23F83495DB7}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{ED36FB6D-7278-465D-9C44-D01927258BA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED36FB6D-7278-465D-9C44-D01927258BA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED36FB6D-7278-465D-9C44-D01927258BA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED36FB6D-7278-465D-9C44-D01927258BA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED36FB6D-7278-465D-9C44-D01927258BA1}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED36FB6D-7278-465D-9C44-D01927258BA1}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{C7613109-6198-402E-953F-57EA81E8238E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7613109-6198-402E-953F-57EA81E8238E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7613109-6198-402E-953F-57EA81E8238E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7613109-6198-402E-953F-57EA81E8238E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7613109-6198-402E-953F-57EA81E8238E}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7613109-6198-402E-953F-57EA81E8238E}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{05D753E7-C4B3-4DA7-97E0-66E5FF695F42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05D753E7-C4B3-4DA7-97E0-66E5FF695F42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05D753E7-C4B3-4DA7-97E0-66E5FF695F42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05D753E7-C4B3-4DA7-97E0-66E5FF695F42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05D753E7-C4B3-4DA7-97E0-66E5FF695F42}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{05D753E7-C4B3-4DA7-97E0-66E5FF695F42}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{76F3031E-341E-43CC-BD92-B23F83495DB7} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
+		{ED36FB6D-7278-465D-9C44-D01927258BA1} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
+		{C7613109-6198-402E-953F-57EA81E8238E} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
+		{05D753E7-C4B3-4DA7-97E0-66E5FF695F42} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
+		{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0B07E734-6AE2-4A12-AD60-C072F3695854}
+	EndGlobalSection
+EndGlobal
