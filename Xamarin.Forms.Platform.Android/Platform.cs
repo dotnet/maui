@@ -348,7 +348,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				renderer = new DefaultRenderer(context);
 			}
-			
+
 			if (renderer == null)
 			{
 				renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element, context)
