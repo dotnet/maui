@@ -1,4 +1,4 @@
-﻿window.JavascriptInterop = {
+﻿window.SystemDrawingInterop = {
     SetupCanvas: function (id)
     {
         var canvas = document.getElementById(id);

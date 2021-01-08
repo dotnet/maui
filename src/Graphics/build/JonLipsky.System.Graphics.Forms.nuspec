@@ -16,7 +16,7 @@
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="System.Graphics" version="$version$"/>
+        <dependency id="JonLipsky.System.Graphics" version="$version$"/>
         <dependency id="Xamarin.Forms" version="4.8.0.1821"/>
       </group>
     </dependencies>

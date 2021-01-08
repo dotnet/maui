@@ -16,7 +16,7 @@
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="System.Graphics" version="$version$"/>
+        <dependency id="JonLipsky.System.Graphics" version="$version$"/>
         <dependency id="SkiaSharp" version="2.80.2"/>
         <dependency id="SkiaSharp.Views" version="2.80.2"/>
       </group>

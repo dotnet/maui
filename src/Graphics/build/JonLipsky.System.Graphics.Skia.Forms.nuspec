@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>System.Graphics.Skia.Forms</id>
+    <id>JonLipsky.System.Graphics.Skia.Forms</id>
     <version>$version$</version>
-    <title>System.Graphics.Skia.Forms</title>
+    <title>JonLipsky.System.Graphics.Skia.Forms</title>
     <authors>Jon Lipsky</authors>
     <owners>jonlipsky</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -16,7 +16,7 @@
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="System.Graphics" version="$version$"/>
+        <dependency id="JonLipsky.System.Graphics" version="$version$"/>
         <dependency id="SkiaSharp" version="2.80.2"/>
         <dependency id="SkiaSharp.Views" version="2.80.2"/>
         <dependency id="Xamarin.Forms" version="4.8.0.1821"/>

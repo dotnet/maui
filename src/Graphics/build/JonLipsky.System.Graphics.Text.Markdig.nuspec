@@ -16,7 +16,7 @@
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="System.Graphics" version="$version$"/>
+        <dependency id="JonLipsky.System.Graphics" version="$version$"/>
         <dependency id="Markdig" version="0.22.1"/>
       </group>
     </dependencies>
