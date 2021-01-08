@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>System.Graphics.Forms</id>
+    <id>JonLipsky.System.Graphics.Forms</id>
     <version>$version$</version>
-    <title>System.Graphics.Forms</title>
+    <title>JonLipsky.System.Graphics.Forms</title>
     <authors>Jon Lipsky</authors>
     <owners>jonlipsky</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -16,7 +16,7 @@
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="System.Graphics" version="$version$"/>
+        <dependency id="JonLipsky.System.Graphics" version="$version$"/>
         <dependency id="Xamarin.Forms" version="4.8.0.1821"/>
       </group>
     </dependencies>
