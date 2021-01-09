@@ -52,4 +52,6 @@ jobs:
       run: gpr push *.nupkg --api-key ${{ secrets.PACKAGES_TOKEN }}   
       working-directory: .    
 
-
+    - name: Publish package to NuGet
+      run: dotnet nuget push "*.nupkg" --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate --source https://api.nuget.org/v3/index.json
+      working-directory: . 
