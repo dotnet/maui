@@ -51,5 +51,8 @@ jobs:
     - name: Publish package to GitHub registry
       run: gpr push *.nupkg --api-key ${{ secrets.PACKAGES_TOKEN }}   
       working-directory: .    
-      
-      
+
+    - name: Publish package to NuGet
+      run: nuget push *.nupkg --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate
+      working-directory: .  
+
