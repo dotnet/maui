@@ -46,7 +46,7 @@ jobs:
       run: nuget pack build/JonLipsky.System.Graphics.Text.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
  
     - name: Publish package to NuGet
-      run: nuget push ./*.nupkg ${{secrets.NUGET_API_KEY}} -SkipDuplicate -Source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate --source https://api.nuget.org/v3/index.json
       working-directory: . 
 
 
