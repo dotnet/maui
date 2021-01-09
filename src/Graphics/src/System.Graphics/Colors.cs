@@ -153,6 +153,7 @@ namespace System.Graphics
         public static readonly Color Honeydew = new Color (240, 255, 240);
         public static readonly Color LightGoldenrodYellow = new Color (250, 250, 210);
         public static readonly Color LightGray = new Color (211, 211, 211);
+		public static readonly Color LightSlateGray = new Color(119, 136, 153);
         public static readonly Color MediumAquamarine = new Color (102, 205, 170);
         public static readonly Color PaleGoldenrod = new Color (238, 232, 170);
         public static readonly Color SlateGray = new Color (112, 128, 144);
