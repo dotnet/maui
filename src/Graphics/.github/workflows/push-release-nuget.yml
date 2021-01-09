@@ -2,7 +2,7 @@ name: Build and Release to GitHub Packages
 
 on:
   push:
-    branches: [ release/github-packages ]
+    branches: [ release/nuget ]
 
 jobs:
   build:
@@ -44,12 +44,9 @@ jobs:
 
     - name: NuGet Pack
       run: nuget pack build/JonLipsky.System.Graphics.Text.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
-
-    - name: Install GPR
-      run: dotnet tool install -g gpr --no-cache -v q
-      
-    - name: Publish package to GitHub registry
-      run: gpr push *.nupkg --api-key ${{ secrets.PACKAGES_TOKEN }}   
-      working-directory: .    
+ 
+    - name: Publish package to NuGet
+      run: nuget push ./*.nupkg ${{secrets.NUGET_API_KEY}} -SkipDuplicate -Source https://api.nuget.org/v3/index.json
+      working-directory: . 
 
 
