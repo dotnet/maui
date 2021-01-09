@@ -96,12 +96,17 @@ namespace System.Graphics
 			};
 		}
 		
-		public Color GetTransparentCopy(float alpha)
+		public Color WithAlpha(float alpha)
 		{
 			if (Math.Abs(alpha - Alpha) < Geometry.Epsilon)
 				return this;
 			
 			return new Color(Red,Green,Blue, alpha);
+		}
+
+		public Color MultiplyAlpha(float multiplyBy)
+		{
+			return new Color(Red,Green,Blue, Alpha * multiplyBy);
 		}
 		
 		public string ToHexStringIncludingAlpha()
