@@ -131,5 +131,145 @@ namespace System.Graphics
 
 			return stringValue;
 		}
+
+		public static Color FromHsla(float h, float s, float l, float a = 1)
+		{
+			float red, green, blue;
+			ConvertToRgb(h, s, l, out red, out green, out blue);
+			return new Color(red, green, blue);
+		}
+
+		public static Color FromHsva(float h, float s, float v, float a)
+		{
+			h = h.Clamp(0, 1);
+			s = s.Clamp(0, 1);
+			v = v.Clamp(0, 1);
+			var range = (int)(Math.Floor(h * 6)) % 6;
+			var f = h * 6 - Math.Floor(h * 6);
+			var p = v * (1 - s);
+			var q = v * (1 - f * s);
+			var t = v * (1 - (1 - f) * s);
+
+			switch (range)
+			{
+				case 0:
+					return FromRgba(v, t, p, a);
+				case 1:
+					return FromRgba(q, v, p, a);
+				case 2:
+					return FromRgba(p, v, t, a);
+				case 3:
+					return FromRgba(p, q, v, a);
+				case 4:
+					return FromRgba(t, p, v, a);
+			}
+			return FromRgba(v, p, q, a);
+		}
+
+		public static Color FromRgba(double r, double g, double b, double a)
+		{
+			return new Color((float)r, (float)g, (float)b, (float)a);
+		}
+
+		public static Color FromHsv(float h, float s, float v)
+		{
+			return FromHsva(h, s, v, 1f);
+		}
+
+		public static Color FromHsva(int h, int s, int v, int a)
+		{
+			return FromHsva(h / 360f, s / 100f, v / 100f, a / 100f);
+		}
+
+		public static Color FromHsv(int h, int s, int v)
+		{
+			return FromHsva(h / 360f, s / 100f, v / 100f, 1f);
+		}
+
+		private static void ConvertToRgb(float hue, float saturation, float luminosity, out float r, out float g, out float b)
+		{
+			if (luminosity == 0)
+			{
+				r = g = b = 0;
+				return;
+			}
+
+			if (saturation == 0)
+			{
+				r = g = b = luminosity;
+				return;
+			}
+			float temp2 = luminosity <= 0.5f ? luminosity * (1.0f + saturation) : luminosity + saturation - luminosity * saturation;
+			float temp1 = 2.0f * luminosity - temp2;
+
+			var t3 = new[] { hue + 1.0f / 3.0f, hue, hue - 1.0f / 3.0f };
+			var clr = new float[] { 0, 0, 0 };
+			for (var i = 0; i < 3; i++)
+			{
+				if (t3[i] < 0)
+					t3[i] += 1.0f;
+				if (t3[i] > 1)
+					t3[i] -= 1.0f;
+				if (6.0 * t3[i] < 1.0)
+					clr[i] = temp1 + (temp2 - temp1) * t3[i] * 6.0f;
+				else if (2.0 * t3[i] < 1.0)
+					clr[i] = temp2;
+				else if (3.0 * t3[i] < 2.0)
+					clr[i] = temp1 + (temp2 - temp1) * (2.0f / 3.0f - t3[i]) * 6.0f;
+				else
+					clr[i] = temp1;
+			}
+
+			r = clr[0];
+			g = clr[1];
+			b = clr[2];
+		}
+
+		private static void ConvertToHsl(float r, float g, float b, out float h, out float s, out float l)
+		{
+			float v = Math.Max(r, g);
+			v = Math.Max(v, b);
+
+			float m = Math.Min(r, g);
+			m = Math.Min(m, b);
+
+			l = (m + v) / 2.0f;
+			if (l <= 0.0)
+			{
+				h = s = l = 0;
+				return;
+			}
+			float vm = v - m;
+			s = vm;
+
+			if (s > 0.0)
+			{
+				s /= l <= 0.5f ? v + m : 2.0f - v - m;
+			}
+			else
+			{
+				h = 0;
+				s = 0;
+				return;
+			}
+
+			float r2 = (v - r) / vm;
+			float g2 = (v - g) / vm;
+			float b2 = (v - b) / vm;
+
+			if (r == v)
+			{
+				h = g == m ? 5.0f + b2 : 1.0f - g2;
+			}
+			else if (g == v)
+			{
+				h = b == m ? 1.0f + r2 : 3.0f - b2;
+			}
+			else
+			{
+				h = r == m ? 3.0f + g2 : 5.0f - r2;
+			}
+			h /= 6.0f;
+		}
 	}
 }
