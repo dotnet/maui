@@ -53,6 +53,7 @@ jobs:
       working-directory: .    
 
     - name: Publish package to NuGet
-      run: nuget push *.nupkg -ApiKey ${{secrets.NUGET_API_KEY}} -SkipDuplicate
-      working-directory: .  
+      run: nuget push *.nupkg ${{secrets.NUGET_API_KEY}} -SkipDuplicate
+      working-directory: . 
+      
 
