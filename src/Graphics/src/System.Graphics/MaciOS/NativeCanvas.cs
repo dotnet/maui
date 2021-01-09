@@ -600,7 +600,7 @@ namespace System.Graphics.CoreGraphics
             if (CurrentState.Shadowed)
             {
                 float minimumTransparent = Math.Min(_paint.StartColor.Alpha, _paint.EndColor.Alpha);
-                var color = Colors.White.GetTransparentCopy(minimumTransparent);
+                var color = Colors.White.WithAlpha(minimumTransparent);
                 _context.SetFillColor(color.Red, color.Green, color.Blue, color.Alpha);
                 action();
                 _context.FillPath();
