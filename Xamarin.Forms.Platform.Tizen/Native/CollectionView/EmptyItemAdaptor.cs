@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			layout.Parent = _itemsView;
 			var renderer = Platform.GetOrCreateRenderer(layout);
-			(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+			(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 			return renderer.NativeView;
 		}
 

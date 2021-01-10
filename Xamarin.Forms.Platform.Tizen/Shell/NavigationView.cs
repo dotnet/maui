@@ -248,7 +248,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			var measuredSize = view.Measure(Forms.ConvertToScaledDP(Geometry.Width), Forms.ConvertToScaledDP(Geometry.Height));
 			var renderer = Platform.GetOrCreateRenderer(view);
-			(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+			(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 			renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(measuredSize.Request.Height);
 			return renderer.NativeView;
 		}
@@ -395,7 +395,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				else
 				{
 					var renderer = Platform.GetOrCreateRenderer(header);
-					(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+					(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 					_nativeHeader = renderer.NativeView;
 					_mainLayout.PackEnd(_nativeHeader);
 				}
@@ -425,7 +425,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (_nativeHeader == null)
 				{
 					var renderer = Platform.GetOrCreateRenderer(_header);
-					(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+					(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 					_nativeHeader = renderer.NativeView;
 					_mainLayout.PackEnd(_nativeHeader);
 				}
