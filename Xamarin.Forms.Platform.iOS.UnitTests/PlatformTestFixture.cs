@@ -169,6 +169,75 @@ namespace Xamarin.Forms.Platform.iOS.UnitTests
 			});
 		}
 
+		protected UITextField GetNativeControl(DatePicker datePicker)
+		{
+			var renderer = GetRenderer(datePicker);
+			var viewRenderer = renderer.NativeView as DatePickerRenderer;
+			return viewRenderer.Control;
+		}
+
+		protected UIDatePicker GetPickerControl(DatePicker datePicker)
+		{
+			var renderer = GetRenderer(datePicker);
+			var viewRenderer = renderer.NativeView as DatePickerRenderer;
+			return viewRenderer.Picker;
+		}
+
+		protected async Task<TProperty> GetControlProperty<TProperty>(DatePicker datePicker, Func<UITextField, TProperty> getProperty)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var uiTextField = GetNativeControl(datePicker))
+				{
+					return getProperty(uiTextField);
+				}
+			});
+		}
+
+		protected async Task<TProperty> GetControlProperty<TProperty>(DatePicker datePicker, Func<UIDatePicker, TProperty> getProperty)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var uiDatePicker = GetPickerControl(datePicker))
+				{
+					return getProperty(uiDatePicker);
+				}
+			});
+		}
+
+		protected UITextField GetNativeControl(TimePicker timePicker)
+		{
+			var renderer = GetRenderer(timePicker);
+			var viewRenderer = renderer.NativeView as TimePickerRenderer;
+			return viewRenderer.Control;
+		}
+
+		protected UIDatePicker GetPickerControl(TimePicker timePicker)
+		{
+			var renderer = GetRenderer(timePicker);
+			var viewRenderer = renderer.NativeView as TimePickerRenderer;
+			return viewRenderer.Picker;
+		}
+
+		protected async Task<TProperty> GetControlProperty<TProperty>(TimePicker timePicker, Func<UITextField, TProperty> getProperty)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var uiTextField = GetNativeControl(timePicker))
+				{
+					return getProperty(uiTextField);
+				}
+			});
+		}
+
+		protected async Task<TProperty> GetControlProperty<TProperty>(TimePicker timePicker, Func<UIDatePicker, TProperty> getProperty)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var uiDatePicker = GetPickerControl(timePicker))
+				{
+					return getProperty(uiDatePicker);
+				}
+			});
+		}
+
+
 		protected async Task<TProperty> GetRendererProperty<TProperty>(View view,
 			Func<IVisualElementRenderer, TProperty> getProperty, bool requiresLayout = false)
 		{
@@ -234,5 +303,7 @@ namespace Xamarin.Forms.Platform.iOS.UnitTests
 				Math.Abs(c1G - c2G) < tolerance &&
 				Math.Abs(c1B - c2B) < tolerance;
 		}
+
+		
 	}
 }
