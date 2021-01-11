@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			if (_titleView != null)
 			{
 				var renderer = Platform.GetOrCreateRenderer(_titleView);
-				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+				(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 
 				this.PackEnd(renderer.NativeView);
 			}

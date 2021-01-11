@@ -200,7 +200,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_refreshLayout = new RefreshLayout();
 			_refreshLayout.RefreshIconColor = RefreshView.RefreshColor;
 			_refreshLayoutRenderer = Platform.GetOrCreateRenderer(_refreshLayout);
-			(_refreshLayoutRenderer as LayoutRenderer).RegisterOnLayoutUpdated();
+			(_refreshLayoutRenderer as ILayoutRenderer).RegisterOnLayoutUpdated();
 
 			Control.Children.Add(_refreshLayoutRenderer.NativeView);
 			var measured = _refreshLayout.Measure(Element.Width, Element.Height);

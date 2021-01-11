@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			var view = data as View;
 
 			var renderer = Platform.GetOrCreateRenderer(view);
-			(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+			(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 			var measured = view.Measure(Forms.ConvertToScaledDP(Geometry.Width), Forms.ConvertToScaledDP(Geometry.Width * 3));
 			renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(measured.Request.Height);
 			return renderer.NativeView;

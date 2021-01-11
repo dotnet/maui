@@ -4,7 +4,7 @@ using SkiaSharp.Views.Tizen;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class FastLayoutRenderer : ViewRenderer<Layout, Native.EvasFormsCanvas>, SkiaSharp.IBackgroundCanvas
+	public class FastLayoutRenderer : ViewRenderer<Layout, Native.EvasFormsCanvas>, SkiaSharp.IBackgroundCanvas, ILayoutRenderer
 	{
 		bool _layoutUpdatedRegistered = false;
 

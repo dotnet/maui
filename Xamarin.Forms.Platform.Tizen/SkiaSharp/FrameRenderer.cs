@@ -98,6 +98,9 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 
 		void OnCliperPaint(object sender, SKPaintSurfaceEventArgs e)
 		{
+			if (Element.Content == null)
+				return;
+
 			var canvas = e.Surface.Canvas;
 			var bound = e.Info.Rect;
 			canvas.Clear();
@@ -114,7 +117,7 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 				canvas.DrawRoundRect(roundRect, paint);
 			}
 
-			Element.Content?.SetClipperCanvas(_clipper);
+			Element.Content.SetClipperCanvas(_clipper);
 		}
 
 		void UpdateCornerRadius()

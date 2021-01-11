@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Platform.Tizen
 	/// <summary>
 	/// Renderer of a Layout.
 	/// </summary>
-	public class LayoutRenderer : ViewRenderer<Layout, Native.Canvas>, SkiaSharp.IBackgroundCanvas
+	public class LayoutRenderer : ViewRenderer<Layout, Native.Canvas>, SkiaSharp.IBackgroundCanvas, ILayoutRenderer
 	{
 		bool _layoutUpdatedRegistered = false;
 

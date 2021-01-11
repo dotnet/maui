@@ -689,7 +689,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 							renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(context.Element.MinimumHeightRequest);
 						}
 
-						(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+						(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 
 						return renderer.NativeView;
 					}

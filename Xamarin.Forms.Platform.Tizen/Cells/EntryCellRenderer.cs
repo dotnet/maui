@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				layout.MinimumHeightRequest = Forms.ConvertToScaledDP(pixelHeight);
 
 				var renderer = Platform.GetOrCreateRenderer(layout);
-				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+				(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 
 				var nativeEntry = Platform.GetRenderer(entry)?.NativeView ?? null;
 				if (nativeEntry != null)

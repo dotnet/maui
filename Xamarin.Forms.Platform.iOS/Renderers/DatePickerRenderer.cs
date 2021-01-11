@@ -48,6 +48,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		IElementController ElementController => Element as IElementController;
 
+		internal UIDatePicker Picker => _picker;
 
 		abstract protected override TControl CreateNativeControl();
 
@@ -73,12 +74,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 				_picker = new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
 
-#if __XCODE11__
 				if (Forms.IsiOS14OrNewer)
 				{
 					_picker.PreferredDatePickerStyle = UIKit.UIDatePickerStyle.Wheels;
 				}
-#endif
+
 				_picker.ValueChanged += HandleValueChanged;
 
 				var width = UIScreen.MainScreen.Bounds.Width;
