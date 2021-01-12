@@ -17,18 +17,18 @@ jobs:
       with:
         nuget-version: '5.x'
 
-    - name: Update project version
-      uses: roryprimrose/set-vs-sdk-project-version@v1
-      with:
-        projectFilter: 'src/*/*.csproj'
-        version: '0.1.${{ github.run_number }}'   
-
     - name: NuGet Restore
       run: nuget restore build/Build.System.Graphics.Windows.sln
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Update project version
+      uses: roryprimrose/set-vs-sdk-project-version@v1
+      with:
+        projectFilter: 'src/*/*.csproj'
+        version: '0.1.${{ github.run_number }}'   
+        
     - name: Build
       run: msbuild build/Build.System.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
 
