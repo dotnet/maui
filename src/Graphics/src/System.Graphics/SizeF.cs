@@ -13,6 +13,14 @@ namespace System.Graphics
 
         public static readonly SizeF Zero;
 
+        public SizeF(float size)
+        {
+            if (float.IsNaN(size))
+                throw new ArgumentException("NaN is not a valid value for size");
+            _width = size;
+            _height = size;
+        }
+
         public SizeF(float width, float height)
         {
             if (float.IsNaN(width))
