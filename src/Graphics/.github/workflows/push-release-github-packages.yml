@@ -26,6 +26,30 @@ jobs:
     - name: Build
       run: msbuild build/Build.System.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
 
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.System.Graphics.GDI.Winforms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.System.Graphics.SharpDX.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.System.Graphics.SharpDX.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.System.Graphics.Skia.WPF.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.System.Graphics.Text.WPF.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.System.Graphics.Win2D.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.System.Graphics.Xaml.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.System.Graphics.Xaml.WPF.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
     - name: 'Upload Artifacts'
       uses: actions/upload-artifact@v2
       with:
