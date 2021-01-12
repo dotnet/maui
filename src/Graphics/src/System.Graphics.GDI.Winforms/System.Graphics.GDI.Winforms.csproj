@@ -1,79 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3C3BF90F-C579-463D-B33F-8B9B16D2DAB7}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>System.Graphics.GDI</RootNamespace>
-    <AssemblyName>System.Graphics.GDI.Winforms</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="Microsoft.WindowsDesktop.App" Version="3.0.0-alpha-27128-4" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="GDIFontFamily.cs" />
-    <Compile Include="GDIFontStyle.cs" />
-    <Compile Include="GDICanvas.cs" />
-    <Compile Include="GDICanvasState.cs" />
-    <Compile Include="GDIBitmapExportContext.cs" />
-    <Compile Include="GDIFontManager.cs" />
-    <Compile Include="GDIFontService.cs" />
-    <Compile Include="GDIGraphicsService.cs" />
-    <Compile Include="GDIImage.cs" />
-    <Compile Include="GDIExtensions.cs" />
-    <Compile Include="GDIGraphicsView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="GDIDirectGraphicsRenderer.cs" />
-    <Compile Include="GDIGraphicsRenderer.cs" />
-    <Compile Include="GDIImageExtensions.cs" />
+    <ProjectReference Include="..\System.Graphics\System.Graphics.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\System.Graphics\System.Graphics.csproj">
-      <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
-      <Name>System.Graphics</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

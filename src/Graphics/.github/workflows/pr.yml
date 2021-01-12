@@ -3,8 +3,28 @@ name: Validate Pull Request
 on: [pull_request]
 
 jobs:
-  build:
+  build-on-windows:
+    runs-on: windows-latest
 
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    - name: Install NuGet
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: '5.x'
+
+    - name: NuGet Restore
+      run: nuget restore build/Build.System.Graphics.Windows.sln
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Build
+      run: msbuild build/Build.System.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+
+  build-on-mac:
     runs-on: macos-latest
 
     steps:
