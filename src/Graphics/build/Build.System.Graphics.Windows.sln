@@ -33,8 +33,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpDX.Desktop", "..\src\e
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "System.Graphics.SharpDX.Shared", "..\src\System.Graphics.SharpDX.Shared\System.Graphics.SharpDX.Shared.shproj", "{5163BCB2-4D70-42DA-975A-AF55D6B6A0B3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Graphics.Forms", "..\src\System.Graphics.Forms\System.Graphics.Forms.csproj", "{7A1C8AB5-46EA-4B30-88A1-1564F32702BA}"
-EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\src\System.Graphics.SharpDX.Shared\System.Graphics.SharpDX.Shared.projitems*{5163bcb2-4d70-42da-975a-af55d6b6a0b3}*SharedItemsImports = 13
@@ -94,10 +92,6 @@ Global
 		{D52F4128-20EA-41F3-BA67-0586BBCB3E5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D52F4128-20EA-41F3-BA67-0586BBCB3E5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D52F4128-20EA-41F3-BA67-0586BBCB3E5A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7A1C8AB5-46EA-4B30-88A1-1564F32702BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A1C8AB5-46EA-4B30-88A1-1564F32702BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7A1C8AB5-46EA-4B30-88A1-1564F32702BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7A1C8AB5-46EA-4B30-88A1-1564F32702BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -116,7 +110,6 @@ Global
 		{BC291304-FDC0-4E1D-A673-39F5E446B0E0} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 		{D52F4128-20EA-41F3-BA67-0586BBCB3E5A} = {5FDD2BE9-96B1-4E7D-8028-B8158E6A0FEC}
 		{5163BCB2-4D70-42DA-975A-AF55D6B6A0B3} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
-		{7A1C8AB5-46EA-4B30-88A1-1564F32702BA} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B07E734-6AE2-4A12-AD60-C072F3695854}
