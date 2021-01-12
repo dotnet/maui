@@ -5,8 +5,34 @@ on:
     branches: [ release/github-packages ]
 
 jobs:
-  build:
+  build-on-windows:
+    runs-on: windows-latest
 
+    steps:
+    - name: Install NuGet
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: '5.x'
+
+    - name: Update project version
+      uses: roryprimrose/set-vs-sdk-project-version@v1
+      with:
+        projectFilter: 'src/*/*.csproj'
+        version: '0.1.${{ github.run_number }}'   
+
+    - name: NuGet Restore
+      run: nuget restore build/Build.System.Graphics.Windows.sln
+
+    - name: Build
+      run: msbuild build/Build.System.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+
+    - name: 'Upload Artifacts'
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-artifacts
+        path: *.nupkg
+
+  build-on-mac:
     runs-on: macos-latest
 
     steps:
@@ -45,6 +71,26 @@ jobs:
     - name: NuGet Pack
       run: nuget pack build/JonLipsky.System.Graphics.Text.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
+    - name: 'Upload Artifacts'
+      uses: actions/upload-artifact@v2
+      with:
+        name: mac-artifacts
+        path: *.nupkg
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-on-mac, build-on-windows]
+
+    - name: Download Mac Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: mac-artifacts
+
+    - name: Download Windows Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: windows-artifacts
+    
     - name: Install GPR
       run: dotnet tool install -g gpr --no-cache -v q
       
@@ -55,3 +101,5 @@ jobs:
     - name: Publish package to NuGet
       run: dotnet nuget push "*.nupkg" --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate --source https://api.nuget.org/v3/index.json
       working-directory: . 
+
+
