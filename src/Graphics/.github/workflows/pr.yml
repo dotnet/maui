@@ -7,6 +7,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
     - name: Install NuGet
       uses: nuget/setup-nuget@v1
       with:
