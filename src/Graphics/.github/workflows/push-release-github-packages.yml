@@ -7,7 +7,6 @@ on:
 jobs:
   build-on-windows:
     runs-on: windows-latest
-
     steps:
 
     - name: Checkout source code
@@ -65,8 +64,8 @@ jobs:
 
   build-on-mac:
     runs-on: macos-latest
-
     steps:
+
     - name: Checkout source code
       uses: actions/checkout@v2
               
@@ -109,8 +108,9 @@ jobs:
         path: "*.nupkg"
 
   release:
-    runs-on: ubuntu-latest
     needs: [build-on-mac, build-on-windows]
+    runs-on: ubuntu-latest
+    steps:
 
     - name: Download Mac Artifacts
       uses: actions/download-artifact@v2
