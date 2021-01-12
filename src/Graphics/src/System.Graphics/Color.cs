@@ -151,10 +151,10 @@ namespace System.Graphics
             return l;
         }
 
-		public Color AddLuminosity(float value)
+		public Color AddLuminosity(float delta)
 		{
 			ConvertToHsl(Red,Green,Blue, out var h, out var s, out var l);
-			l+= value;
+			l+= delta;
 			return FromHsla(h,s,l,Alpha);
 		}
 
