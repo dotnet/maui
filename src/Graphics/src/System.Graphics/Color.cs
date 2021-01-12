@@ -139,6 +139,25 @@ namespace System.Graphics
 			return new Color(red, green, blue);
 		}
 
+		public float GetLuminosity()
+        {
+            float v = Math.Max(Red, Green);
+            v = Math.Max(v, Blue);
+            float m = Math.Min(Red, Green);
+            m = Math.Min(m, Blue);
+            var l = (m + v) / 2.0f;
+            if (l <= 0.0)
+                return 0;
+            return l;
+        }
+
+		public Color AddLuminosity(float value)
+		{
+			ConvertToHsl(Red,Green,Blue, out var h, out var s, out var l);
+			l+= value;
+			return FromHsla(h,s,l,Alpha);
+		}
+
 		public static Color FromHsva(float h, float s, float v, float a)
 		{
 			h = h.Clamp(0, 1);
