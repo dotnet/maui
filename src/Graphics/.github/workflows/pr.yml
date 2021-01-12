@@ -13,10 +13,10 @@ jobs:
         nuget-version: '5.x'
 
     - name: NuGet Restore
-      run: nuget restore build\Build.System.Graphics.Windows.sln
+      run: nuget restore build/Build.System.Graphics.Windows.sln
 
     - name: Build
-      run: msbuild build\Build.System.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+      run: msbuild build/Build.System.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
 
   build-on-mac:
     runs-on: macos-latest
