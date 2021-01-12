@@ -109,8 +109,8 @@ jobs:
         path: "*.nupkg"
 
   release:
-    runs-on: ubuntu-latest
     needs: [build-on-mac, build-on-windows]
+    runs-on: ubuntu-latest
 
     - name: Download Mac Artifacts
       uses: actions/download-artifact@v2
