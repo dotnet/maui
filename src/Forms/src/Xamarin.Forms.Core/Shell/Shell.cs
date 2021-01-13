@@ -1200,7 +1200,7 @@ namespace Xamarin.Forms
 		#region Shell Flyout Content
 
 
-		public static readonly BindableProperty FlyoutContentProperty = 
+		public static readonly BindableProperty FlyoutContentProperty =
 			BindableProperty.Create(nameof(FlyoutContent), typeof(object), typeof(Shell), null, BindingMode.OneTime, propertyChanging: OnFlyoutContentChanging);
 
 		public static readonly BindableProperty FlyoutContentTemplateProperty =

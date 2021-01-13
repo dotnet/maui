@@ -50,6 +50,7 @@
     <Compile Include="BackgroundColorTests.cs" />
     <Compile Include="ColorComparison.cs" />
     <Compile Include="CornerRadiusTests.cs" />
+    <Compile Include="DatePickerTests.cs" />
     <Compile Include="EmbeddingTests.cs" />
     <Compile Include="FlowDirectionTests.cs" />
     <Compile Include="FrameTests.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="ScaleTests.cs" />
     <Compile Include="TextTests.cs" />
     <Compile Include="BackgroundTests.cs" />
+    <Compile Include="TimePickerTests.cs" />
     <Compile Include="TransformationTests.cs" />
   </ItemGroup>
   <ItemGroup>

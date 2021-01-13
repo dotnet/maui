@@ -173,7 +173,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (content != null)
 			{
 				var renderer = Platform.GetOrCreateRenderer(content);
-				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+				(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 				nativeView = renderer?.NativeView;
 			}
 			Forms.BaseLayout.SetOverlayPart(nativeView);

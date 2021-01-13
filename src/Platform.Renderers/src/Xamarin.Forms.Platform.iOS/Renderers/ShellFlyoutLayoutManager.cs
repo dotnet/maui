@@ -118,6 +118,8 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				_contentView = value;
 
+				ScrollView = null;
+
 				if (ContentView is UIScrollView sv1)
 					ScrollView = sv1;
 				else if (ContentView is IVisualElementRenderer ver && ver.NativeView is UIScrollView uIScroll)
@@ -126,11 +128,8 @@ namespace Xamarin.Forms.Platform.iOS
 				if (ScrollView != null && Forms.IsiOS11OrNewer)
 					ScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 
-				if (ScrollView != null)
-				{
-					LayoutParallax();
-					SetHeaderContentInset();
-				}
+				LayoutParallax();
+				SetHeaderContentInset();
 			}
 		}
 
@@ -149,6 +148,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (_headerView != null)
 					_headerView.HeaderSizeChanged += OnHeaderFooterSizeChanged;
+
+				SetHeaderContentInset();
+				LayoutParallax();
 			}
 		}
 
@@ -161,6 +163,8 @@ namespace Xamarin.Forms.Platform.iOS
 					return;
 
 				_footerView = value;
+				SetHeaderContentInset();
+				LayoutParallax();
 			}
 		}
 
@@ -243,11 +247,23 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			else
 			{
+				float topMargin = 0;
+				if (Content.IsSet(View.MarginProperty))
+				{
+					topMargin = (float)Content.Margin.Top;
+				}
+				else if(HeaderView == null)
+				{
+					topMargin = (float)Platform.SafeAreaInsetsForWindow.Top;
+				}
+
 				ContentView.Frame =
-						new CGRect(parent.Bounds.X, HeaderTopMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight - contentViewYOffset);
+						new CGRect(parent.Bounds.X, topMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - topMargin - footerHeight - contentViewYOffset);
 
 				if (Content != null)
+				{
 					Layout.LayoutChildIntoBoundingRegion(Content, new Rectangle(0, 0, ContentView.Frame.Width, ContentView.Frame.Height));
+				}
 			}
 
 			if (HeaderView != null && !double.IsNaN(_headerSize))

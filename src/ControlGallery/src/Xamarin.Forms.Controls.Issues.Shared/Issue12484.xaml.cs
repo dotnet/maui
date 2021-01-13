@@ -49,17 +49,16 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			public Issue12484Template()
 			{
-				var label = new Label
+				var content = new StackLayout()
 				{
-					AutomationId = "Success",
-					Text = "If this text appear, the test has passed.",
-					HorizontalOptions = LayoutOptions.Center,
-					VerticalOptions = LayoutOptions.Center
+					Children =
+					{
+						new Label()
+						{
+							Text = "If a label with text `Success` does not show up this test has failed"
+						}
+					}
 				};
-
-				var content = new Grid();
-				content.Children.Add(label);
-
 				Content = content;
 			}
 		}

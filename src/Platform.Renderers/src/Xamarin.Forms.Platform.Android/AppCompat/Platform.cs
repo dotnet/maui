@@ -289,11 +289,23 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		internal static IVisualElementRenderer CreateRenderer(VisualElement element, Context context)
 		{
-			IVisualElementRenderer renderer = Internals.Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element, context)
-				?? new DefaultRenderer(context);
+			IVisualElementRenderer renderer = null;
+
+			// temporary hack to fix the following issues
+			// https://github.com/xamarin/Xamarin.Forms/issues/13261
+			// https://github.com/xamarin/Xamarin.Forms/issues/12484
+			if (element is RadioButton tv && tv.ResolveControlTemplate() != null)
+			{
+				renderer = new DefaultRenderer(context);
+			}
+
+			if (renderer == null)
+			{
+				renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element, context)
+					?? new DefaultRenderer(context);
+			}
 
 			renderer.SetElement(element);
-
 			return renderer;
 		}
 

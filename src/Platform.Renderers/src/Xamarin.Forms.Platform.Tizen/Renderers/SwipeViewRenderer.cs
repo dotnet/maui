@@ -301,7 +301,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 
 			var itemsRenderer = Platform.GetOrCreateRenderer(itemsLayout);
-			(itemsRenderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+			(itemsRenderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 			var measured = itemsLayout.Measure(Element.Width, Element.Height);
 
 			MaximumSwipeSize = Forms.ConvertToScaledPixel(

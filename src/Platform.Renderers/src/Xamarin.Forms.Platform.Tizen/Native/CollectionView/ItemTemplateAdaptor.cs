@@ -103,7 +103,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			var renderer = Platform.GetOrCreateRenderer(view);
 			var native = renderer.NativeView;
 			view.Parent = _itemsView;
-			(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+			(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 
 			_nativeFormsTable[native] = view;
 			return native;
@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				_headerCache.Parent = _itemsView;
 				var renderer = Platform.GetOrCreateRenderer(_headerCache);
-				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+				(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 				return renderer.NativeView;
 			}
 			return null;
@@ -134,7 +134,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				_footerCache.Parent = _itemsView;
 				var renderer = Platform.GetOrCreateRenderer(_footerCache);
-				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+				(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 				return renderer.NativeView;
 			}
 			return null;

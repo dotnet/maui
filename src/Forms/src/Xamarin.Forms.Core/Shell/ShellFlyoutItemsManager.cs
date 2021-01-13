@@ -60,7 +60,7 @@ namespace Xamarin.Forms
 					{
 						if (j < dest.Count)
 						{
-							if(destIndex != j)
+							if (destIndex != j)
 								dest.Move(destIndex, j);
 						}
 						else
