@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				height = height > 0 ? height : FindCellContentHeight(viewCell);
 
 				renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(height);
-				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+				(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 
 				UpdatePropagateEvent(viewCell.View);
 
@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				_cacheCandidate.Remove((EvasObject)sender);
 			};
-			(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+			(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 
 			UpdatePropagateEvent(duplicatedCell.View);
 			return renderer.NativeView;

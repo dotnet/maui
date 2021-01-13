@@ -31,8 +31,8 @@ namespace Xamarin.Forms
 			if (length.IsAuto)
 				return "auto";
 			if (length.IsStar)
-				return $"{length.Value}*";
-			return $"{length.Value}";
+				return $"{length.Value.ToString(CultureInfo.InvariantCulture)}*";
+			return $"{length.Value.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}
 }

@@ -9,6 +9,8 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class PolygonRenderer : ShapeRenderer<Polygon, PolygonView>
 	{
+		PointCollection _points;
+
 		public PolygonRenderer(Context context) : base(context)
 		{
 
@@ -25,9 +27,6 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (args.NewElement != null)
 			{
-				var points = args.NewElement.Points;
-				points.CollectionChanged += OnCollectionChanged;
-
 				UpdatePoints();
 				UpdateFillRule();
 			}
@@ -49,17 +48,24 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
-				if (Element != null)
+				if (_points != null)
 				{
-					var points = Element.Points;
-					points.CollectionChanged -= OnCollectionChanged;
+					_points.CollectionChanged -= OnCollectionChanged;
+					_points = null;
 				}
 			}
 		}
 
 		void UpdatePoints()
 		{
-			Control.UpdatePoints(Element.Points);
+			if (_points != null)
+				_points.CollectionChanged -= OnCollectionChanged;
+
+			_points = Element.Points;
+
+			_points.CollectionChanged += OnCollectionChanged;
+
+			Control.UpdatePoints(_points);
 		}
 
 		void UpdateFillRule()

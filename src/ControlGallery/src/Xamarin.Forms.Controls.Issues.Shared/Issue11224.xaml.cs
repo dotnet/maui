@@ -36,6 +36,17 @@ namespace Xamarin.Forms.Controls.Issues
 				else
 					ResultLabel.Text = "The test has failed";
 			};
+
+			carousel.PropertyChanged += (sender, args) =>
+			{
+				if (args.PropertyName == CarouselView.IsVisibleProperty.PropertyName)
+				{
+					if (carousel.IsVisible && carousel.Position == 3)
+					{
+						ResultLabel.Text = "The test has passed";
+					}
+				}
+			};
 #endif
 		}
 

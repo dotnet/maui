@@ -110,8 +110,11 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			Device.InvokeOnMainThreadAsync(() =>
 			{
-				var page = AddBottomTab("Success");
-				page.Content = new Label() { Text = "Success" };
+				var page = AddBottomTab("Flyout Item");
+				page.Content = new Label()
+				{
+					Text = "Success"
+				};
 			});
 		}
 

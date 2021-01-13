@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Xamarin.Forms;
+using Xamarin.Platform;
 using Xamarin.Platform.Layouts;
 
-namespace Xamarin.Platform
+namespace Sample
 {
-	public abstract class Layout : View, ILayout, IEnumerable<IView>
+	public abstract class Layout : View, Xamarin.Platform.ILayout, IEnumerable<IView>
 	{
 		ILayoutManager _layoutManager;
 		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
@@ -37,7 +38,10 @@ namespace Xamarin.Platform
 				return DesiredSize;
 			}
 
-			DesiredSize = LayoutManager.Measure(widthConstraint, heightConstraint);
+			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
+			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
+				sizeWithoutMargins.Height + Margin.VerticalThickness);
+			
 			IsMeasureValid = true;
 			return DesiredSize;
 		}
@@ -51,10 +55,9 @@ namespace Xamarin.Platform
 
 			base.Arrange(bounds);
 
-			LayoutManager.Arrange(bounds);
+			LayoutManager.Arrange(Frame);
 			IsArrangeValid = true;
-			Handler?.SetFrame(bounds);
+			Handler?.SetFrame(Frame);
 		}
-
 	}
 }

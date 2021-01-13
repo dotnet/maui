@@ -13,6 +13,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.DrawerLayout.Widget;
 using AndroidX.Legacy.App;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.AppCompat;

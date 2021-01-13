@@ -147,7 +147,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			pageItem1.SetBinding(Page.IsVisibleProperty, "Item1");
 			pageItem2.SetBinding(Page.IsVisibleProperty, "Item2");
-			item3.SetBinding(FlyoutItem.IsVisibleProperty, "Item3");
+			item3.SetBinding(Shell.FlyoutItemIsVisibleProperty, "Item3");
 
 			this.Items.Add(new MenuShellItem(new MenuItem()
 			{

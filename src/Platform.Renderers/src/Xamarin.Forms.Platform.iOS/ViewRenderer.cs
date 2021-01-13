@@ -277,7 +277,10 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (IsElementOrControlEmpty)
 				return;
 
-			SetBackground(Element.Background);
+			Brush brush = Element.Background;
+
+			if (!Brush.IsNullOrEmpty(brush))
+				SetBackground(brush);
 		}
 
 		void UpdateIsEnabled()

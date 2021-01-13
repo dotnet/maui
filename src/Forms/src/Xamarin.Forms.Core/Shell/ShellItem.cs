@@ -22,19 +22,9 @@ namespace Xamarin.Forms
 
 		}
 
-		public static readonly new BindableProperty IsVisibleProperty =
-			BindableProperty.CreateAttached(nameof(IsVisible), typeof(bool), typeof(FlyoutItem), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
-
+		public static readonly new BindableProperty IsVisibleProperty = BaseShellItem.IsVisibleProperty;
 		public static bool GetIsVisible(BindableObject obj) => (bool)obj.GetValue(IsVisibleProperty);
 		public static void SetIsVisible(BindableObject obj, bool isVisible) => obj.SetValue(IsVisibleProperty, isVisible);
-
-		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			if (bindable is Element element)
-				element
-					.FindParentOfType<Shell>()
-					?.SendStructureChanged();
-		}
 	}
 
 	[EditorBrowsable(EditorBrowsableState.Always)]
@@ -174,9 +164,12 @@ namespace Xamarin.Forms
 
 		internal void SendStructureChanged()
 		{
-			if (Parent is Shell shell && IsVisibleItem)
+			if (Parent is Shell shell)
 			{
-				shell.SendStructureChanged();
+				if (IsVisibleItem)
+					shell.SendStructureChanged();
+
+				shell.SendFlyoutItemsChanged();
 			}
 		}
 
@@ -184,7 +177,12 @@ namespace Xamarin.Forms
 		{
 			if (shellSection.Parent != null)
 			{
-				return (ShellItem)shellSection.Parent;
+				var current = (ShellItem)shellSection.Parent;
+
+				if (current.Items.Contains(shellSection))
+					current.CurrentItem = shellSection;
+
+				return current;
 			}
 
 			ShellItem result = null;

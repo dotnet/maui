@@ -2,6 +2,7 @@ using System;
 using System.Collections.Specialized;
 using ElmSharp;
 using Xamarin.Forms.Internals;
+using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -45,6 +46,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(ListView.SelectionModeProperty, UpdateSelectionMode);
 			RegisterPropertyHandler(ListView.VerticalScrollBarVisibilityProperty, UpdateVerticalScrollBarVisibility);
 			RegisterPropertyHandler(ListView.HorizontalScrollBarVisibilityProperty, UpdateHorizontalScrollBarVisibility);
+			RegisterPropertyHandler(ListView.SeparatorColorProperty, UpdateSeparator);
+			RegisterPropertyHandler(ListView.SeparatorVisibilityProperty, UpdateSeparator);
 		}
 
 		/// <summary>
@@ -387,6 +390,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		void UpdateHorizontalScrollBarVisibility()
 		{
 			Control.HorizontalScrollBarVisibility = Element.HorizontalScrollBarVisibility.ToNative();
+		}
+
+		void UpdateSeparator()
+		{
+			Control.BottomLineColor = Element.SeparatorVisibility == SeparatorVisibility.Default ? Element.SeparatorColor.ToNative() : EColor.Transparent;
 		}
 	}
 }

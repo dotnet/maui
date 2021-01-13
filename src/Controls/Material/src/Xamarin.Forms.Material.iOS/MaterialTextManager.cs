@@ -143,7 +143,7 @@ namespace Xamarin.Forms.Material.iOS
 				var elementTextColor = element.TextColor;
 				AlphaAdjustment += 0.0000001;
 
-				var adjustedAlpha = elementTextColor.A - AlphaAdjustment;
+				var adjustedAlpha = elementTextColor.IsDefault ? 1 - AlphaAdjustment : elementTextColor.A - AlphaAdjustment;
 				if (adjustedAlpha < 0)
 				{
 					// Below an alpha of 0.01 stuff on iOS doesn't show up in hit tests anyway, so it seems unlikely

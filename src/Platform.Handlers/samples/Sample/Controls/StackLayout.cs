@@ -1,7 +1,8 @@
 ﻿using System.Linq;
 using System.Runtime.InteropServices;
+using Xamarin.Platform;
 
-namespace Xamarin.Platform
+namespace Sample
 {
 	public abstract class StackLayout : Layout, IStackLayout
 	{

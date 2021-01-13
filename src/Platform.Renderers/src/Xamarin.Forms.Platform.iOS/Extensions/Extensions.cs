@@ -161,6 +161,11 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 			{
 				mutableAttributedString = new NSMutableAttributedString(attributedString);
+
+				if (!mutableAttributedString.MutableString.ToString().Equals(text))
+				{
+					mutableAttributedString.MutableString.SetString(new NSString(text));
+				}
 			}
 
 			AddKerningAdjustment(mutableAttributedString, text, characterSpacing);

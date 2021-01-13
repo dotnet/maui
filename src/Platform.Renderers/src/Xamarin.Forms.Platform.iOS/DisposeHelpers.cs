@@ -33,9 +33,7 @@ namespace Xamarin.Forms.Platform.MacOS
 #if __MOBILE__
 					if (renderer.ViewController != null)
 					{
-
-						var modalWrapper = renderer.ViewController.ParentViewController as ModalWrapper;
-						if (modalWrapper != null)
+						if (renderer.ViewController.ParentViewController is ModalWrapper modalWrapper)
 							modalWrapper.Dispose();
 					}
 #endif

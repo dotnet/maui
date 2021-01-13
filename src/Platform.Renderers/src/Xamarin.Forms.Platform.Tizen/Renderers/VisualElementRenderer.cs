@@ -701,12 +701,36 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		static double ComputeAbsoluteX(VisualElement e)
 		{
-			return e.X + ((e.RealParent is VisualElement) ? Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().X) : 0.0);
+			var parentX = 0.0;
+			if (e.RealParent is VisualElement ve)
+			{
+				if (CompressedLayout.GetIsHeadless(e.RealParent))
+				{
+					parentX = ComputeAbsoluteX(ve);
+				}
+				else
+				{
+					parentX = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().X);
+				}
+			}
+			return e.X + parentX;
 		}
 
 		static double ComputeAbsoluteY(VisualElement e)
 		{
-			return e.Y + ((e.RealParent is VisualElement) ? Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().Y) : 0.0);
+			var parentY = 0.0;
+			if (e.RealParent is VisualElement ve)
+			{
+				if (CompressedLayout.GetIsHeadless(e.RealParent))
+				{
+					parentY = ComputeAbsoluteY(ve);
+				}
+				else
+				{
+					parentY = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().Y);
+				}
+			}
+			return e.Y + parentY;
 		}
 
 		static Point ComputeAbsolutePoint(VisualElement e)
@@ -740,22 +764,48 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// Adds a new child if it's derived from the VisualElement class. Otherwise this method does nothing.
 		/// </summary>
 		/// <param name="child">Child to be added.</param>
-		void AddChild(Element child)
+		protected virtual void AddChild(Element child)
 		{
-			VisualElement vElement = child as VisualElement;
-			if (vElement != null)
+			if (child is VisualElement ve)
 			{
-				var childRenderer = Platform.GetOrCreateRenderer(vElement);
-
-				// if the native view can have children, attach the new child
-				if (NativeView is Native.IContainable<EvasObject>)
+				if (CompressedLayout.GetIsHeadless(ve) && NativeView is IContainable<EvasObject> containerNativeView)
 				{
-					(NativeView as Native.IContainable<EvasObject>).Children.Add(childRenderer.NativeView);
+					AddHeadlessChild(ve, containerNativeView);
+					ve.IsPlatformEnabled = true;
+				}
+				else
+				{
+					var childRenderer = Platform.GetOrCreateRenderer(ve);
+					// if the native view can have children, attach the new child
+					if (NativeView is IContainable<EvasObject> containerView)
+					{
+						containerView.Children.Add(childRenderer.NativeView);
+					}
 				}
 			}
 		}
 
-		void RemoveChild(VisualElement view)
+		protected virtual void AddHeadlessChild(VisualElement element, IContainable<EvasObject> parent)
+		{
+			foreach (var child in element.LogicalChildren)
+			{
+				if (child is VisualElement visualChild)
+				{
+					if (CompressedLayout.GetIsHeadless(visualChild))
+					{
+						AddHeadlessChild(visualChild, parent);
+						visualChild.IsPlatformEnabled = true;
+					}
+					else
+					{
+						var childRenderer = Platform.GetOrCreateRenderer(visualChild);
+						parent.Children.Add(childRenderer.NativeView);
+					}
+				}
+			}
+		}
+
+		protected virtual void RemoveChild(VisualElement view)
 		{
 			var renderer = Platform.GetRenderer(view);
 			var containerObject = NativeView as Native.IContainable<EvasObject>;
@@ -1111,8 +1161,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			map.PopulatePoints(geometry, 0);
 
 			bool changed = false;
-			ApplyRotation(map, geometry, ref changed);
 			ApplyScale(map, geometry, ref changed);
+			ApplyRotation(map, geometry, ref changed);
 			ApplyTranslation(map, geometry, ref changed);
 
 			NativeView.IsMapEnabled = changed;

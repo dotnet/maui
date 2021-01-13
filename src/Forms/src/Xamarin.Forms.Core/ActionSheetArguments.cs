@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Internals
 			Destruction = destruction;
 			Buttons = buttons?.Where(c => c != null);
 			Result = new TaskCompletionSource<string>();
+			FlowDirection = FlowDirection.MatchParent;
 		}
 
 		/// <summary>
@@ -39,6 +40,8 @@ namespace Xamarin.Forms.Internals
 		///     Gets the title for the action sheet. Can be null.
 		/// </summary>
 		public string Title { get; private set; }
+
+		public FlowDirection FlowDirection { get; set; }
 
 		public void SetResult(string result)
 		{

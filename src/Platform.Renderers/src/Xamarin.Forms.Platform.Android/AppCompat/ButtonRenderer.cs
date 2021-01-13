@@ -22,7 +22,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		Typeface _defaultTypeface;
 		bool _isDisposed;
 		ButtonLayoutManager _buttonLayoutManager;
-		string _defaultContentDescription;
 
 		public ButtonRenderer(Context context) : base(context)
 		{
@@ -43,7 +42,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		global::Android.Widget.Button NativeButton => Control;
 
 		protected override void SetContentDescription()
-			=> AutomationPropertiesProvider.SetBasicContentDescription(this, Element, ref _defaultContentDescription);
+			=> base.SetContentDescription(false);
 
 		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
 		{

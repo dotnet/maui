@@ -22,7 +22,7 @@ namespace Xamarin.Forms
 		{
 			if (!(value is Point p))
 				throw new NotSupportedException();
-			return $"{p.X}, {p.Y}";
+			return $"{p.X.ToString(CultureInfo.InvariantCulture)}, {p.Y.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}
 }

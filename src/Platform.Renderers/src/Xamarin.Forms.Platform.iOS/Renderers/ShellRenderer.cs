@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -62,6 +63,8 @@ namespace Xamarin.Forms.Platform.iOS
 		IShellItemRenderer _currentShellItemRenderer;
 		bool _disposed;
 		IShellFlyoutRenderer _flyoutRenderer;
+		Task _activeTransition = Task.CompletedTask;
+		IShellItemRenderer _incomingRenderer;
 
 		IShellFlyoutRenderer FlyoutRenderer
 		{
@@ -120,9 +123,6 @@ namespace Xamarin.Forms.Platform.iOS
 			base.ViewDidLoad();
 
 			SetupCurrentShellItem();
-
-			UpdateBackgroundColor();
-			UpdateFlowDirection();
 		}
 
 		protected virtual IShellFlyoutRenderer CreateFlyoutRenderer()
@@ -195,13 +195,35 @@ namespace Xamarin.Forms.Platform.iOS
 			FlyoutRenderer = null;
 		}
 
-		protected virtual void OnCurrentItemChanged()
+		protected virtual async void OnCurrentItemChanged()
+		{
+			try
+			{
+				await OnCurrentItemChangedAsync();
+			}
+			catch(Exception exc)
+			{
+				Internals.Log.Warning(nameof(Shell), $"Failed on changing current item: {exc}");
+			}
+		}
+
+		protected virtual async Task OnCurrentItemChangedAsync()
 		{
 			var currentItem = Shell.CurrentItem;
+
+			var oldLayer = _currentShellItemRenderer
+				?.ViewController
+				?.View
+				?.Layer;
+
+			if (oldLayer?.AnimationKeys?.Length > 0)
+				oldLayer.RemoveAllAnimations();
+
+			await _activeTransition;
 			if (_currentShellItemRenderer?.ShellItem != currentItem)
 			{
 				var newController = CreateShellItemRenderer(currentItem);
-				SetCurrentShellItemController(newController);
+				await SetCurrentShellItemControllerAsync(newController);
 			}
 		}
 
@@ -210,7 +232,6 @@ namespace Xamarin.Forms.Platform.iOS
 			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
 			{
 				OnCurrentItemChanged();
-				UpdateFlowDirection();
 			}
 			else if(e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 			{
@@ -244,6 +265,31 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected async void SetCurrentShellItemController(IShellItemRenderer value)
 		{
+			try
+			{
+				await SetCurrentShellItemControllerAsync(value);
+			}
+			catch (Exception exc)
+			{
+				Internals.Log.Warning(nameof(Shell), $"Failed to SetCurrentShellItemController: {exc}");
+			}
+		}
+
+		protected async Task SetCurrentShellItemControllerAsync(IShellItemRenderer value)
+		{
+			_incomingRenderer = value;
+			await _activeTransition;
+
+			// This means the selected item changed while the active transition
+			// was finishing up
+			if(_incomingRenderer != value ||
+				value.ShellItem != this.Shell.CurrentItem)
+			{
+				(value as IDisconnectable)?.Disconnect();
+				value?.Dispose();
+				return;
+			}
+
 			var oldRenderer = _currentShellItemRenderer;
 			(oldRenderer as IDisconnectable)?.Disconnect();
 			var newRenderer = value;
@@ -259,11 +305,24 @@ namespace Xamarin.Forms.Platform.iOS
 			if (oldRenderer != null)
 			{
 				var transition = CreateShellItemTransition();
-				await transition.Transition(oldRenderer, newRenderer);
+
+				_activeTransition = transition.Transition(oldRenderer, newRenderer);
+				await _activeTransition;
 
 				oldRenderer.ViewController.RemoveFromParentViewController();
 				oldRenderer.ViewController.View.RemoveFromSuperview();
 				oldRenderer.Dispose();
+			}
+			else
+			{
+				View.AddSubview(newRenderer.ViewController.View);
+			}
+
+			// current renderer is still valid
+			if(_currentShellItemRenderer == value)
+			{
+				UpdateBackgroundColor();
+				UpdateFlowDirection();
 			}
 		}
 

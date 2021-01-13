@@ -248,7 +248,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			var layoutrenderer = Platform.GetOrCreateRenderer(layout);
 
 			var request = layout.Measure(Device.Idiom == TargetIdiom.Watch ? sender.Width * 0.7 : sender.Width, sender.Height);
-			(layoutrenderer as LayoutRenderer).RegisterOnLayoutUpdated();
+			(layoutrenderer as ILayoutRenderer).RegisterOnLayoutUpdated();
 			layoutrenderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(request.Request.Height);
 			layoutrenderer.NativeView.MinimumWidth = Forms.ConvertToScaledPixel(request.Request.Width);
 

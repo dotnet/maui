@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage
+    xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:issues="clr-namespace:Xamarin.Forms.Controls.Issues"
+    mc:Ignorable="d"
+    x:Class="Xamarin.Forms.Controls.Issues.Issue12484">
+    <ContentPage.Content>
+        <StackLayout
+             Margin="12">
+            <issues:Issue12484CustomView />
+        </StackLayout>
+    </ContentPage.Content>
+</controls:TestContentPage>

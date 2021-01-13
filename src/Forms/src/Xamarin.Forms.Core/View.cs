@@ -196,10 +196,15 @@ namespace Xamarin.Forms
 
 		public void Arrange(Rectangle bounds)
 		{
+			Layout(bounds);
+		}
+
+		void IFrameworkElement.Arrange(Rectangle bounds) 
+		{
 			if (IsArrangeValid)
 				return;
 			IsArrangeValid = true;
-			Layout(bounds);
+			Layout(this.ComputeFrame(bounds));
 		}
 
 		protected override void OnSizeAllocated(double width, double height)
@@ -212,23 +217,7 @@ namespace Xamarin.Forms
 		{
 			if (!IsMeasureValid)
 			{
-				// TODO ezhart Adjust constraints to account for margins
-
-				// TODO ezhart If we can find reason to, we may need to add a MeasureFlags parameter to IFrameworkElement.Measure
-				// Forms has and (very occasionally) uses one. I'd rather not muddle this up with it, but if it's necessary
-				// we can add it. The default is MeasureFlags.None, but nearly every use of it is MeasureFlags.IncludeMargins,
-				// so it's an awkward default. 
-
-				// I'd much rather just get rid of all the uses of it which don't include the margins, and have "with margins"
-				// be the default. It's more intuitive and less code to write. Also, I sort of suspect that the uses which
-				// _don't_ include the margins are actually bugs.
-
-				var frameworkElement = this as IFrameworkElement;
-
-				widthConstraint = LayoutManager.ResolveConstraints(widthConstraint, frameworkElement.Width);
-				heightConstraint = LayoutManager.ResolveConstraints(heightConstraint, frameworkElement.Height);
-
-				DesiredSize = Handler.GetDesiredSize(widthConstraint, heightConstraint);
+				DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
 			}
 
 			IsMeasureValid = true;

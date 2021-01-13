@@ -47,6 +47,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 							new CarouselItemsGallery(useNativeIndicators: true, setPositionOnAppearing: true), Navigation),
 						GalleryBuilder.NavButton("CarouselView loop", () =>
 							new CarouselXamlGallery(true), Navigation),
+						GalleryBuilder.NavButton("CarouselView Set CurrentItem", () =>
+							new CarouselXamlGallery(false, 3), Navigation),
+						GalleryBuilder.NavButton("CarouselView Set CurrentItem Loop", () =>
+							new CarouselXamlGallery(true, 3), Navigation),
 					}
 				}
 			};

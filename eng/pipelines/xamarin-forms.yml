@@ -26,9 +26,7 @@ trigger:
   branches:
     include:
     - main
-    - 3.*
-    - 4.*
-    - 5.*
+    - main-handler
   tags:
     include:
     - '*'

@@ -51,10 +51,35 @@ using AView = Android.Views.View;
 [assembly: ExportRenderer(typeof(Issue8801.PopupStackLayout), typeof(Issue8801StackLayoutRenderer))]
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Tests.TestClasses.CustomButton), typeof(CustomButtonRenderer))]
 [assembly: ExportRenderer(typeof(ScrolView11185), typeof(ScrollViewFadeRenderer))]
+[assembly: ExportRenderer(typeof(ShellWithCustomRendererDisabledAnimations), typeof(ShellWithCustomRendererDisabledAnimationsRenderer))]
 [assembly: ExportRenderer(typeof(FlyoutPage), typeof(NativeDroidFlyoutPage))]
 
 namespace Xamarin.Forms.ControlGallery.Android
 {
+	public class ShellWithCustomRendererDisabledAnimationsRenderer : ShellRenderer
+	{
+		public ShellWithCustomRendererDisabledAnimationsRenderer(Context context) : base(context)
+		{
+		}
+
+		protected override IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
+		{
+			return new ShellWithCustomRendererDisabledAnimationsShellItemRenderer(this);
+		}
+
+		public class ShellWithCustomRendererDisabledAnimationsShellItemRenderer : ShellItemRenderer
+		{
+			public ShellWithCustomRendererDisabledAnimationsShellItemRenderer(IShellContext shellContext) : base(shellContext)
+			{
+			}
+
+			protected override void SetupAnimation(ShellNavigationSource navSource, AndroidX.Fragment.App.FragmentTransaction t, Page page)
+			{
+				// Don't setup any animations
+			}
+		}
+	}
+
 	public sealed class ScrollViewFadeRenderer : ScrollViewRenderer
 	{
 		public ScrollViewFadeRenderer(Context context) : base(context)

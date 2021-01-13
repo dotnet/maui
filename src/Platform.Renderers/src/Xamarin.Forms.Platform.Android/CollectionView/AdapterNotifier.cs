@@ -27,13 +27,24 @@ namespace Xamarin.Forms.Platform.Android
 		public void NotifyItemInserted(IItemsViewSource source, int startIndex)
 		{
 			if (IsValidAdapter())
+			{
 				_adapter.NotifyItemInserted(startIndex);
+
+				var changedCount = _adapter.ItemCount - startIndex;
+				_adapter.NotifyItemRangeChanged(startIndex, changedCount);
+			}
 		}
 
 		public void NotifyItemMoved(IItemsViewSource source, int fromPosition, int toPosition)
 		{
 			if (IsValidAdapter())
+			{
 				_adapter.NotifyItemMoved(fromPosition, toPosition);
+
+				var minPosition = System.Math.Min(fromPosition, toPosition);
+				var changedCount = _adapter.ItemCount - minPosition;
+				_adapter.NotifyItemRangeChanged(minPosition, changedCount);
+			}
 		}
 
 		public void NotifyItemRangeChanged(IItemsViewSource source, int start, int end)
@@ -45,19 +56,34 @@ namespace Xamarin.Forms.Platform.Android
 		public void NotifyItemRangeInserted(IItemsViewSource source, int startIndex, int count)
 		{
 			if (IsValidAdapter())
+			{
 				_adapter.NotifyItemRangeInserted(startIndex, count);
+
+				var changedCount = _adapter.ItemCount - startIndex;
+				_adapter.NotifyItemRangeChanged(startIndex, changedCount);
+			}
 		}
 
 		public void NotifyItemRangeRemoved(IItemsViewSource source, int startIndex, int count)
 		{
 			if (IsValidAdapter())
+			{
 				_adapter.NotifyItemRangeRemoved(startIndex, count);
+
+				var changedCount = _adapter.ItemCount - startIndex;
+				_adapter.NotifyItemRangeChanged(startIndex, changedCount);
+			}
 		}
 
 		public void NotifyItemRemoved(IItemsViewSource source, int startIndex)
 		{
 			if (IsValidAdapter())
+			{
 				_adapter.NotifyItemRemoved(startIndex);
+
+				var changedCount = _adapter.ItemCount - startIndex;
+				_adapter.NotifyItemRangeChanged(startIndex, changedCount);
+			}
 		}
 
 		internal bool IsValidAdapter()

@@ -1,6 +1,6 @@
 ﻿using Xamarin.Platform.Layouts;
 
-namespace Xamarin.Platform
+namespace Sample
 {
 	public class VerticalStackLayout : StackLayout
 	{

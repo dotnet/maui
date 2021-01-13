@@ -134,12 +134,14 @@
     <Compile Include="BorderEffect.cs" />
     <Compile Include="CustomSwitchRenderer.cs" />
     <Compile Include="DisposePageRenderer.cs" />
+    <Compile Include="NavPageOverrideRenderer.cs" />
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
     <Compile Include="RegistrarValidationService.cs" />
     <Compile Include="SampleNativeControl.cs" />
     <Compile Include="SecondaryWindowService.cs" />
     <Compile Include="Tests\PlatformTestSettings.cs" />
     <Compile Include="Tests\TestingPlatformService.cs" />
+    <Compile Include="_13109IssueHelper.cs" />
     <Compile Include="_2489CustomRenderer.cs" />
     <Compile Include="_57114Renderer.cs" />
     <Compile Include="_58406EffectRenderer.cs" />
@@ -256,7 +258,7 @@
       <Version>6.2.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.4.2</Version>
+      <Version>2.4.3</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>

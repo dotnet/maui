@@ -27,9 +27,6 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected override void Dispose(bool disposing)
 		{
-			if (Control != null)
-				Control.Activated -= OnButtonActivated;
-
 			ObserveStateChange(false);
 
 			base.Dispose(disposing);
@@ -47,8 +44,6 @@ namespace Xamarin.Forms.Platform.MacOS
 					btn.SetButtonType(NSButtonType.Radio);
 					SetNativeControl(btn);
 					ObserveStateChange(true);
-
-					Control.Activated += OnButtonActivated;
 				}
 
 				UpdateContent();
@@ -75,11 +70,6 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateBackgroundVisibility();
 			else if (e.PropertyName == RadioButton.IsCheckedProperty.PropertyName)
 				UpdateCheck();
-		}
-
-		void OnButtonActivated(object sender, EventArgs eventArgs)
-		{
-			((IButtonController)Element)?.SendClicked();
 		}
 
 		void UpdateBackgroundVisibility()

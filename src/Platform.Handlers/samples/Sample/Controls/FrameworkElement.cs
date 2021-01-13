@@ -1,7 +1,8 @@
 ﻿using Xamarin.Forms;
+using Xamarin.Platform;
 using Xamarin.Platform.Layouts;
 
-namespace Xamarin.Platform
+namespace Sample
 {
 	public abstract class FrameworkElement : IFrameworkElement
 	{
@@ -28,9 +29,11 @@ namespace Xamarin.Platform
 		public double Width { get; set; } = -1;
 		public double Height { get; set; } = -1;
 
+		public Thickness Margin { get; set; } = Thickness.Zero;
+
 		public virtual void Arrange(Rectangle bounds)
 		{
-			Frame = bounds;
+			Frame = this.ComputeFrame(bounds);
 		}
 
 		public void InvalidateMeasure()
@@ -48,17 +51,7 @@ namespace Xamarin.Platform
 		{
 			if (!IsMeasureValid)
 			{
-				if (Handler == null)
-				{
-					DesiredSize = Size.Zero;
-				}
-				else
-				{
-					widthConstraint = LayoutManager.ResolveConstraints(widthConstraint, Width);
-					heightConstraint = LayoutManager.ResolveConstraints(heightConstraint, Height);
-
-					DesiredSize = Handler.GetDesiredSize(widthConstraint, heightConstraint);
-				}
+				DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
 			}
 
 			IsMeasureValid = true;

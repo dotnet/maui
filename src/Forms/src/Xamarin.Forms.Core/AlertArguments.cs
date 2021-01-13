@@ -13,6 +13,7 @@ namespace Xamarin.Forms.Internals
 			Accept = accept;
 			Cancel = cancel;
 			Result = new TaskCompletionSource<bool>();
+			FlowDirection = FlowDirection.MatchParent;
 		}
 
 		/// <summary>
@@ -31,6 +32,8 @@ namespace Xamarin.Forms.Internals
 		public string Message { get; private set; }
 
 		public TaskCompletionSource<bool> Result { get; }
+
+		public FlowDirection FlowDirection { get; set; }
 
 		/// <summary>
 		///     Gets the title for the alert. Can be null.

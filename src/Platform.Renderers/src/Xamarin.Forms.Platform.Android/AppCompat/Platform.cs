@@ -291,7 +291,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			IVisualElementRenderer renderer = null;
 
-			if (element is TemplatedView tv && tv.ResolveControlTemplate() != null)
+			// temporary hack to fix the following issues
+			// https://github.com/xamarin/Xamarin.Forms/issues/13261
+			// https://github.com/xamarin/Xamarin.Forms/issues/12484
+			if (element is RadioButton tv && tv.ResolveControlTemplate() != null)
 			{
 				renderer = new DefaultRenderer(context);
 			}
@@ -303,7 +306,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 
 			renderer.SetElement(element);
-
 			return renderer;
 		}
 

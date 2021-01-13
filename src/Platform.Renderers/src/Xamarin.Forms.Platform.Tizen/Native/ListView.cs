@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using ElmSharp;
 using Xamarin.Forms.Internals;
+using EColor = ElmSharp.Color;
 using ERect = ElmSharp.Rect;
 using EScroller = ElmSharp.Scroller;
 
@@ -146,6 +147,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 					Scroller.HorizontalScrollBarVisiblePolicy = value;
 			}
 		}
+
+		public EColor BottomLineColor { get; set; }
 
 		/// <summary>
 		/// Occurs when the ListView has scrolled.
@@ -464,6 +467,14 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			if (itemContext != null && itemContext.Cell != null)
 			{
 				itemContext.Cell.SendSignalToItem(evt.Item);
+				if (BottomLineColor.IsDefault)
+				{
+					evt.Item.DeleteBottomlineColor();
+				}
+				else
+				{
+					evt.Item.SetBottomlineColor(BottomLineColor);
+				}
 				(itemContext.Cell as ICellController).SendAppearing();
 			}
 		}
@@ -678,7 +689,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 							renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(context.Element.MinimumHeightRequest);
 						}
 
-						(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+						(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 
 						return renderer.NativeView;
 					}

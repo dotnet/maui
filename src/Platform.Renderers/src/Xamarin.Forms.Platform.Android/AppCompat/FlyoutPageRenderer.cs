@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
 using Android.Views;
-using AndroidX.Core.Widget;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using AView = Android.Views.View;
@@ -12,6 +11,7 @@ using AView = Android.Views.View;
 namespace Xamarin.Forms.Platform.Android
 {
 	using Xamarin.Forms.Platform.Android.AppCompat;
+	using Xamarin.Forms.Platform.Android.FastRenderers;
 
 	public class FlyoutPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments, ILifeCycleState
 	{
@@ -28,10 +28,10 @@ namespace Xamarin.Forms.Platform.Android
 		bool _disposed;
 		bool _isPresentingFromCore;
 		bool _presented;
+		bool _defaultAutomationSet;
 		VisualElementTracker _tracker;
 		FragmentManager _fragmentManager;
 		string _defaultContentDescription;
-		string _defaultHint;
 
 		public FlyoutPageRenderer(Context context) : base(context)
 		{
@@ -210,9 +210,26 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool ILifeCycleState.MarkedForDispose { get; set; } = false;
 
-		protected virtual void SetAutomationId(string id) => FastRenderers.AutomationPropertiesProvider.SetAutomationId(this, Element, id);
+		void SetupAutomationDefaults()
+		{
+			if (!_defaultAutomationSet)
+			{
+				_defaultAutomationSet = true;
+				AutomationPropertiesProvider.SetupDefaults(this, ref _defaultContentDescription);
+			}
+		}
 
-		protected virtual void SetContentDescription() => FastRenderers.AutomationPropertiesProvider.SetContentDescription(this, Element, ref _defaultContentDescription, ref _defaultHint);
+		protected virtual void SetAutomationId(string id)
+		{
+			SetupAutomationDefaults();
+			AutomationPropertiesProvider.SetAutomationId(this, Element, id);
+		}
+
+		protected virtual void SetContentDescription()
+		{
+			SetupAutomationDefaults();
+			AutomationPropertiesProvider.SetContentDescription(this, Element, _defaultContentDescription, null);
+		}
 
 		protected override void Dispose(bool disposing)
 		{

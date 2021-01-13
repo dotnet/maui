@@ -22,7 +22,11 @@ using AWidget = Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
-	public class TabbedPageRenderer : VisualElementRenderer<TabbedPage>, TabLayout.IOnTabSelectedListener, ViewPager.IOnPageChangeListener, IManageFragments, BottomNavigationView.IOnNavigationItemSelectedListener
+	public class TabbedPageRenderer : VisualElementRenderer<TabbedPage>,
+#pragma warning disable CS0618 // Type or member is obsolete
+		TabLayout.IOnTabSelectedListener,
+#pragma warning restore CS0618 // Type or member is obsolete
+		ViewPager.IOnPageChangeListener, IManageFragments, BottomNavigationView.IOnNavigationItemSelectedListener
 	{
 		Drawable _backgroundDrawable;
 		Drawable _wrappedBackgroundDrawable;
@@ -487,7 +491,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					tabs.SetupWithViewPager(pager);
 					UpdateTabIcons();
+#pragma warning disable CS0618 // Type or member is obsolete
 					tabs.AddOnTabSelectedListener(this);
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 
 				UpdateIgnoreContainerAreas();

@@ -48,6 +48,8 @@
 						new LinearGradientExplorerGallery(), Navigation),
 					GalleryBuilder.NavButton("RadialGradient Explorer", () =>
 						new RadialGradientExplorerGallery(), Navigation),
+					GalleryBuilder.NavButton("GradientBrush Offset Gallery", () =>
+						new GradientBrushDefaultOffsetGallery(), Navigation),
 					GalleryBuilder.NavButton("Bindable Brush Gallery", () =>
 						new BindableBrushGallery(), Navigation),
 					GalleryBuilder.NavButton("Update Brush Colors Gallery", () =>

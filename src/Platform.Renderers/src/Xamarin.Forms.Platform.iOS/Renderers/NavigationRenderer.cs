@@ -669,19 +669,17 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
 
+				navigationBarAppearance.ConfigureWithOpaqueBackground();
+
 				if (barBackgroundColor == Color.Default)
 				{
-					navigationBarAppearance.ConfigureWithDefaultBackground();
-					navigationBarAppearance.BackgroundColor = null;
+					navigationBarAppearance.BackgroundColor = ColorExtensions.BackgroundColor;
 
 					var parentingViewController = GetParentingViewController();
 					parentingViewController?.SetupDefaultNavigationBarAppearance();
 				}
 				else
-				{
-					navigationBarAppearance.ConfigureWithOpaqueBackground();
 					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToUIColor();
-				}
 
 				var barBackgroundBrush = NavPage.BarBackground;
 				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);

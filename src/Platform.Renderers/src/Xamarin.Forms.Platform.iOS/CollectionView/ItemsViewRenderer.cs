@@ -133,8 +133,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 			}
 
-			Controller.CollectionView.UpdateFlowDirection(Element);
-			Controller.Layout.InvalidateLayout();
+			Controller.UpdateFlowDirection();
 		}
 
 		protected virtual void UpdateItemsSource()

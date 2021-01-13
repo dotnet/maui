@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Xamarin.Forms
@@ -25,8 +26,15 @@ namespace Xamarin.Forms
 			Shell.FlyoutBackdropProperty
 		};
 
+		static readonly BindableProperty[] s_ingestDoubleArray = new[]
+		{
+			Shell.FlyoutWidthProperty,
+			Shell.FlyoutHeightProperty
+		};
+
 		Color?[] _colorArray = new Color?[s_ingestArray.Length];
 		Brush[] _brushArray = new Brush[s_ingestBrushArray.Length];
+		double[] _doubleArray = new double[s_ingestDoubleArray.Length];
 
 		public Color BackgroundColor => _colorArray[0].Value;
 
@@ -49,6 +57,8 @@ namespace Xamarin.Forms
 		public Color UnselectedColor => _colorArray[9].Value;
 
 		public Brush FlyoutBackdrop => _brushArray[0];
+		public double FlyoutWidth => _doubleArray[0];
+		public double FlyoutHeight => _doubleArray[1];
 
 		Color IShellAppearanceElement.EffectiveTabBarBackgroundColor =>
 			!TabBarBackgroundColor.IsDefault ? TabBarBackgroundColor : BackgroundColor;
@@ -68,7 +78,10 @@ namespace Xamarin.Forms
 		internal ShellAppearance()
 		{
 			for (int i = 0; i < _brushArray.Length; i++)
-				_brushArray[0] = Brush.Default;
+				_brushArray[i] = Brush.Default;
+
+			for (int i = 0; i < _doubleArray.Length; i++)
+				_doubleArray[i] = -1;
 		}
 
 		public override bool Equals(object obj)
@@ -88,6 +101,12 @@ namespace Xamarin.Forms
 					return false;
 			}
 
+			for (int i = 0; i < _doubleArray.Length; i++)
+			{
+				if (!EqualityComparer<double>.Default.Equals(_doubleArray[i], appearance._doubleArray[i]))
+					return false;
+			}
+
 			return true;
 		}
 
@@ -99,6 +118,9 @@ namespace Xamarin.Forms
 
 			for (int i = 0; i < _brushArray.Length; i++)
 				hashCode = hashCode * -1521134295 + EqualityComparer<Brush>.Default.GetHashCode(_brushArray[i]);
+
+			for (int i = 0; i < _doubleArray.Length; i++)
+				hashCode = hashCode * -1521134295 + EqualityComparer<double>.Default.GetHashCode(_doubleArray[i]);
 
 			return hashCode;
 		}
@@ -120,10 +142,20 @@ namespace Xamarin.Forms
 			var brushDataSet = pivot.GetValues<Brush>(s_ingestBrushArray);
 			for (int i = 0; i < s_ingestBrushArray.Length; i++)
 			{
-				if (_brushArray[i] != Brush.Default && brushDataSet[i].IsSet)
+				if (Brush.IsNullOrEmpty(_brushArray[i]) && brushDataSet[i].IsSet)
 				{
 					anySet = true;
 					_brushArray[i] = brushDataSet[i].Value;
+				}
+			}
+
+			var doubleDataSet = pivot.GetValues<double>(s_ingestDoubleArray);
+			for (int i = 0; i < s_ingestDoubleArray.Length; i++)
+			{
+				if (_doubleArray[i] == -1 && doubleDataSet[i].IsSet)
+				{
+					anySet = true;
+					_doubleArray[i] = doubleDataSet[i].Value;
 				}
 			}
 

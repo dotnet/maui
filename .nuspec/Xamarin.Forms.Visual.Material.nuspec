@@ -22,8 +22,8 @@
       </group>
 
       <group targetFramework="MonoAndroid10.0">
-        <dependency id="Xamarin.AndroidX.Lifecycle.LiveData" version="2.2.0.3" />
-        <dependency id="Xamarin.Google.Android.Material" version="1.0.0.1" />
+        <dependency id="Xamarin.AndroidX.Lifecycle.LiveData" version="2.2.0.4" />
+        <dependency id="Xamarin.Google.Android.Material" version="1.1.0.5" />
       </group>
       <group targetFramework="Xamarin.iOS10">
         <dependency id="Xamarin.iOS.MaterialComponents" version="92.0.0"/>

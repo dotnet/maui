@@ -24,12 +24,14 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 
 		void UpdateRadiusX()
 		{
-			Control.UpdateRadiusX(Element.RadiusX / Element.WidthRequest);
+			if (Element.Width > 0)
+				Control.UpdateRadiusX(Element.RadiusX / Element.Width);
 		}
 
 		void UpdateRadiusY()
 		{
-			Control.UpdateRadiusY(Element.RadiusY / Element.HeightRequest);
+			if (Element.Height > 0)
+				Control.UpdateRadiusY(Element.RadiusY / Element.Height);
 		}
 	}
 

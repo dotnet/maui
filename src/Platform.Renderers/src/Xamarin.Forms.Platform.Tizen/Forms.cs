@@ -42,6 +42,7 @@ namespace Xamarin.Forms
 		public StaticRegistrarStrategy StaticRegistarStrategy { get; set; }
 		public PlatformType PlatformType { get; set; }
 		public bool UseMessagingCenter { get; set; } = true;
+		public bool UseFastLayout { get; set; } = false;
 
 		public DisplayResolutionUnit DisplayResolutionUnit { get; set; }
 
@@ -271,6 +272,8 @@ namespace Xamarin.Forms
 
 		public static bool UseSkiaSharp { get; private set; }
 
+		public static bool UseFastLayout { get; private set; }
+
 		public static DisplayResolutionUnit DisplayResolutionUnit { get; private set; }
 
 		public static int ScreenDPI => s_dpi.Value;
@@ -480,6 +483,7 @@ namespace Xamarin.Forms
 					s_platformType = options.PlatformType;
 					s_useMessagingCenter = options.UseMessagingCenter;
 					UseSkiaSharp = options.UseSkiaSharp;
+					UseFastLayout = options.UseFastLayout;
 
 					if (options.Assemblies != null && options.Assemblies.Length > 0)
 					{
@@ -532,6 +536,9 @@ namespace Xamarin.Forms
 
 							if (UseSkiaSharp)
 								RegisterSkiaSharpRenderers();
+
+							if (UseFastLayout)
+								Registrar.Registered.Register(typeof(Layout), typeof(FastLayoutRenderer));
 						}
 					}
 

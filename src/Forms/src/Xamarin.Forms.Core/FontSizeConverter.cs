@@ -95,7 +95,7 @@ namespace Xamarin.Forms
 		{
 			if (!(value is double d))
 				throw new NotSupportedException();
-			return $"{d}";
+			return $"{d.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}
 }

@@ -10,7 +10,7 @@ namespace Xamarin.Forms
 		{
 			MenuItem = menuItem;
 			MenuItem.Parent = this;
-			FlyoutItem.SetIsVisible(this, FlyoutItem.GetIsVisible(menuItem));
+			Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(menuItem));
 			SetBinding(TitleProperty, new Binding(nameof(MenuItem.Text), BindingMode.OneWay, source: menuItem));
 			SetBinding(IconProperty, new Binding(nameof(MenuItem.IconImageSource), BindingMode.OneWay, source: menuItem));
 			SetBinding(FlyoutIconProperty, new Binding(nameof(MenuItem.IconImageSource), BindingMode.OneWay, source: menuItem));
@@ -30,7 +30,7 @@ namespace Xamarin.Forms
 			else if (e.PropertyName == TitleProperty.PropertyName)
 				OnPropertyChanged(MenuItem.TextProperty.PropertyName);
 			else if (e.PropertyName == FlyoutItem.IsVisibleProperty.PropertyName)
-				FlyoutItem.SetIsVisible(this, FlyoutItem.GetIsVisible(MenuItem));
+				Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(MenuItem));
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)

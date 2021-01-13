@@ -1,5 +1,4 @@
 parameters:
-  slnPath : 'Xamarin.Forms.sln'
   msbuildExtraArguments : ''
   artifactsTargetFolder: '$(build.artifactstagingdirectory)'
   artifactsName: 'win_build'
@@ -7,7 +6,6 @@ parameters:
   includeUwp: 'true'
   includeAndroid: 'true'
   includeNonUwpAndNonAndroid: 'true'
-
 
 steps:
   - checkout: self
@@ -31,18 +29,20 @@ steps:
   #     version: $(DOTNET_VERSION)
   #     packageType: 'sdk'
 
-  - task: NuGetToolInstaller@1
-    displayName: 'Use NuGet $(NUGET_VERSION)'
-    condition: ne(variables['NUGET_VERSION'], '')
-    inputs:
-      versionSpec: $(NUGET_VERSION)
+  - script: build.cmd -Target cg-uwp-build-tests  -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"'
+    condition: eq(variables['BuildConfiguration'], 'Release')
+    displayName: 'Build Tests and APPX'
 
-  - task: NuGetCommand@2
-    displayName: 'NuGet restore ${{ parameters.slnPath }}'
+  - task: CopyFiles@2
+    displayName: 'Copy Appx Packages'
+    condition: eq(variables['BuildConfiguration'], 'Release')
     inputs:
-      restoreSolution: ${{ parameters.slnPath }}
-      feedsToUse: config
-      nugetConfigPath: 'DevopsNuget.config'
+      Contents: |
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/*
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/Add-AppDevPackage.resources/**
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/TelemetryDependencies/**
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/Dependencies/x86/**
+      TargetFolder: '$(build.artifactstagingdirectory)'
 
   - script: build.cmd -Target BuildForNuget -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"','-Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
     name: winbuild
@@ -179,49 +179,32 @@ steps:
         **/*.binlog
 
       TargetFolder: ${{ parameters.artifactsTargetFolder }}
-  
-  # - script: build.cmd -Target cg-uwp-build-tests  -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"'
-  #   condition: eq(variables['BuildConfiguration'], 'Release')
-  #   displayName: 'Build Tests and APPX'
 
-  # - task: CopyFiles@2
-  #   displayName: 'Copy Appx Packages'
-  #   condition: eq(variables['BuildConfiguration'], 'Release')
-  #   inputs:
-  #     Contents: |
-  #       Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/*
-  #       Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/Add-AppDevPackage.resources/**
-  #       Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/TelemetryDependencies/**
-  #       Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/Dependencies/x86/**
-  #     TargetFolder: '$(build.artifactstagingdirectory)'
-  #     CleanTargetFolder: false
-  #     flattenFolders: false
+  - task: CopyFiles@2
+    displayName: 'Copy Cake File'
+    inputs:
+      Contents: |
+        build.cake
+      TargetFolder: '${{ parameters.artifactsTargetFolder }}'
+      CleanTargetFolder: false
+      flattenFolders: false
 
-  # - task: CopyFiles@2
-  #   displayName: 'Copy Cake File'
-  #   inputs:
-  #     Contents: |
-  #       build.cake
-  #     TargetFolder: '${{ parameters.artifactsTargetFolder }}'
-  #     CleanTargetFolder: false
-  #     flattenFolders: false
+  - task: CopyFiles@2
+    displayName: 'Copy UITest Files'
+    condition: eq(variables['BuildConfiguration'], 'Release')
+    inputs:
+      SourceFolder: Xamarin.Forms.Core.Windows.UITests/bin/Debug/
+      TargetFolder: '$(build.artifactstagingdirectory)/UITests'
 
-  # - task: CopyFiles@2
-  #   displayName: 'Copy UITest Files'
-  #   condition: eq(variables['BuildConfiguration'], 'Release')
-  #   inputs:
-  #     SourceFolder: Xamarin.Forms.Core.Windows.UITests/bin/Debug/
-  #     TargetFolder: '$(build.artifactstagingdirectory)/UITests'
-
-  # - task: CopyFiles@2
-  #   displayName: 'Copy Certificate File'
-  #   condition: eq(variables['BuildConfiguration'], 'Debug')
-  #   inputs:
-  #     Contents: |
-  #       Xamarin.Forms.ControlGallery.WindowsUniversal\Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx
-  #     TargetFolder: '$(build.artifactstagingdirectory)'
-  #     CleanTargetFolder: false
-  #     flattenFolders: false
+  - task: CopyFiles@2
+    displayName: 'Copy Certificate File'
+    condition: eq(variables['BuildConfiguration'], 'Debug')
+    inputs:
+      Contents: |
+        Xamarin.Forms.ControlGallery.WindowsUniversal\Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx
+      TargetFolder: '$(build.artifactstagingdirectory)'
+      CleanTargetFolder: false
+      flattenFolders: false
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: ${{ parameters.artifactsName }}'

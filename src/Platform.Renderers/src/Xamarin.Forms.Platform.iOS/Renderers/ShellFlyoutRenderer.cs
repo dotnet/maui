@@ -15,9 +15,22 @@ namespace Xamarin.Forms.Platform.iOS
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
 			if (appearance == null)
+			{
 				_backdropBrush = Brush.Default;
+			}
 			else
+			{
 				_backdropBrush = appearance.FlyoutBackdrop;
+
+				if (appearance.FlyoutHeight != SlideFlyoutTransition.Height ||
+					appearance.FlyoutWidth != SlideFlyoutTransition.Width)
+				{
+					SlideFlyoutTransition?.SetFlyoutSizes(appearance.FlyoutHeight, appearance.FlyoutWidth);
+
+					if(_layoutOccured)
+						LayoutSidebar(false, true);
+				}
+			}
 
 			UpdateTapoffViewBackgroundColor();
 		}
@@ -39,10 +52,10 @@ namespace Xamarin.Forms.Platform.iOS
 			Shell.PropertyChanged += OnShellPropertyChanged;
 
 			PanGestureRecognizer = new UIPanGestureRecognizer(HandlePanGesture);
-			PanGestureRecognizer.ShouldRecognizeSimultaneously += (a,b) =>
+			PanGestureRecognizer.ShouldRecognizeSimultaneously += (a, b) =>
 			{
 				// This handles tapping outside the open flyout
-				if(a is UIPanGestureRecognizer pr && pr.State == UIGestureRecognizerState.Failed &&
+				if (a is UIPanGestureRecognizer pr && pr.State == UIGestureRecognizerState.Failed &&
 					b is UITapGestureRecognizer && b.State == UIGestureRecognizerState.Ended && IsOpen)
 				{
 					IsOpen = false;
@@ -66,7 +79,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				return true;
 			};
-						
+
 			ShellController.AddAppearanceObserver(this, Shell);
 			IsOpen = Shell.FlyoutIsPresented;
 		}
@@ -105,6 +118,7 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _isOpen;
 		UIViewPropertyAnimator _flyoutAnimation;
 		Brush _backdropBrush;
+		bool _layoutOccured;
 
 		public UIViewAnimationCurve AnimationCurve { get; set; } = UIViewAnimationCurve.EaseOut;
 
@@ -112,7 +126,17 @@ namespace Xamarin.Forms.Platform.iOS
 
 		double AnimationDurationInSeconds => ((double)AnimationDuration) / 1000.0;
 
-		public IShellFlyoutTransition FlyoutTransition { get; set; }
+		public IShellFlyoutTransition FlyoutTransition
+		{
+			get => _flyoutTransition;
+			set
+			{
+				_flyoutTransition = value;
+				SlideFlyoutTransition = value as SlideFlyoutTransition;
+			}
+		}
+
+		SlideFlyoutTransition SlideFlyoutTransition { get; set; }
 
 		IShellContext Context { get; set; }
 
@@ -145,7 +169,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLayoutSubviews();
 
-			if(_flyoutAnimation == null)
+			if (_flyoutAnimation == null)
 				LayoutSidebar(false);
 		}
 
@@ -289,6 +313,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UIKeyCommand.Create ((Foundation.NSString)"\t", 0, new ObjCRuntime.Selector ("tabForward:")),
 			UIKeyCommand.Create ((Foundation.NSString)"\t", UIKeyModifierFlags.Shift, new ObjCRuntime.Selector ("tabBackward:"))
 		};
+		private IShellFlyoutTransition _flyoutTransition;
 
 		public override UIKeyCommand[] KeyCommands => tabCommands;
 
@@ -363,10 +388,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void LayoutSidebar(bool animate, bool cancelExisting = false)
 		{
+			_layoutOccured = true;
 			if (_gestureActive)
 				return;
 
-			if(cancelExisting && _flyoutAnimation != null)
+			if (cancelExisting && _flyoutAnimation != null)
 			{
 				_flyoutAnimation.StopAnimation(true);
 				_flyoutAnimation = null;
@@ -375,7 +401,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (animate && _flyoutAnimation != null)
 				return;
 
-			if(!animate && _flyoutAnimation != null)
+			if (!animate && _flyoutAnimation != null)
 			{
 				_flyoutAnimation.StopAnimation(true);
 				_flyoutAnimation = null;

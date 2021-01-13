@@ -28,6 +28,8 @@
 							new EmptyViewSwapGallery(), Navigation),
 						GalleryBuilder.NavButton("EmptyView (load simulation)", () =>
 							new EmptyViewLoadSimulateGallery(), Navigation),
+						GalleryBuilder.NavButton("EmptyView RTL", () =>
+							new EmptyViewRTLGallery(), Navigation)
 					}
 				}
 			};

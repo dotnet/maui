@@ -150,10 +150,14 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateTitleView();
 				UpdateTitle();
 				UpdateTabBarVisible();
-			}
 
-			if (oldPage == null)
-				((IShellController)_context.Shell).AddFlyoutBehaviorObserver(this);
+				if (oldPage == null)
+					((IShellController)_context.Shell).AddFlyoutBehaviorObserver(this);
+			}
+			else if(newPage == null && _context?.Shell is IShellController shellController)
+			{
+				shellController.RemoveFlyoutBehaviorObserver(this);
+			}
 
 			if (newPage != null)
 			{
@@ -208,6 +212,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual async Task UpdateToolbarItems()
 		{
+			if (NavigationItem == null)
+				return;
+
 			if (NavigationItem.RightBarButtonItems != null)
 			{
 				for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)

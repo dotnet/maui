@@ -404,6 +404,9 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (Element?.TextType != TextType.Text)
 				return;
+
+			if (string.IsNullOrEmpty(Element.Text))
+				return;
 #if __MOBILE__
 			var textAttr = Control.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
 

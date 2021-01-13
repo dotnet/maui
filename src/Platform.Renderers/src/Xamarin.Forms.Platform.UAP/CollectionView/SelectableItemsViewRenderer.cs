@@ -171,13 +171,17 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateFormsSingleSelection()
 		{
-			var selectedItem = ListViewBase.SelectedItem is ItemTemplateContext itemPair 
-				? itemPair.Item 
+			var selectedItem = ListViewBase.SelectedItem is ItemTemplateContext itemPair
+				? itemPair.Item
 				: ListViewBase.SelectedItem;
-			
-			ItemsView.SelectionChanged -= FormsSelectionChanged;
-			ItemsView.SelectedItem = selectedItem;
-			ItemsView.SelectionChanged += FormsSelectionChanged;
+
+			if (ItemsView != null)
+			{
+				ItemsView.SelectionChanged -= FormsSelectionChanged;
+				ItemsView.SelectedItem = selectedItem;
+
+				ItemsView.SelectionChanged += FormsSelectionChanged;
+			}
 		}
 
 		void UpdateFormsMultipleSelection()

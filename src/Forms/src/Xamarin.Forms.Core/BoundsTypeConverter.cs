@@ -45,7 +45,7 @@ namespace Xamarin.Forms
 		{
 			if (!(value is Rectangle rect))
 				throw new NotSupportedException();
-			return $"{rect.X}, {rect.Y}, {(rect.Width == AbsoluteLayout.AutoSize ? nameof(AbsoluteLayout.AutoSize) : rect.Width.ToString())}, {(rect.Height == AbsoluteLayout.AutoSize ? nameof(AbsoluteLayout.AutoSize) : rect.Height.ToString())}";
+			return $"{rect.X.ToString(CultureInfo.InvariantCulture)}, {rect.Y.ToString(CultureInfo.InvariantCulture)}, {(rect.Width == AbsoluteLayout.AutoSize ? nameof(AbsoluteLayout.AutoSize) : rect.Width.ToString(CultureInfo.InvariantCulture))}, {(rect.Height == AbsoluteLayout.AutoSize ? nameof(AbsoluteLayout.AutoSize) : rect.Height.ToString(CultureInfo.InvariantCulture))}";
 		}
 	}
 }
