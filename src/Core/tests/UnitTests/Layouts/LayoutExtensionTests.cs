@@ -1,4 +1,4 @@
-using Microsoft.Maui;
+﻿using Microsoft.Maui;
 using Microsoft.Maui.Layouts;
 using NSubstitute;
 using Xunit;
@@ -67,6 +67,29 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			Assert.Equal(140, desiredSize.Width);
 			Assert.Equal(90, desiredSize.Height);
+		}
+
+		[Fact]
+		public void MarginsAccountForFlowDirectionRTL()
+		{
+			var element = Substitute.For<IView>();
+			element.FlowDirection.Returns(FlowDirection.RightToLeft);
+			var margin = new Thickness(10, 0, 15, 0);
+			element.Margin.Returns(margin);
+
+			var bounds = new Rectangle(0, 0, 100, 100);
+			var frame = element.ComputeFrame(bounds);
+
+			// The top and bottom margins are zero, so we expect the Frame to have the full height of 100
+			Assert.Equal(0, frame.Top);
+			Assert.Equal(100, frame.Height);
+
+			// The left and right margins together are 25, so we expect the Frame to have a width of 75
+			Assert.Equal(75, frame.Width);
+
+			// The left and right margins should be swapped (because of RTL) so we expect the Frame location
+			// to have a Left value of 15 (the "right side" margin)
+			Assert.Equal(15, frame.Left);
 		}
 	}
 }

@@ -108,5 +108,43 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var expectedRectangle2 = new Rectangle(100, 0, 100, 150);
 			view2.Received().Arrange(Arg.Is(expectedRectangle2));
 		}
+
+		[Fact(DisplayName = "First View in LTR Horizontal Stack is on the left")]
+		public void LtrShouldHaveFirstItemOnTheLeft()
+		{
+			var stack = BuildStack(viewCount: 2, viewWidth: 100, viewHeight: 100);
+			stack.FlowDirection.Returns(FlowDirection.LeftToRight);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+			manager.Arrange(new Rectangle(Point.Zero, measuredSize));
+
+			// We expect that the starting view (0) should be arranged on the left,
+			// and the next rectangle (1) should be on the right
+			var expectedRectangle0 = new Rectangle(0, 0, 100, 100);
+			var expectedRectangle1 = new Rectangle(100, 0, 100, 100);
+
+			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle0));
+			stack.Children[1].Received().Arrange(Arg.Is(expectedRectangle1));
+		}
+
+		[Fact(DisplayName = "First View in RTL Horizontal Stack is on the right")]
+		public void RtlShouldHaveFirstItemOnTheRight() 
+		{
+			var stack = BuildStack(viewCount: 2, viewWidth: 100, viewHeight: 100);
+			stack.FlowDirection.Returns(FlowDirection.RightToLeft);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+			manager.Arrange(new Rectangle(Point.Zero, measuredSize));
+
+			// We expect that the starting view (0) should be arranged on the right,
+			// and the next rectangle (1) should be on the left
+			var expectedRectangle0 = new Rectangle(100, 0, 100, 100);
+			var expectedRectangle1 = new Rectangle(0, 0, 100, 100);
+
+			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle0));
+			stack.Children[1].Received().Arrange(Arg.Is(expectedRectangle1));
+		}
 	}
 }

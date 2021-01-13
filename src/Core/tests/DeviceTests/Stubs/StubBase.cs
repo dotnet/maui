@@ -29,6 +29,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Thickness Margin { get; set; }
 
 		public string AutomationId { get; set; }
+		
+		public FlowDirection FlowDirection { get; set; }
 
 		public void Arrange(Rectangle bounds)
 		{

@@ -1,4 +1,4 @@
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a framework-level set of properties, events, and methods for .NET MAUI elements. 
@@ -83,5 +83,7 @@ namespace Microsoft.Maui
 		/// Id used by automation tools to interact with this FrameworkElement
 		/// </summary>
 		string AutomationId { get; }
+	
+		FlowDirection FlowDirection { get; }
 	}
 }
