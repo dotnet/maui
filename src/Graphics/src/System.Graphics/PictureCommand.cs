@@ -5,7 +5,7 @@ namespace System.Graphics
         DrawLine = 0,
         DrawRectangle = 1,
         DrawRoundedRectangle = 2,
-        DrawOval = 3,
+        DrawEllipse = 3,
         DrawPath = 4,
         DrawImage = 5,
         DrawArc = 6,
@@ -13,7 +13,7 @@ namespace System.Graphics
 
         FillRectangle = 10,
         FillRoundedRectangle = 11,
-        FillOval = 12,
+        FillEllipse = 12,
         FillPath = 13,
         FillArc = 14,
         FillPath2 = 15,

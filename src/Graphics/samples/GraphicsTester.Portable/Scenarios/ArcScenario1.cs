@@ -4,21 +4,21 @@ namespace GraphicsTester.Scenarios
 {
     public class ArcScenario1 : AbstractScenario
     {
-        public readonly bool includeOvals;
+        public readonly bool includeEllipses;
 
-        public ArcScenario1(bool includeOvals = false) : base(720, 1024)
+        public ArcScenario1(bool includeEllipses = false) : base(720, 1024)
         {
-            this.includeOvals = includeOvals;
+            this.includeEllipses = includeEllipses;
         }
 
         public override void Draw(ICanvas canvas)
         {
             canvas.SaveState();
 
-            if (includeOvals)
+            if (includeEllipses)
             {
                 canvas.StrokeColor = Colors.LightGrey;
-                canvas.DrawOval(50, 50, 150, 20);
+                canvas.DrawEllipse(50, 50, 150, 20);
                 canvas.StrokeColor = Colors.Black;
             }
 

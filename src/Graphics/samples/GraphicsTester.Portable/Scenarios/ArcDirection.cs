@@ -4,19 +4,19 @@ namespace GraphicsTester.Scenarios
 {
     public class ArcDirection : AbstractScenario
     {
-        public readonly bool includeOvals;
+        public readonly bool includeEllipses;
 
-        public ArcDirection(bool includeOvals = false) : base(720, 1024)
+        public ArcDirection(bool includeEllipses = false) : base(720, 1024)
         {
-            this.includeOvals = includeOvals;
+            this.includeEllipses = includeEllipses;
         }
 
         private void DrawArc(ICanvas canvas, float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)
         {
-            if (includeOvals)
+            if (includeEllipses)
             {
                 canvas.StrokeColor = Colors.LightGrey;
-                canvas.DrawOval(x, y, width, height);
+                canvas.DrawEllipse(x, y, width, height);
             }
 
             canvas.StrokeColor = Colors.Black;
@@ -51,9 +51,9 @@ namespace GraphicsTester.Scenarios
 
         public override string ToString()
         {
-            if (includeOvals)
+            if (includeEllipses)
             {
-                return "ArcDirection (Including Background Ovals)";
+                return "ArcDirection (Including Background Ellipses)";
             }
 
             return base.ToString();

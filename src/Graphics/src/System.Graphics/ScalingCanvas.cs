@@ -119,9 +119,9 @@ namespace System.Graphics
             _canvas.FillArc(x * _scaleX, y * _scaleY, width * _scaleX, height * _scaleY, startAngle, endAngle, clockwise);
         }
 
-        public void DrawOval(float x, float y, float width, float height)
+        public void DrawEllipse(float x, float y, float width, float height)
         {
-            _canvas.DrawOval(x * _scaleX, y * _scaleY, width * _scaleX, height * _scaleY);
+            _canvas.DrawEllipse(x * _scaleX, y * _scaleY, width * _scaleX, height * _scaleY);
         }
 
         public void DrawImage(IImage image, float x, float y, float width, float height)
@@ -155,9 +155,9 @@ namespace System.Graphics
             _canvas.DrawText(value, x * _scaleX, y * _scaleY, width * _scaleX, height * _scaleY);
         }
 
-        public void FillOval(float x, float y, float width, float height)
+        public void FillEllipse(float x, float y, float width, float height)
         {
-            _canvas.FillOval(x * _scaleX, y * _scaleY, width * _scaleX, height * _scaleY);
+            _canvas.FillEllipse(x * _scaleX, y * _scaleY, width * _scaleX, height * _scaleY);
         }
 
         public void FillRectangle(float x, float y, float width, float height)

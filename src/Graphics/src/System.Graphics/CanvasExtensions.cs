@@ -27,14 +27,14 @@ namespace System.Graphics
             target.FillRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, cornerRadius);
         }
 
-        public static void DrawOval(this ICanvas target, RectangleF rect)
+        public static void DrawEllipse(this ICanvas target, RectangleF rect)
         {
-            target.DrawOval(rect.X, rect.Y, rect.Width, rect.Height);
+            target.DrawEllipse(rect.X, rect.Y, rect.Width, rect.Height);
         }
 
-        public static void FillOval(this ICanvas target, RectangleF rect)
+        public static void FillEllipse(this ICanvas target, RectangleF rect)
         {
-            target.FillOval(rect.X, rect.Y, rect.Width, rect.Height);
+            target.FillEllipse(rect.X, rect.Y, rect.Width, rect.Height);
         }
 
         public static void DrawPath(this ICanvas target, PathF path)
@@ -80,7 +80,7 @@ namespace System.Graphics
             var y = centerY - radius;
             var size = radius * 2;
 
-            target.FillOval(x, y, size, size);
+            target.FillEllipse(x, y, size, size);
         }
 
         public static void FillCircle(this ICanvas target, PointF center, float radius)
@@ -89,7 +89,7 @@ namespace System.Graphics
             var y = center.Y - radius;
             var size = radius * 2;
 
-            target.FillOval(x, y, size, size);
+            target.FillEllipse(x, y, size, size);
         }
 
         public static void DrawCircle(this ICanvas target, float centerX, float centerY, float radius)
@@ -98,7 +98,7 @@ namespace System.Graphics
             var y = centerY - radius;
             var size = radius * 2;
 
-            target.DrawOval(x, y, size, size);
+            target.DrawEllipse(x, y, size, size);
         }
 
         public static void DrawCircle(this ICanvas target, PointF center, float radius)
@@ -107,7 +107,7 @@ namespace System.Graphics
             var y = center.Y - radius;
             var size = radius * 2;
 
-            target.DrawOval(x, y, size, size);
+            target.DrawEllipse(x, y, size, size);
         }
 
         /// <summary>

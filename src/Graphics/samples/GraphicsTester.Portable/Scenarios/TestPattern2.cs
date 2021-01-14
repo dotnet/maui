@@ -57,7 +57,7 @@ namespace GraphicsTester.Scenarios
 
             canvas.FillColor = Colors.Green;
             canvas.Translate(100, 0);
-            canvas.FillOval(10, 10, 80, 80);
+            canvas.FillEllipse(10, 10, 80, 80);
 
             canvas.FillColor = Colors.Blue;
             canvas.Translate(100, 0);
@@ -82,7 +82,7 @@ namespace GraphicsTester.Scenarios
             canvas.Translate(100, 0);
             canvas.DrawRectangle(0, 0, 100, 100);
             canvas.Translate(100, 0);
-            canvas.DrawOval(0, 0, 100, 100);
+            canvas.DrawEllipse(0, 0, 100, 100);
             canvas.Translate(100, 0);
             canvas.DrawRoundedRectangle(0, 0, 100, 100, 25);
 
@@ -97,7 +97,7 @@ namespace GraphicsTester.Scenarios
             canvas.Translate(100, 0);
             canvas.DrawRectangle(0, 0, 100, 50);
             canvas.Translate(100, 0);
-            canvas.DrawOval(0, 0, 100, 50);
+            canvas.DrawEllipse(0, 0, 100, 50);
             canvas.Translate(100, 0);
             canvas.DrawRoundedRectangle(0, 0, 100, 50, 25);
             canvas.Translate(100, 0);

@@ -338,13 +338,13 @@ namespace System.Graphics.GDI
             path.Dispose();
         }
 
-        protected override void NativeDrawOval(float x, float y, float width, float height)
+        protected override void NativeDrawEllipse(float x, float y, float width, float height)
         {
             SetRect(x, y, width, height);
             Draw(g => g.DrawEllipse(CurrentState.StrokePen, _rect));
         }
 
-        public override void FillOval(float x, float y, float width, float height)
+        public override void FillEllipse(float x, float y, float width, float height)
         {
             SetRect(x, y, width, height);
             Draw(g => g.FillEllipse(CurrentState.FillBrush, _rect));

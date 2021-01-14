@@ -106,7 +106,7 @@ namespace System.Graphics
 
 
         /// <summary>
-        /// Gets the point on an oval that corresponds to the given angle.
+        /// Gets the point on an ellipse that corresponds to the given angle.
         /// </summary>
         /// <returns>The point.</returns>
         /// <param name="x">The x position of the bounding rectangle.</param>
@@ -114,7 +114,7 @@ namespace System.Graphics
         /// <param name="width">The width of the bounding rectangle.</param>
         /// <param name="height">The height of the bounding rectangle.</param>
         /// <param name="angleInDegrees">Angle in degrees.</param>
-        public static PointF OvalAngleToPoint(float x, float y, float width, float height, float angleInDegrees)
+        public static PointF EllipseAngleToPoint(float x, float y, float width, float height, float angleInDegrees)
         {
             var radians = DegreesToRadians(angleInDegrees);
 

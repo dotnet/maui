@@ -143,8 +143,8 @@ namespace System.Graphics.Win2D
                         var rectWidth = (ox + bottomRight.X * fx) - rectX;
                         var rectHeight = (oy + bottomRight.Y * fy) - rectY;
 
-                        var startPoint = Geometry.OvalAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
-                        var endPoint = Geometry.OvalAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
+                        var startPoint = Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
+                        var endPoint = Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
 
 
                         if (!figureOpen)
@@ -265,8 +265,8 @@ namespace System.Graphics.Win2D
                 var rectWidth = (bottomRight.X * scale) - rectX;
                 var rectHeight = (bottomRight.Y * scale) - rectY;
 
-                var startPoint = Geometry.OvalAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
-                var endPoint = Geometry.OvalAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
+                var startPoint = Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
+                var endPoint = Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
 
                 builder.BeginFigure(startPoint.X * scale, startPoint.Y * scale, CanvasFigureFill.Default);
 

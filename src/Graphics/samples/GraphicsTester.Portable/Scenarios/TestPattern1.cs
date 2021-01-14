@@ -18,7 +18,7 @@ namespace GraphicsTester.Scenarios
             canvas.StrokeColor = Colors.Grey;
             canvas.DrawLine(0, 0, 100, 100);
             canvas.DrawRectangle(100, 0, 100, 100);
-            canvas.DrawOval(200, 0, 100, 100);
+            canvas.DrawEllipse(200, 0, 100, 100);
             canvas.DrawRoundedRectangle(300, 0, 100, 100, 25);
 
             var path = new PathF();
@@ -29,7 +29,7 @@ namespace GraphicsTester.Scenarios
             canvas.DrawPath(path);
 
             canvas.DrawRectangle(500, 0, 100, 50);
-            canvas.DrawOval(600, 0, 100, 50);
+            canvas.DrawEllipse(600, 0, 100, 50);
             canvas.DrawRoundedRectangle(700, 0, 100, 50, 25);
             canvas.DrawRoundedRectangle(800, 0, 100, 25, 25);
 
@@ -41,7 +41,7 @@ namespace GraphicsTester.Scenarios
             canvas.FillRectangle(210, 210, 80, 80);
 
             canvas.FillColor = Colors.Green;
-            canvas.FillOval(310, 210, 80, 80);
+            canvas.FillEllipse(310, 210, 80, 80);
 
             canvas.FillColor = Colors.Blue;
             canvas.FillRoundedRectangle(410, 210, 80, 80, 10);
@@ -61,7 +61,7 @@ namespace GraphicsTester.Scenarios
             //
             canvas.StrokeSize = 10;
             canvas.DrawRectangle(50, 400, 100, 50);
-            canvas.DrawOval(200, 400, 100, 50);
+            canvas.DrawEllipse(200, 400, 100, 50);
             canvas.DrawRoundedRectangle(350, 400, 100, 50, 25);
 
             path = new PathF();
@@ -169,7 +169,7 @@ namespace GraphicsTester.Scenarios
             canvas.FillRectangle(50, 700, 100, 50);
 
             canvas.SetFillPaint(vPaint, 200, 700, 300, 700);
-            canvas.FillOval(200, 700, 100, 50);
+            canvas.FillEllipse(200, 700, 100, 50);
 
             vPaint.AddOffset(.5f, Colors.IndianRed);
             canvas.SetFillPaint(vPaint, 350, 700, 450, 700);
@@ -199,7 +199,7 @@ namespace GraphicsTester.Scenarios
             canvas.FillRectangle(50, 800, 100, 50);
 
             canvas.SetFillPaint(vPaint, 250, 825, 300, 800);
-            canvas.FillOval(200, 800, 100, 50);
+            canvas.FillEllipse(200, 800, 100, 50);
 
             vPaint.AddOffset(.5f, Colors.IndianRed);
             canvas.SetFillPaint(vPaint, 400, 825, 450, 800);
@@ -224,7 +224,7 @@ namespace GraphicsTester.Scenarios
             canvas.FillRectangle(50, 900, 100, 50);
 
             canvas.SetShadow(new SizeF(5, 5), 2, Colors.Red);
-            canvas.FillOval(200, 900, 100, 50);
+            canvas.FillEllipse(200, 900, 100, 50);
 
             canvas.SetShadow(new SizeF(5, 5), 5, Colors.Green);
             canvas.FillRoundedRectangle(350, 900, 100, 50, 25);
@@ -248,7 +248,7 @@ namespace GraphicsTester.Scenarios
             canvas.DrawRectangle(50, 1000, 100, 50);
 
             canvas.SetShadow(new SizeF(5, 5), 2, Colors.Red);
-            canvas.DrawOval(200, 1000, 100, 50);
+            canvas.DrawEllipse(200, 1000, 100, 50);
 
             canvas.SetShadow(new SizeF(5, 5), 5, Colors.Green);
             canvas.DrawRoundedRectangle(350, 1000, 100, 50, 25);
@@ -270,7 +270,7 @@ namespace GraphicsTester.Scenarios
 
             canvas.FillColor = Colors.DarkOliveGreen;
             canvas.FillRectangle(50, 1100, 100, 50);
-            canvas.FillOval(200, 1100, 100, 50);
+            canvas.FillEllipse(200, 1100, 100, 50);
             canvas.FillRoundedRectangle(350, 1100, 100, 50, 25);
 
             path = new PathF();
@@ -294,7 +294,7 @@ namespace GraphicsTester.Scenarios
 
             canvas.Alpha = .5f;
             canvas.SetShadow(new SizeF(5, 5), 2, Colors.Red);
-            canvas.FillOval(200, 1200, 100, 50);
+            canvas.FillEllipse(200, 1200, 100, 50);
 
             canvas.Alpha = .75f;
             canvas.SetShadow(new SizeF(5, 5), 5, Colors.Green);
@@ -338,16 +338,16 @@ namespace GraphicsTester.Scenarios
             canvas.SetShadow(new SizeF(2, 0), 2, Colors.Black);
             canvas.StrokeColor = Colors.CornflowerBlue;
             canvas.Rotate(15);
-            canvas.DrawOval(60, 60, 10, 10);
+            canvas.DrawEllipse(60, 60, 10, 10);
             canvas.Rotate(15);
-            canvas.DrawOval(60, 60, 10, 10);
+            canvas.DrawEllipse(60, 60, 10, 10);
             canvas.Rotate(15);
-            canvas.DrawOval(60, 60, 10, 10);
+            canvas.DrawEllipse(60, 60, 10, 10);
             canvas.StrokeColor = Colors.DarkSeaGreen;
             canvas.Rotate(-60);
-            canvas.DrawOval(60, 60, 10, 10);
+            canvas.DrawEllipse(60, 60, 10, 10);
             canvas.Rotate(-15);
-            canvas.DrawOval(60, 60, 10, 10);
+            canvas.DrawEllipse(60, 60, 10, 10);
             canvas.RestoreState();
 
             canvas.DrawRectangle(60, 60, 10, 10);

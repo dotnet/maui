@@ -1016,7 +1016,7 @@ namespace System.Graphics
             return new PathF(points, arcSizes, arcClockwise, operations, _subPathCount);
         }
 
-        public void AppendOval(float x, float y, float w, float h)
+        public void AppendEllipse(float x, float y, float w, float h)
         {
             var minX = x;
             var minY = y;

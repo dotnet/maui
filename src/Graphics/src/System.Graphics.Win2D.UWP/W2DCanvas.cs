@@ -165,8 +165,8 @@ namespace System.Graphics.Win2D
             _size.Width = _rect.Width / 2;
             _size.Height = _rect.Height / 2;
 
-            var startPoint = Geometry.OvalAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -startAngle);
-            var endPoint = Geometry.OvalAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -endAngle);
+            var startPoint = Geometry.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -startAngle);
+            var endPoint = Geometry.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -endAngle);
 
             _point1.X = startPoint.X;
             _point1.Y = startPoint.Y;
@@ -200,7 +200,7 @@ namespace System.Graphics.Win2D
             Draw(s => s.FillRoundedRectangle(x, y, width, height, cornerRadius, cornerRadius, CurrentState.NativeFillBrush));
         }
 
-        public override void FillOval(float x, float y, float width, float height)
+        public override void FillEllipse(float x, float y, float width, float height)
         {
             float radiusX;
             float radiusY;
@@ -554,8 +554,8 @@ namespace System.Graphics.Win2D
             _size.Width = _rect.Width / 2;
             _size.Height = _rect.Height / 2;
 
-            var startPoint = Geometry.OvalAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -startAngle);
-            var endPoint = Geometry.OvalAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -endAngle);
+            var startPoint = Geometry.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -startAngle);
+            var endPoint = Geometry.EllipseAngleToPoint((float)_rect.X, (float)_rect.Y, (float)_rect.Width, (float)_rect.Height, -endAngle);
 
             _point1.X = startPoint.X;
             _point1.Y = startPoint.Y;
@@ -605,7 +605,7 @@ namespace System.Graphics.Win2D
             Draw(s => s.DrawRoundedRectangle(_rect, cornerRadius, cornerRadius, CurrentState.NativeStrokeBrush, CurrentState.StrokeSize, CurrentState.NativeStrokeStyle));
         }
 
-        protected override void NativeDrawOval(float x, float y, float width, float height)
+        protected override void NativeDrawEllipse(float x, float y, float width, float height)
         {
             float radiusX;
             float radiusY;

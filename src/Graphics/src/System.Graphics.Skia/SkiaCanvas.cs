@@ -591,7 +591,7 @@ namespace System.Graphics.Skia
             _canvas.DrawRoundRect(rect, radius, radius, CurrentState.FillPaintWithAlpha);
         }
 
-        protected override void NativeDrawOval(
+        protected override void NativeDrawEllipse(
             float x,
             float y,
             float width,
@@ -606,10 +606,10 @@ namespace System.Graphics.Skia
             var rectHeight = height;
             
             var rect = new SKRect(rectX, rectY, rectX + rectWidth, rectY + rectHeight);
-            _canvas.DrawOval(rect, CurrentState.StrokePaintWithAlpha);
+            _canvas.DrawEllipse(rect, CurrentState.StrokePaintWithAlpha);
         }
 
-        public override void FillOval(
+        public override void FillEllipse(
             float x,
             float y,
             float width,
@@ -622,7 +622,7 @@ namespace System.Graphics.Skia
             var rectHeight = height;
 
             var rect = new SKRect(rectX, rectY, rectX + rectWidth, rectY + rectHeight);
-            _canvas.DrawOval(rect, CurrentState.FillPaintWithAlpha);
+            _canvas.DrawEllipse(rect, CurrentState.FillPaintWithAlpha);
         }
 
         public override void SubtractFromClip(

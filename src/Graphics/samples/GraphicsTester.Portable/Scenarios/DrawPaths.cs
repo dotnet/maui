@@ -91,7 +91,7 @@ namespace GraphicsTester.Scenarios
             canvas.DrawRectangle(150.5f, 150.5f, 50, 50);
             var path = new PathF();
             path.AppendRectangle(175.5f, 150.5f, 25, 50);
-            path.AppendOval(175.5f, 150.5f, 25, 50);
+            path.AppendEllipse(175.5f, 150.5f, 25, 50);
             canvas.StrokeColor = Colors.Black;
             canvas.DrawPath(path);
         }

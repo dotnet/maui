@@ -1,9 +1,9 @@
 ﻿namespace GraphicsTester.Scenarios
 {
-    public class FillOvals : AbstractFillScenario
+    public class FillEllipses : AbstractFillScenario
     {
-        public FillOvals()
-            : base((canvas, x, y, width, height) => canvas.FillOval(x, y, width, height))
+        public FillEllipses()
+            : base((canvas, x, y, width, height) => canvas.FillEllipse(x, y, width, height))
         {
         }
     }
