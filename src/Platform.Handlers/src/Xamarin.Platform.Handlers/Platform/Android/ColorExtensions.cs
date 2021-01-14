@@ -1,8 +1,8 @@
 using Android.Content;
 using Android.Content.Res;
+using AndroidX.Core.Content;
 using Xamarin.Forms;
 using AColor = Android.Graphics.Color;
-using AndroidX.Core.Content;
 
 namespace Xamarin.Platform
 {
@@ -14,7 +14,7 @@ namespace Xamarin.Platform
 		{
 			return new AColor((byte)(byte.MaxValue * self.R), (byte)(byte.MaxValue * self.G), (byte)(byte.MaxValue * self.B), (byte)(byte.MaxValue * self.A));
 		}
-				
+
 		public static AColor ToNative(this Color self, int defaultColorResourceId, Context context)
 		{
 			if (self == Color.Default)

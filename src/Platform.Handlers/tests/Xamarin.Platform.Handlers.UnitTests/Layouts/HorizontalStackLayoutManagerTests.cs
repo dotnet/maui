@@ -82,7 +82,7 @@ namespace Xamarin.Platform.Handlers.UnitTests.Layouts
 		}
 
 		[Test]
-		public void ViewsArrangedWithDesiredHeights() 
+		public void ViewsArrangedWithDesiredHeights()
 		{
 			var stack = CreateTestLayout();
 			var manager = new HorizontalStackLayoutManager(stack);

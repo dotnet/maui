@@ -65,7 +65,7 @@ namespace Xamarin.Platform.Handlers.UnitTests.Layouts
 		[TestCase(150, 100, 100, Description = "The Stack's specified height of 100 should override the child's measured height of 150")]
 		[TestCase(150, 200, 200, Description = "The Stack's specified height of 200 should override the child's measured height of 150")]
 		[TestCase(1250, -1, 1250, Description = "The Stack doesn't specify height, so the child determines the height")]
-		public void StackAppliesHeight(double viewHeight, double stackHeight, double expectedHeight) 
+		public void StackAppliesHeight(double viewHeight, double stackHeight, double expectedHeight)
 		{
 			var stack = CreateTestLayout();
 

@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
-using Xamarin.Platform.Handlers.Tests;
-using NSubstitute;
+﻿using NSubstitute;
+using NUnit.Framework;
 using Xamarin.Forms;
+using Xamarin.Platform.Handlers.Tests;
 using Xamarin.Platform.Layouts;
 
 namespace Xamarin.Platform.Handlers.UnitTests.Layouts
@@ -10,7 +10,7 @@ namespace Xamarin.Platform.Handlers.UnitTests.Layouts
 	public class LayoutExtensionTests
 	{
 		[Test]
-		public void FrameExcludesMargin() 
+		public void FrameExcludesMargin()
 		{
 			var element = Substitute.For<IFrameworkElement>();
 			var margin = new Thickness(20);
@@ -40,13 +40,13 @@ namespace Xamarin.Platform.Handlers.UnitTests.Layouts
 
 			// The margin is simply too large for the bounds; since negative widths/heights on a frame don't make sense,
 			// we expect them to collapse to zero
-			
+
 			Assert.That(frame.Width, Is.EqualTo(0));
 			Assert.That(frame.Height, Is.EqualTo(0));
 		}
 
 		[Test]
-		public void DesiredSizeIncludesMargin() 
+		public void DesiredSizeIncludesMargin()
 		{
 			var widthConstraint = 400;
 			var heightConstraint = 655;

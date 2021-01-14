@@ -16,7 +16,7 @@ namespace Xamarin.Platform.Handlers.UnitTests.Layouts
 			return stack;
 		}
 
-		protected IView CreateTestView() 
+		protected IView CreateTestView()
 		{
 			var view = Substitute.For<IView>();
 

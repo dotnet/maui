@@ -5,7 +5,7 @@ namespace Xamarin.Platform.Layouts
 {
 	public static class LayoutExtensions
 	{
-		public static Size ComputeDesiredSize(this IFrameworkElement frameworkElement, double widthConstraint, double heightConstraint) 
+		public static Size ComputeDesiredSize(this IFrameworkElement frameworkElement, double widthConstraint, double heightConstraint)
 		{
 			_ = frameworkElement ?? throw new ArgumentNullException(nameof(frameworkElement));
 
@@ -32,7 +32,7 @@ namespace Xamarin.Platform.Layouts
 				measureWithMargins.Height + margin.VerticalThickness);
 		}
 
-		public static Rectangle ComputeFrame(this IFrameworkElement frameworkElement, Rectangle bounds) 
+		public static Rectangle ComputeFrame(this IFrameworkElement frameworkElement, Rectangle bounds)
 		{
 			var margin = frameworkElement.Margin;
 
@@ -40,7 +40,7 @@ namespace Xamarin.Platform.Layouts
 			var frameWidth = Math.Max(0, bounds.Width - margin.HorizontalThickness);
 			var frameHeight = Math.Max(0, bounds.Height - margin.VerticalThickness);
 
-			return new Rectangle(bounds.X + margin.Left, bounds.Y + margin.Top, 
+			return new Rectangle(bounds.X + margin.Left, bounds.Y + margin.Top,
 				frameWidth, frameHeight);
 		}
 	}

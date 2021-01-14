@@ -12,6 +12,7 @@ using AndroidX.RecyclerView.Widget;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.AppCompat;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Xamarin.Platform;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using APointF = Android.Graphics.PointF;
 using ARect = Android.Graphics.Rect;
@@ -19,7 +20,6 @@ using ATextAlignment = Android.Views.TextAlignment;
 using AView = Android.Views.View;
 using AWebView = Android.Webkit.WebView;
 using Specifics = Xamarin.Forms.PlatformConfiguration.AndroidSpecific.SwipeView;
-using Xamarin.Platform;
 
 namespace Xamarin.Forms.Platform.Android
 {

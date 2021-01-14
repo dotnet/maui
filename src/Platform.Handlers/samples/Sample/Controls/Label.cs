@@ -22,7 +22,7 @@ namespace Sample
 		public TextAlignment HorizontalTextAlignment { get; set; }
 
 		public TextAlignment VerticalTextAlignment { get; set; }
-		
+
 		public double CharacterSpacing { get; set; }
 	}
 }
