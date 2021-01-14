@@ -12,7 +12,7 @@ namespace System.Graphics.Xaml
         DrawLine,
         DrawRectangle,
         DrawRoundedRectangle,
-        DrawOval,
+        DrawEllipse,
         DrawArc,
         DrawPath,
         DrawText,
@@ -20,7 +20,7 @@ namespace System.Graphics.Xaml
         DrawImage,
         FillRectangle,
         FillRoundedRectangle,
-        FillOval,
+        FillEllipse,
         FillArc,
         FillPath
     }
@@ -159,8 +159,8 @@ namespace System.Graphics.Xaml
                 case ItemType.FillRectangle:
                 case ItemType.FillRoundedRectangle:
                     return new Rectangle();
-                case ItemType.DrawOval:
-                case ItemType.FillOval:
+                case ItemType.DrawEllipse:
+                case ItemType.FillEllipse:
                     return new Ellipse();
                 case ItemType.DrawArc:
                 case ItemType.FillArc:
@@ -278,9 +278,9 @@ namespace System.Graphics.Xaml
             element.Effect = CurrentState.XamlEffect;
         }
 
-        protected override void NativeDrawOval(float x, float y, float width, float height)
+        protected override void NativeDrawEllipse(float x, float y, float width, float height)
         {
-            var item = GetOrCreateItem(ItemType.DrawOval);
+            var item = GetOrCreateItem(ItemType.DrawEllipse);
             var element = (Ellipse) item.Element;
 
             CreateStrokeRect(x, y, width, height);
@@ -377,8 +377,8 @@ namespace System.Graphics.Xaml
 
             var sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
             var absSweep = Math.Abs(sweep);
-            var startPoint = Geometry.OvalAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -startAngle);
-            var endPoint = Geometry.OvalAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -endAngle);
+            var startPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -startAngle);
+            var endPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -endAngle);
 
             figure.StartPoint = new Point(startPoint.X, startPoint.Y);
             arcSegment.Point = new Point(endPoint.X, endPoint.Y);
@@ -613,9 +613,9 @@ namespace System.Graphics.Xaml
             Logger.Warn("Not implemented");
         }
 
-        public override void FillOval(float x, float y, float width, float height)
+        public override void FillEllipse(float x, float y, float width, float height)
         {
-            var item = GetOrCreateItem(ItemType.FillOval);
+            var item = GetOrCreateItem(ItemType.FillEllipse);
             var element = (Ellipse) item.Element;
 
             CreateFillRect(x, y, width, height);
@@ -794,8 +794,8 @@ namespace System.Graphics.Xaml
 
             var sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
             var absSweep = Math.Abs(sweep);
-            var startPoint = Geometry.OvalAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -startAngle);
-            var endPoint = Geometry.OvalAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -endAngle);
+            var startPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -startAngle);
+            var endPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -endAngle);
 
             figure.StartPoint = new Point(startPoint.X, startPoint.Y);
             arcSegment.Point = new Point(endPoint.X, endPoint.Y);

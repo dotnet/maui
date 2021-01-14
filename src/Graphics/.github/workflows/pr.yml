@@ -10,6 +10,11 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v2
 
+    - name: Setup DotNet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0'
+
     - name: Install NuGet
       uses: nuget/setup-nuget@v1
       with:
@@ -31,6 +36,11 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v2
               
+    - name: Setup DotNet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0'
+
     - name: Install NuGet
       uses: nuget/setup-nuget@v1
       with:

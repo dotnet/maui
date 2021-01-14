@@ -22,7 +22,7 @@ namespace GraphicsTester.Scenarios
             //
             canvas.StrokeSize = 10;
             canvas.DrawRectangle(50, 400, 100, 50);
-            canvas.DrawOval(200, 400, 100, 50);
+            canvas.DrawEllipse(200, 400, 100, 50);
             canvas.DrawRoundedRectangle(350, 400, 100, 50, 25);
 
             var path = new PathF();

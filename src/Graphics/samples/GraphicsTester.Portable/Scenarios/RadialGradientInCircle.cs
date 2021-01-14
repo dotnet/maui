@@ -20,10 +20,10 @@ namespace GraphicsTester.Scenarios
             };
 
             canvas.SetFillPaint(paint, 200, 200, 300, 200);
-            canvas.FillOval(100, 100, 200, 200);
+            canvas.FillEllipse(100, 100, 200, 200);
 
             canvas.SetFillPaint(paint, 250, 500, 100, 500);
-            canvas.FillOval(100, 400, 200, 200);
+            canvas.FillEllipse(100, 400, 200, 200);
 
             canvas.RestoreState();
         }

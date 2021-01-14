@@ -36,20 +36,20 @@ namespace GraphicsTester.Scenarios
 
             canvas.SaveState();
             canvas.FillColor = Colors.Black;
-            canvas.FillOval(60, 60, 10, 10);
+            canvas.FillEllipse(60, 60, 10, 10);
             canvas.SetShadow(new SizeF(2, 0), 2, Colors.Black);
             canvas.StrokeColor = Colors.CornflowerBlue;
             canvas.Rotate(15);
-            canvas.DrawOval(60, 60, 10, 10);
+            canvas.DrawEllipse(60, 60, 10, 10);
             canvas.Rotate(15);
-            canvas.DrawOval(60, 60, 10, 10);
+            canvas.DrawEllipse(60, 60, 10, 10);
             canvas.Rotate(15);
-            canvas.DrawOval(60, 60, 10, 10);
+            canvas.DrawEllipse(60, 60, 10, 10);
             canvas.StrokeColor = Colors.DarkSeaGreen;
             canvas.Rotate(-60);
-            canvas.DrawOval(60, 60, 10, 10);
+            canvas.DrawEllipse(60, 60, 10, 10);
             canvas.Rotate(-15);
-            canvas.DrawOval(60, 60, 10, 10);
+            canvas.DrawEllipse(60, 60, 10, 10);
             canvas.RestoreState();
         }
     }

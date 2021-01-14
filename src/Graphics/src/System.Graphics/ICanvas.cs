@@ -44,9 +44,9 @@ namespace System.Graphics
 
         public  void FillRoundedRectangle(float x, float y, float width, float height, float cornerRadius);
 
-        public  void DrawOval(float x, float y, float width, float height);
+        public  void DrawEllipse(float x, float y, float width, float height);
 
-        public  void FillOval(float x, float y, float width, float height);
+        public  void FillEllipse(float x, float y, float width, float height);
 
         public  void DrawString(string value, float x, float y, HorizontalAlignment horizontalAlignment);
 

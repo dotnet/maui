@@ -20,7 +20,7 @@ namespace System.Graphics
         protected abstract void NativeDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed);
         protected abstract void NativeDrawRectangle(float x, float y, float width, float height);
         protected abstract void NativeDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius);
-        protected abstract void NativeDrawOval(float x, float y, float width, float height);
+        protected abstract void NativeDrawEllipse(float x, float y, float width, float height);
         protected abstract void NativeDrawPath(PathF path);
         protected abstract void NativeRotate(float degrees, float radians, float x, float y);
         protected abstract void NativeRotate(float degrees, float radians);
@@ -159,13 +159,13 @@ namespace System.Graphics
 
         public abstract void FillRoundedRectangle(float x, float y, float width, float height, float cornerRadius);
 
-        public void DrawOval(float x, float y, float width, float height)
+        public void DrawEllipse(float x, float y, float width, float height)
         {
             EnsureStrokePatternSet();
-            NativeDrawOval(x, y, width, height);
+            NativeDrawEllipse(x, y, width, height);
         }
 
-        public abstract void FillOval(float x, float y, float width, float height);
+        public abstract void FillEllipse(float x, float y, float width, float height);
         public abstract void DrawString(string value, float x, float y, HorizontalAlignment horizontalAlignment);
 
         public abstract void DrawString(

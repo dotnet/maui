@@ -260,8 +260,8 @@ namespace System.Graphics.SharpDX
             _size.Width = _rect.Width / 2;
             _size.Height = _rect.Height / 2;
 
-            var startPoint = Geometry.OvalAngleToPoint(_rect.X, _rect.Y, _rect.Width, _rect.Height, -startAngle);
-            var endPoint = Geometry.OvalAngleToPoint(_rect.X, _rect.Y, _rect.Width, _rect.Height, -endAngle);
+            var startPoint = Geometry.EllipseAngleToPoint(_rect.X, _rect.Y, _rect.Width, _rect.Height, -startAngle);
+            var endPoint = Geometry.EllipseAngleToPoint(_rect.X, _rect.Y, _rect.Width, _rect.Height, -endAngle);
 
             _point1.X = startPoint.X;
             _point1.Y = startPoint.Y;
@@ -308,8 +308,8 @@ namespace System.Graphics.SharpDX
             _size.Width = width / 2;
             _size.Height = height / 2;
 
-            var startPoint = Geometry.OvalAngleToPoint(x, y, width, height, -startAngle);
-            var endPoint = Geometry.OvalAngleToPoint(x, y, width, height, -endAngle);
+            var startPoint = Geometry.EllipseAngleToPoint(x, y, width, height, -startAngle);
+            var endPoint = Geometry.EllipseAngleToPoint(x, y, width, height, -endAngle);
 
             _point1.X = startPoint.X;
             _point1.Y = startPoint.Y;
@@ -366,7 +366,7 @@ namespace System.Graphics.SharpDX
             Draw(ctx => ctx.DrawRoundedRectangle(_roundedRect, CurrentState.DxStrokeBrush, strokeWidth, CurrentState.StrokeStyle));
         }
 
-        protected override void NativeDrawOval(float x, float y, float width, float height)
+        protected override void NativeDrawEllipse(float x, float y, float width, float height)
         {
             float strokeWidth = CurrentState.StrokeSize;
 
@@ -468,7 +468,7 @@ namespace System.Graphics.SharpDX
             Draw(ctx => ctx.FillRoundedRectangle(_roundedRect, CurrentState.DxFillBrush));
         }
 
-        public override void FillOval(float x, float y, float width, float height)
+        public override void FillEllipse(float x, float y, float width, float height)
         {
             if (width > 0 || width < 0)
             {

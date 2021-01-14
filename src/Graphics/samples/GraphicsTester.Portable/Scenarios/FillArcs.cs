@@ -4,21 +4,21 @@ namespace GraphicsTester.Scenarios
 {
     public class FillArcs : AbstractScenario
     {
-        public readonly bool includeOvals;
+        public readonly bool includeEllipses;
 
-        public FillArcs(bool includeOvals = false)
+        public FillArcs(bool includeEllipses = false)
             : base(720, 1024)
         {
-            this.includeOvals = includeOvals;
+            this.includeEllipses = includeEllipses;
         }
 
         public override void Draw(ICanvas canvas)
         {
-            if (includeOvals)
+            if (includeEllipses)
             {
                 canvas.FillColor = Colors.LightGrey;
-                canvas.FillOval(50.5f, 10.5f, 150, 15);
-                canvas.FillOval(250.5f, 10.5f, 150, 15);
+                canvas.FillEllipse(50.5f, 10.5f, 150, 15);
+                canvas.FillEllipse(250.5f, 10.5f, 150, 15);
                 canvas.FillColor = Colors.Black;
             }
 
@@ -28,10 +28,10 @@ namespace GraphicsTester.Scenarios
 
             canvas.SaveState();
 
-            if (includeOvals)
+            if (includeEllipses)
             {
-                OvalFillArcsOfDifferentSizesAndColors(canvas);
-                OvalFillShadowedRect(canvas);
+                EllipseFillArcsOfDifferentSizesAndColors(canvas);
+                EllipseFillShadowedRect(canvas);
             }
 
             FillArcsOfDifferentSizesAndColors(canvas);
@@ -40,11 +40,11 @@ namespace GraphicsTester.Scenarios
 
             canvas.RestoreState();
 
-            if (includeOvals)
+            if (includeEllipses)
             {
                 canvas.FillColor = Colors.LightGrey;
-                canvas.FillOval(50.5f, 30.5f, 150, 15);
-                canvas.FillOval(250.5f, 30.5f, 150, 15);
+                canvas.FillEllipse(50.5f, 30.5f, 150, 15);
+                canvas.FillEllipse(250.5f, 30.5f, 150, 15);
                 canvas.FillColor = Colors.Black;
             }
 
@@ -53,10 +53,10 @@ namespace GraphicsTester.Scenarios
             canvas.FillArc(250.5f, 30.5f, 150, 15, 90, 270, true);
         }
 
-        private static void OvalFillShadowedRect(ICanvas canvas)
+        private static void EllipseFillShadowedRect(ICanvas canvas)
         {
             canvas.FillColor = Colors.LightGrey;
-            canvas.FillOval(50.5f, 400.5f, 200, 50);
+            canvas.FillEllipse(50.5f, 400.5f, 200, 50);
             canvas.FillColor = Colors.Black;
         }
 
@@ -70,18 +70,18 @@ namespace GraphicsTester.Scenarios
             canvas.RestoreState();
         }
 
-        private static void OvalFillArcsOfDifferentSizesAndColors(ICanvas canvas)
+        private static void EllipseFillArcsOfDifferentSizesAndColors(ICanvas canvas)
         {
             canvas.FillColor = Colors.LightGrey;
             for (int i = 1; i < 5; i++)
             {
-                canvas.FillOval(50, 50 + i * 30, 150, 20);
-                canvas.FillOval(250.5f, 50.5f + i * 30, 150, 20);
+                canvas.FillEllipse(50, 50 + i * 30, 150, 20);
+                canvas.FillEllipse(250.5f, 50.5f + i * 30, 150, 20);
             }
 
             for (int i = 1; i < 5; i++)
             {
-                canvas.FillOval(450.5f, 50.5f + i * 30, 150, 20);
+                canvas.FillEllipse(450.5f, 50.5f + i * 30, 150, 20);
             }
 
             canvas.FillColor = Colors.Black;
@@ -118,9 +118,9 @@ namespace GraphicsTester.Scenarios
 
         public override string ToString()
         {
-            if (includeOvals)
+            if (includeEllipses)
             {
-                return "FillArcs (Including Background Ovals)";
+                return "FillArcs (Including Background Ellipses)";
             }
 
             return base.ToString();

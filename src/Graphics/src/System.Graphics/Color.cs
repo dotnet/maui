@@ -1,27 +1,34 @@
+using System.Diagnostics;
 using System.Globalization;
 
 namespace System.Graphics
 {
-    public class Color
+	[DebuggerDisplay("Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}")]
+	public class Color
 	{
 		public readonly float Red;
 		public readonly float Green;
 		public readonly float Blue;
 		public readonly float Alpha = 1;
 
+		public Color(float gray)
+		{
+			Red = Green = Blue = gray.Clamp(0,1);
+		}
+
 		public Color(float red, float green, float blue)
 		{
-			Red = red;
-			Green = green;
-			Blue = blue;
+			Red = red.Clamp(0, 1);
+			Green = green.Clamp(0, 1);
+			Blue = blue.Clamp(0, 1);
 		}
 
 		public Color(float red, float green, float blue, float alpha)
 		{
-			Red = red;
-			Green = green;
-			Blue = blue;
-			Alpha = alpha;
+			Red = red.Clamp(0,1);
+			Green = green.Clamp(0,1);
+			Blue = blue.Clamp(0,1);
+			Alpha = alpha.Clamp(0,1);
 		}
 
 		public Color(string colorAsHex)
@@ -72,19 +79,37 @@ namespace System.Graphics
 			Alpha = alpha / 255f;
 		}
 
-		public static Color FromBytes(byte red, byte green, byte blue) => Color.FromBytes(red, green, blue, 255);
-		
-		public static Color FromBytes(byte red, byte green, byte blue, byte alpha)
-			=> new Color(red / 255f, green / 255f, blue / 255f, alpha / 255f);
+		public override string ToString()
+		{
+			return $"[Color: Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}]";
+		}
 
 		public override int GetHashCode()
 		{
-			return ((int)Red ^ (int)Blue) ^ ((int)Green ^ (int)Alpha);
+			unchecked
+			{
+				int hashcode = Red.GetHashCode();
+				hashcode = (hashcode * 397) ^ Green.GetHashCode();
+				hashcode = (hashcode * 397) ^ Blue.GetHashCode();
+				hashcode = (hashcode * 397) ^ Alpha.GetHashCode();
+				return hashcode;
+			}
 		}
 
-		public string ToHexString()
+		public override bool Equals(object obj)
 		{
-			return "#" + ToHexString(Red) + ToHexString(Green) + ToHexString(Blue);
+			if (obj is Color other)
+				return Red == other.Red && Green == other.Green && Blue == other.Blue && Alpha == other.Alpha;
+
+			return base.Equals(obj);
+		}
+
+		public string ToHex(bool includeAlpha = false)
+		{
+			if (includeAlpha || Alpha < 1)
+				return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue) + ToHex(Alpha);
+
+			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
 		}
 
 		public Paint AsPaint()
@@ -108,21 +133,13 @@ namespace System.Graphics
 		{
 			return new Color(Red,Green,Blue, Alpha * multiplyBy);
 		}
-		
-		public string ToHexStringIncludingAlpha()
-		{
-			if (Alpha < 1)
-				return ToHexString() + ToHexString(Alpha);
 
-			return ToHexString();
+		public static string ToHex(float r, float g, float b)
+		{
+			return "#" + ToHex(r) + ToHex(g) + ToHex(b);
 		}
 
-		public static string ToHexString(float r, float g, float b)
-		{
-			return "#" + ToHexString(r) + ToHexString(g) + ToHexString(b);
-		}
-
-		private static string ToHexString(float value)
+		private static string ToHex(float value)
 		{
 			var intValue = (int)(255f * value);
 			var stringValue = intValue.ToString("X");
@@ -130,13 +147,6 @@ namespace System.Graphics
 				return "0" + stringValue;
 
 			return stringValue;
-		}
-
-		public static Color FromHsla(float h, float s, float l, float a = 1)
-		{
-			float red, green, blue;
-			ConvertToRgb(h, s, l, out red, out green, out blue);
-			return new Color(red, green, blue);
 		}
 
 		public float GetLuminosity()
@@ -155,8 +165,44 @@ namespace System.Graphics
 		{
 			ConvertToHsl(Red,Green,Blue, out var h, out var s, out var l);
 			l+= delta;
+			l = l.Clamp(0, 1);
 			return FromHsla(h,s,l,Alpha);
 		}
+
+		public Color WithLuminosity(float luminosity)
+		{
+			ConvertToHsl(Red, Green, Blue, out var h, out var s, out var l);
+			return FromHsla(h, s, luminosity, Alpha);
+		}
+
+		public float GetSaturation()
+        {
+			ConvertToHsl(Red, Green, Blue, out var h, out var s, out var l);
+			return s;
+		}
+
+		public Color WithSaturation(float saturation)
+		{
+			ConvertToHsl(Red, Green, Blue, out var h, out var s, out var l);
+			return FromHsla(h, saturation, l, Alpha);
+		}
+
+		public float GetHue()
+		{
+			ConvertToHsl(Red, Green, Blue, out var h, out var s, out var l);
+			return h;
+		}
+
+		public Color WithHue(float hue)
+		{
+			ConvertToHsl(Red, Green, Blue, out var h, out var s, out var l);
+			return FromHsla(hue, s, l, Alpha);
+		}
+
+		public static Color FromHex(string hex)
+        {
+			return new Color(hex);
+        }
 
 		public static Color FromHsva(float h, float s, float v, float a)
 		{
@@ -187,12 +233,51 @@ namespace System.Graphics
 
 		public static Color FromUint(uint argb)
 		{
-			return FromRgba((byte)((argb & 0x00ff0000) >> 0x10), (byte)((argb & 0x0000ff00) >> 0x8), (byte)(argb & 0x000000ff), (byte)((argb & 0xff000000) >> 0x18));
+			return FromRgba((byte)((argb & 0x00ff0000) >> 0x10), (byte)((argb & 0x0000ff00) >> 0x8), (byte)(argb & 0x000000ff), (double)(byte)((argb & 0xff000000) >> 0x18));
+		}
+
+		public static Color FromRgb(byte red, byte green, byte blue)
+		{
+			return Color.FromRgba(red, green, blue, 255);
+		}
+
+		public static Color FromRgba(byte red, byte green, byte blue, byte alpha)
+		{ 
+			return new Color(red / 255f, green / 255f, blue / 255f, alpha / 255f);
+		}
+
+		public static Color FromRgb(float red, float green, float blue)
+		{
+			return Color.FromRgba(red, green, blue, 1);
+		}
+
+		public static Color FromRgb(double red, double green, double blue)
+		{
+			return Color.FromRgba(red, green, blue, 1);
+		}
+
+		public static Color FromRgba(float r, float g, float b, float a)
+		{
+			return new Color(r, g, b, a);
 		}
 
 		public static Color FromRgba(double r, double g, double b, double a)
 		{
 			return new Color((float)r, (float)g, (float)b, (float)a);
+		}
+
+		public static Color FromHsla(float h, float s, float l, float a = 1)
+		{
+			float red, green, blue;
+			ConvertToRgb(h, s, l, out red, out green, out blue);
+			return new Color(red, green, blue, a);
+		}
+
+		public static Color FromHsla(double h, double s, double l, double a = 1)
+		{
+			float red, green, blue;
+			ConvertToRgb((float)h, (float)s, (float)l, out red, out green, out blue);
+			return new Color(red, green, blue, (float)a);
 		}
 
 		public static Color FromHsv(float h, float s, float v)

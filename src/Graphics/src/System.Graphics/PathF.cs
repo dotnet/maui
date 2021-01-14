@@ -1016,7 +1016,12 @@ namespace System.Graphics
             return new PathF(points, arcSizes, arcClockwise, operations, _subPathCount);
         }
 
-        public void AppendOval(float x, float y, float w, float h)
+        public void AppendEllipse(RectangleF rect)
+        {
+            AppendEllipse(rect.X, rect.Y, rect.Width, rect.Height);
+        }
+
+        public void AppendEllipse(float x, float y, float w, float h)
         {
             var minX = x;
             var minY = y;
@@ -1033,6 +1038,11 @@ namespace System.Graphics
             CurveTo(new PointF(maxX, midY + offsetY), new PointF(midX + offsetX, maxY), new PointF(midX, maxY));
             CurveTo(new PointF(midX - offsetX, maxY), new PointF(minX, midY + offsetY), new PointF(minX, midY));
             Close();
+        }
+
+        public void AppendCircle(PointF center, float r)
+        {
+            AppendCircle(center.X, center.Y, r);
         }
 
         public void AppendCircle(float cx, float cy, float r)
@@ -1054,6 +1064,11 @@ namespace System.Graphics
             Close();
         }
 
+        public void AppendRectangle(RectangleF rect, bool includeLast = false)
+        {
+            AppendRectangle(rect.X, rect.Y, rect.Width, rect.Height, includeLast);
+        }
+
         public void AppendRectangle(float x, float y, float w, float h, bool includeLast = false)
         {
             var minX = x;
@@ -1072,6 +1087,11 @@ namespace System.Graphics
             }
 
             Close();
+        }
+
+        public void AppendRoundedRectangle(RectangleF rect, float cornerRadius, bool includeLast = false)
+        {
+            AppendRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, cornerRadius, includeLast);
         }
 
         public void AppendRoundedRectangle(float x, float y, float w, float h, float cornerRadius, bool includeLast = false)
@@ -1111,11 +1131,11 @@ namespace System.Graphics
             Close();
         }
         
-        public bool IsSubPathClosed(int aSubPathIndex)
+        public bool IsSubPathClosed(int subPathIndex)
         {
-            if (aSubPathIndex >= 0 && aSubPathIndex < SubPathCount)
+            if (subPathIndex >= 0 && subPathIndex < SubPathCount)
             {
-                return _subPathsClosed[aSubPathIndex];
+                return _subPathsClosed[subPathIndex];
             }
 
             return false;
@@ -1126,9 +1146,7 @@ namespace System.Graphics
             get => _nativePath;
             set
             {
-                if (_nativePath is IDisposable disposable)
-                    disposable.Dispose();
-
+                ReleaseNative();
                 _nativePath = value;
             }
         }

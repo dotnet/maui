@@ -591,7 +591,7 @@ namespace System.Graphics.Skia
             _canvas.DrawRoundRect(rect, radius, radius, CurrentState.FillPaintWithAlpha);
         }
 
-        protected override void NativeDrawOval(
+        protected override void NativeDrawEllipse(
             float x,
             float y,
             float width,
@@ -609,7 +609,7 @@ namespace System.Graphics.Skia
             _canvas.DrawOval(rect, CurrentState.StrokePaintWithAlpha);
         }
 
-        public override void FillOval(
+        public override void FillEllipse(
             float x,
             float y,
             float width,

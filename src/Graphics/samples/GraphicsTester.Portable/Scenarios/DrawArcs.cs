@@ -4,20 +4,20 @@ namespace GraphicsTester.Scenarios
 {
     public class DrawArcs : AbstractScenario
     {
-        public readonly bool includeOvals;
+        public readonly bool includeEllipses;
 
-        public DrawArcs(bool includeOvals = false) : base(720, 1024)
+        public DrawArcs(bool includeEllipses = false) : base(720, 1024)
         {
-            this.includeOvals = includeOvals;
+            this.includeEllipses = includeEllipses;
         }
 
         public override void Draw(ICanvas canvas)
         {
-            if (includeOvals)
+            if (includeEllipses)
             {
                 canvas.StrokeColor = Colors.LightGrey;
-                canvas.DrawOval(50.5f, 10.5f, 150, 15);
-                canvas.DrawOval(250.5f, 10.5f, 150, 15);
+                canvas.DrawEllipse(50.5f, 10.5f, 150, 15);
+                canvas.DrawEllipse(250.5f, 10.5f, 150, 15);
                 canvas.StrokeColor = Colors.Black;
             }
 
@@ -26,12 +26,12 @@ namespace GraphicsTester.Scenarios
 
             canvas.SaveState();
 
-            if (includeOvals)
+            if (includeEllipses)
             {
-                OvalDrawArcsOfDifferentSizesAndColors(canvas);
-                OvalDrawArcsWithDashesOfDifferentSizes(canvas);
-                OvalDrawShadowedRect(canvas);
-                OvalDrawArcsWithDifferentStrokeLocations(canvas);
+                EllipseDrawArcsOfDifferentSizesAndColors(canvas);
+                EllipseDrawArcsWithDashesOfDifferentSizes(canvas);
+                EllipseDrawShadowedRect(canvas);
+                EllipseDrawArcsWithDifferentStrokeLocations(canvas);
             }
 
             DrawArcsOfDifferentSizesAndColors(canvas);
@@ -42,11 +42,11 @@ namespace GraphicsTester.Scenarios
 
             canvas.RestoreState();
 
-            if (includeOvals)
+            if (includeEllipses)
             {
                 canvas.StrokeColor = Colors.LightGrey;
-                canvas.DrawOval(50.5f, 30.5f, 150, 15);
-                canvas.DrawOval(250.5f, 30.5f, 150, 15);
+                canvas.DrawEllipse(50.5f, 30.5f, 150, 15);
+                canvas.DrawEllipse(250.5f, 30.5f, 150, 15);
                 canvas.StrokeColor = Colors.Black;
             }
 
@@ -54,11 +54,11 @@ namespace GraphicsTester.Scenarios
             canvas.DrawArc(250.5f, 30.5f, 150, 15, 90, 270, true, true);
         }
 
-        private static void OvalDrawShadowedRect(ICanvas canvas)
+        private static void EllipseDrawShadowedRect(ICanvas canvas)
         {
             canvas.StrokeColor = Colors.LightGrey;
             canvas.StrokeSize = 5;
-            canvas.DrawOval(50.5f, 400.5f, 200, 50);
+            canvas.DrawEllipse(50.5f, 400.5f, 200, 50);
             canvas.StrokeColor = Colors.Black;
         }
 
@@ -73,14 +73,14 @@ namespace GraphicsTester.Scenarios
             canvas.RestoreState();
         }
 
-        private static void OvalDrawArcsWithDashesOfDifferentSizes(ICanvas canvas)
+        private static void EllipseDrawArcsWithDashesOfDifferentSizes(ICanvas canvas)
         {
             canvas.StrokeColor = Colors.LightGrey;
             for (int i = 1; i < 5; i++)
             {
                 canvas.StrokeSize = i;
-                canvas.DrawOval(50f, 200f + i * 30, 150, 20);
-                canvas.DrawOval(250.5f, 200.5f + i * 30, 150, 20);
+                canvas.DrawEllipse(50f, 200f + i * 30, 150, 20);
+                canvas.DrawEllipse(250.5f, 200.5f + i * 30, 150, 20);
             }
 
             canvas.StrokeColor = Colors.Black;
@@ -100,20 +100,20 @@ namespace GraphicsTester.Scenarios
             canvas.StrokeDashPattern = SOLID;
         }
 
-        private static void OvalDrawArcsOfDifferentSizesAndColors(ICanvas canvas)
+        private static void EllipseDrawArcsOfDifferentSizesAndColors(ICanvas canvas)
         {
             canvas.StrokeColor = Colors.LightGrey;
             for (int i = 1; i < 5; i++)
             {
                 canvas.StrokeSize = i;
-                canvas.DrawOval(50, 50 + i * 30, 150, 20);
-                canvas.DrawOval(250.5f, 50.5f + i * 30, 150, 20);
+                canvas.DrawEllipse(50, 50 + i * 30, 150, 20);
+                canvas.DrawEllipse(250.5f, 50.5f + i * 30, 150, 20);
             }
 
             for (int i = 1; i < 5; i++)
             {
                 canvas.StrokeSize = i;
-                canvas.DrawOval(450.5f, 50.5f + i * 30, 150, 20);
+                canvas.DrawEllipse(450.5f, 50.5f + i * 30, 150, 20);
             }
 
             canvas.StrokeColor = Colors.Black;
@@ -149,13 +149,13 @@ namespace GraphicsTester.Scenarios
             canvas.Alpha = 1;
         }
 
-        private static void OvalDrawArcsWithDifferentStrokeLocations(ICanvas canvas)
+        private static void EllipseDrawArcsWithDifferentStrokeLocations(ICanvas canvas)
         {
             canvas.StrokeColor = Colors.LightGrey;
             for (int i = 1; i < 4; i++)
             {
                 canvas.StrokeSize = i * 2 + 1;
-                canvas.DrawOval(50.5f, 500.5f + i * 40, 150, 20);
+                canvas.DrawEllipse(50.5f, 500.5f + i * 40, 150, 20);
             }
             
             canvas.StrokeColor = Colors.Black;
@@ -179,9 +179,9 @@ namespace GraphicsTester.Scenarios
 
         public override string ToString()
         {
-            if (includeOvals)
+            if (includeEllipses)
             {
-                return "DrawArcs (Including Background Ovals)";
+                return "DrawArcs (Including Background Ellipses)";
             }
 
             return base.ToString();

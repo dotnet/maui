@@ -28,7 +28,7 @@ namespace GraphicsTester.Scenarios
             canvas.FillRectangle(100, 100, 100, 100);
 
             canvas.FillColor = Colors.Beige;
-            canvas.FillOval(100, 300, 100, 50);
+            canvas.FillEllipse(100, 300, 100, 50);
 
             canvas.RestoreState();
         }

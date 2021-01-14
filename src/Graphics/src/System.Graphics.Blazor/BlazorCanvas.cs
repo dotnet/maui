@@ -163,7 +163,7 @@ namespace System.Graphics.Blazor
             _context.GlobalAlpha = alpha;
         }
 
-        public override void FillOval(float x, float y, float width, float height)
+        public override void FillEllipse(float x, float y, float width, float height)
         {
             var alpha = CurrentState.SetFillStyle(_context);
             _context.BeginPath();
@@ -258,7 +258,7 @@ namespace System.Graphics.Blazor
             _context.GlobalAlpha = alpha;
         }
 
-        protected override void NativeDrawOval(float x, float y, float width, float height)
+        protected override void NativeDrawEllipse(float x, float y, float width, float height)
         {
             var alpha = CurrentState.SetStrokeStyle(_context);
 

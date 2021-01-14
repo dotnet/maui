@@ -848,7 +848,7 @@ namespace System.Graphics.CoreGraphics
             }
         }
 
-        protected override void NativeDrawOval(float x, float y, float width, float height)
+        protected override void NativeDrawEllipse(float x, float y, float width, float height)
         {
             _rect.X = x;
             _rect.Y = y;
@@ -857,7 +857,7 @@ namespace System.Graphics.CoreGraphics
             _context.StrokeEllipseInRect(_rect);
         }
 
-        public override void FillOval(float x, float y, float width, float height)
+        public override void FillEllipse(float x, float y, float width, float height)
         {
             _rect.X = x;
             _rect.Y = y;
@@ -1256,7 +1256,7 @@ namespace System.Graphics.CoreGraphics
             context.TextMatrix = CGAffineTransform.MakeIdentity();
             context.TextMatrix.Translate(ix, iy);
 
-            var attributedString = text.AsNSAttributedString(fontName, fontSize, fontColor?.ToHexString(), true);
+            var attributedString = text.AsNSAttributedString(fontName, fontSize, fontColor?.ToHex(), true);
             if (attributedString == null)
                 return;
 

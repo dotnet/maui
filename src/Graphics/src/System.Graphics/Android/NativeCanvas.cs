@@ -542,7 +542,7 @@ namespace System.Graphics.Android
             rect.Dispose();
         }
 
-        protected override void NativeDrawOval(float x, float y, float width, float height)
+        protected override void NativeDrawEllipse(float x, float y, float width, float height)
         {
             // These values work for a stroke location of center.
             float strokeSize = CurrentState.ScaledStrokeSize;
@@ -557,7 +557,7 @@ namespace System.Graphics.Android
             rect.Dispose();
         }
 
-        public override void FillOval(float x, float y, float width, float height)
+        public override void FillEllipse(float x, float y, float width, float height)
         {
             /* todo: support gradients here */
 
