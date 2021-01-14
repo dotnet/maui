@@ -553,7 +553,7 @@ namespace System.Graphics.Android
             var rectHeight = height;
 
             var rect = new RectF(rectX, rectY, rectX + rectWidth, rectY + rectHeight);
-            _canvas.DrawEllipse(rect, CurrentState.StrokePaintWithAlpha);
+            _canvas.DrawOval(rect, CurrentState.StrokePaintWithAlpha);
             rect.Dispose();
         }
 
@@ -568,7 +568,7 @@ namespace System.Graphics.Android
             var rectHeight = height;
 
             var rect = new RectF(rectX, rectY, rectX + rectWidth, rectY + rectHeight);
-            _canvas.DrawEllipse(rect, CurrentState.FillPaintWithAlpha);
+            _canvas.DrawOval(rect, CurrentState.FillPaintWithAlpha);
             rect.Dispose();
         }
 

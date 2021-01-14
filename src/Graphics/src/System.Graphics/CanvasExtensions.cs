@@ -37,6 +37,30 @@ namespace System.Graphics
             target.FillEllipse(rect.X, rect.Y, rect.Width, rect.Height);
         }
 
+        [Obsolete]
+        public static void DrawOval(this ICanvas target, RectangleF rect)
+        {
+            target.DrawEllipse(rect.X, rect.Y, rect.Width, rect.Height);
+        }
+
+        [Obsolete]
+        public static void DrawOval(this ICanvas target, float x, float y, float width, float height)
+        {
+            target.DrawEllipse(x,y,width, height);
+        }
+
+        [Obsolete]
+        public static void FillOval(this ICanvas target, RectangleF rect)
+        {
+            target.FillEllipse(rect.X, rect.Y, rect.Width, rect.Height);
+        }
+
+        [Obsolete]
+        public static void FillOval(this ICanvas target, float x, float y, float width, float height)
+        {
+            target.FillEllipse(x, y, width, height);
+        }
+
         public static void DrawPath(this ICanvas target, PathF path)
         {
             target.DrawPath(path);

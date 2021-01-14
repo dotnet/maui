@@ -606,7 +606,7 @@ namespace System.Graphics.Skia
             var rectHeight = height;
             
             var rect = new SKRect(rectX, rectY, rectX + rectWidth, rectY + rectHeight);
-            _canvas.DrawEllipse(rect, CurrentState.StrokePaintWithAlpha);
+            _canvas.DrawOval(rect, CurrentState.StrokePaintWithAlpha);
         }
 
         public override void FillEllipse(
@@ -622,7 +622,7 @@ namespace System.Graphics.Skia
             var rectHeight = height;
 
             var rect = new SKRect(rectX, rectY, rectX + rectWidth, rectY + rectHeight);
-            _canvas.DrawEllipse(rect, CurrentState.FillPaintWithAlpha);
+            _canvas.DrawOval(rect, CurrentState.FillPaintWithAlpha);
         }
 
         public override void SubtractFromClip(
