@@ -1,9 +1,8 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
-	[TypeConverter(typeof(GridLengthTypeConverter))]
 	[DebuggerDisplay("{Value}.{GridUnitType}")]
 	public struct GridLength
 	{
@@ -51,7 +50,7 @@ namespace Microsoft.Maui.Controls
 			GridUnitType = type;
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj != null && obj is GridLength && Equals((GridLength)obj);
 		}

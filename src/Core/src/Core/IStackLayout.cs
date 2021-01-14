@@ -1,3 +1,6 @@
+﻿using System.Collections.Generic;
+
+
 namespace Microsoft.Maui
 {
 	/// <summary>

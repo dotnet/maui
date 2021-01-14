@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Layout2
 
 			Arrange(bounds);
 
-			LayoutManager.Arrange(Frame);
+			LayoutManager.ArrangeChildren(Frame);
 			IsArrangeValid = true;
 			Handler?.SetFrame(Frame);
 		}

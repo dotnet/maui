@@ -37,7 +37,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new HorizontalStackLayoutManager(stack);
 
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.Arrange(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			var expectedRectangle = new Rectangle(0, 0, 100, 100);
 			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle));
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new HorizontalStackLayoutManager(stack);
 
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.Arrange(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			var expectedRectangle0 = new Rectangle(0, 0, 100, 100);
 			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle0));
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var stack = CreateTestLayout();
 
-			var view = CreateTestView(new Size(viewWidth, 100));
+			var view = LayoutTestHelpers.CreateTestView(new Size(viewWidth, 100));
 
 			var children = new List<IView>() { view }.AsReadOnly();
 
@@ -88,14 +88,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var stack = CreateTestLayout();
 			var manager = new HorizontalStackLayoutManager(stack);
 
-			var view1 = CreateTestView(new Size(100, 200));
-			var view2 = CreateTestView(new Size(100, 150));
+			var view1 = LayoutTestHelpers.CreateTestView(new Size(100, 200));
+			var view2 = LayoutTestHelpers.CreateTestView(new Size(100, 150));
 
 			var children = new List<IView>() { view1, view2 }.AsReadOnly();
 			stack.Children.Returns(children);
 
 			var measurement = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.Arrange(new Rectangle(Point.Zero, measurement));
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measurement));
 
 			// The tallest IView is 200, so the stack should be that tall
 			Assert.Equal(200, measurement.Height);

@@ -1,5 +1,4 @@
-using System.Linq;
-
+﻿using System.Linq;
 
 // This is a temporary namespace until we rename everything and move the legacy layouts
 namespace Microsoft.Maui.Controls.Layout2
