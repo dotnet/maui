@@ -266,6 +266,51 @@ namespace System.Graphics
 			return new Color((float)r, (float)g, (float)b, (float)a);
 		}
 
+		public static Color FromArgb(string colorAsHex)
+		{
+			//Remove # if present
+			if (colorAsHex.IndexOf('#') != -1)
+				colorAsHex = colorAsHex.Replace("#", "");
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (colorAsHex.Length == 6)
+			{
+				//#RRGGBB
+				red = int.Parse(colorAsHex.Substring(0, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(colorAsHex.Substring(2, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(colorAsHex.Substring(4, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (colorAsHex.Length == 3)
+			{
+				//#RGB
+				red = int.Parse($"{colorAsHex[0]}{colorAsHex[0]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{colorAsHex[1]}{colorAsHex[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{colorAsHex[2]}{colorAsHex[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (colorAsHex.Length == 4)
+			{
+				//#ARGB
+				alpha = int.Parse($"{colorAsHex[3]}{colorAsHex[0]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				red = int.Parse($"{colorAsHex[0]}{colorAsHex[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{colorAsHex[1]}{colorAsHex[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{colorAsHex[2]}{colorAsHex[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (colorAsHex.Length == 8)
+			{
+				//#AARRGGBB
+				alpha = int.Parse(colorAsHex.Substring(0, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				red = int.Parse(colorAsHex.Substring(2, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(colorAsHex.Substring(4, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(colorAsHex.Substring(6, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return FromRgba(red, green, blue, alpha);
+		}
+
 		public static Color FromHsla(float h, float s, float l, float a = 1)
 		{
 			float red, green, blue;
