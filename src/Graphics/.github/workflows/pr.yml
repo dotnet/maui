@@ -13,7 +13,7 @@ jobs:
     - name: Setup DotNet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.x'
+        dotnet-version: '5.0'
 
     - name: Install NuGet
       uses: nuget/setup-nuget@v1
@@ -39,7 +39,7 @@ jobs:
     - name: Setup DotNet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.x'
+        dotnet-version: '5.0'
 
     - name: Install NuGet
       uses: nuget/setup-nuget@v1
