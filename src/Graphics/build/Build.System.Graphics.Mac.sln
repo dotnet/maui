@@ -11,16 +11,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Graphics.Skia", "..\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D6F0522F-3BB5-4A10-953F-CA047F3D881A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2BAF0999-6876-4091-9FCE-CBC56D80BEC3}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = ..\.editorconfig
+		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Graphics.Forms", "..\src\System.Graphics.Forms\System.Graphics.Forms.csproj", "{05D753E7-C4B3-4DA7-97E0-66E5FF695F42}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Graphics.Skia.Forms", "..\src\System.Graphics.Skia.Forms\System.Graphics.Skia.Forms.csproj", "{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Graphics.Tests", "..\tests\System.Graphics.Tests\System.Graphics.Tests.csproj", "{D69CA0F0-51A5-4D8B-9C2B-69C0F1506072}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{8A2197EB-6E30-495D-9DE9-2E40032FB2E9}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -67,6 +69,12 @@ Global
 		{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
 		{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{D69CA0F0-51A5-4D8B-9C2B-69C0F1506072}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D69CA0F0-51A5-4D8B-9C2B-69C0F1506072}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D69CA0F0-51A5-4D8B-9C2B-69C0F1506072}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D69CA0F0-51A5-4D8B-9C2B-69C0F1506072}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D69CA0F0-51A5-4D8B-9C2B-69C0F1506072}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{D69CA0F0-51A5-4D8B-9C2B-69C0F1506072}.AppStore|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -77,6 +85,7 @@ Global
 		{C7613109-6198-402E-953F-57EA81E8238E} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 		{05D753E7-C4B3-4DA7-97E0-66E5FF695F42} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 		{BD41610F-2F5B-40BA-AAC4-5F7EEBDC462C} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
+		{D69CA0F0-51A5-4D8B-9C2B-69C0F1506072} = {8A2197EB-6E30-495D-9DE9-2E40032FB2E9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B07E734-6AE2-4A12-AD60-C072F3695854}

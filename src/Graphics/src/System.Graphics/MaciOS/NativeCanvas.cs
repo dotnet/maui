@@ -1256,7 +1256,7 @@ namespace System.Graphics.CoreGraphics
             context.TextMatrix = CGAffineTransform.MakeIdentity();
             context.TextMatrix.Translate(ix, iy);
 
-            var attributedString = text.AsNSAttributedString(fontName, fontSize, fontColor?.ToHexString(), true);
+            var attributedString = text.AsNSAttributedString(fontName, fontSize, fontColor?.ToHex(), true);
             if (attributedString == null)
                 return;
 
