@@ -5,13 +5,13 @@ using Xamarin.Platform.Layouts;
 namespace Xamarin.Platform.Handlers.UnitTests.Layouts
 {
 	[TestFixture(Category = TestCategory.Layout)]
-	public class ConstraintTests 
+	public class ConstraintTests
 	{
 		[Test(Description = "When resolving constraints, external constraints take precedence")]
 		[TestCase(100, 200, 100)]
 		[TestCase(100, 100, 100)]
 		[TestCase(100, -1, 100)]
-		public void ExternalWinsOverDesired(double externalConstraint, double desiredLength, double expected) 
+		public void ExternalWinsOverDesired(double externalConstraint, double desiredLength, double expected)
 		{
 			var resolution = LayoutManager.ResolveConstraints(externalConstraint, desiredLength);
 			Assert.That(resolution, Is.EqualTo(expected));

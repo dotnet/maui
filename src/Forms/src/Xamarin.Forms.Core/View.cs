@@ -199,7 +199,7 @@ namespace Xamarin.Forms
 			Layout(bounds);
 		}
 
-		void IFrameworkElement.Arrange(Rectangle bounds) 
+		void IFrameworkElement.Arrange(Rectangle bounds)
 		{
 			if (IsArrangeValid)
 				return;

@@ -24,10 +24,10 @@ namespace Xamarin.Platform
 			return size + (int)mode;
 		}
 
-		public static double ToDouble(this int measureSpec, Context context) 
+		public static double ToDouble(this int measureSpec, Context context)
 		{
-			return measureSpec.GetMode() == MeasureSpecMode.Unspecified 
-				? double.PositiveInfinity 
+			return measureSpec.GetMode() == MeasureSpecMode.Unspecified
+				? double.PositiveInfinity
 				: context.FromPixels(measureSpec.GetSize());
 		}
 	}

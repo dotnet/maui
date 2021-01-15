@@ -55,7 +55,7 @@ namespace Xamarin.Platform.Handlers
 			VirtualView = view as TVirtualView;
 			TypedNativeView ??= CreateNativeView();
 
-			if(setupNativeView && TypedNativeView != null)
+			if (setupNativeView && TypedNativeView != null)
 			{
 				ConnectHandler(TypedNativeView);
 			}

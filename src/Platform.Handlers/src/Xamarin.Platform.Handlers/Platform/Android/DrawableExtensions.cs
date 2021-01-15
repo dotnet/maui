@@ -56,7 +56,7 @@ namespace Xamarin.Platform
 
 			if (colorFilter == null)
 				ADrawableCompat.ClearColorFilter(drawable);
-			else			
+			else
 				drawable.SetColorFilter(colorFilter);
 		}
 

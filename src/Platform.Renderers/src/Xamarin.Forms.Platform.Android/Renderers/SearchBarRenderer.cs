@@ -9,8 +9,8 @@ using Android.OS;
 using Android.Text;
 using Android.Text.Method;
 using Android.Util;
-using Android.Widget;
 using Android.Views;
+using Android.Widget;
 using Xamarin.Platform;
 using AView = Android.Views.View;
 
