@@ -13,6 +13,7 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	public static class FontExtensions
 	{
+		[ThreadStatic]
 		static Dictionary<string, FontFamily> FontFamilies = new Dictionary<string, FontFamily>();
 		static double DefaultFontSize = double.NegativeInfinity;
 
@@ -94,6 +95,8 @@ namespace Xamarin.Forms.Platform.UWP
 			if (string.IsNullOrWhiteSpace(fontFamily))
 				return (FontFamily)WApplication.Current.Resources["ContentControlThemeFontFamily"];
 
+			if (FontFamilies == null)
+				FontFamilies = new Dictionary<string, FontFamily>();
 			//Return from Cache!
 			if (FontFamilies.TryGetValue(fontFamily, out var f))
 			{
