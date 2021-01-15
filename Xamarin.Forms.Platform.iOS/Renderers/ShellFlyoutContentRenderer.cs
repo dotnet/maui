@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			if (header != null)
-				_headerView = new UIContainerView(((IShellController)_shellContext.Shell).FlyoutHeader);
+				_headerView = new ShellFlyoutHeaderContainer(((IShellController)_shellContext.Shell).FlyoutHeader);
 			else
 				_headerView = null;
 

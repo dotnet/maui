@@ -1,5 +1,6 @@
 ﻿using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using System.Threading.Tasks;
 
 
 #if UITEST
@@ -15,6 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.Shell)]
 	[NUnit.Framework.Category(UITestCategories.TitleView)]
+	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 #endif
 	public class ShellTitleView : TestShell
 	{
@@ -27,6 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			ContentPage createContentPage(string titleView)
 			{
+				Label safeArea = new Label();
 				ContentPage page = new ContentPage()
 				{
 					Content = new StackLayout()
@@ -35,8 +38,10 @@ namespace Xamarin.Forms.Controls.Issues
 						{
 							new Label()
 							{
-								Text = "Click through the tabs and make sure title view changes and doesn't duplicate"
-							}
+								Text = "Tab 1,3, and 4 should have a single visible TitleView. If the TitleView is duplicated or not visible the test has failed.",
+								AutomationId = "Instructions"
+							},
+							safeArea
 						}
 					}
 				};
@@ -58,7 +63,19 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 
-#if UITEST && (__IOS__ || __ANDROID__)
+#if UITEST
+
+		[Test]
+		public void TitleViewPositionsCorrectly()
+		{
+			var titleView = RunningApp.WaitForElement("TitleViewId")[0].Rect;
+			var topTab = RunningApp.WaitForElement("page 2")[0].Rect;
+
+			var titleViewBottom = titleView.Y + titleView.Height;
+			var topTabTop = topTab.Y;
+
+			Assert.GreaterOrEqual(topTabTop, titleViewBottom, "Title View is incorrectly positioned behind tabs");
+		}
 
 		[Test]
 		public void NoDuplicateTitleViews()
