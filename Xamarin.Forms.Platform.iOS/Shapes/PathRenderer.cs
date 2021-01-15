@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
         protected override void OnElementChanged(ElementChangedEventArgs<Path> args)
         {
-            if (Control == null)
+            if (Control == null && args.NewElement != null)
             {
                 SetNativeControl(new PathView());
             }

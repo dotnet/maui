@@ -658,6 +658,34 @@ namespace Xamarin.Forms.Controls
 				content.Route = content.Title;
 		}
 
+		public ContentPage AddBottomTab(ContentPage page, string title, string icon = null)
+		{
+			if (Items.Count == 0)
+			{
+				var item = AddContentPage(page);
+				item.Items[0].Items[0].Title = title ?? page.Title;
+				item.Items[0].Title = title ?? page.Title;
+				return page;
+			}
+
+			Items[0].Items.Add(new ShellSection()
+			{
+				AutomationId = title,
+				Route = title,
+				Title = title,
+				Icon = icon,
+				Items =
+ 				{
+ 					new ShellContent()
+ 					{
+ 						ContentTemplate = new DataTemplate(() => page),
+ 						Title = title
+ 					}
+ 				}
+			});
+			return page;
+		}
+
 		public ContentPage AddBottomTab(string title, string icon = null)
 		{
 			ContentPage page = new ContentPage();

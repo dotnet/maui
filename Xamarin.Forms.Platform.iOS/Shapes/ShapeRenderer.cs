@@ -37,6 +37,13 @@ namespace Xamarin.Forms.Platform.MacOS
                 UpdateStrokeLineCap();
                 UpdateStrokeLineJoin();
                 UpdateStrokeMiterLimit();
+
+                if (!args.NewElement.Bounds.IsEmpty)
+                {
+                    _height = Element.Height;
+                    _width = Element.Width;
+                    UpdateSize();
+                }
             }
         }
 
