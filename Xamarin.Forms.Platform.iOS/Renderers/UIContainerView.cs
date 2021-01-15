@@ -22,11 +22,7 @@ namespace Xamarin.Forms.Platform.iOS
 			ClipsToBounds = true;
 			view.MeasureInvalidated += OnMeasureInvalidated;
 			MeasuredHeight = double.NaN;
-			_view.BatchCommitted += _view_BatchCommitted;
-		}
-
-		private void _view_BatchCommitted(object sender, Internals.EventArg<VisualElement> e)
-		{
+			Margin = new Thickness(0);
 		}
 
 		internal View View => _view;
@@ -46,22 +42,9 @@ namespace Xamarin.Forms.Platform.iOS
 			return false;
 		}
 
-		public Thickness Margin
+		public virtual Thickness Margin
 		{
-			get
-			{
-				if(!_view.IsSet(View.MarginProperty))
-				{
-					var newMargin = new Thickness(0, (float)Platform.SafeAreaInsetsForWindow.Top, 0, 0);
-
-					if (newMargin != _view.Margin)
-					{
-						_view.Margin = newMargin;
-					}
-				}
-
-				return _view.Margin;
-			}
+			get;
 		}
 
 		void ReMeasure()

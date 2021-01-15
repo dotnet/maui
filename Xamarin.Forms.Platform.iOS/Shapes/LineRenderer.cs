@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
         protected override void OnElementChanged(ElementChangedEventArgs<Line> args)
         {
-            if (Control == null)
+            if (Control == null && args.NewElement != null)
             {
                 SetNativeControl(new LineView());
             }

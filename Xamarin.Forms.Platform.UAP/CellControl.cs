@@ -39,13 +39,33 @@ namespace Xamarin.Forms.Platform.UWP
 
 			DataContextChanged += OnDataContextChanged;
 
-			Unloaded += (sender, args) =>
-			{
-				Cell?.SendDisappearing();
-			};
+			Loaded += OnLoaded;
+			Unloaded += OnUnloaded;
 
 			_propertyChangedHandler = OnCellPropertyChanged;
 		}
+
+		void OnLoaded(object sender, RoutedEventArgs e)
+		{
+			if (Cell == null)
+				return;
+
+			/// 🚀 subscribe topropertychanged
+			// make sure we do not subscribe twice (because this could happen in SetSource(Cell oldCell, Cell newCell))
+			Cell.PropertyChanged -= _propertyChangedHandler;
+			Cell.PropertyChanged += _propertyChangedHandler;
+		}
+
+		void OnUnloaded(object sender, RoutedEventArgs e)
+		{
+			if (Cell == null)
+				return;
+
+			Cell.SendDisappearing();
+			/// 🚀 unsubscribe from propertychanged
+			Cell.PropertyChanged -= _propertyChangedHandler;
+		}
+
 
 		public Cell Cell
 		{
@@ -312,16 +332,49 @@ namespace Xamarin.Forms.Platform.UWP
 			ListView lv = _listView.Value;
 			if (lv != null)
 			{
+				// 🚀 If there is an old cell, check if it was a group header
+				// we need this later to know whether we can recycle this cell
+				bool? wasGroupHeader = null;
+				var oldCell = Cell;
+				if (oldCell != null)
+				{
+					wasGroupHeader = oldCell.GetIsGroupHeader<ItemsView<Cell>, Cell>();
+				}
+
 				bool isGroupHeader = IsGroupHeader;
 				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
 				object bindingContext = newContext;
 
-				if (template is DataTemplateSelector)
+				bool sameTemplate = false;
+				if (template is DataTemplateSelector dataTemplateSelector)
 				{
-					template = ((DataTemplateSelector)template).SelectTemplate(bindingContext, lv);
+					template = dataTemplateSelector.SelectTemplate(bindingContext, lv);
+
+					// 🚀 If there exists an old cell, get its data template and check
+					// whether the new- and old template matches. In that case, we can recycle it
+					if (oldCell?.BindingContext != null)
+					{
+						DataTemplate oldTemplate = dataTemplateSelector.SelectTemplate(oldCell?.BindingContext, lv);
+						sameTemplate = oldTemplate == template;
+					}
+				}
+				// 🚀 if there is no datatemplateselector, we now verify if the old cell
+				// was a groupheader and whether the new one is as well.
+				// Again, this is only to verify we can reuse this cell
+				else if (wasGroupHeader.HasValue)
+				{
+					sameTemplate = wasGroupHeader == isGroupHeader;
 				}
 
-				if (template != null)
+				// reuse cell
+				var canReuseCell = Cell != null && sameTemplate;
+
+				// 🚀 If we can reuse the cell, just reuse it...
+				if (canReuseCell)
+				{
+					cell = Cell;
+				}
+				else if (template != null)
 				{
 					cell = template.CreateContent() as Cell;
 				}
@@ -345,7 +398,18 @@ namespace Xamarin.Forms.Platform.UWP
 				cell.SetIsGroupHeader<ItemsView<Cell>, Cell>(isGroupHeader);
 			}
 
-			Cell = cell;
+			// 🚀 Only set the cell if it DID change
+			// Note: The cleanup (SendDisappearing(), etc.) is done by the Cell propertychanged callback so we do not need to do any cleanup ourselves.
+
+			if (Cell != cell)
+				Cell = cell;
+			// 🚀 even if the cell did not change, we **must** call SendDisappearing() and SendAppearing()
+			// because frameworks such as Reactive UI rely on this! (this.WhenActivated())
+			else if (Cell != null)
+			{
+				Cell.SendDisappearing();
+				Cell.SendAppearing();
+			}
 		}
 
 		void SetSource(Cell oldCell, Cell newCell)
@@ -364,9 +428,12 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateFlowDirection(newCell);
 				SetupContextMenu();
 
+				// 🚀 make sure we do not subscribe twice (OnLoaded!)
+				newCell.PropertyChanged -= _propertyChangedHandler;
 				newCell.PropertyChanged += _propertyChangedHandler;
 			}
 		}
+
 
 		void SetupContextMenu()
 		{
