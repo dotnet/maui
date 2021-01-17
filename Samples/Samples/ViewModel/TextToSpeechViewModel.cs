@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -87,13 +88,27 @@ namespace Samples.ViewModel
 
         async Task OnPickLocale()
         {
-            var locales = await TextToSpeech.GetLocalesAsync();
-            var names = locales.Select(i => i.Name).ToArray();
+            var allLocales = await TextToSpeech.GetLocalesAsync();
+            var locales = allLocales
+                .OrderBy(i => i.Language.ToLowerInvariant())
+                .ToArray();
 
-            var result = await Application.Current.MainPage.DisplayActionSheet("Pick", "OK", null, names);
+            var languages = locales
+                .Select(i => string.IsNullOrEmpty(i.Country) ? i.Language : $"{i.Language} ({i.Country})")
+                .ToArray();
 
-            selectedLocale = locales.FirstOrDefault(i => i.Name == result);
-            Locale = (result == "OK" || string.IsNullOrEmpty(result)) ? "Default" : result;
+            var result = await Application.Current.MainPage.DisplayActionSheet("Pick", "OK", null, languages);
+
+            if (!string.IsNullOrEmpty(result) && Array.IndexOf(languages, result) is int idx && idx != -1)
+            {
+                selectedLocale = locales[idx];
+                Locale = result;
+            }
+            else
+            {
+                selectedLocale = null;
+                Locale = "Default";
+            }
         }
 
         public ICommand CancelCommand { get; }
