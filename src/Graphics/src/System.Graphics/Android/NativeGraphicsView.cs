@@ -7,48 +7,37 @@ namespace System.Graphics.Android
 {
     public class NativeGraphicsView : View
     {
-        private RectangleF _dirtyRect;
-        private IGraphicsRenderer _renderer;
-        private IDrawable _drawable;
         private int _width, _height;
+        private readonly NativeCanvas _canvas;
+        private readonly ScalingCanvas _scalingCanvas;
+        private IDrawable _drawable;
+        private readonly float _scale = 1;
+        private Color _backgroundColor;
 
-        public NativeGraphicsView(Context context, IAttributeSet attrs, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(context, attrs)
+        public NativeGraphicsView(Context context, IAttributeSet attrs, IDrawable drawable = null) : base(context, attrs)
         {
+            _scale = Resources.DisplayMetrics.Density;
+            _canvas = new NativeCanvas(context);
+            _scalingCanvas = new ScalingCanvas(_canvas);
             Drawable = drawable;
-            Renderer = renderer;
         }
 
-        public NativeGraphicsView(Context context, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(context)
+        public NativeGraphicsView(Context context, IDrawable drawable = null) : base(context)
         {
+            _scale = Resources.DisplayMetrics.Density;
+            _canvas = new NativeCanvas(context);
+            _scalingCanvas = new ScalingCanvas(_canvas);
             Drawable = drawable;
-            Renderer = renderer;
-        }
-
-        public IGraphicsRenderer Renderer
-        {
-            get => _renderer;
-
-            set
-            {
-                if (_renderer != null)
-                {
-                    _renderer.Drawable = null;
-                    _renderer.GraphicsView = null;
-                    _renderer.Dispose();
-                }
-
-                _renderer = value ?? new DirectRenderer(Context);
-
-                _renderer.GraphicsView = this;
-                _renderer.Drawable = _drawable;
-                _renderer.SizeChanged(_width, _height);
-            }
         }
 
         public Color BackgroundColor
         {
-            get => _renderer.BackgroundColor;
-            set => _renderer.BackgroundColor = value;
+            get => _backgroundColor;
+            set
+            {
+                _backgroundColor = value;
+                Invalidate();
+            }
         }
 
         public IDrawable Drawable
@@ -57,10 +46,7 @@ namespace System.Graphics.Android
             set
             {
                 _drawable = value;
-                if (_renderer != null)
-                {
-                    _renderer.Drawable = _drawable;
-                }
+                Invalidate();
             }
         }
 
@@ -68,32 +54,27 @@ namespace System.Graphics.Android
         {
             if (_drawable == null) return;
 
-            _dirtyRect.Width = Width;
-            _dirtyRect.Height = Height;
-            _renderer.Draw(androidCanvas, _dirtyRect);
+            var dirtyRect = new RectangleF(0, 0, _width, _height);
+
+            _canvas.Canvas = androidCanvas;
+            if (_backgroundColor != null)
+            {
+                _canvas.FillColor = _backgroundColor;
+                _canvas.FillRectangle(dirtyRect);
+                _canvas.FillColor = Colors.White;
+            }
+
+            _scalingCanvas.ResetState();
+            _scalingCanvas.Scale(_scale, _scale);
+            _drawable.Draw(_scalingCanvas, dirtyRect);
+            _canvas.Canvas = null;
         }
 
         protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
         {
             base.OnSizeChanged(width, height, oldWidth, oldHeight);
-            _renderer.SizeChanged(width, height);
             _width = width;
             _height = height;
-        }
-
-        protected override void OnDetachedFromWindow()
-        {
-            _renderer.Detached();
-        }
-
-        public void InvalidateDrawable()
-        {
-            _renderer.Invalidate();
-        }
-
-        public void InvalidateDrawable(float x, float y, float w, float h)
-        {
-            _renderer.Invalidate(x, y, w, h);
         }
     }
 }
