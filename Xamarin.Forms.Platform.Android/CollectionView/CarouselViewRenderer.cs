@@ -343,7 +343,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				while (carouselEnumerator.MoveNext())
 				{
-					if(carouselEnumerator.Current == Carousel.CurrentItem)
+					if (carouselEnumerator.Current == Carousel.CurrentItem)
 						position = itemCount;
 
 					itemCount++;
