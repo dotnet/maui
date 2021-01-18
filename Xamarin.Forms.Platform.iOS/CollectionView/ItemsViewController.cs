@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -30,6 +31,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			ItemsView = itemsView;
 			ItemsViewLayout = layout;
+
+			ItemsView.PropertyChanged += ItemsViewPropertyChanged;
 		}
 
 		public void UpdateLayout(ItemsViewLayout newLayout)
@@ -59,6 +62,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (disposing)
 			{
+				ItemsView.PropertyChanged -= ItemsViewPropertyChanged;
+
 				ItemsSource?.Dispose();
 
 				CollectionView.Delegate = null;
@@ -596,6 +601,17 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			return ItemsViewLayout.EstimatedItemSize;
+		}
+		
+		void ItemsViewPropertyChanged(object sender, PropertyChangedEventArgs changedProperty) 
+		{
+			if (changedProperty.Is(VisualElement.IsVisibleProperty))
+			{
+				if (ItemsView.IsVisible)
+				{
+					Layout.InvalidateLayout();
+				}
+			}
 		}
 	}
 }
