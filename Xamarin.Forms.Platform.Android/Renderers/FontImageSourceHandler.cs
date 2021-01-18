@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Android
 			var fontsource = imagesource as FontImageSource;
 			if (fontsource != null)
 			{
-				var paint = new Paint
+				using var paint = new Paint
 				{
 					TextSize = TypedValue.ApplyDimension(ComplexUnitType.Dip, (float)fontsource.Size, context.Resources.DisplayMetrics),
 					Color = (fontsource.Color != Color.Default ? fontsource.Color : Color.White).ToAndroid(),
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.Android
 				var baseline = (int)(-paint.Ascent() + .5f);
 				var height = (int)(baseline + paint.Descent() + .5f);
 				image = Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888);
-				var canvas = new Canvas(image);
+				using var canvas = new Canvas(image);
 				canvas.DrawText(fontsource.Glyph, 0, baseline, paint);
 			}
 
