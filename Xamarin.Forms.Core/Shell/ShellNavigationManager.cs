@@ -490,7 +490,7 @@ namespace Xamarin.Forms
 				routeStack.Insert(0, "/");
 
 			return new ShellNavigationState(String.Join("/", routeStack), true);
-			
+
 		}
 
 		public static List<Page> BuildFlattenedNavigationStack(Shell shell)
@@ -498,7 +498,7 @@ namespace Xamarin.Forms
 			var section = shell.CurrentItem.CurrentItem;
 			return BuildFlattenedNavigationStack(section.Stack, section.Navigation.ModalStack);
 		}
-		
+
 		public static List<Page> BuildFlattenedNavigationStack(IReadOnlyList<Page> startingList, IReadOnlyList<Page> modalStack)
 		{
 			var returnValue = startingList.ToList();

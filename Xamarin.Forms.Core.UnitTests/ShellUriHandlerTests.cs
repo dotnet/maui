@@ -166,7 +166,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Routing.RegisterRoute("monkeys/monkeyDetails", typeof(TestPage1));
 			Routing.RegisterRoute("monkeyDetails/monkeygenome", typeof(TestPage2));
 			var shell = new TestShell(
-				CreateShellItem(shellContentRoute: "cats", shellSectionRoute:"domestic", shellItemRoute: "animals")
+				CreateShellItem(shellContentRoute: "cats", shellSectionRoute: "domestic", shellItemRoute: "animals")
 			);
 
 			shell.Items[0].Items.Add(CreateShellContent(shellContentRoute: "monkeys"));

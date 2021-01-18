@@ -22,7 +22,7 @@ namespace Xamarin.Forms
 
 				List<string> restOfPath = new List<string>();
 				bool dotsAllParsed = false;
-				foreach(var p in path.OriginalString.Split(_pathSeparators))
+				foreach (var p in path.OriginalString.Split(_pathSeparators))
 				{
 					if (p != ".." || dotsAllParsed)
 					{
@@ -34,12 +34,12 @@ namespace Xamarin.Forms
 					var lastPage = pages[pages.Count - 1];
 					if (lastPage == null)
 						break;
-					
+
 					pages.Remove(lastPage);
 
 					List<string> buildUpPages = new List<string>();
 
-					foreach(var page in pages)
+					foreach (var page in pages)
 					{
 						if (page == null)
 							continue;
@@ -296,7 +296,7 @@ namespace Xamarin.Forms
 					ExpandOutGlobalRoutes(pureGlobalRoutesMatch, routeKeys);
 
 
-					if(currentLocation.Content != null && pureGlobalRoutesMatch.Count == 0)
+					if (currentLocation.Content != null && pureGlobalRoutesMatch.Count == 0)
 					{
 						string newPath = $"{shell.CurrentState.Location.OriginalString}{_pathSeparator}{String.Join(_pathSeparator, segments)}";
 						var currentSegments = RetrievePaths(shell.CurrentState.FullLocation.OriginalString);
@@ -455,7 +455,7 @@ namespace Xamarin.Forms
 
 				// If the registered route is a combination of shell items and global routes then we might end up here
 				// without the previous tree search finding the correct path
-				if ((possibleRoutePath.Shell != null) && 
+				if ((possibleRoutePath.Shell != null) &&
 					(possibleRoutePath.Item == null || possibleRoutePath.Section == null || possibleRoutePath.Content == null))
 				{
 					var nextNode = possibleRoutePath.GetNodeLocation().WalkToNextNode();
@@ -463,7 +463,7 @@ namespace Xamarin.Forms
 					while (nextNode != null)
 					{
 						// This means we've jumped to a branch that no longer corresponds with the route path we are searching
-						if((possibleRoutePath.Item != null && nextNode.Item != possibleRoutePath.Item) ||
+						if ((possibleRoutePath.Item != null && nextNode.Item != possibleRoutePath.Item) ||
 							(possibleRoutePath.Section != null && nextNode.Section != possibleRoutePath.Section) ||
 							(possibleRoutePath.Content != null && nextNode.Content != possibleRoutePath.Content))
 						{
@@ -482,7 +482,7 @@ namespace Xamarin.Forms
 
 						if (routeKey.StartsWith("//"))
 							collapsedLeafRoute = "//" + collapsedLeafRoute;
-						
+
 						string segmentMatch = leafSearch.GetNextSegmentMatch(collapsedLeafRoute);
 						if (!String.IsNullOrWhiteSpace(segmentMatch))
 						{
@@ -497,7 +497,7 @@ namespace Xamarin.Forms
 			}
 
 			// check for exact matches
-			if(routeKeys.Contains(possibleRoutePath.NextSegment))
+			if (routeKeys.Contains(possibleRoutePath.NextSegment))
 			{
 				possibleRoutePath.AddGlobalRoute(possibleRoutePath.NextSegment, possibleRoutePath.NextSegment);
 				return true;
@@ -510,7 +510,8 @@ namespace Xamarin.Forms
 		{
 			foreach (var possibleRoutePath in possibleRoutePaths)
 			{
-				while (FindAndAddSegmentMatch(possibleRoutePath, routeKeys));
+				while (FindAndAddSegmentMatch(possibleRoutePath, routeKeys))
+					;
 
 				while (!possibleRoutePath.IsFullMatch)
 				{
@@ -549,8 +550,8 @@ namespace Xamarin.Forms
 
 					// remove duplicates
 					foreach (var bestMatch in bestMatches)
-					{ 
-						if(bestMatch.Item == match.Item && 
+					{
+						if (bestMatch.Item == match.Item &&
 							bestMatch.Section == match.Section &&
 							bestMatch.Content == match.Content &&
 							bestMatch.GlobalRouteMatches.Count == match.GlobalRouteMatches.Count)
@@ -558,7 +559,7 @@ namespace Xamarin.Forms
 							bool allMatch = true;
 							for (var i = 0; i < bestMatch.GlobalRouteMatches.Count; i++)
 							{
-								if(bestMatch.GlobalRouteMatches[i] != match.GlobalRouteMatches[i])
+								if (bestMatch.GlobalRouteMatches[i] != match.GlobalRouteMatches[i])
 								{
 									allMatch = false;
 									break;
@@ -569,15 +570,15 @@ namespace Xamarin.Forms
 						}
 					}
 
-					if(!matchFound)
+					if (!matchFound)
 						bestMatches.Add(match);
 				}
 			}
 
-			while(bestMatches.Count > 1)
+			while (bestMatches.Count > 1)
 			{
 				List<RouteRequestBuilder> betterMatches = new List<RouteRequestBuilder>();
-				for(int i = bestMatches.Count - 1; i >= 0; i--)
+				for (int i = bestMatches.Count - 1; i >= 0; i--)
 				{
 					for (int j = i - 1; j >= 0; j--)
 					{
@@ -589,7 +590,7 @@ namespace Xamarin.Forms
 							betterMatch = bestMatches[i];
 
 						// nobody wins
-						if(betterMatch == null)
+						if (betterMatch == null)
 						{
 							if (!betterMatches.Contains(bestMatches[i]))
 								betterMatches.Add(bestMatches[i]);
@@ -713,7 +714,7 @@ namespace Xamarin.Forms
 				int sectionIndex = 0;
 				int contentIndex = 0;
 
-				if(Item != null)
+				if (Item != null)
 				{
 					itemIndex = Shell.Items.IndexOf(Item);
 				}
@@ -748,7 +749,7 @@ namespace Xamarin.Forms
 				}
 
 				return null;
-			}			
+			}
 		}
 
 		static void SearchPath(
