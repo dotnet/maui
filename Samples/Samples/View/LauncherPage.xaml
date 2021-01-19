@@ -35,8 +35,8 @@
                     <Label Text="File Contents:" />
                     <Editor Text="{Binding FileAttachmentContents}" AutoSize="TextChanges" />
 
-                    <Button Text="Open File" Command="{Binding LaunchFileCommand}" />
-
+                    <Button Text="Open File" Command="{Binding LaunchFileCommand}"
+                            CommandParameter="{Binding Source={RelativeSource Self}}" />
                 </StackLayout>
             </Grid>
         </ScrollView>

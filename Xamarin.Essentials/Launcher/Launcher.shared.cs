@@ -1,6 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
+#if !NETSTANDARD1_0
+using System.Drawing;
+#endif
 
 namespace Xamarin.Essentials
 {
@@ -86,5 +88,9 @@ namespace Xamarin.Essentials
         public string Title { get; set; }
 
         public ReadOnlyFile File { get; set; }
+
+#if !NETSTANDARD1_0
+        public Rectangle PresentationSourceBounds { get; set; } = Rectangle.Empty;
+#endif
     }
 }
