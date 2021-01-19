@@ -10,7 +10,7 @@ namespace Samples.ViewModel
     {
         string lat = 47.67398.ToString();
         string lon = (-122.121513).ToString();
-        string address = "Microsoft Building 25 Redmond WA USA";
+        string address = "Microsoft Building 25 Redmond WA";
         string geocodeAddress;
         string geocodePosition;
 
