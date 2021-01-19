@@ -1,3 +1,20 @@
+<!-- 
+
+HOL' UP! JUST A SEC!
+
+After January 31, 2021, feature related pull requests cannot be guaranteed to merge by Xamarin.Essentials.
+
+We are in the process of merging Xamarin.Essentials into the MAUI repository for improved experience.
+At this stage, MAUI will depend on Xamarin.Essentials, so we are moving it there so that they can be released together.
+
+This repo can still be used for a time to fix any critical bugs and other issues. All new features will be postponed until the merge is complete.
+
+Thanks for all the PRs in the past, we can't wait to have you contributing features very soon in our new and improved home!
+
+PLEASE DELETE THE ALL THESE COMMENTS BEFORE SUBMITTING! THANKS!!!
+
+-->
+ 
 ### Description of Change ###
 
 Describe your changes here. 
