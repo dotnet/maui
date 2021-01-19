@@ -6,7 +6,7 @@
 * Deploy to multiple devices across mobile & desktop
 * Using a single project, single codebase
 * Evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms)
-* Targeting .NET 6, previews end of year
+* .NET 6
 
 ## Current News
 
@@ -19,7 +19,7 @@ Additional live streams and presentations:
 * September 19, 2020 - Shane Neuville at ReactiveUI Virtual Conference: [Dual Screen, .NET MAUI, and RxUI](https://www.youtube.com/watch?v=Rkz6Dkk1uWU)
 * October 3, 2020 - James Clancey at Xamarin Expert Day: [.NET MAUI MVU](https://www.youtube.com/watch?v=9kwrgm_-FCk)
 * October 3, 2020 - David Ortinau at Xamarin Expert Day: [Introducing .NET MAUI](https://youtu.be/qbHO8J3bId0)
-* December 2, 2020 - Javier Suarez Ruiz at MonkeyConf: [.NET MAUI Handlers](https://youtu.be/o99qbIOc9X4?t=26040) (Spanish)
+* December 2, 2020 - Javier Suarez Ruiz at MonkeyConf: [.NET MAUI Handlers](https://youtu.be/TBMauxRGkiI) (Spanish)
 
 ## Status: Active Development
 
@@ -27,8 +27,8 @@ While [Xamarin.Forms](https://github.com/xamarin/xamarin.forms) continues to be 
 
 * Porting renderers to handlers ([spec](https://github.com/dotnet/maui/issues/28))
 * Adapting layouts for handlers
-* WinUI 3 preview 3 early spike
-* Mac Catalyst early evaluation
+* WinUI 3 preview 3 early spike ([branch](https://github.com/xamarin/Xamarin.Forms/tree/winui3))
+* Mac Catalyst early evaluation ([wiki](https://github.com/xamarin/xamarin-macios/wiki/Mac-Catalyst-(Early-Preview)))
 
 Active development is happening today to build Android and iOS SDKs against .NET 6. [Samples may be found here](https://github.com/xamarin/net6-samples).
 
@@ -49,7 +49,7 @@ Active development is happening today to build Android and iOS SDKs against .NET
   * [Renderer architecture revisions](https://github.com/dotnet/maui/issues/28)
   * Source solution and project simplification
   * Complete approved proposals
-  * Implement MVU
+  * Implement MVU (experimental)
 * .NET MAUI release candidate September 2021
 * .NET MAUI general availability November 2021
 
