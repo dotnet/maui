@@ -83,9 +83,11 @@ namespace Xamarin.Essentials
             {
                 status.Add(NetworkStatus.ReachableViaCarrierDataNetwork);
             }
-#endif
-
+            else if (defaultNetworkAvailable)
+#else
+            // If the connection is reachable and no connection is required, then assume it's WiFi
             if (defaultNetworkAvailable)
+#endif
             {
                 status.Add(NetworkStatus.ReachableViaWiFiNetwork);
             }
