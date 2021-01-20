@@ -210,7 +210,7 @@ namespace Xamarin.Essentials
 
                 [Export("locationManagerDidChangeAuthorization:")]
                 public void DidChangeAuthorization(CLLocationManager manager) =>
-                    AuthorizationStatusChanged?.Invoke(this, new CLAuthorizationChangedEventArgs(manager.AuthorizationStatus));
+                    AuthorizationStatusChanged?.Invoke(this, new CLAuthorizationChangedEventArgs(manager.GetAuthorizationStatus()));
             }
         }
 

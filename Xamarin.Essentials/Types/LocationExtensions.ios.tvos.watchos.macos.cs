@@ -9,7 +9,7 @@ namespace Xamarin.Essentials
     public static partial class LocationExtensions
     {
         [System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
-        public static extern CLAuthorizationStatus CLAuthorizationStatus_objc_msgSend(IntPtr receiver, IntPtr selector);
+        static extern CLAuthorizationStatus CLAuthorizationStatus_objc_msgSend(IntPtr receiver, IntPtr selector);
 
         internal static Location ToLocation(this CLPlacemark placemark) =>
             new Location
