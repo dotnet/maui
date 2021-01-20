@@ -31,6 +31,14 @@
     <Compile Remove="**\Android\**\*.cs"/>
     <None Include="**\Android\**\*.cs"/>
   </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;tizen&apos;)) != true ">
+    <Compile Remove="**\*.Tizen.cs"/>
+    <None Include="**\*.Tizen.cs"/>
+    <Compile Remove="**\Tizen\*.cs"/>
+    <None Include="**\Tizen\*.cs"/>
+    <Compile Remove="**\Tizen\**\*.cs"/>
+    <None Include="**\Tizen\**\*.cs"/>
+  </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;netstandard&apos;)) != true ">
     <Compile Remove="**\*.Standard.cs"/>
     <None Include="**\*.Standard.cs"/>
@@ -58,5 +66,8 @@
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.2.0"/>
     <PackageReference Include="Xamarin.Google.Android.Material" Version="1.0.0.1"/>
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0.1"/>
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith(&apos;tizen&apos;)) == true ">
+    <PackageReference Include="Tizen.NET" Version="4.0.0"/>
   </ItemGroup>
 </Project>

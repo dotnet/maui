@@ -1,6 +1,6 @@
 # System.Graphics
 
-System.Graphics is a cross-platform graphics library for iOS, Android, Windows, macOS and Linux completely in C#.  With this library you can use a common API to target multiple abstractions allowing you to share your drawing code between platforms, or mix and match graphics implentations within a singular application.
+System.Graphics is a cross-platform graphics library for iOS, Android, Windows, macOS, Tizen and Linux completely in C#.  With this library you can use a common API to target multiple abstractions allowing you to share your drawing code between platforms, or mix and match graphics implentations within a singular application.
 
 # Motivation
 
@@ -25,7 +25,8 @@ Xamarin.Mac            | CoreGraphics & SkiaSharp |
 WPF                    | SharpDX, SkiaSharp, Xaml & GDI |
 UWP                    | SharpDX, Win2D, Xaml, SkiaSharp |
 WinForms               | SharpDX, SkiaSharp & GDI |
-Linux | SkiaSharp |
+Tizen                  | SkiaSharp |
+Linux                  | SkiaSharp |
 Xamarin.Forms          | Dependent on native platform support (noted above) |
 
 # Main Abstractions

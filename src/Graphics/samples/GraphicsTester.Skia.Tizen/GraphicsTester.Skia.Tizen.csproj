@@ -1,0 +1,30 @@
+﻿<Project Sdk="Tizen.NET.Sdk/1.1.5">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>tizen40</TargetFramework>
+    <AssemblyName>GraphicsTester.Skia.Tizen</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>None</DebugType>
+  </PropertyGroup>
+
+    <PropertyGroup>
+        <ProjectTypeGuids>{B484D2DE-331C-4CA2-B931-2B4BDAD9945F}</ProjectTypeGuids>
+    </PropertyGroup>
+    
+    <ItemGroup Condition="'$(Configuration)' != 'Release'">
+        <PackageReference Include="TizenHotReloader_4" Version="1.0.0" />
+    </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\System.Graphics.Skia\System.Graphics.Skia.csproj" />
+    <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
+  </ItemGroup>
+
+</Project>
+

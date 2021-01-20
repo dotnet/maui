@@ -1,19 +1,21 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0;Xamarin.Mac20;</TargetFrameworks>
-    <RootNamespace>System.Graphics.Forms</RootNamespace>
-  </PropertyGroup>
-  <PropertyGroup>
-    <LangVersion>8.0</LangVersion>
-    <PackageId>System.Graphics.Forms</PackageId>
-    <Product>System.Graphics.Forms</Product>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\System.Graphics\System.Graphics.csproj" />
-  </ItemGroup>
-    
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0;Xamarin.Mac20;tizen40</TargetFrameworks>
+        <RootNamespace>System.Graphics.Forms</RootNamespace>
+    </PropertyGroup>
+    <PropertyGroup>
+        <LangVersion>8.0</LangVersion>
+        <PackageId>System.Graphics.Forms</PackageId>
+        <Product>System.Graphics.Forms</Product>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\System.Graphics\System.Graphics.csproj" />
+    </ItemGroup>
+    <ItemGroup Condition=" $(TargetFramework.StartsWith('tizen')) ">
+        <ProjectReference Include="..\System.Graphics.Skia\System.Graphics.Skia.csproj" />
+    </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
     </ItemGroup>
-  <Import Project="..\targets\MultiTargeting.targets" />
+    <Import Project="..\targets\MultiTargeting.targets" />
 </Project>

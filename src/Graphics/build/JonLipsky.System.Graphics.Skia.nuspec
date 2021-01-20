@@ -35,5 +35,7 @@
     <file src="src/System.Graphics.Skia/bin/Release/monoandroid10.0/System.Graphics.Skia.pdb" target="lib/monoandroid10.0/System.Graphics.Skia.pdb"/>
     <file src="src/System.Graphics.Skia/bin/Release/xamarin.mac20/System.Graphics.Skia.dll" target="lib/xamarin.mac20/System.Graphics.Skia.dll"/>
     <file src="src/System.Graphics.Skia/bin/Release/xamarin.mac20/System.Graphics.Skia.pdb" target="lib/xamarin.mac20/System.Graphics.Skia.pdb"/>
+    <file src="src/System.Graphics.Skia/bin/Release/tizen40/System.Graphics.Skia.dll" target="lib/tizen40/System.Graphics.Skia.dll"/>
+    <file src="src/System.Graphics.Skia/bin/Release/tizen40/System.Graphics.Skia.pdb" target="lib/tizen40/System.Graphics.Skia.pdb"/>
   </files>
 </package>
