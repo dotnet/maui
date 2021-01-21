@@ -1208,9 +1208,9 @@ namespace Xamarin.Forms
 
 		View _flyoutContentView;
 
-		public View FlyoutContent
+		public object FlyoutContent
 		{
-			get => (View)GetValue(FlyoutContentProperty);
+			get => GetValue(FlyoutContentProperty);
 			set => SetValue(FlyoutContentProperty, value);
 		}
 

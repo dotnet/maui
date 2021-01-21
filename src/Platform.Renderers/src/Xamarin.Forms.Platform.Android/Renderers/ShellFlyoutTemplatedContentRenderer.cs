@@ -549,19 +549,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			protected override void LayoutView(double x, double y, double width, double height)
 			{
-				var context = Context;
-				var paddingLeft = context.FromPixels(PaddingLeft);
-				var paddingTop = context.FromPixels(PaddingTop);
-				var paddingRight = context.FromPixels(PaddingRight);
-				var paddingBottom = context.FromPixels(PaddingBottom);
-
-				width -= paddingLeft + paddingRight;
-				height -= paddingTop + paddingBottom;
-
 				UpdateElevation();
-
-				if (View != null)
-					View.Layout(new Rectangle(paddingLeft, paddingTop, width, height));
+				base.LayoutView(x, y, width, height);
 			}
 
 			protected override void Dispose(bool disposing)

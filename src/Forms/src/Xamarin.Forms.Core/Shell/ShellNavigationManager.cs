@@ -465,7 +465,7 @@ namespace Xamarin.Forms
 						for (int i = 1; i < sectionStack.Count; i++)
 						{
 							var page = sectionStack[i];
-							routeStack.AddRange(CollapsePath(Routing.GetRoute(page), routeStack, hasUserDefinedRoute));
+							routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetRoute(page), routeStack, hasUserDefinedRoute));
 						}
 					}
 
@@ -475,11 +475,11 @@ namespace Xamarin.Forms
 						{
 							var topPage = modalStack[i];
 
-							routeStack.AddRange(CollapsePath(Routing.GetRoute(topPage), routeStack, hasUserDefinedRoute));
+							routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetRoute(topPage), routeStack, hasUserDefinedRoute));
 
 							for (int j = 1; j < topPage.Navigation.NavigationStack.Count; j++)
 							{
-								routeStack.AddRange(CollapsePath(Routing.GetRoute(topPage.Navigation.NavigationStack[j]), routeStack, hasUserDefinedRoute));
+								routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetRoute(topPage.Navigation.NavigationStack[j]), routeStack, hasUserDefinedRoute));
 							}
 						}
 					}
@@ -491,45 +491,30 @@ namespace Xamarin.Forms
 
 			return new ShellNavigationState(String.Join("/", routeStack), true);
 
-
-			List<string> CollapsePath(
-				string myRoute,
-				IEnumerable<string> currentRouteStack,
-				bool userDefinedRoute)
-			{
-				var localRouteStack = currentRouteStack.ToList();
-				for (var i = localRouteStack.Count - 1; i >= 0; i--)
-				{
-					var route = localRouteStack[i];
-					if (Routing.IsImplicit(route) ||
-						(Routing.IsDefault(route) && userDefinedRoute))
-					{
-						localRouteStack.RemoveAt(i);
-					}
-				}
-
-				var paths = myRoute.Split('/').ToList();
-
-				// collapse similar leaves
-				int walkBackCurrentStackIndex = localRouteStack.Count - (paths.Count - 1);
-
-				while (paths.Count > 1 && walkBackCurrentStackIndex >= 0)
-				{
-					if (paths[0] == localRouteStack[walkBackCurrentStackIndex])
-					{
-						paths.RemoveAt(0);
-					}
-					else
-					{
-						break;
-					}
-
-					walkBackCurrentStackIndex++;
-				}
-
-				return paths;
-			}
 		}
 
+		public static List<Page> BuildFlattenedNavigationStack(Shell shell)
+		{
+			var section = shell.CurrentItem.CurrentItem;
+			return BuildFlattenedNavigationStack(section.Stack, section.Navigation.ModalStack);
+		}
+
+		public static List<Page> BuildFlattenedNavigationStack(IReadOnlyList<Page> startingList, IReadOnlyList<Page> modalStack)
+		{
+			var returnValue = startingList.ToList();
+			if (modalStack == null)
+				return returnValue;
+
+			for (int i = 0; i < modalStack.Count; i++)
+			{
+				returnValue.Add(modalStack[i]);
+				for (int j = 1; j < modalStack[i].Navigation.NavigationStack.Count; j++)
+				{
+					returnValue.Add(modalStack[i].Navigation.NavigationStack[j]);
+				}
+			}
+
+			return returnValue;
+		}
 	}
 }

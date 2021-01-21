@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Path> args)
 		{
-			if (Control == null)
+			if (Control == null && args.NewElement != null)
 			{
 				SetNativeControl(new PathView(Context));
 			}

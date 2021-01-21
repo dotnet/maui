@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
         protected override void OnElementChanged(ElementChangedEventArgs<Polygon> args)
         {
-            if (Control == null)
+            if (Control == null && args.NewElement != null)
             {
                 SetNativeControl(new PolygonView());
             }
