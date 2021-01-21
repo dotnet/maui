@@ -34,8 +34,6 @@ using Xamarin.Forms.Platform.iOS;
 [assembly: ExportRenderer(typeof(TableView), typeof(PerformanceTrackingTableView))]
 [assembly: ExportRenderer(typeof(TimePicker), typeof(PerformanceTrackingTimePicker))]
 [assembly: ExportRenderer(typeof(WebView), typeof(PerformanceTrackingWebView))]
-[assembly: ExportRenderer(typeof(Entry), typeof(PerformanceTrackingMaterialEntry), new[] { typeof(VisualMarker.MaterialVisual) })]
-
 [assembly: ExportRenderer(typeof(Frame), typeof(PerformanceTrackingFrame))]
 
 namespace Xamarin.Forms.ControlGallery.iOS
@@ -537,55 +535,6 @@ namespace Xamarin.Forms.ControlGallery.iOS
 		public PerformanceTrackingEntry()
 		{
 			_watcher = new SubviewWatcher<PerformanceTrackingEntry>(this);
-		}
-
-		[Export(nameof(IDrawnObservable.Drawn))]
-		public int Drawn
-		{
-			get { return _Drawn; }
-			set
-			{
-				WillChangeValue(nameof(IDrawnObservable.Drawn));
-				_Drawn = value;
-				DidChangeValue(nameof(IDrawnObservable.Drawn));
-			}
-		}
-
-		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
-		public NSString GetLayerTransformString
-		{
-			get => new NSString(Layer.Transform.ToString());
-		}
-
-		public override void Draw(CGRect rect)
-		{
-			base.Draw(rect);
-			Drawn++;
-		}
-
-		public override void LayoutSubviews()
-		{
-			base.LayoutSubviews();
-
-			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
-			_watcher.SubscribeToDrawn(this);
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			_watcher.Dispose();
-			base.Dispose(disposing);
-		}
-	}
-
-	public class PerformanceTrackingMaterialEntry : Material.iOS.MaterialEntryRenderer, IDrawnObservable
-	{
-		readonly SubviewWatcher<PerformanceTrackingMaterialEntry> _watcher;
-		int _Drawn;
-
-		public PerformanceTrackingMaterialEntry()
-		{
-			_watcher = new SubviewWatcher<PerformanceTrackingMaterialEntry>(this);
 		}
 
 		[Export(nameof(IDrawnObservable.Drawn))]

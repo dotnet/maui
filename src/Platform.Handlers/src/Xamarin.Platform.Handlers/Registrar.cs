@@ -16,19 +16,34 @@ namespace Xamarin.Platform
 	}
 
 	public class Registrar<TType, TTypeRender>
+		where TTypeRender : class
 	{
 		internal Dictionary<Type, Type> _handler = new Dictionary<Type, Type>();
+		internal Dictionary<Type, Func<Type, IViewHandler>> _handlerFactories = new Dictionary<Type, Func<Type, IViewHandler>>();
 
 		public void Register<TView, TRender>()
 			where TView : TType
-				where TRender : TTypeRender
+			where TRender : TTypeRender
 		{
 			Register(typeof(TView), typeof(TRender));
 		}
 
 		public void Register(Type view, Type handler)
 		{
+			_handlerFactories.Remove(view);
 			_handler[view] = handler;
+		}
+
+		public void Register(Type view, Func<Type, IViewHandler> factory)
+		{
+			_handler.Remove(view);
+			_handlerFactories[view] = factory;
+		}
+
+		public void Register<TView>(Func<Type, IViewHandler> factory)
+			where TView : TType
+		{
+			Register(typeof(TView), factory);
 		}
 
 		public TTypeRender GetHandler<T>()
@@ -69,10 +84,10 @@ namespace Xamarin.Platform
 					return renderer;
 			}
 
-			return default!;
+			throw new Exception($"Handler not found for {type}");
 		}
 
-		public Type? GetRendererType(Type type)
+		public Type GetRendererType(Type type)
 		{
 			List<Type> types = new List<Type> { type };
 			Type baseType = type.BaseType;
@@ -89,13 +104,23 @@ namespace Xamarin.Platform
 					return returnType;
 			}
 
-			return null;
+			throw new Exception($"Renderer Type not found  {type}");
 		}
 
-		TTypeRender GetRenderer(Type type)
+		TTypeRender? GetRenderer(Type type)
 		{
+			if (_handlerFactories.TryGetValue(type, out var handlerFactory))
+			{
+				var newObject = handlerFactory?.Invoke(type) as TTypeRender;
+				if (newObject != null)
+					return newObject;
+			}
+
 			if (!_handler.TryGetValue(type, out var handler))
-				return default!;
+			{
+				return default(TTypeRender);
+			}
+
 			try
 			{
 				var newObject = Activator.CreateInstance(handler);
@@ -107,7 +132,7 @@ namespace Xamarin.Platform
 					throw ex;
 			}
 
-			throw new ArgumentException($"No Handler found for type: {type}", nameof(type));
+			return default(TTypeRender);
 		}
 	}
 }

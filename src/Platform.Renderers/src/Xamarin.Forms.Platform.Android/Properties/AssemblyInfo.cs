@@ -2,16 +2,14 @@ using System.Runtime.CompilerServices;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android;
+using Xamarin.Forms.Platform.Android.AppCompat;
 
-// These renderers are now registered via the RenderWithAttribute in the Android Forwarders project.
-// Note that AppCompat and FastRenderers are also registered conditionally in FormsAppCompatActivity.LoadApplication
-#if ROOT_RENDERERS
 [assembly: ExportRenderer (typeof (BoxView), typeof (BoxRenderer))]
 [assembly: ExportRenderer (typeof (Entry), typeof (EntryRenderer))]
 [assembly: ExportRenderer (typeof (Editor), typeof (EditorRenderer))]
-[assembly: ExportRenderer (typeof (Label), typeof (LabelRenderer))]
+[assembly: ExportRenderer (typeof (Label), typeof (Xamarin.Forms.Platform.Android.FastRenderers.LabelRenderer))]
 [assembly: ExportRenderer (typeof (Image), typeof (ImageRenderer))]
-[assembly: ExportRenderer (typeof (Button), typeof (ButtonRenderer))]
+[assembly: ExportRenderer (typeof (Button), typeof (Xamarin.Forms.Platform.Android.FastRenderers.ButtonRenderer))]
 [assembly: ExportRenderer (typeof (ImageButton), typeof (ImageButtonRenderer))]
 [assembly: ExportRenderer (typeof (TableView), typeof (TableViewRenderer))]
 [assembly: ExportRenderer (typeof (ListView), typeof (ListViewRenderer))]
@@ -29,19 +27,19 @@ using Xamarin.Forms.Platform.Android;
 [assembly: ExportRenderer (typeof (ProgressBar), typeof (ProgressBarRenderer))]
 [assembly: ExportRenderer (typeof (ScrollView), typeof (ScrollViewRenderer))]
 [assembly: ExportRenderer (typeof (ActivityIndicator), typeof (ActivityIndicatorRenderer))]
-[assembly: ExportRenderer (typeof (Frame), typeof (FrameRenderer))]
+[assembly: ExportRenderer (typeof (Frame), typeof (Xamarin.Forms.Platform.Android.FastRenderers.FrameRenderer))]
 [assembly: ExportRenderer (typeof (OpenGLView), typeof (OpenGLViewRenderer))]
 [assembly: ExportRenderer (typeof (CheckBox), typeof (CheckBoxRenderer))]
 
-[assembly: ExportRenderer (typeof (TabbedPage), typeof (TabbedRenderer))]
-[assembly: ExportRenderer (typeof (NavigationPage), typeof (NavigationRenderer))]
+[assembly: ExportRenderer (typeof (TabbedPage), typeof (TabbedPageRenderer))]
+[assembly: ExportRenderer (typeof (NavigationPage), typeof (NavigationPageRenderer))]
 [assembly: ExportRenderer (typeof (CarouselPage), typeof (CarouselPageRenderer))]
 [assembly: ExportRenderer (typeof (Page), typeof (PageRenderer))]
 [assembly: ExportRenderer (typeof (FlyoutPage), typeof (FlyoutPageRenderer))]
-[assembly: ExportRenderer (typeof (MasterDetailPage), typeof (MasterDetailRenderer))]
+[assembly: ExportRenderer (typeof (FlyoutPage), typeof (FlyoutPage))]
 [assembly: ExportRenderer (typeof (RefreshView), typeof (RefreshViewRenderer))]
-[assembly: ExportRenderer(typeof(Path), typeof(PathRenderer))]
-#endif
+
+
 
 [assembly: ExportRenderer(typeof(Shell), typeof(ShellRenderer))]
 
