@@ -16,7 +16,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.DotMemoryUnit" Version="3.1.20200127.214830" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit" Version="3.13.0" />
     <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
     <!--<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />-->
