@@ -345,7 +345,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void CountDoesNotIncludeMerged()
+		public void CountDoesIncludeMerged()
 		{
 			var rd = new ResourceDictionary {
 				{"baz", "Baz"},
@@ -353,7 +353,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 			rd.MergedWith = typeof(MyRD);
 
-			Assert.That(rd.Count, Is.EqualTo(2));
+			Assert.That(rd.Count, Is.EqualTo(4));
 		}
 
 		[Test]

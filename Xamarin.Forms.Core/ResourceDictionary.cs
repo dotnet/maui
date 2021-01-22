@@ -175,7 +175,7 @@ namespace Xamarin.Forms
 
 		public int Count
 		{
-			get { return _innerDictionary.Count; }
+			get { return _innerDictionary.Count + (_mergedInstance?.Count ?? 0); }
 		}
 
 		bool ICollection<KeyValuePair<string, object>>.IsReadOnly
@@ -230,7 +230,7 @@ namespace Xamarin.Forms
 
 		public bool Remove(string key)
 		{
-			return _innerDictionary.Remove(key);
+			return _innerDictionary.Remove(key) || (_mergedInstance?.Remove(key) ?? false);
 		}
 
 		public ICollection<object> Values
