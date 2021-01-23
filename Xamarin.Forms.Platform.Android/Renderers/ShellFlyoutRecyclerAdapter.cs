@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override void OnViewRecycled(Java.Lang.Object holder)
 		{
-			if(holder is ElementViewHolder evh)
+			if (holder is ElementViewHolder evh)
 			{
 				evh.Element = null;
 			}
@@ -299,7 +299,7 @@ namespace Xamarin.Forms.Platform.Android
 					_element = value;
 
 					// Set binding context before calling AddLogicalChild so parent binding context doesn't propagate to view
-					View.BindingContext = value;			
+					View.BindingContext = value;
 
 					if (_element != null)
 					{
