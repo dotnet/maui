@@ -58,27 +58,23 @@
     <Compile Include="PlatformTests\DisplayAlertUITestsAndroid.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\Platform.Handlers\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj">
+    <ProjectReference Include="..\..\..\Platform.Handlers\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj">
       <Project>{e2403480-7079-4e09-9c21-113b615a2a0a}</Project>
       <Name>Xamarin.Platform.Handlers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
+    <ProjectReference Include="..\..\..\Forms\test\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
       <Project>{4DCD0420-1168-4B77-86DB-6196EE4BD491}</Project>
       <Name>Xamarin.Forms.CustomAttributes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
       <Project>{7724ac21-0b03-4bb0-b125-d26ccf84b3f9}</Project>
       <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
-      <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>
-      <Name>Xamarin.Forms.Platform</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
+    <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
       <Project>{9DB2F292-8034-4E06-89AD-98BBDA4306B9}</Project>
       <Name>Xamarin.Forms.Xaml</Name>
     </ProjectReference>
@@ -86,8 +82,8 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <Import Project="..\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
-  <Import Project="..\Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems" Label="Shared" />
+  <Import Project="..\..\src\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\src\Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="_CopyXamarinUITestFiles" AfterTargets="Build">
     <ItemGroup>

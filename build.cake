@@ -47,19 +47,27 @@ if(String.IsNullOrWhiteSpace(target))
 
 var IOS_SIM_NAME = GetBuildVariable("IOS_SIM_NAME", "iPhone 7");
 var IOS_SIM_RUNTIME = GetBuildVariable("IOS_SIM_RUNTIME", "com.apple.CoreSimulator.SimRuntime.iOS-12-4");
-var IOS_TEST_PROJ = "./Xamarin.Forms.Core.iOS.UITests/Xamarin.Forms.Core.iOS.UITests.csproj";
-var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $"./Xamarin.Forms.Core.iOS.UITests/bin/{configuration}/Xamarin.Forms.Core.iOS.UITests.dll");
-var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $"./Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/{configuration}/XamarinFormsControlGalleryiOS.app");
-var IOS_BUNDLE_ID = "com.xamarin.quickui.controlgallery";
-var IOS_BUILD_IPA = GetBuildVariable("IOS_BUILD_IPA", (target == "cg-ios-deploy") ? true : (false || isCIBuild) );
-Guid IOS_SIM_UDID = GetBuildVariable("IOS_SIM_UDID", Guid.Empty);
+var IOS_CONTROLGALLERY_PROJ = "src/ControlGallery/src/Xamarin.Forms.ControlGallery.iOS/Xamarin.Forms.ControlGallery.iOS.csproj";
+var IOS_TEST_PROJ = "./src/ControlGallery/test/Xamarin.Forms.Core.iOS.UITests/Xamarin.Forms.Core.iOS.UITests.csproj";
+var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $"./src/ControlGallery/test/Xamarin.Forms.Core.iOS.UITests/bin/{configuration}/Xamarin.Forms.Core.iOS.UITests.dll");
+var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $"./src/ControlGallery/test/Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/{configuration}/XamarinFormsControlGalleryiOS.app");
+var IOS_BUNDLE_ID = "com.xamarin.xamarin-forms-controlgallery";
+var IOS_BUILD_IPA = Argument("IOS_BUILD_IPA", (target == "cg-ios-deploy") ? true : (false || isCIBuild) );
+Guid IOS_SIM_UDID = Argument("IOS_SIM_UDID", Guid.Empty);
 
 var UWP_PACKAGE_ID = "0d4424f6-1e29-4476-ac00-ba22c3789cb6";
-var UWP_TEST_LIBRARY = GetBuildVariable("UWP_TEST_LIBRARY", $"./Xamarin.Forms.Core.Windows.UITests/bin/{configuration}/Xamarin.Forms.Core.Windows.UITests.dll");
+var UWP_TEST_LIBRARY = GetBuildVariable("UWP_TEST_LIBRARY", $"./src/ControlGallery/test/Xamarin.Forms.Core.Windows.UITests/bin/{configuration}/Xamarin.Forms.Core.Windows.UITests.dll");
 var UWP_PFX_PATH = Argument("UWP_PFX_PATH", "Xamarin.Forms.ControlGallery.WindowsUniversal\\Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx");
 var UWP_APP_PACKAGES_PATH = Argument("UWP_APP_PACKAGES_PATH", "*/AppPackages/");
 var UWP_APP_DRIVER_INSTALL_PATH = Argument("UWP_APP_DRIVER_INSTALL_PATH", "https://github.com/microsoft/WinAppDriver/releases/download/v1.2-RC/WindowsApplicationDriver.msi");
+
+var ANDROID_BUNDLE_ID = "com.xamarin.xamarin_forms_controlgallery";
+var ANDROID_CONTROLGALLERY_PROJ = "src/ControlGallery/src/Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj";
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
+var ANDROID_TEST_PROJ = "./src/ControlGallery/test/Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj";
+
+var BUILD_TASKS_PROJ ="src/Forms/src/Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj";
+
 var XamarinFormsVersion = Argument("XamarinFormsVersion", "");
 var packageVersion = Argument("packageVersion", "");
 var releaseChannelArg = Argument("CHANNEL", "Stable");
@@ -834,10 +842,10 @@ Task("BuildPages")
 });
 
 Task("BuildTasks")
-    .Description("Build Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj")
+    .Description($"Build {BUILD_TASKS_PROJ}")
     .Does(() =>
 {
-    MSBuild("./src/Forms/src/Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj", GetMSBuildSettings().WithRestore());
+    MSBuild(BUILD_TASKS_PROJ, GetMSBuildSettings().WithRestore());
 });
 
 Task("Build")
@@ -881,6 +889,8 @@ Task("cg-android")
     {
         var buildSettings = GetMSBuildSettings();
 
+        buildSettings = buildSettings.WithRestore();
+
         if(isCIBuild)
         {
             buildSettings = buildSettings.WithTarget("Rebuild").WithTarget("SignAndroidPackage");
@@ -891,12 +901,29 @@ Task("cg-android")
             buildSettings.BinaryLogger = binaryLogger;
             binaryLogger.FileName = $"{artifactStagingDirectory}/android-{ANDROID_RENDERERS}.binlog";
         }
-        else
+
+        MSBuild(ANDROID_CONTROLGALLERY_PROJ, buildSettings);
+    });
+
+Task("cg-android-build-tests")
+    .IsDependentOn("BuildTasks")
+    .Does(() =>
+    {
+        var buildSettings =  GetMSBuildSettings();
+
+        buildSettings = buildSettings.WithRestore();
+
+        if(isCIBuild)
         {
-            buildSettings = buildSettings.WithRestore();
+            var binaryLogger = new MSBuildBinaryLogSettings {
+                Enabled  = true,
+                FileName = $"{artifactStagingDirectory}/android-uitests.binlog"
+            };
+
+            buildSettings.BinaryLogger = binaryLogger;
         }
 
-        MSBuild("./Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj", buildSettings);
+        MSBuild(ANDROID_TEST_PROJ, buildSettings);
     });
 
 Task("cg-android-vs")
@@ -916,22 +943,19 @@ Task("cg-ios")
             GetMSBuildSettings(null)
                 .WithProperty("BuildIpa", $"{IOS_BUILD_IPA}");
 
+        buildSettings = buildSettings.WithRestore();
+
         if(isCIBuild)
         {
             var binaryLogger = new MSBuildBinaryLogSettings {
                 Enabled  = true
             };
-
+            
             buildSettings.BinaryLogger = binaryLogger;
             binaryLogger.FileName = $"{artifactStagingDirectory}/ios-cg.binlog";
         }
-        else
-        {
-            buildSettings = buildSettings.WithRestore();
-        }
 
-        MSBuild("./Xamarin.Forms.ControlGallery.iOS/Xamarin.Forms.ControlGallery.iOS.csproj", 
-            buildSettings);
+        MSBuild(IOS_CONTROLGALLERY_PROJ, buildSettings);
     });
 
 Task("cg-ios-vs")
@@ -1022,6 +1046,8 @@ Task ("cg-ios-deploy")
     // Look for a matching simulator on the system
     var sim = GetIosSimulator();
 
+    //ShutdownAndResetiOSSimulator(sim);
+
     // Boot the simulator
     Information("Booting: {0} ({1} - {2})", sim.Name, sim.Runtime, sim.UDID);
     if (!sim.State.ToLower().Contains ("booted"))
@@ -1052,14 +1078,13 @@ Task("DeployAndroid")
     .Description("Builds and deploy Android Control Gallery")
     .Does(() =>
     {
-        MSBuild("./Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj", GetMSBuildSettings().WithRestore());
-        MSBuild("./Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj", GetMSBuildSettings().WithRestore());
-        BuildAndroidApk("./Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj", sign:true, configuration:configuration);
-        AdbUninstall("AndroidControlGallery.AndroidControlGallery");
-        AdbInstall("./Xamarin.Forms.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk");
-        AmStartActivity("AndroidControlGallery.AndroidControlGallery/md546303760447087909496d02dc7b17ae8.Activity1");
+        MSBuild(BUILD_TASKS_PROJ, GetMSBuildSettings().WithRestore());
+        MSBuild(ANDROID_CONTROLGALLERY_PROJ, GetMSBuildSettings().WithRestore());
+        BuildAndroidApk(ANDROID_CONTROLGALLERY_PROJ, sign:true, configuration:configuration);
+        AdbUninstall(ANDROID_BUNDLE_ID);
+        AdbInstall($"src/Controlgallery/src/Xamarin.Forms.ControlGallery.Android/bin/Debug/{ANDROID_BUNDLE_ID}-Signed.apk");
+        AmStartActivity($"{ANDROID_BUNDLE_ID}/md546303760447087909496d02dc7b17ae8.Activity1");
     });
-
 
 //////////////////////////////////////////////////////////////////////
 // TASK TARGETS
@@ -1186,6 +1211,27 @@ Version XcodeVersion()
 }
 
 IReadOnlyList<AppleSimulator> iosSimulators = null;
+
+void ShutdownAndResetiOSSimulator(AppleSimulator sim)
+{
+    //close all simulators , reset needs simulator to be closed
+    Information("Shutdown simulators: {0} ({1} - {2}) State: {3}", sim.Name, sim.Runtime, sim.UDID, sim.State);
+    ShutdownAllAppleSimulators();
+
+    var shutdown = false;
+    for (int i = 0; i < 100; i++) {
+        if (ListAppleSimulators().Any (s => s.UDID == sim.UDID && s.State.ToLower().Contains("shutdown"))) {
+            shutdown = true;
+            break;
+        }
+        System.Threading.Thread.Sleep(1000);
+    }
+
+    //Reset the simulator
+    Information ("Factory reset simulator: {0}", sim.UDID);
+    EraseAppleSimulator(sim.UDID);
+}
+
 AppleSimulator GetIosSimulator()
 {
     if(iosSimulators == null)

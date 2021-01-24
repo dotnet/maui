@@ -78,3 +78,46 @@ stages:
           - template: common/build-windows.yml
             parameters:
               provisionatorPath : '/build/provisioning/provisioning.csx'
+
+  - stage: build_osx
+    displayName: iOS
+    dependsOn: []
+    jobs:
+      - job: ios
+        workspace:
+          clean: all
+        displayName: Build ControlGallery iOS
+        timeoutInMinutes: 120
+        pool:
+          name:  $(macOSXVmPool)
+          vmImage: $(macOSXVmImage)
+          demands:
+            - sh
+            - Xamarin.iOS
+        variables:
+          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+          provisionator.extraArguments : '--v'
+        steps:
+          - template: common/controlgallery-ios.yml
+  
+  - stage: build_android
+    displayName: Android
+    dependsOn: []
+    jobs:
+      - job: android
+        workspace:
+          clean: all
+        displayName: Build ControlGallery Android
+        timeoutInMinutes: 120
+        pool:
+          name:  $(macOSXVmPool)
+          vmImage: $(macOSXVmImage)
+        variables:
+          renderers: 'FAST'
+          outputfolder: 'newRenderers'
+          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+          provisionator.extraArguments : '--v'
+        steps:
+          - template: common/controlgallery-android.yml

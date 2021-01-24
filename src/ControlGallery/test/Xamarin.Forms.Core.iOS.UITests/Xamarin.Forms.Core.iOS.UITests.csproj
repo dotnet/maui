@@ -58,19 +58,23 @@
     <Compile Include="BaseViewContainerRemoteiOS.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+      <Project>{f137fac5-3385-4b19-988b-4a14ed84ccc6}</Project>
+      <Name>Xamarin.Forms.Maps</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
-      <Project>{4DCD0420-1168-4B77-86DB-6196EE4BD491}</Project>
+    <ProjectReference Include="..\..\..\Forms\test\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
+      <Project>{2964f669-7cd9-4d78-b4d9-804a965d58c0}</Project>
       <Name>Xamarin.Forms.CustomAttributes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
-      <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>
-      <Name>Xamarin.Forms.Platform</Name>
+    <ProjectReference Include="..\..\..\Platform.Handlers\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
+      <Name>Xamarin.Platform.Handlers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.ControlGallery.iOS\Xamarin.Forms.ControlGallery.iOS.csproj">
+    <ProjectReference Include="..\..\src\Xamarin.Forms.ControlGallery.iOS\Xamarin.Forms.ControlGallery.iOS.csproj">
       <Project>{C7131F14-274F-4B55-ACA9-E81731AD012F}</Project>
       <Name>Xamarin.Forms.ControlGallery.iOS</Name>
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
@@ -80,8 +84,8 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <Import Project="..\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
-  <Import Project="..\Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems" Label="Shared" />
+  <Import Project="..\..\src\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\src\Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">
     <Delete Files="bin/$(Configuration)/System.Net.Http.dll" />

@@ -6,14 +6,14 @@ steps:
     displayName: 'Provision Xcode'
     condition: ne(variables['REQUIRED_XCODE'], '')
     inputs:
-      provisioning_script: 'build/provisioning/xcode.csx'
+      provisioning_script: $(provisionator.xcode)
 
   - task: xamops.azdevex.provisionator-task.provisionator@1
     displayName: 'Provisionator'
     condition: eq(variables['provisioning'], 'true')
     inputs:
-      provisioning_script: $(provisionator.osxPath)
-      provisioning_extra_args: $(provisionator.extraArguments) --v
+      provisioning_script: $(provisionator.path)
+      provisioning_extra_args: $(provisionator.extraArguments)
 
   - script: |
       echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
@@ -36,38 +36,10 @@ steps:
       version: $(DOTNET_VERSION)
       packageType: 'sdk'
 
-  - task: NuGetToolInstaller@1
-    displayName: 'Use NuGet'
-    condition: ne(variables['NUGET_VERSION'], '')
-    inputs:
-      versionSpec: $(NUGET_VERSION)
-
-  - task: DownloadBuildArtifacts@0
-    displayName: 'Download build artifact nuget'
-    condition: eq(variables['System.TeamProject'], 'DevDiv')
-    inputs:
-      artifactName: 'nuget'
-      downloadPath: '$(Build.ArtifactsDirectory)'
-
-  - task: CopyFiles@2
-    displayName: 'Copy Files to: $(System.DefaultWorkingDirectory)'
-    condition: eq(variables['System.TeamProject'], 'DevDiv')
-    inputs:
-      SourceFolder: '$(Build.ArtifactsDirectory)/nuget/$(buildConfiguration)'
-      TargetFolder: '$(System.DefaultWorkingDirectory)/Nuget'
-
-  - task: NuGetCommand@2
-    displayName: 'NuGet restore'
-    inputs:
-      command: restore
-      restoreSolution: 'Xamarin.Forms.sln'
-      feedsToUse: config
-      nugetConfigPath: 'DevopsNuget.config'
-
   - task: InstallAppleCertificate@2
     displayName: 'Install an Apple certificate'
     inputs:
-      certSecureFile: 'Xamarin Forms iOS Certificate.p12'
+      certSecureFile: 'XamarinForms.p12'
       certPwd: $(P12password)
 
   - task: InstallAppleProvisioningProfile@1
@@ -80,32 +52,32 @@ steps:
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target cg-ios --BUILD_CONFIGURATION=$(buildConfiguration) --MSBuildArguments='${{ variables.MSBuildArguments_cg_ios }}'
+      arguments: --target cg-ios --BUILD_CONFIGURATION=$(BuildConfiguration)
 
   - task: Bash@3
-    displayName: 'Build iOS Tests'
+    displayName: 'Build iOS UITests Tests'
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target cg-ios-build-tests -BUILD_CONFIGURATION=$(buildConfiguration) --MSBuildArguments='${{ variables.MSBuildArguments_cg_ios }}'
+      arguments: --target cg-ios-build-tests -BUILD_CONFIGURATION=$(BuildConfiguration)
 
   - task: CopyFiles@2
     displayName: 'Copy iOS Files for UITest'
     inputs:
       Contents: |
         **/XamarinFormsControlGalleryiOS.ipa
-        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
-        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
-        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
-        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
-        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
+        **/Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+        **/Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
+        **/Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
+        **/Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
+        **/Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
       TargetFolder: '$(build.artifactstagingdirectory)/ios'
       flattenFolders: true
 
   - task: CopyFiles@2
     displayName: 'Copy iOS dSYM'
     inputs:
-      SourceFolder: Xamarin.Forms.ControlGallery.iOS/bin/iPhone/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app.dSYM/
+      SourceFolder: 'src/ControlGallery/src/Xamarin.Forms.ControlGallery.iOS/bin/iPhone/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app.dSYM/'
       TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhone/XamarinFormsControlGalleryiOS.app.dSYM/'
       CleanTargetFolder: false
       flattenFolders: false
@@ -113,17 +85,10 @@ steps:
   - task: CopyFiles@2
     displayName: 'Copy iOS App'
     inputs:
-      SourceFolder: Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app/
+      SourceFolder: 'src/ControlGallery/src/Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app/'
       TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhoneSimulator/XamarinFormsControlGalleryiOS.app/'
       CleanTargetFolder: false
       flattenFolders: false
-
-  - task: MSBuild@1
-    displayName: 'Build Android Tests'
-    inputs:
-      solution: 'Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj'
-      configuration: $(buildConfiguration)
-      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/android-uitests.binlog
 
   - task: CopyFiles@2
     displayName: 'Copy test-cloud.exe'
@@ -131,20 +96,6 @@ steps:
       Contents: '**/Xamarin.UITest.*/tools/test-cloud.exe'
       TargetFolder: '$(build.artifactstagingdirectory)/testcloud'
       OverWrite: true
-      flattenFolders: true
-
-  - task: CopyFiles@2
-    displayName: 'Copy Android Files for UITest'
-    inputs:
-      Contents: |
-       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
-       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/nunit.*
-       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/NUnit3.*
-       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Plugin.*
-       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Xamarin.*
-
-      TargetFolder: '$(build.artifactstagingdirectory)/android'
-      CleanTargetFolder: true
       flattenFolders: true
 
   - task: CopyFiles@2

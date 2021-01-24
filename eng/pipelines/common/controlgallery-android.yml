@@ -1,0 +1,71 @@
+steps:
+  - checkout: self
+    clean: true
+
+  - task: xamops.azdevex.provisionator-task.provisionator@1
+    displayName: 'Provisionator'
+    condition: eq(variables['provisioning'], 'true')
+    inputs:
+      provisioning_script: $(provisionator.path)
+      provisioning_extra_args: $(provisionator.extraArguments)
+  
+  - task: Bash@3
+    displayName: 'Cake Provision'
+    condition: eq(variables['provisioningCake'], 'true')
+    inputs:
+      targetType: 'filePath'
+      filePath: 'build.sh'
+      arguments: --target provision --TeamProject="$(System.TeamProject)"
+
+  - task: UseDotNet@2
+    displayName: 'Install .net core $(DOTNET_VERSION)'
+    condition: ne(variables['DOTNET_VERSION'], '')
+    inputs:
+      version: $(DOTNET_VERSION)
+      packageType: 'sdk'
+  
+  # - script: '/bin/bash -c "sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh ${{ parameters.monoVersion }}"'
+  #   displayName: 'Select MONO ${{ parameters.monoVersion }}'
+  
+  - task: Bash@3
+    displayName: 'Build Android $(renderers)'
+    inputs:
+      targetType: 'filePath'
+      filePath: 'build.sh'
+      arguments: --target cg-android --ANDROID_RENDERERS="$(renderers)" --GoogleMapsAPIKey="$(GoogleMapsAPIKey)" --BUILD_CONFIGURATION=$(BuildConfiguration)
+
+  - task: Bash@3
+    displayName: 'Build Android UITests'
+    inputs:
+      targetType: 'filePath'
+      filePath: 'build.sh'
+      arguments: --target cg-android-build-tests -BUILD_CONFIGURATION=$(BuildConfiguration)
+
+  - task: CopyFiles@2
+    displayName: 'Copy Android Files for UITest'
+    inputs:
+      Contents: |
+        **/Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+        **/Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/nunit.*
+        **/Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/NUnit3.*
+        **/Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Plugin.*
+        **/Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Xamarin.*
+      TargetFolder: '$(build.artifactstagingdirectory)/android'
+      CleanTargetFolder: true
+      flattenFolders: true
+
+  - task: CopyFiles@2
+    displayName: 'Copy $(renderers)'
+    inputs:
+      SourceFolder: src/ControlGallery/src/Xamarin.Forms.ControlGallery.Android/bin/$(BuildConfiguration)/
+      Contents: '**/*.apk'
+      TargetFolder: '$(build.artifactstagingdirectory)/androidApp'
+      CleanTargetFolder: true
+      flattenFolders: true
+  
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: AndroidApps'
+    condition: always()
+    inputs:
+      PathtoPublish: '$(build.artifactstagingdirectory)'
+      ArtifactName: OSXArtifacts
