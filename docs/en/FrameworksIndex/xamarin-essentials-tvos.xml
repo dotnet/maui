@@ -597,6 +597,7 @@
       <Member Id="M:Xamarin.Essentials.OpenFileRequest.#ctor(System.String,Xamarin.Essentials.FileBase)" />
       <Member Id="M:Xamarin.Essentials.OpenFileRequest.#ctor(System.String,Xamarin.Essentials.ReadOnlyFile)" />
       <Member Id="P:Xamarin.Essentials.OpenFileRequest.File" />
+      <Member Id="P:Xamarin.Essentials.OpenFileRequest.PresentationSourceBounds" />
       <Member Id="P:Xamarin.Essentials.OpenFileRequest.Title" />
     </Type>
     <Type Name="Xamarin.Essentials.OrientationSensor" Id="T:Xamarin.Essentials.OrientationSensor">

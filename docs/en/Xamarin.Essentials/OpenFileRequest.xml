@@ -88,6 +88,24 @@
         <remarks></remarks>
       </Docs>
     </Member>
+    <Member MemberName="PresentationSourceBounds">
+      <MemberSignature Language="C#" Value="public System.Drawing.Rectangle PresentationSourceBounds { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Drawing.Rectangle PresentationSourceBounds" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.OpenFileRequest.PresentationSourceBounds" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Rectangle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the source rectangle to display the Share UI from.</summary>
+        <value></value>
+        <remarks>This is only used on iOS currently.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Title">
       <MemberSignature Language="C#" Value="public string Title { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string Title" />
@@ -104,24 +122,6 @@
         <summary>Title to display on open dialog if available.</summary>
         <value></value>
         <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="PresentationSourceBounds">
-      <MemberSignature Language="C#" Value="public System.Drawing.Rectangle PresentationSourceBounds { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Drawing.Rectangle PresentationSourceBounds" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ShareRequestBase.PresentationSourceBounds" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Drawing.Rectangle</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets the source rectangle to display the Share UI from.</summary>
-        <value></value>
-        <remarks>This is only used on iOS currently.</remarks>
       </Docs>
     </Member>
   </Members>
