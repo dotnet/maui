@@ -8,9 +8,9 @@ namespace Xamarin.Forms
 	public static class ShellTemplatedViewManager
 	{
 		public static void SetView(
-			ref View localView, 
-			View newView, 
-			Action<Element> OnChildRemoved, 
+			ref View localView,
+			View newView,
+			Action<Element> OnChildRemoved,
 			Action<Element> OnChildAdded)
 		{
 			if (localView == newView)
@@ -50,7 +50,7 @@ namespace Xamarin.Forms
 		{
 			View newContentView = currentViewData as View;
 			if (newViewTemplate != null)
-			{ 
+			{
 				newContentView = (View)newViewTemplate.CreateContent(newViewTemplate, shell);
 			}
 

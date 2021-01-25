@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 				Assert.That(layout.Root.Resources["Color1"], Is.Not.Null);
 				Assert.That(layout.Root.Resources.Remove("Color1"), Is.True);
-				Assert.Throws<KeyNotFoundException>(()=>
+				Assert.Throws<KeyNotFoundException>(() =>
 				{
 					var _ = layout.Root.Resources["Color1"];
 				});

@@ -584,7 +584,7 @@ namespace Xamarin.Forms
 
 		ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => 
+		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
 			new ReadOnlyCollection<Element>(_logicalChildren);
 
 		public Shell()
