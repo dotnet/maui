@@ -36,5 +36,7 @@
     <file src="src/System.Graphics.Skia.Forms/bin/Release/monoandroid10.0/System.Graphics.Skia.Forms.pdb" target="lib/monoandroid10.0/System.Graphics.Skia.Forms.pdb"/>
     <file src="src/System.Graphics.Skia.Forms/bin/Release/xamarin.mac20/System.Graphics.Skia.Forms.dll" target="lib/xamarin.mac20/System.Graphics.Skia.Forms.dll"/>
     <file src="src/System.Graphics.Skia.Forms/bin/Release/xamarin.mac20/System.Graphics.Skia.Forms.pdb" target="lib/xamarin.mac20/System.Graphics.Skia.Forms.pdb"/>
+    <file src="src/System.Graphics.Skia.Forms/bin/Release/tizen40/System.Graphics.Skia.Forms.dll" target="lib/tizen40/System.Graphics.Skia.Forms.dll"/>
+    <file src="src/System.Graphics.Skia.Forms/bin/Release/tizen40/System.Graphics.Skia.Forms.pdb" target="lib/tizen40/System.Graphics.Skia.Forms.pdb"/>
   </files>
 </package>
