@@ -88,9 +88,24 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (Element == null || Control == null)
 				return _defaultIsAccessibilityElement;
 
+			// If the user hasn't set IsInAccessibleTree then just don't do anything
+			if (!Element.IsSet(AutomationProperties.IsInAccessibleTreeProperty))
+				return null;
+
 #if __MOBILE__
 			if (!_defaultIsAccessibilityElement.HasValue)
-				_defaultIsAccessibilityElement = Control.IsAccessibilityElement;
+			{
+				// iOS sets the default value for IsAccessibilityElement late in the layout cycle
+				// But if we set it to false ourselves then that causes it to act like it's false
+
+				// from the docs:
+				// https://developer.apple.com/documentation/objectivec/nsobject/1615141-isaccessibilityelement
+				// The default value for this property is false unless the receiver is a standard UIKit control,
+				// in which case the value is true.
+				//
+				// So we just base the default on that logic				
+				_defaultIsAccessibilityElement = Control.IsAccessibilityElement || Control is UIControl;
+			}
 
 			Control.IsAccessibilityElement = (bool)((bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultIsAccessibilityElement);
 #else

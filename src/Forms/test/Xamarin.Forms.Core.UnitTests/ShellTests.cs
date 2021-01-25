@@ -768,10 +768,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.FlyoutHeader = null;
 			shell.FlyoutHeader = layout;
 
-			Assert.True(shell.ChildrenNotDrawnByThisElement.Contains(layout));
+			Assert.True(shell.LogicalChildren.Contains(layout));
 			shell.FlyoutHeader = null;
 
-			Assert.False(shell.ChildrenNotDrawnByThisElement.Contains(layout));
+			Assert.False(shell.LogicalChildren.Contains(layout));
 		}
 
 

@@ -175,7 +175,7 @@ namespace Xamarin.Forms
 
 		public int Count
 		{
-			get { return _innerDictionary.Count; }
+			get { return _innerDictionary.Count + (_mergedInstance?.Count ?? 0); }
 		}
 
 		bool ICollection<KeyValuePair<string, object>>.IsReadOnly
@@ -230,7 +230,7 @@ namespace Xamarin.Forms
 
 		public bool Remove(string key)
 		{
-			return _innerDictionary.Remove(key);
+			return _innerDictionary.Remove(key) || (_mergedInstance?.Remove(key) ?? false);
 		}
 
 		public ICollection<object> Values
@@ -369,10 +369,23 @@ namespace Xamarin.Forms
 
 				var lineInfo = (serviceProvider.GetService(typeof(Xaml.IXmlLineInfoProvider)) as Xaml.IXmlLineInfoProvider)?.XmlLineInfo;
 				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
+				var assembly = rootObjectType.GetTypeInfo().Assembly;
+#if NETSTANDARD2_0
+				if (value.Contains(";assembly="))
+				{
+					var parts = value.Split(new[] { ";assembly=" }, StringSplitOptions.RemoveEmptyEntries);
+					value = parts[0];
+					var asmName = parts[1];
+					assembly = Assembly.Load(asmName);
+				}
+#endif
 				var uri = new Uri(value, UriKind.Relative); //we don't want file:// uris, even if they start with '/'
 				var resourcePath = GetResourcePath(uri, rootTargetPath);
 
-				targetRD.SetAndLoadSource(uri, resourcePath, rootObjectType.GetTypeInfo().Assembly, lineInfo);
+				//Re-add the assembly= in all cases, so HotReload doesn't have to make assumptions
+				uri = new Uri($"{value};assembly={assembly.GetName().Name}", UriKind.Relative);
+				targetRD.SetAndLoadSource(uri, resourcePath, assembly, lineInfo);
+
 				return uri;
 			}
 

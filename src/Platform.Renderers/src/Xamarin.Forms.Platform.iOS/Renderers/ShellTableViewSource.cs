@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.iOS
 					if (_cells != null)
 					{
 						foreach (var cell in _cells.Values)
-							cell.Disconnect();
+							cell.Disconnect(_context.Shell);
 					}
 
 					_cells = new Dictionary<Element, UIContainerCell>();
@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_cells != null)
 				{
 					foreach (var cell in _cells.Values)
-						cell.Disconnect();
+						cell.Disconnect(_context.Shell);
 				}
 				_cells = new Dictionary<Element, UIContainerCell>();
 			}
@@ -120,18 +120,13 @@ namespace Xamarin.Forms.Platform.iOS
 			if (!_cells.TryGetValue(context, out cell))
 			{
 				var view = (View)template.CreateContent(context, _context.Shell);
-				cell = new UIContainerCell(cellId, view);
-
-				// Set Parent after binding context so parent binding context doesn't propagate to view
-				cell.BindingContext = context;
-				view.Parent = _context.Shell;
+				cell = new UIContainerCell(cellId, view, _context.Shell, context);
 			}
 			else
 			{
 				var view = _cells[context].View;
 				cell.Disconnect();
-				cell = new UIContainerCell(cellId, view);
-				cell.BindingContext = context;
+				cell = new UIContainerCell(cellId, view, _context.Shell, context);
 			}
 
 			cell.SetAccessibilityProperties(context);
