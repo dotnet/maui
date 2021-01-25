@@ -23,7 +23,8 @@ namespace Xamarin.Essentials
                 height: bounds.Height * scale,
                 density: scale,
                 orientation: CalculateOrientation(),
-                rotation: CalculateRotation());
+                rotation: CalculateRotation(),
+                rate: UIScreen.MainScreen.MaximumFramesPerSecond);
         }
 
         static void StartScreenMetricsListeners()

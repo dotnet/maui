@@ -12,6 +12,17 @@ namespace Xamarin.Essentials
             Density = density;
             Orientation = orientation;
             Rotation = rotation;
+            RefreshRate = 0;
+        }
+
+        public DisplayInfo(double width, double height, double density, DisplayOrientation orientation, DisplayRotation rotation, float rate)
+        {
+            Width = width;
+            Height = height;
+            Density = density;
+            Orientation = orientation;
+            Rotation = rotation;
+            RefreshRate = rate;
         }
 
         public double Width { get; }
@@ -23,6 +34,8 @@ namespace Xamarin.Essentials
         public DisplayOrientation Orientation { get; }
 
         public DisplayRotation Rotation { get; }
+
+        public float RefreshRate { get; }
 
         public static bool operator ==(DisplayInfo left, DisplayInfo right) =>
             left.Equals(right);

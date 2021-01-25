@@ -1,4 +1,5 @@
 ﻿using AppKit;
+using CoreVideo;
 using Foundation;
 
 namespace Xamarin.Essentials
@@ -38,12 +39,22 @@ namespace Xamarin.Essentials
             var frame = mainScreen.Frame;
             var scale = mainScreen.BackingScaleFactor;
 
+            var mainDisplayId = CoreGraphicsInterop.MainDisplayId;
+
+            // try determine the refresh rate, but fall back to 60Hz
+            var refreshRate = CoreGraphicsInterop.GetRefreshRate(mainDisplayId);
+            if (refreshRate == 0)
+                refreshRate = CVDisplayLinkInterop.GetRefreshRate(mainDisplayId);
+            if (refreshRate == 0)
+                refreshRate = 60.0;
+
             return new DisplayInfo(
                 width: frame.Width,
                 height: frame.Height,
                 density: scale,
                 orientation: DisplayOrientation.Portrait,
-                rotation: DisplayRotation.Rotation0);
+                rotation: DisplayRotation.Rotation0,
+                rate: (float)refreshRate);
         }
 
         static void StartScreenMetricsListeners()

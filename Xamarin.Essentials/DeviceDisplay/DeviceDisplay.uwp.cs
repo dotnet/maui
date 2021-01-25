@@ -1,4 +1,5 @@
 ﻿using Windows.Graphics.Display;
+using Windows.Graphics.Display.Core;
 using Windows.System.Display;
 
 namespace Xamarin.Essentials
@@ -54,12 +55,16 @@ namespace Xamarin.Essentials
             var w = di.ScreenWidthInRawPixels;
             var h = di.ScreenHeightInRawPixels;
 
+            var hdi = HdmiDisplayInformation.GetForCurrentView();
+            var hdm = hdi?.GetCurrentDisplayMode();
+
             return new DisplayInfo(
                 width: perpendicular ? h : w,
                 height: perpendicular ? w : h,
                 density: di.LogicalDpi / 96.0,
                 orientation: CalculateOrientation(di),
-                rotation: rotation);
+                rotation: rotation,
+                rate: (float)(hdm?.RefreshRate ?? 0));
         }
 
         static void StartScreenMetricsListeners()

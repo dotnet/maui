@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using AppKit;
 using CoreFoundation;
+using CoreVideo;
 using Foundation;
 using ObjCRuntime;
 
@@ -17,6 +18,57 @@ namespace Xamarin.Essentials
                 throw new InvalidOperationException("Could not find current window.");
 
             return window;
+        }
+    }
+
+    internal static class CoreGraphicsInterop
+    {
+        public static uint MainDisplayId => CGMainDisplayID();
+
+        [DllImport(Constants.CoreGraphicsLibrary)]
+        static extern IntPtr CGDisplayCopyDisplayMode(uint display);
+
+        [DllImport(Constants.CoreGraphicsLibrary)]
+        static extern void CGDisplayModeRelease(IntPtr mode);
+
+        [DllImport(Constants.CoreGraphicsLibrary)]
+        static extern double CGDisplayModeGetRefreshRate(IntPtr mode);
+
+        [DllImport(Constants.CoreGraphicsLibrary)]
+        static extern uint CGMainDisplayID();
+
+        public static double GetRefreshRate(uint display)
+        {
+            var mode = CGDisplayCopyDisplayMode(display);
+            if (mode == IntPtr.Zero)
+                return 0.0;
+
+            var refreshRate = CGDisplayModeGetRefreshRate(mode);
+
+            CGDisplayModeRelease(mode);
+
+            return refreshRate;
+        }
+    }
+
+    internal static class CVDisplayLinkInterop
+    {
+        [DllImport(Constants.CoreGraphicsLibrary)]
+        static extern int CVDisplayLinkCreateWithCGDisplay(uint display, out IntPtr handle);
+
+        public static double GetRefreshRate(uint display)
+        {
+            var result = CVDisplayLinkCreateWithCGDisplay(display, out var handle);
+            if (result != 0 || handle == IntPtr.Zero)
+                return 0.0;
+
+            using var dl = new CVDisplayLink(handle);
+
+            var period = dl.NominalOutputVideoRefreshPeriod;
+            if (((CVTimeFlags)period.Flags).HasFlag(CVTimeFlags.IsIndefinite) || period.TimeValue == 0)
+                return 0.0;
+
+            return period.TimeScale / (double)period.TimeValue;
         }
     }
 

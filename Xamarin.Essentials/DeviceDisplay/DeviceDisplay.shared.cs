@@ -17,7 +17,7 @@ namespace Xamarin.Essentials
         public static DisplayInfo MainDisplayInfo => GetMainDisplayInfo();
 
         static void SetCurrent(DisplayInfo metrics) =>
-            currentMetrics = new DisplayInfo(metrics.Width, metrics.Height, metrics.Density, metrics.Orientation, metrics.Rotation);
+            currentMetrics = new DisplayInfo(metrics.Width, metrics.Height, metrics.Density, metrics.Orientation, metrics.Rotation, metrics.RefreshRate);
 
         public static event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged
         {

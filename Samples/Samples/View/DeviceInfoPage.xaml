@@ -29,6 +29,7 @@
                 <Label Text="{Binding ScreenMetrics.Density, StringFormat='Density: {0}'}" />
                 <Label Text="{Binding ScreenMetrics.Orientation, StringFormat='Orientation: {0}'}" />
                 <Label Text="{Binding ScreenMetrics.Rotation, StringFormat='Rotation: {0}'}" />
+                <Label Text="{Binding ScreenMetrics.RefreshRate, StringFormat='Refresh Rate: {0}'}" />
             </StackLayout>
         </ScrollView>
     </StackLayout>

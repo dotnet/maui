@@ -313,6 +313,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.DisplayInfo" Id="T:Xamarin.Essentials.DisplayInfo">
       <Member Id="M:Xamarin.Essentials.DisplayInfo.#ctor(System.Double,System.Double,System.Double,Xamarin.Essentials.DisplayOrientation,Xamarin.Essentials.DisplayRotation)" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.#ctor(System.Double,System.Double,System.Double,Xamarin.Essentials.DisplayOrientation,Xamarin.Essentials.DisplayRotation,System.Single)" />
       <Member Id="M:Xamarin.Essentials.DisplayInfo.Equals(System.Object)" />
       <Member Id="M:Xamarin.Essentials.DisplayInfo.Equals(Xamarin.Essentials.DisplayInfo)" />
       <Member Id="M:Xamarin.Essentials.DisplayInfo.GetHashCode" />
@@ -322,6 +323,7 @@
       <Member Id="P:Xamarin.Essentials.DisplayInfo.Density" />
       <Member Id="P:Xamarin.Essentials.DisplayInfo.Height" />
       <Member Id="P:Xamarin.Essentials.DisplayInfo.Orientation" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfo.RefreshRate" />
       <Member Id="P:Xamarin.Essentials.DisplayInfo.Rotation" />
       <Member Id="P:Xamarin.Essentials.DisplayInfo.Width" />
     </Type>
