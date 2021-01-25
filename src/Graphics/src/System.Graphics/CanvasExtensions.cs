@@ -22,9 +22,37 @@ namespace System.Graphics
             target.DrawRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, cornerRadius);
         }
 
+        public static void DrawRoundedRectangle(this ICanvas target, float x, float y, float width, float height, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius)
+        {
+            var path = new PathF();
+            path.AppendRoundedRectangle(x,y,width, height, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
+            target.DrawPath(path);
+        }
+
+        public static void DrawRoundedRectangle(this ICanvas target, RectangleF rect, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius)
+        {
+            var path = new PathF();
+            path.AppendRoundedRectangle(rect, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
+            target.DrawPath(path);
+        }
+
         public static void FillRoundedRectangle(this ICanvas target, RectangleF rect, float cornerRadius)
         {
             target.FillRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, cornerRadius);
+        }
+
+        public static void FillRoundedRectangle(this ICanvas target, float x, float y, float width, float height, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius)
+        {
+            var path = new PathF();
+            path.AppendRoundedRectangle(x,y,width, height, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
+            target.FillPath(path);
+        }
+
+        public static void FillRoundedRectangle(this ICanvas target, RectangleF rect, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius)
+        {
+            var path = new PathF();
+            path.AppendRoundedRectangle(rect, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
+            target.FillPath(path);
         }
 
         public static void DrawEllipse(this ICanvas target, RectangleF rect)
@@ -87,12 +115,12 @@ namespace System.Graphics
         }
 
         public static void DrawString(
-            this ICanvas target, 
-            string value, 
-            RectangleF bounds, 
-            HorizontalAlignment horizontalAlignment, 
+            this ICanvas target,
+            string value,
+            RectangleF bounds,
+            HorizontalAlignment horizontalAlignment,
             VerticalAlignment verticalAlignment,
-            TextFlow textFlow = TextFlow.ClipBounds, 
+            TextFlow textFlow = TextFlow.ClipBounds,
             float lineSpacingAdjustment = 0)
         {
             target.DrawString(value, bounds.X, bounds.Y, bounds.Width, bounds.Height, horizontalAlignment, verticalAlignment, textFlow, lineSpacingAdjustment);
@@ -213,7 +241,7 @@ namespace System.Graphics
             canvas.StrokeLineCap = LineCap.Butt;
             canvas.StrokeColor = Colors.Black;
         }
-        
+
         public static void SetFillPattern(this ICanvas target, IPattern pattern)
         {
             SetFillPattern(target, pattern, Colors.Black);
@@ -237,17 +265,17 @@ namespace System.Graphics
                 }
             }
         }
-        
+
         public static void SubtractFromClip(this ICanvas target, RectangleF rect)
         {
             target.SubtractFromClip(rect.X, rect.Y, rect.Width, rect.Height);
         }
-        
+
         public static void SetFillPaint(this ICanvas target, Paint paint, PointF point1, PointF point2)
         {
             target.SetFillPaint(paint, point1.X, point1.Y, point2.X, point2.Y);
         }
-        
+
         public static void SetFillPaint(this ICanvas target, Paint paint, RectangleF rectangle)
         {
             target.SetFillPaint(paint, rectangle.Left, rectangle.Top, rectangle.Bottom, rectangle.Right);

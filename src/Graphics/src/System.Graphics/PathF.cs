@@ -12,7 +12,7 @@ namespace System.Graphics
         private readonly List<bool> _subPathsClosed;
 
         private object _nativePath;
-        
+
         private PathF(List<PointF> points, List<float> arcSizes, List<bool> arcClockwise, List<PathOperation> operations, int subPathCount)
         {
             _points = points;
@@ -111,7 +111,7 @@ namespace System.Graphics
                     yield return _points[i];
             }
         }
-        
+
         public PointF LastPoint
         {
             get
@@ -188,7 +188,7 @@ namespace System.Graphics
                 return 0;
             }
         }
-        
+
         public PathOperation GetSegmentType(int aIndex)
         {
             return _operations[aIndex];
@@ -857,7 +857,7 @@ namespace System.Graphics
                 }
             }
         }
-        
+
         public PathF Rotate(float angleAsDegrees, PointF pivot)
         {
             var path = new PathF();
@@ -923,7 +923,7 @@ namespace System.Graphics
 
             Invalidate();
         }
-        
+
         public List<PathF> Separate()
         {
             var vPaths = new List<PathF>();
@@ -1096,15 +1096,7 @@ namespace System.Graphics
 
         public void AppendRoundedRectangle(float x, float y, float w, float h, float cornerRadius, bool includeLast = false)
         {
-            if (cornerRadius > h / 2)
-            {
-                cornerRadius = h / 2;
-            }
-
-            if (cornerRadius > w / 2)
-            {
-                cornerRadius = w / 2;
-            }
+            cornerRadius = ClampCornerRadius(cornerRadius, w, h);
 
             var minx = x;
             var miny = y;
@@ -1130,7 +1122,57 @@ namespace System.Graphics
 
             Close();
         }
-        
+
+        public void AppendRoundedRectangle(RectangleF rect, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius, bool includeLast = false)
+        {
+            AppendRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius, includeLast);
+        }
+
+        public void AppendRoundedRectangle(float x, float y, float w, float h, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius, bool includeLast = false)
+        {
+            topLeftCornerRadius = ClampCornerRadius(topLeftCornerRadius, w, h);
+            topRightCornerRadius = ClampCornerRadius(topRightCornerRadius, w, h);
+            bottomLeftCornerRadius = ClampCornerRadius(bottomLeftCornerRadius, w, h);
+            bottomRightCornerRadius = ClampCornerRadius(bottomRightCornerRadius, w, h);
+
+            var minx = x;
+            var miny = y;
+            var maxx = minx + w;
+            var maxy = miny + h;
+
+            var topLeftCornerOffset = topLeftCornerRadius - (topLeftCornerRadius * .55f);
+            var topRightCornerOffset = topRightCornerRadius - (topRightCornerRadius * .55f);
+            var bottomLeftCornerOffset = bottomLeftCornerRadius - (bottomLeftCornerRadius * .55f);
+            var bottomRightCornerOffset = bottomRightCornerRadius - (bottomRightCornerRadius * .55f);
+
+            MoveTo(new PointF(minx, miny + topLeftCornerRadius));
+            CurveTo(new PointF(minx, miny + topLeftCornerOffset), new PointF(minx + topLeftCornerOffset, miny), new PointF(minx + topLeftCornerRadius, miny));
+            LineTo(new PointF(maxx - topRightCornerRadius, miny));
+            CurveTo(new PointF(maxx - topRightCornerOffset, miny), new PointF(maxx, miny + topRightCornerOffset), new PointF(maxx, miny + topRightCornerRadius));
+            LineTo(new PointF(maxx, maxy - bottomRightCornerRadius));
+            CurveTo(new PointF(maxx, maxy - bottomRightCornerOffset), new PointF(maxx - bottomRightCornerOffset, maxy), new PointF(maxx - bottomRightCornerRadius, maxy));
+            LineTo(new PointF(minx + bottomLeftCornerRadius, maxy));
+            CurveTo(new PointF(minx + bottomLeftCornerOffset, maxy), new PointF(minx, maxy - bottomLeftCornerOffset), new PointF(minx, maxy - bottomLeftCornerRadius));
+
+            if (includeLast)
+            {
+                LineTo(new PointF(minx, miny + topLeftCornerRadius));
+            }
+
+            Close();
+        }
+
+        private float ClampCornerRadius(float cornerRadius, float w, float h)
+        {
+            if (cornerRadius > h / 2)
+                cornerRadius = h / 2;
+
+            if (cornerRadius > w / 2)
+                cornerRadius = w / 2;
+
+            return cornerRadius;
+        }
+
         public bool IsSubPathClosed(int subPathIndex)
         {
             if (subPathIndex >= 0 && subPathIndex < SubPathCount)
@@ -1175,7 +1217,7 @@ namespace System.Graphics
             {
                 _points[i] = _points[i].Offset(x, y);
             }
-           
+
             Invalidate();
         }
 
@@ -1184,21 +1226,21 @@ namespace System.Graphics
             _points[index] = _points[index].Offset(dx,dy);
             Invalidate();
         }
-        
+
         public override bool Equals(object obj)
         {
             if (obj is PathF compareTo)
             {
                 if (OperationCount != compareTo.OperationCount)
                     return false;
-                
+
                 for (var i = 0; i < _operations.Count; i++)
                 {
                     var segmentType = _operations[i];
                     if (segmentType != compareTo.GetSegmentType(i))
                         return false;
                 }
-                
+
                 for (var i = 0; i < _points.Count; i++)
                 {
                     var point = _points[i];
@@ -1248,14 +1290,14 @@ namespace System.Graphics
             {
                 if (OperationCount != compareTo.OperationCount)
                     return false;
-                
+
                 for (var i = 0; i < _operations.Count; i++)
                 {
                     var segmentType = _operations[i];
                     if (segmentType != compareTo.GetSegmentType(i))
                         return false;
                 }
-                
+
                 for (var i = 0; i < _points.Count; i++)
                 {
                     var point = _points[i];
