@@ -208,7 +208,11 @@ namespace Xamarin.Forms
 			if (IsArrangeValid)
 				return;
 			IsArrangeValid = true;
-			Layout(this.ComputeFrame(bounds));
+
+			var newRect = this.ComputeFrame(bounds);
+
+			Layout(newRect);
+			Handler?.SetFrame(Bounds);
 		}
 
 		protected override void OnSizeAllocated(double width, double height)

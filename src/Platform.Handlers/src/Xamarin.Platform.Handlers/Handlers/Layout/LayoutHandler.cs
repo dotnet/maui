@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Xamarin.Platform.Handlers
 {
-	public partial class LayoutHandler
+	public partial class LayoutHandler : ILayoutHandler
 	{
 		public static PropertyMapper<ILayout> LayoutMapper = new PropertyMapper<ILayout>(ViewHandler.ViewMapper)
 		{

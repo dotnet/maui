@@ -40,7 +40,6 @@ namespace Xamarin.Platform.Handlers
 			(handler.NativeView as NativeView)?.UpdateBackgroundColor(view);
 		}
 
-
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static void CheckParameters(IViewHandler handler, IView view)
 		{

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Android.Views;
 
 namespace Xamarin.Platform.Handlers
 {
@@ -35,6 +36,25 @@ namespace Xamarin.Platform.Handlers
 			foreach (var child in VirtualView.Children)
 			{
 				TypedNativeView.AddView(child.ToNative(Context!));
+			}
+		}
+
+		public void Add(IView child) 
+		{
+			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+
+			TypedNativeView.AddView(child.ToNative(Context!), 0);
+		}
+
+		public void Remove(IView child)
+		{
+			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+
+			if (child?.Handler?.NativeView is View view)
+			{
+				TypedNativeView.RemoveView(view);
 			}
 		}
 	}

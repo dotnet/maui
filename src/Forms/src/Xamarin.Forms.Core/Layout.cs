@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Xamarin.Forms.Internals;
+using Xamarin.Platform;
 
 namespace Xamarin.Forms
 {
@@ -19,6 +20,8 @@ namespace Xamarin.Forms
 		protected Layout() => _children = new ElementCollection<T>(InternalChildren);
 
 		public new IList<T> Children => _children;
+
+		public Platform.ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
 
 		protected override void OnChildAdded(Element child)
 		{
@@ -45,6 +48,22 @@ namespace Xamarin.Forms
 
 		protected virtual void OnRemoved(T view)
 		{
+		}
+
+		public void Add(IView child)
+		{
+			if (child is T view)
+			{
+				Children.Add(view);
+			}
+		}
+
+		public void Remove(IView child)
+		{
+			if (child is T view)
+			{
+				Children.Remove(view);
+			}
 		}
 	}
 

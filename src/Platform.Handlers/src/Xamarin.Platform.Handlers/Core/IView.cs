@@ -1,4 +1,6 @@
-﻿namespace Xamarin.Platform
+﻿using System;
+
+namespace Xamarin.Platform
 {
 	public interface IView : IFrameworkElement
 	{

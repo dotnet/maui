@@ -50,7 +50,7 @@ namespace Xamarin.Platform.Handlers
 
 			var nativeWidth = Context.ToPixels(size.Width);
 			var nativeHeight = Context.ToPixels(size.Height);
-
+			
 			SetMeasuredDimension((int)nativeWidth, (int)nativeHeight);
 		}
 
