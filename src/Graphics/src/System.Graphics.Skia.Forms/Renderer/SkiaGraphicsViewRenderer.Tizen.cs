@@ -1,22 +1,16 @@
 ﻿using System.ComponentModel;
 using System.Graphics.Forms;
-using System.Graphics.Skia.Forms;
-using Android.Content;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Android;
+using Xamarin.Forms.Platform.Tizen;
+using XForms = Xamarin.Forms.Forms;
 
-[assembly: ExportRenderer(typeof(System.Graphics.Forms.SkiaGraphicsView), typeof(SkiaGraphicsViewRenderer))]
+[assembly: ExportRenderer(typeof(SkiaGraphicsView), typeof(System.Graphics.Skia.Views.SkiaGraphicsView))]
 namespace System.Graphics.Skia.Forms
 {
     [Preserve]
     public class SkiaGraphicsViewRenderer : ViewRenderer<SkiaGraphicsView, System.Graphics.Skia.Views.SkiaGraphicsView>
     {
-        public SkiaGraphicsViewRenderer(Context context) : base(context)
-        {
-
-        }
-
         protected override void OnElementChanged(ElementChangedEventArgs<SkiaGraphicsView> e)
         {
             base.OnElementChanged(e);
@@ -29,7 +23,7 @@ namespace System.Graphics.Skia.Forms
 
             if (e.NewElement != null)
             {
-                SetNativeControl(new System.Graphics.Skia.Views.SkiaGraphicsView(Context));
+                SetNativeControl(new System.Graphics.Skia.Views.SkiaGraphicsView(XForms.NativeParent));
             }
         }
 

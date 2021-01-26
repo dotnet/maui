@@ -1,16 +1,14 @@
 ﻿using System.ComponentModel;
-using System.Graphics.CoreGraphics;
 using System.Graphics.Forms;
-using System.Graphics.Forms.Mac;
 using Foundation;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.MacOS;
 
-[assembly: ExportRenderer(typeof(SkiaGraphicsView), typeof(SkiaGraphicsViewRenderer))]
-namespace System.Graphics.Forms.Mac
+[assembly: ExportRenderer(typeof(SkiaGraphicsView), typeof(System.Graphics.Skia.Views.SkiaGraphicsView))]
+namespace System.Graphics.Skia.Forms
 {
     [Preserve]
-    public class SkiaGraphicsViewRenderer : ViewRenderer<SkiaGraphicsView, NativeGraphicsView>
+    public class SkiaGraphicsViewRenderer : ViewRenderer<SkiaGraphicsView, System.Graphics.Skia.Views.SkiaGraphicsView>
     {
         protected override void OnElementChanged(ElementChangedEventArgs<SkiaGraphicsView> e)
         {
@@ -24,7 +22,7 @@ namespace System.Graphics.Forms.Mac
 
             if (e.NewElement != null)
             {
-                SetNativeControl(new NativeGraphicsView());
+                SetNativeControl(new System.Graphics.Skia.Views.SkiaGraphicsView());
             }
         }
 
