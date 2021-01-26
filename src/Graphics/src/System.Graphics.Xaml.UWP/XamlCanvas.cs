@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Graphics.Text;
-using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -162,7 +161,7 @@ namespace System.Graphics.Xaml
                 case ItemType.DrawRoundedRectangle:
                 case ItemType.FillRectangle:
                 case ItemType.FillRoundedRectangle: 
-                    return new Rectangle();
+                    return new global::Windows.UI.Xaml.Shapes.Rectangle();
                 case ItemType.DrawEllipse:
                 case ItemType.FillEllipse:
                     return new Ellipse();
@@ -188,7 +187,7 @@ namespace System.Graphics.Xaml
                     return border;
             }
 
-            return new Rectangle();
+            return new global::Windows.UI.Xaml.Shapes.Rectangle();
         }
 
         private void CreateFillRect(float x, float y, float width, float height)
@@ -306,7 +305,7 @@ namespace System.Graphics.Xaml
         protected override void NativeDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
         {
             var item = GetOrCreateItem(ItemType.DrawRoundedRectangle);
-            var element = (Rectangle)item.Element;
+            var element = (global::Windows.UI.Xaml.Shapes.Rectangle)item.Element;
 
             CreateStrokeRoundedRect(x, y, width, height, cornerRadius);
 
@@ -331,7 +330,7 @@ namespace System.Graphics.Xaml
         protected override void NativeDrawRectangle(float x, float y, float width, float height)
         {
             var item = GetOrCreateItem(ItemType.DrawRectangle);
-            var element = (Rectangle)item.Element;
+            var element = (global::Windows.UI.Xaml.Shapes.Rectangle)item.Element;
 
             CreateStrokeRect(x,y,width,height);
 
@@ -379,9 +378,9 @@ namespace System.Graphics.Xaml
             var startPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -startAngle);
             var endPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -endAngle);
 
-            figure.StartPoint = new Point(startPoint.X, startPoint.Y);
-            arcSegment.Point = new Point(endPoint.X, endPoint.Y);
-            arcSegment.Size = new Size(_rectWidth / 2, _rectHeight /2);
+            figure.StartPoint = new global::Windows.Foundation.Point(startPoint.X, startPoint.Y);
+            arcSegment.Point = new global::Windows.Foundation.Point(endPoint.X, endPoint.Y);
+            arcSegment.Size = new global::Windows.Foundation.Size(_rectWidth / 2, _rectHeight /2);
             arcSegment.SweepDirection = clockwise ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
             arcSegment.IsLargeArc = absSweep >= 180;
 
@@ -399,7 +398,7 @@ namespace System.Graphics.Xaml
                     lineSegment = (LineSegment)figure.Segments[1];
                 }
 
-                lineSegment.Point = new Point(startPoint.X, startPoint.Y);
+                lineSegment.Point = new global::Windows.Foundation.Point(startPoint.X, startPoint.Y);
             }
             else if (figure.Segments.Count > 1)
             {
@@ -619,7 +618,7 @@ namespace System.Graphics.Xaml
         public override void FillRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
         {
             var item = GetOrCreateItem(ItemType.FillRoundedRectangle);
-            var element = (Rectangle)item.Element;
+            var element = (global::Windows.UI.Xaml.Shapes.Rectangle)item.Element;
 
             CreateFillRect(x, y, width, height);
 
@@ -650,7 +649,7 @@ namespace System.Graphics.Xaml
         public override void FillRectangle(float x, float y, float width, float height)
         {
             var item = GetOrCreateItem(ItemType.FillRectangle);
-            var element = (Rectangle)item.Element;
+            var element = (global::Windows.UI.Xaml.Shapes.Rectangle)item.Element;
 
             CreateFillRect(x, y, width, height);
 
@@ -781,9 +780,9 @@ namespace System.Graphics.Xaml
             var startPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -startAngle);
             var endPoint = Geometry.EllipseAngleToPoint(_rectX, _rectY, _rectWidth, _rectHeight, -endAngle);
 
-            figure.StartPoint = new Point(startPoint.X, startPoint.Y);
-            arcSegment.Point = new Point(endPoint.X, endPoint.Y);
-            arcSegment.Size = new Size(_rectWidth / 2, _rectHeight / 2);
+            figure.StartPoint = new global::Windows.Foundation.Point(startPoint.X, startPoint.Y);
+            arcSegment.Point = new global::Windows.Foundation.Point(endPoint.X, endPoint.Y);
+            arcSegment.Size = new global::Windows.Foundation.Size(_rectWidth / 2, _rectHeight / 2);
             arcSegment.SweepDirection = clockwise ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
             arcSegment.IsLargeArc = absSweep >= 180;
 

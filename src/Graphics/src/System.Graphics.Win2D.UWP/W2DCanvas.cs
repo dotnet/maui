@@ -1,7 +1,6 @@
 ﻿using System.Graphics.Text;
 using System.Numerics;
 using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Text;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
@@ -18,11 +17,11 @@ namespace System.Graphics.Win2D
         private CanvasRenderTarget _effectContext;
         private ShadowEffect _shadowEffect;
         private GaussianBlurEffect _blurEffect;
-        private Size _canvasSize;
+        private global::Windows.Foundation.Size _canvasSize;
         private Vector2 _point1;
         private Vector2 _point2;
         private Rect _rect;
-        private Size _size;
+        private global::Windows.Foundation.Size _size;
 
         private bool _bitmapPatternFills;
 
@@ -38,7 +37,7 @@ namespace System.Graphics.Win2D
             set => _session = value;
         }
 
-        public Size CanvasSize
+        public global::Windows.Foundation.Size CanvasSize
         {
             get => _canvasSize;
             set => _canvasSize = value;
@@ -484,7 +483,7 @@ namespace System.Graphics.Win2D
 
         private CanvasBitmap CreatePatternBitmap(IPattern pattern)
         {
-            var context = GetOrCreatePatternContext(new Size(pattern.Width, pattern.Height));
+            var context = GetOrCreatePatternContext(new global::Windows.Foundation.Size(pattern.Width, pattern.Height));
             if (context != null)
             {
                 using (var imageSession = context.CreateDrawingSession())
@@ -727,7 +726,7 @@ namespace System.Graphics.Win2D
             }
         }
 
-        private CanvasRenderTarget GetOrCreatePatternContext(Size patternSize)
+        private CanvasRenderTarget GetOrCreatePatternContext(global::Windows.Foundation.Size patternSize)
         {
             if (_patternContext != null)
             {

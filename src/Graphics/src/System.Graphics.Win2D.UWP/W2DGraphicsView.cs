@@ -1,5 +1,4 @@
-﻿using Windows.Foundation;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 
@@ -64,7 +63,7 @@ namespace System.Graphics.Win2D
 
             W2DGraphicsService.ThreadLocalCreator = sender;
             _canvas.Session = args.DrawingSession;
-            _canvas.CanvasSize = new Size(_dirty.Width, _dirty.Height);
+            _canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
             _drawable.Draw(_canvas, _dirty);
             W2DGraphicsService.ThreadLocalCreator = null;
         }

@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Windows;
 using System.Windows.Media;
 
 namespace System.Graphics.Xaml
@@ -15,19 +14,19 @@ namespace System.Graphics.Xaml
                 (byte) (255 * target.Blue));
         }
 
-        public static PointF AsPointF(this Point point)
+        public static PointF AsPointF(this global::System.Windows.Point point)
         {
             return new PointF((float) point.X, (float) point.Y);
         }
 
-        public static Point AsPoint(this PointF target)
+        public static global::System.Windows.Point AsPoint(this PointF target)
         {
-            return new Point(target.X, target.Y);
+            return new global::System.Windows.Point(target.X, target.Y);
         }
 
-        public static Point AsPoint(this PointF target, float ppu)
+        public static global::System.Windows.Point AsPoint(this PointF target, float ppu)
         {
-            return new Point(target.X * ppu, target.Y * ppu);
+            return new global::System.Windows.Point(target.X * ppu, target.Y * ppu);
         }
 
         [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
@@ -118,8 +117,8 @@ namespace System.Graphics.Xaml
 
                     var arcSegment = new ArcSegment()
                     {
-                        Point = new Point(endPoint.X, endPoint.Y),
-                        Size = new Size(rectWidth / 2, rectHeight / 2),
+                        Point = new global::System.Windows.Point(endPoint.X, endPoint.Y),
+                        Size = new global::System.Windows.Size(rectWidth / 2, rectHeight / 2),
                         SweepDirection = clockwise ? SweepDirection.Clockwise : SweepDirection.Counterclockwise,
                         IsLargeArc = absSweep >= 180,
                     };

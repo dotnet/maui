@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -11,28 +10,28 @@ namespace System.Graphics.SharpDX
 {
     public class DirectXPanelBase : SwapChainPanel
     {
-        private bool valid;
-        private bool renderOnInvalidate;
+        private bool _valid;
+        private bool _renderOnInvalidate;
 
-        private SwapPanelDeviceManager deviceManager;
-        private bool initialized;
+        private SwapPanelDeviceManager _deviceManager;
+        private bool _initialized;
 
         public bool RenderOnInvalidate
         {
-            set => renderOnInvalidate = value;
+            set => _renderOnInvalidate = value;
         }
 
-        protected SwapPanelDeviceManager DeviceManager => deviceManager;
+        protected SwapPanelDeviceManager DeviceManager => _deviceManager;
 
         public void Invalidate()
         {
-            if (valid)
+            if (_valid)
             {
-                valid = false;
+                _valid = false;
 
-                if (renderOnInvalidate)
+                if (_renderOnInvalidate)
                 {
-                    if (deviceManager.Initialized)
+                    if (_deviceManager.Initialized)
                     {
                         Render();
                     }
@@ -49,46 +48,46 @@ namespace System.Graphics.SharpDX
 
         public void ForceRender()
         {
-            valid = false;
+            _valid = false;
             Render();
         }
 
         public void Render()
         {
-            if (valid)
+            if (_valid)
             {
                 return;
             }
 
-            valid = true;
-            var context = deviceManager.ContextDirect2D;
+            _valid = true;
+            var context = _deviceManager.ContextDirect2D;
             context.BeginDraw();
             Draw(context);
             context.EndDraw();
             
-            deviceManager.Present();
+            _deviceManager.Present();
         }
 
-        protected override Size MeasureOverride(Size availableSize)
+        protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
         {
             var result = base.MeasureOverride(availableSize);
            
-            if (!initialized)
+            if (!_initialized)
             {
                 var dispatcher = Window.Current.Dispatcher;
                 if (dispatcher != null && dispatcher.HasThreadAccess)
                 {
-                    initialized = true;
+                    _initialized = true;
 
-                    deviceManager = new SwapPanelDeviceManager(this);
+                    _deviceManager = new SwapPanelDeviceManager(this);
 
                     var displayInformation = DisplayInformation.GetForCurrentView();
                     var logicalDpi = displayInformation.LogicalDpi;
-                    deviceManager.Initialize(logicalDpi);
+                    _deviceManager.Initialize(logicalDpi);
 
                     SizeChanged += (sender, args) =>
                     {
-                        deviceManager.OnSizeChange(args.NewSize.Width, args.NewSize.Height);
+                        _deviceManager.OnSizeChange(args.NewSize.Width, args.NewSize.Height);
                         ForceRender();
                     };
                 }

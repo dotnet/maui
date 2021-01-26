@@ -81,8 +81,8 @@ namespace System.Graphics.Xaml
                         var brush = new LinearGradientBrush
                         {
                             MappingMode = BrushMappingMode.Absolute,
-                            StartPoint = new Point(_fillPaintX1, _fillPaintY1),
-                            EndPoint = new Point(_fillPaintX2, _fillPaintY2)
+                            StartPoint = new global::System.Windows.Point(_fillPaintX1, _fillPaintY1),
+                            EndPoint = new global::System.Windows.Point(_fillPaintX2, _fillPaintY2)
                         };
 
                         foreach (var stop in _fillPaint.Stops)
@@ -95,7 +95,7 @@ namespace System.Graphics.Xaml
                     {
                         var radius = Geometry.GetDistance(_fillPaintX1, _fillPaintY1, _fillPaintX2, _fillPaintY2);
                         var brush = new RadialGradientBrush {MappingMode = BrushMappingMode.Absolute};
-                        brush.GradientOrigin = brush.Center = new Point(_fillPaintX1, _fillPaintY1);
+                        brush.GradientOrigin = brush.Center = new global::System.Windows.Point(_fillPaintX1, _fillPaintY1);
                         brush.RadiusX = radius;
                         brush.RadiusY = radius;
 

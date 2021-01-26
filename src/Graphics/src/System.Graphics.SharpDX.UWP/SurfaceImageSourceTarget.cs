@@ -37,76 +37,76 @@ namespace System.Graphics.SharpDX
     /// </summary>
     public class SurfaceImageSourceTarget : TargetBase
     {
-        private readonly int pixelHeight;
-        private readonly int pixelWidth;
-        private readonly SurfaceImageSource surfaceImageSource;
-        private readonly ISurfaceImageSourceNative surfaceImageSourceNative;
-        private readonly SurfaceViewData[] viewDatas = new SurfaceViewData[2];
-        private int nextViewDataIndex;
-        private RawPoint position;
-        private bool dirty = true;
+        private readonly int _pixelHeight;
+        private readonly int _pixelWidth;
+        private readonly SurfaceImageSource _surfaceImageSource;
+        private readonly ISurfaceImageSourceNative _surfaceImageSourceNative;
+        private readonly SurfaceViewData[] _viewDatas = new SurfaceViewData[2];
+        private int _nextViewDataIndex;
+        private RawPoint _position;
+        private bool _dirty = true;
 
         /// <summary>
-        ///     Initialzes a new <see cref="SurfaceImageSourceTarget" /> instance.
+        ///     Initializes a new <see cref="SurfaceImageSourceTarget" /> instance.
         /// </summary>
         /// <param name="pixelWidth">Width of the target in pixels</param>
         /// <param name="pixelHeight">Height of the target in pixels</param>
         public SurfaceImageSourceTarget(int pixelWidth, int pixelHeight, bool supportOpacity = false)
         {
-            this.pixelWidth = pixelWidth;
-            this.pixelHeight = pixelHeight;
-            surfaceImageSource = new SurfaceImageSource(pixelWidth, pixelHeight, supportOpacity);
-            surfaceImageSourceNative = Collect(ComObject.As<ISurfaceImageSourceNative>(surfaceImageSource));
-            viewDatas[0] = Collect(new SurfaceViewData());
-            viewDatas[1] = Collect(new SurfaceViewData());
+            this._pixelWidth = pixelWidth;
+            this._pixelHeight = pixelHeight;
+            _surfaceImageSource = new SurfaceImageSource(pixelWidth, pixelHeight, supportOpacity);
+            _surfaceImageSourceNative = Collect(ComObject.As<ISurfaceImageSourceNative>(_surfaceImageSource));
+            _viewDatas[0] = Collect(new SurfaceViewData());
+            _viewDatas[1] = Collect(new SurfaceViewData());
         }
 
         public bool Dirty
         {
-            get => dirty;
-            set => dirty = value;
+            get => _dirty;
+            set => _dirty = value;
         }
 
         /// <summary>
         ///     Gets the <see cref="SurfaceImageSource" /> to be used by brushes.
         /// </summary>
-        public SurfaceImageSource ImageSource => surfaceImageSource;
+        public SurfaceImageSource ImageSource => _surfaceImageSource;
 
         /// <inveritdoc />
-        protected override Rect CurrentControlBounds => new Rect(0, 0, pixelWidth, pixelHeight);
+        protected override Rect CurrentControlBounds => new Rect(0, 0, _pixelWidth, _pixelHeight);
 
         /// <summary>
         ///     Gets the relative position to use to draw on the surface.
         /// </summary>
-        public Point DrawingPosition => position;
+        public RawPoint DrawingPosition => _position;
 
         /// <inveritdoc />
         public override void Initialize(DeviceManager deviceManager)
         {
             base.Initialize(deviceManager);
             var device = Collect(DeviceManager.DeviceDirect3D.QueryInterface<Device>());
-            surfaceImageSourceNative.Device = device;
+            _surfaceImageSourceNative.Device = device;
         }
 
         /// <inveritdoc />
         public override void RenderAll()
         {
-            if (!dirty) return;
+            if (!_dirty) return;
 
             SurfaceViewData viewData = null;
 
-            var regionToDraw = new Rectangle(0, 0, pixelWidth, pixelHeight);
+            var regionToDraw = new global::SharpDX.Mathematics.Interop.RawRectangle(0, 0, _pixelWidth, _pixelHeight);
 
             // Unlike other targets, we can only get the DXGI surface to render to
             // just before rendering.
-            var surface = surfaceImageSourceNative.BeginDraw(regionToDraw, out position);
+            var surface = _surfaceImageSourceNative.BeginDraw(regionToDraw, out _position);
             using (surface)
             {
                 // Cache DXGI surface in order to avoid recreate all render target view, depth stencil...etc.
                 // Is it the right way to do it?
                 // It seems that ISurfaceImageSourceNative.BeginDraw is returning 2 different DXGI surfaces (when the application is in foreground)
                 // or different DXGI surfaces (when the application is in background).
-                foreach (SurfaceViewData surfaceViewData in viewDatas)
+                foreach (SurfaceViewData surfaceViewData in _viewDatas)
                 {
                     if (surfaceViewData.SurfacePointer == surface.NativePointer)
                     {
@@ -118,8 +118,8 @@ namespace System.Graphics.SharpDX
                 
                 if (viewData == null)
                 {
-                    viewData = viewDatas[nextViewDataIndex];
-                    nextViewDataIndex = (nextViewDataIndex + 1)%viewDatas.Length;
+                    viewData = _viewDatas[_nextViewDataIndex];
+                    _nextViewDataIndex = (_nextViewDataIndex + 1)%_viewDatas.Length;
 
                     // Make sure that previous was disposed.
                     viewData.Dispose();
@@ -166,9 +166,9 @@ namespace System.Graphics.SharpDX
                     viewData.BitmapTarget = new Bitmap1(DeviceManager.ContextDirect2D, surface, bitmapProperties);
 
                     // Create a viewport descriptor of the full window size.
-                    viewData.Viewport = new ViewportF(position.X, position.Y,
-                        (float) viewData.RenderTargetSize.Width - position.X,
-                        (float) viewData.RenderTargetSize.Height - position.Y, 0.0f, 1.0f);
+                    viewData.Viewport = new ViewportF(_position.X, _position.Y,
+                        (float) viewData.RenderTargetSize.Width - _position.X,
+                        (float) viewData.RenderTargetSize.Height - _position.Y, 0.0f, 1.0f);
                 }
 
                 backBuffer = viewData.BackBuffer;
@@ -187,8 +187,8 @@ namespace System.Graphics.SharpDX
                 base.RenderAll();
             }
 
-            surfaceImageSourceNative.EndDraw();
-            dirty = false;
+            _surfaceImageSourceNative.EndDraw();
+            _dirty = false;
         }
 
         /// <summary>

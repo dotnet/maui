@@ -75,8 +75,8 @@ namespace System.Graphics.Xaml
 					    var brush = new LinearGradientBrush
 					    {
 					        MappingMode = BrushMappingMode.Absolute,
-					        StartPoint = new Point(_fillPaintX1, _fillPaintY1),
-					        EndPoint = new Point(_fillPaintX2, _fillPaintY2)
+					        StartPoint = new global::Windows.Foundation.Point(_fillPaintX1, _fillPaintY1),
+					        EndPoint = new global::Windows.Foundation.Point(_fillPaintX2, _fillPaintY2)
 					    };
 
 					    foreach (var stop in _fillPaint.Stops)

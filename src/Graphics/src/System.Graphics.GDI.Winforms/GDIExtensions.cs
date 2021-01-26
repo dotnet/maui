@@ -15,7 +15,7 @@ namespace System.Graphics.GDI
             return new RectangleF(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
         }
 
-        public static RectangleF AsRectangleF(this Rectangle target)
+        public static RectangleF AsRectangleF(this global::System.Drawing.Rectangle target)
         {
             return new RectangleF(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
         }

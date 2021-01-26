@@ -10,7 +10,7 @@ namespace System.Graphics.GDI
         private System.Drawing.Graphics _graphics;
 
         private Drawing.RectangleF _rect;
-        private Rectangle _rectI;
+        private global::System.Drawing.Rectangle _rectI;
 
         public GDICanvas()
             : base(CreateNewState, CreateStateCopy)
