@@ -83,3 +83,4 @@ WriteDevopsVariables.csproj
 !**/DevopsNuget.config
 !**/Xamarin.Forms.Maps.GTK/Libs/**/*
 /tools
+*.svclog
