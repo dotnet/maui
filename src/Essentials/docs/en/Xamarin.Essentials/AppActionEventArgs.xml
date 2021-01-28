@@ -1,0 +1,55 @@
+<Type Name="AppActionEventArgs" FullName="Xamarin.Essentials.AppActionEventArgs">
+  <TypeSignature Language="C#" Value="public class AppActionEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit AppActionEventArgs extends System.EventArgs" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.AppActionEventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public AppActionEventArgs (Xamarin.Essentials.AppAction appAction);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.AppAction appAction) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppActionEventArgs.#ctor(Xamarin.Essentials.AppAction)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="appAction" Type="Xamarin.Essentials.AppAction" />
+      </Parameters>
+      <Docs>
+        <param name="appAction">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AppAction">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.AppAction AppAction { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Essentials.AppAction AppAction" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppActionEventArgs.AppAction" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.AppAction</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

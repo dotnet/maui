@@ -1,0 +1,124 @@
+<Type Name="BrowserLaunchOptions" FullName="Xamarin.Essentials.BrowserLaunchOptions">
+  <TypeSignature Language="C#" Value="public class BrowserLaunchOptions" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit BrowserLaunchOptions extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.BrowserLaunchOptions" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Optional setting to open the browser with.</summary>
+    <remarks>These settings do not apply to all operation systems. Check documentation for more information.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public BrowserLaunchOptions ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.BrowserLaunchOptions.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Default constructor.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Flags">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.BrowserLaunchFlags Flags { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BrowserLaunchFlags Flags" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BrowserLaunchOptions.Flags" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BrowserLaunchFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Additional launch flags that may or may not take effect based on the device and launch mode.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="LaunchMode">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.BrowserLaunchMode LaunchMode { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BrowserLaunchMode LaunchMode" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BrowserLaunchOptions.LaunchMode" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BrowserLaunchMode</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Launch type of the browser.</summary>
+        <value>The launch type.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PreferredControlColor">
+      <MemberSignature Language="C#" Value="public Nullable&lt;System.Drawing.Color&gt; PreferredControlColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;valuetype System.Drawing.Color&gt; PreferredControlColor" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BrowserLaunchOptions.PreferredControlColor" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Drawing.Color&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Preferred color of the controls on the browser.</summary>
+        <value>Gets the color for controls.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PreferredToolbarColor">
+      <MemberSignature Language="C#" Value="public Nullable&lt;System.Drawing.Color&gt; PreferredToolbarColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;valuetype System.Drawing.Color&gt; PreferredToolbarColor" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BrowserLaunchOptions.PreferredToolbarColor" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Drawing.Color&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Preferred color of the background toolbar.</summary>
+        <value>Gets the toolbar color.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="TitleMode">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.BrowserTitleMode TitleMode { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BrowserTitleMode TitleMode" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BrowserLaunchOptions.TitleMode" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BrowserTitleMode</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Preferred mode for the title display.</summary>
+        <value>Gets the title display mode.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

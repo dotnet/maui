@@ -1,0 +1,91 @@
+<Type Name="BrowserLaunchFlags" FullName="Xamarin.Essentials.BrowserLaunchFlags">
+  <TypeSignature Language="C#" Value="public enum BrowserLaunchFlags" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed BrowserLaunchFlags extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.BrowserLaunchFlags" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.Flags</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>Additional flags that can be set to control how the browser opens.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="LaunchAdjacent">
+      <MemberSignature Language="C#" Value="LaunchAdjacent" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchFlags LaunchAdjacent = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserLaunchFlags.LaunchAdjacent" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BrowserLaunchFlags</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>On Android to launch the new activity adjacent to the current one if available.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="None">
+      <MemberSignature Language="C#" Value="None" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchFlags None = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserLaunchFlags.None" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BrowserLaunchFlags</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>No additional flags. This is the default.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="PresentAsFormSheet">
+      <MemberSignature Language="C#" Value="PresentAsFormSheet" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchFlags PresentAsFormSheet = int32(4)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserLaunchFlags.PresentAsFormSheet" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BrowserLaunchFlags</ReturnType>
+      </ReturnValue>
+      <MemberValue>4</MemberValue>
+      <Docs>
+        <summary>On iOS to launch the browser as a form sheet with system preferred browser where supported.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="PresentAsPageSheet">
+      <MemberSignature Language="C#" Value="PresentAsPageSheet" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchFlags PresentAsPageSheet = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserLaunchFlags.PresentAsPageSheet" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BrowserLaunchFlags</ReturnType>
+      </ReturnValue>
+      <MemberValue>2</MemberValue>
+      <Docs>
+        <summary>On iOS to launch the browser as a page sheet with system preferred browser where supported.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

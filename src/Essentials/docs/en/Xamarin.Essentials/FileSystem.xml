@@ -1,0 +1,77 @@
+<Type Name="FileSystem" FullName="Xamarin.Essentials.FileSystem">
+  <TypeSignature Language="C#" Value="public static class FileSystem" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit FileSystem extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.FileSystem" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Provides an easy way to access the locations for device folders.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="AppDataDirectory">
+      <MemberSignature Language="C#" Value="public static string AppDataDirectory { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string AppDataDirectory" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.FileSystem.AppDataDirectory" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the location where app data can be stored.</summary>
+        <value>The location where app data can be stored.</value>
+        <remarks>This location usually is not visible to the user, and is backed up.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CacheDirectory">
+      <MemberSignature Language="C#" Value="public static string CacheDirectory { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string CacheDirectory" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.FileSystem.CacheDirectory" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the location where temporary data can be stored.</summary>
+        <value>The location where temporary data can be stored.</value>
+        <remarks>This location usually is not visible to the user, is not backed up, and may be cleared at any time.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OpenAppPackageFileAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.IO.Stream&gt; OpenAppPackageFileAsync (string filename);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.IO.Stream&gt; OpenAppPackageFileAsync(string filename) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FileSystem.OpenAppPackageFileAsync(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.IO.Stream&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="filename" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="filename">the name of the file to load from the app package.</param>
+        <summary>Opens a stream to a file contained within the app package.</summary>
+        <returns>Returns a stream to the file.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

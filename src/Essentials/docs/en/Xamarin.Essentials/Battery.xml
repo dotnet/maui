@@ -1,0 +1,134 @@
+<Type Name="Battery" FullName="Xamarin.Essentials.Battery">
+  <TypeSignature Language="C#" Value="public static class Battery" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Battery extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Battery" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Methods and properties for battery and charging information of the device.</summary>
+    <remarks>
+      <para>Platform specific remarks:</para>
+      <para>- Android: Battery_Stats permission must be set in manifest.</para>
+      <para>- iOS: Simulator will not return battery information, must be run on device</para>
+      <para>- UWP: None</para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="BatteryInfoChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.BatteryInfoChangedEventArgs&gt; BatteryInfoChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.BatteryInfoChangedEventArgs&gt; BatteryInfoChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Battery.BatteryInfoChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.BatteryInfoChangedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event trigger when battery properties have changed.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ChargeLevel">
+      <MemberSignature Language="C#" Value="public static double ChargeLevel { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property float64 ChargeLevel" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Battery.ChargeLevel" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current charge level of the device from 0.0 to 1.0.</summary>
+        <value>
+          <para>Level of charge. Returns -1 if no battery exists.</para>
+        </value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EnergySaverStatus">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.EnergySaverStatus EnergySaverStatus { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.EnergySaverStatus EnergySaverStatus" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Battery.EnergySaverStatus" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.EnergySaverStatus</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current energy saver status of the device.</summary>
+        <value>The current status of energy saver mode.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EnergySaverStatusChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.EnergySaverStatusChangedEventArgs&gt; EnergySaverStatusChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.EnergySaverStatusChangedEventArgs&gt; EnergySaverStatusChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Battery.EnergySaverStatusChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.EnergySaverStatusChangedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event that is triggered when energy saver status changes.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PowerSource">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.BatteryPowerSource PowerSource { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.BatteryPowerSource PowerSource" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Battery.PowerSource" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current power source for the device.</summary>
+        <value>
+          <para>Power source, or uknown.</para>
+        </value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="State">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.BatteryState State { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.BatteryState State" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Battery.State" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BatteryState</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the charging state of the device if it can be determined.</summary>
+        <value>Battery state, or unknown.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

@@ -1,0 +1,114 @@
+<Type Name="BatteryInfoChangedEventArgs" FullName="Xamarin.Essentials.BatteryInfoChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class BatteryInfoChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit BatteryInfoChangedEventArgs extends System.EventArgs" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.BatteryInfoChangedEventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Battery changed information.</summary>
+    <remarks>Returns the current information of the battery.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public BatteryInfoChangedEventArgs (double level, Xamarin.Essentials.BatteryState state, Xamarin.Essentials.BatteryPowerSource source);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 level, valuetype Xamarin.Essentials.BatteryState state, valuetype Xamarin.Essentials.BatteryPowerSource source) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.BatteryInfoChangedEventArgs.#ctor(System.Double,Xamarin.Essentials.BatteryState,Xamarin.Essentials.BatteryPowerSource)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="level" Type="System.Double" />
+        <Parameter Name="state" Type="Xamarin.Essentials.BatteryState" />
+        <Parameter Name="source" Type="Xamarin.Essentials.BatteryPowerSource" />
+      </Parameters>
+      <Docs>
+        <param name="level">The current level of the batter.</param>
+        <param name="state">The state of the battery</param>
+        <param name="source">The source of the battery</param>
+        <summary>The public constructor.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ChargeLevel">
+      <MemberSignature Language="C#" Value="public double ChargeLevel { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 ChargeLevel" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.ChargeLevel" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current charge level of the device from 0.0 to 1.0.</summary>
+        <value>Level of charge.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PowerSource">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.BatteryPowerSource PowerSource { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BatteryPowerSource PowerSource" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.PowerSource" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current power source for the device.</summary>
+        <value>Power source, or unknown</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="State">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.BatteryState State { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BatteryState State" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.State" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BatteryState</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the charging state of the device if it can be determined.</summary>
+        <value>Battery state, or unknown.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.BatteryInfoChangedEventArgs.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Outputs the data as a string.</summary>
+        <returns></returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

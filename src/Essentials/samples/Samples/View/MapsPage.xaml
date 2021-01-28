@@ -1,0 +1,44 @@
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.MapsPage"
+                Title="Maps">
+    <views:BasePage.BindingContext>
+        <viewmodels:MapsViewModel />
+    </views:BasePage.BindingContext>
+
+    <ScrollView>
+        <StackLayout Padding="10">
+            <Label Text="Open location in maps." FontAttributes="Bold"/>
+
+            <Label Text="Options:"/>
+            <Label Text="Navigation Mode"/>
+            <Picker HorizontalOptions="FillAndExpand"
+                    ItemsSource="{Binding NavigationModes}"
+                    SelectedIndex="{Binding NavigationMode, Mode=TwoWay}" />
+            <Label Text="Name"/>
+            <Entry Text="{Binding Name}"/>
+
+            <Label Text="Latitude" Margin="0,24,0,0" />
+            <Entry Keyboard="Numeric" Text="{Binding Latitude}" />
+            <Label Text="Longitude" />
+            <Entry Keyboard="Numeric" Text="{Binding Longitude}" />
+            <Button Text="Open coordinates" Command="{Binding MapsCommand}"/>
+
+            <Label Text="Thoroughfare" Margin="0,24,0,0"/>
+            <Entry Text="{Binding Thoroughfare}"/>
+            <Label Text="Locality"/>
+            <Entry Text="{Binding Locality}"/>
+            <Label Text="Admin Area"/>
+            <Entry Text="{Binding AdminArea}"/>
+            <Label Text="Country Name"/>
+            <Entry Text="{Binding Country}"/>
+            <Label Text="Zip Code"/>
+            <Entry Text="{Binding ZipCode}" Keyboard="Numeric"/>
+
+            <Button Text="Open address" Command="{Binding LaunchPlacemarkCommand}"/>
+        </StackLayout>
+    </ScrollView>
+
+</views:BasePage>

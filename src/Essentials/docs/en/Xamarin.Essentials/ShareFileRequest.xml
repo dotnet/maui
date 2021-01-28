@@ -1,0 +1,128 @@
+<Type Name="ShareFileRequest" FullName="Xamarin.Essentials.ShareFileRequest">
+  <TypeSignature Language="C#" Value="public class ShareFileRequest : Xamarin.Essentials.ShareRequestBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ShareFileRequest extends Xamarin.Essentials.ShareRequestBase" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ShareFileRequest" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Essentials.ShareRequestBase</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Standard request for sharing a file to another application.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ShareFileRequest ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareFileRequest.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Default constructor.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ShareFileRequest (Xamarin.Essentials.FileBase file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.FileBase file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareFileRequest.#ctor(Xamarin.Essentials.FileBase)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="file" Type="Xamarin.Essentials.FileBase" />
+      </Parameters>
+      <Docs>
+        <param name="file">Existing file.</param>
+        <summary>Share request with an existing file.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ShareFileRequest (Xamarin.Essentials.ShareFile file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.ShareFile file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareFileRequest.#ctor(Xamarin.Essentials.ShareFile)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="file" Type="Xamarin.Essentials.ShareFile" />
+      </Parameters>
+      <Docs>
+        <param name="file">Existing file.</param>
+        <summary>Share request with an existing file.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ShareFileRequest (string title, Xamarin.Essentials.FileBase file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, class Xamarin.Essentials.FileBase file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareFileRequest.#ctor(System.String,Xamarin.Essentials.FileBase)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="title" Type="System.String" />
+        <Parameter Name="file" Type="Xamarin.Essentials.FileBase" />
+      </Parameters>
+      <Docs>
+        <param name="title">Title to use on the share user interface.</param>
+        <param name="file">Existing file.</param>
+        <summary>Share request with an existing file.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ShareFileRequest (string title, Xamarin.Essentials.ShareFile file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, class Xamarin.Essentials.ShareFile file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareFileRequest.#ctor(System.String,Xamarin.Essentials.ShareFile)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="title" Type="System.String" />
+        <Parameter Name="file" Type="Xamarin.Essentials.ShareFile" />
+      </Parameters>
+      <Docs>
+        <param name="title">Title to use on the share user interface.</param>
+        <param name="file">Existing file.</param>
+        <summary>Share requerst with an existing file.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="File">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.ShareFile File { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Essentials.ShareFile File" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ShareFileRequest.File" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ShareFile</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the file to share.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

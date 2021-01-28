@@ -1,0 +1,25 @@
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.BatteryPage"
+                Title="Battery">
+    <views:BasePage.BindingContext>
+        <viewmodels:BatteryViewModel/>
+    </views:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Easily detect battery level, source, and state." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <Label Text="Battery State:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="{Binding Level, StringFormat='Charge Level: {0:P1}'}" />
+                <Label Text="{Binding State, StringFormat='State: {0}'}" />
+                <Label Text="{Binding PowerSource, StringFormat='Power Source: {0}'}" />
+                <Label Text="{Binding EnergySaverStatus, StringFormat='Energy Saver: {0}'}" />
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+</views:BasePage>

@@ -1,0 +1,80 @@
+<Type Name="Connectivity" FullName="Xamarin.Essentials.Connectivity">
+  <TypeSignature Language="C#" Value="public static class Connectivity" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Connectivity extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Connectivity" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Connectivity and networking helpers.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="ConnectionProfiles">
+      <MemberSignature Language="C#" Value="public static System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt; ConnectionProfiles { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class System.Collections.Generic.IEnumerable`1&lt;valuetype Xamarin.Essentials.ConnectionProfile&gt; ConnectionProfiles" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Connectivity.ConnectionProfiles" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the active connectivity types for the device.</summary>
+        <value>List of all connection profiles.</value>
+        <remarks>
+          <para>Can throw PermissionException on Android if ACCESS_NETWORK_STATE is not set in manifest.</para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ConnectivityChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.ConnectivityChangedEventArgs&gt; ConnectivityChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.ConnectivityChangedEventArgs&gt; ConnectivityChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Connectivity.ConnectivityChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.ConnectivityChangedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>
+          <para>Event that is triggered when a network access or profile has changed.</para>
+        </summary>
+        <remarks>
+          <para>Can throw PermissionException on Android if ACCESS_NETWORK_STATE is not set in manifest.</para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="NetworkAccess">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.NetworkAccess NetworkAccess { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.NetworkAccess NetworkAccess" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Connectivity.NetworkAccess" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.NetworkAccess</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current state of network access. Does not guarantee full access to the internet.</summary>
+        <value>The current network access state.</value>
+        <remarks>
+          <para>Can throw PermissionException on Android if ACCESS_NETWORK_STATE is not set in manifest.</para>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

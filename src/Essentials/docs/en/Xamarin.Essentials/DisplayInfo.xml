@@ -1,0 +1,329 @@
+<Type Name="DisplayInfo" FullName="Xamarin.Essentials.DisplayInfo">
+  <TypeSignature Language="C#" Value="public struct DisplayInfo : IEquatable&lt;Xamarin.Essentials.DisplayInfo&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit DisplayInfo extends System.ValueType implements class System.IEquatable`1&lt;valuetype Xamarin.Essentials.DisplayInfo&gt;" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.DisplayInfo" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>System.IEquatable&lt;Xamarin.Essentials.DisplayInfo&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Attributes>
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos">
+      <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>Represents information about the screen.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public DisplayInfo (double width, double height, double density, Xamarin.Essentials.DisplayOrientation orientation, Xamarin.Essentials.DisplayRotation rotation);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 width, float64 height, float64 density, valuetype Xamarin.Essentials.DisplayOrientation orientation, valuetype Xamarin.Essentials.DisplayRotation rotation) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DisplayInfo.#ctor(System.Double,System.Double,System.Double,Xamarin.Essentials.DisplayOrientation,Xamarin.Essentials.DisplayRotation)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="width" Type="System.Double" />
+        <Parameter Name="height" Type="System.Double" />
+        <Parameter Name="density" Type="System.Double" />
+        <Parameter Name="orientation" Type="Xamarin.Essentials.DisplayOrientation" />
+        <Parameter Name="rotation" Type="Xamarin.Essentials.DisplayRotation" />
+      </Parameters>
+      <Docs>
+        <param name="width">The width of the display</param>
+        <param name="height">The height of the display</param>
+        <param name="density">The screen density</param>
+        <param name="orientation">The current orientation</param>
+        <param name="rotation">The rotation of the device.</param>
+        <summary>Main constructor for Display Information</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public DisplayInfo (double width, double height, double density, Xamarin.Essentials.DisplayOrientation orientation, Xamarin.Essentials.DisplayRotation rotation, float rate);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 width, float64 height, float64 density, valuetype Xamarin.Essentials.DisplayOrientation orientation, valuetype Xamarin.Essentials.DisplayRotation rotation, float32 rate) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DisplayInfo.#ctor(System.Double,System.Double,System.Double,Xamarin.Essentials.DisplayOrientation,Xamarin.Essentials.DisplayRotation,System.Single)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="width" Type="System.Double" />
+        <Parameter Name="height" Type="System.Double" />
+        <Parameter Name="density" Type="System.Double" />
+        <Parameter Name="orientation" Type="Xamarin.Essentials.DisplayOrientation" />
+        <Parameter Name="rotation" Type="Xamarin.Essentials.DisplayRotation" />
+        <Parameter Name="rate" Type="System.Single" />
+      </Parameters>
+      <Docs>
+        <param name="width">The width of the display</param>
+        <param name="height">The height of the display</param>
+        <param name="density">The screen density</param>
+        <param name="orientation">The current orientation</param>
+        <param name="rotation">The rotation of the device.</param>
+        <param name="rate">The refresh rate of the display.</param>
+        <summary>Main constructor for Display Information</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Density">
+      <MemberSignature Language="C#" Value="public double Density { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Density" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DisplayInfo.Density" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets a value representing the screen density.</summary>
+        <value>The screen density.</value>
+        <remarks>
+          <para>The density is the scaling or a factor that can be used to convert between physical pixels and scaled pixels. For example, on high resolution displays, the physical number of pixels increases, but the scaled pixels remain the same.</para>
+          <para>In a practical example for iOS, the Retina display will have a density of 2.0 or 3.0, but the units used to lay out a view does not change much. A view with a UI width of 100 may be 100 physical pixels (density = 1) on a non-Retina device, but be 200 physical pixels (density = 2) on a Retina device.</para>
+          <para>On Windows or UWP, the density works similarly, and may often relate to the scale used in the display. On some monitors, the scale is set to 100% (density = 1), but on other high resolution monitors, the scale may be set to 200% (density = 2) or even 250% (density = 2.5).</para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public override bool Equals (object obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance bool Equals(object obj) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DisplayInfo.Equals(System.Object)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="obj" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="obj">Object to compare.</param>
+        <summary>If equal to another object.</summary>
+        <returns>If equal.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public bool Equals (Xamarin.Essentials.DisplayInfo other);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance bool Equals(valuetype Xamarin.Essentials.DisplayInfo other) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DisplayInfo.Equals(Xamarin.Essentials.DisplayInfo)" />
+      <MemberType>Method</MemberType>
+      <Implements>
+        <InterfaceMember>M:System.IEquatable`1.Equals(`0)</InterfaceMember>
+      </Implements>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="other" Type="Xamarin.Essentials.DisplayInfo" />
+      </Parameters>
+      <Docs>
+        <param name="other">The other display info to compare.</param>
+        <summary>If equal to another object.</summary>
+        <returns>If equal.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetHashCode">
+      <MemberSignature Language="C#" Value="public override int GetHashCode ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance int32 GetHashCode() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DisplayInfo.GetHashCode" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Gets the hash code for object.</summary>
+        <returns>The hash code.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Height">
+      <MemberSignature Language="C#" Value="public double Height { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Height" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DisplayInfo.Height" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the height of the screen for the current orientation.</summary>
+        <value>The height in pixels.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Equality">
+      <MemberSignature Language="C#" Value="public static bool operator == (Xamarin.Essentials.DisplayInfo left, Xamarin.Essentials.DisplayInfo right);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Equality(valuetype Xamarin.Essentials.DisplayInfo left, valuetype Xamarin.Essentials.DisplayInfo right) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DisplayInfo.op_Equality(Xamarin.Essentials.DisplayInfo,Xamarin.Essentials.DisplayInfo)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="left" Type="Xamarin.Essentials.DisplayInfo" />
+        <Parameter Name="right" Type="Xamarin.Essentials.DisplayInfo" />
+      </Parameters>
+      <Docs>
+        <param name="left">Left to compare.</param>
+        <param name="right">Right to compare.</param>
+        <summary>If equal to another object.</summary>
+        <returns>If equal</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Inequality">
+      <MemberSignature Language="C#" Value="public static bool operator != (Xamarin.Essentials.DisplayInfo left, Xamarin.Essentials.DisplayInfo right);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Inequality(valuetype Xamarin.Essentials.DisplayInfo left, valuetype Xamarin.Essentials.DisplayInfo right) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DisplayInfo.op_Inequality(Xamarin.Essentials.DisplayInfo,Xamarin.Essentials.DisplayInfo)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="left" Type="Xamarin.Essentials.DisplayInfo" />
+        <Parameter Name="right" Type="Xamarin.Essentials.DisplayInfo" />
+      </Parameters>
+      <Docs>
+        <param name="left">Left to compare</param>
+        <param name="right">Right to compare</param>
+        <summary>If not equal to another object.</summary>
+        <returns>If not equal</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Orientation">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.DisplayOrientation Orientation { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.DisplayOrientation Orientation" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DisplayInfo.Orientation" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayOrientation</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the orientation of the device.</summary>
+        <value>The orientation.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RefreshRate">
+      <MemberSignature Language="C#" Value="public float RefreshRate { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float32 RefreshRate" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DisplayInfo.RefreshRate" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Single</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the refresh rate of the display.</summary>
+        <value>The refresh rate in Hz.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Rotation">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.DisplayRotation Rotation { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.DisplayRotation Rotation" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DisplayInfo.Rotation" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayRotation</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the rotation from the designated orientation.</summary>
+        <value>The rotation</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DisplayInfo.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>String representation of information.</summary>
+        <returns>String information about display info.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Width">
+      <MemberSignature Language="C#" Value="public double Width { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Width" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DisplayInfo.Width" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the width of the scrreen for the current orientation.</summary>
+        <value>The width in pixels.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

@@ -1,0 +1,173 @@
+<Type Name="MainThread" FullName="Xamarin.Essentials.MainThread">
+  <TypeSignature Language="C#" Value="public static class MainThread" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit MainThread extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.MainThread" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Main Thread helpers.</summary>
+    <remarks>Main Thread helpers.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="BeginInvokeOnMainThread">
+      <MemberSignature Language="C#" Value="public static void BeginInvokeOnMainThread (Action action);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void BeginInvokeOnMainThread(class System.Action action) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(System.Action)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="action" Type="System.Action" />
+      </Parameters>
+      <Docs>
+        <param name="action">Action to execute.</param>
+        <summary>Invokes an action on the main thread of the application.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetMainThreadSynchronizationContextAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Threading.SynchronizationContext&gt; GetMainThreadSynchronizationContextAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Threading.SynchronizationContext&gt; GetMainThreadSynchronizationContextAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.MainThread.GetMainThreadSynchronizationContextAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Threading.SynchronizationContext&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Gets the main thread synchonization context</summary>
+        <returns>The syncrhonization context for the main thread</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="InvokeOnMainThreadAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task InvokeOnMainThreadAsync (Action action);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task InvokeOnMainThreadAsync(class System.Action action) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync(System.Action)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="action" Type="System.Action" />
+      </Parameters>
+      <Docs>
+        <param name="action">Action to invoke</param>
+        <summary>Invoke the main thread aysnc</summary>
+        <returns>A task that can be awaited</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="InvokeOnMainThreadAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task InvokeOnMainThreadAsync (Func&lt;System.Threading.Tasks.Task&gt; funcTask);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task InvokeOnMainThreadAsync(class System.Func`1&lt;class System.Threading.Tasks.Task&gt; funcTask) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync(System.Func{System.Threading.Tasks.Task})" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="funcTask" Type="System.Func&lt;System.Threading.Tasks.Task&gt;" />
+      </Parameters>
+      <Docs>
+        <param name="funcTask">A function task to execute</param>
+        <summary>Invoke the main thread aysnc</summary>
+        <returns>A task that can be awaited</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="InvokeOnMainThreadAsync&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;T&gt; InvokeOnMainThreadAsync&lt;T&gt; (Func&lt;System.Threading.Tasks.Task&lt;T&gt;&gt; funcTask);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;!!T&gt; InvokeOnMainThreadAsync&lt;T&gt;(class System.Func`1&lt;class System.Threading.Tasks.Task`1&lt;!!T&gt;&gt; funcTask) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync``1(System.Func{System.Threading.Tasks.Task{``0}})" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;T&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T" />
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="funcTask" Type="System.Func&lt;System.Threading.Tasks.Task&lt;T&gt;&gt;" />
+      </Parameters>
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <param name="funcTask">A function task to execute</param>
+        <summary>Invoke the main thread aysnc</summary>
+        <returns>A task that can be awaited</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="InvokeOnMainThreadAsync&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;T&gt; InvokeOnMainThreadAsync&lt;T&gt; (Func&lt;T&gt; func);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;!!T&gt; InvokeOnMainThreadAsync&lt;T&gt;(class System.Func`1&lt;!!T&gt; func) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync``1(System.Func{``0})" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;T&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T" />
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="func" Type="System.Func&lt;T&gt;" />
+      </Parameters>
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <param name="func">A function to execute</param>
+        <summary>Invoke the main thread aysnc</summary>
+        <returns>A task that can be awaited</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsMainThread">
+      <MemberSignature Language="C#" Value="public static bool IsMainThread { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsMainThread" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MainThread.IsMainThread" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets if it is the current main UI thread.</summary>
+        <value>If main thread.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

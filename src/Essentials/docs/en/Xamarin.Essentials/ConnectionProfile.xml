@@ -1,0 +1,103 @@
+<Type Name="ConnectionProfile" FullName="Xamarin.Essentials.ConnectionProfile">
+  <TypeSignature Language="C#" Value="public enum ConnectionProfile" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed ConnectionProfile extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ConnectionProfile" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>Describes the type of connection the device is using.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Bluetooth">
+      <MemberSignature Language="C#" Value="Bluetooth" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ConnectionProfile Bluetooth = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ConnectionProfile.Bluetooth" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ConnectionProfile</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>The bluetooth data connection.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Cellular">
+      <MemberSignature Language="C#" Value="Cellular" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ConnectionProfile Cellular = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ConnectionProfile.Cellular" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ConnectionProfile</ReturnType>
+      </ReturnValue>
+      <MemberValue>2</MemberValue>
+      <Docs>
+        <summary>The mobile/cellular data connection.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Ethernet">
+      <MemberSignature Language="C#" Value="Ethernet" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ConnectionProfile Ethernet = int32(3)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ConnectionProfile.Ethernet" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ConnectionProfile</ReturnType>
+      </ReturnValue>
+      <MemberValue>3</MemberValue>
+      <Docs>
+        <summary>The ethernet data connection.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Unknown">
+      <MemberSignature Language="C#" Value="Unknown" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ConnectionProfile Unknown = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ConnectionProfile.Unknown" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ConnectionProfile</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Other unknown type of connection.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="WiFi">
+      <MemberSignature Language="C#" Value="WiFi" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ConnectionProfile WiFi = int32(4)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ConnectionProfile.WiFi" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ConnectionProfile</ReturnType>
+      </ReturnValue>
+      <MemberValue>4</MemberValue>
+      <Docs>
+        <summary>The WiFi data connection.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

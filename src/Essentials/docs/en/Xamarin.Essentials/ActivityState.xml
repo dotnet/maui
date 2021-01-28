@@ -1,0 +1,137 @@
+<Type Name="ActivityState" FullName="Xamarin.Essentials.ActivityState">
+  <TypeSignature Language="C#" Value="public enum ActivityState" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed ActivityState extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ActivityState" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>A state of an Android Activity.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Created">
+      <MemberSignature Language="C#" Value="Created" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ActivityState Created = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ActivityState.Created" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ActivityState</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>An Activity is in the OnCreate state</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Destroyed">
+      <MemberSignature Language="C#" Value="Destroyed" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ActivityState Destroyed = int32(3)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ActivityState.Destroyed" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ActivityState</ReturnType>
+      </ReturnValue>
+      <MemberValue>3</MemberValue>
+      <Docs>
+        <summary>An Activity is in the OnDestroyed state</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Paused">
+      <MemberSignature Language="C#" Value="Paused" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ActivityState Paused = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ActivityState.Paused" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ActivityState</ReturnType>
+      </ReturnValue>
+      <MemberValue>2</MemberValue>
+      <Docs>
+        <summary>An Activity is in the OnPaused state</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Resumed">
+      <MemberSignature Language="C#" Value="Resumed" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ActivityState Resumed = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ActivityState.Resumed" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ActivityState</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>An Activity is in the OnResumed state</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="SaveInstanceState">
+      <MemberSignature Language="C#" Value="SaveInstanceState" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ActivityState SaveInstanceState = int32(4)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ActivityState.SaveInstanceState" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ActivityState</ReturnType>
+      </ReturnValue>
+      <MemberValue>4</MemberValue>
+      <Docs>
+        <summary>An Activity is in the SaveInstanceState state</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Started">
+      <MemberSignature Language="C#" Value="Started" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ActivityState Started = int32(5)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ActivityState.Started" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ActivityState</ReturnType>
+      </ReturnValue>
+      <MemberValue>5</MemberValue>
+      <Docs>
+        <summary>An Activity is in the OnStarted state</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Stopped">
+      <MemberSignature Language="C#" Value="Stopped" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ActivityState Stopped = int32(6)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ActivityState.Stopped" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ActivityState</ReturnType>
+      </ReturnValue>
+      <MemberValue>6</MemberValue>
+      <Docs>
+        <summary>An Activity is in the OnStopped state</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

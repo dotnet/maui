@@ -1,0 +1,291 @@
+<Type Name="DeviceIdiom" FullName="Xamarin.Essentials.DeviceIdiom">
+  <TypeSignature Language="C#" Value="public struct DeviceIdiom : IEquatable&lt;Xamarin.Essentials.DeviceIdiom&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit DeviceIdiom extends System.ValueType implements class System.IEquatable`1&lt;valuetype Xamarin.Essentials.DeviceIdiom&gt;" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.DeviceIdiom" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>System.IEquatable&lt;Xamarin.Essentials.DeviceIdiom&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Attributes>
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos">
+      <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>The idiom (form factor) of the device.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Create">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DeviceIdiom Create (string deviceIdiom);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Essentials.DeviceIdiom Create(string deviceIdiom) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DeviceIdiom.Create(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DeviceIdiom</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="deviceIdiom" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="deviceIdiom">The idiom name of the device</param>
+        <summary>Creates a new device idiom.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Desktop">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DeviceIdiom Desktop { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DeviceIdiom Desktop" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceIdiom.Desktop" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DeviceIdiom</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the desktop idiom.</summary>
+        <value></value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public override bool Equals (object obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance bool Equals(object obj) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DeviceIdiom.Equals(System.Object)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="obj" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="obj">The object ot compare.</param>
+        <summary>Checks the equality of the idiom.</summary>
+        <returns>If the values are equal</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public bool Equals (Xamarin.Essentials.DeviceIdiom other);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance bool Equals(valuetype Xamarin.Essentials.DeviceIdiom other) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DeviceIdiom.Equals(Xamarin.Essentials.DeviceIdiom)" />
+      <MemberType>Method</MemberType>
+      <Implements>
+        <InterfaceMember>M:System.IEquatable`1.Equals(`0)</InterfaceMember>
+      </Implements>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="other" Type="Xamarin.Essentials.DeviceIdiom" />
+      </Parameters>
+      <Docs>
+        <param name="other">The object ot compare.</param>
+        <summary>Checks the equality of the idiom.</summary>
+        <returns>If the values are equal</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetHashCode">
+      <MemberSignature Language="C#" Value="public override int GetHashCode ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance int32 GetHashCode() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DeviceIdiom.GetHashCode" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Gets the hash code for the idom.</summary>
+        <returns>The hashc ode</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Equality">
+      <MemberSignature Language="C#" Value="public static bool operator == (Xamarin.Essentials.DeviceIdiom left, Xamarin.Essentials.DeviceIdiom right);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Equality(valuetype Xamarin.Essentials.DeviceIdiom left, valuetype Xamarin.Essentials.DeviceIdiom right) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DeviceIdiom.op_Equality(Xamarin.Essentials.DeviceIdiom,Xamarin.Essentials.DeviceIdiom)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="left" Type="Xamarin.Essentials.DeviceIdiom" />
+        <Parameter Name="right" Type="Xamarin.Essentials.DeviceIdiom" />
+      </Parameters>
+      <Docs>
+        <param name="left">The left idiom to compare.</param>
+        <param name="right">The right idiom to compare.</param>
+        <summary>Checks the equality of the idiom.</summary>
+        <returns>If they are equal</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Inequality">
+      <MemberSignature Language="C#" Value="public static bool operator != (Xamarin.Essentials.DeviceIdiom left, Xamarin.Essentials.DeviceIdiom right);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Inequality(valuetype Xamarin.Essentials.DeviceIdiom left, valuetype Xamarin.Essentials.DeviceIdiom right) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DeviceIdiom.op_Inequality(Xamarin.Essentials.DeviceIdiom,Xamarin.Essentials.DeviceIdiom)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="left" Type="Xamarin.Essentials.DeviceIdiom" />
+        <Parameter Name="right" Type="Xamarin.Essentials.DeviceIdiom" />
+      </Parameters>
+      <Docs>
+        <param name="left">The left idiom to compare.</param>
+        <param name="right">The right idiom to compare.</param>
+        <summary>Checks the equality of the idiom.</summary>
+        <returns>If they are inequal</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Phone">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DeviceIdiom Phone { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DeviceIdiom Phone" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceIdiom.Phone" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DeviceIdiom</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the phone idiom.</summary>
+        <value>The phone idiom</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Tablet">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DeviceIdiom Tablet { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DeviceIdiom Tablet" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceIdiom.Tablet" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DeviceIdiom</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the tablet idiom.</summary>
+        <value>The tablet idiom</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DeviceIdiom.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>String representation of the idiom.</summary>
+        <returns>String representation of the idiom.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="TV">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DeviceIdiom TV { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DeviceIdiom TV" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceIdiom.TV" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DeviceIdiom</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the TV idiom.</summary>
+        <value>The TV idiom</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Unknown">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DeviceIdiom Unknown { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DeviceIdiom Unknown" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceIdiom.Unknown" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DeviceIdiom</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the unknown idiom.</summary>
+        <value>An unknown idiom.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Watch">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DeviceIdiom Watch { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DeviceIdiom Watch" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceIdiom.Watch" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DeviceIdiom</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the watch idiom.</summary>
+        <value>The watch idiom</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

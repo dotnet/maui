@@ -1,0 +1,713 @@
+<Type Name="UnitConverters" FullName="Xamarin.Essentials.UnitConverters">
+  <TypeSignature Language="C#" Value="public static class UnitConverters" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit UnitConverters extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.UnitConverters" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Built in unit converters</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="AtmospheresToPascals">
+      <MemberSignature Language="C#" Value="public static double AtmospheresToPascals (double atm);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 AtmospheresToPascals(float64 atm) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.AtmospheresToPascals(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="atm" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="atm">Atmospheres to convert</param>
+        <summary>Atmospheres to Pascals</summary>
+        <returns>The pascals value</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CelsiusToFahrenheit">
+      <MemberSignature Language="C#" Value="public static double CelsiusToFahrenheit (double celsius);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CelsiusToFahrenheit(float64 celsius) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.CelsiusToFahrenheit(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="celsius" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="celsius">The temperature in celsius to convert</param>
+        <summary>Celsius to Fahrenheit </summary>
+        <returns>The temperature in fahrenheit</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CelsiusToKelvin">
+      <MemberSignature Language="C#" Value="public static double CelsiusToKelvin (double celsius);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CelsiusToKelvin(float64 celsius) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.CelsiusToKelvin(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="celsius" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="celsius">The temperature in Celsius to convert</param>
+        <summary>Celsius to Kelvin</summary>
+        <returns>The temperature in Kelvin</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CoordinatesToKilometers">
+      <MemberSignature Language="C#" Value="public static double CoordinatesToKilometers (double lat1, double lon1, double lat2, double lon2);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CoordinatesToKilometers(float64 lat1, float64 lon1, float64 lat2, float64 lon2) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.CoordinatesToKilometers(System.Double,System.Double,System.Double,System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="lat1" Type="System.Double" />
+        <Parameter Name="lon1" Type="System.Double" />
+        <Parameter Name="lat2" Type="System.Double" />
+        <Parameter Name="lon2" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="lat1">First latitude</param>
+        <param name="lon1">First longitude</param>
+        <param name="lat2">Second latitude</param>
+        <param name="lon2">Second longitude</param>
+        <summary>Calulate the distance between two coordinate in kilometers</summary>
+        <returns>Distance in kilometers</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CoordinatesToMiles">
+      <MemberSignature Language="C#" Value="public static double CoordinatesToMiles (double lat1, double lon1, double lat2, double lon2);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CoordinatesToMiles(float64 lat1, float64 lon1, float64 lat2, float64 lon2) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.CoordinatesToMiles(System.Double,System.Double,System.Double,System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="lat1" Type="System.Double" />
+        <Parameter Name="lon1" Type="System.Double" />
+        <Parameter Name="lat2" Type="System.Double" />
+        <Parameter Name="lon2" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="lat1">First latitude</param>
+        <param name="lon1">First longitude</param>
+        <param name="lat2">Second latitude</param>
+        <param name="lon2">Second longitude</param>
+        <summary>Calulate the distance between two coordinate in miles</summary>
+        <returns>Distance in miles</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="DegreesPerSecondToHertz">
+      <MemberSignature Language="C#" Value="public static double DegreesPerSecondToHertz (double degrees);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 DegreesPerSecondToHertz(float64 degrees) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.DegreesPerSecondToHertz(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="degrees" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="degrees">The degrees to convert</param>
+        <summary>Converte degrees per second to hertz</summary>
+        <returns>Value in hertz</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="DegreesPerSecondToRadiansPerSecond">
+      <MemberSignature Language="C#" Value="public static double DegreesPerSecondToRadiansPerSecond (double degrees);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 DegreesPerSecondToRadiansPerSecond(float64 degrees) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.DegreesPerSecondToRadiansPerSecond(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="degrees" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="degrees">Degrees to convert</param>
+        <summary>Convert degrees per second to radians per second</summary>
+        <returns>Value in radians</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="DegreesToRadians">
+      <MemberSignature Language="C#" Value="public static double DegreesToRadians (double degrees);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 DegreesToRadians(float64 degrees) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.DegreesToRadians(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="degrees" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="degrees">Degrees to convert</param>
+        <summary>Convert degrees to radian</summary>
+        <returns>The value in radians</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FahrenheitToCelsius">
+      <MemberSignature Language="C#" Value="public static double FahrenheitToCelsius (double fahrenheit);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 FahrenheitToCelsius(float64 fahrenheit) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.FahrenheitToCelsius(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="fahrenheit" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="fahrenheit">The value in fahrenheit to convert</param>
+        <summary>Converter fahrenheit to celsius</summary>
+        <returns>The value in celsius</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HectopascalsToKilopascals">
+      <MemberSignature Language="C#" Value="public static double HectopascalsToKilopascals (double hpa);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 HectopascalsToKilopascals(float64 hpa) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.HectopascalsToKilopascals(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="hpa" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="hpa">Hectopascals to convert</param>
+        <summary>Convert hectopascals to kilopascals</summary>
+        <returns>The value in kilopascals</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HectopascalsToPascals">
+      <MemberSignature Language="C#" Value="public static double HectopascalsToPascals (double hpa);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 HectopascalsToPascals(float64 hpa) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.HectopascalsToPascals(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="hpa" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="hpa">The value to convert in Hectopascals</param>
+        <summary>Convert hectopascals to pascals</summary>
+        <returns>The value in pascals</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HertzToDegreesPerSecond">
+      <MemberSignature Language="C#" Value="public static double HertzToDegreesPerSecond (double hertz);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 HertzToDegreesPerSecond(float64 hertz) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.HertzToDegreesPerSecond(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="hertz" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="hertz">The value in hertz to convert</param>
+        <summary>Convert hertz to degrees per second</summary>
+        <returns>The value in degrees per second</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HertzToRadiansPerSecond">
+      <MemberSignature Language="C#" Value="public static double HertzToRadiansPerSecond (double hertz);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 HertzToRadiansPerSecond(float64 hertz) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.HertzToRadiansPerSecond(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="hertz" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="hertz">The value in hertz to convert</param>
+        <summary>Convert hertz to radians per second</summary>
+        <returns>The value in radians per second</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="InternationalFeetToMeters">
+      <MemberSignature Language="C#" Value="public static double InternationalFeetToMeters (double internationalFeet);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 InternationalFeetToMeters(float64 internationalFeet) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.InternationalFeetToMeters(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="internationalFeet" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="internationalFeet">The feet to convert</param>
+        <summary>Convert international feet to meters</summary>
+        <returns>The value in meters</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="KelvinToCelsius">
+      <MemberSignature Language="C#" Value="public static double KelvinToCelsius (double kelvin);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 KelvinToCelsius(float64 kelvin) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.KelvinToCelsius(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="kelvin" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="kelvin">The kelvin value to convert</param>
+        <summary>Convert kelvin to celsius</summary>
+        <returns>The value in celsius</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="KilogramsToPounds">
+      <MemberSignature Language="C#" Value="public static double KilogramsToPounds (double kilograms);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 KilogramsToPounds(float64 kilograms) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.KilogramsToPounds(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="kilograms" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="kilograms">The value in kilograms to convert</param>
+        <summary>Convert kilograms to pounds</summary>
+        <returns>The value in pounds.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="KilometersToMiles">
+      <MemberSignature Language="C#" Value="public static double KilometersToMiles (double kilometers);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 KilometersToMiles(float64 kilometers) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.KilometersToMiles(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="kilometers" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="kilometers">The kilometers to convert</param>
+        <summary>Convert kilometers to miles</summary>
+        <returns>The value in miles.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="KilopascalsToHectopascals">
+      <MemberSignature Language="C#" Value="public static double KilopascalsToHectopascals (double kpa);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 KilopascalsToHectopascals(float64 kpa) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.KilopascalsToHectopascals(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="kpa" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="kpa">The value in kilopascals to convert</param>
+        <summary>Convert kilopascals to hectopascals</summary>
+        <returns>The value in hectopascals</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="KilopascalsToPascals">
+      <MemberSignature Language="C#" Value="public static double KilopascalsToPascals (double kpa);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 KilopascalsToPascals(float64 kpa) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.KilopascalsToPascals(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="kpa" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="kpa">The value in kilopascals to convert</param>
+        <summary>Convert kilopascals to pascals</summary>
+        <returns>The value in pascals</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MetersToInternationalFeet">
+      <MemberSignature Language="C#" Value="public static double MetersToInternationalFeet (double meters);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 MetersToInternationalFeet(float64 meters) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.MetersToInternationalFeet(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="meters" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="meters">The value in meters to convert</param>
+        <summary>Convert meters to international feet</summary>
+        <returns>The value in feet</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MetersToUSSurveyFeet">
+      <MemberSignature Language="C#" Value="public static double MetersToUSSurveyFeet (double meters);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 MetersToUSSurveyFeet(float64 meters) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.MetersToUSSurveyFeet(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="meters" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="meters">The value in meters to convert</param>
+        <summary>Convert meters to US survey feet</summary>
+        <returns>The value in US survey feet</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MilesToKilometers">
+      <MemberSignature Language="C#" Value="public static double MilesToKilometers (double miles);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 MilesToKilometers(float64 miles) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.MilesToKilometers(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="miles" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="miles">The value in miles to convert</param>
+        <summary>Convert miles to kilometers</summary>
+        <returns>The value in kilometers</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MilesToMeters">
+      <MemberSignature Language="C#" Value="public static double MilesToMeters (double miles);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 MilesToMeters(float64 miles) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.MilesToMeters(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="miles" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="miles">The value in miles to convert</param>
+        <summary>Convert miles to meters</summary>
+        <returns>The value in meters</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PascalsToAtmospheres">
+      <MemberSignature Language="C#" Value="public static double PascalsToAtmospheres (double pascals);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 PascalsToAtmospheres(float64 pascals) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.PascalsToAtmospheres(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="pascals" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="pascals">The value in pascals to convert</param>
+        <summary>Convert pascals to atmospheres</summary>
+        <returns>The value in atmospheres</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PoundsToKilograms">
+      <MemberSignature Language="C#" Value="public static double PoundsToKilograms (double pounds);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 PoundsToKilograms(float64 pounds) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.PoundsToKilograms(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="pounds" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="pounds">The value in pounds to convert</param>
+        <summary>Convert pounds to kilograms</summary>
+        <returns>The value in kilograms</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PoundsToStones">
+      <MemberSignature Language="C#" Value="public static double PoundsToStones (double pounds);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 PoundsToStones(float64 pounds) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.PoundsToStones(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="pounds" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="pounds">The value in pounds to convert</param>
+        <summary>Convert pounds to stones</summary>
+        <returns>The value in stones</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RadiansPerSecondToDegreesPerSecond">
+      <MemberSignature Language="C#" Value="public static double RadiansPerSecondToDegreesPerSecond (double radians);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 RadiansPerSecondToDegreesPerSecond(float64 radians) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.RadiansPerSecondToDegreesPerSecond(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="radians" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="radians">The value of radians per second to convert</param>
+        <summary>Convert radians per second to degrees per second</summary>
+        <returns>The value in degrees per second</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RadiansPerSecondToHertz">
+      <MemberSignature Language="C#" Value="public static double RadiansPerSecondToHertz (double radians);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 RadiansPerSecondToHertz(float64 radians) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.RadiansPerSecondToHertz(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="radians" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="radians">The value of radians per second to convert</param>
+        <summary>Convert radians per second to hertz</summary>
+        <returns>The value in hertz</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RadiansToDegrees">
+      <MemberSignature Language="C#" Value="public static double RadiansToDegrees (double radians);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 RadiansToDegrees(float64 radians) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.RadiansToDegrees(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="radians" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="radians">The value in radians to convert</param>
+        <summary>Convert radians to degrees</summary>
+        <returns>The value in degrees</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="StonesToPounds">
+      <MemberSignature Language="C#" Value="public static double StonesToPounds (double stones);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 StonesToPounds(float64 stones) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.StonesToPounds(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="stones" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="stones">The value in stones to convert</param>
+        <summary>Convert stones to pounds</summary>
+        <returns>The value in pounds</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="USSurveyFeetToMeters">
+      <MemberSignature Language="C#" Value="public static double USSurveyFeetToMeters (double usFeet);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 USSurveyFeetToMeters(float64 usFeet) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.USSurveyFeetToMeters(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="usFeet" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="usFeet">The value in US Survey Feet to convert</param>
+        <summary>Convert US survey feet to meteres</summary>
+        <returns>The value in meters.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
