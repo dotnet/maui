@@ -1,45 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NUnit.Framework;
+﻿using Xamarin.Platform.Handlers.Tests;
+using Xunit;
 
 namespace Xamarin.Platform.Handlers.UnitTests
 {
-
-	[TestFixture]
+	[Category(TestCategory.Core, TestCategory.Lifecycle)]
 	public class AbstractViewHandlerTests
 	{
-		[Test]
+		[Fact]
 		public void ConnectAndDisconnectFireAppropriateNumberOfTimes()
 		{
 			HandlerStub handlerStub = new HandlerStub();
 			handlerStub.SetVirtualView(new Forms.Button());
 
-			Assert.AreEqual(1, handlerStub.ConnectHandlerCount);
-			Assert.AreEqual(0, handlerStub.DisconnectHandlerCount);
+			Assert.Equal(1, handlerStub.ConnectHandlerCount);
+			Assert.Equal(0, handlerStub.DisconnectHandlerCount);
 
 			handlerStub.SetVirtualView(new Forms.Button());
 			handlerStub.SetVirtualView(new Forms.Button());
 			handlerStub.SetVirtualView(new Forms.Button());
-			Assert.AreEqual(1, handlerStub.ConnectHandlerCount);
-			Assert.AreEqual(0, handlerStub.DisconnectHandlerCount);
+			Assert.Equal(1, handlerStub.ConnectHandlerCount);
+			Assert.Equal(0, handlerStub.DisconnectHandlerCount);
 
 			(handlerStub as IViewHandler).DisconnectHandler();
-			Assert.AreEqual(1, handlerStub.ConnectHandlerCount);
-			Assert.AreEqual(1, handlerStub.DisconnectHandlerCount);
+			Assert.Equal(1, handlerStub.ConnectHandlerCount);
+			Assert.Equal(1, handlerStub.DisconnectHandlerCount);
 
 			(handlerStub as IViewHandler).DisconnectHandler();
-			Assert.AreEqual(1, handlerStub.ConnectHandlerCount);
-			Assert.AreEqual(1, handlerStub.DisconnectHandlerCount);
+			Assert.Equal(1, handlerStub.ConnectHandlerCount);
+			Assert.Equal(1, handlerStub.DisconnectHandlerCount);
 
 
 			handlerStub.SetVirtualView(new Forms.Button());
-			Assert.AreEqual(2, handlerStub.ConnectHandlerCount);
-			Assert.AreEqual(1, handlerStub.DisconnectHandlerCount);
+			Assert.Equal(2, handlerStub.ConnectHandlerCount);
+			Assert.Equal(1, handlerStub.DisconnectHandlerCount);
 			(handlerStub as IViewHandler).DisconnectHandler();
-			Assert.AreEqual(2, handlerStub.ConnectHandlerCount);
-			Assert.AreEqual(2, handlerStub.DisconnectHandlerCount);
+			Assert.Equal(2, handlerStub.ConnectHandlerCount);
+			Assert.Equal(2, handlerStub.DisconnectHandlerCount);
 		}
 	}
-
 }

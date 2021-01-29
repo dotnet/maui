@@ -1,13 +1,15 @@
 using System;
-using NUnit.Framework;
 using Xamarin.Forms;
+using Xamarin.Platform.Handlers.UnitTests;
+using Xunit;
+using Fact = Xamarin.Platform.Handlers.UnitTests.FactAttribute;
 
 namespace Xamarin.Platform.Handlers.Tests
 {
-	[TestFixture]
+	[Category(TestCategory.Core, TestCategory.PropertyMapping)]
 	public class PropertyMapperTests
 	{
-		[Test]
+		[Fact]
 		public void ChainingMappersOverrideBase()
 		{
 			bool wasMapper1Called = false;
@@ -28,7 +30,7 @@ namespace Xamarin.Platform.Handlers.Tests
 			Assert.True(wasMapper2Called);
 		}
 
-		[Test]
+		[Fact]
 		public void ChainingMappersWorks()
 		{
 			bool wasMapper1Called = false;
@@ -49,7 +51,7 @@ namespace Xamarin.Platform.Handlers.Tests
 			Assert.True(wasMapper2Called);
 		}
 
-		[Test]
+		[Fact]
 		public void ChainingMappersStillAllowReplacingChainedRoot()
 		{
 			bool wasMapper1Called = false;
@@ -74,7 +76,7 @@ namespace Xamarin.Platform.Handlers.Tests
 			Assert.True(wasMapper3Called, "Mapper 3 was called");
 		}
 
-		[Test]
+		[Fact]
 		public void MappersActionsAreNotCalledOnUpdateProperties()
 		{
 			bool wasMapper1Called = false;
@@ -96,7 +98,7 @@ namespace Xamarin.Platform.Handlers.Tests
 			Assert.True(mapperActionWasCalled);
 		}
 
-		[Test]
+		[Fact]
 		public void ChainedMapperActionsRespectNewUpdate()
 		{
 			bool wasMapper1Called = false;
@@ -116,13 +118,13 @@ namespace Xamarin.Platform.Handlers.Tests
 				[mapperActionKey] = (r, v) => wasMapper2Called = true
 			};
 
-			Assert.AreEqual(2, mapper1.Keys.Count);
-			Assert.AreEqual(1, mapper1.ActionKeys.Count);
-			Assert.AreEqual(1, mapper1.UpdateKeys.Count);
+			Assert.Equal(2, mapper1.Keys.Count);
+			Assert.Equal(1, mapper1.ActionKeys.Count);
+			Assert.Equal(1, mapper1.UpdateKeys.Count);
 
-			Assert.AreEqual(2, mapper2.Keys.Count);
-			Assert.AreEqual(0, mapper2.ActionKeys.Count);
-			Assert.AreEqual(2, mapper2.UpdateKeys.Count);
+			Assert.Equal(2, mapper2.Keys.Count);
+			Assert.Equal(0, mapper2.ActionKeys.Count);
+			Assert.Equal(2, mapper2.UpdateKeys.Count);
 
 			mapper2.UpdateProperties(null, new Button());
 
@@ -133,7 +135,7 @@ namespace Xamarin.Platform.Handlers.Tests
 
 
 
-		[Test]
+		[Fact]
 		public void GenericMappersWorks()
 		{
 			bool wasMapper1Called = false;
