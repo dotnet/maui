@@ -68,19 +68,18 @@
     <PackageReference Include="Xamarin.AndroidX.Palette" Version="1.0.0.6" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj">
+    <ProjectReference Include="..\..\src\Xamarin.Essentials\Xamarin.Essentials.csproj">
       <Project>{CD6D6AE6-83A1-41B1-BD7C-C555A77C288B}</Project>
       <Name>Xamarin.Essentials</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DeviceTests.Shared\DeviceTests.Shared.csproj">
-      <Project>{D30EA5AD-6C9B-4517-9767-41C2E62946DB}</Project>
-      <Name>DeviceTests.Shared</Name>
+    <ProjectReference Include="..\DeviceTests.Shared\Xamarin.Essentials.DeviceTests.Shared.csproj">
+      <Project>{81128D28-CFC8-4EA4-B68D-9939339C461A}</Project>
+      <Name>Xamarin.Essentials.DeviceTests.Shared</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
     <Compile Include="TestInstrumentation.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Tests\**\*.cs" />
@@ -125,4 +124,9 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties TriggeredFromHotReload="False" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

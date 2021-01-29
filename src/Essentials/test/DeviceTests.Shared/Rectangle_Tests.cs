@@ -56,13 +56,16 @@ namespace DeviceTests
         [InlineData(0, float.MaxValue, 0, 0)]
         [InlineData(0, 0, float.MaxValue, 0)]
         [InlineData(0, 0, 0, float.MaxValue)]
-        public void PlatformToSystemException(float x, float y, float height, float width)
+        public void PlatformToSystemException(float x, float y, float width, float height)
         {
 #if __IOS__
-            var platform = new CoreGraphics.CGRect(x, y, height, width);
+            var platform = new CoreGraphics.CGRect(x, y, width, height);
+            Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemRectangle());
+#elif __ANDROID__
+            var platform = new Android.Graphics.Rect((int)x, (int)y, (int)width, (int)height);
             Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemRectangle());
 #elif WINDOWS_UWP
-            var platform = new Windows.Foundation.Rect(x, y, height, width);
+            var platform = new Windows.Foundation.Rect(x, y, width, height);
             Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemRectangle());
 #endif
         }

@@ -44,6 +44,9 @@ namespace DeviceTests
 #if __IOS__
             var platform = new CoreGraphics.CGPoint(x, y);
             Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemPoint());
+#elif __ANDROID__
+            var platform = new Android.Graphics.Point((int)x, (int)y);
+            Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemPoint());
 #elif WINDOWS_UWP
             var platform = new Windows.Foundation.Point(x, y);
             Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemPoint());

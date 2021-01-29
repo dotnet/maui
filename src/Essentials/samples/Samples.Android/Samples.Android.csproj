@@ -65,7 +65,7 @@
     <PackageReference Include="Xamarin.AndroidX.AppCompat.AppCompatResources" Version="1.2.0.6" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj">
+    <ProjectReference Include="..\..\src\Xamarin.Essentials\Xamarin.Essentials.csproj">
       <Project>{CD6D6AE6-83A1-41B1-BD7C-C555A77C288B}</Project>
       <Name>Xamarin.Essentials</Name>
     </ProjectReference>
@@ -77,7 +77,6 @@
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\icon.png" />
@@ -124,4 +123,9 @@
     <AndroidAsset Include="Assets\FileSystemTemplate.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties TriggeredFromHotReload="False" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

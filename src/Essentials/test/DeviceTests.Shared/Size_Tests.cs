@@ -44,6 +44,9 @@ namespace DeviceTests
 #if __IOS__
             var platform = new CoreGraphics.CGSize(width, height);
             Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemSize());
+#elif __ANDROID__
+            var platform = new Android.Util.Size((int)width, (int)height);
+            Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemSize());
 #elif WINDOWS_UWP
             var platform = new Windows.Foundation.Size(width, height);
             Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemSize());

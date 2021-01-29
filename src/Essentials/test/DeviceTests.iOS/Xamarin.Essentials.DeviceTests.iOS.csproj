@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{EE8FC716-27FC-405B-BD27-AF17E01A6671}</ProjectGuid>
+    <ProjectGuid>{B73EB308-70BE-49FD-91A7-1D1495663D6D}</ProjectGuid>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Exe</OutputType>
     <RootNamespace>DeviceTests.iOS</RootNamespace>
@@ -84,13 +84,13 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj">
+    <ProjectReference Include="..\..\src\Xamarin.Essentials\Xamarin.Essentials.csproj">
       <Project>{CD6D6AE6-83A1-41B1-BD7C-C555A77C288B}</Project>
       <Name>Xamarin.Essentials</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DeviceTests.Shared\DeviceTests.Shared.csproj">
-      <Project>{D30EA5AD-6C9B-4517-9767-41C2E62946DB}</Project>
-      <Name>DeviceTests.Shared</Name>
+    <ProjectReference Include="..\DeviceTests.Shared\Xamarin.Essentials.DeviceTests.Shared.csproj">
+      <Project>{81128D28-CFC8-4EA4-B68D-9939339C461A}</Project>
+      <Name>Xamarin.Essentials.DeviceTests.Shared</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -99,7 +99,6 @@
     <Compile Include="AppDelegate.cs" />
     <None Include="Entitlements.plist" />
     <None Include="Info.plist" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestApplicationDelegate.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -122,5 +121,13 @@
   <ItemGroup>
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties XamarinHotReloadWrongLinkerErrorInfoBarXamarinEssentialsDeviceTestsiOSHideInfoBar="True" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

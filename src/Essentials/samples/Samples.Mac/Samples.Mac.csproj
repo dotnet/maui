@@ -66,7 +66,7 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj">
+    <ProjectReference Include="..\..\src\Xamarin.Essentials\Xamarin.Essentials.csproj">
       <Project>{CD6D6AE6-83A1-41B1-BD7C-C555A77C288B}</Project>
       <Name>Xamarin.Essentials</Name>
     </ProjectReference>

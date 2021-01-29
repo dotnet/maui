@@ -36,6 +36,8 @@ namespace DeviceTests
             {
                 Platform.SetLocale(new Java.Util.Locale("ar"));
             }
+#else
+            Utils.Unused(emulatePreApi23, emulateNonEnglishLocale);
 #endif
 
             await SecureStorage.SetAsync(key, data);
@@ -94,6 +96,8 @@ namespace DeviceTests
         {
 #if __ANDROID__
             SecureStorage.AlwaysUseAsymmetricKeyStorage = emulatePreApi23;
+#else
+            Utils.Unused(emulatePreApi23);
 #endif
             var v = await SecureStorage.GetAsync("THIS_KEY_SHOULD_NOT_EXIST");
 
@@ -107,6 +111,8 @@ namespace DeviceTests
         {
 #if __ANDROID__
             SecureStorage.AlwaysUseAsymmetricKeyStorage = emulatePreApi23;
+#else
+            Utils.Unused(emulatePreApi23);
 #endif
             await SecureStorage.SetAsync(key, "Irrelevant Data");
 
@@ -126,6 +132,8 @@ namespace DeviceTests
         {
 #if __ANDROID__
             SecureStorage.AlwaysUseAsymmetricKeyStorage = emulatePreApi23;
+#else
+            Utils.Unused(emulatePreApi23);
 #endif
 
             // Set a couple keys

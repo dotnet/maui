@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj" />
+    <ProjectReference Include="..\..\src\Xamarin.Essentials\Xamarin.Essentials.csproj" />
     <ProjectReference Include="..\Samples\Samples.csproj" />
   </ItemGroup>
 

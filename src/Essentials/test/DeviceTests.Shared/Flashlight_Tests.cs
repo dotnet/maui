@@ -24,6 +24,8 @@ namespace DeviceTests
 
 #if __ANDROID__
             Flashlight.AlwaysUseCameraApi = oldCameraApi;
+#else
+            Utils.Unused(oldCameraApi);
 #endif
 
             return Utils.OnMainThread(async () =>

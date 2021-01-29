@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Essentials\Xamarin.Essentials.csproj" />
+    <ProjectReference Include="..\..\src\Xamarin.Essentials\Xamarin.Essentials.csproj" />
   </ItemGroup>
 
 </Project>

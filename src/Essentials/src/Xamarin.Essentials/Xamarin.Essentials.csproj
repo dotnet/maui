@@ -31,6 +31,7 @@
     <MDocDocumentationDirectory>$(MSBuildThisFileDirectory)..\docs\en</MDocDocumentationDirectory>
     <DebugType>portable</DebugType>
     <Configurations>Debug;Release</Configurations>
+    <LangVersion>8.0</LangVersion>
  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -121,8 +122,4 @@
     <Reference Include="System.Numerics.Vectors" />
     <Reference Include="OpenTK" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="mdoc.targets" />
-  </ItemGroup>
-  <Import Project="$(MSBuildThisFileDirectory)mdoc.targets" />
 </Project>
