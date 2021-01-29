@@ -27,9 +27,6 @@
     <None Remove="Fonts\fa-regular-400.ttf" />
     <None Remove="Fonts\PTM55FT.ttf" />
   </ItemGroup>
-  <ItemGroup Condition="$(FromSource) == 'false'">
-    <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
-  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Remove="GalleryPages\DateTimePickerGalleries\DatesPage.xaml" />
     <EmbeddedResource Remove="GalleryPages\DateTimePickerGalleries\MainTabbedPage.xaml" />
@@ -122,13 +119,19 @@
     <Folder Include="Fonts\" />
     <Folder Include="GalleryPages\AppThemeGalleries\" />
   </ItemGroup>
-
-  <ItemGroup>
+  <ItemGroup Condition="$(FromSource) == 'false'">
+    <ProjectReference Include="..\..\..\Forms\test\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="$(FromSource) != 'false'">
     <ProjectReference Include="..\..\..\Controls\Maps\src\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj" />
     <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
     <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
-    <ProjectReference Include="..\..\..\Forms\test\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
     <ProjectReference Include="..\..\..\Platform.Handlers\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj" />
+    <ProjectReference Include="..\..\..\Forms\test\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
+    <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj" >
+      <Name>Xamarin.Forms.Build.Tasks</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
     <Folder Include="GalleryPages\DateTimePickerGalleries\" />
   </ItemGroup>
 
