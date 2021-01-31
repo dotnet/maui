@@ -584,7 +584,6 @@ void InstallMsi(string msiFile, string installTo, string fileName = "InstallFile
 
 Task("provision")
     .Description("Install SDKs required to build project")
-    .IsDependentOn("provision-powershell")
     .IsDependentOn("provision-macsdk")
     .IsDependentOn("provision-iossdk")
     .IsDependentOn("provision-androidsdk")
