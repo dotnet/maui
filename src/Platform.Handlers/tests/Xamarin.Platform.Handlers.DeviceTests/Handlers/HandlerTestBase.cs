@@ -35,12 +35,12 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 		}
 
 		async protected Task ValidatePropertyInitValue<TValue>(
-			ISlider slider,
+			IView view,
 			Func<TValue> GetValue,
 			Func<THandler, TValue> GetNativeValue,
 			TValue expectedValue)
 		{
-			var values = await GetValueAsync(slider, (handler) =>
+			var values = await GetValueAsync(view, (handler) =>
 			{
 				return new
 				{
