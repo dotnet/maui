@@ -62,7 +62,8 @@ var UWP_APP_PACKAGES_PATH = Argument("UWP_APP_PACKAGES_PATH", "*/AppPackages/");
 var UWP_APP_DRIVER_INSTALL_PATH = Argument("UWP_APP_DRIVER_INSTALL_PATH", "https://github.com/microsoft/WinAppDriver/releases/download/v1.2-RC/WindowsApplicationDriver.msi");
 
 var ANDROID_BUNDLE_ID = "com.xamarin.xamarin_forms_controlgallery";
-var ANDROID_CONTROLGALLERY_PROJ = "src/ControlGallery/src/Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj";
+var ANDROID_CONTROLGALLERY = "src/ControlGallery/src/Xamarin.Forms.ControlGallery.Android/";
+var ANDROID_CONTROLGALLERY_PROJ = $"{ANDROID_CONTROLGALLERY}Xamarin.Forms.ControlGallery.Android.csproj";
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
 var ANDROID_TEST_PROJ = "./src/ControlGallery/test/Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj";
 
@@ -664,7 +665,7 @@ Task("WriteGoogleMapsAPIKey")
         if(!String.IsNullOrWhiteSpace(GoogleMapsAPIKey))
         {
             Information("Writing GoogleMapsAPIKey");
-            System.IO.File.WriteAllText("Xamarin.Forms.ControlGallery.Android/Properties/MapsKey.cs", "[assembly: Android.App.MetaData(\"com.google.android.maps.v2.API_KEY\", Value = \"" + GoogleMapsAPIKey + "\")]");
+            System.IO.File.WriteAllText($"{ANDROID_CONTROLGALLERY}/Properties/MapsKey.cs", "[assembly: Android.App.MetaData(\"com.google.android.maps.v2.API_KEY\", Value = \"" + GoogleMapsAPIKey + "\")]");
         }
     });
 
