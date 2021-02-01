@@ -22,11 +22,9 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				_backdropBrush = appearance.FlyoutBackdrop;
 
-				if (appearance.FlyoutHeight != SlideFlyoutTransition.Height ||
-					appearance.FlyoutWidth != SlideFlyoutTransition.Width)
+				if (SlideFlyoutTransition?.UpdateFlyoutSize(appearance.FlyoutHeight, appearance.FlyoutWidth) ==
+					true)
 				{
-					SlideFlyoutTransition?.SetFlyoutSizes(appearance.FlyoutHeight, appearance.FlyoutWidth);
-
 					if(_layoutOccured)
 						LayoutSidebar(false, true);
 				}

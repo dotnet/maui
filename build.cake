@@ -597,6 +597,15 @@ Task("NuGetPack")
     .IsDependentOn("BuildForNuget")
     .IsDependentOn("_NuGetPack");
 
+Task("provision-powershell").Does(()=> {
+    var settings = new DotNetCoreToolSettings
+    {
+        DiagnosticOutput = true,
+        ArgumentCustomization = args=>args.Append("install --global PowerShell")
+    };
+
+    DotNetCoreTool("tool", settings);
+});
 
 Task("_NuGetPack")
     .WithCriteria(IsRunningOnWindows())

@@ -1691,6 +1691,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue8988.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue12084.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue12512.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3311.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue12473.xaml.cs">
+      <DependentUpon>Issue12473.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue12809.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11969.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11381.xaml.cs" />
@@ -1707,7 +1712,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutBackground.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutContentOffest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutContentWithZeroMargin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LabelFormattedTextHtmlPadding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue13436.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue13390.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
@@ -2080,6 +2087,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12084.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12473.xaml">
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12809.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
