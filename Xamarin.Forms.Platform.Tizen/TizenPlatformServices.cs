@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -171,83 +170,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			Forms.Context.Exit();
 		}
 
-		public bool IsInvokeRequired
-		{
-			get
-			{
-				return !EcoreMainloop.IsMainThread;
-			}
-		}
+		public bool IsInvokeRequired => !EcoreMainloop.IsMainThread;
 
 		public string RuntimePlatform => Device.Tizen;
 
 		#endregion
-
-		// In .NETCore, AppDomain is not supported. The list of the assemblies should be generated manually.
-		internal class AppDomain
-		{
-			public static AppDomain CurrentDomain { get; private set; }
-
-			readonly HashSet<Assembly> _assemblies;
-
-			static AppDomain()
-			{
-				CurrentDomain = new AppDomain();
-			}
-
-			AppDomain()
-			{
-				_assemblies = new HashSet<Assembly>();
-
-				// Add this renderer assembly to the list
-				_assemblies.Add(GetType().GetTypeInfo().Assembly);
-			}
-
-			public void AddAssembly(Assembly assembly)
-			{
-				if (!_assemblies.Contains(assembly))
-				{
-					_assemblies.Add(assembly);
-				}
-			}
-
-			public void AddAssemblies(Assembly[] assemblies)
-			{
-				foreach (var asm in assemblies)
-				{
-					AddAssembly(asm);
-				}
-			}
-
-			internal void RegisterAssemblyRecursively(Assembly asm)
-			{
-				if (_assemblies.Contains(asm))
-					return;
-
-				_assemblies.Add(asm);
-
-				foreach (var refName in asm.GetReferencedAssemblies())
-				{
-					if (!refName.Name.StartsWith("System.") && !refName.Name.StartsWith("Microsoft.") && !refName.Name.StartsWith("mscorlib"))
-					{
-						try
-						{
-							Assembly refAsm = Assembly.Load(refName);
-							RegisterAssemblyRecursively(refAsm);
-						}
-						catch
-						{
-							Log.Warn("Reference Assembly can not be loaded. {0}", refName.FullName);
-						}
-					}
-				}
-			}
-
-			public Assembly[] GetAssemblies()
-			{
-				return _assemblies.ToArray();
-			}
-		}
 
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
