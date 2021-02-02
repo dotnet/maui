@@ -1,0 +1,36 @@
+<Type Name="Platform+Intent" FullName="Xamarin.Essentials.Platform+Intent">
+  <TypeSignature Language="C#" Value="public static class Platform.Intent" />
+  <TypeSignature Language="ILAsm" Value=".class nested public auto ansi abstract sealed beforefieldinit Platform/Intent extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Platform.Intent" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="ActionAppAction">
+      <MemberSignature Language="C#" Value="public const string ActionAppAction;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string ActionAppAction" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.Platform.Intent.ActionAppAction" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

@@ -1,0 +1,55 @@
+<Type Name="WebAuthenticatorCallbackActivity" FullName="Xamarin.Essentials.WebAuthenticatorCallbackActivity">
+  <TypeSignature Language="C#" Value="public abstract class WebAuthenticatorCallbackActivity : Android.App.Activity" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract beforefieldinit WebAuthenticatorCallbackActivity extends Android.App.Activity" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.WebAuthenticatorCallbackActivity" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Android.App.Activity</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>The activity meant to be subclassed and implemented to receive callbacks on Android.</summary>
+    <remarks>This activity should be decorated with the appropriate Intent Filter to handle callbacks to the appropriate URI scheme.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="protected WebAuthenticatorCallbackActivity ();" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.WebAuthenticatorCallbackActivity.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OnCreate">
+      <MemberSignature Language="C#" Value="protected override void OnCreate (Android.OS.Bundle savedInstanceState);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance void OnCreate(class Android.OS.Bundle savedInstanceState) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.WebAuthenticatorCallbackActivity.OnCreate(Android.OS.Bundle)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="savedInstanceState" Type="Android.OS.Bundle" />
+      </Parameters>
+      <Docs>
+        <param name="savedInstanceState"></param>
+        <summary>This method should be called from the same method in the parent activity which initiated the web authentication.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

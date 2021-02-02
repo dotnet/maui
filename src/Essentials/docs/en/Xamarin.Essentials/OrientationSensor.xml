@@ -1,0 +1,95 @@
+<Type Name="OrientationSensor" FullName="Xamarin.Essentials.OrientationSensor">
+  <TypeSignature Language="C#" Value="public static class OrientationSensor" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit OrientationSensor extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.OrientationSensor" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Device orientation (quaternion) relative to magnetic fields.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="IsMonitoring">
+      <MemberSignature Language="C#" Value="public static bool IsMonitoring { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsMonitoring" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.OrientationSensor.IsMonitoring" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets of currently monitoring the sensor.</summary>
+        <value>If monitoring.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ReadingChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.OrientationSensorChangedEventArgs&gt; ReadingChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.OrientationSensorChangedEventArgs&gt; ReadingChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.OrientationSensor.ReadingChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.OrientationSensorChangedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>
+          <para>Event triggered when reading of sensor changes.</para>
+        </summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Start">
+      <MemberSignature Language="C#" Value="public static void Start (Xamarin.Essentials.SensorSpeed sensorSpeed);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(valuetype Xamarin.Essentials.SensorSpeed sensorSpeed) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OrientationSensor.Start(Xamarin.Essentials.SensorSpeed)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sensorSpeed" Type="Xamarin.Essentials.SensorSpeed" />
+      </Parameters>
+      <Docs>
+        <param name="sensorSpeed">Sensor speed to use.</param>
+        <summary>Starts monitoring orientation sensor with specific speed.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Stop">
+      <MemberSignature Language="C#" Value="public static void Stop ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Stop() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OrientationSensor.Stop" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Stops monitoring.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

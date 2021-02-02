@@ -1,0 +1,55 @@
+<Type Name="OrientationSensorChangedEventArgs" FullName="Xamarin.Essentials.OrientationSensorChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class OrientationSensorChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit OrientationSensorChangedEventArgs extends System.EventArgs" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.OrientationSensorChangedEventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Orientation event args when reading changes.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public OrientationSensorChangedEventArgs (Xamarin.Essentials.OrientationSensorData reading);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.OrientationSensorData reading) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OrientationSensorChangedEventArgs.#ctor(Xamarin.Essentials.OrientationSensorData)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="reading" Type="Xamarin.Essentials.OrientationSensorData" />
+      </Parameters>
+      <Docs>
+        <param name="reading">Reading of the sensor data</param>
+        <summary>Public constructor</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Reading">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.OrientationSensorData Reading { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.OrientationSensorData Reading" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.OrientationSensorChangedEventArgs.Reading" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.OrientationSensorData</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the reading when it changes.</summary>
+        <value>The current Reading</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

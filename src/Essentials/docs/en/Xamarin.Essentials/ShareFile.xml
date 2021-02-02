@@ -1,0 +1,75 @@
+<Type Name="ShareFile" FullName="Xamarin.Essentials.ShareFile">
+  <TypeSignature Language="C#" Value="public class ShareFile : Xamarin.Essentials.FileBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ShareFile extends Xamarin.Essentials.FileBase" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ShareFile" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Essentials.FileBase</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>A file to be shared.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ShareFile (string fullPath);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string fullPath) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareFile.#ctor(System.String)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="fullPath" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="fullPath">The full path and filename.</param>
+        <summary>File to be shared.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ShareFile (Xamarin.Essentials.FileBase file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.FileBase file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareFile.#ctor(Xamarin.Essentials.FileBase)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="file" Type="Xamarin.Essentials.FileBase" />
+      </Parameters>
+      <Docs>
+        <param name="file">Existing file to be shared.</param>
+        <summary>Shares an existing file.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ShareFile (string fullPath, string contentType);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string fullPath, string contentType) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareFile.#ctor(System.String,System.String)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="fullPath" Type="System.String" />
+        <Parameter Name="contentType" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="fullPath">Full path and filename.</param>
+        <param name="contentType">Explicit content type (MIME type) of the file (eg: `image/png`).</param>
+        <summary></summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

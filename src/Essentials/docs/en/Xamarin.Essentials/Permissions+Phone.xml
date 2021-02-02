@@ -1,0 +1,59 @@
+<Type Name="Permissions+Phone" FullName="Xamarin.Essentials.Permissions+Phone">
+  <TypeSignature Language="C#" Value="public class Permissions.Phone : Xamarin.Essentials.Permissions.BasePlatformPermission" />
+  <TypeSignature Language="ILAsm" Value=".class nested public auto ansi beforefieldinit Permissions/Phone extends Xamarin.Essentials.Permissions/BasePlatformPermission" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Permissions.Phone" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Essentials.Permissions+BasePlatformPermission</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Permission to access the phone.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Phone ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.Phone.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Public constructor for permission.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RequiredPermissions">
+      <MemberSignature Language="C#" Value="public override ValueTuple&lt;string,bool&gt;[] RequiredPermissions { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.ValueTuple`2&lt;string, bool&gt;[] RequiredPermissions" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Permissions.Phone.RequiredPermissions" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute FrameworkAlternate="xamarin-essentials-android">
+          <AttributeName>System.Runtime.CompilerServices.TupleElementNames(new System.String[] { "androidPermission", "isRuntime" })</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.ValueTuple&lt;System.String,System.Boolean&gt;[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Get a list of required permissions.</summary>
+        <value>
+          <para>List of required permissions.</para>
+        </value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

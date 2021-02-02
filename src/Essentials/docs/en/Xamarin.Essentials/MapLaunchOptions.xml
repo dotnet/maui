@@ -1,0 +1,70 @@
+<Type Name="MapLaunchOptions" FullName="Xamarin.Essentials.MapLaunchOptions">
+  <TypeSignature Language="C#" Value="public class MapLaunchOptions" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit MapLaunchOptions extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.MapLaunchOptions" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Launch options for opening a map.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public MapLaunchOptions ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.MapLaunchOptions.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Public constructor</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Name">
+      <MemberSignature Language="C#" Value="public string Name { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Name" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MapLaunchOptions.Name" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Name of destination to display to user.</summary>
+        <value>Gets the name.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="NavigationMode">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.NavigationMode NavigationMode { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.NavigationMode NavigationMode" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MapLaunchOptions.NavigationMode" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.NavigationMode</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The navigation mode to use.</summary>
+        <value>Gets the navigation mode.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

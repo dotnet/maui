@@ -1,0 +1,60 @@
+<Type Name="FileProvider" FullName="Xamarin.Essentials.FileProvider">
+  <TypeSignature Language="C#" Value="public class FileProvider : AndroidX.Core.Content.FileProvider" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit FileProvider extends AndroidX.Core.Content.FileProvider" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.FileProvider" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>AndroidX.Core.Content.FileProvider</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Android.App.MetaData("android.support.FILE_PROVIDER_PATHS", Resource="@xml/xamarin_essentials_fileprovider_file_paths")</AttributeName>
+    </Attribute>
+    <Attribute>
+      <AttributeName>Android.Content.ContentProvider(new System.String[] { "${applicationId}.fileProvider" }, Exported=false, GrantUriPermissions=true, Name="xamarin.essentials.fileProvider")</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>Android FileProvider implementation for creating Content URIs to share files with other applications.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public FileProvider ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FileProvider.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Default constructor.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="TemporaryLocation">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.FileProviderLocation TemporaryLocation { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.FileProviderLocation TemporaryLocation" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.FileProvider.TemporaryLocation" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.FileProviderLocation</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the temporary location for file sharing.</summary>
+        <value></value>
+        <remarks>The default is to prefer external and fallback to internal.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

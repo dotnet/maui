@@ -1,0 +1,269 @@
+<Type Name="Placemark" FullName="Xamarin.Essentials.Placemark">
+  <TypeSignature Language="C#" Value="public class Placemark" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Placemark extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Placemark" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>User-friendly description of a geographic coordinate. This contains information such as the name of the place, its address, and other information.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Placemark ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Placemark.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Default constructor for placemark.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Placemark (Xamarin.Essentials.Placemark placemark);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.Placemark placemark) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Placemark.#ctor(Xamarin.Essentials.Placemark)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" />
+      </Parameters>
+      <Docs>
+        <param name="placemark">Placemark to copy.</param>
+        <summary>Constructor to create a deep copy.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AdminArea">
+      <MemberSignature Language="C#" Value="public string AdminArea { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string AdminArea" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.AdminArea" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the administrative area name of the address, for example, "CA", or null if it is unknown.</summary>
+        <value>The admin area.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CountryCode">
+      <MemberSignature Language="C#" Value="public string CountryCode { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string CountryCode" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.CountryCode" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the country ISO code.</summary>
+        <value>The country ISO code.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CountryName">
+      <MemberSignature Language="C#" Value="public string CountryName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string CountryName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.CountryName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the country name.</summary>
+        <value>The country name.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FeatureName">
+      <MemberSignature Language="C#" Value="public string FeatureName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string FeatureName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.FeatureName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the feature name.</summary>
+        <value>The feature name.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Locality">
+      <MemberSignature Language="C#" Value="public string Locality { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Locality" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.Locality" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the city or town.</summary>
+        <value>The city or town of the locality.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Location">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.Location Location { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Essentials.Location Location" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.Location" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.Location</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the location of the placemark.</summary>
+        <value>The location of the placemark.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PostalCode">
+      <MemberSignature Language="C#" Value="public string PostalCode { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string PostalCode" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.PostalCode" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the postal code.</summary>
+        <value>The postal code.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SubAdminArea">
+      <MemberSignature Language="C#" Value="public string SubAdminArea { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string SubAdminArea" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.SubAdminArea" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the sub-administrative area name of the address, for example, "Santa Clara County", or null if it is unknown.</summary>
+        <value>The sub-admin area.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SubLocality">
+      <MemberSignature Language="C#" Value="public string SubLocality { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string SubLocality" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.SubLocality" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the sub locality.</summary>
+        <value>The sub locality.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SubThoroughfare">
+      <MemberSignature Language="C#" Value="public string SubThoroughfare { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string SubThoroughfare" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.SubThoroughfare" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets optional info: sub street or region.</summary>
+        <value>The sub thoroughfare.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Thoroughfare">
+      <MemberSignature Language="C#" Value="public string Thoroughfare { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Thoroughfare" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.Thoroughfare" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the street name.</summary>
+        <value>The street name.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Placemark.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>A string representation of the placemark.</summary>
+        <returns>Returns a string representation of the placemark.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
