@@ -13,6 +13,10 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 12848, "[Bug] CarouselView position resets when visibility toggled",
 		PlatformAffected.Android)]
+#if UITEST
+	[NUnit.Framework.Category(UITestCategories.CarouselView)]
+	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
+#endif
 	public partial class Issue12848 : TestContentPage
 	{
 		protected override void Init()
