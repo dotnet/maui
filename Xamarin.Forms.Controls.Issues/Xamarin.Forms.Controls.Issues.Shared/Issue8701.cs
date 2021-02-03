@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 						button
 					}
 				};
-					
+
 			}
 		}
 
