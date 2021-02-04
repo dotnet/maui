@@ -221,7 +221,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			_isDisposed = true;
-		
+
 			if (disposing)
 			{
 				if (Control.IsAlive())

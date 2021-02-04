@@ -214,7 +214,7 @@ namespace Xamarin.Forms.Platform.Android
 					{
 						formsEditContext.OnKeyboardBackPressed -= OnKeyboardBackPressed;
 						formsEditContext.SelectionChanged -= SelectionChanged;
-						
+
 						ListenForCloseBtnTouch(false);
 					}
 				}

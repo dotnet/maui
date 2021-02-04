@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(UITestCategories.Shell)]
 #endif
 	public class Issue12642 : TestShell
-	{	
+	{
 		protected override void Init()
 		{
 			var page = AddTopTab("Tab 1");
