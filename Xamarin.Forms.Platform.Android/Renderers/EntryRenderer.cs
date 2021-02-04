@@ -205,12 +205,20 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
-				if (EditText != null && EditText is IFormsEditText formsEditContext)
+				if (EditText != null)
 				{
-					formsEditContext.OnKeyboardBackPressed -= OnKeyboardBackPressed;
-					formsEditContext.SelectionChanged -= SelectionChanged;
-					ListenForCloseBtnTouch(false);
+					EditText.RemoveTextChangedListener(this);
+					EditText.SetOnEditorActionListener(null);
+
+					if (EditText is IFormsEditText formsEditContext)
+					{
+						formsEditContext.OnKeyboardBackPressed -= OnKeyboardBackPressed;
+						formsEditContext.SelectionChanged -= SelectionChanged;
+						
+						ListenForCloseBtnTouch(false);
+					}
 				}
+
 				_clearBtn = null;
 			}
 

@@ -22,6 +22,7 @@ namespace Xamarin.Forms.Platform.Android
 		TextColorSwitcher _textColorSwitcher;
 		TextColorSwitcher _hintColorSwitcher;
 		float _defaultHeight => Context.ToPixels(42);
+		bool _isDisposed;
 
 		public SearchBarRenderer(Context context) : base(context)
 		{
@@ -347,6 +348,25 @@ namespace Xamarin.Forms.Platform.Android
 			// or to filter out input types you don't want to allow
 			// (e.g., inputTypes &= ~InputTypes.NumberFlagSigned to disallow the sign)
 			return LocalizedDigitsKeyListener.Create(inputTypes);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (_isDisposed)
+				return;
+
+			_isDisposed = true;
+		
+			if (disposing)
+			{
+				if (Control.IsAlive())
+				{
+					Control.SetOnQueryTextListener(null);
+					Control.SetOnQueryTextFocusChangeListener(null);
+				}
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 }

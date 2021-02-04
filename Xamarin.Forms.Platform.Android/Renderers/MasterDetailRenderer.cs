@@ -229,6 +229,8 @@ namespace Xamarin.Forms.Platform.Android
 					_masterLayout = null;
 				}
 
+				RemoveDrawerListener(this);
+
 				Device.Info.PropertyChanged -= DeviceInfoPropertyChanged;
 
 				if (_page != null)

@@ -90,6 +90,13 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
+				if (Control.IsAlive())
+				{
+					Control.SetOnClickListener(null);
+					Control.SetOnTouchListener(null);
+					Control.RemoveOnAttachStateChangeListener(this);
+				}
+
 				_backgroundTracker?.Dispose();
 				_backgroundTracker = null;
 				_visualElementRenderer = null;

@@ -31,8 +31,8 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_previousPage = null;
 
-				if (_viewPager.Adapter != null)
-					_viewPager.Adapter.Dispose();
+				_viewPager.Adapter?.Dispose();
+				_viewPager.ClearOnPageChangeListeners();
 				_viewPager.Dispose();
 				_viewPager = null;
 			}
