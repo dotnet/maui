@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml.Diagnostics;
 
 namespace Xamarin.Forms
 {
@@ -493,6 +494,40 @@ namespace Xamarin.Forms
 			return _navigationManager.GoToAsync(state, animate, false);
 		}
 
+		public void AddLogicalChild(Element element)
+		{
+			if (element == null)
+			{
+				return;
+			}
+
+			if (_logicalChildren.Contains(element))
+				return;
+
+			_logicalChildren.Add(element);
+			element.Parent = this;
+			OnChildAdded(element);
+			VisualDiagnostics.OnChildAdded(this, element);
+		}
+
+		public void RemoveLogicalChild(Element element)
+		{
+			if (element == null)
+			{
+				return;
+			}
+
+			element.Parent = null;
+
+			if (!_logicalChildren.Contains(element))
+				return;
+
+			var oldLogicalIndex = _logicalChildren.IndexOf(element);
+			_logicalChildren.Remove(element);
+			OnChildRemoved(element, oldLogicalIndex);
+			VisualDiagnostics.OnChildRemoved(this, element, oldLogicalIndex);
+		}
+
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellItem), typeof(Shell), null, BindingMode.TwoWay,
 				propertyChanging: OnCurrentItemChanging,
@@ -547,6 +582,11 @@ namespace Xamarin.Forms
 		ShellNavigationManager _navigationManager;
 		ShellFlyoutItemsManager _flyoutManager;
 
+		ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
+
+		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
+			new ReadOnlyCollection<Element>(_logicalChildren);
+
 		public Shell()
 		{
 			_navigationManager = new ShellNavigationManager(this);
@@ -566,6 +606,7 @@ namespace Xamarin.Forms
 			Navigation = new NavigationImpl(this);
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
+			InternalChildren.CollectionChanged += OnInternalChildrenCollectionChanged;
 		}
 
 		void Initialize()
@@ -784,38 +825,17 @@ namespace Xamarin.Forms
 		View FlyoutHeaderView
 		{
 			get => _flyoutHeaderView;
-			set
-			{
-				if (_flyoutHeaderView == value)
-					return;
-
-				if (_flyoutHeaderView != null)
-					OnChildRemoved(_flyoutHeaderView, -1);
-				_flyoutHeaderView = value;
-				if (_flyoutHeaderView != null)
-					OnChildAdded(_flyoutHeaderView);
-			}
 		}
 
 		View FlyoutFooterView
 		{
 			get => _flyoutFooterView;
-			set
-			{
-				if (_flyoutFooterView == value)
-					return;
-
-				if (_flyoutFooterView != null)
-					OnChildRemoved(_flyoutFooterView, -1);
-				_flyoutFooterView = value;
-				if (_flyoutFooterView != null)
-					OnChildAdded(_flyoutFooterView);
-			}
 		}
 
 		protected override void OnBindingContextChanged()
 		{
 			base.OnBindingContextChanged();
+
 			if (FlyoutHeaderView != null)
 				SetInheritedBindingContext(FlyoutHeaderView, BindingContext);
 
@@ -870,18 +890,6 @@ namespace Xamarin.Forms
 		}
 
 		bool ValidDefaultShellItem(Element child) => !(child is MenuShellItem);
-
-		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement
-		{
-			get
-			{
-				if (FlyoutHeaderView != null)
-					yield return FlyoutHeaderView;
-
-				if (FlyoutFooterView != null)
-					yield return FlyoutFooterView;
-			}
-		}
 
 		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
 		{
@@ -1094,6 +1102,18 @@ namespace Xamarin.Forms
 			return null;
 		}
 
+
+		void OnInternalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (e.NewItems != null)
+				foreach (Element element in e.NewItems)
+					AddLogicalChild(element);
+
+			if (e.OldItems != null)
+				foreach (Element element in e.OldItems)
+					RemoveLogicalChild(element);
+		}
+
 		void NotifyFlyoutBehaviorObservers()
 		{
 			if (CurrentItem == null || GetVisiblePage() == null)
@@ -1106,56 +1126,44 @@ namespace Xamarin.Forms
 
 		void OnFlyoutHeaderChanged(object oldVal, object newVal)
 		{
-			if (FlyoutHeaderTemplate == null)
-			{
-				if (newVal is View newFlyoutHeader)
-					FlyoutHeaderView = newFlyoutHeader;
-				else
-					FlyoutHeaderView = null;
-			}
+			ShellTemplatedViewManager.OnViewDataChanged(
+				FlyoutHeaderTemplate,
+				ref _flyoutHeaderView,
+				newVal,
+				RemoveLogicalChild,
+				AddLogicalChild);
 		}
 
 		void OnFlyoutHeaderTemplateChanged(DataTemplate oldValue, DataTemplate newValue)
 		{
-			if (newValue == null)
-			{
-				if (FlyoutHeader is View flyoutHeaderView)
-					FlyoutHeaderView = flyoutHeaderView;
-				else
-					FlyoutHeaderView = null;
-			}
-			else
-			{
-				var newHeaderView = (View)newValue.CreateContent(FlyoutHeader, this);
-				FlyoutHeaderView = newHeaderView;
-			}
+			ShellTemplatedViewManager.OnViewTemplateChanged(
+				newValue,
+				ref _flyoutHeaderView,
+				FlyoutHeader,
+				RemoveLogicalChild,
+				AddLogicalChild,
+				this);
 		}
 
 		void OnFlyoutFooterChanged(object oldVal, object newVal)
 		{
-			if (FlyoutFooterTemplate == null)
-			{
-				if (newVal is View newFlyoutFooter)
-					FlyoutFooterView = newFlyoutFooter;
-				else
-					FlyoutFooterView = null;
-			}
+			ShellTemplatedViewManager.OnViewDataChanged(
+				FlyoutFooterTemplate,
+				ref _flyoutFooterView,
+				newVal,
+				RemoveLogicalChild,
+				AddLogicalChild);
 		}
 
 		void OnFlyoutFooterTemplateChanged(DataTemplate oldValue, DataTemplate newValue)
 		{
-			if (newValue == null)
-			{
-				if (FlyoutFooter is View flyoutFooterView)
-					FlyoutFooterView = flyoutFooterView;
-				else
-					FlyoutFooterView = null;
-			}
-			else
-			{
-				var newFooterView = (View)newValue.CreateContent(FlyoutFooter, this);
-				FlyoutFooterView = newFooterView;
-			}
+			ShellTemplatedViewManager.OnViewTemplateChanged(
+				newValue,
+				ref _flyoutFooterView,
+				FlyoutFooter,
+				RemoveLogicalChild,
+				AddLogicalChild,
+				this);
 		}
 
 		internal Element GetVisiblePage()
@@ -1194,8 +1202,15 @@ namespace Xamarin.Forms
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutHeaderView });
 			if (FlyoutFooterView != null)
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutFooterView });
+			if (FlyoutContentView != null)
+				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutContentView });
 		}
 
+		protected override void LayoutChildren(double x, double y, double width, double height)
+		{
+			// Page by default tries to layout all logical children
+			// we don't want this behavior with shell
+		}
 
 		#region Shell Flyout Content
 
@@ -1208,9 +1223,9 @@ namespace Xamarin.Forms
 
 		View _flyoutContentView;
 
-		public View FlyoutContent
+		public object FlyoutContent
 		{
-			get => (View)GetValue(FlyoutContentProperty);
+			get => GetValue(FlyoutContentProperty);
 			set => SetValue(FlyoutContentProperty, value);
 		}
 
@@ -1223,44 +1238,27 @@ namespace Xamarin.Forms
 		View FlyoutContentView
 		{
 			get => _flyoutContentView;
-			set
-			{
-				if (_flyoutContentView == value)
-					return;
-
-				if (_flyoutContentView != null)
-					OnChildRemoved(_flyoutContentView, -1);
-				_flyoutContentView = value;
-				if (_flyoutContentView != null)
-					OnChildAdded(_flyoutContentView);
-			}
 		}
 
 		void OnFlyoutContentChanged(object oldVal, object newVal)
 		{
-			if (FlyoutContentTemplate == null)
-			{
-				if (newVal is View newFlyoutContent)
-					FlyoutContentView = newFlyoutContent;
-				else
-					FlyoutContentView = null;
-			}
+			ShellTemplatedViewManager.OnViewDataChanged(
+				FlyoutContentTemplate,
+				ref _flyoutContentView,
+				newVal,
+				RemoveLogicalChild,
+				AddLogicalChild);
 		}
 
 		void OnFlyoutContentTemplateChanged(DataTemplate oldValue, DataTemplate newValue)
 		{
-			if (newValue == null)
-			{
-				if (FlyoutContent is View flyoutContentView)
-					FlyoutContentView = flyoutContentView;
-				else
-					FlyoutContentView = null;
-			}
-			else
-			{
-				var newContentView = (View)newValue.CreateContent(FlyoutContent, this);
-				FlyoutContentView = newContentView;
-			}
+			ShellTemplatedViewManager.OnViewTemplateChanged(
+				newValue,
+				ref _flyoutContentView,
+				FlyoutContent,
+				RemoveLogicalChild,
+				AddLogicalChild,
+				this);
 		}
 
 		static void OnFlyoutContentChanging(BindableObject bindable, object oldValue, object newValue)

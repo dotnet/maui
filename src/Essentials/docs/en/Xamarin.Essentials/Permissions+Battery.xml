@@ -1,0 +1,76 @@
+<Type Name="Permissions+Battery" FullName="Xamarin.Essentials.Permissions+Battery">
+  <TypeSignature Language="C#" Value="public class Permissions.Battery : Xamarin.Essentials.Permissions.BasePlatformPermission" />
+  <TypeSignature Language="ILAsm" Value=".class nested public auto ansi beforefieldinit Permissions/Battery extends Xamarin.Essentials.Permissions/BasePlatformPermission" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Permissions.Battery" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Essentials.Permissions+BasePlatformPermission</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Permission for battery</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Battery ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.Battery.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Public constructor for permission.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CheckStatusAsync">
+      <MemberSignature Language="C#" Value="public override System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt; CheckStatusAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance class System.Threading.Tasks.Task`1&lt;valuetype Xamarin.Essentials.PermissionStatus&gt; CheckStatusAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.Battery.CheckStatusAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Check status of Battery permission.</summary>
+        <returns>Task of PermissionStatus for Battery.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RequiredPermissions">
+      <MemberSignature Language="C#" Value="public override ValueTuple&lt;string,bool&gt;[] RequiredPermissions { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.ValueTuple`2&lt;string, bool&gt;[] RequiredPermissions" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Permissions.Battery.RequiredPermissions" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute FrameworkAlternate="xamarin-essentials-android">
+          <AttributeName>System.Runtime.CompilerServices.TupleElementNames(new System.String[] { "androidPermission", "isRuntime" })</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.ValueTuple&lt;System.String,System.Boolean&gt;[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Get a list of required permissions.</summary>
+        <value>List of required permissions.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

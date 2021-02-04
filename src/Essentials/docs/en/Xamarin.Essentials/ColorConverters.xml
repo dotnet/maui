@@ -1,0 +1,117 @@
+<Type Name="ColorConverters" FullName="Xamarin.Essentials.ColorConverters">
+  <TypeSignature Language="C#" Value="public static class ColorConverters" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit ColorConverters extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ColorConverters" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Contains several helper methods to convert System.Drawing.Color</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="FromHex">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color FromHex (string hex);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color FromHex(string hex) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorConverters.FromHex(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="hex" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="hex">A string value similar to the syntax used in HTML, eg "00FF00". Alpha can optionally be specified as the first pair of the characters ("CC00FF00").</param>
+        <summary>Creates a new Color from a Hex string.</summary>
+        <returns>A color from the Hex string.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromHsl">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color FromHsl (float hue, float saturation, float luminosity);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color FromHsl(float32 hue, float32 saturation, float32 luminosity) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorConverters.FromHsl(System.Single,System.Single,System.Single)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="hue" Type="System.Single" />
+        <Parameter Name="saturation" Type="System.Single" />
+        <Parameter Name="luminosity" Type="System.Single" />
+      </Parameters>
+      <Docs>
+        <param name="hue">The hue of the color from 0-360.</param>
+        <param name="saturation">The saturation of the color from 0-100.</param>
+        <param name="luminosity">The luminosity of the color from 0-100.</param>
+        <summary>Creates a new Color from hue, saturation, and lightness.</summary>
+        <returns>A new color from the Hsla.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromHsla">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color FromHsla (float hue, float saturation, float luminosity, int alpha);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color FromHsla(float32 hue, float32 saturation, float32 luminosity, int32 alpha) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorConverters.FromHsla(System.Single,System.Single,System.Single,System.Int32)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="hue" Type="System.Single" />
+        <Parameter Name="saturation" Type="System.Single" />
+        <Parameter Name="luminosity" Type="System.Single" />
+        <Parameter Name="alpha" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="hue">The hue of the color from 0-360.</param>
+        <param name="saturation">The saturation of the color from 0-100.</param>
+        <param name="luminosity">The luminosity of the color from 0-100.</param>
+        <param name="alpha">The alpha of the color from 0-255.</param>
+        <summary>Creates a new Color from hue, saturation, luminosity, and alpha.</summary>
+        <returns>A new color from the Hsla.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromUInt">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color FromUInt (uint argb);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color FromUInt(unsigned int32 argb) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorConverters.FromUInt(System.UInt32)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="argb" Type="System.UInt32" />
+      </Parameters>
+      <Docs>
+        <param name="argb">A single value representing argb.</param>
+        <summary>Creates a new Color from an UInt.</summary>
+        <returns>A new color from the Uint</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

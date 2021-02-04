@@ -30,6 +30,7 @@ namespace Xamarin.Forms
 					((ColumnDefinitionCollection)oldvalue).ItemSizeChanged -= ((Grid)bindable).OnDefinitionChanged;
 				if (newvalue != null)
 					((ColumnDefinitionCollection)newvalue).ItemSizeChanged += ((Grid)bindable).OnDefinitionChanged;
+				((Grid)bindable).OnDefinitionChanged(bindable, EventArgs.Empty);
 			}, defaultValueCreator: bindable =>
 			{
 				var colDef = new ColumnDefinitionCollection();
@@ -44,6 +45,7 @@ namespace Xamarin.Forms
 					((RowDefinitionCollection)oldvalue).ItemSizeChanged -= ((Grid)bindable).OnDefinitionChanged;
 				if (newvalue != null)
 					((RowDefinitionCollection)newvalue).ItemSizeChanged += ((Grid)bindable).OnDefinitionChanged;
+				((Grid)bindable).OnDefinitionChanged(bindable, EventArgs.Empty);
 			}, defaultValueCreator: bindable =>
 			{
 				var rowDef = new RowDefinitionCollection();

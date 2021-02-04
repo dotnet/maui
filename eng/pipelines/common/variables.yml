@@ -1,11 +1,13 @@
 variables:
 - name: SolutionFile
   value: Xamarin.Forms.sln
+- name: ControlGallerySolutionFile
+  value: Xamarin.Forms.ControlGallery.sln
 - name: BuildVersion
   value: $[counter('handler-counter', 1)]
 - name: NUGET_VERSION
-  value: 5.6.0
+  value: 5.8.1
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 3.1.301
+  value: 5.0.102

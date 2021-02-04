@@ -1,15 +1,15 @@
-﻿using NSubstitute;
-using NUnit.Framework;
+﻿using Xamarin.Platform.Handlers.Tests;
+using NSubstitute;
 using Xamarin.Forms;
-using Xamarin.Platform.Handlers.Tests;
 using Xamarin.Platform.Layouts;
+using Xunit;
 
 namespace Xamarin.Platform.Handlers.UnitTests.Layouts
 {
-	[TestFixture(Category = TestCategory.Layout)]
+	[Category(TestCategory.Core, TestCategory.Layout)]
 	public class LayoutExtensionTests
 	{
-		[Test]
+		[Fact]
 		public void FrameExcludesMargin()
 		{
 			var element = Substitute.For<IFrameworkElement>();
@@ -22,13 +22,13 @@ namespace Xamarin.Platform.Handlers.UnitTests.Layouts
 			// With a margin of 20 all the way around, we expect the actual frame
 			// to be 60x60, with an x,y position of 20,20
 
-			Assert.That(frame.Top, Is.EqualTo(20));
-			Assert.That(frame.Left, Is.EqualTo(20));
-			Assert.That(frame.Width, Is.EqualTo(60));
-			Assert.That(frame.Height, Is.EqualTo(60));
+			Assert.Equal(20, frame.Top);
+			Assert.Equal(20, frame.Left);
+			Assert.Equal(60, frame.Width);
+			Assert.Equal(60, frame.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void FrameSizeGoesToZeroWhenMarginsExceedBounds()
 		{
 			var element = Substitute.For<IFrameworkElement>();
@@ -41,11 +41,11 @@ namespace Xamarin.Platform.Handlers.UnitTests.Layouts
 			// The margin is simply too large for the bounds; since negative widths/heights on a frame don't make sense,
 			// we expect them to collapse to zero
 
-			Assert.That(frame.Width, Is.EqualTo(0));
-			Assert.That(frame.Height, Is.EqualTo(0));
+			Assert.Equal(0, frame.Height);
+			Assert.Equal(0, frame.Width);
 		}
 
-		[Test]
+		[Fact]
 		public void DesiredSizeIncludesMargin()
 		{
 			var widthConstraint = 400;
@@ -66,8 +66,8 @@ namespace Xamarin.Platform.Handlers.UnitTests.Layouts
 			// and the margin on the IFrameworkElement is 20, the expected width is (100 + 20 + 20) = 140
 			// and the expected height is (50 + 20 + 20) = 90
 
-			Assert.That(desiredSize.Width, Is.EqualTo(140));
-			Assert.That(desiredSize.Height, Is.EqualTo(90));
+			Assert.Equal(140, desiredSize.Width);
+			Assert.Equal(90, desiredSize.Height);
 		}
 	}
 }

@@ -8,6 +8,7 @@ using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms.Platform.Android.AppLinks;
 using Xamarin.Forms.Internals;
+using RegistrarHandlers = Xamarin.Platform.Registrar;
 using System.Threading.Tasks;
 using System.Net.Http;
 
@@ -15,7 +16,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 {
 	// This is the AppCompat version of Activity1
 
-	[Activity(Label = "Control Gallery", Icon = "@drawable/icon", Theme = "@style/MyTheme",
+	[Activity(Label = "Xamarin Forms", Icon = "@drawable/icon", Theme = "@style/MyTheme",
 		MainLauncher = true, HardwareAccelerated = true, 
 		ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.UiMode)]
 	[IntentFilter(new[] { Intent.ActionView },
@@ -47,8 +48,9 @@ namespace Xamarin.Forms.ControlGallery.Android
 			Forms.SetFlags("UseLegacyRenderers");
 #endif
 			Forms.Init(this, bundle);
-
+			FormsHandlers.InitHandlers();
 			FormsMaps.Init(this, bundle);
+
 			//FormsMaterial.Init(this, bundle);
 			AndroidAppLinks.Init(this);
 			Forms.ViewInitialized += (sender, e) => {

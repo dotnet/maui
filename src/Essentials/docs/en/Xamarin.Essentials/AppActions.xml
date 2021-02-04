@@ -1,0 +1,141 @@
+<Type Name="AppActions" FullName="Xamarin.Essentials.AppActions">
+  <TypeSignature Language="C#" Value="public static class AppActions" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit AppActions extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.AppActions" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="GetAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.AppAction&gt;&gt; GetAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.AppAction&gt;&gt; GetAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppActions.GetAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.AppAction&gt;&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IconDirectory">
+      <MemberSignature Language="C#" Value="public static string IconDirectory { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property string IconDirectory" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppActions.IconDirectory" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IconExtension">
+      <MemberSignature Language="C#" Value="public static string IconExtension { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property string IconExtension" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppActions.IconExtension" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OnAppAction">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.AppActionEventArgs&gt; OnAppAction;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.AppActionEventArgs&gt; OnAppAction" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.AppActions.OnAppAction" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.AppActionEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SetAsync (System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.AppAction&gt; actions);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task SetAsync(class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.AppAction&gt; actions) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppActions.SetAsync(System.Collections.Generic.IEnumerable{Xamarin.Essentials.AppAction})" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="actions" Type="System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.AppAction&gt;" />
+      </Parameters>
+      <Docs>
+        <param name="actions">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SetAsync (params Xamarin.Essentials.AppAction[] actions);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task SetAsync(class Xamarin.Essentials.AppAction[] actions) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppActions.SetAsync(Xamarin.Essentials.AppAction[])" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="actions" Type="Xamarin.Essentials.AppAction[]">
+          <Attributes>
+            <Attribute FrameworkAlternate="xamarin-essentials">
+              <AttributeName>System.ParamArray</AttributeName>
+            </Attribute>
+          </Attributes>
+        </Parameter>
+      </Parameters>
+      <Docs>
+        <param name="actions">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

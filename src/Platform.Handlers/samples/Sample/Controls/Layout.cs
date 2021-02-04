@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Xamarin.Forms;
 using Xamarin.Platform;
+using Xamarin.Platform.Handlers;
 using Xamarin.Platform.Layouts;
 
 namespace Sample
@@ -15,15 +16,7 @@ namespace Sample
 
 		public IReadOnlyList<IView> Children { get => _children.AsReadOnly(); }
 
-		public void Add(IView view)
-		{
-			if (view == null)
-				return;
-
-			_children.Add(view);
-
-			InvalidateMeasure();
-		}
+		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
 
 		protected abstract ILayoutManager CreateLayoutManager();
 
@@ -58,6 +51,40 @@ namespace Sample
 			LayoutManager.Arrange(Frame);
 			IsArrangeValid = true;
 			Handler?.SetFrame(Frame);
+		}
+
+		public override void InvalidateMeasure()
+		{
+			base.InvalidateMeasure();
+
+			foreach (var child in Children)
+			{
+				child.InvalidateArrange();
+			}
+		}
+
+		public void Add(IView child)
+		{
+			if (child == null)
+				return;
+
+			_children.Add(child);
+
+			InvalidateMeasure();
+
+			LayoutHandler?.Add(child);
+		}
+
+		public void Remove(IView child)
+		{
+			if (child == null)
+				return;
+
+			_children.Remove(child);
+
+			InvalidateMeasure();
+
+			LayoutHandler?.Remove(child);
 		}
 	}
 }

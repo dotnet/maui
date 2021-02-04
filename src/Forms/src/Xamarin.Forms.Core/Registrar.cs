@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using Xamarin.Forms.StyleSheets;
+using Xamarin.Platform;
 
 namespace Xamarin.Forms
 {
@@ -54,6 +55,22 @@ namespace Xamarin.Forms.Internals
 				else
 					visualRenderers[supportedVisuals[i]] = (trender, priority);
 			}
+
+
+			// This registers a factory into the Handler version of the registrar.
+			// This way if you are running a .NET MAUI app but want to use legacy renderers
+			// the Handler.Registrar will use this factory to resolve a RendererToHandlerShim for the given type
+			// This only comes into play if users "Init" a legacy set of renderers
+			// The default for a .NET MAUI application will be to not do this but 3rd party vendors or
+			// customers with large custom renderers will be able to use this to easily shim their renderer to a handler
+			// to ease the migration process
+			// TODO: This implementation isn't currently compatible with Visual but we have no concept of visual inside
+			// .NET MAUI currently.
+			Xamarin.Platform.Registrar.Handlers.Register(tview,
+				(viewType) =>
+				{
+					return Registrar.RendererToHandlerShim?.Invoke(null);
+				});
 		}
 
 		public void Register(Type tview, Type trender, Type[] supportedVisual) => Register(tview, trender, supportedVisual, 0);
@@ -75,17 +92,19 @@ namespace Xamarin.Forms.Internals
 
 		internal TRegistrable GetHandler(Type type, object source, IVisual visual, params object[] args)
 		{
+			TRegistrable returnValue = default(TRegistrable);
 			if (args.Length == 0)
 			{
-				return GetHandler(type, visual?.GetType() ?? _defaultVisualType);
+				returnValue = GetHandler(type, visual?.GetType() ?? _defaultVisualType);
+			}
+			else
+			{
+				Type handlerType = GetHandlerType(type, visual?.GetType() ?? _defaultVisualType);
+				if (handlerType != null)
+					returnValue = (TRegistrable)DependencyResolver.ResolveOrCreate(handlerType, source, visual?.GetType(), args);
 			}
 
-			Type handlerType = GetHandlerType(type, visual?.GetType() ?? _defaultVisualType);
-			if (handlerType == null)
-				return null;
-
-
-			return (TRegistrable)DependencyResolver.ResolveOrCreate(handlerType, source, visual?.GetType(), args);
+			return returnValue;
 		}
 
 		public TOut GetHandler<TOut>(Type type) where TOut : class, TRegistrable
@@ -274,6 +293,15 @@ namespace Xamarin.Forms.Internals
 				if (attribute.ShouldRegister())
 					Registered.Register(attribute.HandlerType, attribute.TargetType, attribute.SupportedVisuals, attribute.Priority);
 			}
+		}
+
+		// This is used when you're running an app that only knows about handlers (.NET MAUI app)
+		// If the user has called Forms.Init() this will register all found types 
+		// into the handlers registrar and then it will use this factory to create a shim
+		internal static Func<object, IViewHandler> RendererToHandlerShim { get; private set; }
+		public static void RegisterRendererToHandlerShim(Func<object, IViewHandler> handlerShim)
+		{
+			RendererToHandlerShim = handlerShim;
 		}
 
 		public static void RegisterStylesheets(InitializationFlags flags)

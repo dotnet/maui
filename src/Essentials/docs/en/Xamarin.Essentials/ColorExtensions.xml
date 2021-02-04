@@ -1,0 +1,372 @@
+<Type Name="ColorExtensions" FullName="Xamarin.Essentials.ColorExtensions">
+  <TypeSignature Language="C#" Value="public static class ColorExtensions" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit ColorExtensions extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ColorExtensions" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Extension methods for System.Drawing.Color</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="AddLuminosity">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color AddLuminosity (this System.Drawing.Color color, float delta);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color AddLuminosity(valuetype System.Drawing.Color color, float32 delta) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+        <Parameter Name="delta" Type="System.Single" />
+      </Parameters>
+      <Docs>
+        <param name="color">The color to add luminosity to.</param>
+        <param name="delta">The delta to add to the current luminosity.</param>
+        <summary>Adds luminosity to the existing color</summary>
+        <returns>The new color.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromHsva">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color FromHsva (double h, double s, double v, double a);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color FromHsva(float64 h, float64 s, float64 v, float64 a) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.FromHsva(System.Double,System.Double,System.Double,System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="h" Type="System.Double" />
+        <Parameter Name="s" Type="System.Double" />
+        <Parameter Name="v" Type="System.Double" />
+        <Parameter Name="a" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="h">The Hue value in double.</param>
+        <param name="s">The Saturation value in double.</param>
+        <param name="v">The Value value in double.</param>
+        <param name="a">The Alpha value in double.</param>
+        <summary>Convert HSVa color into System.Drawing.Color.</summary>
+        <returns>System.Drawing.Color.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetComplementary">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color GetComplementary (this System.Drawing.Color color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color GetComplementary(valuetype System.Drawing.Color color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="color">A color to obtain the complement for.</param>
+        <summary>Returns a new color that is on the opposite side of the color wheel from the original.</summary>
+        <returns>A color that is the complement of the value passed in.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MultiplyAlpha">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color MultiplyAlpha (this System.Drawing.Color color, float percentage);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color MultiplyAlpha(valuetype System.Drawing.Color color, float32 percentage) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+        <Parameter Name="percentage" Type="System.Single" />
+      </Parameters>
+      <Docs>
+        <param name="color">The current color to manipulate.</param>
+        <param name="percentage">The percentage from 0-1f</param>
+        <summary>Multiplies the current alpha by a percentage (0-1f)</summary>
+        <returns>The new color.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToHsv">
+      <MemberSignature Language="C#" Value="public static ValueTuple&lt;double,double,double&gt; ToHsv (this System.Drawing.Color color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.ValueTuple`3&lt;float64, float64, float64&gt; ToHsv(valuetype System.Drawing.Color color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToHsv(System.Drawing.Color)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.ValueTuple&lt;System.Double,System.Double,System.Double&gt;</ReturnType>
+        <Attributes>
+          <Attribute FrameworkAlternate="xamarin-essentials">
+            <AttributeName>System.Runtime.CompilerServices.TupleElementNames(new System.String[] { "h", "s", "v" })</AttributeName>
+          </Attribute>
+        </Attributes>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="color">The current color to manipulate.</param>
+        <summary>Convert a System.Drawing.Color struct into HSV Color.</summary>
+        <returns>A tuple of doubles with the values of Hue, Saturation and Value, respectively.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToInt">
+      <MemberSignature Language="C#" Value="public static int ToInt (this System.Drawing.Color color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 ToInt(valuetype System.Drawing.Color color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="color">The color to convert</param>
+        <summary>Converts the current color to an interger</summary>
+        <returns>The color as an integer</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToSystemColor">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color ToSystemColor (this Android.Graphics.Color color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color ToSystemColor(valuetype Android.Graphics.Color color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Android.Graphics.Color)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="Android.Graphics.Color" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-android" />
+      </Parameters>
+      <Docs>
+        <param name="color">The color to use as a base.</param>
+        <summary>Converts the color to the system specific color.</summary>
+        <returns>The system color.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToSystemColor">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color ToSystemColor (this AppKit.NSColor color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color ToSystemColor(class AppKit.NSColor color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(AppKit.NSColor)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="AppKit.NSColor" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-macos" />
+      </Parameters>
+      <Docs>
+        <param name="color">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToSystemColor">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color ToSystemColor (this UIKit.UIColor color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color ToSystemColor(class UIKit.UIColor color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(UIKit.UIColor)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="UIKit.UIColor" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+      </Parameters>
+      <Docs>
+        <param name="color">The color to use as a base.</param>
+        <summary>Converts the color to the system specific color.</summary>
+        <returns>The system color.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToSystemColor">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color ToSystemColor (this Windows.UI.Color color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color ToSystemColor(valuetype Windows.UI.Color color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Windows.UI.Color)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="Windows.UI.Color" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-uwp" />
+      </Parameters>
+      <Docs>
+        <param name="color">The color to use as a base.</param>
+        <summary>Converts the color to the system specific color.</summary>
+        <returns>The system color.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToUInt">
+      <MemberSignature Language="C#" Value="public static uint ToUInt (this System.Drawing.Color color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig unsigned int32 ToUInt(valuetype System.Drawing.Color color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToUInt(System.Drawing.Color)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.UInt32</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="color">The color to use as a base.</param>
+        <summary>Converts the color to a UInt representation.</summary>
+        <returns>The UInt representation.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="WithAlpha">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color WithAlpha (this System.Drawing.Color color, int alpha);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color WithAlpha(valuetype System.Drawing.Color color, int32 alpha) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.WithAlpha(System.Drawing.Color,System.Int32)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+        <Parameter Name="alpha" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="color">The color to use as a base.</param>
+        <param name="alpha">The alpha to set 0-255.</param>
+        <summary>Creates a new color based on this color, but with a new alpha (0-255).</summary>
+        <returns>The new color.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="WithHue">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color WithHue (this System.Drawing.Color color, float hue);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color WithHue(valuetype System.Drawing.Color color, float32 hue) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.WithHue(System.Drawing.Color,System.Single)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+        <Parameter Name="hue" Type="System.Single" />
+      </Parameters>
+      <Docs>
+        <param name="color">The color to use as a base.</param>
+        <param name="hue">The hue to set 0-360.</param>
+        <summary>Creates a new color based on this color, but with a new hue (0-360).</summary>
+        <returns>The new color.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="WithLuminosity">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color WithLuminosity (this System.Drawing.Color color, float luminosity);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color WithLuminosity(valuetype System.Drawing.Color color, float32 luminosity) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.WithLuminosity(System.Drawing.Color,System.Single)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+        <Parameter Name="luminosity" Type="System.Single" />
+      </Parameters>
+      <Docs>
+        <param name="color">The color to use as a base.</param>
+        <param name="luminosity">The luminosity to set 0-100.</param>
+        <summary>Creates a new color based on this color, but with a new luminosity (0-100).</summary>
+        <returns>The new color.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="WithSaturation">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color WithSaturation (this System.Drawing.Color color, float saturation);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color WithSaturation(valuetype System.Drawing.Color color, float32 saturation) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.WithSaturation(System.Drawing.Color,System.Single)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+        <Parameter Name="saturation" Type="System.Single" />
+      </Parameters>
+      <Docs>
+        <param name="color">The color to use as a base.</param>
+        <param name="saturation">The saturation to set 0-100.</param>
+        <summary>Creates a new color based on this color, but with a new saturation (0-100).</summary>
+        <returns>The new color.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

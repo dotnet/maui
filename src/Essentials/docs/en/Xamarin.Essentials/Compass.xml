@@ -1,0 +1,134 @@
+<Type Name="Compass" FullName="Xamarin.Essentials.Compass">
+  <TypeSignature Language="C#" Value="public static class Compass" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Compass extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Compass" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Monitor changes to the orientation of the user's device.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="IsMonitoring">
+      <MemberSignature Language="C#" Value="public static bool IsMonitoring { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsMonitoring" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Compass.IsMonitoring" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets if compass is actively being monitored.</summary>
+        <value>If compass is being monitored.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ReadingChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.CompassChangedEventArgs&gt; ReadingChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.CompassChangedEventArgs&gt; ReadingChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Compass.ReadingChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.CompassChangedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event triggered when compass reading changes.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ShouldDisplayHeadingCalibration">
+      <MemberSignature Language="C#" Value="public static bool ShouldDisplayHeadingCalibration { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool ShouldDisplayHeadingCalibration" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Compass.ShouldDisplayHeadingCalibration" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Determines if the calibration screen should be displayed.</summary>
+        <value>Gets or sets if this should be displayed when started.</value>
+        <remarks>Only available on iOS</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Start">
+      <MemberSignature Language="C#" Value="public static void Start (Xamarin.Essentials.SensorSpeed sensorSpeed);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(valuetype Xamarin.Essentials.SensorSpeed sensorSpeed) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Compass.Start(Xamarin.Essentials.SensorSpeed)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sensorSpeed" Type="Xamarin.Essentials.SensorSpeed" />
+      </Parameters>
+      <Docs>
+        <param name="sensorSpeed">The speed to monitor for changes.</param>
+        <summary>Start monitoring for changes to the compass.</summary>
+        <remarks>Will throw FeatureNotSupportedException if not supported on device. Will throw ArgumentNullException if handler is null.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Start">
+      <MemberSignature Language="C#" Value="public static void Start (Xamarin.Essentials.SensorSpeed sensorSpeed, bool applyLowPassFilter);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(valuetype Xamarin.Essentials.SensorSpeed sensorSpeed, bool applyLowPassFilter) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Compass.Start(Xamarin.Essentials.SensorSpeed,System.Boolean)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sensorSpeed" Type="Xamarin.Essentials.SensorSpeed" />
+        <Parameter Name="applyLowPassFilter" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="sensorSpeed">The speed to monitor for changes.</param>
+        <param name="applyLowPassFilter">Whether or not to apply a moving average filter (only used on Android).</param>
+        <summary>Start monitoring for changes to the compass.</summary>
+        <remarks>Will throw FeatureNotSupportedException if not supported on device. Will throw ArgumentNullException if handler is null.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Stop">
+      <MemberSignature Language="C#" Value="public static void Stop ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Stop() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Compass.Stop" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Stop monitoring for changes to the compass.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

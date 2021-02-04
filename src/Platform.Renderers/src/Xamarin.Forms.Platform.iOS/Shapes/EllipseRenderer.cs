@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
         protected override void OnElementChanged(ElementChangedEventArgs<Ellipse> args)
         {
-            if (Control == null)
+            if (Control == null && args.NewElement != null)
             {
                 SetNativeControl(new EllipseView());
             }

@@ -24,9 +24,9 @@
 	<key>MinimumOSVersion</key>
 	<string>8.0</string>
 	<key>CFBundleDisplayName</key>
-	<string>XamControl</string>
+	<string>Xamarin Forms</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.xamarin.quickui.controlgallery</string>
+	<string>com.xamarin.xamarin-forms-controlgallery</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>CFBundleIconFiles</key>

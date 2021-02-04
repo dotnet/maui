@@ -173,6 +173,7 @@ namespace Xamarin.Forms
 				return;
 			IsInitialized = true;
 
+			Internals.Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 			Color.SetAccent(ColorExtensions.AccentColor.ToColor());
 
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));

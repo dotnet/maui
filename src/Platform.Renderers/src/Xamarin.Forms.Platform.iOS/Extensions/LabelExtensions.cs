@@ -21,6 +21,12 @@ namespace Xamarin.Forms.Platform.MacOS
 	{
 		public static void RecalculateSpanPositions(this NativeLabel control, Label element)
 		{
+			if (element == null)
+				return;
+
+			if (element.TextType == TextType.Html)
+				return;
+
 			if (element?.FormattedText?.Spans == null
 				|| element.FormattedText.Spans.Count == 0)
 				return;

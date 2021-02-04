@@ -1,0 +1,55 @@
+<Type Name="DisplayInfoChangedEventArgs" FullName="Xamarin.Essentials.DisplayInfoChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class DisplayInfoChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit DisplayInfoChangedEventArgs extends System.EventArgs" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.DisplayInfoChangedEventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Main display information event arguments.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public DisplayInfoChangedEventArgs (Xamarin.Essentials.DisplayInfo displayInfo);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.DisplayInfo displayInfo) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DisplayInfoChangedEventArgs.#ctor(Xamarin.Essentials.DisplayInfo)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="displayInfo" Type="Xamarin.Essentials.DisplayInfo" />
+      </Parameters>
+      <Docs>
+        <param name="displayInfo">The display info for the event</param>
+        <summary>Main constructor for event args.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="DisplayInfo">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.DisplayInfo DisplayInfo { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.DisplayInfo DisplayInfo" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DisplayInfoChangedEventArgs.DisplayInfo" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayInfo</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current display info for the main display.</summary>
+        <value>The current display info.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

@@ -1,5 +1,11 @@
 ﻿using System;
 
+#if __IOS__
+using NativeView = UIKit.UIView;
+#else
+using NativeView = AppKit.NSView;
+#endif
+
 namespace Xamarin.Platform.Handlers
 {
 	public partial class LayoutHandler : AbstractViewHandler<ILayout, LayoutView>
@@ -33,6 +39,27 @@ namespace Xamarin.Platform.Handlers
 			foreach (var child in VirtualView.Children)
 			{
 				TypedNativeView.AddSubview(child.ToNative());
+			}
+		}
+
+		public void Add(IView child)
+		{
+			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+
+			TypedNativeView.AddSubview(child.ToNative());
+			TypedNativeView.SetNeedsLayout();
+		}
+
+		public void Remove(IView child)
+		{
+			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+
+			if (child?.Handler?.NativeView is NativeView nativeView)
+			{
+				nativeView.RemoveFromSuperview();
+				TypedNativeView.SetNeedsLayout();
 			}
 		}
 	}

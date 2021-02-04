@@ -1,0 +1,69 @@
+<Type Name="AppTheme" FullName="Xamarin.Essentials.AppTheme">
+  <TypeSignature Language="C#" Value="public enum AppTheme" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed AppTheme extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.AppTheme" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>Application Theme Type</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Dark">
+      <MemberSignature Language="C#" Value="Dark" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.AppTheme Dark = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.AppTheme.Dark" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.AppTheme</ReturnType>
+      </ReturnValue>
+      <MemberValue>2</MemberValue>
+      <Docs>
+        <summary>Dark Theme</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Light">
+      <MemberSignature Language="C#" Value="Light" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.AppTheme Light = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.AppTheme.Light" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.AppTheme</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>Light Theme</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Unspecified">
+      <MemberSignature Language="C#" Value="Unspecified" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.AppTheme Unspecified = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.AppTheme.Unspecified" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.AppTheme</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Default, Unknown or Unspecified Theme</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

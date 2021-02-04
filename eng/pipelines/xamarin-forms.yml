@@ -12,7 +12,7 @@ variables:
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 3.1.301
+  value: 5.0.102
 
 resources:
   repositories:

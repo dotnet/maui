@@ -1,0 +1,55 @@
+<Type Name="BarometerChangedEventArgs" FullName="Xamarin.Essentials.BarometerChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class BarometerChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit BarometerChangedEventArgs extends System.EventArgs" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.BarometerChangedEventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>The current pressure information from the change event.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public BarometerChangedEventArgs (Xamarin.Essentials.BarometerData reading);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.BarometerData reading) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.BarometerChangedEventArgs.#ctor(Xamarin.Essentials.BarometerData)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="reading" Type="Xamarin.Essentials.BarometerData" />
+      </Parameters>
+      <Docs>
+        <param name="reading">The current reading</param>
+        <summary>Public constructor for barometer changed event args.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Reading">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.BarometerData Reading { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BarometerData Reading" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BarometerChangedEventArgs.Reading" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BarometerData</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current barometer pressure data</summary>
+        <value>Pressure in hPA</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

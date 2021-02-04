@@ -95,8 +95,8 @@ namespace Xamarin.Forms.Platform.iOS
 			if (cell == null)
 			{
 				var view = (View)template.CreateContent(context, _context.Shell);
-				view.Parent = _context.Shell;
 				view.BindingContext = context;
+				view.Parent = _context.Shell;
 				cell = new UIContainerCell(cellId, view);
 			}
 			else

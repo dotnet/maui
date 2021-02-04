@@ -41,6 +41,13 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateStrokeLineCap();
 				UpdateStrokeLineJoin();
 				UpdateStrokeMiterLimit();
+
+				if (!args.NewElement.Bounds.IsEmpty)
+				{
+					_height = Element.Height;
+					_width = Element.Width;
+					UpdateSize();
+				}
 			}
 		}
 

@@ -25,5 +25,9 @@ namespace Xamarin.Forms
 		{
 			return string.Format("{{Request={0} Minimum={1}}}", Request, Minimum);
 		}
+
+		public static implicit operator SizeRequest(Size size) => new SizeRequest(size);
+
+		public static implicit operator Size(SizeRequest size) => size.Request;
 	}
 }

@@ -26,11 +26,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			AddFlyoutItem(CreateContentPage(), "Item 1");
-			AddFlyoutItem(CreateContentPage(), "Item 2");
+			for (int i = 0; i < 20; i++)
+			{
+				AddFlyoutItem(CreateContentPage(), $"Item {i}");
+			}
 
 			FlyoutBackgroundImage = "photo.jpg";
 			FlyoutBackgroundImageAspect = Aspect.AspectFill;
+			FlyoutVerticalScrollMode = ScrollMode.Enabled;
 		}
 
 		ContentPage CreateContentPage()
@@ -148,6 +151,52 @@ namespace Xamarin.Forms.Controls.Issues
 							}
 						}),
 						AutomationId = "ToggleHeaderFooter"
+					},
+					new Button()
+					{
+						Text = "Toggle Header/Footer Transparent",
+						Command = new Command(() =>
+						{
+							if (FlyoutHeader == null)
+							{
+								FlyoutFooter =
+									new Label()
+									{
+										Text = "The FOOTER",
+										TextColor = Color.Blue,
+										HeightRequest = 50
+									};
+
+								FlyoutHeader =
+								new StackLayout
+								{
+									Orientation = StackOrientation.Horizontal,
+									HeightRequest = 100,
+									Children = {
+										new Label()
+										{
+											Text = "The HEADER",
+											FontSize = 25,
+											FontAttributes = FontAttributes.Bold,
+											VerticalTextAlignment = TextAlignment.Center,
+											TextColor = Color.Blue,
+										},
+										new Button()
+										{
+											Text = "OK",
+											FontSize = 25,
+											TextColor = Color.Green,
+											Command = new Command(() => DisplayAlert("Button", "ThisButtonWorks", "OK"))
+										}
+									}
+								};
+							}
+							else
+							{
+								FlyoutHeader = FlyoutFooter = null;
+							}
+						}),
+						AutomationId = "ToggleHeaderFooterTransparent"
 					}
 				}
 			};

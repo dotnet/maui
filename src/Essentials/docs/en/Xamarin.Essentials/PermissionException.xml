@@ -1,0 +1,37 @@
+<Type Name="PermissionException" FullName="Xamarin.Essentials.PermissionException">
+  <TypeSignature Language="C#" Value="public class PermissionException : UnauthorizedAccessException" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit PermissionException extends System.UnauthorizedAccessException" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.PermissionException" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.UnauthorizedAccessException</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Exception that occures when calling an API that requires a specific permission.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public PermissionException (string message);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string message) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PermissionException.#ctor(System.String)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="message" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="message">Permission that is required.</param>
+        <summary>Constructor with permission information.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

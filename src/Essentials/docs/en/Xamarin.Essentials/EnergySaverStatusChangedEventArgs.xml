@@ -1,0 +1,74 @@
+<Type Name="EnergySaverStatusChangedEventArgs" FullName="Xamarin.Essentials.EnergySaverStatusChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class EnergySaverStatusChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit EnergySaverStatusChangedEventArgs extends System.EventArgs" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.EnergySaverStatusChangedEventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Event arguments when the energy saver status changes.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public EnergySaverStatusChangedEventArgs (Xamarin.Essentials.EnergySaverStatus saverStatus);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.EnergySaverStatus saverStatus) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.#ctor(Xamarin.Essentials.EnergySaverStatus)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="saverStatus" Type="Xamarin.Essentials.EnergySaverStatus" />
+      </Parameters>
+      <Docs>
+        <param name="saverStatus">The current status of the event.</param>
+        <summary>Public constructor for event arguments</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EnergySaverStatus">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.EnergySaverStatus EnergySaverStatus { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.EnergySaverStatus EnergySaverStatus" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.EnergySaverStatus" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.EnergySaverStatus</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current status of energy saver mode</summary>
+        <value>The current statu of the energy saver mode.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>A string representation of the event arguments.</summary>
+        <returns>A string representation of the event arguments.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

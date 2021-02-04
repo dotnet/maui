@@ -64,6 +64,16 @@ namespace Xamarin.Forms.Platform.Android
 			return id;
 		}
 
+		public override void OnViewRecycled(Java.Lang.Object holder)
+		{
+			if (holder is ElementViewHolder evh)
+			{
+				evh.Element = null;
+			}
+
+			base.OnViewRecycled(holder);
+		}
+
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
 		{
 			var item = _listItems[position];
@@ -279,6 +289,7 @@ namespace Xamarin.Forms.Platform.Android
 					if (_element == value)
 						return;
 
+					_shell.RemoveLogicalChild(View);
 					if (_element != null && _element is BaseShellItem)
 					{
 						_element.ClearValue(AppCompat.Platform.RendererProperty);
@@ -287,12 +298,12 @@ namespace Xamarin.Forms.Platform.Android
 
 					_element = value;
 
-					// Set Parent after binding context so parent binding context doesn't propagate to view
+					// Set binding context before calling AddLogicalChild so parent binding context doesn't propagate to view
 					View.BindingContext = value;
-					View.Parent = _shell;
 
 					if (_element != null)
 					{
+						_shell.AddLogicalChild(View);
 						FastRenderers.AutomationPropertiesProvider.AccessibilitySettingsChanged(_itemView, value);
 						_element.SetValue(AppCompat.Platform.RendererProperty, _itemView);
 						_element.PropertyChanged += OnElementPropertyChanged;

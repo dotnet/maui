@@ -1,0 +1,53 @@
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.HomePage"
+                Title="Xamarin.Essentials">
+    <views:BasePage.BindingContext>
+        <viewmodels:HomeViewModel />
+    </views:BasePage.BindingContext>
+    <StackLayout>
+
+        <ListView ItemsSource="{Binding FilteredItems}"
+                  HasUnevenRows="{OnPlatform Default=True, macOS=False}"
+                  ItemTapped="OnSampleTapped"
+                  VerticalOptions="FillAndExpand">
+
+            <ListView.Header>
+                <SearchBar Placeholder="Filter samples..." Text="{Binding FilterText}" />
+            </ListView.Header>
+
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid Padding="12,6" ColumnSpacing="6" RowSpacing="3">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="48" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Text="{Binding Icon}"
+                                   FontSize="24"
+                                   Grid.RowSpan="2"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+
+                            <Label Text="{Binding Name}"
+                                   FontAttributes="Bold"
+                                   Grid.Column="1" />
+                            <Label Text="{Binding Description}"
+                                   FontAttributes="Italic" TextColor="DarkGray"
+                                   Grid.Column="1" Grid.Row="1" />
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+        </ListView>
+
+    </StackLayout>
+</views:BasePage>

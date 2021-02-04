@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Ellipse> args)
 		{
-			if (Control == null)
+			if (Control == null && args.NewElement != null)
 			{
 				SetNativeControl(new EllipseView(Context));
 			}

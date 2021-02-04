@@ -1,0 +1,65 @@
+{
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.md",
+          "**/*.yml"
+        ],
+        "exclude": [
+          "**/obj/**",
+          "**/includes/**",
+          "**/_themes/**",
+          "api/overwrites/**",
+          "README.md",
+          "LICENSE",
+          "LICENSE-CODE",
+          "ThirdPartyNotices"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "**/*.png",
+          "**/*.jpg",
+          "**/*.svg",
+          "**/*.gif",
+          "**/*.bmp"
+        ],
+        "exclude": [
+          "**/obj/**",
+          "**/includes/**"
+        ]
+      }
+    ],
+    "overwrite": {
+      "files": [
+        "api/overwrites/**/*.md"
+      ]
+    },
+    "globalMetadata": {
+      "apiPlatform": "dotnet",
+      "breadcrumb_path": "~/breadcrumb/toc.yml",
+      "author": "dotnet-bot",
+      "ms.author": "dotnetcontent",
+      "manager": "crdun",
+      "ms.date": "12/21/2018",
+      "searchScope": ["Xamarin"],
+      "uhfHeaderId": "MSDocsHeader-DotNet",
+      "ms.topic": "managed-reference",
+      "ms.prod": "xamarin",
+      "ms.technology":"xamarin-essentials",
+      "feedback_system": "GitHub",      
+      "feedback_product_url": "https://github.com/xamarin/Essentials/blob/main/PRODUCT-FEEDBACK.md"
+    },
+    "fileMetadata": {
+      "author": {
+        "api/**.yml": "dotnet-bot"
+      }
+    },
+    "template": [],
+    "dest": "_site",
+    "lruSize": 0
+  }
+}

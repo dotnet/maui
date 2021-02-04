@@ -1,0 +1,431 @@
+<Type Name="Location" FullName="Xamarin.Essentials.Location">
+  <TypeSignature Language="C#" Value="public class Location" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Location extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Location" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>The latitude, longitude, altitude and time information reported by the device.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Location ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Default constructor.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Location (Xamarin.Essentials.Location point);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.Location point) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.#ctor(Xamarin.Essentials.Location)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="point" Type="Xamarin.Essentials.Location" />
+      </Parameters>
+      <Docs>
+        <param name="point">Location to copy values from.</param>
+        <summary>Copy constructor.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Location (double latitude, double longitude);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 latitude, float64 longitude) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="latitude" Type="System.Double" />
+        <Parameter Name="longitude" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="latitude">Default latitude for location.</param>
+        <param name="longitude">Default longitude for location.</param>
+        <summary>Parametrized constructor with latitude and longitude parameters.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Location (double latitude, double longitude, DateTimeOffset timestamp);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 latitude, float64 longitude, valuetype System.DateTimeOffset timestamp) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double,System.DateTimeOffset)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="latitude" Type="System.Double" />
+        <Parameter Name="longitude" Type="System.Double" />
+        <Parameter Name="timestamp" Type="System.DateTimeOffset" />
+      </Parameters>
+      <Docs>
+        <param name="latitude">Default latitude for location.</param>
+        <param name="longitude">Default longitude for location.</param>
+        <param name="timestamp">Timestamp for the location (Utc based).</param>
+        <summary>Parametrized constructor with latitude, longitude and timestamp parameters.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Location (double latitude, double longitude, double altitude);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 latitude, float64 longitude, float64 altitude) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double,System.Double)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="latitude" Type="System.Double" />
+        <Parameter Name="longitude" Type="System.Double" />
+        <Parameter Name="altitude" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="latitude">Default latitude for location.</param>
+        <param name="longitude">Default longitude for location.</param>
+        <param name="altitude">To be added.</param>
+        <summary>Parametrized constructor with latitude, longitude and altitude parameters.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Accuracy">
+      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; Accuracy { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; Accuracy" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Accuracy" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the horizontal accuracy (in meters) of the location.</summary>
+        <value>The horizontal accuracy of the location.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Altitude">
+      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; Altitude { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; Altitude" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Altitude" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the altitude in meters (if available) in a reference system which is specified by AltitudeReferenceSystem.</summary>
+        <value>Altitude of location if available.</value>
+        <remarks>Returns 0 or no value if not available.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AltitudeReferenceSystem">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.AltitudeReferenceSystem AltitudeReferenceSystem { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.AltitudeReferenceSystem AltitudeReferenceSystem" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.AltitudeReferenceSystem" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.AltitudeReferenceSystem</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Specifies the reference system in which the altitude value is given.</summary>
+        <value>The altitude reference system.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CalculateDistance">
+      <MemberSignature Language="C#" Value="public static double CalculateDistance (Xamarin.Essentials.Location locationStart, Xamarin.Essentials.Location locationEnd, Xamarin.Essentials.DistanceUnits units);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, class Xamarin.Essentials.Location locationEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="locationStart" Type="Xamarin.Essentials.Location" />
+        <Parameter Name="locationEnd" Type="Xamarin.Essentials.Location" />
+        <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
+      </Parameters>
+      <Docs>
+        <param name="locationStart">Start location to calculate from.</param>
+        <param name="locationEnd">End location to calculate from.</param>
+        <param name="units">Units to return.</param>
+        <summary>Calculate distance between two locations.</summary>
+        <returns>Distance between two locations in the unit selected.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CalculateDistance">
+      <MemberSignature Language="C#" Value="public static double CalculateDistance (double latitudeStart, double longitudeStart, Xamarin.Essentials.Location locationEnd, Xamarin.Essentials.DistanceUnits units);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(float64 latitudeStart, float64 longitudeStart, class Xamarin.Essentials.Location locationEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="latitudeStart" Type="System.Double" />
+        <Parameter Name="longitudeStart" Type="System.Double" />
+        <Parameter Name="locationEnd" Type="Xamarin.Essentials.Location" />
+        <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
+      </Parameters>
+      <Docs>
+        <param name="latitudeStart">Start latitude to calculate from.</param>
+        <param name="longitudeStart">Start longitude to calculate from.</param>
+        <param name="locationEnd">End location to calculate from.</param>
+        <param name="units">Unit to return.</param>
+        <summary>Calculate distance between two locations.</summary>
+        <returns>Distance calculated.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CalculateDistance">
+      <MemberSignature Language="C#" Value="public static double CalculateDistance (Xamarin.Essentials.Location locationStart, double latitudeEnd, double longitudeEnd, Xamarin.Essentials.DistanceUnits units);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, float64 latitudeEnd, float64 longitudeEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.CalculateDistance(Xamarin.Essentials.Location,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="locationStart" Type="Xamarin.Essentials.Location" />
+        <Parameter Name="latitudeEnd" Type="System.Double" />
+        <Parameter Name="longitudeEnd" Type="System.Double" />
+        <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
+      </Parameters>
+      <Docs>
+        <param name="locationStart">Start location to calculate from.</param>
+        <param name="latitudeEnd">End latitude to calculate from.</param>
+        <param name="longitudeEnd">End longitude to calculate from.</param>
+        <param name="units">Unit to use.</param>
+        <summary>Calculate distance between two locations.</summary>
+        <returns>Distance calculated.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CalculateDistance">
+      <MemberSignature Language="C#" Value="public static double CalculateDistance (double latitudeStart, double longitudeStart, double latitudeEnd, double longitudeEnd, Xamarin.Essentials.DistanceUnits units);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(float64 latitudeStart, float64 longitudeStart, float64 latitudeEnd, float64 longitudeEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="latitudeStart" Type="System.Double" />
+        <Parameter Name="longitudeStart" Type="System.Double" />
+        <Parameter Name="latitudeEnd" Type="System.Double" />
+        <Parameter Name="longitudeEnd" Type="System.Double" />
+        <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
+      </Parameters>
+      <Docs>
+        <param name="latitudeStart">Start latitude to calculate from.</param>
+        <param name="longitudeStart">Start longitude to calculate from.</param>
+        <param name="latitudeEnd">End latitude to calculate from.</param>
+        <param name="longitudeEnd">End longitude to calculate from.</param>
+        <param name="units">Units to return.</param>
+        <summary>Calculate distance between two locations.</summary>
+        <returns>Distance between two locations in the unit selected.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Course">
+      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; Course { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; Course" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Course" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Degrees relative to true north.</summary>
+        <value>0..360 in degrees relative to true north. null if unavailable.</value>
+        <remarks>
+          <para>
+          Requires a high accuracy query of location and may not be returned by Geolocation.GetLastKnownLocationAsync 
+          </para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsFromMockProvider">
+      <MemberSignature Language="C#" Value="public bool IsFromMockProvider { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool IsFromMockProvider" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.IsFromMockProvider" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Inform if location is from GPS or from Mock.</summary>
+        <value>True if is from Mock and False if from GPS.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Latitude">
+      <MemberSignature Language="C#" Value="public double Latitude { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Latitude" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Latitude" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the latitude of location.</summary>
+        <value>Latitude of the location.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Longitude">
+      <MemberSignature Language="C#" Value="public double Longitude { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Longitude" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Longitude" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the longitude of location.</summary>
+        <value>Longitude of the location.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Speed">
+      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; Speed { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; Speed" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Speed" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Speed in meters per second.</summary>
+        <value>Speed measured by the device..</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Timestamp">
+      <MemberSignature Language="C#" Value="public DateTimeOffset Timestamp { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.DateTimeOffset Timestamp" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Timestamp" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.DateTimeOffset</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the timestamp of the location.</summary>
+        <value>UTC timestamp.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>A string representation of the location.</summary>
+        <returns>A string representation of the location.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="VerticalAccuracy">
+      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; VerticalAccuracy { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; VerticalAccuracy" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.VerticalAccuracy" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the vertical accuracy (in meters) of the location.</summary>
+        <value>The vertical accuracy of the location.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

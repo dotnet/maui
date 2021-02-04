@@ -36,7 +36,7 @@ namespace Sample
 			Frame = this.ComputeFrame(bounds);
 		}
 
-		public void InvalidateMeasure()
+		public virtual void InvalidateMeasure()
 		{
 			IsMeasureValid = false;
 			IsArrangeValid = false;

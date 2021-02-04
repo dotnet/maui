@@ -178,7 +178,11 @@ namespace Xamarin.Forms
 
 		Rectangle IFrameworkElement.Frame => Bounds;
 
-		public IViewHandler Handler { get; set; }
+		public IViewHandler Handler 
+		{ 
+			get; 
+			set; 
+		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
@@ -204,7 +208,11 @@ namespace Xamarin.Forms
 			if (IsArrangeValid)
 				return;
 			IsArrangeValid = true;
-			Layout(this.ComputeFrame(bounds));
+
+			var newRect = this.ComputeFrame(bounds);
+
+			Layout(newRect);
+			Handler?.SetFrame(Bounds);
 		}
 
 		protected override void OnSizeAllocated(double width, double height)

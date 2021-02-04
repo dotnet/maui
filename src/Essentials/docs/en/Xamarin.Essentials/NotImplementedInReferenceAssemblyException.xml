@@ -1,0 +1,34 @@
+<Type Name="NotImplementedInReferenceAssemblyException" FullName="Xamarin.Essentials.NotImplementedInReferenceAssemblyException">
+  <TypeSignature Language="C#" Value="public class NotImplementedInReferenceAssemblyException : NotImplementedException" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit NotImplementedInReferenceAssemblyException extends System.NotImplementedException" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.NotImplementedInReferenceAssemblyException" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.NotImplementedException</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Exception that occurs when executed from a reference assembly. This usually means that the NuGet was not installed into the app project.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public NotImplementedInReferenceAssemblyException ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.NotImplementedInReferenceAssemblyException.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Default constructor.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

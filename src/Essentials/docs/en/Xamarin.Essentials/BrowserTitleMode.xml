@@ -1,0 +1,71 @@
+<Type Name="BrowserTitleMode" FullName="Xamarin.Essentials.BrowserTitleMode">
+  <TypeSignature Language="C#" Value="public enum BrowserTitleMode" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed BrowserTitleMode extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.BrowserTitleMode" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>Mode for the title.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Default">
+      <MemberSignature Language="C#" Value="Default" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserTitleMode Default = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserTitleMode.Default" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BrowserTitleMode</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Uses the system default showing it.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Hide">
+      <MemberSignature Language="C#" Value="Hide" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserTitleMode Hide = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserTitleMode.Hide" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BrowserTitleMode</ReturnType>
+      </ReturnValue>
+      <MemberValue>2</MemberValue>
+      <Docs>
+        <summary>
+          <para>Hide the title.</para>
+        </summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Show">
+      <MemberSignature Language="C#" Value="Show" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserTitleMode Show = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserTitleMode.Show" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BrowserTitleMode</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>Show the title.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
