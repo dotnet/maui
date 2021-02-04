@@ -341,6 +341,11 @@ namespace Xamarin.Forms.Core.UnitTests
 				Routing.RegisterRoute(route, new ConcretePageFactory(contentPage));
 			}
 
+			public void AssertCurrentStateEquals(string expectedState)
+			{
+				Assert.AreEqual(expectedState, CurrentState.Location.ToString());
+			}
+
 			public class ConcretePageFactory : RouteFactory
 			{
 				ContentPage _contentPage;
