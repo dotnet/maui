@@ -1315,16 +1315,6 @@ namespace Xamarin.Forms.Platform.Android
 
 			bool ILayoutChanges.HasLayoutOccurred => _hasLayoutOccurred;
 
-			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-			{
-				if (Element is Layout layout)
-				{
-					layout.ResolveLayoutChanges();
-				}
-
-				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-			}
-
 			protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 			{
 				base.OnLayout(changed, left, top, right, bottom);

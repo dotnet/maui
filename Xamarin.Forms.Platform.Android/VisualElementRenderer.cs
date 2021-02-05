@@ -505,5 +505,15 @@ namespace Xamarin.Forms.Platform.Android
 
 		void IVisualElementRenderer.SetLabelFor(int? id)
 			=> ViewCompat.SetLabelFor(this, id ?? ViewCompat.GetLabelFor(this));
+
+		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			if (Element is Layout layout)
+			{
+				layout.ResolveLayoutChanges();
+			}
+
+			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+		}
 	}
 }
