@@ -9,6 +9,7 @@ using NUnit.Framework;
 using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using AColor = Android.Graphics.Color;
+using AContextThemeWrapper = Android.Support.V7.View.ContextThemeWrapper;
 
 namespace Xamarin.Forms.Platform.Android.UnitTests
 {
@@ -92,25 +93,26 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 		}
 
 		// This is the ideal test for Issue11703. It's currently being tabled due to a Resource linking bug that we're working out with Android team
-		//[Category("Button")]
-		//[Description("Account for user's setting of styles property textAllCaps")]
-		//[Issue(IssueTracker.Github, 11703, "[Bug] Android textAllCaps no longer works", issueTestNumber: 1)]
-		//[TestCase(false)]
-		//[TestCase(true)]
-		//public void StyleTextAllCapsSettingIsRespected(bool allCaps)
-		//{
-		//	ContextThemeWrapper contextThemeWrapper = null;
-		//	if (allCaps)
-		//		contextThemeWrapper = new ContextThemeWrapper(Context, Resource.Style.TextAllCapsStyleTrue);
-		//	else
-		//		contextThemeWrapper = new ContextThemeWrapper(Context, Resource.Style.TextAllCapsStyleFalse);
+		/*[Category("Button")]
+		[Description("Account for user's setting of styles property textAllCaps")]
+		[Issue(IssueTracker.Github, 11703, "[Bug] Android textAllCaps no longer works", issueTestNumber: 1)]
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task StyleTextAllCapsSettingIsRespected(bool allCaps)
+		{
+			AContextThemeWrapper contextThemeWrapper = null;
+			if (allCaps)
+				contextThemeWrapper = new AContextThemeWrapper(Context, Context.GetStyle("TextAllCapsStyleTrue"));
+			else
+				contextThemeWrapper = new AContextThemeWrapper(Context, Context.GetStyle("TextAllCapsStyleFalse"));
 
-		//	var button = new Button { Text = "foo" };
-		//	var buttonControl = GetRenderer(button, contextThemeWrapper).View as AppCompatButton;
-		//	var initialTextTransform = buttonControl.TransformationMethod;
+			var button = new Button { Text = "foo" };
+			var initialTextTransform = await GetControlProperty(button, x => x.TransformationMethod);
 
-		//	Assert.AreEqual(allCaps, initialTextTransform is AllCapsTransformationMethod);
-		//}
+			// when set through a style the type is an internal version of AllCapsTransformationMethod
+			string typeName = $"{initialTextTransform}";
+			Assert.AreEqual(allCaps, typeName.Contains("AllCapsTransformationMethod"));
+		}*/
 
 	}
 }
