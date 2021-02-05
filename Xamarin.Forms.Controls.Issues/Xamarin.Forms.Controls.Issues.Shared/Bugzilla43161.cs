@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = new StackLayout { Children = { label, listView, listView2, listView3 } };
 		}
 
-#if (UITEST && __IOS__)
+#if UITEST && __IOS__
 		[Test]
 		public void Bugzilla43161Test()
 		{
