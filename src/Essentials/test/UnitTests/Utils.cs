@@ -5,10 +5,10 @@ using Xamarin.Essentials;
 
 namespace Tests
 {
-    public static class TestUtils
-    {
-        public static void EnableExperimentalFeatures()
-        {
-        }
-    }
+	public static class TestUtils
+	{
+		public static void EnableExperimentalFeatures()
+		{
+		}
+	}
 }

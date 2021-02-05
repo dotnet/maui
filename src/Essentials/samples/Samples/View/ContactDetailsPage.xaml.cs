@@ -1,10 +1,10 @@
 ﻿namespace Samples.View
 {
-    public partial class ContactDetailsPage
-    {
-        public ContactDetailsPage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class ContactDetailsPage
+	{
+		public ContactDetailsPage()
+		{
+			InitializeComponent();
+		}
+	}
 }

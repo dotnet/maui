@@ -10,7 +10,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests.Handlers.Layout
 	public partial class LayoutHandlerTests : HandlerTestBase<LayoutHandler>
 	{
 		[Fact(DisplayName = "Empty layout")]
-		public async Task EmptyLayout() 
+		public async Task EmptyLayout()
 		{
 			var layout = new LayoutStub();
 			await ValidatePropertyInitValue(layout, () => layout.Children.Count, GetNativeChildCount, 0);

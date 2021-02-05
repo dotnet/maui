@@ -8,11 +8,11 @@ using Xamarin.Forms.Xaml;
 
 namespace Samples.View
 {
-    public partial class LauncherPage : BasePage
-    {
-        public LauncherPage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class LauncherPage : BasePage
+	{
+		public LauncherPage()
+		{
+			InitializeComponent();
+		}
+	}
 }

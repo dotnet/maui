@@ -4,9 +4,9 @@ using Xamarin.Essentials;
 
 namespace DeviceTests
 {
-    public class Utils
-    {
-        public static void Unused(params object[] obj) { }
+	public class Utils
+	{
+		public static void Unused(params object[] obj) { }
 
 #if WINDOWS_UWP
         public static async Task OnMainThread(Windows.UI.Core.DispatchedHandler action)
@@ -104,5 +104,5 @@ namespace DeviceTests
             return tcs.Task;
         }
 #endif
-    }
+	}
 }

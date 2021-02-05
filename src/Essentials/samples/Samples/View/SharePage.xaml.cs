@@ -1,10 +1,10 @@
 ﻿namespace Samples.View
 {
-    public partial class SharePage : BasePage
-    {
-        public SharePage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class SharePage : BasePage
+	{
+		public SharePage()
+		{
+			InitializeComponent();
+		}
+	}
 }

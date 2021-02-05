@@ -301,12 +301,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					handler = Xamarin.Platform.Registrar.Handlers.GetHandler(element.GetType());
 				}
-				catch 
+				catch
 				{
 					// TODO define better catch response or define if this is needed?
 				}
-				
-				if(handler == null)
+
+				if (handler == null)
 				{
 					renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element, context)
 										?? new DefaultRenderer(context);
@@ -380,7 +380,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				LayoutRootPage(Page, r - l, b - t);
 			}
-						
+
 			GetRenderer(Page)?.UpdateLayout();
 
 			for (var i = 0; i < _renderer.ChildCount; i++)

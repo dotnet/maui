@@ -44,7 +44,7 @@ namespace Xamarin.Forms
 		public void SetElement(VisualElement element)
 		{
 			var oldElement = Element;
-			if(oldElement != null)
+			if (oldElement != null)
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 
 			if (Element != null)

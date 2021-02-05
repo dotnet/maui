@@ -1,10 +1,10 @@
 ﻿namespace Samples.View
 {
-    public partial class FileSystemPage : BasePage
-    {
-        public FileSystemPage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class FileSystemPage : BasePage
+	{
+		public FileSystemPage()
+		{
+			InitializeComponent();
+		}
+	}
 }

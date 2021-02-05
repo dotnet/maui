@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Xunit;
-using Xamarin.Platform;
+using System.Threading.Tasks;
 using UIKit;
 using Xamarin.Essentials;
-using System.Threading.Tasks;
+using Xamarin.Platform;
+using Xunit;
 
 namespace Xamarin.Platform.Handlers.DeviceTests
 {

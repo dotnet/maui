@@ -4,11 +4,11 @@ using Xamarin.Forms;
 
 namespace Samples.View
 {
-    public partial class TextToSpeechPage : BasePage
-    {
-        public TextToSpeechPage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class TextToSpeechPage : BasePage
+	{
+		public TextToSpeechPage()
+		{
+			InitializeComponent();
+		}
+	}
 }
