@@ -803,7 +803,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (fileImageSource == null)
 					throw new InvalidOperationException("Icon property must be a FileImageSource on Master page");
 
-			int icon = ResourceManager.GetDrawableByName(fileImageSource);
+			int icon = _activity.GetDrawableId(fileImageSource);
 
 			FastRenderers.AutomationPropertiesProvider.GetDrawerAccessibilityResources(_activity, CurrentMasterDetailPage, out int resourceIdOpen, out int resourceIdClose);
 #pragma warning disable 618 // Eventually we will need to determine how to handle the v7 ActionBarDrawerToggle for AppCompat
