@@ -9,7 +9,6 @@ using NUnit.Framework;
 using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using AColor = Android.Graphics.Color;
-using AContextThemeWrapper = Android.Support.V7.View.ContextThemeWrapper;
 
 namespace Xamarin.Forms.Platform.Android.UnitTests
 {
