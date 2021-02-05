@@ -20,8 +20,10 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 #if APP
 			InitializeComponent();
+			Device.BeginInvokeOnMainThread(OnAppearing);
 #endif
 		}
+
 		protected override void Init()
 		{
 			BindingContext = this;

@@ -361,7 +361,6 @@
                     <Label Text="Background GradientColor" Margin="0,0,0,-10" />
                     <CheckBox Background="{StaticResource GreenGradient}" IsChecked="True" />
                     <CheckBox Background="{StaticResource BlueGradient}" IsChecked="True" />
-
                 </StackLayout>
             </ScrollView>
         </ContentPage>
@@ -374,6 +373,19 @@
                     <StackLayout Orientation="Horizontal">
                         <Button Text="Enabled" BackgroundColor="{StaticResource PrimaryColor}" BorderColor="#b19cd9" BorderWidth="1" HorizontalOptions="FillAndExpand" />
                         <Button Text="Disabled" BackgroundColor="{StaticResource PrimaryColor}" BorderColor="#b19cd9" BorderWidth="1" IsEnabled="false" HorizontalOptions="FillAndExpand" />
+                    </StackLayout>
+                </StackLayout>
+            </ScrollView>
+        </ContentPage>
+    </FlyoutItem>
+    <FlyoutItem Title="Placeholder Test">
+        <ContentPage>
+            <ScrollView>
+                <StackLayout Spacing="20" Padding="10" BackgroundColor="White">
+                    <Label Text="Placeholder looks correcct" Margin="0,0,0,-10" />
+                    <StackLayout Orientation="Vertical">
+                        <Editor x:Name="delayLoadingEditor" Placeholder="Text" AutoSize="TextChanges" BackgroundColor="White" />
+                        <Entry x:Name="delayLoadingEntry" Placeholder="Text"  BackgroundColor="White" />
                     </StackLayout>
                 </StackLayout>
             </ScrollView>
