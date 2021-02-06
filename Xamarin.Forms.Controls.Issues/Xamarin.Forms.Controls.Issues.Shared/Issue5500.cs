@@ -61,7 +61,8 @@ namespace Xamarin.Forms.Controls.Issues
 			Device.BeginInvokeOnMainThread(GarbageCollectionHelper.Collect);
 		}
 
-#if UITEST
+
+#if UITEST && __IOS__
 		[Test]
 		public void VerifyEditorTextChangeEventsAreFiring()
 		{

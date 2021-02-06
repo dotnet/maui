@@ -94,6 +94,7 @@
     <Compile Include="ShellFlyoutItemGroupTests.cs" />
     <Compile Include="ShellFlyoutItemTemplateTests.cs" />
     <Compile Include="ShellModalTests.cs" />
+    <Compile Include="ShellNavigationStateTests.cs" />
     <Compile Include="ShellNavigatingTests.cs" />
     <Compile Include="ShellTestBase.cs" />
     <Compile Include="ShellLifeCycleTests.cs" />

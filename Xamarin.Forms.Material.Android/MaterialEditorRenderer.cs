@@ -39,13 +39,8 @@ namespace Xamarin.Forms.Material.Android
 			UpdateBackgroundColor();
 		}
 
-		protected override void UpdateBackgroundColor()
-		{
-			if (_disposed || _textInputLayout == null)
-				return;
-
-			_textInputLayout.BoxBackgroundColor = MaterialColors.CreateEntryFilledInputBackgroundColor(Element.BackgroundColor, Element.TextColor);
-		}
+		protected override void UpdateBackgroundColor() =>
+			_textInputLayout?.ApplyBackgroundColor(Element.BackgroundColor, Element.TextColor);
 
 		protected override void UpdatePlaceholderText()
 		{
@@ -53,6 +48,9 @@ namespace Xamarin.Forms.Material.Android
 				return;
 
 			_textInputLayout?.SetHint(Element.Placeholder, Element);
+
+			if(!string.IsNullOrWhiteSpace(Element.Placeholder))
+				EditText.SetHintTextColor(global::Android.Graphics.Color.Transparent);
 		}
 
 		protected override void UpdatePlaceholderColor() => ApplyTheme();

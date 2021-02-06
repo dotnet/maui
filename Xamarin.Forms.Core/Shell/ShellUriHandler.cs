@@ -17,12 +17,15 @@ namespace Xamarin.Forms
 		{
 			if (path.OriginalString.StartsWith("..") && shell?.CurrentState != null)
 			{
+				var pathAndQueryString = path.OriginalString.Split(new[] { '?' }, 2);
+				string pathPart = pathAndQueryString[0];
+				string queryString = (pathAndQueryString.Length > 1) ? $"?{pathAndQueryString[1]}" : String.Empty;
+
 				var pages = ShellNavigationManager.BuildFlattenedNavigationStack(shell);
-				var currentState = shell.CurrentState.FullLocation.OriginalString;
 
 				List<string> restOfPath = new List<string>();
 				bool dotsAllParsed = false;
-				foreach (var p in path.OriginalString.Split(_pathSeparators))
+				foreach (var p in pathPart.Split(_pathSeparators))
 				{
 					if (p != ".." || dotsAllParsed)
 					{
@@ -54,7 +57,7 @@ namespace Xamarin.Forms
 				restOfPath.Insert(0, shell.CurrentItem.CurrentItem.CurrentItem.Route);
 				restOfPath.Insert(0, shell.CurrentItem.CurrentItem.Route);
 				restOfPath.Insert(0, shell.CurrentItem.Route);
-				var result = String.Join(_pathSeparator, restOfPath);
+				var result = $"{String.Join(_pathSeparator, restOfPath)}{queryString}";
 				var returnValue = ConvertToStandardFormat("scheme", "host", null, new Uri(result, UriKind.Relative));
 				return new Uri(FormatUri(returnValue.PathAndQuery), UriKind.Relative);
 			}

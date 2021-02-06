@@ -57,7 +57,16 @@ namespace Xamarin.Forms.Platform.iOS
 			// Truncating to 177 means the rows fit, but there's a very slight gap
 			// There may not be anything we can do about this.
 
-			ConstrainedDimension = (int)ConstrainedDimension;
+			// Possibly the solution is to round to the tenths or hundredths place, we should look into that. 
+			// But for the moment, we need a special case for dimensions < 1, because upon transition from invisible to visible,
+			// Forms will briefly layout the CollectionView at a size of 1,1. For a spanned collectionview, that means we 
+			// need to accept a constrained dimension of 1/span. If we don't, autolayout will start throwing a flurry of 
+			// exceptions (which we can't catch) and either crash the app or spin until we kill the app. 
+			if (ConstrainedDimension > 1)
+			{
+				ConstrainedDimension = (int)ConstrainedDimension;
+			}
+
 			DetermineCellSize();
 		}
 
@@ -288,6 +297,12 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			var maxSpacing = (available - span) / (span - 1);
+
+			if (maxSpacing < 0)
+			{
+				return 0;
+			}
+
 			return (nfloat)Math.Min(requestedSpacing, maxSpacing);
 		}
 	}

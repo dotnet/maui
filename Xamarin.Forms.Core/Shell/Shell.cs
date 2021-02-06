@@ -872,7 +872,7 @@ namespace Xamarin.Forms
 				return true;
 			}
 
-			var args = new ShellNavigatingEventArgs(this.CurrentState, "", ShellNavigationSource.Pop, true);
+			var args = new ShellNavigatingEventArgs(this.CurrentState, new ShellNavigationState(""), ShellNavigationSource.Pop, true);
 			_navigationManager.HandleNavigating(args);
 			return args.Cancelled;
 

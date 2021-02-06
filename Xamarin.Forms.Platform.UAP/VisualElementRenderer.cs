@@ -294,6 +294,11 @@ namespace Xamarin.Forms.Platform.UWP
 			if (Element == null || availableSize.Width * availableSize.Height == 0)
 				return new Windows.Foundation.Size(0, 0);
 
+			if (Element is Layout layout)
+			{
+				layout.ResolveLayoutChanges();
+			}
+
 			Element.IsInNativeLayout = true;
 
 			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
