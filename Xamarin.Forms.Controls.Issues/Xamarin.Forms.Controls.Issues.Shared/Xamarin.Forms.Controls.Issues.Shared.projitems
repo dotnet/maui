@@ -900,6 +900,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue10699.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11185.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10307.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)VisualGallery.xaml.cs">
+      <DependentUpon>VisualGallery.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)_TemplateMarkup.xaml.cs">
       <DependentUpon>_TemplateMarkup.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -2650,6 +2654,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ShellFlyoutItemIsVisible.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)VisualGallery.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
