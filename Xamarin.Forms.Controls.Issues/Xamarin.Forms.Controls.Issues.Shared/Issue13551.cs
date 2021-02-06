@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public ObservableCollection<Item> Source1 { get; } = new ObservableCollection<Item>();
 		public ObservableCollection<Item> Source2 { get; } = new ObservableCollection<Item>();
 
-		CollectionView BindingWithConverter() 
+		CollectionView BindingWithConverter()
 		{
 			var cv = new CollectionView
 			{

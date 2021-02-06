@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Material.Android
 
 			_textInputLayout?.SetHint(Element.Placeholder, Element);
 
-			if(!string.IsNullOrWhiteSpace(Element.Placeholder))
+			if (!string.IsNullOrWhiteSpace(Element.Placeholder))
 				EditText.SetHintTextColor(global::Android.Graphics.Color.Transparent);
 		}
 
