@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Material.Android
 				return;
 			}
 
-			if(!_hasDrawnOnce)
+			if (!_hasDrawnOnce)
 			{
 				_hasDrawnOnce = true;
 

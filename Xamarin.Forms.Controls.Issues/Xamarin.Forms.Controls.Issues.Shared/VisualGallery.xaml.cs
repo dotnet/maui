@@ -9,12 +9,12 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-    public partial class VisualGallery : ContentPage
+	public partial class VisualGallery : ContentPage
 	{
 		bool isVisible = false;
 		double percentage = 0.0;
 		public VisualGallery()
-        {
+		{
 #if APP
 			InitializeComponent();
 			Device.BeginInvokeOnMainThread(OnAppearing);
