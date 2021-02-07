@@ -5,27 +5,27 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
-    public static partial class MediaPicker
-    {
-        static bool PlatformIsCaptureSupported
-            => false;
+	public static partial class MediaPicker
+	{
+		static bool PlatformIsCaptureSupported
+			=> false;
 
-        static async Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options)
-            => new FileResult(await FilePicker.PickAsync(new PickOptions
-            {
-                 FileTypes = FilePickerFileType.Images
-            }));
+		static async Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options)
+			=> new FileResult(await FilePicker.PickAsync(new PickOptions
+			{
+				FileTypes = FilePickerFileType.Images
+			}));
 
-        static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
-            => PlatformPickPhotoAsync(options);
+		static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
+			=> PlatformPickPhotoAsync(options);
 
-        static async Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options)
-            => new FileResult(await FilePicker.PickAsync(new PickOptions
-            {
-                FileTypes = FilePickerFileType.Videos
-            }));
+		static async Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options)
+			=> new FileResult(await FilePicker.PickAsync(new PickOptions
+			{
+				FileTypes = FilePickerFileType.Videos
+			}));
 
-        static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
-            => PlatformPickVideoAsync(options);
-    }
+		static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
+			=> PlatformPickVideoAsync(options);
+	}
 }

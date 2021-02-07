@@ -4,32 +4,32 @@ using Xamarin.Forms;
 
 namespace Samples.ViewModel
 {
-    public class KeepScreenOnViewModel : BaseViewModel
-    {
-        public KeepScreenOnViewModel()
-        {
-            RequestActiveCommand = new Command(OnRequestActive);
-            RequestReleaseCommand = new Command(OnRequestRelease);
-        }
+	public class KeepScreenOnViewModel : BaseViewModel
+	{
+		public KeepScreenOnViewModel()
+		{
+			RequestActiveCommand = new Command(OnRequestActive);
+			RequestReleaseCommand = new Command(OnRequestRelease);
+		}
 
-        public bool IsActive => DeviceDisplay.KeepScreenOn;
+		public bool IsActive => DeviceDisplay.KeepScreenOn;
 
-        public ICommand RequestActiveCommand { get; }
+		public ICommand RequestActiveCommand { get; }
 
-        public ICommand RequestReleaseCommand { get; }
+		public ICommand RequestReleaseCommand { get; }
 
-        void OnRequestActive()
-        {
-            DeviceDisplay.KeepScreenOn = true;
+		void OnRequestActive()
+		{
+			DeviceDisplay.KeepScreenOn = true;
 
-            OnPropertyChanged(nameof(IsActive));
-        }
+			OnPropertyChanged(nameof(IsActive));
+		}
 
-        void OnRequestRelease()
-        {
-            DeviceDisplay.KeepScreenOn = false;
+		void OnRequestRelease()
+		{
+			DeviceDisplay.KeepScreenOn = false;
 
-            OnPropertyChanged(nameof(IsActive));
-        }
-    }
+			OnPropertyChanged(nameof(IsActive));
+		}
+	}
 }

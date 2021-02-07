@@ -2,27 +2,27 @@
 
 namespace Samples.ViewModel
 {
-    public class PreferencesViewModel : BaseViewModel
-    {
-        const string preferenceKey = "PreferenceKey";
+	public class PreferencesViewModel : BaseViewModel
+	{
+		const string preferenceKey = "PreferenceKey";
 
-        string preferenceValue;
+		string preferenceValue;
 
-        public PreferencesViewModel()
-        {
-            preferenceValue = Preferences.Get(preferenceKey, string.Empty);
-        }
+		public PreferencesViewModel()
+		{
+			preferenceValue = Preferences.Get(preferenceKey, string.Empty);
+		}
 
-        public string PreferenceValue
-        {
-            get => preferenceValue;
-            set
-            {
-                preferenceValue = value;
-                Preferences.Set(preferenceKey, value);
+		public string PreferenceValue
+		{
+			get => preferenceValue;
+			set
+			{
+				preferenceValue = value;
+				Preferences.Set(preferenceKey, value);
 
-                OnPropertyChanged();
-            }
-        }
-    }
+				OnPropertyChanged();
+			}
+		}
+	}
 }

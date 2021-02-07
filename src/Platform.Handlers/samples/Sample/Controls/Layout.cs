@@ -34,7 +34,7 @@ namespace Sample
 			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
 			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
 				sizeWithoutMargins.Height + Margin.VerticalThickness);
-			
+
 			IsMeasureValid = true;
 			return DesiredSize;
 		}

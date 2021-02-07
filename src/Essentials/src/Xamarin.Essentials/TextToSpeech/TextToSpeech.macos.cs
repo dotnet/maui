@@ -7,91 +7,91 @@ using AppKit;
 
 namespace Xamarin.Essentials
 {
-    public static partial class TextToSpeech
-    {
-        static readonly Lazy<NSSpeechSynthesizer> speechSynthesizer = new Lazy<NSSpeechSynthesizer>(() =>
-            new NSSpeechSynthesizer { Delegate = new SpeechSynthesizerDelegate() });
+	public static partial class TextToSpeech
+	{
+		static readonly Lazy<NSSpeechSynthesizer> speechSynthesizer = new Lazy<NSSpeechSynthesizer>(() =>
+			new NSSpeechSynthesizer { Delegate = new SpeechSynthesizerDelegate() });
 
-        internal static Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
-            Task.FromResult(NSSpeechSynthesizer.AvailableVoices
-                .Select(voice => NSSpeechSynthesizer.AttributesForVoice(voice))
-                .Select(attribute => new Locale(attribute["VoiceLanguage"]?.ToString(), null, attribute["VoiceName"]?.ToString(), attribute["VoiceIdentifier"]?.ToString())));
+		internal static Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
+			Task.FromResult(NSSpeechSynthesizer.AvailableVoices
+				.Select(voice => NSSpeechSynthesizer.AttributesForVoice(voice))
+				.Select(attribute => new Locale(attribute["VoiceLanguage"]?.ToString(), null, attribute["VoiceName"]?.ToString(), attribute["VoiceIdentifier"]?.ToString())));
 
-        internal static async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
-        {
-            var ss = speechSynthesizer.Value;
-            var ssd = (SpeechSynthesizerDelegate)ss.Delegate;
+		internal static async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
+		{
+			var ss = speechSynthesizer.Value;
+			var ssd = (SpeechSynthesizerDelegate)ss.Delegate;
 
-            var tcs = new TaskCompletionSource<bool>();
-            try
-            {
-                if (options != null)
-                {
-                    if (options.Volume.HasValue)
-                        ss.Volume = NormalizeVolume(options.Volume);
+			var tcs = new TaskCompletionSource<bool>();
+			try
+			{
+				if (options != null)
+				{
+					if (options.Volume.HasValue)
+						ss.Volume = NormalizeVolume(options.Volume);
 
-                    if (options.Locale != null)
-                        ss.Voice = options.Locale.Id;
-                }
+					if (options.Locale != null)
+						ss.Voice = options.Locale.Id;
+				}
 
-                ssd.FinishedSpeaking += OnFinishedSpeaking;
-                ssd.EncounteredError += OnEncounteredError;
+				ssd.FinishedSpeaking += OnFinishedSpeaking;
+				ssd.EncounteredError += OnEncounteredError;
 
-                ss.StartSpeakingString(text);
+				ss.StartSpeakingString(text);
 
-                using (cancelToken.Register(TryCancel))
-                {
-                    await tcs.Task;
-                }
-            }
-            finally
-            {
-                ssd.FinishedSpeaking -= OnFinishedSpeaking;
-                ssd.EncounteredError -= OnEncounteredError;
-            }
+				using (cancelToken.Register(TryCancel))
+				{
+					await tcs.Task;
+				}
+			}
+			finally
+			{
+				ssd.FinishedSpeaking -= OnFinishedSpeaking;
+				ssd.EncounteredError -= OnEncounteredError;
+			}
 
-            void TryCancel()
-            {
+			void TryCancel()
+			{
 #pragma warning disable 0618
-                // hWord is obsolete, but only just the latest release
-                ss.StopSpeaking(NSSpeechBoundary.hWord);
+				// hWord is obsolete, but only just the latest release
+				ss.StopSpeaking(NSSpeechBoundary.hWord);
 #pragma warning restore 0618
-                tcs.TrySetResult(true);
-            }
+				tcs.TrySetResult(true);
+			}
 
-            void OnFinishedSpeaking(bool completed)
-            {
-                tcs.TrySetResult(completed);
-            }
+			void OnFinishedSpeaking(bool completed)
+			{
+				tcs.TrySetResult(completed);
+			}
 
-            void OnEncounteredError(string errorMessage)
-            {
-                // TODO: a real exception type here
-                tcs.TrySetException(new Exception(errorMessage));
-            }
-        }
+			void OnEncounteredError(string errorMessage)
+			{
+				// TODO: a real exception type here
+				tcs.TrySetException(new Exception(errorMessage));
+			}
+		}
 
-        static float NormalizeVolume(float? volume)
-        {
-            var v = volume ?? 1.0f;
-            if (v > 1.0f)
-                v = 1.0f;
-            else if (v < 0.0f)
-                v = 0.0f;
-            return v;
-        }
+		static float NormalizeVolume(float? volume)
+		{
+			var v = volume ?? 1.0f;
+			if (v > 1.0f)
+				v = 1.0f;
+			else if (v < 0.0f)
+				v = 0.0f;
+			return v;
+		}
 
-        class SpeechSynthesizerDelegate : NSSpeechSynthesizerDelegate
-        {
-            public event Action<bool> FinishedSpeaking;
+		class SpeechSynthesizerDelegate : NSSpeechSynthesizerDelegate
+		{
+			public event Action<bool> FinishedSpeaking;
 
-            public event Action<string> EncounteredError;
+			public event Action<string> EncounteredError;
 
-            public override void DidEncounterError(NSSpeechSynthesizer sender, nuint characterIndex, string theString, string message) =>
-                EncounteredError?.Invoke(message);
+			public override void DidEncounterError(NSSpeechSynthesizer sender, nuint characterIndex, string theString, string message) =>
+				EncounteredError?.Invoke(message);
 
-            public override void DidFinishSpeaking(NSSpeechSynthesizer sender, bool finishedSpeaking) =>
-                FinishedSpeaking?.Invoke(finishedSpeaking);
-        }
-    }
+			public override void DidFinishSpeaking(NSSpeechSynthesizer sender, bool finishedSpeaking) =>
+				FinishedSpeaking?.Invoke(finishedSpeaking);
+		}
+	}
 }

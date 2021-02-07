@@ -10,8 +10,8 @@ using ContactsUI;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Contacts
-    {
+	public static partial class Contacts
+	{
 #if __MACOS__
         static Task<Contact> PlatformPickContactAsync() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
@@ -45,65 +45,65 @@ namespace Xamarin.Essentials
         }
 
 #endif
-        static Task<IEnumerable<Contact>> PlatformGetAllAsync(CancellationToken cancellationToken)
-        {
-            var keys = new[]
-            {
-                CNContactKey.Identifier,
-                CNContactKey.NamePrefix,
-                CNContactKey.GivenName,
-                CNContactKey.MiddleName,
-                CNContactKey.FamilyName,
-                CNContactKey.NameSuffix,
-                CNContactKey.EmailAddresses,
-                CNContactKey.PhoneNumbers,
-                CNContactKey.Type
-            };
+		static Task<IEnumerable<Contact>> PlatformGetAllAsync(CancellationToken cancellationToken)
+		{
+			var keys = new[]
+			{
+				CNContactKey.Identifier,
+				CNContactKey.NamePrefix,
+				CNContactKey.GivenName,
+				CNContactKey.MiddleName,
+				CNContactKey.FamilyName,
+				CNContactKey.NameSuffix,
+				CNContactKey.EmailAddresses,
+				CNContactKey.PhoneNumbers,
+				CNContactKey.Type
+			};
 
-            var store = new CNContactStore();
-            var containers = store.GetContainers(null, out _);
-            if (containers == null)
-                return Task.FromResult<IEnumerable<Contact>>(Array.Empty<Contact>());
+			var store = new CNContactStore();
+			var containers = store.GetContainers(null, out _);
+			if (containers == null)
+				return Task.FromResult<IEnumerable<Contact>>(Array.Empty<Contact>());
 
-            return Task.FromResult(GetEnumerable());
+			return Task.FromResult(GetEnumerable());
 
-            IEnumerable<Contact> GetEnumerable()
-            {
-                foreach (var container in containers)
-                {
-                    using var pred = CNContact.GetPredicateForContactsInContainer(container.Identifier);
-                    var contacts = store.GetUnifiedContacts(pred, keys, out var error);
-                    if (contacts == null)
-                        continue;
+			IEnumerable<Contact> GetEnumerable()
+			{
+				foreach (var container in containers)
+				{
+					using var pred = CNContact.GetPredicateForContactsInContainer(container.Identifier);
+					var contacts = store.GetUnifiedContacts(pred, keys, out var error);
+					if (contacts == null)
+						continue;
 
-                    foreach (var contact in contacts)
-                    {
-                        yield return ConvertContact(contact);
-                    }
-                }
-            }
-        }
+					foreach (var contact in contacts)
+					{
+						yield return ConvertContact(contact);
+					}
+				}
+			}
+		}
 
-        internal static Contact ConvertContact(CNContact contact)
-        {
-            if (contact == null)
-                return default;
+		internal static Contact ConvertContact(CNContact contact)
+		{
+			if (contact == null)
+				return default;
 
-            var phones = contact.PhoneNumbers?.Select(
-                item => new ContactPhone(item?.Value?.StringValue));
-            var emails = contact.EmailAddresses?.Select(
-                item => new ContactEmail(item?.Value?.ToString()));
+			var phones = contact.PhoneNumbers?.Select(
+				item => new ContactPhone(item?.Value?.StringValue));
+			var emails = contact.EmailAddresses?.Select(
+				item => new ContactEmail(item?.Value?.ToString()));
 
-            return new Contact(
-                contact.Identifier,
-                contact.NamePrefix,
-                contact.GivenName,
-                contact.MiddleName,
-                contact.FamilyName,
-                contact.NameSuffix,
-                phones,
-                emails);
-        }
+			return new Contact(
+				contact.Identifier,
+				contact.NamePrefix,
+				contact.GivenName,
+				contact.MiddleName,
+				contact.FamilyName,
+				contact.NameSuffix,
+				phones,
+				emails);
+		}
 
 #if __IOS__
         class ContactPickerDelegate : CNContactPickerDelegate
@@ -134,5 +134,5 @@ namespace Xamarin.Essentials
                 picker.DismissModalViewController(true);
         }
 #endif
-    }
+	}
 }

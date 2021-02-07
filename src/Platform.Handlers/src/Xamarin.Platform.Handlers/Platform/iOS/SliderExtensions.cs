@@ -4,7 +4,7 @@ using Xamarin.Forms;
 namespace Xamarin.Platform
 {
 	public static class SliderExtensions
-	{ 
+	{
 		public static void UpdateMinimum(this UISlider uiSlider, ISlider slider)
 		{
 			uiSlider.MaxValue = (float)slider.Maximum;

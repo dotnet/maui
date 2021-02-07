@@ -5,43 +5,43 @@ using Tizen.Applications;
 
 namespace Xamarin.Essentials
 {
-    public static partial class FileSystem
-    {
-        static string PlatformCacheDirectory
-            => Application.Current.DirectoryInfo.Cache;
+	public static partial class FileSystem
+	{
+		static string PlatformCacheDirectory
+			=> Application.Current.DirectoryInfo.Cache;
 
-        static string PlatformAppDataDirectory
-            => Application.Current.DirectoryInfo.Data;
+		static string PlatformAppDataDirectory
+			=> Application.Current.DirectoryInfo.Data;
 
-        static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
-        {
-            if (string.IsNullOrWhiteSpace(filename))
-                throw new ArgumentNullException(nameof(filename));
+		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
+		{
+			if (string.IsNullOrWhiteSpace(filename))
+				throw new ArgumentNullException(nameof(filename));
 
-            filename = filename.Replace('\\', Path.DirectorySeparatorChar);
-            Stream fs = File.OpenRead(Path.Combine(Application.Current.DirectoryInfo.Resource, filename));
-            return Task.FromResult(fs);
-        }
-    }
+			filename = filename.Replace('\\', Path.DirectorySeparatorChar);
+			Stream fs = File.OpenRead(Path.Combine(Application.Current.DirectoryInfo.Resource, filename));
+			return Task.FromResult(fs);
+		}
+	}
 
-    public partial class FileBase
-    {
-        static string PlatformGetContentType(string extension)
-        {
-            extension = extension.TrimStart('.');
-            return Tizen.Content.MimeType.MimeUtil.GetMimeType(extension);
-        }
+	public partial class FileBase
+	{
+		static string PlatformGetContentType(string extension)
+		{
+			extension = extension.TrimStart('.');
+			return Tizen.Content.MimeType.MimeUtil.GetMimeType(extension);
+		}
 
-        internal void PlatformInit(FileBase file)
-        {
-        }
+		internal void PlatformInit(FileBase file)
+		{
+		}
 
-        internal virtual async Task<Stream> PlatformOpenReadAsync()
-        {
-            await Permissions.RequestAsync<Permissions.StorageRead>();
+		internal virtual async Task<Stream> PlatformOpenReadAsync()
+		{
+			await Permissions.RequestAsync<Permissions.StorageRead>();
 
-            var stream = File.Open(FullPath, FileMode.Open, FileAccess.Read);
-            return Task.FromResult<Stream>(stream).Result;
-        }
-    }
+			var stream = File.Open(FullPath, FileMode.Open, FileAccess.Read);
+			return Task.FromResult<Stream>(stream).Result;
+		}
+	}
 }

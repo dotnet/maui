@@ -67,7 +67,7 @@ namespace Xamarin.Platform.Handlers.UnitTests.Layouts
 		[InlineData(150, 100, 100)]
 		[InlineData(150, 200, 200)]
 		[InlineData(1250, -1, 1250)]
-		public void StackAppliesHeight(double viewHeight, double stackHeight, double expectedHeight) 
+		public void StackAppliesHeight(double viewHeight, double stackHeight, double expectedHeight)
 		{
 			var stack = CreateTestLayout();
 

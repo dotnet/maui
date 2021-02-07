@@ -4,89 +4,89 @@ using Xunit;
 
 namespace DeviceTests
 {
-    // TEST NOTES:
-    //   - these tests require a gyroscope to be present
-    public class Gyroscope_Tests
-    {
-        [Fact]
-        public void IsSupported()
-        {
-            Assert.Equal(HardwareSupport.HasGyroscope, Gyroscope.IsSupported);
-        }
+	// TEST NOTES:
+	//   - these tests require a gyroscope to be present
+	public class Gyroscope_Tests
+	{
+		[Fact]
+		public void IsSupported()
+		{
+			Assert.Equal(HardwareSupport.HasGyroscope, Gyroscope.IsSupported);
+		}
 
-        [Theory]
-        [InlineData(SensorSpeed.Fastest)]
-        [Trait(Traits.Hardware.Gyroscope, Traits.FeatureSupport.Supported)]
-        public async Task Monitor(SensorSpeed sensorSpeed)
-        {
-            // TODO: the test runner app (UI version) should do this, until then...
-            if (!HardwareSupport.HasGyroscope)
-                return;
+		[Theory]
+		[InlineData(SensorSpeed.Fastest)]
+		[Trait(Traits.Hardware.Gyroscope, Traits.FeatureSupport.Supported)]
+		public async Task Monitor(SensorSpeed sensorSpeed)
+		{
+			// TODO: the test runner app (UI version) should do this, until then...
+			if (!HardwareSupport.HasGyroscope)
+				return;
 
-            var tcs = new TaskCompletionSource<GyroscopeData>();
-            Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
-            Gyroscope.Start(sensorSpeed);
+			var tcs = new TaskCompletionSource<GyroscopeData>();
+			Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
+			Gyroscope.Start(sensorSpeed);
 
-            void Gyroscope_ReadingChanged(object sender, GyroscopeChangedEventArgs e)
-            {
-                tcs.TrySetResult(e.Reading);
-            }
+			void Gyroscope_ReadingChanged(object sender, GyroscopeChangedEventArgs e)
+			{
+				tcs.TrySetResult(e.Reading);
+			}
 
-            var d = await tcs.Task;
+			var d = await tcs.Task;
 
-            Gyroscope.Stop();
-            Gyroscope.ReadingChanged -= Gyroscope_ReadingChanged;
-        }
+			Gyroscope.Stop();
+			Gyroscope.ReadingChanged -= Gyroscope_ReadingChanged;
+		}
 
-        [Theory]
-        [InlineData(SensorSpeed.Fastest)]
-        [Trait(Traits.Hardware.Gyroscope, Traits.FeatureSupport.Supported)]
-        public async Task IsMonitoring(SensorSpeed sensorSpeed)
-        {
-            // TODO: the test runner app (UI version) should do this, until then...
-            if (!HardwareSupport.HasGyroscope)
-                return;
+		[Theory]
+		[InlineData(SensorSpeed.Fastest)]
+		[Trait(Traits.Hardware.Gyroscope, Traits.FeatureSupport.Supported)]
+		public async Task IsMonitoring(SensorSpeed sensorSpeed)
+		{
+			// TODO: the test runner app (UI version) should do this, until then...
+			if (!HardwareSupport.HasGyroscope)
+				return;
 
-            var tcs = new TaskCompletionSource<GyroscopeData>();
-            Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
-            Gyroscope.Start(sensorSpeed);
+			var tcs = new TaskCompletionSource<GyroscopeData>();
+			Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
+			Gyroscope.Start(sensorSpeed);
 
-            void Gyroscope_ReadingChanged(object sender, GyroscopeChangedEventArgs e)
-            {
-                tcs.TrySetResult(e.Reading);
-            }
+			void Gyroscope_ReadingChanged(object sender, GyroscopeChangedEventArgs e)
+			{
+				tcs.TrySetResult(e.Reading);
+			}
 
-            var d = await tcs.Task;
-            Assert.True(Gyroscope.IsMonitoring);
-            Gyroscope.Stop();
-            Gyroscope.ReadingChanged -= Gyroscope_ReadingChanged;
-        }
+			var d = await tcs.Task;
+			Assert.True(Gyroscope.IsMonitoring);
+			Gyroscope.Stop();
+			Gyroscope.ReadingChanged -= Gyroscope_ReadingChanged;
+		}
 
-        [Theory]
-        [InlineData(SensorSpeed.Fastest)]
-        [Trait(Traits.Hardware.Gyroscope, Traits.FeatureSupport.Supported)]
-        public async Task Stop_Monitor(SensorSpeed sensorSpeed)
-        {
-            // TODO: the test runner app (UI version) should do this, until then...
-            if (!HardwareSupport.HasGyroscope)
-                return;
+		[Theory]
+		[InlineData(SensorSpeed.Fastest)]
+		[Trait(Traits.Hardware.Gyroscope, Traits.FeatureSupport.Supported)]
+		public async Task Stop_Monitor(SensorSpeed sensorSpeed)
+		{
+			// TODO: the test runner app (UI version) should do this, until then...
+			if (!HardwareSupport.HasGyroscope)
+				return;
 
-            var tcs = new TaskCompletionSource<GyroscopeData>();
+			var tcs = new TaskCompletionSource<GyroscopeData>();
 
-            Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
-            Gyroscope.Start(sensorSpeed);
+			Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
+			Gyroscope.Start(sensorSpeed);
 
-            void Gyroscope_ReadingChanged(object sender, GyroscopeChangedEventArgs e)
-            {
-                tcs.TrySetResult(e.Reading);
-            }
+			void Gyroscope_ReadingChanged(object sender, GyroscopeChangedEventArgs e)
+			{
+				tcs.TrySetResult(e.Reading);
+			}
 
-            var d = await tcs.Task;
+			var d = await tcs.Task;
 
-            Gyroscope.Stop();
-            Gyroscope.ReadingChanged -= Gyroscope_ReadingChanged;
+			Gyroscope.Stop();
+			Gyroscope.ReadingChanged -= Gyroscope_ReadingChanged;
 
-            Assert.False(Gyroscope.IsMonitoring);
-        }
-    }
+			Assert.False(Gyroscope.IsMonitoring);
+		}
+	}
 }

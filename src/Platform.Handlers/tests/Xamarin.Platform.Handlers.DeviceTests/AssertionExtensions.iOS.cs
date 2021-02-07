@@ -73,7 +73,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 			return pixel;
 		}
 
-		
+
 
 		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y)
 		{
@@ -90,7 +90,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 
 				return bitmap;
 			}
-			catch (Exception ex) 
+			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine(ex);
 			}
@@ -164,7 +164,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 		{
 			return view.ToBitmap().AssertContainsColor(expectedColor);
 		}
-		
+
 		public static UIImage AssertContainsColor(this UIView view, Xamarin.Forms.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToNative());
 
@@ -187,7 +187,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 
 		public static async Task AssertEqualsAsync(this UIImage expectedBitmap, UIImage actualBitmap)
 		{
-			if(!actualBitmap.AsPNG().IsEqual(expectedBitmap.AsPNG()))
+			if (!actualBitmap.AsPNG().IsEqual(expectedBitmap.AsPNG()))
 			{
 				string failureMessage = null;
 				await MainThread.InvokeOnMainThreadAsync(() =>

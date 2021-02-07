@@ -10,27 +10,27 @@ using Xamarin.Forms.Xaml;
 
 namespace Samples.View
 {
-    [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class PermissionsPage : BasePage
-    {
-        public PermissionsPage()
-        {
-            InitializeComponent();
-        }
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class PermissionsPage : BasePage
+	{
+		public PermissionsPage()
+		{
+			InitializeComponent();
+		}
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
 
-            MessagingCenter.Subscribe<PermissionItem, Exception>(this, nameof(PermissionException), async (p, ex) =>
-                await DisplayAlert("Permission Error", ex.Message, "OK"));
-        }
+			MessagingCenter.Subscribe<PermissionItem, Exception>(this, nameof(PermissionException), async (p, ex) =>
+				await DisplayAlert("Permission Error", ex.Message, "OK"));
+		}
 
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
+		protected override void OnDisappearing()
+		{
+			base.OnDisappearing();
 
-            MessagingCenter.Unsubscribe<PermissionItem, Exception>(this, nameof(PermissionException));
-        }
-    }
+			MessagingCenter.Unsubscribe<PermissionItem, Exception>(this, nameof(PermissionException));
+		}
+	}
 }

@@ -4,89 +4,89 @@ using Xunit;
 
 namespace DeviceTests
 {
-    // TEST NOTES:
-    //   - these tests require a magnetometer to be present
-    public class Magnetometer_Tests
-    {
-        [Fact]
-        public void IsSupported()
-        {
-            Assert.Equal(HardwareSupport.HasMagnetometer, Magnetometer.IsSupported);
-        }
+	// TEST NOTES:
+	//   - these tests require a magnetometer to be present
+	public class Magnetometer_Tests
+	{
+		[Fact]
+		public void IsSupported()
+		{
+			Assert.Equal(HardwareSupport.HasMagnetometer, Magnetometer.IsSupported);
+		}
 
-        [Theory]
-        [InlineData(SensorSpeed.Fastest)]
-        [Trait(Traits.Hardware.Magnetometer, Traits.FeatureSupport.Supported)]
-        public async Task Monitor(SensorSpeed sensorSpeed)
-        {
-            // TODO: the test runner app (UI version) should do this, until then...
-            if (!HardwareSupport.HasMagnetometer)
-                return;
+		[Theory]
+		[InlineData(SensorSpeed.Fastest)]
+		[Trait(Traits.Hardware.Magnetometer, Traits.FeatureSupport.Supported)]
+		public async Task Monitor(SensorSpeed sensorSpeed)
+		{
+			// TODO: the test runner app (UI version) should do this, until then...
+			if (!HardwareSupport.HasMagnetometer)
+				return;
 
-            var tcs = new TaskCompletionSource<MagnetometerData>();
-            Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
-            Magnetometer.Start(sensorSpeed);
+			var tcs = new TaskCompletionSource<MagnetometerData>();
+			Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
+			Magnetometer.Start(sensorSpeed);
 
-            void Magnetometer_ReadingChanged(object sender, MagnetometerChangedEventArgs e)
-            {
-                tcs.TrySetResult(e.Reading);
-            }
+			void Magnetometer_ReadingChanged(object sender, MagnetometerChangedEventArgs e)
+			{
+				tcs.TrySetResult(e.Reading);
+			}
 
-            var d = await tcs.Task;
+			var d = await tcs.Task;
 
-            Magnetometer.Stop();
-            Magnetometer.ReadingChanged -= Magnetometer_ReadingChanged;
-        }
+			Magnetometer.Stop();
+			Magnetometer.ReadingChanged -= Magnetometer_ReadingChanged;
+		}
 
-        [Theory]
-        [InlineData(SensorSpeed.Fastest)]
-        [Trait(Traits.Hardware.Magnetometer, Traits.FeatureSupport.Supported)]
-        public async Task IsMonitoring(SensorSpeed sensorSpeed)
-        {
-            // TODO: the test runner app (UI version) should do this, until then...
-            if (!HardwareSupport.HasMagnetometer)
-                return;
+		[Theory]
+		[InlineData(SensorSpeed.Fastest)]
+		[Trait(Traits.Hardware.Magnetometer, Traits.FeatureSupport.Supported)]
+		public async Task IsMonitoring(SensorSpeed sensorSpeed)
+		{
+			// TODO: the test runner app (UI version) should do this, until then...
+			if (!HardwareSupport.HasMagnetometer)
+				return;
 
-            var tcs = new TaskCompletionSource<MagnetometerData>();
-            Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
-            Magnetometer.Start(sensorSpeed);
+			var tcs = new TaskCompletionSource<MagnetometerData>();
+			Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
+			Magnetometer.Start(sensorSpeed);
 
-            void Magnetometer_ReadingChanged(object sender, MagnetometerChangedEventArgs e)
-            {
-                tcs.TrySetResult(e.Reading);
-            }
+			void Magnetometer_ReadingChanged(object sender, MagnetometerChangedEventArgs e)
+			{
+				tcs.TrySetResult(e.Reading);
+			}
 
-            var d = await tcs.Task;
-            Assert.True(Magnetometer.IsMonitoring);
-            Magnetometer.Stop();
-            Magnetometer.ReadingChanged -= Magnetometer_ReadingChanged;
-        }
+			var d = await tcs.Task;
+			Assert.True(Magnetometer.IsMonitoring);
+			Magnetometer.Stop();
+			Magnetometer.ReadingChanged -= Magnetometer_ReadingChanged;
+		}
 
-        [Theory]
-        [InlineData(SensorSpeed.Fastest)]
-        [Trait(Traits.Hardware.Magnetometer, Traits.FeatureSupport.Supported)]
-        public async Task Stop_Monitor(SensorSpeed sensorSpeed)
-        {
-            // TODO: the test runner app (UI version) should do this, until then...
-            if (!HardwareSupport.HasMagnetometer)
-                return;
+		[Theory]
+		[InlineData(SensorSpeed.Fastest)]
+		[Trait(Traits.Hardware.Magnetometer, Traits.FeatureSupport.Supported)]
+		public async Task Stop_Monitor(SensorSpeed sensorSpeed)
+		{
+			// TODO: the test runner app (UI version) should do this, until then...
+			if (!HardwareSupport.HasMagnetometer)
+				return;
 
-            var tcs = new TaskCompletionSource<MagnetometerData>();
+			var tcs = new TaskCompletionSource<MagnetometerData>();
 
-            Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
-            Magnetometer.Start(sensorSpeed);
+			Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
+			Magnetometer.Start(sensorSpeed);
 
-            void Magnetometer_ReadingChanged(object sender, MagnetometerChangedEventArgs e)
-            {
-                tcs.TrySetResult(e.Reading);
-            }
+			void Magnetometer_ReadingChanged(object sender, MagnetometerChangedEventArgs e)
+			{
+				tcs.TrySetResult(e.Reading);
+			}
 
-            var d = await tcs.Task;
+			var d = await tcs.Task;
 
-            Magnetometer.Stop();
-            Magnetometer.ReadingChanged -= Magnetometer_ReadingChanged;
+			Magnetometer.Stop();
+			Magnetometer.ReadingChanged -= Magnetometer_ReadingChanged;
 
-            Assert.False(Magnetometer.IsMonitoring);
-        }
-    }
+			Assert.False(Magnetometer.IsMonitoring);
+		}
+	}
 }

@@ -8,28 +8,28 @@ using UIKit;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Launcher
-    {
-        static Task<bool> PlatformCanOpenAsync(Uri uri) =>
-            Task.FromResult(UIApplication.SharedApplication.CanOpenUrl(WebUtils.GetNativeUrl(uri)));
+	public static partial class Launcher
+	{
+		static Task<bool> PlatformCanOpenAsync(Uri uri) =>
+			Task.FromResult(UIApplication.SharedApplication.CanOpenUrl(WebUtils.GetNativeUrl(uri)));
 
-        static Task PlatformOpenAsync(Uri uri) =>
-            PlatformOpenAsync(WebUtils.GetNativeUrl(uri));
+		static Task PlatformOpenAsync(Uri uri) =>
+			PlatformOpenAsync(WebUtils.GetNativeUrl(uri));
 
-        internal static Task<bool> PlatformOpenAsync(NSUrl nativeUrl) =>
-            Platform.HasOSVersion(10, 0)
-                ? UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions())
-                : Task.FromResult(UIApplication.SharedApplication.OpenUrl(nativeUrl));
+		internal static Task<bool> PlatformOpenAsync(NSUrl nativeUrl) =>
+			Platform.HasOSVersion(10, 0)
+				? UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions())
+				: Task.FromResult(UIApplication.SharedApplication.OpenUrl(nativeUrl));
 
-        static Task<bool> PlatformTryOpenAsync(Uri uri)
-        {
-            var nativeUrl = WebUtils.GetNativeUrl(uri);
+		static Task<bool> PlatformTryOpenAsync(Uri uri)
+		{
+			var nativeUrl = WebUtils.GetNativeUrl(uri);
 
-            if (UIApplication.SharedApplication.CanOpenUrl(nativeUrl))
-                return PlatformOpenAsync(nativeUrl);
+			if (UIApplication.SharedApplication.CanOpenUrl(nativeUrl))
+				return PlatformOpenAsync(nativeUrl);
 
-            return Task.FromResult(false);
-        }
+			return Task.FromResult(false);
+		}
 
 #if __IOS__
         static UIDocumentInteractionController documentController;
@@ -63,8 +63,8 @@ namespace Xamarin.Essentials
         }
 
 #else
-        static Task PlatformOpenAsync(OpenFileRequest request) =>
-            throw new FeatureNotSupportedException();
+		static Task PlatformOpenAsync(OpenFileRequest request) =>
+			throw new FeatureNotSupportedException();
 #endif
-    }
+	}
 }

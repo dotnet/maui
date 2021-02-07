@@ -1,10 +1,10 @@
 ﻿namespace Samples.View
 {
-    public partial class SecureStoragePage : BasePage
-    {
-        public SecureStoragePage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class SecureStoragePage : BasePage
+	{
+		public SecureStoragePage()
+		{
+			InitializeComponent();
+		}
+	}
 }

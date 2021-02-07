@@ -3,22 +3,22 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Screenshot
-    {
-        static bool PlatformIsCaptureSupported =>
-            throw ExceptionUtils.NotSupportedOrImplementedException;
+	public static partial class Screenshot
+	{
+		static bool PlatformIsCaptureSupported =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static Task<ScreenshotResult> PlatformCaptureAsync() =>
-            throw ExceptionUtils.NotSupportedOrImplementedException;
-    }
+		static Task<ScreenshotResult> PlatformCaptureAsync() =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+	}
 
-    public partial class ScreenshotResult
-    {
-        ScreenshotResult()
-        {
-        }
+	public partial class ScreenshotResult
+	{
+		ScreenshotResult()
+		{
+		}
 
-        internal Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format) =>
-            throw ExceptionUtils.NotSupportedOrImplementedException;
-    }
+		internal Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+	}
 }

@@ -178,10 +178,10 @@ namespace Xamarin.Forms
 
 		Rectangle IFrameworkElement.Frame => Bounds;
 
-		public IViewHandler Handler 
-		{ 
-			get; 
-			set; 
+		public IViewHandler Handler
+		{
+			get;
+			set;
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -203,7 +203,7 @@ namespace Xamarin.Forms
 			Layout(bounds);
 		}
 
-		void IFrameworkElement.Arrange(Rectangle bounds) 
+		void IFrameworkElement.Arrange(Rectangle bounds)
 		{
 			if (IsArrangeValid)
 				return;

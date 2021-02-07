@@ -42,7 +42,7 @@ namespace Sample
 		void IButton.Released() => Released?.Invoke();
 		void IButton.Clicked() => Clicked?.Invoke();
 
-		public new double Width 
+		public new double Width
 		{
 			get { return WidthRequest; }
 			set { WidthRequest = value; }

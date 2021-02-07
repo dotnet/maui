@@ -6,9 +6,9 @@ using Android.Graphics;
 using Android.Text;
 using Android.Text.Style;
 using Android.Views;
+using Xamarin.Platform;
 using ATextView = global::Android.Widget.TextView;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
-using Xamarin.Platform;
 
 namespace Xamarin.Forms.Platform.Android
 {

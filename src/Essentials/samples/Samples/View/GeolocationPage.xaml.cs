@@ -1,10 +1,10 @@
 ﻿namespace Samples.View
 {
-    public partial class GeolocationPage : BasePage
-    {
-        public GeolocationPage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class GeolocationPage : BasePage
+	{
+		public GeolocationPage()
+		{
+			InitializeComponent();
+		}
+	}
 }

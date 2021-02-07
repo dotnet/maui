@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
 using Android.App;
 using Android.Content;
 using Android.Graphics;
@@ -12,10 +11,10 @@ using Android.Text;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Platform;
-using AView = Android.Views.View;
-using AImageButton = Android.Widget.ImageButton;
 using Xamarin.Forms.Internals;
+using Xamarin.Platform;
+using AImageButton = Android.Widget.ImageButton;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {

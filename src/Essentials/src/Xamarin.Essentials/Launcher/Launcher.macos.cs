@@ -6,26 +6,26 @@ using Foundation;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Launcher
-    {
-        static Task<bool> PlatformCanOpenAsync(Uri uri) =>
-            Task.FromResult(NSWorkspace.SharedWorkspace.UrlForApplication(WebUtils.GetNativeUrl(uri)) != null);
+	public static partial class Launcher
+	{
+		static Task<bool> PlatformCanOpenAsync(Uri uri) =>
+			Task.FromResult(NSWorkspace.SharedWorkspace.UrlForApplication(WebUtils.GetNativeUrl(uri)) != null);
 
-        internal static Task PlatformOpenAsync(Uri uri) =>
-            Task.FromResult(NSWorkspace.SharedWorkspace.OpenUrl(WebUtils.GetNativeUrl(uri)));
+		internal static Task PlatformOpenAsync(Uri uri) =>
+			Task.FromResult(NSWorkspace.SharedWorkspace.OpenUrl(WebUtils.GetNativeUrl(uri)));
 
-        static Task<bool> PlatformTryOpenAsync(Uri uri)
-        {
-            var nativeUrl = WebUtils.GetNativeUrl(uri);
-            var canOpen = NSWorkspace.SharedWorkspace.UrlForApplication(nativeUrl) != null;
+		static Task<bool> PlatformTryOpenAsync(Uri uri)
+		{
+			var nativeUrl = WebUtils.GetNativeUrl(uri);
+			var canOpen = NSWorkspace.SharedWorkspace.UrlForApplication(nativeUrl) != null;
 
-            if (canOpen)
-                return Task.FromResult(NSWorkspace.SharedWorkspace.OpenUrl(nativeUrl));
+			if (canOpen)
+				return Task.FromResult(NSWorkspace.SharedWorkspace.OpenUrl(nativeUrl));
 
-            return Task.FromResult(canOpen);
-        }
+			return Task.FromResult(canOpen);
+		}
 
-        static Task PlatformOpenAsync(OpenFileRequest request) =>
-            Task.FromResult(NSWorkspace.SharedWorkspace.OpenFile(request.File.FullPath));
-    }
+		static Task PlatformOpenAsync(OpenFileRequest request) =>
+			Task.FromResult(NSWorkspace.SharedWorkspace.OpenFile(request.File.FullPath));
+	}
 }
