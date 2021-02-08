@@ -8,11 +8,11 @@
 
 Windows CMD:
 build.cmd -Target NugetPack
-build.cmd -Target NugetPack -ScriptArgs '-packageVersion="9.9.9-custom"','-configuration="Release"'
+build.cmd -Target NugetPack -ScriptArgs '--packageVersion="9.9.9-custom"','--configuration="Release"'
 
 PowerShell:
 ./build.ps1 -Target NugetPack
-./build.ps1 -Target NugetPack -ScriptArgs '-packageVersion="9.9.9-custom"'
+./build.ps1 -Target NugetPack -ScriptArgs '--packageVersion="9.9.9-custom"'
 
  */
 //////////////////////////////////////////////////////////////////////
@@ -169,6 +169,7 @@ Information ("isCIBuild: {0}", isCIBuild);
 Information ("artifactStagingDirectory: {0}", artifactStagingDirectory);
 Information("workingDirectory: {0}", workingDirectory);
 Information("NUNIT_TEST_WHERE: {0}", NUNIT_TEST_WHERE);
+Information("TARGET: {0}", target);
 
 var releaseChannel = ReleaseChannel.Stable;
 if(releaseChannelArg == "Preview")

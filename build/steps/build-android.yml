@@ -110,7 +110,7 @@ jobs:
         inputs:
           targetType: 'filePath'
           filePath: 'build.sh'
-          arguments: --target cg-android --ANDROID_RENDERERS="$(renderers)" --GoogleMapsAPIKey="$(GoogleMapsAPIKey)" --buildForVS2017=$(buildForVS2017) --BUILD_CONFIGURATION=${{ parameters.buildConfiguration }} --MSBuildArguments='${{ variables.MSBuildArguments_cg_android }}'
+          arguments: --target cg-android --ANDROID_RENDERERS="$(renderers)" --GoogleMapsAPIKey="$(GoogleMapsAPIKey)" --buildForVS2017=$(buildForVS2017) --BUILD_CONFIGURATION=${{ parameters.buildConfiguration }} --MSBuildArguments='${{ variables.MSBuildArguments_cg_android }} '
 
       - task: CopyFiles@2
         displayName: 'Copy $(renderers)'
