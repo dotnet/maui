@@ -1,7 +1,11 @@
 if (IsMac)
 {
 	System.Net.Http.HttpClient client = new System.Net.Http.HttpClient (new System.Net.Http.HttpClientHandler { AllowAutoRedirect = true });
-	
+	if (!Directory.Exists ("/Library/Frameworks/Mono.framework/Versions/Current/Commands/"))
+ 	{
+ 		Item ("Mono", "6.12.0.127")
+ 			.Source (_ => "https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.107.macos10.xamarin.universal.pkg");
+ 	}
 	ForceJavaCleanup();
 	OpenJDK ("1.8.0-40");
 

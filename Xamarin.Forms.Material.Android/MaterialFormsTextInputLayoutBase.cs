@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Material.Android
 		ColorStateList _placeholderColorsList;
 		ColorStateList _placeholderDefaultColorList;
 		ColorStateList _underlineColorsList;
-		
+
 		static readonly int[][] s_colorStates = { new[] { global::Android.Resource.Attribute.StateEnabled }, new[] { -global::Android.Resource.Attribute.StateEnabled } };
 		bool _disposed = false;
 
