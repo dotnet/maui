@@ -111,7 +111,7 @@ string MSBuildArgumentsARGS = Argument("MSBuildArguments", "");
 string MSBuildArguments;
 
 if(buildForVS2017)
-    MSBuildArguments = String.Empty;
+    MSBuildArguments = " ";
 else
     MSBuildArguments = $"{MSBuildArgumentsENV} {MSBuildArgumentsARGS}";
     
