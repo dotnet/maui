@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void LayoutView(double x, double y, double width, double height)
 		{
-			_shellViewRenderer.LayoutView(width, height);
+			_shellViewRenderer.LayoutView(x, y, width, height);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)

@@ -44,6 +44,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void LayoutView(double width, double height, double? maxWidth = null, double? maxHeight = null)
 		{
+			LayoutView(0, 0, width, height, maxWidth, maxHeight);
+		}
+
+		public void LayoutView(double x, double y, double width, double height, double? maxWidth = null, double? maxHeight = null)
+		{
 			if (width == -1)
 				width = double.PositiveInfinity;
 
@@ -86,7 +91,7 @@ namespace Xamarin.Forms.Platform.Android
 				layoutParams.Height = (int)context.ToPixels(height);
 
 			NativeView.LayoutParameters = layoutParams;
-			View.Layout(new Rectangle(0, 0, width, height));
+			View.Layout(new Rectangle(x, y, width, height));
 			Renderer.UpdateLayout();
 		}
 

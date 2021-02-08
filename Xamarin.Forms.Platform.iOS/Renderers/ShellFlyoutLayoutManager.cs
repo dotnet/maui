@@ -170,7 +170,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnHeaderFooterSizeChanged(object sender, EventArgs e)
 		{
-			_headerSize = HeaderMax;
+			HeaderSize = HeaderMax;
 			SetHeaderContentInset();
 			LayoutParallax();
 		}
@@ -266,21 +266,22 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 			}
 
-			if (HeaderView != null && !double.IsNaN(_headerSize))
+			if (HeaderView != null && !double.IsNaN(HeaderSize))
 			{
 				var margin = HeaderView.Margin;
 				var leftMargin = margin.Left - margin.Right;
 
-				HeaderView.Frame = new CGRect(leftMargin, _headerOffset, parent.Frame.Width, _headerSize + HeaderTopMargin);
-
+				HeaderView.Frame = new CGRect(leftMargin, _headerOffset, parent.Frame.Width, HeaderSize + HeaderTopMargin);
+				
 				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderTopMargin > 0 && _headerOffset < 0)
 				{
-					var headerHeight = Math.Max(_headerMin, _headerSize + _headerOffset);
+					var headerHeight = Math.Max(_headerMin, HeaderSize + _headerOffset + HeaderTopMargin);
 					CAShapeLayer shapeLayer = new CAShapeLayer();
 					CGRect rect = new CGRect(0, _headerOffset * -1, parent.Frame.Width, headerHeight);
 					var path = CGPath.FromRect(rect);
 					shapeLayer.Path = path;
 					HeaderView.Layer.Mask = shapeLayer;
+
 				}
 				else if (HeaderView.Layer.Mask != null)
 					HeaderView.Layer.Mask = null;
@@ -314,22 +315,37 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				case FlyoutHeaderBehavior.Default:
 				case FlyoutHeaderBehavior.Fixed:
-					_headerSize = HeaderMax;
+					HeaderSize = HeaderMax;
 					_headerOffset = 0;
 					break;
 
 				case FlyoutHeaderBehavior.Scroll:
-					_headerSize = HeaderMax;
+					HeaderSize = HeaderMax;
 					_headerOffset = Math.Min(0, -(HeaderMax + contentOffsetY));
 					break;
 
 				case FlyoutHeaderBehavior.CollapseOnScroll:
-					_headerSize = Math.Max(_headerMin, -contentOffsetY);
+					HeaderSize = Math.Max(_headerMin, -contentOffsetY);
 					_headerOffset = 0;
 					break;
 			}
 
 			LayoutParallax();
+		}
+
+
+		double HeaderSize
+		{
+			get => _headerSize;
+			set
+			{
+				if (HeaderView != null)
+				{
+					HeaderView.Height = value;
+				}
+
+				_headerSize = value;
+			}
 		}
 
 		double HeaderMax => HeaderView?.MeasuredHeight ?? 0;
