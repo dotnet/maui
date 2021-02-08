@@ -29,7 +29,7 @@ steps:
   #     version: $(DOTNET_VERSION)
   #     packageType: 'sdk'
 
-  - script: build.cmd -Target cg-uwp-build-tests  -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"'
+  - script: build.cmd -Target cg-uwp-build-tests -ScriptArgs '--BUILD_CONFIGURATION="$(BuildConfiguration)"'
     condition: eq(variables['BuildConfiguration'], 'Release')
     displayName: 'Build Tests and APPX'
 
