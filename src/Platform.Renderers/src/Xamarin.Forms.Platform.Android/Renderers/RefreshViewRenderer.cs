@@ -237,9 +237,9 @@ namespace Xamarin.Forms.Platform.Android
 					Element.PropertyChanged -= HandlePropertyChanged;
 				}
 
-				if (_renderer != null)
-					_renderer.View.RemoveFromParent();
+				SetOnRefreshListener(null);
 
+				_renderer?.View.RemoveFromParent();
 				_renderer?.Dispose();
 				_renderer = null;
 

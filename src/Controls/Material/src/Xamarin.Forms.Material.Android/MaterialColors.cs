@@ -56,10 +56,6 @@ internal static class MaterialColors
 	const float kFilledTextFieldIndicatorLineAlpha = 0.42f;
 	const float kFilledTextFieldIconAlpha = 0.54f;
 
-	// the idea of this value is that I want Active to be the exact color the user specified
-	// and then all the other colors decrease according to the Material theme setup
-	static float kFilledPlaceHolderOffset = 1f - kFilledTextFieldActiveAlpha;
-
 	// State list from material-components-android
 	// https://github.com/material-components/material-components-android/blob/71694616056012fe1162adb9144be903d1e510d5/lib/java/com/google/android/material/textfield/res/values/colors.xml#L28
 	public static PlatformColor CreateEntryFilledInputBackgroundColor(Color backgroundColor, Color textColor)
@@ -77,24 +73,29 @@ internal static class MaterialColors
 		return ToPlatformColor(backgroundColor);
 	}
 
-	public static (PlatformColor InlineColor, PlatformColor FloatingColor) GetPlaceHolderColor(Color placeholderColor, Color textColor)
+	public static (PlatformColor InlineColor, PlatformColor FloatingColor, PlatformColor DefaultColor) GetPlaceHolderColor(Color placeholderColor, Color textColor)
 	{
 		PlatformColor inlineColor;
 		PlatformColor floatingColor;
-		float inlineAlpha = kFilledTextFieldOnSurfaceAlpha + kFilledPlaceHolderOffset;
+		PlatformColor defaultColor;
 
 		if (placeholderColor == Color.Default)
 		{
-			inlineColor = WithAlpha(MaterialColors.Light.OnSurfaceColor, inlineAlpha);
+			inlineColor = WithAlpha(MaterialColors.Light.OnSurfaceColor, kFilledTextFieldDisabledAlpha);
+
+			defaultColor = WithAlpha(MaterialColors.Light.OnSurfaceColor, kFilledTextFieldOnSurfaceAlpha);
+
 			floatingColor = MaterialColors.Light.PrimaryColor;
+
 		}
 		else
 		{
-			inlineColor = WithAlpha(ToPlatformColor(placeholderColor), inlineAlpha);
+			inlineColor = ToPlatformColor(placeholderColor);
 			floatingColor = ToPlatformColor(placeholderColor);
+			defaultColor = ToPlatformColor(placeholderColor);
 		}
 
-		return (inlineColor, floatingColor);
+		return (inlineColor, floatingColor, defaultColor);
 	}
 
 	public static (PlatformColor FocusedColor, PlatformColor UnFocusedColor) GetUnderlineColor(Color placeholderColor)
@@ -138,7 +139,7 @@ internal static class MaterialColors
 		public static readonly int[][] ButtonTextStates =
 		{
 			new int[] { global::Android.Resource.Attribute.StateEnabled },
-			new int[] { ~global::Android.Resource.Attribute.StateEnabled },
+			new int[] { -global::Android.Resource.Attribute.StateEnabled },
 			new int[] { }
 		};
 
@@ -152,6 +153,9 @@ internal static class MaterialColors
 		{
 			new []{ global::Android.Resource.Attribute.StateFocused  },
 			new []{ -global::Android.Resource.Attribute.StateFocused  },
+			new int[] { global::Android.Resource.Attribute.StateEnabled },
+			new int[] { -global::Android.Resource.Attribute.StateEnabled },
+			new int[0] { }
 		};
 
 		// State list from material-components-android
@@ -174,7 +178,7 @@ internal static class MaterialColors
 		{
 			int[][] States =
 			{
-				new []{ ~global::Android.Resource.Attribute.StateEnabled },
+				new []{ -global::Android.Resource.Attribute.StateEnabled },
 				new int[0] { }
 			};
 
@@ -184,7 +188,7 @@ internal static class MaterialColors
 
 		public static ColorStateList CreateEntryUnderlineColors(PlatformColor focusedColor, PlatformColor unfocusedColor)
 		{
-			var colors = new int[] { focusedColor, unfocusedColor };
+			var colors = new int[] { focusedColor, unfocusedColor, focusedColor, focusedColor, unfocusedColor };
 			return new ColorStateList(EntryUnderlineStates, colors);
 		}
 

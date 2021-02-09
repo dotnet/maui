@@ -39,13 +39,8 @@ namespace Xamarin.Forms.Material.Android
 			UpdateBackgroundColor();
 		}
 
-		protected override void UpdateBackgroundColor()
-		{
-			if (_textInputLayout == null)
-				return;
-
-			_textInputLayout.BoxBackgroundColor = MaterialColors.CreateEntryFilledInputBackgroundColor(Element.BackgroundColor, Element.TextColor);
-		}
+		protected override void UpdateBackgroundColor() =>
+			_textInputLayout?.ApplyBackgroundColor(Element.BackgroundColor, Element.TextColor);
 
 		protected override void UpdateTextColor() => ApplyTheme();
 		void ApplyTheme() => _textInputLayout?.ApplyTheme(Element.TextColor, Color.Default);

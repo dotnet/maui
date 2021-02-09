@@ -47,6 +47,12 @@ namespace Xamarin.Forms.ControlGallery.Android
 #else
 			Forms.SetFlags("UseLegacyRenderers");
 #endif
+			// null out the assembly on the Resource Manager
+			// so all of our tests run without using the reflection APIs
+			// At some point the Resources class types will go away so
+			// reflection will stop working
+			ResourceManager.Init(null);
+
 			Forms.Init(this, bundle);
 			FormsHandlers.InitHandlers();
 			FormsMaps.Init(this, bundle);

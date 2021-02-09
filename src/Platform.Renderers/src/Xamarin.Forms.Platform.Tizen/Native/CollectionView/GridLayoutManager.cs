@@ -178,6 +178,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				return;
 			}
+
 			_isLayouting = true;
 			_last = bound;
 
@@ -382,14 +383,21 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		public void ItemMeasureInvalidated(int index)
 		{
-			if (_realizedItem.ContainsKey(index))
-			{
-				CollectionView.RequestLayoutItems();
-			}
 			if (_hasUnevenRows)
 			{
 				if (_cached.Count > index)
 					_cached[index] = false;
+
+				if (_realizedItem.ContainsKey(index))
+				{
+					CollectionView.RequestLayoutItems();
+				}
+			}
+			else if (index == 0) // MeasureFirstItem
+			{
+				// Reset item size to measure updated size
+				InitializeMeasureCache();
+				CollectionView.RequestLayoutItems();
 			}
 		}
 

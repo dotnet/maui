@@ -205,12 +205,15 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (_carouselViewLoopManager == null)
 				return;
-			//Special case here
-			//We could have a race condition where we are scrolling our collection to center the first item
-			//And at the same time the user is requesting we go to a particular item
-			if (position == -1 && Carousel.Loop)
+
+			// Special case here
+			// We could have a race condition where we are scrolling our collection to center the first item
+			// And at the same time the user is requesting we go to a particular item
+			if (position == -1)
 			{
-				_carouselViewLoopManager.AddPendingScrollTo(args);
+				if (Carousel.Loop)
+					_carouselViewLoopManager.AddPendingScrollTo(args);
+
 				return;
 			}
 

@@ -25,19 +25,26 @@ namespace Xamarin.Forms.Controls.Issues
 			var page = AddTopTab("Tab 1");
 			var page2 = AddTopTab("Tab 2");
 
-			page.Content = CreateContent();
-			page2.Content = CreateContent();
-
-			StackLayout CreateContent()
+			Label successLabel = new Label()
 			{
-				return new StackLayout()
+				Text = "Success",
+				AutomationId = "Success",
+				IsVisible = false
+			};
+
+			page.Content = CreateContent();
+			page2.Content = CreateContent(successLabel);
+
+			StackLayout CreateContent(Label label = null)
+			{
+				StackLayout layout = null;
+				layout = new StackLayout()
 				{
 					Children =
 					{
 						new Label()
 						{
-							Text = "Click quickly between the tabs. If you stop clicking and the content is blank then the test has failed.",
-							AutomationId = "Success"
+							Text = "Click quickly between the tabs. If you stop clicking and the content is blank then the test has failed."
 						},
 						new Button()
 						{
@@ -45,6 +52,7 @@ namespace Xamarin.Forms.Controls.Issues
 							AutomationId = "AutomatedRun",
 							Command = new Command(async () =>
 							{
+								successLabel.IsVisible = false;
 								for(int i = 0; i < 20; i++)
 								{
 									this.CurrentItem = Items[0].Items[0].Items[0];
@@ -52,10 +60,16 @@ namespace Xamarin.Forms.Controls.Issues
 									this.CurrentItem = Items[0].Items[0].Items[1];
 									await Task.Delay(10);
 								}
+								successLabel.IsVisible = true;
 							})
 						}
 					}
 				};
+
+				if (label != null)
+					layout.Children.Add(label);
+
+				return layout;
 			}
 		}
 
@@ -64,9 +78,9 @@ namespace Xamarin.Forms.Controls.Issues
 		public void ClickingQuicklyBetweenTopTabsBreaksContent()
 		{
 			RunningApp.Tap("AutomatedRun");
-			RunningApp.Tap("Success");
+			RunningApp.WaitForElement("Success");
 			RunningApp.Tap("AutomatedRun");
-			RunningApp.Tap("Success");
+			RunningApp.WaitForElement("Success");
 		}
 #endif
 	}

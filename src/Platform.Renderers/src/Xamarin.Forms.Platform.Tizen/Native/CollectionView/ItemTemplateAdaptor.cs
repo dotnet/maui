@@ -252,6 +252,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 						header = structuredItemsView.HeaderTemplate.CreateContent() as View;
 						header.BindingContext = structuredItemsView.Header;
 					}
+					else if (structuredItemsView.Header is String str)
+					{
+						header = new XLabel { Text = str, };
+					}
 					return header;
 				}
 			}
@@ -273,6 +277,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 					{
 						footer = structuredItemsView.FooterTemplate.CreateContent() as View;
 						footer.BindingContext = structuredItemsView.Footer;
+					}
+					else if (structuredItemsView.Footer is String str)
+					{
+						footer = new XLabel { Text = str, };
 					}
 					return footer;
 				}

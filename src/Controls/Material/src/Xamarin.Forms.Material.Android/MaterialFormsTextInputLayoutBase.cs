@@ -18,6 +18,8 @@ namespace Xamarin.Forms.Material.Android
 		Color _formsPlaceholderColor;
 		bool _isSetup = false;
 		ColorStateList _placeholderColorsList;
+		ColorStateList _placeholderDefaultColorList;
+		ColorStateList _underlineColorsList;
 
 		static readonly int[][] s_colorStates = { new[] { global::Android.Resource.Attribute.StateEnabled }, new[] { -global::Android.Resource.Attribute.StateEnabled } };
 		bool _disposed = false;
@@ -46,10 +48,19 @@ namespace Xamarin.Forms.Material.Android
 			var underlineColors = MaterialColors.GetUnderlineColor(_formsPlaceholderColor);
 			var placeHolderColors = MaterialColors.GetPlaceHolderColor(_formsPlaceholderColor, _formsTextColor);
 			_placeholderColorsList = MaterialColors.CreateEntryFilledPlaceholderColors(placeHolderColors.InlineColor, placeHolderColors.FloatingColor);
-
-
+			_placeholderDefaultColorList = MaterialColors.CreateEntryFilledPlaceholderColors(placeHolderColors.InlineColor, placeHolderColors.DefaultColor);
+			_underlineColorsList = MaterialColors.CreateEntryUnderlineColors(underlineColors.FocusedColor, underlineColors.UnFocusedColor);
 			var textColor = MaterialColors.GetEntryTextColor(formsTextColor).ToArgb();
 			EditText.SetTextColor(new ColorStateList(s_colorStates, new[] { textColor, textColor }));
+		}
+
+		public virtual void ApplyBackgroundColor(Color backgroundColor, Color textColor)
+		{
+			if (!this.IsAlive() || !this.EditText.IsAlive())
+				return;
+
+			var bgColor = (int)MaterialColors.CreateEntryFilledInputBackgroundColor(backgroundColor, textColor);
+			this.SetBoxBackgroundColorStateList(new ColorStateList(s_colorStates, new[] { bgColor, bgColor }));
 		}
 
 		public virtual void ApplyTheme(Color formsTextColor, Color formsPlaceHolderColor)
@@ -67,9 +78,10 @@ namespace Xamarin.Forms.Material.Android
 			{
 				ResetTextColors(formsTextColor, formsPlaceHolderColor);
 			}
-			this.DefaultHintTextColor = _placeholderColorsList;
-			this.HintTextColor = _placeholderColorsList.ToDefaultOnlyColorStateList();
-			this.BoxStrokeColor = _placeholderColorsList.DefaultColor;
+
+			this.DefaultHintTextColor = _placeholderDefaultColorList;
+			this.HintTextColor = _placeholderColorsList;
+			this.SetBoxStrokeColorStateList(_underlineColorsList);
 		}
 
 		void ApplyTheme() => ApplyTheme(_formsTextColor, _formsPlaceholderColor);

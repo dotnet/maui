@@ -104,11 +104,25 @@ namespace Xamarin.Forms.Material.Android
 
 		public override void Draw(Canvas canvas)
 		{
-			_hasDrawnOnce = true;
 			if (Element.IsEnabled != Enabled)
 			{
+				_hasDrawnOnce = true;
 				Enabled = Element.IsEnabled;
 				return;
+			}
+
+			if (!_hasDrawnOnce)
+			{
+				_hasDrawnOnce = true;
+
+				// https://github.com/xamarin/Xamarin.Forms/issues/13416
+				// This forces a redraw the first time which works around
+				// an issue with setting background color and having an image set
+				if (Enabled && Element.ImageSource != null)
+				{
+					Enabled = false;
+					Enabled = true;
+				}
 			}
 
 			if (Element == null || Element.CornerRadius <= 0)

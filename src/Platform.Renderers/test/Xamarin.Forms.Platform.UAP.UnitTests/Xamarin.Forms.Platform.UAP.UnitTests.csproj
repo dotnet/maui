@@ -140,7 +140,7 @@
       <Version>6.2.10</Version>
     </PackageReference>
     <PackageReference Include="NUnit">
-      <Version>3.13.0</Version>
+      <Version>3.13.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

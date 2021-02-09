@@ -70,11 +70,12 @@
     <Compile Include="ButtonTests.cs" />
     <Compile Include="BackgroundTests.cs" />
     <Compile Include="TestActivity.cs" />
+    <Compile Include="ResourceManagerTests.cs" />
     <Compile Include="TransformationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NUnit">
-      <Version>3.13.0</Version>
+      <Version>3.13.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -101,6 +102,12 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\values\styles.xml" />
+    <AndroidResource Include="Resources\layout\LayoutTest.axml" />
+    <AndroidResource Include="Resources\drawable\DrawableTest.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\drawable\" />
+    <Folder Include="Resources\layout\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>

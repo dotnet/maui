@@ -37,6 +37,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var source = new List<Item> { new Item { Text = Success } };
 			cv.ItemsSource = source;
+
 			Content = cv;
 
 			Appearing += (sender, args) => { cv.IsVisible = true; };
@@ -49,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void SettingGroupedCollectionViewItemSourceNullShouldNotCrash()
+		public void CollectionShouldInvalidateOnVisibilityChange()
 		{
 			RunningApp.WaitForElement(Success);
 		}
