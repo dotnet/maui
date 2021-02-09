@@ -469,6 +469,18 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_oldViews = newViews;
 		}
+
+		protected internal override void UpdateVisibility()
+		{
+			if (ItemsView.IsVisible)
+			{
+				CollectionView.Hidden = false;
+			}
+			else
+			{
+				CollectionView.Hidden = true;
+			}
+		}
 	}
 
 	class CarouselViewLoopManager : IDisposable
