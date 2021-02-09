@@ -71,6 +71,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UpdateFlowDirection();
 			}
+			else if (changedProperty.Is(VisualElement.IsVisibleProperty))
+			{
+				UpdateVisibility();
+			}
 		}
 
 		protected abstract ItemsViewLayout SelectLayout();
@@ -101,6 +105,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateVerticalScrollBarVisibility();
 			UpdateItemsUpdatingScrollMode();
 			UpdateFlowDirection();
+			UpdateVisibility();
 
 			// Listen for ScrollTo requests
 			newElement.ScrollToRequested += ScrollToRequested;
@@ -140,6 +145,11 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			UpdateItemsUpdatingScrollMode();
 			Controller.UpdateItemsSource();
+		}
+
+		protected virtual void UpdateVisibility() 
+		{
+			Controller?.UpdateVisibility();
 		}
 
 		protected abstract TViewController CreateController(TItemsView newElement, ItemsViewLayout layout);

@@ -47,6 +47,41 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual DataTemplate DefaultMenuItemTemplate => null;
 
+		internal void ReSyncCache()
+		{
+			var newGroups = ((IShellController)_context.Shell).GenerateFlyoutGrouping();
+
+			if (newGroups == _groups)
+				return;
+
+			_groups = newGroups;
+			if (_cells == null)
+			{
+				_cells = new Dictionary<Element, UIContainerCell>();
+				return;
+			}
+
+			var oldList = _cells;
+			_cells = new Dictionary<Element, UIContainerCell>();
+
+			foreach (var group in newGroups)
+			{
+				foreach(var element in group)
+				{
+					UIContainerCell result;
+					if(oldList.TryGetValue(element, out result))
+					{
+						_cells.Add(element, result);
+						oldList.Remove(element);
+					}
+				}
+			}
+
+			foreach (var cell in oldList.Values)
+				cell.Disconnect(_context.Shell);
+		}
+
+
 		public void ClearCache()
 		{
 			var newGroups = ((IShellController)_context.Shell).GenerateFlyoutGrouping();
@@ -125,7 +160,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 			{
 				var view = _cells[context].View;
-				cell.Disconnect();
+				cell.Disconnect(keepRenderer: true);
 				cell = new UIContainerCell(cellId, view, _context.Shell, context);
 			}
 
@@ -148,8 +183,10 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (section < Groups.Count - 1)
 				return 1;
+
 			return 0;
 		}
+
 		public override UIView GetViewForFooter(UITableView tableView, nint section)
 		{
 			return new SeparatorView();

@@ -60,14 +60,14 @@ namespace Xamarin.Forms.Controls.Issues
 				var page = new ContentPage();
 				var layout = new StackLayout();
 
-				foreach(FlyoutHeaderBehavior value in Enum.GetValues(typeof(FlyoutHeaderBehavior)))
+				foreach (FlyoutHeaderBehavior value in Enum.GetValues(typeof(FlyoutHeaderBehavior)))
 				{
 					var local = value;
 					layout.Children.Add(new Button()
 					{
 						Text = $"{value}",
 						AutomationId = $"{value}",
-						Command = new Command(()=>
+						Command = new Command(() =>
 						{
 							this.FlyoutHeaderBehavior = local;
 						})
