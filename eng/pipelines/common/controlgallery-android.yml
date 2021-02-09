@@ -39,7 +39,7 @@ steps:
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target cg-android-build-tests -BUILD_CONFIGURATION=$(BuildConfiguration)
+      arguments: --target cg-android-build-tests --BUILD_CONFIGURATION=$(BuildConfiguration)
 
   - task: CopyFiles@2
     displayName: 'Copy Android Files for UITest'
