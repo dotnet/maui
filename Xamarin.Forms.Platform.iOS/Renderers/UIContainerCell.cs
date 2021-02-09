@@ -18,9 +18,14 @@ namespace Xamarin.Forms.Platform.iOS
 			View = view;
 			View.MeasureInvalidated += MeasureInvalidated;
 			SelectionStyle = UITableViewCellSelectionStyle.None;
-			
-			_renderer = Platform.CreateRenderer(view);
-			Platform.SetRenderer(view, _renderer);
+
+			_renderer = Platform.GetRenderer(view);
+
+			if (_renderer == null)
+			{
+				_renderer = Platform.CreateRenderer(view);
+				Platform.SetRenderer(view, _renderer);
+			}
 
 			ContentView.AddSubview(_renderer.NativeView);
 			_renderer.NativeView.ClipsToBounds = true;
@@ -49,7 +54,7 @@ namespace Xamarin.Forms.Platform.iOS
 			TableView.ReloadRows(new[] { IndexPath }, UITableViewRowAnimation.Automatic);
 		}
 
-		internal void Disconnect(Shell shell = null)
+		internal void Disconnect(Shell shell = null, bool keepRenderer = false)
 		{
 			ViewMeasureInvalidated = null;
 			View.MeasureInvalidated -= MeasureInvalidated;
@@ -57,7 +62,10 @@ namespace Xamarin.Forms.Platform.iOS
 				baseShell.PropertyChanged -= OnElementPropertyChanged;
 
 			_bindingContext = null;
-			Platform.SetRenderer(View, null);
+
+			if (!keepRenderer)
+				Platform.SetRenderer(View, null);
+
 			if (shell != null)
 				shell.RemoveLogicalChild(shell);
 
@@ -70,7 +78,8 @@ namespace Xamarin.Forms.Platform.iOS
 		public object BindingContext
 		{
 			get => _bindingContext;
-			set {
+			set
+			{
 				if (value == _bindingContext)
 					return;
 
@@ -91,7 +100,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
-			if(View != null)
+			if (View != null)
 				View.Layout(Bounds.ToRectangle());
 		}
 
