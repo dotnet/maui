@@ -398,6 +398,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			public TitleViewContainer(View view) : base(view)
 			{
+				MatchHeight = true;
 			}
 
 			public override CGRect Frame
@@ -413,6 +414,20 @@ namespace Xamarin.Forms.Platform.iOS
 
 					base.Frame = value;
 				}
+			}
+
+			public override void WillMoveToSuperview(UIView newSuper)
+			{
+				if (newSuper != null)
+				{
+					if (!Forms.IsiOS11OrNewer)
+						Frame = new CGRect(Frame.X, newSuper.Bounds.Y, Frame.Width, newSuper.Bounds.Height);
+
+					Height = newSuper.Bounds.Height;
+					Width = newSuper.Bounds.Width;
+				}
+
+				base.WillMoveToSuperview(newSuper);
 			}
 
 			public override CGSize IntrinsicContentSize => UILayoutFittingExpandedSize;
