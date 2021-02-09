@@ -1719,6 +1719,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutContentWithZeroMargin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LabelFormattedTextHtmlPadding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue13436.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue13476.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutHeaderBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8701.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue13390.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue13616.xaml.cs" />
