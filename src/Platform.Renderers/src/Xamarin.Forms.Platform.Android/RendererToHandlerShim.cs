@@ -1,10 +1,10 @@
 ﻿using System;
 using Android.Views;
+using Xamarin.Platform;
+using AbstractViewHandler = Xamarin.Platform.Handlers.AbstractViewHandler<Xamarin.Platform.IView, Android.Views.View>;
+using IView = Xamarin.Platform.IView;
 using IVisualElementRenderer = Xamarin.Forms.Platform.Android.IVisualElementRenderer;
 using VisualElementChangedEventArgs = Xamarin.Forms.Platform.Android.VisualElementChangedEventArgs;
-using Xamarin.Platform;
-using IView = Xamarin.Platform.IView;
-using AbstractViewHandler = Xamarin.Platform.Handlers.AbstractViewHandler<Xamarin.Platform.IView, Android.Views.View>;
 
 namespace Xamarin.Forms
 {
@@ -29,7 +29,7 @@ namespace Xamarin.Forms
 
 		public RendererToHandlerShim(IVisualElementRenderer visualElementRenderer) : this()
 		{
-			if(visualElementRenderer != null)
+			if (visualElementRenderer != null)
 				SetupRenderer(visualElementRenderer);
 		}
 
@@ -54,7 +54,7 @@ namespace Xamarin.Forms
 
 			if (e.NewElement is IView newView)
 			{
-				newView.Handler = this;				
+				newView.Handler = this;
 				this.SetVirtualView(newView);
 			}
 			else if (e.NewElement != null)
@@ -80,7 +80,7 @@ namespace Xamarin.Forms
 
 		public override void SetVirtualView(IView view)
 		{
-			if(VisualElementRenderer == null && Context != null)
+			if (VisualElementRenderer == null && Context != null)
 			{
 				var renderer = Internals.Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(view, Context)
 										   ?? new Platform.Android.AppCompat.Platform.DefaultRenderer(Context);

@@ -39,13 +39,8 @@ namespace Xamarin.Forms.Material.Android
 
 		protected override void UpdateColor() => ApplyTheme();
 
-		protected override void UpdateBackgroundColor()
-		{
-			if (_textInputLayout == null)
-				return;
-
-			_textInputLayout.BoxBackgroundColor = MaterialColors.CreateEntryFilledInputBackgroundColor(Element.BackgroundColor, Element.TextColor);
-		}
+		protected override void UpdateBackgroundColor() =>
+			_textInputLayout?.ApplyBackgroundColor(Element.BackgroundColor, Element.TextColor);
 
 		protected override void UpdatePlaceHolderText() => _textInputLayout.SetHint(Element.Placeholder, Element);
 		protected override EditText EditText => _textInputEditText;

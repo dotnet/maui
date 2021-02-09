@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
-    public static partial class WebAuthenticator
-    {
-        static Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
-            => throw ExceptionUtils.NotSupportedOrImplementedException;
-    }
+	public static partial class WebAuthenticator
+	{
+		static Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+	}
 }

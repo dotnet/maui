@@ -1,11 +1,11 @@
 ﻿namespace Xamarin.Essentials
 {
-    public static partial class PhoneDialer
-    {
-        internal static bool IsSupported =>
-            throw ExceptionUtils.NotSupportedOrImplementedException;
+	public static partial class PhoneDialer
+	{
+		internal static bool IsSupported =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static void PlatformOpen(string number) =>
-            throw ExceptionUtils.NotSupportedOrImplementedException;
-    }
+		static void PlatformOpen(string number) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+	}
 }

@@ -3,37 +3,37 @@ using System.Collections.Generic;
 
 namespace Xamarin.Essentials
 {
-    class LowPassFilter
-    {
-        const int length = 10;
+	class LowPassFilter
+	{
+		const int length = 10;
 
-        readonly Queue<float> history = new Queue<float>(length);
-        float sin;
-        float cos;
+		readonly Queue<float> history = new Queue<float>(length);
+		float sin;
+		float cos;
 
-        internal void Add(float radians)
-        {
-            sin += (float)Math.Sin(radians);
+		internal void Add(float radians)
+		{
+			sin += (float)Math.Sin(radians);
 
-            cos += (float)Math.Cos(radians);
+			cos += (float)Math.Cos(radians);
 
-            history.Enqueue(radians);
+			history.Enqueue(radians);
 
-            if (history.Count > length)
-            {
-                var old = history.Dequeue();
+			if (history.Count > length)
+			{
+				var old = history.Dequeue();
 
-                sin -= (float)Math.Sin(old);
+				sin -= (float)Math.Sin(old);
 
-                cos -= (float)Math.Cos(old);
-            }
-        }
+				cos -= (float)Math.Cos(old);
+			}
+		}
 
-        internal float Average()
-        {
-            var size = history.Count;
+		internal float Average()
+		{
+			var size = history.Count;
 
-            return (float)Math.Atan2(sin / size, cos / size);
-        }
-    }
+			return (float)Math.Atan2(sin / size, cos / size);
+		}
+	}
 }

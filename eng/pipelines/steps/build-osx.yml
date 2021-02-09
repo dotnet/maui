@@ -21,6 +21,13 @@ steps:
     displayName: 'Setup SDK Paths'
     condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
 
+  - task: UseDotNet@2
+    displayName: 'Install .net core $(DOTNET_VERSION)'
+    condition: ne(variables['DOTNET_VERSION'], '')
+    inputs:
+      version: $(DOTNET_VERSION)
+      packageType: 'sdk'
+
   - task: Bash@3
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
@@ -28,13 +35,6 @@ steps:
       targetType: 'filePath'
       filePath: 'build.sh'
       arguments: --target provision --TeamProject="$(System.TeamProject)"
-
-  - task: UseDotNet@2
-    displayName: 'Install .net core $(DOTNET_VERSION)'
-    condition: ne(variables['DOTNET_VERSION'], '')
-    inputs:
-      version: $(DOTNET_VERSION)
-      packageType: 'sdk'
 
   - task: NuGetToolInstaller@1
     displayName: 'Use NuGet'
@@ -80,14 +80,14 @@ steps:
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target cg-ios --BUILD_CONFIGURATION=$(buildConfiguration) --MSBuildArguments='${{ variables.MSBuildArguments_cg_ios }}'
+      arguments: --target cg-ios --BUILD_CONFIGURATION=$(buildConfiguration) --MSBuildArguments='${{ variables.MSBuildArguments_cg_ios }} '
 
   - task: Bash@3
     displayName: 'Build iOS Tests'
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target cg-ios-build-tests -BUILD_CONFIGURATION=$(buildConfiguration) --MSBuildArguments='${{ variables.MSBuildArguments_cg_ios }}'
+      arguments: --target cg-ios-build-tests --BUILD_CONFIGURATION=$(buildConfiguration) --MSBuildArguments='${{ variables.MSBuildArguments_cg_ios }} '
 
   - task: CopyFiles@2
     displayName: 'Copy iOS Files for UITest'

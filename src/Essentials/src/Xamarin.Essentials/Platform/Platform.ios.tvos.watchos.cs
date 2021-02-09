@@ -15,8 +15,8 @@ using UIDevice = WatchKit.WKInterfaceDevice;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Platform
-    {
+	public static partial class Platform
+	{
 #if __IOS__ || __TVOS__
         public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
             => WebAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
@@ -40,36 +40,36 @@ namespace Xamarin.Essentials
 #if __IOS__
         [DllImport(Constants.SystemLibrary, EntryPoint = "sysctlbyname")]
 #else
-        [DllImport(Constants.libSystemLibrary, EntryPoint = "sysctlbyname")]
+		[DllImport(Constants.libSystemLibrary, EntryPoint = "sysctlbyname")]
 #endif
-        internal static extern int SysctlByName([MarshalAs(UnmanagedType.LPStr)] string property, IntPtr output, IntPtr oldLen, IntPtr newp, uint newlen);
+		internal static extern int SysctlByName([MarshalAs(UnmanagedType.LPStr)] string property, IntPtr output, IntPtr oldLen, IntPtr newp, uint newlen);
 
-        internal static string GetSystemLibraryProperty(string property)
-        {
-            var lengthPtr = Marshal.AllocHGlobal(sizeof(int));
-            SysctlByName(property, IntPtr.Zero, lengthPtr, IntPtr.Zero, 0);
+		internal static string GetSystemLibraryProperty(string property)
+		{
+			var lengthPtr = Marshal.AllocHGlobal(sizeof(int));
+			SysctlByName(property, IntPtr.Zero, lengthPtr, IntPtr.Zero, 0);
 
-            var propertyLength = Marshal.ReadInt32(lengthPtr);
+			var propertyLength = Marshal.ReadInt32(lengthPtr);
 
-            if (propertyLength == 0)
-            {
-                Marshal.FreeHGlobal(lengthPtr);
-                throw new InvalidOperationException("Unable to read length of property.");
-            }
+			if (propertyLength == 0)
+			{
+				Marshal.FreeHGlobal(lengthPtr);
+				throw new InvalidOperationException("Unable to read length of property.");
+			}
 
-            var valuePtr = Marshal.AllocHGlobal(propertyLength);
-            SysctlByName(property, valuePtr, lengthPtr, IntPtr.Zero, 0);
+			var valuePtr = Marshal.AllocHGlobal(propertyLength);
+			SysctlByName(property, valuePtr, lengthPtr, IntPtr.Zero, 0);
 
-            var returnValue = Marshal.PtrToStringAnsi(valuePtr);
+			var returnValue = Marshal.PtrToStringAnsi(valuePtr);
 
-            Marshal.FreeHGlobal(lengthPtr);
-            Marshal.FreeHGlobal(valuePtr);
+			Marshal.FreeHGlobal(lengthPtr);
+			Marshal.FreeHGlobal(valuePtr);
 
-            return returnValue;
-        }
+			return returnValue;
+		}
 
-        internal static bool HasOSVersion(int major, int minor) =>
-            UIDevice.CurrentDevice.CheckSystemVersion(major, minor);
+		internal static bool HasOSVersion(int major, int minor) =>
+			UIDevice.CurrentDevice.CheckSystemVersion(major, minor);
 
 #if __IOS__ || __TVOS__
 
@@ -136,7 +136,7 @@ namespace Xamarin.Essentials
             motionManager ?? (motionManager = new CMMotionManager());
 #endif
 
-        internal static NSOperationQueue GetCurrentQueue() =>
-            NSOperationQueue.CurrentQueue ?? new NSOperationQueue();
-    }
+		internal static NSOperationQueue GetCurrentQueue() =>
+			NSOperationQueue.CurrentQueue ?? new NSOperationQueue();
+	}
 }

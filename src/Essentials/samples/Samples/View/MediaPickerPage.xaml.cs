@@ -2,11 +2,11 @@
 
 namespace Samples.View
 {
-    public partial class MediaPickerPage : BasePage
-    {
-        public MediaPickerPage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class MediaPickerPage : BasePage
+	{
+		public MediaPickerPage()
+		{
+			InitializeComponent();
+		}
+	}
 }

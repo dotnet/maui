@@ -3,76 +3,76 @@ using UIKit;
 
 namespace Xamarin.Essentials
 {
-    public static partial class DeviceDisplay
-    {
-        static NSObject observer;
+	public static partial class DeviceDisplay
+	{
+		static NSObject observer;
 
-        static bool PlatformKeepScreenOn
-        {
-            get => UIApplication.SharedApplication.IdleTimerDisabled;
-            set => UIApplication.SharedApplication.IdleTimerDisabled = value;
-        }
+		static bool PlatformKeepScreenOn
+		{
+			get => UIApplication.SharedApplication.IdleTimerDisabled;
+			set => UIApplication.SharedApplication.IdleTimerDisabled = value;
+		}
 
-        static DisplayInfo GetMainDisplayInfo()
-        {
-            var bounds = UIScreen.MainScreen.Bounds;
-            var scale = UIScreen.MainScreen.Scale;
+		static DisplayInfo GetMainDisplayInfo()
+		{
+			var bounds = UIScreen.MainScreen.Bounds;
+			var scale = UIScreen.MainScreen.Scale;
 
-            return new DisplayInfo(
-                width: bounds.Width * scale,
-                height: bounds.Height * scale,
-                density: scale,
-                orientation: CalculateOrientation(),
-                rotation: CalculateRotation(),
-                rate: UIScreen.MainScreen.MaximumFramesPerSecond);
-        }
+			return new DisplayInfo(
+				width: bounds.Width * scale,
+				height: bounds.Height * scale,
+				density: scale,
+				orientation: CalculateOrientation(),
+				rotation: CalculateRotation(),
+				rate: UIScreen.MainScreen.MaximumFramesPerSecond);
+		}
 
-        static void StartScreenMetricsListeners()
-        {
-            var notificationCenter = NSNotificationCenter.DefaultCenter;
-            var notification = UIApplication.DidChangeStatusBarOrientationNotification;
-            observer = notificationCenter.AddObserver(notification, OnScreenMetricsChanged);
-        }
+		static void StartScreenMetricsListeners()
+		{
+			var notificationCenter = NSNotificationCenter.DefaultCenter;
+			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
+			observer = notificationCenter.AddObserver(notification, OnScreenMetricsChanged);
+		}
 
-        static void StopScreenMetricsListeners()
-        {
-            observer?.Dispose();
-            observer = null;
-        }
+		static void StopScreenMetricsListeners()
+		{
+			observer?.Dispose();
+			observer = null;
+		}
 
-        static void OnScreenMetricsChanged(NSNotification obj)
-        {
-            var metrics = GetMainDisplayInfo();
-            OnMainDisplayInfoChanged(metrics);
-        }
+		static void OnScreenMetricsChanged(NSNotification obj)
+		{
+			var metrics = GetMainDisplayInfo();
+			OnMainDisplayInfoChanged(metrics);
+		}
 
-        static DisplayOrientation CalculateOrientation()
-        {
-            var orientation = UIApplication.SharedApplication.StatusBarOrientation;
+		static DisplayOrientation CalculateOrientation()
+		{
+			var orientation = UIApplication.SharedApplication.StatusBarOrientation;
 
-            if (orientation.IsLandscape())
-                return DisplayOrientation.Landscape;
+			if (orientation.IsLandscape())
+				return DisplayOrientation.Landscape;
 
-            return DisplayOrientation.Portrait;
-        }
+			return DisplayOrientation.Portrait;
+		}
 
-        static DisplayRotation CalculateRotation()
-        {
-            var orientation = UIApplication.SharedApplication.StatusBarOrientation;
+		static DisplayRotation CalculateRotation()
+		{
+			var orientation = UIApplication.SharedApplication.StatusBarOrientation;
 
-            switch (orientation)
-            {
-                case UIInterfaceOrientation.Portrait:
-                    return DisplayRotation.Rotation0;
-                case UIInterfaceOrientation.PortraitUpsideDown:
-                    return DisplayRotation.Rotation180;
-                case UIInterfaceOrientation.LandscapeLeft:
-                    return DisplayRotation.Rotation270;
-                case UIInterfaceOrientation.LandscapeRight:
-                    return DisplayRotation.Rotation90;
-            }
+			switch (orientation)
+			{
+				case UIInterfaceOrientation.Portrait:
+					return DisplayRotation.Rotation0;
+				case UIInterfaceOrientation.PortraitUpsideDown:
+					return DisplayRotation.Rotation180;
+				case UIInterfaceOrientation.LandscapeLeft:
+					return DisplayRotation.Rotation270;
+				case UIInterfaceOrientation.LandscapeRight:
+					return DisplayRotation.Rotation90;
+			}
 
-            return DisplayRotation.Unknown;
-        }
-    }
+			return DisplayRotation.Unknown;
+		}
+	}
 }

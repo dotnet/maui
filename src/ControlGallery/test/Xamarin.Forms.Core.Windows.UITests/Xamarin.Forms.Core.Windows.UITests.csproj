@@ -45,17 +45,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="4.2.1" />
+    <PackageReference Include="Appium.WebDriver" Version="4.3.1" />
     <PackageReference Include="Castle.Core" Version="4.3.1" />
     <PackageReference Include="DotNetSeleniumExtras.PageObjects" Version="3.11.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NUnit" Version="3.13.0" />
+    <PackageReference Include="NUnit" Version="3.13.1" />
     <PackageReference Include="Selenium.Support" Version="3.141.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
-    <PackageReference Include="Xamarin.UITest" Version="3.0.11" />
+    <PackageReference Include="Xamarin.UITest" Version="3.0.14" />
     <PackageReference Include="NUnit3TestAdapter">
-      <Version>3.15.1</Version>
+      <Version>3.17.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

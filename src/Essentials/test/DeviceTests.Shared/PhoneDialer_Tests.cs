@@ -3,7 +3,7 @@ using Xunit;
 
 namespace DeviceTests
 {
-    public class PhoneDialer_Tests
-    {
-    }
+	public class PhoneDialer_Tests
+	{
+	}
 }

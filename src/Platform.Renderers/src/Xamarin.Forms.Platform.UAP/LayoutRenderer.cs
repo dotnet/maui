@@ -80,11 +80,5 @@ namespace Xamarin.Forms.Platform.UWP
 				Clip = new RectangleGeometry { Rect = new WRect(0, 0, ActualWidth, ActualHeight) };
 			}
 		}
-
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
-		{
-			Element?.ResolveLayoutChanges();
-			return base.MeasureOverride(availableSize);
-		}
 	}
 }

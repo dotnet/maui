@@ -160,10 +160,6 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewWillLayoutSubviews();
 
-			// We can't set this constraint up on ViewDidLoad, because Forms does other stuff that resizes the view
-			// and we end up with massive layout errors. And View[Will/Did]Appear do not fire for this controller
-			// reliably. So until one of those options is cleared up, we set this flag so that the initial constraints
-			// are set up the first time this method is called.
 			EnsureLayoutInitialized();
 
 			LayoutEmptyView();
@@ -566,11 +562,22 @@ namespace Xamarin.Forms.Platform.iOS
 			return new VerticalCell(frame);
 		}
 
-		public TemplatedCell CreateMeasurementCell(NSIndexPath indexPath) 
+		public UICollectionViewCell CreateMeasurementCell(NSIndexPath indexPath) 
 		{
 			if (ItemsView.ItemTemplate == null)
 			{
-				return null;
+				var frame = new CGRect(0, 0, ItemsViewLayout.EstimatedItemSize.Width, ItemsViewLayout.EstimatedItemSize.Height);
+
+				if (ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+				{
+					var cell1 = new HorizontalDefaultCell(frame);
+					UpdateDefaultCell(cell1, indexPath);
+					return cell1;
+				}
+
+				var cell = new VerticalDefaultCell(frame);
+				UpdateDefaultCell(cell, indexPath);
+				return cell;
 			}
 
 			TemplatedCell templatedCell = CreateAppropriateCellForLayout(); 
@@ -610,6 +617,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (ItemsView.IsVisible)
 				{
 					Layout.InvalidateLayout();
+					CollectionView.LayoutIfNeeded();
 				}
 			}
 		}

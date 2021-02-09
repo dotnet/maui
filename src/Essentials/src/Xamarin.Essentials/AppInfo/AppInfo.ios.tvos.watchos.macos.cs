@@ -10,18 +10,18 @@ using AppKit;
 
 namespace Xamarin.Essentials
 {
-    public static partial class AppInfo
-    {
-        static string PlatformGetPackageName() => GetBundleValue("CFBundleIdentifier");
+	public static partial class AppInfo
+	{
+		static string PlatformGetPackageName() => GetBundleValue("CFBundleIdentifier");
 
-        static string PlatformGetName() => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
+		static string PlatformGetName() => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
 
-        static string PlatformGetVersionString() => GetBundleValue("CFBundleShortVersionString");
+		static string PlatformGetVersionString() => GetBundleValue("CFBundleShortVersionString");
 
-        static string PlatformGetBuild() => GetBundleValue("CFBundleVersion");
+		static string PlatformGetBuild() => GetBundleValue("CFBundleVersion");
 
-        static string GetBundleValue(string key)
-           => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
+		static string GetBundleValue(string key)
+		   => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
 
 #if __IOS__ || __TVOS__
         static async void PlatformShowSettingsUI()
@@ -37,8 +37,8 @@ namespace Xamarin.Essentials
             });
         }
 #else
-        static void PlatformShowSettingsUI() =>
-            throw new FeatureNotSupportedException();
+		static void PlatformShowSettingsUI() =>
+			throw new FeatureNotSupportedException();
 #endif
 
 #if __IOS__ || __TVOS__
@@ -77,53 +77,53 @@ namespace Xamarin.Essentials
             return AppTheme.Light;
         }
 #else
-        static AppTheme PlatformRequestedTheme() =>
-            AppTheme.Unspecified;
+		static AppTheme PlatformRequestedTheme() =>
+			AppTheme.Unspecified;
 #endif
 
-        internal static bool VerifyHasUrlScheme(string scheme)
-        {
-            var cleansed = scheme.Replace("://", string.Empty);
-            var schemes = GetCFBundleURLSchemes().ToList();
-            return schemes.Any(x => x != null && x.Equals(cleansed, StringComparison.InvariantCultureIgnoreCase));
-        }
+		internal static bool VerifyHasUrlScheme(string scheme)
+		{
+			var cleansed = scheme.Replace("://", string.Empty);
+			var schemes = GetCFBundleURLSchemes().ToList();
+			return schemes.Any(x => x != null && x.Equals(cleansed, StringComparison.InvariantCultureIgnoreCase));
+		}
 
-        internal static IEnumerable<string> GetCFBundleURLSchemes()
-        {
-            var schemes = new List<string>();
+		internal static IEnumerable<string> GetCFBundleURLSchemes()
+		{
+			var schemes = new List<string>();
 
-            NSObject nsobj = null;
-            if (!NSBundle.MainBundle.InfoDictionary.TryGetValue((NSString)"CFBundleURLTypes", out nsobj))
-                return schemes;
+			NSObject nsobj = null;
+			if (!NSBundle.MainBundle.InfoDictionary.TryGetValue((NSString)"CFBundleURLTypes", out nsobj))
+				return schemes;
 
-            var array = nsobj as NSArray;
+			var array = nsobj as NSArray;
 
-            if (array == null)
-                return schemes;
+			if (array == null)
+				return schemes;
 
-            for (nuint i = 0; i < array.Count; i++)
-            {
-                var d = array.GetItem<NSDictionary>(i);
-                if (d == null || !d.Any())
-                    continue;
+			for (nuint i = 0; i < array.Count; i++)
+			{
+				var d = array.GetItem<NSDictionary>(i);
+				if (d == null || !d.Any())
+					continue;
 
-                if (!d.TryGetValue((NSString)"CFBundleURLSchemes", out nsobj))
-                    continue;
+				if (!d.TryGetValue((NSString)"CFBundleURLSchemes", out nsobj))
+					continue;
 
-                var a = nsobj as NSArray;
-                var urls = ConvertToIEnumerable<NSString>(a).Select(x => x.ToString()).ToArray();
-                foreach (var url in urls)
-                    schemes.Add(url);
-            }
+				var a = nsobj as NSArray;
+				var urls = ConvertToIEnumerable<NSString>(a).Select(x => x.ToString()).ToArray();
+				foreach (var url in urls)
+					schemes.Add(url);
+			}
 
-            return schemes;
-        }
+			return schemes;
+		}
 
-        static IEnumerable<T> ConvertToIEnumerable<T>(NSArray array)
-            where T : class, ObjCRuntime.INativeObject
-        {
-            for (nuint i = 0; i < array.Count; i++)
-                yield return array.GetItem<T>(i);
-        }
-    }
+		static IEnumerable<T> ConvertToIEnumerable<T>(NSArray array)
+			where T : class, ObjCRuntime.INativeObject
+		{
+			for (nuint i = 0; i < array.Count; i++)
+				yield return array.GetItem<T>(i);
+		}
+	}
 }

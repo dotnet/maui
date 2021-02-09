@@ -38,6 +38,13 @@ jobs:
       - checkout: self
         clean: true
 
+      - task: UseDotNet@2
+        displayName: 'Install .net core $(DOTNET_VERSION)'
+        condition: ne(variables['DOTNET_VERSION'], '')
+        inputs:
+          version: $(DOTNET_VERSION)
+          packageType: 'sdk'
+
       - task: Bash@3
         displayName: 'Cake Provision'
         condition: eq(variables['provisioningCake'], 'true')
@@ -52,13 +59,6 @@ jobs:
         inputs:
           provisioning_script: ${{ parameters.provisionatorPath }}
           provisioning_extra_args: ${{ parameters.provisionator.extraArguments }}
-
-      - task: UseDotNet@2
-        displayName: 'Install .net core $(DOTNET_VERSION)'
-        condition: ne(variables['DOTNET_VERSION'], '')
-        inputs:
-          version: $(DOTNET_VERSION)
-          packageType: 'sdk'
 
       - script: '/bin/bash -c "sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh ${{ parameters.monoVersion }}"'
         displayName: 'Select MONO ${{ parameters.monoVersion }}'
@@ -104,7 +104,7 @@ jobs:
         inputs:
           targetType: 'filePath'
           filePath: 'build.sh'
-          arguments: --target cg-android --ANDROID_RENDERERS="$(renderers)" --GoogleMapsAPIKey="$(GoogleMapsAPIKey)" --BUILD_CONFIGURATION=${{ parameters.buildConfiguration }} --MSBuildArguments='${{ variables.MSBuildArguments_cg_android }}'
+          arguments: --target cg-android --ANDROID_RENDERERS="$(renderers)" --GoogleMapsAPIKey="$(GoogleMapsAPIKey)" --BUILD_CONFIGURATION=${{ parameters.buildConfiguration }} --MSBuildArguments='${{ variables.MSBuildArguments_cg_android }} '
 
       - task: CopyFiles@2
         displayName: 'Copy $(renderers)'

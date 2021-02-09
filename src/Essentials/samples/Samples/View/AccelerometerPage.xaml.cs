@@ -1,10 +1,10 @@
 ﻿namespace Samples.View
 {
-    public partial class AccelerometerPage : BasePage
-    {
-        public AccelerometerPage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class AccelerometerPage : BasePage
+	{
+		public AccelerometerPage()
+		{
+			InitializeComponent();
+		}
+	}
 }

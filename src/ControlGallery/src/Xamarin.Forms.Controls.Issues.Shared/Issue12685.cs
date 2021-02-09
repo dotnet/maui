@@ -1,7 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Windows.Input;
-using Xamarin.Forms.CustomAttributes;
+﻿using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Shapes;
 
@@ -21,6 +18,9 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	public partial class Issue12685 : TestContentPage
 	{
+		const string StatusLabelId = "StatusLabelId";
+		const string PathId = "PathId";
+
 		const string ResetStatus = "Path touch event not fired, touch path above.";
 		const string ClickedStatus = "Path was clicked, click reset button to start over.";
 
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var layout = new StackLayout();
 			var statusLabel = new Label
 			{
-				AutomationId = "LabelValue",
+				AutomationId = StatusLabelId,
 				Text = ResetStatus,
 			};
 
@@ -42,6 +42,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var path = new Path
 			{
+				AutomationId = PathId,
 				Data = pathGeometry,
 				Fill = lgb
 			};
@@ -69,11 +70,12 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void ShapesPathReceiveGestureRecognizers()
 		{
-			var testLabel = RunningApp.WaitForFirstElement("LabelValue");
+			var testLabel = RunningApp.WaitForFirstElement(StatusLabelId);
 			Assert.AreEqual(ResetStatus, testLabel.ReadText());
-			var pathRect = testLabel.Rect;
-			RunningApp.TapCoordinates(pathRect.X + 100, pathRect.Y-100);
-			Assert.AreEqual(ClickedStatus, RunningApp.WaitForFirstElement("LabelValue").ReadText());
+			var testPath = RunningApp.WaitForFirstElement(PathId);
+			var pathRect = testPath.Rect;
+			RunningApp.TapCoordinates(pathRect.X + 1, pathRect.Y + 1);
+			Assert.AreEqual(ClickedStatus, RunningApp.WaitForFirstElement(StatusLabelId).ReadText());
 		}
 #endif
 	}

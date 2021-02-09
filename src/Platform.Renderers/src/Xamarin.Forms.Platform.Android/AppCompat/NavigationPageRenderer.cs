@@ -971,7 +971,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					bar.NavigationIcon = icon;
 
 					var prevPage = Element.Peek(1);
-					_defaultNavigationContentDescription = bar.SetNavigationContentDescription(prevPage, _defaultNavigationContentDescription);
+					var backButtonTitle = NavigationPage.GetBackButtonTitle(prevPage);
+					_defaultNavigationContentDescription = backButtonTitle != null
+						? bar.SetNavigationContentDescription(prevPage, backButtonTitle)
+						: bar.SetNavigationContentDescription(prevPage, _defaultNavigationContentDescription);
 				}
 				else if (toggle != null && _flyoutPage != null)
 				{

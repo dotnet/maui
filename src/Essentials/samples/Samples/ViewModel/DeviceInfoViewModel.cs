@@ -2,50 +2,50 @@
 
 namespace Samples.ViewModel
 {
-    public class DeviceInfoViewModel : BaseViewModel
-    {
-        DisplayInfo screenMetrics;
+	public class DeviceInfoViewModel : BaseViewModel
+	{
+		DisplayInfo screenMetrics;
 
-        public string Model => DeviceInfo.Model;
+		public string Model => DeviceInfo.Model;
 
-        public string Manufacturer => DeviceInfo.Manufacturer;
+		public string Manufacturer => DeviceInfo.Manufacturer;
 
-        public string Name => DeviceInfo.Name;
+		public string Name => DeviceInfo.Name;
 
-        public string VersionString => DeviceInfo.VersionString;
+		public string VersionString => DeviceInfo.VersionString;
 
-        public string Version => DeviceInfo.Version.ToString();
+		public string Version => DeviceInfo.Version.ToString();
 
-        public DevicePlatform Platform => DeviceInfo.Platform;
+		public DevicePlatform Platform => DeviceInfo.Platform;
 
-        public DeviceIdiom Idiom => DeviceInfo.Idiom;
+		public DeviceIdiom Idiom => DeviceInfo.Idiom;
 
-        public DeviceType DeviceType => DeviceInfo.DeviceType;
+		public DeviceType DeviceType => DeviceInfo.DeviceType;
 
-        public DisplayInfo ScreenMetrics
-        {
-            get => screenMetrics;
-            set => SetProperty(ref screenMetrics, value);
-        }
+		public DisplayInfo ScreenMetrics
+		{
+			get => screenMetrics;
+			set => SetProperty(ref screenMetrics, value);
+		}
 
-        public override void OnAppearing()
-        {
-            base.OnAppearing();
+		public override void OnAppearing()
+		{
+			base.OnAppearing();
 
-            DeviceDisplay.MainDisplayInfoChanged += OnScreenMetricsChanged;
-            ScreenMetrics = DeviceDisplay.MainDisplayInfo;
-        }
+			DeviceDisplay.MainDisplayInfoChanged += OnScreenMetricsChanged;
+			ScreenMetrics = DeviceDisplay.MainDisplayInfo;
+		}
 
-        public override void OnDisappearing()
-        {
-            DeviceDisplay.MainDisplayInfoChanged -= OnScreenMetricsChanged;
+		public override void OnDisappearing()
+		{
+			DeviceDisplay.MainDisplayInfoChanged -= OnScreenMetricsChanged;
 
-            base.OnDisappearing();
-        }
+			base.OnDisappearing();
+		}
 
-        void OnScreenMetricsChanged(object sender, DisplayInfoChangedEventArgs e)
-        {
-            ScreenMetrics = e.DisplayInfo;
-        }
-    }
+		void OnScreenMetricsChanged(object sender, DisplayInfoChangedEventArgs e)
+		{
+			ScreenMetrics = e.DisplayInfo;
+		}
+	}
 }

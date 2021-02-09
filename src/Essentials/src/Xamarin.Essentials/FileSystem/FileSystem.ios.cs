@@ -9,216 +9,216 @@ using UIKit;
 
 namespace Xamarin.Essentials
 {
-    public partial class FileSystem
-    {
-        internal static async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
-        {
-            if (urls == null || urls.Length == 0)
-                return Array.Empty<FileResult>();
+	public partial class FileSystem
+	{
+		internal static async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
+		{
+			if (urls == null || urls.Length == 0)
+				return Array.Empty<FileResult>();
 
-            var opts = NSFileCoordinatorReadingOptions.WithoutChanges;
-            var intents = urls.Select(x => NSFileAccessIntent.CreateReadingIntent(x, opts)).ToArray();
+			var opts = NSFileCoordinatorReadingOptions.WithoutChanges;
+			var intents = urls.Select(x => NSFileAccessIntent.CreateReadingIntent(x, opts)).ToArray();
 
-            using var coordinator = new NSFileCoordinator();
+			using var coordinator = new NSFileCoordinator();
 
-            var tcs = new TaskCompletionSource<FileResult[]>();
+			var tcs = new TaskCompletionSource<FileResult[]>();
 
-            coordinator.CoordinateAccess(intents, new NSOperationQueue(), error =>
-            {
-                if (error != null)
-                {
-                    tcs.TrySetException(new NSErrorException(error));
-                    return;
-                }
+			coordinator.CoordinateAccess(intents, new NSOperationQueue(), error =>
+			{
+				if (error != null)
+				{
+					tcs.TrySetException(new NSErrorException(error));
+					return;
+				}
 
-                var bookmarks = new List<FileResult>();
+				var bookmarks = new List<FileResult>();
 
-                foreach (var intent in intents)
-                {
-                    var url = intent.Url;
-                    var result = new BookmarkDataFileResult(url);
-                    bookmarks.Add(result);
-                }
+				foreach (var intent in intents)
+				{
+					var url = intent.Url;
+					var result = new BookmarkDataFileResult(url);
+					bookmarks.Add(result);
+				}
 
-                tcs.TrySetResult(bookmarks.ToArray());
-            });
+				tcs.TrySetResult(bookmarks.ToArray());
+			});
 
-            return await tcs.Task;
-        }
-    }
+			return await tcs.Task;
+		}
+	}
 
-    class BookmarkDataFileResult : FileResult
-    {
-        NSData bookmark;
+	class BookmarkDataFileResult : FileResult
+	{
+		NSData bookmark;
 
-        internal BookmarkDataFileResult(NSUrl url)
-            : base()
-        {
-            try
-            {
-                url.StartAccessingSecurityScopedResource();
+		internal BookmarkDataFileResult(NSUrl url)
+			: base()
+		{
+			try
+			{
+				url.StartAccessingSecurityScopedResource();
 
-                var newBookmark = url.CreateBookmarkData(0, Array.Empty<string>(), null, out var bookmarkError);
-                if (bookmarkError != null)
-                    throw new NSErrorException(bookmarkError);
+				var newBookmark = url.CreateBookmarkData(0, Array.Empty<string>(), null, out var bookmarkError);
+				if (bookmarkError != null)
+					throw new NSErrorException(bookmarkError);
 
-                UpdateBookmark(url, newBookmark);
-            }
-            finally
-            {
-                url.StopAccessingSecurityScopedResource();
-            }
-        }
+				UpdateBookmark(url, newBookmark);
+			}
+			finally
+			{
+				url.StopAccessingSecurityScopedResource();
+			}
+		}
 
-        void UpdateBookmark(NSUrl url, NSData newBookmark)
-        {
-            bookmark = newBookmark;
+		void UpdateBookmark(NSUrl url, NSData newBookmark)
+		{
+			bookmark = newBookmark;
 
-            var doc = new UIDocument(url);
-            FullPath = doc.FileUrl?.Path;
-            FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
-        }
+			var doc = new UIDocument(url);
+			FullPath = doc.FileUrl?.Path;
+			FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
+		}
 
-        internal override Task<Stream> PlatformOpenReadAsync()
-        {
-            var url = NSUrl.FromBookmarkData(bookmark, 0, null, out var isStale, out var error);
+		internal override Task<Stream> PlatformOpenReadAsync()
+		{
+			var url = NSUrl.FromBookmarkData(bookmark, 0, null, out var isStale, out var error);
 
-            if (error != null)
-                throw new NSErrorException(error);
+			if (error != null)
+				throw new NSErrorException(error);
 
-            url.StartAccessingSecurityScopedResource();
+			url.StartAccessingSecurityScopedResource();
 
-            if (isStale)
-            {
-                var newBookmark = url.CreateBookmarkData(NSUrlBookmarkCreationOptions.SuitableForBookmarkFile, Array.Empty<string>(), null, out error);
-                if (error != null)
-                    throw new NSErrorException(error);
+			if (isStale)
+			{
+				var newBookmark = url.CreateBookmarkData(NSUrlBookmarkCreationOptions.SuitableForBookmarkFile, Array.Empty<string>(), null, out error);
+				if (error != null)
+					throw new NSErrorException(error);
 
-                UpdateBookmark(url, newBookmark);
-            }
+				UpdateBookmark(url, newBookmark);
+			}
 
-            var fileStream = File.OpenRead(FullPath);
-            Stream stream = new SecurityScopedStream(fileStream, url);
-            return Task.FromResult(stream);
-        }
+			var fileStream = File.OpenRead(FullPath);
+			Stream stream = new SecurityScopedStream(fileStream, url);
+			return Task.FromResult(stream);
+		}
 
-        class SecurityScopedStream : Stream
-        {
-            FileStream stream;
-            NSUrl url;
+		class SecurityScopedStream : Stream
+		{
+			FileStream stream;
+			NSUrl url;
 
-            internal SecurityScopedStream(FileStream stream, NSUrl url)
-            {
-                this.stream = stream;
-                this.url = url;
-            }
+			internal SecurityScopedStream(FileStream stream, NSUrl url)
+			{
+				this.stream = stream;
+				this.url = url;
+			}
 
-            public override bool CanRead => stream.CanRead;
+			public override bool CanRead => stream.CanRead;
 
-            public override bool CanSeek => stream.CanSeek;
+			public override bool CanSeek => stream.CanSeek;
 
-            public override bool CanWrite => stream.CanWrite;
+			public override bool CanWrite => stream.CanWrite;
 
-            public override long Length => stream.Length;
+			public override long Length => stream.Length;
 
-            public override long Position
-            {
-                get => stream.Position;
-                set => stream.Position = value;
-            }
+			public override long Position
+			{
+				get => stream.Position;
+				set => stream.Position = value;
+			}
 
-            public override void Flush() =>
-                stream.Flush();
+			public override void Flush() =>
+				stream.Flush();
 
-            public override int Read(byte[] buffer, int offset, int count) =>
-                stream.Read(buffer, offset, count);
+			public override int Read(byte[] buffer, int offset, int count) =>
+				stream.Read(buffer, offset, count);
 
-            public override long Seek(long offset, SeekOrigin origin) =>
-                stream.Seek(offset, origin);
+			public override long Seek(long offset, SeekOrigin origin) =>
+				stream.Seek(offset, origin);
 
-            public override void SetLength(long value) =>
-                stream.SetLength(value);
+			public override void SetLength(long value) =>
+				stream.SetLength(value);
 
-            public override void Write(byte[] buffer, int offset, int count) =>
-                stream.Write(buffer, offset, count);
+			public override void Write(byte[] buffer, int offset, int count) =>
+				stream.Write(buffer, offset, count);
 
-            protected override void Dispose(bool disposing)
-            {
-                base.Dispose(disposing);
+			protected override void Dispose(bool disposing)
+			{
+				base.Dispose(disposing);
 
-                if (disposing)
-                {
-                    stream?.Dispose();
-                    stream = null;
+				if (disposing)
+				{
+					stream?.Dispose();
+					stream = null;
 
-                    url?.StopAccessingSecurityScopedResource();
-                    url = null;
-                }
-            }
-        }
-    }
+					url?.StopAccessingSecurityScopedResource();
+					url = null;
+				}
+			}
+		}
+	}
 
-    class UIDocumentFileResult : FileResult
-    {
-        internal UIDocumentFileResult(NSUrl url)
-            : base()
-        {
-            var doc = new UIDocument(url);
-            FullPath = doc.FileUrl?.Path;
-            FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
-        }
+	class UIDocumentFileResult : FileResult
+	{
+		internal UIDocumentFileResult(NSUrl url)
+			: base()
+		{
+			var doc = new UIDocument(url);
+			FullPath = doc.FileUrl?.Path;
+			FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
+		}
 
-        internal override Task<Stream> PlatformOpenReadAsync()
-        {
-            Stream fileStream = File.OpenRead(FullPath);
+		internal override Task<Stream> PlatformOpenReadAsync()
+		{
+			Stream fileStream = File.OpenRead(FullPath);
 
-            return Task.FromResult(fileStream);
-        }
-    }
+			return Task.FromResult(fileStream);
+		}
+	}
 
-    class UIImageFileResult : FileResult
-    {
-        readonly UIImage uiImage;
-        NSData data;
+	class UIImageFileResult : FileResult
+	{
+		readonly UIImage uiImage;
+		NSData data;
 
-        internal UIImageFileResult(UIImage image)
-            : base()
-        {
-            uiImage = image;
+		internal UIImageFileResult(UIImage image)
+			: base()
+		{
+			uiImage = image;
 
-            FullPath = Guid.NewGuid().ToString() + FileSystem.Extensions.Png;
-            FileName = FullPath;
-        }
+			FullPath = Guid.NewGuid().ToString() + FileSystem.Extensions.Png;
+			FileName = FullPath;
+		}
 
-        internal override Task<Stream> PlatformOpenReadAsync()
-        {
-            data ??= uiImage.AsPNG();
+		internal override Task<Stream> PlatformOpenReadAsync()
+		{
+			data ??= uiImage.AsPNG();
 
-            return Task.FromResult(data.AsStream());
-        }
-    }
+			return Task.FromResult(data.AsStream());
+		}
+	}
 
-    class PHAssetFileResult : FileResult
-    {
-        readonly PHAsset phAsset;
+	class PHAssetFileResult : FileResult
+	{
+		readonly PHAsset phAsset;
 
-        internal PHAssetFileResult(NSUrl url, PHAsset asset, string originalFilename)
-            : base()
-        {
-            phAsset = asset;
+		internal PHAssetFileResult(NSUrl url, PHAsset asset, string originalFilename)
+			: base()
+		{
+			phAsset = asset;
 
-            FullPath = url?.AbsoluteString;
-            FileName = originalFilename;
-        }
+			FullPath = url?.AbsoluteString;
+			FileName = originalFilename;
+		}
 
-        internal override Task<Stream> PlatformOpenReadAsync()
-        {
-            var tcsStream = new TaskCompletionSource<Stream>();
+		internal override Task<Stream> PlatformOpenReadAsync()
+		{
+			var tcsStream = new TaskCompletionSource<Stream>();
 
-            PHImageManager.DefaultManager.RequestImageData(phAsset, null, new PHImageDataHandler((data, str, orientation, dict) =>
-                tcsStream.TrySetResult(data.AsStream())));
+			PHImageManager.DefaultManager.RequestImageData(phAsset, null, new PHImageDataHandler((data, str, orientation, dict) =>
+				tcsStream.TrySetResult(data.AsStream())));
 
-            return tcsStream.Task;
-        }
-    }
+			return tcsStream.Task;
+		}
+	}
 }

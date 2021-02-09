@@ -1,10 +1,10 @@
 ﻿namespace Samples.View
 {
-    public partial class PhoneDialerPage : BasePage
-    {
-        public PhoneDialerPage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class PhoneDialerPage : BasePage
+	{
+		public PhoneDialerPage()
+		{
+			InitializeComponent();
+		}
+	}
 }

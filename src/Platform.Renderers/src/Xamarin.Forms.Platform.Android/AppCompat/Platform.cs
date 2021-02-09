@@ -301,12 +301,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					handler = Xamarin.Platform.Registrar.Handlers.GetHandler(element.GetType());
 				}
-				catch 
+				catch
 				{
 					// TODO define better catch response or define if this is needed?
 				}
-				
-				if(handler == null)
+
+				if (handler == null)
 				{
 					renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element, context)
 										?? new DefaultRenderer(context);
@@ -380,7 +380,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				LayoutRootPage(Page, r - l, b - t);
 			}
-						
+
 			GetRenderer(Page)?.UpdateLayout();
 
 			for (var i = 0; i < _renderer.ChildCount; i++)
@@ -837,16 +837,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 
 			bool ILayoutChanges.HasLayoutOccurred => _hasLayoutOccurred;
-
-			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-			{
-				if (Element is Layout layout)
-				{
-					layout.ResolveLayoutChanges();
-				}
-
-				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-			}
 
 			protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 			{

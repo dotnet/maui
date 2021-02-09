@@ -9,11 +9,11 @@ using Xamarin.Forms.Xaml;
 
 namespace Samples.View
 {
-    public partial class WebAuthenticatorPage : BasePage
-    {
-        public WebAuthenticatorPage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class WebAuthenticatorPage : BasePage
+	{
+		public WebAuthenticatorPage()
+		{
+			InitializeComponent();
+		}
+	}
 }

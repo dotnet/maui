@@ -1063,7 +1063,7 @@ namespace Xamarin.Forms
 				var navigationParameters = new ShellNavigationParameters()
 				{
 					Animated = animated,
-					TargetState = ".."
+					TargetState = new ShellNavigationState("..")
 				};
 
 				var returnedPage = (_owner as IShellSectionController).PresentedPage;

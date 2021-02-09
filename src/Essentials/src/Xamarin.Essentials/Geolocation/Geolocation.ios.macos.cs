@@ -7,89 +7,89 @@ using Foundation;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Geolocation
-    {
-        static async Task<Location> PlatformLastKnownLocationAsync()
-        {
-            if (!CLLocationManager.LocationServicesEnabled)
-                throw new FeatureNotEnabledException("Location services are not enabled on device.");
+	public static partial class Geolocation
+	{
+		static async Task<Location> PlatformLastKnownLocationAsync()
+		{
+			if (!CLLocationManager.LocationServicesEnabled)
+				throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
-            await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
+			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
-            var manager = new CLLocationManager();
-            var location = manager.Location;
+			var manager = new CLLocationManager();
+			var location = manager.Location;
 
-            return location?.ToLocation();
-        }
+			return location?.ToLocation();
+		}
 
-        static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
-        {
-            if (!CLLocationManager.LocationServicesEnabled)
-                throw new FeatureNotEnabledException("Location services are not enabled on device.");
+		static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		{
+			if (!CLLocationManager.LocationServicesEnabled)
+				throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
-            await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
+			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
-            // the location manager requires an active run loop
-            // so just use the main loop
-            var manager = MainThread.InvokeOnMainThread(() => new CLLocationManager());
+			// the location manager requires an active run loop
+			// so just use the main loop
+			var manager = MainThread.InvokeOnMainThread(() => new CLLocationManager());
 
-            var tcs = new TaskCompletionSource<CLLocation>(manager);
+			var tcs = new TaskCompletionSource<CLLocation>(manager);
 
-            var listener = new SingleLocationListener();
-            listener.LocationHandler += HandleLocation;
+			var listener = new SingleLocationListener();
+			listener.LocationHandler += HandleLocation;
 
-            cancellationToken = Utils.TimeoutToken(cancellationToken, request.Timeout);
-            cancellationToken.Register(Cancel);
+			cancellationToken = Utils.TimeoutToken(cancellationToken, request.Timeout);
+			cancellationToken.Register(Cancel);
 
-            manager.DesiredAccuracy = request.PlatformDesiredAccuracy;
-            manager.Delegate = listener;
+			manager.DesiredAccuracy = request.PlatformDesiredAccuracy;
+			manager.Delegate = listener;
 
 #if __IOS__
             // we're only listening for a single update
             manager.PausesLocationUpdatesAutomatically = false;
 #endif
 
-            manager.StartUpdatingLocation();
+			manager.StartUpdatingLocation();
 
-            var clLocation = await tcs.Task;
+			var clLocation = await tcs.Task;
 
-            return clLocation?.ToLocation();
+			return clLocation?.ToLocation();
 
-            void HandleLocation(CLLocation location)
-            {
-                manager.StopUpdatingLocation();
-                tcs.TrySetResult(location);
-            }
+			void HandleLocation(CLLocation location)
+			{
+				manager.StopUpdatingLocation();
+				tcs.TrySetResult(location);
+			}
 
-            void Cancel()
-            {
-                manager.StopUpdatingLocation();
-                tcs.TrySetResult(null);
-            }
-        }
-    }
+			void Cancel()
+			{
+				manager.StopUpdatingLocation();
+				tcs.TrySetResult(null);
+			}
+		}
+	}
 
-    class SingleLocationListener : CLLocationManagerDelegate
-    {
-        bool wasRaised = false;
+	class SingleLocationListener : CLLocationManagerDelegate
+	{
+		bool wasRaised = false;
 
-        internal Action<CLLocation> LocationHandler { get; set; }
+		internal Action<CLLocation> LocationHandler { get; set; }
 
-        public override void LocationsUpdated(CLLocationManager manager, CLLocation[] locations)
-        {
-            if (wasRaised)
-                return;
+		public override void LocationsUpdated(CLLocationManager manager, CLLocation[] locations)
+		{
+			if (wasRaised)
+				return;
 
-            wasRaised = true;
+			wasRaised = true;
 
-            var location = locations?.LastOrDefault();
+			var location = locations?.LastOrDefault();
 
-            if (location == null)
-                return;
+			if (location == null)
+				return;
 
-            LocationHandler?.Invoke(location);
-        }
+			LocationHandler?.Invoke(location);
+		}
 
-        public override bool ShouldDisplayHeadingCalibration(CLLocationManager manager) => false;
-    }
+		public override bool ShouldDisplayHeadingCalibration(CLLocationManager manager) => false;
+	}
 }

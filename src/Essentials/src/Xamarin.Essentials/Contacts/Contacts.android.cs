@@ -10,124 +10,124 @@ using StructuredName = Android.Provider.ContactsContract.CommonDataKinds.Structu
 
 namespace Xamarin.Essentials
 {
-    public static partial class Contacts
-    {
-        const string idCol = ContactsContract.Contacts.InterfaceConsts.Id;
-        const string displayNameCol = ContactsContract.Contacts.InterfaceConsts.DisplayName;
-        const string mimetypeCol = ContactsContract.Data.InterfaceConsts.Mimetype;
+	public static partial class Contacts
+	{
+		const string idCol = ContactsContract.Contacts.InterfaceConsts.Id;
+		const string displayNameCol = ContactsContract.Contacts.InterfaceConsts.DisplayName;
+		const string mimetypeCol = ContactsContract.Data.InterfaceConsts.Mimetype;
 
-        const string contactIdCol = CommonDataKinds.Phone.InterfaceConsts.ContactId;
+		const string contactIdCol = CommonDataKinds.Phone.InterfaceConsts.ContactId;
 
-        static async Task<Contact> PlatformPickContactAsync()
-        {
-            var intent = new Intent(Intent.ActionPick, ContactsContract.Contacts.ContentUri);
-            var result = await IntermediateActivity.StartAsync(intent, Platform.requestCodePickContact).ConfigureAwait(false);
-            if (result?.Data == null)
-                return null;
+		static async Task<Contact> PlatformPickContactAsync()
+		{
+			var intent = new Intent(Intent.ActionPick, ContactsContract.Contacts.ContentUri);
+			var result = await IntermediateActivity.StartAsync(intent, Platform.requestCodePickContact).ConfigureAwait(false);
+			if (result?.Data == null)
+				return null;
 
-            using var cursor = Platform.ContentResolver.Query(result?.Data, null, null, null, null);
-            if (cursor?.MoveToFirst() != true)
-                return null;
+			using var cursor = Platform.ContentResolver.Query(result?.Data, null, null, null, null);
+			if (cursor?.MoveToFirst() != true)
+				return null;
 
-            return GetContact(cursor);
-        }
+			return GetContact(cursor);
+		}
 
-        static Task<IEnumerable<Contact>> PlatformGetAllAsync(CancellationToken cancellationToken)
-        {
-            var cursor = Platform.ContentResolver.Query(ContactsContract.Contacts.ContentUri, null, null, null, null);
-            return Task.FromResult(GetEnumerable());
+		static Task<IEnumerable<Contact>> PlatformGetAllAsync(CancellationToken cancellationToken)
+		{
+			var cursor = Platform.ContentResolver.Query(ContactsContract.Contacts.ContentUri, null, null, null, null);
+			return Task.FromResult(GetEnumerable());
 
-            IEnumerable<Contact> GetEnumerable()
-            {
-                if (cursor?.MoveToFirst() == true)
-                {
-                    do
-                    {
-                        var contact = GetContact(cursor);
-                        if (contact != null)
-                            yield return contact;
-                    }
-                    while (cursor.MoveToNext());
-                }
+			IEnumerable<Contact> GetEnumerable()
+			{
+				if (cursor?.MoveToFirst() == true)
+				{
+					do
+					{
+						var contact = GetContact(cursor);
+						if (contact != null)
+							yield return contact;
+					}
+					while (cursor.MoveToNext());
+				}
 
-                cursor?.Close();
-            }
-        }
+				cursor?.Close();
+			}
+		}
 
-        static Contact GetContact(ICursor cursor)
-        {
-            var id = GetString(cursor, idCol);
-            var displayName = GetString(cursor, displayNameCol);
-            var phones = GetNumbers(id)?.Select(p => new ContactPhone(p));
-            var emails = GetEmails(id)?.Select(e => new ContactEmail(e));
-            var (prefix, given, middle, family, suffix) = GetName(id);
+		static Contact GetContact(ICursor cursor)
+		{
+			var id = GetString(cursor, idCol);
+			var displayName = GetString(cursor, displayNameCol);
+			var phones = GetNumbers(id)?.Select(p => new ContactPhone(p));
+			var emails = GetEmails(id)?.Select(e => new ContactEmail(e));
+			var (prefix, given, middle, family, suffix) = GetName(id);
 
-            return new Contact(id, prefix, given, middle, family, suffix, phones, emails, displayName);
-        }
+			return new Contact(id, prefix, given, middle, family, suffix, phones, emails, displayName);
+		}
 
-        static IEnumerable<string> GetNumbers(string id)
-        {
-            var uri = CommonDataKinds.Phone.ContentUri
-                .BuildUpon()
-                .AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1")
-                .Build();
+		static IEnumerable<string> GetNumbers(string id)
+		{
+			var uri = CommonDataKinds.Phone.ContentUri
+				.BuildUpon()
+				.AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1")
+				.Build();
 
-            var cursor = Platform.ContentResolver.Query(uri, null, $"{contactIdCol}=?", new[] { id }, null);
+			var cursor = Platform.ContentResolver.Query(uri, null, $"{contactIdCol}=?", new[] { id }, null);
 
-            return ReadCursorItems(cursor, CommonDataKinds.Phone.Number);
-        }
+			return ReadCursorItems(cursor, CommonDataKinds.Phone.Number);
+		}
 
-        static IEnumerable<string> GetEmails(string id)
-        {
-            var uri = CommonDataKinds.Email.ContentUri
-                .BuildUpon()
-                .AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1")
-                .Build();
+		static IEnumerable<string> GetEmails(string id)
+		{
+			var uri = CommonDataKinds.Email.ContentUri
+				.BuildUpon()
+				.AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1")
+				.Build();
 
-            var cursor = Platform.ContentResolver.Query(uri, null, $"{contactIdCol}=?", new[] { id }, null);
+			var cursor = Platform.ContentResolver.Query(uri, null, $"{contactIdCol}=?", new[] { id }, null);
 
-            return ReadCursorItems(cursor, CommonDataKinds.Email.Address);
-        }
+			return ReadCursorItems(cursor, CommonDataKinds.Email.Address);
+		}
 
-        static IEnumerable<string> ReadCursorItems(ICursor cursor, string dataKey)
-        {
-            if (cursor?.MoveToFirst() == true)
-            {
-                do
-                {
-                    var data = GetString(cursor, dataKey);
-                    if (data != null)
-                        yield return data;
-                }
-                while (cursor.MoveToNext());
-            }
-            cursor?.Close();
-        }
+		static IEnumerable<string> ReadCursorItems(ICursor cursor, string dataKey)
+		{
+			if (cursor?.MoveToFirst() == true)
+			{
+				do
+				{
+					var data = GetString(cursor, dataKey);
+					if (data != null)
+						yield return data;
+				}
+				while (cursor.MoveToNext());
+			}
+			cursor?.Close();
+		}
 
-        static (string Prefix, string Given, string Middle, string Family, string Suffix) GetName(string id)
-        {
-            var selection = $"{mimetypeCol}=? AND {contactIdCol}=?";
-            var selectionArgs = new string[] { StructuredName.ContentItemType, id };
+		static (string Prefix, string Given, string Middle, string Family, string Suffix) GetName(string id)
+		{
+			var selection = $"{mimetypeCol}=? AND {contactIdCol}=?";
+			var selectionArgs = new string[] { StructuredName.ContentItemType, id };
 
-            using var cursor = Platform.ContentResolver.Query(
-                ContactsContract.Data.ContentUri,
-                null,
-                selection,
-                selectionArgs,
-                null);
+			using var cursor = Platform.ContentResolver.Query(
+				ContactsContract.Data.ContentUri,
+				null,
+				selection,
+				selectionArgs,
+				null);
 
-            if (cursor?.MoveToFirst() != true)
-                return (null, null, null, null, null);
+			if (cursor?.MoveToFirst() != true)
+				return (null, null, null, null, null);
 
-            return (
-                GetString(cursor, StructuredName.Prefix),
-                GetString(cursor, StructuredName.GivenName),
-                GetString(cursor, StructuredName.MiddleName),
-                GetString(cursor, StructuredName.FamilyName),
-                GetString(cursor, StructuredName.Suffix));
-        }
+			return (
+				GetString(cursor, StructuredName.Prefix),
+				GetString(cursor, StructuredName.GivenName),
+				GetString(cursor, StructuredName.MiddleName),
+				GetString(cursor, StructuredName.FamilyName),
+				GetString(cursor, StructuredName.Suffix));
+		}
 
-        static string GetString(ICursor cursor, string column) =>
-            cursor.GetString(cursor.GetColumnIndex(column));
-    }
+		static string GetString(ICursor cursor, string column) =>
+			cursor.GetString(cursor.GetColumnIndex(column));
+	}
 }

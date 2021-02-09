@@ -6,41 +6,41 @@ using Xunit;
 
 namespace DeviceTests
 {
-    public class Point_Tests
-    {
-        int x = 50;
-        int y = 40;
+	public class Point_Tests
+	{
+		int x = 50;
+		int y = 40;
 
-        [Fact]
-        public void SystemToPlatform()
-        {
-            var system = new System.Drawing.Point(x, y);
-            var platform = system.ToPlatformPoint();
-            Assert.Equal(x, platform.X);
-            Assert.Equal(y, platform.Y);
-        }
+		[Fact]
+		public void SystemToPlatform()
+		{
+			var system = new System.Drawing.Point(x, y);
+			var platform = system.ToPlatformPoint();
+			Assert.Equal(x, platform.X);
+			Assert.Equal(y, platform.Y);
+		}
 
-        [Fact]
-        public void PlatformToSystem()
-        {
+		[Fact]
+		public void PlatformToSystem()
+		{
 #if __IOS__
             var platform = new CoreGraphics.CGPoint(x, y);
 #elif __ANDROID__
             var platform = new Android.Graphics.Point(x, y);
 #else
-            var platform = new Windows.Foundation.Point(x, y);
+			var platform = new Windows.Foundation.Point(x, y);
 #endif
-            var system = platform.ToSystemPoint();
+			var system = platform.ToSystemPoint();
 
-            Assert.Equal(x, system.X);
-            Assert.Equal(y, system.Y);
-        }
+			Assert.Equal(x, system.X);
+			Assert.Equal(y, system.Y);
+		}
 
-        [Theory]
-        [InlineData(float.MaxValue, 0)]
-        [InlineData(0, float.MaxValue)]
-        public void PlatformToSystemException(float x, float y)
-        {
+		[Theory]
+		[InlineData(float.MaxValue, 0)]
+		[InlineData(0, float.MaxValue)]
+		public void PlatformToSystemException(float x, float y)
+		{
 #if __IOS__
             var platform = new CoreGraphics.CGPoint(x, y);
             Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemPoint());
@@ -51,36 +51,36 @@ namespace DeviceTests
             var platform = new Windows.Foundation.Point(x, y);
             Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemPoint());
 #endif
-        }
+		}
 
-        [Fact]
-        public void SystemToPlatformF()
-        {
-            var system = new System.Drawing.PointF(x, y);
+		[Fact]
+		public void SystemToPlatformF()
+		{
+			var system = new System.Drawing.PointF(x, y);
 #if __IOS__
             var platform = system.ToPlatformPoint();
 #elif __ANDROID__
             var platform = system.ToPlatformPointF();
 #else
-            var platform = system.ToPlatformPoint();
+			var platform = system.ToPlatformPoint();
 #endif
-            Assert.Equal(x, platform.X);
-            Assert.Equal(y, platform.Y);
-        }
+			Assert.Equal(x, platform.X);
+			Assert.Equal(y, platform.Y);
+		}
 
-        [Fact]
-        public void PlatformToSystemF()
-        {
+		[Fact]
+		public void PlatformToSystemF()
+		{
 #if __IOS__
             var platform = new CoreGraphics.CGPoint(x, y);
 #elif __ANDROID__
             var platform = new Android.Graphics.PointF(x, y);
 #else
-            var platform = new Windows.Foundation.Point(x, y);
+			var platform = new Windows.Foundation.Point(x, y);
 #endif
-            var system = platform.ToSystemPointF();
-            Assert.Equal(x, system.X);
-            Assert.Equal(y, system.Y);
-        }
-    }
+			var system = platform.ToSystemPointF();
+			Assert.Equal(x, system.X);
+			Assert.Equal(y, system.Y);
+		}
+	}
 }

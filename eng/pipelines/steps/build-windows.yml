@@ -29,7 +29,7 @@ steps:
   #     version: $(DOTNET_VERSION)
   #     packageType: 'sdk'
 
-  - script: build.cmd -Target cg-uwp-build-tests  -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"'
+  - script: build.cmd -Target cg-uwp-build-tests -ScriptArgs '--BUILD_CONFIGURATION="$(BuildConfiguration)"'
     condition: eq(variables['BuildConfiguration'], 'Release')
     displayName: 'Build Tests and APPX'
 
@@ -44,7 +44,7 @@ steps:
         Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/Dependencies/x86/**
       TargetFolder: '$(build.artifactstagingdirectory)'
 
-  - script: build.cmd -Target BuildForNuget -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"','-Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
+  - script: build.cmd -Target BuildForNuget -ScriptArgs '--BUILD_CONFIGURATION="$(BuildConfiguration)"','--Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
     name: winbuild
     displayName: 'Build Projects For Nuget'
 

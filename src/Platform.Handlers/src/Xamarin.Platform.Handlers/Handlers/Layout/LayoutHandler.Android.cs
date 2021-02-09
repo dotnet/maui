@@ -39,7 +39,7 @@ namespace Xamarin.Platform.Handlers
 			}
 		}
 
-		public void Add(IView child) 
+		public void Add(IView child)
 		{
 			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");

@@ -196,9 +196,14 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
-				if (EditText != null && EditText is IFormsEditText formsEditText)
+				if (EditText != null)
 				{
-					formsEditText.OnKeyboardBackPressed -= OnKeyboardBackPressed;
+					EditText.RemoveTextChangedListener(this);
+
+					if (EditText is IFormsEditText formsEditText)
+					{
+						formsEditText.OnKeyboardBackPressed -= OnKeyboardBackPressed;
+					}
 				}
 			}
 

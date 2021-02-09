@@ -12,8 +12,8 @@ using UIKit;
 
 namespace Xamarin.Essentials
 {
-    public static partial class WebAuthenticator
-    {
+	public static partial class WebAuthenticator
+	{
 #if __IOS__
         [System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Required for iOS Export")]
@@ -27,27 +27,27 @@ namespace Xamarin.Essentials
         const string sfAuthenticationErrorDomain = "com.apple.SafariServices.Authentication";
 #endif
 
-        static TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
-        static UIViewController currentViewController;
-        static Uri redirectUri;
+		static TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
+		static UIViewController currentViewController;
+		static Uri redirectUri;
 
 #if __IOS__
         static ASWebAuthenticationSession was;
         static SFAuthenticationSession sf;
 #endif
 
-        internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
-        {
-            if (!VerifyHasUrlSchemeOrDoesntRequire(callbackUrl.Scheme))
-                throw new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist.");
+		internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
+		{
+			if (!VerifyHasUrlSchemeOrDoesntRequire(callbackUrl.Scheme))
+				throw new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist.");
 
-            // Cancel any previous task that's still pending
-            if (tcsResponse?.Task != null && !tcsResponse.Task.IsCompleted)
-                tcsResponse.TrySetCanceled();
+			// Cancel any previous task that's still pending
+			if (tcsResponse?.Task != null && !tcsResponse.Task.IsCompleted)
+				tcsResponse.TrySetCanceled();
 
-            tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
-            redirectUri = callbackUrl;
-            var scheme = redirectUri.Scheme;
+			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
+			redirectUri = callbackUrl;
+			var scheme = redirectUri.Scheme;
 
 #if __IOS__
             static void AuthSessionCallback(NSUrl cbUrl, NSError error)
@@ -109,47 +109,47 @@ namespace Xamarin.Essentials
             currentViewController = controller;
             await Platform.GetCurrentUIViewController().PresentViewControllerAsync(controller, true);
 #else
-            var opened = UIApplication.SharedApplication.OpenUrl(url);
-            if (!opened)
-                tcsResponse.TrySetException(new Exception("Error opening Safari"));
+			var opened = UIApplication.SharedApplication.OpenUrl(url);
+			if (!opened)
+				tcsResponse.TrySetException(new Exception("Error opening Safari"));
 #endif
 
-            return await tcsResponse.Task;
-        }
+			return await tcsResponse.Task;
+		}
 
-        internal static bool OpenUrl(Uri uri)
-        {
-            // If we aren't waiting on a task, don't handle the url
-            if (tcsResponse?.Task?.IsCompleted ?? true)
-                return false;
+		internal static bool OpenUrl(Uri uri)
+		{
+			// If we aren't waiting on a task, don't handle the url
+			if (tcsResponse?.Task?.IsCompleted ?? true)
+				return false;
 
-            try
-            {
-                // If we can't handle the url, don't
-                if (!WebUtils.CanHandleCallback(redirectUri, uri))
-                    return false;
+			try
+			{
+				// If we can't handle the url, don't
+				if (!WebUtils.CanHandleCallback(redirectUri, uri))
+					return false;
 
-                currentViewController?.DismissViewControllerAsync(true);
-                currentViewController = null;
+				currentViewController?.DismissViewControllerAsync(true);
+				currentViewController = null;
 
-                tcsResponse.TrySetResult(new WebAuthenticatorResult(uri));
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-            return false;
-        }
+				tcsResponse.TrySetResult(new WebAuthenticatorResult(uri));
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
+			return false;
+		}
 
-        static bool VerifyHasUrlSchemeOrDoesntRequire(string scheme)
-        {
-            // iOS11+ uses sfAuthenticationSession which handles its own url routing
-            if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
-                return true;
+		static bool VerifyHasUrlSchemeOrDoesntRequire(string scheme)
+		{
+			// iOS11+ uses sfAuthenticationSession which handles its own url routing
+			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
+				return true;
 
-            return AppInfo.VerifyHasUrlScheme(scheme);
-        }
+			return AppInfo.VerifyHasUrlScheme(scheme);
+		}
 
 #if __IOS__
         class NativeSFSafariViewControllerDelegate : SFSafariViewControllerDelegate
@@ -173,5 +173,5 @@ namespace Xamarin.Essentials
                 => Window;
         }
 #endif
-    }
+	}
 }

@@ -4,64 +4,64 @@ using Tizen.Applications;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Launcher
-    {
-        static Task<bool> PlatformCanOpenAsync(Uri uri)
-            => Task.FromResult(uri.IsWellFormedOriginalString());
+	public static partial class Launcher
+	{
+		static Task<bool> PlatformCanOpenAsync(Uri uri)
+			=> Task.FromResult(uri.IsWellFormedOriginalString());
 
-        static Task PlatformOpenAsync(Uri uri)
-        {
-            Permissions.EnsureDeclared<Permissions.LaunchApp>();
+		static Task PlatformOpenAsync(Uri uri)
+		{
+			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
-            var appControl = new AppControl
-            {
-                Operation = AppControlOperations.ShareText,
-                Uri = uri.AbsoluteUri
-            };
+			var appControl = new AppControl
+			{
+				Operation = AppControlOperations.ShareText,
+				Uri = uri.AbsoluteUri
+			};
 
-            if (uri.AbsoluteUri.StartsWith("geo:"))
-                appControl.Operation = AppControlOperations.Pick;
-            else if (uri.AbsoluteUri.StartsWith("http"))
-                appControl.Operation = AppControlOperations.View;
-            else if (uri.AbsoluteUri.StartsWith("mailto:"))
-                appControl.Operation = AppControlOperations.Compose;
-            else if (uri.AbsoluteUri.StartsWith("sms:"))
-                appControl.Operation = AppControlOperations.Compose;
-            else if (uri.AbsoluteUri.StartsWith("tel:"))
-                appControl.Operation = AppControlOperations.Dial;
+			if (uri.AbsoluteUri.StartsWith("geo:"))
+				appControl.Operation = AppControlOperations.Pick;
+			else if (uri.AbsoluteUri.StartsWith("http"))
+				appControl.Operation = AppControlOperations.View;
+			else if (uri.AbsoluteUri.StartsWith("mailto:"))
+				appControl.Operation = AppControlOperations.Compose;
+			else if (uri.AbsoluteUri.StartsWith("sms:"))
+				appControl.Operation = AppControlOperations.Compose;
+			else if (uri.AbsoluteUri.StartsWith("tel:"))
+				appControl.Operation = AppControlOperations.Dial;
 
-            AppControl.SendLaunchRequest(appControl);
+			AppControl.SendLaunchRequest(appControl);
 
-            return Task.CompletedTask;
-        }
+			return Task.CompletedTask;
+		}
 
-        static Task PlatformOpenAsync(OpenFileRequest request)
-        {
-            if (string.IsNullOrEmpty(request.File.FullPath))
-                throw new ArgumentNullException(nameof(request.File.FullPath));
+		static Task PlatformOpenAsync(OpenFileRequest request)
+		{
+			if (string.IsNullOrEmpty(request.File.FullPath))
+				throw new ArgumentNullException(nameof(request.File.FullPath));
 
-            Permissions.EnsureDeclared<Permissions.LaunchApp>();
+			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
-            var appControl = new AppControl
-            {
-                Operation = AppControlOperations.View,
-                Mime = FileSystem.MimeTypes.All,
-                Uri = "file://" + request.File.FullPath,
-            };
+			var appControl = new AppControl
+			{
+				Operation = AppControlOperations.View,
+				Mime = FileSystem.MimeTypes.All,
+				Uri = "file://" + request.File.FullPath,
+			};
 
-            AppControl.SendLaunchRequest(appControl);
+			AppControl.SendLaunchRequest(appControl);
 
-            return Task.CompletedTask;
-        }
+			return Task.CompletedTask;
+		}
 
-        static async Task<bool> PlatformTryOpenAsync(Uri uri)
-        {
-            var canOpen = await PlatformCanOpenAsync(uri);
+		static async Task<bool> PlatformTryOpenAsync(Uri uri)
+		{
+			var canOpen = await PlatformCanOpenAsync(uri);
 
-            if (canOpen)
-                await PlatformOpenAsync(uri);
+			if (canOpen)
+				await PlatformOpenAsync(uri);
 
-            return canOpen;
-        }
-    }
+			return canOpen;
+		}
+	}
 }
