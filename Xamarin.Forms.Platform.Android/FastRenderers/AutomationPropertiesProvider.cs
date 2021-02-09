@@ -30,18 +30,28 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			resourceIdClose = context.Resources.GetIdentifier($"{automationIdParent}{s_defaultDrawerIdCloseSuffix}", "string", context.ApplicationInfo.PackageName);
 		}
 
+
 		internal static void SetAutomationId(AView control, Element element, string value = null)
 		{
-			if (element == null || control == null)
+			if (!control.IsAlive() || element == null)
 			{
 				return;
 			}
 
-			value = element.AutomationId;
+			SetAutomationId(control, element.AutomationId, value);
+		}
 
-			if (!string.IsNullOrEmpty(value))
+		internal static void SetAutomationId(AView control, string automationId, string value = null)
+		{
+			if (!control.IsAlive())
 			{
-				control.ContentDescription = value;
+				return;
+			}
+
+			automationId = value ?? automationId;
+			if (!string.IsNullOrEmpty(automationId))
+			{
+				control.ContentDescription = automationId;
 			}
 		}
 
