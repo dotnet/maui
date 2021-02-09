@@ -217,34 +217,24 @@ namespace Xamarin.Forms.Platform.iOS
 				return uIEdgeInsets;
 			}
 
-			// If we're grouping, we'll need to inset the sections to maintain the item spacing between the 
-			// groups and/or their group headers/footers
+			// If we're grouping, we'll need to inset the sections to maintain the spacing between the 
+			// groups and their group headers/footers
 
-			var itemsLayout = ItemsView.ItemsLayout;
-			var scrollDirection = itemsViewLayout.ScrollDirection;
-			nfloat lineSpacing = itemsViewLayout.GetMinimumLineSpacingForSection(collectionView, itemsViewLayout, section);
+			nfloat spacing = itemsViewLayout.GetMinimumLineSpacingForSection(collectionView, itemsViewLayout, section);
 
-			if (itemsLayout is GridItemsLayout)
+			var top = uIEdgeInsets.Top;
+			var left = uIEdgeInsets.Left;
+
+			if (itemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{
-				nfloat itemSpacing = itemsViewLayout.GetMinimumInteritemSpacingForSection(collectionView, itemsViewLayout, section);
-
-				if (scrollDirection == UICollectionViewScrollDirection.Horizontal)
-				{
-					return new UIEdgeInsets(itemSpacing + uIEdgeInsets.Top, lineSpacing + uIEdgeInsets.Left,
-						uIEdgeInsets.Bottom, uIEdgeInsets.Right);
-				}
-
-				return new UIEdgeInsets(lineSpacing + uIEdgeInsets.Top, itemSpacing + uIEdgeInsets.Left,
-					uIEdgeInsets.Bottom, uIEdgeInsets.Right);
+				left += spacing;
+			}
+			else
+			{
+				top += spacing;
 			}
 
-			if (scrollDirection == UICollectionViewScrollDirection.Horizontal)
-			{
-				return new UIEdgeInsets(uIEdgeInsets.Top, lineSpacing + uIEdgeInsets.Left,
-					uIEdgeInsets.Bottom, uIEdgeInsets.Right);
-			}
-
-			return new UIEdgeInsets(lineSpacing + uIEdgeInsets.Top, uIEdgeInsets.Left,
+			return new UIEdgeInsets(top, left,
 				uIEdgeInsets.Bottom, uIEdgeInsets.Right);
 		}
 
