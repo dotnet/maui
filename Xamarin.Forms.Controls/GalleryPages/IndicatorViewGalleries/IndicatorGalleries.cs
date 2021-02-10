@@ -19,7 +19,9 @@
 						GalleryBuilder.NavButton("IndicatorView Gallery", () =>
 							new IndicatorsSample(), Navigation),
 						GalleryBuilder.NavButton("Indicator MaxVisible Gallery", () =>
-							new IndicatorsSampleMaximumVisible(), Navigation)
+							new IndicatorsSampleMaximumVisible(), Navigation),
+						GalleryBuilder.NavButton("Indicator VisualState", () =>
+							new IndicatorsTemplateSample(), Navigation)
 					}
 				}
 			};
