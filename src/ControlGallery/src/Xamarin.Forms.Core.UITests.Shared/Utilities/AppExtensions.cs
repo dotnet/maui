@@ -68,6 +68,25 @@ namespace Xamarin.UITest
 			return results;
 		}
 
+		public static T[] QueryUntilNotPresent<T>(
+			this IApp app,
+			Func<T[]> func,
+			int retryCount = 10,
+			int delayInMs = 2000)
+		{
+			var results = func();
+
+			int counter = 0;
+			while ((results != null || results.Length > 0) && counter < retryCount)
+			{
+				Thread.Sleep(delayInMs);
+				results = func();
+				counter++;
+			}
+
+			return results;
+		}
+
 		public static bool IsApiHigherThan(this IApp app, int apiLevel, string apiLabelId = "ApiLevel")
 		{
 			var api = Convert.ToInt32(app.WaitForElement("ApiLabel")[0].ReadText());

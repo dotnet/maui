@@ -276,7 +276,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (_footerView != null)
 			{
-				_footerView.LayoutView(_shellContext.AndroidContext.FromPixels(_rootView.LayoutParameters.Width), double.PositiveInfinity);
+				_footerView.LayoutView(0, 0, _shellContext.AndroidContext.FromPixels(_rootView.LayoutParameters.Width), double.PositiveInfinity);
 			}
 		}
 
@@ -294,7 +294,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				var width = View.MeasuredWidth;
 
-				_contentView.LayoutView(
+				_contentView.LayoutView(0, 0,
 					ShellContext.AndroidContext.FromPixels(width),
 					ShellContext.AndroidContext.FromPixels(height));
 			}

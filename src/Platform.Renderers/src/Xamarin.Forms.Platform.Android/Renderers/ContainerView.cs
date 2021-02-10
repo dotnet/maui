@@ -29,6 +29,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		public bool MatchHeight { get; set; }
 
+		internal bool MeasureHeight { get; set; }
+
 		public bool MatchWidth { get; set; }
 
 		public View View
@@ -90,7 +92,15 @@ namespace Xamarin.Forms.Platform.Android
 			var measureWidth = width > 0 ? Context.FromPixels(width) : double.PositiveInfinity;
 			var measureHeight = height > 0 ? Context.FromPixels(height) : double.PositiveInfinity;
 
-			_shellViewRenderer.LayoutView(measureWidth, measureHeight);
+			double? maxHeight = null;
+
+			if(MeasureHeight)
+			{
+				maxHeight = measureHeight;
+				measureHeight = double.PositiveInfinity;
+			}
+
+			_shellViewRenderer.LayoutView(0, 0, measureWidth, measureHeight, null, maxHeight);
 
 			SetMeasuredDimension((MatchWidth && width != 0) ? width : (int)Context.ToPixels(View.Width),
 								 (MatchHeight && height != 0) ? height : (int)Context.ToPixels(View.Height));

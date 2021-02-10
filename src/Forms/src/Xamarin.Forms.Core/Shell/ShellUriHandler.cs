@@ -54,9 +54,18 @@ namespace Xamarin.Forms
 					restOfPath = buildUpPages;
 				}
 
+				string[] shellRoutes = new[]
+				{
+					shell.CurrentItem.Route,
+					shell.CurrentItem.CurrentItem.Route,
+					shell.CurrentItem.CurrentItem.CurrentItem.Route,
+				};
+
+				restOfPath = CollapsePath(restOfPath.ToArray(), shellRoutes, true);
 				restOfPath.Insert(0, shell.CurrentItem.CurrentItem.CurrentItem.Route);
 				restOfPath.Insert(0, shell.CurrentItem.CurrentItem.Route);
 				restOfPath.Insert(0, shell.CurrentItem.Route);
+
 				var result = $"{String.Join(_pathSeparator, restOfPath)}{queryString}";
 				var returnValue = ConvertToStandardFormat("scheme", "host", null, new Uri(result, UriKind.Relative));
 				return new Uri(FormatUri(returnValue.PathAndQuery), UriKind.Relative);
@@ -221,11 +230,6 @@ namespace Xamarin.Forms
 			var routeKeys = Routing.GetRouteKeys();
 			for (int i = 0; i < routeKeys.Length; i++)
 			{
-				if (routeKeys[i] == originalRequest.OriginalString)
-				{
-					var builder = new RouteRequestBuilder(routeKeys[i], routeKeys[i], null, new string[] { routeKeys[i] });
-					return new List<RouteRequestBuilder> { builder };
-				}
 				routeKeys[i] = FormatUri(routeKeys[i]);
 			}
 
@@ -245,21 +249,6 @@ namespace Xamarin.Forms
 
 			var segments = RetrievePaths(localPath);
 
-			if (!relativeMatch)
-			{
-				for (int i = 0; i < routeKeys.Length; i++)
-				{
-					var route = routeKeys[i];
-					var uri = ConvertToStandardFormat(shell, CreateUri(route));
-					if (uri.Equals(request))
-					{
-						throw new Exception($"Global routes currently cannot be the only page on the stack, so absolute routing to global routes is not supported. For now, just navigate to: {originalRequest.OriginalString.Replace("//", "")}");
-						//var builder = new RouteRequestBuilder(route, route, null, segments);
-						//return new List<RouteRequestBuilder> { builder };
-					}
-				}
-			}
-
 			var depthStart = 0;
 
 			if (segments[0] == shell?.Route)
@@ -274,124 +263,207 @@ namespace Xamarin.Forms
 
 			if (relativeMatch && shell?.CurrentItem != null)
 			{
-				// retrieve current location
-				var currentLocation = NodeLocation.Create(shell);
-
-				while (currentLocation.Shell != null)
-				{
-					var pureRoutesMatch = new List<RouteRequestBuilder>();
-					var pureGlobalRoutesMatch = new List<RouteRequestBuilder>();
-
-					//currently relative routes to shell routes isn't supported as we aren't creating navigation stacks
-					if (enableRelativeShellRoutes)
-					{
-						SearchPath(currentLocation.LowestChild, null, segments, pureRoutesMatch, 0);
-						ExpandOutGlobalRoutes(pureRoutesMatch, routeKeys);
-						pureRoutesMatch = GetBestMatches(pureRoutesMatch);
-						if (pureRoutesMatch.Count > 0)
-						{
-							return pureRoutesMatch;
-						}
-					}
-
-
-					SearchPath(currentLocation.LowestChild, null, segments, pureGlobalRoutesMatch, 0, ignoreGlobalRoutes: false);
-					ExpandOutGlobalRoutes(pureGlobalRoutesMatch, routeKeys);
-
-
-					if (currentLocation.Content != null && pureGlobalRoutesMatch.Count == 0)
-					{
-						string newPath = $"{shell.CurrentState.Location.OriginalString}{_pathSeparator}{String.Join(_pathSeparator, segments)}";
-						var currentSegments = RetrievePaths(shell.CurrentState.FullLocation.OriginalString);
-						var newSegments = RetrievePaths(newPath);
-
-						RouteRequestBuilder routeRequestBuilder = new RouteRequestBuilder(newSegments);
-						RouteRequestBuilder requestBuilderWithNewSegments = new RouteRequestBuilder(segments);
-
-						// add shell element routes
-						routeRequestBuilder.AddMatch(currentLocation);
-
-						// add routes that are contributed by global routes
-						for (var i = 0; i < currentSegments.Length; i++)
-						{
-							var currentSeg = currentSegments[i];
-							if (routeRequestBuilder.FullSegments.Count <= i || currentSeg != routeRequestBuilder.FullSegments[i])
-							{
-								routeRequestBuilder.AddGlobalRoute(currentSeg, currentSeg);
-							}
-						}
-
-						var existingGlobalRoutes = routeRequestBuilder.GlobalRouteMatches.ToList();
-						ExpandOutGlobalRoutes(new List<RouteRequestBuilder> { routeRequestBuilder }, routeKeys);
-						if (routeRequestBuilder.IsFullMatch)
-						{
-							var additionalRouteMatches = routeRequestBuilder.GlobalRouteMatches;
-							for (int i = existingGlobalRoutes.Count; i < additionalRouteMatches.Count; i++)
-								requestBuilderWithNewSegments.AddGlobalRoute(additionalRouteMatches[i], segments[i - existingGlobalRoutes.Count]);
-
-							pureGlobalRoutesMatch.Add(requestBuilderWithNewSegments);
-						}
-					}
-
-					pureGlobalRoutesMatch = GetBestMatches(pureGlobalRoutesMatch);
-					if (pureGlobalRoutesMatch.Count > 0)
-					{
-						// currently relative routes to shell routes isn't supported as we aren't creating navigation stacks
-						// So right now we will just throw an exception so that once this is implemented
-						// GotoAsync doesn't start acting inconsistently and all of a sudden starts creating routes
-
-						int shellElementsMatched =
-							pureGlobalRoutesMatch[0].SegmentsMatched.Count -
-							pureGlobalRoutesMatch[0].GlobalRouteMatches.Count;
-
-						if (!enableRelativeShellRoutes && shellElementsMatched > 0)
-						{
-							throw new Exception($"Relative routing to shell elements is currently not supported. Try prefixing your uri with ///: ///{originalRequest}");
-						}
-
-						return pureGlobalRoutesMatch;
-					}
-
-					currentLocation.Pop();
-				}
-
-				string searchPath = String.Join(_pathSeparator, segments);
-
-				if (routeKeys.Contains(searchPath))
-				{
-					return new List<RouteRequestBuilder> { new RouteRequestBuilder(searchPath, searchPath, null, segments) };
-				}
-
-				RouteRequestBuilder builder = null;
-				foreach (var segment in segments)
-				{
-					if (routeKeys.Contains(segment))
-					{
-						if (builder == null)
-							builder = new RouteRequestBuilder(segment, segment, null, segments);
-						else
-							builder.AddGlobalRoute(segment, segment);
-					}
-				}
-
-				if (builder != null && builder.IsFullMatch)
-					return new List<RouteRequestBuilder> { builder };
+				var result = ProcessRelativeRoute(shell, routeKeys, segments, enableRelativeShellRoutes, originalRequest);
+				if (result.Count > 0)
+					return result;
 			}
-			else
+
+			possibleRoutePaths.Clear();
+			SearchPath(shell, null, segments, possibleRoutePaths, depthStart);
+
+			var bestMatches = GetBestMatches(possibleRoutePaths);
+			if (bestMatches.Count > 0)
+				return bestMatches;
+
+			bestMatches.Clear();
+			ExpandOutGlobalRoutes(possibleRoutePaths, routeKeys);
+
+			foreach (var possibleRoutePath in possibleRoutePaths)
 			{
-				possibleRoutePaths.Clear();
-				SearchPath(shell, null, segments, possibleRoutePaths, depthStart);
+				if (possibleRoutePath.IsFullMatch)
+					continue;
 
-				var bestMatches = GetBestMatches(possibleRoutePaths);
-				if (bestMatches.Count > 0)
-					return bestMatches;
+				var url = possibleRoutePath.PathFull;
 
-				bestMatches.Clear();
-				ExpandOutGlobalRoutes(possibleRoutePaths, routeKeys);
+				var globalRouteMatches =
+					SearchForGlobalRoutes(
+						possibleRoutePath.RemainingSegments,
+						new ShellNavigationState(url, false).FullLocation,
+						possibleRoutePath.GetNodeLocation(),
+						routeKeys);
+
+				if (globalRouteMatches.Count != 1)
+					continue;
+
+				var globalRouteMatch = globalRouteMatches[0];
+
+				while (possibleRoutePath.NextSegment != null)
+				{
+					var matchIndex = globalRouteMatch.SegmentsMatched.IndexOf(possibleRoutePath.NextSegment);
+					if (matchIndex < 0)
+						break;
+
+					possibleRoutePath.AddGlobalRoute(
+						globalRouteMatch.GlobalRouteMatches[matchIndex],
+						globalRouteMatch.SegmentsMatched[matchIndex]);
+				}
 			}
 
 			possibleRoutePaths = GetBestMatches(possibleRoutePaths);
+
+			if (possibleRoutePaths.Count == 0)
+			{
+				foreach (var routeKey in routeKeys)
+				{
+					if (routeKey == originalRequest.OriginalString)
+					{
+						var builder = new RouteRequestBuilder(routeKey, routeKey, null, new string[] { routeKey });
+						return new List<RouteRequestBuilder> { builder };
+					}
+				}
+
+				if (!relativeMatch)
+				{
+					for (int i = 0; i < routeKeys.Length; i++)
+					{
+						var route = routeKeys[i];
+						var uri = ConvertToStandardFormat(shell, CreateUri(route));
+						if (uri.Equals(request))
+						{
+							throw new Exception($"Global routes currently cannot be the only page on the stack, so absolute routing to global routes is not supported. For now, just navigate to: {originalRequest.OriginalString.Replace("//", "")}");
+						}
+					}
+				}
+			}
 			return possibleRoutePaths;
+		}
+
+		static List<RouteRequestBuilder> ProcessRelativeRoute(
+			Shell shell,
+			string[] routeKeys,
+			string[] segments,
+			bool enableRelativeShellRoutes,
+			Uri originalRequest)
+		{
+			// retrieve current location
+			var currentLocation = NodeLocation.Create(shell);
+
+			while (currentLocation.Shell != null)
+			{
+				var pureRoutesMatch = new List<RouteRequestBuilder>();
+				var pureGlobalRoutesMatch = new List<RouteRequestBuilder>();
+
+				//currently relative routes to shell routes isn't supported as we aren't creating navigation stacks
+				if (enableRelativeShellRoutes)
+				{
+					SearchPath(currentLocation.LowestChild, null, segments, pureRoutesMatch, 0);
+					ExpandOutGlobalRoutes(pureRoutesMatch, routeKeys);
+					pureRoutesMatch = GetBestMatches(pureRoutesMatch);
+					if (pureRoutesMatch.Count > 0)
+					{
+						return pureRoutesMatch;
+					}
+				}
+
+				SearchPath(currentLocation.LowestChild, null, segments, pureGlobalRoutesMatch, 0, ignoreGlobalRoutes: false);
+				ExpandOutGlobalRoutes(pureGlobalRoutesMatch, routeKeys);
+
+				if (currentLocation.Content != null && pureGlobalRoutesMatch.Count == 0)
+				{
+					var matches = SearchForGlobalRoutes(segments, shell.CurrentState.FullLocation, currentLocation, routeKeys);
+					pureGlobalRoutesMatch.AddRange(matches);
+				}
+
+				pureGlobalRoutesMatch = GetBestMatches(pureGlobalRoutesMatch);
+				if (pureGlobalRoutesMatch.Count > 0)
+				{
+					// currently relative routes to shell routes isn't supported as we aren't creating navigation stacks
+					// So right now we will just throw an exception so that once this is implemented
+					// GotoAsync doesn't start acting inconsistently and all of a sudden starts creating routes
+
+					int shellElementsMatched =
+						pureGlobalRoutesMatch[0].SegmentsMatched.Count -
+						pureGlobalRoutesMatch[0].GlobalRouteMatches.Count;
+
+					if (!enableRelativeShellRoutes && shellElementsMatched > 0)
+					{
+						throw new Exception($"Relative routing to shell elements is currently not supported. Try prefixing your uri with ///: ///{originalRequest}");
+					}
+
+					return pureGlobalRoutesMatch;
+				}
+
+				currentLocation.Pop();
+			}
+
+			string searchPath = String.Join(_pathSeparator, segments);
+
+			if (routeKeys.Contains(searchPath))
+			{
+				return new List<RouteRequestBuilder> { new RouteRequestBuilder(searchPath, searchPath, null, segments) };
+			}
+
+			RouteRequestBuilder builder = null;
+			foreach (var segment in segments)
+			{
+				if (routeKeys.Contains(segment))
+				{
+					if (builder == null)
+						builder = new RouteRequestBuilder(segment, segment, null, segments);
+					else
+						builder.AddGlobalRoute(segment, segment);
+				}
+			}
+
+			if (builder != null && builder.IsFullMatch)
+				return new List<RouteRequestBuilder> { builder };
+
+			return new List<RouteRequestBuilder>();
+		}
+
+		static List<RouteRequestBuilder> SearchForGlobalRoutes(
+			string[] segments,
+			Uri startingFrom,
+			NodeLocation currentLocation,
+			string[] routeKeys)
+		{
+			List<RouteRequestBuilder> pureGlobalRoutesMatch = new List<RouteRequestBuilder>();
+			string newPath = String.Join(_pathSeparator, segments);
+			var currentSegments = RetrievePaths(startingFrom.OriginalString);
+			var newSegments = CollapsePath(newPath, currentSegments, true).ToArray();
+			List<string> fullRouteWithNewSegments = new List<string>(currentSegments);
+			fullRouteWithNewSegments.AddRange(newSegments);
+
+			// This is used to calculate if the global route matches
+			RouteRequestBuilder routeRequestBuilder = new RouteRequestBuilder(fullRouteWithNewSegments.ToArray());
+
+			// add shell element routes
+			routeRequestBuilder.AddMatch(currentLocation);
+
+			// add routes that are contributed by global routes
+			for (var i = 0; i < currentSegments.Length; i++)
+			{
+				var currentSeg = currentSegments[i];
+				if (routeRequestBuilder.FullSegments.Count <= i || currentSeg != routeRequestBuilder.FullSegments[i])
+				{
+					routeRequestBuilder.AddGlobalRoute(currentSeg, currentSeg);
+				}
+			}
+
+			var existingGlobalRoutes = routeRequestBuilder.GlobalRouteMatches.ToList();
+			ExpandOutGlobalRoutes(new List<RouteRequestBuilder> { routeRequestBuilder }, routeKeys);
+			if (routeRequestBuilder.IsFullMatch)
+			{
+				RouteRequestBuilder requestBuilderWithNewSegments = new RouteRequestBuilder(newSegments);
+
+				var additionalRouteMatches = routeRequestBuilder.GlobalRouteMatches;
+				for (int i = existingGlobalRoutes.Count; i < additionalRouteMatches.Count; i++)
+					requestBuilderWithNewSegments.AddGlobalRoute(additionalRouteMatches[i], segments[i - existingGlobalRoutes.Count]);
+
+				pureGlobalRoutesMatch.Add(requestBuilderWithNewSegments);
+			}
+
+			return pureGlobalRoutesMatch;
 		}
 
 		// The purpose of this method is to give an accurate representation of what a target URI means based
@@ -404,26 +476,38 @@ namespace Xamarin.Forms
 		internal static List<string> CollapsePath(
 				string myRoute,
 				IEnumerable<string> currentRouteStack,
-				bool userDefinedRoute)
+				bool userDefinedRoute) =>
+			CollapsePath(RetrievePaths(myRoute), currentRouteStack, userDefinedRoute);
+
+		internal static List<string> CollapsePath(
+				string[] myRoute,
+				IEnumerable<string> currentRouteStack,
+				bool removeUserDefinedRoute)
 		{
 			var localRouteStack = currentRouteStack.ToList();
 			for (var i = localRouteStack.Count - 1; i >= 0; i--)
 			{
 				var route = localRouteStack[i];
 				if (Routing.IsImplicit(route) ||
-					(Routing.IsDefault(route) && userDefinedRoute))
+					(Routing.IsDefault(route) && removeUserDefinedRoute))
 				{
 					localRouteStack.RemoveAt(i);
 				}
 			}
 
-			var paths = RetrievePaths(myRoute).ToList();
+			var paths = myRoute.ToList();
 
 			// collapse similar leaves
-			int walkBackCurrentStackIndex = localRouteStack.Count - (paths.Count - 1);
+			int walkBackCurrentStackIndex = -1;
+
+			if (paths.Count > 0)
+				walkBackCurrentStackIndex = localRouteStack.IndexOf(paths[0]);
 
 			while (paths.Count > 1 && walkBackCurrentStackIndex >= 0)
 			{
+				if (localRouteStack.Count <= walkBackCurrentStackIndex)
+					break;
+
 				if (paths[0] == localRouteStack[walkBackCurrentStackIndex])
 				{
 					paths.RemoveAt(0);
@@ -444,10 +528,17 @@ namespace Xamarin.Forms
 			// First search by collapsing global routes if user is registering routes like "route1/route2/route3"
 			foreach (var routeKey in routeKeys)
 			{
-				var collapsedRoute = String.Join(_pathSeparator, CollapsePath(routeKey, possibleRoutePath.SegmentsMatched, true));
+				var collapsedRoutes = CollapsePath(routeKey, possibleRoutePath.SegmentsMatched, true);
+				var collapsedRoute = String.Join(_pathSeparator, collapsedRoutes);
 
 				if (routeKey.StartsWith("//"))
-					collapsedRoute = "//" + collapsedRoute;
+				{
+					var routeKeyPaths =
+						routeKey.Split(_pathSeparators, StringSplitOptions.RemoveEmptyEntries);
+
+					if (routeKeyPaths[0] == collapsedRoutes[0])
+						collapsedRoute = "//" + collapsedRoute;
+				}
 
 				string collapsedMatch = possibleRoutePath.GetNextSegmentMatch(collapsedRoute);
 				if (!String.IsNullOrWhiteSpace(collapsedMatch))

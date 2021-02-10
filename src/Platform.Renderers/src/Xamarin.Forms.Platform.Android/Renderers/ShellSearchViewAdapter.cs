@@ -105,6 +105,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				result = new ContainerView(parent.Context, view);
 				result.MatchWidth = true;
+				result.MeasureHeight = true;
 			}
 
 			return result;

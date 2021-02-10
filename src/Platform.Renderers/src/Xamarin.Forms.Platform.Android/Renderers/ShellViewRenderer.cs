@@ -15,8 +15,16 @@ namespace Xamarin.Forms.Platform.Android
 		public IVisualElementRenderer Renderer { get; private set; }
 		View _view;
 		WeakReference<Context> _context;
+
+		// These are used by layout calls made by android if the layouts
+		// are invalidated. This ensures that the layout is performed
+		// using the same input values
 		public double Width { get; private set; }
 		public double Height { get; private set; }
+		public double? MaxWidth { get; private set; }
+		public double? MaxHeight { get; private set; }
+		public double X { get; private set; }
+		public double Y { get; private set; }
 
 		public ShellViewRenderer(Context context, View view)
 		{
@@ -42,11 +50,6 @@ namespace Xamarin.Forms.Platform.Android
 			_context = null;
 		}
 
-		public void LayoutView(double width, double height, double? maxWidth = null, double? maxHeight = null)
-		{
-			LayoutView(0, 0, width, height, maxWidth, maxHeight);
-		}
-
 		public void LayoutView(double x, double y, double width, double height, double? maxWidth = null, double? maxHeight = null)
 		{
 			if (width == -1)
@@ -57,6 +60,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			Width = width;
 			Height = height;
+			MaxWidth = maxWidth;
+			MaxHeight = maxHeight;
+			X = x;
+			Y = y;
+
 			Context context;
 
 			if (Renderer == null || !(_context.TryGetTarget(out context)) || !Renderer.View.IsAlive())
@@ -134,7 +142,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		void OnViewSizeChanged(object sender, EventArgs e) =>
-			LayoutView(Width, Height);
+			LayoutView(X, Y, Width, Height, MaxWidth, MaxHeight);
 
 		public AView NativeView
 		{

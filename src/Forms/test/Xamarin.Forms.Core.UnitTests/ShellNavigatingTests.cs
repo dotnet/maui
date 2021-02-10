@@ -916,7 +916,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			await shell.Navigation.PopAsync();
 		}
 
-
 		[Test]
 		public async Task GoBackFromRouteWithMultiplePathsHierarchical()
 		{
@@ -931,6 +930,70 @@ namespace Xamarin.Forms.Core.UnitTests
 			await shell.GoToAsync("monkeygenome");
 			await shell.Navigation.PopAsync();
 			await shell.Navigation.PopAsync();
+		}
+
+		[Test]
+		public async Task HierarchicalNavigation()
+		{
+			Routing.RegisterRoute("page1/page2", typeof(ShellTestPage));
+			var shell = new TestShell(
+				CreateShellItem(shellSectionRoute: "page1")
+			);
+
+			await shell.GoToAsync($"page1/page2?{nameof(ShellTestPage.SomeQueryParameter)}=1");
+
+			Assert.AreEqual("1", ((ShellTestPage)shell.CurrentPage).SomeQueryParameter);
+		}
+
+		[Test]
+		public async Task HierarchicalNavigationMultipleRoutes()
+		{
+			Routing.RegisterRoute("page1/page2", typeof(ShellTestPage));
+			Routing.RegisterRoute("page1/page2/page3", typeof(TestPage1));
+			var shell = new TestShell(
+				CreateShellItem(shellSectionRoute: "page1")
+			);
+
+			await shell.GoToAsync($"page1/page2?{nameof(ShellTestPage.SomeQueryParameter)}=1");
+
+			Assert.AreEqual("1", ((ShellTestPage)shell.CurrentPage).SomeQueryParameter);
+			await shell.GoToAsync($"page1/page2/page3");
+
+			Assert.IsTrue(shell.CurrentPage is TestPage1);
+			Assert.IsTrue(shell.Navigation.NavigationStack[1] is ShellTestPage);
+		}
+
+		[Test]
+		public async Task HierarchicalNavigationMultipleRoutesVariation1()
+		{
+			Routing.RegisterRoute("page1/page2", typeof(ShellTestPage));
+			Routing.RegisterRoute("page1/page2/page3", typeof(TestPage1));
+			var shell = new TestShell(
+				CreateShellItem(shellSectionRoute: "page1")
+			);
+
+			await shell.GoToAsync($"page1/page2/page3");
+
+			Assert.IsTrue(shell.CurrentPage is TestPage1);
+			Assert.IsTrue(shell.Navigation.NavigationStack[1] is ShellTestPage);
+		}
+
+		[Test]
+		public async Task HierarchicalNavigationWithBackNavigation()
+		{
+			Routing.RegisterRoute("page1/page2", typeof(ShellTestPage));
+			Routing.RegisterRoute("page1/page2/page3", typeof(TestPage1));
+			var shell = new TestShell(
+				CreateShellItem(shellSectionRoute: "page1")
+			);
+
+			await shell.GoToAsync($"page1/page2");
+			await shell.GoToAsync($"page1/page2/page3");
+			Assert.IsTrue(shell.CurrentPage is TestPage1);
+			await shell.GoToAsync($"..");
+			Assert.IsTrue(shell.CurrentPage is ShellTestPage);
+			await shell.GoToAsync($"..");
+			Assert.IsTrue(shell.CurrentPage is ContentPage);
 		}
 
 		public class NavigationMonitoringTab : Tab

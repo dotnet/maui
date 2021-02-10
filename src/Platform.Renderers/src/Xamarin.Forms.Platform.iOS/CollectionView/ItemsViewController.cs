@@ -22,8 +22,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
-		Dictionary<NSIndexPath, TemplatedCell> _measurementCells = new Dictionary<NSIndexPath, TemplatedCell>();
-		Dictionary<object, CGSize> _cellSizeCache = new Dictionary<object, CGSize>();
+		Dictionary<object, TemplatedCell> _measurementCells = new Dictionary<object, TemplatedCell>();
 
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
 
@@ -31,8 +30,6 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			ItemsView = itemsView;
 			ItemsViewLayout = layout;
-
-			ItemsView.PropertyChanged += ItemsViewPropertyChanged;
 		}
 
 		public void UpdateLayout(ItemsViewLayout newLayout)
@@ -62,8 +59,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (disposing)
 			{
-				ItemsView.PropertyChanged -= ItemsViewPropertyChanged;
-
 				ItemsSource?.Dispose();
 
 				CollectionView.Delegate = null;
@@ -100,11 +95,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override nint GetItemsCount(UICollectionView collectionView, nint section)
 		{
-			if (!_initialized)
-			{
-				return 0;
-			}
-
 			CheckForEmptySource();
 
 			return ItemsSource.ItemCountInGroup(section);
@@ -119,7 +109,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_isEmpty)
 			{
 				_measurementCells.Clear();
-				_cellSizeCache.Clear();
+				ItemsViewLayout?.ClearCellSizeCache();
 			}
 
 			if (wasEmpty != _isEmpty)
@@ -154,28 +144,41 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			RegisterViewTypes();
+
+			EnsureLayoutInitialized();
+		}
+
+		public override void ViewWillAppear(bool animated)
+		{
+			base.ViewWillAppear(animated);
+			ConstrainToItemsView();
 		}
 
 		public override void ViewWillLayoutSubviews()
 		{
+			ConstrainToItemsView();
 			base.ViewWillLayoutSubviews();
-
-			EnsureLayoutInitialized();
-
 			LayoutEmptyView();
+		}
+
+		void ConstrainToItemsView() 
+		{
+			var itemsViewWidth = ItemsView.Width;
+			var itemsViewHeight = ItemsView.Height;
+
+			if (itemsViewHeight < 0 || itemsViewWidth < 0)
+			{
+				ItemsViewLayout.UpdateConstraints(CollectionView.Bounds.Size);
+				return;
+			}
+
+			ItemsViewLayout.UpdateConstraints(new CGSize(itemsViewWidth, itemsViewHeight));
 		}
 
 		void EnsureLayoutInitialized()
 		{
 			if (_initialized)
 			{
-				return;
-			}
-
-			if (!ItemsView.IsVisible)
-			{
-				// If the CollectionView starts out invisible, we'll get a layout pass with a size of 1,1 and everything will
-				// go pear-shaped. So until the first time this CollectionView is visible, we do nothing.
 				return;
 			}
 
@@ -205,7 +208,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public virtual void UpdateItemsSource()
 		{
 			_measurementCells.Clear();
-			_cellSizeCache.Clear();
+			ItemsViewLayout?.ClearCellSizeCache();
 			ItemsSource = CreateItemsViewSource();
 			CollectionView.ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
@@ -225,11 +228,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override nint NumberOfSections(UICollectionView collectionView)
 		{
-			if(!_initialized)
-			{
-				return 0;
-			}
-
 			CheckForEmptySource();
 			return ItemsSource.GroupCount;
 		}
@@ -249,10 +247,12 @@ namespace Xamarin.Forms.Platform.iOS
 			cell.ContentSizeChanged -= CellContentSizeChanged;
 			cell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
 
+			var bindingContext = ItemsSource[indexPath];
+
 			// If we've already created a cell for this index path (for measurement), re-use the content
-			if (_measurementCells.TryGetValue(indexPath, out TemplatedCell measurementCell))
+			if (_measurementCells.TryGetValue(bindingContext, out TemplatedCell measurementCell))
 			{
-				_measurementCells.Remove(indexPath);
+				_measurementCells.Remove(bindingContext);
 				measurementCell.ContentSizeChanged -= CellContentSizeChanged;
 				measurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
 				cell.UseContent(measurementCell);
@@ -316,7 +316,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var item = ItemsSource[indexPath];
 			if (item != null)
 			{
-				_cellSizeCache[item] = size;
+				ItemsViewLayout.CacheCellSize(item, size);
 			}
 		}
 
@@ -568,14 +568,16 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var frame = new CGRect(0, 0, ItemsViewLayout.EstimatedItemSize.Width, ItemsViewLayout.EstimatedItemSize.Height);
 
+				DefaultCell cell;
 				if (ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
-					var cell1 = new HorizontalDefaultCell(frame);
-					UpdateDefaultCell(cell1, indexPath);
-					return cell1;
+					cell = new HorizontalDefaultCell(frame);
 				}
-
-				var cell = new VerticalDefaultCell(frame);
+				else
+				{
+					cell = new VerticalDefaultCell(frame);
+				}
+				
 				UpdateDefaultCell(cell, indexPath);
 				return cell;
 			}
@@ -585,7 +587,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateTemplatedCell(templatedCell, indexPath);
 
 			// Keep this cell around, we can transfer the contents to the actual cell when the UICollectionView creates it
-			_measurementCells[indexPath] = templatedCell;
+			_measurementCells[ItemsSource[indexPath]] = templatedCell;
 
 			return templatedCell;
 		}
@@ -601,7 +603,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var item = ItemsSource[indexPath];
 
-				if (item != null && _cellSizeCache.TryGetValue(item, out CGSize size))
+				if (item != null && ItemsViewLayout.TryGetCachedCellSize(item, out CGSize size))
 				{
 					return size;
 				}
@@ -610,15 +612,20 @@ namespace Xamarin.Forms.Platform.iOS
 			return ItemsViewLayout.EstimatedItemSize;
 		}
 		
-		void ItemsViewPropertyChanged(object sender, PropertyChangedEventArgs changedProperty) 
+		internal protected virtual void UpdateVisibility() 
 		{
-			if (changedProperty.Is(VisualElement.IsVisibleProperty))
+			if (ItemsView.IsVisible)
 			{
-				if (ItemsView.IsVisible)
+				if (CollectionView.Hidden)
 				{
+					CollectionView.Hidden = false;
 					Layout.InvalidateLayout();
 					CollectionView.LayoutIfNeeded();
 				}
+			}
+			else
+			{
+				CollectionView.Hidden = true;
 			}
 		}
 	}
