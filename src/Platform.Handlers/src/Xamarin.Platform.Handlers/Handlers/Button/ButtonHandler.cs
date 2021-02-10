@@ -7,10 +7,10 @@ using NativeView = UIKit.UIButton;
 using NativeView = AppKit.NSButton;
 #elif MONOANDROID
 using NativeView = AndroidX.AppCompat.Widget.AppCompatButton;
-#elif NETCOREAPP
-using NativeView = System.Windows.Controls.Button;
 #elif NETSTANDARD
 using NativeView = System.Object;
+#elif WINDOWS
+using NativeView = Microsoft.UI.Xaml.Controls.Button;
 #endif
 
 namespace Xamarin.Platform.Handlers

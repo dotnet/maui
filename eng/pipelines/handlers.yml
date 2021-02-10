@@ -121,3 +121,112 @@ stages:
           provisionator.extraArguments : '--v'
         steps:
           - template: common/controlgallery-android.yml
+  
+  - stage: build_net6_windows
+    displayName: NET6 Windows
+    dependsOn: []
+    jobs:
+      - job: net6
+        workspace:
+          clean: all
+        displayName: Build NET 6 Windows
+        timeoutInMinutes: 120
+        pool:
+          vmImage:  windows-latest
+        variables:
+          DotNetVersion: 6.0.100-preview.1.21081.5
+          DotNet.Cli.Telemetry.OptOut: true
+          Android.Msi: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4435786/master/abea285994fb4366de7c6c5e1ae9cc9ee22145dd/Microsoft.NET.Workload.Android.11.0.200.72.msi
+          iOS.Msi: https://bosstoragemirror.azureedge.net/wrench/main/f01fde5cd9a7ffffcdc8d241200c35988700fa00/4449408/package/Microsoft.NET.Workload.iOS.14.3.100-ci.main.1079.msi
+          LogDirectory: $(Build.ArtifactStagingDirectory)\logs
+        steps:
+          - powershell: |
+              $ProgressPreference = 'SilentlyContinue'
+              Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+              & .\dotnet-install.ps1 -Version $(DotNetVersion) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+              & dotnet --list-sdks
+            displayName: install .NET $(DotNetVersion)
+            errorActionPreference: stop
+
+          - powershell: |
+              & dotnet tool install --global boots
+              & boots $(Android.Msi)
+              & boots $(iOS.Msi)
+            displayName: install .NET workloads
+            errorActionPreference: stop
+
+          - powershell: |
+              & dotnet restore Maui.sln --configfile eng\DevopsNuget.config
+              & dotnet build Maui.sln -c Debug   -bl:$(LogDirectory)\Debug.binlog
+              & dotnet build Maui.sln -c Release -bl:$(LogDirectory)\Release.binlog
+            displayName: build samples
+            errorActionPreference: stop
+
+          - task: PublishPipelineArtifact@1
+            displayName: publish artifacts
+            inputs:
+              artifactName: NET6-WINDOWS
+              targetPath: $(Build.ArtifactStagingDirectory)
+            condition: always()
+  
+  - stage: build_net6_macOS
+    displayName: NET6 macOS
+    dependsOn: []
+    jobs:
+      - job: net6
+        workspace:
+          clean: all
+        displayName: Build NET 6 macOS
+        timeoutInMinutes: 120
+        pool:
+          vmImage:  macOS-latest
+        variables:
+          DotNetVersion: 6.0.100-preview.1.21081.5
+          DotNet.Cli.Telemetry.OptOut: true
+          Android.Pkg: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4435786/master/abea285994fb4366de7c6c5e1ae9cc9ee22145dd/Microsoft.NET.Workload.Android-11.0.200-ci.master.72.pkg
+          iOS.Pkg: https://bosstoragemirror.azureedge.net/wrench/main/f01fde5cd9a7ffffcdc8d241200c35988700fa00/4449408/package/notarized/Microsoft.iOS.Bundle.14.3.100-ci.main.1079.pkg
+          LogDirectory: $(Build.ArtifactStagingDirectory)\logs
+          DotNet.Root: /usr/local/share/dotnet/
+          DotNet.Tools: ~/.dotnet/tools
+          
+        steps:
+          - task: UseDotNet@2
+            displayName: install .NET Core 3.1
+            inputs:
+              version: 3.1.x
+              installationPath: $(DotNet.Root)
+
+          - bash: >
+              export PATH="$(DotNet.Root):$(DotNet.Tools):$PATH" &&
+              curl -L https://dot.net/v1/dotnet-install.sh > dotnet-install.sh &&
+              sh dotnet-install.sh --version $(DotNetVersion) --install-dir $DOTNET_ROOT --verbose &&
+              dotnet --list-sdks &&
+              echo "##vso[task.setvariable variable=PATH]$PATH"
+            displayName: install .NET $(DotNetVersion)
+
+          - bash: |
+              dotnet tool install --global boots
+              boots $(Android.Pkg)
+              boots $(iOS.Pkg)
+            displayName: install .NET workloads
+
+          - bash: |
+              set -x
+              mkdir -p ~/Library/Preferences/Xamarin
+              rm -f ~/Library/Preferences/Xamarin/Settings.plist
+              /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
+              cat ~/Library/Preferences/Xamarin/Settings.plist || true
+            displayName: configure vsmac xcode
+
+          - bash: |
+              dotnet restore Maui.sln --configfile eng/DevopsNuget.config &&
+              dotnet build Maui.sln -c Debug   -bl:$(LogDirectory)/Debug.binlog &&
+              dotnet build Maui.sln -c Release -bl:$(LogDirectory)/Release.binlog
+            displayName: build samples
+
+          - task: PublishPipelineArtifact@1
+            displayName: publish artifacts
+            inputs:
+              artifactName: NET6-OSX
+              targetPath: $(Build.ArtifactStagingDirectory)
+            condition: always()

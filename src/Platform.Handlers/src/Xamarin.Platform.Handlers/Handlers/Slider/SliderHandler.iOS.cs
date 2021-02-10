@@ -74,7 +74,7 @@ namespace Xamarin.Platform.Handlers
 			handler.TypedNativeView?.UpdateThumbColor(slider, DefaultThumbColor);
 		}
 
-		void OnControlValueChanged(object sender, EventArgs eventArgs)
+		void OnControlValueChanged(object? sender, EventArgs eventArgs)
 		{
 			if (TypedNativeView == null || VirtualView == null)
 				return;
@@ -82,12 +82,12 @@ namespace Xamarin.Platform.Handlers
 			VirtualView.Value = TypedNativeView.Value;
 		}
 
-		void OnTouchDownControlEvent(object sender, EventArgs e)
+		void OnTouchDownControlEvent(object? sender, EventArgs e)
 		{
 			VirtualView?.DragStarted();
 		}
 
-		void OnTouchUpControlEvent(object sender, EventArgs e)
+		void OnTouchUpControlEvent(object? sender, EventArgs e)
 		{
 			VirtualView?.DragCompleted();
 		}

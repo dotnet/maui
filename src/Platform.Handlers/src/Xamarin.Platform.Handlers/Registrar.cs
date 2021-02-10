@@ -69,7 +69,8 @@ namespace Xamarin.Platform
 		public TTypeRender GetHandler(Type type)
 		{
 			List<Type> types = new List<Type> { type };
-			Type baseType = type.BaseType;
+
+			Type? baseType = type.BaseType;
 
 			while (baseType != null)
 			{
@@ -90,7 +91,7 @@ namespace Xamarin.Platform
 		public Type GetRendererType(Type type)
 		{
 			List<Type> types = new List<Type> { type };
-			Type baseType = type.BaseType;
+			Type? baseType = type.BaseType;
 
 			while (baseType != null)
 			{
@@ -124,12 +125,16 @@ namespace Xamarin.Platform
 			try
 			{
 				var newObject = Activator.CreateInstance(handler);
+
+				if(newObject == null)
+					throw new ArgumentException($"No Handler found for type: {type}", nameof(type));
+
 				return (TTypeRender)newObject;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				if (Debugger.IsAttached)
-					throw ex;
+					throw;
 			}
 
 			return default(TTypeRender);

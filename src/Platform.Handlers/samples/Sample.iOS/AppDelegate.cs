@@ -1,8 +1,12 @@
 ﻿using Foundation;
 using UIKit;
 using Xamarin.Platform;
+
+#if !NET6_0
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
+#endif
+
 using System.Threading.Tasks;
 using System.Linq;
 
@@ -11,7 +15,11 @@ namespace Sample.iOS
 	// The UIApplicationDelegate for the application. This class is responsible for launching the
 	// User Interface of the application, as well as listening (and optionally responding) to application events from iOS.
 	[Register("AppDelegate")]
+#if !NET6_0
 	public class AppDelegate : FormsApplicationDelegate, IUIApplicationDelegate
+#else
+	public class AppDelegate : UIApplicationDelegate, IUIApplicationDelegate
+#endif
 	{
 		UIWindow _window;
 

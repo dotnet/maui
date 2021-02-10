@@ -1,5 +1,5 @@
 <Project>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true  ">
     <Compile Remove="**\*.iOS.cs" />
     <None Include="**\*.iOS.cs" />
     <Compile Remove="**\iOS\*.cs" />
@@ -11,13 +11,13 @@
     <Compile Remove="**\Mac\*.cs" />
     <None Include="**\Mac\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true And $(TargetFramework.StartsWith('Xamarin.iOS')) != true ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true AND $(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true ">
     <Compile Remove="**\*.MaciOS.cs" />
     <None Include="**\*.MaciOS.cs" />
     <Compile Remove="**\MaciOS\*.cs" />
     <None Include="**\MaciOS\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) != true ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) != true AND $(TargetFramework.StartsWith('net6.0-android')) != true ">
     <Compile Remove="**\*.Android.cs" />
     <None Include="**\*.Android.cs" />
     <Compile Remove="**\Android\*.cs" />
@@ -40,6 +40,17 @@
     <None Include="**\Win32\*.cs" />
   </ItemGroup>
 
+
+  <!-- Android -->
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net6.0-android'))">
+    <DefineConstants>$(DefineConstants);MONOANDROID</DefineConstants>
+  </PropertyGroup>
+
+  <!-- iOS -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-ios' ">
+    <DefineConstants>$(DefineConstants);IOS</DefineConstants>
+  </PropertyGroup>
+  
   <PropertyGroup Condition="$(TargetFramework.StartsWith('netcoreapp')) == true ">
     <UseWpf>true</UseWpf>
   </PropertyGroup>
@@ -47,9 +58,18 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <!-- If this becomes part of the product we will remove these but for now it's useful having them all in one place -->
-  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true OR '$(TargetPlatformIdentifier)' == 'android' OR '$(TargetFramework)' == 'net6.0-android'">
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.2.0.4" />
     <PackageReference Include="Xamarin.Google.Android.Material" Version="1.2.1.1" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0.6" />
+  </ItemGroup>
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net5.0-windows')) == true">
+    <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP;UWP_16299;UWP_18362;UWP_17134</DefineConstants>
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+  </PropertyGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net5.0-windows')) == true">
+    <PackageReference Include="Microsoft.WinUI" Version="3.0.0-preview3.201113.0" />
   </ItemGroup>
 </Project>
