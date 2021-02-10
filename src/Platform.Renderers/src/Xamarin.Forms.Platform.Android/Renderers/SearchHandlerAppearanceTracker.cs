@@ -98,6 +98,10 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateVerticalTextAlignment();
 			}
+			else if (e.Is(SearchHandler.AutomationIdProperty))
+			{
+				UpdateAutomationId();
+			}
 		}
 
 		void UpdateSearchBarColors()
@@ -107,6 +111,15 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateTextTransform();
 			UpdatePlaceholderColor();
 			UpdateCancelButtonColor();
+			UpdateAutomationId();
+		}
+
+		void UpdateAutomationId()
+		{
+			FastRenderers
+				.AutomationPropertiesProvider
+				.SetAutomationId(_editText, _searchHandler?.AutomationId);
+
 		}
 
 		void UpdateFont()

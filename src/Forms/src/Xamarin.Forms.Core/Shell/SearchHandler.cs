@@ -10,7 +10,6 @@ namespace Xamarin.Forms
 {
 	public class SearchHandler : BindableObject, ISearchHandlerController, IPlaceholderElement, IFontElement, ITextElement, ITextAlignmentElement
 	{
-
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly(nameof(IsFocused),
 			typeof(bool), typeof(VisualElement), default(bool), propertyChanged: OnIsFocusedPropertyChanged);
@@ -261,6 +260,8 @@ namespace Xamarin.Forms
 			OnQueryConfirmed();
 		}
 
+		public static readonly BindableProperty AutomationIdProperty = BindableProperty.Create(nameof(AutomationId), typeof(string), typeof(SearchHandler), null);
+
 		public static readonly BindableProperty ClearIconHelpTextProperty =
 			BindableProperty.Create(nameof(ClearIconHelpText), typeof(string), typeof(SearchHandler), null, BindingMode.OneTime,
 				propertyChanged: (b, o, n) => ((SearchHandler)b).UpdateAutomationProperties());
@@ -344,6 +345,12 @@ namespace Xamarin.Forms
 			BindableProperty.Create(nameof(ShowsResults), typeof(bool), typeof(SearchHandler), false, BindingMode.OneTime);
 
 		private ListProxy _listProxy;
+
+		public string AutomationId
+		{
+			get { return (string)GetValue(AutomationIdProperty); }
+			set { SetValue(AutomationIdProperty, value); }
+		}
 
 		public ImageSource ClearIcon
 		{

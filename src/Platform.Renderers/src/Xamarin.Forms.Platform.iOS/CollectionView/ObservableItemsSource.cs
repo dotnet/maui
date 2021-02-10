@@ -111,12 +111,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
-			if (CollectionView.NumberOfSections() == 0)
-			{
-				// The CollectionView isn't fully initialized yet
-				return;
-			}
-
 			// Force UICollectionView to get the internal accounting straight 
 			CollectionView.NumberOfItemsInSection(_section);
 
@@ -199,9 +193,8 @@ namespace Xamarin.Forms.Platform.iOS
 				var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : IndexOf(args.NewItems[0]);
 
 				// We are replacing one set of items with a set of equal size; we can do a simple item range update
-				OnCollectionViewUpdating(args);
-				CollectionView.ReloadItems(CreateIndexesFrom(startIndex, newCount));
-				OnCollectionViewUpdated(args);
+
+				Update(() => CollectionView.ReloadItems(CreateIndexesFrom(startIndex, newCount)), args);
 				return;
 			}
 
@@ -220,18 +213,14 @@ namespace Xamarin.Forms.Platform.iOS
 				var oldPath = NSIndexPath.Create(_section, args.OldStartingIndex);
 				var newPath = NSIndexPath.Create(_section, args.NewStartingIndex);
 
-				OnCollectionViewUpdating(args);
-				CollectionView.MoveItem(oldPath, newPath);
-				OnCollectionViewUpdated(args);
+				Update(() => CollectionView.MoveItem(oldPath, newPath), args);
 				return;
 			}
 
 			var start = Math.Min(args.OldStartingIndex, args.NewStartingIndex);
 			var end = Math.Max(args.OldStartingIndex, args.NewStartingIndex) + count;
-			OnCollectionViewUpdating(args);
-			CollectionView.ReloadItems(CreateIndexesFrom(start, end));
 
-			OnCollectionViewUpdated(args);
+			Update(() => CollectionView.ReloadItems(CreateIndexesFrom(start, end)), args);
 		}
 
 		internal int ItemsCount()
@@ -276,8 +265,14 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return -1;
 		}
+
 		void Update(Action update, NotifyCollectionChangedEventArgs args)
 		{
+			if (CollectionView.Hidden)
+			{
+				return;
+			}
+
 			OnCollectionViewUpdating(args); 
 			update(); 
 			OnCollectionViewUpdated(args); 

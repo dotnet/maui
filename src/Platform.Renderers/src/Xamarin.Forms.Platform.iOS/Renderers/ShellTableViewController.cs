@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnFlyoutItemsChanged(object sender, EventArgs e)
 		{
-			_source.ClearCache();
+			_source.ReSyncCache();
 			TableView.ReloadData();
 			ShellFlyoutContentManager.UpdateVerticalScrollMode();
 		}
