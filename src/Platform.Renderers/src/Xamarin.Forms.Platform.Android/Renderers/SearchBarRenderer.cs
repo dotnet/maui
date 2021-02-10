@@ -11,8 +11,8 @@ using Android.Text.Method;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using AView = Android.Views.View;
 using Xamarin.Platform;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {
