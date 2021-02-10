@@ -1,14 +1,17 @@
-﻿using Xamarin.Forms.Xaml;
+﻿using System;
+using System.Collections.Generic;
+
+using Xamarin.Forms;
 
 namespace Xamarin.Forms.Controls.GalleryPages
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
-	public partial class IndicatorsSample : ContentPage
+	public partial class IndicatorsTemplateSample : ContentPage
 	{
-		public IndicatorsSample()
+		public IndicatorsTemplateSample()
 		{
 			InitializeComponent();
 			BindingContext = new GalleryPages.CollectionViewGalleries.CarouselViewGalleries.CarouselItemsGalleryViewModel(false, false);
+
 		}
 	}
 }

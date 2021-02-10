@@ -49,9 +49,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			AdapterListItem item = null;
 
-			foreach(var ali in _listItems)
+			foreach (var ali in _listItems)
 			{
-				if(viewTypeId == ali.Index)
+				if (viewTypeId == ali.Index)
 				{
 					item = ali;
 					break;
@@ -80,16 +80,16 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				// only clear out the Element if the item has been removed
 				bool found = false;
-				foreach(var item in _listItems)
+				foreach (var item in _listItems)
 				{
-					if(item.Element == evh.Element)
+					if (item.Element == evh.Element)
 					{
 						found = true;
 						break;
 					}
 				}
 
-				if(!found)
+				if (!found)
 					evh.Element = null;
 			}
 
@@ -222,7 +222,7 @@ namespace Xamarin.Forms.Platform.Android
 					AdapterListItem toAdd = null;
 					foreach (var existingItem in _listItems)
 					{
-						if(existingItem.Element == element)
+						if (existingItem.Element == element)
 						{
 							existingItem.DrawTopLine = first;
 							toAdd = existingItem;
