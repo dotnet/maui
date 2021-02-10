@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ElmSharp;
@@ -173,6 +174,11 @@ namespace Xamarin.Forms.Platform.Tizen
 						break;
 				}
 			}
+
+			if (handler is DropGestureHandler dropGestureHandler)
+			{
+				dropGestureHandler.AddDropGesture();
+			}
 		}
 
 		void RemoveGesture(IGestureRecognizer recognizer)
@@ -260,6 +266,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				_gestureLayer.LongTapTimeout = timeout;
 
 			_gestureLayer.SetTapCallback(type, GestureLayer.GestureState.Start, (data) => { OnLongTapStarted(type, data); });
+			_gestureLayer.SetTapCallback(type, GestureLayer.GestureState.Move, (data) => { OnLongTapMoved(type, data); });
 			_gestureLayer.SetTapCallback(type, GestureLayer.GestureState.End, (data) => { OnLongTapCompleted(type, data); });
 			_gestureLayer.SetTapCallback(type, GestureLayer.GestureState.Abort, (data) => { OnGestureCanceled(type, data); });
 		}
@@ -458,6 +465,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			OnGestureStarted(type, data);
 		}
 
+		void OnLongTapMoved(EGestureType type, object data)
+		{
+			OnGestureMoved(type, data);
+		}
+
 		void OnLongTapCompleted(EGestureType type, object data)
 		{
 			_longTapTime = ((GestureLayer.TapData)data).Timestamp - _longTapTime;
@@ -494,6 +506,14 @@ namespace Xamarin.Forms.Platform.Tizen
 			else if (recognizer is SwipeGestureRecognizer)
 			{
 				return new SwipeGestureHandler(recognizer);
+			}
+			else if (recognizer is DragGestureRecognizer)
+			{
+				return new DragGestureHandler(recognizer, _renderer);
+			}
+			else if (recognizer is DropGestureRecognizer)
+			{
+				return new DropGestureHandler(recognizer, _renderer);
 			}
 			return Forms.GetHandlerForObject<GestureHandler>(recognizer, recognizer);
 		}

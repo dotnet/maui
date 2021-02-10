@@ -65,6 +65,8 @@ using Xamarin.Forms.Shapes;
 [assembly: ExportHandler(typeof(PinchGestureRecognizer), typeof(PinchGestureHandler))]
 [assembly: ExportHandler(typeof(PanGestureRecognizer), typeof(PanGestureHandler))]
 [assembly: ExportHandler(typeof(SwipeGestureRecognizer), typeof(SwipeGestureHandler))]
+[assembly: ExportHandler(typeof(DragGestureRecognizer), typeof(DragGestureHandler))]
+[assembly: ExportHandler(typeof(DropGestureRecognizer), typeof(DropGestureHandler))]
 
 [assembly: ExportRenderer(typeof(Shell), typeof(Xamarin.Forms.Platform.Tizen.Watch.ShellRenderer), TargetIdiom.Watch)]
 
