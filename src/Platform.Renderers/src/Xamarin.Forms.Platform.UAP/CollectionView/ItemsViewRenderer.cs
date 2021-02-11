@@ -418,6 +418,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 			SetNativeControl(ListViewBase);
 
+			_defaultHorizontalScrollVisibility = null;
+			_defaultVerticalScrollVisibility = null;
+
 			UpdateItemTemplate();
 			UpdateItemsSource();
 			UpdateVerticalScrollBarVisibility();

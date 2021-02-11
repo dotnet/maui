@@ -39,6 +39,8 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 			_stretch = Stretch.None;
 		}
 
+		public SKCanvasView SKCanvasView => _skCanvasView;
+
 		void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
 		{
 			var canvas = e.Surface.Canvas;

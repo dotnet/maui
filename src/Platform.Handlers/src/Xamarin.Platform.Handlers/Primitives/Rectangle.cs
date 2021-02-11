@@ -71,8 +71,8 @@ namespace Xamarin.Forms
 		{
 			return X.Equals(other.X) && Y.Equals(other.Y) && Width.Equals(other.Width) && Height.Equals(other.Height);
 		}
-
-		public override bool Equals(object obj)
+		
+		public override bool Equals(object? obj)
 		{
 			if (obj is null)
 				return false;

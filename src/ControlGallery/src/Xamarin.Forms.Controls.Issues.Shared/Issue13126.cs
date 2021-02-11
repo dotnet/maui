@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Controls.Issues
 			await Task.Delay(1000);
 
 			_vm.Data.Add(Success);
-			
+
 			_vm.IsBusy = false;
 		}
 

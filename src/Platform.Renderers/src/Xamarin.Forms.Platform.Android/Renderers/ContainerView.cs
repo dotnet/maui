@@ -94,7 +94,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			double? maxHeight = null;
 
-			if(MeasureHeight)
+			if (MeasureHeight)
 			{
 				maxHeight = measureHeight;
 				measureHeight = double.PositiveInfinity;

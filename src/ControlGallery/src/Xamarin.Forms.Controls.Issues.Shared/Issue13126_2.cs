@@ -18,8 +18,8 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Issue(IssueTracker.Github, 13126, "[Bug] Regression: 5.0.0-pre5 often fails to draw dynamically loaded collection view content", 
-		PlatformAffected.iOS, issueTestNumber:1)]
+	[Issue(IssueTracker.Github, 13126, "[Bug] Regression: 5.0.0-pre5 often fails to draw dynamically loaded collection view content",
+		PlatformAffected.iOS, issueTestNumber: 1)]
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.CollectionView)]
 #endif

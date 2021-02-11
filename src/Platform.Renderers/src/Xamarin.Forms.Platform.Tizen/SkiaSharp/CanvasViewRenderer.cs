@@ -7,7 +7,7 @@ using Xamarin.Forms.Shapes;
 
 namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 {
-	public abstract class CanvasViewRenderer<TView, TNativeView> : ViewRenderer<TView, Native.Canvas>, IBackgroundCanvas, IClipperCanvas
+	public abstract class CanvasViewRenderer<TView, TNativeView> : ViewRenderer<TView, Native.Canvas>, IBackgroundCanvas, IClipperCanvas, ICanvasRenderer
 		where TView : View
 		where TNativeView : EvasObject
 	{
@@ -82,7 +82,6 @@ namespace Xamarin.Forms.Platform.Tizen.SkiaSharp
 				ClipperCanvas.Geometry = Control.Geometry;
 				ClipperCanvas.Invalidate();
 			}
-
 		}
 
 		protected void SetRealNativeControl(TNativeView control)

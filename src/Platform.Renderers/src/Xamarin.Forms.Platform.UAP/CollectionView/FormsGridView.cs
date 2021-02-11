@@ -78,6 +78,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_wrapGrid.SizeChanged -= WrapGridSizeChanged;
 			_wrapGrid.SizeChanged += WrapGridSizeChanged;
+
+			UpdateItemSize();
 		}
 
 		void WrapGridSizeChanged(object sender, SizeChangedEventArgs e)

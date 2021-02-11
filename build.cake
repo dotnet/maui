@@ -22,7 +22,7 @@ PowerShell:
 #addin "nuget:?package=Cake.Android.Adb&version=3.2.0"
 #addin "nuget:?package=Cake.Git&version=0.21.0"
 #addin "nuget:?package=Cake.Android.SdkManager&version=3.0.2"
-#addin "nuget:?package=Cake.Boots&version=1.0.2.437"
+#addin "nuget:?package=Cake.Boots&version=1.0.3.556"
 #addin "nuget:?package=Cake.AppleSimulator&version=0.2.0"
 #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
 
@@ -388,7 +388,7 @@ Task("provision-netsdk-local")
 
                 Information("Downloading: {0} to {1}", cabUrl, cabPath);
                 DownloadFile(cabUrl, cabPath);
-                InstallMsi(msiUrl, null, msiName);
+                InstallMsiOrExe(msiUrl, null, msiName);
             }
 
             int i = 0;
@@ -541,7 +541,7 @@ Task("provision-uitests-uwp")
         if(!DirectoryExists(driverPath))
         {
             try{
-                InstallMsi(UWP_APP_DRIVER_INSTALL_PATH, installPath);
+                InstallMsiOrExe(UWP_APP_DRIVER_INSTALL_PATH, installPath);
             }
             catch(Exception e)
             {
@@ -550,8 +550,41 @@ Task("provision-uitests-uwp")
         }
     });
 
-void InstallMsi(string msiFile, string installTo, string fileName = "InstallFile.msi")
+
+async Task InstallMsiWithBoots(string msiFile, string installTo = null, string fileName = "InstallFile.msi")
 {
+    bool success = false;
+
+    try
+    {
+        await Boots(msiFile);
+        success = true;
+    }
+    catch (System.Exception e)
+    {
+        Information("Boots failed: {0}", e);
+    }
+
+
+    if(success)
+        return;
+
+    try
+    {
+        InstallMsiOrExe(msiFile, installTo, fileName, !isCIBuild);
+        success = true;
+    }
+    catch (System.Exception e)
+    {
+        Information("Our attempt failed: {0}", e);
+    }
+}
+
+void InstallMsiOrExe(string msiFile, string installTo = null, string fileName = "InstallFile.msi", bool interactive = false)
+{
+     if(msiFile.EndsWith(".exe") && fileName == "InstallFile.msi")
+        fileName = "InstallFile.exe";
+
     string installerPath = $"{System.IO.Path.GetTempPath()}{fileName}";
         
     try
@@ -559,22 +592,35 @@ void InstallMsi(string msiFile, string installTo, string fileName = "InstallFile
         Information ("Installing: {0}", msiFile);
         DownloadFile(msiFile, installerPath);
         Information("File Downloaded To: {0}", installerPath);
+        int result = -1;
 
-        var argumentBuilder = 
-            new ProcessArgumentBuilder()
-                .Append("/a")
-                .Append(installerPath)
-                .Append("/qn");
-
-        if(!String.IsNullOrWhiteSpace(installTo))
+        if(msiFile.EndsWith(".exe"))
         {
-            Information("Installing into: {0}", installTo);
-            argumentBuilder = argumentBuilder.Append("TARGETDIR=\"" + installTo + "\"");
+            result = StartProcess(installerPath, new ProcessSettings {
+                    Arguments = new ProcessArgumentBuilder()
+                        .Append(@" /q")
+                    }
+                );
         }
+        else{
+            var argumentBuilder = 
+                new ProcessArgumentBuilder()
+                    .Append("/a")
+                    .Append(installerPath);
 
-        var result = StartProcess("msiexec", new ProcessSettings {
-            Arguments = argumentBuilder
-        });
+            if(!interactive)
+                argumentBuilder = argumentBuilder.Append("/qn");
+
+            if(!String.IsNullOrWhiteSpace(installTo))
+            {
+                Information("Installing into: {0}", installTo);
+                argumentBuilder = argumentBuilder.Append("TARGETDIR=\"" + installTo + "\"");
+            }
+
+            result = StartProcess("msiexec", new ProcessSettings {
+                Arguments = argumentBuilder
+            });
+        }
 
         if(result != 0)
             throw new Exception("Failed to install: " + msiFile);
@@ -828,30 +874,6 @@ Task("BuildForNuget")
     }
 });
 
-Task("BuildPages")
-    .IsDependentOn("BuildTasks")
-    .Description("Build Xamarin.Forms.Pages")
-    .Does(() =>
-{
-    try
-    {
-        var msbuildSettings = GetMSBuildSettings();
-        var binaryLogger = new MSBuildBinaryLogSettings {
-            Enabled  = isCIBuild
-        };
-
-        msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/win-pages-{configuration}.binlog";
-        MSBuild("./build/Xamarin.Forms.Pages.sln", msbuildSettings.WithRestore());
-
-    }
-    catch(Exception)
-    {
-        if(IsRunningOnWindows())
-            throw;
-    }
-});
-
 Task("BuildTasks")
     .Description($"Build {BUILD_TASKS_PROJ}")
     .Does(() =>
@@ -891,7 +913,7 @@ Task("VSMAC")
     {
         StartVisualStudio();
     });
-
+    
 Task("cg-android")
     .Description("Builds Android Control Gallery")
     .IsDependentOn("WriteGoogleMapsAPIKey")

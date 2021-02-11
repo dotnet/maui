@@ -38,7 +38,7 @@
 
   <!-- Auto install any missing Android SDKs -->
   <PropertyGroup Condition="'$(CI)' == 'true'">
-    <AndroidRestoreOnBuild Condition="'$(AndroidRestoreOnBuild)' == ''">True</AndroidRestoreOnBuild>
+    <AndroidRestoreOnBuild Condition="'$(AndroidRestoreOnBuild)' == ''">False</AndroidRestoreOnBuild>
     <AcceptAndroidSDKLicenses Condition="'$(AcceptAndroidSDKLicenses)' == ''">True</AcceptAndroidSDKLicenses>
   </PropertyGroup>
 </Project>

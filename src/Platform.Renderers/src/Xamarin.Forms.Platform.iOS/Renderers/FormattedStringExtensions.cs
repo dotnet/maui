@@ -109,14 +109,17 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (owner is Entry && !fgcolor.IsDefault)
 				fgcolor = defaultForegroundColor;
 
+#if __MOBILE__
 			if (fgcolor.IsDefault)
 				fgcolor = ColorExtensions.LabelColor.ToColor();
-#if __MOBILE__
 			UIColor spanFgColor;
 			UIColor spanBgColor;
 			spanFgColor = fgcolor.ToUIColor();
 			spanBgColor = span.BackgroundColor.ToUIColor();
 #else
+
+			if (fgcolor.IsDefault)
+				fgcolor = ColorExtensions.LabelColor.ToColor(NSColorSpace.GenericRGBColorSpace);
 			NSColor spanFgColor;
 			NSColor spanBgColor;
 			spanFgColor = fgcolor.ToNSColor();

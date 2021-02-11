@@ -8,6 +8,30 @@
 * Evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms)
 * .NET 6
 
+## Maui.sln
+
+### SDKS required
+- Install the SDKs listed here https://github.com/xamarin/net6-samples
+
+- And/or run the following
+
+```
+dotnet tool install Cake.Tool -g
+dotnet cake --target=provision
+```
+
+### Running
+
+#### IDE
+- If you have Visual Studio 16.9 P4 installed you can open `Maui.sln` and run it from there.
+
+#### Command Line
+
+```
+dotnet build src\Platform.Handlers\samples\Sample.Droid\Sample.Droid-net6.csproj -t:Run
+dotnet build src\Platform.Handlers\samples\Sample.iOS\Sample.iOS-net6.csproj -t:Run
+```
+
 ## Current News
 
 [![](Assets/poster-standup.png)](https://www.youtube.com/watch?v=5bK2ICHtMxo)
