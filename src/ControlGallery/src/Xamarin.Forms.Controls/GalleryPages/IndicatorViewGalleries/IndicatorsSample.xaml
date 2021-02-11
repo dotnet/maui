@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:Xamarin.Forms.Controls"
              mc:Ignorable="d"
-             x:Class="Xamarin.Forms.Controls.IndicatorsSample">
+             x:Class="Xamarin.Forms.Controls.GalleryPages.IndicatorsSample">
     <ContentPage.Resources>
         <OnPlatform x:Key="IonicsFontFamily" x:TypeArguments="x:String">
             <On Platform="iOS" Value="Ionicons" />
@@ -25,7 +25,7 @@
                 <DataTemplate>
                     <Frame BackgroundColor="{Binding Color}">
                         <Grid HorizontalOptions="Center" VerticalOptions="Center">
-                            <Label Text="{Binding Name}" FontSize="25"></Label>
+                            <Label Text="{Binding Name}" FontSize="25"/>
                         </Grid>
                     </Frame>
                 </DataTemplate>

@@ -95,9 +95,15 @@ namespace Xamarin.Forms
 				var maxVisible = _indicatorView.MaximumVisible;
 				var position = _indicatorView.Position;
 				var selectedIndex = position >= maxVisible ? maxVisible - 1 : position;
-				Children[index].BackgroundColor = index == selectedIndex
+				bool isSelected = index == selectedIndex;
+				Children[index].BackgroundColor = isSelected
 					? GetColorOrDefault(_indicatorView.SelectedIndicatorColor, Color.Gray)
 					: GetColorOrDefault(_indicatorView.IndicatorColor, Color.Silver);
+
+				VisualStateManager.GoToState(Children[index], isSelected
+					? VisualStateManager.CommonStates.Selected
+					: VisualStateManager.CommonStates.Normal);
+
 			}
 
 			IsVisible = indicatorCount > 1 || !_indicatorView.HideSingle;

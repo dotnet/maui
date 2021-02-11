@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				ShowsResults = true;
 				ItemsSource = Enumerable.Range(0, 100)
-					.Select(_=> "searchresult")
+					.Select(_ => "searchresult")
 					.ToList();
 			}
 		}
