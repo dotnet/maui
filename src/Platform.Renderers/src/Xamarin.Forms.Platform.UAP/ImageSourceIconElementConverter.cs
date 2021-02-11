@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	internal class ImageSourceIconElementConverter : Windows.UI.Xaml.Data.IValueConverter
+	internal class ImageSourceIconElementConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{

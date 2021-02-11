@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WVisualStateManager = Windows.UI.Xaml.VisualStateManager;
-using WVisualStateGroup = Windows.UI.Xaml.VisualStateGroup;
-using WVisualState = Windows.UI.Xaml.VisualState;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
+using WVisualStateGroup = Microsoft.UI.Xaml.VisualStateGroup;
+using WVisualState = Microsoft.UI.Xaml.VisualState;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -26,8 +26,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public static readonly DependencyProperty ButtonBackgroundProperty = DependencyProperty.Register(nameof(ButtonBackground), typeof(Brush), typeof(StepperControl), new PropertyMetadata(default(Brush), OnButtonBackgroundChanged));
 	
-		Windows.UI.Xaml.Controls.Button _plus;
-		Windows.UI.Xaml.Controls.Button _minus;
+		Microsoft.UI.Xaml.Controls.Button _plus;
+		Microsoft.UI.Xaml.Controls.Button _minus;
 		VisualStateCache _plusStateCache;
 		VisualStateCache _minusStateCache;
 
@@ -78,11 +78,11 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnApplyTemplate();
 
-			_plus = GetTemplateChild("Plus") as Windows.UI.Xaml.Controls.Button;
+			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;
 			if (_plus != null)
 				_plus.Click += OnPlusClicked;
 
-			_minus = GetTemplateChild("Minus") as Windows.UI.Xaml.Controls.Button;
+			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
 			if (_minus != null)
 				_minus.Click += OnMinusClicked;
 
@@ -225,8 +225,8 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateButtonBackgroundColor(Color value)
 		{
 			WBrush brush = value.ToBrush();
-			_minus = GetTemplateChild("Minus") as Windows.UI.Xaml.Controls.Button;
-			_plus = GetTemplateChild("Plus") as Windows.UI.Xaml.Controls.Button;
+			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
+			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;
 			if (_minus != null)
 				_minus.Background = brush;
 			if (_plus != null)
@@ -236,8 +236,8 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateButtonBackground(Brush value)
 		{
 			var brush = value.ToBrush();
-			_minus = GetTemplateChild("Minus") as Windows.UI.Xaml.Controls.Button;
-			_plus = GetTemplateChild("Plus") as Windows.UI.Xaml.Controls.Button;
+			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
+			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;
 			if (_minus != null)
 				_minus.Background = brush;
 			if (_plus != null)

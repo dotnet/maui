@@ -1,4 +1,4 @@
-﻿using Windows.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		protected override GroupStyle SelectGroupStyleCore(object group, uint level)
 		{
-			return (GroupStyle)Windows.UI.Xaml.Application.Current.Resources["ListViewGroup"];
+			return (GroupStyle)Microsoft.UI.Xaml.Application.Current.Resources["ListViewGroup"];
 		}
 	}
 }

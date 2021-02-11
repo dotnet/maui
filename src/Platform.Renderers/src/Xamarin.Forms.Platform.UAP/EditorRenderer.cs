@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
 using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using WBrush = Windows.UI.Xaml.Media.Brush;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.InputView;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				AcceptsReturn = true,
 				TextWrapping = TextWrapping.Wrap,
-				Style = Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Windows.UI.Xaml.Style,
+				Style = Microsoft.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Microsoft.UI.Xaml.Style,
 				VerticalContentAlignment = VerticalAlignment.Top,
 				UpdateVerticalAlignmentOnLoad = false
 			};
@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 					// The default is DetectFromContent, which we don't want because it can
 					// override the FlowDirection settings. 
-					textBox.TextAlignment = Windows.UI.Xaml.TextAlignment.Left;
+					textBox.TextAlignment = Microsoft.UI.Xaml.TextAlignment.Left;
 				}
 
 				UpdateText();
@@ -190,7 +190,7 @@ namespace Xamarin.Forms.Platform.UWP
 				() => Control.BackgroundFocusBrush, brush => Control.BackgroundFocusBrush = brush);
 		}
 
-		void OnNativeTextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs args)
+		void OnNativeTextChanged(object sender, Microsoft.UI.Xaml.Controls.TextChangedEventArgs args)
 		{
 			_transformedText = Element.UpdateFormsText(Control.Text, Element.TextTransform);
 			Element.SetValueCore(Editor.TextProperty, _transformedText);

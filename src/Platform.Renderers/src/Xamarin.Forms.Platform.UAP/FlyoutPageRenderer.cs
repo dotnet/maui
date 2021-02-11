@@ -1,14 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -175,9 +175,9 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateIsPresented();
 
 				if (!string.IsNullOrEmpty(e.NewElement.AutomationId))
-					Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, e.NewElement.AutomationId);
+					Control.SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, e.NewElement.AutomationId);
 
-				((ITitleProvider)this).BarBackgroundBrush = (WBrush)Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
+				((ITitleProvider)this).BarBackgroundBrush = (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
 				UpdateToolbarPlacement();
 				UpdateToolbarDynamicOverflowEnabled();
 
@@ -188,7 +188,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName || e.PropertyName == FlyoutPage.FlyoutLayoutBehaviorProperty.PropertyName)
 				UpdateIsPresented();
@@ -265,7 +265,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Element?.SendDisappearing();
 		}
 
-		void OnDetailPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnDetailPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.TitleProperty.PropertyName)
 				UpdateDetailTitle();
@@ -286,7 +286,7 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateBounds();
 		}
 
-		void OnMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnMasterPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.TitleProperty.PropertyName)
 				Control.FlyoutTitle = _master?.Title;
@@ -432,8 +432,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void SetAppBarForegroundBinding(FrameworkElement element)
 		{
-			element.SetBinding(Windows.UI.Xaml.Controls.Control.ForegroundProperty,
-				new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath("Control.ToolbarForeground"), Source = this, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
+			element.SetBinding(Microsoft.UI.Xaml.Controls.Control.ForegroundProperty,
+				new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("Control.ToolbarForeground"), Source = this, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
 		}
 
 		Page GetCurrentPage()

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using WBrush = Windows.UI.Xaml.Media.Brush;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -72,11 +72,11 @@ namespace Xamarin.Forms.Platform.UWP
 					//
 					// The VerticalAlignment needs to be set as well since a control would not actually be
 					// centered if a larger HeightRequest is set.
-					if (Element.VerticalOptions.Alignment == LayoutAlignment.Center && Control.Orientation == Windows.UI.Xaml.Controls.Orientation.Horizontal)
+					if (Element.VerticalOptions.Alignment == LayoutAlignment.Center && Control.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
 					{
 						Control.VerticalAlignment = VerticalAlignment.Center;
 
-						slider.Margin = new Windows.UI.Xaml.Thickness(0, 7, 0, 0);
+						slider.Margin = WinUIHelpers.CreateThickness(0, 7, 0, 0);
 					}
 
 					_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
@@ -195,7 +195,7 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 				else
 				{
-					Control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+					Control.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
 				}
 			}
 		}
@@ -212,7 +212,7 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					Color backgroundColor = Element.BackgroundColor;
 					if (backgroundColor.IsDefault)
-						Control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+						Control.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
 				}
 			}
 		}

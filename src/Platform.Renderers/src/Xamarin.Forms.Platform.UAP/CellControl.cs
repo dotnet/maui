@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Windows.UI.Input;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 using Xamarin.Forms.Internals;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.UWP
 		WBrush _defaultOnColor;
 
 		IList<MenuItem> _contextActions;
-		Windows.UI.Xaml.DataTemplate _currentTemplate;
+		Microsoft.UI.Xaml.DataTemplate _currentTemplate;
 		bool _isListViewRealized;
 		object _newValue;
 
@@ -150,7 +150,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return null;
 		}
 
-		Windows.UI.Xaml.DataTemplate GetTemplate(Cell cell)
+		Microsoft.UI.Xaml.DataTemplate GetTemplate(Cell cell)
 		{
 			var renderer = Registrar.Registered.GetHandlerForObject<ICellRenderer>(cell);
 			return renderer.GetTemplate(cell);
@@ -183,14 +183,14 @@ namespace Xamarin.Forms.Platform.UWP
 			var nativeSwitch = FrameworkElementExtensions.GetFirstDescendant<ToggleSwitch>(this);
 
 			// change fill color in switch rectangle
-			var rects = nativeSwitch.GetDescendantsByName<Windows.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
+			var rects = nativeSwitch.GetDescendantsByName<Microsoft.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
 			foreach (var rect in rects)
 				rect.Fill = color;
 
 			// change color in animation on PointerOver
-			var grid = nativeSwitch.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>();
-			var gridVisualStateGroups = Windows.UI.Xaml.VisualStateManager.GetVisualStateGroups(grid);
-			Windows.UI.Xaml.VisualStateGroup vsGroup = null;
+			var grid = nativeSwitch.GetFirstDescendant<Microsoft.UI.Xaml.Controls.Grid>();
+			var gridVisualStateGroups = Microsoft.UI.Xaml.VisualStateManager.GetVisualStateGroups(grid);
+			Microsoft.UI.Xaml.VisualStateGroup vsGroup = null;
 			foreach (var visualGroup in gridVisualStateGroups)
 			{
 				if (visualGroup.Name == "CommonStates")
@@ -202,7 +202,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (vsGroup == null)
 				return;
 
-			Windows.UI.Xaml.VisualState vState = null;
+			Microsoft.UI.Xaml.VisualState vState = null;
 			foreach (var visualState in vsGroup.States)
 			{
 				if (visualState.Name == "PointerOver")
@@ -230,7 +230,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_defaultOnColor == null && Cell is SwitchCell)
 			{
 				var nativeSwitch = FrameworkElementExtensions.GetFirstDescendant<ToggleSwitch>(this);
-				var rects = nativeSwitch.GetDescendantsByName<Windows.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
+				var rects = nativeSwitch.GetDescendantsByName<Microsoft.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
 				foreach (var rect in rects)
 					_defaultOnColor = rect.Fill;
 				UpdateOnColor();
@@ -239,7 +239,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnClick(object sender, PointerRoutedEventArgs e)
 		{
-			PointerPoint point = e.GetCurrentPoint(CellContent);
+			var point = e.GetCurrentPoint(CellContent);
 			if (point.Properties.PointerUpdateKind != PointerUpdateKind.RightButtonReleased)
 				return;
 
@@ -464,7 +464,8 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				var flyoutItem = new MenuFlyoutItem();
 				flyoutItem.SetBinding(MenuFlyoutItem.TextProperty, "Text");
-				flyoutItem.Command = new MenuItemCommand(item);
+				//WINUI FIX
+				//flyoutItem.Command = new MenuItemCommand(item);
 				flyoutItem.DataContext = item;
 
 				flyout.Items.Add(flyoutItem);
@@ -473,7 +474,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateContent(Cell newCell)
 		{
-			Windows.UI.Xaml.DataTemplate dt = GetTemplate(newCell);
+			Microsoft.UI.Xaml.DataTemplate dt = GetTemplate(newCell);
 			if (dt != _currentTemplate || Content == null)
 			{
 				_currentTemplate = dt;

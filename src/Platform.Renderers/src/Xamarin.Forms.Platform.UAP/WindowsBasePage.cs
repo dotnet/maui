@@ -4,7 +4,7 @@ using Windows.ApplicationModel;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public abstract class WindowsBasePage : Windows.UI.Xaml.Controls.Page
+	public abstract class WindowsBasePage : Microsoft.UI.Xaml.Window
 	{
 
 		Application _application;
@@ -13,16 +13,17 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
 			{
-				Windows.UI.Xaml.Application.Current.Suspending += OnApplicationSuspending;
-				Windows.UI.Xaml.Application.Current.Resuming += OnApplicationResuming;
+				Microsoft.UI.Xaml.Application.Current.Suspending += OnApplicationSuspending;
+				Microsoft.UI.Xaml.Application.Current.Resuming += OnApplicationResuming;
 			}
 		}
 
 		internal Platform Platform { get; private set; }
 
+		public abstract Application CreateApplication();
 		protected abstract Platform CreatePlatform();
 
-		protected void LoadApplication(Application application)
+		public virtual void LoadApplication(Application application)
 		{
 			if (application == null)
 				throw new ArgumentNullException("application");

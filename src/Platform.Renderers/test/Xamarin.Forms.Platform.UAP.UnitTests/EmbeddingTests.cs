@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
-using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Xamarin.Forms.Platform.UWP;
 
 namespace Xamarin.Forms.Platform.UAP.UnitTests

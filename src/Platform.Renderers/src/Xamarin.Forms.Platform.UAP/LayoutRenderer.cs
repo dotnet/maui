@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel;
 using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Media;
 using WRect = Windows.Foundation.Rect;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+using Microsoft.UI;
 
 namespace Xamarin.Forms.Platform.UWP
 {

@@ -1,8 +1,8 @@
-﻿using Windows.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.WindowsUniversal;
 using Xamarin.Forms.Platform.UWP;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 [assembly: ExportEffect(typeof(BorderEffect), "BorderEffect")]
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
@@ -15,7 +15,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			if (control == null)
 				return;
 
-			control.Background = new WSolidColorBrush(Windows.UI.Colors.Aqua);
+			control.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Aqua);
 
 			var childLabel = (Element as ScrollView)?.Content as Label;
 			if (childLabel != null)
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			if (control == null)
 				return;
 
-			control.Background = new WSolidColorBrush(Windows.UI.Colors.Beige);
+			control.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Beige);
 		}
 	}
 }

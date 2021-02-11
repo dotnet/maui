@@ -1,8 +1,11 @@
-﻿using Windows.UI.Composition;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Hosting;
+﻿
+#pragma warning disable CS8305
+
+using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Hosting;
 using Xamarin.Forms.Shapes;
-using WRectangleGeometry = Windows.UI.Xaml.Media.RectangleGeometry;
+using WRectangleGeometry = Microsoft.UI.Xaml.Media.RectangleGeometry;
 
 #if UWP_18362
 using WVector2 = System.Numerics.Vector2;
@@ -25,7 +28,7 @@ namespace Xamarin.Forms.Platform.UWP
 			// UIElement.Clip only support rectangle geometry to be used for clipping area sizing.
 			// If the used Build is 17763 or higher, we use Composition's APIs (CompositionGeometricClip) to allow Clip complex geometries.
 #if UWP_18362
-			var compositor = Window.Current.Compositor;
+			var compositor = Forms.MainWindow.Compositor;
 			var visual = ElementCompositionPreview.GetElementVisual(frameworkElement);
 
 			CompositionClip compositionClip = null;
@@ -64,3 +67,4 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 	}
 }
+#pragma warning restore CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
-using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
+using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.UWP
 		public CarouselPageRenderer()
 		{
 			VirtualizingStackPanel.SetVirtualizationMode(this, VirtualizationMode.Standard);
-			ItemTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ContainedPageTemplate"];
+			ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["ContainedPageTemplate"];
 			SelectionChanged += OnSelectionChanged;
 			Loaded += OnLoaded;
 			Unloaded += OnUnloaded;
@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Platform.UWP
 			OnElementChanged(new ElementChangedEventArgs<CarouselPage>(oldPage, newPage));
 
 			if (!string.IsNullOrEmpty(Element?.AutomationId))
-				SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, Element.AutomationId);
+				SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, Element.AutomationId);
 		}
 
 		protected virtual void Dispose(bool disposing)

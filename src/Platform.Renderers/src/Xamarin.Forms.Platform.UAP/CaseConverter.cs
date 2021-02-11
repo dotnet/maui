@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class CaseConverter : Windows.UI.Xaml.Data.IValueConverter
+	public class CaseConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public bool ConvertToUpper { get; set; }
 

@@ -4,9 +4,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using WRect = Windows.Foundation.Rect;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.UWP
 			set => SetValue(IsSelectedProperty, value);
 		}
 
-		void OnDataContextChanged(Windows.UI.Xaml.FrameworkElement sender, Windows.UI.Xaml.DataContextChangedEventArgs args)
+		void OnDataContextChanged(Microsoft.UI.Xaml.FrameworkElement sender, Microsoft.UI.Xaml.DataContextChangedEventArgs args)
 		{
 			if (_previousDataContext == args.NewValue)
 				return;
@@ -136,7 +136,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Size request = _content.Measure(width, height, MeasureFlags.IncludeMargins).Request;
 
-			var minSize = (double)Windows.UI.Xaml.Application.Current.Resources["NavigationViewItemOnLeftMinHeight"];
+			var minSize = (double)Microsoft.UI.Xaml.Application.Current.Resources["NavigationViewItemOnLeftMinHeight"];
 
 			if (request.Height < minSize)
 			{

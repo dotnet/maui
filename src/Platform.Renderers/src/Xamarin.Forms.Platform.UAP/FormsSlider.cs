@@ -1,13 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Media.Imaging;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media.Imaging;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class FormsSlider : Windows.UI.Xaml.Controls.Slider
+	public class FormsSlider : Microsoft.UI.Xaml.Controls.Slider
 	{
 		internal Thumb Thumb { get; set; }
 		internal Thumb ImageThumb { get; set; }

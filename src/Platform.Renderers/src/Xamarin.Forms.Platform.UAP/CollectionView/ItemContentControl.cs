@@ -1,8 +1,8 @@
 ﻿using System;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
-using WThickness = Windows.UI.Xaml.Thickness;
+using WThickness = Microsoft.UI.Xaml.Thickness;
 using WSize = Windows.Foundation.Size;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -210,7 +210,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				var wsize = new WSize(ItemWidth, ItemHeight);
 
-				frameworkElement.Margin = new WThickness(ItemSpacing.Left, ItemSpacing.Top, ItemSpacing.Right, ItemSpacing.Bottom);
+				frameworkElement.Margin = WinUIHelpers.CreateThickness(ItemSpacing.Left, ItemSpacing.Top, ItemSpacing.Right, ItemSpacing.Bottom);
 
 				frameworkElement.Measure(wsize);
 

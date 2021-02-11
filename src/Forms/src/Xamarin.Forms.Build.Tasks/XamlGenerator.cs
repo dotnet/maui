@@ -428,8 +428,6 @@ namespace Xamarin.Forms.Build.Tasks
 
 		bool AssemblyIsSystem(string name)
 		{
-			if (name.StartsWith("System.Maui", StringComparison.CurrentCultureIgnoreCase))
-				return false;
 			if (name.StartsWith("System.", StringComparison.CurrentCultureIgnoreCase))
 				return true;
 			else if (name.Equals("mscorlib.dll", StringComparison.CurrentCultureIgnoreCase))

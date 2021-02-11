@@ -3,20 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 using Windows.UI;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
+using Windows.ApplicationModel;
 
 // The Blank Application template is documented at http://go.microsoft.com/fwlink/?LinkId=402347&clcid=0x409
 
@@ -25,8 +24,9 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    sealed partial class App
-    {
+    sealed partial class App : Microsoft.UI.Xaml.Application
+	{
+		private Window m_window;
 		public static bool RunningAsUITests { get; private set; }
 		/// <summary>
 		/// Initializes the singleton application object.  This is the first line of authored code
@@ -38,12 +38,12 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
             Suspending += OnSuspending;
         }
 
-        /// <summary>
-        /// Invoked when the application is launched normally by the end user.  Other entry points
-        /// will be used such as when the application is launched to open a specific file.
-        /// </summary>
-        /// <param name="e">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs e)
+		/// <summary>
+		/// Invoked when the application is launched normally by the end user.  Other entry points
+		/// will be used such as when the application is launched to open a specific file.
+		/// </summary>
+		/// <param name="e">Details about the launch request and process.</param>
+		protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs e)
         {
             if (!String.IsNullOrWhiteSpace(e.Arguments) &&
 				e.Arguments.Contains("RunningAsUITests"))
@@ -51,58 +51,10 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 				RunningAsUITests = true;
 				Controls.App.PreloadTestCasesIssuesList = false;
 			}
-#if DEBUG
-			if (System.Diagnostics.Debugger.IsAttached)
-            {
-             //   DebugSettings.EnableFrameRateCounter = true;
-            }
-#endif
 
-            var rootFrame = Window.Current.Content as Windows.UI.Xaml.Controls.Frame;
-
-            // Do not repeat app initialization when the Window already has content,
-            // just ensure that the window is active
-            if (rootFrame == null)
-            {
-                // Create a Frame to act as the navigation context and navigate to the first page
-                rootFrame = new Windows.UI.Xaml.Controls.Frame();
-                // Set the default language
-                rootFrame.Language = Windows.Globalization.ApplicationLanguages.Languages[0];
-
-                rootFrame.NavigationFailed += OnNavigationFailed;
-
-				Forms.SetFlags("Shell_UWP_Experimental");
-
-				Forms.Init (e);
-				//FormsMaps.Init (Controls.App.Config["UWPMapsAuthKey"]);
-
-				// Place the frame in the current Window
-				Window.Current.Content = rootFrame;
-            }
-
-            if (rootFrame.Content == null)
-            {
-                // When the navigation stack isn't restored navigate to the first page,
-                // configuring the new page by passing required information as a navigation
-                // parameter
-                rootFrame.Navigate(typeof(MainPage), e.Arguments);
-            }
-
-			//// Uncomment to test overriding the status bar color
-			//if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
-			//{
-			//	var statusBar = StatusBar.GetForCurrentView();
-			//	if (statusBar != null)
-			//	{
-			//		statusBar.BackgroundOpacity = 1;
-			//		statusBar.BackgroundColor = Colors.Black;
-			//		statusBar.ForegroundColor = Colors.White;
-			//	}
-			//}
-
-			// Ensure the current window is active
-			Window.Current.Activate();
-        }
+			m_window = new MainPage();
+			Xamarin.Forms.Forms.Init(e, m_window as MainPage);
+		}
 
         /// <summary>
         /// Invoked when Navigation to a certain page fails

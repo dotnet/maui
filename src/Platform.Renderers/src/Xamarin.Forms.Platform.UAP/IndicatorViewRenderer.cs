@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Markup;
-using Windows.UI.Xaml.Shapes;
-using WEllipse = Windows.UI.Xaml.Shapes.Ellipse;
-using WRectangle = Windows.UI.Xaml.Shapes.Rectangle;
-using WShape = Windows.UI.Xaml.Shapes.Shape;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Shapes;
+using WEllipse = Microsoft.UI.Xaml.Shapes.Ellipse;
+using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
+using WShape = Microsoft.UI.Xaml.Shapes.Shape;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -134,7 +134,7 @@ namespace Xamarin.Forms.Platform.UWP
 					Fill = i == position ? _selectedColor : _fillColor,
 					Height = indicatorSize,
 					Width = indicatorSize,
-					Margin = new Windows.UI.Xaml.Thickness(DefaultPadding, 0, DefaultPadding, 0)
+					Margin = WinUIHelpers.CreateThickness(DefaultPadding, 0, DefaultPadding, 0)
 				};
 			}
 			else
@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Platform.UWP
 					Fill = i == position ? _selectedColor : _fillColor,
 					Height = indicatorSize,
 					Width = indicatorSize,
-					Margin = new Windows.UI.Xaml.Thickness(DefaultPadding, 0, DefaultPadding, 0)
+					Margin = WinUIHelpers.CreateThickness(DefaultPadding, 0, DefaultPadding, 0)
 				};
 			}
 		}

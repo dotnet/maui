@@ -3,20 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.Foundation.Metadata;
-using Windows.Graphics.Display;
 using Windows.UI.ViewManagement;
 
-#if UWP_18362
-using Windows.UI.WindowManagement;
-#endif
 
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Hosting;
 using Xamarin.Forms;
 using Xamarin.Forms.DualScreen;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.UWP;
+using Windows.Foundation.Metadata;
+using Windows.Graphics.Display;
 
 [assembly: Dependency(typeof(DualScreenService))]
 namespace Xamarin.Forms.DualScreen
@@ -59,7 +56,7 @@ namespace Xamarin.Forms.DualScreen
 #endif
 		}
 
-		void OnCurrentSizeChanged(object sender, Windows.UI.Core.WindowSizeChangedEventArgs e)
+		void OnCurrentSizeChanged(object sender, WindowSizeChangedEventArgs e)
 		{
 			_onScreenChangedEventManager.HandleEvent(this, EventArgs.Empty, nameof(OnScreenChanged));
 		}

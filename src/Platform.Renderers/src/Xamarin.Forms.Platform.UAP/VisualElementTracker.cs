@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Hosting;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Xamarin.Forms.Internals;
-using WCompositeTransform = Windows.UI.Xaml.Media.CompositeTransform;
-using WScaleTransform = Windows.UI.Xaml.Media.ScaleTransform;
+using WCompositeTransform = Microsoft.UI.Xaml.Media.CompositeTransform;
+using WScaleTransform = Microsoft.UI.Xaml.Media.ScaleTransform;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -108,7 +108,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void HandleDragLeave(object sender, Windows.UI.Xaml.DragEventArgs e)
+		void HandleDragLeave(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
 			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
 			var dragEventArgs = new DragEventArgs(package);
@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Platform.UWP
 			});
 		}
 
-		void HandleDragOver(object sender, Windows.UI.Xaml.DragEventArgs e)
+		void HandleDragOver(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
 			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
 			var dragEventArgs = new DragEventArgs(package);
@@ -157,13 +157,13 @@ namespace Xamarin.Forms.Platform.UWP
 			});
 		}
 
-		void HandleDropCompleted(UIElement sender, Windows.UI.Xaml.DropCompletedEventArgs e)
+		void HandleDropCompleted(UIElement sender, Microsoft.UI.Xaml.DropCompletedEventArgs e)
 		{
 			var args = new DropCompletedEventArgs();
 			SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args));
 		}
 
-		void HandleDrop(object sender, Windows.UI.Xaml.DragEventArgs e)
+		void HandleDrop(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
 			var datapackage = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
 			VisualElement element = null;
@@ -190,7 +190,7 @@ namespace Xamarin.Forms.Platform.UWP
 			});
 		}
 
-		void HandleDragStarting(UIElement sender, Windows.UI.Xaml.DragStartingEventArgs e)
+		void HandleDragStarting(UIElement sender, Microsoft.UI.Xaml.DragStartingEventArgs e)
 		{
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
@@ -206,7 +206,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				if (!args.Handled && renderer != null)
 				{
-					if (renderer.GetNativeElement() is Windows.UI.Xaml.Controls.Image nativeImage &&
+					if (renderer.GetNativeElement() is Microsoft.UI.Xaml.Controls.Image nativeImage &&
 						nativeImage.Source is BitmapImage bi && bi.UriSource != null)
 					{
 						e.Data.SetBitmap(RandomAccessStreamReference.CreateFromUri(bi.UriSource));

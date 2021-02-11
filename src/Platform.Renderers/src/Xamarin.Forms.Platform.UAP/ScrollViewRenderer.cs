@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using WRect = Windows.Foundation.Rect;
-using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
+using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -231,9 +231,9 @@ namespace Xamarin.Forms.Platform.UWP
 				Element.SendScrollFinished();
 		}
 
-		Windows.UI.Xaml.Thickness AddMargin(Thickness original, double left, double top, double right, double bottom)
+		Microsoft.UI.Xaml.Thickness AddMargin(Thickness original, double left, double top, double right, double bottom)
 		{
-			return new Windows.UI.Xaml.Thickness(original.Left + left, original.Top + top, original.Right + right, original.Bottom + bottom);
+			return WinUIHelpers.CreateThickness(original.Left + left, original.Top + top, original.Right + right, original.Bottom + bottom);
 		}
 
 		// UAP ScrollView forces Content origin to be the same as the ScrollView origin.

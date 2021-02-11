@@ -1,13 +1,10 @@
 ﻿using System.Linq;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WGradientStopCollection = Windows.UI.Xaml.Media.GradientStopCollection;
-using WGradientStop = Windows.UI.Xaml.Media.GradientStop;
-using WLinearGradientBrush = Windows.UI.Xaml.Media.LinearGradientBrush;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WGradientStopCollection = Microsoft.UI.Xaml.Media.GradientStopCollection;
+using WGradientStop = Microsoft.UI.Xaml.Media.GradientStop;
+using WLinearGradientBrush = Microsoft.UI.Xaml.Media.LinearGradientBrush;
 using WPoint = Windows.Foundation.Point;
-
-#if UWP_18362
 using WRadialGradientBrush = Microsoft.UI.Xaml.Media.RadialGradientBrush;
-#endif
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -40,6 +37,7 @@ namespace Xamarin.Forms.Platform.UWP
 					EndPoint = new WPoint(p2.X, p2.Y)
 				};
 			}
+
 #if UWP_18362
 			if (brush is RadialGradientBrush radialGradientBrush)
 			{

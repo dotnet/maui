@@ -5,16 +5,16 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Windows.Devices.Input;
 using Windows.UI.Input;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Animation;
 using Windows.UI.Core;
-using Windows.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Data;
 using Xamarin.Forms.Internals;
 using static Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -225,7 +225,7 @@ namespace Xamarin.Forms.Platform.UWP
 				Element.InternalChildren.CollectionChanged += OnChildrenChanged;
 
 				if (!string.IsNullOrEmpty(Element.AutomationId))
-					_container.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, Element.AutomationId);
+					_container.SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, Element.AutomationId);
 
 				PushExistingNavigationStack();
 			}
@@ -299,7 +299,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		WBrush GetBarForegroundBrush()
 		{
-			object defaultColor = Windows.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
+			object defaultColor = Microsoft.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
 			if (Element.BarTextColor.IsDefault)
 				return (WBrush)defaultColor;
 			return Element.BarTextColor.ToBrush();
@@ -335,7 +335,7 @@ namespace Xamarin.Forms.Platform.UWP
 			_parentsLookedUp = true;
 		}
 
-		void MultiPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		void MultiPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "CurrentPage" || e.PropertyName == "Detail")
 			{
@@ -355,7 +355,7 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateBackButton();
 		}
 
-		void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnCurrentPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
 				UpdateBackButton();
@@ -377,7 +377,7 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateBackButton();
 		}
 
-		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName)
 				UpdateTitleColor();
@@ -424,11 +424,11 @@ namespace Xamarin.Forms.Platform.UWP
 			if (e.Handled)
 				return;
 
-			PointerPoint point = e.GetCurrentPoint(_container);
+			var point = e.GetCurrentPoint(_container);
 			if (point == null)
 				return;
 
-			if (point.PointerDevice.PointerDeviceType != PointerDeviceType.Mouse)
+			if (point.PointerDeviceType != PointerDeviceType.Mouse)
 				return;
 
 			if (point.Properties.IsXButton1Pressed)
@@ -628,7 +628,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void SetAppBarForegroundBinding(FrameworkElement element)
 		{
 			element.SetBinding(Control.ForegroundProperty,
-				new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath("TitleBrush"), Source = _container, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
+				new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("TitleBrush"), Source = _container, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
 		}
 
 		void UpdateToolbarPlacement()
@@ -659,7 +659,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		static object GetDefaultColor()
 		{
-			return Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
+			return Microsoft.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
 		}
 
 		void UpdateBackButton()

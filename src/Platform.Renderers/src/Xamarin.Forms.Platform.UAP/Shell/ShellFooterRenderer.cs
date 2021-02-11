@@ -1,10 +1,11 @@
 ﻿using System;
+using Microsoft.UI.Xaml;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class ShellFooterRenderer : Windows.UI.Xaml.Controls.ContentControl
+	public class ShellFooterRenderer : Microsoft.UI.Xaml.Controls.ContentControl
 	{
 		Shell _shell;
 

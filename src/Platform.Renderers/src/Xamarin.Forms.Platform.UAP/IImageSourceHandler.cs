@@ -5,6 +5,6 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	public interface IImageSourceHandler : IRegisterable
 	{
-		Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = default(CancellationToken));
+		Task<Microsoft.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = default(CancellationToken));
 	}
 }

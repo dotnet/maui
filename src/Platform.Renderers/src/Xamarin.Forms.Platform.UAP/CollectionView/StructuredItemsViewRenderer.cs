@@ -1,14 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
 
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls;
 
-using UWPApp = Windows.UI.Xaml.Application;
-using WListView = Windows.UI.Xaml.Controls.ListView;
-using WScrollMode = Windows.UI.Xaml.Controls.ScrollMode;
-using WSetter = Windows.UI.Xaml.Setter;
-using WStyle = Windows.UI.Xaml.Style;
-using WThickness = Windows.UI.Xaml.Thickness;
+using UWPApp = Microsoft.UI.Xaml.Application;
+using WListView = Microsoft.UI.Xaml.Controls.ListView;
+using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
+using WSetter = Microsoft.UI.Xaml.Setter;
+using WStyle = Microsoft.UI.Xaml.Style;
+using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -164,7 +164,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		protected override void HandleLayoutPropertyChanged(PropertyChangedEventArgs property)
+		protected override void HandleLayoutPropertyChanged(System.ComponentModel.PropertyChangedEventArgs property)
 		{
 			if (property.Is(GridItemsLayout.SpanProperty))
 			{
@@ -222,10 +222,10 @@ namespace Xamarin.Forms.Platform.UWP
 				ItemsPanel = (ItemsPanelTemplate)UWPApp.Current.Resources["HorizontalListItemsPanel"],
 				ItemContainerStyle = GetHorizontalItemContainerStyle(listItemsLayout)
 			};
-			ScrollViewer.SetVerticalScrollBarVisibility(horizontalListView, Windows.UI.Xaml.Controls.ScrollBarVisibility.Hidden);
+			ScrollViewer.SetVerticalScrollBarVisibility(horizontalListView, Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Hidden);
 			ScrollViewer.SetVerticalScrollMode(horizontalListView, WScrollMode.Disabled);
 			ScrollViewer.SetHorizontalScrollMode(horizontalListView, WScrollMode.Auto);
-			ScrollViewer.SetHorizontalScrollBarVisibility(horizontalListView, Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto);
+			ScrollViewer.SetHorizontalScrollBarVisibility(horizontalListView, Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Auto);
 
 			return horizontalListView;
 		}
@@ -234,12 +234,12 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			var h = layout?.HorizontalItemSpacing ?? 0;
 			var v = layout?.VerticalItemSpacing ?? 0;
-			var margin = new WThickness(h, v, h, v);
+			var margin = WinUIHelpers.CreateThickness(h, v, h, v);
 
 			var style = new WStyle(typeof(GridViewItem));
 
 			style.Setters.Add(new WSetter(GridViewItem.MarginProperty, margin));
-			style.Setters.Add(new WSetter(GridViewItem.PaddingProperty, new WThickness(0)));
+			style.Setters.Add(new WSetter(GridViewItem.PaddingProperty, WinUIHelpers.CreateThickness(0)));
 
 			return style;
 		}
@@ -247,12 +247,12 @@ namespace Xamarin.Forms.Platform.UWP
 		static WStyle GetVerticalItemContainerStyle(LinearItemsLayout layout)
 		{
 			var v = layout?.ItemSpacing ?? 0;
-			var margin = new WThickness(0, v, 0, v);
+			var margin = WinUIHelpers.CreateThickness(0, v, 0, v);
 
 			var style = new WStyle(typeof(ListViewItem));
 
 			style.Setters.Add(new WSetter(ListViewItem.MarginProperty, margin));
-			style.Setters.Add(new WSetter(GridViewItem.PaddingProperty, new WThickness(0)));
+			style.Setters.Add(new WSetter(GridViewItem.PaddingProperty, WinUIHelpers.CreateThickness(0)));
 
 			return style;
 		}
@@ -260,7 +260,7 @@ namespace Xamarin.Forms.Platform.UWP
 		static WStyle GetHorizontalItemContainerStyle(LinearItemsLayout layout)
 		{
 			var h = layout?.ItemSpacing ?? 0;
-			var padding = new WThickness(h, 0, h, 0);
+			var padding = WinUIHelpers.CreateThickness(h, 0, h, 0);
 
 			var style = new WStyle(typeof(ListViewItem));
 

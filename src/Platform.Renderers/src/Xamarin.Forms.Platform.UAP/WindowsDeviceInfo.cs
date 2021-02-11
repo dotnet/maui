@@ -1,6 +1,6 @@
 ﻿using System;
 using Windows.Graphics.Display;
-using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Xamarin.Forms.Internals;
 using WRect = Windows.Foundation.Rect;
 
@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			get
 			{
-				WRect windowSize = Window.Current.Bounds;
+				WRect windowSize = Forms.MainWindow.Bounds;
 				return new Size(windowSize.Width, windowSize.Height);
 			}
 		}

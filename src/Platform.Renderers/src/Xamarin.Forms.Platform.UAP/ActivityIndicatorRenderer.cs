@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new FormsProgressBar { IsIndeterminate = true, Style = Windows.UI.Xaml.Application.Current.Resources["FormsProgressBarStyle"] as Windows.UI.Xaml.Style });
+					SetNativeControl(new FormsProgressBar { IsIndeterminate = true, Style = Microsoft.UI.Xaml.Application.Current.Resources["FormsProgressBarStyle"] as Microsoft.UI.Xaml.Style });
 
 					Control.Loaded += OnControlLoaded;
 				}

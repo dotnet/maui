@@ -1,8 +1,9 @@
 ﻿using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
-using WStyle = Windows.UI.Xaml.Style;
+using WStyle = Microsoft.UI.Xaml.Style;
+using Microsoft.UI.Text;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -26,7 +27,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		Style GetStyle(object nativeKey, TextBlock prototype)
 		{
-			var style = (WStyle)Windows.UI.Xaml.Application.Current.Resources[nativeKey];
+			var style = (WStyle)Microsoft.UI.Xaml.Application.Current.Resources[nativeKey];
 
 			prototype.Style = style;
 

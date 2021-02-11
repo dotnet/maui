@@ -1,5 +1,5 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -79,16 +79,16 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 
 			if (_defaultAutomationPropertiesLabeledBy == null)
-				_defaultAutomationPropertiesLabeledBy = (UIElement)Control.GetValue(Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty);
+				_defaultAutomationPropertiesLabeledBy = (UIElement)Control.GetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.LabeledByProperty);
 
 			var elemValue = (VisualElement)Element.GetValue(AutomationProperties.LabeledByProperty);
 			var renderer = elemValue?.GetOrCreateRenderer();
 			var nativeElement = renderer?.GetNativeElement();
 
 			if (nativeElement != null)
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, nativeElement);
+				Control.SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, nativeElement);
 			else
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
+				Control.SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
 		}
 
 		void UpdateFlowDirection()

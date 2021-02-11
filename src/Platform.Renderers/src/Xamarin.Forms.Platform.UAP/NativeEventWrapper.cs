@@ -3,7 +3,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
+using WinRT;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -25,7 +26,9 @@ namespace Xamarin.Forms.Platform.UWP
 				var handlerDelegate = s_handlerinfo.CreateDelegate(delegateType, this);
 				Func<object, EventRegistrationToken> add = a => (EventRegistrationToken)addMethod.Invoke(target, new object[] { handlerDelegate });
 				Action<EventRegistrationToken> remove = t => removeMethod.Invoke(target, new object[] { t });
-				WindowsRuntimeMarshal.AddEventHandler(add, remove, s_handlerinfo);
+
+				// TODO WINUI3
+				//WindowsRuntimeMarshal.AddEventHandler(add, remove, s_handlerinfo);
 			}
 			catch (Exception) {
 				Log.Warning(nameof(NativeEventWrapper), "Can not attach NativeEventWrapper.");

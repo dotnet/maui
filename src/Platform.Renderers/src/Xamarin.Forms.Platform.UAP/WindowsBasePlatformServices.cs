@@ -18,8 +18,8 @@ using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using IOPath = System.IO.Path;
 
@@ -28,25 +28,35 @@ namespace Xamarin.Forms.Platform.UWP
 	internal abstract class WindowsBasePlatformServices : IPlatformServices, IPlatformInvalidate
 	{
 		const string WrongThreadError = "RPC_E_WRONG_THREAD";
-		readonly CoreDispatcher _dispatcher;
+#pragma warning disable CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+		readonly Microsoft.System.DispatcherQueue _dispatcher;
+#pragma warning restore CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 		readonly UISettings _uiSettings = new UISettings();
 
-		protected WindowsBasePlatformServices(CoreDispatcher dispatcher)
+#pragma warning disable CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+		protected WindowsBasePlatformServices(Microsoft.System.DispatcherQueue dispatcher)
+#pragma warning restore CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 		{
 			_dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 			_uiSettings.ColorValuesChanged += UISettingsColorValuesChanged;
 		}
 
-		public async void BeginInvokeOnMainThread(Action action)
+		public void BeginInvokeOnMainThread(Action action)
 		{
-			if (CoreApplication.Views.Count == 1)
+			//if (CoreApplication.Views.Count == 1)
 			{
 				// This is the normal scenario - one window only
-				_dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => action()).WatchForError();
+
+				// TODO WINUI
+				_dispatcher.TryEnqueue(() =>
+				{
+					action();
+				});//.WatchForError();
 				return;
 			}
 
-			await TryAllDispatchers(action);
+			// WINUI3 
+			//await TryAllDispatchers(action);
 		}
 
 		public Ticker CreateTicker()
@@ -56,27 +66,15 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public virtual Assembly[] GetAssemblies()
 		{
+
 			var options = new QueryOptions { FileTypeFilter = { ".exe", ".dll" } };
 
 			StorageFileQueryResult query = Package.Current.InstalledLocation.CreateFileQueryWithOptions(options);
 			IReadOnlyList<StorageFile> files = query.GetFilesAsync().AsTask().Result;
 
 			var assemblies = new List<Assembly>(files.Count);
-			foreach (StorageFile file in files)
-			{
-				try
-				{
-					Assembly assembly = Assembly.Load(new AssemblyName { Name = IOPath.GetFileNameWithoutExtension(file.Name) });
 
-					assemblies.Add(assembly);
-				}
-				catch (IOException)
-				{
-				}
-				catch (BadImageFormatException)
-				{
-				}
-			}
+			LoadAllAssemblies(AppDomain.CurrentDomain.GetAssemblies(), assemblies);
 
 			Assembly thisAssembly = GetType().GetTypeInfo().Assembly;
 			// this happens with .NET Native
@@ -94,6 +92,40 @@ namespace Xamarin.Forms.Platform.UWP
 			return assemblies.ToArray();
 		}
 
+		void LoadAllAssemblies(Assembly[] files, List<Assembly> loaded)
+		{
+			for (var i = 0; i < files.Length; i++)
+			{
+				var asm = files[i];
+				if (!loaded.Contains(asm))
+				{
+					loaded.Add(asm);
+				}
+			}
+		}
+
+		void LoadAllAssemblies(AssemblyName[] files, List<Assembly> loaded)
+		{
+			for (var i = 0; i < files.Length; i++)
+			{
+				try
+				{
+					var asm = Assembly.Load(files[i]);
+					if (!loaded.Contains(asm))
+					{
+						loaded.Add(asm);
+						LoadAllAssemblies(asm.GetReferencedAssemblies(), loaded);
+					}
+				}
+				catch (IOException)
+				{
+				}
+				catch (BadImageFormatException)
+				{
+				}
+			}
+		}
+
 		public string GetHash(string input) => Crc64.GetHash(input);
 
 		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
@@ -105,10 +137,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public Color GetNamedColor(string name)
 		{
-			if (!Windows.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
+			if (!Microsoft.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
 				return Color.Default;
 
-			return ((Windows.UI.Color)Windows.UI.Xaml.Application.Current?.Resources[name]).ToFormsColor();
+			return ((Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToFormsColor();
 		}
 
 		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
@@ -166,94 +198,9 @@ namespace Xamarin.Forms.Platform.UWP
 			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 		}
 
-		async void UISettingsColorValuesChanged(UISettings sender, object args)
+		void UISettingsColorValuesChanged(UISettings sender, object args)
 		{
-			await _dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme)));
-		}
-
-		async Task TryAllDispatchers(Action action)
-		{
-			// Our best bet is Window.Current; most of the time, that's the Dispatcher we need
-			var currentWindow = Window.Current;
-
-			if (currentWindow?.Dispatcher != null)
-			{
-				try
-				{
-					await TryDispatch(currentWindow.Dispatcher, action);
-					return;
-				}
-				catch (Exception ex) when (ex.Message.Contains(WrongThreadError))
-				{
-					// The current window is not the one we need 
-				}
-			}
-
-			// Either Window.Current was the wrong Dispatcher, or Window.Current was null because we're on a 
-			// non-UI thread (e.g., one from the thread pool). So now it's time to try all the available Dispatchers 
-
-			var views = CoreApplication.Views;
-
-			for (int n = 0; n < views.Count; n++)
-			{
-				var dispatcher = views[n].Dispatcher;
-
-				if (dispatcher == null || dispatcher == currentWindow?.Dispatcher)
-				{
-					// Obviously null Dispatchers are no good, and we already tried the one from currentWindow
-					continue;
-				}
-
-				// We need to ignore Deactivated/Never Activated windows, but it's possible we can't access their 
-				// properties from this thread. So we'll check those using the Dispatcher
-				bool activated = false;
-
-				await TryDispatch(dispatcher, () => {
-					var mode = views[n].CoreWindow.ActivationMode;
-					activated = (mode == CoreWindowActivationMode.ActivatedInForeground
-						|| mode == CoreWindowActivationMode.ActivatedNotForeground);
-				});
-
-				if (!activated)
-				{
-					// This is a deactivated (or not yet activated) window; move on
-					continue;
-				}
-
-				try
-				{
-					await TryDispatch(dispatcher, action);
-					return;
-				}
-				catch (Exception ex) when (ex.Message.Contains(WrongThreadError))
-				{
-					// This was the incorrect dispatcher; move on to try another one
-				}
-			}
-		}
-
-		async Task<bool> TryDispatch(CoreDispatcher dispatcher, Action action)
-		{
-			if (dispatcher == null)
-			{
-				throw new ArgumentNullException(nameof(dispatcher));
-			}
-
-			var taskCompletionSource = new TaskCompletionSource<bool>();
-
-			await dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-				try
-				{
-					action();
-					taskCompletionSource.SetResult(true);
-				}
-				catch (Exception ex)
-				{
-					taskCompletionSource.SetException(ex);
-				}
-			});
-
-			return await taskCompletionSource.Task;
+			_dispatcher.TryEnqueue(() => Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme)));
 		}
 
 		public void Invalidate(VisualElement visualElement)
@@ -267,6 +214,91 @@ namespace Xamarin.Forms.Platform.UWP
 			renderer.ContainerElement.InvalidateMeasure();
 		}
 
-		public OSAppTheme RequestedTheme => Windows.UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark ? OSAppTheme.Dark : OSAppTheme.Light;
+		//async Task TryAllDispatchers(Action action)
+		//{
+		//	// Our best bet is Window.Current; most of the time, that's the Dispatcher we need
+		//	var currentWindow = Window.Current;
+
+		//	if (currentWindow?.Dispatcher != null)
+		//	{
+		//		try
+		//		{
+		//			await TryDispatch(currentWindow.Dispatcher, action);
+		//			return;
+		//		}
+		//		catch (Exception ex) when (ex.Message.Contains(WrongThreadError))
+		//		{
+		//			// The current window is not the one we need 
+		//		}
+		//	}
+
+		//	// Either Window.Current was the wrong Dispatcher, or Window.Current was null because we're on a 
+		//	// non-UI thread (e.g., one from the thread pool). So now it's time to try all the available Dispatchers 
+
+		//	var views = CoreApplication.Views;
+
+		//	for (int n = 0; n < views.Count; n++)
+		//	{
+		//		var dispatcher = views[n].Dispatcher;
+
+		//		if (dispatcher == null || dispatcher == currentWindow?.Dispatcher)
+		//		{
+		//			// Obviously null Dispatchers are no good, and we already tried the one from currentWindow
+		//			continue;
+		//		}
+
+		//		// We need to ignore Deactivated/Never Activated windows, but it's possible we can't access their 
+		//		// properties from this thread. So we'll check those using the Dispatcher
+		//		bool activated = false;
+
+		//		await TryDispatch(dispatcher, () => {
+		//			var mode = views[n].CoreWindow.ActivationMode;
+		//			activated = (mode == CoreWindowActivationMode.ActivatedInForeground
+		//				|| mode == CoreWindowActivationMode.ActivatedNotForeground);
+		//		});
+
+		//		if (!activated)
+		//		{
+		//			// This is a deactivated (or not yet activated) window; move on
+		//			continue;
+		//		}
+
+		//		try
+		//		{
+		//			await TryDispatch(dispatcher, action);
+		//			return;
+		//		}
+		//		catch (Exception ex) when (ex.Message.Contains(WrongThreadError))
+		//		{
+		//			// This was the incorrect dispatcher; move on to try another one
+		//		}
+		//	}
+		//}
+
+		//async Task<bool> TryDispatch(CoreDispatcher dispatcher, Action action)
+		//{
+		//	if (dispatcher == null)
+		//	{
+		//		throw new ArgumentNullException(nameof(dispatcher));
+		//	}
+
+		//	var taskCompletionSource = new TaskCompletionSource<bool>();
+
+		//	await dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+		//		try
+		//		{
+		//			action();
+		//			taskCompletionSource.SetResult(true);
+		//		}
+		//		catch (Exception ex)
+		//		{
+		//			taskCompletionSource.SetException(ex);
+		//		}
+		//	});
+
+		//	return await taskCompletionSource.Task;
+		//}
+
+		public OSAppTheme RequestedTheme => Microsoft.UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark ? OSAppTheme.Dark : OSAppTheme.Light;
 	}
 }

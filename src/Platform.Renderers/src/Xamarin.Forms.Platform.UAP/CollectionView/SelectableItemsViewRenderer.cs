@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Windows.UI.Xaml.Controls;
-using UWPListViewSelectionMode = Windows.UI.Xaml.Controls.ListViewSelectionMode;
-using UWPSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
+using Microsoft.UI.Xaml.Controls;
+using UWPListViewSelectionMode = Microsoft.UI.Xaml.Controls.ListViewSelectionMode;
+using UWPSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -49,12 +49,12 @@ namespace Xamarin.Forms.Platform.UWP
 			if (newListViewBase != null)
 			{
 				newListViewBase.SetBinding(ListViewBase.SelectionModeProperty,
-						new Windows.UI.Xaml.Data.Binding
+						new Microsoft.UI.Xaml.Data.Binding
 						{
 							Source = ItemsView,
-							Path = new Windows.UI.Xaml.PropertyPath("SelectionMode"),
+							Path = new Microsoft.UI.Xaml.PropertyPath("SelectionMode"),
 							Converter = new SelectionModeConvert(),
-							Mode = Windows.UI.Xaml.Data.BindingMode.TwoWay
+							Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay
 						});
 
 				newListViewBase.SelectionChanged += NativeSelectionChanged;
@@ -200,7 +200,7 @@ namespace Xamarin.Forms.Platform.UWP
 			ItemsView.SelectionChanged += FormsSelectionChanged;
 		}
 
-		class SelectionModeConvert : Windows.UI.Xaml.Data.IValueConverter
+		class SelectionModeConvert : Microsoft.UI.Xaml.Data.IValueConverter
 		{
 			public object Convert(object value, Type targetType, object parameter, string language)
 			{

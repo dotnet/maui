@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
 using NUnit.Framework;
 using Windows.UI.Xaml;
-using WCompositeTransform = Windows.UI.Xaml.Media.CompositeTransform;
+using WCompositeTransform = Microsoft.UI.Xaml.Media.CompositeTransform;
 
 namespace Xamarin.Forms.Platform.UAP.UnitTests
 {

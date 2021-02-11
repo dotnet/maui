@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
-using Windows.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Input;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.VisualElement;
 using WRect = Windows.Foundation.Rect;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.UWP
 		event EventHandler _controlChanging;
 		event EventHandler _controlChanged;
 		VisualElementTracker<TElement, TNativeElement> _tracker;
-		Windows.UI.Xaml.Controls.Page _containingPage; // Cache of containing page used for unfocusing
+		Microsoft.UI.Xaml.Controls.Page _containingPage; // Cache of containing page used for unfocusing
 		Control _control => Control as Control;
 
 		Canvas _backgroundLayer;
@@ -166,7 +166,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			var controller = (IElementController)oldElement;
-			if (controller != null && controller.EffectControlProvider == this)
+			if (controller != null && (Panel)controller.EffectControlProvider == this)
 			{
 				controller.EffectControlProvider = null;
 			}
@@ -502,7 +502,7 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 				else
 				{
-					_control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+					_control.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
 					backgroundLayer.ClearValue(BackgroundProperty);
 				}
 			}
@@ -541,7 +541,7 @@ namespace Xamarin.Forms.Platform.UWP
 						_control.Background = backgroundColor.ToBrush();
 					else
 					{
-						_control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+						_control.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
 						backgroundLayer.ClearValue(BackgroundProperty);
 					}
 				}
@@ -611,11 +611,11 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				// Work our way up the tree to find the containing Page
 				DependencyObject parent = _control;
-				while (parent != null && !(parent is Windows.UI.Xaml.Controls.Page))
+				while (parent != null && !(parent is Microsoft.UI.Xaml.Controls.Page))
 				{
 					parent = VisualTreeHelper.GetParent(parent);
 				}
-				_containingPage = parent as Windows.UI.Xaml.Controls.Page;
+				_containingPage = parent as Microsoft.UI.Xaml.Controls.Page;
 			}
 
 			if (_containingPage != null)
@@ -683,7 +683,7 @@ namespace Xamarin.Forms.Platform.UWP
 				// in hit testing. 
 				if (Element is Layout && Background == null)
 				{
-					Background = new WSolidColorBrush(Windows.UI.Colors.Transparent);
+					Background = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 				}
 			}
 		}

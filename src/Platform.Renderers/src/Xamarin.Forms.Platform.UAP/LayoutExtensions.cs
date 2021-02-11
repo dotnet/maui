@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
 using WSize = Windows.Foundation.Size;
 
 namespace Xamarin.Forms.Platform.UWP

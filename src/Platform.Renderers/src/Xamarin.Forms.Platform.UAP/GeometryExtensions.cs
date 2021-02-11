@@ -1,6 +1,6 @@
 ﻿using Xamarin.Forms.Shapes;
 using WFoundation = Windows.Foundation;
-using WMedia = Windows.UI.Xaml.Media;
+using WMedia = Microsoft.UI.Xaml.Media;
 
 namespace Xamarin.Forms.Platform.UWP
 {

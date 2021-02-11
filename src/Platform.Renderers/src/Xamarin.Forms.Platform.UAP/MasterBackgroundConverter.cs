@@ -1,13 +1,14 @@
 ﻿using System;
 using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
+using Microsoft.UI;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class MasterBackgroundConverter : Windows.UI.Xaml.Data.IValueConverter
+	public class MasterBackgroundConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		// Obtained by comparing the Mail apps master section background to the detail background
 		const double Shift = 0.03;

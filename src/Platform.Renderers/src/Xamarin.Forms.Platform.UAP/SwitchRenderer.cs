@@ -1,16 +1,16 @@
 ﻿using System.ComponentModel;
 using System.Linq;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media.Animation;
-using Windows.UI.Xaml.Shapes;
-using WBrush = Windows.UI.Xaml.Media.Brush;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Shapes;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WColor = Windows.UI.Color;
-using WGrid = Windows.UI.Xaml.Controls.Grid;
-using WEllipse = Windows.UI.Xaml.Shapes.Ellipse;
-using WRectangle = Windows.UI.Xaml.Shapes.Rectangle;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
-using WVisualStateManager = Windows.UI.Xaml.VisualStateManager;
+using WGrid = Microsoft.UI.Xaml.Controls.Grid;
+using WEllipse = Microsoft.UI.Xaml.Shapes.Ellipse;
+using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 
 namespace Xamarin.Forms.Platform.UWP
 {

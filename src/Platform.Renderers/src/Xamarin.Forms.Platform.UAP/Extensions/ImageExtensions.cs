@@ -1,16 +1,16 @@
 ﻿using System;
-using Microsoft.Graphics.Canvas.UI.Xaml;
-using Windows.UI.Xaml.Media.Imaging;
+//using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -30,14 +30,15 @@ namespace Xamarin.Forms.Platform.UWP
 					Height = bitmap.PixelHeight
 				};
 			}
-			else if (source is CanvasImageSource canvas)
-			{
-				return new Size
-				{
-					Width = canvas.Size.Width,
-					Height = canvas.Size.Height
-				};
-			}
+			// WINUI
+			//else if (source is CanvasImageSource canvas)
+			//{
+			//	return new Size
+			//	{
+			//		Width = canvas.Size.Width,
+			//		Height = canvas.Size.Height
+			//	};
+			//}
 
 			throw new InvalidCastException($"\"{source.GetType().FullName}\" is not supported.");
 		}
