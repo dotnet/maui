@@ -1,11 +1,11 @@
 ﻿using System;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using WRect = Windows.Foundation.Rect; 
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class ViewToRendererConverter : Windows.UI.Xaml.Data.IValueConverter
+	public class ViewToRendererConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{

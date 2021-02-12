@@ -2,7 +2,7 @@
 using FormsRectangle = Xamarin.Forms.Shapes.Rectangle;
 
 #if WINDOWS_UWP
-using WRectangle = Windows.UI.Xaml.Shapes.Rectangle;
+using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 
 namespace Xamarin.Forms.Platform.UWP
 #else

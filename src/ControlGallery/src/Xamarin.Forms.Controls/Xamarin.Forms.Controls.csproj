@@ -128,7 +128,7 @@
     <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Platform.Handlers\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj" />
     <ProjectReference Include="..\..\..\Forms\test\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
-    <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj" >
+    <ProjectReference Condition=" '$(Platform)' == 'AnyCPU'" Include="..\..\..\Forms\src\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj" >
       <Name>Xamarin.Forms.Build.Tasks</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

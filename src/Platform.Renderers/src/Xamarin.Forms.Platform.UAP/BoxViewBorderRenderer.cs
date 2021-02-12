@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using WShape = Windows.UI.Xaml.Shapes.Shape;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
+using WShape = Microsoft.UI.Xaml.Shapes.Shape;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -101,7 +101,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void SetCornerRadius(CornerRadius cornerRadius)
 		{
-			Control.CornerRadius = new Windows.UI.Xaml.CornerRadius(cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomLeft);
+			Control.CornerRadius = WinUIHelpers.CreateCornerRadius(cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomLeft);
 		}
 	}
 }

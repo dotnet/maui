@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	public class GroupableItemsViewRenderer<TItemsView> : SelectableItemsViewRenderer<TItemsView>
 		where TItemsView : GroupableItemsView
 	{
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
+		protected override void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs changedProperty)
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
 
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.UWP
 					Source = TemplatedItemSourceFactory.CreateGrouped(itemsSource, itemTemplate,
 					ItemsView.GroupHeaderTemplate, ItemsView.GroupFooterTemplate, Element),
 					IsSourceGrouped = true,
-					ItemsPath = new Windows.UI.Xaml.PropertyPath(nameof(GroupTemplateContext.Items))
+					ItemsPath = new Microsoft.UI.Xaml.PropertyPath(nameof(GroupTemplateContext.Items))
 				};
 			}
 			else

@@ -2,7 +2,7 @@
 
 #if WINDOWS_UWP
 using WPoint = Windows.Foundation.Point;
-using WPointCollection = Windows.UI.Xaml.Media.PointCollection;
+using WPointCollection = Microsoft.UI.Xaml.Media.PointCollection;
 
 namespace Xamarin.Forms.Platform.UWP
 #else

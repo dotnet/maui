@@ -1,6 +1,6 @@
 ﻿using Windows.ApplicationModel.Core;
 using System;
-using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP

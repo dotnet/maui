@@ -2,7 +2,7 @@
 {
 	internal sealed class WindowsPlatform : Platform
 	{
-		public WindowsPlatform(Windows.UI.Xaml.Controls.Page page) : base(page)
+		public WindowsPlatform(Microsoft.UI.Xaml.Window page) : base(page)
 		{
 		}
 	}

@@ -7,22 +7,22 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using WListView = Windows.UI.Xaml.Controls.ListView;
-using WBinding = Windows.UI.Xaml.Data.Binding;
-using WApp = Windows.UI.Xaml.Application;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using WListView = Microsoft.UI.Xaml.Controls.ListView;
+using WBinding = Microsoft.UI.Xaml.Data.Binding;
+using WApp = Microsoft.UI.Xaml.Application;
 using WRect = Windows.Foundation.Rect;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListView;
 using System.Collections.ObjectModel;
-using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
-using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
+using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
+using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -78,10 +78,10 @@ namespace Xamarin.Forms.Platform.UWP
 					List = new ListViewTransparent
 					{
 						IsSynchronizedWithCurrentItem = false,
-						ItemTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
-						HeaderTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
-						FooterTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
-						ItemContainerStyle = (Windows.UI.Xaml.Style)WApp.Current.Resources["FormsListViewItem"],
+						ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
+						HeaderTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
+						FooterTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
+						ItemContainerStyle = (Microsoft.UI.Xaml.Style)WApp.Current.Resources["FormsListViewItem"],
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
 
@@ -238,7 +238,7 @@ namespace Xamarin.Forms.Platform.UWP
 				Element.Dispatcher.BeginInvokeOnMainThread(() => List?.UpdateLayout());
 		}
 
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected override void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
 
@@ -405,7 +405,7 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					ScrollViewer.SetIsVerticalScrollChainingEnabled(List, false);
 
-					var grid = new GridView { ItemsSource = templatedItems.ShortNames, Style = (Windows.UI.Xaml.Style)WApp.Current.Resources["JumpListGrid"] };
+					var grid = new GridView { ItemsSource = templatedItems.ShortNames, Style = (Microsoft.UI.Xaml.Style)WApp.Current.Resources["JumpListGrid"] };
 
 					ScrollViewer.SetIsHorizontalScrollChainingEnabled(grid, false);
 
@@ -436,13 +436,13 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (Element.SelectionMode == ListViewSelectionMode.None)
 			{
-				List.SelectionMode = Windows.UI.Xaml.Controls.ListViewSelectionMode.None;
+				List.SelectionMode = Microsoft.UI.Xaml.Controls.ListViewSelectionMode.None;
 				List.SelectedIndex = -1;
 				Element.SelectedItem = null;
 			}
 			else if (Element.SelectionMode == ListViewSelectionMode.Single)
 			{
-				List.SelectionMode = Windows.UI.Xaml.Controls.ListViewSelectionMode.Single;
+				List.SelectionMode = Microsoft.UI.Xaml.Controls.ListViewSelectionMode.Single;
 
 				// UWP seems to reset the selected item when SelectionMode is set, make sure our items stays selected by doing this call
 				if (Element.SelectedItem != null)
@@ -553,7 +553,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		bool ScrollToItemWithAnimation(ScrollViewer viewer, object item)
 		{
-			var selectorItem = List.ContainerFromItem(item) as Windows.UI.Xaml.Controls.Primitives.SelectorItem;
+			var selectorItem = List.ContainerFromItem(item) as Microsoft.UI.Xaml.Controls.Primitives.SelectorItem;
 			var transform = selectorItem?.TransformToVisual(viewer.Content as UIElement);
 			var position = transform?.TransformPoint(new Windows.Foundation.Point(0, 0));
 			if (!position.HasValue)

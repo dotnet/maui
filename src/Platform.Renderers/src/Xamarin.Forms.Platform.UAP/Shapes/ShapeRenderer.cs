@@ -4,12 +4,12 @@ using Xamarin.Forms.Shapes;
 using Shape = Xamarin.Forms.Shapes.Shape;
 
 #if WINDOWS_UWP
-using Windows.UI.Xaml;
-using WDoubleCollection = Windows.UI.Xaml.Media.DoubleCollection;
-using WPenLineCap = Windows.UI.Xaml.Media.PenLineCap;
-using WPenLineJoin = Windows.UI.Xaml.Media.PenLineJoin;
-using WShape = Windows.UI.Xaml.Shapes.Shape;
-using WStretch = Windows.UI.Xaml.Media.Stretch;
+using Microsoft.UI.Xaml;
+using WDoubleCollection = Microsoft.UI.Xaml.Media.DoubleCollection;
+using WPenLineCap = Microsoft.UI.Xaml.Media.PenLineCap;
+using WPenLineJoin = Microsoft.UI.Xaml.Media.PenLineJoin;
+using WShape = Microsoft.UI.Xaml.Shapes.Shape;
+using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 
 namespace Xamarin.Forms.Platform.UWP
 #else

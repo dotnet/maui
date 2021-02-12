@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.Platform.UWP
 {
-	public class WindowsPage : WindowsBasePage
+	public abstract class WindowsPage : WindowsBasePage
 	{
 		protected override Platform CreatePlatform()
 		{

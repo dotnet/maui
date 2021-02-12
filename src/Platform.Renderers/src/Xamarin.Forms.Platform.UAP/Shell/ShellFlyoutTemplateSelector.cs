@@ -1,27 +1,27 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class ShellFlyoutTemplateSelector : Windows.UI.Xaml.Controls.DataTemplateSelector
+	public class ShellFlyoutTemplateSelector : Microsoft.UI.Xaml.Controls.DataTemplateSelector
 	{
-		Windows.UI.Xaml.DataTemplate BaseShellItemTemplate { get; }
-		Windows.UI.Xaml.DataTemplate MenuItemTemplate { get; }
-		Windows.UI.Xaml.DataTemplate SeperatorTemplate { get; }
+		Microsoft.UI.Xaml.DataTemplate BaseShellItemTemplate { get; }
+		Microsoft.UI.Xaml.DataTemplate MenuItemTemplate { get; }
+		Microsoft.UI.Xaml.DataTemplate SeperatorTemplate { get; }
 
 		public ShellFlyoutTemplateSelector()
 		{
-			BaseShellItemTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ShellFlyoutBaseShellItemTemplate"];
-			MenuItemTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ShellFlyoutMenuItemTemplate"];
-			SeperatorTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ShellFlyoutSeperatorTemplate"];
+			BaseShellItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["ShellFlyoutBaseShellItemTemplate"];
+			MenuItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["ShellFlyoutMenuItemTemplate"];
+			SeperatorTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["ShellFlyoutSeperatorTemplate"];
 		}
 
-		protected override Windows.UI.Xaml.DataTemplate SelectTemplateCore(object item, DependencyObject container)
+		protected override Microsoft.UI.Xaml.DataTemplate SelectTemplateCore(object item, DependencyObject container)
 		{
 			return SelectTemplateCore(item);
 		}
 
-		protected override Windows.UI.Xaml.DataTemplate SelectTemplateCore(object item)
+		protected override Microsoft.UI.Xaml.DataTemplate SelectTemplateCore(object item)
 		{
 			if (item is MenuFlyoutSeparator)
 				return SeperatorTemplate;

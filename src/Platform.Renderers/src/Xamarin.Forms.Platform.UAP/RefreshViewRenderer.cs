@@ -3,11 +3,11 @@ using System.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.RefreshView;
-using WBrush = Windows.UI.Xaml.Media.Brush;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -160,7 +160,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Control.Visualizer.Foreground = Element.RefreshColor != Color.Default
 				? Element.RefreshColor.ToBrush()
-				: (WBrush)Windows.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
+				: (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
 
 			UpdateBackgroundColor();
 		}

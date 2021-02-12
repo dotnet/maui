@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
-using Windows.UI.Xaml;
-using WBrush = Windows.UI.Xaml.Media.Brush;
+using Microsoft.UI.Xaml;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			return new FormsCheckBox()
 			{
-				Style = Windows.UI.Xaml.Application.Current.Resources["FormsCheckBoxStyle"] as Windows.UI.Xaml.Style,			
+				Style = Microsoft.UI.Xaml.Application.Current.Resources["FormsCheckBoxStyle"] as Microsoft.UI.Xaml.Style,			
 			};
 		}
 

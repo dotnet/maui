@@ -1,4 +1,4 @@
-﻿using WStretch = Windows.UI.Xaml.Media.Stretch;
+﻿using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 
 namespace Xamarin.Forms.Platform.UWP
 {

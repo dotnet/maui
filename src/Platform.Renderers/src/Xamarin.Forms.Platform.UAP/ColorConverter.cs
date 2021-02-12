@@ -1,18 +1,19 @@
 ﻿using System;
+using Microsoft.UI;
 using Windows.UI;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public sealed class ColorConverter : Windows.UI.Xaml.Data.IValueConverter
+	public sealed class ColorConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
 			var color = (Color)value;
 			var defaultColorKey = (string)parameter;
 
-			WBrush defaultBrush = defaultColorKey != null ? (WBrush)Windows.UI.Xaml.Application.Current.Resources[defaultColorKey] : new WSolidColorBrush(Colors.Transparent);
+			WBrush defaultBrush = defaultColorKey != null ? (WBrush)Microsoft.UI.Xaml.Application.Current.Resources[defaultColorKey] : new WSolidColorBrush(Colors.Transparent);
 
 			return color == Color.Default ? defaultBrush : color.ToBrush();
 		}

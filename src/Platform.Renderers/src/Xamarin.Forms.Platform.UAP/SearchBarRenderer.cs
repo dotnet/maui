@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel;
 using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using WBrush = Windows.UI.Xaml.Media.Brush;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.SearchBar;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.UWP
 					AutoSuggestBox nativeAutoSuggestBox = new AutoSuggestBox
 					{
 						QueryIcon = new SymbolIcon(Symbol.Find),
-						Style = Windows.UI.Xaml.Application.Current.Resources["FormsAutoSuggestBoxStyle"] as Windows.UI.Xaml.Style
+						Style = Microsoft.UI.Xaml.Application.Current.Resources["FormsAutoSuggestBoxStyle"] as Microsoft.UI.Xaml.Style
 					};
 					SetNativeControl(nativeAutoSuggestBox);
 					Control.QuerySubmitted += OnQuerySubmitted;
@@ -210,11 +210,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (searchBarIsDefault)
 			{
-				Control.ClearValue(Windows.UI.Xaml.Controls.Control.FontStyleProperty);
-				Control.ClearValue(Windows.UI.Xaml.Controls.Control.FontSizeProperty);
-				Control.ClearValue(Windows.UI.Xaml.Controls.Control.FontFamilyProperty);
-				Control.ClearValue(Windows.UI.Xaml.Controls.Control.FontWeightProperty);
-				Control.ClearValue(Windows.UI.Xaml.Controls.Control.FontStretchProperty);
+				Control.ClearValue(Microsoft.UI.Xaml.Controls.Control.FontStyleProperty);
+				Control.ClearValue(Microsoft.UI.Xaml.Controls.Control.FontSizeProperty);
+				Control.ClearValue(Microsoft.UI.Xaml.Controls.Control.FontFamilyProperty);
+				Control.ClearValue(Microsoft.UI.Xaml.Controls.Control.FontWeightProperty);
+				Control.ClearValue(Microsoft.UI.Xaml.Controls.Control.FontStretchProperty);
 			}
 			else
 				Control.ApplyFont(searchBar);
@@ -325,7 +325,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				_queryTextBox.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+				_queryTextBox.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
 			}
 		}
 
@@ -342,7 +342,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				Color backgroundColor = Element.BackgroundColor;
 				if (backgroundColor.IsDefault)
-					_queryTextBox.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+					_queryTextBox.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
 			}
 		}
 

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 
 			double buttonWidth = 0;
-			foreach (var item in CommandBar.GetDescendantsByName<Windows.UI.Xaml.Controls.Button>("MoreButton"))
+			foreach (var item in CommandBar.GetDescendantsByName<Microsoft.UI.Xaml.Controls.Button>("MoreButton"))
 				if (item.Visibility == Visibility.Visible)
 					buttonWidth += item.ActualWidth;
 

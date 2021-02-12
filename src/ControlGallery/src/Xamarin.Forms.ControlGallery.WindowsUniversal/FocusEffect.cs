@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Windows.UI;
+using Microsoft.UI.Xaml.Media;
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.WindowsUniversal;
 using Xamarin.Forms.Platform.UWP;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
+using Microsoft.UI;
 
 [assembly: ExportEffect(typeof(FocusEffect), "FocusEffect")]
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
@@ -15,8 +20,8 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 		{
 			try
 			{
-				(Control as Windows.UI.Xaml.Controls.Control).Background = new WSolidColorBrush(Colors.Cyan);
-				(Control as FormsTextBox).BackgroundFocusBrush = new WSolidColorBrush(Colors.White);
+				(Control as Microsoft.UI.Xaml.Controls.Control).Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Colors.Cyan);
+				(Control as FormsTextBox).BackgroundFocusBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Colors.White);
 			}
 			catch (Exception ex)
 			{

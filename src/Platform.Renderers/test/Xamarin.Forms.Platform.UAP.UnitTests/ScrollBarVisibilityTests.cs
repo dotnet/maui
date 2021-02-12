@@ -13,9 +13,9 @@ namespace Xamarin.Forms.Platform.UAP.UnitTests
 			var defaultVisibility = ScrollBarVisibility.Default.ToUwpScrollBarVisibility();
 			var never = ScrollBarVisibility.Never.ToUwpScrollBarVisibility();
 
-			Assert.That(always, Is.EqualTo(Windows.UI.Xaml.Controls.ScrollBarVisibility.Visible));
-			Assert.That(defaultVisibility, Is.EqualTo(Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto));
-			Assert.That(never, Is.EqualTo(Windows.UI.Xaml.Controls.ScrollBarVisibility.Hidden));
+			Assert.That(always, Is.EqualTo(Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Visible));
+			Assert.That(defaultVisibility, Is.EqualTo(Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Auto));
+			Assert.That(never, Is.EqualTo(Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Hidden));
 		}
 	}
 }

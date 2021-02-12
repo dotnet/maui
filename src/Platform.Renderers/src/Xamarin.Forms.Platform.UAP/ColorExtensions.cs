@@ -1,7 +1,8 @@
 ﻿using System;
 using Windows.UI;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
+using Microsoft.UI;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {

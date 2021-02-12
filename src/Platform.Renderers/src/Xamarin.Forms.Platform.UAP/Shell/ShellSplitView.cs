@@ -1,7 +1,7 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WRectangle = Windows.UI.Xaml.Shapes.Rectangle;
+﻿using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
+using Microsoft.UI.Xaml;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -27,29 +27,29 @@ namespace Xamarin.Forms.Platform.UWP
 
 		internal void RefreshFlyoutPosition()
 		{
-			var paneRoot = (Windows.UI.Xaml.FrameworkElement)GetTemplateChild("PaneRoot");
+			var paneRoot = (Microsoft.UI.Xaml.FrameworkElement)GetTemplateChild("PaneRoot");
 			if (paneRoot == null)
 				return;
 
-			var HCPaneBorder = (Windows.UI.Xaml.Shapes.Rectangle)GetTemplateChild("HCPaneBorder");
+			var HCPaneBorder = (Microsoft.UI.Xaml.Shapes.Rectangle)GetTemplateChild("HCPaneBorder");
 
 			if (paneRoot != null)
 			{
 				if (_height == -1)
 				{
 					paneRoot.Height = double.NaN;
-					paneRoot.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Stretch;
+					paneRoot.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
 
 					if (HCPaneBorder != null)
-						HCPaneBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
+						HCPaneBorder.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 				}
 				else
 				{
 					paneRoot.Height = _height;
-					paneRoot.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Top;
+					paneRoot.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top;
 
 					if (HCPaneBorder != null)
-						HCPaneBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+						HCPaneBorder.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 				}
 			}
 

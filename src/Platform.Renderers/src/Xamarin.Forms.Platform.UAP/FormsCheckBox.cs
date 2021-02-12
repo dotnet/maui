@@ -1,6 +1,6 @@
-﻿using Windows.UI.Xaml;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WindowsCheckbox = Windows.UI.Xaml.Controls.CheckBox;
+﻿using Microsoft.UI.Xaml;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WindowsCheckbox = Microsoft.UI.Xaml.Controls.CheckBox;
 
 namespace Xamarin.Forms.Platform.UWP
 {

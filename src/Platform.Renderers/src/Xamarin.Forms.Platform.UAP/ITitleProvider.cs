@@ -1,4 +1,4 @@
-﻿using WBrush = Windows.UI.Xaml.Media.Brush;
+﻿using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {

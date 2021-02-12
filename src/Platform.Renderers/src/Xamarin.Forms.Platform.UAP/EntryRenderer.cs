@@ -2,12 +2,12 @@
 using System.ComponentModel;
 using Windows.System;
 using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using WBrush = Windows.UI.Xaml.Media.Brush;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.InputView;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var textBox = new FormsTextBox { Style = Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Windows.UI.Xaml.Style };
+					var textBox = new FormsTextBox { Style = Microsoft.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Microsoft.UI.Xaml.Style };
 
 					SetNativeControl(textBox);
 					textBox.TextChanged += OnNativeTextChanged;
@@ -170,7 +170,7 @@ namespace Xamarin.Forms.Platform.UWP
 				() => Control.BackgroundFocusBrush, brush => Control.BackgroundFocusBrush = brush);
 		}
 
-		void OnNativeTextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs args)
+		void OnNativeTextChanged(object sender, Microsoft.UI.Xaml.Controls.TextChangedEventArgs args)
 		{
 			if (Control.Text == _transformedText)
 				return;

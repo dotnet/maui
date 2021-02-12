@@ -2,7 +2,7 @@
 using Path = Xamarin.Forms.Shapes.Path;
 
 #if WINDOWS_UWP
-using WPath = Windows.UI.Xaml.Shapes.Path;
+using WPath = Microsoft.UI.Xaml.Shapes.Path;
 
 namespace Xamarin.Forms.Platform.UWP
 #else

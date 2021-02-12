@@ -2,10 +2,11 @@
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Xamarin.Forms.Platform.UWP;
 using WColor = Windows.UI.Color;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UAP.UnitTests
 {
@@ -94,24 +95,6 @@ namespace Xamarin.Forms.Platform.UAP.UnitTests
 			var actualColor = await Device.InvokeOnMainThreadAsync(() =>
 			{
 				var renderer = GetRenderer(frame);
-				var nativeElement = renderer.GetNativeElement() as Border;
-
-				var backgroundBrush = nativeElement.Background as WSolidColorBrush;
-				return backgroundBrush.Color;
-			});
-
-			Assert.That(actualColor, Is.EqualTo(expectedColor));
-		}
-
-		[Test, Category("Color"), Category("BoxView")]
-		public async Task BoxViewColorConsistent() 
-		{
-			var box = new BoxView() { Color = Color.PapayaWhip };
-			var expectedColor = box.Color.ToWindowsColor();
-
-			var actualColor = await Device.InvokeOnMainThreadAsync(() =>
-			{
-				var renderer = GetRenderer(box);
 				var nativeElement = renderer.GetNativeElement() as Border;
 
 				var backgroundBrush = nativeElement.Background as WSolidColorBrush;

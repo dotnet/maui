@@ -1,10 +1,10 @@
 ﻿using System;
-using Windows.UI.Xaml.Controls;
-using WBrush = Windows.UI.Xaml.Media.Brush;
+using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	internal class FormsCancelButton : Windows.UI.Xaml.Controls.Button
+	internal class FormsCancelButton : Microsoft.UI.Xaml.Controls.Button
 	{
 		TextBlock _cancelButtonGlyph;
 		Border _cancelButtonBackground;

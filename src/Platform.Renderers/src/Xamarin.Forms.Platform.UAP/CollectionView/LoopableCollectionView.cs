@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Windows.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Data;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		const int FakeCount = 655360; // 640k ought to be enough for anybody
 		readonly ICollectionView _internal;
+
 
 		public LoopableCollectionView(ICollectionView @internal)
 		{
@@ -176,59 +177,81 @@ namespace Xamarin.Forms.Platform.UWP
 			return ((IEnumerable)_internal).GetEnumerator();
 		}
 
-		EventRegistrationTokenTable<EventHandler<object>> _currentChangedTokenTable = null;
-
+		EventHandler<object> _currentChanged;
 		event EventHandler<object> ICollectionView.CurrentChanged
 		{
-			add
-			{
-				return EventRegistrationTokenTable<EventHandler<object>>
-					.GetOrCreateEventRegistrationTokenTable(ref _currentChangedTokenTable)
-					.AddEventHandler(value);
-			}
-			remove
-			{
-				EventRegistrationTokenTable<EventHandler<object>>
-					.GetOrCreateEventRegistrationTokenTable(ref _currentChangedTokenTable)
-					.RemoveEventHandler(value);
-			}
+			add => _currentChanged += value;
+			remove => _currentChanged -= value;
 		}
 
-		EventRegistrationTokenTable<CurrentChangingEventHandler> _currentChangingTokenTable = null;
-
+		CurrentChangingEventHandler _currentChanging;
 		event CurrentChangingEventHandler ICollectionView.CurrentChanging
 		{
-			add
-			{
-				return EventRegistrationTokenTable<CurrentChangingEventHandler>
-					.GetOrCreateEventRegistrationTokenTable(ref _currentChangingTokenTable)
-					.AddEventHandler(value);
-			}
-			remove
-			{
-				EventRegistrationTokenTable<CurrentChangingEventHandler>
-					.GetOrCreateEventRegistrationTokenTable(ref _currentChangingTokenTable)
-					.RemoveEventHandler(value);
-			}
+			add => _currentChanging += value;
+			remove => _currentChanging -= value;
 		}
 
-		EventRegistrationTokenTable<VectorChangedEventHandler<object>> _vectorChangedTokenTable = null;
-
+		VectorChangedEventHandler<object> _vectorChanged;
 		event VectorChangedEventHandler<object> IObservableVector<object>.VectorChanged
 		{
-			add
-			{
-				return EventRegistrationTokenTable<VectorChangedEventHandler<object>>
-					.GetOrCreateEventRegistrationTokenTable(ref _vectorChangedTokenTable)
-					.AddEventHandler(value);
-			}
-			remove
-			{
-				EventRegistrationTokenTable<VectorChangedEventHandler<object>>
-					.GetOrCreateEventRegistrationTokenTable(ref _vectorChangedTokenTable)
-					.RemoveEventHandler(value);
-			}
+			add => _vectorChanged += value;
+			remove => _vectorChanged -= value;
 		}
+
+		// TODO WINUI3
+		//EventRegistrationTokenTable<EventHandler<object>> _currentChangedTokenTable = null;
+
+		//event EventHandler<object> ICollectionView.CurrentChanged
+		//{
+		//	add
+		//	{
+		//		return EventRegistrationTokenTable<EventHandler<object>>
+		//			.GetOrCreateEventRegistrationTokenTable(ref _currentChangedTokenTable)
+		//			.AddEventHandler(value);
+		//	}
+		//	remove
+		//	{
+		//		EventRegistrationTokenTable<EventHandler<object>>
+		//			.GetOrCreateEventRegistrationTokenTable(ref _currentChangedTokenTable)
+		//			.RemoveEventHandler(value);
+		//	}
+		//}
+
+		//EventRegistrationTokenTable<CurrentChangingEventHandler> _currentChangingTokenTable = null;
+
+		//event CurrentChangingEventHandler ICollectionView.CurrentChanging
+		//{
+		//	add
+		//	{
+		//		return EventRegistrationTokenTable<CurrentChangingEventHandler>
+		//			.GetOrCreateEventRegistrationTokenTable(ref _currentChangingTokenTable)
+		//			.AddEventHandler(value);
+		//	}
+		//	remove
+		//	{
+		//		EventRegistrationTokenTable<CurrentChangingEventHandler>
+		//			.GetOrCreateEventRegistrationTokenTable(ref _currentChangingTokenTable)
+		//			.RemoveEventHandler(value);
+		//	}
+		//}
+
+		//EventRegistrationTokenTable<VectorChangedEventHandler<object>> _vectorChangedTokenTable = null;
+
+		//event VectorChangedEventHandler<object> IObservableVector<object>.VectorChanged
+		//{
+		//	add
+		//	{
+		//		return EventRegistrationTokenTable<VectorChangedEventHandler<object>>
+		//			.GetOrCreateEventRegistrationTokenTable(ref _vectorChangedTokenTable)
+		//			.AddEventHandler(value);
+		//	}
+		//	remove
+		//	{
+		//		EventRegistrationTokenTable<VectorChangedEventHandler<object>>
+		//			.GetOrCreateEventRegistrationTokenTable(ref _vectorChangedTokenTable)
+		//			.RemoveEventHandler(value);
+		//	}
+		//}
 	}
 }
 

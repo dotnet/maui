@@ -1,5 +1,5 @@
-﻿using Windows.UI.Xaml;
-using WFlowDirection = Windows.UI.Xaml.FlowDirection;
+﻿using Microsoft.UI.Xaml;
+using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 
 namespace Xamarin.Forms.Platform.UWP
 {

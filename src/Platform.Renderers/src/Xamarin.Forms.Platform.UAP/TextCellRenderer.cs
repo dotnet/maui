@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
-using WDataTemplate = Windows.UI.Xaml.DataTemplate;
-using WApplication = Windows.UI.Xaml.Application;
+using WDataTemplate = Microsoft.UI.Xaml.DataTemplate;
+using WApplication = Microsoft.UI.Xaml.Application;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP

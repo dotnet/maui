@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -22,13 +22,13 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (options.FlowDirection == Xamarin.Forms.FlowDirection.RightToLeft)
 			{
-				TitleBlock.FlowDirection = Windows.UI.Xaml.FlowDirection.RightToLeft;
-				OptionsList.FlowDirection = Windows.UI.Xaml.FlowDirection.RightToLeft;
+				TitleBlock.FlowDirection = Microsoft.UI.Xaml.FlowDirection.RightToLeft;
+				OptionsList.FlowDirection = Microsoft.UI.Xaml.FlowDirection.RightToLeft;
 			}
 			else if (options.FlowDirection == Xamarin.Forms.FlowDirection.LeftToRight)
 			{
-				TitleBlock.FlowDirection = Windows.UI.Xaml.FlowDirection.LeftToRight;
-				OptionsList.FlowDirection = Windows.UI.Xaml.FlowDirection.LeftToRight;
+				TitleBlock.FlowDirection = Microsoft.UI.Xaml.FlowDirection.LeftToRight;
+				OptionsList.FlowDirection = Microsoft.UI.Xaml.FlowDirection.LeftToRight;
 			}
 
 			if (options.FlowDirection == Xamarin.Forms.FlowDirection.RightToLeft)
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void ActionButtonClicked(object sender, RoutedEventArgs e)
 		{
-			var button = (Windows.UI.Xaml.Controls.Button)sender;
+			var button = (Microsoft.UI.Xaml.Controls.Button)sender;
 			var selection = (string)button.Content;
 			options.SetResult(selection);
 

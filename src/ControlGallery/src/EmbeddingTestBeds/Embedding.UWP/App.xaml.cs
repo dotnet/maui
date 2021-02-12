@@ -8,16 +8,16 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 using Xamarin.Forms;
-using Application = Windows.UI.Xaml.Application;
-using Frame = Windows.UI.Xaml.Controls.Frame;
-using NavigationEventArgs = Windows.UI.Xaml.Navigation.NavigationEventArgs;
+using Application = Microsoft.UI.Xaml.Application;
+using Frame = Microsoft.UI.Xaml.Controls.Frame;
+using NavigationEventArgs = Microsoft.UI.Xaml.Navigation.NavigationEventArgs;
 
 namespace Embedding.UWP
 {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -283,11 +283,11 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_split == null)
 				return;
 
-			var paneToggle = GetTemplateChild("PaneTogglePane") as Windows.UI.Xaml.Controls.Button;
+			var paneToggle = GetTemplateChild("PaneTogglePane") as Microsoft.UI.Xaml.Controls.Button;
 			if (paneToggle != null)
 				paneToggle.Click += OnToggleClicked;
 
-			var contentToggle = GetTemplateChild("ContentTogglePane") as Windows.UI.Xaml.Controls.Button;
+			var contentToggle = GetTemplateChild("ContentTogglePane") as Microsoft.UI.Xaml.Controls.Button;
 			if (contentToggle != null)
 				contentToggle.Click += OnToggleClicked;
 

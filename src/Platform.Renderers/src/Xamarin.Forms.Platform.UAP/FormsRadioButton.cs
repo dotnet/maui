@@ -1,10 +1,10 @@
-﻿using Windows.UI.Xaml;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WContentPresenter = Windows.UI.Xaml.Controls.ContentPresenter;
+﻿using Microsoft.UI.Xaml;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class FormsRadioButton : Windows.UI.Xaml.Controls.RadioButton
+	public class FormsRadioButton : Microsoft.UI.Xaml.Controls.RadioButton
 	{
 		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),
 	new PropertyMetadata(default(int), OnBorderRadiusChanged));
@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateBorderRadius()
 		{
 			if (_contentPresenter != null)
-				_contentPresenter.CornerRadius = new Windows.UI.Xaml.CornerRadius(BorderRadius);
+				_contentPresenter.CornerRadius = WinUIHelpers.CreateCornerRadius(BorderRadius);
 		}
 	}
 }

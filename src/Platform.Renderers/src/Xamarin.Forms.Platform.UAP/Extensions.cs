@@ -4,15 +4,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
-using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
-using Windows.UI.Xaml.Media.Imaging;
-using Microsoft.Graphics.Canvas.UI.Xaml;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
+using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
+using Microsoft.UI.Xaml.Media.Imaging;
+//using Microsoft.Graphics.Canvas.UI.Xaml;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -30,12 +30,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public static void SetBinding(this FrameworkElement self, DependencyProperty property, string path)
 		{
-			self.SetBinding(property, new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath(path) });
+			self.SetBinding(property, new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath(path) });
 		}
 
-		public static void SetBinding(this FrameworkElement self, DependencyProperty property, string path, Windows.UI.Xaml.Data.IValueConverter converter)
+		public static void SetBinding(this FrameworkElement self, DependencyProperty property, string path, Microsoft.UI.Xaml.Data.IValueConverter converter)
 		{
-			self.SetBinding(property, new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath(path), Converter = converter });
+			self.SetBinding(property, new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath(path), Converter = converter });
 		}
 
 		internal static InputScopeNameValue GetKeyboardButtonType(this ReturnType returnType)

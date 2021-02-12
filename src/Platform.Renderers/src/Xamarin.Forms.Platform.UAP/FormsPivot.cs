@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using WBrush = Windows.UI.Xaml.Media.Brush;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (pivotItem != null && page?.Title != null)
 			{
 				// This way we can find tabs with automation (for testing, etc.)
-				Windows.UI.Xaml.Automation.AutomationProperties.SetName(pivotItem, page.Title);	
+				Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(pivotItem, page.Title);	
 			}
 		}
 

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class ImageRenderer : ViewRenderer<Image, Windows.UI.Xaml.Controls.Image>, IImageVisualElementRenderer
+	public class ImageRenderer : ViewRenderer<Image, Microsoft.UI.Xaml.Controls.Image>, IImageVisualElementRenderer
 	{
 		bool _measured;
 		bool _disposed;
@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.UWP
 		public ImageRenderer() : base()
 		{
 			ImageElementManager.Init(this);
-			Windows.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
+			Microsoft.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
 		}
 
 		bool IImageVisualElementRenderer.IsDisposed => _disposed;
@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					Control.ImageOpened -= OnImageOpened;
 					Control.ImageFailed -= OnImageFailed;
-					Windows.UI.Xaml.Application.Current.Resuming -= OnResumingAsync;
+					Microsoft.UI.Xaml.Application.Current.Resuming -= OnResumingAsync;
 				}
 			}
 
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var image = new Windows.UI.Xaml.Controls.Image();
+					var image = new Microsoft.UI.Xaml.Controls.Image();
 					image.ImageOpened += OnImageOpened;
 					image.ImageFailed += OnImageFailed;
 					SetNativeControl(image);
@@ -132,11 +132,11 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void IImageVisualElementRenderer.SetImage(Windows.UI.Xaml.Media.ImageSource image)
+		void IImageVisualElementRenderer.SetImage(Microsoft.UI.Xaml.Media.ImageSource image)
 		{
 			Control.Source = image;
 		}
 
-		Windows.UI.Xaml.Controls.Image IImageVisualElementRenderer.GetImage() => Control;
+		Microsoft.UI.Xaml.Controls.Image IImageVisualElementRenderer.GetImage() => Control;
 	}
 }

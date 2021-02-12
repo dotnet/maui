@@ -3,29 +3,35 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Resources.Core;
-using Windows.UI.Xaml;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.UWP;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms
 {
 	public static partial class Forms
 	{
 		const string LogFormat = "[{0}] {1}";
+		private static ApplicationExecutionState s_state;
 
-		static ApplicationExecutionState s_state;
+		//TODO WINUI3 This is set by main page currently because
+		// it's only a single window
+		public static Window MainWindow { get; set; }
 
 		public static bool IsInitialized { get; private set; }
 		
-		public static void Init(IActivatedEventArgs launchActivatedEventArgs, IEnumerable<Assembly> rendererAssemblies = null)
+		public static void Init(
+			Microsoft.UI.Xaml.LaunchActivatedEventArgs launchActivatedEventArgs,
+			WindowsBasePage mainWindow,
+			IEnumerable<Assembly> rendererAssemblies = null)
 		{
 			if (IsInitialized)
 				return;
-
-			var accent = (WSolidColorBrush)Windows.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
+			
+			var accent = (WSolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			Color.SetAccent(accent.ToFormsColor());
 
 #if !UWP_16299
@@ -33,21 +39,14 @@ namespace Xamarin.Forms
 #else
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 #endif
-			if (!Windows.UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
+			if (!Microsoft.UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
 			{
-				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
+				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
 			}
 
 			try
 			{
-				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new Microsoft.UI.Xaml.Controls.XamlControlsResources());
-#if UWP_16299
-				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(
-					new Windows.UI.Xaml.ResourceDictionary
-					{
-						Source = new Uri("ms-appx:///Xamarin.Forms.Platform.UAP/Shell/ShellStyles.xbf")
-					});
-#endif
+				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new Microsoft.UI.Xaml.Controls.XamlControlsResources());
 			}
 			catch
 			{
@@ -57,11 +56,6 @@ namespace Xamarin.Forms
 			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.SetFlowDirection(GetFlowDirection());
 
-			var platformServices = new WindowsPlatformServices(Window.Current.Dispatcher);
-
-			Device.PlatformServices = platformServices;
-			Device.PlatformInvalidator = platformServices;
-			
 			Device.SetFlags(s_flags);
 			Device.Info = new WindowsDeviceInfo();
 
@@ -88,15 +82,31 @@ namespace Xamarin.Forms
 			ExpressionSearch.Default = new WindowsExpressionSearch();
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
+			s_state = launchActivatedEventArgs.UWPLaunchActivatedEventArgs.PreviousExecutionState;
+
+
+			MainWindow = mainWindow;
+			Xamarin.Forms.Forms.InitDispatcher(mainWindow.DispatcherQueue);
+			mainWindow.LoadApplication(mainWindow.CreateApplication());
+			mainWindow.Activate();
+		}
+
+#pragma warning disable CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+		public static void InitDispatcher(Microsoft.System.DispatcherQueue dispatcher)
+#pragma warning restore CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+		{
+			var platformServices = new WindowsPlatformServices(dispatcher);
+
+			Device.PlatformServices = platformServices;
+			Device.PlatformInvalidator = platformServices;
 
 			Registrar.RegisterAll(new[] { typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute), typeof(ExportFontAttribute) });
 
 			IsInitialized = true;
-			s_state = launchActivatedEventArgs.PreviousExecutionState;
 
 			Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
 		}
-		 
+
 		static FlowDirection GetFlowDirection()
 		{
 			string resourceFlowDirection = ResourceContext.GetForCurrentView().QualifierValues["LayoutDirection"];
@@ -108,9 +118,9 @@ namespace Xamarin.Forms
 			return FlowDirection.MatchParent;
 		}
 
-		internal static Windows.UI.Xaml.ResourceDictionary GetTabletResources()
+		internal static Microsoft.UI.Xaml.ResourceDictionary GetTabletResources()
 		{
-			return new Windows.UI.Xaml.ResourceDictionary {
+			return new Microsoft.UI.Xaml.ResourceDictionary {
 				Source = new Uri("ms-appx:///Xamarin.Forms.Platform.UAP/Resources.xbf")
 			};
 		}

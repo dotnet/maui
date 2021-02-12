@@ -1,7 +1,7 @@
+#pragma warning disable CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 using System;
 using System.ComponentModel;
 using Windows.UI.Core;
-using Windows.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
 using static System.String;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
@@ -10,15 +10,19 @@ using System.Net;
 using Windows.Web.Http;
 using System.Collections.Generic;
 using System.Linq;
-using WWebView = Windows.UI.Xaml.Controls.WebView;
-using WWebViewExecutionMode = Windows.UI.Xaml.Controls.WebViewExecutionMode;
+using Microsoft.UI.Xaml.Controls;
+using WWebView = Microsoft.UI.Xaml.Controls.WebView2;
+
+//TODO WINUI3
+//using WWebViewExecutionMode = Microsoft.UI.Xaml.Controls.WebViewExecutionMode;
+
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class WebViewRenderer : ViewRenderer<WebView, WWebView>, IWebViewDelegate
+	public class WebViewRenderer : ViewRenderer<WebView, WebView2>, IWebViewDelegate
 	{
 		WebNavigationEvent _eventState;
 		bool _updating;
-		WWebView _internalWebView;
+		WebView2 _internalWebView;
 		const string LocalScheme = "ms-appx-web:///";
 
 		// Script to insert a <base> tag into an HTML document
@@ -42,7 +46,7 @@ if(bases.length == 0){
 
 			// Set up an internal WebView we can use to load and parse the original HTML string
 			// Make _internalWebView a field instead of local variable to avoid garbage collection
-			_internalWebView = new WWebView();
+			_internalWebView = new WebView2();
 
 			// When the 'navigation' to the original HTML string is done, we can modify it to include our <base> tag
 			_internalWebView.NavigationCompleted += async (sender, args) =>
@@ -51,8 +55,8 @@ if(bases.length == 0){
 				var script = BaseInsertionScript.Replace("baseTag", baseTag);
 
 				// Run it and retrieve the updated HTML from our WebView
-				await sender.InvokeScriptAsync("eval", new[] { script });
-				htmlWithBaseTag = await sender.InvokeScriptAsync("eval", new[] { "document.documentElement.outerHTML;" });
+				await sender.ExecuteScriptAsync(script);
+				htmlWithBaseTag = await sender.ExecuteScriptAsync("document.documentElement.outerHTML;");
 
 				// Set the HTML for the 'real' WebView to the updated HTML
 				Control.NavigateToString(!IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
@@ -80,8 +84,11 @@ if(bases.length == 0){
 
 				try
 				{
-					var httpRequestMessage = new Windows.Web.Http.HttpRequestMessage(Windows.Web.Http.HttpMethod.Get, uri);
-					Control.NavigateWithHttpRequestMessage(httpRequestMessage);
+					Control.Source = uri;
+
+					// TODO WINUI3
+					//var httpRequestMessage = new Windows.Web.Http.HttpRequestMessage(Windows.Web.Http.HttpMethod.Get, uri);
+					//Control.NavigateWithHttpRequestMessage(httpRequestMessage);
 				}
 				catch (System.Exception exc)
 				{
@@ -108,11 +115,13 @@ if(bases.length == 0){
 			{
 				return;
 			}
-			webView.SeparateProcessLost -= OnSeparateProcessLost;
 			webView.NavigationStarting -= OnNavigationStarted;
 			webView.NavigationCompleted -= OnNavigationCompleted;
-			webView.NavigationFailed -= OnNavigationFailed;
-			webView.ScriptNotify -= OnScriptNotify;
+
+			// TODO WINUI3
+			//	webView.SeparateProcessLost -= OnSeparateProcessLost;
+			//webView.NavigationFailed -= OnNavigationFailed;
+			//webView.ScriptNotify -= OnScriptNotify;
 		}
 
 		void Connect(WWebView webView)
@@ -122,11 +131,12 @@ if(bases.length == 0){
 				return;
 			}
 
-			webView.SeparateProcessLost += OnSeparateProcessLost;
+			// TODO WINUI3
+			//webView.SeparateProcessLost += OnSeparateProcessLost;
+			//webView.NavigationFailed += OnNavigationFailed;
+			//webView.ScriptNotify += OnScriptNotify;
 			webView.NavigationStarting += OnNavigationStarted;
 			webView.NavigationCompleted += OnNavigationCompleted;
-			webView.NavigationFailed += OnNavigationFailed;
-			webView.ScriptNotify += OnScriptNotify;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -136,6 +146,8 @@ if(bases.length == 0){
 				TearDown(Control);
 				if (Element != null)
 				{
+					Control.NavigationStarting -= OnNavigationStarted;
+					Control.NavigationCompleted -= OnNavigationCompleted;
 					Element.EvalRequested -= OnEvalRequested;
 					Element.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 					Element.GoBackRequested -= OnGoBackRequested;
@@ -149,26 +161,27 @@ if(bases.length == 0){
 
 		protected virtual WWebView CreateNativeControl()
 		{
-			if (Element.IsSet(PlatformConfiguration.WindowsSpecific.WebView.ExecutionModeProperty))
-			{
-				WWebViewExecutionMode webViewExecutionMode = WWebViewExecutionMode.SameThread;
+			// TODO WINUI3
+			//if (Element.IsSet(PlatformConfiguration.WindowsSpecific.WebView.ExecutionModeProperty))
+			//{
+			//	WWebViewExecutionMode webViewExecutionMode = WWebViewExecutionMode.SameThread;
 
-				switch (Element.OnThisPlatform().GetExecutionMode())
-				{
-					case PlatformConfiguration.WindowsSpecific.WebViewExecutionMode.SameThread:
-						webViewExecutionMode = WWebViewExecutionMode.SameThread;
-						break;
-					case PlatformConfiguration.WindowsSpecific.WebViewExecutionMode.SeparateProcess:
-						webViewExecutionMode = WWebViewExecutionMode.SeparateProcess;
-						break;
-					case PlatformConfiguration.WindowsSpecific.WebViewExecutionMode.SeparateThread:
-						webViewExecutionMode = WWebViewExecutionMode.SeparateThread;
-						break;
+			//	switch (Element.OnThisPlatform().GetExecutionMode())
+			//	{
+			//		case PlatformConfiguration.WindowsSpecific.WebViewExecutionMode.SameThread:
+			//			webViewExecutionMode = WWebViewExecutionMode.SameThread;
+			//			break;
+			//		case PlatformConfiguration.WindowsSpecific.WebViewExecutionMode.SeparateProcess:
+			//			webViewExecutionMode = WWebViewExecutionMode.SeparateProcess;
+			//			break;
+			//		case PlatformConfiguration.WindowsSpecific.WebViewExecutionMode.SeparateThread:
+			//			webViewExecutionMode = WWebViewExecutionMode.SeparateThread;
+			//			break;
 
-				}
+			//	}
 
-				return new WWebView(webViewExecutionMode);
-			}
+			//	return new WWebView(webViewExecutionMode);
+			//}
 
 			return new WWebView();
 		}
@@ -358,7 +371,7 @@ if(bases.length == 0){
 				{
 					try
 					{
-						await Control.InvokeScriptAsync("eval", new[] { eventArg.Script });
+						await Control.ExecuteScriptAsync(eventArg.Script);
 					}
 					catch (Exception exc)
 					{
@@ -369,7 +382,7 @@ if(bases.length == 0){
 
 		async Task<string> OnEvaluateJavaScriptRequested(string script)
 		{
-			return await Control.InvokeScriptAsync("eval", new[] { script });
+			return await Control.ExecuteScriptAsync(script);
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)
@@ -397,31 +410,47 @@ if(bases.length == 0){
 		void OnReloadRequested(object sender, EventArgs eventArgs)
 		{
 			SyncNativeCookies(Control?.Source?.ToString());
-			Control.Refresh();
+			Control.Reload();
 		}
 
-		async void OnNavigationCompleted(WWebView sender, WebViewNavigationCompletedEventArgs e)
+		async void OnNavigationCompleted(WWebView sender, WebView2NavigationCompletedEventArgs e)
 		{
-			if (e.Uri != null)
-				SendNavigated(new UrlWebViewSource { Url = e.Uri.AbsoluteUri }, _eventState, WebNavigationResult.Success);
+			// TODO WINUI3
+			//if (e.Uri != null)
+			//	SendNavigated(new UrlWebViewSource { Url = e.Uri.AbsoluteUri }, _eventState, WebNavigationResult.Success);
+			Uri uri = sender.Source;
+			if (uri != null)
+				SendNavigated(new UrlWebViewSource { Url = uri.AbsoluteUri }, _eventState, WebNavigationResult.Success);
 
 			UpdateCanGoBackForward();
 
 			if (Element.OnThisPlatform().IsJavaScriptAlertEnabled())
-				await Control.InvokeScriptAsync("eval", new string[] { "window.alert = function(message){ window.external.notify(message); };" });
+				await Control.ExecuteScriptAsync("window.alert = function(message){ window.external.notify(message); };");
 		}
 
-		void OnNavigationFailed(object sender, WebViewNavigationFailedEventArgs e)
-		{
-			if (e.Uri != null)
-				SendNavigated(new UrlWebViewSource { Url = e.Uri.AbsoluteUri }, _eventState, WebNavigationResult.Failure);
-		}
+		// TODO WINUI3
+		//void OnNavigationFailed(object sender, WebViewNavigationFailedEventArgs e)
+		//{
+		//	if (e.Uri != null)
+		//		SendNavigated(new UrlWebViewSource { Url = e.Uri.AbsoluteUri }, _eventState, WebNavigationResult.Failure);
+		//}
 
-		void OnNavigationStarted(WWebView sender, WebViewNavigationStartingEventArgs e)
-		{
-			Uri uri = e.Uri;
+		//async void OnScriptNotify(object sender, NotifyEventArgs e)
+		//{
+		//	if (Element.OnThisPlatform().IsJavaScriptAlertEnabled())
+		//		await new Windows.UI.Popups.MessageDialog(e.Value).ShowAsync();
+		//}
 
-			if (uri != null)
+		void OnNavigationStarted(WWebView sender, WebView2NavigationStartingEventArgs e)
+		{
+			// TODO WINUI3
+			//Uri uri = e.Uri;
+
+			//if (uri != null)
+			//{
+			Uri uri;
+
+			if (Uri.TryCreate(e.Uri, UriKind.Absolute, out uri) && uri != null)
 			{
 				var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = uri.AbsoluteUri }, uri.AbsoluteUri);
 
@@ -432,12 +461,6 @@ if(bases.length == 0){
 				if (args.Cancel)
 					_eventState = WebNavigationEvent.NewPage;
 			}
-		}
-
-		async void OnScriptNotify(object sender, NotifyEventArgs e)
-		{
-			if (Element.OnThisPlatform().IsJavaScriptAlertEnabled())
-				await new Windows.UI.Popups.MessageDialog(e.Value).ShowAsync();
 		}
 
 		void SendNavigated(UrlWebViewSource source, WebNavigationEvent evnt, WebNavigationResult result)
@@ -468,9 +491,10 @@ if(bases.length == 0){
 			Load();
 		}
 
-		void OnSeparateProcessLost(WWebView sender, WebViewSeparateProcessLostEventArgs e)
-		{
-			UpdateExecutionMode();
-		}
+		// TODO WINUI3
+		//void OnSeparateProcessLost(WWebView sender, WebViewSeparateProcessLostEventArgs e)
+		//{
+		//	UpdateExecutionMode();
+		//}
 	}
 }

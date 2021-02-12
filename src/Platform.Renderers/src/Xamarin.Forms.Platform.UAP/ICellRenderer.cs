@@ -2,6 +2,6 @@
 {
 	public interface ICellRenderer : IRegisterable
 	{
-		Windows.UI.Xaml.DataTemplate GetTemplate(Cell cell);
+		Microsoft.UI.Xaml.DataTemplate GetTemplate(Cell cell);
 	}
 }

@@ -2,11 +2,11 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
-using WBrush = Windows.UI.Xaml.Media.Brush;
-using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (Element.UseFormsVsm())
 			{
-				InterceptVisualStateManager.Hook(Control.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>(), Control, Element);
+				InterceptVisualStateManager.Hook(Control.GetFirstDescendant<Microsoft.UI.Xaml.Controls.Grid>(), Control, Element);
 			}
 		}
 
@@ -223,7 +223,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateTitle()
 		{
 			Control.Header = null;
-			Control.HeaderTemplate = string.IsNullOrEmpty(Element.Title) ? null : (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
+			Control.HeaderTemplate = string.IsNullOrEmpty(Element.Title) ? null : (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
 			Control.DataContext = Element;
 		}
 

@@ -2,7 +2,7 @@
 using Xamarin.Forms.ControlGallery.WindowsUniversal;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.UWP;
-using WResourceDictionary = Windows.UI.Xaml.ResourceDictionary;
+using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 
 [assembly: ExportRenderer(typeof(CustomSwitch), typeof(CustomSwitchRenderer))]
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal

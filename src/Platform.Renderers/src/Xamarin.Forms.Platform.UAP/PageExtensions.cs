@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public sealed partial class FormsEmbeddedPageWrapper : Windows.UI.Xaml.Controls.Page
+	public sealed partial class FormsEmbeddedPageWrapper : Microsoft.UI.Xaml.Controls.Page
 	{
 		internal static Dictionary<Guid, ContentPage> Pages = new Dictionary<Guid, ContentPage>();
 
@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.UWP
 			InitializeComponent();
 		}
 
-		protected override void OnNavigatedTo(Windows.UI.Xaml.Navigation.NavigationEventArgs e)
+		protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
 		{
 			base.OnNavigatedTo(e);
 
@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Platform.UWP
 				throw new InvalidOperationException("call Forms.Init() before this");
 			}
 
-			var root = new Windows.UI.Xaml.Controls.Page();
+			var root = new Microsoft.UI.Xaml.Window();
 
 			// Yes, this looks awkward. But the page needs to be Platformed or several things won't work
 			new WindowsPlatform(root);
@@ -77,12 +77,12 @@ namespace Xamarin.Forms.Platform.UWP
 			return frameworkElement;
 		}
 
-		public static bool Navigate(this Windows.UI.Xaml.Controls.Frame frame, ContentPage page)
+		public static bool Navigate(this Microsoft.UI.Xaml.Controls.Frame frame, ContentPage page)
 		{
 			return Navigate(frame, page, null);
 		}
 
-		internal static bool Navigate(this Windows.UI.Xaml.Controls.Frame frame, ContentPage page, Windows.UI.Xaml.Media.Animation.NavigationTransitionInfo infoOverride)
+		internal static bool Navigate(this Microsoft.UI.Xaml.Controls.Frame frame, ContentPage page, Microsoft.UI.Xaml.Media.Animation.NavigationTransitionInfo infoOverride)
 		{
 
 			if (page == null)

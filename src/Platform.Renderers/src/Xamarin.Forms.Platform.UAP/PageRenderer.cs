@@ -1,11 +1,15 @@
 ﻿using System.Collections.ObjectModel;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
+using System;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class PageRenderer : VisualElementRenderer<Page, FrameworkElement>
+	public class PageRenderer : 
+		//Microsoft.UI.Xaml.Controls.Grid, IVisualElementRenderer 
+		VisualElementRenderer<Page, FrameworkElement>
 	{
 		bool _disposed;
 
@@ -85,5 +89,45 @@ namespace Xamarin.Forms.Platform.UWP
 			_loaded = false;
 			Element?.SendDisappearing();
 		}
+
+		//public PageRenderer()
+		//{
+		//	//Children.Add(new TextBlock());
+		//}
+
+		//public FrameworkElement ContainerElement => this;
+
+		//public VisualElement Element { get; set; }
+
+		//public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+
+		//public void Dispose()
+		//{
+		//}
+
+		//public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		//{
+		//	if (Children.Count == 0)
+		//		return new SizeRequest();
+
+		//	var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+		//	var child = this;
+
+		//	child.Measure(constraint);
+		//	var result = new Size(Math.Ceiling(child.DesiredSize.Width), Math.Ceiling(child.DesiredSize.Height));
+
+		//	return new SizeRequest(result);
+		//}
+
+		//public UIElement GetNativeElement()
+		//{
+		//	return this;
+		//}
+
+		//public void SetElement(VisualElement element)
+		//{
+		//	Element = element;
+		//	ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(null, element));
+		//}
 	}
 }

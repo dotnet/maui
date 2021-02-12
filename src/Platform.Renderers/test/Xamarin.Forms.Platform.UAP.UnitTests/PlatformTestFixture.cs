@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls;
 using Xamarin.Forms.Platform.UWP;
 
 namespace Xamarin.Forms.Platform.UAP.UnitTests

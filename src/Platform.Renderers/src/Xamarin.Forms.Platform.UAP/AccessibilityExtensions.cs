@@ -1,6 +1,6 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using NativeAutomationProperties = Windows.UI.Xaml.Automation.AutomationProperties;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 
 namespace Xamarin.Forms.Platform.UWP
 {

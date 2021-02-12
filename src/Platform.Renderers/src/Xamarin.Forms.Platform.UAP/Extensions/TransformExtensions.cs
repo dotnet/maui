@@ -1,8 +1,8 @@
 ﻿using Xamarin.Forms.Shapes;
 
 #if WINDOWS_UWP
-using WMatrix = Windows.UI.Xaml.Media.Matrix;
-using WMatrixTransform = Windows.UI.Xaml.Media.MatrixTransform;
+using WMatrix = Microsoft.UI.Xaml.Media.Matrix;
+using WMatrixTransform = Microsoft.UI.Xaml.Media.MatrixTransform;
 
 namespace Xamarin.Forms.Platform.UWP
 #else
@@ -20,13 +20,15 @@ namespace Xamarin.Forms.Platform.WPF
 
 			return new WMatrixTransform
 			{
-				Matrix = new WMatrix(
-					matrix.M11,
-					matrix.M12,
-					matrix.M21,
-					matrix.M22,
-					matrix.OffsetX,
-					matrix.OffsetY)
+				Matrix = new WMatrix()
+				{
+					M11 = matrix.M11,
+					M12 = matrix.M12,
+					M21 = matrix.M21,
+					M22 = matrix.M22,
+					OffsetX = matrix.OffsetX,
+					OffsetY = matrix.OffsetY
+				}
 			};
 		}
 	}

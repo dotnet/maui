@@ -1,12 +1,11 @@
+using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.UI;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using WGradientStop = Windows.UI.Xaml.Media.GradientStop;
-using WGradientStopCollection = Windows.UI.Xaml.Media.GradientStopCollection;
-using WLinearGradientBrush = Windows.UI.Xaml.Media.LinearGradientBrush;
-using WRect = Windows.Foundation.Rect;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI;
 
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 {
@@ -26,8 +25,8 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			Children.Add (_textBlock);
 
 			Background =
-				new WLinearGradientBrush(
-					new WGradientStopCollection { new WGradientStop { Color = Colors.Green, Offset = 0.5}, new WGradientStop { Color = Colors.Blue, Offset = 1} }, 0);
+				new Microsoft.UI.Xaml.Media.LinearGradientBrush (
+					new Microsoft.UI.Xaml.Media.GradientStopCollection { new Microsoft.UI.Xaml.Media.GradientStop { Color = Colors.Green, Offset = 0.5}, new Microsoft.UI.Xaml.Media.GradientStop { Color = Colors.Blue, Offset = 1} }, 0);
 		}
 
 		public static readonly DependencyProperty TextProperty = DependencyProperty.Register (
@@ -49,7 +48,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 
 		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
 		{
-			_textBlock.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
+			_textBlock.Arrange(new Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 			return finalSize;
 		}
 
@@ -59,7 +58,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			_textBlock.Measure (availableSize);
 
 			// This deliberately does something wrong so we can demo fixing it
-			WRect bounds = ApplicationView.GetForCurrentView ().VisibleBounds;
+			var bounds = ApplicationView.GetForCurrentView ().VisibleBounds;
 			double scaleFactor = DisplayInformation.GetForCurrentView ().RawPixelsPerViewPixel;
 			var size = new Size (bounds.Width * scaleFactor, bounds.Height * scaleFactor);
 

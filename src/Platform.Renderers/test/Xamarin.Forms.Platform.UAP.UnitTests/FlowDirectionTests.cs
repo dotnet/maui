@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
-using WTextAlignment = Windows.UI.Xaml.TextAlignment;
-using WFlowDirection = Windows.UI.Xaml.FlowDirection;
+using WTextAlignment = Microsoft.UI.Xaml.TextAlignment;
+using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using System;
 
 namespace Xamarin.Forms.Platform.UAP.UnitTests

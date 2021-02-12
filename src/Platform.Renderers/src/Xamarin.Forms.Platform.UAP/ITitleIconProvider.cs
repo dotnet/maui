@@ -2,6 +2,6 @@
 {
 	internal interface ITitleIconProvider
 	{
-		Windows.UI.Xaml.Media.ImageSource TitleIcon { get; set; }
+		Microsoft.UI.Xaml.Media.ImageSource TitleIcon { get; set; }
 	}
 }

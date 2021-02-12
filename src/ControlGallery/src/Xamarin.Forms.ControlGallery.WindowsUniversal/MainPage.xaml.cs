@@ -2,20 +2,19 @@
 
 using System;
 using System.Globalization;
-using Windows.Foundation;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.Graphics.Display;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Xamarin.Forms;
+using Xamarin.Forms.ControlGallery.WindowsUniversal;
 using Xamarin.Forms.Controls;
 using Xamarin.Forms.Platform.UWP;
-using WRectangleGeometry = Windows.UI.Xaml.Media.RectangleGeometry;
-using WRect = Windows.Foundation.Rect;
-using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
+
 
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 {
@@ -30,17 +29,16 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 		{
 			InitializeComponent();
 
-			if (Xamarin.Forms.ControlGallery.WindowsUniversal.App.RunningAsUITests)
-			{
-				var bounds = ApplicationView.GetForCurrentView().VisibleBounds;
-				var scaleFactor = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
-				var size = new Windows.Foundation.Size(bounds.Width * scaleFactor, bounds.Height * scaleFactor);
-				ApplicationView.PreferredLaunchViewSize = size;
-				ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
-			}
+			// TODO WINUI3
+			// some tests need to window to be large enough to click on things
+			// can we make this only open to window size for UI Tests?
+			//var bounds = ApplicationView.GetForCurrentView().VisibleBounds;
+			//var scaleFactor = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+			//var size = new Windows.Foundation.Size(bounds.Width * scaleFactor, bounds.Height * scaleFactor);
+			//ApplicationView.PreferredLaunchViewSize = size;
+			//ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
 
 
-			_app = new Controls.App();
 
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
 			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
@@ -48,20 +46,55 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
 
-			LoadApplication(_app);
-
-			CoreWindow.GetForCurrentThread().KeyDown += OnKeyDown;
-
 		}
 
-		void OnKeyDown(CoreWindow coreWindow, KeyEventArgs args)
+		public override Application CreateApplication()
 		{
-			if (args.VirtualKey == VirtualKey.Escape)
+			_app = new Controls.App();
+			return _app;
+		}
+
+		public override void LoadApplication(Application application)
+		{
+			base.LoadApplication(application);
+
+			_app.PropertyChanged += _app_PropertyChanged;
+			WireUpKeyDown();
+		}
+
+		// TODO WINUI3 not sure the best way to detect the content swap out
+		void WireUpKeyDown()
+		{
+			this.DispatcherQueue.TryEnqueue(() =>
+			{
+				if (this.Content != null)
+				{
+					this.Content.KeyDown -= OnKeyDown;
+					this.Content.KeyDown += OnKeyDown;
+				}
+				else
+				{
+					WireUpKeyDown();
+				}
+			});
+		}
+		
+		private void _app_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == "MainPage")
+			{
+				WireUpKeyDown();
+			}
+		}
+
+		void OnKeyDown(object sender, KeyRoutedEventArgs args)
+		{
+			if (args.Key == VirtualKey.Escape)
 			{
 				_app.Reset();
 				args.Handled = true;
 			}
-			else if (args.VirtualKey == VirtualKey.F1)
+			else if (args.Key == VirtualKey.F1)
 			{
 				_app.PlatformTest();
 			}
@@ -88,7 +121,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			sl?.Children.Add(textBlock);
 
 			// Create and add a native Button 
-			var button = new Windows.UI.Xaml.Controls.Button { Content = "Toggle Font Size", Height = 80 };
+			var button = new Microsoft.UI.Xaml.Controls.Button { Content = "Toggle Font Size", Height = 80 };
 			button.Click += (sender, args) => { textBlock.FontSize = textBlock.FontSize == 14 ? 24 : 14; };
 
 			sl?.Children.Add(button.ToView());
@@ -120,17 +153,17 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 
 					// The broken control always tries to size itself to the screen width
 					// So figure that out and we'll know how far off it's laying itself out
-					WRect bounds = ApplicationView.GetForCurrentView().VisibleBounds;
+					var bounds = ApplicationView.GetForCurrentView().VisibleBounds;
 					double scaleFactor = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 					var screenWidth = new Size(bounds.Width * scaleFactor, bounds.Height * scaleFactor);
 
 					// We can re-center it by offsetting it during the Arrange call
 					double diff = Math.Abs(screenWidth.Width - finalSize.Width) / -2;
-					frameworkElement.Arrange(new WRect(diff, 0, finalSize.Width - diff, finalSize.Height));
+					frameworkElement.Arrange(new Windows.Foundation.Rect(diff, 0, finalSize.Width - diff, finalSize.Height));
 
 					// Arranging the control to the left will make it show up past the edge of the stack layout
 					// We can fix that by clipping it manually
-					var clip = new RectangleGeometry { Rect = new WRect(-diff, 0, finalSize.Width, finalSize.Height) };
+					var clip = new RectangleGeometry { Rect = new Windows.Foundation.Rect(-diff, 0, finalSize.Width, finalSize.Height) };
 					frameworkElement.Clip = clip;
 
 					return finalSize;
@@ -159,10 +192,10 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 				FontFamily = new FontFamily("HelveticaNeue")
 			};
 
-			var btnColor = new Windows.UI.Xaml.Controls.Button { Content = "Toggle Label Color", Height = 80 };
-			btnColor.Click += (sender, args) => txbLabel.Foreground = new WSolidColorBrush(Windows.UI.Colors.Pink);
+			var btnColor = new Microsoft.UI.Xaml.Controls.Button { Content = "Toggle Label Color", Height = 80 };
+			btnColor.Click += (sender, args) => txbLabel.Foreground = SolidColorBrush.Pink.ToBrush();
 
-			var btnTextBox = new Windows.UI.Xaml.Controls.Button { Content = "Change text textbox", Height = 80 };
+			var btnTextBox = new Microsoft.UI.Xaml.Controls.Button { Content = "Change text textbox", Height = 80 };
 			btnTextBox.Click += (sender, args) => txbBox.Text = "Hello 2 way native";
 
 			txbLabel.SetBinding("Text", new Binding("NativeLabel"));
@@ -186,15 +219,15 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 			{
 				if (value is Color)
-					return new WSolidColorBrush(ToWindowsColor((Color)value));
+					return new Microsoft.UI.Xaml.Media.SolidColorBrush(ToWindowsColor((Color)value));
 
 				return null;
 			}
 
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			{
-				if (value is WSolidColorBrush)
-					return ToColor(((WSolidColorBrush)value).Color);
+				if (value is Microsoft.UI.Xaml.Media.SolidColorBrush)
+					return ToColor(((Microsoft.UI.Xaml.Media.SolidColorBrush)value).Color);
 
 				return null;
 			}

@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public sealed class HeightConverter : Windows.UI.Xaml.Data.IValueConverter
+	public sealed class HeightConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{

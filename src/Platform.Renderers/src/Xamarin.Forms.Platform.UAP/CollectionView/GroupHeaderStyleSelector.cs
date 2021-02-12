@@ -1,6 +1,6 @@
-﻿using Windows.UI.Xaml.Controls;
-using UWPApp = Windows.UI.Xaml.Application;
-using UWPDataTemplate = Windows.UI.Xaml.DataTemplate;
+﻿using Microsoft.UI.Xaml.Controls;
+using UWPApp = Microsoft.UI.Xaml.Application;
+using UWPDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 
 namespace Xamarin.Forms.Platform.UWP
 {

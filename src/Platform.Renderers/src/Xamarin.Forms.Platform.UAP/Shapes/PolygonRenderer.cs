@@ -3,8 +3,8 @@ using Xamarin.Forms.Shapes;
 using System.Collections.Specialized;
 
 #if WINDOWS_UWP
-using WFillRule = Windows.UI.Xaml.Media.FillRule;
-using WPolygon = Windows.UI.Xaml.Shapes.Polygon;
+using WFillRule = Microsoft.UI.Xaml.Media.FillRule;
+using WPolygon = Microsoft.UI.Xaml.Shapes.Polygon;
 
 namespace Xamarin.Forms.Platform.UWP
 #else

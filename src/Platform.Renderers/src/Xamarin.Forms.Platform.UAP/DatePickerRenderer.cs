@@ -2,17 +2,17 @@
 using System.ComponentModel;
 using System.Linq;
 using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Documents;
-using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Documents;
+using Microsoft.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
-using WBrush = Windows.UI.Xaml.Media.Brush;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class DatePickerRenderer : ViewRenderer<DatePicker, Windows.UI.Xaml.Controls.DatePicker>, ITabStopOnDescendants
+	public class DatePickerRenderer : ViewRenderer<DatePicker, Microsoft.UI.Xaml.Controls.DatePicker>, ITabStopOnDescendants
 	{
 		WBrush _defaultBrush;
 		bool _fontApplied;
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var picker = new Windows.UI.Xaml.Controls.DatePicker();
+					var picker = new Microsoft.UI.Xaml.Controls.DatePicker();
 					SetNativeControl(picker);
 					Control.Loaded += ControlOnLoaded;
 					Control.DateChanged += OnControlDateChanged;
@@ -90,10 +90,10 @@ namespace Xamarin.Forms.Platform.UWP
 			InterceptVisualStateManager.Hook(Control.GetFirstDescendant<StackPanel>(), Control, Element);
 
 			// We also have to intercept the VSM changes on the DatePicker's button
-			var button = Control.GetDescendantsByName<Windows.UI.Xaml.Controls.Button>("FlyoutButton").FirstOrDefault();
+			var button = Control.GetDescendantsByName<Microsoft.UI.Xaml.Controls.Button>("FlyoutButton").FirstOrDefault();
 
 			if (button != null)
-				InterceptVisualStateManager.Hook(button.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>(), button, Element);
+				InterceptVisualStateManager.Hook(button.GetFirstDescendant<Microsoft.UI.Xaml.Controls.Grid>(), button, Element);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

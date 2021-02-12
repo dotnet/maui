@@ -3,8 +3,8 @@ using Xamarin.Forms.Shapes;
 using System.Collections.Specialized;
 
 #if WINDOWS_UWP
-using WFillRule = Windows.UI.Xaml.Media.FillRule;
-using WPolyline = Windows.UI.Xaml.Shapes.Polyline;
+using WFillRule = Microsoft.UI.Xaml.Media.FillRule;
+using WPolyline = Microsoft.UI.Xaml.Shapes.Polyline;
 
 namespace Xamarin.Forms.Platform.UWP
 #else

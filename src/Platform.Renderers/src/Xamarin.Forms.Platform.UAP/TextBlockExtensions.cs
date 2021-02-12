@@ -2,8 +2,8 @@
 using System.Linq;
 using Xamarin.Forms.Internals;
 #if WINDOWS_UWP
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Documents;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 using NativeSize = Windows.Foundation.Size;
 #else
 using System.Windows.Controls;

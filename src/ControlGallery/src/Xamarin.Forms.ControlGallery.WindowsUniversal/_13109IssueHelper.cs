@@ -3,7 +3,7 @@ using Xamarin.Forms;
 using Xamarin.Forms.Platform.UWP;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.ControlGallery.WindowsUniversal;
-using Bitmap = Windows.UI.Xaml.Media.ImageSource;
+using Bitmap = Microsoft.UI.Xaml.Media.ImageSource;
 
 [assembly: Dependency(typeof(_13109IssueHelper))]
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
