@@ -5,7 +5,7 @@ namespace Xamarin.Forms
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	[DebuggerDisplay("{XmlNamespace}, {ClrNamespace}, {AssemblyName}")]
-#if NETSTANDARD2_0
+#if !NETSTANDARD1_0
 	public
 #else
 	// Certain needed reflection methods are not possible in .NET Standard 1.X

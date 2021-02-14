@@ -69,7 +69,7 @@ namespace Xamarin.Forms
 
 		public static ImageSource FromResource(string resource, Assembly sourceAssembly = null)
 		{
-#if NETSTANDARD2_0
+#if !NETSTANDARD1_0
 			sourceAssembly = sourceAssembly ?? Assembly.GetCallingAssembly();
 #else
 			if (sourceAssembly == null)

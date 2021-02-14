@@ -2,7 +2,7 @@ using System;
 
 namespace Xamarin.Forms
 {
-#if NETSTANDARD2_0
+#if !NETSTANDARD1_0
 	[Serializable]
 #endif
 	public class UnsolvableConstraintsException : Exception
@@ -21,7 +21,7 @@ namespace Xamarin.Forms
 		{
 		}
 
-#if NETSTANDARD2_0
+#if !NETSTANDARD1_0
 		protected UnsolvableConstraintsException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
 			: base(info, context)
 		{

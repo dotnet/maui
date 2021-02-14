@@ -370,7 +370,7 @@ namespace Xamarin.Forms
 				var lineInfo = (serviceProvider.GetService(typeof(Xaml.IXmlLineInfoProvider)) as Xaml.IXmlLineInfoProvider)?.XmlLineInfo;
 				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
 				var assembly = rootObjectType.GetTypeInfo().Assembly;
-#if NETSTANDARD2_0
+#if !NETSTANDARD1_0
 				if (value.Contains(";assembly="))
 				{
 					var parts = value.Split(new[] { ";assembly=" }, StringSplitOptions.RemoveEmptyEntries);

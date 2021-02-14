@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Internals
 		{
 			try
 			{
-#if NETSTANDARD2_0
+#if !NETSTANDARD1_0
 				return assembly.GetCustomAttributes(attrType, true);
 #else
 				return assembly.GetCustomAttributes(attrType).ToArray();

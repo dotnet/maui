@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnCreateView(inflater, container, savedInstanceState);
 
-			_outerLayout = inflater.Inflate(Resource.Layout.BottomTabLayout, null);
+			_outerLayout = inflater.Inflate(Resource.Layout.bottomtablayout, null);
 			_bottomView = _outerLayout.FindViewById<BottomNavigationView>(Resource.Id.bottomtab_tabbar);
 			_navigationArea = _outerLayout.FindViewById<FrameLayout>(Resource.Id.bottomtab_navarea);
 

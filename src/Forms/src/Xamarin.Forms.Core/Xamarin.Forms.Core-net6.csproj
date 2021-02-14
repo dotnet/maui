@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
+		<TargetFrameworks>netstandard2.1;netstandard2.0;net6.0;net6.0-android;net6.0-ios</TargetFrameworks>
     <RootNamespace>Xamarin.Forms.Core</RootNamespace>
     <AssemblyName>Xamarin.Forms</AssemblyName>
+    <Nullable>disable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="Internals\Legacy\**" />

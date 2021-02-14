@@ -19,6 +19,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Droid-net6", "src\Pl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.iOS-net6", "src\Platform.Handlers\samples\Sample.iOS\Sample.iOS-net6.csproj", "{B8D80A2B-F636-4E27-BCAA-EA601007B7F4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Compatibility-net6", "src\Platform.Renderers\src\Maui.Controls.Compatibility\Maui.Controls.Compatibility-net6.csproj", "{00A11C2F-969F-4964-8557-91ADF4B1523D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Android.FormsViewGroup-net6", "src\Platform.Renderers\src\Xamarin.Forms.Platform.Android.FormsViewGroup\Xamarin.Forms.Platform.Android.FormsViewGroup-net6.csproj", "{EB956381-F3E6-437C-9069-36B8BF5C6E2F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +50,14 @@ Global
 		{B8D80A2B-F636-4E27-BCAA-EA601007B7F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8D80A2B-F636-4E27-BCAA-EA601007B7F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8D80A2B-F636-4E27-BCAA-EA601007B7F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00A11C2F-969F-4964-8557-91ADF4B1523D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00A11C2F-969F-4964-8557-91ADF4B1523D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00A11C2F-969F-4964-8557-91ADF4B1523D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00A11C2F-969F-4964-8557-91ADF4B1523D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB956381-F3E6-437C-9069-36B8BF5C6E2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB956381-F3E6-437C-9069-36B8BF5C6E2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB956381-F3E6-437C-9069-36B8BF5C6E2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB956381-F3E6-437C-9069-36B8BF5C6E2F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

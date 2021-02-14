@@ -15,22 +15,20 @@
     <Compile Remove="AppCompat\Resource.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\anim\**\*" />
+    <AndroidResource Include="Resources\anim\enterfromleft.xml" />
+    <AndroidResource Include="Resources\anim\enterfromright.xml" />
+    <AndroidResource Include="Resources\anim\exittoleft.xml" />
+    <AndroidResource Include="Resources\anim\exittoright.xml" />
     <AndroidResource Include="Resources\values\**\*" />
     <Compile Remove="Anticipator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\Layout\BottomTabLayout.axml" />
-    <AndroidResource Include="Resources\Layout\FlyoutContent.axml" />
-    <AndroidResource Include="Resources\Layout\RootLayout.axml" />
-    <AndroidResource Include="Resources\Layout\ShellContent.axml" />
-    <AndroidResource Include="Resources\Layout\FallbackTabbarDoNotUse.axml" />
-    <AndroidResource Include="Resources\Layout\FallbackToolbarDoNotUse.axml" />
-    <AndroidResource Include="Resources\Layout\Tabbar.axml" />
-    <AndroidResource Include="Resources\Layout\Toolbar.axml" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Resources\values\attrs.xml" />
+    <AndroidResource Include="Resources\Layout\bottomtablayout.axml" />
+    <AndroidResource Include="Resources\Layout\flyoutcontent.axml" />
+    <AndroidResource Include="Resources\Layout\rootlayout.axml" />
+    <AndroidResource Include="Resources\Layout\shellcontent.axml" />
+    <AndroidResource Include="Resources\Layout\tabbar.axml" />
+    <AndroidResource Include="Resources\Layout\toolbar.axml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\Forms\src\Xamarin.Forms.Core\Crc64.cs" Link="Crc64.cs" />
@@ -46,9 +44,6 @@
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.2.0.4" />
     <PackageReference Include="Xamarin.Google.Android.Material" Version="1.2.1.1" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0.6" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Shapes\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
