@@ -103,7 +103,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (currentStateData.DataPackage == null || currentStateData.AcceptedOperation == DataPackageOperation.None)
 				return false;
 
-			Device.BeginInvokeOnMainThread(async ()=>
+			Device.BeginInvokeOnMainThread(async () =>
 			{
 				if (Recognizer is DropGestureRecognizer dropRecognizer && dropRecognizer.AllowDrop)
 					await dropRecognizer.SendDrop(new DropEventArgs(currentStateData.DataPackage.View));

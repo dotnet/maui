@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
 using System.Collections.ObjectModel;
+using Xamarin.Forms.CustomAttributes;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -73,11 +73,11 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void SetTwoGrid()
 		{
-			Collection.ItemsLayout = new GridItemsLayout(ItemsLayoutOrientation.Vertical)	
+			Collection.ItemsLayout = new GridItemsLayout(ItemsLayoutOrientation.Vertical)
 			{
-					Span = 2,
-					HorizontalItemSpacing = 5,
-					VerticalItemSpacing = 5
+				Span = 2,
+				HorizontalItemSpacing = 5,
+				VerticalItemSpacing = 5
 			};
 		}
 
