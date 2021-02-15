@@ -924,7 +924,7 @@ namespace Xamarin.Forms
 
 		internal void MockBounds(Rectangle bounds)
 		{
-#if NETSTANDARD2_0
+#if !NETSTANDARD1_0
 			(_mockX, _mockY, _mockWidth, _mockHeight) = bounds;
 #else
 			_mockX = bounds.X;

@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Platform.Android
 				_page = ((IShellContentController)_shellContent).GetOrCreateContent();
 			}
 
-			_root = inflater.Inflate(Resource.Layout.ShellContent, null).JavaCast<CoordinatorLayout>();
+			_root = inflater.Inflate(Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
 			_toolbar = _root.FindViewById<Toolbar>(Resource.Id.shellcontent_toolbar);
 

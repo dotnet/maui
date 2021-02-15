@@ -9,6 +9,7 @@
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Platform.Renderers\src\Maui.Controls.Compatibility\Maui.Controls.Compatibility-net6.csproj" />
     <ProjectReference Include="..\Sample\Sample-net6.csproj" />
     <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
     <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.3.0.4" />

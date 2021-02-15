@@ -3,7 +3,7 @@ using System.Xml;
 
 namespace Xamarin.Forms.Xaml
 {
-#if NETSTANDARD2_0
+#if !NETSTANDARD1_0
 	[Serializable]
 #endif
 	public class XamlParseException : Exception
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Xaml
 		{
 		}
 
-#if NETSTANDARD2_0
+#if !NETSTANDARD1_0
 		protected XamlParseException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
 			: base(info, context)
 		{

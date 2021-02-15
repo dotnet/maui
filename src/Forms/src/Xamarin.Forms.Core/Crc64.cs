@@ -5,9 +5,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
-/// <summary>
-/// https://github.com/xamarin/java.interop/blob/master/src/Java.Interop.Tools.JavaCallableWrappers/Java.Interop.Tools.JavaCallableWrappers/Crc64.cs
-/// </summary>
+// https://github.com/xamarin/java.interop/blob/master/src/Java.Interop.Tools.JavaCallableWrappers/Java.Interop.Tools.JavaCallableWrappers/Crc64.cs
 namespace Xamarin.Forms.Internals
 {
 	/// <summary>

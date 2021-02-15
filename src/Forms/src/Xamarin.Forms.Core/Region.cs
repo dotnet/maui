@@ -10,7 +10,7 @@ namespace Xamarin.Forms
 		// such as circles if required, without affecting anything else.
 
 		IReadOnlyList<Rectangle> Regions { get; }
-		readonly Thickness _inflation;
+		readonly Thickness? _inflation;
 
 		Region(IList<Rectangle> positions) : this()
 		{
@@ -70,7 +70,7 @@ namespace Xamarin.Forms
 			if (_inflation == null)
 				return this;
 
-			return Inflate(_inflation.Left * -1, _inflation.Top * -1, _inflation.Right * -1, _inflation.Bottom * -1);
+			return Inflate(_inflation.Value.Left * -1, _inflation.Value.Top * -1, _inflation.Value.Right * -1, _inflation.Value.Bottom * -1);
 		}
 
 		public Region Inflate(double size)
@@ -100,10 +100,10 @@ namespace Xamarin.Forms
 				rectangles[i] = region;
 			}
 
-			var inflation = new Thickness(_inflation == null ? left : left + _inflation.Left,
-									   _inflation == null ? top : top + _inflation.Top,
-									   _inflation == null ? right : right + _inflation.Right,
-									   _inflation == null ? bottom : bottom + _inflation.Bottom);
+			var inflation = new Thickness(_inflation == null ? left : left + _inflation.Value.Left,
+									   _inflation == null ? top : top + _inflation.Value.Top,
+									   _inflation == null ? right : right + _inflation.Value.Right,
+									   _inflation == null ? bottom : bottom + _inflation.Value.Bottom);
 
 			return new Region(rectangles, inflation);
 		}

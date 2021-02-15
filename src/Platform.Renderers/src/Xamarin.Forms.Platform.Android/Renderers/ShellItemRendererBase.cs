@@ -329,12 +329,12 @@ namespace Xamarin.Forms.Platform.Android
 			switch (navSource)
 			{
 				case ShellNavigationSource.Push:
-					t.SetCustomAnimations(Resource.Animation.EnterFromRight, Resource.Animation.ExitToLeft);
+					t.SetCustomAnimations(Resource.Animation.enterfromright, Resource.Animation.exittoleft);
 					break;
 
 				case ShellNavigationSource.Pop:
 				case ShellNavigationSource.PopToRoot:
-					t.SetCustomAnimations(Resource.Animation.EnterFromLeft, Resource.Animation.ExitToRight);
+					t.SetCustomAnimations(Resource.Animation.enterfromleft, Resource.Animation.exittoright);
 					break;
 
 				case ShellNavigationSource.ShellSectionChanged:

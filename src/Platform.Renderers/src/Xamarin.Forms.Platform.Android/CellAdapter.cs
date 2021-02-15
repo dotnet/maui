@@ -9,6 +9,11 @@ using AndroidX.AppCompat.App;
 using AActionMode = global::AndroidX.AppCompat.View.ActionMode;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
+#if NET6_0
+using AMenu = Android.Views.IMenu;
+#else
+using AMenu = Android.Views.Menu;
+#endif
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -190,8 +195,9 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				MenuItem action = ActionModeContext.ContextActions[i];
 
-				IMenuItem item = menu.Add(global::Android.Views.Menu.None, i, global::Android.Views.Menu.None, action.Text);
+				IMenuItem item = menu.Add(AMenu.None, i, AMenu.None, action.Text);
 
+				
 				_ = _context.ApplyDrawableAsync(action, MenuItem.IconImageSourceProperty, iconDrawable =>
 				{
 					if (iconDrawable != null && !this.IsDisposed() && !_actionModeNeedsUpdates)

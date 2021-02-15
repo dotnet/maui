@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			var coordinator = (ViewGroup)LayoutInflater.FromContext(context).Inflate(Resource.Layout.FlyoutContent, null);
+			var coordinator = (ViewGroup)LayoutInflater.FromContext(context).Inflate(Resource.Layout.flyoutcontent, null);
 
 			Profile.FramePartition("Find AppBar");
 			_appBar = coordinator.FindViewById<AppBarLayout>(Resource.Id.flyoutcontent_appbar);

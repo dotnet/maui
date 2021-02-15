@@ -14,7 +14,7 @@ namespace Xamarin.Forms
 		public ShellNavigatingEventArgs(ShellNavigationState current, ShellNavigationState target, ShellNavigationSource source, bool canCancel)
 		{
 
-#if NETSTANDARD2_0
+#if !NETSTANDARD1_0
 			_deferralFinishedTask = () => Task.CompletedTask;
 #else
 			_deferralFinishedTask = () => Task.Delay(0);
