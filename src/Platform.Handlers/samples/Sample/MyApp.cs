@@ -24,7 +24,7 @@ namespace Sample
 			var button = new Button() { Text = "A Button", Width = 200 };
 			var button2 = new Button()
 			{
-				Color = Color.Green,
+				TextColor = Color.Green,
 				Text = "Hello I'm a button",
 				BackgroundColor = Color.Purple,
 				Margin = new Thickness(12)

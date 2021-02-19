@@ -9,11 +9,6 @@ namespace Xamarin.Forms
 
 		public TextAlignment VerticalTextAlignment => throw new NotImplementedException();
 
-		Color IText.Color
-		{
-			get => this.TextColor;
-		}
-
 		void IButton.Clicked()
 		{
 			throw new NotImplementedException();

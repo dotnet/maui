@@ -7,7 +7,7 @@ namespace Sample
 	{
 		public string Text { get; set; }
 
-		public Color Color { get; set; }
+		public Color TextColor { get; set; }
 
 		public Font Font { get; set; }
 

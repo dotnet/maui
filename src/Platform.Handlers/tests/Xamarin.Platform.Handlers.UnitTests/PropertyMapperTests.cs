@@ -42,7 +42,7 @@ namespace Xamarin.Platform.Handlers.Tests
 
 			var mapper2 = new PropertyMapper<IButton>(mapper1)
 			{
-				[nameof(IButton.Color)] = (r, v) => wasMapper2Called = true
+				[nameof(IButton.TextColor)] = (r, v) => wasMapper2Called = true
 			};
 
 			mapper2.UpdateProperties(null, new Button());
@@ -64,7 +64,7 @@ namespace Xamarin.Platform.Handlers.Tests
 
 			var mapper2 = new PropertyMapper<IButton>(mapper1)
 			{
-				[nameof(IButton.Color)] = (r, v) => wasMapper2Called = true
+				[nameof(IButton.TextColor)] = (r, v) => wasMapper2Called = true
 			};
 
 			mapper1[nameof(IView.BackgroundColor)] = (r, v) => wasMapper3Called = true;
@@ -147,7 +147,7 @@ namespace Xamarin.Platform.Handlers.Tests
 
 			var mapper2 = new PropertyMapper<IButton, ButtonHandler>(mapper1)
 			{
-				[nameof(IButton.Color)] = (r, v) => wasMapper2Called = true
+				[nameof(IButton.TextColor)] = (r, v) => wasMapper2Called = true
 			};
 
 			mapper2.UpdateProperties(null, new Button());

@@ -17,11 +17,11 @@ namespace Xamarin.Platform.Handlers
 	{
 		public static PropertyMapper<ILabel, LabelHandler> LabelMapper = new PropertyMapper<ILabel, LabelHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(ILabel.Color)] = MapColor,
+			[nameof(ILabel.TextColor)] = MapTextColor,
 			[nameof(ILabel.Text)] = MapText,
 		};
 
-		public static void MapColor(LabelHandler handler, ILabel Label)
+		public static void MapTextColor(LabelHandler handler, ILabel Label)
 		{
 		}
 

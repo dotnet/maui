@@ -7,7 +7,7 @@ namespace Xamarin.Platform
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateColor(this object nothing, IButton button)
+		public static void UpdateTextColor(this object nothing, IButton button)
 		{
 
 		}
