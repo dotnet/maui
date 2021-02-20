@@ -2,7 +2,7 @@
 
 namespace Xamarin.Platform
 {
-	public interface IFont : IView
+	public interface IFont
 	{
 		FontAttributes FontAttributes { get; }
 		string FontFamily { get; }

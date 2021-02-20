@@ -8,6 +8,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using Xamarin.Platform;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -181,6 +182,7 @@ namespace Xamarin.Forms.Platform.Android
 			Control.UpdateFlowDirection(Element);
 		}
 
+		[PortHandler]
 		void UpdateColor()
 		{
 			Color c = Element.TextColor;

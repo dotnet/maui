@@ -1,9 +1,6 @@
 ﻿using Android.Content.Res;
 using Android.Graphics;
-using Android.OS;
-using Android.Views;
 using Android.Widget;
-using Java.Net;
 
 namespace Xamarin.Platform.Handlers
 {

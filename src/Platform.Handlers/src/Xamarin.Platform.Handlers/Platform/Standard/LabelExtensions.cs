@@ -6,5 +6,10 @@
 		{
 
 		}
+
+		public static void UpdateTextColor(this object nothing, ILabel label)
+		{
+
+		}
 	}
 }

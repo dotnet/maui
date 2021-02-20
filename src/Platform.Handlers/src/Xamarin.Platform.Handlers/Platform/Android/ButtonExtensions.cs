@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Android.Content.Res;
+﻿using Android.Content.Res;
 using AndroidX.AppCompat.Widget;
 using Xamarin.Forms;
 

@@ -33,7 +33,15 @@ namespace Sample
 
 		public virtual void Arrange(Rectangle bounds)
 		{
+			if (IsArrangeValid)
+			{
+				return;
+			}
+
 			Frame = this.ComputeFrame(bounds);
+			IsArrangeValid = true;
+
+			Handler?.SetFrame(Frame);
 		}
 
 		public virtual void InvalidateMeasure()
