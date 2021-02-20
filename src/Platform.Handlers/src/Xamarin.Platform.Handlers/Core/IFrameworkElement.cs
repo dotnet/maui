@@ -25,6 +25,5 @@ namespace Xamarin.Platform
 		double Height { get; }
 
 		Thickness Margin { get; }
-
 	}
 }

@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using System.Runtime.InteropServices;
 using Xamarin.Platform;
 
-namespace Sample
+// This is a temporary namespace until we rename everything and move the legacy layouts
+namespace Xamarin.Forms.Layout2
 {
 	public abstract class StackLayout : Layout, IStackLayout
 	{
