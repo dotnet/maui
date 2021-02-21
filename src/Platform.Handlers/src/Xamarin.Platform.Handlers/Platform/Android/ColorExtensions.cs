@@ -48,5 +48,13 @@ namespace Xamarin.Platform
 		{
 			return Color.FromUint((uint)color.ToArgb());
 		}
+
+		public static ColorStateList ToDefaultColorStateList(this Color color)
+		{
+			return new ColorStateList(
+				new int[][] { new int[0] }, 
+				new[] { color.ToNative().ToArgb() }
+			);
+		}
 	}
 }

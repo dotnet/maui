@@ -179,6 +179,9 @@ namespace Xamarin.Platform
 			nfloat green;
 			nfloat blue;
 			nfloat alpha;
+
+			if (color == null)
+				return Color.Default;
 #if __IOS__
 			color.GetRGBA(out red, out green, out blue, out alpha);
 #else

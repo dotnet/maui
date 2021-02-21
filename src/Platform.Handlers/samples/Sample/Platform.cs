@@ -22,6 +22,7 @@ namespace Sample
 			RegistrarHandlers.Handlers.Register<HorizontalStackLayout, LayoutHandler>();
 			RegistrarHandlers.Handlers.Register<FlexLayout, LayoutHandler>();
 			RegistrarHandlers.Handlers.Register<Xamarin.Forms.StackLayout, LayoutHandler>();
+			RegistrarHandlers.Handlers.Register<Switch, SwitchHandler>();
 		}
 
 

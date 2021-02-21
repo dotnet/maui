@@ -36,6 +36,10 @@ namespace Sample
 
 			verticalStack.Add(horizontalStack);
 			verticalStack.Add(new Slider());
+			verticalStack.Add(new Switch());
+			verticalStack.Add(new Switch() { OnColor = Color.Green });
+			verticalStack.Add(new Switch() { ThumbColor = Color.Yellow });
+			verticalStack.Add(new Switch() { OnColor = Color.Green, ThumbColor = Color.Yellow });
 
 			return verticalStack;
 		}

@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Android.Graphics;
+using Android.Views;
+using Android.Widget;
+using System;
 using System.IO;
-using Android.Graphics;
 using Xunit;
-using AColor = global::Android.Graphics.Color;
-using AView = global::Android.Views.View;
+using AColor = Android.Graphics.Color;
+using AView = Android.Views.View;
 
 namespace Xamarin.Platform.Handlers.DeviceTests
 {
@@ -45,12 +47,20 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 
 		public static Bitmap ToBitmap(this AView view)
 		{
+			var layout = new FrameLayout(view.Context);
+			layout.LayoutParameters = new FrameLayout.LayoutParams(500, 500);
+			view.LayoutParameters = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WrapContent, FrameLayout.LayoutParams.WrapContent)
+			{
+				Gravity = GravityFlags.Center
+			};
+
+			layout.AddView(view);
+			layout.Measure(500, 500);
+			layout.Layout(0, 0, 500, 500);
 			var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888);
-			var canvas = new Canvas(bitmap);
-			canvas.Save();
-			canvas.Translate(0, 0);
+			Canvas canvas = new Canvas(bitmap);
+			view.Layout(0, 0, view.Width, view.Height);
 			view.Draw(canvas);
-			canvas.Restore();
 
 			return bitmap;
 		}
@@ -87,7 +97,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Bitmap AssertContainsColor(this AView view, Xamarin.Forms.Color expectedColor) =>
+		public static Bitmap AssertContainsColor(this AView view, Forms.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToNative());
 
 		public static Bitmap AssertContainsColor(this AView view, AColor expectedColor)

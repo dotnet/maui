@@ -1,8 +1,9 @@
 using System;
+using Xamarin.Platform;
 
 namespace Xamarin.Forms
 {
-	public class Switch : View, IElementConfiguration<Switch>
+	public partial class Switch : View, IElementConfiguration<Switch>
 	{
 		public const string SwitchOnVisualState = "On";
 		public const string SwitchOffVisualState = "Off";
@@ -11,9 +12,15 @@ namespace Xamarin.Forms
 		{
 			((Switch)bindable).Toggled?.Invoke(bindable, new ToggledEventArgs((bool)newValue));
 			((Switch)bindable).ChangeVisualState();
+			((IFrameworkElement)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
+
 		}, defaultBindingMode: BindingMode.TwoWay);
 
-		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(Switch), Color.Default);
+		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(Switch), Color.Default, 
+			propertyChanged: (bindable, oldValue, newValue) =>
+			{
+				((IFrameworkElement)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
+			});
 
 		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Switch), Color.Default);
 
@@ -41,9 +48,10 @@ namespace Xamarin.Forms
 			get { return (bool)GetValue(IsToggledProperty); }
 			set { SetValue(IsToggledProperty, value); }
 		}
+
 		protected internal override void ChangeVisualState()
 		{
-			base.ChangeVisualState();
+			base.ChangeVisualState();			
 			if (IsEnabled && IsToggled)
 				VisualStateManager.GoToState(this, SwitchOnVisualState);
 			else if (IsEnabled && !IsToggled)
