@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Maps.MacOS
 				mkMapView.DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
 				mkMapView.RegionChanged -= MkMapViewOnRegionChanged;
 				mkMapView.GetViewForAnnotation = null;
-				mkMapView.OverlayRenderer = null; 
+				mkMapView.OverlayRenderer = null;
 				if (mkMapView.Delegate != null)
 				{
 					mkMapView.Delegate.Dispose();
@@ -194,7 +194,7 @@ namespace Xamarin.Forms.Maps.MacOS
 			else if (e.PropertyName == Map.TrafficEnabledProperty.PropertyName)
 				UpdateTrafficEnabled();
 			else if (e.PropertyName == VisualElement.HeightProperty.PropertyName && ((Map)Element).LastMoveToRegion != null)
-				_shouldUpdateRegion = ((Map)Element).MoveToLastRegionOnLayoutChange; 
+				_shouldUpdateRegion = ((Map)Element).MoveToLastRegionOnLayoutChange;
 		}
 
 #if __MOBILE__
@@ -320,9 +320,7 @@ namespace Xamarin.Forms.Maps.MacOS
 			if (_lastTouchedView is MKAnnotationView)
 				return;
 
-#pragma warning disable CS0618
-			targetPin.SendTap();
-#pragma warning restore CS0618
+			targetPin.SendMarkerClick();
 
 			// SendInfoWindowClick() returns the value of PinClickedEventArgs.HideInfoWindow
 			// Hide the info window by deselecting the annotation

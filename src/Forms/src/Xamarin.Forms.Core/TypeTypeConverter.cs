@@ -1,6 +1,4 @@
 using System;
-using System.ComponentModel;
-using System.Globalization;
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms
@@ -20,10 +18,6 @@ namespace Xamarin.Forms
 		}
 
 		public override object ConvertFromInvariantString(string value) => throw new NotImplementedException();
-
-		[Obsolete("IExtendedTypeConverter.ConvertFrom is obsolete as of version 2.2.0. Please use ConvertFromInvariantString (string, IServiceProvider) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		object IExtendedTypeConverter.ConvertFrom(CultureInfo culture, object value, IServiceProvider serviceProvider) => ((IExtendedTypeConverter)this).ConvertFromInvariantString((string)value, serviceProvider);
 
 		public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
 	}

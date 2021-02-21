@@ -8,7 +8,7 @@
 		<ResourceDictionary>
 			<!-- buttons -->
 			<Style x:Key="ButtonStyle" TargetType="Button">
-				<Setter Property="BorderRadius" Value="0"/>
+				<Setter Property="CornerRadius" Value="0"/>
 				<Setter Property="HeightRequest" Value="42"/>
 			</Style>
 			<Style x:Key="NavButtonBlueStyle" BasedOn="{StaticResource ButtonStyle}" TargetType="Button">

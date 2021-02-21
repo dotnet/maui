@@ -13,9 +13,7 @@ namespace Xamarin.Forms.Platform.UWP
 			IVisualElementRenderer renderer = Platform.GetRenderer(self);
 			if (renderer == null)
 			{
-#pragma warning disable 618
-				renderer = RendererFactory.CreateRenderer(self);
-#pragma warning restore 618
+				renderer = Platform.CreateRenderer(self);
 				Platform.SetRenderer(self, renderer);
 			}
 

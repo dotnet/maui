@@ -6,14 +6,14 @@
 	<StackLayout>
 		<StackLayout>
 			<StackLayout.Resources>
-				<ResourceDictionary MergedWith="local:SharedResourceDictionary"/>
+				<local:SharedResourceDictionary />
 			</StackLayout.Resources>
 			<Label x:Name="label" Style="{StaticResource sharedfoo}"/>
 			<Label x:Name="implicitLabel" />
 		</StackLayout>
 		<ContentView>
 			<ContentView.Resources>
-				<ResourceDictionary MergedWith="local:SharedResourceDictionary2"/>
+				<local:SharedResourceDictionary2 />
 			</ContentView.Resources>
 			<Label x:Name="label2" Style="{StaticResource sharedStyle2}"/>
 			<Label x:Name="label3" Text="{StaticResource foo}"/>

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
 using Xamarin.Forms.Platform.WPF.Extensions;
 using WThickness = System.Windows.Thickness;
@@ -62,7 +60,9 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateHorizontalTextAlign();
 			else if (e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
 				UpdateVerticalTextAlign();
-			else if (e.PropertyName == Label.FontProperty.PropertyName)
+			else if (e.PropertyName == Label.FontAttributesProperty.PropertyName ||
+				e.PropertyName == Label.FontFamilyProperty.PropertyName ||
+				e.PropertyName == Label.FontSizeProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
 				UpdateLineBreakMode();

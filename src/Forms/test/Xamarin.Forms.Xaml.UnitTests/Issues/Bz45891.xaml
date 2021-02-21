@@ -7,11 +7,11 @@
 	x:Class="Xamarin.Forms.Xaml.UnitTests.Bz45891">
 	<local:Bz45891.List>
 		<OnPlatform x:TypeArguments="scg:List(sys:String)">
-			<OnPlatform.iOS>
+			<On Platform="iOS">
 				<scg:List x:TypeArguments="sys:String">
 					<x:String>Foo</x:String>
 				</scg:List>
-			</OnPlatform.iOS>
+			</On>
 		</OnPlatform>
 	</local:Bz45891.List>
 </ContentPage>

@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Xamarin.Forms.Internals;
 
@@ -41,19 +40,10 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
-		[Obsolete("BorderRadiusProperty is obsolete as of 2.5.0. Please use CornerRadius instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty BorderRadiusProperty = BindableProperty.Create("BorderRadius", typeof(int), typeof(Button), defaultValue: DefaultBorderRadius,
-			propertyChanged: BorderRadiusPropertyChanged);
-
 		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create("CornerRadius", typeof(int), typeof(Button), defaultValue: BorderElement.DefaultCornerRadius,
 			propertyChanged: CornerRadiusPropertyChanged);
 
-		public static readonly BindableProperty ImageSourceProperty = ImageElement.ImageProperty;
-
-		[Obsolete("ImageProperty is obsolete as of 4.0.0. Please use ImageSourceProperty instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty ImageProperty = ImageElement.ImageProperty;
+		public static readonly BindableProperty ImageSourceProperty = ImageElement.ImageSourceProperty;
 
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
@@ -93,14 +83,6 @@ namespace Xamarin.Forms
 		{
 			get { return (Color)GetValue(BorderElement.BorderColorProperty); }
 			set { SetValue(BorderElement.BorderColorProperty, value); }
-		}
-
-		[Obsolete("BorderRadius is obsolete as of 2.5.0. Please use CornerRadius instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public int BorderRadius
-		{
-			get { return (int)GetValue(BorderRadiusProperty); }
-			set { SetValue(BorderRadiusProperty, value); }
 		}
 
 		public int CornerRadius
@@ -143,14 +125,6 @@ namespace Xamarin.Forms
 		{
 			get { return (ImageSource)GetValue(ImageSourceProperty); }
 			set { SetValue(ImageSourceProperty, value); }
-		}
-
-		[Obsolete("Image is obsolete as of 4.0.0. Please use ImageSource instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public FileImageSource Image
-		{
-			get { return GetValue(ImageProperty) as FileImageSource; }
-			set { SetValue(ImageProperty, value); }
 		}
 
 		public string Text
@@ -326,19 +300,6 @@ namespace Xamarin.Forms
 			var val = (int)newvalue;
 			if (val == BorderElement.DefaultCornerRadius && !button.cornerOrBorderRadiusSetting)
 				val = DefaultBorderRadius;
-
-#pragma warning disable 0618 // retain until BorderRadiusProperty removed
-			var oldVal = (int)bindable.GetValue(Button.BorderRadiusProperty);
-#pragma warning restore
-
-			if (oldVal == val)
-				return;
-
-#pragma warning disable 0618 // retain until BorderRadiusProperty removed
-			button.cornerOrBorderRadiusSetting = true;
-			bindable.SetValue(Button.BorderRadiusProperty, val);
-			button.cornerOrBorderRadiusSetting = false;
-#pragma warning restore
 		}
 
 		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)

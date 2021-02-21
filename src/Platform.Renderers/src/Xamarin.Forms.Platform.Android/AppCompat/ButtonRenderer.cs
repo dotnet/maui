@@ -30,15 +30,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			_buttonLayoutManager = new ButtonLayoutManager(this);
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use ButtonRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ButtonRenderer()
-		{
-			AutoPackage = false;
-			_backgroundTracker = new BorderBackgroundManager(this);
-			_buttonLayoutManager = new ButtonLayoutManager(this);
-		}
-
 		global::Android.Widget.Button NativeButton => Control;
 
 		protected override void SetContentDescription()

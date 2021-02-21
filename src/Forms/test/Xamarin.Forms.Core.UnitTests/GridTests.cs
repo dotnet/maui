@@ -2011,8 +2011,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 			grid.Children.Add(new Label { BackgroundColor = Color.Lime, Text = "Foo", IsPlatformEnabled = true });
 			grid.Children.Add(new Label { Text = "Bar", IsPlatformEnabled = true }, 0, 1);
-			grid.Children.Add(new Label { Text = "Baz", XAlign = TextAlignment.End, IsPlatformEnabled = true }, 1, 0);
-			grid.Children.Add(new Label { Text = "Qux", XAlign = TextAlignment.End, IsPlatformEnabled = true }, 1, 1);
+			grid.Children.Add(new Label { Text = "Baz", HorizontalTextAlignment = TextAlignment.End, IsPlatformEnabled = true }, 1, 0);
+			grid.Children.Add(new Label { Text = "Qux", HorizontalTextAlignment = TextAlignment.End, IsPlatformEnabled = true }, 1, 1);
 
 			var request = grid.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(206, request.Request.Width);

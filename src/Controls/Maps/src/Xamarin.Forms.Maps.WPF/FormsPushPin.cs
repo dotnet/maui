@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maps.MapControl.WPF;
 
@@ -36,9 +31,7 @@ namespace Xamarin.Forms.Maps.WPF
 
 		void FormsPushPin_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-#pragma warning disable CS0618
-			Pin.SendTap();
-#pragma warning restore CS0618
+			Pin.SendMarkerClick();
 		}
 
 		void PinPropertyChanged(object sender, PropertyChangedEventArgs e)

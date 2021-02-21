@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using Gdk;
 using Gtk;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using Xamarin.Forms.Platform.GTK.Helpers;
@@ -86,7 +85,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 			if (e.PropertyName == Label.TextColorProperty.PropertyName)
 				UpdateColor();
-			else if (e.PropertyName == Label.FontProperty.PropertyName)
+			else if (e.PropertyName == Label.FontAttributesProperty.PropertyName || e.PropertyName == Label.FontFamilyProperty.PropertyName || e.PropertyName == Label.FontSizeProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == Label.TextProperty.PropertyName)
 				UpdateText();

@@ -2,10 +2,13 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Xaml.UnitTests.Bz44213">
 	<Label x:Name="label">
 		<Label.Text>
-			<OnPlatform x:TypeArguments="BindingBase" Android="{Binding Bar}">
-				<OnPlatform.iOS>
+			<OnPlatform x:TypeArguments="BindingBase">
+				<On Platform="Android">
+					<Binding Path="Bar"/>
+				</On>
+				<On Platform="iOS">
 					<Binding Path="Foo"/>
-				</OnPlatform.iOS>
+				</On>
 			</OnPlatform>
 		</Label.Text>
 	</Label>

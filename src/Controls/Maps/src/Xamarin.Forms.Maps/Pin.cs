@@ -39,20 +39,6 @@ namespace Xamarin.Forms.Maps
 			set { SetValue(TypeProperty, value); }
 		}
 
-
-		// introduced to store the unique id for Android markers
-		[Obsolete("This property is obsolete as of 4.0.0. Please use MarkerId instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public new object Id
-		{
-			get => _id;
-			set
-			{
-				_id = value;
-				_markerId = value;
-			}
-		}
-
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public object MarkerId
 		{
@@ -64,9 +50,6 @@ namespace Xamarin.Forms.Maps
 				_id = value;
 			}
 		}
-
-		[Obsolete("This event is obsolete as of 4.3.0. Please use MarkerClicked and/or InfoWindowClicked instead.")]
-		public event EventHandler Clicked;
 
 		public event EventHandler<PinClickedEventArgs> MarkerClicked;
 
@@ -103,18 +86,6 @@ namespace Xamarin.Forms.Maps
 		public static bool operator !=(Pin left, Pin right)
 		{
 			return !Equals(left, right);
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("This method is obsolete as of 4.3.0.")]
-		public bool SendTap()
-		{
-			EventHandler handler = Clicked;
-			if (handler == null)
-				return false;
-
-			handler(this, EventArgs.Empty);
-			return true;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

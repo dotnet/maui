@@ -255,12 +255,6 @@ namespace Xamarin.Forms.Platform.Android
 				}
 				cell = (Cell)boxedCell.Element;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-				// The Platform property is no longer necessary, but we have to set it because some third-party
-				// library might still be retrieving it and using it
-				cell.Platform = _listView.Platform;
-#pragma warning restore CS0618 // Type or member is obsolete
-
 				ICellController cellController = cell;
 				cellController.SendDisappearing();
 

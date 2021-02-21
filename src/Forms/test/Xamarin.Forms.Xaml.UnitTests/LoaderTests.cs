@@ -58,14 +58,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public class Catalog
 	{
 		public static readonly BindableProperty MessageProperty =
-#pragma warning disable 618
-			BindableProperty.CreateAttached<Catalog, string>(bindable => GetMessage(bindable), default(string),
-#pragma warning restore 618
+			BindableProperty.CreateAttached("Message", typeof(string), typeof(Catalog), default(string),
 				propertyChanged: (bindable, oldvalue, newvalue) =>
 				{
 					var label = bindable as Label;
 					if (label != null)
-						label.SetValue(Label.TextProperty, new string(newvalue.Reverse().ToArray()));
+						label.SetValue(Label.TextProperty, new string(((string)newvalue).Reverse().ToArray()));
 				});
 
 		public static string GetMessage(BindableObject bindable)

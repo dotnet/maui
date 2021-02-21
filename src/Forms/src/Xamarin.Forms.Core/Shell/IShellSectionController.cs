@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 
@@ -26,18 +24,6 @@ namespace Xamarin.Forms
 
 		void SendPopping(Task poppingCompleted);
 		void SendPoppingToRoot(Task finishedPopping);
-
-		[Obsolete]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		void SendPopped();
-
-		[Obsolete]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		void SendPopping(Page page);
-
-		[Obsolete]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		void SendPopped(Page page);
 
 		ReadOnlyCollection<ShellContent> GetItems();
 

@@ -93,14 +93,6 @@ namespace Xamarin.Forms.Controls
 							})
 						},
 						new Button {
-							Text = "Make sure Tint still works",
-							Command = new Command (() => {
-	#pragma warning disable 618
-								rootNavPage.Tint = Color.Red;
-	#pragma warning restore 618
-							})
-						},
-						new Button {
 							Text = "Black background, white text",
 							Command = new Command (() => {
 								rootNavPage.BarTextColor = Color.White;

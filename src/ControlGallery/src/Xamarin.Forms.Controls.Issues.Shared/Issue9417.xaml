@@ -43,7 +43,7 @@
                                     Command="{Binding Source={x:Reference Issue9417Page}, Path=BindingContext.DeleteCommand}" 
                                     CommandParameter="{Binding .}" 
                                     Text="Delete" 
-                                    Icon="{StaticResource TrashCanImage}"
+                                    IconImageSource="{StaticResource TrashCanImage}"
                                     BackgroundColor="{StaticResource DeleteButtonColor}" />
                             </SwipeItems>
                         </SwipeView.RightItems>
@@ -53,7 +53,7 @@
                                     Command="{Binding Source={x:Reference Issue9417Page}, Path=BindingContext.EditCommand}"
                                     CommandParameter="{Binding .}"
                                     Text="Edit"
-                                    Icon="{StaticResource EditImage}"
+                                    IconImageSource="{StaticResource EditImage}"
                                     BackgroundColor="{StaticResource SaveButtonColor}" />
                             </SwipeItems>
                         </SwipeView.LeftItems>

@@ -382,9 +382,6 @@
       <DependentUpon>Issue4992.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Issue4915.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue5131.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5376.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60787.xaml.cs">
@@ -740,7 +737,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60774_2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ButtonBackgroundColorTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CarouselAsync.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34561.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34727.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ComplexListView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomImageRendererErrorHandling.cs" />
@@ -1002,7 +998,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60382.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60524.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59925.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60691.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1326.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1436.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1567.cs" />
@@ -1225,7 +1220,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla27779.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla27698.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla29247.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla27318.xaml.cs">
       <DependentUpon>Bugzilla27318.xaml</DependentUpon>
     </Compile>
@@ -1935,7 +1929,6 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9906.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8958.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
@@ -2292,12 +2285,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)A11yTabIndex.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4915.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>

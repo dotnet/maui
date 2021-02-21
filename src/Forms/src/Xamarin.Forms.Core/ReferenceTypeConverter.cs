@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Globalization;
-
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Xaml.Internals;
@@ -9,9 +7,6 @@ namespace Xamarin.Forms
 {
 	public sealed class ReferenceTypeConverter : TypeConverter, IExtendedTypeConverter
 	{
-		object IExtendedTypeConverter.ConvertFrom(CultureInfo culture, object value, IServiceProvider serviceProvider)
-			=> ((IExtendedTypeConverter)this).ConvertFromInvariantString(value as string, serviceProvider);
-
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)

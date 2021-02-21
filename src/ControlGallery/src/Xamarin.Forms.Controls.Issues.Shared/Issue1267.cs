@@ -34,14 +34,10 @@ namespace Xamarin.Forms.Controls.Issues
 			grid.Children.Add(label = new Label(), 0, 1);
 			label.SetBinding(Label.TextProperty, "LastName");
 
-#pragma warning disable 618
-			grid.Children.Add(label = new Label { XAlign = TextAlignment.End }, 1, 0);
-#pragma warning restore 618
+			grid.Children.Add(label = new Label { HorizontalTextAlignment = TextAlignment.End }, 1, 0);
 			label.SetBinding(Label.TextProperty, "Zip");
 
-#pragma warning disable 618
-			grid.Children.Add(label = new Label { XAlign = TextAlignment.End }, 1, 1);
-#pragma warning restore 618
+			grid.Children.Add(label = new Label { VerticalTextAlignment = TextAlignment.End }, 1, 1);
 			label.SetBinding(Label.TextProperty, "City");
 			View = grid;
 

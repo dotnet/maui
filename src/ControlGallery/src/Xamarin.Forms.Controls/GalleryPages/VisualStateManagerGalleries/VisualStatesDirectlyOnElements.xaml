@@ -28,14 +28,14 @@
 				</VisualStateManager.VisualStateGroups>
 			</Label>
 
-			<Button x:Name="AButton" Text="Button" ContentLayout="Left" HorizontalOptions="Start" Image="coffee.png" TextColor="Blue">
+            <Button x:Name="AButton" Text="Button" ContentLayout="Left" HorizontalOptions="Start" ImageSource="coffee.png" TextColor="Blue">
 				<VisualStateManager.VisualStateGroups>
 					<VisualStateGroup x:Name="ColorStates">
 						<VisualState x:Name="Normal" />
 						<VisualState x:Name="Invalid">
 							<VisualState.Setters>
 								<Setter Property="TextColor" Value="DarkRed"/>
-								<Setter Property="Image" Value="toolbar_close.png"/>
+								<Setter Property="ImageSource" Value="toolbar_close.png"/>
 							</VisualState.Setters>
 						</VisualState>
 					</VisualStateGroup>

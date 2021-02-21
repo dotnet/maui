@@ -23,12 +23,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 			stack.Children.Add(new Label()
 			{
-				VerticalOptions =
-#pragma warning disable 618
-				LayoutOptions.Center,
-				XAlign = TextAlignment.Center,
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalTextAlignment = TextAlignment.Center,
 				Text = "Page 1"
-#pragma warning restore 618
 			});
 
 			Content = stack;

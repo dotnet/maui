@@ -31,6 +31,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
+			[Ignore("Temporarily ignore: https://github.com/xamarin/Xamarin.Forms/issues/13815")]
 			[TestCase(true)]
 			[TestCase(false)]
 			public void OnPlatformFontConversion(bool useCompiledXaml)

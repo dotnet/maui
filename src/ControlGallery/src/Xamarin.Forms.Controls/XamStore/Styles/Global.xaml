@@ -17,7 +17,9 @@
     <x:Double x:Key="mediumTextSize">20</x:Double>
     <x:Double x:Key="smallTextSize">14</x:Double>
     <x:Double x:Key="standardPadding">10</x:Double>
-    <OnPlatform x:Key="IconButtonWidth" x:TypeArguments="x:Double" Default="-1" Android="40" />
+    <OnPlatform x:Key="IconButtonWidth" x:TypeArguments="x:Double" Default="-1">
+        <On Platform="Android" Value="30"/>
+    </OnPlatform>
     <Style x:Key="NakedButton" TargetType="Button">
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="TextColor" Value="{StaticResource accentColor}" />

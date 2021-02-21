@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
@@ -20,13 +19,6 @@ namespace Xamarin.Forms.Platform.Android
 		bool _isDisposed;
 
 		public SliderRenderer(Context context) : base(context)
-		{
-			AutoPackage = false;
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use SliderRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public SliderRenderer()
 		{
 			AutoPackage = false;
 		}
@@ -101,7 +93,7 @@ namespace Xamarin.Forms.Platform.Android
 			get { return Control; }
 		}
 
-		[PortHandler("Mapped Minimum, Maximum and Value properties")]
+		[PortHandler]
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (this.IsDisposed())

@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -11,14 +11,10 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		internal Thumb Thumb { get; set; }
 		internal Thumb ImageThumb { get; set; }
-			   
-		public static readonly DependencyProperty ThumbImageSourceProperty = 
-			DependencyProperty.Register(nameof(ThumbImageSource), typeof(WImageSource), 
-			typeof(FormsSlider), new PropertyMetadata(null, PropertyChangedCallback));
 
-		[Obsolete("ThumbImageProperty is obsolete as of 4.0.0. Please use ThumbImageSourceProperty instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly DependencyProperty ThumbImageProperty = ThumbImageSourceProperty;
+		public static readonly DependencyProperty ThumbImageSourceProperty =
+			DependencyProperty.Register(nameof(ThumbImageSource), typeof(WImageSource),
+			typeof(FormsSlider), new PropertyMetadata(null, PropertyChangedCallback));
 
 		static void PropertyChangedCallback(DependencyObject dependencyObject,
 			DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
@@ -49,14 +45,6 @@ namespace Xamarin.Forms.Platform.UWP
 		public WImageSource ThumbImageSource
 		{
 			get { return (WImageSource)GetValue(ThumbImageSourceProperty); }
-			set { SetValue(ThumbImageSourceProperty, value); }
-		}
-
-		[Obsolete("ThumbImage is obsolete as of 4.0.0. Please use ThumbImageSource instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public BitmapImage ThumbImage
-		{
-			get { return GetValue(ThumbImageSourceProperty) as BitmapImage; }
 			set { SetValue(ThumbImageSourceProperty, value); }
 		}
 

@@ -504,12 +504,5 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		public MasterDetailPageRenderer(Context context) : base(context)
 		{
 		}
-
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use FlyoutPageRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public MasterDetailPageRenderer() : base(Forms.Context)
-		{
-		}
 	}
 }

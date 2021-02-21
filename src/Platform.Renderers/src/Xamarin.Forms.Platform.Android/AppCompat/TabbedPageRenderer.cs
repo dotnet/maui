@@ -55,13 +55,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use TabbedPageRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public TabbedPageRenderer()
-		{
-			AutoPackage = false;
-		}
-
 		Platform Platform
 		{
 			get
@@ -714,11 +707,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			_ = this.ApplyDrawableAsync(page, Page.IconImageSourceProperty, Context, icon =>
 			{
 				SetTabIconImageSource(tab, icon);
-
-#pragma warning disable CS0618 // Type or member is obsolete
-				SetTabIcon(tab, page.Icon as FileImageSource);
-#pragma warning restore CS0618 // Type or member is obsolete
-
 			});
 		}
 

@@ -208,12 +208,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use ImageRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ImageRenderer() : base(Forms.Context)
-		{
-		}
-
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (this.IsDisposed())

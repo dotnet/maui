@@ -16,9 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			public RoundedButton(int radius)
 			{
-#pragma warning disable 0618
-				base.BorderRadius = radius;
-#pragma warning restore
+				base.CornerRadius = radius;
 				base.WidthRequest = 2 * radius;
 				base.HeightRequest = 2 * radius;
 				HorizontalOptions = LayoutOptions.Center;
@@ -30,22 +28,18 @@ namespace Xamarin.Forms.Controls.Issues
 				//Image = new FileImageSource { File = "crimson.jpg" };
 			}
 
-			public new int BorderRadius
+			public new int CornerRadius
 			{
 				get
 				{
-#pragma warning disable 0618
-					return base.BorderRadius;
-#pragma warning restore
+					return base.CornerRadius;
 				}
 
 				set
 				{
 					base.WidthRequest = 2 * value;
 					base.HeightRequest = 2 * value;
-#pragma warning disable 0618
-					base.BorderRadius = value;
-#pragma warning restore
+					base.CornerRadius = value;
 				}
 			}
 
@@ -60,9 +54,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					base.WidthRequest = value;
 					base.HeightRequest = value;
-#pragma warning disable 0618
-					base.BorderRadius = ((int)value) / 2;
-#pragma warning restore
+					base.CornerRadius = ((int)value) / 2;
 				}
 			}
 
@@ -77,9 +69,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					base.WidthRequest = value;
 					base.HeightRequest = value;
-#pragma warning disable 0618
-					base.BorderRadius = ((int)value) / 2;
-#pragma warning restore
+					base.CornerRadius = ((int)value) / 2;
 				}
 			}
 		}

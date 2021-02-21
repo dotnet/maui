@@ -1,10 +1,7 @@
-using System;
-using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.Widget;
 using AListView = Android.Widget.ListView;
-using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -14,13 +11,6 @@ namespace Xamarin.Forms.Platform.Android
 		bool _disposed;
 
 		public TableViewRenderer(Context context) : base(context)
-		{
-			AutoPackage = false;
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use TableViewRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public TableViewRenderer()
 		{
 			AutoPackage = false;
 		}

@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
-using Android.Graphics;
 using Android.Views;
 using Xamarin.Forms.Internals;
 using AImageView = Android.Widget.ImageView;
@@ -22,13 +21,6 @@ namespace Xamarin.Forms.Platform.Android
 		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 
 		public ImageRenderer(Context context) : base(context)
-		{
-			AutoPackage = false;
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use ImageRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ImageRenderer()
 		{
 			AutoPackage = false;
 		}

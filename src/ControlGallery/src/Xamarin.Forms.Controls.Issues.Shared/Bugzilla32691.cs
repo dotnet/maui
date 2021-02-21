@@ -21,9 +21,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-#pragma warning disable 618
-			var label = new Label() { XAlign = TextAlignment.Center };
-#pragma warning restore 618
+			var label = new Label() { HorizontalTextAlignment = TextAlignment.Center };
 			var image = new Image();
 
 			image.PropertyChanged += (sender, e) =>

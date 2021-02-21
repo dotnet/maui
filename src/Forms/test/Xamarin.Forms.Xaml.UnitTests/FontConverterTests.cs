@@ -21,9 +21,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var label = new Label().LoadFromXaml(xaml);
 
 			Assert.AreEqual(result, label.FontAttributes);
-#pragma warning disable 618
-			Assert.AreEqual(result, label.Font.FontAttributes);
-#pragma warning restore 618
 		}
 	}
 }

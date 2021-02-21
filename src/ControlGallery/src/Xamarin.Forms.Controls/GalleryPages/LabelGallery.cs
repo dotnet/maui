@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Xamarin.Forms.Controls
+﻿namespace Xamarin.Forms.Controls
 {
 	public class LabelGallery : ContentPage
 	{
@@ -52,10 +46,8 @@ namespace Xamarin.Forms.Controls
 			{
 				FormattedText = new FormattedString
 				{
-					Spans = { 
-#pragma warning disable 618
-						new Span {Text="FormattedStrings ", TextColor=Color.Blue, BackgroundColor = Color.Yellow, Font = Font.BoldSystemFontOfSize (NamedSize.Large)},
-#pragma warning restore 618
+					Spans = {
+						new Span {Text="FormattedStrings ", TextColor=Color.Blue, BackgroundColor = Color.Yellow, FontAttributes = FontAttributes.Bold, FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label))},
 					}
 				}
 			};
@@ -66,33 +58,23 @@ namespace Xamarin.Forms.Controls
 
 			var missingfont = new Label { Text = "Missing font: use default" };
 
-#pragma warning disable 618
-			micro.Font = Font.SystemFontOfSize(NamedSize.Micro);
-#pragma warning restore 618
+			micro.FontSize = Device.GetNamedSize(NamedSize.Micro, typeof(Label));
 
-#pragma warning disable 618
-			small.Font = Font.SystemFontOfSize(NamedSize.Small);
-#pragma warning restore 618
+			small.FontSize = Device.GetNamedSize(NamedSize.Small, typeof(Label));
 
-#pragma warning disable 618
-			medium.Font = Font.SystemFontOfSize(NamedSize.Medium);
-#pragma warning restore 618
+			medium.FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
 
-#pragma warning disable 618
-			large.Font = Font.SystemFontOfSize(NamedSize.Large);
-#pragma warning restore 618
+			large.FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label));
 
-#pragma warning disable 618
-			bold.Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold);
-#pragma warning restore 618
+			bold.FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
+			bold.FontAttributes = FontAttributes.Bold;
 
-#pragma warning disable 618
-			italic.Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Italic);
-#pragma warning restore 618
+			italic.FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
+			italic.FontAttributes = FontAttributes.Italic;
 
-#pragma warning disable 618
-			bolditalic.Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold | FontAttributes.Italic);
-#pragma warning restore 618
+			bolditalic.FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
+			bolditalic.FontAttributes = FontAttributes.Bold | FontAttributes.Italic;
+
 			string fontName;
 			switch (Device.RuntimePlatform)
 			{
@@ -107,30 +89,35 @@ namespace Xamarin.Forms.Controls
 					fontName = "Comic Sans MS";
 					break;
 			}
-			var font = Font.OfSize(fontName, NamedSize.Medium);
-#pragma warning disable 618
-			customFont.Font = font;
-#pragma warning restore 618
 
-#pragma warning disable 618
-			italicfont.Font = font.WithAttributes(FontAttributes.Italic);
-#pragma warning restore 618
+			customFont.FontFamily = fontName;
+			customFont.FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
 
-#pragma warning disable 618
-			boldfont.Font = font.WithAttributes(FontAttributes.Bold);
-#pragma warning restore 618
+			italicfont.FontFamily = fontName;
+			italicfont.FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
+			italicfont.FontAttributes = FontAttributes.Italic;
 
-#pragma warning disable 618
-			bolditalicfont.Font = font.WithAttributes(FontAttributes.Bold | FontAttributes.Italic);
-#pragma warning restore 618
+			boldfont.FontFamily = fontName;
+			boldfont.FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
+			boldfont.FontAttributes = FontAttributes.Bold;
 
-#pragma warning disable 618
-			customFont.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(o => customFont.Font = Font.Default) });
-#pragma warning restore 618
+			bolditalicfont.FontFamily = fontName;
+			bolditalicfont.FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
+			bolditalicfont.FontAttributes = FontAttributes.Bold | FontAttributes.Italic;
 
-#pragma warning disable 618
-			missingfont.Font = Font.OfSize("FooBar", 20);
-#pragma warning restore 618
+			customFont.GestureRecognizers.Add(new TapGestureRecognizer
+			{
+				Command = new Command(o =>
+					{
+						customFont.FontAttributes = FontAttributes.None;
+						customFont.FontFamily = null;
+						customFont.FontSize = 0;
+					})
+			});
+
+			missingfont.FontFamily = "FooBar";
+			missingfont.FontSize = 20;
+
 			center.HorizontalTextAlignment = TextAlignment.Center;
 			right.HorizontalTextAlignment = TextAlignment.End;
 			int i = 1;

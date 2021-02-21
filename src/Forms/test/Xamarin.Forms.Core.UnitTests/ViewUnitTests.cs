@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Threading.Tasks;
 
 using NUnit.Framework;
@@ -99,126 +97,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 			view.IsVisible = true;
 			Assert.True(signaled);
-		}
-
-		[Test]
-		public void TestOnPlatformiOS()
-		{
-			var view = new View();
-
-			bool ios = false;
-			bool android = false;
-			bool winphone = false;
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
-
-			Device.OnPlatform(
-				iOS: () => ios = true,
-				Android: () => android = true,
-				WinPhone: () => winphone = true);
-
-			Assert.True(ios);
-			Assert.False(android);
-			Assert.False(winphone);
-		}
-
-		[Test]
-		public void TestOnPlatformAndroid()
-		{
-			var view = new View();
-
-			bool ios = false;
-			bool android = false;
-			bool winphone = false;
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
-
-			Device.OnPlatform(
-				iOS: () => ios = true,
-				Android: () => android = true,
-				WinPhone: () => winphone = true);
-
-			Assert.False(ios);
-			Assert.True(android);
-			Assert.False(winphone);
-		}
-
-		[Test]
-		public void TestOnPlatformDefault()
-		{
-			var view = new View();
-
-			bool ios = false;
-			bool android = false;
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
-
-			Device.OnPlatform(
-				iOS: () => ios = false,
-				Default: () => android = true);
-
-			Assert.False(ios);
-			Assert.True(android);
-		}
-
-		[Test]
-		public void TestOnPlatformNoOpWithoutDefault()
-		{
-			bool any = false;
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = "Other";
-
-			Device.OnPlatform(
-				iOS: () => any = true,
-				Android: () => any = true,
-				WinPhone: () => any = true);
-
-			Assert.False(any);
-		}
-
-		[Test]
-		public void TestDefaultOniOS()
-		{
-			bool defaultExecuted = false;
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
-
-			Device.OnPlatform(
-				Android: () => { },
-				WinPhone: () => { },
-				Default: () => defaultExecuted = true);
-
-			Assert.True(defaultExecuted);
-		}
-
-		[Test]
-		public void TestDefaultOnAndroid()
-		{
-			bool defaultExecuted = false;
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
-
-			Device.OnPlatform(
-				iOS: () => { },
-				WinPhone: () => { },
-				Default: () => defaultExecuted = true);
-
-			Assert.True(defaultExecuted);
-		}
-
-		[Test]
-		public void TestDefaultOnOther()
-		{
-			bool defaultExecuted = false;
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = "Other";
-
-			Device.OnPlatform(
-				iOS: () => { },
-				Android: () => { },
-				WinPhone: () => { },
-				Default: () => defaultExecuted = true);
-
-			Assert.True(defaultExecuted);
 		}
 
 		[Test]
@@ -399,19 +277,6 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			child.Children.Remove(ancestor);
 			Assert.True(removed, "AncestorRemoved must fire when removing a child from an ancestor of a view.");
-		}
-
-		[Test]
-		public void TestOnPlatformGeneric()
-		{
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
-			Assert.AreEqual(1, Device.OnPlatform(1, 2, 3));
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
-			Assert.AreEqual(2, Device.OnPlatform(1, 2, 3));
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = "Other";
-			Assert.AreEqual(1, Device.OnPlatform(1, 2, 3));
 		}
 
 		[Test]
@@ -607,29 +472,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			view.SetValueCore(VisualElement.IsFocusedPropertyKey, false);
 
 			Assert.True(fired);
-		}
-
-		[Test]
-		public void TestOpenUriAction()
-		{
-			var uri = new Uri("http://www.xamarin.com/");
-			var invoked = false;
-			Device.PlatformServices = new MockPlatformServices(openUriAction: u =>
-			{
-				Assert.AreSame(uri, u);
-				invoked = true;
-			});
-
-			Device.OpenUri(uri);
-			Assert.True(invoked);
-		}
-
-		[Test]
-		public void OpenUriThrowsWhenNull()
-		{
-			Device.PlatformServices = null;
-			var uri = new Uri("http://www.xamarin.com/");
-			Assert.Throws<InvalidOperationException>(() => Device.OpenUri(uri));
 		}
 
 		[Test]

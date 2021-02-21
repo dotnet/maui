@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,10 +16,6 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), true);
 
-		[Obsolete("TintProperty is obsolete as of version 1.2.0. Please use BarBackgroundColorProperty and BarTextColorProperty to change NavigationPage bar color properties.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty TintProperty = BindableProperty.Create("Tint", typeof(Color), typeof(NavigationPage), Color.Default);
-
 		public static readonly BindableProperty BarBackgroundColorProperty = BarElement.BarBackgroundColorProperty;
 
 		public static readonly BindableProperty BarBackgroundProperty = BarElement.BarBackgroundProperty;
@@ -28,10 +23,6 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
 		public static readonly BindableProperty TitleIconImageSourceProperty = BindableProperty.CreateAttached("TitleIconImageSource", typeof(ImageSource), typeof(NavigationPage), default(ImageSource));
-
-		[Obsolete("TitleIconProperty is obsolete as of 4.0.0. Please use TitleIconImageSourceProperty instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty TitleIconProperty = TitleIconImageSourceProperty;
 
 		public static readonly BindableProperty IconColorProperty = BindableProperty.CreateAttached("IconColor", typeof(Color), typeof(NavigationPage), Color.Default);
 
@@ -71,14 +62,6 @@ namespace Xamarin.Forms
 		{
 			get => (Color)GetValue(BarElement.BarTextColorProperty);
 			set => SetValue(BarElement.BarTextColorProperty, value);
-		}
-
-		[Obsolete("Tint is obsolete as of version 1.2.0. Please use BarBackgroundColor and BarTextColor to change NavigationPage bar color properties.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Color Tint
-		{
-			get { return (Color)GetValue(TintProperty); }
-			set { SetValue(TintProperty, value); }
 		}
 
 		internal Task CurrentNavigationTask { get; set; }
@@ -151,13 +134,6 @@ namespace Xamarin.Forms
 		public static bool GetHasNavigationBar(BindableObject page)
 		{
 			return (bool)page.GetValue(HasNavigationBarProperty);
-		}
-
-		[Obsolete("GetTitleIcon is obsolete as of 4.0.0. Please use GetTitleIconImageSource instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static FileImageSource GetTitleIcon(BindableObject bindable)
-		{
-			return bindable.GetValue(TitleIconImageSourceProperty) as FileImageSource;
 		}
 
 		public static ImageSource GetTitleIconImageSource(BindableObject bindable)
@@ -280,13 +256,6 @@ namespace Xamarin.Forms
 		public static void SetHasNavigationBar(BindableObject page, bool value)
 		{
 			page.SetValue(HasNavigationBarProperty, value);
-		}
-
-		[Obsolete("SetTitleIcon is obsolete as of 4.0.0. Please use SetTitleIconImageSource instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetTitleIcon(BindableObject bindable, FileImageSource value)
-		{
-			bindable.SetValue(TitleIconImageSourceProperty, value);
 		}
 
 		public static void SetTitleIconImageSource(BindableObject bindable, ImageSource value)

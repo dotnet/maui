@@ -20,13 +20,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var label = new Label
 			{
 				Text = "I should have a toolbar item",
-#pragma warning disable 618
-				XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-				YAlign = TextAlignment.Center
-#pragma warning restore 618
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center
 			};
 
 			var refreshBtn = new ToolbarItem("Refresh", null, () => label.Text = "Clicking it works");

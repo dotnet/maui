@@ -167,14 +167,6 @@ namespace Xamarin.Forms
 			return resultArray;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("GetValues is obsolete as of 4.0.0. Please use GetValue instead.")]
-		public object[] GetValues(BindableProperty property0, BindableProperty property1) => new object[] { GetValue(property0), GetValue(property1) };
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("GetValues is obsolete as of 4.0.0. Please use GetValue instead.")]
-		public object[] GetValues(BindableProperty property0, BindableProperty property1, BindableProperty property2) => new object[] { GetValue(property0), GetValue(property1), GetValue(property2) };
-
 		public bool IsSet(BindableProperty targetProperty)
 		{
 			var bpcontext = GetContext(targetProperty ?? throw new ArgumentNullException(nameof(targetProperty)));

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using NUnit.Framework;
 using Xamarin.Forms.Internals;
@@ -297,25 +296,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void MergedWithFailsToMergeAnythingButRDs()
-		{
-			var rd = new ResourceDictionary();
-			Assert.DoesNotThrow(() => rd.MergedWith = typeof(MyRD));
-			Assert.Throws<ArgumentException>(() => rd.MergedWith = typeof(ContentPage));
-		}
-
-		[Test]
-		public void MergedResourcesAreFound()
-		{
-			var rd0 = new ResourceDictionary();
-			rd0.MergedWith = typeof(MyRD);
-
-			object _;
-			Assert.True(rd0.TryGetValue("foo", out _));
-			Assert.AreEqual("Foo", _);
-		}
-
-		[Test]
 		public void ThrowOnDuplicateKey()
 		{
 			var rd0 = new ResourceDictionary();
@@ -330,57 +310,6 @@ namespace Xamarin.Forms.Core.UnitTests
 				Assert.Pass();
 			}
 			Assert.Fail();
-		}
-
-		[Test]
-		public void ContainsReturnsValuesForMergedRD()
-		{
-			var rd = new ResourceDictionary {
-				{"baz", "BAZ"},
-				{"qux", "QUX"},
-			};
-			rd.MergedWith = typeof(MyRD);
-
-			Assert.That(rd.Contains(new KeyValuePair<string, object>("foo", "Foo")), Is.True);
-		}
-
-		[Test]
-		public void CountDoesIncludeMerged()
-		{
-			var rd = new ResourceDictionary {
-				{"baz", "Baz"},
-				{"qux", "Qux"},
-			};
-			rd.MergedWith = typeof(MyRD);
-
-			Assert.That(rd.Count, Is.EqualTo(4));
-		}
-
-		[Test]
-		public void IndexerLookupInMerged()
-		{
-			var rd = new ResourceDictionary {
-				{"baz", "BAZ"},
-				{"qux", "QUX"},
-			};
-			rd.MergedWith = typeof(MyRD);
-
-			Assert.That(() => rd["foo"], Throws.Nothing);
-			Assert.That(rd["foo"], Is.EqualTo("Foo"));
-		}
-
-		[Test]
-		public void TryGetValueLookupInMerged()
-		{
-			var rd = new ResourceDictionary {
-				{"baz", "BAZ"},
-				{"qux", "QUX"},
-			};
-			rd.MergedWith = typeof(MyRD);
-
-			object _;
-			Assert.That(rd.TryGetValue("foo", out _), Is.True);
-			Assert.That(rd.TryGetValue("baz", out _), Is.True);
 		}
 
 		[Test]

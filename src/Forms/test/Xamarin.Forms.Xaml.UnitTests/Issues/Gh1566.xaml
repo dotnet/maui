@@ -6,7 +6,7 @@
     <Frame x:Name="frame">
         <Frame.Style>
             <Style TargetType="Frame">
-                <Setter Property="Frame.OutlineColor" Value="Red" />
+                <Setter Property="Frame.BorderColor" Value="Red" />
             </Style>
         </Frame.Style>
     </Frame>

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
@@ -12,12 +11,12 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			const BindingMode mode = BindingMode.OneWayToSource;
 			const string dvalue = "default";
-			BindableProperty.CoerceValueDelegate<string> coerce = (bindable, value) => value;
-			BindableProperty.ValidateValueDelegate<string> validate = (b, v) => true;
-			BindableProperty.BindingPropertyChangedDelegate<string> changed = (b, ov, nv) => { };
-			BindableProperty.BindingPropertyChangingDelegate<string> changing = (b, ov, nv) => { };
+			BindableProperty.CoerceValueDelegate coerce = (bindable, value) => value;
+			BindableProperty.ValidateValueDelegate validate = (b, v) => true;
+			BindableProperty.BindingPropertyChangedDelegate changed = (b, ov, nv) => { };
+			BindableProperty.BindingPropertyChangingDelegate changing = (b, ov, nv) => { };
 
-			var prop = BindableProperty.Create<Button, string>(b => b.Text, dvalue, mode, validate, changed, changing, coerce);
+			var prop = BindableProperty.Create(nameof(Button.Text), typeof(string), typeof(Button), dvalue, mode, validate, changed, changing, coerce);
 			Assert.AreEqual("Text", prop.PropertyName);
 			Assert.AreEqual(typeof(Button), prop.DeclaringType);
 			Assert.AreEqual(typeof(string), prop.ReturnType);
@@ -29,14 +28,14 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void CreateWithDefaultMode()
 		{
 			const BindingMode mode = BindingMode.Default;
-			var prop = BindableProperty.Create<Button, string>(b => b.Text, null, defaultBindingMode: mode);
+			var prop = BindableProperty.Create(nameof(Button.Text), typeof(string), typeof(Button), null, defaultBindingMode: mode);
 			Assert.AreEqual(BindingMode.OneWay, prop.DefaultBindingMode);
 		}
 
 		[Test]
 		public void CreateCasted()
 		{
-			var prop = BindableProperty.Create<Cell, bool>(c => c.IsEnabled, true);
+			var prop = BindableProperty.Create(nameof(Cell.IsEnabled), typeof(bool), typeof(Cell), true);
 
 			Assert.AreEqual("IsEnabled", prop.PropertyName);
 			Assert.AreEqual(typeof(Cell), prop.DeclaringType);
@@ -93,20 +92,18 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			bool changingfired = false;
 			bool changedfired = false;
-			BindableProperty.BindingPropertyChangedDelegate<string> changed = (b, ov, nv) =>
+			BindableProperty.BindingPropertyChangedDelegate changed = (b, ov, nv) =>
 			{
 				Assert.True(changingfired);
 				changedfired = true;
 			};
-			BindableProperty.BindingPropertyChangingDelegate<string> changing = (b, ov, nv) =>
+			BindableProperty.BindingPropertyChangingDelegate changing = (b, ov, nv) =>
 			{
 				Assert.False(changedfired);
 				changingfired = true;
 			};
 
-			var prop = BindableProperty.Create<Button, string>(b => b.Text, "Foo",
-				propertyChanging: changing,
-				propertyChanged: changed);
+			var prop = BindableProperty.Create(nameof(Button.Text), typeof(string), typeof(Button), "Foo", propertyChanging: changing, propertyChanged: changed);
 
 			Assert.False(changingfired);
 			Assert.False(changedfired);

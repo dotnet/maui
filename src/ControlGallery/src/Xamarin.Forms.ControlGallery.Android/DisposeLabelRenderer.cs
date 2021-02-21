@@ -1,3 +1,4 @@
+using Android.Content;
 using Xamarin.Forms.Controls;
 using Xamarin.Forms.Platform.Android;
 
@@ -12,6 +13,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 #endif
 #pragma warning restore 618
 	{
+		public DisposeLabelRenderer(Context context) : base(context)
+		{
+		}
+
 		protected override void Dispose (bool disposing)
 		{
 

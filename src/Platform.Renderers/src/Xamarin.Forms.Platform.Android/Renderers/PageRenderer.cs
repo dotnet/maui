@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
@@ -14,12 +13,6 @@ namespace Xamarin.Forms.Platform.Android
 	public class PageRenderer : VisualElementRenderer<Page>, IOrderedTraversalController
 	{
 		public PageRenderer(Context context) : base(context)
-		{
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use PageRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public PageRenderer()
 		{
 		}
 

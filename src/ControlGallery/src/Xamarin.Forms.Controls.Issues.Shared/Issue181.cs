@@ -25,13 +25,8 @@ namespace Xamarin.Forms.Controls.Issues
 					Text = "I should have red text",
 					TextColor = Color.Red,
 					BackgroundColor = new Color(0.5, 0.5, 0.5),
-#pragma warning disable 618
-					XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-					YAlign = TextAlignment.Center
-#pragma warning restore 618
+					HorizontalTextAlignment = TextAlignment.Center,
+					VerticalTextAlignment = TextAlignment.Center
 				}
 			};
 		}

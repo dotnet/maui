@@ -6,14 +6,15 @@
   <local:TestContentPage.Resources>
     <ResourceDictionary>
 
-      <OnPlatform
-          x:Key="SizeMedium"
-          x:TypeArguments="x:Double"
-          iOS="40"
-          Android="30"
-          WinPhone="60" />
+            <OnPlatform
+                x:Key="SizeMedium"
+                x:TypeArguments="x:Double">
+                    <On Platform="iOS" Value="40"/>
+                    <On Platform="Android" Value="30"/>
+                    <On Platform="UWP" Value="60"/>
+            </OnPlatform>
 
-      <x:Double x:Key="SizeLarge">80</x:Double>
+            <x:Double x:Key="SizeLarge">80</x:Double>
 
     </ResourceDictionary>
   </local:TestContentPage.Resources>
@@ -24,11 +25,12 @@
       <Label Text="If there is a blue box and a red box below, this test has passed. If the application crashes, the test has not passed."></Label>
       <BoxView HorizontalOptions="Center" VerticalOptions="Center" BackgroundColor="Blue" WidthRequest="{StaticResource SizeMedium}">
         <BoxView.HeightRequest>
-          <OnPlatform
-                        x:TypeArguments="x:Double"
-                        iOS="40"
-                        Android="30"
-                        WinPhone="60" />
+                    <OnPlatform
+                        x:TypeArguments="x:Double">
+                        <On Platform="iOS" Value="40"/>
+                        <On Platform="Android" Value="30"/>
+                        <On Platform="UWP" Value="60"/>
+                    </OnPlatform>
         </BoxView.HeightRequest>
       </BoxView>
       <BoxView  HorizontalOptions="Center" VerticalOptions="Center" BackgroundColor="Red" WidthRequest="{StaticResource SizeLarge}">

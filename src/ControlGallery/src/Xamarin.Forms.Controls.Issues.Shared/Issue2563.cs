@@ -30,13 +30,8 @@ namespace Xamarin.Forms.Controls.Issues
 						Content = new Label
 						{
 							Text = "Page " + i,
-#pragma warning disable 618
-							XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-							YAlign = TextAlignment.Center
-#pragma warning restore 618
+							HorizontalTextAlignment = TextAlignment.Center,
+							VerticalTextAlignment = TextAlignment.Center
 						}
 					}, random.NextDouble() > 0.5);
 				}

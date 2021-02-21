@@ -13,16 +13,16 @@
 							<Image Source="{Binding Image}" VerticalOptions="Center">
 								<Image.WidthRequest>
 									<OnPlatform x:TypeArguments="x:Double">
-										<OnPlatform.iOS>55</OnPlatform.iOS>
-										<OnPlatform.Android>55 </OnPlatform.Android>
-										<OnPlatform.WinPhone>75</OnPlatform.WinPhone>
+										<On Platform="iOS">55</On>
+										<On Platform="Android">55 </On>
+										<On Platform="UWP">75</On>
 									</OnPlatform>
 								</Image.WidthRequest>
 								<Image.HeightRequest>
 									<OnPlatform x:TypeArguments="x:Double">
-										<OnPlatform.iOS>55</OnPlatform.iOS>
-										<OnPlatform.Android>55</OnPlatform.Android>
-										<OnPlatform.WinPhone>75</OnPlatform.WinPhone>
+										<On Platform="iOS">55</On>
+										<On Platform="Android">55 </On>
+										<On Platform="UWP">75</On>
 									</OnPlatform>
 								</Image.HeightRequest>
 							</Image>

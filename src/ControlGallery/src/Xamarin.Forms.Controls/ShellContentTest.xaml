@@ -6,7 +6,7 @@
 			 Shell.TabBarIsVisible="false"
              x:Class="Xamarin.Forms.Controls.ShellContentTest">
 	<Page.ToolbarItems>
-		<ToolbarItem Text="Search" Icon="bank.png" />
+		<ToolbarItem Text="Search" IconImageSource="bank.png" />
 	</Page.ToolbarItems>
 	<!--<Shell.SearchHandler>
 		<SearchHandler Placeholder="My Placeholder!" />

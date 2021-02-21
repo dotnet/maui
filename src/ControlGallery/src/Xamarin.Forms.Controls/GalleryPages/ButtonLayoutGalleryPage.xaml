@@ -22,17 +22,17 @@
 			<StackLayout Orientation="Vertical" Padding="0" Spacing="5">
 				<Button />
 				<Button Text="Some Text" />
-				<Button Image="bank.png" />
-				<Button Text="Some Text" Image="bank.png" />
-				<Button Text="Some Text" Image="bank.png" ContentLayout="Top, 8" />
-				<Button Text="Some Text" Image="bank.png" ContentLayout="Right, 8" />
-				<Button Text="Some Text" Image="bank.png" ContentLayout="Bottom, 8" />
-				<Button Text="Some Text" Image="bank.png" ContentLayout="Left, 8" />
+				<Button ImageSource="bank.png" />
+				<Button Text="Some Text" ImageSource="bank.png" />
+				<Button Text="Some Text" ImageSource="bank.png" ContentLayout="Top, 8" />
+				<Button Text="Some Text" ImageSource="bank.png" ContentLayout="Right, 8" />
+				<Button Text="Some Text" ImageSource="bank.png" ContentLayout="Bottom, 8" />
+				<Button Text="Some Text" ImageSource="bank.png" ContentLayout="Left, 8" />
 			</StackLayout>
 
 			<Label Text="Autosized:" Margin="0,0,0,-5" />
 			<StackLayout Orientation="Horizontal" Padding="0" Spacing="5">
-				<Button x:Name="autosizedButton" Text="{Binding ButtonText}" Image="{Binding ButtonImage}" ContentLayout="{Binding ButtonImageLayout}" FontSize="{Binding ButtonFontSize}" />
+                <Button x:Name="autosizedButton" Text="{Binding ButtonText}" ImageSource="{Binding ButtonImage}" ContentLayout="{Binding ButtonImageLayout}" FontSize="{Binding ButtonFontSize}" />
 			</StackLayout>
 
 			<Label Text="Explicit Size:" Margin="0,0,0,-5" />
@@ -47,19 +47,19 @@
 				</Grid.ColumnDefinitions>
 
 				<Button
-					x:Name="explicitButton" Text="{Binding ButtonText}" Image="{Binding ButtonImage}" ContentLayout="{Binding ButtonImageLayout}" FontSize="{Binding ButtonFontSize}"
+					x:Name="explicitButton" Text="{Binding ButtonText}" ImageSource="{Binding ButtonImage}" ContentLayout="{Binding ButtonImageLayout}" FontSize="{Binding ButtonFontSize}"
 					WidthRequest="120" HeightRequest="60" HorizontalOptions="Start" VerticalOptions="Start" />
 				<Button
-					x:Name="explicitWidthButton" Text="{Binding ButtonText}" Image="{Binding ButtonImage}" ContentLayout="{Binding ButtonImageLayout}" FontSize="{Binding ButtonFontSize}"
+					x:Name="explicitWidthButton" Text="{Binding ButtonText}" ImageSource="{Binding ButtonImage}" ContentLayout="{Binding ButtonImageLayout}" FontSize="{Binding ButtonFontSize}"
 					Grid.Column="1" Grid.RowSpan="2" WidthRequest="120" HorizontalOptions="Start" VerticalOptions="Start" />
 				<Button
-					x:Name="explicitHeightButton" Text="{Binding ButtonText}" Image="{Binding ButtonImage}" ContentLayout="{Binding ButtonImageLayout}" FontSize="{Binding ButtonFontSize}"
+					x:Name="explicitHeightButton" Text="{Binding ButtonText}" ImageSource="{Binding ButtonImage}" ContentLayout="{Binding ButtonImageLayout}" FontSize="{Binding ButtonFontSize}"
 					Grid.Row="1" Grid.ColumnSpan="2" HeightRequest="60" HorizontalOptions="Start" VerticalOptions="Start" />
 			</Grid>
 
 			<Label Text="Stretched:" Margin="0,0,0,-5" />
 			<StackLayout Orientation="Vertical" Padding="0" Spacing="5">
-				<Button x:Name="stretchedButton" Text="{Binding ButtonText}" Image="{Binding ButtonImage}" ContentLayout="{Binding ButtonImageLayout}" FontSize="{Binding ButtonFontSize}" />
+                <Button x:Name="stretchedButton" Text="{Binding ButtonText}" ImageSource="{Binding ButtonImage}" ContentLayout="{Binding ButtonImageLayout}" FontSize="{Binding ButtonFontSize}" />
 			</StackLayout>
 
 			<Label Text="Options:" Margin="0,5,0,0" FontAttributes="Bold" />

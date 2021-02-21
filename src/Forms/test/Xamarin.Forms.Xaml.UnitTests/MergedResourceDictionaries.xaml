@@ -7,11 +7,11 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <local:SharedResourceDictionary/>
-                <ResourceDictionary MergedWith="local:SharedResourceDictionary2"/>
+                <local:SharedResourceDictionary2/>
             </ResourceDictionary.MergedDictionaries>
             <x:String x:Key="foo">Foo</x:String>
             <Style TargetType="Button">
-                <Setter Property="BorderRadius" Value="0"/>
+                <Setter Property="CornerRadius" Value="0"/>
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>

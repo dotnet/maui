@@ -10,12 +10,12 @@
 					<Trigger Property="Text" TargetType="Label" Value="Foo">
 						<Setter Property="BackgroundColor" Value="Red" />
 					</Trigger>
-					<Trigger Property="Font" TargetType="Label" Value="Small">
+					<Trigger Property="FontSize" TargetType="Label" Value="Small">
 						<Setter Property="TextColor" Value="Olive" />
 					</Trigger>
 				</Style.Triggers>
 			</Style>
 		</ResourceDictionary>
 	</ContentPage.Resources>
-	<Label x:Name="label" Font="Small" Style="{StaticResource labelStyle}" />
+	<Label x:Name="label" FontSize="Small" Style="{StaticResource labelStyle}" />
 </ContentPage>

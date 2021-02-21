@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
@@ -29,14 +28,6 @@ namespace Xamarin.Forms
 			Priority = priority;
 		}
 
-		[Obsolete("Name is obsolete as of version 1.3.0. Please use Text instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public string Name
-		{
-			get { return Text; }
-			set { Text = value; }
-		}
-
 		public ToolbarItemOrder Order
 		{
 			get { return (ToolbarItemOrder)GetValue(OrderProperty); }
@@ -47,14 +38,6 @@ namespace Xamarin.Forms
 		{
 			get { return (int)GetValue(PriorityProperty); }
 			set { SetValue(PriorityProperty, value); }
-		}
-
-		[Obsolete("Activated is obsolete as of version 1.3.0. Please use Clicked instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EventHandler Activated
-		{
-			add { Clicked += value; }
-			remove { Clicked -= value; }
 		}
 	}
 }

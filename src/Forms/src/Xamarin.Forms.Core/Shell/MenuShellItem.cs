@@ -43,8 +43,6 @@ namespace Xamarin.Forms
 		public MenuItem MenuItem { get; }
 		bool IMenuItemController.IsEnabled { get => MenuItem.IsEnabled; set => MenuItem.IsEnabled = value; }
 
-		string IMenuItemController.IsEnabledPropertyName => MenuItem.IsEnabledProperty.PropertyName;
-
 		void IMenuItemController.Activate()
 		{
 			(MenuItem as IMenuItemController).Activate();

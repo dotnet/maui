@@ -527,9 +527,6 @@ namespace Xamarin.Forms
 		public static readonly Color FloralWhite = new Color(255, 250, 240);
 		public static readonly Color ForestGreen = new Color(34, 139, 34);
 		public static readonly Color Fuchsia = new Color(255, 0, 255);
-		[Obsolete("Fuschia is obsolete as of version 1.3.0. Please use Fuchsia instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly Color Fuschia = new Color(255, 0, 255);
 		public static readonly Color Gainsboro = new Color(220, 220, 220);
 		public static readonly Color GhostWhite = new Color(248, 248, 255);
 		public static readonly Color Gold = new Color(255, 215, 0);

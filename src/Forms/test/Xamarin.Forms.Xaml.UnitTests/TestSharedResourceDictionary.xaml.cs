@@ -26,9 +26,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				{
 					Resources = new ResourceDictionary
 					{
-#pragma warning disable 618
-						MergedWith = typeof(MyRD)
-#pragma warning restore 618
+						new MyRD()
 					}
 				};
 			}

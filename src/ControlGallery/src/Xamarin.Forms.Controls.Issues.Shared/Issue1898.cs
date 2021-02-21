@@ -116,10 +116,8 @@ namespace Xamarin.Forms.Controls.Issues
 			tabbedPage.Children.Add(Issue1898PageOne);
 			tabbedPage.Children.Add(Issue1898PageTwo);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			tabbedPage.On<Android>().SetBarItemColor(Color.Blue);
-			tabbedPage.On<Android>().SetBarSelectedItemColor(Color.Green);
-#pragma warning restore CS0618 // Type or member is obsolete
+			tabbedPage.On<Android>().Element.UnselectedTabColor =Color.Blue;
+			tabbedPage.On<Android>().Element.SelectedTabColor = Color.Green;
 			tabbedPage.On<Android>().SetToolbarPlacement(placement);
 			tabbedPage.On<WindowsOS>().SetHeaderIconsEnabled(true);
 		}

@@ -9,7 +9,6 @@ using System.Linq;
 #endif
 
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -143,9 +142,6 @@ namespace Xamarin.Forms
 				_isPageVisibleChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
-
-		[Obsolete("OnChildRemoved(Element) is obsolete as of version 4.8.0. Please use OnChildRemoved(Element, int) instead.")]
-		protected override void OnChildRemoved(Element child) => OnChildRemoved(child, -1);
 
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
@@ -79,10 +80,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var layout = new OnPlatform(useCompiledXaml);
 				var onplat = layout.Resources["fontAttributes"] as OnPlatform<FontAttributes>;
 				Assert.NotNull(onplat);
-#pragma warning disable 612
-				Assert.AreEqual(FontAttributes.Bold, onplat.iOS);
-				Assert.AreEqual(FontAttributes.Italic, onplat.Android);
-#pragma warning restore 612
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				Assert.AreEqual(FontAttributes.Bold, (FontAttributes)onplat);
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+				Assert.AreEqual(FontAttributes.Italic, (FontAttributes)onplat);
 
 			}
 

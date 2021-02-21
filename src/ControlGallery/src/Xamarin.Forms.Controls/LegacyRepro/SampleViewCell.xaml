@@ -24,9 +24,9 @@
 
             <Image x:Name="completedimg" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="0" Grid.Column="0" IsVisible="true"/>
 
-            <Label Text="{Binding CallOut}" TextColor="Yellow"  FontSize="17" FontFamily="Roboto"  XAlign="Start" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="0" Grid.Column="1" />
+            <Label Text="{Binding CallOut}" TextColor="Yellow"  FontSize="17" FontFamily="Roboto"  HorizontalTextAlignment="Start" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="0" Grid.Column="1" />
             <Label Text="........................................................................................................................................................................." LineBreakMode ="NoWrap" TextColor="Yellow" HorizontalOptions="FillAndExpand" VerticalOptions="Center" Grid.Row="0" Grid.Column="2" />
-            <Label Text="{Binding Action}" FontSize="17" TextColor="Yellow" FontFamily="Roboto"  XAlign="End" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="0" Grid.Column="3" />
+            <Label Text="{Binding Action}" FontSize="17" TextColor="Yellow" FontFamily="Roboto"  HorizontalTextAlignment="End" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="0" Grid.Column="3" />
 
         </Grid>
 

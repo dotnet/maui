@@ -208,13 +208,8 @@ namespace Xamarin.Forms.Controls.Issues
 						new Label {
 							AutomationId = "lblHome",
 							Text = "Sample Home page",
-#pragma warning disable 618
-							XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-							YAlign = TextAlignment.Center
-#pragma warning restore 618
+							HorizontalTextAlignment = TextAlignment.Center,
+							VerticalTextAlignment = TextAlignment.Center
 						}
 					}
 				};
@@ -245,13 +240,8 @@ namespace Xamarin.Forms.Controls.Issues
 						new Label {
 							AutomationId = "lblAbout",
 							Text = "Sample About page",
-#pragma warning disable 618
-							XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-							YAlign = TextAlignment.Center
-#pragma warning restore 618
+							HorizontalTextAlignment = TextAlignment.Center,
+							VerticalTextAlignment = TextAlignment.Center
 						}
 					}
 				};

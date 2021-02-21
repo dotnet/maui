@@ -44,9 +44,7 @@ namespace Xamarin.Forms.Controls
 				Label name = new Label();
 				name.SetBinding(Label.TextProperty, "FullName");
 
-#pragma warning disable 618
-				Label title = new Label { Font = Font.SystemFontOfSize(NamedSize.Micro) };
-#pragma warning restore 618
+				Label title = new Label { FontSize = Device.GetNamedSize(NamedSize.Micro, typeof(Label)) };
 				title.SetBinding(Label.TextProperty, "Title");
 
 				return new ViewCell

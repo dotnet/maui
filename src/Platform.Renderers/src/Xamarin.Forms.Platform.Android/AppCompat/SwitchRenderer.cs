@@ -19,13 +19,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use SwitchRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public SwitchRenderer()
-		{
-			AutoPackage = false;
-		}
-
 		protected override void SetContentDescription() =>
 			base.SetContentDescription(false);
 

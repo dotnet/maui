@@ -19,8 +19,7 @@ namespace Xamarin.Forms.Core.UnitTests
 	internal class MockBindable
 		: VisualElement
 	{
-		public static readonly BindableProperty TextProperty = BindableProperty.Create<MockBindable, string>(
-			b => b.Text, "default", BindingMode.TwoWay);
+		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default", BindingMode.TwoWay);
 
 		public string Text
 		{
@@ -33,7 +32,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public int TargetInt { get; set; }
 
 		public static readonly BindableProperty BarProperty =
-			BindableProperty.Create<MockBindable, Bar>(w => w.Bar, default(Bar));
+			BindableProperty.Create(nameof(MockBindable.Bar), typeof(Bar), typeof(MockBindable), default(Bar));
 
 		public Bar Bar
 		{
@@ -42,7 +41,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		public static readonly BindableProperty BazProperty =
-			BindableProperty.Create<MockBindable, Baz>(w => w.Baz, default(Baz));
+			BindableProperty.Create(nameof(MockBindable.Baz), typeof(Baz), typeof(MockBindable), default(Baz));
 
 		[TypeConverter(typeof(ToBazConverter))]
 		public Baz Baz
@@ -52,7 +51,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		public static readonly BindableProperty QuxProperty =
-			BindableProperty.Create<MockBindable, Baz>(w => w.Qux, default(Baz));
+			BindableProperty.Create(nameof(MockBindable.Qux), typeof(Baz), typeof(MockBindable), default(Baz));
 
 		public Baz Qux
 		{
@@ -63,18 +62,10 @@ namespace Xamarin.Forms.Core.UnitTests
 
 	internal class ToBarConverter : TypeConverter
 	{
-		public override object ConvertFrom(System.Globalization.CultureInfo culture, object value)
-		{
-			return new Bar();
-		}
 	}
 
 	internal class ToBazConverter : TypeConverter
 	{
-		public override object ConvertFrom(System.Globalization.CultureInfo culture, object value)
-		{
-			return new Baz();
-		}
 	}
 
 	[TestFixture]
@@ -313,7 +304,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void PropertyChangingDefaultValue()
 		{
-			var prop = BindableProperty.Create<MockBindable, string>(w => w.Foo, "DefaultValue");
+			var prop = BindableProperty.Create(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), "DefaultValue");
+			;
 
 			var mock = new MockBindable();
 			mock.PropertyChanging += (s, e) => Assert.Fail();
@@ -357,7 +349,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void PropertyChangedDefaultValue()
 		{
-			var prop = BindableProperty.Create<MockBindable, string>(w => w.Foo, "DefaultValue");
+			var prop = BindableProperty.Create(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), "DefaultValue");
 
 			var mock = new MockBindable();
 			mock.PropertyChanged += (s, e) => Assert.Fail();
@@ -380,10 +372,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void GetValueDefault()
 		{
-			var nulldefault = BindableProperty.Create<MockBindable, string>(w => w.Foo, null);
+			var nulldefault = BindableProperty.Create(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), null);
 			TestGetValueDefault(nulldefault);
 
-			var foodefault = BindableProperty.Create<MockBindable, string>(w => w.Foo, "Foo");
+			var foodefault = BindableProperty.Create(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), "Foo");
 			TestGetValueDefault(foodefault);
 		}
 
@@ -527,8 +519,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void CoerceValue()
 		{
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Foo, null,
-				coerceValue: (bo, o) => o.ToUpper());
+			var property = BindableProperty.Create(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), null,
+				coerceValue: (bo, o) => ((string)o).ToUpper());
 
 			const string value = "value";
 			var mock = new MockBindable();
@@ -539,7 +531,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void ValidateValue()
 		{
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Foo, null,
+			var property = BindableProperty.Create(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), null,
 				validateValue: (b, v) => false);
 
 			var mock = new MockBindable();
@@ -554,7 +546,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			string oldv = "bar";
 			string newv = "foo";
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Foo, oldv,
+			var property = BindableProperty.Create(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), oldv,
 				propertyChanged: (b, ov, nv) =>
 				{
 					Assert.AreSame(oldv, ov);
@@ -700,7 +692,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestReadOnly()
 		{
-			var bindablePropertyKey = BindableProperty.CreateReadOnly<MockBindable, string>(w => w.Foo, "DefaultValue");
+			var bindablePropertyKey = BindableProperty.CreateReadOnly(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), "DefaultValue");
 			var bindableProperty = bindablePropertyKey.BindableProperty;
 
 			var bindable = new MockBindable();
@@ -721,7 +713,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestBindingTwoWayOnReadOnly()
 		{
-			var bindablePropertyKey = BindableProperty.CreateReadOnly<MockBindable, string>(w => w.Foo, "DefaultValue", BindingMode.OneWayToSource);
+			var bindablePropertyKey = BindableProperty.CreateReadOnly(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), "DefaultValue", BindingMode.OneWayToSource);
 			var bindableProperty = bindablePropertyKey.BindableProperty;
 
 			var bindable = new MockBindable();
@@ -1430,8 +1422,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var prop2 = BindableProperty.Create("Foo2", typeof(int), typeof(MockBindable), 2);
 			var bindable = new MockBindable();
 
-
-			object[] values = bindable.GetValues(prop, prop1, prop2);
+			object[] values = new object[] { bindable.GetValue(prop), bindable.GetValue(prop1), bindable.GetValue(prop2) };
 			Assert.That(values.Length == 3);
 			Assert.That(values[0], Is.EqualTo(0));
 			Assert.That(values[1], Is.EqualTo(1));
@@ -1448,8 +1439,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			bindable.SetValue(prop, 3);
 			bindable.SetValue(prop2, 5);
 
-
-			object[] values = bindable.GetValues(prop, prop1, prop2);
+			object[] values = new object[] { bindable.GetValue(prop), bindable.GetValue(prop1), bindable.GetValue(prop2) };
 			Assert.That(values.Length == 3);
 			Assert.That(values[0], Is.EqualTo(3));
 			Assert.That(values[1], Is.EqualTo(1));

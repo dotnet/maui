@@ -22,8 +22,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			public event Action<BindableObject> Hooked;
 			public event Action<BindableObject> Unhooked;
 
-			public static readonly BindableProperty IsGroupingEnabledProperty =
-				BindableProperty.Create<MockItemsView, bool>(lv => lv.IsGroupingEnabled, false);
+			public static readonly BindableProperty IsGroupingEnabledProperty = BindableProperty.Create(nameof(MockItemsView.IsGroupingEnabled), typeof(bool), typeof(MockItemsView), false);
 
 			public bool IsGroupingEnabled
 			{

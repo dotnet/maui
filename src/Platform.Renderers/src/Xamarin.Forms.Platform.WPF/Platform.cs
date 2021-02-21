@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.WPF.Controls;
 
 namespace Xamarin.Forms.Platform.WPF
 {
 	public class Platform : BindableObject, INavigation
-#pragma warning disable CS0618
-		, IPlatform
-#pragma warning restore
 	{
 		readonly FormsApplicationPage _page;
 		Page Page { get; set; }
@@ -165,12 +160,6 @@ namespace Xamarin.Forms.Platform.WPF
 
 			Page = newRoot;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			// The Platform property is no longer necessary, but we have to set it because some third-party
-			// library might still be retrieving it and using it
-			Page.Platform = this;
-#pragma warning restore CS0618 // Type or member is obsolete
-
 			_page.StartupPage = Page;
 			Application.Current.NavigationProxy.Inner = this;
 		}
@@ -246,12 +235,6 @@ namespace Xamarin.Forms.Platform.WPF
 
 			var tcs = new TaskCompletionSource<bool>();
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			// The Platform property is no longer necessary, but we have to set it because some third-party
-			// library might still be retrieving it and using it
-			page.Platform = this;
-#pragma warning restore CS0618 // Type or member is obsolete
-
 			_page.PushModal(page, animated);
 			tcs.SetResult(true);
 			return tcs.Task;
@@ -264,14 +247,5 @@ namespace Xamarin.Forms.Platform.WPF
 			tcs.SetResult(page);
 			return tcs.Task;
 		}
-
-		#region Obsolete 
-
-		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
-		{
-			return GetNativeSize(view, widthConstraint, heightConstraint);
-		}
-
-		#endregion
 	}
 }

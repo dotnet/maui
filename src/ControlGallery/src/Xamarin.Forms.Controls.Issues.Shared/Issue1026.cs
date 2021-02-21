@@ -32,9 +32,7 @@ namespace Xamarin.Forms.Controls.Issues
 							Text = "Subscribe with LinkedIn",
 							WidthRequest = 262,
 							HorizontalOptions = LayoutOptions.Center,
-#pragma warning disable 0618
-							BorderRadius = 0,
-#pragma warning restore
+							CornerRadius = 0,
 						},
 						new Entry {
 							Placeholder = "Professional email",
@@ -75,20 +73,13 @@ namespace Xamarin.Forms.Controls.Issues
 							Text = "Create an account",
 							WidthRequest = 262,
 							HorizontalOptions = LayoutOptions.Center,
-#pragma warning disable 0618
-							BorderRadius = 0,
-#pragma warning restore
+							CornerRadius = 0,
 						},
 						new Label {
 							Text = "by subscribing, you accept the general conditions.",
 							TextColor = Color.White,
-#pragma warning disable 618
-							XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-							Font = Font.SystemFontOfSize (NamedSize.Micro),
-#pragma warning restore 618
+							HorizontalTextAlignment = TextAlignment.Center,
+							FontSize = Device.GetNamedSize(NamedSize.Micro, typeof(Label)),
 							WidthRequest = 262,
 							HorizontalOptions = LayoutOptions.Center,
 						},

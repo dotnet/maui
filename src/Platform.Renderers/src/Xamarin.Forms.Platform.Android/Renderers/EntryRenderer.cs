@@ -24,13 +24,6 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use EntryRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public EntryRenderer()
-		{
-			AutoPackage = false;
-		}
-
 		protected override FormsEditText CreateNativeControl()
 		{
 			return new FormsEditText(Context);
@@ -77,13 +70,6 @@ namespace Xamarin.Forms.Platform.Android
 		protected abstract EditText EditText { get; }
 
 		public EntryRendererBase(Context context) : base(context)
-		{
-			AutoPackage = false;
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use EntryRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		internal EntryRendererBase()
 		{
 			AutoPackage = false;
 		}

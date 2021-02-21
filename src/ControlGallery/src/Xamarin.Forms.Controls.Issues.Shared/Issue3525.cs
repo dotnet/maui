@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var layout = new StackLayout { Padding = new Thickness(5, 10) };
 
 			var formattedString = new FormattedString();
-			formattedString.Spans.Add(new Span { Text = "Not Clickable, ", ForegroundColor = Color.Red, FontAttributes = FontAttributes.Bold, LineHeight = 1.8 });
+			formattedString.Spans.Add(new Span { Text = "Not Clickable, ", TextColor = Color.Red, FontAttributes = FontAttributes.Bold, LineHeight = 1.8 });
 			formattedString.Spans.Add(new Span { Text = Environment.NewLine });
 			formattedString.Spans.Add(new Span { Text = Environment.NewLine });
 			var span = new Span { Text = "Clickable, " };

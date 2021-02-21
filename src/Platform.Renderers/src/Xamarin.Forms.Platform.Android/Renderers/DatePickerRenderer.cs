@@ -4,9 +4,7 @@ using System.Globalization;
 using Android.App;
 using Android.Content;
 using Android.Util;
-using Android.Views;
 using Android.Widget;
-using AColor = Android.Graphics.Color;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -19,15 +17,6 @@ namespace Xamarin.Forms.Platform.Android
 		protected abstract EditText EditText { get; }
 
 		public DatePickerRendererBase(Context context) : base(context)
-		{
-			AutoPackage = false;
-			if (Forms.IsLollipopOrNewer)
-				Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use DatePickerRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public DatePickerRendererBase()
 		{
 			AutoPackage = false;
 			if (Forms.IsLollipopOrNewer)
@@ -227,10 +216,6 @@ namespace Xamarin.Forms.Platform.Android
 	public class DatePickerRenderer : DatePickerRendererBase<EditText>
 	{
 		TextColorSwitcher _textColorSwitcher;
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use DatePickerRenderer(Context) instead.")]
-		public DatePickerRenderer()
-		{
-		}
 
 		public DatePickerRenderer(Context context) : base(context)
 		{

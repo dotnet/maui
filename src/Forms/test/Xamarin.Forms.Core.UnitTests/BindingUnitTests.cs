@@ -365,7 +365,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, null, propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), null, propertyDefault);
 
 			var binding = new Binding("Model.Model[1]", bindingMode);
 
@@ -406,7 +406,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, null, propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), null, propertyDefault);
 
 			var binding = new Binding(".[1]", bindingMode);
 
@@ -452,7 +452,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, null, propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), null, propertyDefault);
 
 			var binding = new Binding("Model.Array[1]", bindingMode);
 
@@ -492,7 +492,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, null, propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), null, propertyDefault);
 
 			var binding = new Binding(".[1]", bindingMode);
 
@@ -538,7 +538,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, defaultValue: value, defaultBindingMode: propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), defaultValue: value, defaultBindingMode: propertyDefault);
 
 			var binding = new Binding("Model.Model[1]", bindingMode);
 
@@ -585,7 +585,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var binding = new Binding("Model.Model[1]", bindingMode);
 
@@ -632,7 +632,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var binding = new Binding("Model.Array[1]", bindingMode);
 
@@ -672,7 +672,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var binding = new Binding(".[1]", bindingMode);
 
@@ -709,7 +709,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, null, propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), null, propertyDefault);
 
 			var binding = new Binding(".", bindingMode);
 
@@ -748,7 +748,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			}
 
 			const string value = "Foo";
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, defaultValue: value, defaultBindingMode: propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), defaultValue: value, defaultBindingMode: propertyDefault);
 
 			var binding = new Binding(".", bindingMode);
 
@@ -828,7 +828,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -869,7 +869,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -915,7 +915,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -961,7 +961,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -999,7 +999,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -1043,7 +1043,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -1085,7 +1085,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -1115,7 +1115,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			const string value = "foo";
 
@@ -1150,7 +1150,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var binding = new Binding(".", bindingMode);
 
@@ -1187,7 +1187,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
 			var binding = new Binding(".", bindingMode);
 
@@ -1219,7 +1219,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[TestCase(BindingMode.TwoWay)]
 		public void SourceAndTargetAreWeakComplexPath(BindingMode mode)
 		{
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value");
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default value");
 
 			var binding = new Binding("Model.Model[1]");
 
@@ -1309,7 +1309,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var converter = new TestConverter<string, int>();
 
 			var vm = new MockViewModel();
-			var property = BindableProperty.Create<MockBindable, int>(w => w.TargetInt, 1, BindingMode.OneWayToSource);
+			var property = BindableProperty.Create(nameof(MockBindable.TargetInt), typeof(int), typeof(MockBindable), 1, BindingMode.OneWayToSource);
 			var bindable = new MockBindable();
 			bindable.SetBinding(property, new Binding("Text", converter: converter));
 			bindable.BindingContext = vm;
@@ -1340,7 +1340,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var converter = new TestConverterParameter();
 
 			var vm = new MockViewModel();
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "Bar", BindingMode.OneWayToSource);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "Bar", BindingMode.OneWayToSource);
 			var bindable = new MockBindable();
 			bindable.SetBinding(property, new Binding("Text", converter: converter, converterParameter: "Foo"));
 			bindable.BindingContext = vm;
@@ -1372,7 +1372,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var converter = new TestConverterCulture();
 			var vm = new MockViewModel();
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "Bar", BindingMode.OneWayToSource);
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "Bar", BindingMode.OneWayToSource);
 			var bindable = new MockBindable();
 			bindable.SetBinding(property, new Binding("Text", converter: converter));
 			bindable.BindingContext = vm;
@@ -1386,7 +1386,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var converter = new TestConverter<int, string>();
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "0");
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "0");
 			var bindable = new MockBindable();
 			bindable.BindingContext = 1;
 			bindable.SetBinding(property, new Binding(Binding.SelfPath, converter: converter));
@@ -1445,7 +1445,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			: BindableObject
 		{
 			public static readonly BindableProperty ValueProperty =
-				BindableProperty.Create<MultiplePropertyBindable, float>(b => b.Value, 0f);
+				BindableProperty.Create(nameof(MultiplePropertyBindable.Value), typeof(float), typeof(MultiplePropertyBindable), 0f);
 
 			public float Value
 			{
@@ -1454,7 +1454,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			}
 
 			public static readonly BindableProperty DoneProperty =
-				BindableProperty.Create<MultiplePropertyBindable, int>(b => b.Done, 0);
+				BindableProperty.Create(nameof(MultiplePropertyBindable.Done), typeof(int), typeof(MultiplePropertyBindable), 0);
 
 			public int Done
 			{
@@ -1493,7 +1493,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				Model = new ComplexMockViewModel()
 			};
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "foo bar");
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "foo bar");
 
 			var bindable = new MockBindable();
 			bindable.SetBinding(property, new Binding("Model.Text", BindingMode.OneWay));
@@ -1518,7 +1518,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				}
 			};
 
-			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "foo bar");
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "foo bar");
 
 			var bindable = new MockBindable();
 			bindable.SetBinding(property, new Binding("Model.Text", BindingMode.OneWay));
@@ -1814,123 +1814,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void CreateBindingNull()
-		{
-			Assert.That(() => Binding.Create<MockViewModel>(null), Throws.InstanceOf<ArgumentNullException>());
-		}
-
-		[Test]
-		public void CreateBindingSimple()
-		{
-			Binding binding = Binding.Create<MockViewModel>(mvm => mvm.Text);
-			Assert.IsNotNull(binding);
-			Assert.AreEqual("Text", binding.Path);
-		}
-
-		[Test]
-		public void CreateBindingComplex()
-		{
-			Binding binding = Binding.Create<ComplexMockViewModel>(vm => vm.Model.Model.Text);
-			Assert.IsNotNull(binding);
-			Assert.AreEqual("Model.Model.Text", binding.Path);
-		}
-
-		[Test]
-		public void CreateBindingIndexed()
-		{
-			Binding binding = Binding.Create<ComplexMockViewModel>(vm => vm.Model.Model[5]);
-			Assert.IsNotNull(binding);
-			Assert.AreEqual("Model.Model[5]", binding.Path);
-		}
-
-		[Test]
-		public void CreateBindingIndexedNonConstant()
-		{
-			int x = 5;
-			Assert.That(
-				() => Binding.Create<ComplexMockViewModel>(vm => vm.Model.Model[x]),
-				Throws.ArgumentException);
-		}
-
-		internal class ReferenceTypeIndexerViewModel
-			: MockViewModel
-		{
-			public string this[string value]
-			{
-				get { return value; }
-			}
-		}
-
-		[Test]
-		public void CreateBindingNullToIndexer()
-		{
-			Assert.That(
-				() => Binding.Create<ReferenceTypeIndexerViewModel>(vm => vm[null]),
-				Throws.Nothing);
-		}
-
-		[Test]
-		public void CreateBindingWithMethod()
-		{
-			Assert.That(
-				() => Binding.Create<ComplexMockViewModel>(vm => vm.DoStuff()),
-				Throws.ArgumentException);
-		}
-
-		[Test]
-		[Description("Indexers are seen as methods, we don't want to get them confused with real methods.")]
-		public void CreateBindingWithMethodArgument()
-		{
-			Assert.That(
-				() => Binding.Create<ComplexMockViewModel>(vm => vm.DoStuff(null)),
-				Throws.ArgumentException);
-		}
-
-		object Method(MockViewModel vm)
-		{
-			return vm.Text;
-		}
-
-		[Test]
-		public void CreateBindingMethod()
-		{
-			Func<MockViewModel, object> func = vm => vm.Text;
-			Assert.That(() => Binding.Create<MockViewModel>(vm => func(vm)),
-				Throws.ArgumentException);
-
-			Assert.That(() => Binding.Create<MockViewModel>(vm => Method(vm)),
-				Throws.ArgumentException);
-		}
-
-		[Test]
-		public void CreateBindingPrivateIndexer()
-		{
-			Assert.That(() => Binding.Create<InternalIndexerViewModel>(vm => vm[5]),
-				Throws.ArgumentException);
-		}
-
-		class InternalIndexerViewModel
-		{
-			internal int this[int x]
-			{
-				get { return x; }
-			}
-		}
-
-		[Test]
-		public void CreateBindingInvalidExpression()
-		{
-			Assert.That(() => Binding.Create<MockViewModel>(vm => vm.Text + vm.Text),
-				Throws.ArgumentException);
-
-			Assert.That(() => Binding.Create<MockViewModel>(vm => 5),
-				Throws.ArgumentException);
-
-			Assert.That(() => Binding.Create<MockViewModel>(vm => null),
-				Throws.ArgumentException);
-		}
-
-		[Test]
 		public void SetBindingContextBeforeContextBindingAndInnerBindings()
 		{
 			var label = new Label();
@@ -2056,8 +1939,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		class MockBindable2 : MockBindable
 		{
-			public static readonly BindableProperty Text2Property = BindableProperty.Create<MockBindable2, string>(
-				b => b.Text2, "default", BindingMode.TwoWay);
+			public static readonly BindableProperty Text2Property = BindableProperty.Create(nameof(MockBindable2.Text2), typeof(string), typeof(MockBindable2), "default", BindingMode.TwoWay);
 
 			public string Text2
 			{

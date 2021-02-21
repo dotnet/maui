@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Windows.UI.Text;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI.Text;
 using Xamarin.Forms.Internals;
 using IOPath = System.IO.Path;
 using WApplication = Microsoft.UI.Xaml.Application;
-using Microsoft.UI.Text;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -41,6 +41,22 @@ namespace Xamarin.Forms.Platform.UWP
 			self.FontWeight = font.FontAttributes.HasFlag(FontAttributes.Bold) ? FontWeights.Bold : FontWeights.Normal;
 		}
 
+		internal static void ApplyFont(this TextBlock self, IFontElement element)
+		{
+			self.FontSize = element.FontSize;
+			self.FontFamily = element.FontFamily.ToFontFamily();
+			self.FontStyle = element.FontAttributes.HasFlag(FontAttributes.Italic) ? FontStyle.Italic : FontStyle.Normal;
+			self.FontWeight = element.FontAttributes.HasFlag(FontAttributes.Bold) ? FontWeights.Bold : FontWeights.Normal;
+		}
+
+		internal static void ApplyFont(this TextElement self, IFontElement element)
+		{
+			self.FontSize = element.FontSize;
+			self.FontFamily = element.FontFamily.ToFontFamily();
+			self.FontStyle = element.FontAttributes.HasFlag(FontAttributes.Italic) ? FontStyle.Italic : FontStyle.Normal;
+			self.FontWeight = element.FontAttributes.HasFlag(FontAttributes.Bold) ? FontWeights.Bold : FontWeights.Normal;
+		}
+
 		internal static void ApplyFont(this Control self, IFontElement element)
 		{
 			self.FontSize = element.FontSize;
@@ -56,7 +72,7 @@ namespace Xamarin.Forms.Platform.UWP
 			switch (size)
 			{
 				case NamedSize.Default:
-					if(DefaultFontSize == double.NegativeInfinity)
+					if (DefaultFontSize == double.NegativeInfinity)
 					{
 						DefaultFontSize = (double)WApplication.Current.Resources["ControlContentThemeFontSize"];
 					}
