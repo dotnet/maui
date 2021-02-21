@@ -40,13 +40,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			Initialize();
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use ButtonRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ButtonRenderer() : base(Forms.Context)
-		{
-			Initialize();
-		}
-
 		protected Button Element => Button;
 		protected AppCompatButton Control => this;
 

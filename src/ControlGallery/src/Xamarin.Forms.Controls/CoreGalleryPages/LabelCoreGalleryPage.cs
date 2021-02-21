@@ -18,37 +18,21 @@ namespace Xamarin.Forms.Controls
 		{
 			base.Build(stackLayout);
 
-#pragma warning disable 618
-			var namedSizeMediumBoldContainer = new ViewContainer<Label>(Test.Label.FontAttibutesBold, new Label { Text = "Medium Bold Font", Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold) });
-#pragma warning restore 618
+			var namedSizeMediumBoldContainer = new ViewContainer<Label>(Test.Label.FontAttibutesBold, new Label { Text = "Medium Bold Font", FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)), FontAttributes = FontAttributes.Bold });
 
-#pragma warning disable 618
-			var namedSizeMediumItalicContainer = new ViewContainer<Label>(Test.Label.FontAttributesItalic, new Label { Text = "Medium Italic Font", Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Italic) });
-#pragma warning restore 618
+			var namedSizeMediumItalicContainer = new ViewContainer<Label>(Test.Label.FontAttributesItalic, new Label { Text = "Medium Italic Font", FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)), FontAttributes = FontAttributes.Italic });
 
-#pragma warning disable 618
-			var namedSizeMediumUnderlineContainer = new ViewContainer<Label>(Test.Label.TextDecorationUnderline, new Label { Text = "Medium Underlined Font", Font = Font.SystemFontOfSize(NamedSize.Medium), TextDecorations = TextDecorations.Underline });
-#pragma warning restore 618
+			var namedSizeMediumUnderlineContainer = new ViewContainer<Label>(Test.Label.TextDecorationUnderline, new Label { Text = "Medium Underlined Font", FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)), TextDecorations = TextDecorations.Underline });
 
-#pragma warning disable 618
-			var namedSizeMediumStrikeContainer = new ViewContainer<Label>(Test.Label.TextDecorationStrike, new Label { Text = "Medium StrikeThrough Font", Font = Font.SystemFontOfSize(NamedSize.Medium), TextDecorations = TextDecorations.Strikethrough });
-#pragma warning restore 618
+			var namedSizeMediumStrikeContainer = new ViewContainer<Label>(Test.Label.TextDecorationStrike, new Label { Text = "Medium StrikeThrough Font", FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)), TextDecorations = TextDecorations.Strikethrough });
 
-#pragma warning disable 618
-			var namedSizeLargeContainer = new ViewContainer<Label>(Test.Label.FontNamedSizeLarge, new Label { Text = "Large Font", Font = Font.SystemFontOfSize(NamedSize.Large) });
-#pragma warning restore 618
+			var namedSizeLargeContainer = new ViewContainer<Label>(Test.Label.FontNamedSizeLarge, new Label { Text = "Large Font", FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)) });
 
-#pragma warning disable 618
-			var namedSizeMediumContainer = new ViewContainer<Label>(Test.Label.FontNamedSizeMedium, new Label { Text = "Medium Font", Font = Font.SystemFontOfSize(NamedSize.Medium) });
-#pragma warning restore 618
+			var namedSizeMediumContainer = new ViewContainer<Label>(Test.Label.FontNamedSizeMedium, new Label { Text = "Medium Font", FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)) });
 
-#pragma warning disable 618
-			var namedSizeMicroContainer = new ViewContainer<Label>(Test.Label.FontNamedSizeMicro, new Label { Text = "Micro Font", Font = Font.SystemFontOfSize(NamedSize.Micro) });
-#pragma warning restore 618
+			var namedSizeMicroContainer = new ViewContainer<Label>(Test.Label.FontNamedSizeMicro, new Label { Text = "Micro Font", FontSize = Device.GetNamedSize(NamedSize.Micro, typeof(Label)) });
 
-#pragma warning disable 618
-			var namedSizeSmallContainer = new ViewContainer<Label>(Test.Label.FontNamedSizeSmall, new Label { Text = "Small Font", Font = Font.SystemFontOfSize(NamedSize.Small) });
-#pragma warning restore 618
+			var namedSizeSmallContainer = new ViewContainer<Label>(Test.Label.FontNamedSizeSmall, new Label { Text = "Small Font", FontSize = Device.GetNamedSize(NamedSize.Small, typeof(Label)) });
 
 			var formattedString = new FormattedString();
 			formattedString.Spans.Add(new Span { BackgroundColor = Color.Red, TextColor = Color.Olive, Text = "Span 1 " });

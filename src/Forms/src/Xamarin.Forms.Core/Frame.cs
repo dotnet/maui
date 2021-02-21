@@ -1,15 +1,10 @@
 using System;
-using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
 	[ContentProperty("Content")]
 	public class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement
 	{
-		[Obsolete("OutlineColorProperty is obsolete as of version 3.0.0. Please use BorderColorProperty instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty OutlineColorProperty = BorderElement.BorderColorProperty;
-
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
 		public static readonly BindableProperty HasShadowProperty = BindableProperty.Create("HasShadow", typeof(bool), typeof(Frame), true);
@@ -33,14 +28,6 @@ namespace Xamarin.Forms
 		{
 			get { return (bool)GetValue(HasShadowProperty); }
 			set { SetValue(HasShadowProperty, value); }
-		}
-
-		[Obsolete("OutlineColor is obsolete as of version 3.0.0. Please use BorderColor instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Color OutlineColor
-		{
-			get { return (Color)GetValue(OutlineColorProperty); }
-			set { SetValue(OutlineColorProperty, value); }
 		}
 
 		public Color BorderColor
@@ -73,9 +60,6 @@ namespace Xamarin.Forms
 
 		void IBorderElement.OnBorderColorPropertyChanged(Color oldValue, Color newValue)
 		{
-#pragma warning disable 0618 // retain until OutlineColor removed
-			OnPropertyChanged(nameof(OutlineColor));
-#pragma warning restore
 		}
 
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(CornerRadiusProperty);

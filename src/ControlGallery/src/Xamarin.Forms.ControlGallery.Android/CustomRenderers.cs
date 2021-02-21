@@ -185,9 +185,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 		FlyoutPage _page;
 		bool _disposed;
 
-#pragma warning disable 618
-		public NativeDroidFlyoutPage()
-#pragma warning restore 618
+		public NativeDroidFlyoutPage(Context context) : base(context)
 		{
 			System.Diagnostics.Debug.WriteLine($">>>>> NativeDroidMasterDetail NativeDroidMasterDetail 53: This is the obsolete constructor being selected");
 		}
@@ -259,9 +257,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 	public class NativeListViewRenderer : ViewRenderer<NativeListView, global::Android.Widget.ListView>
 	{
-#pragma warning disable 618
-		public NativeListViewRenderer()
-#pragma warning restore 618
+		public NativeListViewRenderer(Context context) : base(context)
 		{
 		}
 
@@ -446,19 +442,14 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 	public class NativeAndroidListViewRenderer : ViewRenderer<NativeListView2, global::Android.Widget.ListView>
 	{
-
-#pragma warning disable 618
-		public NativeAndroidListViewRenderer()
-#pragma warning restore 618
+		public NativeAndroidListViewRenderer(Context context) : base(context)
 		{
 		}
 
 		protected override global::Android.Widget.ListView CreateNativeControl()
 		{
-#pragma warning disable 618
 			// Disabled the warning so we have a test that this obsolete stuff still works
-			return new global::Android.Widget.ListView(Forms.Context);
-#pragma warning restore 618
+			return new global::Android.Widget.ListView(Context);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<NativeListView2> e)
@@ -613,10 +604,8 @@ namespace Xamarin.Forms.ControlGallery.Android
 	[Preserve]
 	public class CustomContentRenderer : ViewRenderer
 	{
-#pragma warning disable 618
 		[Preserve]
-		public CustomContentRenderer()
-#pragma warning restore 618
+		public CustomContentRenderer(Context context) : base(context)
 		{
 			AutoPackage = true;
 		}
@@ -932,6 +921,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 	public class NoFlashTestNavigationPage
 		: Xamarin.Forms.Platform.Android.AppCompat.NavigationPageRenderer
 	{
+		public NoFlashTestNavigationPage(Context context) : base(context)
+		{
+		}
+
 #if !FORMS_APPLICATION_ACTIVITY
 		protected override void SetupPageTransition(FragmentTransaction transaction, bool isPush)
 		{
@@ -947,6 +940,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 	{
 		bool _disposed;
 		NavigationPage _page;
+
+		public QuickCollectNavigationPageRenderer(Context context) : base(context)
+		{
+		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<NavigationPage> e)
 		{

@@ -34,17 +34,10 @@ namespace Xamarin.Forms.Controls.Issues
 			var name = new Label
 			{
 				Text = "Foo",
-#pragma warning disable 618
-				XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-				YAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-				Font = Font.SystemFontOfSize(30, FontAttributes.Bold),
-#pragma warning restore 618
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center,
+				FontSize = 30,
+				FontAttributes = FontAttributes.Bold,
 				TextColor = Color.White,
 			};
 
@@ -61,13 +54,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var addressLabel = new Label
 			{
 				Text = "Loading address…",
-#pragma warning disable 618
-				XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-				YAlign = TextAlignment.Center,
-#pragma warning restore 618
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center,
 			};
 
 			var map = new Map

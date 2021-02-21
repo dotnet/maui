@@ -19,10 +19,6 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
-		[Obsolete("XAlignProperty is obsolete as of version 2.0.0. Please use HorizontalTextAlignmentProperty instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty XAlignProperty = HorizontalTextAlignmentProperty;
-
 		public TextAlignment HorizontalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.HorizontalTextAlignmentProperty); }
@@ -65,14 +61,6 @@ namespace Xamarin.Forms
 			set { SetValue(TextProperty, value); }
 		}
 
-		[Obsolete("XAlign is obsolete as of version 2.0.0. Please use HorizontalTextAlignment instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public TextAlignment XAlign
-		{
-			get { return (TextAlignment)GetValue(XAlignProperty); }
-			set { SetValue(XAlignProperty, value); }
-		}
-
 		public event EventHandler Completed;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -81,9 +69,6 @@ namespace Xamarin.Forms
 
 		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
 		{
-#pragma warning disable 0618 // retain until XAlign removed
-			OnPropertyChanged(nameof(XAlign));
-#pragma warning restore
 		}
 	}
 }

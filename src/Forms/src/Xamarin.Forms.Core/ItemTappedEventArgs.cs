@@ -4,13 +4,6 @@ namespace Xamarin.Forms
 {
 	public class ItemTappedEventArgs : EventArgs
 	{
-		[Obsolete("Please use the constructor that reports the items index")]
-		public ItemTappedEventArgs(object group, object item)
-			: this(group, item, -1)
-		{
-
-		}
-
 		public ItemTappedEventArgs(object group, object item, int itemIndex)
 		{
 			Group = group;

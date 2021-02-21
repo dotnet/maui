@@ -29,10 +29,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					xmlns:sys=""clr-namespace:System;assembly=mscorlib""
 					x:Name=""activateButton"" Text=""ACTIVATE NOW"" TextColor=""White"" BackgroundColor=""#00A0FF"">
 				        <Button.HeightRequest>
-				           <OnPlatform x:TypeArguments=""sys:Double""
-				                   iOS=""33""
-				                   Android=""44""
-				                   WinPhone=""44"" />
+				           <OnPlatform x:TypeArguments=""sys:Double"">
+				                   <On Platform=""iOS"">33</On>
+				                   <On Platform=""Android"">44</On>
+				                   <On Platform=""UWP"">44</On>
+				         	</OnPlatform>
 				         </Button.HeightRequest>
 				 </Button>";
 

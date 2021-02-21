@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Net;
 using System.Threading.Tasks;
 using Android.Content;
-using Android.OS;
 using Android.Webkit;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
@@ -26,13 +25,6 @@ namespace Xamarin.Forms.Platform.Android
 		protected internal string UrlCanceled { get; set; }
 
 		public WebViewRenderer(Context context) : base(context)
-		{
-			AutoPackage = false;
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use WebViewRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public WebViewRenderer()
 		{
 			AutoPackage = false;
 		}

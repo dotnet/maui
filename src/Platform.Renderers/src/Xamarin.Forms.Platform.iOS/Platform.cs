@@ -13,9 +13,6 @@ using RectangleF = CoreGraphics.CGRect;
 namespace Xamarin.Forms.Platform.iOS
 {
 	public class Platform : BindableObject, INavigation, IDisposable
-#pragma warning disable CS0618
-		, IPlatform
-#pragma warning restore
 	{
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),
 			propertyChanged: (bindable, oldvalue, newvalue) =>
@@ -83,12 +80,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		IReadOnlyList<Page> INavigation.ModalStack
 		{
-			get 
+			get
 			{
 				if (_disposed)
 					return new List<Page>();
 
-				return _modals; 
+				return _modals;
 			}
 		}
 
@@ -189,12 +186,6 @@ namespace Xamarin.Forms.Platform.iOS
 				Page.GetCurrentPage()?.SendDisappearing();
 
 			_modals.Add(modal);
-
-#pragma warning disable CS0618 // Type or member is obsolete
-			// The Platform property is no longer necessary, but we have to set it because some third-party
-			// library might still be retrieving it and using it
-			modal.Platform = this;
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			modal.DescendantRemoved += HandleChildRemoved;
 
@@ -345,12 +336,6 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_appeared == false)
 				return;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			// The Platform property is no longer necessary, but we have to set it because some third-party
-			// library might still be retrieving it and using it
-			Page.Platform = this;
-#pragma warning restore CS0618 // Type or member is obsolete
-
 			AddChild(Page);
 
 			Page.DescendantRemoved += HandleChildRemoved;
@@ -365,12 +350,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_renderer.View.BackgroundColor = ColorExtensions.BackgroundColor;
 			_renderer.View.ContentMode = UIViewContentMode.Redraw;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-				// The Platform property is no longer necessary, but we have to set it because some third-party
-				// library might still be retrieving it and using it
-				Page.Platform = this;
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			AddChild(Page);
 
@@ -521,7 +500,7 @@ namespace Xamarin.Forms.Platform.iOS
 				alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
 			}
 
-			if(!Forms.IsiOS9OrNewer)
+			if (!Forms.IsiOS9OrNewer)
 			{
 				// For iOS 8, we need to explicitly set the size of the window
 				window.Frame = new RectangleF(0, 0, UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);
@@ -584,7 +563,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			public override UIView HitTest(CGPoint point, UIEvent uievent)
 			{
-				if (!UserInteractionEnabled) 
+				if (!UserInteractionEnabled)
 				{
 					// This view can't interact, and neither can its children
 					return null;
@@ -626,7 +605,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		internal static string ResolveMsAppDataUri(Uri uri)
 		{
-			if(uri.Scheme == "ms-appdata")
+			if (uri.Scheme == "ms-appdata")
 			{
 				string filePath = string.Empty;
 
@@ -651,15 +630,6 @@ namespace Xamarin.Forms.Platform.iOS
 				throw new ArgumentException("uri");
 			}
 		}
-    
-		#region Obsolete 
-
-		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
-		{
-			return GetNativeSize(view, widthConstraint, heightConstraint);
-		}
-
-		#endregion
 
 		internal void SubscribeToAlertsAndActionSheets()
 		{
@@ -673,7 +643,7 @@ namespace Xamarin.Forms.Platform.iOS
 			});
 
 			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments arguments) =>
-			{	
+			{
 				if (!PageIsChildOfPlatform(sender))
 					return;
 				PresentAlert(arguments);

@@ -68,14 +68,10 @@ namespace Xamarin.Forms.Controls.Issues
 			if (s_mImgRenewal == null)
 				s_mImgRenewal = ImageSource.FromFile("bank.png");
 
-#pragma warning disable 618
-			var label1 = new Label { Text = "Label 1", Font = Font.SystemFontOfSize(NamedSize.Small, FontAttributes.Bold) };
-#pragma warning restore 618
+			var label1 = new Label { Text = "Label 1", FontAttributes = FontAttributes.Bold, FontSize = Device.GetNamedSize(NamedSize.Small, typeof(Label)) };
 			label1.SetBinding(Label.TextProperty, new Binding("."));
 
-#pragma warning disable 618
-			var label2 = new Label { Text = "Label 2", Font = Font.SystemFontOfSize(NamedSize.Small) };
-#pragma warning restore 618
+			var label2 = new Label { Text = "Label 2", FontSize = Device.GetNamedSize(NamedSize.Small, typeof(Label)) };
 
 			// was ListButton?
 			var button = new Button
@@ -89,9 +85,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				var b = (Button)sender;
 				var t = b.CommandParameter;
-#pragma warning disable 618
-				((ContentPage)((ListView)((StackLayout)b.ParentView).ParentView).ParentView).DisplayAlert("Clicked",
-#pragma warning restore 618
+				((ContentPage)((ListView)((StackLayout)b.Parent).Parent).Parent).DisplayAlert("Clicked",
 					t + " button was clicked", "OK");
 				Debug.WriteLine("clicked" + t);
 			};

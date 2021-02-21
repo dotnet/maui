@@ -2,8 +2,8 @@
 using UIKit;
 using Xamarin.Platform;
 
-#if !NET6_0
 using Xamarin.Forms;
+#if !NET6_0
 using Xamarin.Forms.Platform.iOS;
 #endif
 

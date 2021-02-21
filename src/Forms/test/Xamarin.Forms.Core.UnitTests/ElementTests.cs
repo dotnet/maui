@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			if (e.OldItems != null)
 			{
 				foreach (Element element in e.OldItems)
-					OnChildRemoved(element);
+					OnChildRemoved(element, -1);
 			}
 		}
 

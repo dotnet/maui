@@ -20,9 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "Tap input field, then try to scroll"
 					},
 					new WebView {

@@ -1,5 +1,3 @@
-using System;
-using System.Diagnostics;
 using System.Text;
 using Android.Graphics;
 using Android.Text;
@@ -59,9 +57,10 @@ namespace Xamarin.Forms.Platform.Android
 					spannable.SetSpan(new LineHeightSpan(view, span.LineHeight), start, end, SpanTypes.InclusiveExclusive);
 				}
 				if (!span.IsDefault())
-#pragma warning disable 618 // We will need to update this when .Font goes away
-					spannable.SetSpan(new FontSpan(span.Font, view, span.CharacterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
-#pragma warning restore 618
+				{
+					var spanFont = Font.OfSize(span.FontFamily, span.FontSize).WithAttributes(span.FontAttributes);
+					spannable.SetSpan(new FontSpan(spanFont, view, span.CharacterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
+				}
 				else
 					spannable.SetSpan(new FontSpan(defaultFont, view, span.CharacterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
 				if (span.IsSet(Span.TextDecorationsProperty))

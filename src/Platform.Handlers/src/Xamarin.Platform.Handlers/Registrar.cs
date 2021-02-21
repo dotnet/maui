@@ -126,7 +126,7 @@ namespace Xamarin.Platform
 			{
 				var newObject = Activator.CreateInstance(handler);
 
-				if(newObject == null)
+				if (newObject == null)
 					throw new ArgumentException($"No Handler found for type: {type}", nameof(type));
 
 				return (TTypeRender)newObject;

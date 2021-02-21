@@ -58,7 +58,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)IVisualElementRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Platform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformRenderer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RendererFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RendererPool.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ResourcesProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewRenderer.cs" />

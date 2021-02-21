@@ -15,4 +15,5 @@
     <type fullname="System.Runtime.CompilerServices.TaskAwaiter" />
   </assembly>
   <assembly fullname="Xamarin.Forms.Platform.Android.UnitTests" />
+  <assembly fullname="Xamarin.Platform" />
 </linker>

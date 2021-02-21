@@ -5,10 +5,10 @@
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<OnPlatform x:Key="HeaderFont"
-                        x:TypeArguments="Font">
+                        x:TypeArguments="x:String">
                 <On Platform="Android"
                     Value="Large" />
-                <On Platform="WinPhone"
+                <On Platform="UWP"
                     Value="Large" />
                 <On Platform="iOS"
                     Value="Large" />
@@ -18,7 +18,7 @@
                         x:TypeArguments="x:Double">
                 <On Platform="Android"
                     Value="60.0" />
-                <On Platform="WinPhone"
+                <On Platform="UWP"
                     Value="60.0" />
                 <On Platform="iOS"
                     Value="64.0" />
@@ -26,7 +26,7 @@
 		</ResourceDictionary>
 	</ContentPage.Resources>
 	<StackLayout>
-		<Label x:Name="label0" Font="{StaticResource HeaderFont}" />
+		<Label x:Name="label0" FontSize="{StaticResource HeaderFont}" />
 		<Label x:Name="label1" FontSize="{StaticResource HeaderFontSize}" />
 	</StackLayout>
 </ContentPage>

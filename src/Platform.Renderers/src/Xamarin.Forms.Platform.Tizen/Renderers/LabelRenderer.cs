@@ -1,5 +1,3 @@
-using Xamarin.Forms.Core;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Tizen.Native;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Label;
 
@@ -13,8 +11,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			RegisterPropertyHandler(Label.TextProperty, UpdateText);
 			RegisterPropertyHandler(Label.TextColorProperty, UpdateTextColor);
-			// FontProperty change is called also for FontSizeProperty, FontFamilyProperty and FontAttributesProperty change
-			RegisterPropertyHandler(Label.FontProperty, UpdateFontProperties);
 			RegisterPropertyHandler(Label.LineBreakModeProperty, UpdateLineBreakMode);
 			RegisterPropertyHandler(Label.HorizontalTextAlignmentProperty, UpdateHorizontalTextAlignment);
 			RegisterPropertyHandler(Label.VerticalTextAlignmentProperty, UpdateVerticalTextAlignment);

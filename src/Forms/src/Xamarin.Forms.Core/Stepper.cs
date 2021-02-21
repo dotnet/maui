@@ -92,13 +92,5 @@ namespace Xamarin.Forms
 		public event EventHandler<ValueChangedEventArgs> ValueChanged;
 
 		public IPlatformElementConfiguration<T, Stepper> On<T>() where T : IConfigPlatform => _platformConfigurationRegistry.Value.On<T>();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("deprecated without replacement in 4.8.0")]
-		public int StepperPosition { get; set; }
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("deprecated without replacement in 4.8.0")]
-		public static readonly BindableProperty StepperPositionProperty = BindableProperty.Create(nameof(StepperPosition), typeof(int), typeof(Stepper), 0);
 	}
 }

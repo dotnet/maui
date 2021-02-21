@@ -122,18 +122,6 @@ namespace Xamarin.Forms.Xaml.Internals
 		readonly object targetProperty;
 		readonly INameScope scope;
 
-		[Obsolete("SimpleValueTargetProvider(object[] objectAndParents) is obsolete as of version 2.3.4. Please use SimpleValueTargetProvider(object[] objectAndParents, object targetProperty) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public SimpleValueTargetProvider(object[] objectAndParents) : this(objectAndParents, null)
-		{
-		}
-
-		[Obsolete("SimpleValueTargetProvider(object[] objectAndParents) is obsolete as of version 3.3.0. Please use SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, NameScope scope) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty) : this(objectAndParents, targetProperty, null)
-		{
-		}
-
 		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope scope)
 		{
 			if (objectAndParents == null)

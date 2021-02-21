@@ -34,11 +34,9 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = new StackLayout
 			{
 				Children = {
-						btn,
-#pragma warning disable 618
-                    new Label {Text = "GeneratedImage", Font=Font.BoldSystemFontOfSize(NamedSize.Medium)},
-#pragma warning restore 618
-                    generatedImage
+					btn,
+					new Label {Text = "GeneratedImage", FontAttributes = FontAttributes.Bold, FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)) },
+					generatedImage
 				},
 				Padding = new Thickness(0, 20, 0, 0),
 				VerticalOptions = LayoutOptions.StartAndExpand,

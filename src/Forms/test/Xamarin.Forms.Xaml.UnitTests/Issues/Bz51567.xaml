@@ -5,7 +5,11 @@
 			<Style x:Key="ListText" TargetType="Label">
 				<Setter Property="TextColor" Value="Black" />
 				<Setter Property="FontSize">
-					<OnPlatform x:TypeArguments="x:Double" iOS="17" Android="17" WinPhone="20" />
+					<OnPlatform x:TypeArguments="x:Double">
+						<On Platform="iOS">17</On>
+						<On Platform="Android">17</On>
+						<On Platform="UWP">20</On>
+					</OnPlatform>
 				</Setter>
 			</Style>
 		</ResourceDictionary>

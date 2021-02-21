@@ -1,6 +1,5 @@
 ﻿using NSubstitute;
 using Xamarin.Forms;
-using Xamarin.Platform.Handlers.Tests;
 using Xamarin.Platform.Layouts;
 using Xunit;
 

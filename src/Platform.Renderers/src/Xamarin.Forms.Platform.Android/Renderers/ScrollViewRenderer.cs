@@ -34,12 +34,6 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use ScrollViewRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ScrollViewRenderer() : base(Forms.Context)
-		{
-		}
-
 		protected IScrollViewController Controller
 		{
 			get { return (IScrollViewController)Element; }

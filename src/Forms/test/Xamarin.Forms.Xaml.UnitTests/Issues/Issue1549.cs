@@ -89,7 +89,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 					TextColor=""Black""
 					x:Name=""label""
 					BackgroundColor=""{Binding Severity, Converter={StaticResource SeverityColorConverter}}""
-					XAlign=""Center"" YAlign=""Center""/>
+					HorizontalTextAlignment=""Center"" VerticalTextAlignment=""Center""/>
 </ContentPage>";
 
 			var layout = new ContentPage().LoadFromXaml(xaml);
@@ -118,7 +118,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 					TextColor=""Black""
 					x:Name=""label""
 					BackgroundColor=""{Binding Severity, Converter={StaticResource SeverityColorConverter}}""
-					XAlign=""Center"" YAlign=""Center""/>
+					HorizontalTextAlignment=""Center"" VerticalTextAlignment=""Center""/>
 </ContentPage>";
 
 			var layout = new ContentPage().LoadFromXaml(xaml);

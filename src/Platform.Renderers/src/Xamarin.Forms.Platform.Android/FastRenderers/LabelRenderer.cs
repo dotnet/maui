@@ -40,15 +40,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			BackgroundManager.Init(this);
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use LabelRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public LabelRenderer() : base(Forms.Context)
-		{
-			_labelTextColorDefault = TextColors;
-			_visualElementRenderer = new VisualElementRenderer(this);
-			BackgroundManager.Init(this);
-		}
-
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
@@ -134,7 +125,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			// if the measure of the view has changed then trigger a request for layout
 			// if the measure hasn't changed then force a layout of the label
 			var measureIsChanged = !_lastSizeRequest.HasValue ||
-				_lastSizeRequest.HasValue && (_lastSizeRequest.Value.Request.Height != MeasuredHeight || _lastSizeRequest.Value.Request.Width != MeasuredWidth);
+				(_lastSizeRequest.Value.Request.Height != MeasuredHeight || _lastSizeRequest.Value.Request.Width != MeasuredWidth);
 			if (measureIsChanged)
 				this.MaybeRequestLayout();
 			else
@@ -287,7 +278,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			else if (e.PropertyName == Label.TextColorProperty.PropertyName ||
 				e.PropertyName == Label.TextTypeProperty.PropertyName)
 				UpdateText();
-			else if (e.PropertyName == Label.FontProperty.PropertyName)
+			else if (e.IsOneOf(Label.FontAttributesProperty, Label.FontFamilyProperty, Label.FontSizeProperty))
 				UpdateText();
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
 				UpdateLineBreakMode();
@@ -320,9 +311,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateFont()
 		{
-#pragma warning disable 618 // We will need to update this when .Font goes away
-			Font f = Element.Font;
-#pragma warning restore 618
+			Font f = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
 
 			Typeface newTypeface = f.ToTypeface();
 			if (newTypeface != _lastTypeface)
@@ -391,9 +380,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			if (Element.FormattedText != null)
 			{
 				FormattedString formattedText = Element.FormattedText ?? Element.Text;
-#pragma warning disable 618 // We will need to update this when .Font goes away
-				TextFormatted = _spannableString = formattedText.ToAttributed(Element.Font, Element.TextColor, this);
-#pragma warning restore 618
+
+				Font f = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
+				TextFormatted = _spannableString = formattedText.ToAttributed(f, Element.TextColor, this);
 				_wasFormatted = true;
 			}
 			else

@@ -176,7 +176,7 @@ namespace Xamarin.Forms
 
 		#region IView
 
-		Rectangle IFrameworkElement.Frame => Bounds;
+		public Rectangle Frame => Bounds;
 
 		public IViewHandler Handler
 		{
@@ -194,7 +194,7 @@ namespace Xamarin.Forms
 
 		public Size DesiredSize { get; protected set; }
 
-		public bool IsMeasureValid { get; protected set; }
+		public virtual bool IsMeasureValid { get; protected set; }
 
 		public bool IsArrangeValid { get; protected set; }
 
@@ -204,6 +204,13 @@ namespace Xamarin.Forms
 		}
 
 		void IFrameworkElement.Arrange(Rectangle bounds)
+		{
+			ArrangeOverride(bounds);
+		}
+
+		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override Arrange even though
+		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
+		protected virtual void ArrangeOverride(Rectangle bounds) 
 		{
 			if (IsArrangeValid)
 				return;
@@ -218,10 +225,21 @@ namespace Xamarin.Forms
 		protected override void OnSizeAllocated(double width, double height)
 		{
 			base.OnSizeAllocated(width, height);
-			Handler?.SetFrame(Bounds);
+
+			if (IsArrangeValid)
+			{
+				Handler?.SetFrame(Bounds);
+			}
 		}
 
 		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
+		{
+			return MeasureOverride(widthConstraint, heightConstraint);
+		}
+
+		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override Measure even though
+		// the interface has to be explicitly implemented to avoid conflict with the old Measure method
+		protected virtual Size MeasureOverride(double widthConstraint, double heightConstraint) 
 		{
 			if (!IsMeasureValid)
 			{
@@ -233,6 +251,13 @@ namespace Xamarin.Forms
 		}
 
 		void IFrameworkElement.InvalidateMeasure()
+		{
+			InvalidateMeasureOverride();
+		}
+
+		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override InvalidateMeasure even though
+		// the interface has to be explicitly implemented to avoid conflict with the VisualElement.InvalidateMeasure method
+		protected virtual void InvalidateMeasureOverride() 
 		{
 			IsMeasureValid = false;
 			IsArrangeValid = false;

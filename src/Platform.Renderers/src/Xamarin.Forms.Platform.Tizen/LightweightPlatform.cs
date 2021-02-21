@@ -64,9 +64,6 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			_navModel.Push(page, null);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			page.Platform = this;
-#pragma warning restore CS0618 // Type or member is obsolete
 			((Application)page.RealParent).NavigationProxy.Inner = this;
 
 			var renderer = Platform.CreateRenderer(page);
@@ -194,11 +191,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		void INavigation.RemovePage(Page page)
 		{
 			throw new InvalidOperationException("RemovePage is not supported globally on Tizen, please use a NavigationPage.");
-		}
-
-		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
-		{
-			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 		}
 
 		void OnLayout(object sender, Native.LayoutEventArgs e)

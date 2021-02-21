@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Xamarin.Forms;
 using Xamarin.Platform;
 
@@ -6,7 +8,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests.Stubs
 {
 	public class StubBase : IFrameworkElement
 	{
-		public bool IsEnabled { get; set; }
+		public bool IsEnabled { get; set; } = true;
 
 		public Color BackgroundColor { get; set; }
 
@@ -32,6 +34,20 @@ namespace Xamarin.Platform.Handlers.DeviceTests.Stubs
 		{
 			Frame = bounds;
 			DesiredSize = bounds.Size;
+		}
+
+
+		protected bool SetProperty<T>(ref T backingStore, T value,
+			[CallerMemberName] string propertyName = "",
+			Action onChanged = null)
+		{
+			if (EqualityComparer<T>.Default.Equals(backingStore, value))
+				return false;
+
+			backingStore = value;
+			onChanged?.Invoke();
+			Handler?.UpdateValue(propertyName);
+			return true;
 		}
 
 		public void InvalidateArrange()

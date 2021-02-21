@@ -10,12 +10,12 @@
                 <StackLayout Spacing="0">
                     <StackLayout Orientation="Horizontal" Margin="0, 5, 0, 20">
                         <Label class="RadioText" HorizontalOptions="StartAndExpand" VerticalTextAlignment="Start" FontAttributes="Bold">Please review and confirm that you agree to our terms and conditions before continuing.</Label>
-                        <Button Text="View" class="Primary" HorizontalOptions="End" VerticalOptions="Start" BorderRadius="8" WidthRequest="80"></Button>
+                        <Button Text="View" class="Primary" HorizontalOptions="End" VerticalOptions="Start" CornerRadius="8" WidthRequest="80"></Button>
                     </StackLayout>
                     <StackLayout Orientation="Horizontal" Margin="0, 5, 0, 5">
                         <Label class="RadioText" FontAttributes="Bold" VerticalTextAlignment="Center">I agree</Label>
                         <Switch x:Name="rbTerms" HorizontalOptions="StartAndExpand" />
-                        <Button x:Name="btnContinue" StyleClass="Primary" Text="Continue" HorizontalOptions="Center" BorderRadius="8" IsEnabled="False" WidthRequest="150"></Button>
+                        <Button x:Name="btnContinue" StyleClass="Primary" Text="Continue" HorizontalOptions="Center" CornerRadius="8" IsEnabled="False" WidthRequest="150"></Button>
                     </StackLayout>
                 </StackLayout>
             </Frame>

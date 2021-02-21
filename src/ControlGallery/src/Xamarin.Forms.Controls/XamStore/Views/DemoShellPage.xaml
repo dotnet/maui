@@ -35,15 +35,15 @@
                     StyleClass="MainTab"
                     HorizontalOptions="FillAndExpand"
                     VerticalOptions="Fill"
-                    Image="icon_bookmark.png"
+                    ImageSource="icon_bookmark.png"
                     Command="{Binding ToggleCommand}" 
                     CommandParameter="bookmarked">
                     <Button.Triggers>
                         <DataTrigger TargetType="Button" Binding="{Binding IsFullTabSelected}" Value="true">
-                            <Setter Property="Image" Value="icon_bookmark.png" />
+                            <Setter Property="ImageSource" Value="icon_bookmark.png" />
                         </DataTrigger>
                         <DataTrigger TargetType="Button" Binding="{Binding IsFullTabSelected}" Value="false">
-                            <Setter Property="Image" Value="icon_bookmark_selected.png" />
+                            <Setter Property="ImageSource" Value="icon_bookmark_selected.png" />
                         </DataTrigger>
                     </Button.Triggers>
                 </Button>
@@ -127,7 +127,7 @@
                                         Constant=-80}"
                             Command="{Binding NavToAddCommand}"
                             StyleClass="AddButton"
-                            Image="button_add.png"/>
+                            ImageSource="button_add.png"/>
         </RelativeLayout>
     </ContentPage.Content>
 </ContentPage>

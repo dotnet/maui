@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
@@ -253,47 +252,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.False(invoked);
 		}
 
-		public void ButtonBorderRadiusForwardsToButtonCornerRadius()
-		{
-			var button = new Button();
-			button.BorderRadius = 10;
-
-			Assert.AreEqual(10, button.CornerRadius);
-		}
-
-		[Test]
-		public void ButtonCornerRadiusForwardsToButtonBorderRadius()
-		{
-			var button = new Button();
-			button.CornerRadius = 10;
-
-			Assert.AreEqual(10, button.BorderRadius);
-		}
-
-		[Test]
-		public void ButtonCornerRadiusClearValueForwardsToButtonBorderRadius()
-		{
-			var button = new Button();
-
-			button.CornerRadius = 10;
-
-			button.ClearValue(Button.CornerRadiusProperty);
-
-			Assert.AreEqual((int)Button.BorderRadiusProperty.DefaultValue, button.BorderRadius);
-		}
-
-		[Test]
-		public void ButtonBorderRadiusClearValueForwardsToButtonCornerRadius()
-		{
-			var button = new Button();
-
-			button.BorderRadius = 10;
-
-			button.ClearValue(Button.BorderRadiusProperty);
-
-			Assert.AreEqual((int)Button.CornerRadiusProperty.DefaultValue, button.CornerRadius);
-		}
-
 		[Test]
 		public void ButtonCornerRadiusSetToFive()
 		{
@@ -304,18 +262,6 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			button.CornerRadius = 5;
 			Assert.AreEqual(5, button.CornerRadius);
-		}
-
-		[Test]
-		public void ButtonBorderRadiusSetMinusOne()
-		{
-			var button = new Button();
-
-			button.BorderRadius = 25;
-			Assert.AreEqual(25, button.BorderRadius);
-
-			button.BorderRadius = -1;
-			Assert.AreEqual(-1, button.BorderRadius);
 		}
 
 		private void AssertButtonContentLayoutsEqual(Button.ButtonContentLayout layout1, object layout2)

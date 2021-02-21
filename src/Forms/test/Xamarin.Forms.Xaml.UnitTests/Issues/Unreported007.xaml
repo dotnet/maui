@@ -5,7 +5,10 @@
 
 	<Label Text="Foo" x:Name="label">
 		<RelativeLayout.XConstraint>
-			<OnPlatform x:TypeArguments="Constraint" Android="{ConstraintExpression Type=Constant,Constant=6}" iOS="{ConstraintExpression Type=Constant,Constant=3}" />
+			<OnPlatform x:TypeArguments="Constraint">
+				<On Platform="iOS" Value="{ConstraintExpression Type=Constant,Constant=3}" />
+				<On Platform="Android" Value="{ConstraintExpression Type=Constant,Constant=6}" />
+			</OnPlatform>
 		</RelativeLayout.XConstraint>
 	</Label>
 </ContentPage>

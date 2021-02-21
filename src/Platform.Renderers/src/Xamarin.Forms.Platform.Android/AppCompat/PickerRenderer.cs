@@ -23,13 +23,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use PickerRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public PickerRendererBase()
-		{
-			AutoPackage = false;
-		}
-
 		protected abstract EditText EditText { get; }
 
 		protected override void Dispose(bool disposing)
@@ -198,11 +191,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 	{
 		TextColorSwitcher _textColorSwitcher;
 		TextColorSwitcher _hintColorSwitcher;
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use PickerRenderer(Context) instead.")]
-		public PickerRenderer()
-		{
-		}
 
 		public PickerRenderer(Context context) : base(context)
 		{

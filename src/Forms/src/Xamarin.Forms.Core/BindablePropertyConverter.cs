@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
@@ -14,11 +11,6 @@ namespace Xamarin.Forms
 	[Xaml.TypeConversion(typeof(BindableProperty))]
 	public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConverter
 	{
-		object IExtendedTypeConverter.ConvertFrom(CultureInfo culture, object value, IServiceProvider serviceProvider)
-		{
-			return ((IExtendedTypeConverter)this).ConvertFromInvariantString(value as string, serviceProvider);
-		}
-
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
 			if (string.IsNullOrWhiteSpace(value))
@@ -51,7 +43,7 @@ namespace Xamarin.Forms
 				}
 				else if (parentValuesProvider.TargetObject is Trigger)
 					type = (parentValuesProvider.TargetObject as Trigger).TargetType;
-				else if (parentValuesProvider.TargetObject is PropertyCondition && (parent as TriggerBase) != null)
+				else if (parentValuesProvider.TargetObject is PropertyCondition && parent is TriggerBase)
 					type = (parent as TriggerBase).TargetType;
 
 				if (type == null)

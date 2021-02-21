@@ -174,10 +174,10 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	public class ButtonExtensions
 	{
-#pragma warning disable 618
-		public static readonly BindableProperty IsPrimaryProperty = BindableProperty.CreateAttached<ButtonExtensions, bool>(
-#pragma warning restore 618
-																		bindable => GetIsPrimary(bindable),
+		public static readonly BindableProperty IsPrimaryProperty = BindableProperty.CreateAttached(
+																		"IsPrimary",
+																		typeof(bool),
+																		typeof(ButtonExtensions),
 																		false,
 																		BindingMode.TwoWay,
 																		null,

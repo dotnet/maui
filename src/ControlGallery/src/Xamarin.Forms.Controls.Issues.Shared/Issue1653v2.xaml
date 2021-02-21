@@ -8,7 +8,7 @@
       <Label Text="HEADER" Font="40" />
     </StackLayout>
       <StackLayout Padding="22,0,22,22">
-      <Label x:Name="productNameLabel" Text="TESTING 345" XAlign="Center" YAlign="Center" TextColor="#808080"></Label>
+      <Label x:Name="productNameLabel" Text="TESTING 345" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" TextColor="#808080"></Label>
 	      <ScrollView HeightRequest="980" BackgroundColor="Aqua" IsClippedToBounds="true">
 	        <StackLayout x:Name="addonGroupStack" Spacing="1" ></StackLayout>
 	      </ScrollView>

@@ -81,9 +81,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = Device.RuntimePlatform == Device.iOS ? "Custom renderer UITableView" : Device.RuntimePlatform == Device.Android ? "Custom renderer ListView" : "Custom renderer todo"
 					},
 					fasterListView
@@ -156,9 +154,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(5, 20, 5, 0) : new Thickness(5, 0),
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "Xamarin.Forms built-in ListView"
 					},
 					listView
@@ -200,9 +196,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "Xamarin.Forms native Cell"
 					},
 					listView
@@ -313,9 +307,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = Device.RuntimePlatform == Device.iOS ? "Custom UITableView+UICell" : Device.RuntimePlatform == Device.Android ? "Custom ListView+Cell" : "Custom renderer todo"
 					},
 					nativeListView2

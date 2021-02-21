@@ -3,11 +3,9 @@ using System.ComponentModel;
 using System.Globalization;
 using Android.App;
 using Android.Content;
-using Android.OS;
 using Android.Text.Format;
 using Android.Util;
 using Android.Widget;
-using AColor = Android.Graphics.Color;
 using ATimePicker = Android.Widget.TimePicker;
 
 namespace Xamarin.Forms.Platform.Android
@@ -24,13 +22,6 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		public TimePickerRendererBase(Context context) : base(context)
-		{
-			AutoPackage = false;
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use TimePickerRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public TimePickerRendererBase()
 		{
 			AutoPackage = false;
 		}
@@ -199,10 +190,6 @@ namespace Xamarin.Forms.Platform.Android
 	public class TimePickerRenderer : TimePickerRendererBase<EditText>
 	{
 		TextColorSwitcher _textColorSwitcher;
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use TimePickerRenderer(Context) instead.")]
-		public TimePickerRenderer()
-		{
-		}
 
 		public TimePickerRenderer(Context context) : base(context)
 		{

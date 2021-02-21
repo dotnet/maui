@@ -287,7 +287,7 @@ namespace Xamarin.Forms.CustomAttributes
 			Placeholder,
 			LabelColor,
 			Keyboard,
-			XAlign,
+			HorizontalTextAlignment,
 		}
 
 		public enum TextCell

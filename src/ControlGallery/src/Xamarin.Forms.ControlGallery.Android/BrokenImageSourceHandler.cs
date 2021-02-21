@@ -23,6 +23,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 	public class _51173CustomImageRenderer : ImageRenderer
 #pragma warning restore 618
 	{
+		public _51173CustomImageRenderer(Context context) : base(context)
+		{
+		}
+
 		protected override async Task TryUpdateBitmap(Image previous = null)
 		{
 			try

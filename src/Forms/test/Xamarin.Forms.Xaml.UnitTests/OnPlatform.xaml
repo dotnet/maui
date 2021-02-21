@@ -5,11 +5,19 @@
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<OnPlatform x:TypeArguments="FontAttributes" x:Key="fontAttributes">
-				<OnPlatform.iOS>Bold</OnPlatform.iOS>
-				<OnPlatform.Android>Italic</OnPlatform.Android>
+				<On Platform="iOS">Bold</On>
+				<On Platform="Android">Italic</On>
 			</OnPlatform>
-			<OnPlatform x:Key="phone" x:TypeArguments="x:Double" iOS="20" Android="20" WinPhone="30"/>
-			<OnPlatform x:Key="tablet" x:TypeArguments="x:Double" iOS="40" Android="40" WinPhone="60"/>
+			<OnPlatform x:Key="phone" x:TypeArguments="x:Double">
+				<On Platform="iOS">20</On>
+				<On Platform="Android">20</On>
+				<On Platform="UWP">30</On>
+			</OnPlatform>
+			<OnPlatform x:Key="tablet" x:TypeArguments="x:Double">
+				<On Platform="iOS">40</On>
+				<On Platform="Android">40</On>
+				<On Platform="UWP">60</On>
+			</OnPlatform>
 			<OnIdiom x:Key="fontSize" x:TypeArguments="x:Double"
 				Phone="{StaticResource phone}"
 				Tablet="{StaticResource tablet}"/>
@@ -20,20 +28,20 @@
 		<Label x:Name="label0" FontAttributes="{StaticResource fontAttributes}" FontSize="{StaticResource fontSize}">
 			<Label.IsVisible>
 				<OnPlatform x:TypeArguments="x:Boolean">
-					<OnPlatform.iOS>true</OnPlatform.iOS>
-					<OnPlatform.Android>false</OnPlatform.Android>
+					<On Platform="iOS">true</On>
+					<On Platform="Android">false</On>
 				</OnPlatform>
 			</Label.IsVisible>
 			<Label.WidthRequest>
 				<OnPlatform x:TypeArguments="x:Double">
-					<OnPlatform.iOS>20</OnPlatform.iOS>
-					<OnPlatform.Android>30</OnPlatform.Android>
+					<On Platform="iOS">20</On>
+					<On Platform="Android">30</On>
 				</OnPlatform>
 			</Label.WidthRequest>
 			<Label.Text>
 				<OnPlatform x:TypeArguments="x:String">
-					<OnPlatform.iOS>Foo</OnPlatform.iOS>
-					<OnPlatform.Android>Bar</OnPlatform.Android>
+					<On Platform="iOS">Foo</On>
+					<On Platform="Android">Bar</On>
 				</OnPlatform>
 			</Label.Text>
 			<Label.HeightRequest>

@@ -10,9 +10,6 @@ using Xamarin.Forms.Platform.GTK.Renderers;
 namespace Xamarin.Forms.Platform.GTK
 {
 	public class Platform : BindableObject, INavigation, IDisposable
-#pragma warning disable CS0618
-		, IPlatform
-#pragma warning restore
 	{
 		private bool _disposed;
 		readonly List<Page> _modals;
@@ -124,12 +121,6 @@ namespace Xamarin.Forms.Platform.GTK
 				throw new NotImplementedException();
 
 			Page = newRoot;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-			// The Platform property is no longer necessary, but we have to set it because some third-party
-			// library might still be retrieving it and using it
-			Page.Platform = this;
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			AddChild(Page);
 
@@ -246,12 +237,6 @@ namespace Xamarin.Forms.Platform.GTK
 		{
 			_modals.Add(modal);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			// The Platform property is no longer necessary, but we have to set it because some third-party
-			// library might still be retrieving it and using it
-			modal.Platform = this;
-#pragma warning restore CS0618 // Type or member is obsolete
-
 			modal.DescendantRemoved += HandleChildRemoved;
 
 			var modalRenderer = GetRenderer(modal);
@@ -298,14 +283,5 @@ namespace Xamarin.Forms.Platform.GTK
 		{
 
 		}
-
-		#region Obsolete 
-
-		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
-		{
-			return GetNativeSize(view, widthConstraint, heightConstraint);
-		}
-
-		#endregion
 	}
 }

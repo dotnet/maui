@@ -14,7 +14,7 @@
         </DataTemplate>
         <DataTemplate x:Key="EmptyTemplate">
             <Frame Padding="10" AutomationId="{Binding BindingContext.EmptyTemplateAutomationId, Source={x:Reference ThePage}}"
-				   BackgroundColor="Fuschia">
+				   BackgroundColor="Fuchsia">
                 <Label Text="No items here" />
             </Frame>
         </DataTemplate>

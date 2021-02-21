@@ -27,12 +27,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = new MockPlatformServices();
 			}
 
+			[Ignore("Temporarily ignore: https://github.com/xamarin/Xamarin.Forms/issues/13815")]
 			[TestCase(false)]
 			[TestCase(true)]
 			public void MultipleTriggers(bool useCompiledXaml)
 			{
-				Issue2578 layout = null;
-				Assert.DoesNotThrow(() => layout = new Issue2578(useCompiledXaml));
+				Issue2578 layout = new Issue2578(useCompiledXaml);
 
 				Assert.AreEqual(null, layout.label.Text);
 				Assert.AreEqual(Color.Default, layout.label.BackgroundColor);

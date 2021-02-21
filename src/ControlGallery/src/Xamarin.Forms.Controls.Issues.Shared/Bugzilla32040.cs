@@ -33,9 +33,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			var entryCell = new EntryCell { Text = "yaddayadda" };
-#pragma warning disable 618
-			entryCell.XAlign = TextAlignment.End;
-#pragma warning restore 618
+			entryCell.HorizontalTextAlignment = TextAlignment.End;
 			entryCell.Label = "Click Here";
 			entryCell.Tapped += (s, e) =>
 			{

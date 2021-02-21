@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Xamarin.Platform.Handlers.UnitTests
+﻿namespace Xamarin.Platform.Handlers.UnitTests
 {
 	public class HandlerStub : AbstractViewHandler<Forms.Button, object>
 	{
@@ -35,5 +31,4 @@ namespace Xamarin.Platform.Handlers.UnitTests
 			DisconnectHandlerCount++;
 		}
 	}
-
 }

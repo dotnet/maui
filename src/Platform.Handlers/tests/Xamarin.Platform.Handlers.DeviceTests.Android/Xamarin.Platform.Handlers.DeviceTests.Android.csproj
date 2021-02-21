@@ -36,7 +36,7 @@
     <WarningLevel>4</WarningLevel>
     <AndroidUseSharedRuntime>True</AndroidUseSharedRuntime>
     <AndroidLinkMode>None</AndroidLinkMode>
-    <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -110,6 +110,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
+      <Name>Xamarin.Platform.Handlers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xamarin.Platform.Handlers.DeviceTests\Xamarin.Platform.Handlers.DeviceTests.csproj">
       <Project>{da9e4d76-8ca4-4cc3-a47c-ba75dff805c6}</Project>
       <Name>Xamarin.Platform.Handlers.DeviceTests</Name>

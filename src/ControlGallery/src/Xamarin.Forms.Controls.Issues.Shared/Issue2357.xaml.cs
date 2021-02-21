@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 #if UITEST
@@ -180,9 +179,9 @@ namespace Xamarin.Forms.Controls.Issues
 					//if external link is clicked
 					Debug.WriteLine("WebView_OnNavigating, DIfferent Uri, so open in Native Browser");
 					e.Cancel = true;
-#pragma warning disable CS0618 // Type or member is obsolete
-					Device.OpenUri(new Uri(e.Url));
-#pragma warning restore CS0618 // Type or member is obsolete
+
+					// TODO: not sure what to do here since there is no OpenUri anymore
+					// Device.OpenUri(new Uri(e.Url));
 				}
 			}
 		}

@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -61,18 +60,6 @@ namespace Xamarin.Forms
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
-		[Obsolete("Foreground is obsolete as of version 3.1.0. Please use the TextColor property instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty ForegroundColorProperty = TextColorProperty;
-
-#pragma warning disable 618
-		public Color ForegroundColor
-		{
-			get { return (Color)GetValue(ForegroundColorProperty); }
-			set { SetValue(ForegroundColorProperty, value); }
-		}
-#pragma warning restore 618
-
 		public static readonly BindableProperty TextProperty
 			= BindableProperty.Create(nameof(Text), typeof(string), typeof(Span), "", defaultBindingMode: BindingMode.OneWay);
 
@@ -82,8 +69,6 @@ namespace Xamarin.Forms
 			set { SetValue(TextProperty, value); }
 		}
 
-		public static readonly BindableProperty FontProperty = FontElement.FontProperty;
-
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
@@ -91,14 +76,6 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
 		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
-
-		[Obsolete("Font is obsolete as of version 1.3.0. Please use the Font properties directly.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Font Font
-		{
-			get { return (Font)GetValue(FontElement.FontProperty); }
-			set { SetValue(FontElement.FontProperty, value); }
-		}
 
 		public FontAttributes FontAttributes
 		{

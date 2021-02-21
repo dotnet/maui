@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Shapes;
 
@@ -835,9 +834,6 @@ namespace Xamarin.Forms
 				ComputeConstraintForView(view);
 		}
 
-		[Obsolete("OnChildRemoved(Element) is obsolete as of version 4.8.0. Please use OnChildRemoved(Element, int) instead.")]
-		protected override void OnChildRemoved(Element child) => OnChildRemoved(child, -1);
-
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
@@ -924,7 +920,7 @@ namespace Xamarin.Forms
 
 		internal void MockBounds(Rectangle bounds)
 		{
-#if !NETSTANDARD1_0
+#if NETSTANDARD2_0
 			(_mockX, _mockY, _mockWidth, _mockHeight) = bounds;
 #else
 			_mockX = bounds.X;

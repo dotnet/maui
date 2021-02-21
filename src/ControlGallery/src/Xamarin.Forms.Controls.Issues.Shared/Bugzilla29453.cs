@@ -24,9 +24,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "Page 1"
 					}
 				}
@@ -36,9 +34,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "Page 2"
 					}
 				}

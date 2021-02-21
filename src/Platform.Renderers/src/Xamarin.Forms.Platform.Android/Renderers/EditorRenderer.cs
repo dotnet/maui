@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
-using Android.Content.Res;
-using Android.OS;
 using Android.Text;
 using Android.Text.Method;
 using Android.Util;
@@ -21,13 +19,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		public EditorRenderer(Context context) : base(context)
 		{
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use EditorRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public EditorRenderer()
-		{
-			AutoPackage = false;
 		}
 
 		protected override FormsEditText CreateNativeControl()
@@ -72,13 +63,6 @@ namespace Xamarin.Forms.Platform.Android
 		protected abstract EditText EditText { get; }
 
 		public EditorRendererBase(Context context) : base(context)
-		{
-			AutoPackage = false;
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use EditorRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public EditorRendererBase()
 		{
 			AutoPackage = false;
 		}

@@ -78,10 +78,8 @@ namespace Xamarin.Forms.Controls.Issues
 						new Label () {
 							Text = title,
 							VerticalOptions = LayoutOptions.CenterAndExpand,
-#pragma warning disable 618
-							Font = Font.SystemFontOfSize (NamedSize.Large,
-#pragma warning restore 618
-							                              FontAttributes.Bold)
+							FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
+							FontAttributes = FontAttributes.Bold
 						}
 					}
 				};

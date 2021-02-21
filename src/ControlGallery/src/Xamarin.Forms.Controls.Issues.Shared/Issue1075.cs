@@ -32,9 +32,8 @@ namespace Xamarin.Forms.Controls.Issues
 			Label header = new Label
 			{
 				Text = "Picker",
-#pragma warning disable 618
-				Font = Font.BoldSystemFontOfSize(50),
-#pragma warning restore 618
+				FontAttributes = FontAttributes.Bold,
+				FontSize = 50,
 				HorizontalOptions = LayoutOptions.Center
 			};
 
@@ -46,7 +45,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			foreach (string color in new string[]
 				{
-					"Aqua", "Black", "Blue", "Fuschia",
+					"Aqua", "Black", "Blue", "Fuchsia",
 					"Gray", "Green", "Lime", "Maroon",
 					"Navy", "Olive", "Purple", "Red",
 					"Silver", "Teal", "White", "Yellow"

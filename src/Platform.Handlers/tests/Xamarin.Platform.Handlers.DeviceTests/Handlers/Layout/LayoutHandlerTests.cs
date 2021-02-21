@@ -36,8 +36,13 @@ namespace Xamarin.Platform.Handlers.DeviceTests.Handlers.Layout
 
 			var handler = await CreateHandlerAsync(layout);
 
-			handler.Remove(slider);
-			Assert.Equal(0, GetNativeChildCount(handler));
+			var count = await InvokeOnMainThreadAsync(() =>
+			{
+				handler.Remove(slider);
+				return GetNativeChildCount(handler);
+			});
+
+			Assert.Equal(0, count);
 		}
 	}
 }

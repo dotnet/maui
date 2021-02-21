@@ -20,7 +20,7 @@
 		</DataTemplate>
         <DataTemplate x:Key="EmptyTemplate">
 			<Frame Padding="10" HasShadow="False" 
-				   BackgroundColor="Fuschia">
+				   BackgroundColor="Fuchsia">
 				<Label Text="No items here" />
 			</Frame>
 		</DataTemplate>

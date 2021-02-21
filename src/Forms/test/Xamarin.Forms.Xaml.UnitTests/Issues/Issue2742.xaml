@@ -4,8 +4,8 @@
 			 xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
 			 x:Class="Xamarin.Forms.Xaml.UnitTests.Issue2742">
 	<ContentPage.ToolbarItems>
-		<ToolbarItem Name="One"></ToolbarItem>
-		<ToolbarItem Name="Two"></ToolbarItem>
+		<ToolbarItem Text="One"></ToolbarItem>
+		<ToolbarItem Text="Two"></ToolbarItem>
 	</ContentPage.ToolbarItems>
 	<ContentPage.Content>
 		<Label Text="test"></Label>

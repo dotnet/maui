@@ -2,25 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Core;
-using Windows.Foundation.Metadata;
-using Windows.UI;
-using Windows.UI.Core;
-using Windows.UI.ViewManagement;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Foundation.Metadata;
+using Windows.UI.Core;
 using Xamarin.Forms.Internals;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
-using WImage = Microsoft.UI.Xaml.Controls.Image;
-using Microsoft.UI;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
+using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	public abstract class Platform : INavigation
-#pragma warning disable CS0618 // Type or member is obsolete
-		, IPlatform
-#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		static Task<bool> s_currentAlert;
 		static Task<string> s_currentPrompt;
@@ -128,7 +121,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			catch (Exception exception)
 			{
-				Log.Warning("Update toolbar items after app resume", 
+				Log.Warning("Update toolbar items after app resume",
 					$"UpdateToolbarItems failed after app resume: {exception.Message}");
 
 			}
@@ -225,11 +218,6 @@ namespace Xamarin.Forms.Platform.UWP
 			Page result = _navModel.PopModal();
 			SetCurrent(_navModel.CurrentPage, true, true, () => tcs.SetResult(result));
 			return tcs.Task;
-		}
-
-		SizeRequest IPlatform.GetNativeSize(VisualElement element, double widthConstraint, double heightConstraint)
-		{
-			return Platform.GetNativeSize(element, widthConstraint, heightConstraint);
 		}
 
 		public static SizeRequest GetNativeSize(VisualElement element, double widthConstraint, double heightConstraint)
@@ -333,12 +321,6 @@ namespace Xamarin.Forms.Platform.UWP
 				if (newPage == _currentPage)
 					return;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-				// The Platform property is no longer necessary, but we have to set it because some third-party
-				// library might still be retrieving it and using it
-				newPage.Platform = this;
-#pragma warning restore CS0618 // Type or member is obsolete
-
 				if (_currentPage != null)
 				{
 					Page previousPage = _currentPage;
@@ -349,13 +331,13 @@ namespace Xamarin.Forms.Platform.UWP
 					{
 						RemovePage(previousPage);
 
-						if(!modal && _modalBackgroundPage != null)
+						if (!modal && _modalBackgroundPage != null)
 						{
 							RemovePage(_modalBackgroundPage);
 							_modalBackgroundPage.Cleanup();
 							_modalBackgroundPage.Parent = null;
 						}
-						
+
 						_modalBackgroundPage = null;
 					}
 
@@ -369,9 +351,9 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 
 				newPage.Layout(ContainerBounds);
-											
+
 				AddPage(newPage);
-								
+
 				completedCallback?.Invoke();
 
 				_currentPage = newPage;
@@ -380,7 +362,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				await UpdateToolbarItems();
 			}
-			catch(Exception error)
+			catch (Exception error)
 			{
 				//This exception prevents the Main Page from being changed in a child 
 				//window or a different thread, except on the Main thread. 
@@ -441,8 +423,8 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			_bounds = new Rectangle(0, 0, _page.Bounds.Width, _page.Bounds.Height);
 
-            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
-            {
+			if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+			{
 				// TODO WINUI
 				//StatusBar statusBar = StatusBar.GetForCurrentView();
 				//if (statusBar != null)
@@ -467,8 +449,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void InitializeStatusBar()
 		{
-            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
-            {
+			if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+			{
 				//StatusBar statusBar = StatusBar.GetForCurrentView();
 				//if (statusBar != null)
 				//{
@@ -495,7 +477,7 @@ namespace Xamarin.Forms.Platform.UWP
 		internal async Task UpdateToolbarItems()
 		{
 			var toolbarProvider = GetToolbarProvider();
-			
+
 			if (toolbarProvider == null)
 			{
 				return;

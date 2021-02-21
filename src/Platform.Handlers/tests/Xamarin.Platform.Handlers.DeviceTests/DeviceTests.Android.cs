@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Context = global::Android.Content.Context;
+﻿using Context = global::Android.Content.Context;
 
 namespace Xamarin.Platform.Handlers.DeviceTests
 {

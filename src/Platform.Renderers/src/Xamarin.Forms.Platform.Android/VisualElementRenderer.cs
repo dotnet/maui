@@ -68,12 +68,6 @@ namespace Xamarin.Forms.Platform.Android
 			return base.DispatchTouchEvent(e);
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use VisualElementRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected VisualElementRenderer() : this(Forms.Context)
-		{
-		}
-
 		public TElement Element { get; private set; }
 
 		protected bool AutoPackage

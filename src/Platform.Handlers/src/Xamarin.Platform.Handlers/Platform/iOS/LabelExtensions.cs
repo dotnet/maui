@@ -1,20 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Foundation;
-using UIKit;
+﻿using UIKit;
 
 namespace Xamarin.Platform
 {
 	public static class LabelExtensions
 	{
-		public static void UpdateText(this UILabel label, string text)
-			=> label.Text = text;
+		public static void UpdateText(this UILabel nativeLabel, ILabel label)
+		{
+			nativeLabel.Text = label.Text;
+		}
 
-		public static void UpdateText(this UILabel label, NSAttributedString text)
-			=> label.AttributedText = text;
+		public static void UpdateTextColor(this UILabel nativeLabel, ILabel label)
+		{
+			var textColor = label.TextColor;
 
-		public static void UpdateText(this UILabel label, ILabel text)
-			=> label.UpdateText(text.Text);
+			if (textColor.IsDefault)
+			{
+				// Default value of color documented to be black in iOS docs
+				nativeLabel.TextColor = textColor.ToNative(ColorExtensions.LabelColor);
+			}
+			else
+			{
+				nativeLabel.TextColor = textColor.ToNative(textColor);
+			}
+		}
 	}
 }

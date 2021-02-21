@@ -21,10 +21,6 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(MenuItem), default(ImageSource));
 
-		[Obsolete("IconProperty is obsolete as of 4.0.0. Please use IconImageSourceProperty instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty IconProperty = IconImageSourceProperty;
-
 		static readonly BindablePropertyKey IsEnabledPropertyKey = BindableProperty.CreateReadOnly(nameof(IsEnabled), typeof(bool), typeof(ToolbarItem), true);
 		public static readonly BindableProperty IsEnabledProperty = IsEnabledPropertyKey.BindableProperty;
 
@@ -51,14 +47,6 @@ namespace Xamarin.Forms
 		{
 			get => GetValue(CommandParameterProperty);
 			set => SetValue(CommandParameterProperty, value);
-		}
-
-		[Obsolete("Icon is obsolete as of 4.0.0. Please use IconImageSource instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public FileImageSource Icon
-		{
-			get => GetValue(IconProperty) as FileImageSource ?? default(FileImageSource);
-			set => SetValue(IconProperty, value);
 		}
 
 		public ImageSource IconImageSource
@@ -109,9 +97,6 @@ namespace Xamarin.Forms
 		{
 			set => SetValueCore(IsEnabledPropertyKey, value);
 		}
-
-		[Obsolete("This property is obsolete as of 3.5.0. Please use MenuItem.IsEnabledProperty.PropertyName instead.")]
-		public string IsEnabledPropertyName => MenuItem.IsEnabledProperty.PropertyName;
 
 		public event EventHandler Clicked;
 

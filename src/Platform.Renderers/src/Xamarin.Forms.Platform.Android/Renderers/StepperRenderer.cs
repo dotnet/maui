@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
@@ -13,13 +12,6 @@ namespace Xamarin.Forms.Platform.Android
 		AButton _upButton;
 
 		public StepperRenderer(Context context) : base(context)
-		{
-			AutoPackage = false;
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use StepperRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public StepperRenderer()
 		{
 			AutoPackage = false;
 		}

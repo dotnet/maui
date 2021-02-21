@@ -6,7 +6,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Tizen.Location;
 using Tizen.Maps;
-using Xamarin.Forms;
 using Xamarin.Forms.Platform.Tizen;
 using TPin = Tizen.Maps.Pin;
 
@@ -213,9 +212,7 @@ namespace Xamarin.Forms.Maps.Tizen
 				pin.MarkerId = nativePin;
 				nativePin.Clicked += (s, e) =>
 				{
-#pragma warning disable CS0618
-					pin.SendTap();
-#pragma warning restore CS0618
+					pin.SendMarkerClick();
 				};
 				Control.Add(nativePin);
 				_pins.Add(pin);

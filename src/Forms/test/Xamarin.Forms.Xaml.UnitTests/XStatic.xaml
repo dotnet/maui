@@ -5,7 +5,7 @@
 			 xmlns:remote="clr-namespace:Xamarin.Forms.Controls;assembly=Xamarin.Forms.Controls"
 			 x:Class="Xamarin.Forms.Xaml.UnitTests.XStatic">
 	<ContentPage.ToolbarItems>
-		<ToolbarItem Icon="{x:Static local:MockxStatic.MockFieldRef}" />
+		<ToolbarItem IconImageSource="{x:Static local:MockxStatic.MockFieldRef}" />
 	</ContentPage.ToolbarItems>
 	<StackLayout>
 		<Label x:Name="staticproperty"

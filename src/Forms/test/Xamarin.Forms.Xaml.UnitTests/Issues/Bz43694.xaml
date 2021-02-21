@@ -7,9 +7,9 @@
 			<x:String x:Key="Dark">Dark</x:String>
 			<x:String x:Key="Light">
 				<OnPlatform x:TypeArguments="x:String">
-					<OnPlatform.iOS>OpenSans-Light</OnPlatform.iOS>
-					<OnPlatform.Android>OpenSans-Light</OnPlatform.Android>
-					<OnPlatform.WinPhone>/Assets/Fonts/OpenSans-Light.ttf#Open Sans</OnPlatform.WinPhone>
+					<On Platform="iOS">OpenSans-Light</On>
+					<On Platform="Android">OpenSans-Light</On>
+					<On Platform="UWP">/Assets/Fonts/OpenSans-Light.ttf#Open Sans</On>
 				</OnPlatform>
 			</x:String>
 		</ResourceDictionary>

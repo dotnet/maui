@@ -38,9 +38,7 @@ namespace Xamarin.Forms.Controls.Issues
 						Text = "Add pins",
 						Command = new Command (() => {
 							foreach (var pin in map.Pins) {
-#pragma warning disable CS0618
-								pin.Clicked -= PinClicked;
-#pragma warning restore CS0618
+								pin.MarkerClicked -= PinClicked;
 							}
 
 							map.Pins.Clear ();
@@ -61,9 +59,9 @@ namespace Xamarin.Forms.Controls.Issues
 									Type = PinType.Place,
 									Position = new Position (map.VisibleRegion.Center.Latitude + lat, map.VisibleRegion.Center.Longitude + lng)
 								};
-#pragma warning disable CS0618
-								pin.Clicked += PinClicked;
-#pragma warning restore CS0618
+
+								pin.MarkerClicked += PinClicked;
+
 								map.Pins.Add (pin);
 							}
 						})

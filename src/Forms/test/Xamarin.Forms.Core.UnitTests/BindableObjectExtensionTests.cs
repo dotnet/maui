@@ -15,13 +15,6 @@ namespace Xamarin.Forms.Core.UnitTests
 				Throws.InstanceOf<ArgumentNullException>());
 			Assert.That(() => BindableObjectExtensions.SetBinding(new MockBindable(), MockBindable.TextProperty, null),
 				Throws.InstanceOf<ArgumentNullException>());
-
-			Assert.That(() => BindableObjectExtensions.SetBinding<MockViewModel>(null, MockBindable.TextProperty, vm => vm.Text),
-				Throws.InstanceOf<ArgumentNullException>());
-			Assert.That(() => BindableObjectExtensions.SetBinding<MockViewModel>(new MockBindable(), null, vm => vm.Text),
-				Throws.InstanceOf<ArgumentNullException>());
-			Assert.That(() => BindableObjectExtensions.SetBinding<MockViewModel>(new MockBindable(), MockBindable.TextProperty, null),
-				Throws.InstanceOf<ArgumentNullException>());
 		}
 
 		[Test]
@@ -59,13 +52,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var totalCheckTime = new TextCell { Text = "Total Check Time" };
 			totalCheckTime.BindingContext = new Bz27229ViewModel();
 			totalCheckTime.SetBinding(TextCell.DetailProperty, "Member.Result.Text");
-			Assert.AreEqual("foo", totalCheckTime.Detail);
-
-			totalCheckTime = new TextCell { Text = "Total Check Time" };
-			totalCheckTime.BindingContext = new Bz27229ViewModel();
-			totalCheckTime.SetBinding<Bz27229ViewModel>(TextCell.DetailProperty, vm =>
-				((Generic<Label>)vm.Member).Result.Text);
-
 			Assert.AreEqual("foo", totalCheckTime.Detail);
 		}
 	}

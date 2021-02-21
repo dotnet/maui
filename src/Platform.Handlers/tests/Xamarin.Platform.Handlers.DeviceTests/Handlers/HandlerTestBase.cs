@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xunit;
@@ -10,7 +8,6 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 	public partial class HandlerTestBase<THandler> : TestBase
 		where THandler : IViewHandler
 	{
-
 		public Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			MainThread.InvokeOnMainThreadAsync(func);
 

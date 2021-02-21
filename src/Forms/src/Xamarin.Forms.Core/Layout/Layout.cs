@@ -1,11 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Xamarin.Forms;
 using Xamarin.Platform;
-using Xamarin.Platform.Handlers;
 using Xamarin.Platform.Layouts;
 
-namespace Sample
+// This is a temporary namespace until we rename everything and move the legacy layouts
+namespace Xamarin.Forms.Layout2
 {
 	public abstract class Layout : View, Xamarin.Platform.ILayout, IEnumerable<IView>
 	{
@@ -24,7 +23,7 @@ namespace Sample
 
 		IEnumerator IEnumerable.GetEnumerator() => _children.GetEnumerator();
 
-		public override Size Measure(double widthConstraint, double heightConstraint)
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			if (IsMeasureValid)
 			{
@@ -39,7 +38,7 @@ namespace Sample
 			return DesiredSize;
 		}
 
-		public override void Arrange(Rectangle bounds)
+		protected override void ArrangeOverride(Rectangle bounds)
 		{
 			if (IsArrangeValid)
 			{
@@ -53,7 +52,7 @@ namespace Sample
 			Handler?.SetFrame(Frame);
 		}
 
-		public override void InvalidateMeasure()
+		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasure();
 

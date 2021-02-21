@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using UIKit;
+using Xamarin.Forms.Internals;
 using Xamarin.Platform;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -31,15 +32,29 @@ namespace Xamarin.Forms.Platform.iOS
 		public void SetElement(VisualElement element)
 		{
 			var oldElement = Element;
-			if(oldElement != null)
-				oldElement.PropertyChanged -= OnElementPropertyChanged;
 
-			if (Element != null)
-				Element.PropertyChanged += OnElementPropertyChanged;
+			if (oldElement != null)
+			{
+				oldElement.PropertyChanged -= OnElementPropertyChanged;
+				oldElement.BatchCommitted -= OnBatchCommitted;
+			}
+
+			if (element != null)
+			{
+				element.PropertyChanged += OnElementPropertyChanged;
+				element.BatchCommitted += OnBatchCommitted;
+			}
 
 			Element = element;
 			ViewHandler.SetVirtualView((IView)element);
+			((IView)element).Handler = ViewHandler;
+
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
+		}
+
+		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
+		{
+			ViewHandler?.SetFrame(Element.Bounds);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

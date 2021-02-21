@@ -1,35 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
 	[ContentProperty("Text")]
-	public class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement
+	public partial class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement
 	{
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
-		[Obsolete("XAlignProperty is obsolete as of version 2.0.0. Please use HorizontalTextAlignmentProperty instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty XAlignProperty = HorizontalTextAlignmentProperty;
-
-		public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create("VerticalTextAlignment", typeof(TextAlignment), typeof(Label), TextAlignment.Start,
-			propertyChanged: OnVerticalTextAlignmentPropertyChanged);
-
-		[Obsolete("YAlignProperty is obsolete as of version 2.0.0. Please use VerticalTextAlignmentProperty instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty YAlignProperty = VerticalTextAlignmentProperty;
+		public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create("VerticalTextAlignment", typeof(TextAlignment), typeof(Label), TextAlignment.Start);
 
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
-
-		public static readonly BindableProperty FontProperty = FontElement.FontProperty;
 
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(Label), default(string), propertyChanged: OnTextPropertyChanged);
 
@@ -117,14 +104,6 @@ namespace Xamarin.Forms
 				SetInheritedBindingContext(FormattedText, this.BindingContext);
 		}
 
-		[Obsolete("Font is obsolete as of version 1.3.0. Please use the Font attributes which are on the class itself.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Font Font
-		{
-			get { return (Font)GetValue(FontProperty); }
-			set { SetValue(FontProperty, value); }
-		}
-
 		public FormattedString FormattedText
 		{
 			get { return (FormattedString)GetValue(FormattedTextProperty); }
@@ -165,22 +144,6 @@ namespace Xamarin.Forms
 		{
 			get { return (TextAlignment)GetValue(VerticalTextAlignmentProperty); }
 			set { SetValue(VerticalTextAlignmentProperty, value); }
-		}
-
-		[Obsolete("XAlign is obsolete as of version 2.0.0. Please use HorizontalTextAlignment instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public TextAlignment XAlign
-		{
-			get { return (TextAlignment)GetValue(XAlignProperty); }
-			set { SetValue(XAlignProperty, value); }
-		}
-
-		[Obsolete("YAlign is obsolete as of version 2.0.0. Please use VerticalTextAlignment instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public TextAlignment YAlign
-		{
-			get { return (TextAlignment)GetValue(YAlignProperty); }
-			set { SetValue(YAlignProperty, value); }
 		}
 
 		public FontAttributes FontAttributes
@@ -341,9 +304,6 @@ namespace Xamarin.Forms
 
 		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
 		{
-#pragma warning disable 0618 // retain until XAlign removed
-			OnPropertyChanged(nameof(XAlign));
-#pragma warning restore
 		}
 
 		static void OnTextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
@@ -356,14 +316,6 @@ namespace Xamarin.Forms
 				((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			if (newvalue != null)
 				((Label)bindable).FormattedText = null;
-		}
-
-		static void OnVerticalTextAlignmentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var label = (Label)bindable;
-#pragma warning disable 0618 // retain until YAlign removed
-			label.OnPropertyChanged(nameof(YAlign));
-#pragma warning restore 0618
 		}
 
 		public IPlatformElementConfiguration<T, Label> On<T>() where T : IConfigPlatform

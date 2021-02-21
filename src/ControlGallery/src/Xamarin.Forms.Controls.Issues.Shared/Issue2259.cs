@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Controls.Issues
 				new Person ("Bob", new DateTime (1976, 2, 20), Color.Black),
 				new Person ("Cathy", new DateTime (1977, 3, 10), Color.Blue),
 #pragma warning disable 618
-				new Person ("David", new DateTime (1978, 4, 25), Color.Fuschia),
+				new Person ("David", new DateTime (1978, 4, 25), Color.Fuchsia),
 #pragma warning restore 618
 			};
 

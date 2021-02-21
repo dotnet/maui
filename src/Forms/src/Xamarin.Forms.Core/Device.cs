@@ -32,28 +32,6 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
 
-		[Obsolete("TargetPlatform is obsolete as of version 2.3.4. Please use RuntimePlatform instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable 0618
-		public static TargetPlatform OS
-		{
-			get
-			{
-				TargetPlatform platform;
-				if (Enum.TryParse(RuntimePlatform, out platform))
-					return platform;
-
-				// In the old TargetPlatform, there was no distinction between WinRT/UWP
-				if (RuntimePlatform == UWP)
-				{
-					return TargetPlatform.Windows;
-				}
-
-				return TargetPlatform.Other;
-			}
-		}
-#pragma warning restore 0618
-
 		public static string RuntimePlatform => PlatformServices.RuntimePlatform;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -176,62 +154,6 @@ namespace Xamarin.Forms
 		public static double GetNamedSize(NamedSize size, Type targetElementType)
 		{
 			return GetNamedSize(size, targetElementType, false);
-		}
-
-		[Obsolete("OnPlatform is obsolete as of version 2.3.4. Please use 'switch (Device.RuntimePlatform)' instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void OnPlatform(Action iOS = null, Action Android = null, Action WinPhone = null, Action Default = null)
-		{
-			switch (OS)
-			{
-				case TargetPlatform.iOS:
-					if (iOS != null)
-						iOS();
-					else if (Default != null)
-						Default();
-					break;
-				case TargetPlatform.Android:
-					if (Android != null)
-						Android();
-					else if (Default != null)
-						Default();
-					break;
-				case TargetPlatform.Windows:
-				case TargetPlatform.WinPhone:
-					if (WinPhone != null)
-						WinPhone();
-					else if (Default != null)
-						Default();
-					break;
-				case TargetPlatform.Other:
-					if (Default != null)
-						Default();
-					break;
-			}
-		}
-
-		[Obsolete("OnPlatform<> (generic) is obsolete as of version 2.3.4. Please use 'switch (Device.RuntimePlatform)' instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static T OnPlatform<T>(T iOS, T Android, T WinPhone)
-		{
-			switch (OS)
-			{
-				case TargetPlatform.iOS:
-					return iOS;
-				case TargetPlatform.Android:
-					return Android;
-				case TargetPlatform.Windows:
-				case TargetPlatform.WinPhone:
-					return WinPhone;
-			}
-
-			return iOS;
-		}
-
-		[Obsolete("OpenUri is obsolete as of version 4.3.0. Use Launcher.OpenAsync (or CanOpenAsync, or TryOpenAsync) from Xamarin.Essentials instead.")]
-		public static void OpenUri(Uri uri)
-		{
-			PlatformServices.OpenUriAction(uri);
 		}
 
 		public static void StartTimer(TimeSpan interval, Func<bool> callback)

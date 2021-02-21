@@ -29,6 +29,7 @@ namespace Xamarin.Forms.Platform.WPF
 #pragma warning disable 618
 				run.ApplyFont(span.Font);
 #pragma warning restore 618
+
 			if (!span.IsSet(Span.TextDecorationsProperty))
 				return run;
 

@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		class BindableViewCell : ViewCell
 		{
 			public static readonly BindableProperty NameProperty =
-				BindableProperty.Create<BindableViewCell, string>(w => w.Name, "");
+				BindableProperty.Create("Name", typeof(string), typeof(BindableViewCell));
 
 			public Label NameLabel { get; set; }
 

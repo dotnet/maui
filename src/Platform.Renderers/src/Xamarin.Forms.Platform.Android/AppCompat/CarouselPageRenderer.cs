@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Android.Content;
@@ -17,13 +16,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		FragmentManager _fragmentManager;
 
 		public CarouselPageRenderer(Context context) : base(context)
-		{
-			AutoPackage = false;
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use CarouselPageRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public CarouselPageRenderer()
 		{
 			AutoPackage = false;
 		}

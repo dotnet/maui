@@ -87,25 +87,25 @@
 		<ShellContent Route="movies" Style="{StaticResource MoviesShell}" Title="Movies &amp; TV" 
 					  Icon="film.png" FlyoutIcon="filmflyout.png" ContentTemplate="{DataTemplate local:MoviesPage}">
 			<ShellContent.MenuItems>
-				<MenuItem Icon="film.png" Text="Open Movies App" />
+                <MenuItem IconImageSource="film.png" Text="Open Movies App" />
 			</ShellContent.MenuItems>
 		</ShellContent>
 		<ShellContent Route="books" Style="{StaticResource BooksShell}" Title="Books" 
 					  Icon="books.png" FlyoutIcon="booksflyout.png" ContentTemplate="{DataTemplate local:BooksPage}">
 			<ShellContent.MenuItems>
-				<MenuItem Icon="books.png" Text="Open Reader" />
+                <MenuItem IconImageSource="books.png" Text="Open Reader" />
 			</ShellContent.MenuItems>
 		</ShellContent>
 		<ShellContent Route="music" Style="{StaticResource MusicShell}" Title="Music" 
 					  Icon="headphone.png" FlyoutIcon="headphoneflyout.png" ContentTemplate="{DataTemplate local:MusicPage}">
 			<ShellContent.MenuItems>
-				<MenuItem Icon="headphone.png" Text="Open Music App" />
+                <MenuItem IconImageSource="headphone.png" Text="Open Music App" />
 			</ShellContent.MenuItems>
 		</ShellContent>
 		<ShellContent Route="news" Style="{StaticResource NewsShell}" Title="Newsstand" 
 					  Icon="newspaper.png" FlyoutIcon="newspaperflyout.png" ContentTemplate="{DataTemplate local:NewsPage}">
 			<ShellContent.MenuItems>
-				<MenuItem Icon="newspaper.png" Text="Open News App" />
+				<MenuItem IconImageSource="newspaper.png" Text="Open News App" />
 			</ShellContent.MenuItems>
 		</ShellContent>
 	</ShellItem>
@@ -122,7 +122,7 @@
 
 	<ShellContent Route="wishlist" Title="Wishlist" Icon="star.png" ContentTemplate="{DataTemplate local:WishlistPage}" />
 	
-	<MenuItem Shell.MenuItemTemplate="{StaticResource MenuItemTemplate}" Text="Xam Protect" Icon="jet.png" />
+	<MenuItem Shell.MenuItemTemplate="{StaticResource MenuItemTemplate}" Text="Xam Protect" IconImageSource="jet.png" />
 
 	<ShellContent Route="settings" Title="Settings" Icon="gear.png" ContentTemplate="{DataTemplate local:SettingsPage}" />
 

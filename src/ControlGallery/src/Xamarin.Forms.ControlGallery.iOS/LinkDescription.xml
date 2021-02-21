@@ -17,4 +17,5 @@
     <type fullname="System.Runtime.CompilerServices.TaskAwaiter" />
   </assembly>
   <assembly fullname="Xamarin.Forms.Platform.iOS.UnitTests" />
+  <assembly fullname="Xamarin.Platform" />
 </linker>

@@ -24,7 +24,7 @@ namespace Sample
 			var button = new Button() { Text = "A Button", Width = 200 };
 			var button2 = new Button()
 			{
-				Color = Color.Green,
+				TextColor = Color.Green,
 				Text = "Hello I'm a button",
 				BackgroundColor = Color.Purple,
 				Margin = new Thickness(12)
@@ -36,6 +36,10 @@ namespace Sample
 
 			verticalStack.Add(horizontalStack);
 			verticalStack.Add(new Slider());
+			verticalStack.Add(new Switch());
+			verticalStack.Add(new Switch() { OnColor = Color.Green });
+			verticalStack.Add(new Switch() { ThumbColor = Color.Yellow });
+			verticalStack.Add(new Switch() { OnColor = Color.Green, ThumbColor = Color.Yellow });
 
 			return verticalStack;
 		}

@@ -1,5 +1,4 @@
-﻿using Xamarin.Platform.Handlers.Tests;
-using Xamarin.Platform.Layouts;
+﻿using Xamarin.Platform.Layouts;
 using Xunit;
 
 namespace Xamarin.Platform.Handlers.UnitTests.Layouts

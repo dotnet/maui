@@ -71,9 +71,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				var jobId = new Label
 				{
-#pragma warning disable 618
-					Font = Font.SystemFontOfSize(20),
-#pragma warning restore 618
+					FontSize = 20,
 					WidthRequest = 105,
 					VerticalOptions = LayoutOptions.Center,
 
@@ -93,9 +91,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					WidthRequest = 45,
 					VerticalOptions = LayoutOptions.Center,
-#pragma warning disable 618
-					XAlign = TextAlignment.End,
-#pragma warning restore 618
+					HorizontalTextAlignment = TextAlignment.End,
 					HorizontalOptions = LayoutOptions.EndAndExpand,
 
 				};

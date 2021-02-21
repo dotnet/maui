@@ -6,7 +6,7 @@
 		<Label BindingContext="{x:Reference slider}"
 			   x:Name="label"
 			   Text="{Binding Value, StringFormat='Slider value is {0:F3}'}"
-			   Font="Large"
+			   FontSize="Large"
 			   HorizontalOptions="Center"
 			   VerticalOptions="CenterAndExpand" />
 		<Slider x:Name="slider"

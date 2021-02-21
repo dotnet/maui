@@ -39,9 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 			_label = new Label
 			{
 				Text = "Stepper value is 0",
-#pragma warning disable 618
-				Font = Font.SystemFontOfSize(NamedSize.Large),
-#pragma warning restore 618
+				FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.CenterAndExpand
 			};

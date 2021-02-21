@@ -7,9 +7,6 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Platform.MacOS
 {
 	public class Platform : BindableObject, IDisposable
-#pragma warning disable CS0618
-		, IPlatform
-#pragma warning restore
 	{
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer",
 			typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),
@@ -161,12 +158,6 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (_appeared == false)
 				return;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			// The Platform property is no longer necessary, but we have to set it because some third-party
-			// library might still be retrieving it and using it
-			Page.Platform = this;
-#pragma warning restore CS0618 // Type or member is obsolete
-
 			AddChild(Page);
 
 			Page.DescendantRemoved += HandleChildRemoved;
@@ -185,12 +176,6 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (_appeared)
 				return;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-			// The Platform property is no longer necessary, but we have to set it because some third-party
-			// library might still be retrieving it and using it
-			Page.Platform = this;
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			AddChild(Page);
 
@@ -247,14 +232,5 @@ namespace Xamarin.Forms.Platform.MacOS
 			var view = e.Element;
 			view.DisposeModalAndChildRenderers();
 		}
-
-		#region Obsolete 
-
-		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
-		{
-			return GetNativeSize(view, widthConstraint, heightConstraint);
-		}
-
-		#endregion
 	}
 }

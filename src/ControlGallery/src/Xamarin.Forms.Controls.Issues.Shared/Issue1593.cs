@@ -19,9 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var title = new Label
 			{
 				Text = "Select League",
-#pragma warning disable 618
-				Font = Font.SystemFontOfSize(NamedSize.Large),
-#pragma warning restore 618
+				FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
 				TextColor = Color.White
 			};
 
@@ -30,9 +28,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var seasonLabel = new Label
 			{
 				Text = "Season",
-#pragma warning disable 618
-				Font = Font.SystemFontOfSize(NamedSize.Small),
-#pragma warning restore 618
+				FontSize = Device.GetNamedSize(NamedSize.Small, typeof(Label)),
 				TextColor = Color.White
 			};
 
@@ -58,9 +54,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var sportLabel = new Label
 			{
 				Text = "Sport",
-#pragma warning disable 618
-				Font = Font.SystemFontOfSize(NamedSize.Small),
-#pragma warning restore 618
+				FontSize = Device.GetNamedSize(NamedSize.Small, typeof(Label)),
 				TextColor = Color.White
 			};
 
@@ -117,9 +111,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					var leagueName = new Label
 					{
-#pragma warning disable 618
-						Font = Font.SystemFontOfSize(NamedSize.Large),
-#pragma warning restore 618
+						FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
 						BackgroundColor = Color.Transparent,
 						TextColor = Color.White,
 						VerticalOptions = LayoutOptions.CenterAndExpand,

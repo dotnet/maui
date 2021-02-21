@@ -434,7 +434,7 @@ namespace Xamarin.Forms
 				Padding = 6
 			};
 
-			BindToTemplatedParent(frame, BackgroundColorProperty, Frame.BorderColorProperty, HorizontalOptionsProperty,
+			BindToTemplatedParent(frame, BackgroundColorProperty, Xamarin.Forms.Frame.BorderColorProperty, HorizontalOptionsProperty,
 				MarginProperty, OpacityProperty, RotationProperty, ScaleProperty, ScaleXProperty, ScaleYProperty,
 				TranslationYProperty, TranslationXProperty, VerticalOptionsProperty);
 

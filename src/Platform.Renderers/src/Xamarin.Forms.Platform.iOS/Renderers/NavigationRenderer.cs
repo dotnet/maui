@@ -226,7 +226,6 @@ namespace Xamarin.Forms.Platform.iOS
 			navPage.RemovePageRequested += OnRemovedPageRequested;
 			navPage.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
 
-			UpdateTint();
 			UpdateBarBackground();
 			UpdateBarTextColor();
 			UpdateHideNavigationBarSeparator();
@@ -438,13 +437,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-#pragma warning disable 0618 //retaining legacy call to obsolete code
-			if (e.PropertyName == NavigationPage.TintProperty.PropertyName)
-#pragma warning restore 0618
-			{
-				UpdateTint();
-			}
-			else if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName ||
+			if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName ||
 				e.PropertyName == NavigationPage.BarBackgroundProperty.PropertyName)
 			{
 				UpdateBarBackground();
@@ -780,21 +773,6 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-
-		void UpdateTint()
-		{
-#pragma warning disable 0618 //retaining legacy call to obsolete code
-			var tintColor = NavPage.Tint;
-#pragma warning restore 0618
-			NavigationBar.BarTintColor = tintColor == Color.Default
-				? UINavigationBar.Appearance.BarTintColor
-				: tintColor.ToUIColor();
-			if (tintColor == Color.Default)
-				NavigationBar.TintColor = UINavigationBar.Appearance.TintColor;
-			else
-				NavigationBar.TintColor = tintColor.Luminosity > 0.5 ? UIColor.Black : UIColor.White;
-		}
-
 		void UpdateToolBarVisible()
 		{
 			if (_secondaryToolbar == null)
@@ -850,7 +828,7 @@ namespace Xamarin.Forms.Platform.iOS
 					}
 				}
 
-				if(icon == null || containerController.NavigationItem.LeftBarButtonItem == null)
+				if (icon == null || containerController.NavigationItem.LeftBarButtonItem == null)
 				{
 					containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(FlyoutPage.Flyout.Title, UIBarButtonItemStyle.Plain, OnItemTapped);
 				}

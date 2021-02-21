@@ -39,9 +39,22 @@ namespace Xamarin.Platform
 			return new ColorStateList(States, new[] { color.ToNative().ToArgb(), disabled });
 		}
 
+		public static Color ToColor(this uint color)
+		{
+			return Color.FromUint(color);
+		}
+
 		public static Color ToColor(this AColor color)
 		{
 			return Color.FromUint((uint)color.ToArgb());
+		}
+
+		public static ColorStateList ToDefaultColorStateList(this Color color)
+		{
+			return new ColorStateList(
+				new int[][] { new int[0] }, 
+				new[] { color.ToNative().ToArgb() }
+			);
 		}
 	}
 }

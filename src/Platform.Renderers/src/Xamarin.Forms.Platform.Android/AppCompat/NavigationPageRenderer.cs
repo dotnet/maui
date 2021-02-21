@@ -71,15 +71,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use NavigationPageRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public NavigationPageRenderer()
-		{
-			AutoPackage = false;
-			Id = Platform.GenerateViewId();
-			Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
-		}
-
 		INavigationPageController NavigationPageController => Element as INavigationPageController;
 
 		Platform Platform
@@ -206,7 +197,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				if (_titleViewRenderer != null)
 				{
-					Android.Platform.ClearRenderer(_titleViewRenderer.View);
+					Platform.ClearRenderer(_titleViewRenderer.View);
 					_titleViewRenderer.Dispose();
 					_titleViewRenderer = null;
 				}
@@ -288,7 +279,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 						if (child == null)
 							continue;
 
-						IVisualElementRenderer renderer = Android.Platform.GetRenderer(child);
+						IVisualElementRenderer renderer = Platform.GetRenderer(child);
 						renderer?.Dispose();
 					}
 				}
@@ -664,7 +655,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (((IFlyoutPageController)_flyoutPage).ShouldShowSplitMode)
 				return;
 
-			var renderer = Android.Platform.GetRenderer(_flyoutPage) as FlyoutPageRenderer;
+			var renderer = APlatform.GetRenderer(_flyoutPage) as FlyoutPageRenderer;
 			if (renderer == null)
 				return;
 
@@ -754,7 +745,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (_titleViewRenderer != null)
 			{
-				Android.Platform.ClearRenderer(_titleViewRenderer.View);
+				Platform.ClearRenderer(_titleViewRenderer.View);
 				_titleViewRenderer.Dispose();
 				_titleViewRenderer = null;
 			}
@@ -1097,7 +1088,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					if (_titleView != null)
 						_titleView.Child = null;
-					Android.Platform.ClearRenderer(_titleViewRenderer.View);
+					Platform.ClearRenderer(_titleViewRenderer.View);
 					_titleViewRenderer.Dispose();
 					_titleViewRenderer = null;
 				}
@@ -1121,7 +1112,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				_titleView.Child = _titleViewRenderer;
 			}
 
-			Android.Platform.SetRenderer(titleView, _titleViewRenderer);
+			Platform.SetRenderer(titleView, _titleViewRenderer);
 		}
 
 		void AddTransitionTimer(TaskCompletionSource<bool> tcs, Fragment fragment, FragmentManager fragmentManager, IReadOnlyCollection<Fragment> fragmentsToRemove, int duration, bool shouldUpdateToolbar)

@@ -31,7 +31,7 @@
 				<Button Text="Transparent" BackgroundColor="Transparent" />
 				<Button Text="Red" BackgroundColor="Red" />
 				<Button Text="Black" BackgroundColor="Black" />
-				<Button Text="Red, Image" BackgroundColor="Red" Image="bank.png" />
+				<Button Text="Red, Image" BackgroundColor="Red" ImageSource="bank.png" />
 			</StackLayout>
 
 			<Label Text="Corners: (various corner radii)" Margin="0,0,0,-5" />
@@ -39,7 +39,7 @@
 				<Button Text="Radius: 0" CornerRadius="0" />
 				<Button Text="Radius: 5" CornerRadius="5" />
 				<Button Text="Radius: 15" CornerRadius="15" />
-				<Button Text="Radius: 15, Image" CornerRadius="15" Image="bank.png" />
+                <Button Text="Radius: 15, Image" CornerRadius="15" ImageSource="bank.png" />
 				<Button Text="Radius: 15, Width: 5" CornerRadius="15" BorderWidth="5" BorderColor="Red" />
 			</StackLayout>
 
@@ -49,7 +49,7 @@
 				<Button Text="Width: 0" BorderWidth="0" BorderColor="Red" />
 				<Button Text="Width: 1" BorderWidth="1" BorderColor="Red" />
 				<Button Text="Width: 15" BorderWidth="15" BorderColor="Red" />
-				<Button Text="Width: 15, Image" BorderWidth="15" BorderColor="Red" Image="bank.png" />
+                <Button Text="Width: 15, Image" BorderWidth="15" BorderColor="Red" ImageSource="bank.png" />
 			</StackLayout>
 
 			<Label Text="Border Colors: (various border colors, width 5)" Margin="0,0,0,-5" />
@@ -58,7 +58,7 @@
 				<Button Text="Transparent" BorderColor="Transparent" BorderWidth="5" />
 				<Button Text="Red" BorderColor="Red" BorderWidth="5" />
 				<Button Text="Black" BorderColor="Black" BorderWidth="5" />
-				<Button Text="Red, Image" BorderColor="Red" BorderWidth="5" Image="bank.png" />
+                <Button Text="Red, Image" BorderColor="Red" BorderWidth="5" ImageSource="bank.png" />
 			</StackLayout>
 
 			<Label Text="Circles:" Margin="0,5,0,0" FontAttributes="Bold" />
@@ -74,8 +74,8 @@
 					<Button Text="Red Circle" BackgroundColor="Red" CornerRadius="50" WidthRequest="100" HeightRequest="100" />
 				</StackLayout>
 				<StackLayout Padding="0" Spacing="5" Orientation="Horizontal">
-					<Button Text="Image Square" BackgroundColor="Red" Image="bank.png" WidthRequest="100" HeightRequest="100" />
-					<Button Text="Image Circle" BackgroundColor="Red" CornerRadius="50" Image="bank.png" WidthRequest="100" HeightRequest="100" />
+                    <Button Text="Image Square" BackgroundColor="Red" ImageSource="bank.png" WidthRequest="100" HeightRequest="100" />
+                    <Button Text="Image Circle" BackgroundColor="Red" CornerRadius="50" ImageSource="bank.png" WidthRequest="100" HeightRequest="100" />
 				</StackLayout>
 			</StackLayout>
 
@@ -90,8 +90,8 @@
 					<Button Text="Red Circle" BackgroundColor="Red" CornerRadius="50" WidthRequest="100" HeightRequest="100" android:Button.UseDefaultPadding="true" android:Button.UseDefaultShadow="true" />
 				</StackLayout>
 				<StackLayout Padding="0" Spacing="5" Orientation="Horizontal">
-					<Button Text="Image Square" BackgroundColor="Red" Image="bank.png" WidthRequest="100" HeightRequest="100" android:Button.UseDefaultPadding="true" android:Button.UseDefaultShadow="true" />
-					<Button Text="Image Circle" BackgroundColor="Red" CornerRadius="50" Image="bank.png" WidthRequest="100" HeightRequest="100" android:Button.UseDefaultPadding="true" android:Button.UseDefaultShadow="true" />
+                    <Button Text="Image Square" BackgroundColor="Red" ImageSource="bank.png" WidthRequest="100" HeightRequest="100" android:Button.UseDefaultPadding="true" android:Button.UseDefaultShadow="true" />
+                    <Button Text="Image Circle" BackgroundColor="Red" CornerRadius="50" ImageSource="bank.png" WidthRequest="100" HeightRequest="100" android:Button.UseDefaultPadding="true" android:Button.UseDefaultShadow="true" />
 				</StackLayout>
 			</StackLayout>
 

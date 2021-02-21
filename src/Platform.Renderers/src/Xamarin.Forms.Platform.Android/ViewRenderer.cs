@@ -17,26 +17,12 @@ namespace Xamarin.Forms.Platform.Android
 		protected ViewRenderer(Context context) : base(context)
 		{
 		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use ViewRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected ViewRenderer()
-
-		{
-		}
 	}
 
 	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, IViewRenderer, ITabStop, AView.IOnFocusChangeListener where TView : View where TNativeView : AView
 	{
 		protected ViewRenderer(Context context) : base(context)
 		{
-		}
-
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use ViewRenderer(Context) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected ViewRenderer()
-		{
-
 		}
 
 		protected virtual TNativeView CreateNativeControl()

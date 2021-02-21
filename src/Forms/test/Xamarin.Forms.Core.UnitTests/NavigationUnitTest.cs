@@ -152,43 +152,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestTint()
-		{
-			var nav = new NavigationPage();
-
-			Assert.AreEqual(Color.Default, nav.Tint);
-
-			bool signaled = false;
-			nav.PropertyChanged += (sender, args) =>
-			{
-				if (args.PropertyName == "Tint")
-					signaled = true;
-			};
-
-			nav.Tint = new Color(1, 0, 0);
-
-			Assert.AreEqual(new Color(1, 0, 0), nav.Tint);
-			Assert.True(signaled);
-		}
-
-		[Test]
-		public void TestTintDoubleSet()
-		{
-			var nav = new NavigationPage();
-
-			bool signaled = false;
-			nav.PropertyChanged += (sender, args) =>
-			{
-				if (args.PropertyName == "Tint")
-					signaled = true;
-			};
-
-			nav.Tint = nav.Tint;
-
-			Assert.False(signaled);
-		}
-
-		[Test]
 		public async Task TestPopToRoot()
 		{
 			var nav = new NavigationPage();

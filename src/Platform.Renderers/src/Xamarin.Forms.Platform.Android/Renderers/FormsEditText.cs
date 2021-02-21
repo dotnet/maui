@@ -85,22 +85,4 @@ namespace Xamarin.Forms.Platform.Android
 			End = end;
 		}
 	}
-
-	[Obsolete("EntryEditText is obsolete as of version 2.4.0. Please use Xamarin.Forms.Platform.Android.FormsEditText instead.")]
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class EntryEditText : FormsEditText
-	{
-		public EntryEditText(Context context) : base(context)
-		{
-		}
-	}
-
-	[Obsolete("EditorEditText is obsolete as of version 2.4.0. Please use Xamarin.Forms.Platform.Android.FormsEditText instead.")]
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class EditorEditText : FormsEditText
-	{
-		public EditorEditText(Context context) : base(context)
-		{
-		}
-	}
 }

@@ -24,10 +24,6 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
-		[Obsolete("BackgroundImageProperty is obsolete as of 4.0.0. Please use BackgroundImageSourceProperty instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty BackgroundImageProperty = BackgroundImageSourceProperty;
-
 		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create("IsBusy", typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
@@ -35,10 +31,6 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create("Title", typeof(string), typeof(Page), null);
 
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
-
-		[Obsolete("IconProperty is obsolete as of 4.0.0. Please use IconImageSourceProperty instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty IconProperty = IconImageSourceProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
@@ -69,26 +61,10 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Page>>(() => new PlatformConfigurationRegistry<Page>(this));
 		}
 
-		[Obsolete("BackgroundImage is obsolete as of 4.0.0. Please use BackgroundImageSource instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public string BackgroundImage
-		{
-			get { return GetValue(BackgroundImageProperty) as FileImageSource; }
-			set { SetValue(BackgroundImageProperty, value); }
-		}
-
 		public ImageSource BackgroundImageSource
 		{
 			get { return (ImageSource)GetValue(BackgroundImageSourceProperty); }
 			set { SetValue(BackgroundImageSourceProperty, value); }
-		}
-
-		[Obsolete("Icon is obsolete as of 4.0.0. Please use IconImageSource instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public FileImageSource Icon
-		{
-			get { return GetValue(IconProperty) as FileImageSource; }
-			set { SetValue(IconProperty, value); }
 		}
 
 		public ImageSource IconImageSource
@@ -223,13 +199,6 @@ namespace Xamarin.Forms
 				_pendingActions.Add(() => MessagingCenter.Send(this, AlertSignalName, args));
 
 			return args.Result.Task;
-		}
-
-		[Obsolete("DisplayPromptAsync overload is obsolete as of version 4.5.0 and is no longer supported.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Task<string> DisplayPromptAsync(string title, string message, string accept, string cancel, string placeholder, int maxLength, Keyboard keyboard)
-		{
-			return DisplayPromptAsync(title, message, accept, cancel, placeholder, maxLength, keyboard, "");
 		}
 
 		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")

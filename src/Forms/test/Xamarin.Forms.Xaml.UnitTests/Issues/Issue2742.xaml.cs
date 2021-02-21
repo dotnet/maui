@@ -36,9 +36,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 				Assert.NotNull(layout.ToolbarItems);
 				Assert.AreEqual(2, layout.ToolbarItems.Count);
-#pragma warning disable 618
-				Assert.AreEqual("One", layout.ToolbarItems[0].Name);
-#pragma warning restore 618
+				Assert.AreEqual("One", layout.ToolbarItems[0].Text);
 			}
 		}
 	}

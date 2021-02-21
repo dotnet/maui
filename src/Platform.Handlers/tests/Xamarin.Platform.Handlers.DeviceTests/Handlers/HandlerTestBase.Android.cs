@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Android.Widget;
-using Xamarin.Platform;
-using Xunit;
 
 namespace Xamarin.Platform.Handlers.DeviceTests
 {
@@ -18,6 +12,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 
 			handler.SetVirtualView(view);
 			view.Handler = handler;
+
 			return handler;
 		}
 	}
