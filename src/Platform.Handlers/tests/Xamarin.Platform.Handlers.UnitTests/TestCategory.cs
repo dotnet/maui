@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Platform.Handlers.Tests
+﻿namespace Xamarin.Platform.Handlers.UnitTests
 {
 	public static class TestCategory
 	{

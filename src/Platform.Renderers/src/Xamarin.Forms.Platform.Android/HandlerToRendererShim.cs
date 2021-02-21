@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Android.Views;
 using AndroidX.AppCompat.View.Menu;
 using AndroidX.Core.View;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android;
 using Xamarin.Platform;
 
@@ -45,10 +46,16 @@ namespace Xamarin.Forms
 		{
 			var oldElement = Element;
 			if (oldElement != null)
+			{
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
+				oldElement.BatchCommitted -= OnBatchCommitted;
+			}
 
-			if (Element != null)
-				Element.PropertyChanged += OnElementPropertyChanged;
+			if (element != null)
+			{
+				element.PropertyChanged += OnElementPropertyChanged;
+				element.BatchCommitted += OnBatchCommitted;
+			}
 
 			Element = element;
 			
@@ -61,6 +68,11 @@ namespace Xamarin.Forms
 			}
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
+		}
+
+		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
+		{
+			ViewHandler?.SetFrame(Element.Bounds);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

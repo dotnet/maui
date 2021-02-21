@@ -7,6 +7,7 @@ using Android.Views;
 using AndroidX.AppCompat.Widget;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Xamarin.Platform;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 
@@ -126,6 +127,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			base.OnElementPropertyChanged(sender, e);
 		}
 
+		[PortHandler]
 		protected override void UpdateBackgroundColor()
 		{
 			if (Element == null || Control == null)

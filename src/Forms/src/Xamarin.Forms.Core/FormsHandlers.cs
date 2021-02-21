@@ -12,9 +12,10 @@ namespace Xamarin.Forms
 		// And other scenarios
 		public static void InitHandlers()
 		{
-			//Xamarin.Platform.Registrar.Handlers.Register<Label, LabelHandler>();
 			Xamarin.Platform.Registrar.Handlers.Register<VerticalStackLayout, LayoutHandler>();
 			Xamarin.Platform.Registrar.Handlers.Register<HorizontalStackLayout, LayoutHandler>();
+			Xamarin.Platform.Registrar.Handlers.Register<Button, ButtonHandler>();
+			Xamarin.Platform.Registrar.Handlers.Register<Label, LabelHandler>();
 		}
 	}
 }

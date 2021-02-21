@@ -2,9 +2,8 @@ using System;
 using Xamarin.Forms;
 using Xamarin.Platform.Handlers.UnitTests;
 using Xunit;
-using Fact = Xamarin.Platform.Handlers.UnitTests.FactAttribute;
 
-namespace Xamarin.Platform.Handlers.Tests
+namespace Xamarin.Platform.Handlers.UnitTests
 {
 	[Category(TestCategory.Core, TestCategory.PropertyMapping)]
 	public class PropertyMapperTests

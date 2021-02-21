@@ -7,9 +7,8 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 {
 	public partial class TestBase
 	{
-		public TestBase()
+		static TestBase()
 		{
-			Xamarin.Platform.Registrar.Handlers.Register<SliderStub, SliderHandler>();
 		}
 	}
 }

@@ -1,5 +1,4 @@
-﻿using Xamarin.Platform.Handlers.Tests;
-using Xunit;
+﻿using Xunit;
 
 namespace Xamarin.Platform.Handlers.UnitTests
 {
