@@ -25,7 +25,6 @@ namespace Sample
 			RegistrarHandlers.Handlers.Register<Switch, SwitchHandler>();
 		}
 
-
 		void RegisterLegacyRendererAgainstFormsControl()
 		{
 #if MONOANDROID && !NET6_0

@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms;
+﻿using System;
+using Xamarin.Forms;
 using Xamarin.Platform;
 using Xamarin.Platform.Core;
 
@@ -35,7 +36,11 @@ namespace Sample
 			horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout" });
 
 			verticalStack.Add(horizontalStack);
-			verticalStack.Add(new Slider());
+
+			var slider = new Slider();
+			slider.ValueChanged += value => Console.WriteLine($"Slider value: {value:0.000}");
+			verticalStack.Add(slider);
+
 			verticalStack.Add(new Switch());
 			verticalStack.Add(new Switch() { OnColor = Color.Green });
 			verticalStack.Add(new Switch() { ThumbColor = Color.Yellow });

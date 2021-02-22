@@ -9,7 +9,7 @@ namespace Xamarin.Platform.Handlers
 		static UIColor? DefaultMaxTrackColor;
 		static UIColor? DefaultThumbColor;
 
-		protected override UISlider CreateNativeView() => new UISlider();
+		protected override UISlider CreateNativeView() => new UISlider { Continuous = true };
 
 		protected override void ConnectHandler(UISlider nativeView)
 		{

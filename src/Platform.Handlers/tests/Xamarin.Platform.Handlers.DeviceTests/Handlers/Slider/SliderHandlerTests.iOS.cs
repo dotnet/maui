@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using UIKit;
 using Xamarin.Forms;
+using Xamarin.Platform.Handlers.DeviceTests.Stubs;
 using Xunit;
 
 namespace Xamarin.Platform.Handlers.DeviceTests
@@ -12,6 +13,9 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 
 		double GetNativeProgress(SliderHandler sliderHandler) =>
 			GetNativeSlider(sliderHandler).Value;
+
+		double GetNativeMinimum(SliderHandler sliderHandler) =>
+			GetNativeSlider(sliderHandler).MinValue;
 
 		double GetNativeMaximum(SliderHandler sliderHandler) =>
 			GetNativeSlider(sliderHandler).MaxValue;

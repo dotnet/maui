@@ -57,9 +57,9 @@ namespace Sample
 		public Color MaximumTrackColor { get; set; }
 		public Color ThumbColor { get; set; }
 
-		public Action<double> ValueChanged { get; set; }
-		public Action DragStarted { get; set; }
-		public Action DragCompleted { get; set; }
+		public event Action<double> ValueChanged;
+		public event Action DragStarted;
+		public event Action DragCompleted;
 
 		public ICommand DragStartedCommand { get; set; }
 		public ICommand DragCompletedCommand { get; set; }

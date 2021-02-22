@@ -17,6 +17,7 @@ namespace Xamarin.Forms
 			Xamarin.Platform.Registrar.Handlers.Register<Button, ButtonHandler>();
 			Xamarin.Platform.Registrar.Handlers.Register<Label, LabelHandler>();
 			Xamarin.Platform.Registrar.Handlers.Register(typeof(Switch), typeof(SwitchHandler));
+			Xamarin.Platform.Registrar.Handlers.Register(typeof(Slider), typeof(SliderHandler));
 		}
 	}
 }
