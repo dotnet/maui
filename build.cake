@@ -18,9 +18,6 @@ PowerShell:
 //////////////////////////////////////////////////////////////////////
 // ADDINS
 //////////////////////////////////////////////////////////////////////
-#addin "nuget:?package=Cake.Xamarin&version=3.0.2"
-#addin "nuget:?package=Cake.Android.Adb&version=3.2.0"
-#addin "nuget:?package=Cake.Git&version=0.21.0"
 #addin "nuget:?package=Cake.Android.SdkManager&version=3.0.2"
 #addin "nuget:?package=Cake.Boots&version=1.0.3.556"
 #addin "nuget:?package=Cake.AppleSimulator&version=0.2.0"
@@ -1103,18 +1100,6 @@ Task ("cg-ios-deploy")
     LaunchiOSApplication(sim.UDID, IOS_BUNDLE_ID);
 });
 
-Task("DeployAndroid")
-    .Description("Builds and deploy Android Control Gallery")
-    .Does(() =>
-    {
-        MSBuild(BUILD_TASKS_PROJ, GetMSBuildSettings().WithRestore());
-        MSBuild(ANDROID_CONTROLGALLERY_PROJ, GetMSBuildSettings().WithRestore());
-        BuildAndroidApk(ANDROID_CONTROLGALLERY_PROJ, sign:true, configuration:configuration);
-        AdbUninstall(ANDROID_BUNDLE_ID);
-        AdbInstall($"src/Controlgallery/src/Xamarin.Forms.ControlGallery.Android/bin/Debug/{ANDROID_BUNDLE_ID}-Signed.apk");
-        AmStartActivity($"{ANDROID_BUNDLE_ID}/md546303760447087909496d02dc7b17ae8.Activity1");
-    });
-
 //////////////////////////////////////////////////////////////////////
 // TASK TARGETS
 //////////////////////////////////////////////////////////////////////
@@ -1192,11 +1177,6 @@ MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarg
     if(!String.IsNullOrWhiteSpace(XamarinFormsVersion))
     {
         buildSettings = buildSettings.WithProperty("XamarinFormsVersion", XamarinFormsVersion);
-    }
-    
-    if(isCIBuild)
-    {
-        buildSettings = buildSettings.WithProperty("RestoreConfigFile", $"eng/DevopsNuget.config");
     }
     
     buildSettings.ArgumentCustomization = args => args.Append($"/nowarn:VSX1000 {MSBuildArguments}");

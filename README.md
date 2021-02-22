@@ -17,7 +17,6 @@
 
 ```
 dotnet tool install Cake.Tool -g
-dotnet cake --target=provision
 ```
 
 ### Running

@@ -97,7 +97,6 @@ jobs:
           command: restore
           restoreSolution: 'Xamarin.Forms.sln'
           feedsToUse: config
-          nugetConfigPath: 'DevopsNuget.config'
 
       - task: Bash@3
         displayName: 'Build Android $(renderers)'

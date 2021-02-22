@@ -62,7 +62,6 @@ steps:
       command: restore
       restoreSolution: 'Xamarin.Forms.sln'
       feedsToUse: config
-      nugetConfigPath: 'DevopsNuget.config'
 
   - task: InstallAppleCertificate@2
     displayName: 'Install an Apple certificate'

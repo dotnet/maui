@@ -80,7 +80,6 @@ WriteDevopsVariables.csproj
 !**/Xamarin.Forms.Platform.GTK/Libs/**/*
 !**/Xamarin.Forms.Build.Tasks/ErrorMessages.Designer.cs
 !**/Xamarin.Forms.Maps.WPF/Properties/Settings.Designer.cs
-!**/DevopsNuget.config
 !**/Xamarin.Forms.Maps.GTK/Libs/**/*
 /tools
 *.svclog

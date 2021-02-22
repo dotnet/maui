@@ -156,7 +156,7 @@ stages:
             errorActionPreference: stop
 
           - powershell: |
-              & dotnet restore Maui.sln --configfile eng\DevopsNuget.config
+              & dotnet restore Maui.sln
               & dotnet build Maui.sln -c Debug   -bl:$(LogDirectory)\Debug.binlog
               & dotnet build Maui.sln -c Release -bl:$(LogDirectory)\Release.binlog
             displayName: build samples
@@ -219,7 +219,7 @@ stages:
             displayName: configure vsmac xcode
 
           - bash: |
-              dotnet restore Maui.sln --configfile eng/DevopsNuget.config &&
+              dotnet restore Maui.sln &&
               dotnet build Maui.sln -c Debug   -bl:$(LogDirectory)/Debug.binlog &&
               dotnet build Maui.sln -c Release -bl:$(LogDirectory)/Release.binlog
             displayName: build samples

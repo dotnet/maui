@@ -33,7 +33,6 @@ steps:
     inputs:
       restoreSolution: ${{ parameters.slnPath }}
       feedsToUse: config
-      nugetConfigPath: 'eng/DevopsNuget.config'
 
   - script: build.cmd -Target BuildForNuget -ScriptArgs '--BUILD_CONFIGURATION="$(BuildConfiguration)"','--Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
     name: winbuild
