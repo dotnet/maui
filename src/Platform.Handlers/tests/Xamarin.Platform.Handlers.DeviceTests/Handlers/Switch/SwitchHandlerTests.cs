@@ -7,7 +7,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 {
 	public partial class SwitchHandlerTests : HandlerTestBase<SwitchHandler>
 	{
-		[Fact(DisplayName= "Is Toggled Initializes Correctly")]
+		[Fact(DisplayName = "Is Toggled Initializes Correctly")]
 		public async Task IsToggledInitializesCorrectly()
 		{
 			var switchStub = new SwitchStub()

@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Android.Widget;
+using Xamarin.Forms;
 using Xunit;
 
 namespace Xamarin.Platform.Handlers.DeviceTests

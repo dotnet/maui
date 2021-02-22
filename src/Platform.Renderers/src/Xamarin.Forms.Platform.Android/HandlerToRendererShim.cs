@@ -58,7 +58,7 @@ namespace Xamarin.Forms
 			}
 
 			Element = element;
-			
+
 			ViewHandler.SetVirtualView((IView)element);
 			((IView)element).Handler = ViewHandler;
 

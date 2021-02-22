@@ -10,8 +10,8 @@ namespace Xamarin.Platform.Handlers.DeviceTests.Stubs
 		private Color _trackColor;
 
 		public bool IsToggled { get; set; }
-		public Color TrackColor 
-		{ 
+		public Color TrackColor
+		{
 			get => _trackColor;
 			set => SetProperty(ref _trackColor, value);
 		}

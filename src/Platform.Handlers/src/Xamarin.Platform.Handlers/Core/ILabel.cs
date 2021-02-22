@@ -4,6 +4,6 @@ namespace Xamarin.Platform
 {
 	public interface ILabel : IView, IText
 	{
-		
+
 	}
 }

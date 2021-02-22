@@ -1,8 +1,8 @@
-﻿using Android.Graphics;
+﻿using System;
+using System.IO;
+using Android.Graphics;
 using Android.Views;
 using Android.Widget;
-using System;
-using System.IO;
 using Xunit;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;

@@ -20,7 +20,7 @@ namespace Xamarin.Platform
 			else
 			{
 				textView.SetTextColor(textColor.ToNative());
-			}				
+			}
 		}
 	}
 }

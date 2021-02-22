@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms;
-using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
+﻿using System;
 using System.Threading.Tasks;
-using System;
+using Xamarin.Forms;
+using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 
 namespace Xamarin.Platform.Handlers.DeviceTests
 {

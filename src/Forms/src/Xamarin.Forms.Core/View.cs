@@ -210,7 +210,7 @@ namespace Xamarin.Forms
 
 		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override Arrange even though
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
-		protected virtual void ArrangeOverride(Rectangle bounds) 
+		protected virtual void ArrangeOverride(Rectangle bounds)
 		{
 			if (IsArrangeValid)
 				return;
@@ -239,7 +239,7 @@ namespace Xamarin.Forms
 
 		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override Measure even though
 		// the interface has to be explicitly implemented to avoid conflict with the old Measure method
-		protected virtual Size MeasureOverride(double widthConstraint, double heightConstraint) 
+		protected virtual Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			if (!IsMeasureValid)
 			{
@@ -257,7 +257,7 @@ namespace Xamarin.Forms
 
 		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override InvalidateMeasure even though
 		// the interface has to be explicitly implemented to avoid conflict with the VisualElement.InvalidateMeasure method
-		protected virtual void InvalidateMeasureOverride() 
+		protected virtual void InvalidateMeasureOverride()
 		{
 			IsMeasureValid = false;
 			IsArrangeValid = false;

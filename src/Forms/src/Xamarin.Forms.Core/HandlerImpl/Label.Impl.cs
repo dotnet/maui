@@ -4,6 +4,6 @@ namespace Xamarin.Forms
 {
 	public partial class Label : ILabel
 	{
-	
+
 	}
 }

@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms;
-using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
+﻿using Android.Content.Res;
+using Xamarin.Forms;
 using AAttribute = Android.Resource.Attribute;
-using MauiAttribute = Xamarin.Platform.Resource.Attribute;
 using APorterDuff = Android.Graphics.PorterDuff;
-using Android.Content.Res;
+using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
+using MauiAttribute = Xamarin.Platform.Resource.Attribute;
 
 namespace Xamarin.Platform
 {
@@ -19,7 +19,7 @@ namespace Xamarin.Platform
 			if (aSwitch.Context == null)
 				return;
 
-			if(trackColor.IsDefault)
+			if (trackColor.IsDefault)
 			{
 				aSwitch.TrackTintMode = APorterDuff.Mode.SrcAtop;
 				aSwitch.TrackTintList = defaultTrackColor;

@@ -8,10 +8,10 @@ using AndroidX.Fragment.App;
 using Xamarin.Forms;
 using AActivity = Android.App.Activity;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
+using AAttribute = Android.Resource.Attribute;
+using AColor = Android.Graphics.Color;
 using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
 using Size = Xamarin.Forms.Size;
-using AColor = Android.Graphics.Color;
-using AAttribute = Android.Resource.Attribute;
 
 namespace Xamarin.Platform
 {
@@ -95,7 +95,7 @@ namespace Xamarin.Platform
 		{
 			if (context.Theme == null)
 				return 0;
-			
+
 			using (var value = new TypedValue())
 			{
 				// Now retrieve the disabledAlpha value from the theme
