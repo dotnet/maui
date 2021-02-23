@@ -5,7 +5,7 @@
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<OnPlatform x:Key="HeaderFont"
-                        x:TypeArguments="x:String">
+                        x:TypeArguments="NamedSize">
                 <On Platform="Android"
                     Value="Large" />
                 <On Platform="UWP"

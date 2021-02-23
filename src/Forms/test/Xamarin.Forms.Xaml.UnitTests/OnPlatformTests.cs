@@ -21,10 +21,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			base.TearDown();
 		}
 
-		[Ignore("Temporarily ignore: https://github.com/xamarin/Xamarin.Forms/issues/13815")]
 		[Test]
 		public void ApplyToProperty()
 		{
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 			var xaml = @"
 			<ContentPage 
 			xmlns=""http://xamarin.com/schemas/2014/forms""

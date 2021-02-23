@@ -43,11 +43,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
-			[Ignore("Temporarily ignore: https://github.com/xamarin/Xamarin.Forms/issues/13815")]
 			[TestCase(true)]
 			[TestCase(false)]
 			public void LookForInheritanceOnOpImplicit(bool useCompiledXaml)
 			{
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 				var p = new Bz45891(useCompiledXaml);
 				Assert.AreEqual("Foo", p.List.First());
 			}
