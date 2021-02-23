@@ -229,14 +229,15 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				Xamarin.Platform.IViewHandler handler = null;
 
-				try
-				{
-					handler = Xamarin.Platform.Registrar.Handlers.GetHandler(element.GetType());
-				}
-				catch
-				{
-					// TODO define better catch response or define if this is needed?
-				}
+				//TODO: Handle this with AppBuilderHost
+				//try
+				//{
+				//	handler = Xamarin.Platform.Registrar.Handlers.GetHandler(element.GetType());
+				//}
+				//catch
+				//{
+				//	// TODO define better catch response or define if this is needed?
+				//}
 
 				if (handler == null)
 				{

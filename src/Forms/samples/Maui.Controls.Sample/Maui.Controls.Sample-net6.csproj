@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0-android;net6.0-ios;</TargetFrameworks>
+    <RootNamespace>Maui.Controls.Sample</RootNamespace>
+    <AssemblyName>Maui.Controls.Sample</AssemblyName>
+  </PropertyGroup>  
+  <Import Project="..\..\..\..\.nuspec\Xamarin.Forms.MultiTargeting.targets" />
+  <PropertyGroup>
+    <_DotNetPackageVersion>6.0.0-preview.2.21110.7</_DotNetPackageVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(_DotNetPackageVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Core\Xamarin.Forms.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Platform.Handlers\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers-net6.csproj" />
+    <ProjectReference Include="..\..\..\Platform.Renderers\src\Maui.Controls.Compatibility\Maui.Controls.Compatibility-net6.csproj" />
+  </ItemGroup>
+</Project>

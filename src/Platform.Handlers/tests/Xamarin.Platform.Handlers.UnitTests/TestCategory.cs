@@ -6,5 +6,6 @@
 		public const string Layout = "Layout";
 		public const string PropertyMapping = "PropertyMapping";
 		public const string Lifecycle = "Lifecycle";
+		public const string Hosting = "Hosting";
 	}
 }

@@ -1,7 +1,10 @@
-﻿namespace Xamarin.Platform.Core
+﻿using System;
+using System.Collections.Generic;
+
+namespace Xamarin.Platform
 {
 	public interface IApp
 	{
-		IView CreateView();
+		IServiceProvider? Services { get; }
 	}
 }

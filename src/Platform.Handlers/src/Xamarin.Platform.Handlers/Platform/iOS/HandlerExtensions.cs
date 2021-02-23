@@ -1,19 +1,25 @@
-﻿using System;
+using System;
 using UIKit;
+using Xamarin.Platform.Hosting;
 
 namespace Xamarin.Platform
 {
 	public static class HandlerExtensions
 	{
-		public static UIView ToNative(this IView view)
+		public static UIView ToNative(this IView view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
 
 			var handler = view.Handler;
 
 			if (handler == null)
 			{
-				handler = Registrar.Handlers.GetHandler(view.GetType());
+				handler = context.Handlers.GetHandler(view.GetType());
+
+				if (handler == null)
+					throw new Exception($"Handler not found for view {view}");
+
 				view.Handler = handler;
 			}
 

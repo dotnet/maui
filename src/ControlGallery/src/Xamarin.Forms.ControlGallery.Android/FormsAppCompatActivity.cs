@@ -8,7 +8,6 @@ using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms.Platform.Android.AppLinks;
 using Xamarin.Forms.Internals;
-using RegistrarHandlers = Xamarin.Platform.Registrar;
 using System.Threading.Tasks;
 using System.Net.Http;
 
@@ -54,7 +53,6 @@ namespace Xamarin.Forms.ControlGallery.Android
 			ResourceManager.Init(null);
 
 			Forms.Init(this, bundle);
-			FormsHandlers.InitHandlers();
 			FormsMaps.Init(this, bundle);
 
 			//FormsMaterial.Init(this, bundle);

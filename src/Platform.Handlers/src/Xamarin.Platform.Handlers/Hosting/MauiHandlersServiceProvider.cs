@@ -1,0 +1,17 @@
+﻿using System;
+
+namespace Xamarin.Platform.Hosting
+{
+	class MauiHandlersServiceProvider : MauiServiceProvider, IMauiHandlersServiceProvider
+	{
+		public MauiHandlersServiceProvider(IMauiServiceCollection collection) : base(collection)
+		{
+		}
+
+		public IViewHandler? GetHandler(Type type)
+			=> GetService(type) as IViewHandler;
+
+		public IViewHandler? GetHandler<T>() where T : IView
+			=> GetHandler(typeof(T));
+	}
+}

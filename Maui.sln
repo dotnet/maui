@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.30926.220
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Platform.Handlers-net6", "src\Platform.Handlers\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers-net6.csproj", "{95BA42B5-B00E-4986-B9B5-517140378452}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample-net6", "src\Platform.Handlers\samples\Sample\Sample-net6.csproj", "{31D405F0-723E-4A6C-A52B-F4CB19A8D845}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{449F6071-A74F-4309-8D7B-7038CFD1B17B}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
@@ -15,13 +13,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{449F6071
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Core-net6", "src\Forms\src\Xamarin.Forms.Core\Xamarin.Forms.Core-net6.csproj", "{AF64451F-E2BD-41C2-B083-F60C26AE2A9F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Droid-net6", "src\Platform.Handlers\samples\Sample.Droid\Sample.Droid-net6.csproj", "{3AE5B968-1916-4213-97E4-F88F51BCAB23}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.iOS-net6", "src\Platform.Handlers\samples\Sample.iOS\Sample.iOS-net6.csproj", "{B8D80A2B-F636-4E27-BCAA-EA601007B7F4}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Compatibility-net6", "src\Platform.Renderers\src\Maui.Controls.Compatibility\Maui.Controls.Compatibility-net6.csproj", "{00A11C2F-969F-4964-8557-91ADF4B1523D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Android.FormsViewGroup-net6", "src\Platform.Renderers\src\Xamarin.Forms.Platform.Android.FormsViewGroup\Xamarin.Forms.Platform.Android.FormsViewGroup-net6.csproj", "{EB956381-F3E6-437C-9069-36B8BF5C6E2F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Maui.Controls", "Maui.Controls", "{459BF674-83CB-46F6-881F-A2D2117DBF4D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{E1082E26-D700-4127-9329-66D673FD2D55}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample-net6", "src\Forms\samples\Maui.Controls.Sample\Maui.Controls.Sample-net6.csproj", "{B8DC1324-977C-46F1-B697-9064ADE6099A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.Droid-net6", "src\Forms\samples\Maui.Controls.Sample.Droid\Maui.Controls.Sample.Droid-net6.csproj", "{BE50FAEF-4096-48B5-B9CE-EE0C38F15A18}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.iOS-net6", "src\Forms\samples\Maui.Controls.Sample.iOS\Maui.Controls.Sample.iOS-net6.csproj", "{1C3439E6-73D7-4F8E-A64A-5448F5CB18DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,23 +37,10 @@ Global
 		{95BA42B5-B00E-4986-B9B5-517140378452}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95BA42B5-B00E-4986-B9B5-517140378452}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95BA42B5-B00E-4986-B9B5-517140378452}.Release|Any CPU.Build.0 = Release|Any CPU
-		{31D405F0-723E-4A6C-A52B-F4CB19A8D845}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{31D405F0-723E-4A6C-A52B-F4CB19A8D845}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{31D405F0-723E-4A6C-A52B-F4CB19A8D845}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{31D405F0-723E-4A6C-A52B-F4CB19A8D845}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AF64451F-E2BD-41C2-B083-F60C26AE2A9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AF64451F-E2BD-41C2-B083-F60C26AE2A9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF64451F-E2BD-41C2-B083-F60C26AE2A9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF64451F-E2BD-41C2-B083-F60C26AE2A9F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3AE5B968-1916-4213-97E4-F88F51BCAB23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3AE5B968-1916-4213-97E4-F88F51BCAB23}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3AE5B968-1916-4213-97E4-F88F51BCAB23}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{3AE5B968-1916-4213-97E4-F88F51BCAB23}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3AE5B968-1916-4213-97E4-F88F51BCAB23}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B8D80A2B-F636-4E27-BCAA-EA601007B7F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B8D80A2B-F636-4E27-BCAA-EA601007B7F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B8D80A2B-F636-4E27-BCAA-EA601007B7F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B8D80A2B-F636-4E27-BCAA-EA601007B7F4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{00A11C2F-969F-4964-8557-91ADF4B1523D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{00A11C2F-969F-4964-8557-91ADF4B1523D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00A11C2F-969F-4964-8557-91ADF4B1523D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -58,9 +49,31 @@ Global
 		{EB956381-F3E6-437C-9069-36B8BF5C6E2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB956381-F3E6-437C-9069-36B8BF5C6E2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB956381-F3E6-437C-9069-36B8BF5C6E2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE50FAEF-4096-48B5-B9CE-EE0C38F15A18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE50FAEF-4096-48B5-B9CE-EE0C38F15A18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE50FAEF-4096-48B5-B9CE-EE0C38F15A18}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{BE50FAEF-4096-48B5-B9CE-EE0C38F15A18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE50FAEF-4096-48B5-B9CE-EE0C38F15A18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C3439E6-73D7-4F8E-A64A-5448F5CB18DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C3439E6-73D7-4F8E-A64A-5448F5CB18DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C3439E6-73D7-4F8E-A64A-5448F5CB18DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C3439E6-73D7-4F8E-A64A-5448F5CB18DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AF64451F-E2BD-41C2-B083-F60C26AE2A9F} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
+		{00A11C2F-969F-4964-8557-91ADF4B1523D} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
+		{EB956381-F3E6-437C-9069-36B8BF5C6E2F} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
+		{E1082E26-D700-4127-9329-66D673FD2D55} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
+		{B8DC1324-977C-46F1-B697-9064ADE6099A} = {E1082E26-D700-4127-9329-66D673FD2D55}
+		{BE50FAEF-4096-48B5-B9CE-EE0C38F15A18} = {E1082E26-D700-4127-9329-66D673FD2D55}
+		{1C3439E6-73D7-4F8E-A64A-5448F5CB18DE} = {E1082E26-D700-4127-9329-66D673FD2D55}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

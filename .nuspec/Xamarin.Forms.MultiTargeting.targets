@@ -40,11 +40,22 @@
     <None Include="**\Win32\*.cs" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- Android -->
+    <AndroidProjectFolder>Platform\Android\</AndroidProjectFolder>
+    <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
+    <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
+  </PropertyGroup>
 
   <!-- Android -->
   <PropertyGroup Condition="$(TargetFramework.StartsWith('net6.0-android'))">
     <DefineConstants>$(DefineConstants);MONOANDROID</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true OR $(TargetFramework.StartsWith('net6.0-android')) == true ">
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.xml" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.axml" />
+  </ItemGroup>
 
   <!-- iOS -->
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-ios' ">

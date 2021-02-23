@@ -19,15 +19,18 @@
 
 
   <PropertyGroup>
-    <_DotNetPackageVersion>5.0.0</_DotNetPackageVersion>
+    <_DotNetPackageVersion>6.0.0-preview.2.21110.7</_DotNetPackageVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.CodeDom"                        Version="$(_DotNetPackageVersion)" />
-    <PackageReference Include="System.Diagnostics.EventLog"           Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="System.CodeDom" Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="System.Diagnostics.EventLog" Version="$(_DotNetPackageVersion)" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="$(_DotNetPackageVersion)" />
-    <PackageReference Include="System.IO.Ports"                       Version="$(_DotNetPackageVersion)" />
-    <PackageReference Include="System.Security.Permissions"           Version="$(_DotNetPackageVersion)" />
-    <PackageReference Include="System.Threading.AccessControl"        Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="System.IO.Ports" Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="System.Security.Permissions" Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="System.Threading.AccessControl" Version="$(_DotNetPackageVersion)" />
   </ItemGroup>
 </Project>
 

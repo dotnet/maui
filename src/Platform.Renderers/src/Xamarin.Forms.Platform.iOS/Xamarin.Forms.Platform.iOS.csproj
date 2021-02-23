@@ -48,6 +48,11 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ContextActionCell.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContextScrollViewDelegate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalCloseContextGestureRecognizer.cs" />
@@ -112,6 +117,9 @@
     </Compile>
     <Compile Include="..\..\..\Forms\src\Xamarin.Forms.Core\StreamWrapper.cs">
       <Link>StreamWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Maui.Controls.Compatibility\AppHostBuilderExtensions.cs">
+      <Link>AppHostBuilderExtensions.cs</Link>
     </Compile>
     <Compile Include="CADisplayLinkTicker.cs" />
     <Compile Include="CollectionView\CarouselViewDelegator.cs" />

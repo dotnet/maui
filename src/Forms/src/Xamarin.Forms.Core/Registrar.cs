@@ -66,11 +66,12 @@ namespace Xamarin.Forms.Internals
 			// to ease the migration process
 			// TODO: This implementation isn't currently compatible with Visual but we have no concept of visual inside
 			// .NET MAUI currently.
-			Xamarin.Platform.Registrar.Handlers.Register(tview,
-				(viewType) =>
-				{
-					return Registrar.RendererToHandlerShim?.Invoke(null);
-				});
+			// TODO: We need to implemnt this with the new AppHostBuilder
+			//Xamarin.Platform.Registrar.Handlers.Register(tview,
+			//	(viewType) =>
+			//	{
+			//		return Registrar.RendererToHandlerShim?.Invoke(null);
+			//	});
 		}
 
 		public void Register(Type tview, Type trender, Type[] supportedVisual) => Register(tview, trender, supportedVisual, 0);
