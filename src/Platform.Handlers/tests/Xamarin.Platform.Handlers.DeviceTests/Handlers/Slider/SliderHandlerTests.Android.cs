@@ -70,7 +70,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 				Value = xplatValue
 			};
 
-			double expectedValue = SliderExtensions.NativeMaxValue / 2;
+			int expectedValue = (int)(SliderExtensions.NativeMaxValue / 2);
 
 			var values = await GetValueAsync(slider, (handler) =>
 			{
