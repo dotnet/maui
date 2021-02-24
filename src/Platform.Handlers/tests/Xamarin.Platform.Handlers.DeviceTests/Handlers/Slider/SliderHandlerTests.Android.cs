@@ -35,7 +35,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "[SliderHandler] Maximum Value Initializes Correctly")]
+		[Fact(DisplayName = "Maximum Value Initializes Correctly")]
 		public async Task MaximumInitializesCorrectly()
 		{
 			var xplatMaximum = 1;
@@ -59,7 +59,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue);
 		}
 
-		[Fact(DisplayName = "[SliderHandler] Value Initializes Correctly")]
+		[Fact(DisplayName = "Value Initializes Correctly")]
 		public async Task ValueInitializesCorrectly()
 		{
 			var xplatValue = 0.5;

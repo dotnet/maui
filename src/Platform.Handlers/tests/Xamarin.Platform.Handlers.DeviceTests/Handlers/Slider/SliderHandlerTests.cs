@@ -6,9 +6,10 @@ using Xunit;
 
 namespace Xamarin.Platform.Handlers.DeviceTests
 {
+	[Category(TestCategory.Slider)]
 	public partial class SliderHandlerTests : HandlerTestBase<SliderHandler>
 	{
-		[Theory(DisplayName = "[SliderHandler] Percent Value Initializes Correctly")]
+		[Theory(DisplayName = "Percent Value Initializes Correctly")]
 		[InlineData(0, 1, 0)]
 		[InlineData(0, 1, 0.5)]
 		[InlineData(0, 1, 1)]
@@ -51,7 +52,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 			Assert.Equal(expectedPercent, nativePercent, 5);
 		}
 
-		[Fact(DisplayName = "[SliderHandler] Thumb Color Initializes Correctly")]
+		[Fact(DisplayName = "Thumb Color Initializes Correctly")]
 		public async Task ThumbColorInitializesCorrectly()
 		{
 			var slider = new SliderStub()
@@ -63,7 +64,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 		}
 
 #if !__ANDROID__ // Android native control behavior works differently; see SliderHandlerTests.Android.cs
-		[Fact(DisplayName = "[SliderHandler] Value Initializes Correctly")]
+		[Fact(DisplayName = "Value Initializes Correctly")]
 		public async Task ValueInitializesCorrectly()
 		{
 			var slider = new SliderStub()
@@ -76,7 +77,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 			await ValidatePropertyInitValue(slider, () => slider.Value, GetNativeProgress, slider.Value);
 		}
 
-		[Fact(DisplayName = "[SliderHandler] Maximum Value Initializes Correctly")]
+		[Fact(DisplayName = "Maximum Value Initializes Correctly")]
 		public async Task MaximumInitializesCorrectly()
 		{
 			var slider = new SliderStub()

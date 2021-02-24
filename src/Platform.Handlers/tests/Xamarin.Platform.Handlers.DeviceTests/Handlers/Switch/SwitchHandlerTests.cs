@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Xamarin.Platform.Handlers.DeviceTests
 {
+	[Category(TestCategory.Switch)]
 	public partial class SwitchHandlerTests : HandlerTestBase<SwitchHandler>
 	{
 		[Fact(DisplayName= "Is Toggled Initializes Correctly")]
