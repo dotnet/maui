@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -8,7 +8,7 @@ using Android.OS;
 using Android.Runtime;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.DotNet.XHarness.TestRunners.Xunit;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 
 namespace DeviceTests.Droid
 {

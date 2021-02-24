@@ -65,7 +65,7 @@ var ANDROID_CONTROLGALLERY_PROJ = $"{ANDROID_CONTROLGALLERY}Xamarin.Forms.Contro
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
 var ANDROID_TEST_PROJ = "./src/ControlGallery/test/Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj";
 
-var BUILD_TASKS_PROJ ="src/Forms/src/Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj";
+var BUILD_TASKS_PROJ ="src/Controls/src/Build.Tasks/Controls.Build.Tasks.csproj";
 
 var XamarinFormsVersion = Argument("XamarinFormsVersion", "");
 var packageVersion = Argument("packageVersion", "");
@@ -73,6 +73,10 @@ var releaseChannelArg = Argument("CHANNEL", "Stable");
 releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
 var teamProject = Argument("TeamProject", "");
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
+
+var MAUI_SLN = "./Microsoft.Maui.sln";
+
+var CONTROLGALLERY_SLN = "./ControlGallery.sln";
 
 string defaultUnitTestWhere = "";
 
@@ -703,11 +707,11 @@ Task("_NuGetPack")
     });
 
 Task("Restore")
-    .Description("Restore target on Xamarin.Forms.sln")
+    .Description($"Restore target on {MAUI_SLN}")
     .Does(() =>
     {
         try{
-            MSBuild("./Xamarin.Forms.sln", GetMSBuildSettings().WithTarget("restore"));
+            MSBuild(MAUI_SLN, GetMSBuildSettings().WithTarget("restore"));
         }
         catch{
             // ignore restore errors that come from uwp
@@ -742,8 +746,8 @@ Task("BuildForNuget")
         };
 
         msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/Xamarin.Forms-{configuration}.binlog";
-        MSBuild("./Xamarin.Forms.sln", msbuildSettings.WithRestore());
+        binaryLogger.FileName = $"{artifactStagingDirectory}/Maui.Controls-{configuration}.binlog";
+        MSBuild(MAUI_SLN, msbuildSettings.WithRestore());
         
         // // This currently fails on CI will revisit later
         // if(isCIBuild)
@@ -752,7 +756,7 @@ Task("BuildForNuget")
         //     MSBuild("./Xamarin.Forms.Xaml.UnitTests/Xamarin.Forms.Xaml.UnitTests.csproj", GetMSBuildSettings());
         // }
 
-        // MSBuild("./Xamarin.Forms.sln", GetMSBuildSettings().WithTarget("Restore"));
+        // MSBuild(MAUI_SLN, GetMSBuildSettings().WithTarget("Restore"));
         // MSBuild("./Xamarin.Forms.DualScreen.sln", GetMSBuildSettings().WithTarget("Restore"));
 
         // if(isCIBuild)
@@ -768,7 +772,7 @@ Task("BuildForNuget")
         //     }
         // }
 
-        // MSBuild("./Xamarin.Forms.sln", GetMSBuildSettings().WithTarget("Restore"));
+        // MSBuild(MAUI_SLN, GetMSBuildSettings().WithTarget("Restore"));
         // MSBuild("./Xamarin.Forms.DualScreen.sln", GetMSBuildSettings().WithTarget("Restore"));
         
         // msbuildSettings.BinaryLogger = binaryLogger;
@@ -807,13 +811,13 @@ Task("BuildForNuget")
 
 
          // XAML Tests are currently having issues compiling in Release Mode
-        if(configuration == "Debug")
-        {
-            msbuildSettings = GetMSBuildSettings();
-            msbuildSettings.BinaryLogger = binaryLogger;
-            binaryLogger.FileName = $"{artifactStagingDirectory}/Xamarin.Forms.ControlGallery-{configuration}.binlog";
-           MSBuild("./Xamarin.Forms.ControlGallery.sln", msbuildSettings.WithRestore());
-        }
+        // if(configuration == "Debug")
+        // {
+        //     msbuildSettings = GetMSBuildSettings();
+        //     msbuildSettings.BinaryLogger = binaryLogger;
+        //     binaryLogger.FileName = $"{artifactStagingDirectory}/ControlGallery-{configuration}.binlog";
+        //    MSBuild(CONTROLGALLERY_SLN, msbuildSettings.WithRestore());
+        // }
 
         if(IsRunningOnWindows())
         {
@@ -834,15 +838,15 @@ Task("BuildForNuget")
 	    //                     .WithProperty("UwpMinTargetFrameworks", "uap10.0.14393")
 	    //                     .WithRestore());
 	
-	        msbuildSettings = GetMSBuildSettings();
-	        msbuildSettings.BinaryLogger = binaryLogger;
-	        binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}-csproj.binlog";
-	        MSBuild("./src/Platform.Renderers/src/Xamarin.Forms.Platform.UAP/Xamarin.Forms.Platform.UAP.csproj",
-	                    msbuildSettings
-	                        .WithRestore()
-	                        .WithTarget("rebuild")
-	                        .WithProperty("DisableEmbeddedXbf", "false")
-	                        .WithProperty("EnableTypeInfoReflection", "false"));
+	        // msbuildSettings = GetMSBuildSettings();
+	        // msbuildSettings.BinaryLogger = binaryLogger;
+	        // binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}-csproj.binlog";
+	        // MSBuild("./src/Compatibility/Core/src/UAP/Compatibility.UAP.csproj",
+	        //             msbuildSettings
+	        //                 .WithRestore()
+	        //                 .WithTarget("rebuild")
+	        //                 .WithProperty("DisableEmbeddedXbf", "false")
+	        //                 .WithProperty("EnableTypeInfoReflection", "false"));
 
         //     msbuildSettings = GetMSBuildSettings();
         //     msbuildSettings.BinaryLogger = binaryLogger;
@@ -880,7 +884,7 @@ Task("Build")
     .Does(() =>
 {
     try{
-        MSBuild("./Xamarin.Forms.sln", GetMSBuildSettings().WithRestore());
+        MSBuild(MAUI_SLN, GetMSBuildSettings().WithRestore());
     }
     catch(Exception)
     {
@@ -893,7 +897,7 @@ Task("Android100")
     .Description("Builds Monodroid10.0 targets")
     .Does(() =>
     {
-        MSBuild("Xamarin.Forms.sln",
+        MSBuild(MAUI_SLN,
                 GetMSBuildSettings()
                     .WithRestore()
                     .WithProperty("AndroidTargetFrameworks", "MonoAndroid10.0"));
@@ -1154,15 +1158,15 @@ T GetBuildVariable<T>(string key, T defaultValue)
     return Argument(key, EnvironmentVariable(key, upperCaseReturnValue));
 }
 
-void StartVisualStudio(string sln = "Xamarin.Forms.sln")
+void StartVisualStudio(string sln = "./Microsoft.Maui.sln")
 {
     if(isCIBuild)
         return;
 
     if(IsRunningOnWindows())
-         StartProcess("start", new ProcessSettings{ Arguments = "Xamarin.Forms.sln" });
+         StartProcess("start", new ProcessSettings{ Arguments = MAUI_SLN });
     else
-         StartProcess("open", new ProcessSettings{ Arguments = "Xamarin.Forms.sln" });
+         StartProcess("open", new ProcessSettings{ Arguments = MAUI_SLN });
 }
 
 MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarget.MSIL, string buildConfiguration = null)

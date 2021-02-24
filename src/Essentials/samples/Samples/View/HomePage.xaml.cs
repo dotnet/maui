@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Samples.Model;
 using Xamarin.Forms;
 

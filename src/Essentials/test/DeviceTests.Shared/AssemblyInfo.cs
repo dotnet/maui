@@ -1,5 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("XamarinEssentialsDeviceTestsAndroid")]
-[assembly: InternalsVisibleTo("XamarinEssentialsDeviceTestsUWP")]
-[assembly: InternalsVisibleTo("XamarinEssentialsDeviceTestsiOS")]
+[assembly: InternalsVisibleTo("EssentialsDeviceTestsAndroid")]
+[assembly: InternalsVisibleTo("EssentialsDeviceTestsUWP")]
+[assembly: InternalsVisibleTo("EssentialsDeviceTestsiOS")]

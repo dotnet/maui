@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Essentials;
-using RuntimeDeviceType = Xamarin.Essentials.DeviceType;
+using Microsoft.Maui.Essentials;
+using RuntimeDeviceType = Microsoft.Maui.Essentials.DeviceType;
 using XUnitFilter = UnitTests.HeadlessRunner.Xunit.XUnitFilter;
 
 namespace DeviceTests

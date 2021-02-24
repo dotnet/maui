@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
@@ -16,7 +16,7 @@ namespace DeviceTests.Droid
     {
         protected override void OnCreate(Bundle bundle)
         {
-            Xamarin.Essentials.Platform.Init(this, bundle);
+            Microsoft.Maui.Essentials.Platform.Init(this, bundle);
 
             // tests can be inside the main assembly
             AddTestAssembly(Assembly.GetExecutingAssembly());
@@ -28,7 +28,7 @@ namespace DeviceTests.Droid
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
         {
-            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            Microsoft.Maui.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }

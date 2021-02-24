@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0</TargetFrameworks>
+		<AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackageId>Microsoft.Maui.Controls.Xaml</PackageId>
+		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Core\Controls.Core.csproj">
+		</ProjectReference>
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="Diagnostics\" />
+	</ItemGroup>
+</Project>

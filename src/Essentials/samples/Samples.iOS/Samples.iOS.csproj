@@ -88,9 +88,9 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Xamarin.Essentials\Xamarin.Essentials.csproj">
-      <Project>{CD6D6AE6-83A1-41B1-BD7C-C555A77C288B}</Project>
-      <Name>Xamarin.Essentials</Name>
+    <ProjectReference Include="..\..\src\Essentials.csproj">
+      <Project>{8CB95D25-8442-42BC-82BE-319D21138549}</Project>
+      <Name>Essentials</Name>
     </ProjectReference>
     <ProjectReference Include="..\Samples\Samples.csproj">
       <Project>{B4227123-2EEB-494A-A221-C061B5659AED}</Project>

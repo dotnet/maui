@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
@@ -6,7 +6,7 @@ using Foundation;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.DotNet.XHarness.TestRunners.Xunit;
 using UIKit;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 
 namespace DeviceTests.iOS
 {

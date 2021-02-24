@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using Xamarin.Essentials;
+using System.Linq;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
 namespace DeviceTests

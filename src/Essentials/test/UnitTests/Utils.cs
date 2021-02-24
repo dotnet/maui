@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 
 namespace Tests
 {

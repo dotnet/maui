@@ -1,5 +1,5 @@
-﻿using System.Windows.Input;
-using Xamarin.Essentials;
+using System.Windows.Input;
+using Microsoft.Maui.Essentials;
 using Xamarin.Forms;
 
 namespace Samples.ViewModel

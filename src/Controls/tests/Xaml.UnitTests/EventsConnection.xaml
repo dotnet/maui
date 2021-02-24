@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:BaseForEvents xmlns="http://xamarin.com/schemas/2014/forms"
+					 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+					 xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+					 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.EventsConnection">
+	<StackLayout>
+		<local:ElementWithEvent x:Name="elementWithEvent"
+								Clicked="HandleClicked" />
+		<local:ElementWithGenericEvent x:Name="elementWithGenericEvent"
+									   Clicked="HandleGenericClicked"/>
+		<local:ElementWithEvent x:Name="eventHandlerOnBase"
+								Clicked="HandleClickedOnBase" />
+		<local:ElementWithEvent x:Name="elementwithAsyncprivateHandler"
+								Clicked="HandleClickedPrivateAsync" />
+		<local:ElementWithEvent x:Name="elementWithVirtualHandler"
+								Clicked="HandleVirtualClicked" />
+		<local:ElementWithEvent x:Name="elementWithStaticHandler"
+								Clicked="HandleStaticClicked" />
+	</StackLayout>
+</local:BaseForEvents>

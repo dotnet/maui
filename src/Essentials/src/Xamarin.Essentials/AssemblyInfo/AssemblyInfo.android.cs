@@ -1,3 +1,0 @@
-﻿using Android;
-
-[assembly: LinkerSafe]

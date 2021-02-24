@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using Xamarin.Essentials;
+using System.Threading.Tasks;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
 namespace DeviceTests

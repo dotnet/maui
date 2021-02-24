@@ -1,4 +1,4 @@
-﻿<Project Sdk="Tizen.NET.Sdk/1.0.8">
+<Project Sdk="Tizen.NET.Sdk/1.0.8">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Xamarin.Essentials\Xamarin.Essentials.csproj" />
+    <ProjectReference Include="..\..\src\Essentials.csproj" />
     <ProjectReference Include="..\Samples\Samples.csproj" />
   </ItemGroup>
 
