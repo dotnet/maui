@@ -4,7 +4,7 @@
 	</PropertyGroup>
 
 	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.targets" />
-	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.DebugXamlCTask" AssemblyFile="$(_XFBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll" />
+	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.DebugXamlCTask" AssemblyFile="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll" />
 	
 	<PropertyGroup>
 		<CompileDependsOn>
