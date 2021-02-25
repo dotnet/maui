@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (resourceId == null)
 				throw new BuildException(BuildExceptionCode.ResourceMissing, node, null, value);
 
-			var resourceDictionaryType = ("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls", "ResourceDictionary");
+			var resourceDictionaryType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary");
 
 			//abuse the converter, produce some side effect, but leave the stack untouched
 			//public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.XamlC
 		{
 			foreach (var ca in type.Module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;

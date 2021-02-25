@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.BindablePropertyConverter")]
+	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.BindablePropertyConverter")]
 	[Xaml.TypeConversion(typeof(BindableProperty))]
 	public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConverter
 	{

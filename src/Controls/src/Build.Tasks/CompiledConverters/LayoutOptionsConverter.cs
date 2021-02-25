@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				{
 					var options = parts[parts.Length - 1];
 
-					var fieldReference = module.ImportFieldReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls", "LayoutOptions"),
+					var fieldReference = module.ImportFieldReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "LayoutOptions"),
 																	 fieldName: options,
 																	 isStatic: true);
 					if (fieldReference != null)

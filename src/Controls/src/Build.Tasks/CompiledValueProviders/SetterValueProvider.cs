@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				yield break;
 
 			var value = ((string)((ValueNode)valueNode).Value);
-			var setterType = ("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls", "Setter");
+			var setterType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Setter");
 
 			//push the setter
 			foreach (var instruction in vardefref.VariableDefinition.LoadAs(module.GetTypeDefinition(setterType), module))

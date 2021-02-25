@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 	{
 		public IEnumerable<Instruction> ProvideValue(IElementNode node, ModuleDefinition module, ILContext context, out TypeReference typeRef)
 		{
-			typeRef = module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls", "DataTemplate"));
+			typeRef = module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "DataTemplate"));
 			var name = new XmlName("", "TypeName");
 
 			if (!node.Properties.TryGetValue(name, out INode typeNameNode) && node.CollectionItems.Any())

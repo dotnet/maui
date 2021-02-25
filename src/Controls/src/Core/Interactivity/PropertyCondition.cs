@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	[ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.PassthroughValueProvider")]
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.PassthroughValueProvider")]
 	[AcceptEmptyServiceProvider]
 	public sealed class PropertyCondition : Condition, IValueProvider
 	{

@@ -21,9 +21,9 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		static readonly string[] references = {
 			"mscorlib",
 			"System",
-			"Microsoft.Maui.Controls.Core.dll",
+			"Microsoft.Maui.Controls.dll",
 			"Microsoft.Maui.Controls.Xaml.dll",
-			"Microsoft.Maui.Controls.Platform.dll",
+			"Microsoft.Maui.dll",
 		};
 
 		class Xaml

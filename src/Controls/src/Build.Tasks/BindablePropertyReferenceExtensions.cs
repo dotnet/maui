@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 												md.IsStatic &&
 												md.IsPublic &&
 												md.Parameters.Count == 1 &&
-												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls", "BindableObject"))), module).FirstOrDefault()?.Item1;
+												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject"))), module).FirstOrDefault()?.Item1;
 			if (getter == null)
 				throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpName, bpRef.DeclaringType);
 
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 												md.IsStatic &&
 												md.IsPublic &&
 												md.Parameters.Count == 1 &&
-												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls", "BindableObject"))), module).FirstOrDefault()?.Item1;
+												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject"))), module).FirstOrDefault()?.Item1;
 
 			var attributes = new List<CustomAttribute>();
 			if (property != null && property.HasCustomAttributes)

@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.ConstraintTypeConverter")]
+	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.ConstraintTypeConverter")]
 	[Xaml.TypeConversion(typeof(Constraint))]
 	public class ConstraintTypeConverter : TypeConverter
 	{

@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.BoundsTypeConverter")]
+	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.BoundsTypeConverter")]
 	[Xaml.TypeConversion(typeof(Rectangle))]
 	public sealed class BoundsTypeConverter : TypeConverter
 	{
