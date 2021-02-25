@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				propertyGroup.Add(NewElement("TargetFrameworkVersion").WithValue("v4.7"));
 				propertyGroup.Add(NewElement("RootNamespace").WithValue("test"));
 			}
-			propertyGroup.Add(NewElement("_XFBuildTasksLocation").WithValue($"{testDirectory}\\"));
+			propertyGroup.Add(NewElement("_MauiBuildTasksLocation").WithValue($"{testDirectory}\\"));
 
 
 			project.Add(propertyGroup);
