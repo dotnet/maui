@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Controls")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Design")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.Android.UnitTests")]

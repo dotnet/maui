@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.XamlC
 					yield return Instruction.Create(OpCodes.Ldc_R8, color.B);
 					yield return Instruction.Create(OpCodes.Ldc_R8, color.A);
 
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls.Platform", "Microsoft.Maui.Controls", "Color"), parameterTypes: new[] {
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui", "Microsoft.Maui", "Color"), parameterTypes: new[] {
 						("mscorlib", "System", "Double"),
 						("mscorlib", "System", "Double"),
 						("mscorlib", "System", "Double"),
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.XamlC
 					var color = parts[parts.Length - 1];
 					if (color == "lightgrey")
 						color = "lightgray";
-					var fieldReference = module.ImportFieldReference(("Microsoft.Maui.Controls.Platform", "Microsoft.Maui.Controls", "Color"),
+					var fieldReference = module.ImportFieldReference(("Microsoft.Maui", "Microsoft.Maui", "Color"),
 																	 color,
 																	 isStatic: true,
 																	 caseSensitive: false);
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.XamlC
 						yield return Instruction.Create(OpCodes.Ldsfld, fieldReference);
 						yield break;
 					}
-					var propertyGetterReference = module.ImportPropertyGetterReference(("Microsoft.Maui.Controls.Platform", "Microsoft.Maui.Controls", "Color"),
+					var propertyGetterReference = module.ImportPropertyGetterReference(("Microsoft.Maui", "Microsoft.Maui", "Color"),
 																					   color,
 																					   isStatic: true,
 																					   caseSensitive: false);
