@@ -267,7 +267,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			else if (_flyoutBehavior == FlyoutBehavior.Flyout)
 			{
-				Shell.Current.FlyoutIsPresented = true;
+				Shell.Current.FlyoutIsPresented = !Shell.Current.FlyoutIsPresented;
 			}
 		}
 
