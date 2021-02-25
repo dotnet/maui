@@ -3,8 +3,8 @@
 		<XFKeepXamlResources>True</XFKeepXamlResources>
 	</PropertyGroup>
 
-	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.targets" />
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.DebugXamlCTask" AssemblyFile="$(_XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll" />
+	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.targets" />
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.DebugXamlCTask" AssemblyFile="$(_XFBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll" />
 	
 	<PropertyGroup>
 		<CompileDependsOn>
