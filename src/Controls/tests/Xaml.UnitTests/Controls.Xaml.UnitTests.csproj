@@ -35,7 +35,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ControlGallery\src\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks.csproj" />
   </ItemGroup>

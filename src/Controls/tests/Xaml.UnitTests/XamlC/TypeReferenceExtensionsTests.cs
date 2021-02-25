@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using NUnit.Framework;
 using Microsoft.Maui.Controls.Build.Tasks;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls
 {

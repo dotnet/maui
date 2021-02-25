@@ -5,7 +5,6 @@ using Microsoft.Build.Utilities;
 using NUnit.Framework;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
-using Microsoft.Maui.Controls.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.MSBuild.UnitTests;
 using IOPath = System.IO.Path;

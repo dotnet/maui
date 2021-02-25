@@ -28,21 +28,21 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		class Xaml
 		{
-			const string Microsoft.Maui.ControlsFormsDefaultNamespace = "http://xamarin.com/schemas/2014/forms";
-			const string Microsoft.Maui.ControlsFormsXNamespace = "http://schemas.microsoft.com/winfx/2006/xaml";
+			const string MicrosoftMauiControlsFormsDefaultNamespace = "http://xamarin.com/schemas/2014/forms";
+			const string MicrosoftMauiControlsFormsXNamespace = "http://schemas.microsoft.com/winfx/2006/xaml";
 
 			public static readonly string MainPage = $@"
 				<ContentPage
-					xmlns=""{Microsoft.Maui.ControlsFormsDefaultNamespace}""
-					xmlns:x=""{Microsoft.Maui.ControlsFormsXNamespace}""
+					xmlns=""{MicrosoftMauiControlsFormsDefaultNamespace}""
+					xmlns:x=""{MicrosoftMauiControlsFormsXNamespace}""
 					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.MainPage"">
 					<Label x:Name=""label0""/>
 				</ContentPage>";
 
 			public static readonly string CustomView = $@"
 				<ContentView
-					xmlns=""{Microsoft.Maui.ControlsFormsDefaultNamespace}""
-					xmlns:x=""{Microsoft.Maui.ControlsFormsXNamespace}""
+					xmlns=""{MicrosoftMauiControlsFormsDefaultNamespace}""
+					xmlns:x=""{MicrosoftMauiControlsFormsXNamespace}""
 					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustomView"">
 					<Label x:Name=""label0""/>
 				</ContentView>";
