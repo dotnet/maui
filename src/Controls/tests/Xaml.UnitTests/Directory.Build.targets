@@ -1,4 +1,9 @@
 <Project>
+  <Target Name="BeforeBuild" >
+        <Message Text="Project File Name = $(MSBuildProjectFile)" Importance="High" />
+        <Message Text="Project Extension = $(MSBuildProjectExtension)" Importance="High"/>
+         <Message Text="Maui build tasks = $(_MauiBuildTasksLocation)" Importance="High"/>
+    </Target>
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll')" />
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
 </Project>
