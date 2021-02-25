@@ -18,16 +18,25 @@ namespace Microsoft.Maui.Handlers
 
 		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var sizeThatFits = TypedNativeView?.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
-
-			if (sizeThatFits.HasValue)
+			if (TypedNativeView == null)
 			{
-				return new Size(
-					sizeThatFits.Value.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Value.Width,
-					sizeThatFits.Value.Height == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Value.Height);
+				return new Size(widthConstraint, heightConstraint);
 			}
 
-			return new Size(widthConstraint, heightConstraint);
+			var sizeThatFits = TypedNativeView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
+
+			var size = new Size(
+				sizeThatFits.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Width,
+				sizeThatFits.Height == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Height);
+
+			if (double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
+			{
+				TypedNativeView.SizeToFit();
+
+				size = new Size(TypedNativeView.Frame.Width, TypedNativeView.Frame.Height);
+			}
+
+			return size;
 		}
 
 		void SetupContainer()
