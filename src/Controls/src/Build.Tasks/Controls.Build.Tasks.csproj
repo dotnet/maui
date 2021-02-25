@@ -19,13 +19,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Mono.Cecil" Version="0.11.3" />
-		<PackageReference Include="System.CodeDom" Version="5.0.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+		<PackageReference Include="Mono.Cecil" Version="0.10.3" />
+		<PackageReference Include="System.CodeDom" Version="4.4.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
 		<PackageReference Include="Microsoft.Build" Version="15.8.166" />
 		<PackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
 		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.8.166" />
-		<PackageReference Include="StrongNamer" Version="0.2.5" />
+		<PackageReference Include="StrongNamer" Version="0.0.8" />
 		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
 		<PackageReference Include="XliffTasks" Version="1.0.0-beta.21110.1" PrivateAssets="all" />
 	</ItemGroup>
