@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void TestRootName(bool useCompiledXaml)
 			{
 				var page = new FindByName(useCompiledXaml);
-				Assert.AreSame(page, ((Forms.Internals.INameScope)page).FindByName("root"));
+				Assert.AreSame(page, ((Maui.Controls.Internals.INameScope)page).FindByName("root"));
 				Assert.AreSame(page, page.FindByName<FindByName>("root"));
 			}
 

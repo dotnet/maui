@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var view = new ContentPage();
 			XamlLoader.Load(view, xaml, useDesignProperties: true); //this is equiv as LoadFromXaml, but with the bool set
 
-			var label = ((Forms.Internals.INameScope)view).FindByName("label") as Label;
+			var label = ((Maui.Controls.Internals.INameScope)view).FindByName("label") as Label;
 
 			Assert.That(label.Text, Is.EqualTo("Bar"));
 		}

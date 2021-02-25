@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					if (rlq.ResourcePath == "ResourceLoader.xaml")
 					{
 						instance = rlq.Instance;
-						return new Forms.Internals.ResourceLoader.ResourceLoadingResponse
+						return new Maui.Controls.Internals.ResourceLoader.ResourceLoadingResponse
 						{
 							ResourceContent = @"
 <ContentPage 
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2 = (rlq) =>
 				{
 					if (rlq.ResourcePath == "ResourceLoader.xaml")
-						return new Forms.Internals.ResourceLoader.ResourceLoadingResponse
+						return new Maui.Controls.Internals.ResourceLoader.ResourceLoadingResponse
 						{
 							UseDesignProperties = true,
 							ResourceContent = @"

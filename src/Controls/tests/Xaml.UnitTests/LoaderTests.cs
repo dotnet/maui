@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var view = new CustomView();
 			view.LoadFromXaml(xaml);
 
-			Assert.AreSame(view, ((Forms.Internals.INameScope)view).FindByName("customView"));
+			Assert.AreSame(view, ((Maui.Controls.Internals.INameScope)view).FindByName("customView"));
 		}
 
 		[Test]
@@ -502,7 +502,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			</ContentPage>";
 			var page = new ContentPage();
 			page.LoadFromXaml(xaml);
-			var template = page.Resources["datatemplate"] as Forms.DataTemplate;
+			var template = page.Resources["datatemplate"] as Maui.Controls.DataTemplate;
 			Assert.Throws<InvalidOperationException>(() => template.CreateContent());
 		}
 
@@ -577,7 +577,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			CustomView customView = null;
 			Assert.DoesNotThrow(() => customView = new CustomView().LoadFromXaml(xaml));
 			Assert.NotNull(customView.Content);
-			Assert.AreSame(customView.Content, ((Forms.Internals.INameScope)customView).FindByName("contentview"));
+			Assert.AreSame(customView.Content, ((Maui.Controls.Internals.INameScope)customView).FindByName("contentview"));
 		}
 
 		[Test]
@@ -657,8 +657,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
 			Assert.IsNotNull(layout);
 			Assert.AreNotSame(layout.DefaultChildren, layout.Children);
-			Assert.Contains(((Forms.Internals.INameScope)layout).FindByName("child0"), layout.Children);
-			Assert.Contains(((Forms.Internals.INameScope)layout).FindByName("child1"), layout.Children);
+			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);
+			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child1"), layout.Children);
 		}
 
 		[Test]
@@ -676,8 +676,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
 			Assert.IsNotNull(layout);
 			Assert.AreSame(layout.DefaultChildren, layout.Children);
-			Assert.Contains(((Forms.Internals.INameScope)layout).FindByName("child0"), layout.Children);
-			Assert.Contains(((Forms.Internals.INameScope)layout).FindByName("child1"), layout.Children);
+			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);
+			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child1"), layout.Children);
 		}
 
 		[Test]
@@ -697,8 +697,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
 			Assert.IsNotNull(layout);
 			Assert.AreSame(layout.DefaultChildren, layout.Children);
-			Assert.Contains(((Forms.Internals.INameScope)layout).FindByName("child0"), layout.Children);
-			Assert.Contains(((Forms.Internals.INameScope)layout).FindByName("child1"), layout.Children);
+			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);
+			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child1"), layout.Children);
 
 		}
 
@@ -716,7 +716,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
 			Assert.IsNotNull(layout);
 			Assert.AreSame(layout.DefaultChildren, layout.Children);
-			Assert.Contains(((Forms.Internals.INameScope)layout).FindByName("child0"), layout.Children);
+			Assert.Contains(((Maui.Controls.Internals.INameScope)layout).FindByName("child0"), layout.Children);
 		}
 
 		[Test]
