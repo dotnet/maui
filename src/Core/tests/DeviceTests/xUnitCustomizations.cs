@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Xamarin.Platform.Handlers.DeviceTests
+namespace Microsoft.Maui.DeviceTests
 {
 	/// <summary>
 	/// Custom trait discoverer which adds a Category trait for filtering, etc.
@@ -75,7 +75,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 	/// <summary>
 	/// Conveninence attribute for setting a Category trait on a test or test class
 	/// </summary>
-	[TraitDiscoverer("Xamarin.Platform.Handlers.DeviceTests.CategoryDiscoverer", "Xamarin.Platform.Handlers.DeviceTests")]
+	[TraitDiscoverer("Microsoft.Maui.DeviceTests.CategoryDiscoverer", "Microsoft.Maui.Core.DeviceTests")]
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
 	public class CategoryAttribute : Attribute, ITraitAttribute
 	{
@@ -87,7 +87,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 	/// Custom Fact attribute which defaults to using the test method name for the DisplayName property
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-	[XunitTestCaseDiscoverer("Xamarin.Platform.Handlers.DeviceTests.FactDiscoverer", "Xamarin.Platform.Handlers.DeviceTests")]
+	[XunitTestCaseDiscoverer("Microsoft.Maui.DeviceTests.FactDiscoverer", "Microsoft.Maui.Core.DeviceTests")]
 	public class FactAttribute : Xunit.FactAttribute
 	{
 		public FactAttribute([CallerMemberName] string displayName = "")
@@ -100,7 +100,7 @@ namespace Xamarin.Platform.Handlers.DeviceTests
 	/// Custom Theory attribute which defaults to using the test method name for the DisplayName property
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-	[XunitTestCaseDiscoverer("Xamarin.Platform.Handlers.DeviceTests.TheoryDiscoverer", "Xamarin.Platform.Handlers.DeviceTests")]
+	[XunitTestCaseDiscoverer("Microsoft.Maui.DeviceTests.TheoryDiscoverer", "Microsoft.Maui.Core.DeviceTests")]
 	public class TheoryAttribute : Xunit.TheoryAttribute
 	{
 		public TheoryAttribute([CallerMemberName] string displayName = "")

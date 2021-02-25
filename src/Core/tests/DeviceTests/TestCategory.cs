@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Platform.Handlers.DeviceTests
+﻿namespace Microsoft.Maui.DeviceTests
 {
 	public static class TestCategory
 	{
