@@ -56,8 +56,8 @@ steps:
     inputs:
       command: test
       projects:   |
-        **/Xamarin.Forms.Core.UnitTests.csproj
-        **/Xamarin.Platform.Handlers.UnitTests.csproj
+        **/Controls.Core.UnitTests.csproj
+        **/Core.UnitTests.csproj
       arguments: '--configuration $(BuildConfiguration)'
 
   - task: CopyFiles@2
