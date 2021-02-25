@@ -23,7 +23,7 @@
   <Color x:Key="MediumGrayTextColor">#4d4d4d</Color>
   <Color x:Key="LightTextColor">#999999</Color>
     
-  <Style TargetType="local:Gh7531" x:Key="style">
+  <!--<Style TargetType="local:Gh7531" x:Key="style">
     <Setter Property="BackgroundColor" Value="HotPink"/>
-  </Style>
+  </Style>-->
 </ResourceDictionary>

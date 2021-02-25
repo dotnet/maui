@@ -54,7 +54,7 @@
 				</local:MockFactory>
 			</local:MockView.Content>
 		</local:MockView>
-		<local:MockView x:Name="v6">
+		<!--<local:MockView x:Name="v6">
 			<local:MockView.Content>
 				<local:MockFactory>
 					<x:Arguments>
@@ -79,6 +79,6 @@
 					</x:Arguments>
 				</local:MockFactory>
 			</local:MockView.Content>
-		</local:MockView>
+		</local:MockView>-->
 	</StackLayout>
 </ContentPage>
