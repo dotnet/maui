@@ -12,13 +12,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 	{
 		static readonly string[] references = new[]
 		{
-			"Microsoft.Maui.Controls.Core",
-			"Microsoft.Maui.Controls.Compatibility.Maps",
+			"Microsoft.Maui.Controls",
+			"Microsoft.Maui.Controls.Maps",
 			"Microsoft.Maui.Controls.Xaml",
 			"Microsoft.Maui.Controls.Build.Tasks"
 		};
 
-		const string s_productName = "Microsoft.Maui.Controls";
+		const string s_productName = "Microsoft.Maui";
 
 		const string s_company = "Microsoft";
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			Version actual = testAssembly.GetName().Version;
-			Assert.AreEqual(2, actual.Major, actual.ToString());
+			Assert.AreEqual(1, actual.Major, actual.ToString());
 			Assert.AreEqual(0, actual.Minor, actual.ToString());
 			Assert.AreEqual(0, actual.Build, actual.ToString());
 		}

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
     <RootNamespace>Microsoft.Maui.Controls.Xaml.UnitTests</RootNamespace>
@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks.csproj" />
   </ItemGroup>
 </Project>
