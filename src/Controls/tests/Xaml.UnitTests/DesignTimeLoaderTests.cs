@@ -320,7 +320,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			int exceptionCount = 0;
 #pragma warning disable 0618 // Type or member is obsolete
-			Forms.Internals.ResourceLoader.ExceptionHandler = _ => exceptionCount++;
+			Maui.Controls.Internals.ResourceLoader.ExceptionHandler = _ => exceptionCount++;
 			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(MockView);
 #pragma warning restore 0618 // Type or member is obsolete
 
