@@ -6,7 +6,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-      <RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
+    	<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
 			<_DisableStrongNamer Condition=" '$(_DisableStrongNamer)' != 'True' ">False</_DisableStrongNamer>
 			<AssemblyName>Microsoft.Maui.Controls.Build.Tasks</AssemblyName>
 			<Description>Microsoft MAUI Build Task</Description>
