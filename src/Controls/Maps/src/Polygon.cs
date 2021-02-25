@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 
-namespace Microsoft.Maui.Controls.Compatibility.Maps
+namespace Microsoft.Maui.Controls.Maps
 {
 	public class Polygon : MapElement
 	{

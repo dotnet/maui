@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Controls.Compatibility.Maps
+namespace Microsoft.Maui.Controls.Maps
 {
 	public static class GeographyUtils
 	{

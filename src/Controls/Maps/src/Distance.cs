@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.Maui.Controls.Compatibility.Maps
+namespace Microsoft.Maui.Controls.Maps
 {
 	public struct Distance
 	{

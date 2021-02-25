@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Microsoft.Maui.Controls.Compatibility.Maps
+namespace Microsoft.Maui.Controls.Maps
 {
 	public class Polyline : MapElement
 	{

@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.Maps
+namespace Microsoft.Maui.Controls.Maps
 {
 	public class Map : View, IEnumerable<Pin>
 	{
