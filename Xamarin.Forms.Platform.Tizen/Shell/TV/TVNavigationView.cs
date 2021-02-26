@@ -272,7 +272,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					ResetHeader();
 				}
-				
+
 				if (_nativeHeader != null)
 				{
 					_mainLayout.UnPack(_nativeHeader);
@@ -318,7 +318,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			else
 			{
 				ResetHeader();
-				if(_nativeHeader == null)
+				if (_nativeHeader == null)
 				{
 					var renderer = Platform.GetOrCreateRenderer(_header);
 					(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();

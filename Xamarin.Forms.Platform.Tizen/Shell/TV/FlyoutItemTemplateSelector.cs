@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.Tizen.TV
 					Margin = new Thickness(nv.GetFlyoutMargin(), 0, 0, 0),
 				};
 				label.SetBinding(Label.TextProperty, new Binding("Title"));
-				label.SetBinding(Label.TextColorProperty, new Binding("BackgroundColor",  converter: new TextColorConverter(), source: grid));
+				label.SetBinding(Label.TextColorProperty, new Binding("BackgroundColor", converter: new TextColorConverter(), source: grid));
 
 				grid.Children.Add(label, 1, 0);
 

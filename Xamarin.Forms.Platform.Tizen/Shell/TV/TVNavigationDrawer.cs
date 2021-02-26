@@ -173,7 +173,7 @@ namespace Xamarin.Forms.Platform.Tizen.TV
 
 		void OnMainBoxLayout()
 		{
-			if(_main != null)
+			if (_main != null)
 			{
 				_main.Geometry = _mainBox.Geometry;
 			}
@@ -237,7 +237,7 @@ namespace Xamarin.Forms.Platform.Tizen.TV
 		{
 			if (_isOpen)
 			{
-				if(_behavior == FlyoutBehavior.Locked)
+				if (_behavior == FlyoutBehavior.Locked)
 				{
 					_drawerBox.AllowTreeFocus = true;
 					_mainBox.AllowTreeFocus = true;
