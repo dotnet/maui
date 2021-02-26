@@ -24,27 +24,18 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFrame(IViewHandler handler, IView view)
 		{
-			CheckParameters(handler, view);
 			handler.SetFrame(view.Frame);
 		}
 
 		public static void MapIsEnabled(IViewHandler handler, IView view)
 		{
-			CheckParameters(handler, view);
 			(handler.NativeView as NativeView)?.UpdateIsEnabled(view);
 		}
 
 		public static void MapBackgroundColor(IViewHandler handler, IView view)
 		{
-			CheckParameters(handler, view);
 			(handler.NativeView as NativeView)?.UpdateBackgroundColor(view);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static void CheckParameters(IViewHandler handler, IView view)
-		{
-			_ = handler ?? throw new ArgumentNullException(nameof(handler));
-			_ = view ?? throw new ArgumentNullException(nameof(view));
-		}
 	}
 }
