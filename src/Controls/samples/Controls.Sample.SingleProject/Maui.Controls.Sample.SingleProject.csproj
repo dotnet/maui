@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">ios-x64</RuntimeIdentifier>
+    <OutputType>Exe</OutputType>
+    <SingleProject>true</SingleProject>
+    <ApplicationTitle>Single Project</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.singleproject</ApplicationId>
+    <ApplicationVersion>1.0</ApplicationVersion>
+    <AndroidVersionCode>1</AndroidVersionCode>
+  </PropertyGroup>
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.2.21110.7" />
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
+  </ItemGroup>
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" />
+</Project>

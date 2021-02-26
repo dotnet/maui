@@ -7,4 +7,6 @@
   <ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultCssItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
     <EmbeddedResource Include="**\*.css" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+
+  <Import Project="Microsoft.Maui.Controls.SingleProject.props" />
 </Project>
