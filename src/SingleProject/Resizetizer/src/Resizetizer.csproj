@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Microsoft.Maui.Resizetizer</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Resizetizer</AssemblyName>
+    <!--<Nullable>enable</Nullable>-->
+    <LangVersion>8.0</LangVersion>
+    <IncludeBuildOutput>False</IncludeBuildOutput>
+    <NoWarn>NU5100;NU5128</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>Microsoft.Maui.Resizetizer</PackageId>
+    <Product>Microsoft</Product>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <_ItemToPack Include="$(PkgSystem_Memory)\lib\netstandard2.0\System.Memory.dll" />
+    <_ItemToPack Include="$(PkgSystem_Buffers)\lib\netstandard2.0\System.Buffers.dll" />
+    <_ItemToPack Include="$(PkgSystem_Numerics_Vectors)\lib\netstandard2.0\System.Numerics.Vectors.dll" />
+    <_ItemToPack Include="$(PkgSystem_Runtime_CompilerServices_Unsafe)\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" />
+    <_ItemToPack Include="$(PkgSystem_Drawing_Common)\lib\netstandard2.0\System.Drawing.Common.dll" />
+    <_ItemToPack Include="$(PkgSystem_ObjectModel)\lib\netstandard1.3\System.ObjectModel.dll" />
+    <_ItemToPack Include="$(PkgSvg_Custom)\lib\net461\Svg.Custom.dll" />
+    <_ItemToPack Include="$(PkgSvg_Picture)\lib\net461\Svg.Picture.dll" />
+    <_ItemToPack Include="$(PkgSvg_Skia)\lib\net461\Svg.Skia.dll" />
+    <_ItemToPack Include="$(PkgFizzler)\lib\netstandard2.0\Fizzler.dll" />
+    <_ItemToPack Include="$(PkgSystem_IO_UnmanagedMemoryStream)\lib\netstandard1.3\System.IO.UnmanagedMemoryStream.dll" />
+    <_ItemToPack Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" />
+    <_ItemToPack Include="$(PkgSkiaSharp)\runtimes\osx\native\libSkiaSharp.dylib" />
+    <_ItemToPack Include="$(PkgSkiaSharp)\runtimes\win-x86\native\libSkiaSharp.dll" />
+    <_ItemToPack Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.dll" />
+    <_ItemToPack Include="$(PkgHarfBuzzSharp)\lib\net462\HarfBuzzSharp.dll" />
+    <_ItemToPack Include="$(PkgHarfBuzzSharp)\runtimes\osx\native\libHarfBuzzSharp.dylib" />
+    <_ItemToPack Include="$(PkgHarfBuzzSharp)\runtimes\win-x86\native\libHarfBuzzSharp.dll" />
+    <_ItemToPack Include="$(PkgSvg2VectorDrawable_Net)\lib\netstandard2.0\Svg2VectorDrawable.Net.dll" />
+    <_ItemToPack Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(TargetPath)" Visible="False" Pack="True" PackagePath="buildTransitive\;build\" />
+    <None Include="@(_ItemToPack)" Visible="False" Pack="True" PackagePath="buildTransitive\;build\" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Microsoft.Maui.Resizetizer.targets" Pack="True" PackagePath="buildTransitive\;build\" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fizzler" Version="1.2.0" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="HarfBuzzSharp" Version="2.6.1.7" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.7.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.7.0" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp" Version="2.80.2" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.80.2" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Svg.Skia" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Svg.Custom" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Svg.Picture" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Memory" Version="4.5.4" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Buffers" Version="4.5.1" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.IO.UnmanagedMemoryStream" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.ObjectModel" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Svg2VectorDrawable.Net" Version="0.1.0" GeneratePathProperty="true" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>
