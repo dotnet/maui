@@ -12,6 +12,7 @@ using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
 using Size = Microsoft.Maui.Size;
 using AColor = Android.Graphics.Color;
 using AAttribute = Android.Resource.Attribute;
+using Android.OS;
 
 namespace Microsoft.Maui
 {
@@ -112,17 +113,21 @@ namespace Microsoft.Maui
 			{
 				if (context.Theme?.ResolveAttribute(attr, mTypedValue, true) == true)
 				{
-					if (mTypedValue.Type >= DataType.FirstInt
-							&& mTypedValue.Type <= DataType.LastInt)
+					if (mTypedValue.Type >= DataType.FirstInt && mTypedValue.Type <= DataType.LastInt)
 					{
 						return mTypedValue.Data;
 					}
 					else if (mTypedValue.Type == DataType.String)
 					{
-						if (context.Resources == null)
-							return 0;
-
-						return context.Resources.GetColor(mTypedValue.ResourceId, context.Theme);
+						if (context.Resources != null)
+						{
+							if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
+								return context.Resources.GetColor(mTypedValue.ResourceId, context.Theme);
+							else
+#pragma warning disable CS0618 // Type or member is obsolete
+								return context.Resources.GetColor(mTypedValue.ResourceId);
+#pragma warning restore CS0618 // Type or member is obsolete
+						}
 					}
 				}
 			}
