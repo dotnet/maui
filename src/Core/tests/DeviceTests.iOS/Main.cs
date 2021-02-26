@@ -1,3 +1,4 @@
+using System;
 using UIKit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.DeviceTests
     {
         static void Main(string[] args)
         {
-            if (args?.Length > 0) // usually means this is from xharness
+            if (args?.Length > 0 || Environment.GetEnvironmentVariable("NUNIT_AUTOEXIT")?.Length > 0) // usually means this is from xharness
                 UIApplication.Main(args, null, nameof(TestApplicationDelegate));
             else
                 UIApplication.Main(args, null, nameof(AppDelegate));

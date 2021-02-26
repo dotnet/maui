@@ -7,7 +7,7 @@ using Xunit.Runners.UI;
 namespace DeviceTests.Droid
 {
     [Activity(
-        Name = "com.xamarin.essentials.devicetests.MainActivity",
+        Name = "com.microsoft.maui.essentials.devicetests.MainActivity",
         Label = "@string/app_name",
         Theme = "@style/MainTheme",
         MainLauncher = true,

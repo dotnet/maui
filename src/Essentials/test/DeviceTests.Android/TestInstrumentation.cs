@@ -12,7 +12,7 @@ using Microsoft.Maui.Essentials;
 
 namespace DeviceTests.Droid
 {
-    [Instrumentation(Name = "com.xamarin.essentials.devicetests.TestInstrumentation")]
+    [Instrumentation(Name = "com.microsoft.maui.essentials.devicetests.TestInstrumentation")]
     public class TestInstrumentation : Instrumentation
     {
         string resultsFileName;

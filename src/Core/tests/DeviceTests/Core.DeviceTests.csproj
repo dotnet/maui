@@ -11,8 +11,7 @@
   </PropertyGroup>
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup>
-    <PackageReference Include="Xamarin.Essentials" Version="1.6.1">
-    </PackageReference>
+    <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
   </ItemGroup>

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.xamarin.essentials" version="1.0.0" api-version="4" xmlns="http://tizen.org/ns/packages">
+<manifest package="com.microsoft.maui.essentials" version="1.0.0" api-version="4" xmlns="http://tizen.org/ns/packages">
     <profile name="common" />
-    <ui-application appid="com.xamarin.essentials" exec="Samples.Tizen.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" splash-screen-display="true" launch_mode="single">
+    <ui-application appid="com.microsoft.maui.essentials" exec="Samples.Tizen.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" splash-screen-display="true" launch_mode="single">
         <label>Xamarin.Essentials</label>
         <icon>Samples.Tizen.png</icon>
         <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true" />

@@ -24,9 +24,9 @@ namespace DeviceTests
 		public void PlatformToSystem()
 		{
 #if __IOS__
-            var platform = new CoreGraphics.CGSize(width, height);
+			var platform = new CoreGraphics.CGSize(width, height);
 #elif __ANDROID__
-            var platform = new Android.Util.Size(width, height);
+			var platform = new Android.Util.Size(width, height);
 #else
 			var platform = new Windows.Foundation.Size(width, height);
 #endif
@@ -42,14 +42,14 @@ namespace DeviceTests
 		public void PlatformToSystemException(float width, float height)
 		{
 #if __IOS__
-            var platform = new CoreGraphics.CGSize(width, height);
-            Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemSize());
+			var platform = new CoreGraphics.CGSize(width, height);
+			Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemSize());
 #elif __ANDROID__
-            var platform = new Android.Util.Size((int)width, (int)height);
-            Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemSize());
+			// N/A
+			Utils.Unused(width, height);
 #elif WINDOWS_UWP
-            var platform = new Windows.Foundation.Size(width, height);
-            Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemSize());
+			var platform = new Windows.Foundation.Size(width, height);
+			Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemSize());
 #endif
 		}
 
@@ -58,9 +58,9 @@ namespace DeviceTests
 		{
 			var system = new System.Drawing.SizeF(width, height);
 #if __IOS__
-            var platform = system.ToPlatformSize();
+			var platform = system.ToPlatformSize();
 #elif __ANDROID__
-            var platform = system.ToPlatformSizeF();
+			var platform = system.ToPlatformSizeF();
 #else
 			var platform = system.ToPlatformSize();
 #endif
@@ -72,11 +72,11 @@ namespace DeviceTests
 		public void PlatformToSystemF()
 		{
 #if __IOS__
-            var platform = new CoreGraphics.CGSize(width, height);
-            var system = platform.ToSystemSize();
+			var platform = new CoreGraphics.CGSize(width, height);
+			var system = platform.ToSystemSize();
 #elif __ANDROID__
-            var platform = new Android.Util.SizeF(width, height);
-            var system = platform.ToSystemSizeF();
+			var platform = new Android.Util.SizeF(width, height);
+			var system = platform.ToSystemSizeF();
 #else
 			var platform = new Windows.Foundation.Size(width, height);
 			var system = platform.ToSystemSize();

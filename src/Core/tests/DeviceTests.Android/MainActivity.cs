@@ -7,7 +7,7 @@ using Android.Content.PM;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Activity(
-		Name = "com.xamarin.handlers.devicetests.MainActivity",
+		Name = "com.microsoft.maui.devicetests.MainActivity",
 		Label = "@string/app_name",
 		Theme = "@style/MainTheme",
 		MainLauncher = true,

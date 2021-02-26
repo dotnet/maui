@@ -1,7 +1,7 @@
 <Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">Xamarin.iOS10;MonoAndroid90;uap10.0.16299</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">Xamarin.iOS10;MonoAndroid90;</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">Xamarin.iOS10;MonoAndroid10.0;uap10.0.16299</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">Xamarin.iOS10;MonoAndroid10.0;</TargetFrameworks>
     <AssemblyName>EssentialsDeviceTestsShared</AssemblyName>
     <RootNamespace>DeviceTests.Shared</RootNamespace>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
