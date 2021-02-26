@@ -1,8 +1,7 @@
 <Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;Xamarin.iOS10;MonoAndroid10.0</TargetFrameworks>
-  </PropertyGroup>  
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+  </PropertyGroup>
   <!--<ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) == true ">
     <ProjectReference Include="..\..\..\Compatibility\Core\src\iOS\Compatibility.iOS.csproj" />
   </ItemGroup>
