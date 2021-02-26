@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Save(projectFile);
 			RestoreIfNeeded(projectFile, sdkStyle);
 
-			string log = Build(projectFile, additionalArgs: "/p:XFXamlCValidateOnly=True", shouldSucceed: false);
+			string log = Build(projectFile, additionalArgs: "/p:MauiXamlCValidateOnly=True", shouldSucceed: false);
 			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XFC0000: Cannot resolve type \"http://xamarin.com/schemas/2014/forms:NotARealThing\".", log);
 		}
 
