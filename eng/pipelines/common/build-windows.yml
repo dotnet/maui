@@ -42,7 +42,7 @@ steps:
     displayName: 'XAML Unit Tests'
     inputs:
       testAssemblyVer2: |
-        **/bin/$(BuildConfiguration)/**/Xamarin.Forms.Xaml.UnitTests.dll
+        **/bin/$(BuildConfiguration)/**/Microsoft.Maui.Controls.Xaml.UnitTests.dll
       searchFolder: ${{ parameters.nunitTestFolder }}
       codeCoverageEnabled: true
       testRunTitle: '$(BuildConfiguration)_UnitTests'
