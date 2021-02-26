@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		// Tests the XFXamlCValidateOnly=True MSBuild property
+		// Tests the MauiXamlCValidateOnly=True MSBuild property
 		[Test]
 		public void ValidateOnly([Values(false, true)] bool sdkStyle)
 		{
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 			RestoreIfNeeded(projectFile, sdkStyle);
-			Build(projectFile, additionalArgs: "/p:XFXamlCValidateOnly=True");
+			Build(projectFile, additionalArgs: "/p:MauiXamlCValidateOnly=True");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
