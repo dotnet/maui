@@ -16,7 +16,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		protected override void OnCreate(Bundle bundle)
 		{
-			Xamarin.Essentials.Platform.Init(this, bundle);
+			Microsoft.Maui.Essentials.Platform.Init(this, bundle);
 			Platform.Init(this);
 
 			// Tests can be inside the main assembly
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
 		{
-			Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+			Microsoft.Maui.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
 			base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 		}

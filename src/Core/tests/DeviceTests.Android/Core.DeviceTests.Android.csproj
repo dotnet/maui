@@ -57,13 +57,20 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.1931" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
     <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21124.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj">
+      <Project>{551b2209-4298-4d60-b55c-79077b8bc244}</Project>
+      <Name>TestUtils.DeviceTests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd266621d1}</Project>
+      <Name>Essentials</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Core.csproj">
       <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
       <Name>Core</Name>

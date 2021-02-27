@@ -6,7 +6,7 @@
     <ProjectGuid>{CB2072E0-A437-4811-AE17-16CAE0DDA1B1}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
-    <RootNamespace>DeviceTests.Droid</RootNamespace>
+    <RootNamespace>Microsoft.Maui.Essentials.DeviceTests.Droid</RootNamespace>
     <AssemblyName>EssentialsDeviceTestsAndroid</AssemblyName>
     <TargetFrameworkVersion>v10.0</TargetFrameworkVersion>
     <AndroidUseLatestPlatformSdk>false</AndroidUseLatestPlatformSdk>
@@ -64,6 +64,10 @@
     <PackageReference Include="Xamarin.AndroidX.Palette" Version="1.0.0.6" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj">
+      <Project>{551b2209-4298-4d60-b55c-79077b8bc244}</Project>
+      <Name>TestUtils.DeviceTests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Essentials.csproj">
       <Project>{8CB95D25-8442-42BC-82BE-319D21138549}</Project>
       <Name>Essentials</Name>

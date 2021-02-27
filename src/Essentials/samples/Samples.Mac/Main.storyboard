@@ -12,11 +12,11 @@
                 <application id="hnw-xV-0zn" sceneMemberID="viewController">
                     <menu key="mainMenu" title="Main Menu" systemMenu="main" id="AYu-sK-qS6">
                         <items>
-                            <menuItem title="Xamarin.Essentials" id="1Xt-HY-uBw">
+                            <menuItem title="Essentials" id="1Xt-HY-uBw">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Xamarin.Essentials" systemMenu="apple" id="uQy-DD-JDr">
+                                <menu key="submenu" title="Essentials" systemMenu="apple" id="uQy-DD-JDr">
                                     <items>
-                                        <menuItem title="Quit Xamarin.Essentials" keyEquivalent="q" id="4sb-4s-VLi">
+                                        <menuItem title="Quit Essentials" keyEquivalent="q" id="4sb-4s-VLi">
                                             <connections>
                                                 <action selector="terminate:" target="Ady-hI-5gd" id="Te7-pn-YzF"/>
                                             </connections>

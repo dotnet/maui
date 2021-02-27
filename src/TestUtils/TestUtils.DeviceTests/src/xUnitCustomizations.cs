@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.Maui.DeviceTests
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Custom trait discoverer which adds a Category trait for filtering, etc.
@@ -35,11 +35,11 @@ namespace Microsoft.Maui.DeviceTests
 	/// </summary>
 	public class FactDiscoverer : Xunit.Sdk.FactDiscoverer
 	{
-		public FactDiscoverer(IMessageSink diagnosticMessageSink) : base (diagnosticMessageSink)
+		public FactDiscoverer(IMessageSink diagnosticMessageSink) : base(diagnosticMessageSink)
 		{
 		}
 
-		public override IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, 
+		public override IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions,
 			ITestMethod testMethod, IAttributeInfo factAttribute)
 		{
 			var cases = base.Discover(discoveryOptions, testMethod, factAttribute);
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 
-		public override IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, 
+		public override IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions,
 			ITestMethod testMethod, IAttributeInfo factAttribute)
 		{
 			var testCases = base.Discover(discoveryOptions, testMethod, factAttribute);
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 	/// <summary>
 	/// Conveninence attribute for setting a Category trait on a test or test class
 	/// </summary>
-	[TraitDiscoverer("Microsoft.Maui.DeviceTests.CategoryDiscoverer", "Microsoft.Maui.Core.DeviceTests")]
+	[TraitDiscoverer("Microsoft.Maui.CategoryDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
 	public class CategoryAttribute : Attribute, ITraitAttribute
 	{
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.DeviceTests
 	/// Custom Fact attribute which defaults to using the test method name for the DisplayName property
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-	[XunitTestCaseDiscoverer("Microsoft.Maui.DeviceTests.FactDiscoverer", "Microsoft.Maui.Core.DeviceTests")]
+	[XunitTestCaseDiscoverer("Microsoft.Maui.FactDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
 	public class FactAttribute : Xunit.FactAttribute
 	{
 		public FactAttribute([CallerMemberName] string displayName = "")
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 	/// Custom Theory attribute which defaults to using the test method name for the DisplayName property
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-	[XunitTestCaseDiscoverer("Microsoft.Maui.DeviceTests.TheoryDiscoverer", "Microsoft.Maui.Core.DeviceTests")]
+	[XunitTestCaseDiscoverer("Microsoft.Maui.TheoryDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
 	public class TheoryAttribute : Xunit.TheoryAttribute
 	{
 		public TheoryAttribute([CallerMemberName] string displayName = "")
@@ -131,21 +131,21 @@ namespace Microsoft.Maui.DeviceTests
 
 		public int Timeout => _inner.Timeout;
 
-		string GetCategoryPrefix() 
+		string GetCategoryPrefix()
 		{
 			if (!Traits.ContainsKey(CategoryDiscoverer.Category))
 			{
 				return string.Empty;
 			}
 
-			return $"[{string.Join(", ", Traits[CategoryDiscoverer.Category])}] " ;
+			return $"[{string.Join(", ", Traits[CategoryDiscoverer.Category])}] ";
 		}
 
 		public string DisplayName
 		{
 			get
 			{
-				return $"{GetCategoryPrefix()}{_inner.DisplayName}"; 
+				return $"{GetCategoryPrefix()}{_inner.DisplayName}";
 			}
 		}
 
@@ -176,5 +176,4 @@ namespace Microsoft.Maui.DeviceTests
 			_inner.Serialize(info);
 		}
 	}
-
 }

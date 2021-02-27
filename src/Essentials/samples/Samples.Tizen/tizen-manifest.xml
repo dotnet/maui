@@ -2,7 +2,7 @@
 <manifest package="com.microsoft.maui.essentials" version="1.0.0" api-version="4" xmlns="http://tizen.org/ns/packages">
     <profile name="common" />
     <ui-application appid="com.microsoft.maui.essentials" exec="Samples.Tizen.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" splash-screen-display="true" launch_mode="single">
-        <label>Xamarin.Essentials</label>
+        <label>Essentials</label>
         <icon>Samples.Tizen.png</icon>
         <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true" />
         <splash-screens />

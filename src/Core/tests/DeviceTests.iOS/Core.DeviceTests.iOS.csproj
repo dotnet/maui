@@ -74,7 +74,6 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.1931" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
@@ -82,13 +81,20 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj">
+      <Project>{551b2209-4298-4d60-b55c-79077b8bc244}</Project>
+      <Name>TestUtils.DeviceTests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DeviceTests\Core.DeviceTests.csproj">
       <Project>{DA9E4D76-8CA4-4CC3-A47C-BA75DFF805C6}</Project>
       <Name>Core.DeviceTests</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd266621d1}</Project>
+      <Name>Essentials</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
     <None Include="Entitlements.plist" />

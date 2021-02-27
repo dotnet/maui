@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui
 {
 	public class CategoryDiscoverer : ITraitDiscoverer
 	{
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.UnitTests
 	/// <summary>
 	/// Conveninence attribute for setting a Category trait on a test or test class
 	/// </summary>
-	[TraitDiscoverer("Microsoft.Maui.UnitTests.CategoryDiscoverer", "Microsoft.Maui.UnitTests")]
+	[TraitDiscoverer("Microsoft.Maui.CategoryDiscoverer", "Microsoft.Maui.TestUtils")]
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
 	public class CategoryAttribute : Attribute, ITraitAttribute
 	{

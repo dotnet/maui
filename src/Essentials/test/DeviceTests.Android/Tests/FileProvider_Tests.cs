@@ -5,7 +5,7 @@ using Microsoft.Maui.Essentials;
 using Xunit;
 using AndroidEnvironment = Android.OS.Environment;
 
-namespace DeviceTests.Shared
+namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
     public class Android_FileProvider_Tests
     {

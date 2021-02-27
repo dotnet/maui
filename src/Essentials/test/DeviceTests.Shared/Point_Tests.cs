@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.Maui.Essentials;
 using Xunit;
 
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	public class Point_Tests
 	{

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Essentials;
 using Xunit;
 
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	public class WebAuthenticator_Tests
 	{

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Essentials;
 using Xunit;
 
-namespace DeviceTests.Shared
+namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
 	public class Contacts_Tests
 	{

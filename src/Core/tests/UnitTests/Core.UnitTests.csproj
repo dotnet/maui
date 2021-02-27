@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-		<AssemblyName>Microsoft.Maui.UnitTests</AssemblyName>
+    <AssemblyName>Microsoft.Maui.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\TestUtils\src\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Core.csproj" />
   </ItemGroup>
 </Project>

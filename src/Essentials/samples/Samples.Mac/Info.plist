@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>Xamarin.Essentials</string>
+	<string>Essentials</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.microsoft.maui.essentials</string>
 	<key>CFBundleShortVersionString</key>

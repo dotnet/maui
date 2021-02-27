@@ -1,7 +1,7 @@
 using System;
 using UIKit;
 
-namespace DeviceTests.iOS
+namespace Microsoft.Maui.Essentials.DeviceTests.iOS
 {
     public class Application
     {

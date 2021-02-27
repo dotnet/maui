@@ -9,7 +9,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Xunit.Runners.UI;
 
-namespace DeviceTests.UWP
+namespace Microsoft.Maui.Essentials.DeviceTests.UWP
 {
     public sealed partial class App : RunnerApplication
     {

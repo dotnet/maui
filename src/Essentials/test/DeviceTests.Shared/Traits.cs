@@ -4,7 +4,7 @@ using Microsoft.Maui.Essentials;
 using RuntimeDeviceType = Microsoft.Maui.Essentials.DeviceType;
 using XUnitFilter = UnitTests.HeadlessRunner.Xunit.XUnitFilter;
 
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	static class Traits
 	{
