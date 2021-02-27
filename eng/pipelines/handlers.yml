@@ -2,7 +2,7 @@ trigger:
   branches:
     include:
     - main
-    - main-handlers
+    - main-handler
   paths:
     include:
     - '*'
@@ -21,7 +21,7 @@ pr:
   branches:
     include:
     - main
-    - main-handlers
+    - main-handler
   paths:
     include:
     - '*'
