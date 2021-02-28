@@ -40,9 +40,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(TargetPath)" Visible="False" Pack="True" PackagePath="buildTransitive\;build\" />
-    <None Include="@(_ItemToPack)" Visible="False" Pack="True" PackagePath="buildTransitive\;build\" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Microsoft.Maui.Resizetizer.targets" Pack="True" PackagePath="buildTransitive\;build\" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(TargetPath)" Visible="False" Pack="True" PackagePath="buildTransitive\$(TargetFramework);build\$(TargetFramework)" />
+    <None Include="@(_ItemToPack)" Visible="False" Pack="True" PackagePath="buildTransitive\$(TargetFramework);build\$(TargetFramework)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" Pack="True" PackagePath="buildTransitive;build" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,5 +65,12 @@
     <PackageReference Include="System.ObjectModel" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg2VectorDrawable.Net" Version="0.1.0" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
+
+  <Target Name="_CopyToNuspecDir" AfterTargets="Build">
+    <ItemGroup>
+      <_CopyItems Include="$(TargetDir)*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\..\..\..\.nuspec\$(TargetFramework)\" ContinueOnError="true" Retries="0" />
+  </Target>
 
 </Project>

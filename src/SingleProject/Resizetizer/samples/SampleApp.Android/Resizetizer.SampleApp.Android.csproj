@@ -95,5 +95,5 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <Import Project="..\..\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Resizetizer.targets" Condition="Exists('..\..\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Resizetizer.targets')" />
+  <Import Project="..\..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
 </Project>
