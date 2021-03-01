@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -34,7 +33,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			Frame = bounds;
 			DesiredSize = bounds.Size;
 		}
-
 
 		protected bool SetProperty<T>(ref T backingStore, T value,
 			[CallerMemberName] string propertyName = "",

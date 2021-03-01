@@ -1,8 +1,6 @@
-using Microsoft.Maui;
-
 namespace Microsoft.Maui
 {
-	public interface IText : IFont
+	public interface IText
 	{
 		string Text { get; }
 

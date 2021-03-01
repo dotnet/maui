@@ -9,12 +9,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Color TextColor { get; set; }
 
-		public FontAttributes FontAttributes => throw new System.NotImplementedException();
-
-		public string FontFamily => throw new System.NotImplementedException();
-
-		public double FontSize => throw new System.NotImplementedException();
-
 		public event EventHandler Pressed;
 		public event EventHandler Released;
 		public event EventHandler Clicked;
