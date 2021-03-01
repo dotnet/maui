@@ -70,9 +70,9 @@
   </PropertyGroup>
   <!-- If this becomes part of the product we will remove these but for now it's useful having them all in one place -->
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true OR '$(TargetPlatformIdentifier)' == 'android' OR '$(TargetFramework)' == 'net6.0-android'">
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.2.0.4" />
-    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.2.1.1" />
-    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0.6" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+    <PackageReference Include="Xamarin.Google.Android.Material" />
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
   </ItemGroup>
   <PropertyGroup Condition="$(TargetFramework.StartsWith('net5.0-windows')) == true">
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>

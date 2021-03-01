@@ -1,0 +1,32 @@
+<Project>
+  <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' == 'true'">
+    <_MicrosoftHostingVersion>6.0.0-preview.2.21110.7</_MicrosoftHostingVersion>
+    <_MicrosoftDependencyInjectionVersion>$(_MicrosoftHostingVersion)</_MicrosoftDependencyInjectionVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' != 'true'">
+    <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
+    <_MicrosoftDependencyInjectionVersion>5.0.1</_MicrosoftDependencyInjectionVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference
+        Update="Microsoft.Extensions.Configuration"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.DependencyInjection"
+        Version="$(_MicrosoftDependencyInjectionVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.Hosting.Abstractions"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.Logging.Abstractions"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.Logging"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+  </ItemGroup>
+</Project>
