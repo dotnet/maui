@@ -215,6 +215,16 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			if (!IsMeasureValid)
+#pragma warning disable CS0618 // Type or member is obsolete
+				DesiredSize = OnSizeRequest(widthConstraint, heightConstraint).Request;
+#pragma warning restore CS0618 // Type or member is obsolete
+			IsMeasureValid = true;
+			return DesiredSize;
+		}
+
 		protected override void OnSizeAllocated(double width, double height)
 		{
 			_allocatedFlag = true;

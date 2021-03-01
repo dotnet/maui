@@ -11,7 +11,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact]
 		public void FrameExcludesMargin()
 		{
-			var element = Substitute.For<IFrameworkElement>();
+			var element = Substitute.For<IView>();
 			var margin = new Thickness(20);
 			element.Margin.Returns(margin);
 
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact]
 		public void FrameSizeGoesToZeroWhenMarginsExceedBounds()
 		{
-			var element = Substitute.For<IFrameworkElement>();
+			var element = Substitute.For<IView>();
 			var margin = new Thickness(200);
 			element.Margin.Returns(margin);
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var heightConstraint = 655;
 
 			var handler = Substitute.For<IViewHandler>();
-			var element = Substitute.For<IFrameworkElement>();
+			var element = Substitute.For<IView>();
 			var margin = new Thickness(20);
 
 			// Our "native" control will request a size of (100,50) when we call GetDesiredSize

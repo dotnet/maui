@@ -22,10 +22,9 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-#if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (NativeVersion.IsAtLeast(13))
 					return UIColor.LabelColor;
-#endif
+
 				return UIColor.Black;
 			}
 		}
@@ -34,10 +33,10 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-#if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+
+				if (NativeVersion.IsAtLeast(13))
 					return UIColor.PlaceholderTextColor;
-#endif
+
 				return SeventyPercentGrey;
 			}
 		}
@@ -46,10 +45,10 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-#if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+
+				if (NativeVersion.IsAtLeast(13))
 					return UIColor.SecondaryLabelColor;
-#endif
+
 				return new Color(.32, .4, .57).ToNative();
 			}
 		}
@@ -58,10 +57,10 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-#if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+
+				if (NativeVersion.IsAtLeast(13))
 					return UIColor.SystemBackgroundColor;
-#endif
+
 				return UIColor.White;
 			}
 		}
@@ -70,10 +69,9 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-#if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (NativeVersion.IsAtLeast(13))
 					return UIColor.SeparatorColor;
-#endif
+
 				return UIColor.Gray;
 			}
 		}
@@ -82,10 +80,9 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-#if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (NativeVersion.IsAtLeast(13))
 					return UIColor.OpaqueSeparatorColor;
-#endif
+
 				return UIColor.Black;
 			}
 		}
@@ -94,10 +91,9 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-#if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (NativeVersion.IsAtLeast(13))
 					return UIColor.SystemGroupedBackgroundColor;
-#endif
+
 				return new UIColor(247f / 255f, 247f / 255f, 247f / 255f, 1);
 			}
 		}
@@ -106,10 +102,9 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-#if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (NativeVersion.IsAtLeast(13))
 					return UIColor.SystemBlueColor;
-#endif
+
 				return Color.FromRgba(50, 79, 133, 255).ToNative();
 			}
 		}
@@ -118,10 +113,9 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-#if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (NativeVersion.IsAtLeast(13))
 					return UIColor.SystemRedColor;
-#endif
+
 				return UIColor.FromRGBA(255, 0, 0, 255);
 			}
 		}
@@ -130,10 +124,9 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-#if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (NativeVersion.IsAtLeast(13))
 					return UIColor.SystemGrayColor;
-#endif
+
 				return UIColor.Gray;
 			}
 		}
@@ -142,10 +135,9 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-#if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (NativeVersion.IsAtLeast(13))
 					return UIColor.SystemGray2Color;
-#endif
+
 				return UIColor.LightGray;
 			}
 		}

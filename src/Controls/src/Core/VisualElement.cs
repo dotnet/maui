@@ -777,7 +777,16 @@ namespace Microsoft.Maui.Controls
 			return r;
 		}
 
-		public void Layout(Rectangle bounds) => Bounds = bounds;
+		public void Layout(Rectangle bounds)
+		{
+			if (Bounds == bounds)
+				return;
+
+			Bounds = bounds;
+			// If Layout is called without arrange getting called this ensures
+			// all the necessary arranged parts are set so that handlers will layout
+			(this as IFrameworkElement).Arrange(bounds);
+		}
 
 		public SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
@@ -889,10 +898,18 @@ namespace Microsoft.Maui.Controls
 		{
 			InvalidateMeasureInternal(trigger);
 		}
+
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_measureCache.Clear();
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+
+			// Framework Element parts are already invalid
+			// This is a bit awkward because we could have invalidations coming from old bits
+			// to here first and new bits going to IFrameworkElement.InvalidateMeasure
+			// first and each one needs to call the other so this short circuits the ping pong
+			if (IsMeasureValid)
+				((IFrameworkElement)this).InvalidateMeasure();
 		}
 
 		void IVisualElementController.InvalidateMeasure(InvalidationTrigger trigger) => InvalidateMeasureInternal(trigger);

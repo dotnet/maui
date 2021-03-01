@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Tests
 			return base.CreateBuilder().ConfigureServices(ConfigureServices);
 		}
 
-		public override IWindow GetWindowFor(IActivationState state)
+		public override IWindow CreateWindow(IActivationState state)
 		{
 			return new WindowStub();
 		}

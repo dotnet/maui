@@ -67,6 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		// One per process; does not change, suitable for loading resources (e.g., ResourceProvider)
 		internal static Context ApplicationContext { get; private set; }
+		internal static IMauiContext MauiContext { get; private set; }
 
 		public static bool IsInitialized { get; private set; }
 		static bool FlagsSet { get; set; }
@@ -185,9 +186,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return _ColorButtonNormal;
 		}
 
+		public static void Init(IActivationState activationState) =>
+			Init(activationState.Context, activationState.SavedInstance);
+
 		// Provide backwards compat for Forms.Init and AndroidActivity
 		// Why is bundle a param if never used?
-		public static void Init(Context activity, Bundle bundle)
+		public static void Init(IMauiContext context, Bundle bundle)
 		{
 			Assembly resourceAssembly;
 
@@ -196,27 +200,28 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd("Assembly.GetCallingAssembly");
 
 			Profile.FrameBegin();
-			SetupInit(activity, resourceAssembly, null);
+			SetupInit(context, resourceAssembly, null);
 			Profile.FrameEnd();
 		}
 
-		public static void Init(Context activity, Bundle bundle, Assembly resourceAssembly)
+		public static void Init(IMauiContext context, Bundle bundle, Assembly resourceAssembly)
 		{
 			Profile.FrameBegin();
-			SetupInit(activity, resourceAssembly, null);
+			SetupInit(context, resourceAssembly, null);
 			Profile.FrameEnd();
 		}
 
-		public static void Init(InitializationOptions options)
-		{
-			Profile.FrameBegin();
-			SetupInit(
-				options.Activity,
-				options.ResourceAssembly,
-				options
-			);
-			Profile.FrameEnd();
-		}
+		//TODO: 
+		//public static void Init(InitializationOptions options)
+		//{
+		//	Profile.FrameBegin();
+		//	SetupInit(
+		//		options.Activity,
+		//		options.ResourceAssembly,
+		//		options
+		//	);
+		//	Profile.FrameEnd();
+		//}
 
 		/// <summary>
 		/// Sets title bar visibility programmatically. Must be called after Microsoft.Maui.Controls.Compatibility.Forms.Init() method
@@ -266,17 +271,19 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		static void SetupInit(
-			Context activity,
+			IMauiContext context,
 			Assembly resourceAssembly,
 			InitializationOptions? maybeOptions = null
 		)
 		{
+			var activity = context.Context;
 			Profile.FrameBegin();
 			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 			if (!IsInitialized)
 			{
 				// Only need to get this once; it won't change
 				ApplicationContext = activity.ApplicationContext;
+				MauiContext = context;
 			}
 
 #pragma warning disable 618 // Still have to set this up so obsolete code can function

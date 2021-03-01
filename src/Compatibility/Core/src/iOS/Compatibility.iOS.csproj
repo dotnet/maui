@@ -3,7 +3,7 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="..\..\..\..\..\eng\Environment.Build.props" />
   <PropertyGroup>
     <Description>iOS Compatibility Backend for Microsoft.Maui</Description>
-    <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility.iOS</AssemblyName>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>

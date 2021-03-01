@@ -1,7 +1,7 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
     <Description>Android Compatibility Backend for Microsoft MAUI</Description>
-    <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility.Android</AssemblyName>
     <TargetFrameworks>$(AndroidTargetFrameworks)</TargetFrameworks>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>

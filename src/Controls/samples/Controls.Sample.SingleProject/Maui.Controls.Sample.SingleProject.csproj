@@ -12,6 +12,7 @@
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.2.21110.7" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
   </ItemGroup>

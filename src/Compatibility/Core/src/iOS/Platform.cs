@@ -205,7 +205,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var renderView = GetRenderer(view);
 			if (renderView == null || renderView.NativeView == null)
+			{
+				if (view is IView iView)
+					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
+
 				return new SizeRequest(Size.Zero);
+			}
 
 			Performance.Stop(reference);
 			return renderView.GetDesiredSize(widthConstraint, heightConstraint);
@@ -216,8 +221,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			IVisualElementRenderer renderer = null;
 
 			// temporary hack to fix the following issues
-			// https://github.com/xamarin/Microsoft.Maui.Controls.Compatibility/issues/13261
-			// https://github.com/xamarin/Microsoft.Maui.Controls.Compatibility/issues/12484
+			// https://github.com/xamarin/Xamarin.Forms/issues/13261
+			// https://github.com/xamarin/Xamarin.Forms/issues/12484
 			if (element is RadioButton tv && tv.ResolveControlTemplate() != null)
 			{
 				renderer = new DefaultRenderer();
@@ -230,14 +235,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				IViewHandler handler = null;
 
 				//TODO: Handle this with AppBuilderHost
-				//try
-				//{
-				//	handler = Xamarin.Platform.Registrar.Handlers.GetHandler(element.GetType());
-				//}
-				//catch
-				//{
-				//	// TODO define better catch response or define if this is needed?
-				//}
+				try
+				{
+					handler = Forms.ActivationState.Context.Handlers.GetHandler(element.GetType());
+				}
+				catch
+				{
+					// TODO define better catch response or define if this is needed?
+				}
 
 				if (handler == null)
 				{
