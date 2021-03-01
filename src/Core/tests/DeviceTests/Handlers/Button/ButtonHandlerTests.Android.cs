@@ -1,7 +1,6 @@
-using Microsoft.Maui.Handlers;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
-using Microsoft.Maui;
+using Microsoft.Maui.Handlers;
 using AColor = global::Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests

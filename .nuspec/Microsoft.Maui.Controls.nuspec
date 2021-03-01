@@ -99,6 +99,8 @@
     <file src="Microsoft.Maui.props" target="build" />
     <file src="Microsoft.Maui.Controls.DefaultItems.targets" target="build" />
     <file src="Microsoft.Maui.Controls.DefaultItems.props" target="build" />
+    <file src="Microsoft.Maui.Controls.SingleProject.targets" target="build" />
+    <file src="Microsoft.Maui.Controls.SingleProject.props" target="build" />
     <file src="..\src\Forms\src\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Build.Tasks.dll" target="build\netstandard2.0" />
     <file src="..\src\Forms\src\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="build\netstandard2.0" />
     <file src="..\src\Forms\src\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="build\netstandard2.0" />
@@ -121,6 +123,8 @@
     <file src="Microsoft.Maui.props" target="buildTransitive" />
     <file src="Microsoft.Maui.Controls.DefaultItems.targets" target="buildTransitive" />
     <file src="Microsoft.Maui.Controls.DefaultItems.props" target="buildTransitive" />
+    <file src="Microsoft.Maui.Controls.SingleProject.targets" target="buildTransitive" />
+    <file src="Microsoft.Maui.Controls.SingleProject.props" target="buildTransitive" />
     <file src="..\src\Forms\src\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Build.Tasks.dll" target="buildTransitive\netstandard2.0" />
     <file src="..\src\Forms\src\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="buildTransitive\netstandard2.0" />
     <file src="..\src\Forms\src\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="buildTransitive\netstandard2.0" />

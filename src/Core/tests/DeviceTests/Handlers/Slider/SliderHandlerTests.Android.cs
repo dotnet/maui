@@ -1,9 +1,8 @@
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui;
 using System.Threading.Tasks;
 using Android.Widget;
-using Xunit;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -36,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "[SliderHandler] Maximum Value Initializes Correctly")]
+		[Fact(DisplayName = "Maximum Value Initializes Correctly")]
 		public async Task MaximumInitializesCorrectly()
 		{
 			var xplatMaximum = 1;
@@ -60,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue);
 		}
 
-		[Fact(DisplayName = "[SliderHandler] Value Initializes Correctly")]
+		[Fact(DisplayName = "Value Initializes Correctly")]
 		public async Task ValueInitializesCorrectly()
 		{
 			var xplatValue = 0.5;

@@ -9,6 +9,7 @@
     	<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
 			<_DisableStrongNamer Condition=" '$(_DisableStrongNamer)' != 'True' ">False</_DisableStrongNamer>
 			<AssemblyName>Microsoft.Maui.Controls.Build.Tasks</AssemblyName>
+			<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
 			<Description>Microsoft MAUI Build Task</Description>
 			<TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
 			<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

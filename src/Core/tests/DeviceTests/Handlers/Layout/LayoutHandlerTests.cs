@@ -1,13 +1,11 @@
-using Microsoft.Maui.Handlers;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 {
+	[Category("LayoutHandler")]
 	public partial class LayoutHandlerTests : HandlerTestBase<LayoutHandler>
 	{
 		[Fact(DisplayName = "Empty layout")]

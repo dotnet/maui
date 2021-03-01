@@ -37,8 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
-			View.Measure(widthConstraint, heightConstraint);
-			return new Size(View.MeasuredWidth, View.MeasuredHeight);
+			return ViewHandler.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		public void SetElement(VisualElement element)

@@ -43,15 +43,11 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
-			ViewHandler.CheckParameters(handler, button);
-
 			handler.TypedNativeView?.UpdateText(button);
 		}
 
 		public static void MapTextColor(ButtonHandler handler, IButton button)
 		{
-			ViewHandler.CheckParameters(handler, button);
-
 			handler.TypedNativeView?.UpdateTextColor(button);
 		}
 

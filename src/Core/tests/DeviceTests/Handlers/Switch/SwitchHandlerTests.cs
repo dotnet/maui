@@ -1,14 +1,14 @@
-using Microsoft.Maui.Handlers;
 using System.Threading.Tasks;
-using Microsoft.Maui;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Category("SwitchHandler")]
 	public partial class SwitchHandlerTests : HandlerTestBase<SwitchHandler>
 	{
-		[Fact(DisplayName= "Is Toggled Initializes Correctly")]
+		[Fact(DisplayName = "Is Toggled Initializes Correctly")]
 		public async Task IsToggledInitializesCorrectly()
 		{
 			var switchStub = new SwitchStub()

@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using CoreGraphics;
 using UIKit;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests

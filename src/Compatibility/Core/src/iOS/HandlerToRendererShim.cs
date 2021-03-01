@@ -64,7 +64,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
+			var size = ViewHandler.GetDesiredSize(widthConstraint, heightConstraint);
+			return new SizeRequest(size, size);
 		}
 
 		public void SetElementSize(Size size)

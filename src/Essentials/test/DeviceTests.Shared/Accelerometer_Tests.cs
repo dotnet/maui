@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Essentials;
 using Xunit;
 
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - these tests require an accelerometer to be present

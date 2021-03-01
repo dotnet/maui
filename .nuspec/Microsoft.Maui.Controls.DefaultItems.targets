@@ -15,4 +15,5 @@
 		<None Remove="**\*.css" Condition="'$(EnableDefaultNoneItems)'=='True'" />
 	</ItemGroup>
 
+	<Import Project="Microsoft.Maui.Controls.SingleProject.targets" />
 </Project>

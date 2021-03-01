@@ -26,7 +26,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>Tests</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.xamarin.handlers.devicetests</string>
+	<string>com.microsoft.maui.devicetests</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>CFBundleIconFiles</key>

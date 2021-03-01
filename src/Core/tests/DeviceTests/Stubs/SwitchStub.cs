@@ -1,13 +1,12 @@
 using System;
-using Microsoft.Maui;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class SwitchStub : StubBase, ISwitch
 	{
 		public Action ToggledDelegate;
-		private Color _thumbColor;
-		private Color _trackColor;
+		Color _thumbColor;
+		Color _trackColor;
 
 		public bool IsToggled { get; set; }
 		public Color TrackColor 

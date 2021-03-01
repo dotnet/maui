@@ -2,7 +2,7 @@ using System.Reflection;
 using Foundation;
 using UIKit;
 
-namespace DeviceTests.iOS
+namespace Microsoft.Maui.Essentials.DeviceTests.iOS
 {
     [Register(nameof(AppDelegate))]
     public partial class AppDelegate : Xunit.Runner.RunnerAppDelegate

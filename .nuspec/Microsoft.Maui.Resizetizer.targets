@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <ItemGroup>
+        <AvailableItemName Include="SharedImage" />
+        <AvailableItemName Include="SharedFont" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <_ResizetizerTaskAssemblyName>netstandard2.0\Microsoft.Maui.Resizetizer.dll</_ResizetizerTaskAssemblyName>
+    </PropertyGroup>
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.ResizetizeSharedImages" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.DetectInvalidResourceOutputFilenamesTask" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.CreatePartialInfoPlistTask" />
+
+    <PropertyGroup>
+        <CleanDependsOn>
+            $(CleanDependsOn);
+            _CleanResizetizer;
+        </CleanDependsOn>
+
+        <_ResizetizerInputsFile>$(IntermediateOutputPath)resizetizer.inputs</_ResizetizerInputsFile>
+        <_SharedFontInputsFile>$(IntermediateOutputPath)sharedfont.inputs</_SharedFontInputsFile>
+        <_SharedFontStampFile>$(IntermediateOutputPath)sharedfont.stamp</_SharedFontStampFile>
+
+        <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
+
+        <_ResizetizerDefaultInvalidFilenamesErrorMessage>
+            One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: &#13;&#10;
+        </_ResizetizerDefaultInvalidFilenamesErrorMessage>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+        <_ResizetizerIsNetCore>False</_ResizetizerIsNetCore>
+        <_ResizetizerIsAndroidApp Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid' And '$(AndroidApplication)' == 'True'">True</_ResizetizerIsAndroidApp>
+        <_ResizetizerIsiOSApp Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
+        <_ResizetizerIsUWPApp Condition="'$(TargetPlatformIdentifier)' == 'UAP' And '$(OutputType)' == 'AppContainerExe'">True</_ResizetizerIsUWPApp>
+        <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(TargetPlatformIdentifier)' == 'Windows'">True</_ResizetizerIsWPFApp>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+        <_ResizetizerIsNetCore>True</_ResizetizerIsNetCore>
+        <_ResizetizerIsAndroidApp Condition="'$(TargetPlatformIdentifier)' == 'Android' And '$(OutputType)' == 'Exe'">True</_ResizetizerIsAndroidApp>
+        <_ResizetizerIsiOSApp Condition="'$(TargetPlatformIdentifier)' == 'iOS' And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
+        <_ResizetizerIsUWPApp Condition="'$(TargetPlatformIdentifier)'=='UAP' And '$(OutputType)' == 'AppContainerExe'">True</_ResizetizerIsUWPApp>
+        <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(TargetPlatformIdentifier)'=='Windows'">True</_ResizetizerIsWPFApp>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True'">
+        <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
+
+        <ResizetizeDependsOnTargets>
+            $(ResizetizeDependsOnTargets);
+            ResizetizeCollectItems;
+        </ResizetizeDependsOnTargets>
+        <ProcessSharedFontsDependsOnTargets>
+            $(ProcessSharedFontsDependsOnTargets);
+            ResizetizeCollectItems;
+        </ProcessSharedFontsDependsOnTargets>
+    </PropertyGroup>
+
+    <!-- iOS -->
+    <PropertyGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
+        <ResizetizerPlatformType>ios</ResizetizerPlatformType>
+
+        <ResizetizeCollectItemsBeforeTargets>
+            $(ResizetizeCollectItemsBeforeTargets);
+            _CollectBundleResources;_BeforeCoreCompileImageAssets;
+        </ResizetizeCollectItemsBeforeTargets>
+
+        <ResizetizeAfterTargets>
+            $(ResizetizeAfterTargets);
+            ResizetizeCollectItems;
+        </ResizetizeAfterTargets>
+
+        <ProcessSharedFontsAfterTargets>
+            $(ProcessSharedFontsAfterTargets);
+            _CompileCoreMLModels;
+        </ProcessSharedFontsAfterTargets>
+    </PropertyGroup>
+
+    <!-- Android -->
+    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+        <ResizetizerPlatformType>android</ResizetizerPlatformType>
+
+        <ResizetizeCollectItemsAfterTargets>
+            $(ResizetizeCollectItemsAfterTargets);
+            ResolveProjectReferences;
+        </ResizetizeCollectItemsAfterTargets>
+
+        <ResizetizeAfterTargets>
+            $(ResizetizeAfterTargets);
+            ResizetizeCollectItems;
+        </ResizetizeAfterTargets>
+
+        <ProcessSharedFontsAfterTargets>
+            $(ProcessSharedFontsAfterTargets);
+            ResizetizeCollectItems;
+        </ProcessSharedFontsAfterTargets>
+    </PropertyGroup>
+
+    <!-- UWP -->
+    <PropertyGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True'">
+        <ResizetizerPlatformType>uwp</ResizetizerPlatformType>
+
+        <ResizetizeBeforeTargets>
+            $(ResizetizeBeforeTargets);
+            AssignTargetPaths;
+        </ResizetizeBeforeTargets>
+
+        <ProcessSharedFontsBeforeTargets>
+            $(ProcessSharedFontsBeforeTargets);
+            AssignTargetPaths;
+        </ProcessSharedFontsBeforeTargets>
+    </PropertyGroup>
+
+    <!-- WPF -->
+    <PropertyGroup Condition="'$(_ResizetizerIsWPFApp)' == 'True'">
+        <ResizetizerPlatformType>wpf</ResizetizerPlatformType>
+
+        <ResizetizeBeforeTargets>
+            $(ResizetizeBeforeTargets);
+            FileClassification;
+        </ResizetizeBeforeTargets>
+
+        <ProcessSharedFontsBeforeTargets>
+            $(ProcessSharedFontsBeforeTargets);
+            FileClassification;
+        </ProcessSharedFontsBeforeTargets>
+    </PropertyGroup>
+
+    <!-- Finds absolute paths to any SharedImage in this project -->
+    <!-- App head projects will invoke this target on their project references to collect images -->
+    <Target Name="GetSharedItems" Outputs="@(ExportedSharedItem)">
+
+        <ItemGroup>
+            <SharedItem Include="@(SharedImage)" ItemGroupName="SharedImage" />
+        </ItemGroup>
+
+        <ItemGroup>
+            <SharedItem Include="@(SharedFont)" ItemGroupName="SharedFont" />
+        </ItemGroup>
+
+        <ConvertToAbsolutePath Paths="@(SharedItem)">
+            <Output TaskParameter="AbsolutePaths" ItemName="ExportedSharedItem" />
+        </ConvertToAbsolutePath>
+
+    </Target>
+
+
+    <!-- Collect images from referenced projects -->
+    <Target Name="ResizetizeCollectItems"
+        Condition="'$(_ResizetizerIsCompatibleApp)' == 'True'"
+        BeforeTargets="$(ResizetizeCollectItemsBeforeTargets)"
+        AfterTargets="$(ResizetizeCollectItemsAfterTargets)">
+
+        <CallTarget Targets="GetSharedItems" Condition="'$(ResizetizerIncludeSelfProject)' == 'True'">
+            <Output
+                TaskParameter="TargetOutputs"
+                ItemName="ImportedSharedItem" />
+        </CallTarget>
+
+        <!-- Invoke the GetSharedItems target on all project references -->
+        <!-- This will accumulate images into our SharedImage group -->
+        <!--<MSBuild Targets="GetSharedItems" Projects="@(_MSBuildProjectReferenceExistent)">-->
+        <MSBuild
+            Targets="GetSharedItems"
+            Projects="@(ProjectReference)"
+            SkipNonexistentProjects="true"
+            SkipNonexistentTargets="true">
+            <Output
+                TaskParameter="TargetOutputs"
+                ItemName="ImportedSharedItem" />
+        </MSBuild>
+
+        <ItemGroup>
+            <SharedImage
+                Include="@(ImportedSharedItem)"
+                Condition="'%(ImportedSharedItem.ItemGroupName)' == 'SharedImage'" />
+        </ItemGroup>
+
+        <ItemGroup>
+            <SharedFont
+                Include="@(ImportedSharedItem)"
+                Condition="'%(ImportedSharedItem.ItemGroupName)' == 'SharedFont'" />
+        </ItemGroup>
+
+
+        <!-- Write out item spec and metadata to a file we can use as an inputs for the resize target -->
+        <!-- This allows us to invalidate the build based on not just input image files changing but project item metadata as well -->
+        <WriteLinesToFile
+            File="$(_ResizetizerInputsFile)"
+            Lines="@(SharedImage->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);IsAppIcon=%(IsAppIcon);ForegroundScale=%(ForegroundScale);ForegroundFile=%(ForegroundFile)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true" />
+
+        <WriteLinesToFile
+            File="$(_SharedFontInputsFile)"
+            Lines="@(SharedFont->'File=%(Identity);Link=%(Link);Alias=%(Alias)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true" />
+
+    </Target>
+
+    <Target Name="ProcessSharedFonts"
+        Inputs="@(SharedFont);$(_SharedFontInputsFile)"
+        Outputs="$(_SharedFontStampFile)"
+        AfterTargets="$(ProcessSharedFontsAfterTargets)"
+        BeforeTargets="$(ProcessSharedFontsBeforeTargets)"
+        DependsOnTargets="$(ProcessSharedFontsDependsOnTargets)">
+
+        <DetectInvalidResourceOutputFilenamesTask
+            Items="@(SharedFont)"
+            ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
+        </DetectInvalidResourceOutputFilenamesTask>
+
+        <!-- Copy font files over -->
+        <Copy
+            SourceFiles="@(SharedFont)"
+            DestinationFolder="$(IntermediateOutputPath)sp\fonts\"
+            SkipUnchangedFiles="true" />
+
+
+        <ItemGroup>
+            <_SharedFontCopied Include="$(IntermediateOutputPath)sp\fonts\*" />
+        </ItemGroup>
+
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_SharedFontCopied)' != ''">
+
+            <!-- iOS Expects fonts to be in this group -->
+            <_SharedFontBundleResource Include="@(_SharedFontCopied)">
+                <LogicalName>$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</LogicalName>
+                <TargetPath>$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</TargetPath>
+            </_SharedFontBundleResource>
+
+            <BundleResource Include="@(_SharedFontBundleResource)" />
+
+        </ItemGroup>
+
+        <!-- Create a partial info.plist for iOS -->
+        <CreatePartialInfoPlistTask
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_SharedFontCopied)' != ''"
+            IntermediateOutputPath="$(IntermediateOutputPath)sp\"
+            PlistName="FontInfo.plist"
+            CustomFonts="@(_SharedFontCopied)">
+            <Output
+                TaskParameter="PListFiles"
+                ItemName="_SharedFontPListFiles" />
+
+        </CreatePartialInfoPlistTask>
+
+        <!-- iOS - Partial Info.plist for font registration  -->
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' ">
+            <_PartialAppManifest Include="@(_SharedFontPListFiles)" Condition="'@(_SharedFontPListFiles)' != ''" />
+            <FileWrites Include="@(_SharedFontPListFiles)" Condition="'@(_SharedFontPListFiles)' != ''" />
+        </ItemGroup>
+
+        <!-- Android -->
+        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+
+            <AndroidAsset Include="@(_SharedFontCopied)" Condition="'@(_SharedFontCopied)' != ''">
+                <Link>$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</Link>
+            </AndroidAsset>
+
+        </ItemGroup>
+
+        <!-- UWP -->
+        <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True'">
+
+            <ContentWithTargetPath Include="@(_SharedFontCopied)" Condition="'@(_SharedFontCopied)' != ''">
+                <TargetPath>Assets\$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</TargetPath>
+            </ContentWithTargetPath>
+
+        </ItemGroup>
+
+        <!-- WPF -->
+        <ItemGroup Condition="'$(_ResizetizerIsWPFApp)' == 'True'">
+
+            <Resource Include="@(_SharedFontCopied)" Condition="'@(_SharedFontCopied)' != ''">
+                <LogicalName>$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</LogicalName>
+                <Link>$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</Link>
+            </Resource>
+
+        </ItemGroup>
+
+        <!-- iOS Only -->
+        <!-- If on Windows, using build host, copy the files over to build server host too -->
+        <CopyFilesToBuildServer
+            Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'"
+            SessionId="$(BuildSessionId)"
+            Files="@(_SharedFontBundleResource);@(_SharedFontPListFiles)" />
+
+        <!-- Touch/create our stamp file for outputs -->
+        <Touch Files="$(_SharedFontStampFile)" AlwaysCreate="True" />
+
+        <!-- Include our fonts and stamp file as filewrites so they don't get rm'd -->
+        <ItemGroup>
+            <FileWrites Include="$(_SharedFontStampFile)" />
+            <FileWrites Include="@(_SharedFontCopied)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="ResizetizeImages"
+        Inputs="@(SharedImage);$(_ResizetizerInputsFile)"
+        Outputs="$(IntermediateOutputPath)resizetizer.stamp"
+        AfterTargets="$(ResizetizeAfterTargets)"
+        BeforeTargets="$(ResizetizeBeforeTargets)"
+        DependsOnTargets="$(ResizetizeDependsOnTargets)">
+
+        <DetectInvalidResourceOutputFilenamesTask
+            Items="@(SharedImage)"
+            ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
+        </DetectInvalidResourceOutputFilenamesTask>
+
+        <!-- Where in obj/ to store these -->
+        <PropertyGroup>
+            <ResizetizerIntermediateOutputPath>$(IntermediateOutputPath)resizetize\r\</ResizetizerIntermediateOutputPath>
+        </PropertyGroup>
+
+        <!-- Resize the images -->
+        <ResizetizeSharedImages
+            PlatformType="$(ResizetizerPlatformType)"
+            IntermediateOutputPath="$(ResizetizerIntermediateOutputPath)"
+            InputsFile="$(_ResizetizerInputsFile)"
+            SharedImages="@(SharedImage)">
+        </ResizetizeSharedImages>
+
+        <ItemGroup>
+            <!-- Get Images that were generated -->
+            <!-- Either from the task, or if the task was skipped (up to date), use the wildcard lookup -->
+            <_ResizetizerCollectedImages Condition="'@(CopiedResources)' != ''" Include="@(CopiedResources)" />
+            <_ResizetizerCollectedImages Condition="'@(CopiedResources)' == ''" Include="$(ResizetizerIntermediateOutputPath)**\*" />
+        </ItemGroup>
+
+        <!-- iOS -->
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
+            <!-- Batch the collectd items into BundleResource which iOS expects -->
+            <_ResizetizerCollectedBundleResourceImages Include="@(_ResizetizerCollectedImages->'%(FullPath)')">
+                <LogicalName>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</LogicalName>
+                <TargetPath>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
+            </_ResizetizerCollectedBundleResourceImages>
+
+            <!-- iOS Expects images in this group -->
+            <BundleResource Include="@(_ResizetizerCollectedBundleResourceImages)" Condition="'@(_ResizetizerCollectedBundleResourceImages->Contains('Assets.xcassets'))' != 'True' and '%(_ResizetizerCollectedBundleResourceImages.Identity)' != ''" />
+
+            <ImageAsset
+                Include="@(_ResizetizerCollectedBundleResourceImages)"
+                Condition="'@(_ResizetizerCollectedBundleResourceImages->Contains('Assets.xcassets'))' == 'True' and '%(_ResizetizerCollectedBundleResourceImages.Identity)' != ''">
+                <LogicalName>Assets.xcassets\$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_ResizetizerCollectedBundleResourceImages.Identity)))))\%(_ResizetizerCollectedBundleResourceImages.Filename)%(_ResizetizerCollectedBundleResourceImages.Extension)</LogicalName>
+                <TargetPath>Assets.xcassets\$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_ResizetizerCollectedBundleResourceImages.Identity)))))\%(_ResizetizerCollectedBundleResourceImages.Filename)%(_ResizetizerCollectedBundleResourceImages.Extension)</TargetPath>
+                <Link>Assets.xcassets\$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_ResizetizerCollectedBundleResourceImages.Identity)))))\%(_ResizetizerCollectedBundleResourceImages.Filename)%(_ResizetizerCollectedBundleResourceImages.Extension)</Link>
+            </ImageAsset>
+
+            <FileWrites Include="@(_ResizetizerCollectedBundleResourceImages)" />
+        </ItemGroup>
+
+        <!-- iOS Only -->
+        <!-- If on Windows, using build host, copy the files over to build server host too -->
+        <CopyFilesToBuildServer
+            Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'"
+            SessionId="$(BuildSessionId)"
+            Files="@(_ResizetizerCollectedBundleResourceImages)" />
+
+        <!-- Android -->
+        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+            <!-- If we had any images, add that obj/ folder as a resource directory -->
+            <LibraryResourceDirectories Condition="Exists ('$(ResizetizerIntermediateOutputPath)')" Include="$(ResizetizerIntermediateOutputPath)">
+                <StampFile>$(IntermediateOutputPath)resizetizer.stamp</StampFile>
+            </LibraryResourceDirectories>
+
+            <FileWrites Include="@(_ResizetizerCollectedImages)" />
+        </ItemGroup>
+
+        <!-- UWP -->
+        <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True'">
+            <ContentWithTargetPath Include="@(_ResizetizerCollectedImages)">
+                <TargetPath>Assets\%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
+            </ContentWithTargetPath>
+
+            <FileWrites Include="@(_ResizetizerCollectedImages)" />
+        </ItemGroup>
+
+        <!-- WPF -->
+        <ItemGroup Condition="'$(_ResizetizerIsWPFApp)' == 'True'">
+            <Resource Include="@(_ResizetizerCollectedImages)">
+                <LogicalName>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</LogicalName>
+                <Link>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</Link>
+            </Resource>
+            <FileWrites Include="@(_ResizetizerCollectedImages)" />
+        </ItemGroup>
+
+        <!-- Touch/create our stamp file for outputs -->
+        <Touch Files="$(IntermediateOutputPath)resizetizer.stamp" AlwaysCreate="True" />
+
+        <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
+        <ItemGroup>
+            <FileWrites Include="$(IntermediateOutputPath)resizetizer.stamp" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_CleanResizetizer">
+        <PropertyGroup>
+            <ResizetizerIntermediateOutputPath>$(IntermediateOutputPath)resizetize\r\</ResizetizerIntermediateOutputPath>
+        </PropertyGroup>
+
+        <RemoveDir Directories="$(ResizetizerIntermediateOutputPath)" Condition="Exists ('$(ResizetizerIntermediateOutputPath)' )" />
+
+        <RemoveDir Directories="$(IntermediateOutputPath)sp" Condition="Exists ( '$(IntermediateOutputPath)sp' )" />
+    </Target>
+</Project>

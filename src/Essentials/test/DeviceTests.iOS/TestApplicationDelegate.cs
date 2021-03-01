@@ -8,7 +8,7 @@ using Microsoft.DotNet.XHarness.TestRunners.Xunit;
 using UIKit;
 using Microsoft.Maui.Essentials;
 
-namespace DeviceTests.iOS
+namespace Microsoft.Maui.Essentials.DeviceTests.iOS
 {
     [Register(nameof(TestApplicationDelegate))]
     public class TestApplicationDelegate : UIApplicationDelegate

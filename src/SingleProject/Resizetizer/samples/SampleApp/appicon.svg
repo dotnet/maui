@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024px" height="1024px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icon</title>
+    <g id="Icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group">
+            <rect id="Rectangle" fill="#00B3FF" x="0" y="0" width="1024" height="128"></rect>
+            <rect id="Rectangle" fill="#00AEF7" x="0" y="128" width="1024" height="128"></rect>
+            <rect id="Rectangle" fill="#00AAF2" x="0" y="256" width="1024" height="128"></rect>
+            <rect id="Rectangle" fill="#00A7EE" x="0" y="384" width="1024" height="128"></rect>
+            <rect id="Rectangle" fill="#02A4E8" x="0" y="512" width="1024" height="128"></rect>
+            <rect id="Rectangle" fill="#009FE1" x="0" y="640" width="1024" height="128"></rect>
+            <rect id="Rectangle" fill="#009BDB" x="0" y="768" width="1024" height="128"></rect>
+            <rect id="Rectangle" fill="#0096D4" x="0" y="896" width="1024" height="128"></rect>
+        </g>
+    </g>
+</svg>

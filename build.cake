@@ -97,7 +97,21 @@ MSBuildArguments = $"{MSBuildArgumentsENV} {MSBuildArgumentsARGS}";
     
 Information("MSBuildArguments: {0}", MSBuildArguments);
 
-string androidSdks = EnvironmentVariable("ANDROID_API_SDKS", "platform-tools,platforms;android-26,platforms;android-27,platforms;android-28,platforms;android-29,build-tools;29.0.3,platforms;android-30,build-tools;30.0.2");
+string androidEmulators = EnvironmentVariable("ANDROID_EMULATORS", "");
+
+string androidSdks = EnvironmentVariable("ANDROID_API_SDKS",
+    // build/platform tools
+    "build-tools;29.0.3," + 
+    "build-tools;30.0.2," + 
+    "platform-tools," + 
+    // apis
+    "platforms;android-26," + 
+    "platforms;android-27," + 
+    "platforms;android-28," + 
+    "platforms;android-29," + 
+    "platforms;android-30," + 
+    // emulators
+    androidEmulators);
 
 Information("ANDROID_API_SDKS: {0}", androidSdks);
 string[] androidSdkManagerInstalls = androidSdks.Split(',');

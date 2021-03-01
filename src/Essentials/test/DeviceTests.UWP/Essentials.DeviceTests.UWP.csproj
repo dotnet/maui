@@ -17,9 +17,7 @@
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <PackageCertificateThumbprint>DCE37AAC07E0E0608894CD251EE86EA3A3DCAA8C</PackageCertificateThumbprint>
-    <PackageCertificateKeyFile>Xamarin.Essentials.DeviceTests.UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -125,11 +123,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Essentials.csproj">
       <Project>{63a4f6a1-48bf-4d32-aed7-82f605edb042}</Project>
-      <Name>Xamarin.Essentials</Name>
+      <Name>Essentials</Name>
     </ProjectReference>
     <ProjectReference Include="..\DeviceTests.Shared\Essentials.DeviceTests.Shared.csproj">
       <Project>{be0de9a3-d92c-47c5-9ec4-dfb546bbdf77}</Project>
-      <Name>Xamarin.Essentials.DeviceTests.Shared</Name>
+      <Name>Essentials.DeviceTests.Shared</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -194,7 +192,7 @@
     </SDKReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Xamarin.Essentials.DeviceTests.UWP_TemporaryKey.pfx" />
+    <None Include="Essentials.DeviceTests.UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

@@ -4,7 +4,7 @@ using Microsoft.Maui.Essentials;
 using Xamarin.Forms;
 using Xunit;
 
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	public class AppActions_Tests
 	{

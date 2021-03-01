@@ -34,43 +34,31 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)
 		{
-			ViewHandler.CheckParameters(handler, slider);
-
 			handler.TypedNativeView?.UpdateMinimum(slider);
 		}
 
 		public static void MapMaximum(SliderHandler handler, ISlider slider)
 		{
-			ViewHandler.CheckParameters(handler, slider);
-
 			handler.TypedNativeView?.UpdateMaximum(slider);
 		}
 
 		public static void MapValue(SliderHandler handler, ISlider slider)
 		{
-			ViewHandler.CheckParameters(handler, slider);
-
 			handler.TypedNativeView?.UpdateValue(slider);
 		}
 
 		public static void MapMinimumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			ViewHandler.CheckParameters(handler, slider);
-
 			handler.TypedNativeView?.UpdateMinimumTrackColor(slider, DefaultMinTrackColor);
 		}
 
 		public static void MapMaximumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			ViewHandler.CheckParameters(handler, slider);
-
 			handler.TypedNativeView?.UpdateMaximumTrackColor(slider, DefaultMaxTrackColor);
 		}
 
 		public static void MapThumbColor(SliderHandler handler, ISlider slider)
 		{
-			ViewHandler.CheckParameters(handler, slider);
-
 			handler.TypedNativeView?.UpdateThumbColor(slider, DefaultThumbColor);
 		}
 

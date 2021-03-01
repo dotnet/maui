@@ -1,4 +1,4 @@
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	static class HardwareSupport
 	{

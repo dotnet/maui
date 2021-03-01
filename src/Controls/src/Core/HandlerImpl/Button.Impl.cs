@@ -1,5 +1,3 @@
-
-
 namespace Microsoft.Maui.Controls
 {
 	public partial class Button : IButton

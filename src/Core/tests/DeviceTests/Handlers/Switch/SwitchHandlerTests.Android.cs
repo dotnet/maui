@@ -1,8 +1,7 @@
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui;
-using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
-using System.Threading.Tasks;
 using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Handlers;
+using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 
 namespace Microsoft.Maui.DeviceTests
 {

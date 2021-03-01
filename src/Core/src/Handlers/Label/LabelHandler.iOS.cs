@@ -8,15 +8,11 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
-			ViewHandler.CheckParameters(handler, label);
-
 			handler.TypedNativeView?.UpdateText(label);
 		}
 
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
-			ViewHandler.CheckParameters(handler, label);
-
 			handler.TypedNativeView?.UpdateTextColor(label);
 		}
 	}

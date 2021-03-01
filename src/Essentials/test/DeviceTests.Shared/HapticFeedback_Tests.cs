@@ -2,7 +2,7 @@ using System;
 using Microsoft.Maui.Essentials;
 using Xunit;
 
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	public class HapticFeedback_Tests
 	{
