@@ -1,6 +1,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
-		<XFKeepXamlResources>True</XFKeepXamlResources>
+		<MauiKeepXamlResources>True</MauiKeepXamlResources>
 	</PropertyGroup>
 
 	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.targets" />
