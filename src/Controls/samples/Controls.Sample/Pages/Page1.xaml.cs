@@ -7,12 +7,14 @@ using Microsoft.Maui.Controls
 
 namespace Maui.Controls.Sample
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
-	public partial class Page1 : ContentPage
+	//[XamlCompilation(XamlCompilationOptions.Compile)]
+	public partial class Page1 : ContentPage, IPage
 	{
 		public Page1()
 		{
 			InitializeComponent();
 		}
+
+		public IView View { get => (IView)Content; set => Content = (View)value; }
 	}
 }

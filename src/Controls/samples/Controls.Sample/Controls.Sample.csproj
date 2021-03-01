@@ -17,5 +17,6 @@
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
   </ItemGroup>
 </Project>
