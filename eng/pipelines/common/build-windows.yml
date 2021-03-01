@@ -40,6 +40,7 @@ steps:
 
   - task: VSTest@2
     displayName: 'XAML Unit Tests'
+    continueOnError: true
     inputs:
       testAssemblyVer2: |
         **/bin/$(BuildConfiguration)/**/Microsoft.Maui.Controls.Xaml.UnitTests.dll
@@ -48,7 +49,6 @@ steps:
       testRunTitle: '$(BuildConfiguration)_UnitTests'
       configuration: '$(BuildConfiguration)'
       diagnosticsEnabled: true
-      continueOnError: true
       # pathtoCustomTestAdapters: ${{ parameters.nunitTestAdapterFolder }}
       # overrideTestrunParameters: -platform AnyCPU -framework Framework47
 
