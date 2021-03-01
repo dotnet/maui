@@ -265,6 +265,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
 		}
 
+		[PortHandler]
 		protected virtual void UpdateColor()
 		{
 			var textColor = Element.TextColor;
@@ -319,6 +320,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.ReloadInputViews();
 		}
 
+		[PortHandler]
 		void UpdatePassword()
 		{
 			if (Element.IsPassword && Control.IsFirstResponder)

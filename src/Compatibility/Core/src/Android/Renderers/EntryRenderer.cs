@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			UpdateTextColor(Element.TextColor);
 		}
 
+		[PortHandler("Partially ported")]
 		protected override void UpdateTextColor(Color color)
 		{
 			_textColorSwitcher = _textColorSwitcher ?? new TextColorSwitcher(EditText.TextColors, Element.UseLegacyColorManagement());
@@ -314,6 +315,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateInputType()
 		{
 			Entry model = Element;

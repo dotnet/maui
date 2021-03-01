@@ -45,7 +45,13 @@ namespace Maui.Controls.Sample.Pages
 			horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout" });
 
 			verticalStack.Add(horizontalStack);
+
+			verticalStack.Add(new Entry());
+			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
+			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
+
 			verticalStack.Add(new Slider());
+
 			verticalStack.Add(new Switch());
 			verticalStack.Add(new Switch() { OnColor = Color.Green });
 			verticalStack.Add(new Switch() { ThumbColor = Color.Yellow });
