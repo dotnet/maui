@@ -111,19 +111,19 @@
       <Project>{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}</Project>
       <Name>Xamarin.Forms.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps.GTK\Xamarin.Forms.Maps.GTK.csproj">
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Xamarin.Forms.Maps.GTK\Xamarin.Forms.Maps.GTK.csproj">
       <Project>{a9772bb1-0e17-42f5-a6db-60bfccbfdb9d}</Project>
       <Name>Xamarin.Forms.Maps.GTK</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
       <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
       <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.GTK\Xamarin.Forms.Platform.GTK.csproj">
+    <ProjectReference Include="..\..\..\Platform.Renderers\src\Xamarin.Forms.Platform.GTK\Xamarin.Forms.Platform.GTK.csproj">
       <Project>{1f058504-62f9-4279-ac8f-16738e0f4417}</Project>
       <Name>Xamarin.Forms.Platform.GTK</Name>
     </ProjectReference>
