@@ -48,6 +48,7 @@ steps:
       testRunTitle: '$(BuildConfiguration)_UnitTests'
       configuration: '$(BuildConfiguration)'
       diagnosticsEnabled: true
+      continueOnError: true
       # pathtoCustomTestAdapters: ${{ parameters.nunitTestAdapterFolder }}
       # overrideTestrunParameters: -platform AnyCPU -framework Framework47
 
