@@ -45,6 +45,20 @@ schedules:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
+  - name: DotNetVersion
+    value: 6.0.100-preview.1.21103.13
+  - name: DotNet.Cli.Telemetry.OptOut
+    value: true
+  - name: Android.Msi
+    value: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4498522/master/2f83bddb99f6a0948631cd0f09bf037ba8a4e359/Microsoft.NET.Workload.Android.11.0.200.118.msi
+  - name: iOS.Msi
+    value: https://bosstoragemirror.azureedge.net/wrench/main/f01fde5cd9a7ffffcdc8d241200c35988700fa00/4449408/package/Microsoft.NET.Workload.iOS.14.3.100-ci.main.1079.msi
+  - name: Android.Pkg
+    value: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4498522/master/2f83bddb99f6a0948631cd0f09bf037ba8a4e359/Microsoft.NET.Workload.Android-11.0.200-ci.master.118.pkg
+  - name: iOS.Pkg
+    value: https://bosstoragemirror.azureedge.net/wrench/main/f01fde5cd9a7ffffcdc8d241200c35988700fa00/4449408/package/notarized/Microsoft.iOS.Bundle.14.3.100-ci.main.1079.pkg
+  - name: LogDirectory
+    value: $(Build.ArtifactStagingDirectory)\logs
 
 resources:
   repositories:
@@ -100,7 +114,7 @@ stages:
   #         provisionator.extraArguments : '--v'
   #       steps:
   #         - template: common/controlgallery-ios.yml
-  
+
   # - stage: build_android
   #   displayName: Android
   #   dependsOn: []
@@ -121,7 +135,45 @@ stages:
   #         provisionator.extraArguments : '--v'
   #       steps:
   #         - template: common/controlgallery-android.yml
-  
+
+  - stage: pack_net6_windows
+    displayName: Pack .NET 6 Windows
+    dependsOn: []
+    jobs:
+      - job: net6_pack
+        workspace:
+          clean: all
+        displayName: Pack .NET 6
+        timeoutInMinutes: 120
+        pool:
+          vmImage: windows-latest
+        steps:
+          - pwsh: |
+              $ProgressPreference = 'SilentlyContinue'
+              Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+              & .\dotnet-install.ps1 -Version $(DotNetVersion) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+              & dotnet --list-sdks
+            displayName: install .NET $(DotNetVersion)
+            errorActionPreference: stop
+
+          - pwsh: |
+              & dotnet tool install --global boots
+              & boots $(Android.Msi)
+              & boots $(iOS.Msi)
+            displayName: install .NET workloads
+            errorActionPreference: stop
+
+          - pwsh: ./.nuspec/package.ps1 -configuration Release
+            displayName: pack nugets
+            errorActionPreference: stop
+
+          - task: PublishPipelineArtifact@1
+            displayName: publish artifacts
+            inputs:
+              artifactName: nuget
+              targetPath: artifacts
+            condition: always()
+
   - stage: build_net6_windows
     displayName: NET6 Windows
     dependsOn: []
@@ -133,12 +185,6 @@ stages:
         timeoutInMinutes: 120
         pool:
           vmImage:  windows-latest
-        variables:
-          DotNetVersion: 6.0.100-preview.1.21103.13
-          DotNet.Cli.Telemetry.OptOut: true
-          Android.Msi: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4498522/master/2f83bddb99f6a0948631cd0f09bf037ba8a4e359/Microsoft.NET.Workload.Android.11.0.200.118.msi
-          iOS.Msi: https://bosstoragemirror.azureedge.net/wrench/main/f01fde5cd9a7ffffcdc8d241200c35988700fa00/4449408/package/Microsoft.NET.Workload.iOS.14.3.100-ci.main.1079.msi
-          LogDirectory: $(Build.ArtifactStagingDirectory)\logs
         steps:
           - powershell: |
               $ProgressPreference = 'SilentlyContinue'
@@ -168,7 +214,7 @@ stages:
               artifactName: NET6-WINDOWS
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
-  
+
   - stage: build_net6_macOS
     displayName: NET6 macOS
     dependsOn: []
@@ -181,14 +227,9 @@ stages:
         pool:
           vmImage:  macOS-latest
         variables:
-          DotNetVersion: 6.0.100-preview.1.21103.13
-          DotNet.Cli.Telemetry.OptOut: true
-          Android.Pkg: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4498522/master/2f83bddb99f6a0948631cd0f09bf037ba8a4e359/Microsoft.NET.Workload.Android-11.0.200-ci.master.118.pkg
-          iOS.Pkg: https://bosstoragemirror.azureedge.net/wrench/main/f01fde5cd9a7ffffcdc8d241200c35988700fa00/4449408/package/notarized/Microsoft.iOS.Bundle.14.3.100-ci.main.1079.pkg
-          LogDirectory: $(Build.ArtifactStagingDirectory)\logs
           DotNet.Root: /usr/local/share/dotnet/
           DotNet.Tools: ~/.dotnet/tools
-          
+
         steps:
           - task: UseDotNet@2
             displayName: install .NET Core 3.1

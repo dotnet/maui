@@ -8,7 +8,6 @@
 	<PropertyGroup>
 		<PackageId>Microsoft.Maui</PackageId>
 		<Product>Microsoft</Product>
-		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
 	</PropertyGroup>
 	<Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 	<ItemGroup>

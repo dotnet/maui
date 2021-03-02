@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
 
-namespace Maui.Controls.Compatibility
+namespace Microsoft.Maui.Controls.Compatibility
 {
 	public static class AppHostBuilderExtensions
 	{

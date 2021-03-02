@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyCopyright("Copyright © 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

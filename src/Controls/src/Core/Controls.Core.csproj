@@ -5,7 +5,6 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageId>Microsoft.Maui.Controls</PackageId>
-		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="Internals\Legacy\**" />

@@ -9,7 +9,6 @@
     <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
     <Version>1.0.0</Version>
     <NeutralLanguage>en</NeutralLanguage>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <MDocDocumentationDirectory>$(MSBuildThisFileDirectory)..\docs\en</MDocDocumentationDirectory>
     <Configurations>Debug;Release</Configurations>

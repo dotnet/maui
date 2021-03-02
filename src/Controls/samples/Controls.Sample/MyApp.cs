@@ -10,9 +10,9 @@ using Maui.Controls.Sample.ViewModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui;
-#if __ANDROID__
-using Maui.Controls.Compatibility;
-#endif
+//#if __ANDROID__
+//using Microsoft.Maui.Controls.Compatibility;
+//#endif
 
 namespace Maui.Controls.Sample
 {

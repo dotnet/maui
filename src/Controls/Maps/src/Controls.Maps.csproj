@@ -5,7 +5,6 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageId>Microsoft.Maui.Controls.Maps</PackageId>
-		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
 	</PropertyGroup>
 	<PropertyGroup>
 		<Description>Provides Maps support for Microsoft MAUI Controls</Description>

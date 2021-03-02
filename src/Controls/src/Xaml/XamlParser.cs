@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		static void GatherXmlnsDefinitionAttributes()
 		{
 			Assembly[] assemblies = null;
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NET6_0
 			assemblies = new[] {
 				typeof(XamlLoader).GetTypeInfo().Assembly,
 				typeof(View).GetTypeInfo().Assembly,
@@ -362,12 +362,12 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
 			out XamlParseException exception)
 		{
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0
 			bool hasRetriedNsSearch = false;
 #endif
 			IList<XamlLoader.FallbackTypeInfo> potentialTypes;
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0
 		retry:
 #endif
 			if (s_xmlnsDefinitions == null)
@@ -383,7 +383,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			var typeArguments = xmlType.TypeArguments;
 			exception = null;
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0
 			if (type == null)
 			{
 				// This covers the scenario where the AppDomain's loaded
