@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty("Content")]
-	public class ContentPage : TemplatedPage
+	public partial class ContentPage : TemplatedPage
 	{
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentPage), null, propertyChanged: TemplateUtilities.OnContentChanged);
 

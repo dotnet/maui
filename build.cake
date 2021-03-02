@@ -917,11 +917,59 @@ Task("Android100")
                     .WithProperty("AndroidTargetFrameworks", "MonoAndroid10.0"));
     });
 
+
+Task("VS-NET6")
+    .IsDependentOn("Clean")
+    .Does(() =>
+    {
+        DotNetCoreRestore("Microsoft.Maui-net6.sln");
+        DotNetCoreBuild("Microsoft.Maui-net6.sln");
+        StartVisualStudio("Microsoft.Maui-net6.sln");
+    });
+
+Task("VS")
+    .Description("Builds projects necessary so solution compiles on VS")
+    .IsDependentOn("Clean")
+    .IsDependentOn("VSMAC")
+    .IsDependentOn("VSWINDOWS");
+
+
+Task("VSWINDOWS")
+    .Description("Builds projects necessary so solution compiles on VS Windows")
+    .WithCriteria(IsRunningOnWindows())
+    .Does(() =>
+    {
+        MSBuild("Microsoft.Maui.sln",
+                GetMSBuildSettings()
+                    .WithRestore());
+
+        StartVisualStudio();
+    });
+
 Task("VSMAC")
     .Description("Builds projects necessary so solution compiles on VSMAC")
+    .WithCriteria(!IsRunningOnWindows())
     .IsDependentOn("BuildTasks")
     .Does(() =>
     {
+
+        MSBuild("src/Core/src.Core.csproj",
+                GetMSBuildSettings()
+                    .WithRestore());
+
+        MSBuild("src/Controls/samples/Controls.Sample.Droid/Controls.Sample.Droid.csproj",
+                GetMSBuildSettings()
+                    .WithRestore());
+
+        MSBuild("src/Controls/samples/Controls.Sample.iOS/Controls.Sample.iOS.csproj",
+                GetMSBuildSettings()
+                    .WithProperty("iOSPlatform", "iPhoneSimulator")
+                    .WithRestore());
+
+        MSBuild("src/Essentials/src/Essentials/Essentials.csproj",
+                GetMSBuildSettings()
+                    .WithRestore());
+                    
         StartVisualStudio();
     });
     
@@ -1178,9 +1226,17 @@ void StartVisualStudio(string sln = "./Microsoft.Maui.sln")
         return;
 
     if(IsRunningOnWindows())
-         StartProcess("start", new ProcessSettings{ Arguments = MAUI_SLN });
+    {
+        StartProcess("powershell",
+            new ProcessSettings
+            {
+                Arguments = new ProcessArgumentBuilder()
+                    .Append("start")
+                    .Append(sln)
+            });
+    }
     else
-         StartProcess("open", new ProcessSettings{ Arguments = MAUI_SLN });
+         StartProcess("open", new ProcessSettings{ Arguments = sln });
 }
 
 MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarget.MSIL, string buildConfiguration = null)

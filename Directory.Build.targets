@@ -1,4 +1,6 @@
 <Project>
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true'" Project="eng\Git.Build.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Version.targets" />
- </Project>
+  <Import Project="eng\AndroidX.targets" />
+  <Import Project="eng\Microsoft.Extensions.targets" />
+</Project>

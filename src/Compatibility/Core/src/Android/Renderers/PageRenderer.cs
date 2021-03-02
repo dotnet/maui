@@ -221,6 +221,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
+			var deviceIndependentLeft = Context.FromPixels(l);
+			var deviceIndependentTop = Context.FromPixels(t);
+			var deviceIndependentRight = Context.FromPixels(r);
+			var deviceIndependentBottom = Context.FromPixels(b);
+
+			var destination = Rectangle.FromLTRB(deviceIndependentLeft, deviceIndependentTop,
+				deviceIndependentRight, deviceIndependentBottom);
+
+			(Element as IFrameworkElement)?.Arrange(destination);
 			base.OnLayout(changed, l, t, r, b);
 			OrderedTraversalController.UpdateTraversalOrder();
 		}

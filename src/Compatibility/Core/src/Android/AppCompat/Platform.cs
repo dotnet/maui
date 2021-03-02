@@ -215,6 +215,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			if (visualElementRenderer == null || visualElementRenderer.View.IsDisposed())
 			{
+				if (view is IView iView)
+					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
+
 				return new SizeRequest(Size.Zero, Size.Zero);
 			}
 
@@ -289,14 +292,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				IViewHandler handler = null;
 
 				//TODO: Handle this with AppBuilderHost
-				//try
-				//{
-				//	handler = Xamarin.Platform.Registrar.Handlers.GetHandler(element.GetType());
-				//}
-				//catch
-				//{
-				//	// TODO define better catch response or define if this is needed?
-				//}
+				try
+				{
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType());
+				}
+				catch
+				{
+					// TODO define better catch response or define if this is needed?
+				}
 
 				if (handler == null)
 				{

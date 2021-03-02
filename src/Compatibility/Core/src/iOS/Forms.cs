@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public static class Forms
 	{
+		public static IActivationState ActivationState { get; private set; }
 		public static bool IsInitialized { get; private set; }
 
 #if __MOBILE__
@@ -167,14 +168,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 				Profile.Enable();
 		}
 
-		public static void Init()
+		public static void Init(IActivationState activationState)
 		{
 			if (IsInitialized)
 				return;
+
+			ActivationState = activationState;
 			IsInitialized = true;
 
 			Microsoft.Maui.Controls.Internals.Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
-			Color.SetAccent(ColorExtensions.AccentColor.ToColor());
+
+			//TODO: MAUI Accent Color?
+			Color.SetAccent(Color.FromRgba(50, 79, 133, 255));
 
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 

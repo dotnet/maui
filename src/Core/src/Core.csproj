@@ -11,12 +11,9 @@
 		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
 	</PropertyGroup>
 	<Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
-	<PropertyGroup>
-		<_DotNetPackageVersion>5.0.0</_DotNetPackageVersion>
-	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="$(_DotNetPackageVersion)" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(_DotNetPackageVersion)" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(_DotNetPackageVersion)" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
 	</ItemGroup>
 </Project>

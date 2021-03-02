@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Hosting
@@ -32,11 +31,13 @@ namespace Microsoft.Maui.Hosting
 			builder.RegisterHandlers(new Dictionary<Type, Type>
 			{
 				{  typeof(IButton), typeof(ButtonHandler) },
+				{  typeof(IEntry), typeof(EntryHandler) },
 				{  typeof(ILayout), typeof(LayoutHandler) },
 				{  typeof(ILabel), typeof(LabelHandler) },
 				{  typeof(ISlider), typeof(SliderHandler) },
 				{  typeof(ISwitch), typeof(SwitchHandler) }
 			});
+
 			return builder;
 		}
 	}

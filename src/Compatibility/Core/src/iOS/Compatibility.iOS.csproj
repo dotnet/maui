@@ -3,7 +3,7 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="..\..\..\..\..\eng\Environment.Build.props" />
   <PropertyGroup>
     <Description>iOS Compatibility Backend for Microsoft.Maui</Description>
-    <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility.iOS</AssemblyName>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -48,9 +48,9 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ContextActionCell.cs" />

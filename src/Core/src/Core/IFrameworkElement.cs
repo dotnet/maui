@@ -22,7 +22,5 @@ namespace Microsoft.Maui
 
 		double Width { get; }
 		double Height { get; }
-
-		Thickness Margin { get; }
 	}
 }

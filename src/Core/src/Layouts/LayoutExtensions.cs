@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Layouts
 				return Size.Zero;
 			}
 
-			var margin = frameworkElement.Margin;
+			var margin = frameworkElement.GetMargin();
 
 			// Adjust the constraints to account for the margins
 			widthConstraint -= margin.HorizontalThickness;
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Layouts
 
 		public static Rectangle ComputeFrame(this IFrameworkElement frameworkElement, Rectangle bounds)
 		{
-			var margin = frameworkElement.Margin;
+			Thickness margin = frameworkElement.GetMargin();
 
 			// If the margins are too big for the bounds, then simply collapse them to zero
 			var frameWidth = Math.Max(0, bounds.Width - margin.HorizontalThickness);
@@ -42,6 +42,14 @@ namespace Microsoft.Maui.Layouts
 
 			return new Rectangle(bounds.X + margin.Left, bounds.Y + margin.Top,
 				frameWidth, frameHeight);
+		}
+
+		static Thickness GetMargin(this IFrameworkElement frameworkElement)
+		{
+			if (frameworkElement is IView view)
+				return view.Margin;
+			
+			return new Thickness();
 		}
 	}
 }

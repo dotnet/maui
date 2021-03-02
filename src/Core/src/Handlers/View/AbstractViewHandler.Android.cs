@@ -33,6 +33,14 @@ namespace Microsoft.Maui.Handlers
 			var width = Context.ToPixels(frame.Width);
 			var height = Context.ToPixels(frame.Height);
 
+			if (nativeView.Bottom == bottom &&
+				nativeView.Top == top &&
+				nativeView.Left == left &&
+				nativeView.Right == right)
+			{
+				return;
+			}
+
 			if (nativeView.LayoutParameters == null)
 			{
 				nativeView.LayoutParameters = new ViewGroup.LayoutParams((int)width, (int)height);

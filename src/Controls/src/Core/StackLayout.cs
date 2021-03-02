@@ -69,17 +69,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// IFrameworkElement Measure
-		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
-		{
-			if (!IsMeasureValid)
-#pragma warning disable CS0618 // Type or member is obsolete
-				DesiredSize = OnSizeRequest(widthConstraint, heightConstraint).Request;
-#pragma warning restore CS0618 // Type or member is obsolete
-			IsMeasureValid = true;
-			return DesiredSize;
-		}
-
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
