@@ -24,7 +24,7 @@
 
 	<ItemGroup>
 		<ProjectCapability Include="XamarinForms" />
-    	<ProjectCapability Include="Maui" />
+		<ProjectCapability Include="Maui" />
 	</ItemGroup>
 
 	<!-- Check Tasks ABI and other validations -->
