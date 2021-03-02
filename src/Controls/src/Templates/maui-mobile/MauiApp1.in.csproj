@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">MauiApp1</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <SingleProject>true</SingleProject>
+    <ApplicationTitle>MauiApp1</ApplicationTitle>
+    <ApplicationId>com.companyname.MauiApp1</ApplicationId>
+    <ApplicationVersion>1.0</ApplicationVersion>
+    <AndroidVersionCode>1</AndroidVersionCode>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui" Version="REPLACE_ME" />
+  </ItemGroup>
+</Project>
