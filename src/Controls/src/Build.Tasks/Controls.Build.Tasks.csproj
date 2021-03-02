@@ -17,7 +17,7 @@
 		<DisableStrongNamer Condition=" '$(_DisableStrongNamer)' == 'True' ">True</DisableStrongNamer>
 		<DelaySign>true</DelaySign>
 		<AssemblyOriginatorKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</AssemblyOriginatorKeyFile>
-		<StrongNamerKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</StrongNamerKeyFile>
+		<StrongNamerKeyFile>$(AssemblyOriginatorKeyFile)</StrongNamerKeyFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -73,7 +73,7 @@
 	</Target>
 
 	<Target Name="_StrongName" AfterTargets="Build" DependsOnTargets="_SetSnExe" Condition="'$(TargetPath)' != ''" Inputs="$(TargetPath)" Outputs="$(IntermediateOutputPath)Sn.stamp">
-		<Exec Command='"$(SnExe)" -R $(TargetPath) ..\..\..\..\eng\microsoft.maui.controls.snk' Condition=" '$(SignAssembly)' == 'true' " />
+		<Exec Command='"$(SnExe)" -R $(TargetPath) $(AssemblyOriginatorKeyFile)' Condition=" '$(SignAssembly)' == 'true' " />
 	</Target>
 
 	<Target Name="_CopyToNuspecDir" AfterTargets="_StrongName;Build">
