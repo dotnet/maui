@@ -5,9 +5,9 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Design")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.Design")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.Android.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.iOS")]
@@ -18,10 +18,10 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.FlexLayout.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Material")]
 
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.iOS.UITests")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.Android.UITests")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.Windows.UITests")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.macOS.UITests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.iOS.UITests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UITests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Windows.UITests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.macOS.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.iOS.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Loader")] // Microsoft.Maui.Controls.Loader.dll, Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider, kzu@microsoft.com

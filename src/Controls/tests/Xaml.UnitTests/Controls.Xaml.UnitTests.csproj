@@ -6,6 +6,7 @@
     <WarningLevel>4</WarningLevel>
     <NoWarn>0672;0219;0414;CS0436</NoWarn>
     <IsPackable>false</IsPackable>
+    <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

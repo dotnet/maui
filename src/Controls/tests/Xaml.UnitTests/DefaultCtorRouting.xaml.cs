@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	[ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.IsCompiledTypeConverter")]
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.IsCompiledTypeConverter")]
 	class IsCompiledTypeConverter : TypeConverter, ICompiledTypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)
