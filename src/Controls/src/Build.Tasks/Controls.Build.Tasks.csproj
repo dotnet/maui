@@ -32,7 +32,6 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<UpdateXlfOnBuild Condition="'$(CI)' != 'true'">true</UpdateXlfOnBuild>
 		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
 		<IncludeBuildOutput>False</IncludeBuildOutput>
 		<NoWarn>$(NoWarn);NU5100;NU5128;</NoWarn>
@@ -57,7 +56,10 @@
 		<None Include="..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="..\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 	</ItemGroup>
-
+	
+	<PropertyGroup>
+		 <UpdateXlfOnBuild Condition="'$(CI)' != 'true'">true</UpdateXlfOnBuild>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core.csproj" PrivateAssets="all" />
@@ -66,15 +68,16 @@
 
 	<ItemGroup>
 		<Compile Update="ErrorMessages.Designer.cs">
-		<DesignTime>True</DesignTime>
-		<AutoGen>True</AutoGen>
-		<DependentUpon>ErrorMessages.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>ErrorMessages.resx</DependentUpon>
+		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>
 		<EmbeddedResource Update="ErrorMessages.resx">
-		<Generator>ResXFileCodeGenerator</Generator>
-		<LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 	</ItemGroup>
 
@@ -97,7 +100,7 @@
 	</Target>
 
 	<Target Name="_StrongName" AfterTargets="Build" DependsOnTargets="_SetSnExe" Condition="'$(TargetPath)' != ''" Inputs="$(TargetPath)" Outputs="$(IntermediateOutputPath)Sn.stamp">
-		<Exec Command='"$(SnExe)" -R $(TargetPath) $(AssemblyOriginatorKeyFile)' Condition=" '$(SignAssembly)' == 'true' " />
+		<Exec Command='"$(SnExe)" -R $(TargetPath) ..\..\..\..\eng\microsoft.maui.controls.snk' Condition=" '$(SignAssembly)' == 'true' " />
 	</Target>
 
 	<Target Name="_CopyToNuspecDir" AfterTargets="_StrongName;Build">
