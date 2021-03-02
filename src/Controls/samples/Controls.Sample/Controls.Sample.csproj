@@ -4,8 +4,6 @@
     <TargetFrameworks>MonoAndroid10.0;Xamarin.iOS10</TargetFrameworks>
   </PropertyGroup>
 
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
