@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Essentials
 {
 	static class ExceptionUtils
 	{
-#if NETSTANDARD1_0 || NETSTANDARD2_0
+#if NETSTANDARD1_0 || NETSTANDARD2_0 || NET6_0
 		internal static NotImplementedInReferenceAssemblyException NotSupportedOrImplementedException =>
 			new NotImplementedInReferenceAssemblyException();
 #else

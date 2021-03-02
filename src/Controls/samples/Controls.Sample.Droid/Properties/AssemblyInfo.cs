@@ -8,7 +8,6 @@ using Android.App;
 // associated with an assembly.
 [assembly: AssemblyTitle ("Maui.Controls.Sample.Droid")]
 [assembly: AssemblyDescription ("")]
-[assembly: AssemblyCopyright ("Copyright © 2021")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 [assembly: ComVisible (false)]

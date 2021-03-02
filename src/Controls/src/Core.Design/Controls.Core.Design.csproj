@@ -71,11 +71,11 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
   </ItemGroup>
-  <!-- The IDE will look for a top level assembly resource called 'Xamarin.Forms.toolbox.xml' to -->
+  <!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->
   <!-- load the toolbox metadata from.                                                           -->
   <ItemGroup>
-    <EmbeddedResource Include="toolbox\Xamarin.Forms.toolbox.xml">
-      <LogicalName>Xamarin.Forms.toolbox.xml</LogicalName>
+    <EmbeddedResource Include="toolbox\Microsoft.Maui.toolbox.xml">
+      <LogicalName>Microsoft.Maui.toolbox.xml</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

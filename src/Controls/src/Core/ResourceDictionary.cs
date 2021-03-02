@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls
 				var lineInfo = (serviceProvider.GetService(typeof(Xaml.IXmlLineInfoProvider)) as Xaml.IXmlLineInfoProvider)?.XmlLineInfo;
 				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
 				var assembly = rootObjectType.GetTypeInfo().Assembly;
-#if NETSTANDARD2_0
+
 				if (value.Contains(";assembly="))
 				{
 					var parts = value.Split(new[] { ";assembly=" }, StringSplitOptions.RemoveEmptyEntries);
@@ -348,7 +348,7 @@ namespace Microsoft.Maui.Controls
 					var asmName = parts[1];
 					assembly = Assembly.Load(asmName);
 				}
-#endif
+
 				var uri = new Uri(value, UriKind.Relative); //we don't want file:// uris, even if they start with '/'
 				var resourcePath = GetResourcePath(uri, rootTargetPath);
 

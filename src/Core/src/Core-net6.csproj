@@ -7,7 +7,7 @@
     <RuntimeIdentifier Condition=" '$(TargetFramework)' == 'net6.0-ios' ">ios-x64</RuntimeIdentifier>
   </PropertyGroup>
   <PropertyGroup>
-    <PackageId>Microsoft.Maui</PackageId>
+    <PackageId>Microsoft.Maui.Core</PackageId>
     <Product>Microsoft MAUI</Product>
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />

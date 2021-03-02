@@ -68,7 +68,7 @@ var ANDROID_TEST_PROJ = "./src/ControlGallery/test/Xamarin.Forms.Core.Android.UI
 var BUILD_TASKS_PROJ ="src/Controls/src/Build.Tasks/Controls.Build.Tasks.csproj";
 
 var XamarinFormsVersion = Argument("XamarinFormsVersion", "");
-var packageVersion = Argument("packageVersion", "");
+var packageVersion = GetBuildVariable("packageVersion", "0.1.0-p2");
 var releaseChannelArg = Argument("CHANNEL", "Stable");
 releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
 var teamProject = Argument("TeamProject", "");
@@ -664,10 +664,17 @@ Task("provision")
     .IsDependentOn("provision-monosdk"); // always provision monosdk last otherwise CI might fail
 
 Task("NuGetPack")
-    .Description("Build and Create Nugets")
-    .IsDependentOn("Restore")
-    .IsDependentOn("BuildForNuget")
-    .IsDependentOn("_NuGetPack");
+    .Description("Build and Create Nugets").Does(()=> {
+        
+    var settings = new DotNetCoreToolSettings
+    {
+        DiagnosticOutput = true,
+        ArgumentCustomization = args => args.Append($"./.nuspec/package.ps1 -configuration \"{configuration}\"")
+    };
+
+   DotNetCoreTool("pwsh", settings);
+
+});;
 
 Task("provision-powershell").Does(()=> {
     var settings = new DotNetCoreToolSettings
@@ -678,47 +685,6 @@ Task("provision-powershell").Does(()=> {
 
     DotNetCoreTool("tool", settings);
 });
-
-Task("_NuGetPack")
-    .WithCriteria(IsRunningOnWindows())
-    .Description("Create Nugets without building anything")
-    .Does(() =>
-    {
-        var nugetversion = String.Empty;
-
-        if(!String.IsNullOrWhiteSpace(packageVersion))
-        {
-            nugetversion = packageVersion;
-        }
-        else
-        {
-            foreach(var nugetVersionFile in GetFiles("./**/.XamarinFormsVersionFile.txt"))
-            {
-                nugetversion = FileReadText(nugetVersionFile);
-
-                if(!nugetversion.StartsWith(".."))
-                    break;
-            }
-        }
-
-        Information("Nuget Version: {0}", nugetversion);
-
-        var nugetPackageDir = Directory("./artifacts");
-        var nuGetPackSettings = new NuGetPackSettings
-        {
-            OutputDirectory = nugetPackageDir,
-            Version = nugetversion
-        };
-
-        var nugetFilePaths =
-            GetFiles("./.nuspec/Xamarin.Forms.nuspec");
-          //  GetFiles("./.nuspec/*.nuspec");
-
-        nuGetPackSettings.Properties.Add("configuration", configuration);
-        nuGetPackSettings.Properties.Add("platform", "anycpu");
-        // nuGetPackSettings.Verbosity = NuGetVerbosity.Detailed;
-        NuGetPack(nugetFilePaths, nuGetPackSettings);
-    });
 
 Task("Restore")
     .Description($"Restore target on {MAUI_SLN}")

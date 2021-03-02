@@ -7,7 +7,7 @@
     <!--<Nullable>enable</Nullable>-->
     <LangVersion>8.0</LangVersion>
     <IncludeBuildOutput>False</IncludeBuildOutput>
-    <NoWarn>NU5100;NU5128</NoWarn>
+    <NoWarn>$(NoWarn);NU5100;NU5128;</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -40,9 +40,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(TargetPath)" Visible="False" Pack="True" PackagePath="buildTransitive\$(TargetFramework);build\$(TargetFramework)" />
-    <None Include="@(_ItemToPack)" Visible="False" Pack="True" PackagePath="buildTransitive\$(TargetFramework);build\$(TargetFramework)" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" Pack="True" PackagePath="buildTransitive;build" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(TargetPath)" Visible="False" Pack="True" PackagePath="buildTransitive" />
+    <None Include="@(_ItemToPack)" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,7 +70,7 @@
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)*.dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\..\..\..\.nuspec\$(TargetFramework)\" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\..\..\..\.nuspec\" ContinueOnError="true" Retries="0" />
   </Target>
 
 </Project>

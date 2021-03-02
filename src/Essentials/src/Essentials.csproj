@@ -5,29 +5,13 @@
     <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
     <RootNamespace>Microsoft.Maui.Essentials</RootNamespace>
     <PackageId>Microsoft.Maui.Essentials</PackageId>
-    <PackageIcon>icon.png</PackageIcon>
-    <!-- <PackageIconUrl>https://raw.githubusercontent.com/xamarin/Essentials/master/Assets/xamarin.essentials_128x128.png</PackageIconUrl> -->
-    <Summary>Microsoft.Maui.Essentials: a kit of essential API's for your apps</Summary>
-    <PackageTags>maui, xamarin, windows, uwp, ios, android, watchos, tvos, tizen, toolkit, xamarin.forms, Essentials, kit</PackageTags>
-    <Title>Microsoft.Maui.Essentials</Title>
-    <Description>Xamarin.Essentials: a kit of essential API's for your apps</Description>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
     <Version>1.0.0</Version>
-    <PackageVersion>1.0.0</PackageVersion>
-    <Authors>Microsoft</Authors>
-    <Owners>microsoft</Owners>
-    <NeutralLanguage>en</NeutralLanguage>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <RepositoryUrl>https://github.com/xamarin/Essentials</RepositoryUrl>
-    <PackageReleaseNotes>See: https://aka.ms/xamarinessentials-releasenotes</PackageReleaseNotes>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageProjectUrl>https://go.microsoft.com/fwlink/?linkid=868960</PackageProjectUrl>
     <MDocDocumentationDirectory>$(MSBuildThisFileDirectory)..\docs\en</MDocDocumentationDirectory>
     <DebugType>portable</DebugType>
     <Configurations>Debug;Release</Configurations>

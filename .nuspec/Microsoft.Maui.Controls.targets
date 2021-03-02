@@ -1,13 +1,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<PropertyGroup>
-		<_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)netstandard2.0\</_MauiBuildTasksLocation>
-		<_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory)net462\</_MauiBuildTasksLocation>
-	</PropertyGroup>
-	
-	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlGTask" AssemblyFile="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll" />
-	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.CssGTask" AssemblyFile="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll" />
-	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlCTask" AssemblyFile="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll" />
+	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlGTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
+	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.CssGTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
+	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
 
 	<PropertyGroup>
 		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
@@ -24,7 +19,7 @@
 
 	<ItemGroup>
 		<ProjectCapability Include="XamarinForms" />
-    <ProjectCapability Include="Maui" />
+		<ProjectCapability Include="Maui" />
 	</ItemGroup>
 
 	<!-- Check Tasks ABI and other validations -->

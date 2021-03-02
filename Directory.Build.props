@@ -1,8 +1,7 @@
 <Project>
   <PropertyGroup>
     <__XFBuildTasksLocation>$(_XFBuildTasksLocation)</__XFBuildTasksLocation>
-    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory).nuspec\netstandard2.0\</__XFBuildTasksLocation>
-    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\net462\</__XFBuildTasksLocation>
+    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == '' ">$(MSBuildThisFileDirectory).nuspec\</__XFBuildTasksLocation>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -16,8 +15,21 @@
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>
   </PropertyGroup>
+  <PropertyGroup>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>Microsoft</Authors>
+    <Owners>microsoft</Owners>
+    <NeutralLanguage>en</NeutralLanguage>
+    <RepositoryUrl>https://github.com/dotnet/maui.git</RepositoryUrl>
+    <ProjectUrl>https://github.com/dotnet/maui</ProjectUrl>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageVersion>0.0.1-alpha1</PackageVersion>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
+  </PropertyGroup>
   <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
   <Target Name="GitVersion" />
+  <Target Name="GitInfo" />
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
 </Project>

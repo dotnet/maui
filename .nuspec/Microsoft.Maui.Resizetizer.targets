@@ -7,7 +7,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <_ResizetizerTaskAssemblyName>netstandard2.0\Microsoft.Maui.Resizetizer.dll</_ResizetizerTaskAssemblyName>
+        <_ResizetizerTaskAssemblyName>$(MSBuildThisFileDirectory)\Microsoft.Maui.Resizetizer.dll</_ResizetizerTaskAssemblyName>
     </PropertyGroup>
 
     <UsingTask
