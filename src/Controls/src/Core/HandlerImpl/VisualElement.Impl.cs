@@ -56,7 +56,20 @@ namespace Microsoft.Maui.Controls
 
 			var newRect = this.ComputeFrame(bounds);
 
-			Layout(newRect);
+			Bounds = newRect;
+			Handler?.SetFrame(Bounds);
+		}
+
+		// TODO: MAUI
+		// This is here to support layout calls from legacy code
+		// This should go away once we get everything piping through
+		// Maui based layout code
+		public void Layout(Rectangle bounds)
+		{
+			Bounds = bounds;
+			// If Layout is called without arrange getting called this ensures
+			// all the necessary arranged parts are set so that handlers will layout			
+			IsArrangeValid = true;
 			Handler?.SetFrame(Bounds);
 		}
 

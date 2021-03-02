@@ -777,17 +777,6 @@ namespace Microsoft.Maui.Controls
 			return r;
 		}
 
-		public void Layout(Rectangle bounds)
-		{
-			if (Bounds == bounds)
-				return;
-
-			Bounds = bounds;
-			// If Layout is called without arrange getting called this ensures
-			// all the necessary arranged parts are set so that handlers will layout
-			(this as IFrameworkElement).Arrange(bounds);
-		}
-
 		public SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
 			bool includeMargins = (flags & MeasureFlags.IncludeMargins) != 0;
