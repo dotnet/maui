@@ -6,18 +6,18 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-    	<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
-			<_DisableStrongNamer Condition=" '$(_DisableStrongNamer)' != 'True' ">False</_DisableStrongNamer>
-			<AssemblyName>Microsoft.Maui.Controls.Build.Tasks</AssemblyName>
-			<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
-			<Description>Microsoft MAUI Build Task</Description>
-			<TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
-			<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-			<SignAssembly Condition=" '$(_DisableStrongNamer)' != 'True' ">True</SignAssembly>
-			<DisableStrongNamer Condition=" '$(_DisableStrongNamer)' == 'True' ">True</DisableStrongNamer>
-			<DelaySign>true</DelaySign>
-			<AssemblyOriginatorKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</AssemblyOriginatorKeyFile>
-			<StrongNamerKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</StrongNamerKeyFile>
+		<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
+		<_DisableStrongNamer Condition=" '$(_DisableStrongNamer)' != 'True' ">False</_DisableStrongNamer>
+		<AssemblyName>Microsoft.Maui.Controls.Build.Tasks</AssemblyName>
+		<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
+		<Description>Microsoft MAUI Build Task</Description>
+		<TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<SignAssembly Condition=" '$(_DisableStrongNamer)' != 'True' ">True</SignAssembly>
+		<DisableStrongNamer Condition=" '$(_DisableStrongNamer)' == 'True' ">True</DisableStrongNamer>
+		<DelaySign>true</DelaySign>
+		<AssemblyOriginatorKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</AssemblyOriginatorKeyFile>
+		<StrongNamerKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</StrongNamerKeyFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -33,30 +33,30 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		 <UpdateXlfOnBuild Condition="'$(CI)' != 'true'">true</UpdateXlfOnBuild>
+		<UpdateXlfOnBuild Condition="'$(CI)' != 'true'">true</UpdateXlfOnBuild>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core.csproj" />
 		<ProjectReference Include="..\Xaml\Controls.Xaml.csproj" />
 	</ItemGroup>
-  
-  <ItemGroup>
-    <Compile Update="ErrorMessages.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ErrorMessages.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="ErrorMessages.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="ErrorMessages.Designer.cs">
+		<DesignTime>True</DesignTime>
+		<AutoGen>True</AutoGen>
+		<DependentUpon>ErrorMessages.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
 
-  <PropertyGroup Condition="'$(SnExe)' == '' And '$(OS)' != 'Windows_NT'">
+	<ItemGroup>
+		<EmbeddedResource Update="ErrorMessages.resx">
+		<Generator>ResXFileCodeGenerator</Generator>
+		<LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(SnExe)' == '' And '$(OS)' != 'Windows_NT'">
 		<SnExe>sn</SnExe>
 	</PropertyGroup>
 
