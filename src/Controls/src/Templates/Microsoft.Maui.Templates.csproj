@@ -22,8 +22,12 @@
     <Compile Remove="**/*" />
   </ItemGroup>
 
+  <!-- Eventually replaced by eng/Version.targets -->
+  <Target Name="SetVersions" />
+
   <Target Name="_GenerateTemplateFile"
       BeforeTargets="Build"
+      DependsOnTargets="SetVersions"
       Inputs="$(MSBuildProjectFile);$(_TemplateFile)"
       Outputs="$(IntermediateOutputPath)MauiApp1.csproj">
     <Copy
