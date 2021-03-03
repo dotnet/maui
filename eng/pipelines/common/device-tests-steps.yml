@@ -1,6 +1,7 @@
 parameters:
   platform: '' # [ android, ios ]
   path: '' # path to csproj
+  device: '' the xharness device to use
 
 steps:
   - checkout: self
@@ -51,12 +52,12 @@ steps:
 
   - ${{ if eq(parameters['platform'], 'android') }}:
     - pwsh: |
-        ./build.ps1 -Script eng/devices/android.cake --project="${{ parameters.path }}" --device=$(devicetests.device) --results="$(System.DefaultWorkingDirectory)/output/testlogs"
+        ./build.ps1 -Script eng/devices/android.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs"
       displayName: $(Agent.JobName)
 
   - ${{ if eq(parameters['platform'], 'ios') }}:
     - pwsh: |
-        ./build.ps1 -Script eng/devices/ios.cake --project="${{ parameters.path }}" --device=$(devicetests.device) --results="$(System.DefaultWorkingDirectory)/output/testlogs"
+        ./build.ps1 -Script eng/devices/ios.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs"
       displayName: $(Agent.JobName)
 
   - task: PublishTestResults@2

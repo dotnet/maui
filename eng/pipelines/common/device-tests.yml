@@ -18,24 +18,22 @@ stages:
     dependsOn: []
     jobs:
       - ${{ each project in parameters.androidProjects }}:
-        - job: device_tests_$(project.name)
-          workspace:
-            clean: all
-          displayName: $(project.description)
-          pool:
-            name:  $(macOSXVmPool)
-            vmImage: $(macOSXVmImage)
-          strategy:
-            matrix:
-              ${{ each api in parameters.androidApiLevels }}:
-                api_$(api):
-                  ANDROID_EMULATORS: "system-images;android-$(api);google_apis;x86"
-                  devicetests.device: android-emulator-32_$(api)
-          steps:
-            - template: device-tests-steps.yml
-              parameters:
-                platform: android
-                path: $(project.path)
+        - ${{ each api in parameters.androidApiLevels }}:
+          - job: device_tests_$(project.name)_$(api)
+            workspace:
+              clean: all
+            displayName: $(project.description) (API $(api))
+            pool:
+              name:  $(macOSXVmPool)
+              vmImage: $(macOSXVmImage)
+            variables:
+              ANDROID_EMULATORS: "system-images;android-$(api);google_apis;x86"
+            steps:
+              - template: device-tests-steps.yml
+                parameters:
+                  platform: android
+                  path: $(project.path)
+                  device: android-emulator-32_$(api)
 
   # - stage: ios_essentials
   #   displayName: Essentials (iOS)
