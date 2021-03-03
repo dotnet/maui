@@ -1,107 +1,86 @@
+parameters:
+  androidApiLevels: [ 30, 29, 21 ]
+  androidProjects:
+    - name: essentials
+      description: Essentials
+      path: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
+    - name: core
+      description: Core
+      path: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
+  # iosProjects:
+  #   - $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
+  #   - $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+
 stages:
 
-  - stage: android_essentials
-    displayName: Essentials (Android)
+  - stage: android_device_tests
+    displayName: Android Device Tests
     dependsOn: []
     jobs:
-      - job: device_tests
-        workspace:
-          clean: all
-        displayName: Device Tests
-        pool:
-          name:  $(macOSXVmPool)
-          vmImage: $(macOSXVmImage)
-        variables:
-          devicetests.project: '$(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj'
-        strategy:
-          matrix:
-            api_30:
-              ANDROID_EMULATORS: "system-images;android-30;google_apis;x86"
-              devicetests.device: android-emulator-32_30
-            api_29:
-              ANDROID_EMULATORS: "system-images;android-29;google_apis;x86"
-              devicetests.device: android-emulator-32_29
-            api_21:
-              ANDROID_EMULATORS: "system-images;android-21;google_apis;x86"
-              devicetests.device: android-emulator-32_21
-        steps:
-          - template: device-tests-steps.yml
-            parameters:
-              platform: android
+      - ${{ each project in androidProjects }}:
+        - job: device_tests_$(project.name)
+          workspace:
+            clean: all
+          displayName: $(project.description)
+          pool:
+            name:  $(macOSXVmPool)
+            vmImage: $(macOSXVmImage)
+          strategy:
+            matrix:
+              ${{ each api in parameters.androidApiLevels }}:
+                api_$(api):
+                  ANDROID_EMULATORS: "system-images;android-$(api);google_apis;x86"
+                  devicetests.device: android-emulator-32_$(api)
+          steps:
+            - template: device-tests-steps.yml
+              parameters:
+                platform: android
+                path: $(project.path)
 
-  - stage: android_handlers
-    displayName: Handlers (Android)
-    dependsOn: []
-    jobs:
-      - job: device_tests
-        workspace:
-          clean: all
-        displayName: Device Tests
-        pool:
-          name:  $(macOSXVmPool)
-          vmImage: $(macOSXVmImage)
-        variables:
-          devicetests.project: '$(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj'
-        strategy:
-          matrix:
-            api_30:
-              ANDROID_EMULATORS: "system-images;android-30;google_apis;x86"
-              devicetests.device: android-emulator-32_30
-            api_29:
-              ANDROID_EMULATORS: "system-images;android-29;google_apis;x86"
-              devicetests.device: android-emulator-32_29
-            api_21:
-              ANDROID_EMULATORS: "system-images;android-21;google_apis;x86"
-              devicetests.device: android-emulator-32_21
-        steps:
-          - template: device-tests-steps.yml
-            parameters:
-              platform: android
+  # - stage: ios_essentials
+  #   displayName: Essentials (iOS)
+  #   dependsOn: []
+  #   jobs:
+  #     - job: device_tests
+  #       workspace:
+  #         clean: all
+  #       displayName: Device Tests
+  #       pool:
+  #         name:  $(macOSXVmPool)
+  #         vmImage: $(macOSXVmImage)
+  #       variables:
+  #         devicetests.project: '$(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj'
+  #       strategy:
+  #         matrix:
+  #           v14_3:
+  #             devicetests.device: ios-simulator-64_14.3
+  #           # v10_3_1:
+  #           #   devicetests.device: ios-simulator-64_10.3.1
+  #       steps:
+  #         - template: device-tests-steps.yml
+  #           parameters:
+  #             platform: ios
 
-  - stage: ios_essentials
-    displayName: Essentials (iOS)
-    dependsOn: []
-    jobs:
-      - job: device_tests
-        workspace:
-          clean: all
-        displayName: Device Tests
-        pool:
-          name:  $(macOSXVmPool)
-          vmImage: $(macOSXVmImage)
-        variables:
-          devicetests.project: '$(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj'
-        strategy:
-          matrix:
-            v14_3:
-              devicetests.device: ios-simulator-64_14.3
-            # v10_3_1:
-            #   devicetests.device: ios-simulator-64_10.3.1
-        steps:
-          - template: device-tests-steps.yml
-            parameters:
-              platform: ios
-
-  - stage: ios_handlers
-    displayName: Handlers (iOS)
-    dependsOn: []
-    jobs:
-      - job: device_tests
-        workspace:
-          clean: all
-        displayName: Device Tests
-        pool:
-          name:  $(macOSXVmPool)
-          vmImage: $(macOSXVmImage)
-        variables:
-          devicetests.project: '$(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj'
-        strategy:
-          matrix:
-            v14_3:
-              devicetests.device: ios-simulator-64_14.3
-            # v10_3_1:
-            #   devicetests.device: ios-simulator-64_10.3.1
-        steps:
-          - template: device-tests-steps.yml
-            parameters:
-              platform: ios
+  # - stage: ios_handlers
+  #   displayName: Handlers (iOS)
+  #   dependsOn: []
+  #   jobs:
+  #     - job: device_tests
+  #       workspace:
+  #         clean: all
+  #       displayName: Device Tests
+  #       pool:
+  #         name:  $(macOSXVmPool)
+  #         vmImage: $(macOSXVmImage)
+  #       variables:
+  #         devicetests.project: '$(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj'
+  #       strategy:
+  #         matrix:
+  #           v14_3:
+  #             devicetests.device: ios-simulator-64_14.3
+  #           # v10_3_1:
+  #           #   devicetests.device: ios-simulator-64_10.3.1
+  #       steps:
+  #         - template: device-tests-steps.yml
+  #           parameters:
+  #             platform: ios
