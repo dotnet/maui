@@ -1,6 +1,6 @@
 parameters:
   androidApiLevels: [ 30, 29, 21 ]
-  iosVersions: [ 14.3 ]
+  iosVersions: [ '14.3' ]
   projects:
     - name: essentials
       desc: Essentials
@@ -25,23 +25,22 @@ stages:
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.android, '') }}:
-          - ${{ each api in parameters.androidApiLevels }}:
-            - job: device_tests_$(project.name)_$(api)
-              workspace:
-                clean: all
-              displayName: $(project.desc) (API $(api))
-              pool:
-                name:  $(macOSXVmPool)
-                vmImage: $(macOSXVmImage)
-              variables:
-                ANDROID_EMULATORS: "system-images;android-$(api);google_apis;x86"
-              steps:
-                - template: device-tests-steps.yml
-                  parameters:
-                    platform: android
-                    path: $(project.android)
-                    device: android-emulator-32_$(api)
+        - ${{ each api in parameters.androidApiLevels }}:
+          - job: device_tests_$(project.name)_$(api)
+            workspace:
+              clean: all
+            displayName: $(project.desc) (API $(api))
+            pool:
+              name:  $(macOSXVmPool)
+              vmImage: $(macOSXVmImage)
+            variables:
+              ANDROID_EMULATORS: "system-images;android-$(api);google_apis;x86"
+            steps:
+              - template: device-tests-steps.yml
+                parameters:
+                  platform: android
+                  path: $(project.android)
+                  device: android-emulator-32_$(api)
 
   # - stage: ios_essentials
   #   displayName: Essentials (iOS)
