@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		ViewHolderState _state;
 		bool _isSelected;
 		bool _isFocused;
+		bool _focusable;
 
 		public ViewHolder(EvasObject parent) : base(parent)
 		{
@@ -51,6 +52,20 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 					PackEnd(_content);
 					_content.StackBelow(_focusArea);
 				}
+			}
+		}
+
+		public bool AllowItemFocus
+		{
+			get => _focusable;
+			set
+			{
+				_focusable = value;
+				if (!value && _focusArea.IsFocused)
+				{
+					_focusArea.SetFocus(false);
+				}
+				_focusArea.AllowFocus(_focusable);
 			}
 		}
 
@@ -93,6 +108,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			_focusArea.KeyUp += OnKeyUp;
 			_focusArea.RepeatEvents = true;
 			_focusArea.Show();
+			_focusArea.AllowFocus(_focusable);
 
 			PackEnd(_focusArea);
 			Show();
