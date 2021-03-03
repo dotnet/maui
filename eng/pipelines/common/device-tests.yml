@@ -24,13 +24,13 @@ stages:
     displayName: Android Device Tests
     dependsOn: []
     jobs:
-      - job: test
-        pool:
-          name:  $(macOSXVmPool)
-          vmImage: $(macOSXVmImage)
-        steps:
-          - pwsh: echo hello
-      # - ${{ each project in parameters.projects }}:
+      - ${{ each project in parameters.projects }}:
+        - job: test_$(project.name)
+          pool:
+            name:  $(macOSXVmPool)
+            vmImage: $(macOSXVmImage)
+          steps:
+            - pwsh: echo hello
       #   - ${{ each api in parameters.androidApiLevels }}:
       #     - job: device_tests_$(project.name)_$(api)
       #       workspace:
