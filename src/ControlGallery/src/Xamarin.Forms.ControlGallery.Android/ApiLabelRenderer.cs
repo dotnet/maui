@@ -1,15 +1,16 @@
 ﻿using System;
 using Android.Content;
 using Android.OS;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.Android;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
 [assembly: ExportRenderer(typeof(ApiLabel), typeof(ApiLabelRenderer))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
-	public class ApiLabelRenderer : Xamarin.Forms.Platform.Android.FastRenderers.LabelRenderer
+	public class ApiLabelRenderer : Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.LabelRenderer
 	{
 		public ApiLabelRenderer(Context context) : base(context)
 		{

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <linker>
-  <assembly fullname="Xamarin.Forms.ControlGallery.Android">
-    <namespace fullname="Xamarin.Forms.ControlGallery.Android.Tests" />
+  <assembly fullname="Microsoft.Maui.Controls.ControlGallery.Android">
+    <namespace fullname="Microsoft.Maui.Controls.ControlGallery.Android.Tests" />
     <namespace fullname="Xamarin.Forms.Controls.Issues" />
     <type fullname="*Renderer" />
   </assembly>

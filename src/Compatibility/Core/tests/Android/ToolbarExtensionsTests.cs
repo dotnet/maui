@@ -14,7 +14,7 @@ using Android.Widget;
 using AndroidX.AppCompat.View.Menu;
 using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests;
 using AToolBar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;

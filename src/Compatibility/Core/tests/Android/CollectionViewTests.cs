@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Microsoft.Maui.Controls.Compatibility.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		[Test(Description = "CollectionView with SnapPointsType set should not crash")]
 		public async Task SnapPointsDoNotCrashOnOlderAPIs()
 		{
-			var cv = new Microsoft.Maui.Controls.Compatibility.CollectionView();
+			var cv = new Microsoft.Maui.Controls.CollectionView();
 
 			var itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
 			{

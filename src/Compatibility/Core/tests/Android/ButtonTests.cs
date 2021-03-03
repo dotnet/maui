@@ -7,7 +7,7 @@ using Android.Text.Method;
 using Android.Views;
 using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests

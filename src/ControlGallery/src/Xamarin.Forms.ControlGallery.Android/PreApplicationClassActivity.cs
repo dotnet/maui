@@ -12,10 +12,10 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.Android;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	[Activity (Label = "Control Gallery", 
 			   Icon = "@drawable/icon",

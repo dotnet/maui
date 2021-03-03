@@ -1,6 +1,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
 
 [assembly: AssemblyTitle("Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests")]
 [assembly: AssemblyDescription("")]

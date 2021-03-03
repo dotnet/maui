@@ -4,6 +4,8 @@ using AColorFilter = Android.Graphics.ColorFilter;
 using AColor = Android.Graphics.Color;
 using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using Android.Graphics;
+using Color = Microsoft.Maui.Color;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
 namespace Xamarin.Forms.Platform.Android
 {

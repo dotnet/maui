@@ -191,6 +191,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		// Provide backwards compat for Forms.Init and AndroidActivity
 		// Why is bundle a param if never used?
+		public static void Init(Context activity, Bundle bundle) =>
+			Init(new MauiContext(activity), bundle);
+
 		public static void Init(IMauiContext context, Bundle bundle)
 		{
 			Assembly resourceAssembly;
@@ -204,6 +207,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd();
 		}
 
+		public static void Init(Context activity, Bundle bundle, Assembly resourceAssembly) =>
+			Init(new MauiContext(activity), bundle, resourceAssembly);
+
 		public static void Init(IMauiContext context, Bundle bundle, Assembly resourceAssembly)
 		{
 			Profile.FrameBegin();
@@ -211,17 +217,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd();
 		}
 
-		//TODO: 
-		//public static void Init(InitializationOptions options)
-		//{
-		//	Profile.FrameBegin();
-		//	SetupInit(
-		//		options.Activity,
-		//		options.ResourceAssembly,
-		//		options
-		//	);
-		//	Profile.FrameEnd();
-		//}
+		public static void Init(InitializationOptions options)
+		{
+			Profile.FrameBegin();
+			SetupInit(
+				new MauiContext(options.Activity),
+				options.ResourceAssembly,
+				options
+			);
+			Profile.FrameEnd();
+		}
 
 		/// <summary>
 		/// Sets title bar visibility programmatically. Must be called after Microsoft.Maui.Controls.Compatibility.Forms.Init() method

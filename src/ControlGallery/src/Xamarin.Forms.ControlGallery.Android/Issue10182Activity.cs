@@ -11,25 +11,25 @@ using Android.Renderscripts;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Controls.Issues;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	[Activity(Label = "Issue10182Activity", Icon = "@drawable/icon", Theme = "@style/MyTheme",
 		MainLauncher = false, HardwareAccelerated = true,
 		ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.UiMode)]
-	public class Issue10182Activity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
+	public class Issue10182Activity : Microsoft.Maui.Controls.Compatibility.Platform.Android.FormsAppCompatActivity
 	{
 		Activity1 _activity1;
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
-			var currentApplication = Xamarin.Forms.Application.Current;
+			var currentApplication = Microsoft.Maui.Controls.Application.Current;
 			TabLayoutResource = Resource.Layout.Tabbar;
 			ToolbarResource = Resource.Layout.Toolbar;
 
 			base.OnCreate(savedInstanceState);
 
-			global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+			Microsoft.Maui.Controls.Compatibility.Forms.Init(this, savedInstanceState);
 			LoadApplication(new Issue10182Application());
 
 			_activity1 = (Activity1)DependencyService.Resolve<Context>();
