@@ -5,18 +5,18 @@ parameters:
     - name: essentials
       desc: Essentials
       platforms:
-        - android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
+        android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
         # - ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
-    - name: core
-      desc: Core
-      platforms:
-        # - android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
-        - ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
-    - name: special
-      desc: Special
-      platforms:
-        - android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
-        - ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+    # - name: core
+    #   desc: Core
+    #   platforms:
+    #     # - android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
+    #     - ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+    # - name: special
+    #   desc: Special
+    #   platforms:
+    #     - android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
+    #     - ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
 
 
 stages:
@@ -26,24 +26,23 @@ stages:
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
-        - ${{ each platform in project.platforms }}:
-          # - ${{ if ne(platform.android, '') }}:
-            - ${{ each api in parameters.androidApiLevels }}:
-              - job: device_tests_$(project.name)_$(api)
-                workspace:
-                  clean: all
-                displayName: $(project.desc) (API $(api))
-                pool:
-                  name:  $(macOSXVmPool)
-                  vmImage: $(macOSXVmImage)
-                variables:
-                  ANDROID_EMULATORS: "system-images;android-$(api);google_apis;x86"
-                steps:
-                  - template: device-tests-steps.yml
-                    parameters:
-                      platform: android
-                      path: $(platform.android.android)
-                      device: android-emulator-32_$(api)
+        - ${{ if ne(project.platforms.android, '') }}:
+          - ${{ each api in parameters.androidApiLevels }}:
+            - job: device_tests_$(project.name)_$(api)
+              workspace:
+                clean: all
+              displayName: $(project.desc) (API $(api))
+              pool:
+                name:  $(macOSXVmPool)
+                vmImage: $(macOSXVmImage)
+              variables:
+                ANDROID_EMULATORS: "system-images;android-$(api);google_apis;x86"
+              steps:
+                - template: device-tests-steps.yml
+                  parameters:
+                    platform: android
+                    path: $(project.platforms.android)
+                    device: android-emulator-32_$(api)
 
   # - stage: ios_essentials
   #   displayName: Essentials (iOS)
