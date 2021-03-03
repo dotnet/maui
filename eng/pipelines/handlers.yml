@@ -286,11 +286,3 @@ stages:
             condition: always()
 
   - template: common/device-tests.yml
-    parameters:
-      projects:
-        - job: 'essentials'
-          description: 'Essentials'
-          path: '$(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj'
-        - job: 'core'
-          description: 'Core'
-          path: '$(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj'

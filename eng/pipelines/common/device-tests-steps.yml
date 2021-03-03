@@ -1,7 +1,7 @@
 parameters:
   platform: '' # [ android, ios ]
   path: '' # path to csproj
-  device: '' the xharness device to use
+  device: '' # the xharness device to use
 
 steps:
   - checkout: self
