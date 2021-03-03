@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.LayoutGalleries
+﻿namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.LayoutGalleries
 {
 	public class LayoutGallery : ContentPage
 	{

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Controls.GalleryPages.GradientGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries
 {
 	public partial class AnimateBrushGallery : ContentPage
 	{

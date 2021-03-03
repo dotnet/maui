@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			//if this is a MarkupExtension that can be compiled directly, compile and returns the value
 			var compiledMarkupExtensionName = typeref
-				.GetCustomAttribute(Module, ("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))
+				.GetCustomAttribute(Module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))
 				?.ConstructorArguments?[0].Value as string;
 			Type compiledMarkupExtensionType;
 			ICompiledMarkupExtension markupProvider;
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				else if (!typedef.IsValueType)
 				{
 					var ctor = Module.ImportReference(ctorinforef);
-					//					IL_0001:  newobj instance void class [Microsoft.Maui.Controls.Core]Microsoft.Maui.Controls.Button::'.ctor'()
+					//					IL_0001:  newobj instance void class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.Button::'.ctor'()
 					//					IL_0006:  stloc.0 
 					Context.IL.Emit(OpCodes.Newobj, ctor);
 					Context.IL.Emit(OpCodes.Stloc, vardef);
@@ -607,7 +607,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			yield return Create(Ldc_I4, lineInfo.LineNumber);               //lineNumber
 			yield return Create(Ldc_I4, lineInfo.LinePosition);             //linePosition
 
-			yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml.Diagnostics", "VisualDiagnostics"),
+			yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml.Diagnostics", "VisualDiagnostics"),
 																   methodName: "RegisterSourceInfo",
 																   parameterTypes: new[] {
 																	   ("mscorlib", "System", "Object"),

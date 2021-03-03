@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	internal static class FlagTestHelpers
 	{

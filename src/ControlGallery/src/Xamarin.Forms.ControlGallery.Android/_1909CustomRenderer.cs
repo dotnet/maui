@@ -1,17 +1,18 @@
 ﻿using Android.Content;
 using System;
 using System.Linq;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Platform.Android.AppCompat;
-using Xamarin.Forms.Controls.Issues;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility;
 
 [assembly: ExportRenderer(typeof(Issue1909.FlatButton), typeof(FlatButtonRenderer))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 		public class FlatButtonRenderer :
 #if !LEGACY_RENDERERS
-		Platform.Android.FastRenderers.ButtonRenderer
+		Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ButtonRenderer
 #else
 		ButtonRenderer
 #endif
@@ -20,7 +21,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 			{
 			}
 
-			protected override void OnElementChanged(Platform.Android.ElementChangedEventArgs<Button> e)
+			protected override void OnElementChanged(Microsoft.Maui.Controls.Compatibility.Platform.Android.ElementChangedEventArgs<Button> e)
 			{
 				base.OnElementChanged(e);
 
@@ -29,7 +30,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 					var nativeButton = (global::Android.Widget.Button)Control;
 					nativeButton.SetShadowLayer(0, 0, 0, global::Android.Graphics.Color.Transparent);
 
-					Platform.Android.ViewExtensions.SetElevation(nativeButton, 0);
+					Microsoft.Maui.Controls.Compatibility.Platform.Android.ViewExtensions.SetElevation(nativeButton, 0);
 				}
 			}
 		}

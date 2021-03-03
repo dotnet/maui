@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var layout = new Issue2450(useCompiledXaml);
 				Assert.Throws(new XamlParseExceptionConstraint(11, 13, m => m == "An element with the name \"label0\" already exists in this NameScope"),
-							  () => (layout.Resources["foo"] as Forms.DataTemplate).CreateContent());
+							  () => (layout.Resources["foo"] as Microsoft.Maui.Controls.DataTemplate).CreateContent());
 			}
 		}
 	}

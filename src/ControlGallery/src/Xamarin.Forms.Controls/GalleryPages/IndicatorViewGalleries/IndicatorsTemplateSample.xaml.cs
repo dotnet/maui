@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
+using Microsoft.Maui.Controls;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	public partial class IndicatorsTemplateSample : ContentPage
 	{

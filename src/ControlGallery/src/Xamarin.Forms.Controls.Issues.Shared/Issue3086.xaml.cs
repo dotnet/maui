@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 3086, "On iOS, groupheadertemplate is broken")]
 	public partial class Issue3086 : ContentPage

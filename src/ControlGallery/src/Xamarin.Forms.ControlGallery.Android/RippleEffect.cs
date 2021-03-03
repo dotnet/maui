@@ -1,11 +1,11 @@
 ﻿using Android.Util;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Android;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using AView = Android.Views.View;
 
-[assembly: ExportEffect(typeof(Xamarin.Forms.ControlGallery.Android.RippleEffect), nameof(Xamarin.Forms.ControlGallery.Android.RippleEffect))]
-namespace Xamarin.Forms.ControlGallery.Android
+[assembly: ExportEffect(typeof(Microsoft.Maui.Controls.ControlGallery.Android.RippleEffect), nameof(Microsoft.Maui.Controls.ControlGallery.Android.RippleEffect))]
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
     [Preserve(AllMembers = true)]
     public class RippleEffect : PlatformEffect

@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			XamlLoader.FallbackTypeResolver = null;
 			XamlLoader.ValueCreatedCallback = null;
 			XamlLoader.InstantiationFailedCallback = null;
-			Forms.Internals.ResourceLoader.ExceptionHandler2 = null;
+			Maui.Controls.Internals.ResourceLoader.ExceptionHandler2 = null;
 #pragma warning disable 0618
 			Internals.XamlLoader.DoNotThrowOnExceptions = false;
 #pragma warning restore 0618

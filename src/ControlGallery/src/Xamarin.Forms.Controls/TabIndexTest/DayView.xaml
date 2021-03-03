@@ -4,9 +4,9 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             xmlns:enums="clr-namespace:Xamarin.Forms.Controls.TabIndexTest"
+             xmlns:enums="clr-namespace:Microsoft.Maui.Controls.ControlGallery.TabIndexTest"
              x:Name="this"
-             x:Class="Xamarin.Forms.Controls.TabIndexTest.DayView">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.TabIndexTest.DayView">
   <ContentView.Content>
         <StackLayout BindingContext="{x:Reference this}"
                      HorizontalOptions="FillAndExpand"

@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Microsoft.Maui.Controls.Compatibility.Maps
+namespace Microsoft.Maui.Controls.Maps
 {
 	public class Pin : Element
 	{

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Android.Graphics;
-using Microsoft.Maui.Controls.Core;
 using Microsoft.Maui.Controls.Internals;
 using AApplication = Android.App.Application;
 

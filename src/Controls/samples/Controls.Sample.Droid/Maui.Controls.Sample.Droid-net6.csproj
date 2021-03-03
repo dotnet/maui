@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Maui.Controls.Sample.Droid</RootNamespace>
     <AssemblyName>Maui.Controls.Sample.Droid</AssemblyName>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />

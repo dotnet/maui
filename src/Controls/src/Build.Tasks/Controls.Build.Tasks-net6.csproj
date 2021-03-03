@@ -34,11 +34,11 @@
 		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
 		<IncludeBuildOutput>False</IncludeBuildOutput>
 		<NoWarn>$(NoWarn);NU5100;NU5128;</NoWarn>
+		<IncludeSymbols>False</IncludeSymbols>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="$(TargetPath)" Visible="False" Pack="True" PackagePath="buildTransitive" />
-
 
 		<None Include="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" Visible="False" Pack="True" PackagePath="buildTransitive" />
@@ -80,5 +80,12 @@
 			<LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 	</ItemGroup>
+
+	<Target Name="_CopyToNuspecDir" AfterTargets="Build">
+		<ItemGroup>
+			<_CopyItems Include="$(TargetDir)*.dll" />
+		</ItemGroup>
+		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\..\..\..\.nuspec\" ContinueOnError="true" Retries="0" />
+	</Target>
 
 </Project>

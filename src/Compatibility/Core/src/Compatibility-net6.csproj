@@ -12,7 +12,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
-    <Product>Microsoft.Maui.Controls.Compatibility</Product>
   </PropertyGroup>
 
   <!--<Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />-->

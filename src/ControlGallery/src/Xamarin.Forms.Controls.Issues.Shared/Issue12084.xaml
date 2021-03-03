@@ -4,10 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:d="http://xamarin.com/schemas/2014/forms/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+    xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
     mc:Ignorable="d"
-    xmlns:local="using:Xamarin.Forms.Controls"
-    x:Class="Xamarin.Forms.Controls.Issues.Issue12084"
+    xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue12084"
     Title="Issue 12084">
     <StackLayout>
         <Label

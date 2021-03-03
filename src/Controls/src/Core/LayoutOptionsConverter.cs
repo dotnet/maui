@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.LayoutOptionsConverter")]
+	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.LayoutOptionsConverter")]
 	[Xaml.TypeConversion(typeof(LayoutOptions))]
 	public sealed class LayoutOptionsConverter : TypeConverter
 	{

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <local:TestShell  
-    xmlns:local="clr-namespace:Xamarin.Forms.Controls" xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery" xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Xamarin.Forms.Controls.Issues.VisualControlsPage"
-    xmlns:issues="clr-namespace:Xamarin.Forms.Controls.Issues"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.VisualControlsPage"
+    xmlns:issues="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
     Visual="Material">
 
     <Shell.Resources>

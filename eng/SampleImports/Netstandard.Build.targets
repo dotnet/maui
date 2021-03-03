@@ -7,7 +7,7 @@
 
   <ItemGroup>
   </ItemGroup>
-  <Import Project="$(XamarinFormsSource).nuspec\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll')" />
+  <Import Project="$(XamarinFormsSource).nuspec\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(_MauiBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll')" />
   <Import Project="$(XamarinFormsSource).nuspec\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
   
 </Project>

@@ -8,6 +8,7 @@
     <ApplicationId>com.microsoft.maui.singleproject</ApplicationId>
     <ApplicationVersion>1.0</ApplicationVersion>
     <AndroidVersionCode>1</AndroidVersionCode>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
   <ItemGroup>

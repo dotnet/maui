@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	//FlyoutPage -> NavigationPage -> ContentPage
 	public class RootMDPNavigationContentPage : FlyoutPage

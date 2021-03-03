@@ -17,9 +17,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup-net6", "src\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup-net6.csproj", "{EB956381-F3E6-437C-9069-36B8BF5C6E2F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{459BF674-83CB-46F6-881F-A2D2117DBF4D}"
-	ProjectSection(SolutionItems) = preProject
-		src\Controls\src\Xaml\Controls.Xaml-net6.csproj = src\Controls\src\Xaml\Controls.Xaml-net6.csproj
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{E1082E26-D700-4127-9329-66D673FD2D55}"
 EndProject
@@ -36,6 +33,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{09C264E9-E3F3-4586-9151-DCBB1F6DA7AB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Build.Tasks-net6", "src\Controls\src\Build.Tasks\Controls.Build.Tasks-net6.csproj", "{75C380E0-CE53-4C01-B89F-CF685331DE18}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SingleProject", "SingleProject", "{D5478E0A-5D9C-4C1F-980C-7A9FC71F925E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer", "src\SingleProject\Resizetizer\src\Resizetizer.csproj", "{9909F93F-C085-4F76-B92A-5D8C516BF47D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Package-net6", "src\Package\Package-net6.csproj", "{5BEB3326-79B4-438C-BF65-274202F387EC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml-net6", "src\Controls\src\Xaml\Controls.Xaml-net6.csproj", "{CC3D4667-D94E-4276-9311-6439BFD075E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -80,6 +85,18 @@ Global
 		{75C380E0-CE53-4C01-B89F-CF685331DE18}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75C380E0-CE53-4C01-B89F-CF685331DE18}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75C380E0-CE53-4C01-B89F-CF685331DE18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9909F93F-C085-4F76-B92A-5D8C516BF47D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9909F93F-C085-4F76-B92A-5D8C516BF47D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9909F93F-C085-4F76-B92A-5D8C516BF47D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9909F93F-C085-4F76-B92A-5D8C516BF47D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BEB3326-79B4-438C-BF65-274202F387EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BEB3326-79B4-438C-BF65-274202F387EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BEB3326-79B4-438C-BF65-274202F387EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BEB3326-79B4-438C-BF65-274202F387EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,6 +112,8 @@ Global
 		{1C3439E6-73D7-4F8E-A64A-5448F5CB18DE} = {E1082E26-D700-4127-9329-66D673FD2D55}
 		{CB495F62-CFE6-4975-AED8-F26B6C5D0113} = {E1082E26-D700-4127-9329-66D673FD2D55}
 		{75C380E0-CE53-4C01-B89F-CF685331DE18} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
+		{9909F93F-C085-4F76-B92A-5D8C516BF47D} = {D5478E0A-5D9C-4C1F-980C-7A9FC71F925E}
+		{CC3D4667-D94E-4276-9311-6439BFD075E4} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

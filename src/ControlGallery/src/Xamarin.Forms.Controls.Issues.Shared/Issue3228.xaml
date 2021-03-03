@@ -2,8 +2,8 @@
 <local:TestContentPage 
 	xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Xamarin.Forms.Controls.Issues.Issue3228"
-	xmlns:local="clr-namespace:Xamarin.Forms.Controls"	
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue3228"
+	xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery"	
 	Title="[UWP] Default Search Directory for UWP Icons (Platform Specific)">
     <ScrollView>
         <StackLayout>

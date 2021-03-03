@@ -1,16 +1,17 @@
 ﻿using AView = Android.Views.View;
 using System;
 using System.ComponentModel;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.Android;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using static Android.Views.ViewTreeObserver;
 using Android.Views;
+using Microsoft.Maui.Controls.Compatibility;
 
 [assembly: ExportRenderer(typeof(PerformanceTracker), typeof(PerformanceTrackerRenderer))]
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class PerformanceTrackerRenderer : ViewRenderer, IOnDrawListener
 	{

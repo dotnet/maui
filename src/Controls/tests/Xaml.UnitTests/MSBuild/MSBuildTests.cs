@@ -21,28 +21,28 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		static readonly string[] references = {
 			"mscorlib",
 			"System",
-			"Microsoft.Maui.Controls.Core.dll",
+			"Microsoft.Maui.Controls.dll",
 			"Microsoft.Maui.Controls.Xaml.dll",
-			"Microsoft.Maui.Controls.Platform.dll",
+			"Microsoft.Maui.dll",
 		};
 
 		class Xaml
 		{
-			const string Microsoft.Maui.ControlsFormsDefaultNamespace = "http://xamarin.com/schemas/2014/forms";
-			const string Microsoft.Maui.ControlsFormsXNamespace = "http://schemas.microsoft.com/winfx/2006/xaml";
+			const string MicrosoftMauiControlsFormsDefaultNamespace = "http://xamarin.com/schemas/2014/forms";
+			const string MicrosoftMauiControlsFormsXNamespace = "http://schemas.microsoft.com/winfx/2006/xaml";
 
 			public static readonly string MainPage = $@"
 				<ContentPage
-					xmlns=""{Microsoft.Maui.ControlsFormsDefaultNamespace}""
-					xmlns:x=""{Microsoft.Maui.ControlsFormsXNamespace}""
+					xmlns=""{MicrosoftMauiControlsFormsDefaultNamespace}""
+					xmlns:x=""{MicrosoftMauiControlsFormsXNamespace}""
 					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.MainPage"">
 					<Label x:Name=""label0""/>
 				</ContentPage>";
 
 			public static readonly string CustomView = $@"
 				<ContentView
-					xmlns=""{Microsoft.Maui.ControlsFormsDefaultNamespace}""
-					xmlns:x=""{Microsoft.Maui.ControlsFormsXNamespace}""
+					xmlns=""{MicrosoftMauiControlsFormsDefaultNamespace}""
+					xmlns:x=""{MicrosoftMauiControlsFormsXNamespace}""
 					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustomView"">
 					<Label x:Name=""label0""/>
 				</ContentView>";
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				propertyGroup.Add(NewElement("TargetFrameworkVersion").WithValue("v4.7"));
 				propertyGroup.Add(NewElement("RootNamespace").WithValue("test"));
 			}
-			propertyGroup.Add(NewElement("_XFBuildTasksLocation").WithValue($"{testDirectory}\\"));
+			propertyGroup.Add(NewElement("_MauiBuildTasksLocation").WithValue($"{testDirectory}\\"));
 
 
 			project.Add(propertyGroup);
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		// Tests the XFXamlCValidateOnly=True MSBuild property
+		// Tests the MauiXamlCValidateOnly=True MSBuild property
 		[Test]
 		public void ValidateOnly([Values(false, true)] bool sdkStyle)
 		{
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 			RestoreIfNeeded(projectFile, sdkStyle);
-			Build(projectFile, additionalArgs: "/p:XFXamlCValidateOnly=True");
+			Build(projectFile, additionalArgs: "/p:MauiXamlCValidateOnly=True");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Save(projectFile);
 			RestoreIfNeeded(projectFile, sdkStyle);
 
-			string log = Build(projectFile, additionalArgs: "/p:XFXamlCValidateOnly=True", shouldSucceed: false);
+			string log = Build(projectFile, additionalArgs: "/p:MauiXamlCValidateOnly=True", shouldSucceed: false);
 			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XFC0000: Cannot resolve type \"http://xamarin.com/schemas/2014/forms:NotARealThing\".", log);
 		}
 

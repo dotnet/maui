@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms;
+using Microsoft.Maui.Controls;
 
 [assembly: ExportFont("CuteFont-Regular.ttf", Alias = "Foo")]
 [assembly: ExportFont("PTM55FT.ttf")]
 [assembly: ExportFont("Dokdo-Regular.ttf")]
 [assembly: ExportFont("fa-regular-400.ttf", Alias = "FontAwesome")]
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	public partial class EmbeddedFonts : ContentPage
 	{

@@ -4,7 +4,7 @@ using Android;
 using Android.App;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Compatibility.Maps;
+using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Compatibility.Maps.Android;
 
 [assembly: ComVisible(false)]

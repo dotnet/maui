@@ -185,6 +185,12 @@ stages:
         timeoutInMinutes: 120
         pool:
           vmImage:  windows-latest
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+            release:
+              BuildConfiguration:  'Release'
         steps:
           - powershell: |
               $ProgressPreference = 'SilentlyContinue'
@@ -203,15 +209,14 @@ stages:
 
           - powershell: |
               & dotnet restore Microsoft.Maui-net6.sln
-              & dotnet build Microsoft.Maui-net6.sln -c Debug   -bl:$(LogDirectory)\Debug.binlog
-              & dotnet build Microsoft.Maui-net6.sln -c Release -bl:$(LogDirectory)\Release.binlog
+              & dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration).binlog
             displayName: build samples
             errorActionPreference: stop
 
           - task: PublishPipelineArtifact@1
             displayName: publish artifacts
             inputs:
-              artifactName: NET6-WINDOWS
+              artifactName: NET6-WINDOWS-$(BuildConfiguration)
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
 
@@ -229,7 +234,12 @@ stages:
         variables:
           DotNet.Root: /usr/local/share/dotnet/
           DotNet.Tools: ~/.dotnet/tools
-
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+            release:
+              BuildConfiguration:  'Release'
         steps:
           - task: UseDotNet@2
             displayName: install .NET Core 3.1
@@ -261,13 +271,12 @@ stages:
 
           - bash: |
               dotnet restore Microsoft.Maui-net6.sln &&
-              dotnet build Microsoft.Maui-net6.sln -c Debug   -bl:$(LogDirectory)/Debug.binlog &&
-              dotnet build Microsoft.Maui-net6.sln -c Release -bl:$(LogDirectory)/Release.binlog
+              dotnet build Microsoft.Maui-net6.sln -c $BUILDCONFIGURATION -bl:$BUILD_ARTIFACTSTAGINGDIRECTORY/logs/$BUILDCONFIGURATION.binlog
             displayName: build samples
 
           - task: PublishPipelineArtifact@1
             displayName: publish artifacts
             inputs:
-              artifactName: NET6-OSX
+              artifactName: NET6-OSX-$(BuildConfiguration)
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()

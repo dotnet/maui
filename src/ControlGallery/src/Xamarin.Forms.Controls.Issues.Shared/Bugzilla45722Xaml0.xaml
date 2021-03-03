@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Xamarin.Forms.Controls.Issues.Bugzilla45722Xaml0"
-			xmlns:local="clr-namespace:Xamarin.Forms.Controls.Issues"
-			xmlns:controls="clr-namespace:Xamarin.Forms.Controls;assembly=Xamarin.Forms.Core.Android.UITests" 
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Bugzilla45722Xaml0"
+			xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
+			xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery;assembly=Microsoft.Maui.Controls.Android.UITests" 
             Title="Bugzilla 45722 (with grouping)">
     <ContentPage.Content>
       <StackLayout>

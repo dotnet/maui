@@ -12,7 +12,7 @@
 
 	<PropertyGroup>
 		<PackageId>Microsoft.Maui</PackageId>
-		<Product>Microsoft MAUI</Product>
+		<IncludeSymbols>False</IncludeSymbols>
 	</PropertyGroup>
 
 	<ItemGroup>

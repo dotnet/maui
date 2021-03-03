@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:controls="clr-namespace:Xamarin.Forms.Controls;assembly=Xamarin.Forms.Controls"
-             x:Class="Xamarin.Forms.Controls.Issues.Issue2858">
+			 xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery;assembly=Microsoft.Maui.Controls.ControlGallery"
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue2858">
     <ContentPage.Content>
 		<Grid>
 			

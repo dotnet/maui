@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.XamlC
 		{
 			foreach (var d in args)
 				yield return Instruction.Create(OpCodes.Ldc_R8, d);
-			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls.Platform", "Microsoft.Maui.Controls", "Thickness"), parameterTypes: args.Select(a => ("mscorlib", "System", "Double")).ToArray()));
+			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui", "Microsoft.Maui", "Thickness"), parameterTypes: args.Select(a => ("mscorlib", "System", "Double")).ToArray()));
 		}
 	}
 

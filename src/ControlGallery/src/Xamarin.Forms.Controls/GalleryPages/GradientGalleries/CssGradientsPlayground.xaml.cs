@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.GradientGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries
 {
 	public partial class CssGradientsPlayground : ContentPage
 	{

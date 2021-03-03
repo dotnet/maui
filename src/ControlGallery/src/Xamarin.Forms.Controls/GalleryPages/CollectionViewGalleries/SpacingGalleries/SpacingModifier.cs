@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.SpacingGalleries
 {
 	internal class SpacingModifier : ContentView
 	{

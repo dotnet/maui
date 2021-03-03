@@ -8,7 +8,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Core</PackageId>
-    <Product>Microsoft MAUI</Product>
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 

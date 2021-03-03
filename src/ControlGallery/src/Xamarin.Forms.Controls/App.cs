@@ -5,14 +5,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.RadioButtonGalleries;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class App : Application
 	{

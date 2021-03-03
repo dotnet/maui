@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	}
 }
 
-namespace Microsoft.Maui.Controls.Core.XamlC
+namespace Microsoft.Maui.Controls.XamlC
 {
 	//only used in unit tests to make sure the compiled InitializeComponent is invoked
 	class IsCompiledTypeConverter : ICompiledTypeConverter

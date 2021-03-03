@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Maui.Controls.Core
+namespace Microsoft.Maui.Controls
 {
 	internal static class ShellExtensions
 	{

@@ -4,8 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:d="http://xamarin.com/schemas/2014/forms/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
-    mc:Ignorable="d" x:Class="Xamarin.Forms.Controls.Issues.Issue7242">
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
+    mc:Ignorable="d" x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue7242">
     <ContentPage.Content>
 
         <StackLayout Padding="0,20,0,0">

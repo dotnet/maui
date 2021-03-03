@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			Assert.NotNull(GetInnerView(contentPage));
 			//			Assert.AreEqual ("innerView", GetInnerView (contentPage).Name);
-			Assert.AreEqual(GetInnerView(contentPage), ((Forms.Internals.INameScope)contentPage).FindByName("innerView"));
+			Assert.AreEqual(GetInnerView(contentPage), ((Microsoft.Maui.Controls.Internals.INameScope)contentPage).FindByName("innerView"));
 			Assert.NotNull(label0);
 			Assert.NotNull(label1);
 			Assert.AreEqual(4, contentPage.Content.Descendants().Count());

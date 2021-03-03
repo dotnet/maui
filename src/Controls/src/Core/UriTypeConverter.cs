@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.UriTypeConverter")]
+	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.UriTypeConverter")]
 	[Xaml.TypeConversion(typeof(Uri))]
 	public class UriTypeConverter : TypeConverter
 	{

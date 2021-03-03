@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class SimpleApp : Application
 	{

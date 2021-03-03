@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries;
+﻿using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	internal class DataTemplateGallery : ContentPage
 	{

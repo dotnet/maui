@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 	///    Windows Phone : ?
 	/// 
 	/// It uses a built-in row/cell class provided by the native platform
-	/// and is therefore faster than building a custom ViewCell in Xamarin.Forms.
+	/// and is therefore faster than building a custom ViewCell in Microsoft.Maui.Controls.
 	/// </summary>
 	[Preserve(AllMembers = true)]
 	public class NativeListPage : ContentPage
@@ -123,7 +123,7 @@ namespace Xamarin.Forms.Controls.Issues
 	/// This page uses built-in Xamarin.Forms controls to display a fast-scrolling list.
 	/// 
 	/// It uses the built-in <c>TextCell</c> class which does not require special 'layout'
-	/// and is therefore faster than building a custom ViewCell in Xamarin.Forms.
+	/// and is therefore faster than building a custom ViewCell in Microsoft.Maui.Controls.
 	/// </summary>
 	[Preserve(AllMembers = true)]
 	public class XamarinFormsPage : ContentPage
@@ -167,7 +167,7 @@ namespace Xamarin.Forms.Controls.Issues
 	/// This page uses built-in Xamarin.Forms controls to display a fast-scrolling list.
 	/// 
 	/// It uses the built-in <c>TextCell</c> class which does not require special 'layout'
-	/// and is therefore faster than building a custom ViewCell in Xamarin.Forms.
+	/// and is therefore faster than building a custom ViewCell in Microsoft.Maui.Controls.
 	/// </summary>
 	[Preserve(AllMembers = true)]
 	public class XamarinFormsNativeCellPage : ContentPage

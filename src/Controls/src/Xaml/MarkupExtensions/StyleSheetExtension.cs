@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.StyleSheets;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Style))]
-	[ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.StyleSheetProvider")]
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.StyleSheetProvider")]
 	public sealed class StyleSheetExtension : IValueProvider
 	{
 		public string Style { get; set; }

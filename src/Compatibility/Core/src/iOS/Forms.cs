@@ -168,6 +168,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				Profile.Enable();
 		}
 
+		public static void Init() =>
+			Init(new ActivationState(new MauiContext()));
+
 		public static void Init(IActivationState activationState)
 		{
 			if (IsInitialized)

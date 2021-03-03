@@ -5,7 +5,7 @@ using static Microsoft.Maui.Controls.Easing;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.EasingTypeConverter")]
+	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.EasingTypeConverter")]
 	[Xaml.TypeConversion(typeof(Easing))]
 	public class EasingTypeConverter : TypeConverter
 	{

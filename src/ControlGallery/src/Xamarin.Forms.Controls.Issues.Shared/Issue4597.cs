@@ -4,16 +4,16 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4597, "[Android] ImageCell not loading images and setting ImageSource to null has no effect",
@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
 		string _theListView = "theListViewAutomationId";
 		string _fileName = "xamarinlogo.png";
 		string _fileNameAutomationId = "CoffeeAutomationId";
-		string _uriImage = "https://github.com/xamarin/Xamarin.Forms/blob/3216ce4ccd096f8b9f909bbeea572dcf2a8c4466/Xamarin.Forms.ControlGallery.iOS/Resources/xamarinlogo.png?raw=true";
+		string _uriImage = "https://github.com/xamarin/Xamarin.Forms/blob/3216ce4ccd096f8b9f909bbeea572dcf2a8c4466/Microsoft.Maui.Controls.ControlGallery.iOS/Resources/xamarinlogo.png?raw=true";
 		bool _isUri = false;
 		string _nextTestId = "NextTest";
 		string _activeTestId = "activeTestId";

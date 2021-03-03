@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.ThicknessTypeConverter")]
+	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.ThicknessTypeConverter")]
 	[Xaml.TypeConversion(typeof(Thickness))]
 	public class ThicknessTypeConverter : TypeConverter
 	{

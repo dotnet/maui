@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty("Value")]
-	[ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.SetterValueProvider")]
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.SetterValueProvider")]
 	public sealed class Setter : IValueProvider
 	{
 		readonly ConditionalWeakTable<BindableObject, object> _originalValues = new ConditionalWeakTable<BindableObject, object>();

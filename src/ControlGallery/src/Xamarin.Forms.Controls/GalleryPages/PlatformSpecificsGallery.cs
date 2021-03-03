@@ -1,8 +1,8 @@
-﻿using Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+﻿using Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class PlatformSpecificsGallery : ContentPage
 	{

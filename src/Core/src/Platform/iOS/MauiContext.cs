@@ -2,19 +2,26 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui
-{ 
+{
 	public class MauiContext : IMauiContext
 	{
-		readonly IServiceProvider _services;
-		readonly IMauiHandlersServiceProvider _mauiHandlersServiceProvider;
+		readonly IServiceProvider? _services;
+		readonly IMauiHandlersServiceProvider? _mauiHandlersServiceProvider;
+
+		public MauiContext()
+		{
+		}
+
 		public MauiContext(IServiceProvider services)
 		{
-			_services = services;
-			_mauiHandlersServiceProvider = Services.GetRequiredService<IMauiHandlersServiceProvider>() ??
-				throw new InvalidOperationException($"The Handlers provider of type {nameof(IMauiHandlersServiceProvider)} was not found");
+			_services = services ?? throw new ArgumentNullException(nameof(services));
+			_mauiHandlersServiceProvider = Services.GetRequiredService<IMauiHandlersServiceProvider>();
 		}
-		public IServiceProvider Services => _services;
 
-		public IMauiHandlersServiceProvider Handlers => _mauiHandlersServiceProvider;
+		public IServiceProvider Services =>
+			_services ?? throw new InvalidOperationException($"No service provider was specified during construction.");
+
+		public IMauiHandlersServiceProvider Handlers =>
+			_mauiHandlersServiceProvider ?? throw new InvalidOperationException($"No service provider was specified during construction.");
 	}
 }

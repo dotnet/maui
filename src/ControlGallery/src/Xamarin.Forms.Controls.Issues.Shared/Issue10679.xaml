@@ -4,9 +4,9 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             xmlns:local="using:Xamarin.Forms.Controls"
-             xmlns:issues="using:Xamarin.Forms.Controls.Issues"
-             x:Class="Xamarin.Forms.Controls.Issues.Issue10679">
+             xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
+             xmlns:issues="using:Microsoft.Maui.Controls.ControlGallery.Issues"
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue10679">
     <Shell.Resources>
         <ResourceDictionary>
 

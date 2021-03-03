@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST && __ANDROID__
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using System.Linq;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST && __ANDROID__
 	[Category(UITestCategories.Shape)]

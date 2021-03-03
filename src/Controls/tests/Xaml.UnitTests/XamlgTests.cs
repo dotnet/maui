@@ -27,10 +27,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 					IOPath.GetFullPath(
 						IOPath.Combine(
-							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 					IOPath.GetFullPath(
 						IOPath.Combine(
-							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 					);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -63,10 +63,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 								);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -109,10 +109,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 								);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -148,10 +148,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 								);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -186,10 +186,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 								);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -213,10 +213,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 								);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -242,10 +242,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 								);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -272,10 +272,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 								);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -305,10 +305,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 								);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -338,10 +338,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 								);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -370,10 +370,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				var references = string.Join(";",
 					IOPath.GetFullPath(
 						IOPath.Combine(
-							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 					IOPath.GetFullPath(
 						IOPath.Combine(
-							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 					);
 
 				var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -404,10 +404,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				var references = string.Join(";",
 					IOPath.GetFullPath(
 						IOPath.Combine(
-							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 					IOPath.GetFullPath(
 						IOPath.Combine(
-							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 					);
 
 				var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -433,10 +433,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Controls.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Core.dll"))
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
 								);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);

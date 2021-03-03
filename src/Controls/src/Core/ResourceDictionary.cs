@@ -321,7 +321,7 @@ namespace Microsoft.Maui.Controls
 		//only used for unit testing
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 
-		[Xaml.ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.RDSourceTypeConverter")]
+		[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.RDSourceTypeConverter")]
 		[TypeConversion(typeof(Uri))]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{

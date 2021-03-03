@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			{
 				var style = (styleNode as ValueNode).Value as string;
 				yield return Create(Ldstr, style);
-				yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet"),
+				yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet"),
 																	   methodName: "FromString",
 																	   parameterTypes: new[] { ("mscorlib", "System", "String") },
 																	   isStatic: true));
@@ -73,14 +73,14 @@ namespace Microsoft.Maui.Controls.XamlC
 				foreach (var instruction in node.PushXmlLineInfo(context))
 					yield return instruction; //lineinfo
 
-				yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet"),
+				yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet"),
 																	   methodName: "FromResource",
 																	   parameterTypes: new[] { ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") },
 																	   isStatic: true));
 			}
 
 			//the variable is of type `object`. fix that
-			var vardef = new VariableDefinition(module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet")));
+			var vardef = new VariableDefinition(module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet")));
 			yield return Create(Stloc, vardef);
 			vardefref.VariableDefinition = vardef;
 		}

@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.Maps;
+using Microsoft.Maui.Controls.Maps;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

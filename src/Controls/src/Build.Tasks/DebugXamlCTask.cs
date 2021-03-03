@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						}
 
 						//						IL_0000:  ldarg.0 
-						//						IL_0001:  callvirt instance void class [Microsoft.Maui.Controls.Core]Microsoft.Maui.Controls.ContentPage::'.ctor'()
+						//						IL_0001:  callvirt instance void class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.ContentPage::'.ctor'()
 						//
 						//						IL_0006:  nop 
 						//						IL_0007:  ldarg.1 

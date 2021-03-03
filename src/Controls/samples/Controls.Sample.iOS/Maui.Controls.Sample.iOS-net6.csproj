@@ -5,6 +5,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Maui.Controls.Sample.iOS</RootNamespace>
     <AssemblyName>Maui.Controls.Sample.iOS</AssemblyName>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />

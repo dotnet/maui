@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <local:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 				 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-				 xmlns:local="clr-namespace:Xamarin.Forms.Controls"
-				 x:Class="Xamarin.Forms.Controls.Issues.Bugzilla29107">
+				 xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
+				 x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Bugzilla29107">
 	<StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" Padding="20">
 		<Frame OutlineColor="Gray" Padding="5">
 			<Label Text="" VerticalOptions="End" HorizontalOptions="Start" />

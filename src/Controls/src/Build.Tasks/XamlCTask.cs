@@ -304,10 +304,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var nop = Instruction.Create(Nop);
 
 					// if (ResourceLoader.IsEnabled && ...
-					il.Emit(Call, module.ImportPropertyGetterReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Internals", "ResourceLoader"), "IsEnabled", isStatic: true));
+					il.Emit(Call, module.ImportPropertyGetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader"), "IsEnabled", isStatic: true));
 					il.Emit(Brfalse, nop);
 
-					il.Emit(Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), 0));
+					il.Emit(Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), 0));
 
 					//AssemblyName
 					il.Emit(Dup); //dup the RLQ
@@ -316,19 +316,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					il.Emit(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", parameterTypes: new[] { ("mscorlib", "System", "Type") }, isStatic: true));
 					il.Emit(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
 					il.Emit(Callvirt, module.ImportMethodReference(("mscorlib", "System.Reflection", "Assembly"), methodName: "GetName", parameterTypes: null));
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), "AssemblyName"));
+					il.Emit(Callvirt, module.ImportPropertySetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), "AssemblyName"));
 
 					//ResourcePath
 					il.Emit(Dup); //dup the RLQ
 					il.Emit(Ldstr, resourcePath);
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), "ResourcePath"));
+					il.Emit(Callvirt, module.ImportPropertySetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), "ResourcePath"));
 
 					//Instance
 					il.Emit(Dup); //dup the RLQ
 					il.Emit(Ldarg_0); //Instance = this
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), "Instance"));
+					il.Emit(Callvirt, module.ImportPropertySetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), "Instance"));
 
-					il.Emit(Call, module.ImportMethodReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Internals", "ResourceLoader"), "CanProvideContentFor", 1, isStatic: true));
+					il.Emit(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader"), "CanProvideContentFor", 1, isStatic: true));
 					il.Emit(Brfalse, nop);
 					il.Emit(Ldarg_0);
 					il.Emit(Call, initCompRuntime);
@@ -387,7 +387,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			foreach (var ca in type.Module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;
@@ -400,7 +400,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			foreach (var ca in module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (ca.ConstructorArguments[1].Value as string != path)
 					continue;

@@ -1,6 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Microsoft.Maui.Controls.ControlGallery</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Controls.ControlGallery</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
     <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
@@ -116,21 +118,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Fonts\" />
-    <Folder Include="GalleryPages\AppThemeGalleries\" />
-  </ItemGroup>
-  <ItemGroup Condition="$(FromSource) == 'false'">
-    <ProjectReference Include="..\..\..\Forms\test\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="$(FromSource) != 'false'">
-    <ProjectReference Condition=" '$(Platform)' == 'AnyCPU'" Include="..\..\..\Forms\src\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj">
-      <Name>Xamarin.Forms.Build.Tasks</Name>
+    <ProjectReference Include="..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj">
+      <Name>Controls.Build.Tasks</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <Folder Include="GalleryPages\DateTimePickerGalleries\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
   </ItemGroup>
@@ -170,6 +164,6 @@
     <Copy SourceFiles="@(ConfigFile)" DestinationFiles="controlgallery.config" Condition="!Exists('controlgallery.config')" />
   </Target>
 
-  <Import Project="..\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
+  <Import Project="..\Xamarin.Forms.Controls.Issues.Shared\ControlGallery.Issues.Shared.projitems" Label="Shared" />
 
 </Project>

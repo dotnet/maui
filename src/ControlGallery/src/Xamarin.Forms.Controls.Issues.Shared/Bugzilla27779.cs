@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 27779, "Xamarin.Forms.ReadOnlyListAdapter.IndexOf throws NotImplementedExcpetion ")]
+	[Issue(IssueTracker.Bugzilla, 27779, "Microsoft.Maui.Controls.ReadOnlyListAdapter.IndexOf throws NotImplementedExcpetion ")]
 	public class Bugzilla27779 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		ListView _listview;

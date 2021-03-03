@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Locations;
+using Microsoft.Maui.Controls.Maps;
 using AGeocoder = Android.Locations.Geocoder;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
@@ -21,8 +22,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 		public void Register()
 		{
-			Geocoder.GetPositionsForAddressAsyncFunc = GetPositionsForAddressAsync;
-			Geocoder.GetAddressesForPositionFuncAsync = GetAddressesForPositionAsync;
+			Microsoft.Maui.Controls.Maps.Geocoder.GetPositionsForAddressAsyncFunc = GetPositionsForAddressAsync;
+			Microsoft.Maui.Controls.Maps.Geocoder.GetAddressesForPositionFuncAsync = GetAddressesForPositionAsync;
 		}
 
 		public async Task<IEnumerable<Position>> GetPositionsForAddressAsync(string address)

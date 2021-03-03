@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Controls.Tests.TestClasses
+namespace Microsoft.Maui.Controls.ControlGallery.Tests.TestClasses
 {
 	public class CustomButton : Button
 	{

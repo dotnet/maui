@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.Core.XamlC.ColorTypeConverter")]
+	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.ColorTypeConverter")]
 	[Xaml.TypeConversion(typeof(Color))]
 	public class ColorTypeConverter : TypeConverter
 	{

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace Microsoft.Maui.Controls.ControlGallery.Tests
 {
 	public interface IPlatformTestSettings
 	{

@@ -19,9 +19,23 @@
       VersionInfoReport;
       $(GenerateNuspecDependsOn);
     </GenerateNuspecDependsOn>
+    <GetPackageVersionDependsOn>
+      SetVersions;
+      VersionInfoReport;
+      $(GetPackageVersionDependsOn);
+    </GetPackageVersionDependsOn>
+    <SetVersionsBefore>
+      GetAssemblyVersion;
+      $(SetVersionsBefore);
+    </SetVersionsBefore>
+    <SetVersionsDependsOn>
+      GitInfo;
+      GitVersion;
+      $(SetVersionsDependsOn);
+    </SetVersionsDependsOn>
   </PropertyGroup>
 
-  <Target Name="SetVersions" DependsOnTargets="GitInfo;GitVersion" Returns="$(Version)">
+  <Target Name="SetVersions" BeforeTargets="$(SetVersionsBefore)" DependsOnTargets="$(SetVersionsDependsOn)" Returns="$(Version)">
     <PropertyGroup>
       <PreOut>$([System.Text.RegularExpressions.Regex]::Match($(GitTag), $(RegexPre)))</PreOut>
       <GitSemVerLabel Condition=" '$(GitTag)' != '' and '$(GitTag)' == '$(GitBranch)' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(GitTag)', $(RegexPre))) ">$(PreOut)</GitSemVerLabel>
@@ -67,15 +81,7 @@
     </ItemGroup>
 
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
-    <ItemGroup>
-       <XamarinFormsVersionFile Include="../.XamarinFormsVersionFile.txt"/>
-       <XamarinFormsVersionLine Include="$(PackageVersion)"/>
-    </ItemGroup>
-    
-    <!-- Occasionally this throws an error from parallel builds writing to this file. It's fine if only one of them wins. -->
-    <WriteLinesToFile ContinueOnError="WarnAndContinue" File="@(XamarinFormsVersionFile)" Lines="@(XamarinFormsVersionLine)" Overwrite="true" />
     <Message Condition="$(CI)" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
-    <Message Condition="$(CI)" Importance="high" Text="##vso[task.setvariable variable=XamarinFormsPackageVersion;isOutput=true;]$(PackageVersion)"/>
   </Target>
 
   <Target Name="VersionInfoReport" DependsOnTargets="SetVersions">

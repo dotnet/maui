@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using static Xamarin.Forms.Controls.Issues.Issue2259;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using static Microsoft.Maui.Controls.ControlGallery.Issues.Issue2259;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
 	public class SafeAreaPageiOS : ContentPage
 	{

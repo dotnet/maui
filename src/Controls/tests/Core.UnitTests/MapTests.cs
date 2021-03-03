@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Linq;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.Maps;
+using Microsoft.Maui.Controls.Maps;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

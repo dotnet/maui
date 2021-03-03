@@ -11,8 +11,8 @@
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xamarin.Forms.ControlGallery.Android</RootNamespace>
-    <AssemblyName>Xamarin.Forms.ControlGallery.Android</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Controls.ControlGallery.Android</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.ControlGallery.Android</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <AndroidApplication>true</AndroidApplication>
     <AndroidUseIntermediateDesignerFile>true</AndroidUseIntermediateDesignerFile>
@@ -22,8 +22,6 @@
     <AndroidManifest Condition="$(AndroidTargetFrameworkVersion) == 'v11.0'">Properties\AndroidManifest.xml</AndroidManifest>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
     <AndroidEnableMultiDex>true</AndroidEnableMultiDex>
     <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
   </PropertyGroup>
@@ -182,31 +180,31 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Compatibility\Maps\src\Android\Compatibility.Maps.Android.csproj">
       <Project>{1d11ec11-4734-47d4-9b62-4d03cff67090}</Project>
-      <Name>Xamarin.Forms.Maps.Android</Name>
+      <Name>Compatibility.Maps.Android</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj">
       <Project>{f137fac5-3385-4b19-988b-4a14ed84ccc6}</Project>
-      <Name>Xamarin.Forms.Maps</Name>
+      <Name>Controls.Maps</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj">
       <Project>{2964f669-7cd9-4d78-b4d9-804a965d58c0}</Project>
-      <Name>Xamarin.Forms.CustomAttributes</Name>
+      <Name>Controls.CustomAttributes</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Core\src\Core.csproj">
       <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
-      <Name>Xamarin.Platform.Handlers</Name>
+      <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Android.AppLinks\Compatibility.Android.AppLinks.csproj">
       <Project>{10553575-8e27-4e2c-9e88-90b015e80f1c}</Project>
-      <Name>Xamarin.Forms.Platform.Android.AppLinks</Name>
+      <Name>Compatibility.Android.AppLinks</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Compatibility\Core\tests\Android\Compatibility.Android.UnitTests.csproj">
       <Project>{a4c57790-71d1-467c-a69e-2bd84cb6666c}</Project>
-      <Name>Xamarin.Forms.Platform.Android.UnitTests</Name>
+      <Name>Compatibility.Android.UnitTests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
+    <ProjectReference Include="..\Xamarin.Forms.Controls\ControlGallery.csproj">
       <Project>{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}</Project>
-      <Name>Xamarin.Forms.Controls</Name>
+      <Name>ControlGallery</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="$(FromSource) == 'true'">
@@ -215,15 +213,15 @@
     </ProguardConfiguration>
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj">
       <Project>{3b72465b-acae-43ae-9327-10f372fe5f80}</Project>
-      <Name>Xamarin.Forms.Platform.Android.FormsViewGroup</Name>
+      <Name>Compatibility.Android.FormsViewGroup</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Android\Compatibility.Android.csproj">
       <Project>{0e16e70a-d6dd-4323-ad5d-363abff42d6a}</Project>
-      <Name>Xamarin.Forms.Platform.Android</Name>
+      <Name>Compatibility.Android</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>Controls.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -394,9 +392,4 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <ProjectExtensions>
-    <VisualStudio>
-      <UserProperties XamarinHotReloadUnhandledDeviceExceptionXamarinFormsControlGalleryAndroidHideInfoBar="True" TriggeredFromHotReload="False" />
-    </VisualStudio>
-  </ProjectExtensions>
 </Project>

@@ -5,11 +5,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Maps;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapWithItemsSourceGallery : ContentPage

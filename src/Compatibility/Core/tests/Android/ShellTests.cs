@@ -5,7 +5,7 @@ using Android.Views;
 using Google.Android.Material.BottomNavigation;
 using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests;
 
 

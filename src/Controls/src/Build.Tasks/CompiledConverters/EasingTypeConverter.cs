@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (parts.Length == 2 && parts[0] == nameof(Easing))
 				value = parts[parts.Length - 1];
 
-			var assemblyTypeInfo = ("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls", nameof(Easing));
+			var assemblyTypeInfo = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", nameof(Easing));
 
 			var module = context.Body.Method.Module;
 			var fieldReference = module.ImportFieldReference(assemblyTypeInfo, value, isStatic: true, caseSensitive: false);

@@ -18,6 +18,8 @@ namespace Maui.Controls.Sample
 {
 	public class MyApp : MauiApp
 	{
+		public readonly static bool UseXamlPage = false;
+
 		public override IAppHostBuilder CreateBuilder()
 		{
 			var builder = base.CreateBuilder()
@@ -56,7 +58,7 @@ namespace Maui.Controls.Sample
 			// This will probably go into a compatibility app or window
 			Microsoft.Maui.Controls.Compatibility.Forms.Init(state);
 #endif
-			return Services.GetService<IWindow>();
+			return Services.GetRequiredService<IWindow>();
 		}
 
 		void ConfigureServices(HostBuilderContext ctx, IServiceCollection services)
@@ -64,7 +66,10 @@ namespace Maui.Controls.Sample
 			//services.AddLogging();
 			services.AddSingleton<ITextService, TextService>();
 			services.AddTransient<MainPageViewModel>();
-			services.AddTransient<MainPage>();
+			if (UseXamlPage)
+				services.AddTransient<IPage, XamlPage>();
+			else
+				services.AddTransient<IPage, MainPage>();
 			services.AddTransient<IWindow, MainWindow>();
 		}
 	}

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
     <RootNamespace>Microsoft.Maui.Controls.Xaml.UnitTests</RootNamespace>
@@ -6,8 +6,8 @@
     <WarningLevel>4</WarningLevel>
     <NoWarn>0672;0219;0414;CS0436</NoWarn>
     <IsPackable>false</IsPackable>
+    <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -19,6 +19,20 @@
     <PackageReference Include="NUnit" Version="3.13.1" />
     <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.3" />
+    <PackageReference Include="System.CodeDom" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Build" Version="15.9.20" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ControlGallery\src\Xamarin.Forms.Controls\ControlGallery.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Core.UnitTests\MockDispatcherProvider.cs">
@@ -33,10 +47,5 @@
     <Compile Include="..\Core.UnitTests\BaseTestFixture.cs">
       <Link>BaseTestFixture.cs</Link>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\ControlGallery\src\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks.csproj" />
   </ItemGroup>
 </Project>

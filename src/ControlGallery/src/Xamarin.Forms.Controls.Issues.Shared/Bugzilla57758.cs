@@ -1,13 +1,13 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Gestures)]
@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 57758, "ObjectDisposedException for Xamarin.Forms.Platform.Android.FastRenderers.ImageRenderer", PlatformAffected.Android)]
+	[Issue(IssueTracker.Bugzilla, 57758, "ObjectDisposedException for Microsoft.Maui.Controls.Platform.Android.FastRenderers.ImageRenderer", PlatformAffected.Android)]
 	public class Bugzilla57758 : TestContentPage
 	{
 		const string ImageId = "TestImageId";

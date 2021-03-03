@@ -40,6 +40,7 @@ steps:
 
   - task: VSTest@2
     displayName: 'XAML Unit Tests'
+    continueOnError: true
     inputs:
       testAssemblyVer2: |
         **/bin/$(BuildConfiguration)/**/Microsoft.Maui.Controls.Xaml.UnitTests.dll

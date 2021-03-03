@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 /*
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,14 +9,14 @@ using ReactiveUI;
 */
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
-	// To test this sample include <PackageReference Include="ReactiveUI" Version="11.2.3" /> in Xamarin.Forms.Controls
+	// To test this sample include <PackageReference Include="ReactiveUI" Version="11.2.3" /> in Microsoft.Maui.Controls.ControlGallery
 	// and uncomment the ViewModel
 #if UITEST
     [Category(UITestCategories.RefreshView)]

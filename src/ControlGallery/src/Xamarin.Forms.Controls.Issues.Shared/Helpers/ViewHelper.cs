@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Xamarin.Forms.Controls.Issues.Helpers
+namespace Microsoft.Maui.Controls.ControlGallery.Issues.Helpers
 {
 	public static class ViewHelper
 	{

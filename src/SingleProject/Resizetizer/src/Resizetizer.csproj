@@ -12,8 +12,7 @@
 
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Resizetizer</PackageId>
-    <Product>Microsoft</Product>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <IncludeSymbols>False</IncludeSymbols>
   </PropertyGroup>
 
   <ItemGroup>

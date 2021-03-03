@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace Microsoft.Maui.Controls.ControlGallery.Tests
 {
 	public interface ITestingPlatformService
 	{

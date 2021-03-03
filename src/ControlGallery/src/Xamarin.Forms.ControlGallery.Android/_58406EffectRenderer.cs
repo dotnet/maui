@@ -2,13 +2,13 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Android.Widget;
-using Xamarin.Forms;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.Android;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
-[assembly: ExportEffect(typeof(Xamarin.Forms.ControlGallery.Android._58406EffectRenderer), Bugzilla58406.EffectName)]
+[assembly: ExportEffect(typeof(Microsoft.Maui.Controls.ControlGallery.Android._58406EffectRenderer), Bugzilla58406.EffectName)]
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class _58406EffectRenderer : PlatformEffect
 	{

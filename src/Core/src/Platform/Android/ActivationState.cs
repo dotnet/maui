@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Android.Content;
 using Android.OS;
 
 namespace Microsoft.Maui
 {
 	public class ActivationState : IActivationState
 	{
-		public IMauiContext Context { get;  }
-		public Bundle? SavedInstance { get; }
-
-		internal ActivationState(Bundle? savedInstance, IMauiContext context)
+		public ActivationState(IMauiContext context, Bundle? savedInstance = null)
 		{
+			Context = context ?? throw new ArgumentNullException(nameof(context));
 			SavedInstance = savedInstance;
-			Context = context;
 		}
+
+		public IMauiContext Context { get; }
+
+		public Bundle? SavedInstance { get; }
 	}
 }

@@ -1,10 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
-		<XFKeepXamlResources>True</XFKeepXamlResources>
+		<MauiKeepXamlResources>True</MauiKeepXamlResources>
 	</PropertyGroup>
 
-	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.targets" />
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.DebugXamlCTask" AssemblyFile="$(_XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll" />
+	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.targets" />
+	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.DebugXamlCTask" AssemblyFile="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll" />
 	
 	<PropertyGroup>
 		<CompileDependsOn>

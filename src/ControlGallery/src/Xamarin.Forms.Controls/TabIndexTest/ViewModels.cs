@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Controls.TabIndexTest
+namespace Microsoft.Maui.Controls.ControlGallery.TabIndexTest
 {
 	public static class Colors
 	{

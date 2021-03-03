@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//If there's a [TypeConverter], use it
 			if (typeConverter != null && str != null)
 			{
-				var typeConvAttribute = typeConverter.GetCustomAttribute(module, ("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "TypeConversionAttribute"));
+				var typeConvAttribute = typeConverter.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "TypeConversionAttribute"));
 				if (typeConvAttribute == null) //trust the unattributed TypeConverter
 					return true;
 				var toType = typeConvAttribute.ConstructorArguments.First().Value as TypeReference;
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var str = (string)node.Value;
 			//If the TypeConverter has a ProvideCompiledAttribute that can be resolved, shortcut this
 			Type compiledConverterType;
-			if (typeConverter?.GetCustomAttribute(module, ("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType(compiledConverterName)) != null)
+			if (typeConverter?.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType(compiledConverterName)) != null)
 			{
 				var compiledConverter = Activator.CreateInstance(compiledConverterType);
 				var converter = typeof(ICompiledTypeConverter).GetMethods().FirstOrDefault(md => md.Name == "ConvertFromString");
@@ -202,10 +202,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//If there's a [TypeConverter], use it
 			if (typeConverter != null)
 			{
-				var isExtendedConverter = typeConverter.ImplementsInterface(module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls", "IExtendedTypeConverter")));
+				var isExtendedConverter = typeConverter.ImplementsInterface(module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "IExtendedTypeConverter")));
 				var typeConverterCtorRef = module.ImportCtorReference(typeConverter, paramCount: 0);
 				var convertFromInvariantStringDefinition = isExtendedConverter
-					? module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls", "IExtendedTypeConverter"))
+					? module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "IExtendedTypeConverter"))
 						.ResolveCached()
 						.Methods.FirstOrDefault(md => md.Name == "ConvertFromInvariantString" && md.Parameters.Count == 2)
 					: typeConverter.ResolveCached()
@@ -456,13 +456,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				yield return Create(Ldc_I4, xmlLineInfo.LineNumber);
 				yield return Create(Ldc_I4, xmlLineInfo.LinePosition);
-				ctor = module.ImportCtorReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "XmlLineInfo"), parameterTypes: new[] {
+				ctor = module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XmlLineInfo"), parameterTypes: new[] {
 					("mscorlib", "System", "Int32"),
 					("mscorlib", "System", "Int32"),
 				});
 			}
 			else
-				ctor = module.ImportCtorReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "XmlLineInfo"), parameterTypes: null);
+				ctor = module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XmlLineInfo"), parameterTypes: null);
 			yield return Create(Newobj, ctor);
 		}
 
@@ -601,7 +601,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (pushParentIl[pushParentIl.Count - 1].OpCode != Ldnull)
 			{
 				yield return Create(Dup); //Keep the serviceProvider on the stack
-				yield return Create(Ldtoken, module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "IProvideValueTarget")));
+				yield return Create(Ldtoken, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IProvideValueTarget")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 
 				foreach (var instruction in pushParentIl)
@@ -624,7 +624,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Callvirt, addService);
 
 				yield return Create(Dup); //Keep the serviceProvider on the stack
-				yield return Create(Ldtoken, module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "IReferenceProvider")));
+				yield return Create(Ldtoken, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IReferenceProvider")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 				yield return Create(Ldloc, refProvider);
 				yield return Create(Callvirt, addService);
@@ -634,7 +634,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (node.NamespaceResolver != null)
 			{
 				yield return Create(Dup); //Duplicate the serviceProvider
-				yield return Create(Ldtoken, module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "IXamlTypeResolver")));
+				yield return Create(Ldtoken, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IXamlTypeResolver")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 				yield return Create(Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "XmlNamespaceResolver"), parameterTypes: null));
 				foreach (var kvp in node.NamespaceResolver.GetNamespacesInScope(XmlNamespaceScope.ExcludeXml))
@@ -660,7 +660,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (node is IXmlLineInfo)
 			{
 				yield return Create(Dup); //Duplicate the serviceProvider
-				yield return Create(Ldtoken, module.ImportReference(("Microsoft.Maui.Controls.Core", "Microsoft.Maui.Controls.Xaml", "IXmlLineInfoProvider")));
+				yield return Create(Ldtoken, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IXmlLineInfoProvider")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 				foreach (var instruction in node.PushXmlLineInfo(context))
 					yield return instruction;

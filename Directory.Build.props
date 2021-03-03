@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
-    <__XFBuildTasksLocation>$(_XFBuildTasksLocation)</__XFBuildTasksLocation>
-    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == '' ">$(MSBuildThisFileDirectory).nuspec\</__XFBuildTasksLocation>
+    <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
+    <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -9,7 +9,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <Company>Microsoft</Company>
-    <Product>Microsoft.Maui</Product>
+    <Product>Microsoft MAUI</Product>
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
   </PropertyGroup>
   <PropertyGroup>

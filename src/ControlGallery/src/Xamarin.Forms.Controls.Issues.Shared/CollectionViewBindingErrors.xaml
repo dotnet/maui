@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage
-    xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
     xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Xamarin.Forms.Controls.Issues.CollectionViewBindingErrors">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.CollectionViewBindingErrors">
         <StackLayout>
             <Label Text="The label below should read 'Binding Errors: 0'; if the number of binding errors is greater than zero, this test has failed."></Label>
 

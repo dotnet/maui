@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Controls.GalleryPages.GradientGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries
 {
 	public partial class LinearGradientExplorerGallery : ContentPage
 	{

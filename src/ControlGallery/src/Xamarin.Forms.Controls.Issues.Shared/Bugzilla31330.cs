@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest.iOS;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	// Note that this test fails on UWP due to https://bugzilla.xamarin.com/show_bug.cgi?id=59650
 #if UITEST
