@@ -17,7 +17,7 @@ stages:
     displayName: Android Device Tests
     dependsOn: []
     jobs:
-      - ${{ each project in androidProjects }}:
+      - ${{ each project in parameters.androidProjects }}:
         - job: device_tests_$(project.name)
           workspace:
             clean: all
