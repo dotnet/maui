@@ -3,10 +3,10 @@ parameters:
   androidProjects:
     - name: essentials
       description: Essentials
-      path: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
+      path: '$(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj'
     - name: core
       description: Core
-      path: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
+      path: '$(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj'
   # iosProjects:
   #   - $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
   #   - $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
