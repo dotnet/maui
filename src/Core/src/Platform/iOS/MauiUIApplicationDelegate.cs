@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 			//Hack for now we set this on the App Static but this should be on IFrameworkElement
 			App.Current.SetHandlerContext(window.MauiContext);
 
-			var content = window.Page.View;
+			var content = (window.Page as IView) ?? window.Page.View;
 
 			var uiWindow = new UIWindow
 			{
