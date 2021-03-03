@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\Xaml.UnitTests.Build.props" />
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
     <RootNamespace>Microsoft.Maui.Controls.Xaml.UnitTests</RootNamespace>
@@ -49,5 +48,4 @@
       <Link>BaseTestFixture.cs</Link>
     </Compile>
   </ItemGroup>
-  <Import Project="..\Xaml.UnitTests.Build.targets" />
 </Project>
