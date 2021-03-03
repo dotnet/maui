@@ -30,18 +30,18 @@ stages:
             - job: device_tests_${{ project.name }}_${{ api }}
               workspace:
                 clean: all
-              displayName: $(project.desc) (API $(api))
+              displayName: ${{ project.desc }} (API ${{ api }})
               pool:
                 name:  $(macOSXVmPool)
                 vmImage: $(macOSXVmImage)
               variables:
-                ANDROID_EMULATORS: "system-images;android-$(api);google_apis;x86"
+                ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
               steps:
                 - template: device-tests-steps.yml
                   parameters:
                     platform: android
-                    path: $(project.android)
-                    device: android-emulator-32_$(api)
+                    path: ${{ project.android }}
+                    device: android-emulator-32_${{ api }}
 
   # - stage: ios_essentials
   #   displayName: Essentials (iOS)
