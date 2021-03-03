@@ -28,8 +28,8 @@ stages:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
               pool:
-                name:  $(macOSXVmPool)
-                vmImage: $(macOSXVmImage)
+                name:  $(vs2019VmPool)
+                vmImage: $(vs2019VmImage)
               variables:
                 ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
               steps:
