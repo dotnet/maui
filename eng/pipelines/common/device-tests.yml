@@ -5,17 +5,14 @@ parameters:
     - name: essentials
       desc: Essentials
       android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
-        # - ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
-    # - name: core
-    #   desc: Core
-    #   platforms:
-    #     # - android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
-    #     - ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
-    # - name: special
-    #   desc: Special
-    #   platforms:
-    #     - android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
-    #     - ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+      # ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
+    - name: core
+      desc: Core
+      # android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
+      ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+    - name: special
+      android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
+      ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
 
 
 stages:
@@ -30,7 +27,7 @@ stages:
             - job: device_tests_${{ project.name }}_${{ api }}
               workspace:
                 clean: all
-              displayName: ${{ project.desc }} (API ${{ api }})
+              displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
               pool:
                 name:  $(macOSXVmPool)
                 vmImage: $(macOSXVmImage)
