@@ -1,6 +1,6 @@
 parameters:
-  androidVmPool: $(macOSXVmImage)
-  androidVmImage: $(macOSXVmPool)
+  androidVmPool: $(macOSXVmPool)
+  androidVmImage: $(macOSXVmImage)
   iosVmPool: $(macOSXVmPool)
   iosVmImage: $(macOSXVmImage)
   androidApiLevels: [ 30, 29, 21 ]
