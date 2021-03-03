@@ -1,11 +1,11 @@
 parameters:
   androidApiLevels: [ 30, 29, 21 ]
   androidProjects:
-    - name: essentials
-      description: Essentials
+    - job: 'essentials'
+      description: 'Essentials'
       path: '$(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj'
-    - name: core
-      description: Core
+    - job: 'core'
+      description: 'Core'
       path: '$(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj'
   # iosProjects:
   #   - $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
@@ -19,7 +19,7 @@ stages:
     jobs:
       - ${{ each project in parameters.androidProjects }}:
         - ${{ each api in parameters.androidApiLevels }}:
-          - job: device_tests_$(project.name)_$(api)
+          - job: device_tests_$(project.job)_$(api)
             workspace:
               clean: all
             displayName: $(project.description) (API $(api))
