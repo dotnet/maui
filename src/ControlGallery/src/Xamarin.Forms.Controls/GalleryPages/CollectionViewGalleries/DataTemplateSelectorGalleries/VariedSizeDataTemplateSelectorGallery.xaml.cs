@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class VariedSizeDataTemplateSelectorGallery : ContentPage

@@ -33,7 +33,6 @@ steps:
     inputs:
       restoreSolution: ${{ parameters.slnPath }}
       feedsToUse: config
-      nugetConfigPath: 'eng/DevopsNuget.config'
 
   - script: build.cmd -Target BuildForNuget -ScriptArgs '--BUILD_CONFIGURATION="$(BuildConfiguration)"','--Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
     name: winbuild
@@ -41,9 +40,10 @@ steps:
 
   - task: VSTest@2
     displayName: 'XAML Unit Tests'
+    continueOnError: true
     inputs:
       testAssemblyVer2: |
-        **/bin/$(BuildConfiguration)/**/Xamarin.Forms.Xaml.UnitTests.dll
+        **/bin/$(BuildConfiguration)/**/Microsoft.Maui.Controls.Xaml.UnitTests.dll
       searchFolder: ${{ parameters.nunitTestFolder }}
       codeCoverageEnabled: true
       testRunTitle: '$(BuildConfiguration)_UnitTests'
@@ -56,9 +56,11 @@ steps:
     displayName: 'Unit Tests'
     inputs:
       command: test
-      projects:   |
-        **/Xamarin.Forms.Core.UnitTests.csproj
-        **/Xamarin.Platform.Handlers.UnitTests.csproj
+      projects: |
+        **/Controls.Core.UnitTests.csproj
+        **/Core.UnitTests.csproj
+        **/Essentials.UnitTests.csproj
+        **/Resizetizer.UnitTests.csproj
       arguments: '--configuration $(BuildConfiguration)'
 
   - task: CopyFiles@2

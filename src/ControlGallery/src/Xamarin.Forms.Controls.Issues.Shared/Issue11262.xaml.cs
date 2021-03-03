@@ -1,22 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.SwipeView)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 11262, "[Bug] SwipeView with StackLayout Bindable delete item exception Xamarin.Forms.Platform.Android.SwipeViewRenderer", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 11262, "[Bug] SwipeView with StackLayout Bindable delete item exception Microsoft.Maui.Controls.Platform.Android.SwipeViewRenderer", PlatformAffected.Android)]
 	public partial class Issue11262 : TestContentPage
 	{
 		public Issue11262()

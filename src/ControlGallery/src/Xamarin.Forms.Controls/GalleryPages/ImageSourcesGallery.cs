@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class ImageSourcesGallery : NavigationPage
 	{
@@ -29,12 +29,12 @@ namespace Xamarin.Forms.Controls
 				new ImageSourcePickerItem
 				{
 					Text = "Embedded",
-					Getter = () => ImageSource.FromResource("Xamarin.Forms.Controls.GalleryPages.crimson.jpg", typeof(App))
+					Getter = () => ImageSource.FromResource("Microsoft.Maui.Controls.ControlGallery.GalleryPages.crimson.jpg", typeof(App))
 				},
 				new ImageSourcePickerItem
 				{
 					Text = "Stream",
-					Getter = () => ImageSource.FromStream(() => typeof(App).GetTypeInfo().Assembly.GetManifestResourceStream("Xamarin.Forms.Controls.coffee.png"))
+					Getter = () => ImageSource.FromStream(() => typeof(App).GetTypeInfo().Assembly.GetManifestResourceStream("Microsoft.Maui.Controls.ControlGallery.coffee.png"))
 				},
 				new ImageSourcePickerItem
 				{

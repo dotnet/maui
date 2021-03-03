@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Maps;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Maps;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PerformanceGallery.Scenarios
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PerformanceGallery.Scenarios
 {
 	[Preserve(AllMembers = true)]
 	internal class MapScenario1 : PerformanceScenario

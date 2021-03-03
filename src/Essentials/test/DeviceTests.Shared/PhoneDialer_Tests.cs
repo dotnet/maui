@@ -1,7 +1,7 @@
-﻿using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	public class PhoneDialer_Tests
 	{

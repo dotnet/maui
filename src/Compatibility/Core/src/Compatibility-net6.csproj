@@ -1,0 +1,82 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!--<TargetFrameworks>net6.0-android</TargetFrameworks>-->
+    <TargetFrameworks>net6.0-ios;net6.0-android</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
+    <Nullable>disable</Nullable>
+    <RuntimeIdentifier Condition=" '$(TargetFramework)' == 'net6.0-ios' ">ios-x64</RuntimeIdentifier>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <AndroidRoot>Android\</AndroidRoot>
+    <iOSRoot>iOS\</iOSRoot>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
+  </PropertyGroup>
+
+  <!--<Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />-->
+  
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <Compile Include="$(AndroidRoot)**\*.cs"></Compile>
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\bottomtablayout.axml" Link="Android\Resources\Layout\bottomtablayout.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\flyoutcontent.axml" Link="Android\Resources\Layout\flyoutcontent.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\rootlayout.axml" Link="Android\Resources\Layout\rootlayout.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\shellcontent.axml" Link="Android\Resources\Layout\shellcontent.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\tabbar.axml" Link="Android\Resources\Layout\tabbar.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\toolbar.axml" Link="Android\Resources\Layout\toolbar.axml" />
+
+
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromleft.xml" Link="Android\Resources\anim\enterfromleft.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromright.xml" Link="Android\Resources\anim\enterfromright.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoleft.xml" Link="Android\Resources\anim\exittoleft.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoright.xml" Link="Android\Resources\anim\exittoright.xml" />
+
+
+    <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" Link="Android\Resources\values\styles.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\values\strings.xml" Link="Android\Resources\values\strings.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" Link="Android\Resources\values\attrs.xml" />
+    <ProjectReference Include="Android.FormsViewGroup\Compatibility.Android.FormsViewGroup-net6.csproj" />
+
+    <Compile Remove="$(AndroidRoot)AppCompat\Resource.cs" />
+    <Compile Remove="$(AndroidRoot)bin\**\*.cs" />
+    <Compile Remove="$(AndroidRoot)obj\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' ">
+    <Compile Include="$(iOSRoot)**\*.cs"></Compile>
+    <EmbeddedResource Include="$(iOSRoot)Resources\*.resx" />
+    <Compile Remove="$(iOSRoot)bin\**\*.cs" />
+    <Compile Remove="$(iOSRoot)obj\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--<None Include="**\bin\**\*.cs" />
+    <None Include="**\obj\**\*.cs" />
+    <None Include="obj\**\*.cs" />
+    <Compile Remove="**\bin\**\*.cs" />
+    <Compile Remove="**\obj\**\*.cs" />
+    <Compile Remove="obj\**\*.cs" />-->
+    <Compile Include="..\..\..\Controls\src\Core\Crc64.cs">
+      <Link>Crc64.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Controls\src\Core\StreamWrapper.cs">
+      <Link>StreamWrapper.cs</Link>
+    </Compile>
+    <Compile Include="AppHostBuilderExtensions.cs" />
+    
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- TODO: disable Fast Deployment temporarily -->
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+  </ItemGroup>
+</Project>
+

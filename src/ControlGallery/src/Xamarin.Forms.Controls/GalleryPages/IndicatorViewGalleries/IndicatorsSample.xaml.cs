@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Xaml;
+﻿using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class IndicatorsSample : ContentPage

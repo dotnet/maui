@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using static Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Application;
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
+using static Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Application;
+using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3228, "[UWP] Default Search Directory for UWP Icons (Platform Specific)")]

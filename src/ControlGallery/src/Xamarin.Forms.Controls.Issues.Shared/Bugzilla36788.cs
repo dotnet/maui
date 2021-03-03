@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
@@ -57,17 +57,17 @@ namespace Xamarin.Forms.Controls.Issues
 							BackgroundColor = Color.Blue,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (0)},
+						}, Microsoft.Maui.Controls.Constraint.Constant (0)},
 						{new Label {
 							BackgroundColor = Color.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (0), Forms.Constraint.Constant (40)},
+						}, Microsoft.Maui.Controls.Constraint.Constant (0), Microsoft.Maui.Controls.Constraint.Constant (40)},
 						{new Label {
 							BackgroundColor = Color.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (10), Forms.Constraint.Constant (80)},
+						}, Microsoft.Maui.Controls.Constraint.Constant (10), Microsoft.Maui.Controls.Constraint.Constant (80)},
 					}
 				}
 			};
@@ -88,17 +88,17 @@ namespace Xamarin.Forms.Controls.Issues
 							BackgroundColor = Color.Blue,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (0)},
+						}, Microsoft.Maui.Controls.Constraint.Constant (0)},
 						{new Label {
 							BackgroundColor = Color.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (0), Forms.Constraint.Constant (40)},
+						}, Microsoft.Maui.Controls.Constraint.Constant (0), Microsoft.Maui.Controls.Constraint.Constant (40)},
 						{new Label {
 							BackgroundColor = Color.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (10), Forms.Constraint.Constant (80)},
+						}, Microsoft.Maui.Controls.Constraint.Constant (10), Microsoft.Maui.Controls.Constraint.Constant (80)},
 					}
 				}
 			};

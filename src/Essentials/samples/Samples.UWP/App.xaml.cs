@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Text;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 
 namespace Samples.UWP
 {
@@ -52,7 +52,7 @@ namespace Samples.UWP
             // Ensure the current window is active
             Window.Current.Activate();
 
-            Xamarin.Essentials.Platform.OnLaunched(e);
+            Microsoft.Maui.Essentials.Platform.OnLaunched(e);
         }
 
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)

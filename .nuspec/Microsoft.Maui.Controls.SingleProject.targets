@@ -1,0 +1,34 @@
+<!-- "Single Project" support -->
+<Project>
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' ">
+    <!-- Android -->
+    <EnableDefaultAndroidItems>false</EnableDefaultAndroidItems>
+    <AndroidProjectFolder Condition=" '$(AndroidProjectFolder)' == '' ">Android/</AndroidProjectFolder>
+    <AndroidManifest>$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
+    <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
+    <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
+    <!-- iOS -->
+    <EnableDefaultiOSItems>false</EnableDefaultiOSItems>
+    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' ">iOS/</iOSProjectFolder>
+    <IPhoneResourcePrefix>$(iOSProjectFolder)Resources</IPhoneResourcePrefix>
+    <_SingleProjectiOSExcludes>$(iOSProjectFolder)/**/.*/**</_SingleProjectiOSExcludes>
+  </PropertyGroup>
+
+  <!-- Removals -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' != 'android' and '$(AndroidProjectFolder)' != '' "
+        Remove="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)"
+    />
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' != 'ios' and '$(iOSProjectFolder)' != '' "
+        Remove="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)"
+    />
+  </ItemGroup>
+
+  <!-- IDE capabilities -->
+  <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
+    <ProjectCapability Include="MauiSingleProject" />
+    <ProjectCapability Include="LaunchProfiles" />
+  </ItemGroup>
+</Project>

@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.SwipeViewGalleries
 {
 	public class NoIconTextSwipeItemGallery : ContentPage
 	{

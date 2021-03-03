@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net6.0-android;net6.0-ios</TargetFrameworks>
+		<AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
+		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
+		<NoWarn>$(NoWarn);CA2200;</NoWarn>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackageId>Microsoft.Maui.Controls.Xaml</PackageId>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Core\Controls.Core-net6.csproj">
+		</ProjectReference>
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="Diagnostics\" />
+	</ItemGroup>
+</Project>

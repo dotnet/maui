@@ -125,9 +125,9 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Xamarin.Essentials\Xamarin.Essentials.csproj">
-      <Project>{63a4f6a1-48bf-4d32-aed7-82f605edb042}</Project>
-      <Name>Xamarin.Essentials</Name>
+    <ProjectReference Include="..\..\src\Essentials.csproj">
+      <Project>{8CB95D25-8442-42BC-82BE-319D21138549}</Project>
+      <Name>Essentials</Name>
     </ProjectReference>
     <ProjectReference Include="..\Samples\Samples.csproj">
       <Project>{045E53B5-3E59-4497-B996-EF6732E33ED5}</Project>

@@ -1,8 +1,8 @@
 using System;
 
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal class ImageButtonCoreGalleryPage : CoreGalleryPage<ImageButton>
 	{
@@ -110,7 +110,7 @@ namespace Xamarin.Forms.Controls
 			InitializeElement(isLoadingContainer.View);
 			InitializeElement(isOpaqueContainer.View);
 
-			var sourceContainer = new ViewContainer<ImageButton>(Test.ImageButton.Source, new ImageButton { Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.Controls/coffee.png" });
+			var sourceContainer = new ViewContainer<ImageButton>(Test.ImageButton.Source, new ImageButton { Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Microsoft.Maui.Controls.ControlGallery/coffee.png" });
 
 			var gifContainer = new ViewContainer<ImageButton>(Test.ImageButton.Source, new ImageButton { Source = "GifTwo.gif" });
 

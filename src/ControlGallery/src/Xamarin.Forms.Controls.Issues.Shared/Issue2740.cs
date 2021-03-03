@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 2740, "System.NotSupportedException: Unable to activate instance of type Xamarin.Forms.Platform.Android.PageContainer from native handle", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 2740, "System.NotSupportedException: Unable to activate instance of type Microsoft.Maui.Controls.Platform.Android.PageContainer from native handle", PlatformAffected.Android)]
 	public class Issue2740 : TestFlyoutPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()

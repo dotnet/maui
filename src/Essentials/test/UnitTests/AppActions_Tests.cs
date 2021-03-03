@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Xamarin.Essentials;
+using System.Collections.Generic;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
 namespace Tests

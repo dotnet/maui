@@ -24,15 +24,15 @@
 	<key>MinimumOSVersion</key>
 	<string>10.0</string>
 	<key>CFBundleDisplayName</key>
-	<string>Xamarin.Essentials</string>
+	<string>Essentials</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.xamarin.essentials</string>
+	<string>com.microsoft.maui.essentials</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>CFBundleName</key>
-	<string>Xamarin.Essentials</string>
+	<string>Essentials</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

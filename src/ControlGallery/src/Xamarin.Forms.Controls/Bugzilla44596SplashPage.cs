@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class Bugzilla44596SplashPage : ContentPage
 	{

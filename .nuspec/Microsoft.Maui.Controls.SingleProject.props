@@ -1,0 +1,42 @@
+<!-- "Single Project" support - all <ItemGroup/>'s must check if $(EnableDefaultItems) and $(SingleProject) are true -->
+<Project>
+
+  <!-- Android -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'android' and '$(MonoAndroidResourcePrefix)' != '' ">
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.xml" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.axml" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.png" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.jpg" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.gif" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/font/*.ttf" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/font/*.otf" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/font/*.ttc" />
+    <AndroidResource Include="$(MonoAndroidResourcePrefix)/raw/*" Exclude="$(MonoAndroidResourcePrefix)/raw/.*" />
+    <AndroidAsset Include="$(MonoAndroidAssetsPrefix)/**/*" Exclude="$(MonoAndroidAssetsPrefix)/**/.*/**" />
+  </ItemGroup>
+
+  <!-- iOS -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' ">
+    <None Include="$(iOSProjectFolder)Info.plist" LogicalName="Info.plist" />
+    <ImageAsset
+        Include="$(iOSProjectFolder)**/*.xcassets/**/*.png;$(iOSProjectFolder)**/*.xcassets/*/*.jpg;$(iOSProjectFolder)**/*.xcassets/**/*.pdf;$(iOSProjectFolder)**/*.xcassets/**/*.json"
+        Exclude="$(_SingleProjectiOSExcludes)"
+        Link="%(RecursiveDir)%(FileName)%(Extension)"
+        Visible="false"
+        IsDefaultItem="true"
+    />
+    <SceneKitAsset
+        Include="$(iOSProjectFolder)**/*.scnassets/*"
+        Exclude="$(_SingleProjectiOSExcludes)"
+        Link="%(RecursiveDir)%(FileName)%(Extension)"
+        IsDefaultItem="true"
+    />
+    <InterfaceDefinition
+        Include="$(iOSProjectFolder)**/*.storyboard;$(iOSProjectFolder)**/*.xib"
+        Exclude="$(_SingleProjectiOSExcludes)"
+        Link="%(RecursiveDir)%(FileName)%(Extension)"
+        IsDefaultItem="true"
+    />
+  </ItemGroup>
+
+</Project>

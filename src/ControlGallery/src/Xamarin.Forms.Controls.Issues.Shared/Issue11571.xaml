@@ -5,8 +5,8 @@
     xmlns:d="http://xamarin.com/schemas/2014/forms/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    xmlns:local="using:Xamarin.Forms.Controls"
-    x:Class="Xamarin.Forms.Controls.Issues.Issue11571"
+    xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue11571"
     Title="Issue 11571">
     <ScrollView>
         <StackLayout Margin="12">

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 using Xunit;
 using AndroidEnvironment = Android.OS.Environment;
 
-namespace DeviceTests.Shared
+namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
     public class Android_FileProvider_Tests
     {
@@ -66,7 +66,7 @@ namespace DeviceTests.Shared
                 // Make sure the uri is what we expected
                 Assert.NotNull(shareableUri);
                 Assert.Equal("content", shareableUri.Scheme);
-                Assert.Equal("com.xamarin.essentials.devicetests.fileProvider", shareableUri.Authority);
+                Assert.Equal("com.microsoft.maui.essentials.devicetests.fileProvider", shareableUri.Authority);
                 Assert.Equal(4, shareableUri.PathSegments.Count);
                 Assert.Equal(expectedCache, shareableUri.PathSegments[0]);
                 Assert.Equal("2203693cc04e0be7f4f024d5f9499e13", shareableUri.PathSegments[1]);
@@ -124,7 +124,7 @@ namespace DeviceTests.Shared
             // Make sure the uri is what we expected
             Assert.NotNull(shareableUri);
             Assert.Equal("content", shareableUri.Scheme);
-            Assert.Equal("com.xamarin.essentials.devicetests.fileProvider", shareableUri.Authority);
+            Assert.Equal("com.microsoft.maui.essentials.devicetests.fileProvider", shareableUri.Authority);
             Assert.Equal(4, shareableUri.PathSegments.Count);
             Assert.Equal("external_cache", shareableUri.PathSegments[0]);
             Assert.Equal("2203693cc04e0be7f4f024d5f9499e13", shareableUri.PathSegments[1]);
@@ -156,7 +156,7 @@ namespace DeviceTests.Shared
             // Make sure the uri is what we expected
             Assert.NotNull(shareableUri);
             Assert.Equal("content", shareableUri.Scheme);
-            Assert.Equal("com.xamarin.essentials.devicetests.fileProvider", shareableUri.Authority);
+            Assert.Equal("com.microsoft.maui.essentials.devicetests.fileProvider", shareableUri.Authority);
             Assert.Equal(new[] { "internal_cache", Path.GetFileName(file) }, shareableUri.PathSegments);
         }
 
@@ -179,7 +179,7 @@ namespace DeviceTests.Shared
             // Make sure the uri is what we expected
             Assert.NotNull(shareableUri);
             Assert.Equal("content", shareableUri.Scheme);
-            Assert.Equal("com.xamarin.essentials.devicetests.fileProvider", shareableUri.Authority);
+            Assert.Equal("com.microsoft.maui.essentials.devicetests.fileProvider", shareableUri.Authority);
             Assert.Equal(new[] { "external_cache", Path.GetFileName(file) }, shareableUri.PathSegments);
         }
 
@@ -203,7 +203,7 @@ namespace DeviceTests.Shared
             // Make sure the uri is what we expected
             Assert.NotNull(shareableUri);
             Assert.Equal("content", shareableUri.Scheme);
-            Assert.Equal("com.xamarin.essentials.devicetests.fileProvider", shareableUri.Authority);
+            Assert.Equal("com.microsoft.maui.essentials.devicetests.fileProvider", shareableUri.Authority);
 
             if (Platform.HasApiLevel(29))
             {

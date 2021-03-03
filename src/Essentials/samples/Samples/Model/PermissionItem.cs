@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Windows.Input;
 using Samples.ViewModel;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 using Xamarin.Forms;
 
 namespace Samples.Model

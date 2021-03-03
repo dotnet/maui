@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net6.0-android;net6.0-ios;</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui</RootNamespace>
+    <AssemblyName>Microsoft.Maui</AssemblyName>
+    <Nullable>enable</Nullable>
+    <RuntimeIdentifier Condition=" '$(TargetFramework)' == 'net6.0-ios' ">ios-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>Microsoft.Maui.Core</PackageId>
+  </PropertyGroup>
+  <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+
+  <PropertyGroup>
+    <!-- TODO: disable Fast Deployment temporarily -->
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>
+

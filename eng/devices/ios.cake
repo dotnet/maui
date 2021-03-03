@@ -31,7 +31,7 @@ Task("Build")
 		c.Properties["BuildIpa"] = new List<string> { "true" };
 		c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
 		c.Targets.Clear();
-		c.Targets.Add("Rebuild");
+		c.Targets.Add("Build");
 		c.BinaryLogger = new MSBuildBinaryLogSettings {
 			Enabled = true,
 			FileName = BINLOG,

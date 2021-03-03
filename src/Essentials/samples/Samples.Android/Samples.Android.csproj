@@ -10,7 +10,7 @@
     <AssemblyName>Samples.Android</AssemblyName>
     <Deterministic>True</Deterministic>
     <AndroidApplication>True</AndroidApplication>
-    <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
+    <AndroidUseIntermediateDesignerFile>true</AndroidUseIntermediateDesignerFile>
     <AndroidResgenClass>Resource</AndroidResgenClass>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <MonoAndroidResourcePrefix>Resources</MonoAndroidResourcePrefix>
@@ -61,13 +61,13 @@
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
     <PackageReference Include="Xamarin.Forms.Visual.Material" Version="4.8.0.1821" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.2.1.1" />
-    <PackageReference Include="Xamarin.AndroidX.AppCompat.AppCompatResources" Version="1.2.0.6" />
+    <PackageReference Include="Xamarin.Google.Android.Material" />
+    <PackageReference Include="Xamarin.AndroidX.AppCompat.AppCompatResources" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Xamarin.Essentials\Xamarin.Essentials.csproj">
-      <Project>{CD6D6AE6-83A1-41B1-BD7C-C555A77C288B}</Project>
-      <Name>Xamarin.Essentials</Name>
+    <ProjectReference Include="..\..\src\Essentials.csproj">
+      <Project>{8CB95D25-8442-42BC-82BE-319D21138549}</Project>
+      <Name>Essentials</Name>
     </ProjectReference>
     <ProjectReference Include="..\Samples\Samples.csproj">
       <Project>{B4227123-2EEB-494A-A221-C061B5659AED}</Project>
@@ -76,7 +76,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
-    <Compile Include="Resources\Resource.designer.cs" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\icon.png" />

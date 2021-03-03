@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<controls:TestContentPage xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+<controls:TestContentPage xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
              xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
-             x:Class="Xamarin.Forms.Controls.Issues.Issue6932_emptyviewtemplate" x:Name="ThePage">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue6932_emptyviewtemplate" x:Name="ThePage">
     <ContentPage.Resources>
         <DataTemplate x:Key="MyIntTemplate">
             <Frame Padding="10"

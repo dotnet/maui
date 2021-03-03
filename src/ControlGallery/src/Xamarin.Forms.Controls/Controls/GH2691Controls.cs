@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public static class GH2691
 	{
@@ -12,21 +12,21 @@ namespace Xamarin.Forms.Controls
 	}
 }
 
-namespace Xamarin.Forms.Controls.CustomNamespace1
+namespace Microsoft.Maui.Controls.ControlGallery.CustomNamespace1
 {
 	public class CustomButton : Button
 	{
 	}
 }
 
-namespace Xamarin.Forms.Controls.CustomNamespace2
+namespace Microsoft.Maui.Controls.ControlGallery.CustomNamespace2
 {
 	public class CustomLabel : Label
 	{
 	}
 }
 
-namespace Xamarin.Forms.Controls.CustomNamespace3
+namespace Microsoft.Maui.Controls.ControlGallery.CustomNamespace3
 {
 	public class CustomStackLayout : StackLayout
 	{

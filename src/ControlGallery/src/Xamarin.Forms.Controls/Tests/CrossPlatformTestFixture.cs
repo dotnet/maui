@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.Tests
+﻿namespace Microsoft.Maui.Controls.ControlGallery.Tests
 {
 	public abstract class CrossPlatformTestFixture
 	{

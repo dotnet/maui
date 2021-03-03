@@ -1,0 +1,22 @@
+<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <TargetFrameworks>Xamarin.iOS10;MonoAndroid10.0</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui.Core.DeviceTests</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Core.DeviceTests</AssemblyName>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>Xamarin.Platform.Handlers.DeviceTests</PackageId>
+    <Product>Xamarin</Product>
+  </PropertyGroup>
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj" />
+    <ProjectReference Include="..\..\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
+  </ItemGroup>
+</Project>

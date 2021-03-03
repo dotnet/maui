@@ -20,6 +20,7 @@ string CONFIGURATION = "Debug"; // needs to be debug so unit tests get discovere
 string ANDROID_AVD = "DEVICE_TESTS_EMULATOR";
 string DEVICE_ID = "";
 string DEVICE_ARCH = "";
+bool DEVICE_BOOT = Argument("boot", true);
 
 // set up env
 var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_SDK_ROOT"));
@@ -78,10 +79,10 @@ Setup(context =>
 			else
 				DEVICE_ARCH = "arm64-v8a";
 		}
-		DEVICE_ID = $"system-images;android-{api};google_apis_playstore;{DEVICE_ARCH}";
+		DEVICE_ID = $"system-images;android-{api};google_apis;{DEVICE_ARCH}";
 
 		// we are not using a virtual device, so quit
-		if (!emulator)
+		if (!emulator || !DEVICE_BOOT)
 			return;
 	}
 
@@ -115,7 +116,7 @@ Setup(context =>
 Teardown(context =>
 {
 	// no virtual device was used
-	if (emulatorProcess == null)
+	if (emulatorProcess == null || !DEVICE_BOOT)
 		return;
 
 	// stop and cleanup the emulator
@@ -141,7 +142,7 @@ Task("Build")
 		c.Restore = true;
 		c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
 		c.Targets.Clear();
-		c.Targets.Add("Rebuild");
+		c.Targets.Add("Build");
 		c.Targets.Add("SignAndroidPackage");
 		c.BinaryLogger = new MSBuildBinaryLogSettings {
 			Enabled = true,

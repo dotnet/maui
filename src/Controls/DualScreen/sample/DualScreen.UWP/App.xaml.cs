@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -52,7 +52,7 @@ namespace DualScreen.UWP
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
 
-                Xamarin.Forms.Forms.Init(e.UWPLaunchActivatedEventArgs);
+                Microsoft.Maui.Controls.Forms.Init(e.UWPLaunchActivatedEventArgs);
 
 
                 // Place the frame in the current Window

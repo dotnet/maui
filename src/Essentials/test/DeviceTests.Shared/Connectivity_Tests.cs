@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using Xamarin.Essentials;
+using System.Linq;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	public class Connectivity_Tests
 	{

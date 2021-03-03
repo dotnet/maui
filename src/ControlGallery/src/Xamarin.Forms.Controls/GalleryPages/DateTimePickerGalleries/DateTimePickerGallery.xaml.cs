@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Xaml;
+﻿using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.DateTimePickerGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.DateTimePickerGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class DateTimePickerGallery : TabbedPage

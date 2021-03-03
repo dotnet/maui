@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
 namespace Tests

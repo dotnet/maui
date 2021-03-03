@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net6.0-android;net6.0-ios</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui.Controls</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
+    <Nullable>disable</Nullable>
+	</PropertyGroup>
+  <PropertyGroup>
+    <PackageId>Microsoft.Maui.Controls</PackageId>
+  </PropertyGroup>
+	<ItemGroup>
+		<Compile Remove="Internals\Legacy\**" />
+		<EmbeddedResource Remove="Internals\Legacy\**" />
+		<None Remove="Internals\Legacy\**" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Xaml\Diagnostics\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+	</ItemGroup>
+	<PropertyGroup>
+    <GitInfoReportImportance>high</GitInfoReportImportance>
+  </PropertyGroup>
+</Project>

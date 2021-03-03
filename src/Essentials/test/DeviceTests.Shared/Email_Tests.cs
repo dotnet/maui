@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - a human needs to close the email composer window

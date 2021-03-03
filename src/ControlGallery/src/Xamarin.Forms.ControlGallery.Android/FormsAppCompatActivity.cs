@@ -3,16 +3,15 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Java.Interop;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.Android;
-using Xamarin.Forms.Platform.Android.AppLinks;
-using Xamarin.Forms.Internals;
-using RegistrarHandlers = Xamarin.Platform.Registrar;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppLinks;
+using Microsoft.Maui.Controls.Internals;
 using System.Threading.Tasks;
 using System.Net.Http;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	// This is the AppCompat version of Activity1
 
@@ -53,13 +52,12 @@ namespace Xamarin.Forms.ControlGallery.Android
 			// reflection will stop working
 			ResourceManager.Init(null);
 
-			Forms.Init(this, bundle);
-			FormsHandlers.InitHandlers();
+			Microsoft.Maui.Controls.Compatibility.Forms.Init(this, bundle);
 			FormsMaps.Init(this, bundle);
 
 			//FormsMaterial.Init(this, bundle);
 			AndroidAppLinks.Init(this);
-			Forms.ViewInitialized += (sender, e) => {
+			Microsoft.Maui.Controls.Compatibility.Forms.ViewInitialized += (sender, e) => {
 				//				if (!string.IsNullOrWhiteSpace(e.View.StyleId)) {
 				//					e.NativeView.ContentDescription = e.View.StyleId;
 				//				}

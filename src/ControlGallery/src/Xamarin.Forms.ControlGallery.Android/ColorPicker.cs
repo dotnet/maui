@@ -3,10 +3,10 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Platform.Android;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Droid = Android;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class ColorPickerView : ViewGroup
 	//, INotifyPropertyChanged

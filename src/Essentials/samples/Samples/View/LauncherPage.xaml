@@ -1,4 +1,4 @@
-﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:Samples.View"
              xmlns:viewmodels="clr-namespace:Samples.ViewModel"

@@ -1,5 +1,4 @@
 <Project>
-  <Import Project="..\..\..\..\.nuspec\Xamarin.Forms.targets" Condition="$(FromSource) == 'true' AND '$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll')" />
-  <Import Project="..\..\..\..\.nuspec\Xamarin.Forms.targets" Condition="$(FromSource) == 'true' AND '$(BuildingInsideVisualStudio)' != 'true'" />
-  <Import Project="..\..\..\..\eng\Nuget.targets" Condition="'$(FromSource)' == 'false'" />
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll')" />
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
 </Project>

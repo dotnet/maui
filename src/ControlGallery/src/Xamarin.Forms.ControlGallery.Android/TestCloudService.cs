@@ -1,6 +1,6 @@
-using Xamarin.Forms.Controls;
+using Microsoft.Maui.Controls.ControlGallery;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class TestCloudService : ITestCloudService
 	{

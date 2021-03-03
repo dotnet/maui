@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+        xmlns="http://xamarin.com/schemas/2014/forms"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Gh11335">
+    <StackLayout x:Name="stack">
+        <Label x:Name="label" Text="Welcome to Microsoft.Maui.Controls!!!!" 
+           HorizontalOptions="Start"
+           VerticalOptions="CenterAndExpand" />
+        <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand">
+            <Button Margin="5" Text="Remove" Clicked="Remove" />
+            <Button Margin="5" Text="Add" Clicked="Add" />
+        </StackLayout>
+    </StackLayout>
+</ContentPage>

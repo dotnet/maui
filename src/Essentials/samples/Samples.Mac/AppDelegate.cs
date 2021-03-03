@@ -1,4 +1,4 @@
-﻿using AppKit;
+using AppKit;
 using CoreGraphics;
 using Foundation;
 using Xamarin.Forms;
@@ -23,7 +23,7 @@ namespace Samples.Mac
 
             window = new NSWindow(rect, style, NSBackingStore.Buffered, false)
             {
-                Title = "Xamarin.Essentials",
+                Title = "Microsoft.Maui.Essentials",
                 TitleVisibility = NSWindowTitleVisibility.Hidden,
             };
         }

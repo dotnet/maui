@@ -1,0 +1,3 @@
+using Android;
+
+[assembly: LinkerSafe]

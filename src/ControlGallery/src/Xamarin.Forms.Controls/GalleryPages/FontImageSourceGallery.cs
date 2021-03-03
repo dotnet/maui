@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Controls.Issues;
+﻿using Microsoft.Maui.Controls.ControlGallery.Issues;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class FontImageSourceGallery : ContentPage
 	{

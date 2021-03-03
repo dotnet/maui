@@ -148,25 +148,25 @@
     <Compile Include="CustomRenderers\_12372CustomRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Controls\Maps\src\Xamarin.Forms.Maps.iOS\Xamarin.Forms.Maps.iOS.csproj">
+    <ProjectReference Include="..\..\..\Compatibility\Maps\src\iOS\Compatibility.Maps.iOS.csproj">
       <Project>{aba078c4-f9bb-4924-8b2b-10fe0d2f5491}</Project>
       <Name>Xamarin.Forms.Maps.iOS</Name>
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Controls\Maps\src\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj">
       <Project>{f137fac5-3385-4b19-988b-4a14ed84ccc6}</Project>
       <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Forms\test\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
+    <ProjectReference Include="..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj">
       <Project>{2964f669-7cd9-4d78-b4d9-804a965d58c0}</Project>
       <Name>Xamarin.Forms.CustomAttributes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Platform.Handlers\src\Xamarin.Platform.Handlers\Xamarin.Platform.Handlers.csproj">
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj">
       <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
       <Name>Xamarin.Platform.Handlers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Platform.Renderers\test\Xamarin.Forms.Platform.iOS.UnitTests\Xamarin.Forms.Platform.iOS.UnitTests.csproj">
+    <ProjectReference Include="..\..\..\Compatibility\Core\tests\iOS\Compatibility.iOS.UnitTests.csproj">
       <Project>{52c50e88-7f15-45fe-a63c-8e7c76ca2bae}</Project>
       <Name>Xamarin.Forms.Platform.iOS.UnitTests</Name>
       <IsAppExtension>false</IsAppExtension>
@@ -178,11 +178,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="$(FromSource) == 'true'">
-    <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Platform.Renderers\src\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj">
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\iOS\Compatibility.iOS.csproj">
       <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>
       <Name>Xamarin.Forms.Platform.iOS</Name>
       <IsAppExtension>false</IsAppExtension>

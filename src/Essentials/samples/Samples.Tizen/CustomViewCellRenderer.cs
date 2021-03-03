@@ -1,4 +1,4 @@
-﻿using ElmSharp;
+using ElmSharp;
 using Samples.Tizen;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Tizen;

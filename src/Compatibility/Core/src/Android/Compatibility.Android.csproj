@@ -1,0 +1,57 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <Description>Android Compatibility Backend for Microsoft MAUI</Description>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility.Android</AssemblyName>
+    <TargetFrameworks>$(AndroidTargetFrameworks)</TargetFrameworks>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="AppCompat\Resource.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\anim\enterfromleft.xml" />
+    <AndroidResource Include="Resources\anim\enterfromright.xml" />
+    <AndroidResource Include="Resources\anim\exittoleft.xml" />
+    <AndroidResource Include="Resources\anim\exittoright.xml" />
+    <AndroidResource Include="Resources\values\**\*" />
+    <Compile Remove="Anticipator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\bottomtablayout.axml" />
+    <AndroidResource Include="Resources\layout\flyoutcontent.axml" />
+    <AndroidResource Include="Resources\layout\rootlayout.axml" />
+    <AndroidResource Include="Resources\layout\shellcontent.axml" />
+    <AndroidResource Include="Resources\layout\tabbar.axml" />
+    <AndroidResource Include="Resources\layout\toolbar.axml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\..\Controls\src\Core\Crc64.cs" Link="Crc64.cs" />
+    <Compile Include="..\..\..\..\Controls\src\Core\StreamWrapper.cs" Link="StreamWrapper.cs" />
+    <Compile Include="..\AppHostBuilderExtensions.cs" Link="AppHostBuilderExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+    <PackageReference Include="Xamarin.Google.Android.Material" />
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj" />
+  </ItemGroup>
+</Project>

@@ -4,7 +4,7 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries.HeaderFooterGrid">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries.HeaderFooterGrid">
     <ContentPage.Content>
         <Grid>
             <Grid.RowDefinitions>

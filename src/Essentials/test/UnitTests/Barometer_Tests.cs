@@ -1,5 +1,5 @@
-﻿using System;
-using Xamarin.Essentials;
+using System;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
 namespace Tests

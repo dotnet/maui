@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 using Xamarin.Forms;
 
 namespace Samples.ViewModel

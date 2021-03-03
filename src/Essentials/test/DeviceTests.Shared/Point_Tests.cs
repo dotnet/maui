@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	public class Point_Tests
 	{
@@ -24,9 +24,9 @@ namespace DeviceTests
 		public void PlatformToSystem()
 		{
 #if __IOS__
-            var platform = new CoreGraphics.CGPoint(x, y);
+			var platform = new CoreGraphics.CGPoint(x, y);
 #elif __ANDROID__
-            var platform = new Android.Graphics.Point(x, y);
+			var platform = new Android.Graphics.Point(x, y);
 #else
 			var platform = new Windows.Foundation.Point(x, y);
 #endif
@@ -42,14 +42,14 @@ namespace DeviceTests
 		public void PlatformToSystemException(float x, float y)
 		{
 #if __IOS__
-            var platform = new CoreGraphics.CGPoint(x, y);
-            Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemPoint());
+			var platform = new CoreGraphics.CGPoint(x, y);
+			Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemPoint());
 #elif __ANDROID__
-            var platform = new Android.Graphics.Point((int)x, (int)y);
-            Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemPoint());
+			// N/A
+			Utils.Unused(x, y);
 #elif WINDOWS_UWP
-            var platform = new Windows.Foundation.Point(x, y);
-            Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemPoint());
+			var platform = new Windows.Foundation.Point(x, y);
+			Assert.Throws<ArgumentOutOfRangeException>(() => platform.ToSystemPoint());
 #endif
 		}
 
@@ -58,9 +58,9 @@ namespace DeviceTests
 		{
 			var system = new System.Drawing.PointF(x, y);
 #if __IOS__
-            var platform = system.ToPlatformPoint();
+			var platform = system.ToPlatformPoint();
 #elif __ANDROID__
-            var platform = system.ToPlatformPointF();
+			var platform = system.ToPlatformPointF();
 #else
 			var platform = system.ToPlatformPoint();
 #endif
@@ -72,9 +72,9 @@ namespace DeviceTests
 		public void PlatformToSystemF()
 		{
 #if __IOS__
-            var platform = new CoreGraphics.CGPoint(x, y);
+			var platform = new CoreGraphics.CGPoint(x, y);
 #elif __ANDROID__
-            var platform = new Android.Graphics.PointF(x, y);
+			var platform = new Android.Graphics.PointF(x, y);
 #else
 			var platform = new Windows.Foundation.Point(x, y);
 #endif

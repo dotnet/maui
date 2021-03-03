@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.SwipeViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public partial class SwipeBindableLayoutGallery : ContentPage

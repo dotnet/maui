@@ -1,4 +1,4 @@
-﻿using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 
 namespace Samples.UWP
 {

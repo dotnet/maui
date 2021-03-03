@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using NUnit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android.Tests;
-using Xamarin.Forms.Controls.Tests;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Android.Tests;
+using Microsoft.Maui.Controls.ControlGallery.Tests;
 
 [assembly: Dependency(typeof(PlatformTestSettings))]
-namespace Xamarin.Forms.ControlGallery.Android.Tests
+namespace Microsoft.Maui.Controls.ControlGallery.Android.Tests
 {
 	public class PlatformTestSettings : IPlatformTestSettings
 	{

@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Shapes;
+using Microsoft.Maui.Controls.Shapes;
 
-namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.ShapesGalleries
 {
 	public class SpiralDemoPage : ContentPage
 	{

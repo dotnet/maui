@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:issues="clr-namespace:Xamarin.Forms.Controls.Issues;assembly=Xamarin.Forms.Controls"
+             xmlns:issues="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues;assembly=Microsoft.Maui.Controls.ControlGallery"
              mc:Ignorable="d"
-             x:Class="Xamarin.Forms.Controls.Issues.Issue6698View2"
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue6698View2"
              x:DataType="{x:Type issues:Issue6698ContainerViewModel}">
   <ContentView.Content>
       <StackLayout>

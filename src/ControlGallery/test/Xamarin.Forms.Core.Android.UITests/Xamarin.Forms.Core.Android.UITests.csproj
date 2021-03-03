@@ -62,7 +62,7 @@
       <Project>{e2403480-7079-4e09-9c21-113b615a2a0a}</Project>
       <Name>Xamarin.Platform.Handlers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Forms\src\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>

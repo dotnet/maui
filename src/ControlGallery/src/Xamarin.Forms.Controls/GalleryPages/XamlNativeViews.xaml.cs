@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public partial class XamlNativeViews : ContentPage
 	{

@@ -5,18 +5,18 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Plugin.DeviceInfo;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
-	[Category(Xamarin.Forms.Core.UITests.UITestCategories.Performance)] 
+	[Category(Microsoft.Maui.Controls.UITests.UITestCategories.Performance)] 
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
@@ -113,7 +113,7 @@ namespace Xamarin.Forms.Controls.Issues
 			try
 			{
 				var assembly = typeof(PerformanceGallery).GetTypeInfo().Assembly;
-				var txt = "Xamarin.Forms.Controls.BuildNumber.txt";
+				var txt = "Microsoft.Maui.Controls.ControlGallery.BuildNumber.txt";
 
 				using (Stream s = assembly.GetManifestResourceStream(txt))
 				using (StreamReader sr = new StreamReader(s))

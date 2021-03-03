@@ -1,17 +1,17 @@
 using System;
 using Android.Content;
 using Android.OS;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.Android;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(Bugzilla57114._57114View), typeof(_57114CustomRenderer))]
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
-	public class _57114CustomRenderer : Platform.Android.AppCompat.ViewRenderer<Bugzilla57114._57114View, _57114NativeView>
+	public class _57114CustomRenderer : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ViewRenderer<Bugzilla57114._57114View, _57114NativeView>
 	{
 		public _57114CustomRenderer(Context context) : base(context)
 		{

@@ -15,11 +15,12 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.Android;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 using NestedScrollView = AndroidX.Core.Widget.NestedScrollView;
 using AMenuItemCompat = AndroidX.Core.View.MenuItemCompat;
@@ -28,8 +29,8 @@ using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(Issue5461.ScrollbarFadingEnabledFalseScrollView), typeof(ScrollbarFadingEnabledFalseScrollViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1942.CustomGrid), typeof(Issue1942GridRenderer))]
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Effects.AttachedStateEffectLabel), typeof(AttachedStateEffectLabelRenderer))]
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.LegacyComponents.NonAppCompatSwitch), typeof(NonAppCompatSwitchRenderer))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.ControlGallery.Effects.AttachedStateEffectLabel), typeof(AttachedStateEffectLabelRenderer))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.ControlGallery.LegacyComponents.NonAppCompatSwitch), typeof(NonAppCompatSwitchRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeAndroidListViewRenderer))]
@@ -44,17 +45,17 @@ using AView = Android.Views.View;
 [assembly: ExportRenderer(typeof(Issue4782.Issue4782ImageButton), typeof(Issue4782ImageButtonImageButtonRenderer))]
 [assembly: ExportRenderer(typeof(Issue4561.CustomView), typeof(Issue4561CustomViewRenderer))]
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Issues.NoFlashTestNavigationPage), typeof(Xamarin.Forms.ControlGallery.Android.NoFlashTestNavigationPage))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.ControlGallery.Issues.NoFlashTestNavigationPage), typeof(Microsoft.Maui.Controls.ControlGallery.Android.NoFlashTestNavigationPage))]
 [assembly: ExportRenderer(typeof(ShellGestures.TouchTestView), typeof(ShellGesturesTouchTestViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue7249Switch), typeof(Issue7249SwitchRenderer))]
 [assembly: ExportRenderer(typeof(Issue9360.Issue9360NavigationPage), typeof(Issue9360NavigationPageRenderer))]
 [assembly: ExportRenderer(typeof(Issue8801.PopupStackLayout), typeof(Issue8801StackLayoutRenderer))]
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Tests.TestClasses.CustomButton), typeof(CustomButtonRenderer))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.ControlGallery.Tests.TestClasses.CustomButton), typeof(CustomButtonRenderer))]
 [assembly: ExportRenderer(typeof(ScrolView11185), typeof(ScrollViewFadeRenderer))]
 [assembly: ExportRenderer(typeof(ShellWithCustomRendererDisabledAnimations), typeof(ShellWithCustomRendererDisabledAnimationsRenderer))]
 [assembly: ExportRenderer(typeof(FlyoutPage), typeof(NativeDroidFlyoutPage))]
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class ShellWithCustomRendererDisabledAnimationsRenderer : ShellRenderer
 	{
@@ -107,7 +108,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 
-	public class Issue9360NavigationPageRenderer : Xamarin.Forms.Platform.Android.AppCompat.NavigationPageRenderer
+	public class Issue9360NavigationPageRenderer : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.NavigationPageRenderer
 	{
 		public Issue9360NavigationPageRenderer(Context context) : base(context)
 		{
@@ -151,7 +152,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 
-	public class NonAppCompatSwitchRenderer : Xamarin.Forms.Platform.Android.AppCompat.SwitchRenderer
+	public class NonAppCompatSwitchRenderer : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.SwitchRenderer
 	{
 		public NonAppCompatSwitchRenderer(Context context) : base(context)
 		{
@@ -170,7 +171,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 	public class AttachedStateEffectLabelRenderer :
 #if !LEGACY_RENDERERS
-		Platform.Android.FastRenderers.LabelRenderer
+		Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.LabelRenderer
 #else
 		LabelRenderer
 #endif
@@ -180,7 +181,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 
-	public class NativeDroidFlyoutPage : Xamarin.Forms.Platform.Android.AppCompat.MasterDetailPageRenderer
+	public class NativeDroidFlyoutPage : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.MasterDetailPageRenderer
 	{
 		FlyoutPage _page;
 		bool _disposed;
@@ -636,7 +637,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 
-	public class CustomButtonRenderer : Platform.Android.AppCompat.ButtonRenderer
+	public class CustomButtonRenderer : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer
 	{
 		public CustomButtonRenderer(Context context) : base(context)
 		{
@@ -909,7 +910,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 	}
 
 
-	//public class HintLabel : Xamarin.Forms.Platform.Android.AppCompat.LabelRenderer
+	//public class HintLabel : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.LabelRenderer
 	//{
 	//	public HintLabel()
 	//	{
@@ -919,7 +920,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 #pragma warning disable CS0618 // Leaving in old constructor so we can verify it works
 	public class NoFlashTestNavigationPage
-		: Xamarin.Forms.Platform.Android.AppCompat.NavigationPageRenderer
+		: Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.NavigationPageRenderer
 	{
 		public NoFlashTestNavigationPage(Context context) : base(context)
 		{
@@ -936,7 +937,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 #pragma warning disable CS0618 // Leaving in old constructor so we can verify it works
 	public class QuickCollectNavigationPageRenderer
-		: Xamarin.Forms.Platform.Android.AppCompat.NavigationPageRenderer
+		: Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.NavigationPageRenderer
 	{
 		bool _disposed;
 		NavigationPage _page;
@@ -1006,7 +1007,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 			switch (e.Action)
 			{
 				case MotionEventActions.Up:
-					Element.Results.Text = Xamarin.Forms.Controls.Issues.ShellGestures.TouchListenerSuccess;
+					Element.Results.Text = Microsoft.Maui.Controls.ControlGallery.Issues.ShellGestures.TouchListenerSuccess;
 					break;
 				case MotionEventActions.Cancel:
 					Element.Results.Text = "Fail";

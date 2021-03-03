@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
-namespace DeviceTests
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	public class DeviceInfo_Tests
 	{
@@ -11,9 +11,9 @@ namespace DeviceTests
 		public void Versions_Are_Correct()
 		{
 #if WINDOWS_UWP
-            Assert.Equal(10, DeviceInfo.Version.Major);
-            Assert.Equal(0, DeviceInfo.Version.Minor);
-            Assert.StartsWith("10.0", DeviceInfo.VersionString);
+			Assert.Equal(10, DeviceInfo.Version.Major);
+			Assert.Equal(0, DeviceInfo.Version.Minor);
+			Assert.StartsWith("10.0", DeviceInfo.VersionString);
 #else
 			Assert.True(DeviceInfo.Version.Major > 0);
 #endif
@@ -29,24 +29,24 @@ namespace DeviceTests
 		public void DeviceModel_Is_Correct()
 		{
 #if WINDOWS_UWP
-            // Nothing right now.
+			// Nothing right now.
 #elif __IOS__
-            if (DeviceInfo.DeviceType == DeviceType.Virtual)
-            {
-                Assert.Equal("x86_64", DeviceInfo.Model);
-            }
+			if (DeviceInfo.DeviceType == DeviceType.Virtual)
+			{
+				Assert.Equal("x86_64", DeviceInfo.Model);
+			}
 #elif __ANDROID__
 
-            if (DeviceInfo.DeviceType == DeviceType.Virtual)
-            {
-                var isEmulator =
-                    DeviceInfo.Model.Contains("sdk_gphone_x86") ||
-                    DeviceInfo.Model.Contains("google_sdk") ||
-                    DeviceInfo.Model.Contains("Emulator") ||
-                    DeviceInfo.Model.Contains("Android SDK built for x86");
+			if (DeviceInfo.DeviceType == DeviceType.Virtual)
+			{
+				var isEmulator =
+					DeviceInfo.Model.Contains("sdk_gphone_x86") ||
+					DeviceInfo.Model.Contains("google_sdk") ||
+					DeviceInfo.Model.Contains("Emulator") ||
+					DeviceInfo.Model.Contains("Android SDK built for x86");
 
-                Assert.True(isEmulator);
-            }
+				Assert.True(isEmulator);
+			}
 #else
 			throw new PlatformNotSupportedException();
 #endif
@@ -56,11 +56,11 @@ namespace DeviceTests
 		public void AppPackageName_Is_Correct()
 		{
 #if WINDOWS_UWP
-            Assert.Equal("ec0cc741-fd3e-485c-81be-68815c480690", AppInfo.PackageName);
+			Assert.Equal("ec0cc741-fd3e-485c-81be-68815c480690", AppInfo.PackageName);
 #elif __IOS__
-            Assert.Equal("com.xamarin.essentials.devicetests", AppInfo.PackageName);
+			Assert.Equal("com.microsoft.maui.essentials.devicetests", AppInfo.PackageName);
 #elif __ANDROID__
-            Assert.Equal("com.xamarin.essentials.devicetests", AppInfo.PackageName);
+			Assert.Equal("com.microsoft.maui.essentials.devicetests", AppInfo.PackageName);
 #else
 			throw new PlatformNotSupportedException();
 #endif
@@ -70,11 +70,11 @@ namespace DeviceTests
 		public void Platform_Is_Correct()
 		{
 #if WINDOWS_UWP
-            Assert.Equal(DevicePlatform.UWP, DeviceInfo.Platform);
+			Assert.Equal(DevicePlatform.UWP, DeviceInfo.Platform);
 #elif __IOS__
-            Assert.Equal(DevicePlatform.iOS, DeviceInfo.Platform);
+			Assert.Equal(DevicePlatform.iOS, DeviceInfo.Platform);
 #elif __ANDROID__
-            Assert.Equal(DevicePlatform.Android, DeviceInfo.Platform);
+			Assert.Equal(DevicePlatform.Android, DeviceInfo.Platform);
 #else
 			throw new PlatformNotSupportedException();
 #endif
@@ -84,7 +84,7 @@ namespace DeviceTests
 		public void App_Theme_Is_Correct()
 		{
 #if WINDOWS_UWP || __IOS__ || __ANDROID__
-            Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
+			Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
 #else
 			Assert.Equal(AppTheme.Unspecified, AppInfo.RequestedTheme);
 #endif

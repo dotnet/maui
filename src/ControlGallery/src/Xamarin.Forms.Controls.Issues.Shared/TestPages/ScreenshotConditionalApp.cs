@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
@@ -14,7 +14,7 @@ using Xamarin.UITest.Queries;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	/// <summary>
 	/// Decorator for IApp which only takes screenshots if the SCREENSHOTS symbol  is specified

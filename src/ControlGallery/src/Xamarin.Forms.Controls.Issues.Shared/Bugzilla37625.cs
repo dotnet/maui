@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Controls.Issues
 			int retry = 5;
 			while (retry-- >= 0)
 			{
-				var imageUri = new Uri("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.ControlGallery.Android/Assets/WebImages/XamarinLogo.png");
+				var imageUri = new Uri("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Microsoft.Maui.Controls.ControlGallery.Android/Assets/WebImages/XamarinLogo.png");
 				Content = new Image() { Source = new UriImageSource() { Uri = imageUri }, BackgroundColor = Color.Black, AutomationId = "success" };
 
 				await Task.Delay(50);

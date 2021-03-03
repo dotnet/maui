@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
+using Microsoft.Maui.Essentials;
 using Xunit;
 
-namespace DeviceTests.Shared
+namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
 	public class Contacts_Tests
 	{
@@ -18,8 +18,8 @@ namespace DeviceTests.Shared
 				await Permissions.RequestAsync<Permissions.ContactsRead>();
 			});
 
-			var list = new List<Xamarin.Essentials.Contact>();
-			var contacts = await Xamarin.Essentials.Contacts.GetAllAsync();
+			var list = new List<Microsoft.Maui.Essentials.Contact>();
+			var contacts = await Microsoft.Maui.Essentials.Contacts.GetAllAsync();
 
 			foreach (var contact in contacts.Take(10))
 				list?.Add(contact);

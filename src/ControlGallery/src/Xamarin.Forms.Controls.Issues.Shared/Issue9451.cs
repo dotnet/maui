@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 9451,
 		"[Bug] RelativeLayout Constraint can not go back to zero", PlatformAffected.All)]
@@ -25,10 +25,10 @@ namespace Xamarin.Forms.Controls.Issues
 			StackLayout.Children.Add(TriggerButton);
 
 			relativeLayout.Children.Add(StackLayout,
-				Xamarin.Forms.Constraint.Constant(0),
-				Xamarin.Forms.Constraint.Constant(0),
-				Xamarin.Forms.Constraint.RelativeToParent(x => x.Width / 2),
-				Xamarin.Forms.Constraint.RelativeToParent(y => y.Height));
+				Microsoft.Maui.Controls.Constraint.Constant(0),
+				Microsoft.Maui.Controls.Constraint.Constant(0),
+				Microsoft.Maui.Controls.Constraint.RelativeToParent(x => x.Width / 2),
+				Microsoft.Maui.Controls.Constraint.RelativeToParent(y => y.Height));
 
 			Content = relativeLayout;
 		}
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		private void Button_Clicked(object sender, EventArgs e)
 		{
-			RelativeLayout.SetWidthConstraint(StackLayout, Xamarin.Forms.Constraint.Constant(0.0));
+			RelativeLayout.SetWidthConstraint(StackLayout, Microsoft.Maui.Controls.Constraint.Constant(0.0));
 		}
 	}
 }

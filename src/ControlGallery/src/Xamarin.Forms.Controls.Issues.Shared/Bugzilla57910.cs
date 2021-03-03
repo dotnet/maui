@@ -2,21 +2,21 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 57910, "ObjectDisposedException in Xamarin.Forms.Platform.Android.Renderers.ProgressBarRenderer", PlatformAffected.Android)]
+	[Issue(IssueTracker.Bugzilla, 57910, "ObjectDisposedException in Microsoft.Maui.Controls.Platform.Android.Renderers.ProgressBarRenderer", PlatformAffected.Android)]
 	public class Bugzilla57910 : QuickCollectNavigationPage
 	{
 		const string ButtonId = "btnPush";

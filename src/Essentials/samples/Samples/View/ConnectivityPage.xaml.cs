@@ -1,4 +1,4 @@
-﻿namespace Samples.View
+namespace Samples.View
 {
 	public partial class ConnectivityPage : BasePage
 	{
