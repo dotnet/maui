@@ -1,15 +1,15 @@
 parameters:
+  androidVmPool: $(vs2019VmPool)
+  androidVmImage: $(vs2019VmImage)
+  iosVmPool: $(macOSXVmPool)
+  iosVmImage: $(macOSXVmImage)
   androidApiLevels: [ 30, 29, 21 ]
   iosVersions: [ '14.3' ]
   projects:
-    - name: essentials
-      desc: Essentials
-      android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
-      ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
-    - name: core
-      desc: Core
-      android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
-      ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+    - name: name
+      desc: Human Description
+      android: /optional/path/to/android.csproj
+      ios: /optional/path/to/ios.csproj
 
 stages:
 
@@ -25,8 +25,8 @@ stages:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
               pool:
-                name: $(vs2019VmPool)
-                vmImage: $(vs2019VmImage)
+                name: ${{ parameters.androidVmPool }}
+                vmImage: ${{ parameters.androidVmImage }}
               variables:
                 ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
               steps:
@@ -49,8 +49,8 @@ stages:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
               pool:
-                name: $(macOSXVmPool)
-                vmImage: $(macOSXVmImage)
+                name: ${{ parameters.iosVmPool }}
+                vmImage: ${{ parameters.iosVmImage }}
               variables:
                 ANDROID_EMULATORS: "system-images;ios-${{ version }};google_apis;x86"
               steps:

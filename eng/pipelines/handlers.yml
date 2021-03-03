@@ -286,3 +286,13 @@ stages:
             condition: always()
 
   - template: common/device-tests.yml
+    parameters:
+      projects:
+        - name: essentials
+          desc: Essentials
+          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
+        - name: core
+          desc: Core
+          android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
