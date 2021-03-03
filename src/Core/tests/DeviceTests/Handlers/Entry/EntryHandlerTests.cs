@@ -8,6 +8,10 @@ namespace Microsoft.Maui.DeviceTests
 	[Category("EntryHandler")]
 	public partial class EntryHandlerTests : HandlerTestBase<EntryHandler>
 	{
+		public EntryHandlerTests(HandlerTestFixture fixture) : base(fixture)
+		{
+		}
+
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
 		{

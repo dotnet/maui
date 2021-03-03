@@ -9,6 +9,10 @@ namespace Microsoft.Maui.DeviceTests
 	[Category("SliderHandler")]
 	public partial class SliderHandlerTests : HandlerTestBase<SliderHandler>
 	{
+		public SliderHandlerTests(HandlerTestFixture fixture) : base(fixture)
+		{
+		}
+
 		[Theory(DisplayName = "Percent Value Initializes Correctly")]
 		[InlineData(0, 1, 0)]
 		[InlineData(0, 1, 0.5)]

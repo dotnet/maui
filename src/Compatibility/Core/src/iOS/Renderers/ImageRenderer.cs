@@ -261,10 +261,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var fontsource = imagesource as FontImageSource;
 			if (fontsource != null)
 			{
-				//This will allow lookup from the Embedded Fonts
-				var cleansedname = FontExtensions.CleanseFontName(fontsource.FontFamily);
-				var font = UIFont.FromName(cleansedname ?? string.Empty, (float)fontsource.Size) ??
-					UIFont.SystemFontOfSize((float)fontsource.Size);
+				// This will allow lookup from the Embedded Fonts
+				var font = Font.OfSize(fontsource.FontFamily, fontsource.Size).ToUIFont();
 				var iconcolor = fontsource.Color.IsDefault ? _defaultColor : fontsource.Color;
 				var attString = new NSAttributedString(fontsource.Glyph, font: font, foregroundColor: iconcolor.ToUIColor());
 				var imagesize = ((NSString)fontsource.Glyph).GetSizeUsingAttributes(attString.GetUIKitAttributes(0, out _));

@@ -82,6 +82,16 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
+			public void NullItemsSucceed()
+			{
+				var task = GetNewTask(null);
+
+				var success = task.Execute();
+
+				Assert.True(success);
+			}
+
+			[Fact]
 			public void NonExistantFileFails()
 			{
 				var items = new[]
@@ -403,6 +413,16 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			public void NoItemsSucceed()
 			{
 				var task = GetNewTask();
+
+				var success = task.Execute();
+
+				Assert.True(success);
+			}
+
+			[Fact]
+			public void NullItemsSucceed()
+			{
+				var task = GetNewTask(null);
 
 				var success = task.Execute();
 

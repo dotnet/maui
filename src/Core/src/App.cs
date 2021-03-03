@@ -43,6 +43,7 @@ namespace Microsoft.Maui
 			var builder = new AppHostBuilder();
 
 			builder.UseMauiHandlers();
+			builder.UseFonts();
 
 			return builder;
 		}

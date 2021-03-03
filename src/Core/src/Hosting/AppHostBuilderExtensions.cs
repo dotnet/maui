@@ -40,5 +40,16 @@ namespace Microsoft.Maui.Hosting
 
 			return builder;
 		}
+
+		public static IAppHostBuilder UseFonts(this IAppHostBuilder builder)
+		{
+			builder.ConfigureServices((context, collection) =>
+			{
+				collection.AddSingleton<IEmbeddedFontLoader, EmbeddedFontLoader>();
+				collection.AddSingleton<IFontRegistrar>(provider => new FontRegistrar(provider.GetRequiredService<IEmbeddedFontLoader>()));
+				collection.AddSingleton<IFontManager>(provider => new FontManager(provider.GetRequiredService<IFontRegistrar>()));
+			});
+			return builder;
+		}
 	}
 }

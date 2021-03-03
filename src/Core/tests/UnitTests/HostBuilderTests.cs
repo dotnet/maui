@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Tests;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.UnitTests
 {
@@ -155,9 +156,77 @@ namespace Microsoft.Maui.UnitTests
 			Assert.IsType<ButtonHandlerStub>(specificHandler);
 		}
 
+		[Fact]
+		public void WillRetrieveDifferentTransientServices()
+		{
+			var app = new AppStub();
+			app.CreateBuilder()
+				.ConfigureServices((ctx, services) => services.AddTransient<IFooService, FooService>())
+				.Build(app);
+			
+			AssertTransient<IFooService, FooService>(app);
+		}
+
+		[Fact]
+		public void WillRetrieveSameSingletonServices()
+		{
+			var app = new AppStub();
+			app.CreateBuilder()
+				.ConfigureServices((ctx, services) => services.AddSingleton<IFooService, FooService>())
+				.Build(app);
+
+			AssertSingleton<IFooService, FooService>(app);
+		}
+
+		[Fact]
+		public void WillRetrieveMixedServices()
+		{
+			var app = new AppStub();
+			app.CreateBuilder()
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddSingleton<IFooService, FooService>();
+					services.AddTransient<IBarService, BarService>();
+				})
+				.Build(app);
+
+			AssertSingleton<IFooService, FooService>(app);
+			AssertTransient<IBarService, BarService>(app);
+		}
+
 		public void Dispose()
 		{
 			(App.Current as AppStub)?.ClearApp();
+		}
+
+		static void AssertTransient<TInterface, TConcrete>(AppStub app)
+		{
+			var service1 = app.Services.GetService<TInterface>();
+
+			Assert.NotNull(service1);
+			Assert.IsType<TConcrete>(service1);
+
+			var service2 = app.Services.GetService<TInterface>();
+
+			Assert.NotNull(service2);
+			Assert.IsType<TConcrete>(service2);
+
+			Assert.NotEqual(service1, service2);
+		}
+
+		static void AssertSingleton<TInterface, TConcrete>(AppStub app)
+		{
+			var service1 = app.Services.GetService<TInterface>();
+
+			Assert.NotNull(service1);
+			Assert.IsType<TConcrete>(service1);
+
+			var service2 = app.Services.GetService<TInterface>();
+
+			Assert.NotNull(service2);
+			Assert.IsType<TConcrete>(service2);
+
+			Assert.Equal(service1, service2);
 		}
 	}
 }

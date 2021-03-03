@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using Microsoft.Maui;
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
@@ -9,4 +8,5 @@ using Microsoft.Maui;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Pages.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.DualScreen.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Core.DeviceTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]

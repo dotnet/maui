@@ -13,6 +13,5 @@ namespace Sample.iOS
 	[Register("AppDelegate")]
 	public class AppDelegate : MauiUIApplicationDelegate<MyApp>
 	{
-
 	}
 }

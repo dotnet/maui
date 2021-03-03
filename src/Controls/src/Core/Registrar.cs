@@ -271,6 +271,8 @@ namespace Microsoft.Maui.Controls.Internals
 			Registered = new Registrar<IRegisterable>();
 		}
 
+		public static IFontRegistrar FontRegistrar { get; } = new FontRegistrar();
+
 		internal static Dictionary<string, Type> Effects { get; } = new Dictionary<string, Type>();
 		internal static Dictionary<string, IList<StylePropertyAttribute>> StyleProperties => LazyStyleProperties.Value;
 
@@ -383,7 +385,7 @@ namespace Microsoft.Maui.Controls.Internals
 						var attribute = a as HandlerAttribute;
 						if (attribute == null && (a is ExportFontAttribute fa))
 						{
-							FontRegistrar.Register(fa, assembly);
+							FontRegistrar.Register(fa.FontFileName, fa.Alias, assembly);
 						}
 						else
 						{
@@ -410,6 +412,13 @@ namespace Microsoft.Maui.Controls.Internals
 				RegisterEffects(resolutionName, typedEffectAttributes);
 
 				Profile.FrameEnd(frameName);
+			}
+
+			if (FontRegistrar is FontRegistrar fontRegistrar)
+			{
+				var type = Registered.GetHandlerType(typeof(EmbeddedFont));
+				if (type != null)
+					fontRegistrar.SetFontLoader((IEmbeddedFontLoader)Activator.CreateInstance(type));
 			}
 
 			RegisterStylesheets(flags);

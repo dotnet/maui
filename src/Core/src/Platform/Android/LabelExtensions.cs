@@ -1,3 +1,4 @@
+using Android.Util;
 using Android.Widget;
 
 namespace Microsoft.Maui
@@ -9,9 +10,9 @@ namespace Microsoft.Maui
 			textView.Text = label.Text;
 		}
 
-		public static void UpdateTextColor(this TextView textView, ILabel label,  Maui.Color defaultColor)
+		public static void UpdateTextColor(this TextView textView, ILabel label, Color defaultColor)
 		{
-			 Maui.Color textColor = label.TextColor;
+			Color textColor = label.TextColor;
 
 			if (textColor.IsDefault)
 			{
@@ -20,7 +21,18 @@ namespace Microsoft.Maui
 			else
 			{
 				textView.SetTextColor(textColor.ToNative());
-			}				
+			}
+		}
+
+		public static void UpdateFont(this TextView textView, ILabel label, IFontManager fontManager)
+		{
+			var font = label.GetFont();
+
+			var tf = fontManager.GetTypeface(font);
+			textView.Typeface = tf;
+
+			var sp = fontManager.GetScaledPixel(font);
+			textView.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 	}
 }
