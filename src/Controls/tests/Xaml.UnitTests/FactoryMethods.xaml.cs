@@ -131,29 +131,29 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual("factory 42foo", layout.v5.Content.Content);
 			}
 
-			//[TestCase(false)]
-			//[TestCase(true)]
-			//public void TestCtorWithxStatic(bool useCompiledXaml)
-			//{
-			//	var layout = new FactoryMethods(useCompiledXaml);
-			//	Assert.AreEqual("alternate ctor Property", layout.v6.Content.Content);
-			//}
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestCtorWithxStatic(bool useCompiledXaml)
+			{
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("alternate ctor Property", layout.v6.Content.Content);
+			}
 
-			//[TestCase(false)]
-			//[TestCase(true)]
-			//public void TestCtorWithxStaticAttribute(bool useCompiledXaml)
-			//{
-			//	var layout = new FactoryMethods(useCompiledXaml);
-			//	Assert.AreEqual("alternate ctor Property", layout.v7.Content.Content);
-			//}
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestCtorWithxStaticAttribute(bool useCompiledXaml)
+			{
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("alternate ctor Property", layout.v7.Content.Content);
+			}
 
-			//[TestCase(false)]
-			//[TestCase(true)]
-			//public void TestCtorWithArrayParameter(bool useCompiledXaml)
-			//{
-			//	var layout = new FactoryMethods(useCompiledXaml);
-			//	Assert.AreEqual("Foo Bar", layout.v8.Content.Content);
-			//}
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestCtorWithArrayParameter(bool useCompiledXaml)
+			{
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("Foo Bar", layout.v8.Content.Content);
+			}
 		}
 	}
 }

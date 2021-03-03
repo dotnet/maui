@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 					IOPath.GetFullPath(
 						IOPath.Combine(
-							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 					IOPath.GetFullPath(
 						IOPath.Combine(
 							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
 										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
 										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
 										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
 										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
 										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -242,7 +242,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
 										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
 										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
 										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -338,7 +338,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
 										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				var references = string.Join(";",
 					IOPath.GetFullPath(
 						IOPath.Combine(
-							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 					IOPath.GetFullPath(
 						IOPath.Combine(
 							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				var references = string.Join(";",
 					IOPath.GetFullPath(
 						IOPath.Combine(
-							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 					IOPath.GetFullPath(
 						IOPath.Combine(
 							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var references = string.Join(";",
 								IOPath.GetFullPath(
 									IOPath.Combine(
-										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Core.dll")),
+										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.dll")),
 								IOPath.GetFullPath(
 									IOPath.Combine(
 										TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))

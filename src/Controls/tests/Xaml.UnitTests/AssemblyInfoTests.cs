@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 	{
 		static readonly string[] references = new[]
 		{
+			"Microsoft.Maui",
 			"Microsoft.Maui.Controls",
 			"Microsoft.Maui.Controls.Maps",
 			"Microsoft.Maui.Controls.Xaml",
@@ -39,6 +40,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.AreEqual(1, actual.Major, actual.ToString());
 			Assert.AreEqual(0, actual.Minor, actual.ToString());
 			Assert.AreEqual(0, actual.Build, actual.ToString());
+			Assert.AreEqual(0, actual.Revision, actual.ToString());
 		}
 
 		[Test, TestCaseSource(nameof(references))]
@@ -46,7 +48,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			FileVersionInfo actual = FileVersionInfo.GetVersionInfo(testAssembly.Location);
-			Version expected = Version.Parse(GetFileFromRoot(s_gitInfoFile));
+			string versionString = GetFileFromRoot(s_gitInfoFile);
+			if (versionString.IndexOf("-") is int idx && idx > 0)
+				versionString = versionString.Substring(0, idx);
+			Version expected = Version.Parse(versionString);
 			Assert.AreEqual(expected.Major, actual.FileMajorPart, $"FileMajorPart is wrong. {actual.ToString()}");
 			Assert.AreEqual(expected.Minor, actual.FileMinorPart, $"FileMinorPart is wrong. {actual.ToString()}");
 			// Fails locally

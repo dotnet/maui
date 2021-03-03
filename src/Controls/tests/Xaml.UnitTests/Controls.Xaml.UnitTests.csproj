@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Xaml.UnitTests.Build.props" />
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
     <RootNamespace>Microsoft.Maui.Controls.Xaml.UnitTests</RootNamespace>
@@ -8,7 +9,6 @@
     <IsPackable>false</IsPackable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -28,6 +28,14 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\Xaml.UnitTests.ExternalAssembly\Controls.Xaml.UnitTests.ExternalAssembly.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="..\Core.UnitTests\MockDispatcherProvider.cs">
       <Link>MockDispatcherProvider.cs</Link>
     </Compile>
@@ -41,11 +49,5 @@
       <Link>BaseTestFixture.cs</Link>
     </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
-    <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
-  </ItemGroup>
+  <Import Project="..\Xaml.UnitTests.Build.targets" />
 </Project>

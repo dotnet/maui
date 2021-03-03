@@ -444,10 +444,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<View 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustView"" Activated=""missingMethod"" />
+				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustView"" Clicked=""missingMethod"" />
 				</View>";
 			var view = new CustView();
-			Assert.Throws(new XamlParseExceptionConstraint(5, 53), () => view.LoadFromXaml(xaml));
+			Assert.Throws(new XamlParseExceptionConstraint(5, 63), () => view.LoadFromXaml(xaml));
 		}
 
 		[Test]
@@ -457,11 +457,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<View 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustView"" Activated=""wrongSignature"" />
+				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustView"" Clicked=""wrongSignature"" />
 				</View>";
 			var view = new CustView();
 
-			Assert.Throws(new XamlParseExceptionConstraint(5, 53), () => view.LoadFromXaml(xaml));
+			Assert.Throws(new XamlParseExceptionConstraint(5, 63), () => view.LoadFromXaml(xaml));
 		}
 
 
