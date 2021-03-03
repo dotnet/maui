@@ -26,7 +26,7 @@ stages:
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.platforms.android, '') }}:
+        - ${{ if containsValue(project.platforms, 'android') }}:
           - ${{ each api in parameters.androidApiLevels }}:
             - job: device_tests_$(project.name)_$(api)
               workspace:
