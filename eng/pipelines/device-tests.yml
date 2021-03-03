@@ -21,8 +21,8 @@ resources:
       endpoint: xamarin
       ref: refs/heads/main # still defaults to master even though main is the main branch
   pipelines:
-    - pipeline: handlersci
-      source: xamarin-handlers-ci
+    - pipeline: mauici
+      source: MAUI-public
       trigger:
         branches:
           - main
