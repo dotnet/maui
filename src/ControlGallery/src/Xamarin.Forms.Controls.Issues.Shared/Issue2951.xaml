@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<controls:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:controls="clr-namespace:Xamarin.Forms.Controls;assembly=Xamarin.Forms.Controls" xmlns:extensions="clr-namespace:Xamarin.Forms.Controls.Issues;assembly=Xamarin.Forms.Controls" x:Name="ThePageIssue2951" x:Class="Xamarin.Forms.Controls.Issues.Issue2951">
+<controls:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery;assembly=Microsoft.Maui.Controls.ControlGallery" xmlns:extensions="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues;assembly=Microsoft.Maui.Controls.ControlGallery" x:Name="ThePageIssue2951" x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue2951">
 	<controls:TestContentPage.Resources>
 		<ResourceDictionary>
 			<Style x:Key="ButtonStyle" TargetType="Button">

@@ -7,9 +7,9 @@ using Xamarin.UITest;
 using NUnit.Framework;
 using Xamarin.UITest.Queries;
 using System.Linq;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	public static class UITestHelper
 	{

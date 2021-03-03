@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -26,16 +26,16 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var presidents = new List<President>();
 
-			presidents.Add(new President($"Presidente 44", 1, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/Fruits.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 43", 2, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Xamarin.Forms.ControlGallery.Android/Resources/drawable/person.png?raw=true"));
-			presidents.Add(new President($"Presidente 42", 3, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Xamarin.Forms.ControlGallery.Android/Resources/drawable/photo.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 41", 4, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/FlowerBuds.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 40", 5, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/games.png?raw=true"));
-			presidents.Add(new President($"Presidente 39", 6, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/gear.png?raw=true"));
-			presidents.Add(new President($"Presidente 38", 7, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Xamarin.Forms.ControlGallery.Android/Resources/drawable/xamarinlogo.png?raw=true"));
-			presidents.Add(new President($"Presidente 37", 8, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Xamarin.Forms.ControlGallery.Android/Resources/drawable/xamarinstore.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 36", 9, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Xamarin.Forms.ControlGallery.Android/Resources/drawable/oasis.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 35", 10, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Xamarin.Forms.ControlGallery.Android/Resources/drawable/Vegetables.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 44", 1, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/Fruits.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 43", 2, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/person.png?raw=true"));
+			presidents.Add(new President($"Presidente 42", 3, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/photo.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 41", 4, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/FlowerBuds.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 40", 5, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/games.png?raw=true"));
+			presidents.Add(new President($"Presidente 39", 6, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/gear.png?raw=true"));
+			presidents.Add(new President($"Presidente 38", 7, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/xamarinlogo.png?raw=true"));
+			presidents.Add(new President($"Presidente 37", 8, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/xamarinstore.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 36", 9, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/oasis.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 35", 10, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/Vegetables.jpg?raw=true"));
 
 			var header = new Label
 			{

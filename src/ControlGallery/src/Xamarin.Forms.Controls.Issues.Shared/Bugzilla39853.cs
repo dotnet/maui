@@ -1,9 +1,9 @@
 ﻿using System;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Bugzilla, 39853, "BorderRadius ignored on UWP", PlatformAffected.UWP)]
 	public class Bugzilla39853 : TestContentPage
 	{
-		public class RoundedButton : Xamarin.Forms.Button
+		public class RoundedButton : Microsoft.Maui.Controls.Button
 		{
 			public RoundedButton(int radius)
 			{

@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -125,9 +125,9 @@ namespace Xamarin.Forms.Controls.Issues
 					};
 
 					headerLayout.Children.Add(_headerLabel,
-						Forms.Constraint.Constant(0),
-						Forms.Constraint.Constant(0),
-						Forms.Constraint.RelativeToParent(parent => parent.Width));
+						Microsoft.Maui.Controls.Constraint.Constant(0),
+						Microsoft.Maui.Controls.Constraint.Constant(0),
+						Microsoft.Maui.Controls.Constraint.RelativeToParent(parent => parent.Width));
 
 					Content = new StackLayout
 					{

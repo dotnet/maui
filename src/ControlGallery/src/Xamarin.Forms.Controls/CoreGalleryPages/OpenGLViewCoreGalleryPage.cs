@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal class OpenGLViewCoreGalleryPage : CoreGalleryPage<OpenGLView>
 	{

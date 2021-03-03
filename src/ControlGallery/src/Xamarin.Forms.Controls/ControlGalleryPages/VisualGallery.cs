@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Controls.Issues;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class VisualGallery : VisualControlsPage
 	{

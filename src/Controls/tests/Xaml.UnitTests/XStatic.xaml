@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
-			 xmlns:remote="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly"
+			 xmlns:remote="clr-namespace:Microsoft.Maui.Controls.ControlGallery;assembly=Microsoft.Maui.Controls.ControlGallery"
 			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.XStatic">
 	<ContentPage.ToolbarItems>
 		<ToolbarItem IconImageSource="{x:Static local:MockxStatic.MockFieldRef}" />
@@ -17,9 +17,7 @@
 		<Label x:Name="constant"
 				Text="{x:Static local:MockxStatic.MockConstant}"/>
 		<Label x:Name="remoteConstant"
-				Text="{x:Static remote:RemotexStatic.MockConstant}"/>
-		<Label x:Name="remoteField"
-				Text="{x:Static remote:RemotexStatic.MockField}"/>
+				Text="{x:Static remote:App.AppName}"/>
 		<Label x:Name="field"
 				Text="{x:Static local:MockxStatic.MockField}"/>
 		<ScrollView x:Name="enuM"

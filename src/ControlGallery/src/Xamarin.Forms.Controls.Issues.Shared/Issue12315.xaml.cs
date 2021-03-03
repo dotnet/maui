@@ -1,12 +1,12 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 12315, "[Bug] Button disappears when setting CornerRadius",
 		PlatformAffected.iOS)]

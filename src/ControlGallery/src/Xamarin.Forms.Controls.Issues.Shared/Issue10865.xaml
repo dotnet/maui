@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
-    xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:d="http://xamarin.com/schemas/2014/forms/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodel="clr-namespace:Xamarin.Forms.Controls.Issues"
+    xmlns:viewmodel="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
     mc:Ignorable="d"
-    x:Class="Xamarin.Forms.Controls.Issues.Issue10865"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue10865"
     Title="Issue 10865">
     <controls:TestContentPage.BindingContext>
         <viewmodel:Issue10865ViewModel />

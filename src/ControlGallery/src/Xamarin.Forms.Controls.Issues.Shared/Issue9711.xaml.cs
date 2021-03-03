@@ -4,19 +4,19 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 
 // Thanks to GitHub user [@Matmork](https://github.com/Matmork) for this reproducible test case.
 // https://github.com/xamarin/Xamarin.Forms/issues/9711#issuecomment-602520024
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 9711, "[Bug] iOS Failed to marshal the Objective-C object HeaderWrapperView", PlatformAffected.iOS)]

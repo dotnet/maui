@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Internals;
+﻿using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.ShapesGalleries
 {
 	[Preserve(AllMembers = true)]
 	public partial class PathGallery : ContentPage

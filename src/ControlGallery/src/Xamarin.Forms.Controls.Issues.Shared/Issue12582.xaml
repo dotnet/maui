@@ -3,10 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:local="using:Xamarin.Forms.Controls"
+             xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
              mc:Ignorable="d"
              Title="Test 12582"
-             x:Class="Xamarin.Forms.Controls.Issues.Issue12582">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue12582">
     <Grid
         RowSpacing="0">
         <Grid.RowDefinitions>

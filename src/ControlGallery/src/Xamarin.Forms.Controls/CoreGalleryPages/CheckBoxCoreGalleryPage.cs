@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal class CheckBoxCoreGalleryPage : CoreGalleryPage<CheckBox>
 	{

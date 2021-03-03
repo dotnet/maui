@@ -1,16 +1,16 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if !__MACOS__
 			var scrollRect = RunningApp.RootViewRect();
-			Xamarin.Forms.Core.UITests.Gestures.ScrollForElement(RunningApp, "* marked:'9'", new Xamarin.Forms.Core.UITests.Drag(scrollRect, Xamarin.Forms.Core.UITests.Drag.Direction.BottomToTop, Xamarin.Forms.Core.UITests.Drag.DragLength.Long));
+			Microsoft.Maui.Controls.UITests.Gestures.ScrollForElement(RunningApp, "* marked:'9'", new Microsoft.Maui.Controls.UITests.Drag(scrollRect, Microsoft.Maui.Controls.UITests.Drag.Direction.BottomToTop, Microsoft.Maui.Controls.UITests.Drag.DragLength.Long));
 			RunningApp.Screenshot("I see 9");
 #endif
 

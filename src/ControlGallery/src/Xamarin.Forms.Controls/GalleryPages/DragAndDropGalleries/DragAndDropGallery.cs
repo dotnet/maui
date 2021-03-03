@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.DragAndDropGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class DragAndDropGallery : Shell

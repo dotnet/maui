@@ -1,9 +1,9 @@
 using System;
 using System.Threading;
 
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal class CoreBoxViewGalleryPage : CoreGalleryPage<BoxView>
 	{

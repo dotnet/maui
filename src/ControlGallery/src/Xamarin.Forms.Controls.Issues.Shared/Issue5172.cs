@@ -1,14 +1,14 @@
 ﻿using System;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ManualReview)]
@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
 						new ImageCell
 						{
                             // Some differences with loading images in initial release.
-                            ImageSource = ImageSource.FromUri(new Uri("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/543da8aec914efc6ce98794302792ef948cc28c8/Xamarin.Forms.ControlGallery.Android/Resources/drawable/coffee.png")),
+                            ImageSource = ImageSource.FromUri(new Uri("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/543da8aec914efc6ce98794302792ef948cc28c8/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/coffee.png")),
 							Text = "This is an ImageCell",
 							Detail = "This is some detail text",
 						}

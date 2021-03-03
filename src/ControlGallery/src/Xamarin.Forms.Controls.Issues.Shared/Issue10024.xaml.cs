@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 10024, "Frame animation issue/inconsistency in latest version of Forms/Xamarin iOS", PlatformAffected.iOS)]
 	public partial class Issue10024 : TestContentPage

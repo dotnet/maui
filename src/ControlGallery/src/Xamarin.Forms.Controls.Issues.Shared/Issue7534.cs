@@ -1,11 +1,11 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7534, "Span with tail truncation and paragraph breaks with Java.Lang.IndexOutOfBoundsException", PlatformAffected.Android)]
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var formattedString = new FormattedString();
 			formattedString.Spans.Add(span);
 
-			var label = new Xamarin.Forms.Label
+			var label = new Microsoft.Maui.Controls.Label
 			{
 				LineBreakMode = LineBreakMode.TailTruncation,
 				VerticalOptions = LayoutOptions.Start,
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 				VerticalOptions = LayoutOptions.StartAndExpand
 			};
 
-			var layout = new Xamarin.Forms.StackLayout();
+			var layout = new Microsoft.Maui.Controls.StackLayout();
 			layout.Children.Add(label);
 			layout.Children.Add(labelDescription);
 

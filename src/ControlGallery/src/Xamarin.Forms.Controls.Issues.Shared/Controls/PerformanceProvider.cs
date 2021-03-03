@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	[Preserve(AllMembers = true)]
 	internal class PerformanceProvider : IPerformanceProvider
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Controls
 
 		static string ShortenPath(string path)
 		{
-			int index = path.IndexOf("Xamarin.Forms.");
+			int index = path.IndexOf("Microsoft.Maui.Controls.");
 			if (index > -1)
 				path = path.Substring(index + 14);
 

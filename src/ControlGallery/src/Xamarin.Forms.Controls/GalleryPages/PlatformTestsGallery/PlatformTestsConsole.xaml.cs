@@ -6,11 +6,11 @@ using System.Reflection;
 using System.Threading.Tasks;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
-using Xamarin.Forms.Controls.Tests;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls.ControlGallery.Tests;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformTestsGallery
 {
 	[Preserve(AllMembers = true)]
 	[XamlCompilation(XamlCompilationOptions.Compile)]

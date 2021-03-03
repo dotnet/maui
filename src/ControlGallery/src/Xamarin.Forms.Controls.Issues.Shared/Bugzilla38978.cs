@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Linq;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 38978, "Cell.ForceUpdateSize issues with row selection/deselection (ViewCell)", PlatformAffected.Android)]
@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		[Category(Xamarin.Forms.Core.UITests.UITestCategories.ManualReview)]
+		[Category(Microsoft.Maui.Controls.UITests.UITestCategories.ManualReview)]
 		public void Bugzilla38978Test ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("2"));

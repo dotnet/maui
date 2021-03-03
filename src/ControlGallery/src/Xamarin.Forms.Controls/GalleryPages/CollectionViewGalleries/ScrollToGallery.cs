@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollToGalleries;
+﻿using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.ScrollToGalleries;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	internal class ScrollToGallery : ContentPage
 	{

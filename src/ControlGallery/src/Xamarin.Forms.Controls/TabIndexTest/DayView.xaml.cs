@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls.TabIndexTest
+namespace Microsoft.Maui.Controls.ControlGallery.TabIndexTest
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class DayView : ContentView

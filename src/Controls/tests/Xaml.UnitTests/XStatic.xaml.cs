@@ -105,15 +105,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void ConstantInARemoteAssembly(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual(RemotexStatic.MockConstant, layout.remoteConstant.Text);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void FieldInARemoteAssembly(bool useCompiledXaml)
-			{
-				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual(RemotexStatic.MockField, layout.remoteField.Text);
+				Assert.AreEqual("XamarinFormsControls", layout.remoteConstant.Text);
 			}
 
 			[TestCase(false)]

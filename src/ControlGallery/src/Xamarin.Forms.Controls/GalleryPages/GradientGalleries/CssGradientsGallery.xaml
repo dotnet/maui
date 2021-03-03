@@ -2,7 +2,7 @@
 <ContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Xamarin.Forms.Controls.GalleryPages.GradientGalleries.CssGradientsGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries.CssGradientsGallery"
     Title="Using CSS">
     <ContentPage.Resources>
 

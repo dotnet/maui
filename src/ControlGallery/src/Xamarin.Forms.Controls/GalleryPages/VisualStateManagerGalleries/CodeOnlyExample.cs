@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.VisualStateManagerGalleries
 {
 	public class CodeOnlyExample : ContentPage
 	{
