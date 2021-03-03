@@ -1,5 +1,4 @@
 parameters:
-  slnPath : 'Xamarin.Forms.sln'
   msbuildExtraArguments : ''
   artifactsTargetFolder: '$(build.artifactstagingdirectory)'
   artifactsName: 'win_build'
@@ -28,12 +27,6 @@ steps:
     inputs:
       script: 'nuget install NUnit3TestAdapter'
 
-  - task: NuGetCommand@2
-    displayName: 'NuGet restore ${{ parameters.slnPath }}'
-    inputs:
-      restoreSolution: ${{ parameters.slnPath }}
-      feedsToUse: config
-
   - script: build.cmd -Target BuildForNuget -ScriptArgs '--BUILD_CONFIGURATION="$(BuildConfiguration)"','--Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
     name: winbuild
     displayName: 'Build Projects For Nuget'
@@ -49,8 +42,6 @@ steps:
       testRunTitle: '$(BuildConfiguration)_UnitTests'
       configuration: '$(BuildConfiguration)'
       diagnosticsEnabled: true
-      # pathtoCustomTestAdapters: ${{ parameters.nunitTestAdapterFolder }}
-      # overrideTestrunParameters: -platform AnyCPU -framework Framework47
 
   - task: DotNetCoreCLI@2
     displayName: 'Unit Tests'

@@ -21,7 +21,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           action: "fix"
           #only-changed-files: true # only works for PRs
-          workspace: "Xamarin.Forms.sln"
+          workspace: "Microsoft.Maui.sln"
     
       - name: Commit files
         if: steps.format.outputs.has-changes == 'true'
