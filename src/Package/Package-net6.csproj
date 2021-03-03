@@ -20,6 +20,7 @@
 		<ProjectReference Include="..\Controls\src\Build.Tasks\Controls.Build.Tasks-net6.csproj" />
 		<ProjectReference Include="..\Controls\src\Core\Controls.Core-net6.csproj" />
 		<ProjectReference Include="..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
+		<ProjectReference Include="..\Essentials\src\Essentials-net6.csproj" />
 		<ProjectReference Include="..\SingleProject\Resizetizer\src\Resizetizer.csproj" />
 	</ItemGroup>
 
