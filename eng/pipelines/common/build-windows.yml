@@ -1,5 +1,5 @@
 parameters:
-  slnPath : 'Xamarin.Forms.sln'
+  slnPath : 'Microsoft.Maui.sln'
   msbuildExtraArguments : ''
   artifactsTargetFolder: '$(build.artifactstagingdirectory)'
   artifactsName: 'win_build'
@@ -14,8 +14,8 @@ steps:
     displayName: 'Provisionator'
     condition: eq(variables['provisioning'], 'true')
     inputs:
-      provisioning_script: ${{ parameters.provisionatorPath }}
-      provisioning_extra_args: ${{ parameters.provisionator.extraArguments }}
+      provisioning_script: $(provisionator.path)
+      provisioning_extra_args: $(provisionator.extraArguments)
 
   - task: NuGetToolInstaller@1
     displayName: 'Use NuGet $(NUGET_VERSION)'
@@ -49,8 +49,6 @@ steps:
       testRunTitle: '$(BuildConfiguration)_UnitTests'
       configuration: '$(BuildConfiguration)'
       diagnosticsEnabled: true
-      # pathtoCustomTestAdapters: ${{ parameters.nunitTestAdapterFolder }}
-      # overrideTestrunParameters: -platform AnyCPU -framework Framework47
 
   - task: DotNetCoreCLI@2
     displayName: 'Unit Tests'

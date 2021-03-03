@@ -59,6 +59,12 @@ variables:
     value: https://bosstoragemirror.azureedge.net/wrench/main/f01fde5cd9a7ffffcdc8d241200c35988700fa00/4449408/package/notarized/Microsoft.iOS.Bundle.14.3.100-ci.main.1079.pkg
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)\logs
+  - name: provisionator.xcode
+    value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+  - name: provisionator.path
+    value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+  - name: provisionator.extraArguments
+    value: '--v'
 
 resources:
   repositories:
@@ -90,8 +96,6 @@ stages:
               BuildConfiguration:  'Release'
         steps:
           - template: common/build-windows.yml
-            parameters:
-              provisionatorPath : '/build/provisioning/provisioning.csx'
 
   # - stage: build_osx
   #   displayName: iOS
@@ -280,3 +284,5 @@ stages:
               artifactName: NET6-OSX-$(BuildConfiguration)
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
+
+  - template: device-tests.yml
