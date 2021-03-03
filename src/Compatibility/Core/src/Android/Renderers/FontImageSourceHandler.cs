@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					AntiAlias = true,
 				};
 
-				paint.SetTypeface(fontsource.FontFamily.ToTypeFace());
+				paint.SetTypeface(fontsource.FontFamily.ToTypeface());
 
 				var width = (int)(paint.MeasureText(fontsource.Glyph) + .5f);
 				var baseline = (int)(-paint.Ascent() + .5f);

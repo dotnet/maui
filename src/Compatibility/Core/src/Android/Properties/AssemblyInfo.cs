@@ -60,7 +60,7 @@ using Microsoft.Maui.Controls.Shapes;
 [assembly: ExportCell(typeof(TextCell), typeof(TextCellRenderer))]
 [assembly: ExportCell(typeof(ImageCell), typeof(ImageCellRenderer))]
 [assembly: ExportCell(typeof(ViewCell), typeof(ViewCellRenderer))]
-[assembly: ExportRenderer(typeof(EmbeddedFont), typeof(EmbeddedFontLoader))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.EmbeddedFont), typeof(Microsoft.Maui.EmbeddedFontLoader))]
 [assembly: ExportImageSourceHandler(typeof(FileImageSource), typeof(FileImageSourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(StreamImageSource), typeof(StreamImagesourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(UriImageSource), typeof(ImageLoaderSourceHandler))]

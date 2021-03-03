@@ -1,7 +1,7 @@
 <Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFrameworks>MonoAndroid10.0;Xamarin.iOS10</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;MonoAndroid10.0;Xamarin.iOS10</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +23,10 @@
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true ">
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Android\Compatibility.Android.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SharedFont Include="Fonts\*" />
   </ItemGroup>
 
 </Project>

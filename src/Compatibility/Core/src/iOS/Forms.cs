@@ -7,8 +7,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -33,6 +31,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		public static IActivationState ActivationState { get; private set; }
 		public static bool IsInitialized { get; private set; }
+
+		static IFontManager s_fontManager;
+
+		internal static IFontManager FontManager =>
+			s_fontManager ??= new FontManager(Microsoft.Maui.Controls.Internals.Registrar.FontRegistrar);
 
 #if __MOBILE__
 		static bool? s_isiOS9OrNewer;

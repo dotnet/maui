@@ -5,9 +5,19 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Collection(TestCollections.Handlers)]
 	public partial class HandlerTestBase<THandler> : TestBase
 		where THandler : IViewHandler
 	{
+		readonly HandlerTestFixture _fixture;
+
+		public HandlerTestBase(HandlerTestFixture fixture)
+		{
+			_fixture = fixture;
+		}
+
+		public IApp App => _fixture.App;
+
 		public Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			MainThread.InvokeOnMainThreadAsync(func);
 

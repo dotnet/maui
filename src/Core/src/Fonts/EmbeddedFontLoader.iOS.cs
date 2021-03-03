@@ -1,20 +1,21 @@
 using System;
 using System.Diagnostics;
-using System.Linq;
 using CoreGraphics;
 using CoreText;
 using Foundation;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui
 {
-	[Preserve(AllMembers = true)]
 	public class EmbeddedFontLoader : IEmbeddedFontLoader
 	{
-		public (bool success, string filePath) LoadFont(EmbeddedFont font)
+		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
 		{
 			try
 			{
+				if (font.ResourceStream == null)
+					throw new InvalidOperationException("ResourceStream was null.");
+
 				var data = NSData.FromStream(font.ResourceStream);
 				var provider = new CGDataProvider(data);
 				var cGFont = CGFont.CreateFromProvider(provider);
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				Debug.WriteLine(ex);
 			}
+
 			return (false, null);
 		}
 	}

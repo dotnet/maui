@@ -533,6 +533,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return true;
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			if (Element == null)

@@ -8,6 +8,10 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 	[Category("LayoutHandler")]
 	public partial class LayoutHandlerTests : HandlerTestBase<LayoutHandler>
 	{
+		public LayoutHandlerTests(HandlerTestFixture fixture) : base(fixture)
+		{
+		}
+
 		[Fact(DisplayName = "Empty layout")]
 		public async Task EmptyLayout()
 		{
