@@ -61,16 +61,16 @@ steps:
       displayName: $(Agent.JobName)
 
   - task: PublishTestResults@2
-    displayName: Publish the $(System.JobName) test results
+    displayName: Publish the $(System.PhaseName) test results
     condition: always()
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: 'output/testlogs/**/TestResults.xml'
-      testRunTitle: '$(System.JobName)'
+      testRunTitle: '$(System.PhaseName)'
 
   - task: PublishBuildArtifacts@1
-    displayName: Publish the $(System.JobName) logs
+    displayName: Publish the $(System.PhaseName) logs
     condition: always()
     inputs:
-      artifactName: $(System.JobName)
+      artifactName: $(System.PhaseName)
       pathToPublish: 'output/testlogs'

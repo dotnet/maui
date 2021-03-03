@@ -23,9 +23,9 @@ string DEVICE_ARCH = "";
 bool DEVICE_BOOT = Argument("boot", true);
 
 // set up env
-var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_SDK_ROOT"));
+var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_HOME"));
 if (string.IsNullOrEmpty(ANDROID_SDK_ROOT)) {
-	throw new Exception("Environment variable 'ANDROID_SDK_ROOT' must be set to the Android SDK root.");
+	throw new Exception("Environment variable 'ANDROID_SDK_ROOT' or 'ANDROID_HOME' must be set to the Android SDK root.");
 }
 System.Environment.SetEnvironmentVariable("PATH",
 	$"{ANDROID_SDK_ROOT}/tools/bin" + System.IO.Path.PathSeparator +
