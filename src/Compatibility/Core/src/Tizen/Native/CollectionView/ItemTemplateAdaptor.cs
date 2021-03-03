@@ -47,23 +47,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 	{
 		Dictionary<EvasObject, View> _nativeFormsTable = new Dictionary<EvasObject, View>();
 		Dictionary<object, View> _dataBindedViewTable = new Dictionary<object, View>();
-		protected ItemsView _itemsView;
 		protected View _headerCache;
 		protected View _footerCache;
 
-		bool IsSelectable { get; }
-
-
 		public ItemTemplateAdaptor(ItemsView itemsView) : this(itemsView, itemsView.ItemsSource, itemsView.ItemTemplate) { }
 
-		protected ItemTemplateAdaptor(ItemsView itemsView, IEnumerable items, DataTemplate template) : base(items)
+		protected ItemTemplateAdaptor(Element itemsView, IEnumerable items, DataTemplate template) : base(items)
 		{
 			ItemTemplate = template;
-			_itemsView = itemsView;
+			Element = itemsView;
 			IsSelectable = itemsView is SelectableItemsView;
 		}
 
 		protected DataTemplate ItemTemplate { get; set; }
+
+		protected Element Element { get; set; }
+
+		protected virtual bool IsSelectable { get; }
 
 		public View GetTemplatedView(EvasObject evasObject)
 		{
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		{
 			if (ItemTemplate is DataTemplateSelector selector)
 			{
-				return selector.SelectTemplate(this[index], _itemsView);
+				return selector.SelectTemplate(this[index], Element);
 			}
 			return base.GetViewCategory(index);
 		}
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			View view = null;
 			if (ItemTemplate is DataTemplateSelector selector)
 			{
-				view = selector.SelectTemplate(this[index], _itemsView).CreateContent() as View;
+				view = selector.SelectTemplate(this[index], Element).CreateContent() as View;
 			}
 			else
 			{
@@ -102,7 +102,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			}
 			var renderer = Platform.GetOrCreateRenderer(view);
 			var native = renderer.NativeView;
-			view.Parent = _itemsView;
+
+			view.Parent = Element;
 			(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 
 			_nativeFormsTable[native] = view;
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			_headerCache = CreateHeaderView();
 			if (_headerCache != null)
 			{
-				_headerCache.Parent = _itemsView;
+				_headerCache.Parent = Element;
 				var renderer = Platform.GetOrCreateRenderer(_headerCache);
 				(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 				return renderer.NativeView;
@@ -132,7 +133,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			_footerCache = CreateFooterView();
 			if (_footerCache != null)
 			{
-				_footerCache.Parent = _itemsView;
+				_footerCache.Parent = Element;
 				var renderer = Platform.GetOrCreateRenderer(_footerCache);
 				(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 				return renderer.NativeView;
@@ -159,7 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 				_dataBindedViewTable[this[index]] = view;
 
 				view.MeasureInvalidated += OnItemMeasureInvalidated;
-				_itemsView.AddLogicalChild(view);
+				AddLogicalChild(view);
 			}
 		}
 
@@ -187,7 +188,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			View view = null;
 			if (ItemTemplate is DataTemplateSelector selector)
 			{
-				view = selector.SelectTemplate(this[index], _itemsView).CreateContent() as View;
+				view = selector.SelectTemplate(this[index], Element).CreateContent() as View;
 			}
 			else
 			{
@@ -195,7 +196,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			}
 			using (var renderer = Platform.GetOrCreateRenderer(view))
 			{
-				view.Parent = _itemsView;
+				view.Parent = Element;
 				if (Count > index)
 					view.BindingContext = this[index];
 				var request = view.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request;
@@ -238,7 +239,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 		protected virtual View CreateHeaderView()
 		{
-			if (_itemsView is StructuredItemsView structuredItemsView)
+			if (Element is StructuredItemsView structuredItemsView)
 			{
 				if (structuredItemsView.Header != null)
 				{
@@ -264,7 +265,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 		protected virtual View CreateFooterView()
 		{
-			if (_itemsView is StructuredItemsView structuredItemsView)
+			if (Element is StructuredItemsView structuredItemsView)
 			{
 				if (structuredItemsView.Footer != null)
 				{
@@ -293,7 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			if (view.BindingContext != null && _dataBindedViewTable.ContainsKey(view.BindingContext))
 			{
 				_dataBindedViewTable[view.BindingContext] = null;
-				_itemsView.RemoveLogicalChild(view);
+				RemoveLogicalChild(view);
 				view.BindingContext = null;
 			}
 		}
@@ -307,5 +308,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 				CollectionView?.ItemMeasureInvalidated(index);
 			}
 		}
+
+		void AddLogicalChild(Element element)
+		{
+			if (Element is ItemsView iv)
+			{
+				iv.AddLogicalChild(element);
+			}
+			else
+			{
+				element.Parent = Element;
+			}
+		}
+
+		void RemoveLogicalChild(Element element)
+		{
+			if (Element is ItemsView iv)
+			{
+				iv.RemoveLogicalChild(element);
+			}
+			else
+			{
+				element.Parent = null;
+			}
+		}
+
 	}
 }

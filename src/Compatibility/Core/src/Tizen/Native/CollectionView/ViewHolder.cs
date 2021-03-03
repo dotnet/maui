@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		EvasObject _content;
 		ViewHolderState _state;
 		bool _isSelected;
+		bool _isFocused;
+		bool _focusable;
 
 		public ViewHolder(EvasObject parent) : base(parent)
 		{
@@ -53,12 +55,32 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			}
 		}
 
+		public bool AllowItemFocus
+		{
+			get => _focusable;
+			set
+			{
+				_focusable = value;
+				if (!value && _focusArea.IsFocused)
+				{
+					_focusArea.SetFocus(false);
+				}
+				_focusArea.AllowFocus(_focusable);
+			}
+		}
+
 		public ViewHolderState State
 		{
 			get { return _state; }
 			set
 			{
-				_state = value;
+				if (value == ViewHolderState.Normal)
+					_isSelected = false;
+				else if (value == ViewHolderState.Selected)
+					_isSelected = true;
+
+				_state = _isFocused ? ViewHolderState.Focused : (_isSelected ? ViewHolderState.Selected : ViewHolderState.Normal);
+
 				UpdateState();
 			}
 		}
@@ -82,10 +104,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			_focusArea.SetEffectColor(EColor.Transparent);
 			_focusArea.Clicked += OnClicked;
 			_focusArea.Focused += OnFocused;
-			_focusArea.Unfocused += OnFocused;
+			_focusArea.Unfocused += OnUnfocused;
 			_focusArea.KeyUp += OnKeyUp;
 			_focusArea.RepeatEvents = true;
 			_focusArea.Show();
+			_focusArea.AllowFocus(_focusable);
 
 			PackEnd(_focusArea);
 			Show();
@@ -93,14 +116,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 		protected virtual void OnFocused(object sender, EventArgs e)
 		{
-			if (_focusArea.IsFocused)
-			{
-				State = ViewHolderState.Focused;
-			}
-			else
-			{
-				State = _isSelected ? ViewHolderState.Selected : ViewHolderState.Normal;
-			}
+			UpdateFocusState();
+		}
+
+		protected virtual void OnUnfocused(object sender, EventArgs e)
+		{
+			UpdateFocusState();
 		}
 
 		protected virtual void OnClicked(object sender, EventArgs e)
@@ -127,6 +148,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 				RaiseTop();
 
 			StateUpdated?.Invoke(this, EventArgs.Empty);
+		}
+
+		void UpdateFocusState()
+		{
+			if (_focusArea.IsFocused)
+			{
+				_isFocused = true;
+				State = ViewHolderState.Focused;
+			}
+			else
+			{
+				_isFocused = false;
+				State = _isSelected ? ViewHolderState.Selected : ViewHolderState.Normal;
+			}
 		}
 
 		void OnKeyUp(object sender, EvasKeyEventArgs e)

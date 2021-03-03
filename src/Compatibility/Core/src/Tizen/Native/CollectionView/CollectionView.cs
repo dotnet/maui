@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		SmartEvent _scrollAnimationStop;
 		SmartEvent _scrollAnimationStart;
 		bool _isScrollAnimationStarted;
+		bool _allowFocusOnItem;
 
 		public event EventHandler<ItemsViewScrolledEventArgs> Scrolled;
 
@@ -51,6 +52,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 			_scrollAnimationStop = new SmartEvent(Scroller, ThemeConstants.Scroller.Signals.StopScrollAnimation);
 			_scrollAnimationStop.On += OnScrollStopped;
+
+			Scroller.DragStart += OnDragStart;
+			Scroller.KeyDown += OnKeyDown;
 
 			_innerLayout = new EBox(parent);
 			_innerLayout.SetLayoutCallback(OnInnerLayout);
@@ -306,6 +310,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 				_innerLayout.PackEnd(holder);
 			}
 
+			holder.AllowItemFocus = _allowFocusOnItem;
+
 			Adaptor.SetBinding(holder.Content, index);
 			_viewHolderIndexTable[holder] = index;
 			if (index == SelectedItemIndex)
@@ -325,6 +331,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 			if (holder.State == ViewHolderState.Focused && FocusedItemScrollPosition != ScrollToPosition.MakeVisible)
 			{
+
 				Device.BeginInvokeOnMainThread(() =>
 				{
 					if (holder.State == ViewHolderState.Focused && _viewHolderIndexTable.TryGetValue(holder, out int itemIndex))
@@ -363,6 +370,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			Adaptor.UnBinding(view.Content);
 			view.ResetState();
 			view.Hide();
+
 			_pool.AddRecyclerView(view);
 			if (_lastSelectedViewHolder == view)
 			{
@@ -661,6 +669,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			}
 		}
 
+		void OnKeyDown(object sender, EvasKeyEventArgs e)
+		{
+			_allowFocusOnItem = true;
+			UpdateAllowFocusOnItem(_allowFocusOnItem);
+		}
+
+		void OnDragStart(object sender, EventArgs e)
+		{
+			_allowFocusOnItem = false;
+			UpdateAllowFocusOnItem(_allowFocusOnItem);
+		}
+
 		void SendScrolledEvent()
 		{
 			var args = new ItemsViewScrolledEventArgs();
@@ -732,6 +752,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			Scroller.SetContent(_innerLayout, true);
 			Adaptor.RemoveNativeView(_emptyView);
 			_emptyView = null;
+		}
+
+		void UpdateAllowFocusOnItem(bool allowFocus)
+		{
+			foreach (var holer in _viewHolderIndexTable)
+			{
+				holer.Key.AllowItemFocus = allowFocus;
+			}
 		}
 	}
 

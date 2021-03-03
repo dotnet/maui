@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 		public void SizeAllocated(ESize size)
 		{
-			Reset();
+			_scrollCanvasSize = new ESize(0, 0);
 			_allocatedSize = size;
 			InitializeMeasureCache();
 		}

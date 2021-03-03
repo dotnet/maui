@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			RegisterPropertyHandler(Shell.FlyoutHeaderBehaviorProperty, UpdateFlyoutHeaderBehavior);
 		}
 
+		protected INavigationDrawer NavigationDrawer => _drawer;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Shell> e)
 		{
 			if (_drawer == null)
@@ -130,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			_navigationView.BackgroundImageSource = Element.FlyoutBackgroundImage;
 		}
 
-		void UpdateFlyoutIsPresented()
+		protected virtual void UpdateFlyoutIsPresented()
 		{
 			// It is workaround of Panel.IsOpen bug, Panel.IsOpen property is not working when layouting was triggered
 			Device.BeginInvokeOnMainThread(() =>
