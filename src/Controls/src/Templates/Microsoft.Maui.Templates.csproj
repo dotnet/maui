@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.Maui.Templates</PackageId>
-    <PackageVersion>0.1.0-alpha</PackageVersion>
+    <PackageVersion>0.0.1-alpha1</PackageVersion>
     <Title>.NET Maui Templates</Title>
     <Authors>Microsoft</Authors>
     <Description>Templates for .NET Maui.</Description>
