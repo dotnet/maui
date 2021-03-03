@@ -1,6 +1,7 @@
 using System;
 using ElmSharp;
 using ElmSharp.Wearable;
+using Xamarin.Forms.Platform.Tizen.TV;
 using static Xamarin.Forms.Platform.Tizen.Native.TableView;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
@@ -909,18 +910,26 @@ namespace Xamarin.Forms.Platform.Tizen
 		}
 		#endregion
 
-		#region NavigationView
+		#region INavigationView
 
 		static double s_navigationViewFlyoutItemHeight = -1;
-		public static double GetFlyoutItemHeight(this NavigationView nav)
+		public static double GetFlyoutItemHeight(this INavigationView nav)
 		{
 			if (s_navigationViewFlyoutItemHeight > 0)
 				return s_navigationViewFlyoutItemHeight;
 			return s_navigationViewFlyoutItemHeight = CalculateDoubleScaledSizeInLargeScreen(60);
 		}
 
+		static double s_navigationViewFlyoutItemWidth = -1;
+		public static double GetFlyoutItemWidth(this INavigationView nav)
+		{
+			if (s_navigationViewFlyoutItemWidth > 0)
+				return s_navigationViewFlyoutItemWidth;
+			return s_navigationViewFlyoutItemWidth = CalculateDoubleScaledSizeInLargeScreen(200);
+		}
+
 		static double s_navigationViewFlyoutIconColumnSize = -1;
-		public static double GetFlyoutIconColumnSize(this NavigationView nav)
+		public static double GetFlyoutIconColumnSize(this INavigationView nav)
 		{
 			if (s_navigationViewFlyoutIconColumnSize > 0)
 				return s_navigationViewFlyoutIconColumnSize;
@@ -928,7 +937,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		}
 
 		static double s_navigationViewFlyoutIconSize = -1;
-		public static double GetFlyoutIconSize(this NavigationView nav)
+		public static double GetFlyoutIconSize(this INavigationView nav)
 		{
 			if (s_navigationViewFlyoutIconSize > 0)
 				return s_navigationViewFlyoutIconSize;
@@ -936,7 +945,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		}
 
 		static double s_navigationViewFlyoutMargin = -1;
-		public static double GetFlyoutMargin(this NavigationView nav)
+		public static double GetFlyoutMargin(this INavigationView nav)
 		{
 			if (s_navigationViewFlyoutMargin > 0)
 				return s_navigationViewFlyoutMargin;
@@ -944,21 +953,46 @@ namespace Xamarin.Forms.Platform.Tizen
 		}
 
 		static double s_navigationViewFlyoutItemFontSize = -1;
-		public static double GetFlyoutItemFontSize(this NavigationView nav)
+		public static double GetFlyoutItemFontSize(this INavigationView nav)
 		{
 			if (s_navigationViewFlyoutItemFontSize > 0)
 				return s_navigationViewFlyoutItemFontSize;
 			return s_navigationViewFlyoutItemFontSize = CalculateDoubleScaledSizeInLargeScreen(25);
 		}
 
+		public static Color GetTvFlyoutItemDefaultColor(this INavigationView nav)
+		{
+			return Color.Transparent;
+		}
+
+		public static Color GetTvFlyoutItemFocusedColor(this INavigationView nav)
+		{
+			return new Color(0.95);
+		}
+
+		public static Color GetTvFlyoutItemTextDefaultColor(this INavigationView nav)
+		{
+			return Color.White;
+		}
+
+		public static Color GetTvFlyoutItemTextFocusedColor(this INavigationView nav)
+		{
+			return Color.Black;
+		}
+
 		#endregion
 
-		#region NavigationDrawer
+		#region INavigationDrawer
 
 		static double s_navigationDrawerRatio = -1;
-		public static double GetFlyoutRatio(this NavigationDrawer drawer, int width, int height)
+		public static double GetFlyoutRatio(this INavigationDrawer drawer, int width, int height)
 		{
 			return s_navigationDrawerRatio = (width > height) ? 0.4 : 0.83;
+		}
+
+		public static double GetFlyoutCollapseRatio(this INavigationDrawer drawer)
+		{
+			return 0.05;
 		}
 		#endregion
 

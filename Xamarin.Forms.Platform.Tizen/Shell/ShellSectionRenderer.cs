@@ -9,7 +9,12 @@ using EToolbarItem = ElmSharp.ToolbarItem;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class ShellSectionRenderer : IAppearanceObserver, IDisposable
+	public interface IShellSectionRenderer : IDisposable
+	{
+		EvasObject NativeView { get; }
+	}
+
+	public class ShellSectionRenderer : IAppearanceObserver, IShellSectionRenderer
 	{
 		EBox _mainLayout = null;
 		EBox _contentArea = null;
@@ -51,7 +56,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		bool _tabBarIsVisible = true;
 
-		bool TabBarIsVisible
+		protected virtual bool TabBarIsVisible
 		{
 			get => _tabBarIsVisible;
 			set

@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		ShellNavBar _navBar = null;
 		Page _currentPage = null;
 		SimpleViewStack _viewStack = null;
-		ShellSectionRenderer _shellSectionRenderer;
+		IShellSectionRenderer _shellSectionRenderer;
 
 		bool _disposed = false;
 		bool _navBarIsVisible = true;
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			InitializeComponent();
 		}
 
-		public bool NavBarIsVisible
+		public virtual bool NavBarIsVisible
 		{
 			get
 			{
@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_disposed = true;
 		}
 
-		protected virtual ShellSectionRenderer CreateShellSectionRenderer(ShellSection section)
+		protected virtual IShellSectionRenderer CreateShellSectionRenderer(ShellSection section)
 		{
 			return new ShellSectionRenderer(section);
 		}
@@ -147,7 +147,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		}
 
 
-		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.TitleProperty.PropertyName)
 			{
@@ -255,7 +255,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			var bound = Geometry;
 			int navBarHeight;
-			if (_navBarIsVisible)
+			if (NavBarIsVisible)
 			{
 				var navBound = bound;
 				navBarHeight = Forms.ConvertToScaledPixel(_navBar.GetDefaultHeight());

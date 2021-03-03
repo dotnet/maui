@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			View emptyView = null;
 			if (ItemTemplate is DataTemplateSelector selector)
 			{
-				emptyView = selector.SelectTemplate(this[index], _itemsView).CreateContent() as View;
+				emptyView = selector.SelectTemplate(this[index], Element).CreateContent() as View;
 			}
 			else
 			{
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				layout.Children.Add(footer);
 			}
 
-			layout.Parent = _itemsView;
+			layout.Parent = Element;
 			var renderer = Platform.GetOrCreateRenderer(layout);
 			(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 			return renderer.NativeView;

@@ -132,6 +132,23 @@ namespace Xamarin.Forms.Platform.Tizen
 			_disposed = true;
 		}
 
+		protected virtual void UpdateTabsItems()
+		{
+			ResetTabs();
+			if (ShellItem.Items.Count > 1)
+			{
+				InitializeTabs();
+				foreach (ShellSection section in ShellItem.Items)
+				{
+					AddTabsItem(section);
+				}
+			}
+			else
+			{
+				DeinitializeTabs();
+			}
+		}
+
 		protected virtual IShellTabs CreateTabs()
 		{
 			return new ShellTabs(Forms.NativeParent);
@@ -284,23 +301,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			foreach (EToolbarItem item in _tabsItems)
 			{
 				item.SetTextColor(color);
-			}
-		}
-
-		void UpdateTabsItems()
-		{
-			ResetTabs();
-			if (ShellItem.Items.Count > 1)
-			{
-				InitializeTabs();
-				foreach (ShellSection section in ShellItem.Items)
-				{
-					AddTabsItem(section);
-				}
-			}
-			else
-			{
-				DeinitializeTabs();
 			}
 		}
 
