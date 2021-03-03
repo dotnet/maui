@@ -285,4 +285,4 @@ stages:
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
 
-  - template: device-tests.yml
+  - template: common/device-tests.yml
