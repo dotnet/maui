@@ -4,8 +4,7 @@ parameters:
   projects:
     - name: essentials
       desc: Essentials
-      platforms:
-        android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
+      android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
         # - ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
     # - name: core
     #   desc: Core
@@ -26,7 +25,7 @@ stages:
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.platforms.android, '') }}:
+        - ${{ if ne(project.android, '') }}:
           - ${{ each api in parameters.androidApiLevels }}:
             - job: device_tests_$(project.name)_$(api)
               workspace:
@@ -41,7 +40,7 @@ stages:
                 - template: device-tests-steps.yml
                   parameters:
                     platform: android
-                    path: $(project.platforms.android)
+                    path: $(project.android)
                     device: android-emulator-32_$(api)
 
   # - stage: ios_essentials
