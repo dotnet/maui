@@ -25,7 +25,7 @@ stages:
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
-        - job: test_$(project.name)
+        - job: test_${{ project.name }}
           pool:
             name:  $(macOSXVmPool)
             vmImage: $(macOSXVmImage)
