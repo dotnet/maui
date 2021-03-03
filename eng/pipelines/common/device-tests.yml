@@ -28,11 +28,12 @@ stages:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
               pool:
-                name:  $(vs2019VmPool)
+                name: $(vs2019VmPool)
                 vmImage: $(vs2019VmImage)
               variables:
                 ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
               steps:
+                - pwsh: 'gci env:*'
                 - template: device-tests-steps.yml
                   parameters:
                     platform: android
@@ -51,7 +52,7 @@ stages:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
               pool:
-                name:  $(macOSXVmPool)
+                name: $(macOSXVmPool)
                 vmImage: $(macOSXVmImage)
               variables:
                 ANDROID_EMULATORS: "system-images;ios-${{ version }};google_apis;x86"
