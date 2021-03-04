@@ -4,7 +4,7 @@ parameters:
   iosVmPool: '$(macOSXVmPool)'
   iosVmImage: '$(macOSXVmImage)'
   androidApiLevels: [ 30, 29, 21 ]
-  iosVersions: [ '14.3' ]
+  iosVersions: [ 'latest' ]
   projects:
     - name: name
       desc: Human Description
@@ -57,4 +57,7 @@ stages:
                   parameters:
                     platform: ios
                     path: ${{ project.ios }}
-                    device: ios-simulator-64_${{ version }}
+                    ${{ if eq(version, 'latest') }}:
+                      device: ios-simulator-64
+                    ${{ if ne(version, 'latest') }}:
+                      device: ios-simulator-64_${{ version }}
