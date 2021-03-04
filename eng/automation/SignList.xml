@@ -3,6 +3,16 @@
   <ItemGroup>
     <FirstParty Include="Microsoft.Maui.*.dll" />
     <FirstParty Include="FormsViewGroup.dll" />
+    
+    <!-- SkiaSharp -->
+    <FirstParty Include="SkiaSharp*.dll" />
+    <FirstParty Include="HarfBuzzSharp*.dll" />
+    <!-- native -->
+    <FirstParty Include="libSkiaSharp.dll" />
+    <FirstParty Include="libHarfBuzzSharp.dll" />
+    <!-- ANGLE -->
+    <FirstParty Include="libEGL.dll" />
+    <FirstParty Include="libGLESv2.dll" />
   </ItemGroup>
 
   <ItemGroup>
