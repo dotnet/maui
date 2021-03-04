@@ -170,7 +170,7 @@ stages:
           - task: CopyFiles@2
             displayName: 'Copy SignList.xml Files'
             inputs:
-              Contents: ../automation/SignList.xml
+              Contents: **/SignList.xml
               TargetFolder: 'artifacts'
               flattenFolders: true
 
