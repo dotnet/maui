@@ -12,7 +12,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public static class AppHostBuilderExtensions
 	{
-
+		public static IAppHostBuilder RegisterCompatibilityRenderers(this IAppHostBuilder builder)
+		{
+#if __ANDROID__
+			Forms.RegisterCompatRenderers(
+				AppDomain.CurrentDomain.GetAssemblies(),
+				typeof(RendererToHandlerShim).Assembly,
+				null);
+#endif
+			return builder;
+		}
+		
 		public static IAppHostBuilder RegisterCompatibilityRenderer<TControlType, TMauiType, TRenderer>(this IAppHostBuilder builder)
 			where TMauiType : IFrameworkElement
 		{

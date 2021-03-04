@@ -275,6 +275,75 @@ namespace Microsoft.Maui.Controls.Compatibility
 				viewInitialized(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
 		}
 
+		static bool IsInitializedRenderers;
+
+
+		internal static void RegisterCompatRenderers(
+			Assembly[] assemblies,
+			Assembly defaultRendererAssembly,
+			Type[] attrTypes)
+		{
+			if (IsInitializedRenderers)
+				return;
+
+			IsInitializedRenderers = true;
+
+			// Only need to do this once
+			Registrar.RegisterAll(
+				assemblies, 
+				defaultRendererAssembly,
+				new[] {
+						typeof(ExportRendererAttribute),
+						typeof(ExportCellAttribute),
+						typeof(ExportImageSourceHandlerAttribute),
+						typeof(ExportFontAttribute)
+					}, default(InitializationFlags));
+		}
+		
+		internal static void RegisterCompatRenderers(InitializationOptions? maybeOptions)
+		{
+			if (!IsInitializedRenderers)
+			{
+				IsInitializedRenderers = true;
+				if (maybeOptions.HasValue)
+				{
+					var options = maybeOptions.Value;
+					var handlers = options.Handlers;
+					var flags = options.Flags;
+					var effectScopes = options.EffectScopes;
+
+					//TODO: ExportCell?
+					//TODO: ExportFont
+
+					// renderers
+					Registrar.RegisterRenderers(handlers);
+
+					// effects
+					if (effectScopes != null)
+					{
+						for (var i = 0; i < effectScopes.Length; i++)
+						{
+							var effectScope = effectScopes[0];
+							Registrar.RegisterEffects(effectScope.Name, effectScope.Effects);
+						}
+					}
+
+					// css
+					Registrar.RegisterStylesheets(flags);
+				}
+				else
+				{
+					// Only need to do this once
+					Registrar.RegisterAll(new[] {
+						typeof(ExportRendererAttribute),
+						typeof(ExportCellAttribute),
+						typeof(ExportImageSourceHandlerAttribute),
+						typeof(ExportFontAttribute)
+					});
+				}
+			}
+		}
+
 		static void SetupInit(
 			IMauiContext context,
 			Assembly resourceAssembly,
@@ -344,45 +413,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Profile.FramePartition("RegisterAll");
 
-			if (!IsInitialized)
-			{
-				if (maybeOptions.HasValue)
-				{
-					var options = maybeOptions.Value;
-					var handlers = options.Handlers;
-					var flags = options.Flags;
-					var effectScopes = options.EffectScopes;
-
-					//TODO: ExportCell?
-					//TODO: ExportFont
-
-					// renderers
-					Registrar.RegisterRenderers(handlers);
-
-					// effects
-					if (effectScopes != null)
-					{
-						for (var i = 0; i < effectScopes.Length; i++)
-						{
-							var effectScope = effectScopes[0];
-							Registrar.RegisterEffects(effectScope.Name, effectScope.Effects);
-						}
-					}
-
-					// css
-					Registrar.RegisterStylesheets(flags);
-				}
-				else
-				{
-					// Only need to do this once
-					Registrar.RegisterAll(new[] {
-						typeof(ExportRendererAttribute),
-						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
-						typeof(ExportFontAttribute)
-					});
-				}
-			}
+			if (context.Handlers == null)
+				RegisterCompatRenderers(maybeOptions);
 
 			Profile.FramePartition("Epilog");
 

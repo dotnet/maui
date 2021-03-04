@@ -23,6 +23,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
 		}
 
+
+		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
+		{
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
+		}
+
+		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing && !_disposed)
