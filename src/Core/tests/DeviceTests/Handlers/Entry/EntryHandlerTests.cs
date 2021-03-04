@@ -47,5 +47,18 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(entry, () => entry.IsPassword, GetNativeIsPassword, isPassword);
 		}
+
+		[Fact(DisplayName = "Is Text Prediction Enabled")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsTextPredictionEnabledCorrectly(bool isEnabled)
+		{
+			var entry = new EntryStub()
+			{
+				IsTextPredictionEnabled = isEnabled
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled , isEnabled);
+		}
 	}
 }
