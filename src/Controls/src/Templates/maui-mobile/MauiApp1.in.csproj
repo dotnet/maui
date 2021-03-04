@@ -12,4 +12,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui" Version="REPLACE_ME" />
   </ItemGroup>
+  <ItemGroup>
+    <SharedImage Include="Resources\appiconbg.svg"
+      IsAppIcon="true"
+      ForegroundFile="Resources\appiconfg.svg"
+      Link="appicon.png"
+      ForegroundScale="0.95" />
+  </ItemGroup>
 </Project>

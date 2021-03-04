@@ -6,6 +6,5 @@ namespace MauiApp1
 	[Activity(Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
 	public class MainActivity : MauiAppCompatActivity
 	{
-
 	}
 }

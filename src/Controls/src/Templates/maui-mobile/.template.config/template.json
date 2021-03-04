@@ -4,7 +4,7 @@
     "classifications": [ "Maui", "Android", "iOS" ],
     "identity": "Microsoft.Maui.SingleProject",
     "name": ".NET Maui Mobile Application",
-    "description": "A project for creating a .NET Maui application for iOS and Android",
+    "description": "A project for creating a .NET MAUI application for iOS and Android",
     "shortName": "maui-mobile",
     "tags": {
       "language": "C#",
