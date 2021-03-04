@@ -212,7 +212,7 @@ stages:
             errorActionPreference: stop
 
           - powershell: |
-              & dotnet build Microsoft.Maui.BuildTasks.sln
+              & dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration)-buildtasks.binlog
               & dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration).binlog
             displayName: build samples
             errorActionPreference: stop
@@ -274,7 +274,7 @@ stages:
             displayName: configure vsmac xcode
 
           - bash: |
-              dotnet build Microsoft.Maui.BuildTasks.sln &&
+              dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration)-buildtasks.binlog &&
               dotnet build Microsoft.Maui-net6.sln -c $BUILDCONFIGURATION -bl:$BUILD_ARTIFACTSTAGINGDIRECTORY/logs/$BUILDCONFIGURATION.binlog
             displayName: build samples
 
