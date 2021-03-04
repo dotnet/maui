@@ -22,16 +22,16 @@ steps:
       displayName: 'Setup SDK Paths'
       condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
 
-    - task: InstallAppleCertificate@2
-      displayName: 'Install an Apple certificate'
-      inputs:
-        certSecureFile: 'Xamarin Forms iOS Certificate.p12'
-        certPwd: $(P12password)
+    # - task: InstallAppleCertificate@2
+    #   displayName: 'Install an Apple certificate'
+    #   inputs:
+    #     certSecureFile: 'Xamarin Forms iOS Certificate.p12'
+    #     certPwd: $(P12password)
 
-    - task: InstallAppleProvisioningProfile@1
-      displayName: 'Install an Apple provisioning profile'
-      inputs:
-        provProfileSecureFile: 'Xamarin Forms iOS Provisioning.mobileprovision'
+    # - task: InstallAppleProvisioningProfile@1
+    #   displayName: 'Install an Apple provisioning profile'
+    #   inputs:
+    #     provProfileSecureFile: 'Xamarin Forms iOS Provisioning.mobileprovision'
 
   - task: xamops.azdevex.provisionator-task.provisionator@1
     displayName: 'Provisionator'
