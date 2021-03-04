@@ -16,5 +16,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsPassword(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).SecureTextEntry;
+
+		string GetNativePlaceholder(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).Placeholder;
 	}
 }

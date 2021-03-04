@@ -37,5 +37,10 @@ namespace Microsoft.Maui
 			else
 				textField.SecureTextEntry = entry.IsPassword;
 		}
+
+		public static void UpdatePlaceholder(this UITextField editText, IEntry entry)
+		{
+			editText.Placeholder = entry.Placeholder;
+		}
 	}
 }

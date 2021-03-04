@@ -40,5 +40,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateIsPassword(entry);
 		}
+
+		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdatePlaceholder(entry);
+		}
 	}
 }

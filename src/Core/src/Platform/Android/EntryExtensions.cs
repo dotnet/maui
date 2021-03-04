@@ -51,5 +51,10 @@ namespace Microsoft.Maui
 			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))
 				editText.InputType |= InputTypes.NumberVariationPassword;
 		}
+
+		public static void UpdatePlaceholder(this EditText editText, IEntry entry)
+		{
+			editText.Hint = entry.Placeholder;
+		}
 	}
 }
