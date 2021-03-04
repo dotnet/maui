@@ -54,6 +54,9 @@ namespace Microsoft.Maui
 
 		public static void UpdatePlaceholder(this EditText editText, IEntry entry)
 		{
+			if (editText.Hint == entry.Placeholder)
+				return;
+
 			editText.Hint = entry.Placeholder;
 		}
 	}
