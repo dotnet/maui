@@ -64,7 +64,7 @@ steps:
   - ${{ if eq(parameters['platform'], 'android') }}:
     - pwsh: |
         $extraArgs = ''
-        if ('${{ preBoot }}' -eq 'true') {
+        if ('${{ parameters.preBoot }}' -eq 'true') {
           $extraArgs = '--boot=false'
         }
         ./build.ps1 -Script eng/devices/android.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} $extraArgs --results="$(System.DefaultWorkingDirectory)/output/testlogs"
