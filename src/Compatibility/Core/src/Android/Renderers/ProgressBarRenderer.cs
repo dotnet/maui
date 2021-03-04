@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			AutoPackage = false;
 		}
 
+		[PortHandler]
 		protected override AProgressBar CreateNativeControl()
 		{
 			return new AProgressBar(Context, null, global::Android.Resource.Attribute.ProgressBarStyleHorizontal) { Indeterminate = false, Max = 10000 };
@@ -51,6 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UpdateProgressColor();
 		}
 
+		[PortHandler]
 		internal virtual protected void UpdateProgressColor()
 		{
 			if (Element == null || Control == null)
@@ -81,6 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		void UpdateProgress()
 		{
 			Control.Progress = (int)(Element.Progress * 10000);
