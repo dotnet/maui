@@ -280,3 +280,17 @@ stages:
               artifactName: NET6-OSX-$(BuildConfiguration)
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
+
+# only sign using the private server and not sigining Maui for now
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - stage: nuget_signing
+      dependsOn: pack_net6_windows
+      displayName: Sign Nuget
+      jobs:
+        - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+          parameters:
+            targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+            signedArtifactName: nuget
+            signedArtifactPath: signed
+            displayName: Sign Phase
+            condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
