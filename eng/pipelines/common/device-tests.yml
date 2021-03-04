@@ -35,7 +35,6 @@ stages:
                     platform: android
                     path: ${{ project.android }}
                     device: android-emulator-32_${{ api }}
-                    preBoot: true
 
   - stage: ios_device_tests
     displayName: iOS Device Tests

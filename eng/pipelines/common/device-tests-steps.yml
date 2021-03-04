@@ -2,7 +2,6 @@ parameters:
   platform: '' # [ android, ios ]
   path: '' # path to csproj
   device: '' # the xharness device to use
-  preBoot: 'false' # whether or not to pre-boot the emulators
 
 steps:
   - checkout: self
@@ -51,11 +50,6 @@ steps:
       version: $(DOTNET_VERSION)
       packageType: 'sdk'
 
-  - ${{ if and(eq(parameters['platform'], 'android'), eq(parameters['preBoot'], 'true')) }}:
-    - pwsh: |
-        ./build.ps1 -Script eng/devices/android.cake --target=boot --wait=false
-      displayName: 'Booting the Emulator'
-
   - pwsh: |
       ./build.ps1 --target=BuildTasks --BUILD_CONFIGURATION=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
     name: winbuild
@@ -63,11 +57,7 @@ steps:
 
   - ${{ if eq(parameters['platform'], 'android') }}:
     - pwsh: |
-        $extraArgs = ''
-        if ('${{ parameters.preBoot }}' -eq 'true') {
-          $extraArgs = '--boot=false'
-        }
-        ./build.ps1 -Script eng/devices/android.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} $extraArgs --results="$(System.DefaultWorkingDirectory)/output/testlogs"
+        ./build.ps1 -Script eng/devices/android.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs"
       displayName: $(Agent.JobName)
 
   - ${{ if eq(parameters['platform'], 'ios') }}:
