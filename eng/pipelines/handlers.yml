@@ -171,15 +171,16 @@ stages:
             displayName: 'Copy SignList.xml Files'
             inputs:
               Contents: |
+                **/*.nupkg
+                **/*.snupkg
                 **/SignList.xml
-              TargetFolder: 'artifacts'
+              TargetFolder: $(build.artifactstagingdirectory)
               flattenFolders: true
 
           - task: PublishBuildArtifacts@1
             displayName: publish artifacts
             inputs:
-              artifactName: nuget
-              targetPath: artifacts
+              ArtifactName: nuget
             condition: always()
 
   - stage: build_net6_windows
