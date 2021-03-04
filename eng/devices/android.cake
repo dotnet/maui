@@ -21,6 +21,7 @@ string ANDROID_AVD = "DEVICE_TESTS_EMULATOR";
 string DEVICE_ID = "";
 string DEVICE_ARCH = "";
 bool DEVICE_BOOT = Argument("boot", true);
+bool DEVICE_BOOT_WAIT = Argument("wait", true);
 
 // set up env
 var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_HOME"));
@@ -40,7 +41,7 @@ Information("Build Configuration: {0}", CONFIGURATION);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = ANDROID_SDK_ROOT };
 var adbSettings = new AdbToolSettings { SdkRoot = ANDROID_SDK_ROOT };
-var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = ANDROID_SDK_ROOT, ArgumentCustomization = args => args.Append("-no-window") };
+var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = ANDROID_SDK_ROOT };
 
 AndroidEmulatorProcess emulatorProcess = null;
 
@@ -82,41 +83,49 @@ Setup(context =>
 		DEVICE_ID = $"system-images;android-{api};google_apis;{DEVICE_ARCH}";
 
 		// we are not using a virtual device, so quit
-		if (!emulator || !DEVICE_BOOT)
+		if (!emulator)
 			return;
 	}
 
 	Information("Test Device ID: {0}", DEVICE_ID);
 
-	// delete the AVD first, if it exists
-	Information("Deleting AVD if exists: {0}...", ANDROID_AVD);
-	try { AndroidAvdDelete(ANDROID_AVD, avdSettings); }
-	catch { }
+	if (DEVICE_BOOT) {
+		Information("Trying to boot the emulator...");
 
-	// create the new AVD
-	Information("Creating AVD: {0}...", ANDROID_AVD);
-	AndroidAvdCreate(ANDROID_AVD, DEVICE_ID, DEVICE_NAME, force: true, settings: avdSettings);
+		// delete the AVD first, if it exists
+		Information("Deleting AVD if exists: {0}...", ANDROID_AVD);
+		try { AndroidAvdDelete(ANDROID_AVD, avdSettings); }
+		catch { }
 
-	// start the emulator
-	Information("Starting Emulator: {0}...", ANDROID_AVD);
-	emulatorProcess = AndroidEmulatorStart(ANDROID_AVD, emuSettings);
+		// create the new AVD
+		Information("Creating AVD: {0}...", ANDROID_AVD);
+		AndroidAvdCreate(ANDROID_AVD, DEVICE_ID, DEVICE_NAME, force: true, settings: avdSettings);
 
-	// wait for it to finish booting (10 mins)
-	var waited = 0;
-	var total = 60 * 10;
-	while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
-		System.Threading.Thread.Sleep(1000);
-		Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
-		if (waited++ > total)
-			break;
+		// start the emulator
+		Information("Starting Emulator: {0}...", ANDROID_AVD);
+		emulatorProcess = AndroidEmulatorStart(ANDROID_AVD, emuSettings);
 	}
-	Information("Waited {0} seconds for the emulator to boot up.", waited);
+
+	if (DEVICE_BOOT_WAIT) {
+		Information("Waiting for the emulator to finish booting...");
+
+		// wait for it to finish booting (10 mins)
+		var waited = 0;
+		var total = 60 * 10;
+		while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
+			System.Threading.Thread.Sleep(1000);
+			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
+			if (waited++ > total)
+				break;
+		}
+		Information("Waited {0} seconds for the emulator to boot up.", waited);
+	}
 });
 
 Teardown(context =>
 {
 	// no virtual device was used
-	if (emulatorProcess == null || !DEVICE_BOOT)
+	if (emulatorProcess == null || !DEVICE_BOOT || TARGET.ToLower() == "boot")
 		return;
 
 	// stop and cleanup the emulator
@@ -132,6 +141,8 @@ Teardown(context =>
 	try { AndroidAvdDelete(ANDROID_AVD, avdSettings); }
 	catch { }
 });
+
+Task("Boot");
 
 Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))

@@ -30,7 +30,6 @@ stages:
               variables:
                 ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
               steps:
-                - pwsh: 'gci env:*'
                 - template: device-tests-steps.yml
                   parameters:
                     platform: android
