@@ -24,9 +24,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ThirdParty Include="Svg.*.dll" />
+    <ThirdParty Include="Fizzler.dll" />
+    <ThirdParty Include="Newtonsoft.Json.dll;" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Skip Include="System.*.dll" />
     <Skip Include="NuGet.*.dll" />
     <Skip Include="Mono.*.dll" />
+    <Skip Include="Microsoft.Build.*.dll" />
   </ItemGroup>
 
 </Project>
