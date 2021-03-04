@@ -1,5 +1,4 @@
 parameters:
-  slnPath : 'Microsoft.Maui.sln'
   msbuildExtraArguments : ''
   artifactsTargetFolder: '$(build.artifactstagingdirectory)'
   artifactsName: 'win_build'
@@ -32,12 +31,6 @@ steps:
     displayName: 'install NUnit3TestAdapter'
     inputs:
       script: 'nuget install NUnit3TestAdapter'
-
-  - task: NuGetCommand@2
-    displayName: 'NuGet restore ${{ parameters.slnPath }}'
-    inputs:
-      restoreSolution: ${{ parameters.slnPath }}
-      feedsToUse: config
 
   - script: build.cmd -Target BuildForNuget -ScriptArgs '--BUILD_CONFIGURATION="$(BuildConfiguration)"','--Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
     name: winbuild
