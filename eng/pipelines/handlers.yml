@@ -91,7 +91,7 @@ stages:
         steps:
           - template: common/build-windows.yml
             parameters:
-              provisionatorPath : '/build/provisioning/provisioning.csx'
+              provisionatorPath : '/eng/provisioning/provisioning.csx'
 
   # - stage: build_osx
   #   displayName: iOS
@@ -166,6 +166,13 @@ stages:
           - pwsh: ./.nuspec/package.ps1 -configuration Release
             displayName: pack nugets
             errorActionPreference: stop
+          
+          - task: CopyFiles@2
+            displayName: 'Copy SignList.xml Files'
+            inputs:
+              Contents: /eng/automation/SignList.xml
+              TargetFolder: 'artifacts'
+              flattenFolders: true
 
           - task: PublishPipelineArtifact@1
             displayName: publish artifacts
