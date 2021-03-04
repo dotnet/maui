@@ -175,7 +175,7 @@ stages:
               TargetFolder: 'artifacts'
               flattenFolders: true
 
-          - task: PublishPipelineArtifact@1
+          - task: PublishBuildArtifacts@1
             displayName: publish artifacts
             inputs:
               artifactName: nuget
@@ -221,10 +221,10 @@ stages:
             displayName: build samples
             errorActionPreference: stop
 
-          - task: PublishPipelineArtifact@1
+          - task: PublishBuildArtifacts@1
             displayName: publish artifacts
             inputs:
-              artifactName: NET6-WINDOWS-$(BuildConfiguration)
+              artifactName: NET6-WINDOWS
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
 
@@ -282,10 +282,10 @@ stages:
               dotnet build Microsoft.Maui-net6.sln -c $BUILDCONFIGURATION -bl:$BUILD_ARTIFACTSTAGINGDIRECTORY/logs/$BUILDCONFIGURATION.binlog
             displayName: build samples
 
-          - task: PublishPipelineArtifact@1
+          - task: PublishBuildArtifacts@1
             displayName: publish artifacts
             inputs:
-              artifactName: NET6-OSX-$(BuildConfiguration)
+              artifactName: NET6-OSX
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
 
@@ -298,7 +298,7 @@ stages:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
           parameters:
             teamName: Maui
-            usePipelineArtifactTasks: true
+            usePipelineArtifactTasks: false
             targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
             signedArtifactName: nuget
             signedArtifactPath: signed
