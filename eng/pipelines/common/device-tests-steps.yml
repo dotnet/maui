@@ -50,6 +50,11 @@ steps:
       version: $(DOTNET_VERSION)
       packageType: 'sdk'
 
+  - pwsh: |
+      ./build.ps1 --target=BuildTasks --BUILD_CONFIGURATION=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
+    name: winbuild
+    displayName: 'Build the MSBuild Tasks'
+
   - ${{ if eq(parameters['platform'], 'android') }}:
     - pwsh: |
         $(System.DefaultWorkingDirectory)/build.ps1 -Script eng/devices/android.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs"
