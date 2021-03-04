@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this TextView textView, ILabel label, IFontManager fontManager)
 		{
-			var font = label.GetFont();
+			var font = label.Font;
 
 			var tf = fontManager.GetTypeface(font);
 			textView.Typeface = tf;
