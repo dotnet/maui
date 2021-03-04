@@ -57,4 +57,4 @@ stages:
                   parameters:
                     platform: ios
                     path: ${{ project.ios }}
-                    device: ios-simpulator-46_${{ version }}
+                    device: ios-simulator-64_${{ version }}
