@@ -6,8 +6,6 @@ parameters:
 steps:
   - checkout: self
     clean: true
-  - pwsh: echo hello
-  - pwsh: ./build.ps1
 
   - ${{ if eq(parameters['platform'], 'ios') }}:
     - task: xamops.azdevex.provisionator-task.provisionator@1
@@ -28,10 +26,10 @@ steps:
     #     certSecureFile: 'Xamarin Forms iOS Certificate.p12'
     #     certPwd: $(P12password)
 
-    # - task: InstallAppleProvisioningProfile@1
-    #   displayName: 'Install an Apple provisioning profile'
-    #   inputs:
-    #     provProfileSecureFile: 'Xamarin Forms iOS Provisioning.mobileprovision'
+    - task: InstallAppleProvisioningProfile@1
+      displayName: 'Install an Apple provisioning profile'
+      inputs:
+        provProfileSecureFile: 'Xamarin Forms iOS Provisioning.mobileprovision'
 
   - task: xamops.azdevex.provisionator-task.provisionator@1
     displayName: 'Provisionator'
