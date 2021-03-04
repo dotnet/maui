@@ -283,7 +283,7 @@ stages:
             displayName: configure vsmac xcode
 
           - bash: |
-              dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration)-buildtasks.binlog &&
+              dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $BUILDCONFIGURATION -bl:$BUILD_ARTIFACTSTAGINGDIRECTORY/logs/$BUILDCONFIGURATION-buildtasks.binlog &&
               dotnet build Microsoft.Maui-net6.sln -c $BUILDCONFIGURATION -bl:$BUILD_ARTIFACTSTAGINGDIRECTORY/logs/$BUILDCONFIGURATION.binlog
             displayName: build samples
 
