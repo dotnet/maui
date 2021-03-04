@@ -75,224 +75,224 @@ resources:
       ref: refs/heads/main # still defaults to master even though main is the main branch
 
 stages:
-  - stage: windows
-    displayName: Build Windows
-    jobs:
-      - job: win_hosted
-        workspace:
-          clean: all
-        displayName: Build Windows Phase
-        timeoutInMinutes: 60
-        pool:
-          name: $(vs2019VmPool)
-          vmImage: $(vs2019VmImage)
-          demands:
-            msbuild
-        strategy:
-          matrix:
-            debug:
-              BuildConfiguration:  'Debug'
-            release:
-              BuildConfiguration:  'Release'
-        steps:
-          - template: common/build-windows.yml
-
-  # - stage: build_osx
-  #   displayName: iOS
-  #   dependsOn: []
+  # - stage: windows
+  #   displayName: Build Windows
   #   jobs:
-  #     - job: ios
+  #     - job: win_hosted
   #       workspace:
   #         clean: all
-  #       displayName: Build ControlGallery iOS
-  #       timeoutInMinutes: 120
+  #       displayName: Build Windows Phase
+  #       timeoutInMinutes: 60
   #       pool:
-  #         name:  $(macOSXVmPool)
-  #         vmImage: $(macOSXVmImage)
+  #         name: $(vs2019VmPool)
+  #         vmImage: $(vs2019VmImage)
   #         demands:
-  #           - sh
-  #           - Xamarin.iOS
-  #       variables:
-  #         provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-  #         provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-  #         provisionator.extraArguments : '--v'
+  #           msbuild
+  #       strategy:
+  #         matrix:
+  #           debug:
+  #             BuildConfiguration:  'Debug'
+  #           release:
+  #             BuildConfiguration:  'Release'
   #       steps:
-  #         - template: common/controlgallery-ios.yml
+  #         - template: common/build-windows.yml
 
-  # - stage: build_android
-  #   displayName: Android
+  # # - stage: build_osx
+  # #   displayName: iOS
+  # #   dependsOn: []
+  # #   jobs:
+  # #     - job: ios
+  # #       workspace:
+  # #         clean: all
+  # #       displayName: Build ControlGallery iOS
+  # #       timeoutInMinutes: 120
+  # #       pool:
+  # #         name:  $(macOSXVmPool)
+  # #         vmImage: $(macOSXVmImage)
+  # #         demands:
+  # #           - sh
+  # #           - Xamarin.iOS
+  # #       variables:
+  # #         provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+  # #         provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+  # #         provisionator.extraArguments : '--v'
+  # #       steps:
+  # #         - template: common/controlgallery-ios.yml
+
+  # # - stage: build_android
+  # #   displayName: Android
+  # #   dependsOn: []
+  # #   jobs:
+  # #     - job: android
+  # #       workspace:
+  # #         clean: all
+  # #       displayName: Build ControlGallery Android
+  # #       timeoutInMinutes: 120
+  # #       pool:
+  # #         name:  $(macOSXVmPool)
+  # #         vmImage: $(macOSXVmImage)
+  # #       variables:
+  # #         renderers: 'FAST'
+  # #         outputfolder: 'newRenderers'
+  # #         provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+  # #         provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+  # #         provisionator.extraArguments : '--v'
+  # #       steps:
+  # #         - template: common/controlgallery-android.yml
+
+  # - stage: pack_net6_windows
+  #   displayName: Pack .NET 6 Windows
   #   dependsOn: []
   #   jobs:
-  #     - job: android
+  #     - job: net6_pack
   #       workspace:
   #         clean: all
-  #       displayName: Build ControlGallery Android
+  #       displayName: Pack .NET 6
   #       timeoutInMinutes: 120
   #       pool:
-  #         name:  $(macOSXVmPool)
-  #         vmImage: $(macOSXVmImage)
-  #       variables:
-  #         renderers: 'FAST'
-  #         outputfolder: 'newRenderers'
-  #         provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-  #         provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-  #         provisionator.extraArguments : '--v'
+  #         vmImage: windows-latest
   #       steps:
-  #         - template: common/controlgallery-android.yml
+  #         - pwsh: |
+  #             $ProgressPreference = 'SilentlyContinue'
+  #             Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+  #             & .\dotnet-install.ps1 -Version $(DotNetVersion) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+  #             & dotnet --list-sdks
+  #           displayName: install .NET $(DotNetVersion)
+  #           errorActionPreference: stop
 
-  - stage: pack_net6_windows
-    displayName: Pack .NET 6 Windows
-    dependsOn: []
-    jobs:
-      - job: net6_pack
-        workspace:
-          clean: all
-        displayName: Pack .NET 6
-        timeoutInMinutes: 120
-        pool:
-          vmImage: windows-latest
-        steps:
-          - pwsh: |
-              $ProgressPreference = 'SilentlyContinue'
-              Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
-              & .\dotnet-install.ps1 -Version $(DotNetVersion) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
-              & dotnet --list-sdks
-            displayName: install .NET $(DotNetVersion)
-            errorActionPreference: stop
+  #         - pwsh: |
+  #             & dotnet tool install --global boots
+  #             & boots $(Android.Msi)
+  #             & boots $(iOS.Msi)
+  #           displayName: install .NET workloads
+  #           errorActionPreference: stop
 
-          - pwsh: |
-              & dotnet tool install --global boots
-              & boots $(Android.Msi)
-              & boots $(iOS.Msi)
-            displayName: install .NET workloads
-            errorActionPreference: stop
+  #         - pwsh: ./.nuspec/package.ps1 -configuration Release
+  #           displayName: pack nugets
+  #           errorActionPreference: stop
 
-          - pwsh: ./.nuspec/package.ps1 -configuration Release
-            displayName: pack nugets
-            errorActionPreference: stop
+  #         - task: PublishPipelineArtifact@1
+  #           displayName: publish artifacts
+  #           inputs:
+  #             artifactName: nuget
+  #             targetPath: artifacts
+  #           condition: always()
 
-          - task: PublishPipelineArtifact@1
-            displayName: publish artifacts
-            inputs:
-              artifactName: nuget
-              targetPath: artifacts
-            condition: always()
+  # - stage: build_net6_windows
+  #   displayName: NET6 Windows
+  #   dependsOn: []
+  #   jobs:
+  #     - job: net6
+  #       workspace:
+  #         clean: all
+  #       displayName: Build NET 6 Windows
+  #       timeoutInMinutes: 120
+  #       pool:
+  #         vmImage:  windows-latest
+  #       strategy:
+  #         matrix:
+  #           debug:
+  #             BuildConfiguration:  'Debug'
+  #           release:
+  #             BuildConfiguration:  'Release'
+  #       steps:
+  #         - powershell: |
+  #             $ProgressPreference = 'SilentlyContinue'
+  #             Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+  #             & .\dotnet-install.ps1 -Version $(DotNetVersion) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+  #             & dotnet --list-sdks
+  #           displayName: install .NET $(DotNetVersion)
+  #           errorActionPreference: stop
 
-  - stage: build_net6_windows
-    displayName: NET6 Windows
-    dependsOn: []
-    jobs:
-      - job: net6
-        workspace:
-          clean: all
-        displayName: Build NET 6 Windows
-        timeoutInMinutes: 120
-        pool:
-          vmImage:  windows-latest
-        strategy:
-          matrix:
-            debug:
-              BuildConfiguration:  'Debug'
-            release:
-              BuildConfiguration:  'Release'
-        steps:
-          - powershell: |
-              $ProgressPreference = 'SilentlyContinue'
-              Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
-              & .\dotnet-install.ps1 -Version $(DotNetVersion) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
-              & dotnet --list-sdks
-            displayName: install .NET $(DotNetVersion)
-            errorActionPreference: stop
+  #         - powershell: |
+  #             & dotnet tool install --global boots
+  #             & boots $(Android.Msi)
+  #             & boots $(iOS.Msi)
+  #           displayName: install .NET workloads
+  #           errorActionPreference: stop
 
-          - powershell: |
-              & dotnet tool install --global boots
-              & boots $(Android.Msi)
-              & boots $(iOS.Msi)
-            displayName: install .NET workloads
-            errorActionPreference: stop
+  #         - powershell: |
+  #             & dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration)-buildtasks.binlog
+  #             & dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration).binlog
+  #           displayName: build samples
+  #           errorActionPreference: stop
 
-          - powershell: |
-              & dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration)-buildtasks.binlog
-              & dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration).binlog
-            displayName: build samples
-            errorActionPreference: stop
+  #         - task: PublishPipelineArtifact@1
+  #           displayName: publish artifacts
+  #           inputs:
+  #             artifactName: NET6-WINDOWS-$(BuildConfiguration)
+  #             targetPath: $(Build.ArtifactStagingDirectory)
+  #           condition: always()
 
-          - task: PublishPipelineArtifact@1
-            displayName: publish artifacts
-            inputs:
-              artifactName: NET6-WINDOWS-$(BuildConfiguration)
-              targetPath: $(Build.ArtifactStagingDirectory)
-            condition: always()
+  # - stage: build_net6_macOS
+  #   displayName: NET6 macOS
+  #   dependsOn: []
+  #   jobs:
+  #     - job: net6
+  #       workspace:
+  #         clean: all
+  #       displayName: Build NET 6 macOS
+  #       timeoutInMinutes: 120
+  #       pool:
+  #         vmImage:  macOS-latest
+  #       variables:
+  #         DotNet.Root: /usr/local/share/dotnet/
+  #         DotNet.Tools: ~/.dotnet/tools
+  #       strategy:
+  #         matrix:
+  #           debug:
+  #             BuildConfiguration:  'Debug'
+  #           release:
+  #             BuildConfiguration:  'Release'
+  #       steps:
+  #         - task: UseDotNet@2
+  #           displayName: install .NET Core 3.1
+  #           inputs:
+  #             version: 3.1.x
+  #             installationPath: $(DotNet.Root)
 
-  - stage: build_net6_macOS
-    displayName: NET6 macOS
-    dependsOn: []
-    jobs:
-      - job: net6
-        workspace:
-          clean: all
-        displayName: Build NET 6 macOS
-        timeoutInMinutes: 120
-        pool:
-          vmImage:  macOS-latest
-        variables:
-          DotNet.Root: /usr/local/share/dotnet/
-          DotNet.Tools: ~/.dotnet/tools
-        strategy:
-          matrix:
-            debug:
-              BuildConfiguration:  'Debug'
-            release:
-              BuildConfiguration:  'Release'
-        steps:
-          - task: UseDotNet@2
-            displayName: install .NET Core 3.1
-            inputs:
-              version: 3.1.x
-              installationPath: $(DotNet.Root)
+  #         - bash: >
+  #             export PATH="$(DotNet.Root):$(DotNet.Tools):$PATH" &&
+  #             curl -L https://dot.net/v1/dotnet-install.sh > dotnet-install.sh &&
+  #             sh dotnet-install.sh --version $(DotNetVersion) --install-dir $DOTNET_ROOT --verbose &&
+  #             dotnet --list-sdks &&
+  #             echo "##vso[task.setvariable variable=PATH]$PATH"
+  #           displayName: install .NET $(DotNetVersion)
 
-          - bash: >
-              export PATH="$(DotNet.Root):$(DotNet.Tools):$PATH" &&
-              curl -L https://dot.net/v1/dotnet-install.sh > dotnet-install.sh &&
-              sh dotnet-install.sh --version $(DotNetVersion) --install-dir $DOTNET_ROOT --verbose &&
-              dotnet --list-sdks &&
-              echo "##vso[task.setvariable variable=PATH]$PATH"
-            displayName: install .NET $(DotNetVersion)
+  #         - bash: |
+  #             dotnet tool install --global boots
+  #             boots $(Android.Pkg)
+  #             boots $(iOS.Pkg)
+  #           displayName: install .NET workloads
 
-          - bash: |
-              dotnet tool install --global boots
-              boots $(Android.Pkg)
-              boots $(iOS.Pkg)
-            displayName: install .NET workloads
+  #         - bash: |
+  #             set -x
+  #             mkdir -p ~/Library/Preferences/Xamarin
+  #             rm -f ~/Library/Preferences/Xamarin/Settings.plist
+  #             /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
+  #             cat ~/Library/Preferences/Xamarin/Settings.plist || true
+  #           displayName: configure vsmac xcode
 
-          - bash: |
-              set -x
-              mkdir -p ~/Library/Preferences/Xamarin
-              rm -f ~/Library/Preferences/Xamarin/Settings.plist
-              /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
-              cat ~/Library/Preferences/Xamarin/Settings.plist || true
-            displayName: configure vsmac xcode
+  #         - bash: |
+  #             dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration)-buildtasks.binlog &&
+  #             dotnet build Microsoft.Maui-net6.sln -c $BUILDCONFIGURATION -bl:$BUILD_ARTIFACTSTAGINGDIRECTORY/logs/$BUILDCONFIGURATION.binlog
+  #           displayName: build samples
 
-          - bash: |
-              dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration)-buildtasks.binlog &&
-              dotnet build Microsoft.Maui-net6.sln -c $BUILDCONFIGURATION -bl:$BUILD_ARTIFACTSTAGINGDIRECTORY/logs/$BUILDCONFIGURATION.binlog
-            displayName: build samples
-
-          - task: PublishPipelineArtifact@1
-            displayName: publish artifacts
-            inputs:
-              artifactName: NET6-OSX-$(BuildConfiguration)
-              targetPath: $(Build.ArtifactStagingDirectory)
-            condition: always()
+  #         - task: PublishPipelineArtifact@1
+  #           displayName: publish artifacts
+  #           inputs:
+  #             artifactName: NET6-OSX-$(BuildConfiguration)
+  #             targetPath: $(Build.ArtifactStagingDirectory)
+  #           condition: always()
 
   - template: common/device-tests.yml
     parameters:
       projects:
-        - name: essentials
-          desc: Essentials
-          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
-          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
+        # - name: essentials
+        #   desc: Essentials
+        #   android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
+        #   ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
         - name: core
           desc: Core
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
-          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+          # ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
