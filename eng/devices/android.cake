@@ -105,21 +105,6 @@ Setup(context =>
 		Information("Starting Emulator: {0}...", ANDROID_AVD);
 		emulatorProcess = AndroidEmulatorStart(ANDROID_AVD, emuSettings);
 	}
-
-	if (DEVICE_BOOT_WAIT) {
-		Information("Waiting for the emulator to finish booting...");
-
-		// wait for it to finish booting (10 mins)
-		var waited = 0;
-		var total = 60 * 10;
-		while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
-			System.Threading.Thread.Sleep(1000);
-			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
-			if (waited++ > total)
-				break;
-		}
-		Information("Waited {0} seconds for the emulator to boot up.", waited);
-	}
 });
 
 Teardown(context =>
@@ -196,6 +181,21 @@ Task("Test")
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 
 	CleanDirectories(TEST_RESULTS);
+
+	if (DEVICE_BOOT_WAIT) {
+		Information("Waiting for the emulator to finish booting...");
+
+		// wait for it to finish booting (10 mins)
+		var waited = 0;
+		var total = 60 * 10;
+		while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
+			System.Threading.Thread.Sleep(1000);
+			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
+			if (waited++ > total)
+				break;
+		}
+		Information("Waited {0} seconds for the emulator to boot up.", waited);
+	}
 
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
