@@ -44,7 +44,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 			else if (VisualElementRenderer.Element != null)
 				throw new Exception($"{VisualElementRenderer.Element} must implement: {nameof(Microsoft.Maui.IView)}");
-
 		}
 
 		void OnElementChanged(object sender, VisualElementChangedEventArgs e)

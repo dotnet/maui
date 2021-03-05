@@ -69,11 +69,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			_hasLayoutOccurred = true;
 		}
 
-		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-		{
-			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-		}
-
 		public override void Invalidate()
 		{
 			if (_skipInvalidate)
