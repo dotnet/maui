@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 			return new AndroidProgressBar(Context, null, Attribute.ProgressBarStyleHorizontal)
 			{
 				Indeterminate = false,
-				Max = ProgressBar.Maximum
+				Max = ProgressBarExtensions.Maximum
 			};
 		}
 	}
