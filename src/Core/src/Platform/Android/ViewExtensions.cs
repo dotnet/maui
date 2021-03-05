@@ -1,7 +1,3 @@
-using System;
-using Android.Content.Res;
-using Android.Graphics.Drawables;
-using Microsoft.Maui;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -20,5 +16,16 @@ namespace Microsoft.Maui
 			if (!backgroundColor.IsDefault)
 				nativeView?.SetBackgroundColor(backgroundColor.ToNative());
 		}
+
+		public static bool GetClipToOutline(this AView view)
+		{
+			return view.ClipToOutline;
+		}
+
+		public static void SetClipToOutline(this AView view, bool value)
+		{
+			view.ClipToOutline = value;
+		}
+
 	}
 }

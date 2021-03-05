@@ -49,6 +49,10 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 
+			verticalStack.Add(new CheckBox());
+			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
+			verticalStack.Add(new CheckBox { IsChecked = true, Color = Color.Aquamarine });
+
 			verticalStack.Add(new Entry());
 			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
