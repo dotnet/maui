@@ -143,7 +143,8 @@
     <Target Name="GetSharedItems" Outputs="@(ExportedSharedItem)">
 
         <ItemGroup>
-            <SharedItem Include="@(SharedImage)" ItemGroupName="SharedImage" />
+            <SharedItem Include="@(SharedImage)" ItemGroupName="SharedImage" Condition="'%(SharedImage.ForegroundFile)' == ''" />
+            <SharedItem Include="@(SharedImage)" ItemGroupName="SharedImage" Condition="'%(SharedImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(SharedImage.ForegroundFile)'))" />
         </ItemGroup>
 
         <ItemGroup>

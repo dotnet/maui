@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Resizetizer
 						{
 							var filename = item.ItemSpec;
 
-							if (!Utils.IsValidResourceFilename(filename) || !File.Exists(filename))
+							if (!Utils.IsValidResourceFilename(filename))
 								invalidFilenames.Add(filename);
 						});
 					}
