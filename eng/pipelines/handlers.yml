@@ -50,13 +50,15 @@ variables:
   - name: DotNet.Cli.Telemetry.OptOut
     value: true
   - name: Android.Msi
-    value: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4498522/master/2f83bddb99f6a0948631cd0f09bf037ba8a4e359/Microsoft.NET.Workload.Android.11.0.200.118.msi
+    value: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4525053/master/8cd0b47032d267a63b449a63c0839c60cbd976f1/Microsoft.NET.Workload.Android.11.0.200.136.msi
   - name: iOS.Msi
-    value: https://bosstoragemirror.azureedge.net/wrench/main/f01fde5cd9a7ffffcdc8d241200c35988700fa00/4449408/package/Microsoft.NET.Workload.iOS.14.3.100-ci.main.1079.msi
+    value: https://bosstoragemirror.azureedge.net/wrench/main/80ed9d81bcf66afa2d800bc362e467180dbf246c/4524716/package/Microsoft.NET.Workload.iOS.14.4.100-ci.main.1167.msi
   - name: Android.Pkg
-    value: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4498522/master/2f83bddb99f6a0948631cd0f09bf037ba8a4e359/Microsoft.NET.Workload.Android-11.0.200-ci.master.118.pkg
+    value: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4525053/master/8cd0b47032d267a63b449a63c0839c60cbd976f1/Microsoft.NET.Workload.Android-11.0.200-ci.8cd0b47032d267a63b449a63c0839c60cbd976f1.136.pkg
   - name: iOS.Pkg
-    value: https://bosstoragemirror.azureedge.net/wrench/main/f01fde5cd9a7ffffcdc8d241200c35988700fa00/4449408/package/notarized/Microsoft.iOS.Bundle.14.3.100-ci.main.1079.pkg
+    value: https://bosstoragemirror.azureedge.net/wrench/main/80ed9d81bcf66afa2d800bc362e467180dbf246c/4524716/package/notarized/Microsoft.iOS.Bundle.14.4.100-ci.main.1167.pkg
+  - name: MacCatalyst.Pkg
+    value: https://bosstoragemirror.azureedge.net/wrench/main/23bdf612307e9fee625bce8e3cc5fe50eb86fa3e/4525406/package/Microsoft.MacCatalyst.Bundle.14.3.100-ci.main.315.pkg
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)\logs
   - name: provisionator.xcode
@@ -272,6 +274,7 @@ stages:
               dotnet tool install --global boots
               boots $(Android.Pkg)
               boots $(iOS.Pkg)
+              boots $(MacCatalyst.Pkg)
             displayName: install .NET workloads
 
           - bash: |
