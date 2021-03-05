@@ -31,15 +31,15 @@
     <None Include="$(PkgSystem_IO_UnmanagedMemoryStream)\lib\netstandard1.3\System.IO.UnmanagedMemoryStream.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSkiaSharp)\runtimes\osx\native\libSkiaSharp.dylib" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(PkgSkiaSharp)\runtimes\win-x86\native\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x86" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(PkgSkiaSharp)\runtimes\win-x64\native\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x64" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(PkgSkiaSharp)\runtimes\win-arm64\native\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\arm64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgSkiaSharp)\runtimes\win-x86\native\libSkiaSharp.dll" Link="x86\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x86" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgSkiaSharp)\runtimes\win-x64\native\libSkiaSharp.dll" Link="x64\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgSkiaSharp)\runtimes\win-arm64\native\libSkiaSharp.dll" Link="arm64\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\arm64" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgHarfBuzzSharp)\lib\net462\HarfBuzzSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgHarfBuzzSharp)\runtimes\osx\native\libHarfBuzzSharp.dylib" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(PkgHarfBuzzSharp)\runtimes\win-x86\native\libHarfBuzzSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x86" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(PkgHarfBuzzSharp)\runtimes\win-x64\native\libHarfBuzzSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x64" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(PkgHarfBuzzSharp)\runtimes\win-arm64\native\libHarfBuzzSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\arm64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgHarfBuzzSharp)\runtimes\win-x86\native\libHarfBuzzSharp.dll" Link="x86\libHarfBuzzSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x86" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgHarfBuzzSharp)\runtimes\win-x64\native\libHarfBuzzSharp.dll" Link="x64\libHarfBuzzSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgHarfBuzzSharp)\runtimes\win-arm64\native\libHarfBuzzSharp.dll" Link="arm64\libHarfBuzzSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\arm64" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSvg2VectorDrawable_Net)\lib\netstandard2.0\Svg2VectorDrawable.Net.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -67,9 +67,9 @@
 
   <Target Name="_CopyToNuspecDir" AfterTargets="Build">
     <ItemGroup>
-      <_CopyItems Include="$(TargetDir)*.dll" />
+      <_CopyItems Include="$(TargetDir)**\*.dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\..\..\..\.nuspec\" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\..\..\..\.nuspec\%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
 
 </Project>
