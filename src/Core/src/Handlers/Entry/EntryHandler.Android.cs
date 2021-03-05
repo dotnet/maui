@@ -32,5 +32,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateIsPassword(entry);
 		}
+
+		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateIsTextPredictionEnabled(entry);
+		}
 	}
 }

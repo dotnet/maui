@@ -59,6 +59,12 @@ variables:
     value: https://bosstoragemirror.azureedge.net/wrench/main/f01fde5cd9a7ffffcdc8d241200c35988700fa00/4449408/package/notarized/Microsoft.iOS.Bundle.14.3.100-ci.main.1079.pkg
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)\logs
+  - name: provisionator.xcode
+    value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+  - name: provisionator.path
+    value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+  - name: provisionator.extraArguments
+    value: '--v'
 
 resources:
   repositories:
@@ -90,8 +96,6 @@ stages:
               BuildConfiguration:  'Release'
         steps:
           - template: common/build-windows.yml
-            parameters:
-              provisionatorPath : '/build/provisioning/provisioning.csx'
 
   # - stage: build_osx
   #   displayName: iOS
@@ -166,12 +170,21 @@ stages:
           - pwsh: ./.nuspec/package.ps1 -configuration Release
             displayName: pack nugets
             errorActionPreference: stop
+          
+          - task: CopyFiles@2
+            displayName: 'Copy SignList.xml Files'
+            inputs:
+              Contents: |
+                **/*.nupkg
+                **/*.snupkg
+                **/SignList.xml
+              TargetFolder: $(build.artifactstagingdirectory)
+              flattenFolders: true
 
-          - task: PublishPipelineArtifact@1
+          - task: PublishBuildArtifacts@1
             displayName: publish artifacts
             inputs:
-              artifactName: nuget
-              targetPath: artifacts
+              ArtifactName: nuget
             condition: always()
 
   - stage: build_net6_windows
@@ -208,15 +221,15 @@ stages:
             errorActionPreference: stop
 
           - powershell: |
-              & dotnet restore Microsoft.Maui-net6.sln
+              & dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration)-buildtasks.binlog
               & dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration).binlog
             displayName: build samples
             errorActionPreference: stop
 
-          - task: PublishPipelineArtifact@1
+          - task: PublishBuildArtifacts@1
             displayName: publish artifacts
             inputs:
-              artifactName: NET6-WINDOWS-$(BuildConfiguration)
+              artifactName: NET6-WINDOWS
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
 
@@ -270,13 +283,41 @@ stages:
             displayName: configure vsmac xcode
 
           - bash: |
-              dotnet restore Microsoft.Maui-net6.sln &&
+              dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $BUILDCONFIGURATION -bl:$BUILD_ARTIFACTSTAGINGDIRECTORY/logs/$BUILDCONFIGURATION-buildtasks.binlog &&
               dotnet build Microsoft.Maui-net6.sln -c $BUILDCONFIGURATION -bl:$BUILD_ARTIFACTSTAGINGDIRECTORY/logs/$BUILDCONFIGURATION.binlog
             displayName: build samples
 
-          - task: PublishPipelineArtifact@1
+          - task: PublishBuildArtifacts@1
             displayName: publish artifacts
             inputs:
-              artifactName: NET6-OSX-$(BuildConfiguration)
+              artifactName: NET6-OSX
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
+
+  - template: common/device-tests.yml
+    parameters:
+      projects:
+        - name: essentials
+          desc: Essentials
+          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
+        - name: core
+          desc: Core
+          android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+
+  # only sign using the private server and not sigining Maui for now
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - stage: nuget_signing
+      dependsOn: pack_net6_windows
+      displayName: Sign Nuget
+      jobs:
+        - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+          parameters:
+            teamName: Maui
+            usePipelineArtifactTasks: false
+            targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+            signedArtifactName: nuget
+            signedArtifactPath: signed
+            displayName: Sign Phase
+            condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
