@@ -1,16 +1,21 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting
 {
-
 	class MauiServiceProvider : IMauiServiceProvider
 	{
-		IDictionary<Type, Func<IServiceProvider, object?>?> _collection;
+		IMauiServiceCollection _collection;
+
+		// TODO: do this properly and support scopes
+		IDictionary<ServiceDescriptor, object?> _singletons;
 
 		public MauiServiceProvider(IMauiServiceCollection collection)
 		{
 			_collection = collection ?? throw new ArgumentNullException(nameof(collection));
+			_singletons = new ConcurrentDictionary<ServiceDescriptor, object?>();
 		}
 
 		public object? GetService(Type serviceType)
@@ -36,14 +41,40 @@ namespace Microsoft.Maui.Hosting
 
 			foreach (var type in types)
 			{
-				if (_collection != null && _collection.ContainsKey(type))
+				if (_collection.TryGetService(type, out var descriptor))
 				{
-					var typeInstance = _collection[type]?.Invoke(this);
+					if (descriptor!.Lifetime == ServiceLifetime.Singleton)
+					{
+						if (_singletons.TryGetValue(descriptor, out var singletonInstance))
+							return singletonInstance;
+					}
+
+					var typeInstance = CreateInstance(descriptor);
+
+					if (descriptor.Lifetime == ServiceLifetime.Singleton)
+					{
+						_singletons[descriptor] = typeInstance;
+					}
+
 					return typeInstance;
 				}
 			}
 
 			return default!;
+		}
+
+		object? CreateInstance(ServiceDescriptor item)
+		{
+			if (item.ImplementationType != null)
+				return Activator.CreateInstance(item.ImplementationType);
+
+			if (item.ImplementationInstance != null)
+				return item.ImplementationInstance;
+
+			if (item.ImplementationFactory != null)
+				return item.ImplementationFactory(this);
+
+			throw new InvalidOperationException($"You need to provide an {nameof(item.ImplementationType)}, an {nameof(item.ImplementationFactory)} or an {nameof(item.ImplementationInstance)}.");
 		}
 	}
 }

@@ -2,26 +2,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
 	public class FontFile
 	{
-		public string FileName { get; set; }
-		public string Extension { get; set; }
-		public string FileNameWithExtension(string extension) => $"{FileName}{extension}";
+		public static readonly string[] Extensions = { ".ttf", ".otf", };
+
+		public string? FileName { get; set; }
+
+		public string? Extension { get; set; }
+
+		public string? PostScriptName { get; set; }
+
+		public string FileNameWithExtension(string? extension) => $"{FileName}{extension}";
+
 		public string FileNameWithExtension() => FileNameWithExtension(Extension);
-		public string PostScriptName { get; set; }
 
-		public string GetPostScriptNameWithSpaces() =>
-			string.Join(" ", GetFontName(PostScriptName));
-
-		public static readonly string[] Extensions = {
-				".ttf",
-				".otf",
-			};
+		public string GetPostScriptNameWithSpaces() => string.Join(" ", GetFontName(PostScriptName!));
 
 		public static FontFile FromString(string input)
 		{
+			_ = input ?? throw new ArgumentNullException(nameof(input));
+
 			var hashIndex = input.IndexOf("#", System.StringComparison.Ordinal);
 			//UWP names require Spaces. Sometimes people may use those, "CuteFont-Regular#Cute Font" should be "CuteFont-Regular#CuteFont"
 			var postScriptName = hashIndex > 0 ? input.Substring(hashIndex + 1).Replace(" ", "") : input;
@@ -42,15 +44,17 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-
 		static IEnumerable<string> GetFontName(string fontFamily)
 		{
+			_ = fontFamily ?? throw new ArgumentNullException(nameof(fontFamily));
+
 			if (fontFamily.Contains(" "))
 			{
 				yield return fontFamily;
 				//We are done, they have spaces, they have it handled.
 				yield break;
 			}
+
 			string currentString = "";
 			char lastCharacter = ' ';
 			var index = fontFamily.LastIndexOf("-", StringComparison.Ordinal);
@@ -69,7 +73,6 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-
 					if (char.IsUpper(c))
 					{
 						//If the last character is lowercase, we are in a new CamelCase font
@@ -100,6 +103,7 @@ namespace Microsoft.Maui.Controls
 					lastCharacter = c;
 				}
 			}
+
 			//Send what is left!
 			if (!string.IsNullOrWhiteSpace(currentString))
 				yield return currentString.Trim();

@@ -30,13 +30,16 @@ namespace Microsoft.Maui.Resizetizer
 
 				try
 				{
-					System.Threading.Tasks.Parallel.ForEach(Items, item =>
+					if (Items != null)
 					{
-						var filename = item.ItemSpec;
+						System.Threading.Tasks.Parallel.ForEach(Items, item =>
+						{
+							var filename = item.ItemSpec;
 
-						if (!Utils.IsValidResourceFilename(filename) || ! File.Exists(filename))
-							invalidFilenames.Add(filename);
-					});
+							if (!Utils.IsValidResourceFilename(filename) || !File.Exists(filename))
+								invalidFilenames.Add(filename);
+						});
+					}
 				}
 				catch (Exception ex)
 				{

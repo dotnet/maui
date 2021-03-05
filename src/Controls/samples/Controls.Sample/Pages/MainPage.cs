@@ -30,6 +30,9 @@ namespace Maui.Controls.Sample.Pages
 			label.Margin = new Thickness(15, 10, 20, 15);
 
 			verticalStack.Add(label);
+			verticalStack.Add(new Label { Text = "This should be BIG text!", FontSize = 24 });
+			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold });
+			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
 			var button2 = new Button()

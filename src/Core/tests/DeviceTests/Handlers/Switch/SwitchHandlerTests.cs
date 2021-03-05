@@ -8,6 +8,10 @@ namespace Microsoft.Maui.DeviceTests
 	[Category("SwitchHandler")]
 	public partial class SwitchHandlerTests : HandlerTestBase<SwitchHandler>
 	{
+		public SwitchHandlerTests(HandlerTestFixture fixture) : base(fixture)
+		{
+		}
+
 		[Fact(DisplayName = "Is Toggled Initializes Correctly")]
 		public async Task IsToggledInitializesCorrectly()
 		{

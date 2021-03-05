@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					using (var text = new TextView(Context))
 					{
-						text.Typeface = "sans-serif-medium".ToTypeFace();
+						text.Typeface = "sans-serif-medium".ToTypeface();
 						text.SetTextColor(AColor.Black);
 						text.Text = shellContent.Title;
 						lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
