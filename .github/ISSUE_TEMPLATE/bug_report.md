@@ -2,12 +2,12 @@
 name: Bug report
 about: Create a report to help us improve
 title: "[Bug] "
-labels: 's/unverified, t/bug :bug:'
+labels: 'bug'
 assignees: ''
 
 ---
 
-<!-- Bug report best practices: https://github.com/xamarin/Xamarin.Forms/wiki/Submitting-Issues -->
+<!-- If this is a bug in Xamarin.Forms, please [open the issue in the Xamarin.Forms repo](https://github.com/xamarin/Xamarin.Forms/issues/new?assignees=&labels=s%2Funverified%2C+t%2Fbug+%3Abug%3A&template=bug_report.md&title=[Bug]+) -->
 
 ### Description
 
