@@ -46,7 +46,7 @@ schedules:
 variables:
   - template: /eng/pipelines/common/variables.yml
   - name: DotNetVersion
-    value: 6.0.100-preview.1.21103.13
+    value: 6.0.100-preview.2.21114.3
   - name: DotNet.Cli.Telemetry.OptOut
     value: true
   - name: Android.Msi
@@ -172,7 +172,7 @@ stages:
           - pwsh: ./.nuspec/package.ps1 -configuration Release
             displayName: pack nugets
             errorActionPreference: stop
-          
+
           - task: CopyFiles@2
             displayName: 'Copy SignList.xml Files'
             inputs:
@@ -186,7 +186,71 @@ stages:
           - task: PublishBuildArtifacts@1
             displayName: publish artifacts
             inputs:
-              ArtifactName: nuget
+              ArtifactName: nuget-windows
+            condition: always()
+
+  - stage: pack_net6_macOS
+    displayName: Pack .NET 6 macOS
+    dependsOn: []
+    jobs:
+      - job: net6_pack
+        workspace:
+          clean: all
+        displayName: Pack .NET 6
+        timeoutInMinutes: 120
+        pool:
+          vmImage:  macOS-latest
+        variables:
+          DotNet.Root: /usr/local/share/dotnet/
+          DotNet.Tools: ~/.dotnet/tools
+        steps:
+          - task: UseDotNet@2
+            displayName: install .NET Core 3.1
+            inputs:
+              version: 3.1.x
+              installationPath: $(DotNet.Root)
+
+          - bash: >
+              export PATH="$(DotNet.Root):$(DotNet.Tools):$PATH" &&
+              curl -L https://dot.net/v1/dotnet-install.sh > dotnet-install.sh &&
+              sh dotnet-install.sh --version $(DotNetVersion) --install-dir $DOTNET_ROOT --verbose &&
+              dotnet --list-sdks &&
+              echo "##vso[task.setvariable variable=PATH]$PATH"
+            displayName: install .NET $(DotNetVersion)
+
+          - bash: |
+              dotnet tool install --global boots
+              boots $(Android.Pkg)
+              boots $(iOS.Pkg)
+              boots $(MacCatalyst.Pkg)
+            displayName: install .NET workloads
+
+          - bash: |
+              set -x
+              mkdir -p ~/Library/Preferences/Xamarin
+              rm -f ~/Library/Preferences/Xamarin/Settings.plist
+              /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
+              cat ~/Library/Preferences/Xamarin/Settings.plist || true
+            displayName: configure vsmac xcode
+
+          - pwsh: ./.nuspec/package.ps1 -configuration Release
+            displayName: pack nugets
+            errorActionPreference: stop
+
+          - task: CopyFiles@2
+            displayName: 'Copy SignList.xml Files'
+            inputs:
+              Contents: |
+                **/*.nupkg
+                **/*.snupkg
+                **/SignList.xml
+              TargetFolder: $(build.artifactstagingdirectory)
+              flattenFolders: true
+
+          - task: PublishBuildArtifacts@1
+            displayName: publish artifacts
+            inputs:
+              ArtifactName: nuget-osx
             condition: always()
 
   - stage: build_net6_windows
