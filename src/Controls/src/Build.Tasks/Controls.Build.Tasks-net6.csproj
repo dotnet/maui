@@ -17,6 +17,7 @@
 		<AssemblyOriginatorKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</AssemblyOriginatorKeyFile>
 		<StrongNamerKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</StrongNamerKeyFile>
 		<DefineConstants Condition=" '$(_DisableStrongNamer)' != 'True' ">$(DefineConstants);STRONG_NAME</DefineConstants> -->
+		<IsTrimmable>false</IsTrimmable>
 	</PropertyGroup>
 
 	<ItemGroup>

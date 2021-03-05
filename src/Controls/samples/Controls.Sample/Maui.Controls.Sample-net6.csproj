@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\src\Xaml\Controls.Xaml-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
