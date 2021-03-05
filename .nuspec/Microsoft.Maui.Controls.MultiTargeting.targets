@@ -1,5 +1,5 @@
 <Project>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true  ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">
     <Compile Remove="**\*.iOS.cs" />
     <None Include="**\*.iOS.cs" />
     <Compile Remove="**\iOS\*.cs" />
@@ -11,7 +11,7 @@
     <Compile Remove="**\Mac\*.cs" />
     <None Include="**\Mac\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true AND $(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true AND $(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">
     <Compile Remove="**\*.MaciOS.cs" />
     <None Include="**\*.MaciOS.cs" />
     <Compile Remove="**\MaciOS\*.cs" />
@@ -58,7 +58,7 @@
   </ItemGroup>
 
   <!-- iOS -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-ios' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-ios' AND '$(TargetFramework)' == 'net6.0-maccatalyst' ">
     <DefineConstants>$(DefineConstants);IOS</DefineConstants>
   </PropertyGroup>
   
