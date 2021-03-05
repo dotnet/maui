@@ -15,25 +15,5 @@ namespace Microsoft.Maui
 		{
 			nativeProgressBar.Progress = (int)(progress.Progress * ProgressBar.Maximum);
 		}
-
-		public static void UpdateProgressColor(this AProgressBar nativeProgressBar, IProgress progress)
-		{
-			Color color = progress.ProgressColor;
-
-			if (color.IsDefault)
-			{
-				(nativeProgressBar.Indeterminate ? nativeProgressBar.IndeterminateDrawable :
-					nativeProgressBar.ProgressDrawable)?.ClearColorFilter();
-			}
-			else
-			{
-				var tintList = ColorStateList.ValueOf(color.ToNative());
-
-				if (nativeProgressBar.Indeterminate)
-					nativeProgressBar.IndeterminateTintList = tintList;
-				else
-					nativeProgressBar.ProgressTintList = tintList;
-			}
-		}
 	}
 }

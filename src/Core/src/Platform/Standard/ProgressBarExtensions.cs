@@ -6,10 +6,5 @@
 		{
 
 		}
-
-		public static void UpdateProgressColor(this object nothing, IProgress progress)
-		{
-
-		}
 	}
 }
