@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			return $"{message}. This is what it looked like:<img>{imageAsString}</img>";
 		}
 
-		public static UIImage ToBitmap(this UIView view)
+		public static Task<UIImage> ToBitmap(this UIView view)
 		{
 			var imageRect = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			UIGraphics.EndImageContext();
 
-			return image;
+			return Task.FromResult(image);
 		}
 
 		public static UIColor ColorAtPoint(this UIImage bitmap, int x, int y)
@@ -72,8 +72,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			return pixel;
 		}
-
-
 
 		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y)
 		{
@@ -124,48 +122,49 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, (int)bitmap.Size.Width - 1, (int)bitmap.Size.Height - 1);
 		}
 
-		public static UIImage AssertColorAtPoint(this UIView view, UIColor expectedColor, int x, int y)
+		public static async Task<UIImage> AssertColorAtPoint(this UIView view, UIColor expectedColor, int x, int y)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static UIImage AssertColorAtCenter(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtCenter(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
-		public static UIImage AssertColorAtBottomLeft(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtBottomLeft(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view .ToBitmap();
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
-		public static UIImage AssertColorAtBottomRight(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtBottomRight(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view .ToBitmap();
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
-		public static UIImage AssertColorAtTopLeft(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtTopLeft(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view .ToBitmap();
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
-		public static UIImage AssertColorAtTopRight(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtTopRight(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static UIImage AssertContainsColor(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor)
 		{
-			return view.ToBitmap().AssertContainsColor(expectedColor);
+			var bitmap = await view.ToBitmap();
+			return bitmap.AssertContainsColor(expectedColor);
 		}
 
-		public static UIImage AssertContainsColor(this UIView view, Microsoft.Maui.Color expectedColor) =>
+		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToNative());
 
 		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor)
@@ -183,32 +182,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(false, CreateColorError(bitmap, $"Color {expectedColor} not found."));
 			return bitmap;
-		}
-
-		public static async Task AssertEqualsAsync(this UIImage expectedBitmap, UIImage actualBitmap)
-		{
-			if (!actualBitmap.AsPNG().IsEqual(expectedBitmap.AsPNG()))
-			{
-				string failureMessage = null;
-				await MainThread.InvokeOnMainThreadAsync(() =>
-				{
-					var view = new UIView();
-					UIImageView actualView = new UIImageView() { Image = actualBitmap };
-					UIImageView expectedView = new UIImageView() { Image = expectedBitmap };
-
-					actualView.Frame = new CGRect(0, 0, actualBitmap.Size.Width, actualBitmap.Size.Height);
-					expectedView.Frame = new CGRect(0, actualBitmap.Size.Height + 40, expectedBitmap.Size.Width, expectedBitmap.Size.Height);
-
-					view.Frame = new CGRect(0, 0,
-						actualView.Frame.Width + expectedView.Frame.Width,
-						actualView.Frame.Height + expectedView.Frame.Height);
-
-					view.AddSubviews(actualView, expectedView);
-					failureMessage = CreateColorError(view.ToBitmap(), "Actual (top) vs Expected (bottom)");
-				});
-
-				Assert.True(false, failureMessage);
-			}
 		}
 	}
 }
