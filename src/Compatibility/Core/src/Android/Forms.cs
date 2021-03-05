@@ -418,8 +418,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Profile.FramePartition("RegisterAll");
 
-			if (context.Handlers == null)
-				RegisterCompatRenderers(maybeOptions);
+			RegisterCompatRenderers(maybeOptions);
 
 			Profile.FramePartition("Epilog");
 
