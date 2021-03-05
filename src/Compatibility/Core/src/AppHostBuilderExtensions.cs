@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				  typeof(Button) ,
 				  typeof(Entry) ,
 				  typeof(ContentPage) ,
+				  typeof(Page) ,
 				  typeof(Label) ,
 				  typeof(Slider),
 				  typeof(Switch) 
