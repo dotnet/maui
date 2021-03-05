@@ -40,10 +40,10 @@ namespace Microsoft.Maui
 
 		public static void UpdateIsTextPredictionEnabled(this UITextField textField, IEntry entry) 
 		{
-			if (!entry.IsTextPredictionEnabled)
-			{
+			if (entry.IsTextPredictionEnabled)
+				textField.AutocorrectionType = UITextAutocorrectionType.Yes;
+			else
 				textField.AutocorrectionType = UITextAutocorrectionType.No;
-			}
 		}
 	}
 }
