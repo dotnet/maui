@@ -251,8 +251,6 @@ namespace Microsoft.Maui.Controls
 
 		void HandleFontChanged()
 		{
-			// Null out the Maui font value so it will be recreated next time it's accessed
-			_font = null;
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
