@@ -55,7 +55,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.TrackTintColor = color != Color.Default ? color.ToUIColor() : null;
 		}
 
-		[PortHandler]
 		void UpdateProgressColor()
 		{
 			Control.ProgressTintColor = Element.ProgressColor == Color.Default ? null : Element.ProgressColor.ToUIColor();

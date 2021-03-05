@@ -52,7 +52,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UpdateProgressColor();
 		}
 
-		[PortHandler]
 		internal virtual protected void UpdateProgressColor()
 		{
 			if (Element == null || Control == null)
