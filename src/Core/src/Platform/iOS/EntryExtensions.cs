@@ -38,6 +38,14 @@ namespace Microsoft.Maui
 				textField.SecureTextEntry = entry.IsPassword;
 		}
 
+		public static void UpdateIsTextPredictionEnabled(this UITextField textField, IEntry entry) 
+		{
+			if (entry.IsTextPredictionEnabled)
+				textField.AutocorrectionType = UITextAutocorrectionType.Yes;
+			else
+				textField.AutocorrectionType = UITextAutocorrectionType.No;
+		}
+
 		public static void UpdatePlaceholder(this UITextField editText, IEntry entry)
 		{
 			editText.Placeholder = entry.Placeholder;

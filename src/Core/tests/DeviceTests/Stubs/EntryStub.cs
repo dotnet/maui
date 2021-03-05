@@ -9,6 +9,9 @@
 		public Color TextColor { get; set; }
 
 		public bool IsPassword { get; set; }
+
 		public string Placeholder { get; set; }
+
+		public bool IsTextPredictionEnabled { get; set; }
 	}
 }

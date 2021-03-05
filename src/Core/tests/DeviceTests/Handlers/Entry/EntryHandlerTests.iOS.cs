@@ -19,5 +19,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativePlaceholder(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Placeholder;
+
+		bool GetNativeIsTextPredictionEnabled(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
 	}
 }

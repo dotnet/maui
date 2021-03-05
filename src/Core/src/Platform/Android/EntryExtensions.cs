@@ -50,6 +50,14 @@ namespace Microsoft.Maui
 
 			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))
 				editText.InputType |= InputTypes.NumberVariationPassword;
+
+			if (!entry.IsTextPredictionEnabled && ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions))
+				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+		}
+
+		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEntry entry)
+		{
+			editText.SetInputType(entry);
 		}
 
 		public static void UpdatePlaceholder(this EditText editText, IEntry entry)
