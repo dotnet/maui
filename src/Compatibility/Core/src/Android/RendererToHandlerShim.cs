@@ -1,5 +1,6 @@
 using System;
 using Android.Views;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using AbstractViewHandler = Microsoft.Maui.Handlers.AbstractViewHandler<Microsoft.Maui.IView, Android.Views.View>;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
 using VisualElementChangedEventArgs = Microsoft.Maui.Controls.Compatibility.Platform.Android.VisualElementChangedEventArgs;
@@ -72,6 +73,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		protected override void DisconnectHandler(global::Android.Views.View nativeView)
 		{
+			Platform.Android.AppCompat.Platform.SetRenderer(
+				VisualElementRenderer.Element,
+				null);
+
+			VisualElementRenderer.SetElement(null);
+
 			base.DisconnectHandler(nativeView);
 			VirtualView.Handler = null;
 		}
@@ -94,11 +101,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				base.SetVirtualView(view);
 			}
-		}
 
-		public void DisconnectHandler()
-		{
-			VisualElementRenderer.SetElement(null);
+			Platform.Android.AppCompat.Platform.SetRenderer(
+				VisualElementRenderer.Element,
+				VisualElementRenderer);
 		}
 
 		public override void UpdateValue(string property)
@@ -108,6 +114,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				SetFrame(VisualElementRenderer.Element.Bounds);
 			}
+		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return Platform.Android.AppCompat.Platform.GetNativeSize(
+				VisualElementRenderer, widthConstraint, heightConstraint);
 		}
 	}
 }
