@@ -58,5 +58,63 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(entry, () => entry.Placeholder, GetNativePlaceholder, entry.Placeholder);
 		}
+
+		[Theory(DisplayName = "IsPassword Updates Correctly")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task IsPasswordUpdatesCorrectly(bool setValue, bool unsetValue)
+		{
+			var entry = new EntryStub();
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.IsPassword),
+				GetNativeIsPassword,
+				setValue,
+				unsetValue);
+		}
+
+		[Theory(DisplayName = "TextColor Updates Correctly")]
+		[InlineData(0xFF0000, 0x0000FF)]
+		[InlineData(0x0000FF, 0xFF0000)]
+		public async Task TextColorUpdatesCorrectly(uint setValue, uint unsetValue)
+		{
+			var entry = new EntryStub();
+
+			var setColor = Color.FromUint(setValue);
+			var unsetColor = Color.FromUint(unsetValue);
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.TextColor),
+				GetNativeTextColor,
+				setColor,
+				unsetColor);
+		}
+
+		[Theory(DisplayName = "Text Updates Correctly")]
+		[InlineData(null, null)]
+		[InlineData(null, "Hello")]
+		[InlineData("Hello", null)]
+		[InlineData("Hello", "Goodbye")]
+		public async Task TextUpdatesCorrectly(string setValue, string unsetValue)
+		{
+			var entry = new EntryStub();
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.Text),
+				h =>
+				{
+					var n = GetNativeText(h);
+					if (string.IsNullOrEmpty(n))
+						n = null; // native platforms may not upport null text
+					return n;
+				},
+				setValue,
+				unsetValue);
+		}
 	}
 }
