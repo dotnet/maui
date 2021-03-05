@@ -52,6 +52,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry());
 			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
+			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });

@@ -16,5 +16,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsPassword(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).SecureTextEntry;
+
+		bool GetNativeIsTextPredictionEnabled(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
 	}
 }
