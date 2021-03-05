@@ -402,11 +402,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (!isDefaultColor)
 				_barTextColorWasSet = true;
 
-			var attributes = new UIStringAttributes();
+			UIColor tabBarTextColor;
 			if (isDefaultColor)
-				attributes.ForegroundColor = _defaultBarTextColor;
+				tabBarTextColor = _defaultBarTextColor;
 			else
-				attributes.ForegroundColor = barTextColor.ToUIColor();
+				tabBarTextColor = barTextColor.ToUIColor();
+
+#if MACCATALYST
+			var attributes = new UIStringAttributes();
+			attributes.ForegroundColor = tabBarTextColor;
+#else
+			var attributes = new UITextAttributes();
+			attributes.TextColor = tabBarTextColor;
+#endif
 
 			foreach (UITabBarItem item in TabBar.Items)
 			{
