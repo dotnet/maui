@@ -26,18 +26,9 @@ namespace Microsoft.Maui.Controls
 			Content = null;
 		}
 
-		protected override void InvalidateMeasureOverride()
-		{
-			base.InvalidateMeasureOverride();
-		}
-
-		protected override void InvalidateMeasure()
-		{
-			base.InvalidateMeasure();
-		}
-
 		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
+			IsArrangeValid = false;
 			base.InvalidateMeasureInternal(trigger);
 		}
 

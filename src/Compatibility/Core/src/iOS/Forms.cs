@@ -156,6 +156,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static IReadOnlyList<string> s_flags;
 		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string[0]);
 
+		public static bool IsInitializedRenderers { get; private set; }
+
 		public static void SetFlags(params string[] flags)
 		{
 			if (IsInitialized)
@@ -222,10 +224,36 @@ namespace Microsoft.Maui.Controls.Compatibility
 #else
 			Device.Info = new Platform.macOS.MacDeviceInfo();
 #endif
+			if(!IsInitializedRenderers)
+			{
+				IsInitializedRenderers = true;
+				Controls.Internals.Registrar.RegisterAll(new[]
+					{ typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute), typeof(ExportFontAttribute) });
+			}
 
-			Controls.Internals.Registrar.RegisterAll(new[]
-				{ typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute), typeof(ExportFontAttribute) });
 			ExpressionSearch.Default = new iOSExpressionSearch();
+		}
+		internal static void RegisterCompatRenderers(
+			Assembly[] assemblies,
+			Assembly defaultRendererAssembly,
+			Action<Type> viewRegistered)
+		{
+			if (IsInitializedRenderers)
+				return;
+
+			IsInitializedRenderers = true;
+
+			// Only need to do this once
+			Controls.Internals.Registrar.RegisterAll(
+				assemblies,
+				defaultRendererAssembly,
+				new[] {
+						typeof(ExportRendererAttribute),
+						typeof(ExportCellAttribute),
+						typeof(ExportImageSourceHandlerAttribute),
+						typeof(ExportFontAttribute)
+					}, default(InitializationFlags),
+				viewRegistered);
 		}
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;

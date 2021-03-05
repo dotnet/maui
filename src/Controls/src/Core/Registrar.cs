@@ -352,14 +352,16 @@ namespace Microsoft.Maui.Controls.Internals
 				Device.GetAssemblies(),
 				Device.PlatformServices.GetType().GetTypeInfo().Assembly,
 				attrTypes,
-				flags);
+				flags,
+				null);
 		}
 
 		public static void RegisterAll(
 			Assembly[] assemblies, 
 			Assembly defaultRendererAssembly,
 			Type[] attrTypes, 
-			InitializationFlags flags)
+			InitializationFlags flags,
+			Action<Type> viewRegistered)
 		{
 			Profile.FrameBegin();
 
@@ -401,7 +403,10 @@ namespace Microsoft.Maui.Controls.Internals
 						else
 						{
 							if (attribute.ShouldRegister())
+							{
 								Registered.Register(attribute.HandlerType, attribute.TargetType, attribute.SupportedVisuals, attribute.Priority);
+								viewRegistered?.Invoke(attribute.HandlerType);
+							}
 						}
 					}
 				}

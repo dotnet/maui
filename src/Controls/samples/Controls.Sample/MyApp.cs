@@ -10,7 +10,7 @@ using Maui.Controls.Sample.ViewModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui;
-#if __ANDROID__
+#if __ANDROID__ || __IOS__
 using Microsoft.Maui.Controls.Compatibility;
 #endif
 
@@ -39,14 +39,8 @@ namespace Maui.Controls.Sample
 										});
 				   })
 				   .ConfigureServices(ConfigureServices)
-#if __ANDROID__
-				   // These only work on NET6
-				   //.RegisterCompatibilityRenderer<Microsoft.Maui.Controls.ContentPage, Microsoft.Maui.Controls.Compatibility.Platform.Android.PageRenderer>()
-				   //.RegisterCompatibilityRenderer<Microsoft.Maui.Controls.Button, Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ButtonRenderer>()
+#if __ANDROID__ || __IOS__
 				   .RegisterCompatibilityRenderers()
-				   .RegisterCompatibilityRenderer<Microsoft.Maui.Controls.Image, Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ImageRenderer>()
-				   .RegisterCompatibilityRenderer<Microsoft.Maui.Controls.DatePicker, Microsoft.Maui.Controls.Compatibility.Platform.Android.DatePickerRenderer>()
-				   .RegisterCompatibilityRenderer<Microsoft.Maui.Controls.TimePicker, Microsoft.Maui.Controls.Compatibility.Platform.Android.TimePickerRenderer>()
 #endif
 				   ;
 

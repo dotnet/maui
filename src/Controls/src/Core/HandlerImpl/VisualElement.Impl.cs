@@ -66,8 +66,11 @@ namespace Microsoft.Maui.Controls
 		// Maui based layout code
 		public void Layout(Rectangle bounds)
 		{
-			Bounds = bounds;
-			Handler?.SetFrame(Bounds);
+			if (Bounds != bounds)
+			{
+				Bounds = bounds;
+				Handler?.SetFrame(Bounds);
+			}
 		}
 
 		void IFrameworkElement.InvalidateMeasure()
