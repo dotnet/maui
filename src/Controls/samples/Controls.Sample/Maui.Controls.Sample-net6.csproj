@@ -23,4 +23,8 @@
     <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks-net6.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SharedFont Include="Fonts\*" />
+  </ItemGroup>
+
 </Project>
