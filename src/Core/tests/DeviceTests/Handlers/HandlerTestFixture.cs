@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Hosting;
@@ -9,15 +10,21 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		AppStub _app;
 		IHost _host;
+		IMauiContext _context;
 
 		public HandlerTestFixture()
 		{
 			_app = new AppStub();
+			_context = new ContextStub(_app);
 			_host = _app
 				.CreateBuilder()
 				.ConfigureFonts((ctx, fonts) =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
+				})
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddSingleton(_context);
 				})
 				.Build(_app);
 		}
@@ -29,6 +36,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			_app.Dispose();
 			_app = null;
+
+			_context = null;
 		}
 
 		public IApp App => _app;

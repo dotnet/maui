@@ -232,6 +232,8 @@ namespace Microsoft.Maui.Resizetizer
 				var info = new SharedImageInfo();
 
 				var fileInfo = new FileInfo(image.GetMetadata("FullPath"));
+				if (!fileInfo.Exists)
+					throw new FileNotFoundException("Unable to find background file: " + fileInfo.FullName, fileInfo.FullName);
 
 				info.Filename = fileInfo.FullName;
 
@@ -253,17 +255,11 @@ namespace Microsoft.Maui.Resizetizer
 				var fgFile = image.GetMetadata("ForegroundFile");
 				if (!string.IsNullOrEmpty(fgFile))
 				{
-					var bgFileInfo = new FileInfo(info.Filename);
+					var fgFileInfo = new FileInfo(fgFile);
+					if (!fgFileInfo.Exists)
+						throw new FileNotFoundException("Unable to find foreground file: " + fgFileInfo.FullName, fgFileInfo.FullName);
 
-					if (!Path.IsPathRooted(fgFile))
-						fgFile = Path.Combine(bgFileInfo.Directory.FullName, fgFile);
-					else
-						fgFile = Path.GetFullPath(fgFile);
-
-					Logger.Log($"AppIcon Foreground: " + fgFile);
-
-					if (File.Exists(fgFile))
-						info.ForegroundFilename = fgFile;
+					info.ForegroundFilename = fgFileInfo.FullName;
 				}
 
 				// TODO:

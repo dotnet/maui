@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 using Xunit;
 
@@ -34,6 +35,24 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
 		}
 
+		[Fact]
+		public async Task PaddingInitializesCorrectly()
+		{
+			var label = new LabelStub()
+			{
+				Text = "Test",
+				Padding = new Thickness(5, 10, 15, 20)
+			};
+
+			var handler = await CreateHandlerAsync(label);
+			var insets = ((MauiLabel)handler.NativeView).TextInsets;
+
+			Assert.Equal(5, insets.Left);
+			Assert.Equal(10, insets.Top);
+			Assert.Equal(15, insets.Right);
+			Assert.Equal(20, insets.Bottom);
+		}
+
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>
 			(UILabel)labelHandler.View;
 
@@ -56,7 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
+				return GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
 			});
 		}
 	}

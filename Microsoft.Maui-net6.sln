@@ -45,6 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Package-net6", "src\Package
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml-net6", "src\Controls\src\Xaml\Controls.Xaml-net6.csproj", "{CC3D4667-D94E-4276-9311-6439BFD075E4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Templates", "src\Controls\src\Templates\Microsoft.Maui.Templates.csproj", "{DAAC2822-63B6-4DE0-83AE-04873CD2F364}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +106,10 @@ Global
 		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAAC2822-63B6-4DE0-83AE-04873CD2F364}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAAC2822-63B6-4DE0-83AE-04873CD2F364}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAAC2822-63B6-4DE0-83AE-04873CD2F364}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAAC2822-63B6-4DE0-83AE-04873CD2F364}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -122,6 +128,7 @@ Global
 		{39B47A3C-21CA-4B28-9250-14FD957EB0FC} = {94F3C036-A5F4-4ACC-A028-8506802ADB88}
 		{9909F93F-C085-4F76-B92A-5D8C516BF47D} = {D5478E0A-5D9C-4C1F-980C-7A9FC71F925E}
 		{CC3D4667-D94E-4276-9311-6439BFD075E4} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
+		{DAAC2822-63B6-4DE0-83AE-04873CD2F364} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

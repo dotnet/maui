@@ -34,5 +34,21 @@ namespace Microsoft.Maui
 			var sp = fontManager.GetScaledPixel(font);
 			textView.SetTextSize(ComplexUnitType.Sp, sp);
 		}
+
+		public static void UpdatePadding(this TextView textView, ILabel label) 
+		{
+			var context = textView.Context;
+
+			if (context == null)
+			{
+				return;
+			}
+
+			textView.SetPadding(
+					(int)context.ToPixels(label.Padding.Left),
+					(int)context.ToPixels(label.Padding.Top),
+					(int)context.ToPixels(label.Padding.Right),
+					(int)context.ToPixels(label.Padding.Bottom));
+		}
 	}
 }

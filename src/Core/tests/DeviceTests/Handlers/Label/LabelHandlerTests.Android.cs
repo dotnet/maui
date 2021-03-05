@@ -36,6 +36,31 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultTypeface, nativeLabel.Typeface);
 		}
 
+		[Fact]
+		public async Task PaddingInitializesCorrectly()
+		{
+			var label = new LabelStub()
+			{
+				Text = "Test",
+				Padding = new Thickness(5, 10, 15, 20)
+			};
+
+			var handler = await CreateHandlerAsync(label);
+			var (left, top, right, bottom) = GetNativePadding((TextView)handler.NativeView);
+
+			var context = handler.View.Context;
+
+			var expectedLeft = context.ToPixels(5);
+			var expectedTop = context.ToPixels(10);
+			var expectedRight = context.ToPixels(15);
+			var expectedBottom = context.ToPixels(20);
+
+			Assert.Equal(expectedLeft, left);
+			Assert.Equal(expectedTop, top);
+			Assert.Equal(expectedRight, right);
+			Assert.Equal(expectedBottom, bottom);
+		}
+
 		TextView GetNativeLabel(LabelHandler labelHandler) =>
 			(TextView)labelHandler.View;
 
@@ -61,8 +86,13 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
+				return GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
 			});
+		}
+
+		(double left, double top, double right, double bottom) GetNativePadding(Android.Views.View view) 
+		{
+			return (view.PaddingLeft, view.PaddingTop, view.PaddingRight, view.PaddingBottom);
 		}
 	}
 }
