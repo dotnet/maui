@@ -77,7 +77,10 @@ namespace Microsoft.Maui.Resizetizer
 						throw new Svg2AndroidDrawableConversionException(fgConvertErr, foregroundFile);
 				}
 				else
+				{
+					Logger.Log("Foreground was not found: " + foregroundFile);
 					File.WriteAllText(foregroundDestination, EmptyVectorDrawable);
+				}
 
 				var adaptiveIconXmlStr = AdaptiveIconDrawableXml.Replace("{name}", AppIconName);
 
