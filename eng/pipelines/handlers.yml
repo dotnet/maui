@@ -142,14 +142,14 @@ stages:
   #       steps:
   #         - template: common/controlgallery-android.yml
 
-  - stage: pack_net6_windows
-    displayName: Pack .NET 6 Windows
+  - stage: pack_net6
+    displayName: Pack .NET 6
     dependsOn: []
     jobs:
-      - job: net6_pack
+      - job: net6_pack_windows
         workspace:
           clean: all
-        displayName: Pack .NET 6
+        displayName: Pack .NET 6 Windows
         timeoutInMinutes: 120
         pool:
           vmImage: windows-latest
@@ -189,14 +189,10 @@ stages:
               ArtifactName: nuget-windows
             condition: always()
 
-  - stage: pack_net6_macOS
-    displayName: Pack .NET 6 macOS
-    dependsOn: []
-    jobs:
-      - job: net6_pack
+      - job: net6_pack_macos
         workspace:
           clean: all
-        displayName: Pack .NET 6
+        displayName: Pack .NET 6 macOS
         timeoutInMinutes: 120
         pool:
           vmImage:  macOS-latest
@@ -253,14 +249,14 @@ stages:
               ArtifactName: nuget-osx
             condition: always()
 
-  - stage: build_net6_windows
-    displayName: NET6 Windows
+  - stage: build_net6
+    displayName: Build .NET 6
     dependsOn: []
     jobs:
-      - job: net6
+      - job: net6_windows
         workspace:
           clean: all
-        displayName: Build NET 6 Windows
+        displayName: Build .NET 6 Windows
         timeoutInMinutes: 120
         pool:
           vmImage:  windows-latest
@@ -299,14 +295,10 @@ stages:
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
 
-  - stage: build_net6_macOS
-    displayName: NET6 macOS
-    dependsOn: []
-    jobs:
-      - job: net6
+      - job: net6_macos
         workspace:
           clean: all
-        displayName: Build NET 6 macOS
+        displayName: Build .NET 6 macOS
         timeoutInMinutes: 120
         pool:
           vmImage:  macOS-latest
