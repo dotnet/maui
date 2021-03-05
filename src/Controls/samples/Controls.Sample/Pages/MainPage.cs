@@ -16,8 +16,8 @@ namespace Maui.Controls.Sample.Pages
 		public MainPage(MainPageViewModel viewModel)
 		{
 			BindingContext = _viewModel = viewModel;
-			//SetupMauiLayout();
-			SetupCompatibilityLayout();
+			SetupMauiLayout();
+			//SetupCompatibilityLayout();
 		}
 
 		void SetupMauiLayout()

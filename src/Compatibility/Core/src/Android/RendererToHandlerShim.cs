@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 			else if (VisualElementRenderer.Element != null)
 				throw new Exception($"{VisualElementRenderer.Element} must implement: {nameof(Microsoft.Maui.IView)}");
+
 		}
 
 		void OnElementChanged(object sender, VisualElementChangedEventArgs e)
@@ -95,10 +96,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				base.SetVirtualView(view);
 			}
+
+			Platform.Android.AppCompat.Platform.SetRenderer(
+				VisualElementRenderer.Element,
+				VisualElementRenderer);
 		}
 
 		public void DisconnectHandler()
 		{
+			Platform.Android.AppCompat.Platform.SetRenderer(
+				VisualElementRenderer.Element,
+				null);
+
 			VisualElementRenderer.SetElement(null);
 		}
 

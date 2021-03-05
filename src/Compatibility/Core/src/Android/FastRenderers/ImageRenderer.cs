@@ -65,14 +65,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-			(Element as IFrameworkElement)?.InvalidateMeasure();
 			base.OnLayout(changed, left, top, right, bottom);
 			_hasLayoutOccurred = true;
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			(Element as IFrameworkElement)?.InvalidateMeasure();
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 
