@@ -21,7 +21,7 @@
         Remove="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)"
     />
     <Compile
-        Condition=" '$(TargetPlatformIdentifier)' != 'ios' and '$(iOSProjectFolder)' != '' "
+        Condition=" '$(TargetPlatformIdentifier)' != 'ios' and '$(TargetPlatformIdentifier)' != 'maccatalyst' and '$(iOSProjectFolder)' != '' "
         Remove="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)"
     />
   </ItemGroup>
