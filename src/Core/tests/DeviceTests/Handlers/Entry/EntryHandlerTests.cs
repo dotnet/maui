@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(entry, () => entry.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled , isEnabled);
-        }
+		}
 
 		[Theory(DisplayName = "IsPassword Updates Correctly")]
 		[InlineData(true, true)]
