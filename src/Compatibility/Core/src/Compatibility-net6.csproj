@@ -42,7 +42,7 @@
     <Compile Remove="$(AndroidRoot)bin\**\*.cs" />
     <Compile Remove="$(AndroidRoot)obj\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' ">
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' OR '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
     <Compile Include="$(iOSRoot)**\*.cs"></Compile>
     <EmbeddedResource Include="$(iOSRoot)Resources\*.resx" />
     <Compile Remove="$(iOSRoot)bin\**\*.cs" />
