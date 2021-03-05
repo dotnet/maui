@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your interest in contributing to Microsoft.Maui! In this document, we'll outline what you need to know about contributing and how to get started.
+Thank you for your interest in contributing to .NET MAUI! In this document, we'll outline what you need to know about contributing and how to get started.
 
 ## Code of Conduct
 
@@ -36,7 +36,7 @@ Please check the "Allow edits from maintainers" checkbox on your pull request. T
 To propose a change or new feature, open an issue using the [Feature request template](https://github.com/dotnet/maui/issues/new?assignees=&labels=proposal-open%2C+t%2Fenhancement+➕&template=feature_request.md&title=[Enhancement]+YOUR+IDEA!). You may also use the [Spec template](https://github.com/dotnet/maui/issues/new?assignees=&labels=proposal-open%2C+t%2Fenhancement+➕&template=spec.md&title=[Spec]++) if you have an idea of what the API should look like. Be sure to also browse current issues and [discussions](https://github.com/dotnet/maui/discussions) that may be related to what you have in mind.
 
 ## Review Process
-All pull requests need to be reviewed and tested by at least two members of the MAUI team. We do our best to review pull requests in a timely manner, but please be patient! Two reviewers will be assigned and will start the review process as soon as possible. If there are any changes requested, the contributor should make them at their earliest convenience or let the reviewers know that they are unable to make further contributions. If the pull request requires only minor changes, then someone else may pick it up and finish it. We will do our best to make sure that all credit is retained for contributors. 
+All pull requests need to be reviewed and tested by at least two members of the .NET MAUI team. We do our best to review pull requests in a timely manner, but please be patient! Two reviewers will be assigned and will start the review process as soon as possible. If there are any changes requested, the contributor should make them at their earliest convenience or let the reviewers know that they are unable to make further contributions. If the pull request requires only minor changes, then someone else may pick it up and finish it. We will do our best to make sure that all credit is retained for contributors. 
 
 Once a pull request has two approvals, it will receive an "approved" label. As long as no UI or unit tests are failing, this pull request can be merged at this time.
 
