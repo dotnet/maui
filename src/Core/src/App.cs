@@ -26,7 +26,6 @@ namespace Microsoft.Maui
 		//move to abstract
 		public virtual IAppHostBuilder CreateBuilder() => CreateDefaultBuilder();
 
-	
 		internal void SetServiceProvider(IServiceProvider provider)
 		{
 			_serviceProvider = provider;

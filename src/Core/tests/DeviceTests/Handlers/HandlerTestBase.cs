@@ -24,6 +24,12 @@ namespace Microsoft.Maui.DeviceTests
 		public Task InvokeOnMainThreadAsync(Action action) =>
 			MainThread.InvokeOnMainThreadAsync(action);
 
+		public Task InvokeOnMainThreadAsync(Func<Task> func) =>
+			MainThread.InvokeOnMainThreadAsync(func);
+
+		public Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func) =>
+			MainThread.InvokeOnMainThreadAsync(func);
+
 		protected async Task<THandler> CreateHandlerAsync(IView view)
 		{
 			return await InvokeOnMainThreadAsync(() =>
