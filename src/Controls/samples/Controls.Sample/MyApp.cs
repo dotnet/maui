@@ -9,10 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Hosting;
-
-//#if __ANDROID__
-//using Microsoft.Maui.Controls.Compatibility;
-//#endif
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Maui.Controls.Sample
 {
@@ -22,16 +19,7 @@ namespace Maui.Controls.Sample
 
 		public override IAppHostBuilder CreateBuilder() =>
 			base.CreateBuilder()
-//#if __ANDROID__
-//				// These only work on NET6
-//				.RegisterCompatibilityRenderer<Microsoft.Maui.Controls.ContentPage, Microsoft.Maui.Controls.Compatibility.Platform.Android.PageRenderer>()
-//				.RegisterCompatibilityRenderer<Microsoft.Maui.Controls.Button, Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ButtonRenderer>()
-//#endif
-				//.ConfigureLogging(logging =>
-				//{
-				//	logging.ClearProviders();
-				//	logging.AddConsole();
-				//})
+				.RegisterCompatibilityRenderers()
 				.ConfigureAppConfiguration((hostingContext, config) =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>
@@ -60,10 +48,7 @@ namespace Maui.Controls.Sample
 		//IAppState state
 		public override IWindow CreateWindow(IActivationState state)
 		{
-#if (__ANDROID__ || __IOS__)
-			// This will probably go into a compatibility app or window
-			Microsoft.Maui.Controls.Compatibility.Forms.Init(state);
-#endif
+			Forms.Init(state);
 			return Services.GetRequiredService<IWindow>();
 		}
 	}

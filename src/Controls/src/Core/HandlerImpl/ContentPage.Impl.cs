@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Controls
 
 			if (Content is IFrameworkElement fe)
 			{
+				fe.InvalidateArrange();
 				fe.Measure(Frame.Width, Frame.Height);
 				fe.Arrange(Frame);
 			}

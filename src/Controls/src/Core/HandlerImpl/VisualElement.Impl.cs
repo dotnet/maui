@@ -73,6 +73,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		// TODO MAUI. Current MAUI layous don't
+		// invalidate if the children change
+		void InvalidateParentHack()
+		{
+			this.FindParentOfType<Page>().InvalidateMeasure();
+		}
+
 		void IFrameworkElement.InvalidateMeasure()
 		{
 			InvalidateMeasureOverride();
@@ -88,6 +95,7 @@ namespace Microsoft.Maui.Controls
 			IsMeasureValid = false;
 			IsArrangeValid = false;
 			InvalidateMeasure();
+			InvalidateParentHack();
 		}
 
 		void IFrameworkElement.InvalidateArrange()
