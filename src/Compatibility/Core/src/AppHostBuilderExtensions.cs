@@ -15,14 +15,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static IAppHostBuilder RegisterCompatibilityRenderers(this IAppHostBuilder builder)
 		{
 			// This won't really be a thing once we have all the handlers built
-			var defaultHandlers = new Dictionary<Type, Type>
+			var defaultHandlers = new List<Type>
 			{
-				{  typeof(IButton), typeof(ButtonHandler) },
-				{  typeof(IEntry), typeof(EntryHandler) },
-				{  typeof(ILayout), typeof(LayoutHandler) },
-				{  typeof(ILabel), typeof(LabelHandler) },
-				{  typeof(ISlider), typeof(SliderHandler) },
-				{  typeof(ISwitch), typeof(SwitchHandler) }
+				  typeof(Button) ,
+				  typeof(Entry) ,
+				  typeof(ContentPage) ,
+				  typeof(Label) ,
+				  typeof(Slider),
+				  typeof(Switch) 
 			};
 
 			Forms.RegisterCompatRenderers(
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				typeof(RendererToHandlerShim).Assembly,
 				(controlType) =>
 				{
-					foreach(var type in defaultHandlers.Keys)
+					foreach(var type in defaultHandlers)
 					{
 						if (type.IsAssignableFrom(controlType))
 							return;
