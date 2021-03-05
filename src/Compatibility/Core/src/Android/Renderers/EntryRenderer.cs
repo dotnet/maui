@@ -212,6 +212,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.Dispose(disposing);
 		}
 
+		[PortHandler]
 		protected virtual void UpdatePlaceHolderText()
 		{
 			if (EditText.Hint == Element.Placeholder)
