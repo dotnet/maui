@@ -90,11 +90,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			// confirm can update
 
-			propInfo.SetValue(view, expectedUnsetValue);
-			handler.UpdateValue(property);
-
 			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
 			{
+				propInfo.SetValue(view, expectedUnsetValue);
+				handler.UpdateValue(property);
+
 				return ((TValue)propInfo.GetValue(view), GetNativeValue(handler));
 			});
 
@@ -103,11 +103,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			// confirm can revert
 
-			propInfo.SetValue(view, expectedSetValue);
-			handler.UpdateValue(property);
-
 			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
 			{
+				propInfo.SetValue(view, expectedSetValue);
+				handler.UpdateValue(property);
+
 				return ((TValue)propInfo.GetValue(view), GetNativeValue(handler));
 			});
 
