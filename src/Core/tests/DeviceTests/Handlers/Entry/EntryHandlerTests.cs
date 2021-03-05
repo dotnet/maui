@@ -118,5 +118,22 @@ namespace Microsoft.Maui.DeviceTests
 				setValue,
 				unsetValue);
 		}
+
+		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task IsTextPredictionEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
+		{
+			var entry = new EntryStub();
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.IsTextPredictionEnabled),
+				GetNativeIsTextPredictionEnabled,
+				setValue,
+				unsetValue);
+		}
 	}
 }
