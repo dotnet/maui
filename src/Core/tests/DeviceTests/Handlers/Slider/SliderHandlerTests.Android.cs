@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				GetNativeSlider(CreateHandler(slider)).AssertContainsColor(color);
+				return GetNativeSlider(CreateHandler(slider)).AssertContainsColor(color);
 			});
 		}
 

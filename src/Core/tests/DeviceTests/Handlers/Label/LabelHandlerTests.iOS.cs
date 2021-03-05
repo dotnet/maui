@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
+				return GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
 			});
 		}
 	}
