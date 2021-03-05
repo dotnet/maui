@@ -21,10 +21,10 @@
     the missing assemblies.
     See: https://github.com/mono/linker/issues/1139
   -->
-  <PropertyGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+  <PropertyGroup>
     <_DotNetPackageVersion>5.0.0</_DotNetPackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+  <ItemGroup>
     <PackageReference Include="System.CodeDom"                        Version="$(_DotNetPackageVersion)" />
     <PackageReference Include="System.Diagnostics.EventLog"           Version="$(_DotNetPackageVersion)" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="$(_DotNetPackageVersion)" />
