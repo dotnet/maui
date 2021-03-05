@@ -65,5 +65,54 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.ViewValue);
 			Assert.Equal(expectedValue, values.NativeViewValue);
 		}
+
+		async protected Task ValidatePropertyUpdatesValue<TValue>(
+			IView view,
+			string property,
+			Func<THandler, TValue> GetNativeValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+		{
+			var propInfo = view.GetType().GetProperty(property);
+
+			// set initial values
+
+			propInfo.SetValue(view, expectedSetValue);
+
+			var (handler, viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(view);
+				return (handler, (TValue)propInfo.GetValue(view), GetNativeValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
+
+			// confirm can update
+
+			propInfo.SetValue(view, expectedUnsetValue);
+			handler.UpdateValue(property);
+
+			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				return ((TValue)propInfo.GetValue(view), GetNativeValue(handler));
+			});
+
+			Assert.Equal(expectedUnsetValue, viewVal);
+			Assert.Equal(expectedUnsetValue, nativeVal);
+
+			// confirm can revert
+
+			propInfo.SetValue(view, expectedSetValue);
+			handler.UpdateValue(property);
+
+			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				return ((TValue)propInfo.GetValue(view), GetNativeValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
+		}
 	}
 }
