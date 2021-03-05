@@ -77,10 +77,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			// set initial values
 
+			propInfo.SetValue(view, expectedSetValue);
+
 			var (handler, viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
 			{
-				propInfo.SetValue(view, expectedSetValue);
-
 				var handler = CreateHandler(view);
 				return (handler, (TValue)propInfo.GetValue(view), GetNativeValue(handler));
 			});
