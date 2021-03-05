@@ -59,5 +59,13 @@ namespace Microsoft.Maui
 		{
 			editText.SetInputType(entry);
 		}
+
+		public static void UpdateIsReadOnly(this EditText editText, IEntry entry)
+		{
+			bool isReadOnly = !entry.IsReadOnly;
+
+			editText.FocusableInTouchMode = isReadOnly;
+			editText.Focusable = isReadOnly;
+		}
 	}
 }

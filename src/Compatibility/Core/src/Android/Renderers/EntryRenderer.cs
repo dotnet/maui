@@ -515,7 +515,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_nativeSelectionIsUpdating = false;
 			}
 		}
-
+		
 		protected virtual void UpdateIsReadOnly()
 		{
 			bool isReadOnly = !Element.IsReadOnly;

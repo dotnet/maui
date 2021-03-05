@@ -19,5 +19,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsTextPredictionEnabled(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
+
+		bool GetNativeIsReadOnly(EntryHandler entryHandler) =>
+			!GetNativeEntry(entryHandler).UserInteractionEnabled;
 	}
 }
