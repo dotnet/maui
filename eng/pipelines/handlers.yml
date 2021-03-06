@@ -246,7 +246,7 @@ stages:
           - task: PublishBuildArtifacts@1
             displayName: publish artifacts
             inputs:
-              ArtifactName: nuget-osx
+              ArtifactName: nuget
             condition: always()
 
   - stage: build_net6
@@ -368,7 +368,7 @@ stages:
   # only sign using the private server and not sigining Maui for now
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - stage: nuget_signing
-      dependsOn: pack_net6_windows
+      dependsOn: pack_net6
       displayName: Sign Nuget
       jobs:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
