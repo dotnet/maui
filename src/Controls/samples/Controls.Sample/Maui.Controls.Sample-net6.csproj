@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <SharedImage Include="Resources\Images\*" />
     <SharedImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <SharedFont Include="Resources\Fonts\*" />
   </ItemGroup>
