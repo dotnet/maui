@@ -8,6 +8,7 @@
 	<PropertyGroup>
 		<!-- <_DisableStrongNamer Condition=" '$(_DisableStrongNamer)' != 'True' ">False</_DisableStrongNamer> -->
 		<AssemblyName>Microsoft.Maui.Controls.Build.Tasks</AssemblyName>
+		<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
 		<Description>Microsoft MAUI Build Task</Description>
 		<TargetFramework>net6.0</TargetFramework>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
