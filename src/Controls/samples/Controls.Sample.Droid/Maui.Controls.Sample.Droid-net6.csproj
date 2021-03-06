@@ -15,4 +15,21 @@
     <ProjectReference Include="..\Controls.Sample\Maui.Controls.Sample-net6.csproj" />
     <PackageReference Include="Xamarin.AndroidX.Browser" />
   </ItemGroup>
+  <!--
+    The linker resolves some assembly references too eagerly, and
+    fails when it can't find them, so work around this by referencing
+    the missing assemblies.
+    See: https://github.com/mono/linker/issues/1139
+  -->
+  <PropertyGroup>
+    <_DotNetPackageVersion>5.0.0</_DotNetPackageVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.CodeDom"                        Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="System.Diagnostics.EventLog"           Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="System.IO.Ports"                       Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="System.Security.Permissions"           Version="$(_DotNetPackageVersion)" />
+    <PackageReference Include="System.Threading.AccessControl"        Version="$(_DotNetPackageVersion)" />
+  </ItemGroup>
 </Project>
