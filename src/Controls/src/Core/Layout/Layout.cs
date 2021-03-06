@@ -83,6 +83,10 @@ namespace Microsoft.Maui.Controls.Layout2
 
 			_children.Add(child);
 
+			// TODO MAUI
+			if (child is Element ve)
+				ve.Parent = this;
+
 			InvalidateMeasure();
 
 			LayoutHandler?.Add(child);
@@ -94,6 +98,10 @@ namespace Microsoft.Maui.Controls.Layout2
 				return;
 
 			_children.Remove(child);
+
+			// TODO MAUI
+			if (child is Element ve)
+				ve.Parent = null;
 
 			InvalidateMeasure();
 

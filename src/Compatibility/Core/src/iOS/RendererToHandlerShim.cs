@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public RendererToHandlerShim(IVisualElementRenderer visualElementRenderer) : this()
 		{
-			if(visualElementRenderer != null)
+			if (visualElementRenderer != null)
 				SetupRenderer(visualElementRenderer);
 		}
 
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (e.NewElement is IView newView)
 			{
-				newView.Handler = this;				
+				newView.Handler = this;
 				this.SetVirtualView(newView);
 			}
 			else if (e.NewElement != null)
@@ -72,13 +72,19 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		protected override void DisconnectHandler(UIView nativeView)
 		{
+			Platform.iOS.Platform.SetRenderer(
+				VisualElementRenderer.Element,
+				VisualElementRenderer);
+
+			VisualElementRenderer.SetElement(null);
+
 			base.DisconnectHandler(nativeView);
 			VirtualView.Handler = null;
 		}
 
 		public override void SetVirtualView(IView view)
 		{
-			if(VisualElementRenderer == null)
+			if (VisualElementRenderer == null)
 			{
 				var renderer = Controls.Internals.Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(view)
 										   ?? new Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer();
@@ -94,11 +100,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				base.SetVirtualView(view);
 			}
-		}
 
-		public void DisconnectHandler()
-		{
-			VisualElementRenderer.SetElement(null);
+			Platform.iOS.Platform.SetRenderer(
+				VisualElementRenderer.Element,
+				VisualElementRenderer);
 		}
 
 		public override void UpdateValue(string property)
