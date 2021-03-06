@@ -1,6 +1,6 @@
 using Microsoft.Maui;
 
-#if __IOS__
+#if __IOS__ || IOS || MACCATALYST
 using NativeColor = UIKit.UIColor;
 #else
 using NativeColor = AppKit.NSColor;

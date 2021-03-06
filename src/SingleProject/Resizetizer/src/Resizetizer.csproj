@@ -8,6 +8,7 @@
     <LangVersion>8.0</LangVersion>
     <IncludeBuildOutput>False</IncludeBuildOutput>
     <NoWarn>$(NoWarn);NU5100;NU5128;</NoWarn>
+    <IsTrimmable>false</IsTrimmable>
   </PropertyGroup>
 
   <PropertyGroup>
