@@ -73,11 +73,12 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// TODO MAUI. Current MAUI layous don't
+		// TODO MAUI. Current MAUI layouts don't
 		// invalidate if the children change
 		void InvalidateParentHack()
 		{
-			this.FindParentOfType<Page>().InvalidateMeasure();
+			if (!(this is Page))
+				this.FindParentOfType<Page>()?.InvalidateMeasure();
 		}
 
 		void IFrameworkElement.InvalidateMeasure()
