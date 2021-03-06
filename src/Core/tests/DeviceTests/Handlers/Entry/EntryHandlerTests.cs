@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category("EntryHandler")]
+	[Category(TestCategory.Entry)]
 	public partial class EntryHandlerTests : HandlerTestBase<EntryHandler>
 	{
 		public EntryHandlerTests(HandlerTestFixture fixture) : base(fixture)
