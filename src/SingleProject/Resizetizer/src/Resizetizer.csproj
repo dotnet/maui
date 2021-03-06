@@ -69,6 +69,7 @@
   <Target Name="_CopyToNuspecDir" AfterTargets="Build">
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)**\*.dll" />
+      <_CopyItems Include="$(TargetDir)**\*.dylib" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\..\..\..\.nuspec\%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
