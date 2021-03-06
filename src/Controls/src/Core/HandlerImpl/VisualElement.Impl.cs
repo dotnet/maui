@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// TODO MAUI. Current MAUI layous don't
+		// TODO MAUI. Current MAUI layouts don't
 		// invalidate if the children change
 		void InvalidateParentHack()
 		{
