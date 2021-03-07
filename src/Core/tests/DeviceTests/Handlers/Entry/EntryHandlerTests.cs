@@ -180,7 +180,24 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.Font.FontSize, GetNativeUnscaledFontSize, entry.Font.FontSize);
 		}
 
-		[Theory(DisplayName = "Text Changed Events Fire Correctly")]
+		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
+		[InlineData(FontAttributes.None, false, false)]
+		[InlineData(FontAttributes.Bold, true, false)]
+		[InlineData(FontAttributes.Italic, false, true)]
+		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
+		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
+			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
+		}
+
+		[Theory(DisplayName = "TextChanged Events Fire Correctly")]
 		// null/empty
 		[InlineData(null, null, false)]
 		[InlineData(null, "", false)]
@@ -200,7 +217,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("Hello", "", true)]
 		[InlineData("Hello", " ", true)]
 		[InlineData("Hello", "Goodbye", true)]
-		public async Task TextChangeEventsFireCorrectly(string initialText, string newText, bool eventExpected)
+		public async Task TextChangedEventsFireCorrectly(string initialText, string newText, bool eventExpected)
 		{
 			var entry = new EntryStub
 			{
@@ -214,30 +231,14 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(initialText, e.OldValue);
 				Assert.Equal(newText ?? string.Empty, e.NewValue);
-		}
-		
-		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontAttributes.None, false, false)]
-		[InlineData(FontAttributes.Bold, true, false)]
-		[InlineData(FontAttributes.Italic, false, true)]
-		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
-		{
-			var entry = new EntryStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
 			};
-
+		
 			await SetValueAsync(entry, newText, SetNativeText);
 
 			if (eventExpected)
 				Assert.Equal(1, eventFiredCount);
 			else
 				Assert.Equal(0, eventFiredCount);
-				
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
 		}
 	}
 }
