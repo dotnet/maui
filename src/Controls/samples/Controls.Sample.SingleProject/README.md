@@ -33,7 +33,7 @@ To run:
 $ dotnet build Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-android --no-restore
 ```
 
-Use `-f net6.0-android` or `-f net6.0-ios` to select your platform.
+Use `-f net6.0-android` or `-f net6.0-ios` or `-f net6.0-maccatalyst` to select your platform.
 
 > NOTE: You need to add the `--no-restore` switch until
 > [dotnet#15485][15485] is resolved.

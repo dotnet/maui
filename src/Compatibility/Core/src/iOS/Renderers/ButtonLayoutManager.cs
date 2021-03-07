@@ -107,29 +107,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_disposed || _renderer == null || _element == null || control == null)
 				return;
 
-			switch (_element.LineBreakMode)
-			{
-				case LineBreakMode.NoWrap:
-					control.LineBreakMode = UILineBreakMode.Clip;
-					break;
-				case LineBreakMode.WordWrap:
-					control.LineBreakMode = UILineBreakMode.WordWrap;
-					break;
-				case LineBreakMode.CharacterWrap:
-					control.LineBreakMode = UILineBreakMode.CharacterWrap;
-					break;
-				case LineBreakMode.HeadTruncation:
-					control.LineBreakMode = UILineBreakMode.HeadTruncation;
-					break;
-				case LineBreakMode.TailTruncation:
-					control.LineBreakMode = UILineBreakMode.TailTruncation;
-					break;
-				case LineBreakMode.MiddleTruncation:
-					control.LineBreakMode = UILineBreakMode.MiddleTruncation;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+			control.TitleLabel.LineBreakMode = _element.LineBreakMode switch {
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => throw new ArgumentOutOfRangeException()
+			};
 		}
 
 		public void SetImage(UIImage image)

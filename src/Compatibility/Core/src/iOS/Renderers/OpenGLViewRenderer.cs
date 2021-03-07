@@ -48,7 +48,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (e.NewElement != null)
 			{
 				var context = new EAGLContext(EAGLRenderingAPI.OpenGLES2);
-				var glkView = new GLKView(RectangleF.Empty) { Context = context, DrawableDepthFormat = GLKViewDrawableDepthFormat.Format24, Delegate = new Delegate(e.NewElement) };
+				var glkView = new GLKView(RectangleF.Empty)
+				{
+					Context = context,
+					DrawableDepthFormat = GLKViewDrawableDepthFormat.Format24,
+					Delegate = new Delegate(e.NewElement)
+				};
 				SetNativeControl(glkView);
 
 				e.NewElement.DisplayRequested += Display;
@@ -90,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_displayLink.AddToRunLoop(NSRunLoop.Current, NSRunLoop.NSRunLoopCommonModes);
 		}
 
-		class Delegate : GLKViewDelegate
+		class Delegate : GLKViewDelegate, IGLKViewDelegate
 		{
 			readonly OpenGLView _model;
 
