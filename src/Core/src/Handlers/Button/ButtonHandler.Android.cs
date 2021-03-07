@@ -1,5 +1,7 @@
+using System;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
@@ -49,6 +51,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(ButtonHandler handler, IButton button)
 		{
 			handler.TypedNativeView?.UpdateTextColor(button);
+		}
+
+		public static void MapFont(ButtonHandler handler, IButton button)
+		{
+			var services = App.Current?.Services
+				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
+			var fontManager = services.GetRequiredService<IFontManager>();
+
+			handler.TypedNativeView?.UpdateFont(button, fontManager);
 		}
 
 		public bool OnTouch(IButton? button, AView? v, MotionEvent? e)

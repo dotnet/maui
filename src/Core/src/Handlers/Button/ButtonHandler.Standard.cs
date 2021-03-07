@@ -8,5 +8,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(ButtonHandler handler, IButton button) { }
 		public static void MapTextColor(ButtonHandler handler, IButton button) { }
+		public static void MapFont(ButtonHandler handler, IButton button) { }
 	}
 }
