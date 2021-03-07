@@ -12,16 +12,6 @@
 		
 		public bool IsTextPredictionEnabled { get; set; }
 
-		public Keyboard Keyboard { get; set; }
-
-		public bool IsSpellCheckEnabled { get; set; }
-
-		public int MaxLength { get; set; }
-
-		public string Placeholder { get; set; }
-
-		public Color PlaceholderColor { get; set; }
-
 		public bool IsReadOnly { get; set; }
 	}
 }
