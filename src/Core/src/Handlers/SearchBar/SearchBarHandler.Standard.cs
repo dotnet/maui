@@ -6,6 +6,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 
-		public static void MapText(IViewHandler handler, ISearchBar entry) { }
+		public static void MapText(IViewHandler handler, ISearchBar searchBar) { }
 	}
 }
