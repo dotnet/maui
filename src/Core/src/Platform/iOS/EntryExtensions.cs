@@ -55,5 +55,11 @@ namespace Microsoft.Maui
 		{
 			textField.UserInteractionEnabled = !entry.IsReadOnly;
 		}
+			
+		public static void UpdateFont(this UITextField textField, IEntry entry, IFontManager fontManager)
+		{
+			var uiFont = fontManager.GetFont(entry.Font);
+			textField.Font = uiFont;
+		}
 	}
 }

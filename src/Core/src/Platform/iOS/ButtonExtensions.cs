@@ -30,5 +30,11 @@ namespace Microsoft.Maui
 				nativeButton.TintColor = color;
 			}
 		}
+
+		public static void UpdateFont(this UIButton nativeButton, IButton button, IFontManager fontManager)
+		{
+			var uiFont = fontManager.GetFont(button.Font);
+			nativeButton.Font = uiFont;
+		}
 	}
 }

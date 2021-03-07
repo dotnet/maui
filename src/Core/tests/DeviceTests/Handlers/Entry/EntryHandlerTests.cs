@@ -162,6 +162,22 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeIsReadOnly,
 				setValue,
 				unsetValue);
+		}		
+				
+		[Theory(DisplayName = "Font Size Initializes Correctly")]
+		[InlineData(1)]
+		[InlineData(10)]
+		[InlineData(20)]
+		[InlineData(100)]
+		public async Task FontSizeInitializesCorrectly(int fontSize)
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				Font = Font.OfSize("Arial", fontSize)
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.Font.FontSize, GetNativeUnscaledFontSize, entry.Font.FontSize);
 		}
 
 		[Theory(DisplayName = "Text Changed Events Fire Correctly")]
@@ -198,6 +214,19 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(initialText, e.OldValue);
 				Assert.Equal(newText ?? string.Empty, e.NewValue);
+		}
+		
+		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
+		[InlineData(FontAttributes.None, false, false)]
+		[InlineData(FontAttributes.Bold, true, false)]
+		[InlineData(FontAttributes.Italic, false, true)]
+		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
+		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
 			};
 
 			await SetValueAsync(entry, newText, SetNativeText);
@@ -206,6 +235,9 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, eventFiredCount);
 			else
 				Assert.Equal(0, eventFiredCount);
+				
+			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
+			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
 		}
 	}
 }

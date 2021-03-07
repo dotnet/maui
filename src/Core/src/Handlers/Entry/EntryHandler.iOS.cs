@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Maui.Platform.iOS;
+using System;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -88,6 +88,15 @@ namespace Microsoft.Maui.Handlers
 			var nativeText = TypedNativeView.Text ?? string.Empty;
 			if (mauiText != nativeText)
 				VirtualView.Text = nativeText;
+		}
+		
+		public static void MapFont(EntryHandler handler, IEntry entry)
+		{
+			var services = App.Current?.Services
+				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
+			var fontManager = services.GetRequiredService<IFontManager>();
+
+			handler.TypedNativeView?.UpdateFont(entry, fontManager);
 		}
 	}
 }
