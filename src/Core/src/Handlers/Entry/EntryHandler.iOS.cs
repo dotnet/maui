@@ -1,5 +1,6 @@
 ﻿using System;
-using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.Handlers
 
 			// Even though <null> is technically different to "", it has no
 			// functional difference to apps. Thus, hide it.
-			var mauiText = VirtualView.Text ?? string.Empty;
+			var mauiText = VirtualView!.Text ?? string.Empty;
 			var nativeText = TypedNativeView.Text ?? string.Empty;
 			if (mauiText != nativeText)
 				VirtualView.Text = nativeText;

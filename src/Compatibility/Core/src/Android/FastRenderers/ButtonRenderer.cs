@@ -308,6 +308,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			Tag = this;
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			if (Element == null || _isDisposed)
