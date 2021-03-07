@@ -1,12 +1,13 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : AbstractViewHandler<ILabel, UILabel>
+	public partial class LabelHandler : AbstractViewHandler<ILabel, MauiLabel>
 	{
-		protected override UILabel CreateNativeView() => new UILabel();
+		protected override MauiLabel CreateNativeView() => new MauiLabel();
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
@@ -31,6 +32,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFontAttributes(LabelHandler handler, ILabel label)
 		{
 			MapFont(handler, label);
+		}
+
+		public static void MapPadding(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdatePadding(label);
 		}
 
 		static void MapFont(LabelHandler handler, ILabel label)

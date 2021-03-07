@@ -33,12 +33,14 @@ dotnet build src\Platform.Handlers\samples\Sample.iOS\Sample.iOS-net6.csproj -t:
 
 ## Current News
 
-[![](Assets/poster-standup.png)](https://www.youtube.com/watch?v=5bK2ICHtMxo)
+[![](https://user-images.githubusercontent.com/41873/110172514-e1c76280-7dc2-11eb-8407-50760881d1ec.png
+)](https://www.youtube.com/watch?v=5bK2ICHtMxo)
 
-Watch our [December 2020 .NET Community Standup report](https://www.youtube.com/watch?v=5bK2ICHtMxo) for the latest information about our progress on .NET MAUI and .NET 6. 
+Watch our [March 2021 .NET Community Standup report](https://youtu.be/NEbRo0ltniM?t=1242) for the latest information about our progress on .NET MAUI and .NET 6. 
 
 Additional live streams and presentations:
 
+* February 25, 2021 - David Ortinau and Maddy Leger at .NET Conf: Focus on Windows: [The Future of Client App Development in .NET 6](https://www.youtube.com/watch?v=fPEdgXeqhE4)
 * January 28, 2021 - David Ortinau at .NET Frontend Day: [A .NET MAUI Progress Report](https://youtu.be/RnyZZKjdUxk)
 * September 19, 2020 - Shane Neuville at ReactiveUI Virtual Conference: [Dual Screen, .NET MAUI, and RxUI](https://www.youtube.com/watch?v=Rkz6Dkk1uWU)
 * October 3, 2020 - James Clancey at Xamarin Expert Day: [.NET MAUI MVU](https://www.youtube.com/watch?v=9kwrgm_-FCk)

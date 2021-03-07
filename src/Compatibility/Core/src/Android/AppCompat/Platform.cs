@@ -207,20 +207,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			throw new InvalidOperationException("RemovePage is not supported globally on Android, please use a NavigationPage.");
 		}
 
-		public static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		internal static SizeRequest GetNativeSize(
+			IVisualElementRenderer visualElementRenderer,
+			double widthConstraint,
+			double heightConstraint)
 		{
-			Performance.Start(out string reference);
-
-			IVisualElementRenderer visualElementRenderer = GetRenderer(view);
-
-			if (visualElementRenderer == null || visualElementRenderer.View.IsDisposed())
-			{
-				if (view is IView iView)
-					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
-
-				return new SizeRequest(Size.Zero, Size.Zero);
-			}
-
 			var context = visualElementRenderer.View.Context;
 
 			// negative numbers have special meanings to android they don't to us
@@ -251,9 +242,36 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				(visualElementRenderer as IViewRenderer)?.MeasureExactly();
 			}
 
+			return result;
+		}
+
+		public static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		{
+			Performance.Start(out string reference);
+
+			IVisualElementRenderer visualElementRenderer = GetRenderer(view);
+			SizeRequest returnValue;
+
+			if (visualElementRenderer != null && !visualElementRenderer.View.IsAlive())
+			{
+				returnValue = new SizeRequest(Size.Zero, Size.Zero);
+			}
+			else if (visualElementRenderer == null && view is IView iView)
+			{
+				returnValue = iView.Handler.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+			else if (visualElementRenderer != null)
+			{
+				returnValue = GetNativeSize(visualElementRenderer, widthConstraint, heightConstraint);
+			}
+			else
+			{
+				returnValue = new SizeRequest(Size.Zero, Size.Zero);
+			}
+			
 			Performance.Stop(reference);
 
-			return result;
+			return returnValue;
 		}
 
 		public static void ClearRenderer(AView renderedView)

@@ -11,5 +11,10 @@ namespace Microsoft.Maui
 		{
 
 		}
+
+		public static void UpdatePadding(this object nothing, ILabel label)
+		{ 
+		
+		}
 	}
 }

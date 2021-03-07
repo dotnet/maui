@@ -125,6 +125,7 @@ namespace Microsoft.Maui.Essentials
 				}
 			}
 
+#if !MACCATALYST
 			if (phAsset == null)
 			{
 				assetUrl = info[UIImagePickerController.ReferenceUrl] as NSUrl;
@@ -132,6 +133,7 @@ namespace Microsoft.Maui.Essentials
 				if (assetUrl != null)
 					phAsset = PHAsset.FetchAssets(new NSUrl[] { assetUrl }, null)?.LastObject as PHAsset;
 			}
+#endif
 
 			if (phAsset == null || assetUrl == null)
 			{

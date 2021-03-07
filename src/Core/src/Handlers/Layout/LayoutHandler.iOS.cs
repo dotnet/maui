@@ -1,6 +1,6 @@
 using System;
 
-#if __IOS__
+#if __IOS__ || IOS || MACCATALYST
 using NativeView = UIKit.UIView;
 #else
 using NativeView = AppKit.NSView;
