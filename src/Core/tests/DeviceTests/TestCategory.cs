@@ -7,5 +7,6 @@
 		public const string Label = "Label";
 		public const string Slider = "Slider";
 		public const string Switch = "Switch";
+		public const string Layout = "Layout";
 	}
 }
