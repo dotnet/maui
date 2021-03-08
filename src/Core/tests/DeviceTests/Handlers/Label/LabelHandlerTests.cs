@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category("LabelHandler")]
+	[Category(TestCategory.Label)]
 	public partial class LabelHandlerTests : HandlerTestBase<LabelHandler>
 	{
 		public LabelHandlerTests(HandlerTestFixture fixture) : base(fixture)

@@ -66,8 +66,19 @@ namespace Microsoft.Maui.Controls
 		// Maui based layout code
 		public void Layout(Rectangle bounds)
 		{
-			Bounds = bounds;
-			Handler?.SetFrame(Bounds);
+			if (Bounds != bounds)
+			{
+				Bounds = bounds;
+				Handler?.SetFrame(Bounds);
+			}
+		}
+
+		// TODO MAUI. Current MAUI layouts don't
+		// invalidate if the children change
+		void InvalidateParentHack()
+		{
+			if (!(this is Page))
+				this.FindParentOfType<Page>()?.InvalidateMeasure();
 		}
 
 		void IFrameworkElement.InvalidateMeasure()
@@ -85,6 +96,7 @@ namespace Microsoft.Maui.Controls
 			IsMeasureValid = false;
 			IsArrangeValid = false;
 			InvalidateMeasure();
+			InvalidateParentHack();
 		}
 
 		void IFrameworkElement.InvalidateArrange()

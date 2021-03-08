@@ -3,15 +3,21 @@
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' ">
     <!-- Android -->
     <EnableDefaultAndroidItems>false</EnableDefaultAndroidItems>
-    <AndroidProjectFolder Condition=" '$(AndroidProjectFolder)' == '' ">Android/</AndroidProjectFolder>
+    <AndroidProjectFolder Condition=" '$(AndroidProjectFolder)' == '' ">Android\</AndroidProjectFolder>
     <AndroidManifest>$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
     <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
     <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
     <!-- iOS -->
     <EnableDefaultiOSItems>false</EnableDefaultiOSItems>
-    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' ">iOS/</iOSProjectFolder>
-    <IPhoneResourcePrefix>$(iOSProjectFolder)Resources</IPhoneResourcePrefix>
+    <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' ">iOS\</iOSProjectFolder>
+    <IPhoneResourcePrefix Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' ">$(iOSProjectFolder)Resources</IPhoneResourcePrefix>
     <_SingleProjectiOSExcludes>$(iOSProjectFolder)/**/.*/**</_SingleProjectiOSExcludes>
+
+    <!-- MacCatalyst -->
+    <EnableDefaultMacCatalystItems>false</EnableDefaultMacCatalystItems>
+    <MacCatalystProjectFolder Condition=" '$(MacCatalystProjectFolder)' == '' ">MacCatalyst\</MacCatalystProjectFolder>
+    <IPhoneResourcePrefix Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst' ">$(MacCatalystProjectFolder)Resources</IPhoneResourcePrefix>
+    <_SingleProjectMacCatalystExcludes>$(MacCatalystProjectFolder)/**/.*/**</_SingleProjectMacCatalystExcludes>
   </PropertyGroup>
 
   <!-- Removals -->
@@ -23,6 +29,10 @@
     <Compile
         Condition=" '$(TargetPlatformIdentifier)' != 'ios' and '$(iOSProjectFolder)' != '' "
         Remove="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)"
+    />
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' != 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' "
+        Remove="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)"
     />
   </ItemGroup>
 

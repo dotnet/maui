@@ -1,3 +1,4 @@
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -30,6 +31,16 @@ namespace Microsoft.Maui
 
 			var uiFont = fontManager.GetFont(font);
 			nativeLabel.Font = uiFont;
+		}
+
+		public static void UpdatePadding(this MauiLabel nativeLabel, ILabel label) 
+		{
+			nativeLabel.TextInsets = new UIEdgeInsets(
+					(float)label.Padding.Top,
+					(float)label.Padding.Left,
+					(float)label.Padding.Bottom,
+					(float)label.Padding.Right);
+			
 		}
 	}
 }

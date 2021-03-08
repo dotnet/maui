@@ -11,9 +11,15 @@ namespace Microsoft.Maui.Hosting
 		{
 			foreach (var handler in handlers)
 			{
-				builder?.ConfigureHandlers((context, handlersCollection) => handlersCollection.AddTransient(handler.Key, handler.Value));
+				builder.ConfigureHandlers((context, handlersCollection) => handlersCollection.AddTransient(handler.Key, handler.Value));
 			}
 
+			return builder;
+		}
+
+		public static IAppHostBuilder RegisterHandler(this IAppHostBuilder builder, Type viewType, Type handlerType)
+		{
+			builder.ConfigureHandlers((context, handlersCollection) => handlersCollection.AddTransient(viewType, handlerType));
 			return builder;
 		}
 
