@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <_AndroidXVersion>net6preview01</_AndroidXVersion>
+    <_AndroidXVersion>net6preview02.4535000</_AndroidXVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference
