@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual TimePickerDialog CreateTimePickerDialog(int hour, int minute)
 		{
-			void onTimeSetCallback(object obj, TimePickerDialog.TimeSetEventArgs args)
+			void onTimeSetCallback(object? obj, TimePickerDialog.TimeSetEventArgs args)
 			{
 				if (VirtualView == null || TypedNativeView == null)
 					return;
