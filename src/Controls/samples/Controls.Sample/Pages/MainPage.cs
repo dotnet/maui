@@ -5,10 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Maui.Controls.Sample.Pages
 {
-
 	public class MainPage : ContentPage, IPage
 	{
 		MainPageViewModel _viewModel;
+
 		public MainPage() : this(App.Current.Services.GetService<MainPageViewModel>())
 		{
 
@@ -23,7 +23,6 @@ namespace Maui.Controls.Sample.Pages
 
 		void SetupMauiLayout()
 		{
-
 			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
 
@@ -51,17 +50,17 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 
-			verticalStack.Add(new Entry());
-			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
-			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
-			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
+			//verticalStack.Add(new Entry());
+			//verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
+			//verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
+			//verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 
-			verticalStack.Add(new Slider());
+			//verticalStack.Add(new Slider());
 
-			verticalStack.Add(new Switch());
-			verticalStack.Add(new Switch() { OnColor = Color.Green });
-			verticalStack.Add(new Switch() { ThumbColor = Color.Yellow });
-			verticalStack.Add(new Switch() { OnColor = Color.Green, ThumbColor = Color.Yellow });
+			//verticalStack.Add(new Switch());
+			//verticalStack.Add(new Switch() { OnColor = Color.Green });
+			//verticalStack.Add(new Switch() { ThumbColor = Color.Yellow });
+			//verticalStack.Add(new Switch() { OnColor = Color.Green, ThumbColor = Color.Yellow });
 			verticalStack.Add(new DatePicker());
 			verticalStack.Add(new TimePicker());
 			verticalStack.Add(new Image() { Source = "https://github.com/dotnet/maui/blob/main/src/ControlGallery/src/Xamarin.Forms.ControlGallery.Android/Resources/drawable/FlowerBuds.jpg?raw=true" });
