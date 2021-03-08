@@ -1,7 +1,6 @@
 namespace Microsoft.Maui
 {
-	public interface ILabel : IView, IText, IFont
+	public interface ILabel : IView, IText, IFont, IPadding
 	{
-		Thickness Padding { get; }
 	}
 }
