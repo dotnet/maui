@@ -5,5 +5,6 @@ namespace Microsoft.Maui
 		void Pressed();
 		void Released();
 		void Clicked();
+		Thickness Padding { get; }
 	}
 }

@@ -53,6 +53,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateTextColor(button, ButtonTextColorDefaultNormal, ButtonTextColorDefaultHighlighted, ButtonTextColorDefaultDisabled);
 		}
+		public static void MapPadding(ButtonHandler handler, IButton button)
+		{
+			handler.TypedNativeView?.UpdatePadding(button);
+		}
 
 		void SetControlPropertiesFromProxy()
 		{

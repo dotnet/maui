@@ -30,5 +30,15 @@ namespace Microsoft.Maui
 				nativeButton.TintColor = color;
 			}
 		}
+
+		public static void UpdatePadding(this UIButton nativeButton, IButton button)
+		{
+			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
+					(float)button.Padding.Top,
+					(float)button.Padding.Left,
+					(float)button.Padding.Bottom,
+					(float)button.Padding.Right);
+		}
+
 	}
 }
