@@ -364,6 +364,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 		}
 
+		[PortHandler]
 		void UpdateLineBreakMode()
 		{
 			this.SetLineBreakMode(Element);

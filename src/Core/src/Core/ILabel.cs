@@ -5,6 +5,8 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface ILabel : IView, IText
 	{
+		int MaxLines { get; }
+		LineBreakMode LineBreakMode { get; }
 		/// <summary>
 		/// Gets the space between the text of the Label and it's border.
 		/// </summary>

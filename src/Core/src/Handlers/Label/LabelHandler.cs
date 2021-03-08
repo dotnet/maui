@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ILabel.Font)] = MapFont,
 			[nameof(ILabel.Padding)] = MapPadding,
+			[nameof(ILabel.LineBreakMode)] = MapLineBreakMode,
 		};
 
 		public LabelHandler() : base(LabelMapper)

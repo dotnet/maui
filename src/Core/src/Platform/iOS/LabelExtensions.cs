@@ -46,13 +46,53 @@ namespace Microsoft.Maui
 			nativeLabel.UpdateCharacterSpacing(label);
 		}
 
-		public static void UpdatePadding(this MauiLabel nativeLabel, ILabel label)
+		public static void UpdateLineBreakMode(this UILabel nativeLabel, ILabel label)
+		{
+			SetLineBreakMode(nativeLabel, label);
+		}
+
+		public static void UpdatePadding(this MauiLabel nativeLabel, ILabel label) 
 		{
 			nativeLabel.TextInsets = new UIEdgeInsets(
 				(float)label.Padding.Top,
 				(float)label.Padding.Left,
 				(float)label.Padding.Bottom,
-				(float)label.Padding.Right);
+				(float)label.Padding.Right);		
+		}
+
+		internal static void SetLineBreakMode(this UILabel nativeLabel, ILabel label)
+		{
+			int maxLines = label.MaxLines;
+			if (maxLines < 0)
+				maxLines = 0;
+
+			switch (label.LineBreakMode)
+			{
+				case LineBreakMode.NoWrap:
+					nativeLabel.LineBreakMode = UILineBreakMode.Clip;
+					maxLines = 1;
+					break;
+				case LineBreakMode.WordWrap:
+					nativeLabel.LineBreakMode = UILineBreakMode.WordWrap;
+					break;
+				case LineBreakMode.CharacterWrap:
+					nativeLabel.LineBreakMode = UILineBreakMode.CharacterWrap;
+					break;
+				case LineBreakMode.HeadTruncation:
+					nativeLabel.LineBreakMode = UILineBreakMode.HeadTruncation;
+					maxLines = 1;
+					break;
+				case LineBreakMode.MiddleTruncation:
+					nativeLabel.LineBreakMode = UILineBreakMode.MiddleTruncation;
+					maxLines = 1;
+					break;
+				case LineBreakMode.TailTruncation:
+					nativeLabel.LineBreakMode = UILineBreakMode.TailTruncation;
+					maxLines = 1;
+					break;
+			}
+
+			nativeLabel.Lines = maxLines;
 		}
 	}
 }

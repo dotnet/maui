@@ -37,6 +37,21 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task NegativeMaxValueWithWrapIsCorrect()
+		{
+			var label = new LabelStub()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				MaxLines = -1,
+				LineBreakMode = LineBreakMode.WordWrap,
+			};
+
+			var nativeValue = await GetValueAsync(label, GetNativeMaxLines);
+
+			Assert.Equal(0, nativeValue);
+		}
+
+		[Fact]
 		public async Task PaddingInitializesCorrectly()
 		{
 			var label = new LabelStub()
@@ -97,5 +112,11 @@ namespace Microsoft.Maui.DeviceTests
 				return GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
 			});
 		}
+
+		int GetNativeMaxLines(LabelHandler labelHandler) =>
+			(int)GetNativeLabel(labelHandler).Lines;
+
+		UILineBreakMode GetNativeLineBreakMode(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).LineBreakMode;
 	}
 }
