@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+#if DEBUG
 	public partial class BindingDiagnosticsTests : ContentPage
 	{
 		public BindingDiagnosticsTests() => InitializeComponent();
@@ -41,4 +42,5 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 		}
 	}
+#endif
 }
