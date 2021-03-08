@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnEditingEnded(object? sender, EventArgs e) => OnTextChanged();
 
-		void OnTextPropertySet(object sender, EventArgs e) => OnTextChanged();
+		void OnTextPropertySet(object? sender, EventArgs e) => OnTextChanged();
 
 		void OnTextChanged()
 		{
