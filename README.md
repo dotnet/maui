@@ -27,8 +27,8 @@ dotnet tool install Cake.Tool -g
 #### Command Line
 
 ```
-dotnet build src\Platform.Handlers\samples\Sample.Droid\Sample.Droid-net6.csproj -t:Run
-dotnet build src\Platform.Handlers\samples\Sample.iOS\Sample.iOS-net6.csproj -t:Run
+dotnet build src\Controls\samples\Controls.Sample.Droid\Maui.Controls.Sample.Droid-net6.csproj -t:Run
+dotnet build src\Controls\samples\Controls.Sample.iOS\Maui.Controls.Sample.iOS-net6.csproj -t:Run
 ```
 
 ## Current News
