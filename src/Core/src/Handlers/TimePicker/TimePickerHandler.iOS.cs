@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateTime(timePicker, Picker);
 		}
 
-		void OnValueChanged(object sender, EventArgs e)
+		void OnValueChanged(object? sender, EventArgs e)
 		{
 			SetVirtualViewTime();
 		}
