@@ -37,7 +37,33 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultTypeface, nativeLabel.Typeface);
 		}
 
-		[Fact]
+		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
+		{
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var labelStub = new LabelStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
+			};
+
+			Android.Views.TextAlignment expectedValue = Android.Views.TextAlignment.ViewEnd;
+
+			var values = await GetValueAsync(labelStub, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelStub.HorizontalTextAlignment,
+					NativeViewValue = GetNativeTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			Assert.True(values.NativeViewValue == expectedValue);
+		}
+
+		[Fact(DisplayName = "Padding Initializes Correctly")]
 		public async Task PaddingInitializesCorrectly()
 		{
 			var label = new LabelStub()
@@ -82,6 +108,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Typeface.IsItalic;
+
+		Android.Views.TextAlignment GetNativeTextAlignment(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).TextAlignment;
 
 		Task ValidateNativeBackgroundColor(ILabel label, Color color)
 		{

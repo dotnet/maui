@@ -38,7 +38,12 @@ namespace Microsoft.Maui
 			textView.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
-		public static void UpdatePadding(this TextView textView, ILabel label)
+		public static void UpdateHorizontalTextAlignment(this TextView textView, ILabel label)
+		{
+			textView.Gravity = label.HorizontalTextAlignment.ToHorizontalGravityFlags();
+		}
+
+		public static void UpdatePadding(this TextView textView, ILabel label) 
 		{
 			var context = textView.Context;
 

@@ -23,6 +23,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateCharacterSpacing(label);
 		}
 
+		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdateHorizontalTextAlignment(label);
+		}
+
 		public static void MapPadding(LabelHandler handler, ILabel label)
 		{
 			handler.TypedNativeView?.UpdatePadding(label);

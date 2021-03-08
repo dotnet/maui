@@ -11,5 +11,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Thickness Padding { get; set; }
 
 		public Font Font { get; set; }
+
+		public TextAlignment HorizontalTextAlignment { get; set; }
+
+		public TextAlignment VerticalTextAlignment { get; set; }
 	}
 }
