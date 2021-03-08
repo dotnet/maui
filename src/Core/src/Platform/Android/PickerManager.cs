@@ -36,7 +36,7 @@ namespace Microsoft.Maui
 				sender.CallOnClick();
 		}
 
-		static void OnKeyPress(object sender, AView.KeyEventArgs e)
+		static void OnKeyPress(object? sender, AView.KeyEventArgs e)
 		{
 			if (!AvailableKeys.Contains(e.KeyCode))
 			{

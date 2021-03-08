@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnCollectionChanged(object sender, EventArgs e)
+		void OnCollectionChanged(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || TypedNativeView == null)
 				return;

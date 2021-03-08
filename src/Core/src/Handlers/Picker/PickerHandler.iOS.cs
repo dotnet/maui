@@ -58,7 +58,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(NativePicker nativeView)
 		{
-			nativeView.EditingDidBegin += OnStarted;
 			nativeView.EditingDidEnd += OnEnded;
 			nativeView.EditingChanged += OnEditing;
 
@@ -70,7 +69,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(NativePicker nativeView)
 		{
-			nativeView.EditingDidBegin -= OnStarted;
 			nativeView.EditingDidEnd -= OnEnded;
 			nativeView.EditingChanged -= OnEditing;
 		
@@ -103,17 +101,12 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateSelectedIndex(picker);
 		}
 
-		void OnCollectionChanged(object sender, EventArgs e)
+		void OnCollectionChanged(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || TypedNativeView == null)
 				return;
 
 			TypedNativeView.UpdatePicker(VirtualView);
-		}
-
-		void OnStarted(object? sender, EventArgs eventArgs)
-		{
-	
 		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)
