@@ -36,14 +36,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		protected bool SetProperty<T>(ref T backingStore, T value,
 			[CallerMemberName] string propertyName = "",
-			Action onChanged = null)
+			Action<T, T> onChanged = null)
 		{
 			if (EqualityComparer<T>.Default.Equals(backingStore, value))
 				return false;
 
+			var oldValue = backingStore;
 			backingStore = value;
-			onChanged?.Invoke();
 			Handler?.UpdateValue(propertyName);
+			onChanged?.Invoke(oldValue, value);
 			return true;
 		}
 
