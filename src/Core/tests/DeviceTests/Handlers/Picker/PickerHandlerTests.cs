@@ -4,14 +4,15 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category("PickerHandler")]
+	[Category(TestCategory.Picker)]
 	public partial class PickerHandlerTests : HandlerTestBase<PickerHandler>
 	{
 		public PickerHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
 		}
 
-		[Fact(DisplayName = "[PickerHandler] Title Initializes Correctly")]
+#if MONOANDROID
+		[Fact(DisplayName = "Title Initializes Correctly")]
 		public async Task TitleInitializesCorrectly()
 		{
 			var picker = new PickerStub
@@ -21,5 +22,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(picker, () => picker.Title, GetNativeTitle, picker.Title);
 		}
+#endif
 	}
 }
