@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonHandlerTests
 	{
-		[Fact]
+		[Fact(DisplayName = "Button Padding Initializing")]
 		public async Task PaddingInitializesCorrectly()
 		{
 			var button = new ButtonStub()

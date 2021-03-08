@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonHandlerTests
 	{
-		[Fact]
+		[Fact(DisplayName = "Button Padding Initializing")]
 		public async Task PaddingInitializesCorrectly()
 		{
 			var button = new ButtonStub()
@@ -32,17 +32,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativeText(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).CurrentTitle;
-
-		Thickness GetNativePadding(ButtonHandler buttonHandler)
-		{
-			var edge = .ContentEdgeInsets;
-			return ToThicknees(edge);
-
-			static Thickness ToThicknees(UIEdgeInsets uIEdgeInsets)
-			{
-				return new Thickness(uIEdgeInsets.Left, uIEdgeInsets.Top, uIEdgeInsets.Right, uIEdgeInsets.Bottom);
-			}
-		}
 
 		Color GetNativeTextColor(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).CurrentTitleColor.ToColor();
