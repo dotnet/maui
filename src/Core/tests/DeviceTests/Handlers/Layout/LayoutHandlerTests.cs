@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 {
-	[Category("LayoutHandler")]
+	[Category(TestCategory.Layout)]
 	public partial class LayoutHandlerTests : HandlerTestBase<LayoutHandler>
 	{
 		public LayoutHandlerTests(HandlerTestFixture fixture) : base(fixture)

@@ -209,6 +209,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (view is IView iView)
 					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
 
+				Performance.Stop(reference);
 				return new SizeRequest(Size.Zero);
 			}
 

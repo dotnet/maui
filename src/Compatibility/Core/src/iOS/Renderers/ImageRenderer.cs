@@ -70,11 +70,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					imageView.ClipsToBounds = true;
 					SetNativeControl(imageView);
 				}
-
-				await TrySetImage(e.OldElement as Image);
 			}
 
 			base.OnElementChanged(e);
+
+			if (e.NewElement != null)
+				await TrySetImage(e.OldElement as Image);
 		}
 
 		protected override async void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
