@@ -1,7 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Platform.iOS;
-using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -17,6 +16,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
 			handler.TypedNativeView?.UpdateTextColor(label);
+		}
+
+		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(label);
 		}
 
 		public static void MapFontFamily(LabelHandler handler, ILabel label)

@@ -5,5 +5,7 @@ namespace Microsoft.Maui
 		string Text { get; }
 
 		Color TextColor { get; }
+
+		double CharacterSpacing { get; }
 	}
 }

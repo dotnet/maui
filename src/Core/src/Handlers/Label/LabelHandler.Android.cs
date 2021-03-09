@@ -33,6 +33,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateTextColor(label, DefaultTextColor);
 		}
 
+		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(label);
+		}
+
 		public static void MapFontFamily(LabelHandler handler, ILabel label)
 		{
 			MapFont(handler, label);
