@@ -8,7 +8,6 @@ namespace Microsoft.Maui
 		bool IsSpellCheckEnabled { get; }
 		int MaxLength { get; }
 		string Placeholder { get; }
-		Color PlaceholderColor { get; }
 		bool IsReadOnly { get; }
 	}
 }
