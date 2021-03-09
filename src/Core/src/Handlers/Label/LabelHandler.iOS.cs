@@ -19,21 +19,6 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateTextColor(label);
 		}
 
-		public static void MapFontFamily(LabelHandler handler, ILabel label)
-		{
-			MapFont(handler, label);
-		}
-
-		public static void MapFontSize(LabelHandler handler, ILabel label)
-		{
-			MapFont(handler, label);
-		}
-
-		public static void MapFontAttributes(LabelHandler handler, ILabel label)
-		{
-			MapFont(handler, label);
-		}
-
 		public static void MapPadding(LabelHandler handler, ILabel label)
 		{
 			handler.TypedNativeView?.UpdatePadding(label);
