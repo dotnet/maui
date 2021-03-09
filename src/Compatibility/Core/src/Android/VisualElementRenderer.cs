@@ -9,7 +9,6 @@ using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 using AView = Android.Views.View;
-using Microsoft.Maui.Controls.Android;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
