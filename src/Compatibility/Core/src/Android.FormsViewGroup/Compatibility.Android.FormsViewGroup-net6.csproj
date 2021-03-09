@@ -1,22 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net6.0-android</TargetFrameworks>
-    <RootNamespace>Microsoft.Maui.Controls.Android</RootNamespace>
-    <AssemblyName>Microsoft.Maui.Controls.Android.FormsViewGroup</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility.Android</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup</AssemblyName>
     <OutputType>Library</OutputType>
     <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedJar Include="Jars\formsviewgroup.jar" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <TransformFile Include="Transforms\Metadata.xml" />
+    <EmbeddedJar Include="Jars\*.jar" />
+    <TransformFile Include="Transforms\*.xml" />
   </ItemGroup>
 </Project>
 
