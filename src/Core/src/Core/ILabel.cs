@@ -8,6 +8,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the space between the text of the Label and it's border.
 		/// </summary>
+		TextDecorations TextDecorations { get; }
 		Thickness Padding { get; }
 	}
 }
