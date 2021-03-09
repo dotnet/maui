@@ -11,6 +11,9 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
+		void SetNativeText(EntryHandler entryHandler, string text) =>
+			GetNativeEntry(entryHandler).Text = text;
+
 		Color GetNativeTextColor(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextColor.ToColor();
 

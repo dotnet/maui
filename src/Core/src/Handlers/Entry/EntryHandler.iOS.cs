@@ -1,24 +1,39 @@
-﻿using CoreGraphics;
+﻿using System;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : AbstractViewHandler<IEntry, UITextField>
+	public partial class EntryHandler : AbstractViewHandler<IEntry, MauiTextField>
 	{
 		static readonly int BaseHeight = 30;
 
 		static UIColor? DefaultTextColor;
 
-		protected override UITextField CreateNativeView()
+		protected override MauiTextField CreateNativeView()
 		{
-			return new UITextField(CGRect.Empty)
+			return new MauiTextField
 			{
 				BorderStyle = UITextBorderStyle.RoundedRect,
 				ClipsToBounds = true
 			};
 		}
 
-		protected override void SetupDefaults(UITextField nativeView)
+		protected override void ConnectHandler(MauiTextField nativeView)
+		{
+			nativeView.EditingChanged += OnEditingChanged;
+			nativeView.EditingDidEnd += OnEditingEnded;
+			nativeView.TextPropertySet += OnTextPropertySet;
+		}
+
+		protected override void DisconnectHandler(MauiTextField nativeView)
+		{
+			nativeView.EditingChanged -= OnEditingChanged;
+			nativeView.EditingDidEnd -= OnEditingEnded;
+			nativeView.TextPropertySet -= OnTextPropertySet;
+		}
+
+		protected override void SetupDefaults(MauiTextField nativeView)
 		{
 			DefaultTextColor = nativeView.TextColor;
 		}
@@ -49,6 +64,25 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.TypedNativeView?.UpdatePlaceholder(entry);
-    }
+		}
+
+		void OnEditingChanged(object? sender, EventArgs e) => OnTextChanged();
+
+		void OnEditingEnded(object? sender, EventArgs e) => OnTextChanged();
+
+		void OnTextPropertySet(object? sender, EventArgs e) => OnTextChanged();
+
+		void OnTextChanged()
+		{
+			if (VirtualView == null || TypedNativeView == null)
+				return;
+
+			// Even though <null> is technically different to "", it has no
+			// functional difference to apps. Thus, hide it.
+			var mauiText = VirtualView.Text ?? string.Empty;
+			var nativeText = TypedNativeView.Text ?? string.Empty;
+			if (mauiText != nativeText)
+				VirtualView.Text = nativeText;
+		}
 	}
 }
