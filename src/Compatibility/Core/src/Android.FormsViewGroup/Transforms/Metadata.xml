@@ -8,6 +8,6 @@
   <remove-node path="/api/package[@name='android.support.v4.content']/class[@name='CursorLoader']/method[@name='loadInBackground']" />
   -->
 
-  <attr path="/api/package[@name='com.xamarin.forms.platform.android']" name="managedName">Microsoft.Maui.Controls.Android</attr>
-  <attr path="/api/package[@name='com.xamarin.formsviewgroup']" name="managedName">Microsoft.Maui.Controls.Android</attr>
+  <attr path="/api/package[@name='com.xamarin.forms.platform.android']" name="managedName">Microsoft.Maui.Controls.Compatibility</attr>
+  <attr path="/api/package[@name='com.xamarin.formsviewgroup']" name="managedName">Microsoft.Maui.Controls.Compatibility</attr>
 </metadata>

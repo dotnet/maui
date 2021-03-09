@@ -1,22 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net6.0-maccatalyst</TargetFramework>
     <RuntimeIdentifier>maccatalyst-x64</RuntimeIdentifier>
+    <TargetFramework Condition=" '$(OS)' == 'Windows_NT' ">net6.0-ios</TargetFramework>
+    <RuntimeIdentifier Condition=" '$(OS)' == 'Windows_NT' ">ios-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
     <RootNamespace>Maui.Controls.Sample.MacCatalyst</RootNamespace>
     <AssemblyName>Maui.Controls.Sample.MacCatalyst</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
     <ProjectReference Include="..\Controls.Sample\Maui.Controls.Sample-net6.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
+
 </Project>

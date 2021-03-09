@@ -23,7 +23,6 @@ namespace Maui.Controls.Sample.Pages
 
 		void SetupMauiLayout()
 		{
-
 			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
 
@@ -60,7 +59,12 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 
-			verticalStack.Add(new Entry());
+			var entry = new Entry();
+			entry.TextChanged += (sender, e) =>
+			{
+				System.Console.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
+			};
+			verticalStack.Add(entry);
 			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
@@ -74,10 +78,9 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new DatePicker());
 			verticalStack.Add(new TimePicker());
 
-			//verticalStack.Add(new Image() { Source = "https://github.com/dotnet/maui/blob/main/src/ControlGallery/src/Xamarin.Forms.ControlGallery.Android/Resources/drawable/FlowerBuds.jpg?raw=true" });
+			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
 
 			Content = verticalStack;
-
 		}
 
 		void SetupCompatibilityLayout()
@@ -116,7 +119,7 @@ namespace Maui.Controls.Sample.Pages
 				Source =
 				new UriImageSource()
 				{
-					Uri = new System.Uri("https://github.com/dotnet/maui/blob/main/src/ControlGallery/src/Xamarin.Forms.ControlGallery.Android/Resources/drawable/FlowerBuds.jpg?raw=true")
+					Uri = new System.Uri("dotnet_bot.png")
 				}
 			});
 
