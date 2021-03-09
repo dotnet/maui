@@ -50,6 +50,9 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 
+			verticalStack.Add(new Editor());
+			verticalStack.Add(new Editor { Text = "Editor" });
+
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
 			{

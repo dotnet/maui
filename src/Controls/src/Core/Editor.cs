@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public class Editor : InputView, IEditorController, IFontElement, IElementConfiguration<Editor>
+	public partial class Editor : InputView, IEditorController, IFontElement, IElementConfiguration<Editor>
 	{
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 

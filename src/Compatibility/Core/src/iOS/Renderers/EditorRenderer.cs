@@ -328,6 +328,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			TextView.ReloadInputViews();
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateText()
 		{
 			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);

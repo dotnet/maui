@@ -249,6 +249,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		void UpdateText()
 		{
 			string newText = Element.UpdateFormsText(Element.Text, Element.TextTransform);
