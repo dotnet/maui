@@ -1,11 +1,11 @@
-﻿#if !FORMS_APPLICATION_ACTIVITY && !PRE_APPLICATION_CLASS
-using Android.Content;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Platform.Android.AppCompat;
+﻿using Android.Content;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 [assembly: ExportRenderer(typeof(NavigationPage), typeof(_50787CustomRenderer))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class _50787CustomRenderer : NavigationPageRenderer
 	{
@@ -25,4 +25,3 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 }
-#endif

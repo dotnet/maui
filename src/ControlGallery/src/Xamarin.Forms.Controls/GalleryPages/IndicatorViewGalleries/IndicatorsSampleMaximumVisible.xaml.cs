@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	public partial class IndicatorsSampleMaximumVisible : ContentPage
 	{

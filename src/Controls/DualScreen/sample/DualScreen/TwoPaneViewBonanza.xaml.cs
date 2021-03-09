@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.DualScreen;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.DualScreen;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace DualScreen
 {
@@ -22,7 +22,7 @@ namespace DualScreen
 		private void OnCVDataScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
 			foreach(var element in cvData.LogicalChildren.OfType<StackLayout>())
-				element.Children[1].InvalidateMeasureNonVirtual(Xamarin.Forms.Internals.InvalidationTrigger.MeasureChanged);
+				element.Children[1].InvalidateMeasureNonVirtual(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
 		}
 
 		protected override void OnAppearing()

@@ -4,10 +4,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using NUnit.Framework;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Markup;
+using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.None, 11311, "[Regression] CollectionView NSRangeException", PlatformAffected.iOS)]
 	public class Issue11311 : TestTabbedPage
@@ -47,15 +46,20 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			BindingContext = new _11311ViewModel();
 
+			var collectionView = new CollectionView
+			{
+				Footer = new BoxView { BackgroundColor = Color.Red, HeightRequest = 53 }
+			};
+
+			collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(_11311ViewModel.ScoreCollectionList));
 			var refreshView = new RefreshView
 			{
-				Content = new CollectionView
-				{
-					Footer = new BoxView { BackgroundColor = Color.Red, HeightRequest = 53 }
-				}.Bind(ItemsView.ItemsSourceProperty, nameof(_11311ViewModel.ScoreCollectionList))
+				Content = collectionView
+			};
 
-			}.Bind(RefreshView.CommandProperty, nameof(_11311ViewModel.PopulateCollectionCommand))
-			 .Bind(RefreshView.IsRefreshingProperty, nameof(_11311ViewModel.IsRefreshing));
+
+			refreshView.SetBinding(RefreshView.CommandProperty, nameof(_11311ViewModel.PopulateCollectionCommand));
+			refreshView.SetBinding(RefreshView.IsRefreshingProperty, nameof(_11311ViewModel.IsRefreshing));
 
 			var page = new ContentPage
 			{

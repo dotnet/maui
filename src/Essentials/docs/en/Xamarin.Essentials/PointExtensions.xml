@@ -1,0 +1,151 @@
+<Type Name="PointExtensions" FullName="Xamarin.Essentials.PointExtensions">
+  <TypeSignature Language="C#" Value="public static class PointExtensions" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit PointExtensions extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.PointExtensions" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Extension methods for Point.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="ToSystemPoint">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Point ToSystemPoint (this Android.Graphics.Point point);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Point ToSystemPoint(class Android.Graphics.Point point) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(Android.Graphics.Point)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Point</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="point" Type="Android.Graphics.Point" Index="0" FrameworkAlternate="xamarin-essentials-android" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="point">The point to convert.</param>
+        <summary>Converts the point ot the system representation.</summary>
+        <returns>The converted point.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToSystemPoint">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Point ToSystemPoint (this CoreGraphics.CGPoint point);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Point ToSystemPoint(valuetype CoreGraphics.CGPoint point) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(CoreGraphics.CGPoint)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Point</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
+      </Parameters>
+      <Docs>
+        <param name="point">The point to convert.</param>
+        <summary>Converts the point ot the system representation.</summary>
+        <returns>The converted point.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToSystemPoint">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Point ToSystemPoint (this Windows.Foundation.Point point);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Point ToSystemPoint(valuetype Windows.Foundation.Point point) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(Windows.Foundation.Point)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Point</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="point" Type="Windows.Foundation.Point" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-uwp" />
+      </Parameters>
+      <Docs>
+        <param name="point">The point to convert.</param>
+        <summary>Converts the point ot the system representation.</summary>
+        <returns>The converted point.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToSystemPointF">
+      <MemberSignature Language="C#" Value="public static System.Drawing.PointF ToSystemPointF (this Android.Graphics.PointF point);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.PointF ToSystemPointF(class Android.Graphics.PointF point) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(Android.Graphics.PointF)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.PointF</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="point" Type="Android.Graphics.PointF" Index="0" FrameworkAlternate="xamarin-essentials-android" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="point">The point to convert.</param>
+        <summary>Converts the point ot the system representation.</summary>
+        <returns>The converted point.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToSystemPointF">
+      <MemberSignature Language="C#" Value="public static System.Drawing.PointF ToSystemPointF (this CoreGraphics.CGPoint point);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.PointF ToSystemPointF(valuetype CoreGraphics.CGPoint point) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(CoreGraphics.CGPoint)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.PointF</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
+      </Parameters>
+      <Docs>
+        <param name="point">The point to convert.</param>
+        <summary>Converts the point ot the system representation.</summary>
+        <returns>The converted point.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToSystemPointF">
+      <MemberSignature Language="C#" Value="public static System.Drawing.PointF ToSystemPointF (this Windows.Foundation.Point point);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.PointF ToSystemPointF(valuetype Windows.Foundation.Point point) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(Windows.Foundation.Point)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.PointF</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="point" Type="Windows.Foundation.Point" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-uwp" />
+      </Parameters>
+      <Docs>
+        <param name="point">The point to convert.</param>
+        <summary>Converts the point ot the system representation.</summary>
+        <returns>The converted point.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

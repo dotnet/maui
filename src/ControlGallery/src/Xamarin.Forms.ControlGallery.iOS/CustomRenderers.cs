@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using CoreGraphics;
 using CoreLocation;
 using Foundation;
 using MapKit;
@@ -25,8 +26,27 @@ using RectangleF = CoreGraphics.CGRect;
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue5830.ExtendedEntryCell), typeof(ExtendedEntryCellRenderer))]
+[assembly: ExportRenderer(typeof(Issue13390), typeof(Issue13390Renderer))]
 namespace Xamarin.Forms.ControlGallery.iOS
 {
+	public class Issue13390Renderer : ShellRenderer
+	{
+		protected override IShellFlyoutRenderer CreateFlyoutRenderer()
+		{
+			return new ShellFlyoutRenderer()
+			{
+				FlyoutTransition = new SlideFlyoutTransition2()
+			};
+		}
+
+		public class SlideFlyoutTransition2 : IShellFlyoutTransition
+		{
+			public void LayoutViews(CGRect bounds, nfloat openPercent, UIView flyout, UIView shell, FlyoutBehavior behavior)
+			{
+				flyout.Frame = new CGRect(0, 0, 0, 0);
+			}
+		}
+	}
 
 	public class CustomIOSMapRenderer : ViewRenderer<Bugzilla39987.CustomMapView, MKMapView>
 	{

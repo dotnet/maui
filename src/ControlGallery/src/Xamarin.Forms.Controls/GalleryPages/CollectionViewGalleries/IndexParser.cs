@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	internal static class IndexParser
 	{

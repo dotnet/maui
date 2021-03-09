@@ -1,0 +1,199 @@
+<Type Name="CompassData" FullName="Xamarin.Essentials.CompassData">
+  <TypeSignature Language="C#" Value="public struct CompassData : IEquatable&lt;Xamarin.Essentials.CompassData&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit CompassData extends System.ValueType implements class System.IEquatable`1&lt;valuetype Xamarin.Essentials.CompassData&gt;" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.CompassData" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>System.IEquatable&lt;Xamarin.Essentials.CompassData&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Attributes>
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos">
+      <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>
+      <para>Contains the orientation of the user's device.</para>
+    </summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public CompassData (double headingMagneticNorth);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 headingMagneticNorth) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.CompassData.#ctor(System.Double)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="headingMagneticNorth" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="headingMagneticNorth">A reading of compass data for heading magnetic north.</param>
+        <summary>Public constructor.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public override bool Equals (object obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance bool Equals(object obj) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.CompassData.Equals(System.Object)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="obj" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="obj">Object to compare</param>
+        <summary>If equal to another object</summary>
+        <returns>If equal</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public bool Equals (Xamarin.Essentials.CompassData other);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance bool Equals(valuetype Xamarin.Essentials.CompassData other) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.CompassData.Equals(Xamarin.Essentials.CompassData)" />
+      <MemberType>Method</MemberType>
+      <Implements>
+        <InterfaceMember>M:System.IEquatable`1.Equals(`0)</InterfaceMember>
+      </Implements>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="other" Type="Xamarin.Essentials.CompassData" />
+      </Parameters>
+      <Docs>
+        <param name="other">Other AccelerometerData to compare with.</param>
+        <summary>Compares the underlying doubles.</summary>
+        <returns>True if they are equal, otherwise false.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetHashCode">
+      <MemberSignature Language="C#" Value="public override int GetHashCode ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance int32 GetHashCode() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.CompassData.GetHashCode" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Get the hash code for object.</summary>
+        <returns>The hash code</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HeadingMagneticNorth">
+      <MemberSignature Language="C#" Value="public double HeadingMagneticNorth { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 HeadingMagneticNorth" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.CompassData.HeadingMagneticNorth" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The heading (measured in degrees) relative to magnetic north.</summary>
+        <value>The magnetic north heading.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Equality">
+      <MemberSignature Language="C#" Value="public static bool operator == (Xamarin.Essentials.CompassData left, Xamarin.Essentials.CompassData right);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Equality(valuetype Xamarin.Essentials.CompassData left, valuetype Xamarin.Essentials.CompassData right) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.CompassData.op_Equality(Xamarin.Essentials.CompassData,Xamarin.Essentials.CompassData)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="left" Type="Xamarin.Essentials.CompassData" />
+        <Parameter Name="right" Type="Xamarin.Essentials.CompassData" />
+      </Parameters>
+      <Docs>
+        <param name="left">Left to compare</param>
+        <param name="right">Right to compare</param>
+        <summary>Equality operator for equals</summary>
+        <returns>If equal</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Inequality">
+      <MemberSignature Language="C#" Value="public static bool operator != (Xamarin.Essentials.CompassData left, Xamarin.Essentials.CompassData right);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Inequality(valuetype Xamarin.Essentials.CompassData left, valuetype Xamarin.Essentials.CompassData right) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.CompassData.op_Inequality(Xamarin.Essentials.CompassData,Xamarin.Essentials.CompassData)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="left" Type="Xamarin.Essentials.CompassData" />
+        <Parameter Name="right" Type="Xamarin.Essentials.CompassData" />
+      </Parameters>
+      <Docs>
+        <param name="left">Left to check</param>
+        <param name="right">Right to check</param>
+        <summary>Inequality check</summary>
+        <returns>If not equal</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.CompassData.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Current string representation of the data.</summary>
+        <returns></returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

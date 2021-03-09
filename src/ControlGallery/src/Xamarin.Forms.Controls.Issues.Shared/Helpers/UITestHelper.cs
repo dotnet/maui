@@ -6,8 +6,10 @@ using System.Text;
 using Xamarin.UITest;
 using NUnit.Framework;
 using Xamarin.UITest.Queries;
+using System.Linq;
+using Microsoft.Maui.Controls.UITests;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	public static class UITestHelper
 	{
@@ -34,6 +36,39 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 
 			Assert.Fail();
+		}
+
+		public static string[] GetTestCategories(Type testType)
+		{
+			var testClassName = TestContext.CurrentContext.Test.ClassName;
+
+			// TestContext.CurrentContext.Test.Properties["Category"]
+			// Only gives you the categories on the test itself
+			// There isn't a property I could find that gives you the Categories
+			// on the Test Class
+			return testType
+						.Assembly
+						.GetType(testClassName)
+						.GetCustomAttributes(typeof(NUnit.Framework.CategoryAttribute), true)
+						.OfType<NUnit.Framework.CategoryAttribute>()
+						.Select(x => x.Name)
+						.Union(TestContext.CurrentContext.Test.Properties["Category"].OfType<string>())
+						.ToArray();
+		}
+
+		public static void MarkTestInconclusiveIfNoInternetConnectionIsPresent(Type testType, IApp app)
+		{
+			if (GetTestCategories(testType).Contains(UITestCategories.RequiresInternetConnection))
+			{
+				var hasInternetAccess = $"{app.Invoke("hasInternetAccess")}";
+				bool checkInternet;
+
+				if (bool.TryParse(hasInternetAccess, out checkInternet))
+				{
+					if (!checkInternet)
+						Assert.Inconclusive("Device Has No Internet Connection");
+				}
+			}
 		}
 	}
 }

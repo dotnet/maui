@@ -1,0 +1,60 @@
+<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.EmailPage"
+                Title="Email">
+    <views:BasePage.BindingContext>
+        <viewmodels:EmailViewModel />
+    </views:BasePage.BindingContext>
+
+    <views:BasePage.ToolbarItems>
+        <ToolbarItem Text="Send" Command="{Binding SendEmailCommand}" IsEnabled="{Binding IsNotBusy}" />
+    </views:BasePage.ToolbarItems>
+
+    <StackLayout>
+        <Label Text="Easily send email messages." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" />
+
+                <Button Text="Send Email" Command="{Binding SendEmailCommand}" IsEnabled="{Binding IsNotBusy}" />
+
+                <Label Text="Recipients" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="To:" />
+                <Entry Text="{Binding RecipientsTo}" />
+                <Label Text="CC:" />
+                <Entry Text="{Binding RecipientsCc}" />
+                <Label Text="BCC:" />
+                <Entry Text="{Binding RecipientsBcc}" />
+
+                <Label Text="Message" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="Subject:" />
+                <Entry Text="{Binding Subject}" />
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Is Html?" HorizontalTextAlignment="End"  HorizontalOptions="FillAndExpand" VerticalOptions="Center"/>
+                    <Switch IsToggled="{Binding IsHtml}" VerticalOptions="Center"/>
+                </StackLayout>
+                <Label Text="Body:" />
+                <Editor Text="{Binding Body}" Keyboard="Chat" AutoSize="TextChanges" />
+
+                <Label Text="Attachment" FontAttributes="Bold" Margin="0,6,0,0" />
+
+                <Label Text="File Name:" />
+                <Entry Text="{Binding AttachmentName}" />
+                <Label Text="File Contents:" />
+                <Editor Text="{Binding AttachmentContents}" Keyboard="Chat" AutoSize="TextChanges" />
+
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Attach Multiple" HorizontalTextAlignment="End"  HorizontalOptions="FillAndExpand" VerticalOptions="Center"/>
+                    <Switch IsToggled="{Binding HasMultipleAttachements}" VerticalOptions="Center"/>
+                </StackLayout>
+
+                <Button Text="Send Email" Command="{Binding SendEmailCommand}" IsEnabled="{Binding IsNotBusy}" />
+
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+</views:BasePage>

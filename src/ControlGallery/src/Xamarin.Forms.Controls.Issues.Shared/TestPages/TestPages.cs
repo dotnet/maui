@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework.Interfaces;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.CustomAttributes;
 using IOPath = System.IO.Path;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 
@@ -15,17 +17,17 @@ using Xamarin.UITest;
 [assembly: Category("Issues")]
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal static class AppPaths
 	{
-		public static string ApkPath = "../../../Xamarin.Forms.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
+		public static string ApkPath = "../../../../src/Microsoft.Maui.Controls.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
 
-		public static string MacOSPath = "../../../Xamarin.Forms.ControlGallery.MacOS/bin/Debug/Xamarin.Forms.ControlGallery.MacOS.app";
+		public static string MacOSPath = "../../../../src/Microsoft.Maui.Controls.ControlGallery.MacOS/bin/Debug/Microsoft.Maui.Controls.ControlGallery.MacOS.app";
 
 		// Have to continue using the old BundleId for now; Test Cloud doesn't like
 		// when you change the BundleId
-		public static string BundleId = "com.xamarin.quickui.controlgallery";
+		public static string BundleId = "com.xamarin.xamarin-forms-controlgallery";
 
 		// Have to continue using the old BundleId for now; Test Cloud doesn't like
 		// when you change the BundleId
@@ -75,23 +77,17 @@ namespace Xamarin.Forms.Controls
 
 			var app = appConfiguration.StartApp(UITest.Configuration.AppDataMode.DoNotClear);
 
-			if (bool.Parse((string)app.Invoke("IsPreAppCompat")))
-			{
-				IsFormsApplicationActivity = true;
-			}
-
 			return app;
 		}
 
-		public static bool IsFormsApplicationActivity { get; private set; }
 #endif
 
 #if __IOS__
 		static IApp InitializeiOSApp()
 		{
-			string UDID = null;
+			string UDID = "";
 
-			if(TestContext.Parameters.Exists("UDID"))
+			if (TestContext.Parameters.Exists("UDID"))
 			{
 				UDID = TestContext.Parameters["UDID"];
 			}
@@ -121,7 +117,7 @@ namespace Xamarin.Forms.Controls
 			// Running on the simulator
 			// var app = ConfigureApp.iOS
 			//				  .PreferIdeSettings()
-			//		  		  .AppBundle("../../../Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/Debug/XamarinFormsControlGalleryiOS.app")
+			//		  		  .AppBundle("../../../Microsoft.Maui.Controls.ControlGallery.iOS/bin/iPhoneSimulator/Debug/XamarinFormsControlGalleryiOS.app")
 			//				  .Debug()
 			//				  .StartApp();
 
@@ -137,11 +133,11 @@ namespace Xamarin.Forms.Controls
 			// Running on a device
 			var configurator = new Xamarin.UITest.Desktop.CocoaAppConfigurator();
 			var app = configurator
-							//.AppBundle("/Users/rmarinho/Xamarin/Xamarin.Forms/Xamarin.Forms.ControlGallery.MacOS/bin/Debug/Xamarin.Forms.ControlGallery.MacOS.app")
+							//.AppBundle("/Users/rmarinho/Xamarin/Xamarin.Forms/Microsoft.Maui.Controls.ControlGallery.MacOS/bin/Debug/Microsoft.Maui.Controls.ControlGallery.MacOS.app")
 							.AppBundle(AppPaths.MacOSPath)
 							.BundleId(AppPaths.MacOSBundleId)
 							.StartApp();
-			return new Xamarin.Forms.Core.macOS.UITests.MacOSApp(app);
+			return new Microsoft.Maui.Controls.macOS.UITests.MacOSApp(app);
 		}
 #endif
 
@@ -574,7 +570,7 @@ namespace Xamarin.Forms.Controls
 	public abstract class TestShell : Shell
 	{
 		protected const string FlyoutIconAutomationId = "OK";
-#if __IOS__
+#if __IOS__ || __WINDOWS__
 		protected const string BackButtonAutomationId = "Back";
 #else
 		protected const string BackButtonAutomationId = "OK";
@@ -604,6 +600,7 @@ namespace Xamarin.Forms.Controls
 
 		protected TestShell() : base()
 		{
+			Device.SetFlags(new List<string> { ExperimentalFlags.ShellUWPExperimental });
 			Routing.Clear();
 #if APP
 			Init();
@@ -618,19 +615,19 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		public ContentPage AddTopTab(string title, string icon = null)
+		public ContentPage AddTopTab(string title, string icon = null, ShellSection root = null)
 		{
 			var page = new ContentPage()
 			{
 				Title = title
 			};
 
-			AddTopTab(page, title, icon);
+			AddTopTab(page, title, icon, root);
 			return page;
 		}
 
 
-		public void AddTopTab(ContentPage page, string title = null, string icon = null)
+		public void AddTopTab(ContentPage page, string title = null, string icon = null, ShellSection root = null)
 		{
 			if (Items.Count == 0)
 			{
@@ -639,17 +636,48 @@ namespace Xamarin.Forms.Controls
 				return;
 			}
 
+			root = Items[0].Items[0];
+			title = title ?? page.Title;
 			var content = new ShellContent()
 			{
-				Title = title ?? page.Title,
+				Title = title,
 				Content = page,
-				Icon = icon
+				Icon = icon,
+				AutomationId = title
 			};
 
-			Items[0].Items[0].Items.Add(content);
+			root.Items.Add(content);
 
 			if (!String.IsNullOrWhiteSpace(content.Title))
 				content.Route = content.Title;
+		}
+
+		public ContentPage AddBottomTab(ContentPage page, string title, string icon = null)
+		{
+			if (Items.Count == 0)
+			{
+				var item = AddContentPage(page);
+				item.Items[0].Items[0].Title = title ?? page.Title;
+				item.Items[0].Title = title ?? page.Title;
+				return page;
+			}
+
+			Items[0].Items.Add(new ShellSection()
+			{
+				AutomationId = title,
+				Route = title,
+				Title = title,
+				Icon = icon,
+				Items =
+ 				{
+ 					new ShellContent()
+ 					{
+ 						ContentTemplate = new DataTemplate(() => page),
+ 						Title = title
+ 					}
+ 				}
+			});
+			return page;
 		}
 
 		public ContentPage AddBottomTab(string title, string icon = null)
@@ -657,7 +685,7 @@ namespace Xamarin.Forms.Controls
 			ContentPage page = new ContentPage();
 			if (Items.Count == 0)
 			{
-				var item = AddContentPage(page);
+				var item = AddContentPage(page, title);
 				item.Items[0].Items[0].Title = title ?? page.Title;
 				item.Items[0].Title = title ?? page.Title;
 				return page;
@@ -794,12 +822,41 @@ namespace Xamarin.Forms.Controls
 		}
 
 
-		public void TapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, string timeoutMessage = null)
+		public void TapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, string timeoutMessage = null, bool makeSureFlyoutStaysOpen = false)
 		{
 			timeoutMessage = timeoutMessage ?? text;
-			ShowFlyout(flyoutIcon, usingSwipe);
-			RunningApp.WaitForElement(text, timeoutMessage);
-			RunningApp.Tap(text);
+#if __WINDOWS__
+			RunningApp.WaitForElement(flyoutIcon);
+#endif
+
+			System.Threading.Thread.Sleep(500);
+			CheckIfOpen();
+			try
+			{
+				RunningApp.Tap(text);
+			}
+			catch
+			{
+				// Give it one more try
+				CheckIfOpen();
+				RunningApp.Tap(text);
+			}
+
+			if (makeSureFlyoutStaysOpen)
+			{
+				System.Threading.Thread.Sleep(500);
+				if(RunningApp.Query(text).Count() == 0)
+					this.ShowFlyout(flyoutIcon);
+			}
+
+			void CheckIfOpen()
+			{
+				if (RunningApp.Query(text).Count() == 0)
+				{
+					ShowFlyout(flyoutIcon, usingSwipe);
+					RunningApp.WaitForElement(text, timeoutMessage);
+				}
+			}
 		}
 
 		public void DoubleTapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, string timeoutMessage = null)
@@ -818,12 +875,12 @@ namespace Xamarin.Forms.Controls
 }
 
 #if UITEST
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	using System;
 	using NUnit.Framework;
 
-// Run setup once for all tests in the Xamarin.Forms.Controls.Issues namespace
+// Run setup once for all tests in the Microsoft.Maui.Controls.ControlGallery.Issues namespace
 	// (instead of once for each test)
 	[SetUpFixture]
 	public class IssuesSetup

@@ -1,0 +1,30 @@
+<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.AppInfoPage"
+                Title="App Info">
+    <views:BasePage.BindingContext>
+        <viewmodels:AppInfoViewModel />
+    </views:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Find out about the app with ease." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <Label Text="App Info:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="{Binding AppName, StringFormat='Name: {0}'}" />
+                <Label Text="{Binding AppPackageName, StringFormat='Package Name: {0}'}" />
+                <Label Text="{Binding AppTheme, StringFormat='Theme: {0}'}" />
+
+                <Label Text="Version Info:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="{Binding AppVersion, StringFormat='Version: {0}'}" />
+                <Label Text="{Binding AppBuild, StringFormat='Build: {0}'}" />
+
+                <Button Text="Open Settings" Command="{Binding ShowSettingsUICommand}"/>
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+</views:BasePage>

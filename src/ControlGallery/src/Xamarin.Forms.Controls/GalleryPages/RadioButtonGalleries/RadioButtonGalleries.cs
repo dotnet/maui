@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries
+﻿namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.RadioButtonGalleries
 {
 	public class RadioButtonGalleries : ContentPage
 	{
@@ -9,13 +9,6 @@
 
 			Title = "RadioButton Galleries";
 
-			var button = new Button
-			{
-				Text = "Enable RadioButton",
-				AutomationId = "EnableRadioButton"
-			};
-			button.Clicked += ButtonClicked;
-
 			Content = new ScrollView
 			{
 				Content = new StackLayout
@@ -23,7 +16,6 @@
 					Children =
 					{
 						descriptionLabel,
-						button,
 						GalleryBuilder.NavButton("RadioButton Group Gallery", () =>
 							new RadioButtonGroupGalleryPage(), Navigation),
 						GalleryBuilder.NavButton("RadioButton Group (Attached Property)", () =>
@@ -41,17 +33,6 @@
 					}
 				}
 			};
-		}
-
-		void ButtonClicked(object sender, System.EventArgs e)
-		{
-			var button = sender as Button;
-
-			button.Text = "RadioButton Enabled!";
-			button.TextColor = Color.Black;
-			button.IsEnabled = false;
-
-			Device.SetFlags(new[] { ExperimentalFlags.RadioButtonExperimental });
 		}
 	}
 }

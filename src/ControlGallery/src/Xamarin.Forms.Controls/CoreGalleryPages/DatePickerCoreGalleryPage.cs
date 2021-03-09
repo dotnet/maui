@@ -1,7 +1,7 @@
 using System;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal class DatePickerCoreGalleryPage : CoreGalleryPage<DatePicker>
 	{

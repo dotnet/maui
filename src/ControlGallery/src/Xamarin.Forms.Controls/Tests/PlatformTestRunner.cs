@@ -4,7 +4,7 @@ using NUnit.Framework.Api;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace Microsoft.Maui.Controls.ControlGallery.Tests
 {
 	public class PlatformTestRunner
 	{

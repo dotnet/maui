@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
@@ -23,9 +23,8 @@ namespace Xamarin.Forms.Controls.Issues
 			Label header = new Label
 			{
 				Text = "Should not see blue",
-#pragma warning disable 618
-				Font = Font.BoldSystemFontOfSize(40),
-#pragma warning restore 618
+				FontSize = 40,
+				FontAttributes = FontAttributes.Bold,
 				HorizontalOptions = LayoutOptions.Center,
 				TextColor = Color.Black
 			};

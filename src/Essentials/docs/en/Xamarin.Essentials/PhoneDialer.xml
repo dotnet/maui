@@ -1,0 +1,44 @@
+<Type Name="PhoneDialer" FullName="Xamarin.Essentials.PhoneDialer">
+  <TypeSignature Language="C#" Value="public static class PhoneDialer" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit PhoneDialer extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.PhoneDialer" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Open the platform phone dialer to place a call.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Open">
+      <MemberSignature Language="C#" Value="public static void Open (string number);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Open(string number) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PhoneDialer.Open(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="number" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="number">Phone number to initialize the dialer with. Example 15555555555</param>
+        <summary>Open the phone dialer to a specific phone number.</summary>
+        <remarks>
+          <para>
+          Throws ArgumentNullException if number is not valid.</para>
+          <para>Throws FeatureNotSupportedException if placing phone call is not supported on the device.</para>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

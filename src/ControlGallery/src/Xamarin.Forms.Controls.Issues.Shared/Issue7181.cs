@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7181, "[Bug] Cannot update ToolbarItem text and icon", PlatformAffected.Android)]
@@ -31,9 +31,11 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var page = CreateContentPage("Test page");
 
-			_toolbarItem = new ToolbarItem(DefaultToolbarItemText, string.Empty, OnToolbarClicked)
+			_toolbarItem = new ToolbarItem()
 			{
-				AutomationId = ToolbarBtn
+				Text = DefaultToolbarItemText,
+				AutomationId = ToolbarBtn,
+				Command = new Command(OnToolbarClicked)
 			};
 
 			page.ToolbarItems.Add(_toolbarItem);
@@ -58,20 +60,20 @@ namespace Xamarin.Forms.Controls.Issues
 		private void OnToolbarClicked() =>
 			_toolbarItem.Text = $"{AfterClickToolbarItemText} {_clicks++}";
 
-#if UITEST && __ANDROID__
+#if UITEST && (__ANDROID__ || __WINDOWS__)
 		[Test]
 		public void ShellToolbarItemTests()
 		{
 			var count = 0;
 			var toolbarButton = RunningApp.WaitForElement(ToolbarBtn);
-			Assert.AreEqual(toolbarButton[0].Text, DefaultToolbarItemText);
+			Assert.AreEqual(DefaultToolbarItemText, toolbarButton[0].ReadText());
 
 			for (int i = 0; i < 5; i++)
 			{
 				RunningApp.Tap(ToolbarBtn);
 
 				toolbarButton = RunningApp.WaitForElement(ToolbarBtn);
-				Assert.AreEqual($"{AfterClickToolbarItemText} {count++}", toolbarButton[0].Text);
+				Assert.AreEqual($"{AfterClickToolbarItemText} {count++}", toolbarButton[0].ReadText());
 			}
 
 			RunningApp.Tap(SetToolbarIconBtn);

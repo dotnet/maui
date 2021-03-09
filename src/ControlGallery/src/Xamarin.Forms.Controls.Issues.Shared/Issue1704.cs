@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1704, "[Enhancement] Basic GIF animation features", PlatformAffected.UWP)]

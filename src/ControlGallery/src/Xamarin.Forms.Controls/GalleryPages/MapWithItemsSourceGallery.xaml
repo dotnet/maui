@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:map="clr-namespace:Xamarin.Forms.Maps;assembly=Xamarin.Forms.Maps"
-             xmlns:local="clr-namespace:Xamarin.Forms.Controls.GalleryPages"
-			 x:Class="Xamarin.Forms.Controls.GalleryPages.MapWithItemsSourceGallery">
+			 xmlns:map="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery.GalleryPages"
+			 x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.MapWithItemsSourceGallery">
     <ContentPage.Resources>
         <ResourceDictionary>
             <local:MapItemTemplateSelector x:Key="MapItemTemplateSelector">

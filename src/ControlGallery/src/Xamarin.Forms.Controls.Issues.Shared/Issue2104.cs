@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using NUnit.Framework;
 using System.Linq;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -44,21 +44,21 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Click Me To call Properties Save a bunch of times",
 				Command = new Command(() =>
 				{
-					Xamarin.Forms.Application.Current.Properties.Clear();
-					Xamarin.Forms.Application.Current.SendSleep();
+					Microsoft.Maui.Controls.Application.Current.Properties.Clear();
+					Microsoft.Maui.Controls.Application.Current.SendSleep();
 
 					for (int i = 0; i < 20; i++)
 					{
-						Xamarin.Forms.Application.Current.Properties[i.ToString()] = expectedValues[i];
-						Xamarin.Forms.Application.Current.SendSleep();
+						Microsoft.Maui.Controls.Application.Current.Properties[i.ToString()] = expectedValues[i];
+						Microsoft.Maui.Controls.Application.Current.SendSleep();
 					}
 
 					for (int i = 20; i < 40; i++)
 					{
-						Xamarin.Forms.Application.Current.Properties[i.ToString()] = expectedValues[i];
+						Microsoft.Maui.Controls.Application.Current.Properties[i.ToString()] = expectedValues[i];
 						Task.Run(() =>
 						{
-							Xamarin.Forms.Application.Current.SendSleep();
+							Microsoft.Maui.Controls.Application.Current.SendSleep();
 						});
 					}
 
@@ -72,8 +72,8 @@ namespace Xamarin.Forms.Controls.Issues
 				AutomationId = "Clear",
 				Command = new Command(() =>
 				{
-					Xamarin.Forms.Application.Current.Properties.Clear();
-					Xamarin.Forms.Application.Current.SendSleep();
+					Microsoft.Maui.Controls.Application.Current.Properties.Clear();
+					Microsoft.Maui.Controls.Application.Current.SendSleep();
 				}),
 			};
 

@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3840, "[iOS] Translation change causes ScrollView to reset to initial position (0, 0)",
@@ -91,7 +91,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Assert.AreEqual(0, label[0].Rect.Height);
 			Assert.AreEqual(0, label[0].Rect.Width);
 #else
-			RunningApp.WaitForNoElement(_failedText);
+			var result = RunningApp.QueryUntilNotPresent(() => RunningApp.Query(_failedText));
 #endif
 		}
 #endif

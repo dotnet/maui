@@ -1,13 +1,13 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 181, "Color not initialized for Label", PlatformAffected.Android, NavigationBehavior.PushModalAsync)]
@@ -25,13 +25,8 @@ namespace Xamarin.Forms.Controls.Issues
 					Text = "I should have red text",
 					TextColor = Color.Red,
 					BackgroundColor = new Color(0.5, 0.5, 0.5),
-#pragma warning disable 618
-					XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-					YAlign = TextAlignment.Center
-#pragma warning restore 618
+					HorizontalTextAlignment = TextAlignment.Center,
+					VerticalTextAlignment = TextAlignment.Center
 				}
 			};
 		}

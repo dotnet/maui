@@ -2,17 +2,17 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 #if UITEST
 using Xamarin.UITest;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1667, "Entry: Position and color of caret", PlatformAffected.All)]

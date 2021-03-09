@@ -1,13 +1,13 @@
 ﻿using System;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
@@ -21,9 +21,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-#pragma warning disable 618
-			var label = new Label() { XAlign = TextAlignment.Center };
-#pragma warning restore 618
+			var label = new Label() { HorizontalTextAlignment = TextAlignment.Center };
 			var image = new Image();
 
 			image.PropertyChanged += (sender, e) =>

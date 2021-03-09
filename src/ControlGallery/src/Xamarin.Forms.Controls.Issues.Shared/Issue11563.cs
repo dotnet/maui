@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Shapes;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Shapes;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Shape)]
@@ -36,12 +36,18 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Tap the button, if the Polygon is updated, the test has passed."
 			};
 
-			var button = new Button
+			var updatePointsButton = new Button
 			{
-				Text = "Update Polygon points"
+				Text = "Update points"
 			};
 
-			var points = new PointCollection() { new Point(10, 10), new Point(100, 50), new Point(100, 95), new Point(10, 95) };
+			var updatePointsCollectionButton = new Button
+			{
+				Text = "Update points collection"
+			};
+
+			var points1 = new PointCollection() { new Point(10, 10), new Point(100, 50), new Point(100, 95), new Point(10, 95) };
+			var points2 = new PointCollection() { new Point(10, 5), new Point(100, 70), new Point(100, 95), new Point(10, 95) };
 
 			var polygon = new Polygon
 			{
@@ -49,19 +55,28 @@ namespace Xamarin.Forms.Controls.Issues
 				WidthRequest = 100,
 				StrokeThickness = 2,
 				Stroke = Brush.Red,
-				Points = points
+				Points = points1
 			};
 
 			layout.Children.Add(instructions);
-			layout.Children.Add(button);
+			layout.Children.Add(updatePointsButton);
+			layout.Children.Add(updatePointsCollectionButton);
 			layout.Children.Add(polygon);
 
 			Content = layout;
 
-			button.Clicked += (sender, args) =>
+			updatePointsButton.Clicked += (sender, args) =>
 			{
-				if (points.Count > 1)
-					points.RemoveAt(1);
+				if (points1.Count > 1)
+					points1.RemoveAt(1);
+
+				if (points2.Count > 1)
+					points2.RemoveAt(1);
+			};
+
+			updatePointsCollectionButton.Clicked += (sender, args) =>
+			{
+				polygon.Points = points2;
 			};
 		}
 	}

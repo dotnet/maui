@@ -1,7 +1,7 @@
 ﻿#if !UITEST
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class Issue6698View2

@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Controls.Issues
 				new Person ("Bob", new DateTime (1976, 2, 20), Color.Black),
 				new Person ("Cathy", new DateTime (1977, 3, 10), Color.Blue),
 #pragma warning disable 618
-				new Person ("David", new DateTime (1978, 4, 25), Color.Fuschia),
+				new Person ("David", new DateTime (1978, 4, 25), Color.Fuchsia),
 #pragma warning restore 618
 			};
 

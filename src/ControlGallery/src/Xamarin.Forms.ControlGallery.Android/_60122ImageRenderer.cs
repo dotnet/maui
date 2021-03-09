@@ -1,18 +1,18 @@
 using System;
 using Android.Content;
 using Android.Views;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.Android;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
 [assembly: ExportRenderer(typeof(Bugzilla60122._60122Image), typeof(_60122ImageRenderer))]
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class _60122ImageRenderer :
-#if TEST_EXPERIMENTAL_RENDERERS
-		Platform.Android.FastRenderers.ImageRenderer
+#if !LEGACY_RENDERERS
+		Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ImageRenderer
 #else
 		ImageRenderer
 #endif

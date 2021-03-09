@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-    xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
     xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:issues="clr-namespace:Xamarin.Forms.Controls.Issues"
+             xmlns:issues="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
              mc:Ignorable="d"
-             x:Class="Xamarin.Forms.Controls.Issues.Issue2172">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue2172">
     <ContentPage.Content>
         <StackLayout>
             <Button Text="Toggle Vertical Alignment (center, end, start - box heights will change)" Clicked="Button_OnClicked"/>

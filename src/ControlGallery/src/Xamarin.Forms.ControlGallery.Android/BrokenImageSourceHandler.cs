@@ -3,13 +3,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.Android;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Compatibility;
 
 [assembly: ExportRenderer(typeof(_51173Image), typeof(_51173CustomImageRenderer))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public sealed class BrokenImageSourceHandler : IImageSourceHandler
 	{
@@ -23,6 +24,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 	public class _51173CustomImageRenderer : ImageRenderer
 #pragma warning restore 618
 	{
+		public _51173CustomImageRenderer(Context context) : base(context)
+		{
+		}
+
 		protected override async Task TryUpdateBitmap(Image previous = null)
 		{
 			try

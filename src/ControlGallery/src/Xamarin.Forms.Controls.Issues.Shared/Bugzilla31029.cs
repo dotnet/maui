@@ -1,15 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(Core.UITests.UITestCategories.Bugzilla)]
@@ -34,11 +34,9 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = new StackLayout
 			{
 				Children = {
-						btn,
-#pragma warning disable 618
-                    new Label {Text = "GeneratedImage", Font=Font.BoldSystemFontOfSize(NamedSize.Medium)},
-#pragma warning restore 618
-                    generatedImage
+					btn,
+					new Label {Text = "GeneratedImage", FontAttributes = FontAttributes.Bold, FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)) },
+					generatedImage
 				},
 				Padding = new Thickness(0, 20, 0, 0),
 				VerticalOptions = LayoutOptions.StartAndExpand,

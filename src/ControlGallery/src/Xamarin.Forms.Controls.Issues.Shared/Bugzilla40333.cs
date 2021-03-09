@@ -1,11 +1,11 @@
 using System;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
@@ -210,19 +210,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if __ANDROID__ // These tests don't work in iOS for unrelated reasons (see https://bugzilla.xamarin.com/show_bug.cgi?id=41085)
 
-		static void IgnoreFormsApplicationActivity()
-		{
-			if (AppSetup.IsFormsApplicationActivity)
-			{
-				Assert.Ignore("This test only applies to FormsAppCompatActivity.");
-			}
-		}
-
 		[Test]
 		public void ClickingOnMenuItemInMasterDoesNotCrash_NavPageVersion()
 		{
-			IgnoreFormsApplicationActivity();
-
 			RunningApp.Tap(q => q.Marked(StartNavPageTestId));
 			RunningApp.WaitForElement(q => q.Marked(OpenMasterId));
 
@@ -236,8 +226,6 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void ClickingOnMenuItemInMasterDoesNotCrash_TabPageVersion()
 		{
-			IgnoreFormsApplicationActivity();
-
 			RunningApp.Tap(q => q.Marked(StartTabPageTestId));
 			RunningApp.WaitForElement(q => q.Marked(OpenMasterId));
 

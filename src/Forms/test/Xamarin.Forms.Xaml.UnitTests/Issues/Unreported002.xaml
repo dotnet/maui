@@ -1,7 +1,0 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 x:Class="Xamarin.Forms.Xaml.UnitTests.Unreported002">
-	<Label x:Name="label"
-		   AbsoluteLayout.LayoutBounds="0.5,0.5,1,AutoSize" />
-</ContentPage>

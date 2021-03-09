@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Internals;
+﻿using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.ShapesGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class ShapesGallery : ContentPage
@@ -9,20 +9,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
 		{
 			Title = "Shapes Gallery";
 
-			var button = new Button
-			{
-				Text = "Enable Shapes",
-				AutomationId = "EnableShapes"
-			};
-			button.Clicked += ButtonClicked;
-
 			Content = new ScrollView
 			{
 				Content = new StackLayout
 				{
 					Children =
 					{
-						button,
 						GalleryBuilder.NavButton("Ellipse Gallery", () => new EllipseGallery(), Navigation),
 						GalleryBuilder.NavButton("Line Gallery", () => new LineGallery(), Navigation),
 						GalleryBuilder.NavButton("Polygon Gallery", () => new PolygonGallery(), Navigation),
@@ -37,6 +29,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
 						GalleryBuilder.NavButton("Transform Playground", () => new TransformPlaygroundGallery(), Navigation),
 						GalleryBuilder.NavButton("Path Transform using string (TypeConverter) Gallery", () => new PathTransformStringGallery(), Navigation),
 						GalleryBuilder.NavButton("Animate Shape Gallery", () => new AnimateShapeGallery(), Navigation),
+						GalleryBuilder.NavButton("Shape AppThemes Gallery", () => new ShapeAppThemeGallery(), Navigation),
 						GalleryBuilder.NavButton("Clip Gallery", () => new ClipGallery(), Navigation),
 						GalleryBuilder.NavButton("Clip CornerRadius Gallery", () => new ClipCornerRadiusGallery(), Navigation),
 						GalleryBuilder.NavButton("Clip Views Gallery", () => new ClipViewsGallery(), Navigation),
@@ -45,15 +38,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
 					}
 				}
 			};
-		}
-
-		void ButtonClicked(object sender, System.EventArgs e)
-		{
-			var button = sender as Button;
-
-			button.Text = "Shapes Enabled!";
-			button.TextColor = Color.Black;
-			button.IsEnabled = false;
 		}
 	}
 }

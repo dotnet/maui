@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	class RadioButtonCoreGalleryPage : CoreGalleryPage<RadioButton>
 	{
@@ -15,7 +15,6 @@ namespace Xamarin.Forms.Controls
 		protected override void Initialize()
 		{
 			base.Initialize();
-			Device.SetFlags(new List<string> { ExperimentalFlags.RadioButtonExperimental });
 		}
 
 		protected override void OnDisappearing()

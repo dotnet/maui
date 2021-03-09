@@ -4,12 +4,12 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries.GridGrouping">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.GroupingGalleries.GridGrouping">
     <ContentPage.Content>
         <CollectionView x:Name="CollectionView" IsGrouped="True" Header="This is a header" Footer="This is a footer.">
 
             <CollectionView.ItemsLayout>
-                <GridItemsLayout Span="2" Orientation="Vertical"></GridItemsLayout>
+                <GridItemsLayout Span="2" HorizontalItemSpacing="5" Orientation="Vertical"></GridItemsLayout>
             </CollectionView.ItemsLayout>
             
             <CollectionView.ItemTemplate>

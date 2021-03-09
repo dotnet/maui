@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<local:TestContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue11571"
+    Title="Issue 11571">
+    <ScrollView>
+        <StackLayout Margin="12">
+            <Label Text="LinearGradientBrush (Horizontal)"
+                   FontAttributes="Bold" />
+            <Frame 
+                Margin="0,12,0,0"
+                BorderColor="LightGray"
+                HasShadow="True"
+                CornerRadius="12"
+                HeightRequest="60"
+                WidthRequest="120">
+                <Frame.Background>
+                    <LinearGradientBrush StartPoint="0,0"
+                                         EndPoint="1,0">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Color="Yellow"
+                                        Offset="0.1" />
+                            <GradientStop Color="Green"
+                                        Offset="1.0" />                                                         
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </Frame.Background>
+            </Frame>    
+            <Label Margin="0,12,0,0"
+                   Text="LinearGradientBrush (Vertical)"
+                   FontAttributes="Bold" />        
+            <Frame 
+                Margin="0,12,0,0"
+                BorderColor="LightGray"
+                HasShadow="True"
+                CornerRadius="12"
+                HeightRequest="60"
+                WidthRequest="120">
+                <Frame.Background>
+                    <LinearGradientBrush StartPoint="0,0"
+                                         EndPoint="0,1">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Color="Yellow"
+                                        Offset="0.1" />
+                            <GradientStop Color="Green"
+                                        Offset="1.0" />                                                         
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </Frame.Background>
+            </Frame>                    
+            <Label Margin="0,12,0,0"
+                   Text="LinearGradientBrush (Diagonal)"
+                   FontAttributes="Bold" />        
+            <Frame
+                Margin="0,12,0,0"
+                BorderColor="LightGray"
+                HasShadow="True"
+                CornerRadius="12"
+                HeightRequest="60"
+                WidthRequest="120">
+                <Frame.Background>
+                    <LinearGradientBrush StartPoint="0,0"
+                                         EndPoint="1,1">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Color="Yellow"
+                                        Offset="0.1" />
+                            <GradientStop Color="Green"
+                                        Offset="1.0" />                                                         
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </Frame.Background>
+            </Frame>                           
+        </StackLayout>
+    </ScrollView>
+</local:TestContentPage>

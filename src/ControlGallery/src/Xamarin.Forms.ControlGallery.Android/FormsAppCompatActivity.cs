@@ -1,22 +1,21 @@
-﻿#if !FORMS_APPLICATION_ACTIVITY && !PRE_APPLICATION_CLASS
-
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Java.Interop;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.Android;
-using Xamarin.Forms.Platform.Android.AppLinks;
-using System.Linq;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppLinks;
+using Microsoft.Maui.Controls.Internals;
+using System.Threading.Tasks;
+using System.Net.Http;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	// This is the AppCompat version of Activity1
 
-	[Activity(Label = "Control Gallery", Icon = "@drawable/icon", Theme = "@style/MyTheme",
+	[Activity(Label = "Xamarin Forms", Icon = "@drawable/icon", Theme = "@style/MyTheme",
 		MainLauncher = true, HardwareAccelerated = true, 
 		ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.UiMode)]
 	[IntentFilter(new[] { Intent.ActionView },
@@ -43,16 +42,22 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 			base.OnCreate(bundle);
 
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 #else
 			Forms.SetFlags("UseLegacyRenderers");
 #endif
-			Forms.Init(this, bundle);
+			// null out the assembly on the Resource Manager
+			// so all of our tests run without using the reflection APIs
+			// At some point the Resources class types will go away so
+			// reflection will stop working
+			ResourceManager.Init(null);
 
+			Microsoft.Maui.Controls.Compatibility.Forms.Init(this, bundle);
 			FormsMaps.Init(this, bundle);
+
 			//FormsMaterial.Init(this, bundle);
 			AndroidAppLinks.Init(this);
-			Forms.ViewInitialized += (sender, e) => {
+			Microsoft.Maui.Controls.Compatibility.Forms.ViewInitialized += (sender, e) => {
 				//				if (!string.IsNullOrWhiteSpace(e.View.StyleId)) {
 				//					e.NativeView.ContentDescription = e.View.StyleId;
 				//				}
@@ -96,7 +101,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 			
 			LoadApplication(_app);
 
-#if !TEST_EXPERIMENTAL_RENDERERS
+#if LEGACY_RENDERERS
 			if ((int)Build.VERSION.SdkInt >= 21)
 			{
 				// Show a purple status bar if we're looking at legacy renderers
@@ -114,6 +119,27 @@ namespace Xamarin.Forms.ControlGallery.Android
 		{
 			base.OnResume();
 			Profile.Stop();
+		}
+
+		[Export("hasInternetAccess")]
+		public bool HasInternetAccess()
+		{
+			try
+			{
+				using (var httpClient = new HttpClient())
+				using (var httpResponse = httpClient.GetAsync(@"https://www.github.com"))
+				{
+					httpResponse.Wait();
+					if (httpResponse.Result.StatusCode == System.Net.HttpStatusCode.OK)
+						return true;
+					else
+						return false;
+				}
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		[Export("IsPreAppCompat")]
@@ -142,5 +168,3 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 }
-
-#endif

@@ -1,0 +1,72 @@
+<Type Name="DeviceDisplay" FullName="Xamarin.Essentials.DeviceDisplay">
+  <TypeSignature Language="C#" Value="public static class DeviceDisplay" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit DeviceDisplay extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.DeviceDisplay" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Represents information about the device screen.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="KeepScreenOn">
+      <MemberSignature Language="C#" Value="public static bool KeepScreenOn { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool KeepScreenOn" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceDisplay.KeepScreenOn" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets if the screen shold be kept on.</summary>
+        <value>If the screen keep on is set.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MainDisplayInfo">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DisplayInfo MainDisplayInfo { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DisplayInfo MainDisplayInfo" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceDisplay.MainDisplayInfo" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayInfo</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the main screens display info.</summary>
+        <value>The main screen display info.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MainDisplayInfoChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.DisplayInfoChangedEventArgs&gt; MainDisplayInfoChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.DisplayInfoChangedEventArgs&gt; MainDisplayInfoChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.DeviceDisplay.MainDisplayInfoChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.DisplayInfoChangedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event that is triggered when the main display info changes.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

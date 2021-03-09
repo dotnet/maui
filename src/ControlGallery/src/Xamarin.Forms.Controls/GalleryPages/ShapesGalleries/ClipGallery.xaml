@@ -5,7 +5,7 @@
     xmlns:d="http://xamarin.com/schemas/2014/forms/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    x:Class="Xamarin.Forms.Controls.GalleryPages.ShapesGalleries.ClipGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.ShapesGalleries.ClipGallery"
     Title="Clip Gallery">
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -38,6 +38,16 @@
                     Source="crimson.jpg">
                     <Image.Clip>
                         <RectangleGeometry 
+                            Rect="0, 15, 150, 150" />
+                    </Image.Clip>
+                </Image>
+                <Label
+                    Text="Clipped Image using RoundRectangleGeometry"/>
+                <Image  
+                    Source="crimson.jpg">
+                    <Image.Clip>
+                        <RoundRectangleGeometry
+                            CornerRadius="6"
                             Rect="0, 15, 150, 150" />
                     </Image.Clip>
                 </Image>

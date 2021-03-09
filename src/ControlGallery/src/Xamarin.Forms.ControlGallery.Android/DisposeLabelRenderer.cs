@@ -1,17 +1,22 @@
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.Android;
+using Android.Content;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 #pragma warning disable 618
 	public class DisposeLabelRenderer :
-#if TEST_EXPERIMENTAL_RENDERERS
-		Platform.Android.FastRenderers.LabelRenderer
+#if !LEGACY_RENDERERS
+		Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.LabelRenderer
 #else
 		LabelRenderer
 #endif
 #pragma warning restore 618
 	{
+		public DisposeLabelRenderer(Context context) : base(context)
+		{
+		}
+
 		protected override void Dispose (bool disposing)
 		{
 

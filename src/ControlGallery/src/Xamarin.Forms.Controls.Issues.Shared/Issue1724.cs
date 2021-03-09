@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Controls.Issues
 					new Label(){ Text = "Do you see image from a Uri?" },
 					new ImageButton()
 					{
-						Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.Controls/coffee.png",
+						Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Microsoft.Maui.Controls.ControlGallery/coffee.png",
 						BackgroundColor = Color.ForestGreen
 					},
 					new Label(){ Text = "Invalid Image Uri just to test it doesn't crash" },

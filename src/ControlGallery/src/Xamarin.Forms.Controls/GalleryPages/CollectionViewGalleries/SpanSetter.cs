@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	internal class SpanSetter : ContentView
 	{

@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Maps;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Maps;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 886, "Map scrolling problems", PlatformAffected.Android)]

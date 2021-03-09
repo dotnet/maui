@@ -1,5 +1,4 @@
 parameters:
-  slnPath : 'Xamarin.Forms.sln'
   msbuildExtraArguments : ''
   artifactsTargetFolder: '$(build.artifactstagingdirectory)'
   artifactsName: 'win_build'
@@ -14,8 +13,13 @@ steps:
     displayName: 'Provisionator'
     condition: eq(variables['provisioning'], 'true')
     inputs:
-      provisioning_script: ${{ parameters.provisionatorPath }}
-      provisioning_extra_args: ${{ parameters.provisionator.extraArguments }}
+      provisioning_script: $(provisionator.path)
+      provisioning_extra_args: $(provisionator.extraArguments)
+
+  - pwsh: |
+      $(System.DefaultWorkingDirectory)/build.ps1 --target provision --TeamProject="$(System.TeamProject)"
+    displayName: 'Cake Provision'
+    condition: eq(variables['provisioningCake'], 'true')
 
   - task: NuGetToolInstaller@1
     displayName: 'Use NuGet $(NUGET_VERSION)'
@@ -28,37 +32,31 @@ steps:
     inputs:
       script: 'nuget install NUnit3TestAdapter'
 
-  - task: NuGetCommand@2
-    displayName: 'NuGet restore ${{ parameters.slnPath }}'
-    inputs:
-      restoreSolution: ${{ parameters.slnPath }}
-      feedsToUse: config
-      nugetConfigPath: 'eng/DevopsNuget.config'
-
-  - script: build.cmd -Target BuildForNuget -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"','-Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
+  - script: build.cmd -Target BuildForNuget -ScriptArgs '--BUILD_CONFIGURATION="$(BuildConfiguration)"','--Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
     name: winbuild
     displayName: 'Build Projects For Nuget'
 
   - task: VSTest@2
     displayName: 'XAML Unit Tests'
+    continueOnError: true
     inputs:
       testAssemblyVer2: |
-        **/bin/$(BuildConfiguration)/**/Xamarin.Forms.Xaml.UnitTests.dll
+        **/bin/$(BuildConfiguration)/**/Microsoft.Maui.Controls.Xaml.UnitTests.dll
       searchFolder: ${{ parameters.nunitTestFolder }}
       codeCoverageEnabled: true
       testRunTitle: '$(BuildConfiguration)_UnitTests'
       configuration: '$(BuildConfiguration)'
       diagnosticsEnabled: true
-      # pathtoCustomTestAdapters: ${{ parameters.nunitTestAdapterFolder }}
-      # overrideTestrunParameters: -platform AnyCPU -framework Framework47
 
   - task: DotNetCoreCLI@2
     displayName: 'Unit Tests'
     inputs:
       command: test
-      projects:   |
-        **/Xamarin.Forms.Core.UnitTests.csproj
-        **/Xamarin.Platform.Handlers.UnitTests.csproj
+      projects: |
+        **/Controls.Core.UnitTests.csproj
+        **/Core.UnitTests.csproj
+        **/Essentials.UnitTests.csproj
+        **/Resizetizer.UnitTests.csproj
       arguments: '--configuration $(BuildConfiguration)'
 
   - task: CopyFiles@2

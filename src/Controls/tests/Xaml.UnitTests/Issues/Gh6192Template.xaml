@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentView
+        xmlns="http://xamarin.com/schemas/2014/forms"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Gh6192Template"
+        x:Name="listView">
+    <ListView ItemsSource="{Binding Options}">
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <ViewCell>
+                    <StackLayout>
+                        <Label Text="{Binding .}" />
+                        <Button
+                                BackgroundColor="Blue"
+                                Command="{Binding Source={x:Reference Name=listView}, Path=Parent.BindingContext.ShowMessageCommand}"
+                                CommandParameter="{Binding .}"
+                                Text="Show Message" />
+                    </StackLayout>
+                </ViewCell>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
+</ContentView>

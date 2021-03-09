@@ -1,4 +1,6 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+﻿using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries;
+
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	internal class DataTemplateGallery : ContentPage
 	{
@@ -26,6 +28,8 @@
 							new TemplateCodeCollectionViewGridGallery (ItemsLayoutOrientation.Horizontal), Navigation),
 						GalleryBuilder.NavButton("DataTemplateSelector", () =>
 							new DataTemplateSelectorGallery(), Navigation),
+						GalleryBuilder.NavButton("Varied Size Data Templates", () =>
+							new VariedSizeDataTemplateSelectorGallery(), Navigation),
 					}
 				}
 			};

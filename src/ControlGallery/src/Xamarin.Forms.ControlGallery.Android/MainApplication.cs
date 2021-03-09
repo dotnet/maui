@@ -4,9 +4,9 @@ using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Plugin.CurrentActivity;
-using Xamarin.Forms.DualScreen;
+using Microsoft.Maui.Controls.DualScreen;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	//You can specify additional application information in this attribute
     [Application]

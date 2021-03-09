@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public static class TestCases
 	{
@@ -227,7 +227,7 @@ namespace Xamarin.Forms.Controls
 					return;
 
 				PageToAction.Clear();
-				if (String.IsNullOrWhiteSpace(filter) && !Controls.App.PreloadTestCasesIssuesList)
+				if (String.IsNullOrWhiteSpace(filter) && !App.PreloadTestCasesIssuesList)
 				{
 					if (_section != null)
 					{

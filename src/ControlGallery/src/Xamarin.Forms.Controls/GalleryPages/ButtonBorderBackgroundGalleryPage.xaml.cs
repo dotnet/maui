@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ButtonBorderBackgroundGalleryPage : ContentPage

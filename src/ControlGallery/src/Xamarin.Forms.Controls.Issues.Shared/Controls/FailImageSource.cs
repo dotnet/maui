@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public sealed class FailImageSource : ImageSource
 	{

@@ -1,12 +1,15 @@
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.Android;
+using Android.Content;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
-#pragma warning disable 618
 	public class DisposePageRenderer : PageRenderer
-#pragma warning restore 618
 	{
+		public DisposePageRenderer(Context context) : base(context)
+		{
+		}
+
 		protected override void Dispose (bool disposing)
 		{
 			if (disposing) {

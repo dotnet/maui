@@ -1,0 +1,22 @@
+name: Rebase Trigger
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  launchBackportBuild:
+    runs-on: ubuntu-latest
+    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '@vs-mobiletools-engineering-service2 rebase')
+
+    steps:
+      - uses: xamarin/rebase-bot-action@v1.0
+        with:
+          pull_request_url: ${{ github.event.issue.pull_request.url }}
+          comment_author: ${{ github.actor }}
+          github_repository: ${{ github.repository }}
+          ado_organization: ${{ secrets.ADO_PROJECTCOLLECTION }}
+          ado_project: ${{ secrets.ADO_PROJECT }}
+          rebase_pipeline_id: 13926
+          ado_build_pat: ${{ secrets.ADO_BUILDPAT }}
+          github_account_pat: ${{ secrets.SERVICEACCOUNT_PAT }}

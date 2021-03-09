@@ -1,0 +1,103 @@
+<Type Name="DisplayRotation" FullName="Xamarin.Essentials.DisplayRotation">
+  <TypeSignature Language="C#" Value="public enum DisplayRotation" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed DisplayRotation extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.DisplayRotation" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>Display rotation.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Rotation0">
+      <MemberSignature Language="C#" Value="Rotation0" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DisplayRotation Rotation0 = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DisplayRotation.Rotation0" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayRotation</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>Rotated 0 degrees.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Rotation180">
+      <MemberSignature Language="C#" Value="Rotation180" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DisplayRotation Rotation180 = int32(3)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DisplayRotation.Rotation180" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayRotation</ReturnType>
+      </ReturnValue>
+      <MemberValue>3</MemberValue>
+      <Docs>
+        <summary>Rotated 180 degrees.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Rotation270">
+      <MemberSignature Language="C#" Value="Rotation270" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DisplayRotation Rotation270 = int32(4)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DisplayRotation.Rotation270" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayRotation</ReturnType>
+      </ReturnValue>
+      <MemberValue>4</MemberValue>
+      <Docs>
+        <summary>Rotated 270 degrees.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Rotation90">
+      <MemberSignature Language="C#" Value="Rotation90" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DisplayRotation Rotation90 = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DisplayRotation.Rotation90" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayRotation</ReturnType>
+      </ReturnValue>
+      <MemberValue>2</MemberValue>
+      <Docs>
+        <summary>Rotated 90 degrees.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Unknown">
+      <MemberSignature Language="C#" Value="Unknown" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DisplayRotation Unknown = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DisplayRotation.Unknown" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayRotation</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Unknown display rotation.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

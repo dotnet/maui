@@ -1,64 +1,52 @@
-<!-- WAIT! 
 
-After July 15, 2020, feature related pull requests cannot be guaranteed to merge by Xamarin.Forms 5.0. They will be labeled "maui" for transition to dotnet/maui. See the [transition to .NET MAUI](https://github.com/xamarin/Xamarin.Forms/wiki/Feature-Roadmap#transition-to-net-maui) for more information.
+
+<!-- 
+
+We are currently only accepting Pull Requests for .NET MAUI issues in our [Handler Property Backlog](https://github.com/dotnet/maui/projects/4). We will continue to update this repository over the next couple of months as we begin to accept more types of PRs.
 
 Before you submit this PR, make sure you're building on and targeting the right branch!
      - If this is an enhancement or contains API changes or breaking changes, target main.
-     - If the issue you're working on has a milestone, target the corresponding branch.
-     - If this is a bug fix, target the branch of the latest stable version (unless the bug is only in a prerelease or main, of course!).
-     See [Contributing](https://github.com/xamarin/Xamarin.Forms/blob/main/.github/CONTRIBUTING.md) for more tips!
+          - If the issue you're working on has a milestone, target the corresponding branch.
+          - If this is a bug fix, target the branch of the latest stable version (unless the bug is only in a prerelease or main, of course!).
+               See [Contributing](https://github.com/dotnet/maui/blob/main/.github/CONTRIBUTING.md) for more tips!
 
-     PLEASE DELETE THE ALL THESE COMMENTS BEFORE SUBMITTING! THANKS!!!
+```
+ PLEASE DELETE THE ALL THESE COMMENTS BEFORE SUBMITTING! THANKS!!!
+```
  -->
 ### Description of Change ###
 
-<!-- Describe your changes here. If you're fixing a regression, please also include a link to the commit that first introduced this issue, if possible. -->
+<!-- Please use the format "Implements #xxxx" for the issue this PR addresses -->
 
-### Issues Resolved ### 
-<!-- Please use the format "fixes #xxxx" for each issue this PR addresses -->
+Implements #
 
-- fixes #
+### Additions made ###
+<!-- List all the additions made here, example:
 
-### API Changes ###
-<!-- List all API changes here (or just put None), example:
+ - Adds `Thickness Padding { get; }` to the `ILabel` interface
+- Adds Padding property map to LabelHandler
+- Adds Padding mapping methods to LabelHandler for Android and iOS
+- Adds extension methods to apply Padding on Android/iOS
+- Adds UILabel subclass MauiLabel (to support Padding, since UILabel doesn't by default)
+- Adds DeviceTests for initial Padding values on iOS and Android
 
-Added:
- - bool FakeControl.MakeShiny { get; set; } //Bindable Property
- - void FakeControl.Clear ();
-
-Changed:
- - object FakeControl.MakeShiny => FakeControl FakeControl.MakeShiny
- 
- Removed:
- - object FakeControl.MakeShiny => FakeControl FakeControl.MakeShiny
- 
  -->
- 
- None
 
-### Platforms Affected ### 
-<!-- Please list all platforms affected by these changes -->
-
-- Core/XAML (all platforms)
-- iOS
-- Android
-- UWP
-
-### Behavioral/Visual Changes ###
-<!-- Describe any changes that may change how a user's app behaves or appears when upgrading to this version of the codebase. -->
-
-None
-
-### Before/After Screenshots ### 
-<!-- If possible, take a screenshot of your test case before these changes were made and another screenshot after the changes were made to show possible visual changes. -->
-
-Not applicable
-
-### Testing Procedure ###
-<!-- Please list the steps that should be taken to properly test these changes on each relevant platform. If you were unable to test these changes yourself on any or all platforms, please let us know. Also, if you are able to attach a video of your test run, you will be our personal hero. -->
+* Adds 
 
 ### PR Checklist ###
-<!-- To be completed by reviewers -->
 
-- [ ] Targets the correct branch
+<!-- See our [Handler Property PR Guidelines](https://github.com/dotnet/maui/wiki/Handler-Property-PR-Guidelines) for more tips -->
+
+- [ ] Targets the correct branch 
 - [ ] Tests are passing (or failures are unrelated)
+- [ ] Targets a single property for a single control (or intertwined few properties)
+- [ ] Adds the property to the appropriate interface
+- [ ] Avoids any changes not essential to the handler property
+- [ ] Adds the mapping to the PropertyMapper in the handler
+- [ ] Adds the mapping method to the Android, iOS, and Standard aspects of the handler
+- [ ] Implements the actual property updates (usually in extension methods in the Platform section of Core)
+- [ ] Tags ported renderer methods with [PortHandler]
+- [ ] Adds an example of the property to the sample project (MainPage)
+- [ ] Adds the property to the stub class
+- [ ] Implements basic property tests in DeviceTests

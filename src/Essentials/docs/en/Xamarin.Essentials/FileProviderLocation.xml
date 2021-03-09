@@ -1,0 +1,69 @@
+<Type Name="FileProviderLocation" FullName="Xamarin.Essentials.FileProviderLocation">
+  <TypeSignature Language="C#" Value="public enum FileProviderLocation" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed FileProviderLocation extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.FileProviderLocation" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>Location to save temporary files to for sharing.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="External">
+      <MemberSignature Language="C#" Value="External" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.FileProviderLocation External = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.FileProviderLocation.External" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.FileProviderLocation</ReturnType>
+      </ReturnValue>
+      <MemberValue>2</MemberValue>
+      <Docs>
+        <summary>External storage or cache only.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Internal">
+      <MemberSignature Language="C#" Value="Internal" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.FileProviderLocation Internal = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.FileProviderLocation.Internal" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.FileProviderLocation</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>Internal cache only,</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="PreferExternal">
+      <MemberSignature Language="C#" Value="PreferExternal" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.FileProviderLocation PreferExternal = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.FileProviderLocation.PreferExternal" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.FileProviderLocation</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Prefer external and fall back to internal if unavailable.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

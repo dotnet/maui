@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage x:Class="Xamarin.Forms.Controls.GalleryPages.MapElementsGallery"
+<ContentPage x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.MapElementsGallery"
              xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:maps="clr-namespace:Xamarin.Forms.Maps;assembly=Xamarin.Forms.Maps">
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps">
     <ContentPage.Content>
         <StackLayout>
             <maps:Map x:Name="Map"

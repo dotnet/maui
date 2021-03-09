@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal class ValueViewContainer<T> : ViewContainer<T> where T : View
 	{

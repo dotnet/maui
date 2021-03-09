@@ -1,17 +1,17 @@
 ﻿using Android.Content;
 using System;
 using System.Linq;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Platform.Android.AppCompat;
-using Xamarin.Forms.Controls.Issues;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using System.ComponentModel;
 
 [assembly: ExportRenderer(typeof(Issue5724.CustomButton), typeof(CustomButtonRenderer5724))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class CustomButtonRenderer5724 :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.ButtonRenderer
 #else
 		ButtonRenderer
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 	}
 
 	public class CustomImageRenderer5724 :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.ImageRenderer
 #else
 		ImageRenderer
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 	}
 
 	public class CustomFrameRenderer5724 :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.FrameRenderer
 #else
 		FrameRenderer
@@ -76,7 +76,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 	}
 
 	public class CustomLabelRenderer5724 :
-#if TEST_EXPERIMENTAL_RENDERERS
+#if !LEGACY_RENDERERS
 		Platform.Android.FastRenderers.LabelRenderer
 #else
 		LabelRenderer

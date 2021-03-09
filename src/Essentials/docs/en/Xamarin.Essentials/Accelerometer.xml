@@ -1,0 +1,114 @@
+<Type Name="Accelerometer" FullName="Xamarin.Essentials.Accelerometer">
+  <TypeSignature Language="C#" Value="public static class Accelerometer" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Accelerometer extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Accelerometer" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>
+      <para>Accelerometer data of the acceleration of the device in three dimensional space.</para>
+    </summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="IsMonitoring">
+      <MemberSignature Language="C#" Value="public static bool IsMonitoring { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsMonitoring" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Accelerometer.IsMonitoring" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets if accelerometer is being monitored.</summary>
+        <value>If monitoring.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ReadingChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.AccelerometerChangedEventArgs&gt; ReadingChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.AccelerometerChangedEventArgs&gt; ReadingChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Accelerometer.ReadingChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.AccelerometerChangedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event triggered when reading of sensor changes.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ShakeDetected">
+      <MemberSignature Language="C#" Value="public static event EventHandler ShakeDetected;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler ShakeDetected" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Accelerometer.ShakeDetected" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event triggered when a shake has been detected on the device.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Start">
+      <MemberSignature Language="C#" Value="public static void Start (Xamarin.Essentials.SensorSpeed sensorSpeed);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(valuetype Xamarin.Essentials.SensorSpeed sensorSpeed) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Accelerometer.Start(Xamarin.Essentials.SensorSpeed)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sensorSpeed" Type="Xamarin.Essentials.SensorSpeed" />
+      </Parameters>
+      <Docs>
+        <param name="sensorSpeed">
+          <para>Speed to monitor the sensor.</para>
+        </param>
+        <summary>Start monitoring for changes to accelerometer.</summary>
+        <remarks>Will throw FeatureNotSupportedException if not supported on device. Will throw ArgumentNullException if handler is null.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Stop">
+      <MemberSignature Language="C#" Value="public static void Stop ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Stop() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Accelerometer.Stop" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Stop monitoring for changes to accelerometer.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

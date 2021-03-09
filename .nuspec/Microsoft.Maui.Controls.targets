@@ -1,0 +1,207 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlGTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
+	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.CssGTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
+	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
+
+	<PropertyGroup>
+		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
+		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
+		<_DefaultXamlItemsEnabled>False</_DefaultXamlItemsEnabled>
+		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
+		<_DefaultCssItemsEnabled>False</_DefaultCssItemsEnabled>
+		<!-- The WINUI check for this only runs when there is an empty string so I just convert false to an empty string to fall in line with our other properties -->
+		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'==''">true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
+		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'=='false'"></SkipMicrosoftUIXamlCheckTargetPlatformVersion>
+	</PropertyGroup>
+
+	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
+
+	<ItemGroup>
+		<ProjectCapability Include="XamarinForms" />
+		<ProjectCapability Include="Maui" />
+	</ItemGroup>
+
+	<!-- Check Tasks ABI and other validations -->
+	<PropertyGroup>
+		<_MauiTargetsImportedAgain Condition="'$(_MauiTargetsImported)'=='True'">True</_MauiTargetsImportedAgain>
+		<_MauiTargetsImported>True</_MauiTargetsImported>
+		<IsXBuild Condition="'$(MSBuildRuntimeType)' == ''">true</IsXBuild>
+		<IsXBuild Condition="'$(MSBuildRuntimeType)' != ''">false</IsXBuild>
+	</PropertyGroup>
+	
+	<Target Name="_ValidateMauiTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform" Condition="'$(MauiDisableTargetsValidation)' != 'True'">
+		<Error Code="XF001"
+			Text="Microsoft.Maui targets have been imported multiple times. Please check your project file and remove the duplicate import(s)."
+			Condition="'$(_MauiTargetsImportedAgain)' == 'True'" />
+	</Target>
+
+	<Target Name="_ValidateMSBuild" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
+		<Error Code="XF003"
+			Text="Microsoft.Maui requires msbuild. xbuild is no longer supported."
+			Condition="'$(IsXBuild)' == 'true'" />
+	</Target>
+
+	<Target Name="_ValidateNETFrameworkVersion"
+			BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+			Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion.Substring(1))' &lt; '4.6.1' AND '$(MauiDisableFrameworkVersionValidation)' != 'True'">
+		<Error Code="XF004"
+			Text="Microsoft.Maui requires .NETFramework >= v4.6.1. You have '$(TargetFrameworkVersion)'" />
+	</Target>
+
+	<!-- XamlG -->
+	<Target
+		Name="UpdateDesignTimeXaml"
+		DependsOnTargets="XamlG"/>
+
+	<PropertyGroup>
+		<CoreCompileDependsOn>
+			XamlG;
+			$(CoreCompileDependsOn);
+		</CoreCompileDependsOn>
+	</PropertyGroup>
+
+	<Target
+		Name="_FindXamlGFiles"
+		DependsOnTargets="PrepareResourceNames">
+		<ItemGroup>
+			<_XamlGInputs
+				Include="@(EmbeddedResource)"
+				Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs' AND '%(TargetPath)' != ''" />
+			<_XamlGOutputs
+				Include="@(_XamlGInputs->'$(IntermediateOutputPath)%(TargetPath).g.cs')" />
+		</ItemGroup>
+	</Target>
+
+	<Target
+		Name="XamlG"
+		BeforeTargets="BeforeCompile"
+		DependsOnTargets="_FindXamlGFiles; PrepareResourceNames; AfterResolveReferences"
+		Inputs="@(_XamlGInputs)"
+		Outputs="@(_XamlGOutputs)">
+		<PropertyGroup>
+			<ReferencedAssemblies>@(ReferencePath)</ReferencedAssemblies>
+		</PropertyGroup>
+		<XamlGTask
+			XamlFiles="@(_XamlGInputs)"
+			OutputFiles="@(_XamlGOutputs)"
+			Language="$(Language)"
+			References = "$(ReferencedAssemblies)"
+			AssemblyName="$(AssemblyName)" />
+		<ItemGroup>
+			<FileWrites Include="@(_XamlGOutputs)" />
+			<Compile Include="@(_XamlGOutputs)" />
+		</ItemGroup>
+	</Target>
+
+	<!-- XamlC -->
+	<PropertyGroup>
+		<CompileDependsOn>
+			$(CompileDependsOn);
+			XamlC;
+		</CompileDependsOn>
+	</PropertyGroup>
+
+	<Target Name="XamlC"
+		AfterTargets="AfterCompile"
+		DependsOnTargets="_FindXamlGFiles"
+		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
+		Outputs="$(IntermediateOutputPath)XamlC.stamp"
+		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(_XamlGInputs->Count())' != '0' ">
+	    <PropertyGroup>
+		<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
+		<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_MauiXamlCValidateOnly>
+	    </PropertyGroup>
+		<XamlCTask
+			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
+			ReferencePath = "@(ReferencePath)"
+			OptimizeIL = "true"
+			DebugSymbols = "$(DebugSymbols)"
+			DebugType = "$(DebugType)"
+			ValidateOnly = "$(_MauiXamlCValidateOnly)"
+			KeepXamlResources = "$(MauiKeepXamlResources)" />
+		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True" />
+		<ItemGroup>
+			<FileWrites Include="$(IntermediateOutputPath)XamlC.stamp" />
+		</ItemGroup>
+	</Target>
+
+	<!-- CssG -->
+	<PropertyGroup>
+		<CoreCompileDependsOn>
+			CssG;
+			$(CoreCompileDependsOn);
+		</CoreCompileDependsOn>
+	</PropertyGroup>
+
+	<Target Name="_FindCSSFiles" DependsOnTargets="PrepareResourceNames">
+		<ItemGroup>
+ 			<_CSSInputs Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.css' AND '$(DefaultLanguageSourceExtension)' == '.cs' AND '%(TargetPath)' != ''" />
+ 			<_CSSOutputs Include="@(_CSSInputs->'$(IntermediateOutputPath)%(TargetPath).g.cs')" />
+ 		</ItemGroup>
+	</Target>
+
+	<Target Name="CssG" BeforeTargets="BeforeCompile" DependsOnTargets="_FindCSSFiles" Inputs="@(_CSSInputs)" Outputs="@(_CSSOutputs)">
+		<CssGTask
+			CSSFiles="@(_CSSInputs)"
+			OutputFiles="@(_CSSOutputs)"
+			Language = "$(Language)"
+			AssemblyName = "$(AssemblyName)" />
+		<ItemGroup>
+ 			<FileWrites Include="@(_CSSOutputs)" />
+ 			<Compile Include="@(_CSSOutputs)" />
+ 		</ItemGroup>
+	</Target>
+  
+ <!-- 
+    Platform Specific Targets.
+    We can't use a framework specific targets file because it breaks shared projects i.e.  /build/MonoAndroid10/Microsoft.Maui.Controls.targets
+  -->
+
+  <!-- MonoAndroid targets. -->
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
+    <CoreCompileDependsOn>
+      IncludeProguardForAndroid;
+      $(CoreCompileDependsOn);
+    </CoreCompileDependsOn>
+    <PrepareForBuildDependsOn>
+      ValidateTargetFrameworkVersionForMaui;
+      $(PrepareForBuildDependsOn);
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="IncludeProguardForAndroid" Condition="'$(MauiDisableDefaultProguardConfiguration)' != 'True'">
+    <ItemGroup>
+      <ProguardConfiguration Include="$(MSBuildThisFileDirectory)MonoAndroid10\proguard.cfg" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ValidateTargetFrameworkVersionForMaui" Condition="'$(MauiDisableTargetFrameworkValidation)' != 'True'">
+    <PropertyGroup>
+      <MinTargetFrameworkVersionForMaui>10.0</MinTargetFrameworkVersionForMaui>
+      <TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</TargetFrameworkVersionWithoutV>
+    </PropertyGroup>
+    <Error Code="XF005"  Condition="$(TargetFrameworkVersionWithoutV) &lt; $(MinTargetFrameworkVersionForMaui)"
+           Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Microsoft.Maui ($(MinTargetFrameworkVersionForMaui)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
+  </Target>
+
+  <!-- UWP Targets-->
+  <Target Name="WinUICheckTargetPlatformVersion" BeforeTargets="PrepareForBuild"
+      Condition="'$(TargetPlatformIdentifier)' == 'UAP' AND '$(TargetPlatformVersion)' != '' AND '$(TargetPlatformMinVersion)' != ''">
+    <PropertyGroup>
+      <MicrosoftUIXamlTargetPlatformMinCheckValue>$([System.Version]::Parse('$(TargetPlatformMinVersion)').Build)</MicrosoftUIXamlTargetPlatformMinCheckValue>
+    </PropertyGroup>
+    <Warning
+        Text="Microsoft.Maui recommends TargetPlatformMinVersion &gt;= 10.0.15063.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))"
+        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 15063" />
+    <PropertyGroup>
+      <MicrosoftUIXamlTargetPlatformCheckValue>$([System.Version]::Parse('$(TargetPlatformVersion)').Build)</MicrosoftUIXamlTargetPlatformCheckValue>
+    </PropertyGroup>
+    <Warning
+        Text="Microsoft.Maui recommends TargetPlatformVersion &gt;= 10.0.18362.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
+        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 18362 AND '$(OutputType)'!='Library'" />
+    <Warning
+        Text="Microsoft.Maui recommends TargetPlatformVersion &gt;= 10.0.14393.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
+        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 14393 AND '$(OutputType)'=='Library'" />
+  </Target>
+</Project>

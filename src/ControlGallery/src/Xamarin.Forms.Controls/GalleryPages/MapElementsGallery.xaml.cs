@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using Xamarin.Forms.Maps;
-using Xamarin.Forms.Xaml;
-using Map = Xamarin.Forms.Maps;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Controls.Xaml;
+using Map = Microsoft.Maui.Controls.Maps;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapElementsGallery : ContentPage

@@ -1,11 +1,11 @@
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal class WkWebViewCoreGalleryPage : CoreGalleryPage<WkWebView>
 	{

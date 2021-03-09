@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class TitleView : ContentPage

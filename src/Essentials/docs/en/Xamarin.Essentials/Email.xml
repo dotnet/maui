@@ -1,0 +1,92 @@
+<Type Name="Email" FullName="Xamarin.Essentials.Email">
+  <TypeSignature Language="C#" Value="public static class Email" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Email extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Email" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Provides an easy way to allow the user to send emails.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="ComposeAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task ComposeAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task ComposeAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Email.ComposeAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Opens the default email client to allow the user to send the message.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ComposeAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task ComposeAsync (Xamarin.Essentials.EmailMessage message);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task ComposeAsync(class Xamarin.Essentials.EmailMessage message) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Email.ComposeAsync(Xamarin.Essentials.EmailMessage)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="message" Type="Xamarin.Essentials.EmailMessage" />
+      </Parameters>
+      <Docs>
+        <param name="message">The email message.</param>
+        <summary>Opens the default email client to allow the user to send the message.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ComposeAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task ComposeAsync (string subject, string body, params string[] to);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task ComposeAsync(string subject, string body, string[] to) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Email.ComposeAsync(System.String,System.String,System.String[])" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="subject" Type="System.String" />
+        <Parameter Name="body" Type="System.String" />
+        <Parameter Name="to" Type="System.String[]">
+          <Attributes>
+            <Attribute FrameworkAlternate="xamarin-essentials">
+              <AttributeName>System.ParamArray</AttributeName>
+            </Attribute>
+          </Attributes>
+        </Parameter>
+      </Parameters>
+      <Docs>
+        <param name="subject">The email subject.</param>
+        <param name="body">The email body.</param>
+        <param name="to">The email recipients.</param>
+        <summary>Opens the default email client to allow the user to send the message with the provided subject, body and recipients.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

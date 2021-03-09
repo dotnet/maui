@@ -3,10 +3,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class HeaderFooterTemplate : ContentPage

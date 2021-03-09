@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <FlyoutPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:Xamarin.Forms.Controls.Issues"
-             x:Class="Xamarin.Forms.Controls.Issues.Issue5949_1"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue5949_1"
              Title="Issue 5949">
     <FlyoutPage.Flyout>
         <ContentPage Title="Issue 5949">

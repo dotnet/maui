@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Xamarin.Forms;
+using Microsoft.Maui.Controls;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class AppearingGalleryPage : ContentPage
 	{

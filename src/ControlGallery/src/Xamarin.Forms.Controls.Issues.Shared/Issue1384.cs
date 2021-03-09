@@ -1,9 +1,9 @@
 ﻿using System;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -19,17 +19,10 @@ namespace Xamarin.Forms.Controls.Issues
 			grid.Children.Add(new Label
 			{
 				Opacity = .75,
-#pragma warning disable 618
-				YAlign = TextAlignment.Start,
-#pragma warning restore 618
-
-#pragma warning disable 618
-				XAlign = TextAlignment.End,
-#pragma warning restore 618
+				VerticalTextAlignment = TextAlignment.Start,
+				HorizontalTextAlignment = TextAlignment.End,
 				Text = "top and flush right",
-#pragma warning disable 618
-				Font = Font.SystemFontOfSize(NamedSize.Large),
-#pragma warning restore 618
+				FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
 				VerticalOptions = LayoutOptions.Start,
 				HorizontalOptions = LayoutOptions.End,
 				HeightRequest = 30,
@@ -38,13 +31,9 @@ namespace Xamarin.Forms.Controls.Issues
 			grid.Children.Add(new Label
 			{
 				Opacity = .75,
-#pragma warning disable 618
-				YAlign = TextAlignment.End,
-#pragma warning restore 618
+				VerticalTextAlignment = TextAlignment.End,
 				Text = "bottom and flush left",
-#pragma warning disable 618
-				Font = Font.SystemFontOfSize(NamedSize.Large),
-#pragma warning restore 618
+				FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
 				VerticalOptions = LayoutOptions.End,
 				HeightRequest = 40,
 				TextColor = Color.White,

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -208,13 +208,8 @@ namespace Xamarin.Forms.Controls.Issues
 						new Label {
 							AutomationId = "lblHome",
 							Text = "Sample Home page",
-#pragma warning disable 618
-							XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-							YAlign = TextAlignment.Center
-#pragma warning restore 618
+							HorizontalTextAlignment = TextAlignment.Center,
+							VerticalTextAlignment = TextAlignment.Center
 						}
 					}
 				};
@@ -245,13 +240,8 @@ namespace Xamarin.Forms.Controls.Issues
 						new Label {
 							AutomationId = "lblAbout",
 							Text = "Sample About page",
-#pragma warning disable 618
-							XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-							YAlign = TextAlignment.Center
-#pragma warning restore 618
+							HorizontalTextAlignment = TextAlignment.Center,
+							VerticalTextAlignment = TextAlignment.Center
 						}
 					}
 				};

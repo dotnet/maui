@@ -1,13 +1,13 @@
 ﻿using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = new StackLayout { Children = { label, listView, listView2, listView3 } };
 		}
 
-#if (UITEST && __IOS__)
+#if UITEST && __IOS__
 		[Test]
 		public void Bugzilla43161Test()
 		{

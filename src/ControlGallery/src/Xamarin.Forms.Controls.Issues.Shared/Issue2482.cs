@@ -4,16 +4,16 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Animation)]
@@ -91,6 +91,9 @@ namespace Xamarin.Forms.Controls.Issues
 			layout.Children.Add(instructions);
 			layout.Children.Add(_result);
 			layout.Children.Add(button);
+
+			if (Device.RuntimePlatform == Device.UWP)
+				layout.Children.Add(new Label { Text = "\xE76E", FontFamily = "Segoe MDL2 Assets", FontSize = 32 });
 
 			Content = layout;
 		}

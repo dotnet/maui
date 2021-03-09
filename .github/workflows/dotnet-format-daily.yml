@@ -16,12 +16,12 @@ jobs:
 
       - name: Run dotnet format
         id: format
-        uses: jfversluis/dotnet-format@v1.0.4
+        uses: jfversluis/dotnet-format@v1.0.5
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           action: "fix"
           #only-changed-files: true # only works for PRs
-          workspace: "Xamarin.Forms.sln"
+          workspace: "Microsoft.Maui.sln"
     
       - name: Commit files
         if: steps.format.outputs.has-changes == 'true'
@@ -39,8 +39,8 @@ jobs:
           committer: GitHub <noreply@github.com>
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           labels: t/housekeeping ♻︎
-          assignees: rmarinho,samhouts
-          reviewers: rmarinho,samhouts
+          assignees: rmarinho, jsuarezruiz
+          reviewers: rmarinho, jsuarezruiz
           branch: housekeeping/fix-codeformatting
 
       # Pushing won't work to forked repos

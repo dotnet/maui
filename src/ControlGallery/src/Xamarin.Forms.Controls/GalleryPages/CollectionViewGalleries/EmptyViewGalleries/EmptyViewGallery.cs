@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
+﻿namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
 {
 	internal class EmptyViewGallery : ContentPage
 	{
@@ -28,6 +28,8 @@
 							new EmptyViewSwapGallery(), Navigation),
 						GalleryBuilder.NavButton("EmptyView (load simulation)", () =>
 							new EmptyViewLoadSimulateGallery(), Navigation),
+						GalleryBuilder.NavButton("EmptyView RTL", () =>
+							new EmptyViewRTLGallery(), Navigation)
 					}
 				}
 			};

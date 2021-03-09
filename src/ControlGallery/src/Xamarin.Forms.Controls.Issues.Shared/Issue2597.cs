@@ -1,12 +1,12 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -39,9 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 			_label = new Label
 			{
 				Text = "Stepper value is 0",
-#pragma warning disable 618
-				Font = Font.SystemFontOfSize(NamedSize.Large),
-#pragma warning restore 618
+				FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.CenterAndExpand
 			};

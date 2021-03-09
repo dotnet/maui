@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Xamarin.Forms;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal class ListViewDemoPage : ContentPage
 	{
@@ -149,9 +148,8 @@ namespace Xamarin.Forms.Controls
 			Label header = new Label
 			{
 				Text = "ListView",
-#pragma warning disable 618
-				Font = Font.BoldSystemFontOfSize(50),
-#pragma warning restore 618
+				FontAttributes = FontAttributes.Bold,
+				FontSize = 50,
 				HorizontalOptions = LayoutOptions.Center
 			};
 
@@ -162,7 +160,7 @@ namespace Xamarin.Forms.Controls
 				new Person("Bob", new DateTime(1976, 2, 20), Color.Black),
 				new Person("Cathy", new DateTime(1977, 3, 10), Color.Blue),
 #pragma warning disable 618
-                new Person("David", new DateTime(1978, 4, 25), Color.Fuschia),
+                new Person("David", new DateTime(1978, 4, 25), Color.Fuchsia),
 #pragma warning restore 618
                 new Person("Eugenie", new DateTime(1979, 5, 5), Color.Gray),
 				new Person("Freddie", new DateTime(1980, 6, 30), Color.Green),
@@ -179,7 +177,7 @@ namespace Xamarin.Forms.Controls
 				new Person("Queenie", new DateTime(1979, 5, 15), Color.Aqua),
 				new Person("Rob", new DateTime(1980, 6, 30), Color.Blue),
 #pragma warning disable 618
-                new Person("Sally", new DateTime(1981, 7, 5), Color.Fuschia),
+                new Person("Sally", new DateTime(1981, 7, 5), Color.Fuchsia),
 #pragma warning restore 618
                 new Person("Timothy", new DateTime(1982, 8, 30), Color.Green),
 				new Person("Uma", new DateTime(1983, 9, 10), Color.Lime),
@@ -195,7 +193,7 @@ namespace Xamarin.Forms.Controls
 				new Person("Bob", new DateTime(1976, 2, 20), Color.Black),
 				new Person("Cathy", new DateTime(1977, 3, 10), Color.Blue),
 #pragma warning disable 618
-                new Person("David", new DateTime(1978, 4, 25), Color.Fuschia),
+                new Person("David", new DateTime(1978, 4, 25), Color.Fuchsia),
 #pragma warning restore 618
                 new Person("Eugenie", new DateTime(1979, 5, 5), Color.Gray),
 				new Person("Freddie", new DateTime(1980, 6, 30), Color.Green),
@@ -212,7 +210,7 @@ namespace Xamarin.Forms.Controls
 				new Person("Queenie", new DateTime(1979, 5, 15), Color.Aqua),
 				new Person("Rob", new DateTime(1980, 6, 30), Color.Blue),
 #pragma warning disable 618
-                new Person("Sally", new DateTime(1981, 7, 5), Color.Fuschia),
+                new Person("Sally", new DateTime(1981, 7, 5), Color.Fuchsia),
 #pragma warning restore 618
                 new Person("Timothy", new DateTime(1982, 8, 30), Color.Green),
 				new Person("Uma", new DateTime(1983, 9, 10), Color.Lime),

@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:local="clr-namespace:Xamarin.Forms.Controls"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
              mc:Ignorable="d"
-             x:Class="Xamarin.Forms.Controls.IndicatorsSample">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.IndicatorsSample">
     <ContentPage.Resources>
         <OnPlatform x:Key="IonicsFontFamily" x:TypeArguments="x:String">
             <On Platform="iOS" Value="Ionicons" />
@@ -25,7 +25,7 @@
                 <DataTemplate>
                     <Frame BackgroundColor="{Binding Color}">
                         <Grid HorizontalOptions="Center" VerticalOptions="Center">
-                            <Label Text="{Binding Name}" FontSize="25"></Label>
+                            <Label Text="{Binding Name}" FontSize="25"/>
                         </Grid>
                     </Frame>
                 </DataTemplate>

@@ -1,0 +1,69 @@
+<Type Name="DisplayOrientation" FullName="Xamarin.Essentials.DisplayOrientation">
+  <TypeSignature Language="C#" Value="public enum DisplayOrientation" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed DisplayOrientation extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.DisplayOrientation" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>Display Orientation</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Landscape">
+      <MemberSignature Language="C#" Value="Landscape" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DisplayOrientation Landscape = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DisplayOrientation.Landscape" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayOrientation</ReturnType>
+      </ReturnValue>
+      <MemberValue>2</MemberValue>
+      <Docs>
+        <summary>Display is in landscape.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Portrait">
+      <MemberSignature Language="C#" Value="Portrait" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DisplayOrientation Portrait = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DisplayOrientation.Portrait" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayOrientation</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>Display is in portrait.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Unknown">
+      <MemberSignature Language="C#" Value="Unknown" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DisplayOrientation Unknown = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DisplayOrientation.Unknown" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DisplayOrientation</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Unknown display orientation.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

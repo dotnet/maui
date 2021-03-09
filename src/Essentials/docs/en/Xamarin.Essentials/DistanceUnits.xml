@@ -1,0 +1,52 @@
+<Type Name="DistanceUnits" FullName="Xamarin.Essentials.DistanceUnits">
+  <TypeSignature Language="C#" Value="public enum DistanceUnits" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed DistanceUnits extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.DistanceUnits" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>Distance Unit for use in conversion.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Kilometers">
+      <MemberSignature Language="C#" Value="Kilometers" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DistanceUnits Kilometers = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DistanceUnits.Kilometers" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DistanceUnits</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Kilometers</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Miles">
+      <MemberSignature Language="C#" Value="Miles" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DistanceUnits Miles = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DistanceUnits.Miles" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DistanceUnits</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>Miles</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

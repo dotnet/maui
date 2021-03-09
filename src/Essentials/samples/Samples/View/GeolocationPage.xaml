@@ -1,0 +1,34 @@
+<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.GeolocationPage"
+                Title="Geolocation">
+    <views:BasePage.BindingContext>
+        <viewmodels:GeolocationViewModel />
+    </views:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Quickly get the current location." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" />
+
+                <Label Text="Last Known Location:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="{Binding LastLocation}" />
+                <Button Text="Refresh" Command="{Binding GetLastLocationCommand}" IsEnabled="{Binding IsNotBusy}" />
+
+                <Label Text="Current Location:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="{Binding CurrentLocation}" />
+                <Label Text="Accuracy:" />
+                <Picker ItemsSource="{Binding Accuracies}"
+                        SelectedIndex="{Binding Accuracy, Mode=TwoWay}"
+                        IsEnabled="{Binding IsNotBusy}"
+                        HorizontalOptions="FillAndExpand" />
+                <Button Text="Refresh" Command="{Binding GetCurrentLocationCommand}" IsEnabled="{Binding IsNotBusy}" />
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+</views:BasePage>

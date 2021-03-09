@@ -2,9 +2,9 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.Effects
+namespace Microsoft.Maui.Controls.ControlGallery.Effects
 {
 	[Preserve(AllMembers = true)]
 	public class AttachedStateEffectList : ObservableCollection<AttachedStateEffect>

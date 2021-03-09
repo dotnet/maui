@@ -1,0 +1,33 @@
+<view:BasePage x:Class="Samples.View.ContactsPage"
+               xmlns="http://xamarin.com/schemas/2014/forms"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:view="clr-namespace:Samples.View"
+               xmlns:viewmodel="clr-namespace:Samples.ViewModel"
+               Title="Contacts">
+
+    <view:BasePage.BindingContext>
+        <viewmodel:ContactsViewModel />
+    </view:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Get contacts in your device." FontAttributes="Bold" Margin="12" />
+
+        <StackLayout Padding="12,0,12,12" Spacing="6">
+            <Button Command="{Binding GetContactCommand}" Text="Pick Contact" />
+            <Button Command="{Binding GetAllContactCommand}" Text="Get All Contacts" />
+        </StackLayout>
+
+        <ListView ItemsSource="{Binding ContactsList}" SelectedItem="{Binding SelectedContact}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid Padding="12">
+                            <Label Text="{Binding DisplayName}" LineBreakMode="TailTruncation"/>
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </StackLayout>
+
+</view:BasePage>

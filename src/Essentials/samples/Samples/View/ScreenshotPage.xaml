@@ -1,0 +1,31 @@
+<view:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:view="clr-namespace:Samples.View;assembly=Samples"
+               xmlns:viewModel="clr-namespace:Samples.ViewModel;assembly=Samples"
+               x:Class="Samples.View.ScreenshotPage"
+               Title="Screenshot">
+
+    <view:BasePage.BindingContext>
+        <viewModel:ScreenshotViewModel />
+    </view:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Quickly and easily take screenshots of your app." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+
+                <Button Text="Take Screenshot" Command="{Binding ScreenshotCommand}" />
+
+                <Button Text="Email Screenshot" Command="{Binding EmailCommand}" />
+
+                <Image VerticalOptions="FillAndExpand"
+                       MinimumHeightRequest="400"
+                       MinimumWidthRequest="400"
+                       Source="{Binding Image}" />
+
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+</view:BasePage>

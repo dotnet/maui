@@ -1,0 +1,23 @@
+<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Samples.View"
+             xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+             x:Class="Samples.View.PhoneDialerPage"
+             Title="PhoneDialer">
+    <views:BasePage.BindingContext>
+        <viewmodels:PhoneDialerViewModel />
+    </views:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Easily open the phone dialer." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <Label Text="Phone number:" />
+                <Entry Text="{Binding PhoneNumber}" Keyboard="Telephone" />
+                <Button Text="Open Phone Dialer" Command="{Binding OpenPhoneDialerCommand}" IsEnabled="{Binding IsEnabled}" />
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+</views:BasePage>

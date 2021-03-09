@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 	///    Windows Phone : ?
 	/// 
 	/// It uses a built-in row/cell class provided by the native platform
-	/// and is therefore faster than building a custom ViewCell in Xamarin.Forms.
+	/// and is therefore faster than building a custom ViewCell in Microsoft.Maui.Controls.
 	/// </summary>
 	[Preserve(AllMembers = true)]
 	public class NativeListPage : ContentPage
@@ -81,9 +81,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = Device.RuntimePlatform == Device.iOS ? "Custom renderer UITableView" : Device.RuntimePlatform == Device.Android ? "Custom renderer ListView" : "Custom renderer todo"
 					},
 					fasterListView
@@ -125,7 +123,7 @@ namespace Xamarin.Forms.Controls.Issues
 	/// This page uses built-in Xamarin.Forms controls to display a fast-scrolling list.
 	/// 
 	/// It uses the built-in <c>TextCell</c> class which does not require special 'layout'
-	/// and is therefore faster than building a custom ViewCell in Xamarin.Forms.
+	/// and is therefore faster than building a custom ViewCell in Microsoft.Maui.Controls.
 	/// </summary>
 	[Preserve(AllMembers = true)]
 	public class XamarinFormsPage : ContentPage
@@ -156,9 +154,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(5, 20, 5, 0) : new Thickness(5, 0),
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "Xamarin.Forms built-in ListView"
 					},
 					listView
@@ -171,7 +167,7 @@ namespace Xamarin.Forms.Controls.Issues
 	/// This page uses built-in Xamarin.Forms controls to display a fast-scrolling list.
 	/// 
 	/// It uses the built-in <c>TextCell</c> class which does not require special 'layout'
-	/// and is therefore faster than building a custom ViewCell in Xamarin.Forms.
+	/// and is therefore faster than building a custom ViewCell in Microsoft.Maui.Controls.
 	/// </summary>
 	[Preserve(AllMembers = true)]
 	public class XamarinFormsNativeCellPage : ContentPage
@@ -200,9 +196,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "Xamarin.Forms native Cell"
 					},
 					listView
@@ -313,9 +307,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = Device.RuntimePlatform == Device.iOS ? "Custom UITableView+UICell" : Device.RuntimePlatform == Device.Android ? "Custom ListView+Cell" : "Custom renderer todo"
 					},
 					nativeListView2

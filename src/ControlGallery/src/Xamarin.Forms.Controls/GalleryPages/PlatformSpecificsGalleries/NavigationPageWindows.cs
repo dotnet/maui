@@ -1,6 +1,6 @@
 using System.Windows.Input;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
 	public class NavigationPageWindows : NavigationPage
 	{

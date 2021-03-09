@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Xamarin.Forms.Controls.Issues.Bugzilla42069_Page">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Bugzilla42069_Page">
 	<StackLayout>
 		<Image x:Name="ChangingImage" />
 		<Button x:Name="Button2" Text="Change Image"></Button>

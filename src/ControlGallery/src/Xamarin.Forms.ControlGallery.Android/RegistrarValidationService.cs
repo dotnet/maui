@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.ControlGallery;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class RegistrarValidationService : IRegistrarValidationService
 	{
@@ -21,7 +21,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 			if (element == null)
 				return true;
 
-			var renderer = Platform.Android.Platform.CreateRendererWithContext(element, _context);
+			var renderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.CreateRendererWithContext(element, _context);
 
 			if (renderer == null
 				|| renderer.GetType().Name == "DefaultRenderer"

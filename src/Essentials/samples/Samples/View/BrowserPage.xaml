@@ -1,0 +1,69 @@
+<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.BrowserPage"
+                Title="Browser">
+    <views:BasePage.BindingContext>
+        <viewmodels:BrowserViewModel/>
+    </views:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Quickly and easily open URIs." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <Label Text="Enter URI:" />
+                <Entry Placeholder="https://..." Text="{Binding Uri}" />
+
+                <Button Text="Open URI"
+                        Command="{Binding OpenUriCommand}"
+                        IsEnabled="{Binding IsNotBusy}" />
+
+
+                <Label Text="Launch Type:" />
+                <Picker HorizontalOptions="FillAndExpand"
+                        ItemsSource="{Binding BrowserLaunchModes}"
+                        SelectedIndex="{Binding BrowserType, Mode=TwoWay}" />
+
+                <Label Text="Launch Options:" Margin="0,20,0,0"/>
+                <Label Text="Title Mode:" />
+                <Picker HorizontalOptions="FillAndExpand"
+                        ItemsSource="{Binding BrowserTitleModes}"
+                        SelectedIndex="{Binding BrowserTitleType, Mode=TwoWay}" />
+
+                <Label Text="Toolbar Color:" />
+                <Picker HorizontalOptions="FillAndExpand"
+                        ItemsSource="{Binding AllColors}"
+                        SelectedIndex="{Binding ToolbarColor, Mode=TwoWay}" />
+
+                <Label Text="Control Tint Color (iOS):" />
+                <Picker HorizontalOptions="FillAndExpand"
+                        ItemsSource="{Binding AllColors}"
+                        SelectedIndex="{Binding ControlColor, Mode=TwoWay}" />
+
+                <Label Text="Flags:" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Label Text="Launch Adjacent (Android)" Grid.Column="0" Grid.Row="0" />
+                    <Switch IsToggled="{Binding LaunchAdjacent, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" />
+
+                    <Label Text="Present as Form Sheet (iOS)" Grid.Column="0" Grid.Row="1" />
+                    <Switch IsToggled="{Binding PresentAsFormSheet, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" />
+
+                    <Label Text="Present as Page Sheet (iOS)" Grid.Column="0" Grid.Row="2" />
+                    <Switch IsToggled="{Binding PresentAsPageSheet, Mode=TwoWay}" Grid.Column="1" Grid.Row="2" />
+
+                </Grid>
+
+                <Label Text="{Binding BrowserStatus}" />
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+</views:BasePage>

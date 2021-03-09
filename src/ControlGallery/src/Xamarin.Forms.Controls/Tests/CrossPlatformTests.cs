@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace Microsoft.Maui.Controls.ControlGallery.Tests
 {
 	[TestFixture]
 	public class CrossPlatformTests : CrossPlatformTestFixture
@@ -24,9 +24,7 @@ namespace Xamarin.Forms.Controls.Tests
 			{
 				Text = header,
 				TextColor = Color.Red,
-#pragma warning disable 618
-				XAlign = TextAlignment.Center
-#pragma warning restore 618
+				HorizontalTextAlignment = TextAlignment.Center
 			};
 
 			listview.Header = null;

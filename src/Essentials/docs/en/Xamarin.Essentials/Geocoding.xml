@@ -1,0 +1,89 @@
+<Type Name="Geocoding" FullName="Xamarin.Essentials.Geocoding">
+  <TypeSignature Language="C#" Value="public static class Geocoding" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Geocoding extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Geocoding" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Easily convert between geographic coordinated and place names.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="GetLocationsAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Location&gt;&gt; GetLocationsAsync (string address);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.Location&gt;&gt; GetLocationsAsync(string address) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Geocoding.GetLocationsAsync(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Location&gt;&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="address" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="address">Address to retrieve the lcoation for.</param>
+        <summary>Retrieve location for a given address.</summary>
+        <returns>
+          <para>List of locations that best match the address or null if none found.</para>
+        </returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetPlacemarksAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Placemark&gt;&gt; GetPlacemarksAsync (Xamarin.Essentials.Location location);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.Placemark&gt;&gt; GetPlacemarksAsync(class Xamarin.Essentials.Location location) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Geocoding.GetPlacemarksAsync(Xamarin.Essentials.Location)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Placemark&gt;&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="location" Type="Xamarin.Essentials.Location" />
+      </Parameters>
+      <Docs>
+        <param name="location">Location to find placemarks for.</param>
+        <summary>Retrieve placemarks for a given location.</summary>
+        <returns>List of placemarks or null if no placemarks are found.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetPlacemarksAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Placemark&gt;&gt; GetPlacemarksAsync (double latitude, double longitude);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.Placemark&gt;&gt; GetPlacemarksAsync(float64 latitude, float64 longitude) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Geocoding.GetPlacemarksAsync(System.Double,System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Placemark&gt;&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="latitude" Type="System.Double" />
+        <Parameter Name="longitude" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="latitude">Latitude of the location.</param>
+        <param name="longitude">Longitude of the location.</param>
+        <summary>Retrieve location for a given address.</summary>
+        <returns>List of placemarks or null if no placemarks are found.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

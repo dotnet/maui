@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.Issues
+﻿namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	public static class Effects
 	{

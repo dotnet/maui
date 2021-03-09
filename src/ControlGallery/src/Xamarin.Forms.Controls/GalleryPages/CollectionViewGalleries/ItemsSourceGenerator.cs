@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
-using Xamarin.Forms.Internals;
+using System.Diagnostics;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	internal enum ItemsSourceType
 	{
@@ -95,7 +96,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 						$"Item: {n}", _images[n % _images.Length], n));
 				}
 
+				var watch = new Stopwatch();
+				watch.Start();
 				_cv.ItemsSource = items;
+				watch.Stop();
+				System.Diagnostics.Debug.WriteLine($">>>>>> That itemsource update took {watch.ElapsedMilliseconds} ms");
 			}
 		}
 

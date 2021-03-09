@@ -1,18 +1,18 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using AToolbarPlacement = Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ToolbarPlacement;
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using AToolbarPlacement = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement;
+using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -116,10 +116,8 @@ namespace Xamarin.Forms.Controls.Issues
 			tabbedPage.Children.Add(Issue1898PageOne);
 			tabbedPage.Children.Add(Issue1898PageTwo);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			tabbedPage.On<Android>().SetBarItemColor(Color.Blue);
-			tabbedPage.On<Android>().SetBarSelectedItemColor(Color.Green);
-#pragma warning restore CS0618 // Type or member is obsolete
+			tabbedPage.On<Android>().Element.UnselectedTabColor =Color.Blue;
+			tabbedPage.On<Android>().Element.SelectedTabColor = Color.Green;
 			tabbedPage.On<Android>().SetToolbarPlacement(placement);
 			tabbedPage.On<WindowsOS>().SetHeaderIconsEnabled(true);
 		}

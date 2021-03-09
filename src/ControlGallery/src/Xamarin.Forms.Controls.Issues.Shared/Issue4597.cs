@@ -4,16 +4,16 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4597, "[Android] ImageCell not loading images and setting ImageSource to null has no effect",
@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
 		string _theListView = "theListViewAutomationId";
 		string _fileName = "xamarinlogo.png";
 		string _fileNameAutomationId = "CoffeeAutomationId";
-		string _uriImage = "https://github.com/xamarin/Xamarin.Forms/blob/3216ce4ccd096f8b9f909bbeea572dcf2a8c4466/Xamarin.Forms.ControlGallery.iOS/Resources/xamarinlogo.png?raw=true";
+		string _uriImage = "https://github.com/xamarin/Xamarin.Forms/blob/3216ce4ccd096f8b9f909bbeea572dcf2a8c4466/Microsoft.Maui.Controls.ControlGallery.iOS/Resources/xamarinlogo.png?raw=true";
 		bool _isUri = false;
 		string _nextTestId = "NextTest";
 		string _activeTestId = "activeTestId";
@@ -103,7 +103,7 @@ namespace Xamarin.Forms.Controls.Issues
 				IsToggled = false,
 				HeightRequest = 60
 			};
-			var sourceLabel = new Label { Text = _imageFromFile };
+			var sourceLabel = new Label { Text = _imageFromFile, AutomationId = "SourceLabel" };
 
 			switchToUri.Toggled += (_, e) =>
 			{
@@ -176,39 +176,42 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void ImageFromFileSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(Image), false);
+			RunTest(nameof(Image), true);
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageFromUriSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(Image), true);
+			RunTest(nameof(Image), false);
 		}
 
 
 		[Test]
 		public void ButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(Button), false);
+			RunTest(nameof(Button), true);
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ButtonFromUriSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(Button), true);
+			RunTest(nameof(Button), false);
 		}
 
 
 		[Test]
 		public void ImageButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(ImageButton), false);
+			RunTest(nameof(ImageButton), true);
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageButtonFromUriSourceAppearsAndDisappearsCorrectly()
 		{
-			RunTest(nameof(ImageButton), true);
+			RunTest(nameof(ImageButton), false);
 		}
 
 		[Test]
@@ -218,6 +221,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageCellFromUriSourceAppearsAndDisappearsCorrectly()
 		{
 			ImageCellTest(false);
@@ -235,6 +239,7 @@ namespace Xamarin.Forms.Controls.Issues
 			SetImageSourceToNull();
 
 			imageVisible = GetImage();
+			Assert.AreEqual(0, imageVisible.Length);
 
 			UITest.Queries.AppResult[] GetImage()
 			{
@@ -301,11 +306,10 @@ namespace Xamarin.Forms.Controls.Issues
 				RunningApp.WaitForNoElement(activeTest);
 			}
 
-			var currentSetting = RunningApp.WaitForElement(_switchUriId)[0].ReadText();
-
-			if (fileSource && RunningApp.Query(_imageFromUri).Length == 0)
+			string sourceLabel = RunningApp.WaitForFirstElement("SourceLabel").ReadText();
+			if (fileSource && sourceLabel != _imageFromFile)
 				RunningApp.Tap(_switchUriId);
-			else if (!fileSource && RunningApp.Query(_imageFromFile).Length == 0)
+			else if (!fileSource && sourceLabel != _imageFromUri)
 				RunningApp.Tap(_switchUriId);
 		}
 #endif

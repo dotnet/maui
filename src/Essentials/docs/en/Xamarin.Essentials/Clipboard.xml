@@ -1,0 +1,95 @@
+<Type Name="Clipboard" FullName="Xamarin.Essentials.Clipboard">
+  <TypeSignature Language="C#" Value="public static class Clipboard" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Clipboard extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Clipboard" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Provides a way to work with text on the device clipboard.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="ClipboardContentChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;EventArgs&gt; ClipboardContentChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class System.EventArgs&gt; ClipboardContentChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Clipboard.ClipboardContentChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;System.EventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Fires when the clipboard content changes.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetTextAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;string&gt; GetTextAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;string&gt; GetTextAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Clipboard.GetTextAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.String&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Returns any text that is on the clipboard.</summary>
+        <returns>Returns text that is on the clipboard, or null if there is none.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HasText">
+      <MemberSignature Language="C#" Value="public static bool HasText { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool HasText" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Clipboard.HasText" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets a value indicating whether there is any text on the clipboard.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetTextAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SetTextAsync (string text);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task SetTextAsync(string text) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Clipboard.SetTextAsync(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="text" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="text">The text to put on the clipboard.</param>
+        <summary>Sets the contents of the clipboard to be the specified text.</summary>
+        <returns>Returns text that is on the clipboard, or null if there is none.</returns>
+        <remarks>This method returns immediately and does not guarentee that the text is on the clipboard by the time this method returns</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

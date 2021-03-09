@@ -1,13 +1,13 @@
 ﻿using System;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.LifeCycle)]
@@ -24,9 +24,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "Page 1"
 					}
 				}
@@ -36,9 +34,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Children = {
 					new Label {
-#pragma warning disable 618
-						XAlign = TextAlignment.Center,
-#pragma warning restore 618
+						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "Page 2"
 					}
 				}

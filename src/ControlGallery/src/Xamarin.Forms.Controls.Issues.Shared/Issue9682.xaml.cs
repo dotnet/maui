@@ -8,17 +8,17 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Xaml;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 9682, "[iOS] URI Images no longer loading",
 		PlatformAffected.iOS)]
@@ -39,6 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test, NUnit.Framework.Category(UITestCategories.Image)]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void MonkiesShouldLoad()
 		{
 			RunningApp.WaitForElement("MonkeyLoadButton");
@@ -144,7 +145,7 @@ namespace Xamarin.Forms.Controls.Issues
 						Longitude = 42,
 						Location = "Empire State Building",
 						Name = "King Kong",
-						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/Fruits.jpg?raw=true"
+						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/Fruits.jpg?raw=true"
 					},
 					new Monkey()
 					{
@@ -153,7 +154,7 @@ namespace Xamarin.Forms.Controls.Issues
 						Longitude = 42,
 						Location = "The 90s",
 						Name = "Donkey Kong",
-						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/FlowerBuds.jpg?raw=true"
+						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/FlowerBuds.jpg?raw=true"
 					},
 					new Monkey()
 					{
@@ -162,7 +163,7 @@ namespace Xamarin.Forms.Controls.Issues
 						Longitude = 42,
 						Location = "Sunday Mornings",
 						Name = "Grape Ape",
-						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/games.png?raw=true"
+						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/games.png?raw=true"
 					},
 					new Monkey()
 					{
@@ -171,7 +172,7 @@ namespace Xamarin.Forms.Controls.Issues
 						Longitude = 42,
 						Location = "The Sky",
 						Name = "Flying Monkey",
-						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Xamarin.Forms.ControlGallery.Android/Resources/drawable/gear.png?raw=true"
+						Image = "https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/gear.png?raw=true"
 					},
 				};
 

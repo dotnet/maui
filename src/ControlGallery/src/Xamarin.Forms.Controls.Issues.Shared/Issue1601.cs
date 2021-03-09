@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -22,13 +22,13 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			var grid = new Grid();
-			Forms.CompressedLayout.SetIsHeadless(grid, true);
+			Microsoft.Maui.Controls.CompressedLayout.SetIsHeadless(grid, true);
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 			grid.RowDefinitions.Add(new RowDefinition { Height = 40 });
 
 			var boxView = new BoxView { BackgroundColor = Color.Red };
 			var backgroundContainer = new Grid();
-			Forms.CompressedLayout.SetIsHeadless(backgroundContainer, true);
+			Microsoft.Maui.Controls.CompressedLayout.SetIsHeadless(backgroundContainer, true);
 			backgroundContainer.Children.Add(boxView);
 			grid.Children.Add(backgroundContainer);
 
@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Orientation = StackOrientation.Horizontal
 			};
-			Forms.CompressedLayout.SetIsHeadless(stack, true);
+			Microsoft.Maui.Controls.CompressedLayout.SetIsHeadless(stack, true);
 			var button = new Button { Text = "CRASH!" };
 			stack.Children.Add(button);
 			grid.Children.Add(stack, 0, 1);

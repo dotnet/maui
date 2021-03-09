@@ -5,9 +5,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	[Preserve(AllMembers = true)]
 	internal class AbsolutePositioningExplorationViewModel : INotifyPropertyChanged

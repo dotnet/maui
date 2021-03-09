@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	internal class ItemAdder : ObservableCollectionModifier
 	{

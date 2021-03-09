@@ -1,0 +1,163 @@
+<Type Name="DeviceInfo" FullName="Xamarin.Essentials.DeviceInfo">
+  <TypeSignature Language="C#" Value="public static class DeviceInfo" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed DeviceInfo extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.DeviceInfo" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Represents information about the device.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="DeviceType">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DeviceType DeviceType { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DeviceType DeviceType" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceInfo.DeviceType" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DeviceType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the type of device the application is running on.</summary>
+        <value>The device type.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Idiom">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DeviceIdiom Idiom { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DeviceIdiom Idiom" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceInfo.Idiom" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DeviceIdiom</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the idiom of the device. </summary>
+        <value>The idiom.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Manufacturer">
+      <MemberSignature Language="C#" Value="public static string Manufacturer { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string Manufacturer" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceInfo.Manufacturer" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the manufacturer of the device.</summary>
+        <value>Device manufacturer.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Model">
+      <MemberSignature Language="C#" Value="public static string Model { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string Model" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceInfo.Model" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the model of the device.</summary>
+        <value>Device model.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Name">
+      <MemberSignature Language="C#" Value="public static string Name { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string Name" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceInfo.Name" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the name of the device.</summary>
+        <value>The name of the device (often specified by the user).</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Platform">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform Platform { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DevicePlatform Platform" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceInfo.Platform" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the platform or operating system of the device.</summary>
+        <value>The platform of device.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Version">
+      <MemberSignature Language="C#" Value="public static Version Version { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class System.Version Version" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceInfo.Version" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Version</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the version of the operating system.</summary>
+        <value>The device operating system.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="VersionString">
+      <MemberSignature Language="C#" Value="public static string VersionString { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string VersionString" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceInfo.VersionString" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the version of the operating system.</summary>
+        <value>The version of the operating system.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

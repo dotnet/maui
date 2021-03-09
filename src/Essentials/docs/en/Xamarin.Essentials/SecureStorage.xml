@@ -1,0 +1,181 @@
+<Type Name="SecureStorage" FullName="Xamarin.Essentials.SecureStorage">
+  <TypeSignature Language="C#" Value="public static class SecureStorage" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit SecureStorage extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.SecureStorage" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Provides simple secure storage for key/value pairs.</summary>
+    <remarks>
+      <para>Each platform uses the platform provided native API's for storing data securely:</para>
+      <list type="bullet">
+        <item>
+          <term>iOS: Data is stored in KeyChain. Additional information on SecAccessible at: <see cref="T:Security.SecAccessible" /></term>
+        </item>
+        <item>
+          <term>Android: Encryption keys are stored in KeyStore and encrypted data is stored in a named shared preference container (PackageId.Xamarin.Essentials).</term>
+        </item>
+        <item>
+          <term>UWP: Data is encrypted with DataProtectionProvider and stored in a named ApplicationDataContainer (with a container name of ApplicationId.Xamarin.Essentials).</term>
+        </item>
+      </list>
+      <para>NOTE: On Android devices running below API 23 (6.0 Marshmallow) there is no AES available in KeyStore.  As a best practice this API will generate an RSA/ECB/PKCS7Padding key pair stored in KeyStore (the only type supported in KeyStore by these lower API levels), which is used to wrap an AES key generated at runtime.  This wrapped key is stored in Preferences.</para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="DefaultAccessible">
+      <MemberSignature Language="C#" Value="public static Security.SecAccessible DefaultAccessible { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Security.SecAccessible DefaultAccessible" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SecureStorage.DefaultAccessible" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Security.SecAccessible</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>iOS: Default SecAccessible to use for all Get/Set calls to KeyChain. Default value is AfterFirstUnlock.</summary>
+        <value>The SecAccessible to use for all KeyChain access.</value>
+        <remarks>For more information see: <see cref="T:Security.SecAccessible" /></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;string&gt; GetAsync (string key);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;string&gt; GetAsync(string key) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.String&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Storage Key.</param>
+        <summary>Gets the decrypted value for a given Key.</summary>
+        <returns>Decrypted string or null if key does not exist.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="LegacyKeyHashFallback">
+      <MemberSignature Language="C#" Value="public static bool LegacyKeyHashFallback { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool LegacyKeyHashFallback" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SecureStorage.LegacyKeyHashFallback" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>When set to `true` if the key/value pair is not found, the MD5 key hash is also used to attempt to locate a value.</summary>
+        <value></value>
+        <remarks>Before version 1.5.3, the key/value pair was stored with the key's MD5 hash instead of the key directly.  As of 1.5.3 and newer the key hash is no longer used.  When using the legacy fallback, and an old MD5 key hash is encountered, it is migrated to the new key/value pair and the old MD5 key hash / value pair is removed.  In future versions this will be set to false by default.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Remove">
+      <MemberSignature Language="C#" Value="public static bool Remove (string key);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool Remove(string key) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SecureStorage.Remove(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">The key to remove.</param>
+        <summary>Removes the encrypted key/value pair for the given key.</summary>
+        <returns>Returns true if the key value pair was removed.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RemoveAll">
+      <MemberSignature Language="C#" Value="public static void RemoveAll ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void RemoveAll() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SecureStorage.RemoveAll" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Removes all of the stored encrypted key/value pairs.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SetAsync (string key, string value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task SetAsync(string key, string value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Storage Key.</param>
+        <param name="value">The value to be encrypted.</param>
+        <summary>Stores the value which is encrypted, for a given Key.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SetAsync (string key, string value, Security.SecAccessible accessible);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task SetAsync(string key, string value, valuetype Security.SecAccessible accessible) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String,Security.SecAccessible)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
+        <Parameter Name="value" Type="System.String" Index="1" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
+        <Parameter Name="accessible" Type="Security.SecAccessible" Index="2" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
+      </Parameters>
+      <Docs>
+        <param name="key">Storage Key.</param>
+        <param name="value">The value to be encrypted.</param>
+        <param name="accessible">The KeyChain accessibility to create the encrypted record with.</param>
+        <summary>Stores the value which is encrypted, for a given Key. iOS override to specify SecAccessible for the KeyChain.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

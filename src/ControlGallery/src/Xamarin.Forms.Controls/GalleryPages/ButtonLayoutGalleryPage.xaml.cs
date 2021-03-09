@@ -1,14 +1,14 @@
 ﻿using System;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Xamarin.Forms.Xaml;
-using AndroidSpecific = Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using ButtonImagePosition = Xamarin.Forms.Button.ButtonContentLayout.ImagePosition;
-using iOSSpecific = Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Controls.Xaml;
+using AndroidSpecific = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using ButtonImagePosition = Microsoft.Maui.Controls.Button.ButtonContentLayout.ImagePosition;
+using iOSSpecific = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	[Preserve(AllMembers = true)]
 	[XamlCompilation(XamlCompilationOptions.Compile)]

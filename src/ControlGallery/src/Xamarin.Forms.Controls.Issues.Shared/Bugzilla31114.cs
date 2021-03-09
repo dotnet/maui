@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest.iOS;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Bugzilla)]
@@ -247,9 +247,7 @@ namespace Xamarin.Forms.Controls.Issues
 				_secondaryLabel = new Label() { HeightRequest = 40, FontSize = 16, TranslationY = -5, LineBreakMode = LineBreakMode.TailTruncation };
 				_secondaryLabel.SetBinding(Label.TextProperty, "SecondaryLabelText");
 
-#pragma warning disable 618
-				_distanceLabel = new Label() { XAlign = TextAlignment.End, HorizontalOptions = LayoutOptions.EndAndExpand, FontSize = 11, LineBreakMode = LineBreakMode.NoWrap };
-#pragma warning restore 618
+				_distanceLabel = new Label() { HorizontalTextAlignment = TextAlignment.End, HorizontalOptions = LayoutOptions.EndAndExpand, FontSize = 11, LineBreakMode = LineBreakMode.NoWrap };
 				_distanceLabel.SetBinding(Label.TextProperty, "OtherLabelText");
 
 				_statusCircle = new Label()

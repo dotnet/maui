@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Input;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using static Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries.WindowsPlatformSpecificsGalleryHelpers;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using static Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries.WindowsPlatformSpecificsGalleryHelpers;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
 	public class FlyoutPageWindows : FlyoutPage
 	{

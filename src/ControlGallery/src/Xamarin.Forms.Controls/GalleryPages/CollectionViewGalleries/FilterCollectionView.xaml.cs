@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Xaml;
+﻿using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class FilterCollectionView : ContentPage

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Text;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
@@ -98,9 +98,7 @@ namespace Xamarin.Forms.Controls.Issues
 				for (var i = 0; i < 100; i++)
 					sb.Append("View 1a with ScrollView +++ ");
 
-#pragma warning disable 618
-				var label = new Label { Text = sb.ToString(), HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, XAlign = TextAlignment.Center, };
-#pragma warning restore 618
+				var label = new Label { Text = sb.ToString(), HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, HorizontalTextAlignment = TextAlignment.Center, };
 
 				scrollView.Content = label;
 
@@ -125,9 +123,7 @@ namespace Xamarin.Forms.Controls.Issues
 				for (var i = 0; i < 50; i++)
 					sb.Append("View 1b with ScrollView and recreation of content +++++ ");
 
-#pragma warning disable 618
-				var label = new Label { Text = sb.ToString(), HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, XAlign = TextAlignment.Center, };
-#pragma warning restore 618
+				var label = new Label { Text = sb.ToString(), HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, HorizontalTextAlignment = TextAlignment.Center, };
 
 				scrollView.Content = label;
 
@@ -141,9 +137,7 @@ namespace Xamarin.Forms.Controls.Issues
 			public View2()
 			{
 				BackgroundColor = Color.Teal;
-#pragma warning disable 618
-				Content = new Label { Text = "View 2", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, XAlign = TextAlignment.Center, };
-#pragma warning restore 618
+				Content = new Label { Text = "View 2", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, HorizontalTextAlignment = TextAlignment.Center, };
 			}
 		}
 

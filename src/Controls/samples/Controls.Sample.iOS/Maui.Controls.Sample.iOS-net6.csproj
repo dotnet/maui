@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-ios</TargetFramework>
+    <RuntimeIdentifier>ios-x64</RuntimeIdentifier>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Maui.Controls.Sample.iOS</RootNamespace>
+    <AssemblyName>Maui.Controls.Sample.iOS</AssemblyName>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\Controls.Sample\Maui.Controls.Sample-net6.csproj" />
+  </ItemGroup>
+
+</Project>

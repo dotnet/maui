@@ -1,0 +1,29 @@
+<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <Description>Android AppLinks support for Xamarin.Forms</Description>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility.Android.AppLinks</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>$(AndroidTargetFrameworks)</TargetFrameworks>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility.Android.AppLinks</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Resources\values\Strings.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\values\Strings.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Xamarin.Firebase.AppIndexing" Version="119.1.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
+  </ItemGroup>
+</Project>

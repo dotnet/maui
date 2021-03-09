@@ -4,8 +4,8 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"  
-             xmlns:controls="clr-namespace:Xamarin.Forms.Controls"  
-             x:Class="Xamarin.Forms.Controls.Issues.Issue7924">
+             xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"  
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue7924">
     <ContentPage.Content>
         <Grid
             Margin="10">

@@ -2,7 +2,7 @@
 <ContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Xamarin.Forms.Controls.GalleryPages.GradientGalleries.SolidColorBrushConverterGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries.SolidColorBrushConverterGallery"
     Title="SolidColorBrushConverter Gallery">
     <ContentPage.Resources>
         <ResourceDictionary>

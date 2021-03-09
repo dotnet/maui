@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 
-namespace Xamarin.Forms.Controls.XamStore
+namespace Microsoft.Maui.Controls.ControlGallery.XamStore
 {
 	[Preserve(AllMembers = true)]
 	[XamlCompilation(XamlCompilationOptions.Compile)]
@@ -11,8 +11,6 @@ namespace Xamarin.Forms.Controls.XamStore
 		public StoreShell()
 		{
 			InitializeComponent();
-
-			Device.SetFlags(new List<string> { ExperimentalFlags.ShellUWPExperimental });
 
 			CurrentItem = _storeItem;
 		}

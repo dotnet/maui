@@ -15,6 +15,7 @@
 		public const string CollectionView = "CollectionView";
 		public const string ContextActions = "ContextActions";
 		public const string DatePicker = "DatePicker";
+		public const string DragAndDrop = "DragAndDrop";
 		public const string DisplayAlert = "DisplayAlert";
 		public const string Editor = "Editor";
 		public const string Entry = "Entry";
@@ -30,6 +31,7 @@
 		public const string FlyoutPage = "FlyoutPage";
 		public const string Picker = "Picker";
 		public const string ProgressBar = "ProgressBar";
+		public const string RequiresInternetConnection = "RequiresInternetConnection";
 		public const string RootGallery = "RootGallery";
 		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";

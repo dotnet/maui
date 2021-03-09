@@ -1,0 +1,17 @@
+<Project Sdk="MSBuild.Sdk.Extras">
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0</TargetFrameworks>
+		<RootNamespace>Microsoft.Maui</RootNamespace>
+		<AssemblyName>Microsoft.Maui</AssemblyName>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackageId>Microsoft.Maui</PackageId>
+	</PropertyGroup>
+	<Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Configuration" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+	</ItemGroup>
+</Project>

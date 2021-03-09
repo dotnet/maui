@@ -2,11 +2,10 @@ if (IsMac)
 {
 	System.Net.Http.HttpClient client = new System.Net.Http.HttpClient (new System.Net.Http.HttpClientHandler { AllowAutoRedirect = true });
 	if (!Directory.Exists ("/Library/Frameworks/Mono.framework/Versions/Current/Commands/"))
-	{
-		Item ("Mono", "6.8.0.123")
-			.Source (_ => "https://download.mono-project.com/archive/6.8.0/macos-10-universal/MonoFramework-MDK-6.8.0.123.macos10.xamarin.universal.pkg");
-	}
-    
+ 	{
+ 		Item ("Mono", "6.12.0.127")
+ 			.Source (_ => "https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.107.macos10.xamarin.universal.pkg");
+ 	}
 	ForceJavaCleanup();
 	OpenJDK ("1.8.0-40");
 
@@ -47,9 +46,7 @@ if (IsMac)
 	{
 		if(releaseChannel == "Beta")
 		{
-			Console.WriteLine("Installing Beta Channel");			
-			await ResolveUrl ("https://xamci.azurewebsites.net/dl/xamarin/xamarin-macios/d16-6-xcode11.6/PKG-Xamarin.Mac-notarized");
-			await ResolveUrl ("https://xamci.azurewebsites.net/dl/xamarin/xamarin-macios/d16-6-xcode11.6/PKG-Xamarin.iOS-notarized");
+			Console.WriteLine ("Beta channel doesn't exist on provisionator");
 		}
 		else if(releaseChannel == "Preview")
 		{
@@ -106,6 +103,7 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 		.ApiLevel((AndroidApiLevel)24)
 		.ApiLevel((AndroidApiLevel)28)
 		.ApiLevel((AndroidApiLevel)29)
+		.ApiLevel((AndroidApiLevel)30)
 		.SdkManagerPackage ("build-tools;29.0.3");
 }
 else{

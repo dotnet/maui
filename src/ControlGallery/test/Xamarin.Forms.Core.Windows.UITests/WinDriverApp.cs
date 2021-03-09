@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -132,12 +133,29 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void DragAndDrop(Func<AppQuery, AppQuery> from, Func<AppQuery, AppQuery> to)
 		{
-			throw new NotImplementedException();
+			DragAndDrop(
+				FindFirstElement(WinQuery.FromQuery(from)),
+				FindFirstElement(WinQuery.FromQuery(to))
+			);
 		}
 
 		public void DragAndDrop(string from, string to)
 		{
-			throw new NotImplementedException();
+			DragAndDrop(
+				FindFirstElement(WinQuery.FromMarked(from)),
+				FindFirstElement(WinQuery.FromMarked(to))
+			);
+		}
+
+		public void DragAndDrop(WindowsElement fromElement, WindowsElement toElement)
+		{
+			//Action Drag and Drop doesn't appear to work
+			// https://github.com/microsoft/WinAppDriver/issues/1223
+
+			var action = new Actions(_session);
+			action.MoveToElement(fromElement).Build().Perform();
+			action.ClickAndHold(fromElement).MoveByOffset(toElement.Location.X, toElement.Location.Y).Build().Perform();
+			action.Release().Perform();
 		}
 
 		public void DragCoordinates(float fromX, float fromY, float toX, float toY)
@@ -150,6 +168,69 @@ namespace Xamarin.Forms.Core.UITests
 			new Actions(_session)
 					.SendKeys(text)
 					.Perform();
+		}
+
+		public string ReadSelectorPicker(string marked, string flyoutPresenterName, string seperator, string[] selectors)
+		{
+			WaitForAtLeastOne(() => QueryWindows(marked))[0].SendKeys(Keys.Space);
+			var LTRCharacter = Convert.ToChar(8206);
+			var RTLCharacter = Convert.ToChar(8207);
+			var pickerFlyout = _session.FindElementByAccessibilityId(flyoutPresenterName);
+			List<string> stringSelectors = new List<string>();
+
+			foreach (var selector in selectors)
+				ReadSelector(selector, stringSelectors);
+
+			pickerFlyout.FindElementByAccessibilityId("AcceptButton").Click();
+			return String.Join(seperator, stringSelectors);
+
+			void ReadSelector(string marked, List<string> data)
+			{
+				try
+				{
+					var text = RemoveExtraCharacters(pickerFlyout.FindElementByAccessibilityId(marked).Text);
+					data.Add(text);
+				}
+				catch
+				{
+					// when the control isn't found an exception is thrown
+				}
+			}
+
+			string RemoveExtraCharacters(string text)
+			{
+				return
+					new String(text
+						.ToCharArray()
+						.Where(c => c != LTRCharacter && c != RTLCharacter)
+						.ToArray());
+			}
+		}
+
+		public string ReadDatePicker(string marked)
+		{
+			return ReadSelectorPicker(
+				marked,
+				"DatePickerFlyoutPresenter",
+				",",
+				new[] {
+					"DayLoopingSelector",
+					"MonthLoopingSelector",
+					"YearLoopingSelector",
+				});
+		}
+
+		public string ReadTimePicker(string marked)
+		{
+			return ReadSelectorPicker(
+				marked,
+				"TimePickerFlyoutPresenter",
+				":",
+				new[] {
+					"HourLoopingSelector",
+					"MinuteLoopingSelector",
+					"PeriodLoopingSelector",
+				});
 		}
 
 		static RemoteWebElement SwapInUsefulElement(WindowsElement element)
@@ -202,6 +283,26 @@ namespace Xamarin.Forms.Core.UITests
 				// devices later. So we're going to use the back door.
 				ContextClick(arguments[0].ToString());
 				return null;
+			}
+
+			if (methodName == "hasInternetAccess")
+			{
+				try
+				{
+					using (var httpClient = new System.Net.Http.HttpClient())
+					using (var httpResponse = httpClient.GetAsync(@"https://www.github.com"))
+					{
+						httpResponse.Wait();
+						if (httpResponse.Result.StatusCode == System.Net.HttpStatusCode.OK)
+							return true;
+						else
+							return false;
+					}
+				}
+				catch
+				{
+					return false;
+				}
 			}
 
 			return null;
@@ -602,7 +703,9 @@ namespace Xamarin.Forms.Core.UITests
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			Func<ReadOnlyCollection<WindowsElement>> result = () => QueryWindows(marked);
-			return WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency).Select(ToAppResult).ToArray();
+			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency).Select(ToAppResult).ToArray();
+
+			return results;
 		}
 
 		public AppWebResult[] WaitForElement(Func<AppQuery, AppWebQuery> query,
@@ -882,7 +985,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		ReadOnlyCollection<WindowsElement> QueryWindows(WinQuery query, bool findFirst = false)
 		{
-			ReadOnlyCollection<WindowsElement> resultByAccessibilityId = _session.FindElementsByAccessibilityId(query.Marked);
+			var resultByAccessibilityId = _session.FindElementsByAccessibilityId(query.Marked);
 			ReadOnlyCollection<WindowsElement> resultByName = null;
 
 			if (!findFirst || resultByAccessibilityId.Count == 0)
@@ -1078,7 +1181,10 @@ namespace Xamarin.Forms.Core.UITests
 			TimeSpan? timeout = null,
 			TimeSpan? retryFrequency = null)
 		{
-			return Wait(query, i => i > 0, timeoutMessage, timeout, retryFrequency);
+			var results = Wait(query, i => i > 0, timeoutMessage, timeout, retryFrequency);
+
+
+			return results;
 		}
 
 		void WaitForNone(Func<ReadOnlyCollection<WindowsElement>> query,

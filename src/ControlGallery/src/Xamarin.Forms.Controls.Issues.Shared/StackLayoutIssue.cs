@@ -1,13 +1,13 @@
 ﻿using System.Diagnostics;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0, "StackLayout issue", PlatformAffected.All, NavigationBehavior.PushModalAsync)]
@@ -26,19 +26,18 @@ namespace Xamarin.Forms.Controls.Issues
 			var winPrizeLabel = new Label
 			{
 				Text = "Win a Xamarin Prize",
-#pragma warning disable 618
-				XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-				YAlign = TextAlignment.Center,
-#pragma warning restore 618
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center,
 				VerticalOptions = LayoutOptions.FillAndExpand
 			};
 
-#pragma warning disable 618
-			Device.OnPlatform(iOS: () => winPrizeLabel.Font = Font.OfSize("HelveticaNeue-UltraLight", NamedSize.Large));
-#pragma warning restore 618
+			switch (Device.RuntimePlatform)
+			{
+				case Device.iOS:
+					winPrizeLabel.FontFamily = "HelveticaNeue-UltraLight";
+					winPrizeLabel.FontSize = Device.GetNamedSize( NamedSize.Large, winPrizeLabel);
+					break;
+			}
 
 			StackLayout form = MakeForm();
 

@@ -4,18 +4,18 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 
 	[Preserve(AllMembers = true)]
@@ -73,21 +73,14 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Change Item Color",
 				Command = new Command(() =>
 				{
-#pragma warning disable CS0618 // Type or member is obsolete
-					if (On<Android>().GetBarItemColor() == Color.Default)
-#pragma warning restore CS0618 // Type or member is obsolete
-
+					if (On<Android>().Element.UnselectedTabColor == Color.Default)
 					{
-#pragma warning disable CS0618 // Type or member is obsolete
-						On<Android>().SetBarItemColor(new Color(0, 255, 0, 128));
-#pragma warning restore CS0618 // Type or member is obsolete
+						On<Android>().Element.UnselectedTabColor =new Color(0, 255, 0, 128);
 						btnChangeBarItemColorText.Text = $"Item Color: Less Green";
 					}
 					else
 					{
-#pragma warning disable CS0618 // Type or member is obsolete
-						On<Android>().SetBarItemColor(Color.Default);
-#pragma warning restore CS0618 // Type or member is obsolete
+						On<Android>().Element.UnselectedTabColor = Color.Default;
 						btnChangeBarItemColorText.Text = $"Item Color: Default";
 					}
 				})
@@ -99,21 +92,14 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Change Selected Item Color",
 				Command = new Command(() =>
 				{
-#pragma warning disable CS0618 // Type or member is obsolete
-					if (On<Android>().GetBarSelectedItemColor() == Color.Default)
-#pragma warning restore CS0618 // Type or member is obsolete
-
+					if (On<Android>().Element.SelectedTabColor == Color.Default)
 					{
-#pragma warning disable CS0618 // Type or member is obsolete
-						On<Android>().SetBarSelectedItemColor(Color.Green);
-#pragma warning restore CS0618 // Type or member is obsolete
+						On<Android>().Element.SelectedTabColor =Color.Green;
 						btnChangeBarSelectedItemColorText.Text = $"Selected Item Color: Green";
 					}
 					else
 					{
-#pragma warning disable CS0618 // Type or member is obsolete
-						On<Android>().SetBarSelectedItemColor(Color.Default);
-#pragma warning restore CS0618 // Type or member is obsolete
+						On<Android>().Element.SelectedTabColor= Color.Default;
 						btnChangeBarSelectedItemColorText.Text = $"Selected Item Color: Default";
 					}
 				})

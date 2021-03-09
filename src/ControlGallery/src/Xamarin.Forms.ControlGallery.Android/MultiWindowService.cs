@@ -1,10 +1,8 @@
-﻿#if !FORMS_APPLICATION_ACTIVITY && !PRE_APPLICATION_CLASS
-
-using Android.Content;
-using Xamarin.Forms.Controls.Issues;
+﻿using Android.Content;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using System;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class MultiWindowService : IMultiWindowService
 	{
@@ -19,5 +17,3 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 }
-
-#endif

@@ -1,14 +1,14 @@
 ﻿using System;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Bugzilla)]
@@ -33,9 +33,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			var entryCell = new EntryCell { Text = "yaddayadda" };
-#pragma warning disable 618
-			entryCell.XAlign = TextAlignment.End;
-#pragma warning restore 618
+			entryCell.HorizontalTextAlignment = TextAlignment.End;
 			entryCell.Label = "Click Here";
 			entryCell.Tapped += (s, e) =>
 			{

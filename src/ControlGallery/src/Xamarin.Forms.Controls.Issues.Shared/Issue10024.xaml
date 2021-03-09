@@ -4,8 +4,8 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             xmlns:controls="clr-namespace:Xamarin.Forms.Controls"  
-             x:Class="Xamarin.Forms.Controls.Issues.Issue10024">
+             xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"  
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue10024">
     <AbsoluteLayout VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
         <AbsoluteLayout.GestureRecognizers>
             <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />

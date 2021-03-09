@@ -1,0 +1,16 @@
+<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <TargetFrameworks>$(AndroidTargetFrameworks)</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility.Android</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup</AssemblyName>
+    <AndroidCodeGenTarget>XAJavaInterop1</AndroidCodeGenTarget>
+    <AndroidClassParser>class-parse</AndroidClassParser>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <IsBindingProject>true</IsBindingProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedJar Include="Jars\*.jar" />
+    <TransformFile Include="Transforms\*.xml" />
+  </ItemGroup>
+</Project>

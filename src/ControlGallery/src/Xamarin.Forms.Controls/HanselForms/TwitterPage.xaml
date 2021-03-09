@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Controls.TwitterPage" Title="{Binding Title}" Icon="{Binding Icon}" IsBusy="{Binding IsBusy}">
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Microsoft.Maui.Controls.ControlGallery.TwitterPage" Title="{Binding Title}" Icon="{Binding Icon}" IsBusy="{Binding IsBusy}">
 	<AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
 		<ListView CachingStrategy="RecycleElement" x:Name="listView" ItemsSource="{Binding Tweets}" HasUnevenRows="True" RowHeight="150" IsPullToRefreshEnabled="True" RefreshCommand="{Binding LoadTweetsCommand}" IsRefreshing="{Binding IsBusy, Mode=OneWay}" AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0,0,1,1">
 			<ListView.ItemTemplate>
@@ -13,16 +13,16 @@
 							<Image Source="{Binding Image}" VerticalOptions="Center">
 								<Image.WidthRequest>
 									<OnPlatform x:TypeArguments="x:Double">
-										<OnPlatform.iOS>55</OnPlatform.iOS>
-										<OnPlatform.Android>55 </OnPlatform.Android>
-										<OnPlatform.WinPhone>75</OnPlatform.WinPhone>
+										<On Platform="iOS">55</On>
+										<On Platform="Android">55 </On>
+										<On Platform="UWP">75</On>
 									</OnPlatform>
 								</Image.WidthRequest>
 								<Image.HeightRequest>
 									<OnPlatform x:TypeArguments="x:Double">
-										<OnPlatform.iOS>55</OnPlatform.iOS>
-										<OnPlatform.Android>55</OnPlatform.Android>
-										<OnPlatform.WinPhone>75</OnPlatform.WinPhone>
+										<On Platform="iOS">55</On>
+										<On Platform="Android">55 </On>
+										<On Platform="UWP">75</On>
 									</OnPlatform>
 								</Image.HeightRequest>
 							</Image>

@@ -1,8 +1,8 @@
 using NUnit.Framework;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 9355, "ScrollViewRenderer renderer dispose crash", PlatformAffected.Android)]
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			Forms.CompressedLayout.SetIsHeadless(stacklayout, true);
+			Microsoft.Maui.Controls.CompressedLayout.SetIsHeadless(stacklayout, true);
 
 			var page = new ContentPage
 			{

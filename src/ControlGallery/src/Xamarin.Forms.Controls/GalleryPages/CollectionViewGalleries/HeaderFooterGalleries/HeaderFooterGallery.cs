@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries
+﻿namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries
 {
 	internal class HeaderFooterGallery : ContentPage
 	{

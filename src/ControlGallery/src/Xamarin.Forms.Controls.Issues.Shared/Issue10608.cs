@@ -1,14 +1,14 @@
 ﻿using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Shell)]
@@ -41,7 +41,8 @@ namespace Xamarin.Forms.Controls.Issues
 										Text = "Learn More",
 										Margin = new Thickness(0,10,0,0),
 										BackgroundColor = Color.Purple,
-										TextColor = Color.White
+										TextColor = Color.White,
+										AutomationId = "LearnMoreButton"
 									}
 								}
 							}
@@ -110,16 +111,21 @@ namespace Xamarin.Forms.Controls.Issues
 			for (int i = 0; i < 5; i++)
 			{
 				RunningApp.WaitForElement("Tab1AutomationId");
+				RunningApp.WaitForElement("LearnMoreButton");
 				RunningApp.Tap("FlyoutItem0");
 				RunningApp.Tap("FlyoutItem1");
 				RunningApp.Tap("FlyoutItem0");
+				RunningApp.WaitForElement("LearnMoreButton");
 			}
 
 			RunningApp.WaitForElement("Tab1AutomationId");
+			RunningApp.WaitForElement("LearnMoreButton");
 			RunningApp.Tap("FlyoutItem1");
 			RunningApp.WaitForElement("Tab2AutomationId");
+			RunningApp.WaitForElement("LearnMoreButton");
 			RunningApp.Tap("FlyoutItem0");
 			RunningApp.WaitForElement("Tab1AutomationId");
+			RunningApp.WaitForElement("LearnMoreButton");
 		}
 #endif
 	}

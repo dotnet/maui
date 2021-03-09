@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 11413,
 		"[Bug] Rectangle shape - Incorrect rendering/crash (depending on platform)",

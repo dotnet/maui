@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 9090, "Desktop Support", PlatformAffected.All)]
@@ -165,7 +165,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			for (int i = 0; i < count; i++)
 			{
-				var menu = new Forms.Menu { Text = $"hello {i}" };
+				var menu = new Microsoft.Maui.Controls.Menu { Text = $"hello {i}" };
 				if (addMenuItems)
 				{
 					for (int j = 0; j < countMenuItems; j++)
@@ -199,7 +199,7 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 				if (addSubMenu)
 				{
-					var submenu = new Forms.Menu { Text = $"submenu {i}" };
+					var submenu = new Microsoft.Maui.Controls.Menu { Text = $"submenu {i}" };
 					var item = new MenuItem { Text = $"submenu item {i}" };
 					submenu.Items.Add(item);
 					menu.Add(submenu);

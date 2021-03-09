@@ -1,6 +1,6 @@
 using System;
 using Windows.UI.Input;
-using Windows.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Input;
 using Xamarin.Forms.ControlGallery.WindowsUniversal;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.UWP;

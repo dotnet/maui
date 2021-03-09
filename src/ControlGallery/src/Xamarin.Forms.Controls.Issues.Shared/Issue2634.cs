@@ -1,10 +1,10 @@
 ﻿using System;
 
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2634, "Keyboard causes view to scroll incorrectly", PlatformAffected.iOS)]
@@ -86,9 +86,8 @@ namespace Xamarin.Forms.Controls.Issues
 				var lblFirstNameLabel = new Label
 				{
 					Text = "First Name",
-#pragma warning disable 618
-					Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold),
-#pragma warning restore 618
+					FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
+					FontAttributes = FontAttributes.Bold,
 					TextColor = textColor
 				};
 				_firstNameEntry = new Entry
@@ -105,9 +104,8 @@ namespace Xamarin.Forms.Controls.Issues
 				var lblMiddleNameLabel = new Label
 				{
 					Text = "Middle Name",
-#pragma warning disable 618
-					Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold),
-#pragma warning restore 618
+					FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
+					FontAttributes = FontAttributes.Bold,
 					TextColor = textColor
 				};
 				var entMiddleName = new Entry
@@ -124,9 +122,8 @@ namespace Xamarin.Forms.Controls.Issues
 				var lblLastNameLabel = new Label
 				{
 					Text = "Last Name",
-#pragma warning disable 618
-					Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold),
-#pragma warning restore 618
+					FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
+					FontAttributes = FontAttributes.Bold,
 					TextColor = textColor
 				};
 				var entLastName = new Entry
@@ -143,13 +140,10 @@ namespace Xamarin.Forms.Controls.Issues
 				var lblDobLabel = new Label
 				{
 					Text = "Date of Birth",
-#pragma warning disable 618
-					Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold),
-#pragma warning restore 618
+					FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
+					FontAttributes = FontAttributes.Bold,
 					TextColor = textColor,
-#pragma warning disable 618
-					XAlign = TextAlignment.Start
-#pragma warning restore 618
+					HorizontalTextAlignment = TextAlignment.Start
 				};
 				var entDob = new Entry
 				{
@@ -165,13 +159,10 @@ namespace Xamarin.Forms.Controls.Issues
 				var lblGenderLabel = new Label
 				{
 					Text = "Gender",
-#pragma warning disable 618
-					Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold),
-#pragma warning restore 618
+					FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
+					FontAttributes = FontAttributes.Bold,
 					TextColor = textColor,
-#pragma warning disable 618
-					XAlign = TextAlignment.Start
-#pragma warning restore 618
+					HorizontalTextAlignment = TextAlignment.Start
 				};
 				slGender.Children.Add(lblGenderLabel);
 
@@ -182,13 +173,10 @@ namespace Xamarin.Forms.Controls.Issues
 				var lblHomePhoneLabel = new Label
 				{
 					Text = "Home Phone",
-#pragma warning disable 618
-					Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold),
-#pragma warning restore 618
+					FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
+					FontAttributes = FontAttributes.Bold,
 					TextColor = textColor,
-#pragma warning disable 618
-					XAlign = TextAlignment.Start
-#pragma warning restore 618
+					HorizontalTextAlignment = TextAlignment.Start
 				};
 				var entHomePhone = new Entry
 				{
@@ -208,13 +196,10 @@ namespace Xamarin.Forms.Controls.Issues
 				var lblMobilePhoneLabel = new Label
 				{
 					Text = "Mobile Phone",
-#pragma warning disable 618
-					Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold),
-#pragma warning restore 618
+					FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
+					FontAttributes = FontAttributes.Bold,
 					TextColor = textColor,
-#pragma warning disable 618
-					XAlign = TextAlignment.Start
-#pragma warning restore 618
+					HorizontalTextAlignment = TextAlignment.Start
 				};
 				var entMobilePhone = new Entry
 				{
@@ -248,16 +233,16 @@ namespace Xamarin.Forms.Controls.Issues
 				};
 
 				var rl = new RelativeLayout();
-				rl.Children.Add(bvBackground, Forms.Constraint.Constant(0), Forms.Constraint.Constant(0),
-					Forms.Constraint.RelativeToParent((parent) =>
+				rl.Children.Add(bvBackground, Microsoft.Maui.Controls.Constraint.Constant(0), Microsoft.Maui.Controls.Constraint.Constant(0),
+					Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) =>
 					   parent.Width),
-					Forms.Constraint.RelativeToParent((parent) =>
+					Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) =>
 					   parent.Height));
 
 				rl.Children.Add(addFrame,
-					Forms.Constraint.RelativeToParent((parent) => (parent.Width * .25) / 2),
-					Forms.Constraint.Constant(Device.RuntimePlatform == Device.iOS ? 60 : 40),
-					Forms.Constraint.RelativeToParent((parent) => parent.Width * .75));
+					Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) => (parent.Width * .25) / 2),
+					Microsoft.Maui.Controls.Constraint.Constant(Device.RuntimePlatform == Device.iOS ? 60 : 40),
+					Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) => parent.Width * .75));
 
 				Content = rl;
 			}
@@ -296,49 +281,31 @@ namespace Xamarin.Forms.Controls.Issues
 					};
 
 					Color txtColor = Color.Blue;
-					Font dataFont = Font.SystemFontOfSize(NamedSize.Medium);
+
+					var fontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
+
 					var nameData = new Label
 					{
 						TextColor = txtColor,
-#pragma warning disable 618
-						Font = dataFont,
-#pragma warning restore 618
-
-#pragma warning disable 618
-						XAlign = TextAlignment.Start,
-#pragma warning restore 618
-
-#pragma warning disable 618
-						YAlign = TextAlignment.Center,
-#pragma warning restore 618
+						FontSize= fontSize,
+						HorizontalTextAlignment = TextAlignment.Start,
+						VerticalTextAlignment = TextAlignment.Center,
 						VerticalOptions = LayoutOptions.Center
 					};
 					nameData.SetBinding(Label.TextProperty, "Name");
 					var genderData = new Label
 					{
 						TextColor = txtColor,
-#pragma warning disable 618
-						Font = dataFont,
-#pragma warning restore 618
-
-#pragma warning disable 618
-						XAlign = TextAlignment.Start,
-#pragma warning restore 618
-
-#pragma warning disable 618
-						YAlign = TextAlignment.Center,
-#pragma warning restore 618
+						FontSize = fontSize,
+						HorizontalTextAlignment = TextAlignment.Start,
+						VerticalTextAlignment = TextAlignment.Center,
 						VerticalOptions = LayoutOptions.Center
 					};
 					genderData.SetBinding(Label.TextProperty, "Gender");
 					var slNameGender = new StackLayout { Orientation = StackOrientation.Horizontal };
-#pragma warning disable 618
-					var lblGender1 = new Label { Text = " (", Font = dataFont };
-#pragma warning restore 618
+					var lblGender1 = new Label { Text = " (", FontSize = fontSize };
 
-#pragma warning disable 618
-					var lblGender2 = new Label { Text = ")", Font = dataFont };
-#pragma warning restore 618
+					var lblGender2 = new Label { Text = ")", FontSize = fontSize, };
 					slNameGender.Children.Add(nameData);
 					slNameGender.Children.Add(lblGender1);
 					slNameGender.Children.Add(genderData);
@@ -349,24 +316,15 @@ namespace Xamarin.Forms.Controls.Issues
 					{
 						TextColor = txtColor,
 						Text = "DOB: ",
-#pragma warning disable 618
-						Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold)
-#pragma warning restore 618
+						FontSize = fontSize,
+						FontAttributes = FontAttributes.Bold
 					};
 					var dobData = new Label
 					{
 						TextColor = txtColor,
-#pragma warning disable 618
-						Font = dataFont,
-#pragma warning restore 618
-
-#pragma warning disable 618
-						XAlign = TextAlignment.Start,
-#pragma warning restore 618
-
-#pragma warning disable 618
-						YAlign = TextAlignment.Center,
-#pragma warning restore 618
+						FontSize = fontSize,
+						HorizontalTextAlignment = TextAlignment.Start,
+						VerticalTextAlignment = TextAlignment.Center,
 						VerticalOptions = LayoutOptions.Center
 					};
 					dobData.SetBinding(Label.TextProperty, "DateOfBirth");
@@ -375,7 +333,7 @@ namespace Xamarin.Forms.Controls.Issues
 					slDobPhone.Children.Add(dobData);
 
 #pragma warning disable 618
-					var lblSpacer = new Label { Text = "      ", Font = dataFont };
+					var lblSpacer = new Label { Text = "      ", FontSize = fontSize };
 #pragma warning restore 618
 					slDobPhone.Children.Add(lblSpacer);
 
@@ -383,24 +341,15 @@ namespace Xamarin.Forms.Controls.Issues
 					{
 						TextColor = txtColor,
 						Text = "PHONE: ",
-#pragma warning disable 618
-						Font = Font.SystemFontOfSize(NamedSize.Medium, FontAttributes.Bold)
-#pragma warning restore 618
+						FontSize = fontSize,
+						FontAttributes = FontAttributes.Bold
 					};
 					var phoneData = new Label
 					{
 						TextColor = txtColor,
-#pragma warning disable 618
-						Font = dataFont,
-#pragma warning restore 618
-
-#pragma warning disable 618
-						XAlign = TextAlignment.Start,
-#pragma warning restore 618
-
-#pragma warning disable 618
-						YAlign = TextAlignment.Center,
-#pragma warning restore 618
+						FontSize = fontSize,
+						HorizontalTextAlignment = TextAlignment.Start,
+						VerticalTextAlignment = TextAlignment.Center,
 						VerticalOptions = LayoutOptions.Center
 					};
 					phoneData.SetBinding(Label.TextProperty, "PrimaryPhone");

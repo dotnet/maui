@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.WindowsUniversal;
 using Xamarin.Forms.Controls;
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			int newViewId = 0;
 			await newView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
 			{
-				var frame = new Windows.UI.Xaml.Controls.Frame();
+				var frame = new Microsoft.UI.Xaml.Controls.Frame();
 
 				//The page instance must be created inside the new UI Thread.
 				ContentPage instance = (ContentPage)Activator.CreateInstance(pageType);

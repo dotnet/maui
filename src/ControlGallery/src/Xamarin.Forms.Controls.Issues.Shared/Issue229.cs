@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -20,13 +20,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var label = new Label
 			{
 				Text = "I should have a toolbar item",
-#pragma warning disable 618
-				XAlign = TextAlignment.Center,
-#pragma warning restore 618
-
-#pragma warning disable 618
-				YAlign = TextAlignment.Center
-#pragma warning restore 618
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center
 			};
 
 			var refreshBtn = new ToolbarItem("Refresh", null, () => label.Text = "Clicking it works");

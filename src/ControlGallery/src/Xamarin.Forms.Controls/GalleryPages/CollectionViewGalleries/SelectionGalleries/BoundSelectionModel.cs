@@ -2,9 +2,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.SelectionGalleries
 {
 	[Preserve(AllMembers = true)]
 	internal class BoundSelectionModel : INotifyPropertyChanged

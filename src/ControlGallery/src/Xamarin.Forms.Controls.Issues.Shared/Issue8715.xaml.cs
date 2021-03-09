@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Xaml;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
-	[Issue(IssueTracker.Github, 8715, "NullReferenceException Xamarin.Forms.Platform.iOS.StructuredItemsViewRenderer [Bug]",
+	[Issue(IssueTracker.Github, 8715, "NullReferenceException Microsoft.Maui.Controls.Platform.iOS.StructuredItemsViewRenderer [Bug]",
 		PlatformAffected.iOS)]
 	public partial class Issue8715 : TestShell
 	{

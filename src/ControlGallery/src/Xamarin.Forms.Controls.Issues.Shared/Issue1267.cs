@@ -1,12 +1,12 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -34,14 +34,10 @@ namespace Xamarin.Forms.Controls.Issues
 			grid.Children.Add(label = new Label(), 0, 1);
 			label.SetBinding(Label.TextProperty, "LastName");
 
-#pragma warning disable 618
-			grid.Children.Add(label = new Label { XAlign = TextAlignment.End }, 1, 0);
-#pragma warning restore 618
+			grid.Children.Add(label = new Label { HorizontalTextAlignment = TextAlignment.End }, 1, 0);
 			label.SetBinding(Label.TextProperty, "Zip");
 
-#pragma warning disable 618
-			grid.Children.Add(label = new Label { XAlign = TextAlignment.End }, 1, 1);
-#pragma warning restore 618
+			grid.Children.Add(label = new Label { VerticalTextAlignment = TextAlignment.End }, 1, 1);
 			label.SetBinding(Label.TextProperty, "City");
 			View = grid;
 

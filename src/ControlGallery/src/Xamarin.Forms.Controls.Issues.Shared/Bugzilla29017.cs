@@ -1,14 +1,14 @@
 ﻿using System;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Maps;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Maps;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(Core.UITests.UITestCategories.Bugzilla)]
@@ -38,9 +38,7 @@ namespace Xamarin.Forms.Controls.Issues
 						Text = "Add pins",
 						Command = new Command (() => {
 							foreach (var pin in map.Pins) {
-#pragma warning disable CS0618
-								pin.Clicked -= PinClicked;
-#pragma warning restore CS0618
+								pin.MarkerClicked -= PinClicked;
 							}
 
 							map.Pins.Clear ();
@@ -61,9 +59,9 @@ namespace Xamarin.Forms.Controls.Issues
 									Type = PinType.Place,
 									Position = new Position (map.VisibleRegion.Center.Latitude + lat, map.VisibleRegion.Center.Longitude + lng)
 								};
-#pragma warning disable CS0618
-								pin.Clicked += PinClicked;
-#pragma warning restore CS0618
+
+								pin.MarkerClicked += PinClicked;
+
 								map.Pins.Add (pin);
 							}
 						})

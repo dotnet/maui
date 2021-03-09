@@ -1,0 +1,103 @@
+<Type Name="BatteryPowerSource" FullName="Xamarin.Essentials.BatteryPowerSource">
+  <TypeSignature Language="C#" Value="public enum BatteryPowerSource" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed BatteryPowerSource extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.BatteryPowerSource" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>How the device and battery are currently being powered or charged.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="AC">
+      <MemberSignature Language="C#" Value="AC" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryPowerSource AC = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryPowerSource.AC" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <MemberValue>2</MemberValue>
+      <Docs>
+        <summary>Power source is an AC Charger.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Battery">
+      <MemberSignature Language="C#" Value="Battery" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryPowerSource Battery = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryPowerSource.Battery" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>Power source is the battery and not being charge.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Unknown">
+      <MemberSignature Language="C#" Value="Unknown" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryPowerSource Unknown = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryPowerSource.Unknown" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Power source can not be determined.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Usb">
+      <MemberSignature Language="C#" Value="Usb" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryPowerSource Usb = int32(3)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryPowerSource.Usb" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <MemberValue>3</MemberValue>
+      <Docs>
+        <summary>Power source is a USB port.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Wireless">
+      <MemberSignature Language="C#" Value="Wireless" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryPowerSource Wireless = int32(4)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryPowerSource.Wireless" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <MemberValue>4</MemberValue>
+      <Docs>
+        <summary>Power source is wireless.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

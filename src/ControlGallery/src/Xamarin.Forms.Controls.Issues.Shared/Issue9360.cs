@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 9360, "[Bug] Android Icons no longer customizable via NavigationPageRenderer UpdateMenuItemIcon()",
@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Controls.Issues
 				contentPage.ToolbarItems.Add(new ToolbarItem() { Text = "BAD" });
 				contentPage.ToolbarItems.Add(new ToolbarItem()
 				{
-					IconImageSource = ImageSource.FromResource("Xamarin.Forms.Controls.GalleryPages.crimson.jpg", typeof(Issue9360NavigationPage).GetTypeInfo().Assembly)
+					IconImageSource = ImageSource.FromResource("Microsoft.Maui.Controls.ControlGallery.GalleryPages.crimson.jpg", typeof(Issue9360NavigationPage).GetTypeInfo().Assembly)
 				});
 
 				contentPage.ToolbarItems.Add(new ToolbarItem()

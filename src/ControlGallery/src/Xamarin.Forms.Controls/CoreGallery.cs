@@ -2,26 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Forms.Controls.GalleryPages;
-using Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries;
-using Xamarin.Forms.Controls.GalleryPages.GradientGalleries;
-using Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery;
-using Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries;
-using Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.ShapesGalleries;
-using Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.AppThemeGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.DateTimePickerGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.DragAndDropGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformTestsGallery;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.RadioButtonGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.RefreshViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.ShapesGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.SwipeViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.VisualStateManagerGalleries;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Controls
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	[Preserve(AllMembers = true)]
 	public static class Messages
@@ -297,6 +298,7 @@ namespace Xamarin.Forms.Controls
 		}
 
 		List<GalleryPageFactory> _pages = new List<GalleryPageFactory> {
+				new GalleryPageFactory(() => new GalleryPages.LayoutGalleries.LayoutGallery(), ".NET MAUI Layouts"),
 				new GalleryPageFactory(() => new TabIndexTest.TabIndex(), "Accessibility TabIndex (2)"),
 				new GalleryPageFactory(() => new PlatformTestsConsole(), "Platform Automated Tests"),
 				new GalleryPageFactory(() => new EmbeddedFonts(), "Embedded Fonts"),
@@ -336,6 +338,7 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new AlertGallery(), "DisplayAlert Gallery"),
 				new GalleryPageFactory(() => new ToolbarItems(), "ToolbarItems Gallery"),
 				new GalleryPageFactory(() => new ActionSheetGallery(), "ActionSheet Gallery"),
+				new GalleryPageFactory(() => new DateTimePickerGallery(), "DateTime Picker Localization Gallery"),
 				new GalleryPageFactory(() => new ActivityIndicatorCoreGalleryPage(), "ActivityIndicator Gallery"),
 				new GalleryPageFactory(() => new BehaviorsAndTriggers(), "BehaviorsTriggers Gallery"),
 				new GalleryPageFactory(() => new ContextActionsGallery(), "ContextActions List Gallery"),

@@ -9,17 +9,18 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.Android;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(Bugzilla38989._38989CustomViewCell), typeof(_38989CustomViewCellRenderer))]
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
-	public class _38989CustomViewCellRenderer : Xamarin.Forms.Platform.Android.ViewCellRenderer
+	public class _38989CustomViewCellRenderer : Microsoft.Maui.Controls.Compatibility.Platform.Android.ViewCellRenderer
 	{
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{

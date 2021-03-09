@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
@@ -39,15 +39,15 @@ namespace Xamarin.Forms.Controls.Issues
 			var layout = new RelativeLayout();
 
 			layout.Children.Add(_list,
-				Forms.Constraint.RelativeToParent(p => p.X),
-				Forms.Constraint.RelativeToParent(p => p.Y),
-				Forms.Constraint.RelativeToParent(p => p.Width),
-				Forms.Constraint.RelativeToParent(p => p.Height)
+				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.X),
+				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.Y),
+				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.Width),
+				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.Height)
 			);
 
 			layout.Children.Add(_button,
-				Forms.Constraint.Constant(0),
-				Forms.Constraint.Constant(300));
+				Microsoft.Maui.Controls.Constraint.Constant(0),
+				Microsoft.Maui.Controls.Constraint.Constant(300));
 
 			return layout;
 		}

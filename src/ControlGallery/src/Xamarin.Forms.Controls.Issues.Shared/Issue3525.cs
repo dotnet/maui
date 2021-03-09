@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3525, "[iOS] Finicky tap gesture recognition on Spans")]
@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var layout = new StackLayout { Padding = new Thickness(5, 10) };
 
 			var formattedString = new FormattedString();
-			formattedString.Spans.Add(new Span { Text = "Not Clickable, ", ForegroundColor = Color.Red, FontAttributes = FontAttributes.Bold, LineHeight = 1.8 });
+			formattedString.Spans.Add(new Span { Text = "Not Clickable, ", TextColor = Color.Red, FontAttributes = FontAttributes.Bold, LineHeight = 1.8 });
 			formattedString.Spans.Add(new Span { Text = Environment.NewLine });
 			formattedString.Spans.Add(new Span { Text = Environment.NewLine });
 			var span = new Span { Text = "Clickable, " };

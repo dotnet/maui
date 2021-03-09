@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,13 +7,13 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace DualScreen.UWP
 {
@@ -32,12 +32,12 @@ namespace DualScreen.UWP
             this.Suspending += OnSuspending;
         }
 
-        /// <summary>
-        /// Invoked when the application is launched normally by the end user.  Other entry points
-        /// will be used such as when the application is launched to open a specific file.
-        /// </summary>
-        /// <param name="e">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs e)
+		/// <summary>
+		/// Invoked when the application is launched normally by the end user.  Other entry points
+		/// will be used such as when the application is launched to open a specific file.
+		/// </summary>
+		/// <param name="e">Details about the launch request and process.</param>
+		protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs e)
         {
 
 
@@ -52,12 +52,8 @@ namespace DualScreen.UWP
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
 
-                Xamarin.Forms.Forms.Init(e);
+                Microsoft.Maui.Controls.Forms.Init(e.UWPLaunchActivatedEventArgs);
 
-                if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
-                {
-                    //TODO: Load state from previously suspended application
-                }
 
                 // Place the frame in the current Window
                 Window.Current.Content = rootFrame;

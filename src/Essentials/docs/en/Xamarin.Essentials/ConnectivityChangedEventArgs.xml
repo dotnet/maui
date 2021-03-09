@@ -1,0 +1,94 @@
+<Type Name="ConnectivityChangedEventArgs" FullName="Xamarin.Essentials.ConnectivityChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class ConnectivityChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ConnectivityChangedEventArgs extends System.EventArgs" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ConnectivityChangedEventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>The current connectivity information from the change event.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ConnectivityChangedEventArgs (Xamarin.Essentials.NetworkAccess access, System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt; connectionProfiles);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.NetworkAccess access, class System.Collections.Generic.IEnumerable`1&lt;valuetype Xamarin.Essentials.ConnectionProfile&gt; connectionProfiles) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ConnectivityChangedEventArgs.#ctor(Xamarin.Essentials.NetworkAccess,System.Collections.Generic.IEnumerable{Xamarin.Essentials.ConnectionProfile})" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="access" Type="Xamarin.Essentials.NetworkAccess" />
+        <Parameter Name="connectionProfiles" Type="System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt;" />
+      </Parameters>
+      <Docs>
+        <param name="access">The current access of the network</param>
+        <param name="connectionProfiles">The connection profiles of the events changing</param>
+        <summary>Public constructor</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ConnectionProfiles">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt; ConnectionProfiles { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IEnumerable`1&lt;valuetype Xamarin.Essentials.ConnectionProfile&gt; ConnectionProfiles" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ConnectivityChangedEventArgs.ConnectionProfiles" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the active connectivity types for the device.</summary>
+        <value>List of all connection profiles.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="NetworkAccess">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.NetworkAccess NetworkAccess { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.NetworkAccess NetworkAccess" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.NetworkAccess</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current state of network access. Does not guarantee full access to the internet.</summary>
+        <value>The current network access state.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ConnectivityChangedEventArgs.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>The string representation of the event.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

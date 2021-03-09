@@ -1,0 +1,88 @@
+<Type Name="TextToSpeech" FullName="Xamarin.Essentials.TextToSpeech">
+  <TypeSignature Language="C#" Value="public static class TextToSpeech" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit TextToSpeech extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.TextToSpeech" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Speak text to Speech</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="GetLocalesAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Locale&gt;&gt; GetLocalesAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.Locale&gt;&gt; GetLocalesAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.TextToSpeech.GetLocalesAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Locale&gt;&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Gets a list of Locales supported by Text to Speech.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SpeakAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SpeakAsync (string text, System.Threading.CancellationToken cancelToken = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task SpeakAsync(string text, valuetype System.Threading.CancellationToken cancelToken) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,System.Threading.CancellationToken)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="text" Type="System.String" />
+        <Parameter Name="cancelToken" Type="System.Threading.CancellationToken" />
+      </Parameters>
+      <Docs>
+        <param name="text">The text to speak..</param>
+        <param name="cancelToken">Optional cancellation token to stop speaking.</param>
+        <summary>Speaks the given text with default options.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SpeakAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SpeakAsync (string text, Xamarin.Essentials.SpeechOptions options, System.Threading.CancellationToken cancelToken = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task SpeakAsync(string text, class Xamarin.Essentials.SpeechOptions options, valuetype System.Threading.CancellationToken cancelToken) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,Xamarin.Essentials.SpeechOptions,System.Threading.CancellationToken)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="text" Type="System.String" />
+        <Parameter Name="options" Type="Xamarin.Essentials.SpeechOptions" />
+        <Parameter Name="cancelToken" Type="System.Threading.CancellationToken" />
+      </Parameters>
+      <Docs>
+        <param name="text">The text to speak.</param>
+        <param name="options">The options to use for speaking.</param>
+        <param name="cancelToken">Optional cancellation token to stop speaking.</param>
+        <summary>Speaks the given text with the specified options.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
