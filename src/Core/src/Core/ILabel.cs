@@ -5,6 +5,9 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface ILabel : IView, IText, IFont
 	{
+		/// <summary>
+		/// Gets the space between the text of the Label and it's border.
+		/// </summary>
 		Thickness Padding { get; }
 	}
 }
