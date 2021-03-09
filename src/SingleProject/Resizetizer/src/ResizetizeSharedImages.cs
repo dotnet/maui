@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Resizetizer
 				}
 				catch (Exception ex)
 				{
-					Log.LogErrorFromException(ex);
+					Log.LogWarningFromException(ex, true);
 
 					throw;
 				}
