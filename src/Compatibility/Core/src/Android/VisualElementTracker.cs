@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var width = Math.Max(0, (int)_context.ToPixels(view.Width));
 			var height = Math.Max(0, (int)_context.ToPixels(view.Height));
 
-			var formsViewGroup = aview as Controls.Android.FormsViewGroup;
+			var formsViewGroup = aview as FormsViewGroup;
 			if (formsViewGroup == null)
 			{
 				Performance.Start(reference, "Measure");
@@ -348,7 +348,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
 
-			if (aview is Controls.Android.FormsViewGroup formsViewGroup)
+			if (aview is FormsViewGroup formsViewGroup)
 			{
 				formsViewGroup.SendBatchUpdate((float)(view.AnchorX * _context.ToPixels(view.Width)),
 											   (float)(view.AnchorY * _context.ToPixels(view.Height)),
@@ -365,7 +365,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			else
 			{
-				Controls.Android.FormsViewGroup.SendViewBatchUpdate(aview,
+				FormsViewGroup.SendViewBatchUpdate(aview,
 												   (float)(view.AnchorX * _context.ToPixels(view.Width)),
 												   (float)(view.AnchorY * _context.ToPixels(view.Height)),
 												   (int)(view.IsVisible ? ViewStates.Visible : ViewStates.Invisible),
