@@ -13,7 +13,11 @@ namespace Microsoft.Maui
 
 		public static void UpdateText(this EditText editText, IEntry entry)
 		{
-			editText.Text = entry.Text;
+			var newText = entry.Text ?? string.Empty;
+			var oldText = editText.Text ?? string.Empty;
+
+			if (oldText != newText)
+				editText.Text = newText;
 		}
 
 		public static void UpdateTextColor(this EditText editText, IEntry entry, ColorStateList? defaultColor)
