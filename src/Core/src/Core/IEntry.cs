@@ -9,6 +9,7 @@
 		/// Gets a value that indicates if the entry should visually obscure typed text.
 		/// </summary>
 		bool IsPassword { get; }
+
 		/// <summary>
 		/// Gets a value that controls whether text prediction and automatic text correction is on or off.
 		/// </summary>
