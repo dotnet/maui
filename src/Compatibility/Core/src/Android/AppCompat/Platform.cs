@@ -268,7 +268,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				returnValue = new SizeRequest(Size.Zero, Size.Zero);
 			}
-			
+
 			Performance.Stop(reference);
 
 			return returnValue;

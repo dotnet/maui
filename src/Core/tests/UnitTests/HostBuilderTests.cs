@@ -1,10 +1,10 @@
-using Microsoft.Maui.Handlers;
 using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Tests;
-using Microsoft.Maui.Hosting;
-using Xunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Tests;
+using Xunit;
 
 namespace Microsoft.Maui.UnitTests
 {
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.UnitTests
 			app.CreateBuilder()
 				.ConfigureServices((ctx, services) => services.AddTransient<IFooService, FooService>())
 				.Build(app);
-			
+
 			AssertTransient<IFooService, FooService>(app);
 		}
 

@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateTextColor(this AppCompatButton appCompatButton, IButton button, XColor defaultColor) =>
 			appCompatButton.SetTextColor(button.TextColor.Cleanse(defaultColor).ToNative());
-				
+
 		static XColor Cleanse(this XColor color, XColor defaultColor) => color.IsDefault ? defaultColor : color;
 	}
 }

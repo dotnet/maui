@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 			if (view == null)
 				return;
 
-			if (view.TrackColor ==  Maui.Color.Default)
+			if (view.TrackColor == Maui.Color.Default)
 				uiSwitch.OnTintColor = defaultOnTrackColor;
 			else
 				uiSwitch.OnTintColor = view.TrackColor.ToNative();
@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 			else
 				uIView = uiSwitch.Subviews[0].Subviews[0].Subviews[0];
 
-			if (view.TrackColor ==  Maui.Color.Default)
+			if (view.TrackColor == Maui.Color.Default)
 				uIView.BackgroundColor = defaultOffTrackColor;
 			else
 				uIView.BackgroundColor = uiSwitch.OnTintColor;
@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 			if (view == null)
 				return;
 
-			 Maui.Color thumbColor = view.ThumbColor;
+			Maui.Color thumbColor = view.ThumbColor;
 			uiSwitch.ThumbTintColor = thumbColor.IsDefault ? defaultThumbColor : thumbColor.ToNative();
 		}
 
