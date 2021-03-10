@@ -1,5 +1,5 @@
-using UIKit;
 using Microsoft.Maui;
+using UIKit;
 
 namespace Microsoft.Maui
 {

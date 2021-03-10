@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 			textView.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
-		public static void UpdatePadding(this TextView textView, ILabel label) 
+		public static void UpdatePadding(this TextView textView, ILabel label)
 		{
 			var context = textView.Context;
 

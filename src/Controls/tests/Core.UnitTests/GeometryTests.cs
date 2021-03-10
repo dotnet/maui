@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Shapes;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

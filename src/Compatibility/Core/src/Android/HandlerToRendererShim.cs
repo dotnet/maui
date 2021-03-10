@@ -3,8 +3,8 @@ using System.ComponentModel;
 using Android.Views;
 using AndroidX.AppCompat.View.Menu;
 using AndroidX.Core.View;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			Element = element;
-			
+
 			ViewHandler.SetVirtualView((IView)element);
 			((IView)element).Handler = ViewHandler;
 
