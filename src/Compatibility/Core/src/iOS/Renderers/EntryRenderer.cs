@@ -550,6 +550,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void UpdateIsReadOnly()
 		{
 			Control.UserInteractionEnabled = !Element.IsReadOnly;

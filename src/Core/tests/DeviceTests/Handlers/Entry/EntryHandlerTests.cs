@@ -147,6 +147,23 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
+		[Theory(DisplayName = "IsReadOnly Updates Correctly")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task IsReadOnlyUpdatesCorrectly(bool setValue, bool unsetValue)
+		{
+			var entry = new EntryStub();
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.IsReadOnly),
+				GetNativeIsReadOnly,
+				setValue,
+				unsetValue);
+		}
+
 		[Theory(DisplayName = "Text Changed Events Fire Correctly")]
 		// null/empty
 		[InlineData(null, null, false)]

@@ -518,6 +518,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		protected virtual void UpdateIsReadOnly()
 		{
 			bool isReadOnly = !Element.IsReadOnly;

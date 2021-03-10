@@ -32,7 +32,15 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsTextPredictionEnabled(EntryHandler entryHandler) =>
 			!GetNativeEntry(entryHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
 
+
 		string GetNativePlaceholder(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Hint;
+
+		bool GetNativeIsReadOnly(EntryHandler entryHandler) 
+		{
+			var editText = GetNativeEntry(entryHandler);
+
+			return !editText.Focusable && !editText.FocusableInTouchMode;
+		}
 	}
 }

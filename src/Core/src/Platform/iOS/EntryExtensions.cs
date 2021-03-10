@@ -50,5 +50,10 @@ namespace Microsoft.Maui
 		{
 			editText.Placeholder = entry.Placeholder;
 		}
+
+		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)
+		{
+			textField.UserInteractionEnabled = !entry.IsReadOnly;
+		}
 	}
 }
