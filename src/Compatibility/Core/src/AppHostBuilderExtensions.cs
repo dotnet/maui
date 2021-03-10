@@ -5,8 +5,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -23,15 +23,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 				  typeof(Page) ,
 				  typeof(Label) ,
 				  typeof(Slider),
-				  typeof(Switch) 
+				  typeof(Switch)
 			};
 
 			Forms.RegisterCompatRenderers(
-				new[] { typeof(RendererToHandlerShim).Assembly } ,
+				new[] { typeof(RendererToHandlerShim).Assembly },
 				typeof(RendererToHandlerShim).Assembly,
 				(controlType) =>
 				{
-					foreach(var type in defaultHandlers)
+					foreach (var type in defaultHandlers)
 					{
 						if (type.IsAssignableFrom(controlType))
 							return;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static IAppHostBuilder RegisterCompatibilityRenderer(
-			this IAppHostBuilder builder, 
+			this IAppHostBuilder builder,
 			Type controlType,
 			Type rendererType)
 		{
@@ -73,8 +73,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static IAppHostBuilder RegisterCompatibilityRenderer<TControlType, TRenderer>(this IAppHostBuilder builder)
-			where TControlType : IFrameworkElement =>		
+			where TControlType : IFrameworkElement =>
 				builder.RegisterCompatibilityRenderer<TControlType, TControlType, TRenderer>();
-		
+
 	}
 }

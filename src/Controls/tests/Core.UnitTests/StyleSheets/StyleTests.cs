@@ -1,9 +1,7 @@
 using System;
 using System.IO;
-
-using NUnit.Framework;
-
 using Microsoft.Maui.Controls.Core.UnitTests;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 {

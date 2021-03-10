@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
