@@ -12,6 +12,10 @@ namespace Microsoft.Maui
 				return;
 
 			editText.Text = text;
+
+			if (string.IsNullOrEmpty(text))
+				return;
+
 			editText.SetSelection(text.Length);
 		}
 	}
