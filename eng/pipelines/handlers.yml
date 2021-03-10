@@ -45,20 +45,7 @@ schedules:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
-  - name: DotNetVersion
-    value: 6.0.100-preview.2.21114.3
-  - name: DotNet.Cli.Telemetry.OptOut
-    value: true
-  - name: Android.Msi
-    value: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4525053/master/8cd0b47032d267a63b449a63c0839c60cbd976f1/Microsoft.NET.Workload.Android.11.0.200.136.msi
-  - name: iOS.Msi
-    value: https://bosstoragemirror.azureedge.net/wrench/main/94fb7823f263f0367f7c311dc90920e88d5d5f9a/4526923/package/Microsoft.NET.Workload.iOS.14.4.100-ci.main.1171.msi
-  - name: Android.Pkg
-    value: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4525053/master/8cd0b47032d267a63b449a63c0839c60cbd976f1/Microsoft.NET.Workload.Android-11.0.200-ci.8cd0b47032d267a63b449a63c0839c60cbd976f1.136.pkg
-  - name: iOS.Pkg
-    value: https://bosstoragemirror.azureedge.net/wrench/main/94fb7823f263f0367f7c311dc90920e88d5d5f9a/4526923/package/Microsoft.iOS.Bundle.14.4.100-ci.main.1171.pkg
-  - name: MacCatalyst.Pkg
-    value: https://bosstoragemirror.azureedge.net/wrench/main/94fb7823f263f0367f7c311dc90920e88d5d5f9a/4526923/package/Microsoft.MacCatalyst.Bundle.14.3.100-ci.main.316.pkg
+  - template: /eng/pipelines/common/variables-net6.yml
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)\logs
   - name: provisionator.xcode
@@ -285,7 +272,8 @@ stages:
         displayName: Build .NET 6 macOS
         timeoutInMinutes: 120
         pool:
-          vmImage:  macOS-latest
+          name: $(macOSXNet6VmPool)
+          vmImage: $(macOSXNet6VmImage)
         variables:
           DotNet.Root: /usr/local/share/dotnet/
           DotNet.Tools: ~/.dotnet/tools

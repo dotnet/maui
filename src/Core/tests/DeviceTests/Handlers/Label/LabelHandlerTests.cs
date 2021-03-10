@@ -57,10 +57,10 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				FontSize = fontSize
+				Font = Font.OfSize("Arial", fontSize)
 			};
 
-			await ValidatePropertyInitValue(label, () => label.FontSize, GetNativeUnscaledFontSize, label.FontSize);
+			await ValidatePropertyInitValue(label, () => label.Font.FontSize, GetNativeUnscaledFontSize, label.Font.FontSize);
 		}
 
 		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
@@ -73,11 +73,11 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				FontAttributes = attributes
+				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
 			};
 
-			await ValidatePropertyInitValue(label, () => label.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(label, () => label.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(label, () => label.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
+			await ValidatePropertyInitValue(label, () => label.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
 		}
 	}
 }
