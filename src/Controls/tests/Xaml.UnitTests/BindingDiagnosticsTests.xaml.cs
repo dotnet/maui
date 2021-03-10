@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		[TestFixture]
+#if !DEBUG
+		[Ignore("This test runs only in debug")] 
+#endif 
 		public class Tests
 		{
 			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
