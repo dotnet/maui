@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 
 namespace Microsoft.Maui.Resizetizer
@@ -48,10 +49,14 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				foreach (var idiom in dpi.Idioms)
 				{
+					var w = dpi.Size.Value.Width.ToString("0.#", CultureInfo.InvariantCulture);
+					var h = dpi.Size.Value.Height.ToString("0.#", CultureInfo.InvariantCulture);
+					var s = dpi.Scale.ToString("0", CultureInfo.InvariantCulture);
+
 					appIconImagesJson.Add(new JObject(
 						new JProperty("idiom", idiom),
-						new JProperty("size", $"{dpi.Size.Value.Width}x{dpi.Size.Value.Height}"),
-						new JProperty("scale", dpi.Scale.ToString("0") + "x"),
+						new JProperty("size", $"{w}x{h}"),
+						new JProperty("scale", $"{s}x"),
 						new JProperty("filename", AppIconName + dpi.FileSuffix + ".png")));
 				}
 			}
