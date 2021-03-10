@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Tests
 
 		public Color TextColor { get; set; }
 
+		public double CharacterSpacing { get; set; }
+
 		public void Clicked() { }
 
 		public void Pressed() { }
