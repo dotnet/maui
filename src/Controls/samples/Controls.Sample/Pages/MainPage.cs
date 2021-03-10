@@ -9,6 +9,7 @@ namespace Maui.Controls.Sample.Pages
 	public class MainPage : ContentPage, IPage
 	{
 		MainPageViewModel _viewModel;
+
 		public MainPage() : this(App.Current.Services.GetService<MainPageViewModel>())
 		{
 
@@ -61,6 +62,9 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
 			verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true });
+
+			verticalStack.Add(new RadioButton());
+			verticalStack.Add(new RadioButton { IsChecked = true });
 
 			verticalStack.Add(new Slider());
 

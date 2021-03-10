@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace Microsoft.Maui.Controls
 {
-	public class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement
+	public partial class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement
 	{
 		public const string CheckedVisualState = "Checked";
 		public const string UncheckedVisualState = "Unchecked";
