@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		async Task ValidateTime(ITimePicker timePickerStub, Action action = null)
 		{
-			var expected = await GetValueAsync(timePickerStub, handler =>
+			var actual = await GetValueAsync(timePickerStub, handler =>
 			{
 				var native = GetNativeTimePicker(handler);
 				action?.Invoke();
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			var timeFormat = "t";
 			var emptyTime = emptyTimeSpan.ToString(timeFormat);
 
-			Assert.NotEqual(expected, emptyTime);
+			Assert.NotEqual(actual, emptyTime);
 		}
 	}
 }
