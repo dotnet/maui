@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls.Build.Tasks;
 using Mono.Cecil;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.Build.Tasks;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests

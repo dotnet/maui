@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider, ColorStateList? defaultProgressTintList, PorterDuff.Mode? defaultProgressTintMode)
 		{
-			if (slider.MinimumTrackColor ==  Maui.Color.Default)
+			if (slider.MinimumTrackColor == Maui.Color.Default)
 			{
 				if (defaultProgressTintList != null)
 					seekBar.ProgressTintList = defaultProgressTintList;
@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaximumTrackColor(this SeekBar seekBar, ISlider slider, ColorStateList? defaultProgressBackgroundTintList, PorterDuff.Mode? defaultProgressBackgroundTintMode)
 		{
-			if (slider.MaximumTrackColor ==  Maui.Color.Default)
+			if (slider.MaximumTrackColor == Maui.Color.Default)
 			{
 				if (defaultProgressBackgroundTintList != null)
 					seekBar.ProgressBackgroundTintList = defaultProgressBackgroundTintList;

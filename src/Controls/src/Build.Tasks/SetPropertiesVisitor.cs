@@ -2,18 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
-
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml;
-
+using static Microsoft.Maui.Controls.Build.Tasks.BuildExceptionCode;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
-
-using static Microsoft.Maui.Controls.Build.Tasks.BuildExceptionCode;
 
 namespace Microsoft.Maui.Controls.Build.Tasks
 {

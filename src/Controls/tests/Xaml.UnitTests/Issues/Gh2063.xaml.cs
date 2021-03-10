@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Build.Tasks;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {

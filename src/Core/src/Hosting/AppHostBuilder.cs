@@ -238,9 +238,9 @@ namespace Microsoft.Maui.Hosting
 				if (_hostBuilderContext != null)
 					action(_hostBuilderContext, fontCollection);
 			}
-			
+
 			var fontRegistrar = serviceProvider.GetRequiredService<IFontRegistrar>();
-			foreach(var font in fontCollection)
+			foreach (var font in fontCollection)
 			{
 				fontRegistrar.Register(font.Filename, font.Alias);
 			}

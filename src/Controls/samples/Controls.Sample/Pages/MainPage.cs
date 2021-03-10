@@ -1,7 +1,7 @@
 using Maui.Controls.Sample.ViewModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -50,10 +50,17 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 
-			verticalStack.Add(new Entry());
+			var entry = new Entry();
+			entry.TextChanged += (sender, e) =>
+			{
+				System.Console.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
+			};
+			verticalStack.Add(entry);
 			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
+			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
+			verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });

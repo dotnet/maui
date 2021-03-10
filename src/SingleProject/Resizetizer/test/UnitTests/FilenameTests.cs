@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		public WindowsTheory()
 			: base()
 		{
-			if(!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 				Skip = $"Ignored unless on Windows";
 		}
 	}
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		public UnixTheory()
 			: base()
 		{
-			if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 				Skip = $"Ignored on Windows";
 		}
 	}

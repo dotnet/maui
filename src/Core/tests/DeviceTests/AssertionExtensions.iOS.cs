@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using CoreGraphics;
-using UIKit;
 using Microsoft.Maui.Essentials;
+using UIKit;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -136,19 +136,19 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<UIImage> AssertColorAtBottomLeft(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view .ToBitmap();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtBottomRight(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view .ToBitmap();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtTopLeft(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view .ToBitmap();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
