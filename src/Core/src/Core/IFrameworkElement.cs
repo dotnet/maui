@@ -74,6 +74,7 @@
 		/// </summary>
 		void InvalidateMeasure();
 
+		
 		/// <summary>
 		/// Method that is called to invalidate the layout of this FrameworkElement.
 		/// </summary>
