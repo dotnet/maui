@@ -1,4 +1,6 @@
-﻿using Android.Widget;
+﻿using Android.Views;
+using Android.Views.InputMethods;
+using Android.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -6,12 +8,17 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override EditText CreateNativeView()
 		{
-			return new EditText(Context);
-		}
+			var editText = new EditText(Context)
+			{
+				ImeOptions = ImeAction.Done
+			};
 
-		protected override void SetupDefaults(EditText nativeView)
-		{
-			base.SetupDefaults(nativeView);
+			editText.SetSingleLine(false);
+			editText.Gravity = GravityFlags.Top;
+			editText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
+			editText.SetHorizontallyScrolling(false);
+
+			return editText;
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)

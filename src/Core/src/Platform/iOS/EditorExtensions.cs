@@ -6,7 +6,12 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateText(this UITextView textView, IEditor editor)
 		{
-			textView.Text = editor.Text;
+			string text = editor.Text;
+
+			if (textView.Text != text)
+			{
+				textView.Text = text;
+			}
 		}
 	}
 }

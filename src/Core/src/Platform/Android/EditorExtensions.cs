@@ -6,7 +6,13 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateText(this EditText editText, IEditor editor)
 		{
-			editText.Text = editor.Text;
+			string text = editor.Text;
+
+			if (editText.Text == text)
+				return;
+
+			editText.Text = text;
+			editText.SetSelection(text.Length);
 		}
 	}
 }

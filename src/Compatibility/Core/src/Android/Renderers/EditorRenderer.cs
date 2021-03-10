@@ -302,6 +302,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.Text = TrimToMaxLength(EditText.Text);
 		}
 
+		[PortHandler]
 		string TrimToMaxLength(string currentText)
 		{
 			if (currentText == null || currentText.Length <= Element.MaxLength)
