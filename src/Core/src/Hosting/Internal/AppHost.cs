@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Hosting.Internal
 	internal class AppHost : IHost, IAsyncDisposable
 	{
 		readonly ILogger<AppHost>? _logger;
-		
+
 		public AppHost(IServiceProvider services, ILogger<AppHost>? logger)
 		{
 			Services = services ?? throw new ArgumentNullException(nameof(services));

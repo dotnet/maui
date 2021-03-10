@@ -6,11 +6,11 @@ using System.IO;
 using System.Xml;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Mdb;
 using Mono.Cecil.Pdb;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.Build.Tasks
 {

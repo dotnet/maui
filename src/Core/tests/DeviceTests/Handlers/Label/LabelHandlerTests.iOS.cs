@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				FontFamily = family
+				Font = Font.OfSize(family, 10)
 			};
 
 			var nativeFont = await GetValueAsync(label, handler => GetNativeLabel(handler).Font);

@@ -6,9 +6,9 @@ namespace Microsoft.Maui
 {
 	public static class EntryExtensions
 	{
-		static readonly int[][] ColorStates = { 
-			new[] { global::Android.Resource.Attribute.StateEnabled }, 
-			new[] { -global::Android.Resource.Attribute.StateEnabled } 
+		static readonly int[][] ColorStates = {
+			new[] { global::Android.Resource.Attribute.StateEnabled },
+			new[] { -global::Android.Resource.Attribute.StateEnabled }
 		};
 
 		public static void UpdateText(this EditText editText, IEntry entry)

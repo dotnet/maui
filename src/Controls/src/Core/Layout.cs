@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint) 
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 			=> (this as IFrameworkElement).Measure(widthConstraint, heightConstraint);
 
 		protected override void OnSizeAllocated(double width, double height)

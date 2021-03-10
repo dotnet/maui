@@ -7,10 +7,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Xaml;
+using Newtonsoft.Json;
 
 #if UITEST
 using Microsoft.Maui.Controls.UITests;

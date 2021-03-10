@@ -4,8 +4,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Microsoft.Maui.Controls.Internals;
+using Newtonsoft.Json;
 
 namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
