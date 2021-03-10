@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Frame = new RectangleF(0, 20, 320, 40);
 		}
 
+		[PortHandler]
 		protected override UITextView CreateNativeControl()
 		{
 			return new FormsUITextView(RectangleF.Empty);
