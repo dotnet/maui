@@ -13,5 +13,7 @@ namespace Microsoft.Maui.Tests
 		public void Pressed() { }
 
 		public void Released() { }
+
+		public Font Font { get; set; }
 	}
 }
