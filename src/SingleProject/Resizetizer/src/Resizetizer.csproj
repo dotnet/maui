@@ -63,12 +63,12 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.ObjectModel" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Svg2VectorDrawable.Net" Version="0.1.0" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Svg2VectorDrawable.Net" Version="0.3.0" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="_CopyToNuspecDir" AfterTargets="Build">
     <ItemGroup>
-      <_CopyItems Include="$(TargetDir)**\*.dll" />
+      <_CopyItems Include="$(TargetDir)**\*.dll" Exclude="$(TargetDir)System.*.dll" />
       <_CopyItems Include="$(TargetDir)**\*.dylib" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\..\..\..\.nuspec\%(RecursiveDir)" ContinueOnError="true" Retries="0" />
