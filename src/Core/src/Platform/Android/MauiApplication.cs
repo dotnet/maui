@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 	{
 		public MauiApplication(IntPtr handle, JniHandleOwnership ownerShip) : base(handle, ownerShip)
 		{
-		
+
 		}
 		IHost? _host;
 		public override void OnCreate()
@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 			//_host.Start();
 			base.OnCreate();
 		}
-		
+
 		//configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{

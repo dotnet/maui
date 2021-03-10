@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Samples.Model;
 using Microsoft.Maui.Essentials;
+using Samples.Model;
 
 namespace Samples.ViewModel
 {

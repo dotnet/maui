@@ -4,8 +4,8 @@ using System.Text;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using UIKit;
 using Microsoft.Maui.Hosting;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-			
+
 		}
 	}
 }

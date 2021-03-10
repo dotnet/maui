@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				{
 					if (On<Android>().Element.UnselectedTabColor == Color.Default)
 					{
-						On<Android>().Element.UnselectedTabColor =new Color(0, 255, 0, 128);
+						On<Android>().Element.UnselectedTabColor = new Color(0, 255, 0, 128);
 						btnChangeBarItemColorText.Text = $"Item Color: Less Green";
 					}
 					else
@@ -94,12 +94,12 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				{
 					if (On<Android>().Element.SelectedTabColor == Color.Default)
 					{
-						On<Android>().Element.SelectedTabColor =Color.Green;
+						On<Android>().Element.SelectedTabColor = Color.Green;
 						btnChangeBarSelectedItemColorText.Text = $"Selected Item Color: Green";
 					}
 					else
 					{
-						On<Android>().Element.SelectedTabColor= Color.Default;
+						On<Android>().Element.SelectedTabColor = Color.Default;
 						btnChangeBarSelectedItemColorText.Text = $"Selected Item Color: Default";
 					}
 				})

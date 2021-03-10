@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Internals;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

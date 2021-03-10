@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Microsoft.Maui.Controls.Xaml
 {

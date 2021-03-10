@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mono.Cecil;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.MSBuild.UnitTests;
+using Mono.Cecil;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {

@@ -90,7 +90,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		(double left, double top, double right, double bottom) GetNativePadding(Android.Views.View view) 
+		(double left, double top, double right, double bottom) GetNativePadding(Android.Views.View view)
 		{
 			return (view.PaddingLeft, view.PaddingTop, view.PaddingRight, view.PaddingBottom);
 		}
