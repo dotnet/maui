@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 
 		public static DateTime ToDateTime(this NSDate date)
 		{
-			return new ReferenceDate.AddSeconds(date.SecondsSinceReferenceDate);
+			return ReferenceDate.AddSeconds(date.SecondsSinceReferenceDate);
 		}
 
 		public static NSDate ToNSDate(this DateTime date)
