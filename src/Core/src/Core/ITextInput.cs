@@ -9,5 +9,7 @@ namespace Microsoft.Maui
 		/// Gets the maximum allowed length of input.
 		/// </summary>
 		new string Text { get; set; }
+
+		bool IsReadOnly { get; }
 	}
 }

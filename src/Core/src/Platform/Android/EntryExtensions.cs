@@ -57,11 +57,24 @@ namespace Microsoft.Maui
 
 			if (!entry.IsTextPredictionEnabled && ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions))
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+			
+			if (entry.IsReadOnly)
+				editText.InputType = InputTypes.Null;
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEntry entry)
 		{
 			editText.SetInputType(entry);
+		}
+
+		public static void UpdateIsReadOnly(this EditText editText, IEntry entry)
+		{
+			bool isEditable = !entry.IsReadOnly;
+
+			editText.SetInputType(entry);
+
+			editText.FocusableInTouchMode = isEditable;
+			editText.Focusable = isEditable;
 		}
 	}
 }
