@@ -133,16 +133,23 @@ namespace Microsoft.Maui.Controls
 			Device.GetNamedSize(NamedSize.Default, (Entry)this);
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
-			 InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			 HandleFontChanged();
+
+		void HandleFontChanged() 
+		{
+			// Null out the Maui font value so it will be recreated next time it's accessed
+			_font = null;
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		}
 
 		public event EventHandler Completed;
 

@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			var appIconImagesJson = new List<JObject>();
 
-			foreach(var dpi in Dpis)
+			foreach (var dpi in Dpis)
 			{
 				foreach (var idiom in dpi.Idioms)
 				{

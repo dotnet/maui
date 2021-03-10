@@ -1,6 +1,6 @@
 using System.Collections;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Xaml;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {

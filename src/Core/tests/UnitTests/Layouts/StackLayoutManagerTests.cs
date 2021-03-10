@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using NSubstitute;
 using Microsoft.Maui;
+using NSubstitute;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {

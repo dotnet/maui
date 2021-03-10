@@ -2,7 +2,7 @@
 {
 	public class LayoutGallery : ContentPage
 	{
-		public LayoutGallery() 
+		public LayoutGallery()
 		{
 			Content = new ScrollView
 			{

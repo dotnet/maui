@@ -52,7 +52,7 @@ namespace Microsoft.Maui
 		public static ColorStateList ToDefaultColorStateList(this Color color)
 		{
 			return new ColorStateList(
-				new int[][] { new int[0] }, 
+				new int[][] { new int[0] },
 				new[] { color.ToNative().ToArgb() }
 			);
 		}

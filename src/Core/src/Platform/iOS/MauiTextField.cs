@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform.iOS
 			set
 			{
 				base.Text = value;
-				TextPropertySet?.Invoke(this,EventArgs.Empty);
+				TextPropertySet?.Invoke(this, EventArgs.Empty);
 			}
 		}
 

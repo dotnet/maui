@@ -7,8 +7,8 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
+using Microsoft.Maui.Controls.Internals;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 

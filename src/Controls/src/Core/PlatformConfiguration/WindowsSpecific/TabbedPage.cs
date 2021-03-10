@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.Create(nameof(HeaderIconsEnabledProperty), typeof(bool), typeof(TabbedPage), true);
 
 		public static readonly BindableProperty HeaderIconsSizeProperty =
-			BindableProperty.Create(nameof(HeaderIconsSizeProperty), typeof( Size), typeof(TabbedPage), new  Size(16, 16));
+			BindableProperty.Create(nameof(HeaderIconsSizeProperty), typeof(Size), typeof(TabbedPage), new Size(16, 16));
 
 		public static void SetHeaderIconsEnabled(BindableObject element, bool value)
 		{
@@ -51,23 +51,23 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			SetHeaderIconsEnabled(config.Element, false);
 		}
 
-		public static void SetHeaderIconsSize(BindableObject element,  Size value)
+		public static void SetHeaderIconsSize(BindableObject element, Size value)
 		{
 			element.SetValue(HeaderIconsSizeProperty, value);
 		}
 
-		public static  Size GetHeaderIconsSize(BindableObject element)
+		public static Size GetHeaderIconsSize(BindableObject element)
 		{
-			return ( Size)element.GetValue(HeaderIconsSizeProperty);
+			return (Size)element.GetValue(HeaderIconsSizeProperty);
 		}
 
-		public static  Size GetHeaderIconsSize(this IPlatformElementConfiguration<Windows, FormsElement> config)
+		public static Size GetHeaderIconsSize(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return GetHeaderIconsSize(config.Element);
 		}
 
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetHeaderIconsSize(
-			this IPlatformElementConfiguration<Windows, FormsElement> config,  Size value)
+			this IPlatformElementConfiguration<Windows, FormsElement> config, Size value)
 		{
 			SetHeaderIconsSize(config.Element, value);
 			return config;

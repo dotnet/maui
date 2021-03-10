@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Resizetizer
 			var foregroundExists = File.Exists(foregroundFile);
 
 			Logger.Log("Looking for Foreground File: " + foregroundFile);
-			
+
 			// If we have vectors we can emit an adaptive icon
 			if (backgroundIsVector && (foregroundIsVector || !foregroundExists))
 			{

@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
-
-using Mono.Cecil;
-
 using Microsoft.Maui.Controls.Xaml;
+using Mono.Cecil;
 
 namespace Microsoft.Maui.Controls.Build.Tasks
 {
