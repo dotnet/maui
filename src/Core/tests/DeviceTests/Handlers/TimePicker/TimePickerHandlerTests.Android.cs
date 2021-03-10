@@ -19,11 +19,9 @@ namespace Microsoft.Maui.DeviceTests
 				return native.Text;
 			});
 
-			var emptyTimeSpan = TimeSpan.Zero;
-			var timeFormat = "t";
-			var emptyTime = emptyTimeSpan.ToString(timeFormat);
+			var expected = timePickerStub.ToFormattedString();
 
-			Assert.NotEqual(actual, emptyTime);
+			Assert.Equal(actual, expected);
 		}
 	}
 }

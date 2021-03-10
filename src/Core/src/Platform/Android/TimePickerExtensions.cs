@@ -1,5 +1,4 @@
-﻿using System;
-using Android.Text.Format;
+﻿using Android.Text.Format;
 
 namespace Microsoft.Maui
 {
@@ -15,25 +14,17 @@ namespace Microsoft.Maui
 			mauiTimePicker.SetTime(view);
 		}
 
-		internal static bool Is24HourView(this MauiTimePicker mauiTimePicker, ITimePicker? timePicker)
-		{
-			return timePicker != null && (DateFormat.Is24HourFormat(mauiTimePicker.Context) && timePicker.Format == "t" || timePicker.Format == "HH:mm");
-		}
-
 		internal static void SetTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 		{
 			var time = timePicker.Time;
+			var format = timePicker.Format;
 
-			if (string.IsNullOrEmpty(timePicker.Format))
-			{
-				var timeFormat = "t";
-				mauiTimePicker.Text = DateTime.Today.Add(time).ToString(timeFormat);
-			}
-			else
-			{
-				var timeFormat = timePicker.Format;
-				mauiTimePicker.Text = DateTime.Today.Add(time).ToString(timeFormat);
-			}
+			mauiTimePicker.Text = time.ToFormattedString(format);
+		}
+
+		internal static bool Is24HourView(this MauiTimePicker mauiTimePicker, ITimePicker? timePicker)
+		{
+			return timePicker != null && (DateFormat.Is24HourFormat(mauiTimePicker.Context) && timePicker.Format == "t" || timePicker.Format == "HH:mm");
 		}
 	}
 }

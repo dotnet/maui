@@ -29,25 +29,25 @@ namespace Microsoft.Maui
 				picker.Date = new DateTime(1, 1, 1).Add(timePicker.Time).ToNSDate();
 
 			string iOSLocale = NSLocale.CurrentLocale.CountryCode;
-			var cultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures)
+			var cultureInfo = CultureInfo.GetCultures(CultureTypes.AllCultures)
 				.Where(c => c.Name.EndsWith("-" + iOSLocale)).FirstOrDefault();
 
-			if (cultureInfos == null)
-				cultureInfos = CultureInfo.InvariantCulture;
+			if (cultureInfo == null)
+				cultureInfo = CultureInfo.InvariantCulture;
 
 			if (string.IsNullOrEmpty(timePicker.Format))
 			{
-				string timeformat = cultureInfos.DateTimeFormat.ShortTimePattern;
-				NSLocale locale = new NSLocale(cultureInfos.TwoLetterISOLanguageName);
-				nativeTimePicker.Text = DateTime.Today.Add(timePicker.Time).ToString(timeformat, cultureInfos);
+				string timeformat = cultureInfo.DateTimeFormat.ShortTimePattern;
+				NSLocale locale = new NSLocale(cultureInfo.TwoLetterISOLanguageName);
 
 				if (picker != null)
 					picker.Locale = locale;
 			}
-			else
-			{
-				nativeTimePicker.Text = DateTime.Today.Add(timePicker.Time).ToString(timePicker.Format, cultureInfos);
-			}
+
+			var time = timePicker.Time;
+			var format = timePicker.Format;
+
+			nativeTimePicker.Text = time.ToFormattedString(format, cultureInfo);
 
 			if (timePicker.Format?.Contains('H') == true)
 			{
