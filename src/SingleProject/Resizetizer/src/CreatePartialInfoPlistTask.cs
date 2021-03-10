@@ -1,12 +1,12 @@
-﻿using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -17,12 +17,12 @@ namespace Microsoft.Maui.Resizetizer
 		[Required]
 		public string IntermediateOutputPath { get; set; }
 
-		public string PlistName { get;set; }
-		
+		public string PlistName { get; set; }
+
 		[Output]
 		public ITaskItem[] PlistFiles { get; set; }
 
-		const string plistHeader = 
+		const string plistHeader =
 @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <!DOCTYPE plist PUBLIC ""-//Apple//DTD PLIST 1.0//EN"" ""http://www.apple.com/DTDs/PropertyList-1.0.dtd"">
 <plist version=""1.0"">

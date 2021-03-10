@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Maui.Controls.Sample.Services;
-using Microsoft.Maui;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
 
 namespace Maui.Controls.Sample.ViewModel
 {

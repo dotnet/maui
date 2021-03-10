@@ -16,12 +16,12 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using AndroidX.Core.Content;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.DualScreen.Android;
+using Microsoft.Maui.Controls.Internals;
 using AColor = Android.Graphics.Color;
 using AndroidResource = Android.Resource;
 using Trace = System.Diagnostics.Trace;
-using Microsoft.Maui.Controls.DualScreen.Android;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			// Only need to do this once
 			Registrar.RegisterAll(
-				assemblies, 
+				assemblies,
 				defaultRendererAssembly,
 				new[] {
 						typeof(ExportRendererAttribute),
@@ -304,7 +304,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					}, default(InitializationFlags),
 				viewRegistered);
 		}
-		
+
 		internal static void RegisterCompatRenderers(InitializationOptions? maybeOptions)
 		{
 			if (!IsInitializedRenderers)

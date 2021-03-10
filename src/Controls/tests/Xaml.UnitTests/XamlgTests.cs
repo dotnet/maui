@@ -2,9 +2,9 @@ using System.CodeDom;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using NUnit.Framework;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests

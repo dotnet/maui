@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {

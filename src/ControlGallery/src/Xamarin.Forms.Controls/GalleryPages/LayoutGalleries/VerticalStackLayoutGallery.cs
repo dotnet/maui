@@ -2,7 +2,7 @@
 {
 	public class VerticalStackLayoutGallery : ContentPage
 	{
-		public VerticalStackLayoutGallery() 
+		public VerticalStackLayoutGallery()
 		{
 			var layout = new VerticalStackLayout();
 
@@ -10,7 +10,7 @@
 			{
 				layout.Add(new Label { Text = $"Label {n} in a vertical stack" });
 			}
-			
+
 			Content = layout;
 		}
 	}

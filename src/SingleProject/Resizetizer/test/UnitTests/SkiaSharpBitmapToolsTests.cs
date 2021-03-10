@@ -1,7 +1,7 @@
-using SkiaSharp;
 using System;
 using System.Drawing;
 using System.IO;
+using SkiaSharp;
 using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests

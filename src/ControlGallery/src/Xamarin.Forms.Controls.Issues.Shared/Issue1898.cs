@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			tabbedPage.Children.Add(Issue1898PageOne);
 			tabbedPage.Children.Add(Issue1898PageTwo);
 
-			tabbedPage.On<Android>().Element.UnselectedTabColor =Color.Blue;
+			tabbedPage.On<Android>().Element.UnselectedTabColor = Color.Blue;
 			tabbedPage.On<Android>().Element.SelectedTabColor = Color.Green;
 			tabbedPage.On<Android>().SetToolbarPlacement(placement);
 			tabbedPage.On<WindowsOS>().SetHeaderIconsEnabled(true);

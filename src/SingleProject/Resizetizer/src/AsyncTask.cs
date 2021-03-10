@@ -1,9 +1,9 @@
 ﻿using System;
-using System.IO;
-using Microsoft.Build.Utilities;
-using Microsoft.Build.Framework;
-using System.Threading;
 using System.Collections;
+using System.IO;
+using System.Threading;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {

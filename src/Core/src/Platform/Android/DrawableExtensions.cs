@@ -61,18 +61,18 @@ namespace Microsoft.Maui
 		}
 
 
-		public static void SetColorFilter(this ADrawable drawable,  Maui.Color color, FilterMode mode, AColorFilter? defaultColorFilter)
+		public static void SetColorFilter(this ADrawable drawable, Maui.Color color, FilterMode mode, AColorFilter? defaultColorFilter)
 		{
 			if (drawable == null)
 				return;
 
-			if (color ==  Maui.Color.Default)
+			if (color == Maui.Color.Default)
 				SetColorFilter(drawable, defaultColorFilter);
 			else
 				drawable.SetColorFilter(color.ToNative(), mode);
 		}
 
-		public static void SetColorFilter(this ADrawable drawable,  Maui.Color color, FilterMode mode)
+		public static void SetColorFilter(this ADrawable drawable, Maui.Color color, FilterMode mode)
 		{
 			if (drawable == null)
 				return;

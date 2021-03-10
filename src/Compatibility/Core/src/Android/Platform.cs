@@ -15,8 +15,8 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Legacy.App;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
+using Microsoft.Maui.Controls.Internals;
 using AView = Android.Views.View;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 

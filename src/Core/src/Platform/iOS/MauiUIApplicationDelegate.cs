@@ -4,13 +4,19 @@ using System.Text;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using UIKit;
 using Microsoft.Maui.Hosting;
+using UIKit;
 
 namespace Microsoft.Maui
 {
 	public class MauiUIApplicationDelegate<TApplication> : UIApplicationDelegate, IUIApplicationDelegate where TApplication : MauiApp
 	{
+		public override UIWindow? Window
+		{
+			get;
+			set;
+		}
+
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			if (!(Activator.CreateInstance(typeof(TApplication)) is TApplication app))
@@ -32,7 +38,7 @@ namespace Microsoft.Maui
 
 			var content = (window.Page as IView) ?? window.Page.View;
 
-			var uiWindow = new UIWindow
+			Window = new UIWindow
 			{
 				RootViewController = new UIViewController
 				{
@@ -40,14 +46,14 @@ namespace Microsoft.Maui
 				}
 			};
 
-			uiWindow.MakeKeyAndVisible();
+			Window.MakeKeyAndVisible();
 
 			return true;
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-			
+
 		}
 	}
 }

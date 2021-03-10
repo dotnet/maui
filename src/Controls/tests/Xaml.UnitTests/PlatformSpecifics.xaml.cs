@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using NUnit.Framework;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using NUnit.Framework;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests

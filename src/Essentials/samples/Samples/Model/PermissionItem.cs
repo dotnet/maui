@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Windows.Input;
-using Samples.ViewModel;
 using Microsoft.Maui.Essentials;
+using Samples.ViewModel;
 using Xamarin.Forms;
 
 namespace Samples.Model
