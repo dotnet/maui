@@ -17,8 +17,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public double CharacterSpacing { get; set; }
 
 		public bool IsPassword { get; set; }
-		
+
 		public bool IsTextPredictionEnabled { get; set; }
+
+		public string Placeholder { get; set; }
 
 		public bool IsReadOnly { get; set; }
 

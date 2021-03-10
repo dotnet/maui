@@ -48,6 +48,17 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.IsPassword, GetNativeIsPassword, isPassword);
 		}
 
+		[Fact(DisplayName = "Placeholder Initializes Correctly")]
+		public async Task PlaceholderInitializesCorrectly()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Placeholder"
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.Placeholder, GetNativePlaceholder, entry.Placeholder);
+		}
+
 		[Theory(DisplayName = "Is Text Prediction Enabled")]
 		[InlineData(true)]
 		[InlineData(false)]

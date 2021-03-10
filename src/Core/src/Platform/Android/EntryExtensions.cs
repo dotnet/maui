@@ -67,6 +67,14 @@ namespace Microsoft.Maui
 			editText.SetInputType(entry);
 		}
 
+		public static void UpdatePlaceholder(this EditText editText, IEntry entry)
+		{
+			if (editText.Hint == entry.Placeholder)
+				return;
+
+			editText.Hint = entry.Placeholder;
+		}
+
 		public static void UpdateIsReadOnly(this EditText editText, IEntry entry)
 		{
 			bool isEditable = !entry.IsReadOnly;

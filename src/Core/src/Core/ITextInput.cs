@@ -6,10 +6,18 @@ namespace Microsoft.Maui
 	public interface ITextInput : IText
 	{
 		/// <summary>
-		/// Gets the maximum allowed length of input.
+		/// Gets or sets the text.
 		/// </summary>
 		new string Text { get; set; }
 
+		/// <summary>
+		/// Gets the placeholder or hint text.
+		/// </summary>
+		string Placeholder { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether or not the view is read-only.
+		/// </summary>
 		bool IsReadOnly { get; }
 	}
 }
