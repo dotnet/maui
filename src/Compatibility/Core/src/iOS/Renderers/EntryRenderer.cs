@@ -336,6 +336,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.SecureTextEntry = Element.IsPassword;
 		}
 
+		[PortHandler]
 		protected virtual void UpdatePlaceholder()
 		{
 			var formatted = (FormattedString)Element.Placeholder;

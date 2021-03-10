@@ -53,6 +53,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateIsTextPredictionEnabled(entry);
 		}
 
+		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdatePlaceholder(entry);
+		}
+
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
 		{
 			handler.TypedNativeView?.UpdateIsReadOnly(entry);

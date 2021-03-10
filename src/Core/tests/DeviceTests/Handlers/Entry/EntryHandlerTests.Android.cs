@@ -28,9 +28,13 @@ namespace Microsoft.Maui.DeviceTests
 			var inputType = GetNativeEntry(entryHandler).InputType;
 			return inputType.HasFlag(InputTypes.TextVariationPassword) || inputType.HasFlag(InputTypes.NumberVariationPassword);
 		}
-		
+
 		bool GetNativeIsTextPredictionEnabled(EntryHandler entryHandler) =>
 			!GetNativeEntry(entryHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
+
+
+		string GetNativePlaceholder(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).Hint;
 
 		bool GetNativeIsReadOnly(EntryHandler entryHandler) 
 		{
