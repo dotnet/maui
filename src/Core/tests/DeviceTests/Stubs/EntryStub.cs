@@ -18,6 +18,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		
 		public bool IsTextPredictionEnabled { get; set; }
 
+		public bool IsReadOnly { get; set; }
+
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
 
 		void OnTextChanged(string oldValue, string newValue) =>

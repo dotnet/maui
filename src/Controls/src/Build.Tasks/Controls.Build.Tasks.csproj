@@ -111,7 +111,8 @@
 
 	<Target Name="_CopyToNuspecDir" AfterTargets="Build">
 		<ItemGroup>
-			<_CopyItems Include="$(TargetDir)*.dll" />
+			<_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll" />
+			<_CopyItems Include="$(TargetDir)System.CodeDom.dll" />
 		</ItemGroup>
 		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\..\..\..\.nuspec\" ContinueOnError="true" Retries="0" />
 	</Target>
