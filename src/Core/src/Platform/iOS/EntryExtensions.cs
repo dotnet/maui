@@ -45,5 +45,10 @@ namespace Microsoft.Maui
 			else
 				textField.AutocorrectionType = UITextAutocorrectionType.No;
 		}
+
+		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)
+		{
+			textField.UserInteractionEnabled = !entry.IsReadOnly;
+		}
 	}
 }
