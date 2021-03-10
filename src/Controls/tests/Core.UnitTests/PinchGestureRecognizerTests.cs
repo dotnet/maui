@@ -1,6 +1,6 @@
 using System;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Internals;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

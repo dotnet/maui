@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (self.IsDefault())
 				return Forms.FontManager.DefaultTypeface;
 
-			return Forms.FontManager.GetTypeface(Font.OfSize(self.FontFamily, self.FontSize).WithAttributes(self.FontAttributes));
+			var font = Font.OfSize(self.FontFamily, self.FontSize).WithAttributes(self.FontAttributes);
+
+			return Forms.FontManager.GetTypeface(font);
 		}
 	}
 }

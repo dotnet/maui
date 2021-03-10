@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Layouts
 		{
 			if (frameworkElement is IView view)
 				return view.Margin;
-			
+
 			return new Thickness();
 		}
 	}

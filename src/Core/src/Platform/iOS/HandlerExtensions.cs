@@ -1,6 +1,6 @@
 using System;
-using UIKit;
 using Microsoft.Maui.Hosting;
+using UIKit;
 
 namespace Microsoft.Maui
 {

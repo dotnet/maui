@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Essentials;
 using Samples.Model;
 using Samples.View;
-using Microsoft.Maui.Essentials;
 
 namespace Samples.ViewModel
 {

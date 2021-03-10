@@ -359,9 +359,9 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		public static void RegisterAll(
-			Assembly[] assemblies, 
+			Assembly[] assemblies,
 			Assembly defaultRendererAssembly,
-			Type[] attrTypes, 
+			Type[] attrTypes,
 			InitializationFlags flags,
 			Action<Type> viewRegistered)
 		{
