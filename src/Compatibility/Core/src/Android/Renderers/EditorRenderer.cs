@@ -266,6 +266,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		abstract protected void UpdateTextColor();
 
+		[PortHandler]
 		protected virtual void UpdatePlaceholderText()
 		{
 			if (EditText.Hint == Element.Placeholder)

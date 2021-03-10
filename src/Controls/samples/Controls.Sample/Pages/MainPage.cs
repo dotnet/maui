@@ -93,6 +93,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
 			verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true });
 
+			verticalStack.Add(new Editor { Placeholder = "This is a placeholder."} );
+
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Color.Purple });

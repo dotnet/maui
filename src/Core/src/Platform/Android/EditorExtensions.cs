@@ -1,4 +1,4 @@
-﻿using AndroidX.AppCompat.Widget;
+using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
 {
@@ -17,6 +17,14 @@ namespace Microsoft.Maui
 				return;
 
 			editText.SetSelection(text.Length);
+		}
+
+		public static void UpdatePlaceholder(this AppCompatEditText editText, IEditor editor)
+		{
+			if (editText.Hint == editor.Placeholder)
+				return;
+
+			editText.Hint = editor.Placeholder;
 		}
 	}
 }

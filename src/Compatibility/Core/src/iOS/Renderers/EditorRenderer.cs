@@ -63,6 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_placeholderLabel.Font = Element.ToUIFont();
 		}
 
+		[PortHandler]
 		protected internal override void UpdatePlaceholderText()
 		{
 			_placeholderLabel.Text = Element.Placeholder;

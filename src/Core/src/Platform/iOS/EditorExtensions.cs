@@ -1,4 +1,4 @@
-﻿using UIKit;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -12,6 +12,11 @@ namespace Microsoft.Maui
 			{
 				textView.Text = text;
 			}
+		}
+
+		public static void UpdatePlaceholder(UITextField text, IEditor editor)
+		{
+
 		}
 	}
 }
