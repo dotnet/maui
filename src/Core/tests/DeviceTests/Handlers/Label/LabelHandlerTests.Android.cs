@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				FontFamily = family
+				Font = Font.OfSize(family, 10)
 			};
 
 			var handler = await CreateHandlerAsync(label);
