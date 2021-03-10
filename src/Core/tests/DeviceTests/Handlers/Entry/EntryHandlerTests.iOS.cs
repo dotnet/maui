@@ -20,7 +20,13 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsPassword(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).SecureTextEntry;
 
+		string GetNativePlaceholder(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).Placeholder;
+
 		bool GetNativeIsTextPredictionEnabled(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
+
+		bool GetNativeIsReadOnly(EntryHandler entryHandler) =>
+			!GetNativeEntry(entryHandler).UserInteractionEnabled;
 	}
 }
