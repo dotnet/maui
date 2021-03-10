@@ -15,12 +15,18 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Color TextColor { get; set; }
 
 		public bool IsPassword { get; set; }
-		
+
 		public bool IsTextPredictionEnabled { get; set; }
+
+		public string Placeholder { get; set; }
+
+		public bool IsReadOnly { get; set; }
 
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
 
 		void OnTextChanged(string oldValue, string newValue) =>
 			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
+
+		public Font Font { get; set; }
 	}
 }

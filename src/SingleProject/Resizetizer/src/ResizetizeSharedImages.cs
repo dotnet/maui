@@ -1,12 +1,12 @@
-﻿using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Resizetizer
 		void ProcessImageCopy(SharedImageInfo img, DpiPath originalScaleDpi, ConcurrentBag<ResizedImageInfo> resizedImages)
 		{
 			var resizer = new Resizer(img, IntermediateOutputPath, this);
-			
+
 			Log.LogMessage(MessageImportance.Low, $"Copying {img.Filename}");
 
 			var r = resizer.CopyFile(originalScaleDpi, InputsFile, PlatformType.ToLower().Equals("android"));

@@ -8,9 +8,9 @@ using System.Xml;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CSharp;
-using Mono.Cecil;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using Mono.Cecil;
 using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Build.Tasks

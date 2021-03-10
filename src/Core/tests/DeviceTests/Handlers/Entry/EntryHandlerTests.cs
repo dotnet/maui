@@ -48,6 +48,17 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.IsPassword, GetNativeIsPassword, isPassword);
 		}
 
+		[Fact(DisplayName = "Placeholder Initializes Correctly")]
+		public async Task PlaceholderInitializesCorrectly()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Placeholder"
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.Placeholder, GetNativePlaceholder, entry.Placeholder);
+		}
+
 		[Theory(DisplayName = "Is Text Prediction Enabled")]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -58,7 +69,7 @@ namespace Microsoft.Maui.DeviceTests
 				IsTextPredictionEnabled = isEnabled
 			};
 
-			await ValidatePropertyInitValue(entry, () => entry.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled , isEnabled);
+			await ValidatePropertyInitValue(entry, () => entry.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
 		}
 
 		[Theory(DisplayName = "IsPassword Updates Correctly")]
@@ -132,6 +143,23 @@ namespace Microsoft.Maui.DeviceTests
 				entry,
 				nameof(IEntry.IsTextPredictionEnabled),
 				GetNativeIsTextPredictionEnabled,
+				setValue,
+				unsetValue);
+		}
+
+		[Theory(DisplayName = "IsReadOnly Updates Correctly")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task IsReadOnlyUpdatesCorrectly(bool setValue, bool unsetValue)
+		{
+			var entry = new EntryStub();
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.IsReadOnly),
+				GetNativeIsReadOnly,
 				setValue,
 				unsetValue);
 		}

@@ -1,6 +1,6 @@
-using NSubstitute;
 using Microsoft.Maui;
 using Microsoft.Maui.Layouts;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests.Layouts

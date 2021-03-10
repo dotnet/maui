@@ -3,7 +3,7 @@
 namespace Microsoft.Maui.DeviceTests
 {
 	[CollectionDefinition(TestCollections.Handlers)]
-	public class HandlerTestCollection: ICollectionFixture<HandlerTestFixture>
+	public class HandlerTestCollection : ICollectionFixture<HandlerTestFixture>
 	{
 	}
 }

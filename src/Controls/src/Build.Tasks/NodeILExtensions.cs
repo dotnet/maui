@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.Xaml.Internals;
-
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 

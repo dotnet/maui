@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -9,6 +8,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Color TextColor { get; set; }
 
+		public Font Font { get; set; }
+		
 		public Thickness Padding { get; set; }
 
 		public event EventHandler Pressed;

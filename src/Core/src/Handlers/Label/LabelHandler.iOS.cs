@@ -19,29 +19,15 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateTextColor(label);
 		}
 
-		public static void MapFontFamily(LabelHandler handler, ILabel label)
-		{
-			MapFont(handler, label);
-		}
-
-		public static void MapFontSize(LabelHandler handler, ILabel label)
-		{
-			MapFont(handler, label);
-		}
-
-		public static void MapFontAttributes(LabelHandler handler, ILabel label)
-		{
-			MapFont(handler, label);
-		}
-
 		public static void MapPadding(LabelHandler handler, ILabel label)
 		{
 			handler.TypedNativeView?.UpdatePadding(label);
 		}
 
-		static void MapFont(LabelHandler handler, ILabel label)
+		public static void MapFont(LabelHandler handler, ILabel label)
 		{
-			var services = App.Current?.Services ?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
+			var services = App.Current?.Services ?? 
+				throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
 			var fontManager = services.GetRequiredService<IFontManager>();
 
 			handler.TypedNativeView?.UpdateFont(label, fontManager);

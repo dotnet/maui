@@ -1,7 +1,7 @@
-﻿using SkiaSharp;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
 {

@@ -1,6 +1,9 @@
 namespace Microsoft.Maui
 {
-	public interface ILabel : IView, IText, IFont, IPadding
+	/// <summary>
+	/// Represents a View that displays text.
+	/// </summary>
+	public interface ILabel : IView, IText, IPadding
 	{
 	}
 }
