@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,32 +10,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class LabelHandlerTests
 	{
-		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
-		public async Task CharacterSpacingInitializesCorrectly()
-		{
-			var xplatCharacterSpacing = 4;
-
-			var labelStub = new LabelStub()
-			{
-				Text = "Test CharacterSpacing",
-				CharacterSpacing = xplatCharacterSpacing
-			};
-
-			float expectedValue = xplatCharacterSpacing * UnitExtensions.EmCoefficient;
-
-			var values = await GetValueAsync(labelStub, (handler) =>
-			{
-				return new
-				{
-					ViewValue = labelStub.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
-				};
-			});
-
-			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
-		}
-
 		[Theory(DisplayName = "Font Family Initializes Correctly")]
 		[InlineData(null)]
 		[InlineData("monospace")]
@@ -121,7 +96,7 @@ namespace Microsoft.Maui.DeviceTests
 			return (view.PaddingLeft, view.PaddingTop, view.PaddingRight, view.PaddingBottom);
 		}
 
-		float GetNativeCharacterSpacing(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).LetterSpacing;
+		double GetNativeCharacterSpacing(LabelHandler labelHandler) =>
+			Math.Round(GetNativeLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, 4);
 	}
 }

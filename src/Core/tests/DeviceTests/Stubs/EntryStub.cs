@@ -14,6 +14,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Color TextColor { get; set; }
 
+		public double CharacterSpacing { get; set; }
+
 		public bool IsPassword { get; set; }
 		
 		public bool IsTextPredictionEnabled { get; set; }

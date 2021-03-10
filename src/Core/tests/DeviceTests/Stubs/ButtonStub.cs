@@ -9,6 +9,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Color TextColor { get; set; }
 
+		public double CharacterSpacing { get; set; }
+
 		public event EventHandler Pressed;
 		public event EventHandler Released;
 		public event EventHandler Clicked;

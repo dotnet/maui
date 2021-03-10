@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 			if (string.IsNullOrEmpty(label.Text))
 				return;
 
-			var textAttr = nativeLabel.AttributedText?.AddCharacterSpacing(label.Text, label.CharacterSpacing);
+			var textAttr = nativeLabel.AttributedText?.WithCharacterSpacing(label.CharacterSpacing);
 
 			if (textAttr != null)
 				nativeLabel.AttributedText = textAttr;
