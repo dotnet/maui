@@ -120,6 +120,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				Registered.Register(typeof(Shell), () => new Watch.ShellRenderer());
 			}
+			else if (Device.Idiom == TargetIdiom.TV)
+			{
+				Registered.Register(typeof(Shell), () => new TV.TVShellRenderer());
+			}
 			else
 			{
 				Registered.Register(typeof(Shell), () => new ShellRenderer());

@@ -1,74 +1,63 @@
 parameters:
-  platform: '' # [ android, ios ]
+  androidVmPool: '$(androidTestsVmPool)'
+  androidVmImage: '$(androidTestsVmImage)'
+  iosVmPool: '$(iosTestsVmPool)'
+  iosVmImage: '$(iosTestsVmImage)'
+  androidApiLevels: [ 30, 29, 21 ]
+  iosVersions: [ 'latest' ]
+  projects:
+    - name: name
+      desc: Human Description
+      android: /optional/path/to/android.csproj
+      ios: /optional/path/to/ios.csproj
 
-steps:
-  - checkout: self
-    clean: true
+stages:
 
-  - ${{ if eq(parameters['platform'], 'ios') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@1
-      displayName: 'Provision Xcode'
-      condition: ne(variables['REQUIRED_XCODE'], '')
-      inputs:
-        provisioning_script: $(provisionator.xcode)
+  - stage: android_device_tests
+    displayName: Android Device Tests
+    dependsOn: []
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevels }}:
+            - job: android_device_tests_${{ project.name }}_${{ api }}
+              workspace:
+                clean: all
+              displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
+              pool:
+                name: ${{ parameters.androidVmPool }}
+                vmImage: ${{ parameters.androidVmImage }}
+              variables:
+                ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
+              steps:
+                - template: device-tests-steps.yml
+                  parameters:
+                    platform: android
+                    path: ${{ project.android }}
+                    device: android-emulator-32_${{ api }}
 
-    - script: |
-        echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
-        echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
-      displayName: 'Setup SDK Paths'
-      condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
-
-    - task: InstallAppleCertificate@2
-      displayName: 'Install an Apple certificate'
-      inputs:
-        certSecureFile: 'Xamarin Forms iOS Certificate.p12'
-        certPwd: $(P12password)
-
-    - task: InstallAppleProvisioningProfile@1
-      displayName: 'Install an Apple provisioning profile'
-      inputs:
-        provProfileSecureFile: 'Xamarin Forms iOS Provisioning.mobileprovision'
-
-  - task: xamops.azdevex.provisionator-task.provisionator@1
-    displayName: 'Provisionator'
-    condition: eq(variables['provisioning'], 'true')
-    inputs:
-      provisioning_script: $(provisionator.path)
-      provisioning_extra_args: $(provisionator.extraArguments)
-
-  - pwsh: |
-      ./build.ps1 --target provision --TeamProject="$(System.TeamProject)"
-    displayName: 'Cake Provision'
-    condition: eq(variables['provisioningCake'], 'true')
-
-  - task: UseDotNet@2
-    displayName: 'Install .net core $(DOTNET_VERSION)'
-    condition: ne(variables['DOTNET_VERSION'], '')
-    inputs:
-      version: $(DOTNET_VERSION)
-      packageType: 'sdk'
-
-  - ${{ if eq(parameters['platform'], 'android') }}:
-    - pwsh: |
-        ./build.ps1 -Script eng/devices/android.cake --project="$(devicetests.project)" --device=$(devicetests.device) --results="$(System.DefaultWorkingDirectory)/output/testlogs"
-      displayName: $(Agent.JobName)
-
-  - ${{ if eq(parameters['platform'], 'ios') }}:
-    - pwsh: |
-        ./build.ps1 -Script eng/devices/ios.cake --project="$(devicetests.project)" --device=$(devicetests.device) --results="$(System.DefaultWorkingDirectory)/output/testlogs"
-      displayName: $(Agent.JobName)
-
-  - task: PublishTestResults@2
-    displayName: Publish the $(System.StageName)_$(System.PhaseName)_$(System.JobName) test results
-    condition: always()
-    inputs:
-      testResultsFormat: xUnit
-      testResultsFiles: 'output/testlogs/**/TestResults.xml'
-      testRunTitle: '$(System.StageName)_$(System.PhaseName)_$(System.JobName)'
-
-  - task: PublishBuildArtifacts@1
-    displayName: Publish the test logs
-    condition: always()
-    inputs:
-      artifactName: $(System.StageName)_$(System.PhaseName)_$(System.JobName)
-      pathToPublish: 'output/testlogs'
+  - stage: ios_device_tests
+    displayName: iOS Device Tests
+    dependsOn: []
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.ios, '') }}:
+          - ${{ each version in parameters.iosVersions }}:
+            - job: ios_device_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
+              workspace:
+                clean: all
+              displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+              pool:
+                name: ${{ parameters.iosVmPool }}
+                vmImage: ${{ parameters.iosVmImage }}
+              variables:
+                ANDROID_EMULATORS: "system-images;ios-${{ version }};google_apis;x86"
+              steps:
+                - template: device-tests-steps.yml
+                  parameters:
+                    platform: ios
+                    path: ${{ project.ios }}
+                    ${{ if eq(version, 'latest') }}:
+                      device: ios-simulator-64
+                    ${{ if ne(version, 'latest') }}:
+                      device: ios-simulator-64_${{ version }}

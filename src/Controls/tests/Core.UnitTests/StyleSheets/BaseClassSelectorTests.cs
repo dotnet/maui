@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.StyleSheets;
 using Microsoft.Maui.Controls.StyleSheets.UnitTests;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.StyleSheets
 {

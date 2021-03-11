@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Essentials
 			if (tcsUtterances?.Task != null)
 				await tcsUtterances.Task;
 
-			if (cancelToken != null)
+			if (cancelToken != default)
 			{
 				cancelToken.Register(() =>
 				{

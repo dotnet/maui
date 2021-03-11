@@ -1,7 +1,7 @@
 using System;
+using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
-using Microsoft.Maui.Controls.Core.UnitTests;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {

@@ -2,8 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Markup;
-using Microsoft.Windows.Design;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Windows.Design;
 
 namespace Microsoft.Maui.Controls.Core.Design
 {

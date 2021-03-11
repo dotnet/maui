@@ -263,9 +263,7 @@
     </Compile>
     <Compile Include="Extensions\ImageExtensions.cs" />
     <Compile Include="Extensions\FontExtensions.cs" />
-    <Compile Include="..\iOS\Extensions\FontExtensions.Shared.cs">
-      <Link>Extensions\FontExtensions.Shared.cs</Link>
-    </Compile>
+    <Compile Include="Extensions\FontExtensions.Shared.cs" />
     <Compile Include="Extensions\NSAttributedStringExtensions.cs" />
     <Compile Include="EmbeddedFontLoader.cs" />
     <Compile Include="Extensions\BrushExtensions.cs" />

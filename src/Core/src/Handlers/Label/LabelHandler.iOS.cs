@@ -1,10 +1,12 @@
-using UIKit;
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : AbstractViewHandler<ILabel, UILabel>
+	public partial class LabelHandler : AbstractViewHandler<ILabel, MauiLabel>
 	{
-		protected override UILabel CreateNativeView() => new UILabel();
+		protected override MauiLabel CreateNativeView() => new MauiLabel();
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
@@ -14,6 +16,25 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
 			handler.TypedNativeView?.UpdateTextColor(label);
+		}
+
+		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(label);
+		}
+
+		public static void MapPadding(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdatePadding(label);
+		}
+
+		public static void MapFont(LabelHandler handler, ILabel label)
+		{
+			var services = App.Current?.Services ?? 
+				throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
+			var fontManager = services.GetRequiredService<IFontManager>();
+
+			handler.TypedNativeView?.UpdateFont(label, fontManager);
 		}
 	}
 }

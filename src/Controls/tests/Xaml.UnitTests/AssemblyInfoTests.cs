@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			"Microsoft.Maui.Controls.Build.Tasks"
 		};
 
-		const string s_productName = "Microsoft.Maui";
+		const string s_productName = "Microsoft MAUI";
 
 		const string s_company = "Microsoft";
 

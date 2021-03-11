@@ -11,9 +11,15 @@ namespace Microsoft.Maui.Hosting
 		{
 			foreach (var handler in handlers)
 			{
-				builder?.ConfigureHandlers((context, handlersCollection) => handlersCollection.AddTransient(handler.Key, handler.Value));
+				builder.ConfigureHandlers((context, handlersCollection) => handlersCollection.AddTransient(handler.Key, handler.Value));
 			}
 
+			return builder;
+		}
+
+		public static IAppHostBuilder RegisterHandler(this IAppHostBuilder builder, Type viewType, Type handlerType)
+		{
+			builder.ConfigureHandlers((context, handlersCollection) => handlersCollection.AddTransient(viewType, handlerType));
 			return builder;
 		}
 
@@ -34,10 +40,22 @@ namespace Microsoft.Maui.Hosting
 				{  typeof(IEntry), typeof(EntryHandler) },
 				{  typeof(ILayout), typeof(LayoutHandler) },
 				{  typeof(ILabel), typeof(LabelHandler) },
+				{  typeof(IProgress), typeof(ProgressBarHandler) },
 				{  typeof(ISlider), typeof(SliderHandler) },
 				{  typeof(ISwitch), typeof(SwitchHandler) }
 			});
 
+			return builder;
+		}
+
+		public static IAppHostBuilder UseFonts(this IAppHostBuilder builder)
+		{
+			builder.ConfigureServices((context, collection) =>
+			{
+				collection.AddSingleton<IEmbeddedFontLoader, EmbeddedFontLoader>();
+				collection.AddSingleton<IFontRegistrar>(provider => new FontRegistrar(provider.GetRequiredService<IEmbeddedFontLoader>()));
+				collection.AddSingleton<IFontManager>(provider => new FontManager(provider.GetRequiredService<IFontRegistrar>()));
+			});
 			return builder;
 		}
 	}

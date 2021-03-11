@@ -6,7 +6,15 @@
 * Deploy to multiple devices across mobile & desktop
 * Using a single project, single codebase
 * Evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms)
-* Targeting .NET 6, previews end of year
+* .NET 6
+
+## Build Status ##
+
+
+| Private  | Public |
+|--|--|
+|  [![Build Status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MAUI?repoName=dotnet%2Fmaui&branchName=main)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=13330&repoName=dotnet%2Fmaui&branchName=main) |   [![Build Status](https://dev.azure.com/xamarin/public/_apis/build/status/MAUI-public?repoName=dotnet%2Fmaui&branchName=main)](https://dev.azure.com/xamarin/public/_build/latest?definitionId=57&repoName=dotnet%2Fmaui&branchName=main) |
+
 
 ## Maui.sln
 
@@ -27,22 +35,27 @@ dotnet tool install Cake.Tool -g
 #### Command Line
 
 ```
-dotnet build src\Platform.Handlers\samples\Sample.Droid\Sample.Droid-net6.csproj -t:Run
-dotnet build src\Platform.Handlers\samples\Sample.iOS\Sample.iOS-net6.csproj -t:Run
+dotnet build src\Controls\samples\Controls.Sample.Droid\Maui.Controls.Sample.Droid-net6.csproj -t:Run
+dotnet build src\Controls\samples\Controls.Sample.iOS\Maui.Controls.Sample.iOS-net6.csproj -t:Run
 ```
 
 ## Current News
 
-[![](Assets/poster-standup.png)](https://www.youtube.com/watch?v=5bK2ICHtMxo)
+[March 11, 2021 - Announcing .NET 6 Preview 2](https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-2/)
 
-Watch our [December 2020 .NET Community Standup report](https://www.youtube.com/watch?v=5bK2ICHtMxo) for the latest information about our progress on .NET MAUI and .NET 6. 
+Watch our [March 2021 .NET Community Standup report](https://youtu.be/NEbRo0ltniM?t=1242) for the latest information about our progress on .NET MAUI and .NET 6. 
+
+[![](https://user-images.githubusercontent.com/41873/110172514-e1c76280-7dc2-11eb-8407-50760881d1ec.png
+)](https://www.youtube.com/watch?v=5bK2ICHtMxo)
 
 Additional live streams and presentations:
 
+* February 25, 2021 - David Ortinau and Maddy Leger at .NET Conf: Focus on Windows: [The Future of Client App Development in .NET 6](https://www.youtube.com/watch?v=fPEdgXeqhE4)
+* January 28, 2021 - David Ortinau at .NET Frontend Day: [A .NET MAUI Progress Report](https://youtu.be/RnyZZKjdUxk)
 * September 19, 2020 - Shane Neuville at ReactiveUI Virtual Conference: [Dual Screen, .NET MAUI, and RxUI](https://www.youtube.com/watch?v=Rkz6Dkk1uWU)
 * October 3, 2020 - James Clancey at Xamarin Expert Day: [.NET MAUI MVU](https://www.youtube.com/watch?v=9kwrgm_-FCk)
 * October 3, 2020 - David Ortinau at Xamarin Expert Day: [Introducing .NET MAUI](https://youtu.be/qbHO8J3bId0)
-* December 2, 2020 - Javier Suarez Ruiz at MonkeyConf: [.NET MAUI Handlers](https://youtu.be/o99qbIOc9X4?t=26040) (Spanish)
+* December 2, 2020 - Javier Suarez Ruiz at MonkeyConf: [.NET MAUI Handlers](https://youtu.be/TBMauxRGkiI) (Spanish)
 
 ## Status: Active Development
 
@@ -50,8 +63,8 @@ While [Xamarin.Forms](https://github.com/xamarin/xamarin.forms) continues to be 
 
 * Porting renderers to handlers ([spec](https://github.com/dotnet/maui/issues/28))
 * Adapting layouts for handlers
-* WinUI 3 preview 3 early spike
-* Mac Catalyst early evaluation
+* WinUI 3 preview 3 early spike ([branch](https://github.com/xamarin/Xamarin.Forms/tree/winui3))
+* Mac Catalyst early evaluation ([wiki](https://github.com/xamarin/xamarin-macios/wiki/Mac-Catalyst-(Early-Preview)))
 
 Active development is happening today to build Android and iOS SDKs against .NET 6. [Samples may be found here](https://github.com/xamarin/net6-samples).
 
@@ -72,7 +85,7 @@ Active development is happening today to build Android and iOS SDKs against .NET
   * [Renderer architecture revisions](https://github.com/dotnet/maui/issues/28)
   * Source solution and project simplification
   * Complete approved proposals
-  * Implement MVU
+  * Implement MVU (experimental)
 * .NET MAUI release candidate September 2021
 * .NET MAUI general availability November 2021
 
@@ -121,11 +134,11 @@ Do you have questions? Do not worry, we have prepared a complete [FAQ](https://g
 
 ## How to Engage, Contribute, and Give Feedback
 
-Some of the best ways to [contribute](./CONTRIBUTING.md) are to try things out, file issues, join in design conversations,
+Some of the best ways to [contribute](./.github/CONTRIBUTING.md) are to try things out, file issues, join in design conversations,
 and make pull-requests. Proposals for changes specific to MAUI can be found [here for discussion](../../issues).
 
-See [CONTRIBUTING](./CONTRIBUTING.md)
+See [CONTRIBUTING](./.github/CONTRIBUTING.md)
 
 ## Code of conduct
 
-See [CODE-OF-CONDUCT](./CODE-OF-CONDUCT.md)
+See [CODE-OF-CONDUCT](./.github/CODE_OF_CONDUCT.md)

@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Linq;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Maps;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

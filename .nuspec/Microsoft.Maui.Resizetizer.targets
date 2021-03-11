@@ -29,6 +29,7 @@
         </CleanDependsOn>
 
         <_ResizetizerInputsFile>$(IntermediateOutputPath)resizetizer.inputs</_ResizetizerInputsFile>
+        <_ResizetizerStampFile>$(IntermediateOutputPath)resizetizer.stamp</_ResizetizerStampFile>
         <_SharedFontInputsFile>$(IntermediateOutputPath)sharedfont.inputs</_SharedFontInputsFile>
         <_SharedFontStampFile>$(IntermediateOutputPath)sharedfont.stamp</_SharedFontStampFile>
 
@@ -49,8 +50,8 @@
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
         <_ResizetizerIsNetCore>True</_ResizetizerIsNetCore>
-        <_ResizetizerIsAndroidApp Condition="'$(TargetPlatformIdentifier)' == 'Android' And '$(OutputType)' == 'Exe'">True</_ResizetizerIsAndroidApp>
-        <_ResizetizerIsiOSApp Condition="'$(TargetPlatformIdentifier)' == 'iOS' And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
+        <_ResizetizerIsAndroidApp Condition="'$(TargetPlatformIdentifier)' == 'android' And '$(AndroidApplication)' == 'True'">True</_ResizetizerIsAndroidApp>
+        <_ResizetizerIsiOSApp Condition="('$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst') And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
         <_ResizetizerIsUWPApp Condition="'$(TargetPlatformIdentifier)'=='UAP' And '$(OutputType)' == 'AppContainerExe'">True</_ResizetizerIsUWPApp>
         <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(TargetPlatformIdentifier)'=='Windows'">True</_ResizetizerIsWPFApp>
     </PropertyGroup>
@@ -92,10 +93,10 @@
     <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
         <ResizetizerPlatformType>android</ResizetizerPlatformType>
 
-        <ResizetizeCollectItemsAfterTargets>
+        <ResizetizeCollectItemsBeforeTargets>
             $(ResizetizeCollectItemsAfterTargets);
-            ResolveProjectReferences;
-        </ResizetizeCollectItemsAfterTargets>
+            _ComputeAndroidResourcePaths;
+        </ResizetizeCollectItemsBeforeTargets>
 
         <ResizetizeAfterTargets>
             $(ResizetizeAfterTargets);
@@ -143,7 +144,8 @@
     <Target Name="GetSharedItems" Outputs="@(ExportedSharedItem)">
 
         <ItemGroup>
-            <SharedItem Include="@(SharedImage)" ItemGroupName="SharedImage" />
+            <SharedItem Include="@(SharedImage)" ItemGroupName="SharedImage" Condition="'%(SharedImage.ForegroundFile)' == ''" />
+            <SharedItem Include="@(SharedImage)" ItemGroupName="SharedImage" Condition="'%(SharedImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(SharedImage.ForegroundFile)'))" />
         </ItemGroup>
 
         <ItemGroup>
@@ -311,7 +313,7 @@
 
     <Target Name="ResizetizeImages"
         Inputs="@(SharedImage);$(_ResizetizerInputsFile)"
-        Outputs="$(IntermediateOutputPath)resizetizer.stamp"
+        Outputs="$(_ResizetizerStampFile)"
         AfterTargets="$(ResizetizeAfterTargets)"
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
@@ -374,7 +376,7 @@
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
             <!-- If we had any images, add that obj/ folder as a resource directory -->
             <LibraryResourceDirectories Condition="Exists ('$(ResizetizerIntermediateOutputPath)')" Include="$(ResizetizerIntermediateOutputPath)">
-                <StampFile>$(IntermediateOutputPath)resizetizer.stamp</StampFile>
+                <StampFile>$(_ResizetizerStampFile)</StampFile>
             </LibraryResourceDirectories>
 
             <FileWrites Include="@(_ResizetizerCollectedImages)" />
@@ -399,11 +401,11 @@
         </ItemGroup>
 
         <!-- Touch/create our stamp file for outputs -->
-        <Touch Files="$(IntermediateOutputPath)resizetizer.stamp" AlwaysCreate="True" />
+        <Touch Files="$(_ResizetizerStampFile)" AlwaysCreate="True" />
 
         <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
         <ItemGroup>
-            <FileWrites Include="$(IntermediateOutputPath)resizetizer.stamp" />
+            <FileWrites Include="$(_ResizetizerStampFile)" />
         </ItemGroup>
     </Target>
 

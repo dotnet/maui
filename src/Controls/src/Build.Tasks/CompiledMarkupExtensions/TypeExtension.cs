@@ -1,12 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
-
+using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-
-using Microsoft.Maui.Controls.Xaml;
-
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 

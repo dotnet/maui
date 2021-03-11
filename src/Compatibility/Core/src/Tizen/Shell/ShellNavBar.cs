@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using ElmSharp;
 using EBox = ElmSharp.Box;
@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 			else if (_flyoutBehavior == FlyoutBehavior.Flyout)
 			{
-				Shell.Current.FlyoutIsPresented = true;
+				Shell.Current.FlyoutIsPresented = !Shell.Current.FlyoutIsPresented;
 			}
 		}
 

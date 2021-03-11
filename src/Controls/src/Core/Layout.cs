@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement
 	{
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false);
@@ -215,15 +215,18 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
 		{
 			if (!IsMeasureValid)
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete	
 				DesiredSize = OnSizeRequest(widthConstraint, heightConstraint).Request;
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete	
 			IsMeasureValid = true;
 			return DesiredSize;
 		}
+
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+			=> (this as IFrameworkElement).Measure(widthConstraint, heightConstraint);
 
 		protected override void OnSizeAllocated(double width, double height)
 		{

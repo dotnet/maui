@@ -6,14 +6,18 @@ namespace Microsoft.Maui
 {
 	public static class EntryExtensions
 	{
-		static readonly int[][] ColorStates = { 
-			new[] { global::Android.Resource.Attribute.StateEnabled }, 
-			new[] { -global::Android.Resource.Attribute.StateEnabled } 
+		static readonly int[][] ColorStates = {
+			new[] { global::Android.Resource.Attribute.StateEnabled },
+			new[] { -global::Android.Resource.Attribute.StateEnabled }
 		};
 
 		public static void UpdateText(this EditText editText, IEntry entry)
 		{
-			editText.Text = entry.Text;
+			var newText = entry.Text ?? string.Empty;
+			var oldText = editText.Text ?? string.Empty;
+
+			if (oldText != newText)
+				editText.Text = newText;
 		}
 
 		public static void UpdateTextColor(this EditText editText, IEntry entry, ColorStateList? defaultColor)
@@ -50,6 +54,35 @@ namespace Microsoft.Maui
 
 			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))
 				editText.InputType |= InputTypes.NumberVariationPassword;
+
+			if (!entry.IsTextPredictionEnabled && ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions))
+				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+			
+			if (entry.IsReadOnly)
+				editText.InputType = InputTypes.Null;
+		}
+
+		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEntry entry)
+		{
+			editText.SetInputType(entry);
+		}
+
+		public static void UpdatePlaceholder(this EditText editText, IEntry entry)
+		{
+			if (editText.Hint == entry.Placeholder)
+				return;
+
+			editText.Hint = entry.Placeholder;
+		}
+
+		public static void UpdateIsReadOnly(this EditText editText, IEntry entry)
+		{
+			bool isEditable = !entry.IsReadOnly;
+
+			editText.SetInputType(entry);
+
+			editText.FocusableInTouchMode = isEditable;
+			editText.Focusable = isEditable;
 		}
 	}
 }

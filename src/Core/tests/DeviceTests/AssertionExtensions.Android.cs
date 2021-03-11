@@ -1,8 +1,9 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
-using System;
-using System.IO;
 using Xunit;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static Bitmap ToBitmap(this AView view)
+		public static async Task<Bitmap> ToBitmap(this AView view)
 		{
 			var layout = new FrameLayout(view.Context);
 			layout.LayoutParameters = new FrameLayout.LayoutParams(500, 500);
@@ -54,19 +55,22 @@ namespace Microsoft.Maui.DeviceTests
 				Gravity = GravityFlags.Center
 			};
 
-			layout.AddView(view);
-			layout.Measure(500, 500);
-			layout.Layout(0, 0, 500, 500);
-
 			var act = view.Context.GetActivity();
 			var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content);
 
 			rootView.AddView(layout);
 
+			layout.AddView(view);
+			layout.Measure(500, 500);
+			layout.Layout(0, 0, 500, 500);
+
+			await Task.Delay(100);
+
 			var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888);
-			Canvas canvas = new Canvas(bitmap);
-			view.Layout(0, 0, view.Width, view.Height);
-			view.Draw(canvas);
+			using (var canvas = new Canvas(bitmap))
+			{
+				view.Draw(canvas);
+			}
 
 			rootView.RemoveView(layout);
 
@@ -105,12 +109,12 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Bitmap AssertContainsColor(this AView view,  Maui.Color expectedColor) =>
+		public static Task<Bitmap> AssertContainsColor(this AView view, Maui.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToNative());
 
-		public static Bitmap AssertContainsColor(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view.ToBitmap();
 
 			for (int x = 1; x < view.Width; x++)
 			{
@@ -127,41 +131,41 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Bitmap AssertColorAtPoint(this AView view, AColor expectedColor, int x, int y)
+		public static async Task<Bitmap> AssertColorAtPoint(this AView view, AColor expectedColor, int x, int y)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view.ToBitmap();
 			Assert.Equal(bitmap.ColorAtPoint(x, y), expectedColor);
 
 			return bitmap;
 		}
 
-		public static Bitmap AssertColorAtCenter(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtCenter(this AView view, AColor expectedColor)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
-		public static Bitmap AssertColorAtBottomLeft(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtBottomLeft(this AView view, AColor expectedColor)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
-		public static Bitmap AssertColorAtBottomRight(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtBottomRight(this AView view, AColor expectedColor)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
-		public static Bitmap AssertColorAtTopLeft(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtTopLeft(this AView view, AColor expectedColor)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
-		public static Bitmap AssertColorAtTopRight(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtTopRight(this AView view, AColor expectedColor)
 		{
-			var bitmap = view.ToBitmap();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 	}

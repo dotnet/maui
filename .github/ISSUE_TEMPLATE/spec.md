@@ -2,14 +2,14 @@
 name: Spec
 about: An official specification for enhancements
 title: "[Spec]  "
-labels: proposal-open, t/enhancement ➕
+labels: proposal-open, enhancement
 assignees: ''
 
 ---
 
 # [The feature] 
 
-Provide a concise description of the feature and the motivation for adding it to Xamarin.Forms
+Provide a concise description of the feature and the motivation for adding it to .NET MAUI
 
 # API
 
@@ -26,7 +26,7 @@ Provide a concise description of the feature and the motivation for adding it to
 | API | Description |
 | ------------- | ------------- |
 | [name] | [API documentation/description] |
- 
+
 # Scenarios
 
 ## C# Example

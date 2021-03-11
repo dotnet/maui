@@ -187,6 +187,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_view.SetTextColor(c.ToAndroid());
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			Font f = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);

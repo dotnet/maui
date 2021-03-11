@@ -69,6 +69,7 @@ using Microsoft.Maui.Controls.Compatibility.Shapes;
 [assembly: ExportHandler(typeof(DropGestureRecognizer), typeof(DropGestureHandler))]
 
 [assembly: ExportRenderer(typeof(Shell), typeof(Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch.ShellRenderer), TargetIdiom.Watch)]
+[assembly: ExportRenderer(typeof(Shell), typeof(Microsoft.Maui.Controls.Compatibility.Platform.Tizen.TV.TVShellRenderer), TargetIdiom.TV)]
 
 [assembly: ExportRenderer(typeof(Ellipse), typeof(EllipseRenderer))]
 [assembly: ExportRenderer(typeof(Line), typeof(LineRenderer))]

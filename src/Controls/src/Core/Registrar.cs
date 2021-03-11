@@ -271,6 +271,8 @@ namespace Microsoft.Maui.Controls.Internals
 			Registered = new Registrar<IRegisterable>();
 		}
 
+		public static IFontRegistrar FontRegistrar { get; } = new FontRegistrar();
+
 		internal static Dictionary<string, Type> Effects { get; } = new Dictionary<string, Type>();
 		internal static Dictionary<string, IList<StylePropertyAttribute>> StyleProperties => LazyStyleProperties.Value;
 
@@ -344,16 +346,31 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			RegisterAll(attrTypes, default(InitializationFlags));
 		}
+
+
 		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags)
+		{
+			RegisterAll(
+				Device.GetAssemblies(),
+				Device.PlatformServices.GetType().GetTypeInfo().Assembly,
+				attrTypes,
+				flags,
+				null);
+		}
+
+		public static void RegisterAll(
+			Assembly[] assemblies,
+			Assembly defaultRendererAssembly,
+			Type[] attrTypes,
+			InitializationFlags flags,
+			Action<Type> viewRegistered)
 		{
 			Profile.FrameBegin();
 
-			Assembly[] assemblies = Device.GetAssemblies();
 
 			if (ExtraAssemblies != null)
 				assemblies = assemblies.Union(ExtraAssemblies).ToArray();
 
-			Assembly defaultRendererAssembly = Device.PlatformServices.GetType().GetTypeInfo().Assembly;
 			int indexOfExecuting = Array.IndexOf(assemblies, defaultRendererAssembly);
 
 			if (indexOfExecuting > 0)
@@ -383,12 +400,15 @@ namespace Microsoft.Maui.Controls.Internals
 						var attribute = a as HandlerAttribute;
 						if (attribute == null && (a is ExportFontAttribute fa))
 						{
-							FontRegistrar.Register(fa, assembly);
+							FontRegistrar.Register(fa.FontFileName, fa.Alias, assembly);
 						}
 						else
 						{
 							if (attribute.ShouldRegister())
+							{
 								Registered.Register(attribute.HandlerType, attribute.TargetType, attribute.SupportedVisuals, attribute.Priority);
+								viewRegistered?.Invoke(attribute.HandlerType);
+							}
 						}
 					}
 				}
@@ -410,6 +430,13 @@ namespace Microsoft.Maui.Controls.Internals
 				RegisterEffects(resolutionName, typedEffectAttributes);
 
 				Profile.FrameEnd(frameName);
+			}
+
+			if (FontRegistrar is FontRegistrar fontRegistrar)
+			{
+				var type = Registered.GetHandlerType(typeof(EmbeddedFont));
+				if (type != null)
+					fontRegistrar.SetFontLoader((IEmbeddedFontLoader)Activator.CreateInstance(type));
 			}
 
 			RegisterStylesheets(flags);

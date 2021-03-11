@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			{
 				case Device.iOS:
 					winPrizeLabel.FontFamily = "HelveticaNeue-UltraLight";
-					winPrizeLabel.FontSize = Device.GetNamedSize( NamedSize.Large, winPrizeLabel);
+					winPrizeLabel.FontSize = Device.GetNamedSize(NamedSize.Large, winPrizeLabel);
 					break;
 			}
 

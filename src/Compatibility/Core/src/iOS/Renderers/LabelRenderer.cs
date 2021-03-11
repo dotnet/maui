@@ -402,6 +402,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			if (IsElementOrControlEmpty)
@@ -533,6 +534,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return true;
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			if (Element == null)

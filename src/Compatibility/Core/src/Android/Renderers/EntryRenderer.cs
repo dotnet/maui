@@ -115,6 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
+		[PortHandler]
 		void ITextWatcher.OnTextChanged(ICharSequence s, int start, int before, int count)
 		{
 			Internals.TextTransformUtilites.SetPlainText(Element, s?.ToString());
@@ -212,6 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.Dispose(disposing);
 		}
 
+		[PortHandler]
 		protected virtual void UpdatePlaceHolderText()
 		{
 			if (EditText.Hint == Element.Placeholder)
@@ -516,6 +518,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		protected virtual void UpdateIsReadOnly()
 		{
 			bool isReadOnly = !Element.IsReadOnly;
@@ -524,6 +527,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.Focusable = isReadOnly;
 		}
 
+		[PortHandler("Ported Text setter")]
 		void UpdateText()
 		{
 			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);

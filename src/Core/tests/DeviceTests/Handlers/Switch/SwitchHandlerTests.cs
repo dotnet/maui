@@ -5,9 +5,13 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category("SwitchHandler")]
+	[Category(TestCategory.Switch)]
 	public partial class SwitchHandlerTests : HandlerTestBase<SwitchHandler>
 	{
+		public SwitchHandlerTests(HandlerTestFixture fixture) : base(fixture)
+		{
+		}
+
 		[Fact(DisplayName = "Is Toggled Initializes Correctly")]
 		public async Task IsToggledInitializesCorrectly()
 		{

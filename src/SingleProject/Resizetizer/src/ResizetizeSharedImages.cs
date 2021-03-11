@@ -1,12 +1,12 @@
-﻿using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Resizetizer
 				}
 				catch (Exception ex)
 				{
-					Log.LogErrorFromException(ex);
+					Log.LogWarningFromException(ex, true);
 
 					throw;
 				}
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Resizetizer
 		void ProcessImageCopy(SharedImageInfo img, DpiPath originalScaleDpi, ConcurrentBag<ResizedImageInfo> resizedImages)
 		{
 			var resizer = new Resizer(img, IntermediateOutputPath, this);
-			
+
 			Log.LogMessage(MessageImportance.Low, $"Copying {img.Filename}");
 
 			var r = resizer.CopyFile(originalScaleDpi, InputsFile, PlatformType.ToLower().Equals("android"));
@@ -232,6 +232,8 @@ namespace Microsoft.Maui.Resizetizer
 				var info = new SharedImageInfo();
 
 				var fileInfo = new FileInfo(image.GetMetadata("FullPath"));
+				if (!fileInfo.Exists)
+					throw new FileNotFoundException("Unable to find background file: " + fileInfo.FullName, fileInfo.FullName);
 
 				info.Filename = fileInfo.FullName;
 
@@ -253,17 +255,11 @@ namespace Microsoft.Maui.Resizetizer
 				var fgFile = image.GetMetadata("ForegroundFile");
 				if (!string.IsNullOrEmpty(fgFile))
 				{
-					var bgFileInfo = new FileInfo(info.Filename);
+					var fgFileInfo = new FileInfo(fgFile);
+					if (!fgFileInfo.Exists)
+						throw new FileNotFoundException("Unable to find foreground file: " + fgFileInfo.FullName, fgFileInfo.FullName);
 
-					if (!Path.IsPathRooted(fgFile))
-						fgFile = Path.Combine(bgFileInfo.Directory.FullName, fgFile);
-					else
-						fgFile = Path.GetFullPath(fgFile);
-
-					Logger.Log($"AppIcon Foreground: " + fgFile);
-
-					if (File.Exists(fgFile))
-						info.ForegroundFilename = fgFile;
+					info.ForegroundFilename = fgFileInfo.FullName;
 				}
 
 				// TODO:

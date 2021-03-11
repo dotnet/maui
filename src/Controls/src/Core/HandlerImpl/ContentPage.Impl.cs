@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -25,6 +26,12 @@ namespace Microsoft.Maui.Controls
 			Content = null;
 		}
 
+		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		{
+			IsArrangeValid = false;
+			base.InvalidateMeasureInternal(trigger);
+		}
+
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			IsMeasureValid = true;
@@ -38,16 +45,21 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			Arrange(bounds);
 			IsArrangeValid = true;
 			IsMeasureValid = true;
+			Arrange(bounds);
 			Handler?.SetFrame(Frame);
 
 			if (Content is IFrameworkElement fe)
 			{
+				fe.InvalidateArrange();
 				fe.Measure(Frame.Width, Frame.Height);
 				fe.Arrange(Frame);
 			}
+
+			if (Content is Layout layout)
+				layout.ResolveLayoutChanges();
+
 		}
 	}
 }

@@ -16,12 +16,12 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using AndroidX.Core.Content;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.DualScreen.Android;
+using Microsoft.Maui.Controls.Internals;
 using AColor = Android.Graphics.Color;
 using AndroidResource = Android.Resource;
 using Trace = System.Diagnostics.Trace;
-using Microsoft.Maui.Controls.DualScreen.Android;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isNougatOrNewer;
 		static bool? s_isOreoOrNewer;
 		static bool? s_isPieOrNewer;
+		static FontManager s_fontManager;
 
 		[Obsolete("Context is obsolete as of version 2.5. Please use a local context instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -155,6 +156,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return s_isPieOrNewer.Value;
 			}
 		}
+
+		internal static IFontManager FontManager =>
+			s_fontManager ??= new FontManager(Registrar.FontRegistrar);
 
 		public static float GetFontSizeNormal(Context context)
 		{
@@ -275,6 +279,76 @@ namespace Microsoft.Maui.Controls.Compatibility
 				viewInitialized(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
 		}
 
+		static bool IsInitializedRenderers;
+
+
+		internal static void RegisterCompatRenderers(
+			Assembly[] assemblies,
+			Assembly defaultRendererAssembly,
+			Action<Type> viewRegistered)
+		{
+			if (IsInitializedRenderers)
+				return;
+
+			IsInitializedRenderers = true;
+
+			// Only need to do this once
+			Registrar.RegisterAll(
+				assemblies,
+				defaultRendererAssembly,
+				new[] {
+						typeof(ExportRendererAttribute),
+						typeof(ExportCellAttribute),
+						typeof(ExportImageSourceHandlerAttribute),
+						typeof(ExportFontAttribute)
+					}, default(InitializationFlags),
+				viewRegistered);
+		}
+
+		internal static void RegisterCompatRenderers(InitializationOptions? maybeOptions)
+		{
+			if (!IsInitializedRenderers)
+			{
+				IsInitializedRenderers = true;
+				if (maybeOptions.HasValue)
+				{
+					var options = maybeOptions.Value;
+					var handlers = options.Handlers;
+					var flags = options.Flags;
+					var effectScopes = options.EffectScopes;
+
+					//TODO: ExportCell?
+					//TODO: ExportFont
+
+					// renderers
+					Registrar.RegisterRenderers(handlers);
+
+					// effects
+					if (effectScopes != null)
+					{
+						for (var i = 0; i < effectScopes.Length; i++)
+						{
+							var effectScope = effectScopes[0];
+							Registrar.RegisterEffects(effectScope.Name, effectScope.Effects);
+						}
+					}
+
+					// css
+					Registrar.RegisterStylesheets(flags);
+				}
+				else
+				{
+					// Only need to do this once
+					Registrar.RegisterAll(new[] {
+						typeof(ExportRendererAttribute),
+						typeof(ExportCellAttribute),
+						typeof(ExportImageSourceHandlerAttribute),
+						typeof(ExportFontAttribute)
+					});
+				}
+			}
+		}
+
 		static void SetupInit(
 			IMauiContext context,
 			Assembly resourceAssembly,
@@ -344,45 +418,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Profile.FramePartition("RegisterAll");
 
-			if (!IsInitialized)
-			{
-				if (maybeOptions.HasValue)
-				{
-					var options = maybeOptions.Value;
-					var handlers = options.Handlers;
-					var flags = options.Flags;
-					var effectScopes = options.EffectScopes;
-
-					//TODO: ExportCell?
-					//TODO: ExportFont
-
-					// renderers
-					Registrar.RegisterRenderers(handlers);
-
-					// effects
-					if (effectScopes != null)
-					{
-						for (var i = 0; i < effectScopes.Length; i++)
-						{
-							var effectScope = effectScopes[0];
-							Registrar.RegisterEffects(effectScope.Name, effectScope.Effects);
-						}
-					}
-
-					// css
-					Registrar.RegisterStylesheets(flags);
-				}
-				else
-				{
-					// Only need to do this once
-					Registrar.RegisterAll(new[] {
-						typeof(ExportRendererAttribute),
-						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
-						typeof(ExportFontAttribute)
-					});
-				}
-			}
+			RegisterCompatRenderers(maybeOptions);
 
 			Profile.FramePartition("Epilog");
 

@@ -1,11 +1,11 @@
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using SkiaSharp;
 using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
@@ -75,6 +75,16 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			public void NoItemsSucceed()
 			{
 				var task = GetNewTask();
+
+				var success = task.Execute();
+
+				Assert.True(success);
+			}
+
+			[Fact]
+			public void NullItemsSucceed()
+			{
+				var task = GetNewTask(null);
 
 				var success = task.Execute();
 
@@ -403,6 +413,16 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			public void NoItemsSucceed()
 			{
 				var task = GetNewTask();
+
+				var success = task.Execute();
+
+				Assert.True(success);
+			}
+
+			[Fact]
+			public void NullItemsSucceed()
+			{
+				var task = GetNewTask(null);
 
 				var success = task.Execute();
 

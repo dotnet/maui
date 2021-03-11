@@ -1,6 +1,6 @@
-using Microsoft.Maui.Layouts;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Maui.Layouts;
 
 
 
@@ -23,6 +23,14 @@ namespace Microsoft.Maui.Controls.Layout2
 		public IEnumerator<IView> GetEnumerator() => _children.GetEnumerator();
 
 		IEnumerator IEnumerable.GetEnumerator() => _children.GetEnumerator();
+
+#pragma warning disable CS0672 // Member overrides obsolete member
+		public override SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
+#pragma warning restore CS0672 // Member overrides obsolete member
+		{
+			var size = (this as IFrameworkElement).Measure(widthConstraint, heightConstraint);
+			return new SizeRequest(size);
+		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
@@ -75,6 +83,10 @@ namespace Microsoft.Maui.Controls.Layout2
 
 			_children.Add(child);
 
+			// TODO MAUI
+			if (child is Element ve)
+				ve.Parent = this;
+
 			InvalidateMeasure();
 
 			LayoutHandler?.Add(child);
@@ -86,6 +98,10 @@ namespace Microsoft.Maui.Controls.Layout2
 				return;
 
 			_children.Remove(child);
+
+			// TODO MAUI
+			if (child is Element ve)
+				ve.Parent = null;
 
 			InvalidateMeasure();
 

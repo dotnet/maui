@@ -199,9 +199,10 @@ namespace Microsoft.Maui.Essentials
 						contentUri = MediaStore.Video.Media.ExternalContentUri;
 					else if (storageType.Equals(storageTypeAudio, StringComparison.OrdinalIgnoreCase))
 						contentUri = MediaStore.Audio.Media.ExternalContentUri;
-
+#pragma warning disable CS0618
 					if (contentUri != null && GetDataFilePath(contentUri, $"{MediaStore.MediaColumns.Id}=?", new[] { uriPath }) is string filePath)
 						return filePath;
+#pragma warning restore CS0618
 				}
 			}
 
@@ -237,7 +238,10 @@ namespace Microsoft.Maui.Essentials
 				return null;
 
 			// resolve or generate a valid destination path
+#pragma warning disable CS0618
 			var filename = GetColumnValue(uri, MediaStore.Files.FileColumns.DisplayName) ?? Guid.NewGuid().ToString("N");
+#pragma warning restore CS0618
+
 			if (!Path.HasExtension(filename) && !string.IsNullOrEmpty(extension))
 				filename = Path.ChangeExtension(filename, extension);
 
