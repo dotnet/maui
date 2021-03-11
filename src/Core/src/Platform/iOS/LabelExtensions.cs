@@ -49,7 +49,12 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLines(this UILabel nativeLabel, ILabel label)
 		{
-			nativeLabel.Lines = label.MaxLines;
+			int maxLines = label.MaxLines;
+
+			if (maxLines >= 0)
+			{
+				nativeLabel.Lines = maxLines;
+			}
 		}
 
 		public static void UpdatePadding(this MauiLabel nativeLabel, ILabel label)
