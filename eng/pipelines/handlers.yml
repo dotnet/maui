@@ -141,13 +141,8 @@ stages:
         pool:
           vmImage: windows-latest
         steps:
-          - pwsh: |
-              $ProgressPreference = 'SilentlyContinue'
-              Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
-              & .\dotnet-install.ps1 -Version $(DotNetVersion) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
-              & dotnet --list-sdks
-            displayName: install .NET $(DotNetVersion)
-            errorActionPreference: stop
+
+          - template: common/dotnet-install.yml
 
           - pwsh: |
               & dotnet tool install --global boots
@@ -193,13 +188,7 @@ stages:
               version: 3.1.x
               installationPath: $(DotNet.Root)
 
-          - bash: >
-              export PATH="$(DotNet.Root):$(DotNet.Tools):$PATH" &&
-              curl -L https://dot.net/v1/dotnet-install.sh > dotnet-install.sh &&
-              sh dotnet-install.sh --version $(DotNetVersion) --install-dir $DOTNET_ROOT --verbose &&
-              dotnet --list-sdks &&
-              echo "##vso[task.setvariable variable=PATH]$PATH"
-            displayName: install .NET $(DotNetVersion)
+          - template: common/dotnet-install.yml
 
           - bash: |
               dotnet tool install --global boots
@@ -254,13 +243,8 @@ stages:
             release:
               BuildConfiguration:  'Release'
         steps:
-          - powershell: |
-              $ProgressPreference = 'SilentlyContinue'
-              Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
-              & .\dotnet-install.ps1 -Version $(DotNetVersion) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
-              & dotnet --list-sdks
-            displayName: install .NET $(DotNetVersion)
-            errorActionPreference: stop
+
+          - template: common/dotnet-install.yml
 
           - powershell: |
               & dotnet tool install --global boots
@@ -306,13 +290,7 @@ stages:
               version: 3.1.x
               installationPath: $(DotNet.Root)
 
-          - bash: >
-              export PATH="$(DotNet.Root):$(DotNet.Tools):$PATH" &&
-              curl -L https://dot.net/v1/dotnet-install.sh > dotnet-install.sh &&
-              sh dotnet-install.sh --version $(DotNetVersion) --install-dir $DOTNET_ROOT --verbose &&
-              dotnet --list-sdks &&
-              echo "##vso[task.setvariable variable=PATH]$PATH"
-            displayName: install .NET $(DotNetVersion)
+          - template: common/dotnet-install.yml
 
           - bash: |
               dotnet tool install --global boots
