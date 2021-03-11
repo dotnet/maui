@@ -13,5 +13,13 @@ namespace MauiApp1
 		}
 
 		public IView View { get => (IView)Content; set => Content = (View)value; }
+
+		int count = 0;
+
+		private void OnButtonClicked(object sender, EventArgs e)
+		{
+			count++;
+			CountBtn.Text = $"You clicked {count} times.";
+		}
 	}
 }
