@@ -5,5 +5,9 @@
 		public string Text { get; set; }
 
 		public Color TextColor { get; set; }
+
+		public Font Font { get; set; }
+
+		public double CharacterSpacing { get; set; }
 	}
 }
