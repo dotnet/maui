@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Graphics.Text.Immutable;
 using Markdig.Syntax.Inlines;
+using System;
 
 namespace Microsoft.Maui.Graphics.Text.Renderer
 {

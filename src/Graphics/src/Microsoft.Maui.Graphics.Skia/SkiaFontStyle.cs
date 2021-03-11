@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics.Skia
+﻿using System;
+
+namespace Microsoft.Maui.Graphics.Skia
 {
     public class SkiaFontStyle : IFontStyle
     {
