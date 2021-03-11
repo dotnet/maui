@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : AbstractViewHandler<IEditor, UITextView>
 	{
-		static readonly int BaseHeight = 60;
+		static readonly int BaseHeight = 30;
 
 		protected override UITextView CreateNativeView()
 		{
