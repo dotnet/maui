@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				IMenuItem item = menu.Add(AMenu.None, i, AMenu.None, action.Text);
 
-				
+
 				_ = _context.ApplyDrawableAsync(action, MenuItem.IconImageSourceProperty, iconDrawable =>
 				{
 					if (iconDrawable != null && !this.IsDisposed() && !_actionModeNeedsUpdates)

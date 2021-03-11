@@ -9,8 +9,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		Color _trackColor;
 
 		public bool IsToggled { get; set; }
-		public Color TrackColor 
-		{ 
+		public Color TrackColor
+		{
 			get => _trackColor;
 			set => SetProperty(ref _trackColor, value);
 		}

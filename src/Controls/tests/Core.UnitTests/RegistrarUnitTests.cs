@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using NUnit.Framework;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using NUnit.Framework;
 
 [assembly: TestHandler(typeof(Button), typeof(ButtonTarget))]
 [assembly: TestHandler(typeof(Slider), typeof(SliderTarget))]

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Samples.Model;
 using Microsoft.Maui.Essentials;
+using Samples.Model;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 

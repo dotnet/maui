@@ -1,8 +1,8 @@
-﻿using SkiaSharp;
-using Svg.Skia;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using SkiaSharp;
+using Svg.Skia;
 
 namespace Microsoft.Maui.Resizetizer
 {

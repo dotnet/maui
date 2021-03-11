@@ -25,9 +25,9 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string[] Idioms { get; set; }
 
-		
+
 		public static DpiPath[] Android
-			=> new []
+			=> new[]
 			{
 				new DpiPath("drawable-mdpi", 1.0m),
 				new DpiPath("drawable-hdpi", 1.5m),
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Resizetizer
 
 
 		public static DpiPath[] Ios
-			=> new []
+			=> new[]
 			{
 				new DpiPath("", 1.0m),
 				new DpiPath("", 2.0m, "@2x"),
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Resizetizer
 
 
 		public static DpiPath[] Uwp
-			=> new []
+			=> new[]
 			{
 				new DpiPath("Assets", 1.0m, ".scale-100"),
 				new DpiPath("Assets", 2.0m, ".scale-200"),

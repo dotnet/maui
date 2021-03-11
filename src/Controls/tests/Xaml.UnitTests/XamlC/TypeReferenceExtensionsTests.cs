@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls.Build.Tasks;
 using Mono.Cecil;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.Build.Tasks;
 
 namespace Microsoft.Maui.Controls
 {

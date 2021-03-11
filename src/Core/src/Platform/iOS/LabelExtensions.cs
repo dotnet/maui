@@ -27,20 +27,18 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this UILabel nativeLabel, ILabel label, IFontManager fontManager)
 		{
-			var font = label.GetFont();
-
-			var uiFont = fontManager.GetFont(font);
+			var uiFont = fontManager.GetFont(label.Font);
 			nativeLabel.Font = uiFont;
 		}
 
-		public static void UpdatePadding(this MauiLabel nativeLabel, ILabel label) 
+		public static void UpdatePadding(this MauiLabel nativeLabel, ILabel label)
 		{
 			nativeLabel.TextInsets = new UIEdgeInsets(
 					(float)label.Padding.Top,
 					(float)label.Padding.Left,
 					(float)label.Padding.Bottom,
 					(float)label.Padding.Right);
-			
+
 		}
 	}
 }

@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 
 		public MauiApp()
 		{
-			
+
 		}
 	}
 }

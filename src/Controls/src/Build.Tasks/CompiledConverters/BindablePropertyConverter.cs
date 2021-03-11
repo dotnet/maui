@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
-
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using static System.String;
 using static Microsoft.Maui.Controls.Build.Tasks.BuildExceptionCode;
 

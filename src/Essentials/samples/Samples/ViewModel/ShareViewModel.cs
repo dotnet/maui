@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Input;
-using Samples.Helpers;
 using Microsoft.Maui.Essentials;
+using Samples.Helpers;
 using Xamarin.Forms;
 
 namespace Samples.ViewModel

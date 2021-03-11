@@ -1,9 +1,9 @@
-using Microsoft.Maui;
-using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
-using AAttribute = Android.Resource.Attribute;
-using MauiAttribute = Microsoft.Maui.Resource.Attribute;
-using APorterDuff = Android.Graphics.PorterDuff;
 using Android.Content.Res;
+using Microsoft.Maui;
+using AAttribute = Android.Resource.Attribute;
+using APorterDuff = Android.Graphics.PorterDuff;
+using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
+using MauiAttribute = Microsoft.Maui.Resource.Attribute;
 
 namespace Microsoft.Maui
 {
@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 			if (aSwitch.Context == null)
 				return;
 
-			if(trackColor.IsDefault)
+			if (trackColor.IsDefault)
 			{
 				aSwitch.TrackTintMode = APorterDuff.Mode.SrcAtop;
 				aSwitch.TrackTintList = defaultTrackColor;

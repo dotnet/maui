@@ -1,7 +1,7 @@
 using Maui.Controls.Sample.ViewModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {

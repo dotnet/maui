@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using NUnit.Framework.Interfaces;
-using NUnit.Framework.Internal;
 using Microsoft.Maui.Controls.ControlGallery.Tests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using NUnit.Framework.Interfaces;
+using NUnit.Framework.Internal;
 
 namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformTestsGallery
 {
