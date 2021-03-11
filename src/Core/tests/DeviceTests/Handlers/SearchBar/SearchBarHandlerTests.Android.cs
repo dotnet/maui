@@ -1,5 +1,6 @@
 ﻿using Android.Widget;
 using Microsoft.Maui.Handlers;
+using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.DeviceTests
 {
