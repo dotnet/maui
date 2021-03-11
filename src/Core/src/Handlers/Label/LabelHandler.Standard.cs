@@ -8,9 +8,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(IViewHandler handler, ILabel label) { }
 		public static void MapTextColor(IViewHandler handler, ILabel label) { }
-		public static void MapFontFamily(LabelHandler handler, ILabel label) { }
-		public static void MapFontSize(LabelHandler handler, ILabel label) { }
-		public static void MapFontAttributes(LabelHandler handler, ILabel label) { }
-		public static void MapPadding(LabelHandler handler, ILabel label) { }
+		public static void MapCharacterSpacing(IViewHandler handler, ILabel label) { }
+		public static void MapFont(LabelHandler handler, ILabel label) { }
+		public static void MapPadding(LabelHandler handler, ILabel label) {	}
 	}
 }

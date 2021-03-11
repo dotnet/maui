@@ -1,8 +1,8 @@
 parameters:
-  androidVmPool: '$(macOSXVmPool)'
-  androidVmImage: '$(macOSXVmImage)'
-  iosVmPool: '$(macOSXVmPool)'
-  iosVmImage: '$(macOSXVmImage)'
+  androidVmPool: '$(androidTestsVmPool)'
+  androidVmImage: '$(androidTestsVmImage)'
+  iosVmPool: '$(iosTestsVmPool)'
+  iosVmImage: '$(iosTestsVmImage)'
   androidApiLevels: [ 30, 29, 21 ]
   iosVersions: [ 'latest' ]
   projects:

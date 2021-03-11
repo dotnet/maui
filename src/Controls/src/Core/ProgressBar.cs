@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public class ProgressBar : View, IElementConfiguration<ProgressBar>
+	public partial class ProgressBar : View, IElementConfiguration<ProgressBar>
 	{
 		public static readonly BindableProperty ProgressColorProperty = BindableProperty.Create(nameof(ProgressColor), typeof(Color), typeof(ProgressBar), Color.Default);
 
