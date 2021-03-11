@@ -94,8 +94,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			parent.Background = linearGradientBrush;
 
-			Assert.AreSame(parent, parent.Background.Parent);
-			Assert.AreSame(context, parent.Background.BindingContext);
+			var brush = parent.Background as Brush;
+
+			Assert.NotNull(brush);
+			Assert.AreSame(parent, brush.Parent);
+			Assert.AreSame(context, brush.BindingContext);
 		}
 	}
 }

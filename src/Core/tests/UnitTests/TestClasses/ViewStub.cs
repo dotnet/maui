@@ -1,50 +1,40 @@
-using System;
-using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Tests
 {
 	class ViewStub : IViewStub
 	{
-		public bool IsEnabled => throw new NotImplementedException();
+		public Thickness Margin { get; set; }
 
-		public Color BackgroundColor => throw new NotImplementedException();
+		public bool IsEnabled { get; set; }
 
-		public Rectangle Frame => throw new NotImplementedException();
+		public IBrush Background { get; set; }
 
-		public IViewHandler Handler { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public Rectangle Frame { get; set; }
 
-		public IFrameworkElement Parent => throw new NotImplementedException();
+		public double Width { get; set; }
 
-		public Size DesiredSize => throw new NotImplementedException();
+		public double Height { get; set; }
 
-		public bool IsMeasureValid => throw new NotImplementedException();
+		public IViewHandler Handler { get; set; }
 
-		public bool IsArrangeValid => throw new NotImplementedException();
+		public IFrameworkElement Parent { get; }
 
-		public double Width => throw new NotImplementedException();
+		public Size DesiredSize { get; }
 
-		public double Height => throw new NotImplementedException();
+		public bool IsMeasureValid { get; }
 
-		public Thickness Margin => throw new NotImplementedException();
+		public bool IsArrangeValid { get; }
 
-		public void Arrange(Rectangle bounds)
-		{
-			throw new NotImplementedException();
-		}
+		public void Arrange(Rectangle bounds) { }
 
-		public void InvalidateArrange()
-		{
-			throw new NotImplementedException();
-		}
+		public void InvalidateArrange() { }
 
-		public void InvalidateMeasure()
-		{
-			throw new NotImplementedException();
-		}
+		public void InvalidateMeasure() { }
 
 		public Size Measure(double widthConstraint, double heightConstraint)
 		{
-			throw new NotImplementedException();
+			return Size.Zero;
 		}
 	}
 }
