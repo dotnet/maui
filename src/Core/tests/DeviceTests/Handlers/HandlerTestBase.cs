@@ -123,5 +123,34 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedSetValue, viewVal);
 			Assert.Equal(expectedSetValue, nativeVal);
 		}
+
+		async protected Task ValidateUnrelatedPropertyUnaffected<TValue>(
+			IView view,
+			Func<THandler, TValue> GetNativeValue,
+			string property,
+			Action SetUnrelatedProperty)
+		{
+			// get initial values
+
+			var (handler, initialNativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(view);
+				return (handler, GetNativeValue(handler));
+			});
+
+			// run update
+
+			var newNativeVal = await InvokeOnMainThreadAsync(() =>
+			{
+				SetUnrelatedProperty();
+				handler.UpdateValue(property);
+
+				return GetNativeValue(handler);
+			});
+
+			// ensure unchanged
+
+			Assert.Equal(initialNativeVal, newNativeVal);
+		}
 	}
 }
