@@ -1,6 +1,7 @@
 ﻿using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
+using System;
 
 namespace Microsoft.Maui.Graphics.SharpDX
 {

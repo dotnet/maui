@@ -12,6 +12,7 @@ using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using TextAntialiasMode = SharpDX.Direct2D1.TextAntialiasMode;
+using System;
 
 namespace Microsoft.Maui.Graphics.SharpDX
 {

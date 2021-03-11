@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
 using Microsoft.Graphics.Canvas;
+using System;
 
 namespace Microsoft.Maui.Graphics.Win2D
 {

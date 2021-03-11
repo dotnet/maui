@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Graphics.Text
 
             var fontName = attributes.GetFontName();
             if (fontName != null)
-                span.FontFamily = new Windows.Media.FontFamily(fontName);
+                span.FontFamily = new System.Windows.Media.FontFamily(fontName);
 
             if (attributes.GetBold())
                 span.FontWeight = FontWeights.Bold;
@@ -55,14 +55,14 @@ namespace Microsoft.Maui.Graphics.Text
             var foregroundColor = attributes.GetForegroundColor()?.ParseAsInts()?.ToColor();
             if (foregroundColor != null)
             {
-                var brush = new SolidColorBrush((Windows.Media.Color) foregroundColor);
+                var brush = new SolidColorBrush((System.Windows.Media.Color) foregroundColor);
                 span.Foreground = brush;
             }
 
             var backgroundColor = attributes.GetBackgroundColor()?.ParseAsInts()?.ToColor();
             if (backgroundColor != null)
             {
-                var brush = new SolidColorBrush((Windows.Media.Color) backgroundColor);
+                var brush = new SolidColorBrush((System.Windows.Media.Color) backgroundColor);
                 span.Background = brush;
             }
 

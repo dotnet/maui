@@ -22,6 +22,7 @@ using Windows.Foundation;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Direct3D11;
+using System;
 
 namespace Microsoft.Maui.Graphics.SharpDX
 {

@@ -2,6 +2,7 @@
 using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
 using SharpDX.Mathematics.Interop;
+using System;
 
 namespace Microsoft.Maui.Graphics.SharpDX
 {

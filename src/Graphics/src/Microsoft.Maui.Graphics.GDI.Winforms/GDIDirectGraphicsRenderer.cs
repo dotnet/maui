@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics.GDI
+﻿using System;
+
+namespace Microsoft.Maui.Graphics.GDI
 {
     public class GDIDirectGraphicsRenderer : GDIGraphicsRenderer
     {

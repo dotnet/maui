@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using SharpDX.WIC;
 
 namespace Microsoft.Maui.Graphics.SharpDX

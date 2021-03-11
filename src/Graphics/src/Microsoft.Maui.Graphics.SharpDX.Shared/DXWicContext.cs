@@ -1,4 +1,5 @@
-﻿using d2 = SharpDX.Direct2D1;
+﻿using System;
+using d2 = SharpDX.Direct2D1;
 using dxgi = SharpDX.DXGI;
 using wic = SharpDX.WIC;
 

@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics.SharpDX.WindowsForms
+﻿using System;
+
+namespace Microsoft.Maui.Graphics.SharpDX.WindowsForms
 {
     public interface IGraphicsRenderer : IDisposable
     {

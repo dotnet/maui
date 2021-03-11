@@ -23,6 +23,7 @@ using SharpDX.Direct2D1;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.WIC;
+using System;
 using Device = SharpDX.Direct2D1.Device;
 using DeviceContext = SharpDX.Direct2D1.DeviceContext;
 using Factory = SharpDX.DirectWrite.Factory;

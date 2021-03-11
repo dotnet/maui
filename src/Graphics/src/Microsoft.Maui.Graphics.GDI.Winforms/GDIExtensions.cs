@@ -1,5 +1,7 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Drawing2D;
+using Drawing = System.Drawing;
 
 namespace Microsoft.Maui.Graphics.GDI
 {

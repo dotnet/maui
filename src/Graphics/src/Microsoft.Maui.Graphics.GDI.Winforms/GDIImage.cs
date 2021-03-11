@@ -1,8 +1,11 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Drawing = System.Drawing;
+
 
 namespace Microsoft.Maui.Graphics.GDI
 {

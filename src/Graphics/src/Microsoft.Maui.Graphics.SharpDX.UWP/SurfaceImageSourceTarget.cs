@@ -28,6 +28,7 @@ using SharpDX.Mathematics.Interop;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using Device = SharpDX.DXGI.Device;
 using Point = SharpDX.Point;
+using System;
 
 namespace Microsoft.Maui.Graphics.SharpDX
 {

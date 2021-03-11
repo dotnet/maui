@@ -1,5 +1,6 @@
 ﻿using SharpDX;
 using SharpDX.Direct2D1;
+using System;
 
 namespace Microsoft.Maui.Graphics.SharpDX
 {

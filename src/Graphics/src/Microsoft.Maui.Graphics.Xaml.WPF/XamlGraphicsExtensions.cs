@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 {
     public static class XamlGraphicsExtensions
     {
-        public static Windows.Media.Color AsWpfColor(this Color target)
+        public static System.Windows.Media.Color AsWpfColor(this Color target)
         {
             return Windows.Media.Color.FromArgb(
                 (byte) (255 * target.Alpha),

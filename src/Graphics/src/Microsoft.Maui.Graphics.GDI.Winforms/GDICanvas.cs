@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
+using Drawing = System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using Microsoft.Maui.Graphics.Text;
@@ -55,7 +57,7 @@ namespace Microsoft.Maui.Graphics.GDI
 
         public override Color StrokeColor
         {
-            set => CurrentState.StrokeColor = value?.AsColor() ?? Drawing.Color.Black;
+            set => CurrentState.StrokeColor = value?.AsColor() ?? System.Drawing.Color.Black;
         }
 
         public override LineCap StrokeLineCap
@@ -84,7 +86,7 @@ namespace Microsoft.Maui.Graphics.GDI
                 switch (value)
                 {
                     case LineJoin.Bevel:
-                        CurrentState.StrokeLineJoin = Drawing.Drawing2D.LineJoin.Bevel;
+                        CurrentState.StrokeLineJoin = System.Drawing.Drawing2D.LineJoin.Bevel;
                         break;
                     case LineJoin.Round:
                         CurrentState.StrokeLineJoin = Drawing.Drawing2D.LineJoin.Round;

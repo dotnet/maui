@@ -289,15 +289,15 @@ namespace Microsoft.Maui.Graphics.Xaml
             set => _font = value;
         }
 
-        public Windows.Media.FontFamily FontFamily
+        public System.Windows.Media.FontFamily FontFamily
         {
             get
             {
                 var style = Fonts.CurrentService.GetFontStyleById(_font ?? "Arial");
                 if (style == null)
-                    return new Windows.Media.FontFamily("Arial");
+                    return new FontFamily("Arial");
 
-                return new Windows.Media.FontFamily(style.FontFamily.Name);
+                return new FontFamily(style.FontFamily.Name);
             }
         }
 

@@ -2,6 +2,7 @@
 using Windows.UI;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
+using System;
 
 namespace Microsoft.Maui.Graphics.Win2D
 {
