@@ -38,7 +38,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultTypeface, nativeLabel.Typeface);
 		}
 
-		[Fact]
+		[Fact(DisplayName = "Padding Initializes Correctly")]
 		public async Task PaddingInitializesCorrectly()
 		{
 			var label = new LabelStub()

@@ -39,6 +39,11 @@ namespace Microsoft.Maui
 			textView.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
+		public static void UpdateMaxLines(this TextView textView, ILabel label)
+		{
+			textView.SetMaxLines(label.MaxLines);
+		}
+
 		public static void UpdatePadding(this TextView textView, ILabel label)
 		{
 			var context = textView.Context;
