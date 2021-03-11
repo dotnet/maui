@@ -16,6 +16,8 @@ steps:
       provisioning_script: $(provisionator.path)
       provisioning_extra_args: $(provisionator.extraArguments)
 
+  - template: dotnet-install.yml
+
   - powershell: |
       $(System.DefaultWorkingDirectory)/build.ps1 --target provision --TeamProject="$(System.TeamProject)"
     displayName: 'Cake Provision'
@@ -38,7 +40,6 @@ steps:
 
   - task: VSTest@2
     displayName: 'XAML Unit Tests'
-    continueOnError: true
     inputs:
       testAssemblyVer2: |
         **/bin/$(BuildConfiguration)/**/Microsoft.Maui.Controls.Xaml.UnitTests.dll
@@ -47,6 +48,9 @@ steps:
       testRunTitle: '$(BuildConfiguration)_UnitTests'
       configuration: '$(BuildConfiguration)'
       diagnosticsEnabled: true
+      # Disable code coverage in child processes
+      # See: https://github.com/Microsoft/vstest/issues/1263
+      otherConsoleOptions: -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.CodeCoverage.CollectFromChildProcesses=False
 
   - task: DotNetCoreCLI@2
     displayName: 'Unit Tests'

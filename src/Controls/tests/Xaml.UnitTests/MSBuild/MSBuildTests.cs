@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using Microsoft.Build.Locator;
 using Mono.Cecil;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -19,8 +18,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 	public class MSBuildTests
 	{
 		static readonly string[] references = {
-			"mscorlib",
-			"System",
 			"Microsoft.Maui.Controls.dll",
 			"Microsoft.Maui.Controls.Xaml.dll",
 			"Microsoft.Maui.dll",
@@ -57,6 +54,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				}";
 		}
 
+		const string TargetFramework = "net6.0";
 		string testDirectory;
 		string tempDirectory;
 		string intermediateDirectory;
@@ -66,7 +64,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			testDirectory = TestContext.CurrentContext.TestDirectory;
 			tempDirectory = IOPath.Combine(testDirectory, "temp", TestContext.CurrentContext.Test.Name);
-			intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Debug");
+			intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Debug", TargetFramework);
 			Directory.CreateDirectory(tempDirectory);
 
 			//copy _Directory.Build.[props|targets] in test/
@@ -129,35 +127,17 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Creates a base csproj file for these unit tests
 		/// </summary>
-		/// <param name="sdkStyle">If true, uses a new SDK-style project</param>
-		XElement NewProject(bool sdkStyle)
+		XElement NewProject()
 		{
 			var project = NewElement("Project");
 
 			var propertyGroup = NewElement("PropertyGroup");
-			if (sdkStyle)
-			{
-				project.WithAttribute("Sdk", "Microsoft.NET.Sdk");
-				propertyGroup.Add(NewElement("TargetFramework").WithValue("netstandard2"));
-				//NOTE: we don't want SDK-style projects to auto-add files, tests should be able to control this
-				propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("False"));
-				propertyGroup.Add(NewElement("EnableDefaultEmbeddedResourceItems").WithValue("False"));
-				//NOTE: SDK-style output paths are different
-				if (!intermediateDirectory.EndsWith("netstandard2"))
-					intermediateDirectory = IOPath.Combine(intermediateDirectory, "netstandard2");
-			}
-			else
-			{
-				propertyGroup.Add(NewElement("Configuration").WithValue("Debug"));
-				propertyGroup.Add(NewElement("Platform").WithValue("AnyCPU"));
-				propertyGroup.Add(NewElement("OutputType").WithValue("Library"));
-				propertyGroup.Add(NewElement("OutputPath").WithValue("bin\\Debug"));
-				propertyGroup.Add(NewElement("TargetFrameworkVersion").WithValue("v4.7"));
-				propertyGroup.Add(NewElement("RootNamespace").WithValue("test"));
-			}
+			project.WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(TargetFramework));
+			//NOTE: we don't want SDK-style projects to auto-add files, tests should be able to control this
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("False"));
+			propertyGroup.Add(NewElement("EnableDefaultEmbeddedResourceItems").WithValue("False"));
 			propertyGroup.Add(NewElement("_MauiBuildTasksLocation").WithValue($"{testDirectory}\\"));
-
-
 			project.Add(propertyGroup);
 
 			var itemGroup = NewElement("ItemGroup");
@@ -167,11 +147,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				if (assembly.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
 				{
 					reference.Add(NewElement("HintPath").WithValue(IOPath.Combine("..", "..", assembly)));
-				}
-				else if (sdkStyle)
-				{
-					//NOTE: SDK-style projects don't need system references
-					continue;
 				}
 				itemGroup.Add(reference);
 			}
@@ -183,8 +158,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			//Add a single CSS file
 			project.Add(AddFile("Foo.css", "EmbeddedResource", Css.Foo));
 
-			if (!sdkStyle)
-				project.Add(NewElement("Import").WithAttribute("Project", @"$(MSBuildBinPath)\Microsoft.CSharp.targets"));
 			return project;
 		}
 
@@ -196,29 +169,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var itemGroup = NewElement("ItemGroup");
 			itemGroup.Add(NewElement(buildAction).WithAttribute("Include", name));
 			return itemGroup;
-		}
-
-		string FindMSBuild()
-		{
-			//On Windows we have to "find" MSBuild
-			if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-			{
-				foreach (var visualStudioInstance in MSBuildLocator.QueryVisualStudioInstances().OrderByDescending(v => v.Version))
-				{
-					return IOPath.Combine(visualStudioInstance.MSBuildPath, "MSBuild.exe");
-				}
-			}
-
-			return "msbuild";
-		}
-
-		void RestoreIfNeeded(string projectFile, bool sdkStyle)
-		{
-			//If using an SDK-style project, we need to run the Restore target
-			if (sdkStyle)
-			{
-				Build(projectFile, "Restore");
-			}
 		}
 
 		string Build(string projectFile, string target = "Build", string verbosity = "normal", string additionalArgs = "", bool shouldSucceed = true)
@@ -236,8 +186,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			var psi = new ProcessStartInfo
 			{
-				FileName = FindMSBuild(),
-				Arguments = $"/v:{verbosity} /nologo {projectFile} /t:{target} /bl {additionalArgs}",
+				FileName = "dotnet",
+				Arguments = $"build -v:{verbosity} -nologo {projectFile} -t:{target} -bl {additionalArgs}",
 				CreateNoWindow = true,
 				WindowStyle = ProcessWindowStyle.Hidden,
 				UseShellExecute = false,
@@ -254,6 +204,14 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				p.BeginErrorReadLine();
 				p.BeginOutputReadLine();
 				p.WaitForExit();
+
+				// Add the binlog as a test attachment
+				var binlog = IOPath.Combine(IOPath.GetDirectoryName(projectFile), "msbuild.binlog");
+				if (File.Exists (binlog))
+				{
+					TestContext.AddTestAttachment(binlog);
+				}
+
 				if (shouldSucceed)
 					Assert.AreEqual(0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
 				else
@@ -279,16 +237,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Test]
-		public void BuildAProject([Values(false, true)] bool sdkStyle)
+		public void BuildAProject()
 		{
-			if (sdkStyle)
-				Assert.Ignore("This test fails on sdk style projects");
-
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
@@ -299,17 +253,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		// Tests the MauiXamlCValidateOnly=True MSBuild property
 		[Test]
-		public void ValidateOnly([Values(false, true)] bool sdkStyle)
+		public void ValidateOnly()
 		{
-			if (sdkStyle)
-				Assert.Ignore("This test fails on sdk style projects");
-
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
-			Build(projectFile, additionalArgs: "/p:MauiXamlCValidateOnly=True");
+			Build(projectFile, additionalArgs: "-p:MauiXamlCValidateOnly=True");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
@@ -322,18 +272,14 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Test]
-		public void ValidateOnly_WithErrors([Values(false, true)] bool sdkStyle)
+		public void ValidateOnly_WithErrors()
 		{
-			if (sdkStyle)
-				Assert.Ignore("This test fails on sdk style projects");
-
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", Xaml.MainPage.Replace("</ContentPage>", "<NotARealThing/></ContentPage>")));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 
-			string log = Build(projectFile, additionalArgs: "/p:MauiXamlCValidateOnly=True", shouldSucceed: false);
+			string log = Build(projectFile, additionalArgs: "-p:MauiXamlCValidateOnly=True", shouldSucceed: false);
 			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XFC0000: Cannot resolve type \"http://xamarin.com/schemas/2014/forms:NotARealThing\".", log);
 		}
 
@@ -341,16 +287,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// Tests that XamlG and XamlC targets skip, as well as checking IncrementalClean doesn't delete generated files
 		/// </summary>
 		[Test]
-		public void TargetsShouldSkip([Values(false, true)] bool sdkStyle)
+		public void TargetsShouldSkip()
 		{
-			if (sdkStyle)
-				Assert.Ignore("This test fails on sdk style projects");
-
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 			Build(projectFile);
 
 			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
@@ -381,16 +323,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// Checks that XamlG and XamlC files are cleaned
 		/// </summary>
 		[Test]
-		public void Clean([Values(false, true)] bool sdkStyle)
+		public void Clean()
 		{
-			if (sdkStyle)
-				Assert.Ignore("This test fails on sdk style projects");
-
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 			Build(projectFile);
 
 			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
@@ -408,16 +346,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Test]
-		public void LinkedFile([Values(false, true)] bool sdkStyle)
+		public void LinkedFile()
 		{
-			if (sdkStyle)
-				Assert.Ignore("This test fails on sdk style projects");
-
 			var folder = IOPath.Combine(tempDirectory, "A", "B");
 			Directory.CreateDirectory(folder);
 			File.WriteAllText(IOPath.Combine(folder, "MainPage.xaml"), Xaml.MainPage);
 
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			var itemGroup = NewElement("ItemGroup");
 			var embeddedResource = NewElement("EmbeddedResource").WithAttribute("Include", @"A\B\MainPage.xaml");
 			embeddedResource.Add(NewElement("Link").WithValue(@"Pages\MainPage.xaml"));
@@ -425,7 +360,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(itemGroup);
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
@@ -436,17 +370,14 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		//https://github.com/dotnet/project-system/blob/master/docs/design-time-builds.md
 		//https://daveaglick.com/posts/running-a-design-time-build-with-msbuild-apis
 		[Test]
-		public void DesignTimeBuild([Values(false/*, true */)] bool sdkStyle)
+		public void DesignTimeBuild()
 		{
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile(@"Pages\MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 
-			//NOTE: CompileDesignTime target only exists on Windows
-			var target = Environment.OSVersion.Platform == PlatformID.Win32NT ? "CompileDesignTime" : "Compile";
-			Build(projectFile, target, additionalArgs: "/p:DesignTimeBuild=True /p:BuildingInsideVisualStudio=True /p:SkipCompilerExecution=True /p:ProvideCommandLineArgs=True");
+			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
 
 			var assembly = IOPath.Combine(intermediateDirectory, "test.dll");
 			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "Pages", "MainPage.xaml.g.cs");
@@ -477,13 +408,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		//I believe the designer might invoke this target manually
 		[Test]
-		public void UpdateDesignTimeXaml([Values(false, true)] bool sdkStyle)
+		public void UpdateDesignTimeXaml()
 		{
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile(@"Pages\MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 			Build(projectFile, "UpdateDesignTimeXaml");
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "Pages", "MainPage.xaml.g.cs"), nonEmpty: true);
@@ -492,16 +422,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Test]
-		public void AddNewFile([Values(false, true)] bool sdkStyle)
+		public void AddNewFile()
 		{
-			if (sdkStyle)
-				Assert.Ignore("This test fails on sdk style projects");
-
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 			Build(projectFile);
 
 			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
@@ -534,17 +460,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Test]
-		public void TouchXamlFile([Values(false, true)] bool sdkStyle)
+		public void TouchXamlFile()
 		{
-			if (sdkStyle)
-				Assert.Ignore("This test fails on sdk style projects");
-
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
 			project.Add(AddFile("CustomView.xaml", "EmbeddedResource", Xaml.CustomView));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 			Build(projectFile);
 
 			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
@@ -576,13 +498,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Test]
-		public void RandomXml([Values(false, true)] bool sdkStyle)
+		public void RandomXml()
 		{
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", "<xml></xml>"));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
@@ -591,28 +512,23 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Test]
-		public void InvalidXml([Values(false, true)] bool sdkStyle)
+		public void InvalidXml()
 		{
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", "notxmlatall"));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 			Assert.Throws<AssertionException>(() => Build(projectFile));
 		}
 
 		[Test]
-		public void RandomEmbeddedResource([Values(false, true)] bool sdkStyle)
+		public void RandomEmbeddedResource()
 		{
-			if (sdkStyle)
-				Assert.Ignore("This test fails on sdk style projects");
-
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
 			project.Add(AddFile("MainPage.txt", "EmbeddedResource", "notxmlatall"));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
@@ -621,12 +537,11 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Test]
-		public void NoXamlFiles([Values(false, true)] bool sdkStyle)
+		public void NoXamlFiles()
 		{
-			var project = NewProject(sdkStyle);
+			var project = NewProject();
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			RestoreIfNeeded(projectFile, sdkStyle);
 			var log = Build(projectFile, verbosity: "diagnostic");
 			Assert.IsTrue(log.Contains("Target \"XamlC\" skipped"), "XamlC should be skipped if there are no .xaml files.");
 		}

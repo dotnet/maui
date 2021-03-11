@@ -402,6 +402,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			if (IsElementOrControlEmpty)

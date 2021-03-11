@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
@@ -94,5 +95,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return (view.PaddingLeft, view.PaddingTop, view.PaddingRight, view.PaddingBottom);
 		}
+
+		double GetNativeCharacterSpacing(LabelHandler labelHandler) =>
+			Math.Round(GetNativeLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, 4);
 	}
 }

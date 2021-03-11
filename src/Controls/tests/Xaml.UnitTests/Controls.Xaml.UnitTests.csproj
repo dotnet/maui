@@ -17,7 +17,6 @@
   <ItemGroup>
     <PackageReference Include="JetBrains.DotMemoryUnit" Version="3.1.20200127.214830" />
     <PackageReference Include="NUnit" Version="3.13.1" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
     <PackageReference Include="Mono.Cecil" Version="0.11.3" />
     <PackageReference Include="System.CodeDom" Version="5.0.0" />
