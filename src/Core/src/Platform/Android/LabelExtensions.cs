@@ -24,6 +24,9 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateCharacterSpacing(this TextView textView, ILabel label) =>
+			textView.LetterSpacing = label.CharacterSpacing.ToEm();
+
 		public static void UpdateFont(this TextView textView, ILabel label, IFontManager fontManager)
 		{
 			var font = label.Font;
@@ -45,10 +48,10 @@ namespace Microsoft.Maui
 			}
 
 			textView.SetPadding(
-					(int)context.ToPixels(label.Padding.Left),
-					(int)context.ToPixels(label.Padding.Top),
-					(int)context.ToPixels(label.Padding.Right),
-					(int)context.ToPixels(label.Padding.Bottom));
+				(int)context.ToPixels(label.Padding.Left),
+				(int)context.ToPixels(label.Padding.Top),
+				(int)context.ToPixels(label.Padding.Right),
+				(int)context.ToPixels(label.Padding.Bottom));
 		}
 	}
 }
