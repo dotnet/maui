@@ -6,7 +6,7 @@ using System.Globalization;
 namespace Microsoft.Maui.Graphics
 {
     [DebuggerDisplay("Width={Width}, Height={Height}")]
-    public struct SizeF
+    public partial struct SizeF
     {
         float _width;
         float _height;
@@ -117,5 +117,6 @@ namespace Microsoft.Maui.Graphics
             width = Width;
             height = Height;
         }
+        public static implicit operator Size(SizeF s) => new Size(s.Width, s.Height);
     }
 }

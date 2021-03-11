@@ -1,5 +1,6 @@
 using Android.Graphics;
 using Android.Text;
+using System;
     
 namespace Microsoft.Maui.Graphics.Android
 {
@@ -61,19 +62,9 @@ namespace Microsoft.Maui.Graphics.Android
             return new Color(r, g, b, a);
         }
 
-        public static Drawing.RectangleF AsRectangleF(this RectangleF target)
-        {
-            return new Drawing.RectangleF(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
-        }
-
         public static RectF AsRectF(this RectangleF target)
         {
             return new RectF(target.Left, target.Top, target.Right, target.Bottom);
-        }
-
-        public static RectangleF AsRectangleF(this Drawing.RectangleF target)
-        {
-            return new RectangleF(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
         }
 
         public static RectangleF AsRectangleF(this RectF target)
@@ -343,16 +334,6 @@ namespace Microsoft.Maui.Graphics.Android
             return path;
         }
 
-        public static SizeF AsSizeF(this Drawing.SizeF target)
-        {
-            return new SizeF(target.Width, target.Height);
-        }
-
-        public static Drawing.SizeF AsSizeF(this SizeF target)
-        {
-            return new Drawing.SizeF(target.Width, target.Height);
-        }
-
         public static PointF AsPointF(this global::Android.Graphics.PointF target)
         {
             return new PointF(target.X, target.Y);
@@ -415,7 +396,7 @@ namespace Microsoft.Maui.Graphics.Android
             return new SizeF(maxWidth, target.Height);
         }
 
-        public static Drawing.SizeF GetOffsetsToDrawText(
+        public static SizeF GetOffsetsToDrawText(
             this StaticLayout target,
             float x,
             float y,
@@ -426,7 +407,7 @@ namespace Microsoft.Maui.Graphics.Android
         {
             if (verticalAlignment != VerticalAlignment.Top)
             {
-                Drawing.SizeF vTextFrameSize = target.GetTextSize();
+                SizeF vTextFrameSize = target.GetTextSize();
 
                 float vOffsetX = 0;
                 float vOffsetY = 0;
@@ -439,10 +420,10 @@ namespace Microsoft.Maui.Graphics.Android
                         vOffsetY = (height - vTextFrameSize.Height) / 2;
                 }
 
-                return new Drawing.SizeF(x + vOffsetX, y + vOffsetY);
+                return new SizeF(x + vOffsetX, y + vOffsetY);
             }
 
-            return new Drawing.SizeF(x, y);
+            return new SizeF(x, y);
         }
 
         public static Bitmap Downsize(this Bitmap target, int maxSize, bool dispose = true)

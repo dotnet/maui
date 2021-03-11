@@ -5,7 +5,7 @@ using System.Globalization;
 namespace Microsoft.Maui.Graphics
 {
     [DebuggerDisplay("X={X}, Y={Y}, Width={Width}, Height={Height}")]
-    public struct Rectangle
+    public partial struct Rectangle
     {
         public double X { get; set; }
 
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Graphics
 
         public Rectangle Round()
         {
-            return new Rectangle((double)Math.Round(X), (double)Math.Round(Y), (double)Math.Round(Width), (double)Math.Round(Height));
+            return new Rectangle(Math.Round(X), Math.Round(Y), Math.Round(Width), Math.Round(Height));
         }
 
         public void Deconstruct(out double x, out double y, out double width, out double height)
@@ -214,5 +214,6 @@ namespace Microsoft.Maui.Graphics
             width = Width;
             height = Height;
         }
+        public static implicit operator RectangleF(Rectangle rect) => new RectangleF((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
     }
 }

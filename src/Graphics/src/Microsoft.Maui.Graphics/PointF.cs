@@ -5,7 +5,7 @@ using System.Globalization;
 namespace Microsoft.Maui.Graphics
 {
     [DebuggerDisplay("X={X}, Y={Y}")]
-    public struct PointF
+    public partial struct PointF
     {
         public float X { get; set; }
 
@@ -102,5 +102,6 @@ namespace Microsoft.Maui.Graphics
             x = X;
             y = Y;
         }
+        public static implicit operator Point(PointF p) => new Point(p.X, p.Y);
     }
 }

@@ -41,19 +41,19 @@ namespace Microsoft.Maui.Graphics.Android
             return layout;
         }
 
-        public static Drawing.SizeF GetTextSize(this StaticLayout target)
+        public static SizeF GetTextSize(this StaticLayout target)
         {
             // Get the text bounds and assume (the safe assumption) that the layout wasn't
             // created with a bounded width.
             return GetTextSize(target, false);
         }
 
-        public static Drawing.SizeF GetTextSize(this StaticLayout target, bool hasBoundedWidth)
+        public static SizeF GetTextSize(this StaticLayout target, bool hasBoundedWidth)
         {
             // We need to know if the static layout was created with a bounded width, as this is what 
             // StaticLayout.Width returns.
             if (hasBoundedWidth)
-                return new Drawing.SizeF(target.Width, target.Height);
+                return new SizeF(target.Width, target.Height);
 
             float vMaxWidth = 0;
             int vLineCount = target.LineCount;
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Graphics.Android
                     vMaxWidth = vLineWidth;
             }
 
-            return new Drawing.SizeF(vMaxWidth, target.Height);
+            return new SizeF(vMaxWidth, target.Height);
         }
     }
 }
