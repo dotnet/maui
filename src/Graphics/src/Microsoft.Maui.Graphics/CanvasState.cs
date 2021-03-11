@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics
+﻿using System;
+
+namespace Microsoft.Maui.Graphics
 {
     public class CanvasState : IDisposable
     {

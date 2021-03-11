@@ -1,4 +1,5 @@
-﻿using CoreGraphics;
+﻿using System;
+using CoreGraphics;
 
 namespace Microsoft.Maui.Graphics.CoreGraphics
 {

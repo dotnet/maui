@@ -1,3 +1,5 @@
+using System;
+
 namespace Microsoft.Maui.Graphics
 {
     public enum LogType

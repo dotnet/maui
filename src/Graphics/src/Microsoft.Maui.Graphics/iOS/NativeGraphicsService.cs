@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using CoreGraphics;
 using CoreText;
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Graphics.CoreGraphics
             }
 
             var path = new CGPath();
-            path.AddRect(new Drawing.RectangleF(0, 0, 512, 512));
+            path.AddRect(new RectangleF(0, 0, 512, 512));
             path.CloseSubpath();
 
             var attributedString = new NSMutableAttributedString(value);

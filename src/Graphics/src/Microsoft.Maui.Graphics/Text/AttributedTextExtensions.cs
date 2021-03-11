@@ -2,6 +2,7 @@
 using Microsoft.Maui.Graphics.Text.Immutable;
 using System.IO;
 using System.Linq;
+using System;
 
 namespace Microsoft.Maui.Graphics.Text
 {

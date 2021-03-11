@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics.CoreGraphics
+﻿using System;
+
+namespace Microsoft.Maui.Graphics.CoreGraphics
 {
     public class NativeFontStyle : IFontStyle
     {

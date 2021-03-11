@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics.Text;
 using CoreGraphics;
 using CoreText;
 using Foundation;
+using System;
 
 namespace Microsoft.Maui.Graphics.CoreGraphics
 {

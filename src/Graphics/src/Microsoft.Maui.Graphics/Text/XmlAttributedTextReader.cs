@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using XmlNames = Microsoft.Maui.Graphics.Text.XmlAttributedTextNames;
+using System;
 
 namespace Microsoft.Maui.Graphics.Text
 {

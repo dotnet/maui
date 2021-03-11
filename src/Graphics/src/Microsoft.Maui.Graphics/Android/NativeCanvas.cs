@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics.Text;
 using Android.Content;
 using Android.Graphics;
 using Android.Text;
+using System;
 
 namespace Microsoft.Maui.Graphics.Android
 {

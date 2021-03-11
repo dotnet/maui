@@ -1,4 +1,5 @@
 using UIKit;
+using CoreGraphics;
 
 namespace Microsoft.Maui.Graphics.CoreGraphics
 {
@@ -21,13 +22,13 @@ namespace Microsoft.Maui.Graphics.CoreGraphics
                 targetWidth = targetWidth / scale;
             }
 
-            return ScaleImage(target, new Drawing.SizeF(targetWidth, targetHeight), disposeOriginal);
+            return ScaleImage(target, new CGSize(targetWidth, targetHeight), disposeOriginal);
         }
 
-        public static UIImage ScaleImage(this UIImage target, Drawing.SizeF size, bool disposeOriginal = false)
+        public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
         {
             UIGraphics.BeginImageContext(size);
-            target.Draw(new Drawing.RectangleF(new Drawing.PointF(0, 0), size));
+            target.Draw(new CGRect(CGPoint.Empty, size));
             var image = UIGraphics.GetImageFromCurrentImageContext();
             UIGraphics.EndImageContext();
 
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Graphics.CoreGraphics
             }
 
             UIGraphics.BeginImageContextWithOptions(target.Size, false, target.CurrentScale);
-            target.Draw(new Drawing.PointF(0, 0));
+            target.Draw(CGPoint.Empty);
             var image = UIGraphics.GetImageFromCurrentImageContext();
             UIGraphics.EndImageContext();
 

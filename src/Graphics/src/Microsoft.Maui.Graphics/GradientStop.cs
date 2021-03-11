@@ -1,3 +1,5 @@
+using System;
+
 namespace Microsoft.Maui.Graphics
 {
     public class GradientStop : IComparable<GradientStop>

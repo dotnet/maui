@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using CoreGraphics;
 
 namespace Microsoft.Maui.Graphics.CoreGraphics
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Graphics.CoreGraphics
 
         public void Invalidate(float x, float y, float w, float h)
         {
-            _graphicsView?.SetNeedsDisplayInRect(new Drawing.RectangleF(x, y, w, h));
+            _graphicsView?.SetNeedsDisplayInRect(new RectangleF(x, y, w, h));
         }
     }
 }

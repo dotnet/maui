@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.Graphics.CoreGraphics
         private IDrawable _drawable;
         private CGRect _lastBounds;
 
-        public NativeGraphicsView(Drawing.RectangleF frame, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(frame)
+        public NativeGraphicsView(CGRect frame, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(frame)
         {
             Drawable = drawable;
             Renderer = renderer;
