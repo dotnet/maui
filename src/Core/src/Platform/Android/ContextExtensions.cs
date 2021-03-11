@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Android.Content;
+using Android.OS;
 using Android.Util;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.App;
@@ -8,11 +9,10 @@ using AndroidX.Fragment.App;
 using Microsoft.Maui;
 using AActivity = Android.App.Activity;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
+using AAttribute = Android.Resource.Attribute;
+using AColor = Android.Graphics.Color;
 using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
 using Size = Microsoft.Maui.Size;
-using AColor = Android.Graphics.Color;
-using AAttribute = Android.Resource.Attribute;
-using Android.OS;
 
 namespace Microsoft.Maui
 {
@@ -96,7 +96,7 @@ namespace Microsoft.Maui
 		{
 			if (context.Theme == null)
 				return 0;
-			
+
 			using (var value = new TypedValue())
 			{
 				// Now retrieve the disabledAlpha value from the theme

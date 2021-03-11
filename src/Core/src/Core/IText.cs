@@ -14,5 +14,15 @@ namespace Microsoft.Maui
 		/// Gets the text color.
 		/// </summary>
 		Color TextColor { get; }
+
+		/// <summary>
+		/// Gets the font family, style and size of the font.
+		/// </summary>
+		Font Font { get; }
+
+		/// <summary>
+		/// Gets the character spacing.
+		/// </summary>
+		double CharacterSpacing { get; }
 	}
 }

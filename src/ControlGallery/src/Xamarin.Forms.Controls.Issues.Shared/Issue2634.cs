@@ -287,7 +287,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 					var nameData = new Label
 					{
 						TextColor = txtColor,
-						FontSize= fontSize,
+						FontSize = fontSize,
 						HorizontalTextAlignment = TextAlignment.Start,
 						VerticalTextAlignment = TextAlignment.Center,
 						VerticalOptions = LayoutOptions.Center

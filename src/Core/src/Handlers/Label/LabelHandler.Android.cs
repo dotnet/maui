@@ -1,7 +1,6 @@
 using System;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -33,19 +32,9 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateTextColor(label, DefaultTextColor);
 		}
 
-		public static void MapFontFamily(LabelHandler handler, ILabel label)
+		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
 		{
-			MapFont(handler, label);
-		}
-
-		public static void MapFontSize(LabelHandler handler, ILabel label)
-		{
-			MapFont(handler, label);
-		}
-
-		public static void MapFontAttributes(LabelHandler handler, ILabel label)
-		{
-			MapFont(handler, label);
+			handler.TypedNativeView?.UpdateCharacterSpacing(label);
 		}
 
 		public static void MapPadding(LabelHandler handler, ILabel label) 
@@ -53,9 +42,10 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdatePadding(label);
 		}
 
-		static void MapFont(LabelHandler handler, ILabel label)
+		public static void MapFont(LabelHandler handler, ILabel label)
 		{
-			var services = App.Current?.Services ?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
+			var services = App.Current?.Services 
+				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
 			var fontManager = services.GetRequiredService<IFontManager>();
 
 			handler.TypedNativeView?.UpdateFont(label, fontManager);

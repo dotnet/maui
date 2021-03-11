@@ -8,6 +8,8 @@ namespace Microsoft.Maui
 		public static void UpdateText(this UILabel nativeLabel, ILabel label)
 		{
 			nativeLabel.Text = label.Text;
+
+			nativeLabel.UpdateCharacterSpacing(label);
 		}
 
 		public static void UpdateTextColor(this UILabel nativeLabel, ILabel label)
@@ -25,22 +27,32 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateFont(this UILabel nativeLabel, ILabel label, IFontManager fontManager)
+		public static void UpdateCharacterSpacing(this UILabel nativeLabel, ILabel label)
 		{
-			var font = label.GetFont();
+			if (string.IsNullOrEmpty(label.Text))
+				return;
 
-			var uiFont = fontManager.GetFont(font);
-			nativeLabel.Font = uiFont;
+			var textAttr = nativeLabel.AttributedText?.WithCharacterSpacing(label.CharacterSpacing);
+
+			if (textAttr != null)
+				nativeLabel.AttributedText = textAttr;
 		}
 
-		public static void UpdatePadding(this MauiLabel nativeLabel, ILabel label) 
+		public static void UpdateFont(this UILabel nativeLabel, ILabel label, IFontManager fontManager)
+		{
+			var uiFont = fontManager.GetFont(label.Font);
+			nativeLabel.Font = uiFont;
+
+			nativeLabel.UpdateCharacterSpacing(label);
+		}
+
+		public static void UpdatePadding(this MauiLabel nativeLabel, ILabel label)
 		{
 			nativeLabel.TextInsets = new UIEdgeInsets(
-					(float)label.Padding.Top,
-					(float)label.Padding.Left,
-					(float)label.Padding.Bottom,
-					(float)label.Padding.Right);
-			
+				(float)label.Padding.Top,
+				(float)label.Padding.Left,
+				(float)label.Padding.Bottom,
+				(float)label.Padding.Right);
 		}
 	}
 }

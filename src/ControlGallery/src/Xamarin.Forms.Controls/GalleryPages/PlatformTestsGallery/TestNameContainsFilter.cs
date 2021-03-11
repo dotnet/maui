@@ -1,6 +1,6 @@
-﻿using NUnit.Framework.Interfaces;
+﻿using Microsoft.Maui.Controls.Internals;
+using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformTestsGallery
 {

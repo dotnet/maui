@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				FontFamily = family
+				Font = Font.OfSize(family, 10)
 			};
 
 			var handler = await CreateHandlerAsync(label);
@@ -90,9 +91,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		(double left, double top, double right, double bottom) GetNativePadding(Android.Views.View view) 
+		(double left, double top, double right, double bottom) GetNativePadding(Android.Views.View view)
 		{
 			return (view.PaddingLeft, view.PaddingTop, view.PaddingRight, view.PaddingBottom);
 		}
+
+		double GetNativeCharacterSpacing(LabelHandler labelHandler) =>
+			Math.Round(GetNativeLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, 4);
 	}
 }

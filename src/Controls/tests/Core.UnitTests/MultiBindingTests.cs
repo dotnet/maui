@@ -7,8 +7,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
 using Microsoft.Maui.Controls;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

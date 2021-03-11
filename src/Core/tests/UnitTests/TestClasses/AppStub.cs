@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Maui.UnitTests.TestClasses;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.UnitTests.TestClasses;
 
 namespace Microsoft.Maui.Tests
 {

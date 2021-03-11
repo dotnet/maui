@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				FontFamily = family
+				Font = Font.OfSize(family, 10)
 			};
 
 			var nativeFont = await GetValueAsync(label, handler => GetNativeLabel(handler).Font);
@@ -70,6 +71,24 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
+
+		double GetNativeCharacterSpacing(LabelHandler labelHandler)
+		{
+			var nativeLabel = GetNativeLabel(labelHandler);
+			var text = nativeLabel.AttributedText;
+			if (text == null)
+				return 0;
+
+			var value = text.GetAttribute(UIStringAttributeKey.KerningAdjustment, 0, out var range);
+			if (value == null)
+				return 0;
+
+			Assert.Equal(0, range.Location);
+			Assert.Equal(text.Length, range.Length);
+
+			var kerning = Assert.IsType<NSNumber>(value);
+			return kerning.DoubleValue;
+		}
 
 		Task ValidateNativeBackgroundColor(ILabel label, Color color)
 		{

@@ -22,11 +22,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			};
 
 			Forms.RegisterCompatRenderers(
-				new[] { typeof(RendererToHandlerShim).Assembly } ,
+				new[] { typeof(RendererToHandlerShim).Assembly },
 				typeof(RendererToHandlerShim).Assembly,
 				(controlType) =>
 				{
-					foreach(var type in defaultHandlers)
+					foreach (var type in defaultHandlers)
 					{
 						if (type.IsAssignableFrom(controlType))
 							return;
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static IAppHostBuilder RegisterCompatibilityRenderer(
-			this IAppHostBuilder builder, 
+			this IAppHostBuilder builder,
 			Type controlType,
 			Type rendererType)
 		{
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static IAppHostBuilder RegisterCompatibilityRenderer<TControlType, TRenderer>(this IAppHostBuilder builder)
-			where TControlType : IFrameworkElement =>		
+			where TControlType : IFrameworkElement =>
 				builder.RegisterCompatibilityRenderer<TControlType, TControlType, TRenderer>();
 	}
 }

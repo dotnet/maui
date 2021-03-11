@@ -1,6 +1,6 @@
 using System;
-using NUnit.Framework.Constraints;
 using Microsoft.Maui.Controls.Build.Tasks;
+using NUnit.Framework.Constraints;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {

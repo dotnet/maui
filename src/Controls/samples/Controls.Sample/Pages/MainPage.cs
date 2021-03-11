@@ -1,7 +1,7 @@
 using Maui.Controls.Sample.ViewModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -63,9 +63,13 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
 			verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true });
 
-			verticalStack.Add(new RadioButton());
+			verticalStack.Add(new ProgressBar { Progress = 0.5 });
+			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });
+			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Color.Purple });
+			
+      verticalStack.Add(new RadioButton());
 			verticalStack.Add(new RadioButton { IsChecked = true });
-
+      
 			verticalStack.Add(new Slider());
 
 			verticalStack.Add(new Switch());
