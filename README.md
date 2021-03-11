@@ -8,6 +8,14 @@
 * Evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms)
 * .NET 6
 
+## Build Status ##
+
+
+| Private  | Public |
+|--|--|
+|  [![Build Status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MAUI?repoName=dotnet%2Fmaui&branchName=main)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=13330&repoName=dotnet%2Fmaui&branchName=main) |   [![Build Status](https://dev.azure.com/xamarin/public/_apis/build/status/MAUI-public?repoName=dotnet%2Fmaui&branchName=main)](https://dev.azure.com/xamarin/public/_build/latest?definitionId=57&repoName=dotnet%2Fmaui&branchName=main) |
+
+
 ## Maui.sln
 
 ### SDKS required
