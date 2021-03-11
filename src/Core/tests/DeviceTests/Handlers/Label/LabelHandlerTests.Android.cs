@@ -38,7 +38,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultTypeface, nativeLabel.Typeface);
 		}
 
-		[Fact]
+		[Fact(DisplayName = "Negative MaxLines value with wrap is correct")]
 		public async Task NegativeMaxValueWithWrapIsCorrect()
 		{
 			var label = new LabelStub()
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(int.MaxValue, nativeValue);
 		}
 
-		[Fact]
+		[Fact(DisplayName = "Padding Initializes Correctly")]
 		public async Task PaddingInitializesCorrectly()
 		{
 			var label = new LabelStub()

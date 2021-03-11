@@ -174,8 +174,8 @@ namespace Microsoft.Maui.DeviceTests
             Assert.Equal(expectedValue, values.NativeViewValue);
         }
 
-        [Fact]
-        public async Task LineBreakModeDoesNotAffectMaxLines()
+		[Fact(DisplayName = "LineBreakMode does not affect to MaxLines")]
+		public async Task LineBreakModeDoesNotAffectMaxLines()
         {
             var label = new LabelStub()
             {
@@ -200,8 +200,8 @@ namespace Microsoft.Maui.DeviceTests
             });
         }
 
-        [Fact]
-        public async Task SingleLineBreakModeChangesMaxLines()
+		[Fact(DisplayName = "Single LineBreakMode changes MaxLines")]
+		public async Task SingleLineBreakModeChangesMaxLines()
         {
             var label = new LabelStub()
             {
@@ -226,8 +226,8 @@ namespace Microsoft.Maui.DeviceTests
             });
         }
 
-        [Theory]
-        [InlineData(LineBreakMode.HeadTruncation)]
+		[Theory(DisplayName = "Unsetting single LineBreakMode resets MaxLines")]
+		[InlineData(LineBreakMode.HeadTruncation)]
         [InlineData(LineBreakMode.NoWrap)]
         public async Task UnsettingSingleLineBreakModeResetsMaxLines(LineBreakMode newMode)
         {
