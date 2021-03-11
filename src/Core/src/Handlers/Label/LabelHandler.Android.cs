@@ -42,7 +42,12 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdatePadding(label);
 		}
 
-		public static void MapFont(LabelHandler handler, ILabel label)
+		public static void MapTextDecorations(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdateTextDecorations(label);
+		}
+
+		static void MapFont(LabelHandler handler, ILabel label)
 		{
 			var services = App.Current?.Services 
 				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
