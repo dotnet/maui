@@ -41,10 +41,12 @@ dotnet build src\Controls\samples\Controls.Sample.iOS\Maui.Controls.Sample.iOS-n
 
 ## Current News
 
-[![](https://user-images.githubusercontent.com/41873/110172514-e1c76280-7dc2-11eb-8407-50760881d1ec.png
-)](https://www.youtube.com/watch?v=5bK2ICHtMxo)
+[March 11, 2021 - Announcing .NET 6 Preview 2](https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-2/)
 
 Watch our [March 2021 .NET Community Standup report](https://youtu.be/NEbRo0ltniM?t=1242) for the latest information about our progress on .NET MAUI and .NET 6. 
+
+[![](https://user-images.githubusercontent.com/41873/110172514-e1c76280-7dc2-11eb-8407-50760881d1ec.png
+)](https://www.youtube.com/watch?v=5bK2ICHtMxo)
 
 Additional live streams and presentations:
 
