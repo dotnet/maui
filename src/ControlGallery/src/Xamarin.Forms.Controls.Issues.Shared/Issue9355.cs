@@ -1,7 +1,6 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.CustomAttributes;
 
 namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {

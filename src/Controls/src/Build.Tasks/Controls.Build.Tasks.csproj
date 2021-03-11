@@ -57,7 +57,7 @@
 		<None Include="..\Core\bin\$(Configuration)\net6.0\Microsoft.Maui.Controls.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="..\Xaml\bin\$(Configuration)\net6.0\Microsoft.Maui.Controls.Xaml.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 	</ItemGroup>
-	
+
 	<PropertyGroup>
 		 <UpdateXlfOnBuild Condition="'$(CI)' != 'true'">true</UpdateXlfOnBuild>
 	</PropertyGroup>
@@ -81,8 +81,6 @@
 			<LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 	</ItemGroup>
-
-
 
 	<!-- <PropertyGroup Condition="'$(SnExe)' == '' And '$(OS)' != 'Windows_NT'">
 		<SnExe>sn</SnExe>
