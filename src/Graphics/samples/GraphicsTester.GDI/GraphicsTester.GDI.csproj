@@ -95,13 +95,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj">
       <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
-      <Name>System.Graphics</Name>
+      <Name>Microsoft.Maui.Graphics</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\System.Graphics.GDI.Winforms\System.Graphics.GDI.Winforms.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.GDI.Winforms\Microsoft.Maui.Graphics.GDI.Winforms.csproj">
       <Project>{3c3bf90f-c579-463d-b33f-8b9b16d2dab7}</Project>
-      <Name>System.Graphics.GDI.Winforms</Name>
+      <Name>Microsoft.Maui.Graphics.GDI.Winforms</Name>
     </ProjectReference>
     <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj">
       <Project>{D1878E17-08A7-4858-94B8-DE8B38BE2632}</Project>

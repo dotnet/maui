@@ -1,0 +1,18 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0;Xamarin.Mac20</TargetFrameworks>
+        <RootNamespace>Microsoft.Maui.Graphics.Forms</RootNamespace>
+    </PropertyGroup>
+    <PropertyGroup>
+        <LangVersion>8.0</LangVersion>
+        <PackageId>Microsoft.Maui.Graphics.Forms</PackageId>
+        <Product>Microsoft.Maui.Graphics.Forms</Product>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
+    </ItemGroup>
+    <Import Project="..\targets\MultiTargeting.targets" />
+</Project>

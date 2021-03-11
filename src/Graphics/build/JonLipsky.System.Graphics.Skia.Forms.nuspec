@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>JonLipsky.System.Graphics.Skia.Forms</id>
+    <id>JonLipsky.Microsoft.Maui.Graphics.Skia.Forms</id>
     <version>$version$</version>
-    <title>JonLipsky.System.Graphics.Skia.Forms</title>
+    <title>JonLipsky.Microsoft.Maui.Graphics.Skia.Forms</title>
     <authors>Jon Lipsky</authors>
     <owners>jonlipsky</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Support for System.Graphics using Skia on Xamarin.Forms</description>
-    <summary>This allows you to use Skia as a System.Graphics target in Xamarin.Forms.</summary>
+    <description>Support for Microsoft.Maui.Graphics using Skia on Xamarin.Forms</description>
+    <summary>This allows you to use Skia as a Microsoft.Maui.Graphics target in Xamarin.Forms.</summary>
     <copyright>Jon Lipsky</copyright>
-    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
+    <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="JonLipsky.System.Graphics" version="$version$"/>
+        <dependency id="JonLipsky.Microsoft.Maui.Graphics" version="$version$"/>
         <dependency id="SkiaSharp" version="2.80.2"/>
         <dependency id="SkiaSharp.Views" version="2.80.2"/>
         <dependency id="Xamarin.Forms" version="4.8.0.1821"/>
@@ -24,19 +24,19 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/netstandard2.0/System.Graphics.Skia.Forms.dll" target="lib/netstandard2.0/System.Graphics.Skia.Forms.dll"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/netstandard2.0/System.Graphics.Skia.Forms.pdb" target="lib/netstandard2.0/System.Graphics.Skia.Forms.pdb"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/netstandard2.1/System.Graphics.Skia.Forms.dll" target="lib/netstandard2.1/System.Graphics.Skia.Forms.dll"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/netstandard2.1/System.Graphics.Skia.Forms.pdb" target="lib/netstandard2.1/System.Graphics.Skia.Forms.pdb"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/xamarin.ios10/System.Graphics.Skia.Forms.dll" target="lib/xamarin.ios10/System.Graphics.Skia.Forms.dll"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/xamarin.ios10/System.Graphics.Skia.Forms.pdb" target="lib/xamarin.ios10/System.Graphics.Skia.Forms.pdb"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/xamarin.ios10/System.Graphics.Skia.Forms.dll" target="lib/xamarin.ios10/System.Graphics.Skia.Forms.dll"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/xamarin.ios10/System.Graphics.Skia.Forms.pdb" target="lib/xamarin.ios10/System.Graphics.Skia.Forms.pdb"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/monoandroid10.0/System.Graphics.Skia.Forms.dll" target="lib/monoandroid10.0/System.Graphics.Skia.Forms.dll"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/monoandroid10.0/System.Graphics.Skia.Forms.pdb" target="lib/monoandroid10.0/System.Graphics.Skia.Forms.pdb"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/xamarin.mac20/System.Graphics.Skia.Forms.dll" target="lib/xamarin.mac20/System.Graphics.Skia.Forms.dll"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/xamarin.mac20/System.Graphics.Skia.Forms.pdb" target="lib/xamarin.mac20/System.Graphics.Skia.Forms.pdb"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/tizen40/System.Graphics.Skia.Forms.dll" target="lib/tizen40/System.Graphics.Skia.Forms.dll"/>
-    <file src="src/System.Graphics.Skia.Forms/bin/Release/tizen40/System.Graphics.Skia.Forms.pdb" target="lib/tizen40/System.Graphics.Skia.Forms.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/netstandard2.0/Microsoft.Maui.Graphics.Skia.Forms.dll" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Skia.Forms.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/netstandard2.0/Microsoft.Maui.Graphics.Skia.Forms.pdb" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Skia.Forms.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/netstandard2.1/Microsoft.Maui.Graphics.Skia.Forms.dll" target="lib/netstandard2.1/Microsoft.Maui.Graphics.Skia.Forms.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/netstandard2.1/Microsoft.Maui.Graphics.Skia.Forms.pdb" target="lib/netstandard2.1/Microsoft.Maui.Graphics.Skia.Forms.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/xamarin.ios10/Microsoft.Maui.Graphics.Skia.Forms.dll" target="lib/xamarin.ios10/Microsoft.Maui.Graphics.Skia.Forms.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/xamarin.ios10/Microsoft.Maui.Graphics.Skia.Forms.pdb" target="lib/xamarin.ios10/Microsoft.Maui.Graphics.Skia.Forms.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/xamarin.ios10/Microsoft.Maui.Graphics.Skia.Forms.dll" target="lib/xamarin.ios10/Microsoft.Maui.Graphics.Skia.Forms.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/xamarin.ios10/Microsoft.Maui.Graphics.Skia.Forms.pdb" target="lib/xamarin.ios10/Microsoft.Maui.Graphics.Skia.Forms.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/monoandroid10.0/Microsoft.Maui.Graphics.Skia.Forms.dll" target="lib/monoandroid10.0/Microsoft.Maui.Graphics.Skia.Forms.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/monoandroid10.0/Microsoft.Maui.Graphics.Skia.Forms.pdb" target="lib/monoandroid10.0/Microsoft.Maui.Graphics.Skia.Forms.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/xamarin.mac20/Microsoft.Maui.Graphics.Skia.Forms.dll" target="lib/xamarin.mac20/Microsoft.Maui.Graphics.Skia.Forms.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/xamarin.mac20/Microsoft.Maui.Graphics.Skia.Forms.pdb" target="lib/xamarin.mac20/Microsoft.Maui.Graphics.Skia.Forms.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/tizen40/Microsoft.Maui.Graphics.Skia.Forms.dll" target="lib/tizen40/Microsoft.Maui.Graphics.Skia.Forms.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.Forms/bin/Release/tizen40/Microsoft.Maui.Graphics.Skia.Forms.pdb" target="lib/tizen40/Microsoft.Maui.Graphics.Skia.Forms.pdb"/>
   </files>
 </package>

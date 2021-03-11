@@ -22,7 +22,7 @@
         <PackageReference Include="Markdig" Version="0.22.1" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj" />
-      <ProjectReference Include="..\..\src\System.Graphics.Text.Markdig\System.Graphics.Text.Markdig.csproj" />
+      <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
+      <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Text.Markdig\Microsoft.Maui.Graphics.Text.Markdig.csproj" />
     </ItemGroup>
 </Project>

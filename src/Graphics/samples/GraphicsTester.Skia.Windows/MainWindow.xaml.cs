@@ -1,6 +1,6 @@
-﻿using System.Graphics;
-using System.Graphics.GDI;
-using System.Graphics.Skia;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.GDI;
+using Microsoft.Maui.Graphics.Skia;
 using System.Windows;
 using GraphicsTester.Scenarios;
 

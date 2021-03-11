@@ -36,8 +36,8 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\System.Graphics.Xaml.WPF\System.Graphics.Xaml.WPF.csproj" />
-    <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Xaml.WPF\Microsoft.Maui.Graphics.Xaml.WPF.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
     <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

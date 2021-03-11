@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Graphics;
-using System.Graphics.Android;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Android;
 using Android.Runtime;
 using Android.Content;
 using Android.Views;

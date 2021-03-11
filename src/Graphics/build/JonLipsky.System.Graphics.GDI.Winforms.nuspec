@@ -1,27 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>JonLipsky.System.Graphics.GDI.Winforms</id>
+    <id>JonLipsky.Microsoft.Maui.Graphics.GDI.Winforms</id>
     <version>$version$</version>
-    <title>JonLipsky.System.Graphics.GDI.Winforms</title>
+    <title>JonLipsky.Microsoft.Maui.Graphics.GDI.Winforms</title>
     <authors>Jon Lipsky</authors>
     <owners>jonlipsky</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>GDI support for System.Graphics on WinForms</description>
-    <summary>GDI support for System.Graphics on WinForms</summary>
+    <description>GDI support for Microsoft.Maui.Graphics on WinForms</description>
+    <summary>GDI support for Microsoft.Maui.Graphics on WinForms</summary>
     <copyright>Jon Lipsky</copyright>
-    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
+    <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="JonLipsky.System.Graphics" version="$version$"/>
+        <dependency id="JonLipsky.Microsoft.Maui.Graphics" version="$version$"/>
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="src/System.Graphics.GDI.Winforms/bin/Release/net5.0-windows/System.Graphics.GDI.Winforms.dll"/>
-    <file src="src/System.Graphics.GDI.Winforms/bin/Release/net5.0-windows/System.Graphics.GDI.Winforms.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.GDI.Winforms/bin/Release/net5.0-windows/Microsoft.Maui.Graphics.GDI.Winforms.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.GDI.Winforms/bin/Release/net5.0-windows/Microsoft.Maui.Graphics.GDI.Winforms.pdb"/>
   </files>
 </package>

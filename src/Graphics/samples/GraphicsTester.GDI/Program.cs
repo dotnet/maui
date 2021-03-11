@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Graphics;
-using System.Graphics.GDI;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.GDI;
 using System.Windows.Forms;
 
 namespace GraphicsTester.GDI

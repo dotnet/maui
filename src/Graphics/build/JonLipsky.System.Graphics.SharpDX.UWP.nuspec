@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>JonLipsky.System.Graphics.SharpDX.UWP</id>
+    <id>JonLipsky.Microsoft.Maui.Graphics.SharpDX.UWP</id>
     <version>$version$</version>
-    <title>JonLipsky.System.Graphics.SharpDX.UWP</title>
+    <title>JonLipsky.Microsoft.Maui.Graphics.SharpDX.UWP</title>
     <authors>Jon Lipsky</authors>
     <owners>jonlipsky</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>System.Graphics for UWP powered by SharpDX</description>
-    <summary>System.Graphics for UWP powered by SharpDX</summary>
+    <description>Microsoft.Maui.Graphics for UWP powered by SharpDX</description>
+    <summary>Microsoft.Maui.Graphics for UWP powered by SharpDX</summary>
     <copyright>Jon Lipsky</copyright>
-    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
+    <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="JonLipsky.System.Graphics" version="$version$"/>
+        <dependency id="JonLipsky.Microsoft.Maui.Graphics" version="$version$"/>
         <dependency id="SharpDX.D3DCompiler" version="4.2.0"/>
         <dependency id="SharpDX.Direct2D1" version="4.2.0"/>
         <dependency id="SharpDX.Direct3D11" version="4.2.0"/>
@@ -25,7 +25,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="src/System.Graphics.SharpDX.UWP/bin/Release/System.Graphics.SharpDX.UWP.dll" target="lib/uap/System.Graphics.SharpDX.UWP.dll"/>
-    <file src="src/System.Graphics.SharpDX.UWP/bin/Release/System.Graphics.SharpDX.UWP.pdb" target="lib/uap/System.Graphics.SharpDX.UWP.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.SharpDX.UWP/bin/Release/Microsoft.Maui.Graphics.SharpDX.UWP.dll" target="lib/uap/Microsoft.Maui.Graphics.SharpDX.UWP.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.SharpDX.UWP/bin/Release/Microsoft.Maui.Graphics.SharpDX.UWP.pdb" target="lib/uap/Microsoft.Maui.Graphics.SharpDX.UWP.dll"/>
   </files>
 </package>

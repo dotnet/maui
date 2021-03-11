@@ -22,7 +22,7 @@
     </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\System.Graphics.Skia\System.Graphics.Skia.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Skia\Microsoft.Maui.Graphics.Skia.csproj" />
     <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
   </ItemGroup>
 

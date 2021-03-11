@@ -1,5 +1,5 @@
 using System;
-using System.Graphics;
+using Microsoft.Maui.Graphics;
 using AppKit;
 using Foundation;
 using GraphicsTester.Scenarios;

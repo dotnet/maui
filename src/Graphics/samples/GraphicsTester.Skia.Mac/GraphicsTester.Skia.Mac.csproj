@@ -90,21 +90,21 @@
     <InterfaceDefinition Include="MainWindow.xib" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj">
       <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
-      <Name>System.Graphics</Name>
+      <Name>Microsoft.Maui.Graphics</Name>
     </ProjectReference>
     <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj">
       <Project>{D1878E17-08A7-4858-94B8-DE8B38BE2632}</Project>
       <Name>GraphicsTester.Portable</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\System.Graphics.Text.Markdig\System.Graphics.Text.Markdig.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Text.Markdig\Microsoft.Maui.Graphics.Text.Markdig.csproj">
       <Project>{ED36FB6D-7278-465D-9C44-D01927258BA1}</Project>
-      <Name>System.Graphics.Text.Markdig</Name>
+      <Name>Microsoft.Maui.Graphics.Text.Markdig</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\System.Graphics.Skia\System.Graphics.Skia.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Skia\Microsoft.Maui.Graphics.Skia.csproj">
       <Project>{C7613109-6198-402E-953F-57EA81E8238E}</Project>
-      <Name>System.Graphics.Skia</Name>
+      <Name>Microsoft.Maui.Graphics.Skia</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

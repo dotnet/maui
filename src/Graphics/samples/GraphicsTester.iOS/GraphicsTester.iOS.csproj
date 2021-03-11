@@ -140,13 +140,13 @@
         <Compile Include="TesterTableViewSource.cs" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj">
+      <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj">
         <Project>{76F3031E-341E-43CC-BD92-B23F83495DB7}</Project>
-        <Name>System.Graphics</Name>
+        <Name>Microsoft.Maui.Graphics</Name>
       </ProjectReference>
-      <ProjectReference Include="..\..\src\System.Graphics.Text.Markdig\System.Graphics.Text.Markdig.csproj">
+      <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Text.Markdig\Microsoft.Maui.Graphics.Text.Markdig.csproj">
         <Project>{ED36FB6D-7278-465D-9C44-D01927258BA1}</Project>
-        <Name>System.Graphics.Text.Markdig</Name>
+        <Name>Microsoft.Maui.Graphics.Text.Markdig</Name>
       </ProjectReference>
       <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj">
         <Project>{D1878E17-08A7-4858-94B8-DE8B38BE2632}</Project>

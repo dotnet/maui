@@ -36,8 +36,8 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\System.Graphics.SharpDX.WPF\System.Graphics.SharpDX.WPF.csproj" />
-    <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.SharpDX.WPF\Microsoft.Maui.Graphics.SharpDX.WPF.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
     <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj">
     </ProjectReference>
   </ItemGroup>

@@ -1,28 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>JonLipsky.System.Graphics.Text.Markdig</id>
+    <id>JonLipsky.Microsoft.Maui.Graphics.Text.Markdig</id>
     <version>$version$</version>
-    <title>JonLipsky.System.Graphics.Text.Markdig</title>
+    <title>JonLipsky.Microsoft.Maui.Graphics.Text.Markdig</title>
     <authors>Jon Lipsky</authors>
     <owners>jonlipsky</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Markdown support for System.Graphics attributed text powered by Markdig</description>
-    <summary>Markdown support for System.Graphics attributed text powered by Markdig</summary>
+    <description>Markdown support for Microsoft.Maui.Graphics attributed text powered by Markdig</description>
+    <summary>Markdown support for Microsoft.Maui.Graphics attributed text powered by Markdig</summary>
     <copyright>Jon Lipsky</copyright>
-    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
+    <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="JonLipsky.System.Graphics" version="$version$"/>
+        <dependency id="JonLipsky.Microsoft.Maui.Graphics" version="$version$"/>
         <dependency id="Markdig" version="0.22.1"/>
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="src/System.Graphics.Text.Markdig/bin/Release/netstandard2.0/System.Graphics.Text.Markdig.dll" target="lib/netstandard2.0/System.Graphics.Text.Markdig.dll"/>
-    <file src="src/System.Graphics.Text.Markdig/bin/Release/netstandard2.0/System.Graphics.Text.Markdig.pdb" target="lib/netstandard2.0/System.Graphics.Text.Markdig.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Text.Markdig/bin/Release/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.dll" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Text.Markdig/bin/Release/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.pdb" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.pdb"/>
   </files>
 </package>

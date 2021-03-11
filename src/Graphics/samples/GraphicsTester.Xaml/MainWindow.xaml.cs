@@ -1,5 +1,5 @@
-﻿using System.Graphics;
-using System.Graphics.Xaml;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Xaml;
 using System.Windows;
 using GraphicsTester.Scenarios;
 

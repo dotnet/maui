@@ -1,5 +1,5 @@
-﻿using System.Graphics;
-using System.Graphics.Win2D;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Win2D;
 using Windows.UI;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
