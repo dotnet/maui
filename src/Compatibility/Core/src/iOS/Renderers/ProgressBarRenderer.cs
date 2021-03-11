@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return new SizeF(10, result.Height);
 		}
 
+		[PortHandler]
 		protected override void OnElementChanged(ElementChangedEventArgs<ProgressBar> e)
 		{
 			if (e.NewElement != null)
@@ -59,6 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.ProgressTintColor = Element.ProgressColor == Color.Default ? null : Element.ProgressColor.ToUIColor();
 		}
 
+		[PortHandler]
 		void UpdateProgress()
 		{
 			Control.Progress = (float)Element.Progress;
