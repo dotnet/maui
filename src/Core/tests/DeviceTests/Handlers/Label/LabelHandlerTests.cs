@@ -79,5 +79,74 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(label, () => label.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
 			await ValidatePropertyInitValue(label, () => label.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
 		}
+
+		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			var label = new LabelStub()
+			{
+				Text = "Test CharacterSpacing",
+				CharacterSpacing = 4.0
+			};
+
+			await ValidatePropertyInitValue(label, () => label.CharacterSpacing, GetNativeCharacterSpacing, label.CharacterSpacing);
+		}
+
+		[Theory(DisplayName = "CharacterSpacing Updates Correctly")]
+		[InlineData(0, 0)]
+		[InlineData(0, 5)]
+		[InlineData(5, 0)]
+		[InlineData(5, 5)]
+		[InlineData(5, 10)]
+		[InlineData(10, 5)]
+		public async Task CharacterSpacingUpdatesCorrectly(double setValue, double unsetValue)
+		{
+			var label = new LabelStub
+			{
+				Text = "This is TEXT!"
+			};
+
+			await ValidatePropertyUpdatesValue(
+				label,
+				nameof(ILabel.CharacterSpacing),
+				GetNativeCharacterSpacing,
+				setValue,
+				unsetValue);
+		}
+
+		[Fact(DisplayName = "Updating Font Does Not Affect CharacterSpacing")]
+		public async Task FontDoesNotAffectCharacterSpacing()
+		{
+			var label = new LabelStub
+			{
+				Text = "This is TEXT!",
+				CharacterSpacing = 5,
+				Font = Font.SystemFontOfSize(20)
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				label,
+				GetNativeCharacterSpacing,
+				nameof(ILabel.Font),
+				() => label.Font = Font.SystemFontOfSize(15));
+		}
+
+		[Theory(DisplayName = "Updating Text Does Not Affect CharacterSpacing")]
+		[InlineData("Short", "Longer Text")]
+		[InlineData("Long thext here", "Short")]
+		public async Task TextDoesNotAffectCharacterSpacing(string initialText, string newText)
+		{
+			var label = new LabelStub
+			{
+				Text = initialText,
+				CharacterSpacing = 5,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				label,
+				GetNativeCharacterSpacing,
+				nameof(ILabel.Text),
+				() => label.Text = newText);
+		}
 	}
 }
