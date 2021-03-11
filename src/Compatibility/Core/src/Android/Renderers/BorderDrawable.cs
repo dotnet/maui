@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using APath = Android.Graphics.Path;
 
@@ -202,7 +203,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (BorderElement.IsBackgroundSet())
 			{
-				Brush background = BorderElement.Background;
+				IBrush background = BorderElement.Background;
 				paint.UpdateBackground(background, height, width);
 			}
 

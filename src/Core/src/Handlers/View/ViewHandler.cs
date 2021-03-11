@@ -1,6 +1,3 @@
-using System;
-using System.Drawing;
-using System.Runtime.CompilerServices;
 #if __IOS__
 using NativeView = UIKit.UIView;
 #elif __MACOS__
@@ -17,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static PropertyMapper<IView> ViewMapper = new PropertyMapper<IView>
 		{
-			[nameof(IView.BackgroundColor)] = MapBackgroundColor,
+			[nameof(IView.Background)] = MapBackground,
 			[nameof(IView.Frame)] = MapFrame,
 			[nameof(IView.IsEnabled)] = MapIsEnabled
 		};
@@ -32,9 +29,9 @@ namespace Microsoft.Maui.Handlers
 			(handler.NativeView as NativeView)?.UpdateIsEnabled(view);
 		}
 
-		public static void MapBackgroundColor(IViewHandler handler, IView view)
+		public static void MapBackground(IViewHandler handler, IView view)
 		{
-			(handler.NativeView as NativeView)?.UpdateBackgroundColor(view);
+			(handler.NativeView as NativeView)?.UpdateBackground(view);
 		}
 
 	}

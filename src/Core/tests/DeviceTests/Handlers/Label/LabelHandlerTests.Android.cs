@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -83,7 +84,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Typeface.IsItalic;
 
-		Task ValidateNativeBackgroundColor(ILabel label, Color color)
+		Task ValidateNativeBackground(ILabel label, Color color)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{

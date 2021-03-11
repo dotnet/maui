@@ -9,6 +9,7 @@ using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -486,7 +487,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected virtual void UpdateBackground()
 		{
-			Brush background = Element.Background;
+			IBrush background = Element.Background;
 
 			this.UpdateBackground(background);
 		}

@@ -6,6 +6,7 @@ using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 using PageSpecific = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -525,7 +526,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					NativeView.BackgroundColor = UIColor.FromPatternImage(bgImage);
 				else
 				{
-					Brush background = Element.Background;
+					IBrush background = Element.Background;
 
 					if (!Brush.IsNullOrEmpty(background))
 						NativeView.UpdateBackground(Element.Background);

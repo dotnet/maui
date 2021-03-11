@@ -7,8 +7,6 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Layouts;
 
-
-
 namespace Microsoft.Maui.Controls
 {
 	public class View : VisualElement, IView, IViewController, IGestureController, IGestureRecognizers, IPropertyMapperView

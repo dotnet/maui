@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
@@ -90,7 +91,7 @@ namespace Microsoft.Maui.DeviceTests
 			return kerning.DoubleValue;
 		}
 
-		Task ValidateNativeBackgroundColor(ILabel label, Color color)
+		Task ValidateNativeBackground(ILabel label, Color color)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{

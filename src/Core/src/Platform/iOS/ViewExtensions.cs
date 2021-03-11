@@ -15,15 +15,14 @@ namespace Microsoft.Maui
 			uiControl.Enabled = view.IsEnabled;
 		}
 
-		public static void UpdateBackgroundColor(this UIView nativeView, IView view)
+		public static void UpdateBackground(this UIView nativeView, IView view)
 		{
 			if (nativeView == null)
 				return;
 
-			var color = view.BackgroundColor;
+			var background = view.Background;
 
-			if (!color.IsDefault)
-				nativeView.BackgroundColor = color.ToNative();
+			nativeView.UpdateBackground(background);
 		}
 	}
 }

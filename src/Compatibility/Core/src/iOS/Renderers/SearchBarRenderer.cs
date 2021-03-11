@@ -5,6 +5,7 @@ using CoreGraphics;
 using Foundation;
 using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -160,7 +161,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateCancelButton();
 		}
 
-		protected override void SetBackground(Brush brush)
+		protected override void SetBackground(IBrush brush)
 		{
 			base.SetBackground(brush);
 

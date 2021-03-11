@@ -2,13 +2,17 @@ using Maui.Controls.Sample.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Brush = Microsoft.Maui.Graphics.Brush;
+using GradientStop = Microsoft.Maui.Graphics.GradientStop;
+using GradientStopCollection = Microsoft.Maui.Graphics.GradientStopCollection;
+using LinearGradientBrush = Microsoft.Maui.Graphics.LinearGradientBrush;
 
 namespace Maui.Controls.Sample.Pages
 {
-
 	public class MainPage : ContentPage, IPage
 	{
-		MainPageViewModel _viewModel;
+		readonly MainPageViewModel _viewModel;
+
 		public MainPage() : this(App.Current.Services.GetService<MainPageViewModel>())
 		{
 
@@ -23,17 +27,31 @@ namespace Maui.Controls.Sample.Pages
 
 		void SetupMauiLayout()
 		{
-			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
-			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
+			var verticalStack = new VerticalStackLayout() { Spacing = 5, Background = Brush.AntiqueWhite };
 
-			var label = new Label { Text = "This will disappear in ~5 seconds", BackgroundColor = Color.Fuchsia };
+			var horizontalStack = new HorizontalStackLayout()
+			{
+				Spacing = 2,
+				Background = new LinearGradientBrush
+				{
+					StartPoint = new Point(0, 0),
+					EndPoint = new Point(1, 0),
+					GradientStops = new GradientStopCollection
+					{
+						new GradientStop { Color = Color.FromHex("#cc2b5e"), Offset = 0.1f },
+						new GradientStop { Color = Color.FromHex("#753a88"), Offset = 0.8f }
+					}
+				}
+			};
+
+			var label = new Label { Text = "This will disappear in ~5 seconds", Background = Brush.Fuchsia };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
 			verticalStack.Add(label);
 			verticalStack.Add(new Label { Text = "This should be BIG text!", FontSize = 24 });
 			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
-			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Color.LightBlue });
+			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), Background = Brush.LightBlue });
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
 			var button2 = new Button()
@@ -63,7 +81,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
-			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });
+			verticalStack.Add(new ProgressBar { Progress = 0.5, Background = Brush.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Color.Purple });
 
 			verticalStack.Add(new Slider());
@@ -81,10 +99,10 @@ namespace Maui.Controls.Sample.Pages
 
 		void SetupCompatibilityLayout()
 		{
-			var verticalStack = new StackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
-			var horizontalStack = new StackLayout() { Orientation = StackOrientation.Horizontal, Spacing = 2, BackgroundColor = Color.CornflowerBlue };
+			var verticalStack = new StackLayout() { Spacing = 5, Background = Brush.AntiqueWhite };
+			var horizontalStack = new StackLayout() { Orientation = StackOrientation.Horizontal, Spacing = 2, Background = Brush.CornflowerBlue };
 
-			var label = new Label { Text = "This will disappear in ~5 seconds", BackgroundColor = Color.Fuchsia };
+			var label = new Label { Text = "This will disappear in ~5 seconds", Background = Brush.Fuchsia };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
 			verticalStack.Add(label);

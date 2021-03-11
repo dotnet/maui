@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (Element == null || Control == null)
 				return;
 
-			Brush background = Element.Background;
+			IBrush background = Element.Background;
 
 			Control.UpdateBackground(background);
 		}

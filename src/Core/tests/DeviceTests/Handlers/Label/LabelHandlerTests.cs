@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -12,16 +13,43 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 
-		[Fact(DisplayName = "Background Color Initializes Correctly")]
-		public async Task BackgroundColorInitializesCorrectly()
+		[Fact(DisplayName = "SolidColorBrush Background Initializes Correctly")]
+		public async Task SolidColorBrushBackgroundInitializesCorrectly()
 		{
+			var color = Color.Blue;
+
 			var label = new LabelStub()
 			{
-				BackgroundColor = Color.Blue,
+				Background = new SolidColorBrush(color),
 				Text = "Test"
 			};
 
-			await ValidateNativeBackgroundColor(label, Color.Blue);
+			await ValidateNativeBackground(label, color);
+		}
+
+		[Fact(DisplayName = "GradientBrush Background Initializes Correctly")]
+		public async Task GradientBrushBackgroundInitializesCorrectly()
+		{
+			var color1 = Color.Red;
+			var color2 = Color.Blue;
+
+			var label = new LabelStub()
+			{
+				Background = new LinearGradientBrush
+				{
+					StartPoint = new Point(0, 0),
+					EndPoint = new Point(1, 0),
+					GradientStops = new GradientStopCollection
+					{
+						new GradientStop { Color = color1, Offset = 0.1f },
+						new GradientStop { Color = color2, Offset = 0.9f }
+					}
+				},
+				Text = "Test"
+			};
+
+			await ValidateNativeBackground(label, color1);
+			await ValidateNativeBackground(label, color2);
 		}
 
 		[Fact(DisplayName = "Text Initializes Correctly")]

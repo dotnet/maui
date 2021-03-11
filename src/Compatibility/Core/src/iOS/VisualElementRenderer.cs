@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Compatibility.Internals;
 using CoreAnimation;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;
@@ -481,7 +482,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 		}
 
-		protected virtual void SetBackground(Brush brush)
+		protected virtual void SetBackground(IBrush brush)
 		{
 			NativeView.UpdateBackground(brush);
 		}

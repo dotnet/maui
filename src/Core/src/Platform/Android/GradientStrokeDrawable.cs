@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui
 {
 	public class GradientStrokeDrawable : PaintDrawable
 	{
@@ -71,20 +71,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		protected override void OnDraw(Shape shape, Canvas canvas, Paint paint)
+		protected override void OnDraw(Shape? shape, Canvas? canvas, Paint? paint)
 		{
 			base.OnDraw(shape, canvas, paint);
 
-			if (_backgroundColor != null)
+			if (paint != null && _backgroundColor != null)
 				paint.Color = _backgroundColor.Value;
 
-			shape.Draw(canvas, _strokePaint);
+			shape?.Draw(canvas, _strokePaint);
 		}
 
 		public abstract class GradientShader
 		{
-			public int[] Colors { get; set; }
-			public float[] Offsets { get; set; }
+			public int[]? Colors { get; set; }
+			public float[]? Offsets { get; set; }
 		}
 
 		public class LinearGradientShader : GradientShader
@@ -140,14 +140,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_gradientShader = gradientShader;
 			}
 
-			public override Shader Resize(int width, int height)
+			public override Shader? Resize(int width, int height)
 			{
 				if (width == 0 && height == 0)
 					return null;
 
 				if (_gradientShader is LinearGradientShader linearGradientShader)
 				{
-					if (linearGradientShader.Colors.Length < 2)
+					if (linearGradientShader.Colors == null || linearGradientShader.Colors.Length < 2)
 						return null;
 
 					return new LinearGradient(
@@ -157,12 +157,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						height * linearGradientShader.Y2,
 						linearGradientShader.Colors,
 						linearGradientShader.Offsets,
-						Shader.TileMode.Clamp);
+						Shader.TileMode.Clamp!);
 				}
 
 				if (_gradientShader is RadialGradientShader radialGradientShader)
 				{
-					if (radialGradientShader.Colors.Length < 2)
+					if (radialGradientShader.Colors == null || radialGradientShader.Colors.Length < 2)
 						return null;
 
 					return new RadialGradient(
@@ -171,8 +171,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						Math.Max(height, width) * radialGradientShader.Radius,
 						radialGradientShader.Colors,
 						radialGradientShader.Offsets,
-						Shader.TileMode.Clamp);
+						Shader.TileMode.Clamp!);
 				}
+
 				return null;
 			}
 		}

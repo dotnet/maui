@@ -11,6 +11,7 @@ using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.ListView;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -114,7 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		protected override void SetBackground(Brush brush)
+		protected override void SetBackground(IBrush brush)
 		{
 			if (Control == null)
 				return;

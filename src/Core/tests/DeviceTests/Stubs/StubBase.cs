@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public bool IsEnabled { get; set; } = true;
 
-		public Color BackgroundColor { get; set; }
+		public IBrush Background { get; set; }
 
 		public Rectangle Frame { get; set; } = new Rectangle(0, 0, 20, 20);
 

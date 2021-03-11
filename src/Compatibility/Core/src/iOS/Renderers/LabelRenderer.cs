@@ -5,6 +5,7 @@ using SizeF = CoreGraphics.CGSize;
 using Foundation;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;
@@ -329,7 +330,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 		}
 
-		protected override void SetBackground(Brush brush)
+		protected override void SetBackground(IBrush brush)
 		{
 			var backgroundLayer = this.GetBackgroundLayer(brush);
 

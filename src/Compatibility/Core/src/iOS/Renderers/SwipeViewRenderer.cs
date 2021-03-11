@@ -8,6 +8,7 @@ using UIKit;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.SwipeView;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -166,9 +167,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				BackgroundColor = ColorExtensions.BackgroundColor;
 		}
 
-		protected override void SetBackground(Brush brush)
+		protected override void SetBackground(IBrush brush)
 		{
-			Brush background = Element.Background;
+			IBrush background = Element.Background;
 
 			if (Brush.IsNullOrEmpty(background))
 				return;

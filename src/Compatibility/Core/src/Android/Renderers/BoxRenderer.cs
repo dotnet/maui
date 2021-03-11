@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Views;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateBoxBackground()
 		{
-			Brush brushToSet = Element.Background;
+			IBrush brushToSet = Element.Background;
 
 			if (!Brush.IsNullOrEmpty(brushToSet))
 			{

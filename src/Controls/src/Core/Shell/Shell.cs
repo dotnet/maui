@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -545,7 +546,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlyoutBackgroundColor), typeof(Color), typeof(Shell), Color.Default, BindingMode.OneTime);
 
 		public static readonly BindableProperty FlyoutBackgroundProperty =
-			BindableProperty.Create(nameof(FlyoutBackground), typeof(Brush), typeof(Shell), Brush.Default, BindingMode.OneTime);
+			BindableProperty.Create(nameof(FlyoutBackground), typeof(IBrush), typeof(Shell), Brush.Default, BindingMode.OneTime);
 
 		public static readonly BindableProperty FlyoutHeaderBehaviorProperty =
 			BindableProperty.Create(nameof(FlyoutHeaderBehavior), typeof(FlyoutHeaderBehavior), typeof(Shell), FlyoutHeaderBehavior.Default, BindingMode.OneTime);

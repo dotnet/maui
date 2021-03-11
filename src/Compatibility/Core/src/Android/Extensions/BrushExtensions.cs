@@ -2,6 +2,7 @@ using System;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
+using Microsoft.Maui.Graphics;
 using static Android.Graphics.Drawables.GradientDrawable;
 using AView = Android.Views.View;
 
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	public static class BrushExtensions
 	{
-		public static void UpdateBackground(this AView view, Brush brush)
+		public static void UpdateBackground(this AView view, IBrush brush)
 		{
 			if (view == null)
 				return;
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			view.SetPaintGradient(brush);
 		}
 
-		public static void UpdateBackground(this Paint paint, Brush brush, int height, int width)
+		public static void UpdateBackground(this Paint paint, IBrush brush, int height, int width)
 		{
 			if (paint == null || brush == null || brush.IsEmpty)
 				return;
@@ -108,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		public static void UpdateBackground(this GradientDrawable gradientDrawable, Brush brush, int height, int width)
+		public static void UpdateBackground(this GradientDrawable gradientDrawable, IBrush brush, int height, int width)
 		{
 			if (gradientDrawable == null || brush == null || brush.IsEmpty)
 				return;
@@ -187,7 +188,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return true;
 		}
 
-		internal static void SetPaintGradient(this AView view, Brush brush)
+		internal static void SetPaintGradient(this AView view, IBrush brush)
 		{
 			var gradientStrokeDrawable = new GradientStrokeDrawable
 			{

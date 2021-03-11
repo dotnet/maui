@@ -5,6 +5,7 @@ using UIKit;
 using SizeF = CoreGraphics.CGSize;
 using PreserveAttribute = Foundation.PreserveAttribute;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -81,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (Element != null && _previousSize != Bounds.Size)
 			{
-				Brush brush = Element.Background;
+				IBrush brush = Element.Background;
 
 				if (!Brush.IsNullOrEmpty(brush))
 					SetBackground(brush);
@@ -153,7 +154,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.SetAccessibilityLabel();
 		}
 
-		protected override void SetBackground(Brush brush)
+		protected override void SetBackground(IBrush brush)
 		{
 			if (Control == null)
 				return;

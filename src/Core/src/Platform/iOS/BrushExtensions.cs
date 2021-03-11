@@ -1,12 +1,14 @@
+﻿using System.Collections.Generic;
 using System.Linq;
 using CoreAnimation;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui
 {
-	public static partial class BrushExtensions
+	public static class BrushExtensions
 	{
 		const string BackgroundLayer = "BackgroundLayer";
 
@@ -32,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		public static CALayer GetBackgroundLayer(this UIView control, IBrush brush)
+		public static CALayer? GetBackgroundLayer(this UIView control, IBrush brush)
 		{
 			if (control == null)
 				return null;
@@ -104,28 +106,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return null;
 		}
 
-		public static UIImage GetBackgroundImage(this UIView control, IBrush brush)
-		{
-			if (control == null || brush == null || brush.IsEmpty)
-				return null;
-
-			var backgroundLayer = control.GetBackgroundLayer(brush);
-
-			if (backgroundLayer == null)
-				return null;
-
-			UIGraphics.BeginImageContextWithOptions(backgroundLayer.Bounds.Size, false, UIScreen.MainScreen.Scale);
-
-			if (UIGraphics.GetCurrentContext() == null)
-				return null;
-
-			backgroundLayer.RenderInContext(UIGraphics.GetCurrentContext());
-			UIImage gradientImage = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext(); 
-
-			return gradientImage;
-		}
-
 		public static void InsertBackgroundLayer(this UIView view, CALayer backgroundLayer, int index = -1)
 		{
 			InsertBackgroundLayer(view.Layer, backgroundLayer, index);
@@ -155,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (layer != null)
 			{
 				if (layer.Name == BackgroundLayer)
-					layer?.RemoveFromSuperLayer();
+					layer.RemoveFromSuperLayer();
 
 				if (layer.Sublayers == null || layer.Sublayers.Count() == 0)
 					return;
@@ -168,27 +148,56 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		public static void UpdateBackgroundLayer(this UIView view)
+		static CGPoint GetRadialGradientBrushEndPoint(Point startPoint, double radius)
 		{
-			if (view == null || view.Frame.IsEmpty)
-				return;
+			double x = startPoint.X == 1 ? (startPoint.X - radius) : (startPoint.X + radius);
 
-			var layer = view.Layer;
+			if (x < 0)
+				x = 0;
 
-			UpdateBackgroundLayer(layer, view.Bounds);
+			if (x > 1)
+				x = 1;
+
+			double y = startPoint.Y == 1 ? (startPoint.Y - radius) : (startPoint.Y + radius);
+
+			if (y < 0)
+				y = 0;
+
+			if (y > 1)
+				y = 1;
+
+			return new CGPoint(x, y);
 		}
 
-		static void UpdateBackgroundLayer(this CALayer layer, CGRect bounds)
+		static NSNumber[] GetCAGradientLayerLocations(List<GradientStop> gradientStops)
 		{
-			if (layer != null && layer.Sublayers != null)
-			{
-				foreach (var sublayer in layer.Sublayers)
-				{
-					UpdateBackgroundLayer(sublayer, bounds);
+			if (gradientStops == null || gradientStops.Count == 0)
+				return new NSNumber[0];
 
-					if (sublayer.Name == BackgroundLayer && sublayer.Frame != bounds)
-						sublayer.Frame = bounds;
+			if (gradientStops.Count > 1 && gradientStops.Any(gt => gt.Offset != 0))
+				return gradientStops.Select(x => new NSNumber(x.Offset)).ToArray();
+			else
+			{
+				int itemCount = gradientStops.Count;
+				int index = 0;
+				float step = 1.0f / itemCount;
+
+				NSNumber[] locations = new NSNumber[itemCount];
+
+				foreach (var gradientStop in gradientStops)
+				{
+					float location = step * index;
+					bool setLocation = !gradientStops.Any(gt => gt.Offset > location);
+
+					if (gradientStop.Offset == 0 && setLocation)
+						locations[index] = new NSNumber(location);
+					else
+						locations[index] = new NSNumber(gradientStop.Offset);
+
+					index++;
 				}
+
+				return locations;
 			}
 		}
 

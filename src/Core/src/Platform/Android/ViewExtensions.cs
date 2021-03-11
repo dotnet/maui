@@ -1,5 +1,3 @@
-using System;
-using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Microsoft.Maui;
 using AView = Android.Views.View;
@@ -14,11 +12,15 @@ namespace Microsoft.Maui
 				nativeView.Enabled = view.IsEnabled;
 		}
 
-		public static void UpdateBackgroundColor(this AView nativeView, IView view)
+		public static void UpdateBackground(this AView nativeView, IView view)
 		{
-			var backgroundColor = view.BackgroundColor;
-			if (!backgroundColor.IsDefault)
-				nativeView?.SetBackgroundColor(backgroundColor.ToNative());
+			var background = view.Background;
+			nativeView.UpdateBackground(background);
+		}
+
+		public static void SetBackground(this AView view, Drawable? drawable)
+		{
+			view.Background = drawable;
 		}
 	}
 }
