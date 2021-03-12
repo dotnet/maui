@@ -13,10 +13,16 @@
     <ItemGroup>
         <PackageReference Include="SkiaSharp" Version="2.80.2" />
         <PackageReference Include="SkiaSharp.Views" Version="2.80.2" />
+        <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
     </ItemGroup>
-  <Import Project="..\targets\MultiTargeting.targets" />
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'Xamarin.Mac20' Or '$(TargetFramework)' == 'netstandard2.1'">
+        <Reference Include="netstandard" />
+    </ItemGroup>
+
+    <Import Project="..\targets\MultiTargeting.targets" />
 </Project>

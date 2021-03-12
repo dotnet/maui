@@ -1,6 +1,6 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0;Xamarin.Mac20;</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net5.0;Xamarin.iOS10;MonoAndroid10.0;Xamarin.Mac20;</TargetFrameworks>
       <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
       <PublishRepositoryUrl>true</PublishRepositoryUrl>
       <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
@@ -142,6 +142,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Point.cs">
@@ -157,5 +158,6 @@
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
+
   <Import Project="..\targets\MultiTargeting.targets" />
 </Project>

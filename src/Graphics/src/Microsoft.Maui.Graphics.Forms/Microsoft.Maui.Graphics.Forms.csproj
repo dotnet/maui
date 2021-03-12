@@ -2,6 +2,7 @@
     <PropertyGroup>
         <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0;Xamarin.Mac20</TargetFrameworks>
         <RootNamespace>Microsoft.Maui.Graphics.Forms</RootNamespace>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     </PropertyGroup>
     <PropertyGroup>
         <LangVersion>8.0</LangVersion>
@@ -12,11 +13,16 @@
         <ProjectReference Include="..\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
+        <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
     </ItemGroup>
-    <!--<ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.Mac20' ">
-        <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-        <PackageReference Include="NETStandard.Library" Version="2.0.0" />
-    </ItemGroup>-->
+    <ItemGroup>
+        <PackageReference Include="NETStandard.Library" Version="2.0.3" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'Xamarin.Mac20' Or '$(TargetFramework)' == 'netstandard2.1'">
+        <Reference Include="netstandard" />
+    </ItemGroup>
+
     <Import Project="..\targets\MultiTargeting.targets" />
+
 </Project>

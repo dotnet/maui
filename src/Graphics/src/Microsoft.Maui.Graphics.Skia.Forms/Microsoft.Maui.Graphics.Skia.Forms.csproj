@@ -12,10 +12,14 @@
     <ProjectReference Include="..\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
     <ProjectReference Include="..\Microsoft.Maui.Graphics.Skia\Microsoft.Maui.Graphics.Skia.csproj" />
   </ItemGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
+        <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
     </ItemGroup>
-    
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'Xamarin.Mac20' Or '$(TargetFramework)' == 'netstandard2.1'">
+        <Reference Include="netstandard" />
+    </ItemGroup>
+
   <Import Project="..\targets\MultiTargeting.targets" />
 </Project>
