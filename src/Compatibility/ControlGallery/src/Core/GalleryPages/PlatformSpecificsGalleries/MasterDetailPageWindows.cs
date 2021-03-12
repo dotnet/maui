@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using static Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries.WindowsPlatformSpecificsGalleryHelpers;
+using static Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries.WindowsPlatformSpecificsGalleryHelpers;
 
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 

@@ -3,12 +3,12 @@ using System.Diagnostics;
 using System.Linq;
 using Android.Widget;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
-[assembly: ExportEffect(typeof(Microsoft.Maui.Controls.ControlGallery.Android._58406EffectRenderer), Bugzilla58406.EffectName)]
+[assembly: ExportEffect(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Android._58406EffectRenderer), Bugzilla58406.EffectName)]
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class _58406EffectRenderer : PlatformEffect
 	{

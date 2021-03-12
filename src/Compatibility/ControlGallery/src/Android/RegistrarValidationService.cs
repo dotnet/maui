@@ -1,9 +1,9 @@
 ﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Android;
-using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class RegistrarValidationService : IRegistrarValidationService
 	{

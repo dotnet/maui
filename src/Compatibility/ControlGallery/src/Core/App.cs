@@ -5,8 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.ControlGallery.GalleryPages.RadioButtonGalleries;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RadioButtonGalleries;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -68,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			await Task.Delay(50);
 			// verify that there is no crash when switching MainPage from MDP inside NavPage
-			SetMainPage(new Bugzilla45702());
+			SetMainPage(new Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Bugzilla45702());
 		}
 
 		void TestIssue2393()

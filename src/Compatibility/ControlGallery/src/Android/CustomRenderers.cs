@@ -16,9 +16,9 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Android;
-using Microsoft.Maui.Controls.ControlGallery;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
@@ -29,8 +29,8 @@ using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(Issue5461.ScrollbarFadingEnabledFalseScrollView), typeof(ScrollbarFadingEnabledFalseScrollViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1942.CustomGrid), typeof(Issue1942GridRenderer))]
-[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.ControlGallery.Effects.AttachedStateEffectLabel), typeof(AttachedStateEffectLabelRenderer))]
-[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.ControlGallery.LegacyComponents.NonAppCompatSwitch), typeof(NonAppCompatSwitchRenderer))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Effects.AttachedStateEffectLabel), typeof(AttachedStateEffectLabelRenderer))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.LegacyComponents.NonAppCompatSwitch), typeof(NonAppCompatSwitchRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeAndroidListViewRenderer))]
@@ -45,17 +45,17 @@ using AView = Android.Views.View;
 [assembly: ExportRenderer(typeof(Issue4782.Issue4782ImageButton), typeof(Issue4782ImageButtonImageButtonRenderer))]
 [assembly: ExportRenderer(typeof(Issue4561.CustomView), typeof(Issue4561CustomViewRenderer))]
 
-[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.ControlGallery.Issues.NoFlashTestNavigationPage), typeof(Microsoft.Maui.Controls.ControlGallery.Android.NoFlashTestNavigationPage))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.NoFlashTestNavigationPage), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Android.NoFlashTestNavigationPage))]
 [assembly: ExportRenderer(typeof(ShellGestures.TouchTestView), typeof(ShellGesturesTouchTestViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue7249Switch), typeof(Issue7249SwitchRenderer))]
 [assembly: ExportRenderer(typeof(Issue9360.Issue9360NavigationPage), typeof(Issue9360NavigationPageRenderer))]
 [assembly: ExportRenderer(typeof(Issue8801.PopupStackLayout), typeof(Issue8801StackLayoutRenderer))]
-[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.ControlGallery.Tests.TestClasses.CustomButton), typeof(CustomButtonRenderer))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests.TestClasses.CustomButton), typeof(CustomButtonRenderer))]
 [assembly: ExportRenderer(typeof(ScrolView11185), typeof(ScrollViewFadeRenderer))]
 [assembly: ExportRenderer(typeof(ShellWithCustomRendererDisabledAnimations), typeof(ShellWithCustomRendererDisabledAnimationsRenderer))]
 [assembly: ExportRenderer(typeof(FlyoutPage), typeof(NativeDroidFlyoutPage))]
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class ShellWithCustomRendererDisabledAnimationsRenderer : ShellRenderer
 	{

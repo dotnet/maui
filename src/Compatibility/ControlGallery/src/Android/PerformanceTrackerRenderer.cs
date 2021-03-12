@@ -2,8 +2,8 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Android;
-using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using static Android.Views.ViewTreeObserver;
 using Android.Views;
@@ -11,7 +11,7 @@ using Microsoft.Maui.Controls.Compatibility;
 
 [assembly: ExportRenderer(typeof(PerformanceTracker), typeof(PerformanceTrackerRenderer))]
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class PerformanceTrackerRenderer : ViewRenderer, IOnDrawListener
 	{

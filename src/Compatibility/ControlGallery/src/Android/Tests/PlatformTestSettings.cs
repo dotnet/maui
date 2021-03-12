@@ -2,11 +2,11 @@
 using System.Reflection;
 using NUnit;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Android.Tests;
-using Microsoft.Maui.Controls.ControlGallery.Tests;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android.Tests;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests;
 
 [assembly: Dependency(typeof(PlatformTestSettings))]
-namespace Microsoft.Maui.Controls.ControlGallery.Android.Tests
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android.Tests
 {
 	public class PlatformTestSettings : IPlatformTestSettings
 	{

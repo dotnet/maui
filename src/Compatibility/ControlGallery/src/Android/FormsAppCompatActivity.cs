@@ -3,15 +3,15 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Java.Interop;
-using Microsoft.Maui.Controls.ControlGallery;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppLinks;
 using Microsoft.Maui.Controls.Internals;
 using System.Threading.Tasks;
 using System.Net.Http;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	// This is the AppCompat version of Activity1
 

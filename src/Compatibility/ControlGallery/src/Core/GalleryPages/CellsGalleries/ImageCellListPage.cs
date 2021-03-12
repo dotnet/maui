@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var albums = new List<string>();
 			for (int i = 0; i < 30; i++)
 			{
-				albums.Add(string.Format("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Microsoft.Maui.Controls.ControlGallery/coffee.png?ticks={0}", i));
+				albums.Add(string.Format("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Microsoft.Maui.Controls.Compatibility.ControlGallery/coffee.png?ticks={0}", i));
 			}
 
 

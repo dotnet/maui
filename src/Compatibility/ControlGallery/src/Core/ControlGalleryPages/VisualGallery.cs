@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {

@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Perf
 		{
 			//NOTE: copy image to disk in static ctor, so not to interfere with timing
 			tempFile = IOPath.Combine(IOPath.GetTempPath(), $"{nameof(ImageScenario4)}.png");
-			using (var embeddedStream = typeof(ImageScenario4).GetTypeInfo().Assembly.GetManifestResourceStream("Microsoft.Maui.Controls.ControlGallery.GalleryPages.crimson.jpg"))
+			using (var embeddedStream = typeof(ImageScenario4).GetTypeInfo().Assembly.GetManifestResourceStream("Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.crimson.jpg"))
 			using (var fileStream = File.Create(tempFile))
 				embeddedStream.CopyTo(fileStream);
 		}

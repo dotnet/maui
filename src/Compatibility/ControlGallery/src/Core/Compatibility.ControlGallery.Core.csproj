@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Microsoft.Maui.Controls.ControlGallery</AssemblyName>
-    <RootNamespace>Microsoft.Maui.Controls.ControlGallery</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility.ControlGallery</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility.ControlGallery</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
     <XFDisableTargetsValidation>True</XFDisableTargetsValidation>

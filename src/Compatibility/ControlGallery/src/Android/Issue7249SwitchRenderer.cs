@@ -1,11 +1,11 @@
 ﻿using Android.Content;
 using Android.Graphics;
 using Android.OS;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using static Android.Widget.CompoundButton;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class Issue7249SwitchRenderer : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.SwitchRenderer
 	{

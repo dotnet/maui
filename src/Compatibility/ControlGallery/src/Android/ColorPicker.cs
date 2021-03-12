@@ -6,7 +6,7 @@ using Android.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Droid = Android;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class ColorPickerView : ViewGroup
 	//, INotifyPropertyChanged

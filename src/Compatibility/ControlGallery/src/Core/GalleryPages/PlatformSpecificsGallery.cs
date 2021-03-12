@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries;
+﻿using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 

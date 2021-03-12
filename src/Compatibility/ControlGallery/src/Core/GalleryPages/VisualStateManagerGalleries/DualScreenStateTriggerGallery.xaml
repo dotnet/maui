@@ -2,7 +2,7 @@
 <ContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.VisualStateManagerGalleries.DualScreenStateTriggerGallery"
+    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.VisualStateManagerGalleries.DualScreenStateTriggerGallery"
     xmlns:dualScreen="clr-namespace:Microsoft.Maui.Controls.DualScreen;assembly=Microsoft.Maui.Controls.DualScreen"
     Title="DualScreenStateTrigger Gallery">
     <ContentPage.Content>

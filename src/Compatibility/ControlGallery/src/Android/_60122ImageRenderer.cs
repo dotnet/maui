@@ -2,13 +2,13 @@ using System;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.ControlGallery.Android;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
 [assembly: ExportRenderer(typeof(Bugzilla60122._60122Image), typeof(_60122ImageRenderer))]
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class _60122ImageRenderer :
 #if !LEGACY_RENDERERS

@@ -1,9 +1,9 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
+			 xmlns:local="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery"
 			 xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
 			 xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
-			 x:Class="Microsoft.Maui.Controls.ControlGallery.ButtonBorderBackgroundGalleryPage"
+			 x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.ButtonBorderBackgroundGalleryPage"
 			 Title="Button Border &amp; Background">
 
 	<ContentPage.Resources>

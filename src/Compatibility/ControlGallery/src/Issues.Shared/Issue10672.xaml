@@ -6,7 +6,7 @@
     xmlns:d="http://xamarin.com/schemas/2014/forms/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    x:Class="Microsoft.Maui.Controls.ControlGallery.Issue10672"
+    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issue10672"
     Title="Issue 10672">
     <controls:TestContentPage.Content>
         <CollectionView

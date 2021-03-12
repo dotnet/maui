@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.SpacingGalleries;
+﻿using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.SpacingGalleries;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;

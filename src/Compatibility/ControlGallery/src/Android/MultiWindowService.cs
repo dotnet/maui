@@ -1,8 +1,8 @@
 ﻿using Android.Content;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using System;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class MultiWindowService : IMultiWindowService
 	{

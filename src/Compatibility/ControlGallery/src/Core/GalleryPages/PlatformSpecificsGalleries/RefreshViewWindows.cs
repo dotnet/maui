@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls.ControlGallery.GalleryPages.RefreshViewGalleries;
+﻿using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RefreshViewGalleries;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;

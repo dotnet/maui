@@ -2,13 +2,13 @@
 using System;
 using System.Linq;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
 
 [assembly: ExportRenderer(typeof(Issue1909.FlatButton), typeof(FlatButtonRenderer))]
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 		public class FlatButtonRenderer :
 #if !LEGACY_RENDERERS

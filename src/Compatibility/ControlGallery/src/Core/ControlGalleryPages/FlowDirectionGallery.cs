@@ -205,16 +205,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				string parentType = ParentPage.GetType().ToString();
 				switch (parentType)
 				{
-					case "Microsoft.Maui.Controls.ControlGallery.FlowDirectionGalleryMDP":
+					case "Microsoft.Maui.Controls.Compatibility.ControlGallery.FlowDirectionGalleryMDP":
 						FlowDirectionGalleryLandingPage.PushFlyoutPage(newDirection);
 						break;
-					case "Microsoft.Maui.Controls.ControlGallery.FlowDirectionGalleryCarP":
+					case "Microsoft.Maui.Controls.Compatibility.ControlGallery.FlowDirectionGalleryCarP":
 						FlowDirectionGalleryLandingPage.PushCarouselPage(newDirection);
 						break;
-					case "Microsoft.Maui.Controls.ControlGallery.FlowDirectionGalleryNP":
+					case "Microsoft.Maui.Controls.Compatibility.ControlGallery.FlowDirectionGalleryNP":
 						FlowDirectionGalleryLandingPage.PushNavigationPage(newDirection);
 						break;
-					case "Microsoft.Maui.Controls.ControlGallery.FlowDirectionGalleryTP":
+					case "Microsoft.Maui.Controls.Compatibility.ControlGallery.FlowDirectionGalleryTP":
 						FlowDirectionGalleryLandingPage.PushTabbedPage(newDirection);
 						break;
 				}

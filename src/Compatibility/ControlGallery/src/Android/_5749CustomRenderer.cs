@@ -1,13 +1,13 @@
 ﻿using Android.Content;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Android;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Compatibility;
 using System.ComponentModel;
 
 [assembly: ExportRenderer(typeof(CustomHorizontalListview), typeof(HorizontalListviewRendererAndroid))]
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class HorizontalListviewRendererAndroid : ScrollViewRenderer
 	{

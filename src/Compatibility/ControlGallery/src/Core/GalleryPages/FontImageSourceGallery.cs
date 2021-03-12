@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls.ControlGallery.Issues;
+﻿using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {

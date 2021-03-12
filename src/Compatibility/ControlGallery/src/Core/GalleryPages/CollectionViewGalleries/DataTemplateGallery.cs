@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries;
+﻿using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries
 {

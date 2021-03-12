@@ -11,8 +11,8 @@
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Maui.Controls.ControlGallery.Android</RootNamespace>
-    <AssemblyName>Microsoft.Maui.Controls.ControlGallery.Android</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility.ControlGallery.Android</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility.ControlGallery.Android</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <AndroidApplication>true</AndroidApplication>
     <AndroidUseIntermediateDesignerFile>true</AndroidUseIntermediateDesignerFile>

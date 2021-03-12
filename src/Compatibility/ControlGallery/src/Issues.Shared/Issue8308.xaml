@@ -4,7 +4,7 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Title="Test 8308" xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
+             Title="Test 8308" xmlns:local="using:Microsoft.Maui.Controls.Compatibility.ControlGallery"
              x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue8308">
 
     <FlyoutItem Title="Page 1" AutomationId="Page1">

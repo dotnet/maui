@@ -4,8 +4,8 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using AView = Android.Views.View;
 
-[assembly: ExportEffect(typeof(Microsoft.Maui.Controls.ControlGallery.Android.RippleEffect), nameof(Microsoft.Maui.Controls.ControlGallery.Android.RippleEffect))]
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+[assembly: ExportEffect(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Android.RippleEffect), nameof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Android.RippleEffect))]
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
     [Preserve(AllMembers = true)]
     public class RippleEffect : PlatformEffect

@@ -29,12 +29,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new ImageSourcePickerItem
 				{
 					Text = "Embedded",
-					Getter = () => ImageSource.FromResource("Microsoft.Maui.Controls.ControlGallery.GalleryPages.crimson.jpg", typeof(App))
+					Getter = () => ImageSource.FromResource("Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.crimson.jpg", typeof(App))
 				},
 				new ImageSourcePickerItem
 				{
 					Text = "Stream",
-					Getter = () => ImageSource.FromStream(() => typeof(App).GetTypeInfo().Assembly.GetManifestResourceStream("Microsoft.Maui.Controls.ControlGallery.coffee.png"))
+					Getter = () => ImageSource.FromStream(() => typeof(App).GetTypeInfo().Assembly.GetManifestResourceStream("Microsoft.Maui.Controls.Compatibility.ControlGallery.coffee.png"))
 				},
 				new ImageSourcePickerItem
 				{

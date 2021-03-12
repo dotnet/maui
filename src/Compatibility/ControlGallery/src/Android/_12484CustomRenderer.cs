@@ -1,13 +1,13 @@
 ﻿using System;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Android;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(Issue12484CustomView), typeof(_12484CustomRenderer))]
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class _12484CustomRenderer : ViewRenderer<Issue12484CustomView, AView>
     {

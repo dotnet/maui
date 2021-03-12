@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
     public class BorderEffect : PlatformEffect
     {

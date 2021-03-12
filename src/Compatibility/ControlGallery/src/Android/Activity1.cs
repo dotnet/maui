@@ -7,9 +7,9 @@ using Android.OS;
 using Android.Widget;
 using Java.Interop;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Android;
-using Microsoft.Maui.Controls.ControlGallery;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppLinks;
@@ -24,7 +24,7 @@ using AColor = Android.Graphics.Color;
 [assembly: ExportRenderer (typeof (DisposeLabel), typeof (DisposeLabelRenderer))]
 [assembly: ExportEffect (typeof (BorderEffect), "BorderEffect")]
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public partial class Activity1 
 	{

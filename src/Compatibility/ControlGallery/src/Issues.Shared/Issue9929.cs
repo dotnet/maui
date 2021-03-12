@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override void Init()
 		{
 #if APP
-			PushAsync(new Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.SpacingGalleries.SpacingGallery(new GridItemsLayout(3, ItemsLayoutOrientation.Vertical)));
+			PushAsync(new GalleryPages.CollectionViewGalleries.SpacingGalleries.SpacingGallery(new GridItemsLayout(3, ItemsLayoutOrientation.Vertical)));
 #endif
 		}
 

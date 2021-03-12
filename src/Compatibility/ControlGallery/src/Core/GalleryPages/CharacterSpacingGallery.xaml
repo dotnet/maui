@@ -2,8 +2,8 @@
 
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.CharacterSpacingGallery"
-             xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery">
+             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CharacterSpacingGallery"
+             xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery">
 
     <StackLayout>
         <Label>

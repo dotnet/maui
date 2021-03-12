@@ -1,8 +1,8 @@
 using System.IO.IsolatedStorage;
-using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using IOPath = System.IO.Path;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class CacheService : ICacheService
 	{

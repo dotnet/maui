@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			InitializeElement(isLoadingContainer.View);
 			InitializeElement(isOpaqueContainer.View);
 
-			var sourceContainer = new ViewContainer<Image>(Test.Image.Source, new Image { Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Microsoft.Maui.Controls.ControlGallery/coffee.png" });
+			var sourceContainer = new ViewContainer<Image>(Test.Image.Source, new Image { Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Microsoft.Maui.Controls.Compatibility.ControlGallery/coffee.png" });
 
 			Add(aspectFillContainer);
 			Add(aspectFitContainer);

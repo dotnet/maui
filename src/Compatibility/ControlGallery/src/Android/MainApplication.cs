@@ -6,7 +6,7 @@ using Android.Runtime;
 using Plugin.CurrentActivity;
 using Microsoft.Maui.Controls.DualScreen;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	//You can specify additional application information in this attribute
     [Application]

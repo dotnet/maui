@@ -4,7 +4,6 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using static Microsoft.Maui.Controls.ControlGallery.Issues.Issue2259;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {

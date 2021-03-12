@@ -2,15 +2,15 @@
 using Android.Content;
 using Android.OS;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Android;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Android.Graphics.Drawables;
 using Android.Graphics;
 using Microsoft.Maui.Controls.Compatibility;
 
 [assembly: ExportRenderer(typeof(Bugzilla59457.Bugzilla59457Entry), typeof(_59457CustomRenderer))]
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class _59457CustomRenderer : EntryRenderer
 	{

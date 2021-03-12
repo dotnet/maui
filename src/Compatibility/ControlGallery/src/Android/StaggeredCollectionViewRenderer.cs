@@ -2,15 +2,15 @@
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.ControlGallery.Android;
-using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(StaggeredCollectionView), typeof(StaggeredCollectionViewRenderer))]
-namespace Microsoft.Maui.Controls.ControlGallery.Android
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class StaggeredCollectionViewRenderer : CollectionViewRenderer
 	{
