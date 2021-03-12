@@ -27,7 +27,9 @@ namespace Microsoft.Maui
 		public static void UpdateAutomationId(this AView nativeView, IView view)
 		{
 			if (AutomationTagId == DefaultAutomationTagId)
-				return;
+			{
+				AutomationTagId = Microsoft.Maui.Resource.Id.automation_tag_id;
+			}
 
 			nativeView.SetTag(AutomationTagId, view.AutomationId);
 		}
