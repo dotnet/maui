@@ -85,7 +85,11 @@ namespace Microsoft.Maui.Controls
 
 		void IStyle.Apply(BindableObject bindable)
 		{
-			_targets.Add(new WeakReference<BindableObject>(bindable));
+			lock (_targets)
+			{
+				_targets.Add(new WeakReference<BindableObject>(bindable));
+			}
+
 			if (BaseResourceKey != null)
 				bindable.SetDynamicResource(_basedOnResourceProperty, BaseResourceKey);
 			ApplyCore(bindable, BasedOn ?? GetBasedOnResource(bindable));

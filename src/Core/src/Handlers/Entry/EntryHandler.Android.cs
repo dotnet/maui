@@ -1,33 +1,33 @@
 ﻿using Android.Content.Res;
 using Android.Text;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : AbstractViewHandler<IEntry, EditText>
+	public partial class EntryHandler : AbstractViewHandler<IEntry, AppCompatEditText>
 	{
 		TextWatcher Watcher { get; } = new TextWatcher();
 
 		static ColorStateList? DefaultTextColors { get; set; }
 
-		protected override EditText CreateNativeView()
+		protected override AppCompatEditText CreateNativeView()
 		{
-			return new EditText(Context);
+			return new AppCompatEditText(Context);
 		}
 
-		protected override void ConnectHandler(EditText nativeView)
+		protected override void ConnectHandler(AppCompatEditText nativeView)
 		{
 			Watcher.Handler = this;
 			nativeView.AddTextChangedListener(Watcher);
 		}
 
-		protected override void DisconnectHandler(EditText nativeView)
+		protected override void DisconnectHandler(AppCompatEditText nativeView)
 		{
 			nativeView.RemoveTextChangedListener(Watcher);
 			Watcher.Handler = null;
 		}
 
-		protected override void SetupDefaults(EditText nativeView)
+		protected override void SetupDefaults(AppCompatEditText nativeView)
 		{
 			base.SetupDefaults(nativeView);
 			DefaultTextColors = nativeView.TextColors;
