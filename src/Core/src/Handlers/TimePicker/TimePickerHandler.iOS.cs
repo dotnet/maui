@@ -1,77 +1,41 @@
 ﻿using System;
-using Foundation;
-using UIKit;
-using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : AbstractViewHandler<ITimePicker, MauiTimePicker>
 	{
-		MauiTimePicker? _nativeTimePicker;
-		static UIDatePicker? Picker;
-
 		protected override MauiTimePicker CreateNativeView()
 		{
-			_nativeTimePicker = new MauiTimePicker();
-
-			Picker = new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
-
-			if (NativeVersion.IsAtLeast(14))
-			{
-				Picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
-			}
-
-			var width = UIScreen.MainScreen.Bounds.Width;
-			var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
-			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
-
-			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
-			{
+			return new MauiTimePicker(() => {
 				SetVirtualViewTime();
-				_nativeTimePicker.ResignFirstResponder();
+				TypedNativeView?.ResignFirstResponder();
 			});
-
-			toolbar.SetItems(new[] { spacer, doneButton }, false);
-
-			_nativeTimePicker.InputView = Picker;
-			_nativeTimePicker.InputAccessoryView = toolbar;
-
-			_nativeTimePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-			_nativeTimePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-
-			_nativeTimePicker.InputAssistantItem.LeadingBarButtonGroups = null;
-			_nativeTimePicker.InputAssistantItem.TrailingBarButtonGroups = null;
-
-			_nativeTimePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
-
-			return _nativeTimePicker;
 		}
 
 		protected override void ConnectHandler(MauiTimePicker nativeView)
 		{
-			if (Picker != null)
-				Picker.ValueChanged += OnValueChanged;
+			if (nativeView != null)
+				nativeView.ValueChanged += OnValueChanged;
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker nativeView)
 		{
-			if (Picker != null)
+			if (nativeView != null)
 			{
-				Picker.RemoveFromSuperview();
-				Picker.ValueChanged -= OnValueChanged;
-				Picker.Dispose();
-				Picker = null;
+				nativeView.RemoveFromSuperview();
+				nativeView.ValueChanged -= OnValueChanged;
+				nativeView.Dispose();
 			}
 		}
 
 		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.TypedNativeView?.UpdateFormat(timePicker, Picker);
+			handler.TypedNativeView?.UpdateFormat(timePicker);
 		}
 
 		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.TypedNativeView?.UpdateTime(timePicker, Picker);
+			handler.TypedNativeView?.UpdateTime(timePicker);
 		}
 
 		void OnValueChanged(object? sender, EventArgs e)
@@ -81,10 +45,10 @@ namespace Microsoft.Maui.Handlers
 
 		void SetVirtualViewTime()
 		{
-			if (VirtualView == null || Picker == null)
+			if (VirtualView == null || TypedNativeView == null)
 				return;
 
-			VirtualView.Time = Picker.Date.ToDateTime() - new DateTime(1, 1, 1);
+			VirtualView.Time = TypedNativeView.Date.ToDateTime() - new DateTime(1, 1, 1);
 		}
 	}
 }
