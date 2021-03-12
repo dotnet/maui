@@ -78,5 +78,10 @@ namespace Microsoft.Maui
 		/// Method that is called to invalidate the layout of this FrameworkElement.
 		/// </summary>
 		void InvalidateArrange();
+
+		/// <summary>
+		/// Id used by automation tools to interact with this FrameworkElement
+		/// </summary>
+		string AutomationId { get; }
 	}
 }

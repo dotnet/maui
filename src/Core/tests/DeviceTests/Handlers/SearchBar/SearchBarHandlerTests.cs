@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.SearchBar)]
-	public partial class SearchBarHandlerTests : HandlerTestBase<SearchBarHandler>
+	public partial class SearchBarHandlerTests : HandlerTestBase<SearchBarHandler, SearchBarStub>
 	{
 		public SearchBarHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
@@ -39,11 +39,22 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var n = GetNativeText(h);
 					if (string.IsNullOrEmpty(n))
-						n = null; // native platforms may not support null text
+						n = null; // Native platforms may not support null text
 					return n;
 				},
 				setValue,
 				unsetValue);
+		}
+
+		[Fact(DisplayName = "Placeholder Initializes Correctly")]
+		public async Task PlaceholderInitializesCorrectly()
+		{
+			var searchBar = new SearchBarStub
+			{
+				Placeholder = "Placeholder"
+			};
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.Placeholder, GetNativePlaceholder, searchBar.Placeholder);
 		}
 	}
 }

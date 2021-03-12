@@ -38,7 +38,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultTypeface, nativeLabel.Typeface);
 		}
 
-		[Fact]
+		[Fact(DisplayName = "Padding Initializes Correctly")]
 		public async Task PaddingInitializesCorrectly()
 		{
 			var label = new LabelStub()
@@ -108,6 +108,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Typeface.IsItalic;
+
+		int GetNativeMaxLines(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).MaxLines;
 
 		Task ValidateNativeBackgroundColor(ILabel label, Color color)
 		{
