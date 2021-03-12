@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 		public static void UpdateFont(this UIButton nativeButton, IButton button, IFontManager fontManager)
 		{
 			var uiFont = fontManager.GetFont(button.Font);
-			nativeButton.Font = uiFont;
+			nativeButton.TitleLabel.Font = uiFont;
 		}
 	}
 }

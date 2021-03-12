@@ -52,12 +52,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		double GetNativeUnscaledFontSize(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).Font.PointSize;
+			GetNativeButton(buttonHandler).TitleLabel.Font.PointSize;
 
 		bool GetNativeIsBold(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
+			GetNativeButton(buttonHandler).TitleLabel.Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
 
 		bool GetNativeIsItalic(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
+			GetNativeButton(buttonHandler).TitleLabel.Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
 	}
 }
