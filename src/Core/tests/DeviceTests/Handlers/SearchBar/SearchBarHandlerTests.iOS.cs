@@ -10,5 +10,16 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeEntry(searchBarHandler).Text;
+
+		string GetNativePlaceholder(SearchBarHandler searchBarHandler)
+		{
+			var searchBar = GetNativeEntry(searchBarHandler);
+			var textField = searchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return string.Empty;
+
+			return searchBar.Placeholder;
+		}
 	}
 }
