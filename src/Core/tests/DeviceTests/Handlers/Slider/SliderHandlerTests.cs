@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Slider)]
-	public partial class SliderHandlerTests : HandlerTestBase<SliderHandler>
+	public partial class SliderHandlerTests : HandlerTestBase<SliderHandler, SliderStub>
 	{
 		public SliderHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
