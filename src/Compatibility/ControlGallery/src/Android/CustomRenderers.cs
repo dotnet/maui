@@ -1007,7 +1007,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			switch (e.Action)
 			{
 				case MotionEventActions.Up:
-					Element.Results.Text = Microsoft.Maui.Controls.ControlGallery.Issues.ShellGestures.TouchListenerSuccess;
+					Element.Results.Text = Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.ShellGestures.TouchListenerSuccess;
 					break;
 				case MotionEventActions.Cancel:
 					Element.Results.Text = "Fail";
