@@ -8,5 +8,10 @@ namespace Microsoft.Maui
 		{
 			uiSearchBar.Text = searchBar.Text;
 		}
+
+		public static void UpdatePlaceholder(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			uiSearchBar.Placeholder = searchBar.Placeholder;
+		}
 	}
 }

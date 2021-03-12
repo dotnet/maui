@@ -1,5 +1,4 @@
-﻿using Android.Widget;
-using Microsoft.Maui.Handlers;
+﻿using Microsoft.Maui.Handlers;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.DeviceTests
@@ -11,5 +10,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Query;
+
+		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
+			GetNativeSearchBar(searchBarHandler).QueryHint;
 	}
 }
