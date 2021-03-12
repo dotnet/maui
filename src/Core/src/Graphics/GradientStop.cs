@@ -14,7 +14,7 @@
 			Offset = offset;
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (!(obj is GradientStop dest))
 				return false;

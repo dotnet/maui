@@ -23,7 +23,7 @@
 
 		public Color Color { get; set; } = Color.Default;
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (!(obj is SolidColorBrush dest))
 				return false;
