@@ -11,12 +11,7 @@ namespace Microsoft.Maui
 
 		public static void UpdatePlaceholder(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
-			var textField = uiSearchBar.FindDescendantView<UITextField>();
-
-			if (textField == null)
-				return;
-
-			textField.Text = searchBar.Placeholder;
+			uiSearchBar.Placeholder = searchBar.Placeholder;
 		}
 	}
 }
