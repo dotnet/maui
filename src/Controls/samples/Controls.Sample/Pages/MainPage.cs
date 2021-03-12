@@ -35,6 +35,9 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Color.LightBlue });
 
+			var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
+			verticalStack.Add(underlineLabel);
+
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
 			var button2 = new Button()
 			{
@@ -49,6 +52,9 @@ namespace Maui.Controls.Sample.Pages
 			horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout" });
 
 			verticalStack.Add(horizontalStack);
+
+			verticalStack.Add(new Editor());
+			verticalStack.Add(new Editor { Text = "Editor" });
 
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>

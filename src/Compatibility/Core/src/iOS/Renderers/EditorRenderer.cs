@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Frame = new RectangleF(0, 20, 320, 40);
 		}
 
+		[PortHandler]
 		protected override UITextView CreateNativeControl()
 		{
 			return new FormsUITextView(RectangleF.Empty);
@@ -328,6 +329,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			TextView.ReloadInputViews();
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateText()
 		{
 			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
