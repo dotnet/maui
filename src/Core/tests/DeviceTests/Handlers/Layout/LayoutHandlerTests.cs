@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -47,5 +48,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			Assert.Equal(0, count);
 		}
+
+		protected override Type GetStubType() => typeof(LayoutStub);
 	}
 }

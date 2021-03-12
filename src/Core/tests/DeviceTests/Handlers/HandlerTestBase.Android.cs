@@ -1,4 +1,5 @@
 using System;
+using Android.Views;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -15,5 +16,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			return handler;
 		}
+
+		protected string GetAutomationId(IViewHandler viewHandler) =>
+			$"{((View)viewHandler.NativeView).GetTag(ViewExtensions.AutomationTagId)}";
 	}
 }

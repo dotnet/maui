@@ -9,5 +9,6 @@
 		public const string Layout = "Layout";
 		public const string Slider = "Slider";
 		public const string Switch = "Switch";
+		public const string View = "View";
 	}
 }

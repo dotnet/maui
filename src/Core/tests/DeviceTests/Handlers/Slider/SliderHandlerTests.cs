@@ -103,5 +103,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(double.IsInfinity(size.Width));
 			Assert.False(double.IsInfinity(size.Height));
 		}
+
+		protected override Type GetStubType() => typeof(SliderStub);
 	}
 }

@@ -16,6 +16,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		protected override void OnCreate(Bundle bundle)
 		{
+			ViewExtensions.AutomationTagId = global::Maui.DeviceTests.Android.Resource.Id.AUTOMATION_TAG_ID;
 			Microsoft.Maui.Essentials.Platform.Init(this, bundle);
 			Platform.Init(this);
 

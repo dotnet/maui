@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -50,5 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(clicked);
 		}
+
+		protected override Type GetStubType() => typeof(ButtonStub);
 	}
 }

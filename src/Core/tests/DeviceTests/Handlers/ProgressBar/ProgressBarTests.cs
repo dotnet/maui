@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -28,5 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(progressBar, () => progressBar.Progress, GetNativeProgress, progressBar.Progress);
 		}
+
+		protected override Type GetStubType() => typeof(ProgressBarStub);
 	}
 }

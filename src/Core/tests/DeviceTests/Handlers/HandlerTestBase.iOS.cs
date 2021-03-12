@@ -1,4 +1,8 @@
 using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
+using UIKit;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -12,5 +16,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			return handler;
 		}
+
+		protected string GetAutomationId(IViewHandler viewHandler) =>
+			((UIView)viewHandler.NativeView).AccessibilityIdentifier;
 	}
 }

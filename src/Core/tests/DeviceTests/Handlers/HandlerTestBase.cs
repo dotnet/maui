@@ -21,10 +21,10 @@ namespace Microsoft.Maui.DeviceTests
 		public Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			MainThread.InvokeOnMainThreadAsync(func);
 
-		public Task InvokeOnMainThreadAsync(Action action) =>
+		protected Task InvokeOnMainThreadAsync(Action action) =>
 			MainThread.InvokeOnMainThreadAsync(action);
 
-		public Task InvokeOnMainThreadAsync(Func<Task> func) =>
+		protected Task InvokeOnMainThreadAsync(Func<Task> func) =>
 			MainThread.InvokeOnMainThreadAsync(func);
 
 		public Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func) =>

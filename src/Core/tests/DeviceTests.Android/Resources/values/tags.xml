@@ -1,0 +1,3 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+  <item name="AUTOMATION_TAG_ID" type="id"/>
+</resources>

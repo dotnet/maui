@@ -25,5 +25,8 @@ namespace Microsoft.Maui
 			if (!color.IsDefault)
 				nativeView.BackgroundColor = color.ToNative();
 		}
+
+		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
+			nativeView.AccessibilityIdentifier = view.AutomationId;
 	}
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -70,5 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateThumbColor(switchStub, Color.Red, () => switchStub.ThumbColor = Color.Red);
 		}
+
+		protected override Type GetStubType() => typeof(SwitchStub);
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -45,5 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 				setValue,
 				unsetValue);
 		}
+
+		protected override Type GetStubType() => typeof(EditorStub);
 	}
 }
