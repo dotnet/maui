@@ -86,7 +86,7 @@ namespace Microsoft.Maui
 			editText.Focusable = isEditable;
 		}
 		
-		public static void UpdateFont(this EditText editText, IEntry entry, IFontManager fontManager)
+		public static void UpdateFont(this AppCompatEditText editText, IEntry entry, IFontManager fontManager)
 		{
 			var font = entry.Font;
 
