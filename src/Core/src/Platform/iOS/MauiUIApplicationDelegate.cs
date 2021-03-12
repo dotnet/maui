@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Maui.Hosting;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -24,11 +23,11 @@ namespace Microsoft.Maui
 
 			var host = app.CreateBuilder().ConfigureServices(ConfigureNativeServices).Build(app);
 
-			if (MauiApp.Current == null || MauiApp.Current.Services == null)
+			if (App.Current == null || App.Current.Services == null)
 				throw new InvalidOperationException("App was not intialized");
 
 
-			var mauiContext = new MauiContext(MauiApp.Current.Services);
+			var mauiContext = new MauiContext(App.Current.Services);
 			var window = app.CreateWindow(new ActivationState(mauiContext));
 
 			window.MauiContext = mauiContext;
@@ -48,12 +47,42 @@ namespace Microsoft.Maui
 
 			Window.MakeKeyAndVisible();
 
+			foreach (var iOSApplicationDelegateHandler in GetIosLifecycleHandler())
+				iOSApplicationDelegateHandler.FinishedLaunching(application, launchOptions);
+
 			return true;
+		}
+
+		public override void OnActivated(UIApplication application)
+		{
+			base.OnActivated(application);
+
+			foreach (var iOSApplicationDelegateHandler in GetIosLifecycleHandler())
+				iOSApplicationDelegateHandler.OnActivated(application);
+		}
+
+		public override void OnResignActivation(UIApplication application)
+		{
+			base.OnResignActivation(application);
+
+			foreach (var iOSApplicationDelegateHandler in GetIosLifecycleHandler())
+				iOSApplicationDelegateHandler.OnResignActivation(application);
+		}
+
+		public override void WillTerminate(UIApplication application)
+		{
+			base.WillTerminate(application);
+
+			foreach (var iOSApplicationDelegateHandler in GetIosLifecycleHandler())
+				iOSApplicationDelegateHandler.WillTerminate(application);
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-
+			services.AddTransient<IIosApplicationDelegateHandler, IosApplicationDelegateHandler>();
 		}
+
+		IEnumerable<IIosApplicationDelegateHandler> GetIosLifecycleHandler() =>
+			App.Current?.Services?.GetServices<IIosApplicationDelegateHandler>() ?? Enumerable.Empty<IIosApplicationDelegateHandler>();
 	}
 }

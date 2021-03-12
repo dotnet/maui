@@ -30,6 +30,7 @@ namespace Maui.Controls.Sample
 						{ "Logging:LogLevel:Default", "Warning" }
 					});
 				})
+				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
 				.ConfigureServices((hostingContext, services) =>
 				{
 					services.AddSingleton<ITextService, TextService>();
@@ -39,13 +40,20 @@ namespace Maui.Controls.Sample
 					else
 						services.AddTransient<IPage, MainPage>();
 					services.AddTransient<IWindow, MainWindow>();
+#if __ANDROID__
+					services.AddTransient<IAndroidLifecycleHandler, CustomAndroidLifecycleHandler>();
+#endif
+
+#if __IOS__
+					services.AddTransient<IIosApplicationDelegateHandler, CustomIosLifecycleHandler>();
+#endif
 				})
 				.ConfigureFonts((hostingContext, fonts) =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
 				});
 
-		//IAppState state
+		// IAppState state
 		public override IWindow CreateWindow(IActivationState state)
 		{
 			Forms.Init(state);
@@ -53,7 +61,7 @@ namespace Maui.Controls.Sample
 		}
 	}
 
-	//to use DI ServiceCollection and not the MAUI one
+	// To use DI ServiceCollection and not the MAUI one
 	public class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
 	{
 		public ServiceCollection CreateBuilder(IServiceCollection services)
