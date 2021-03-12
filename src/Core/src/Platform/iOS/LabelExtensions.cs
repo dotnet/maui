@@ -68,7 +68,7 @@ namespace Microsoft.Maui
 				(float)label.Padding.Top,
 				(float)label.Padding.Left,
 				(float)label.Padding.Bottom,
-				(float)label.Padding.Right);		
+				(float)label.Padding.Right);
 		}
 
 		internal static void SetLineBreakMode(this UILabel nativeLabel, ILabel label)

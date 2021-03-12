@@ -67,7 +67,7 @@ namespace Microsoft.Maui
 				(int)context.ToPixels(label.Padding.Right),
 				(int)context.ToPixels(label.Padding.Bottom));
 		}
-    
+
 		public static void UpdateTextDecorations(this TextView textView, ILabel label)
 		{
 			var textDecorations = label.TextDecorations;
@@ -82,7 +82,7 @@ namespace Microsoft.Maui
 			else
 				textView.PaintFlags |= PaintFlags.UnderlineText;
 		}
-    
+
 		internal static void SetLineBreakMode(this TextView textView, ILabel label)
 		{
 			var lineBreakMode = label.LineBreakMode;
@@ -123,6 +123,6 @@ namespace Microsoft.Maui
 
 			textView.SetSingleLine(singleLine);
 			textView.SetMaxLines(maxLines);
-    }
+		}
 	}
 }
