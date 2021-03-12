@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	internal static class TextViewExtensions
 	{
+		[PortHandler("Partially ported")]
 		public static void SetMaxLines(this TextView textView, Label label)
 		{
 			var maxLines = label.MaxLines;
