@@ -1,7 +1,7 @@
 <Project>
  <PropertyGroup>
     <NightlyTag>nightly</NightlyTag>
-    <RegexTag>-[a-z]+\.[0-9]</RegexTag>
+    <RegexTag>[a-z]+\.[0-9]</RegexTag>
  </PropertyGroup>
  <PropertyGroup>
     <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' != ''">$(SYSTEM_PULLREQUEST_TARGETBRANCH)</GitBranch>
