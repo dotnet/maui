@@ -1,5 +1,5 @@
-﻿using UIKit;
-using Microsoft.Maui.Handlers;
+﻿using Microsoft.Maui.Handlers;
+using UIKit;
 
 namespace Microsoft.Maui.DeviceTests
 {

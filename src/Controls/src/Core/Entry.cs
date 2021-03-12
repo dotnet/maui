@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
 			 HandleFontChanged();
 
-		void HandleFontChanged() 
+		void HandleFontChanged()
 		{
 			// Null out the Maui font value so it will be recreated next time it's accessed
 			_font = null;
