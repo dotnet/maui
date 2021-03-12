@@ -1,5 +1,5 @@
 ﻿using Android.Text;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Handlers;
 using AColor = global::Android.Graphics.Color;
 
@@ -7,8 +7,8 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
-		EditText GetNativeEntry(EntryHandler entryHandler) =>
-			(EditText)entryHandler.View;
+		AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
+			(AppCompatEditText)entryHandler.View;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;

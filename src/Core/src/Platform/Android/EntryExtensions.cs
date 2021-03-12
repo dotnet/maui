@@ -1,6 +1,6 @@
 ﻿using Android.Content.Res;
 using Android.Text;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
 {
@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 			new[] { -global::Android.Resource.Attribute.StateEnabled }
 		};
 
-		public static void UpdateText(this EditText editText, IEntry entry)
+		public static void UpdateText(this AppCompatEditText editText, IEntry entry)
 		{
 			var newText = entry.Text ?? string.Empty;
 			var oldText = editText.Text ?? string.Empty;
@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 				editText.Text = newText;
 		}
 
-		public static void UpdateTextColor(this EditText editText, IEntry entry, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this AppCompatEditText editText, IEntry entry, ColorStateList? defaultColor)
 		{
 			var textColor = entry.TextColor;
 			if (textColor.IsDefault)
@@ -39,12 +39,12 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateIsPassword(this EditText editText, IEntry entry)
+		public static void UpdateIsPassword(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.SetInputType(entry);
 		}
 
-		internal static void SetInputType(this EditText editText, IEntry entry)
+		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.InputType = InputTypes.ClassText;
 			editText.InputType |= InputTypes.TextFlagMultiLine;
@@ -62,12 +62,12 @@ namespace Microsoft.Maui
 				editText.InputType = InputTypes.Null;
 		}
 
-		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEntry entry)
+		public static void UpdateIsTextPredictionEnabled(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.SetInputType(entry);
 		}
 
-		public static void UpdatePlaceholder(this EditText editText, IEntry entry)
+		public static void UpdatePlaceholder(this AppCompatEditText editText, IEntry entry)
 		{
 			if (editText.Hint == entry.Placeholder)
 				return;
@@ -75,7 +75,7 @@ namespace Microsoft.Maui
 			editText.Hint = entry.Placeholder;
 		}
 
-		public static void UpdateIsReadOnly(this EditText editText, IEntry entry)
+		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEntry entry)
 		{
 			bool isEditable = !entry.IsReadOnly;
 
