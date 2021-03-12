@@ -6,7 +6,7 @@ namespace MauiApp1
 {
 	public class Application : MauiApp
 	{
-		public override IAppHostBuilder CreateBuilder() => 
+		public override IAppHostBuilder CreateBuilder() =>
 			base.CreateBuilder().ConfigureServices((ctx, services) =>
 				{
 					services.AddTransient<MainPage>();
