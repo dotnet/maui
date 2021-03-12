@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="../../../../eng/ControlGallery.Build.props" />
-  <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="..\..\..\..\eng\Environment.Build.props" />
+  <Import Project="../../../../../eng/ControlGallery.Build.props" />
+  <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="..\..\..\..\..\eng\Environment.Build.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{1346A7F1-4457-4BB4-A371-2C8E28BBD53E}</ProjectGuid>
+    <ProjectGuid>{BB933AF2-9498-4C4E-9F76-AF66A550BED3}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -178,31 +178,31 @@
     <AndroidResource Include="Resources\drawable\cover1.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Compatibility\Maps\src\Android\Compatibility.Maps.Android.csproj">
+    <ProjectReference Include="..\..\..\..\Compatibility\Maps\src\Android\Compatibility.Maps.Android.csproj">
       <Project>{1d11ec11-4734-47d4-9b62-4d03cff67090}</Project>
       <Name>Compatibility.Maps.Android</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj">
+    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj">
       <Project>{f137fac5-3385-4b19-988b-4a14ed84ccc6}</Project>
       <Name>Controls.Maps</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj">
+    <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj">
       <Project>{2964f669-7cd9-4d78-b4d9-804a965d58c0}</Project>
       <Name>Controls.CustomAttributes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Core\src\Core.csproj">
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj">
       <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Android.AppLinks\Compatibility.Android.AppLinks.csproj">
+    <ProjectReference Include="..\..\..\Core\src\Android.AppLinks\Compatibility.Android.AppLinks.csproj">
       <Project>{10553575-8e27-4e2c-9e88-90b015e80f1c}</Project>
       <Name>Compatibility.Android.AppLinks</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Compatibility\Core\tests\Android\Compatibility.Android.UnitTests.csproj">
+    <ProjectReference Include="..\..\..\Core\tests\Android\Compatibility.Android.UnitTests.csproj">
       <Project>{a4c57790-71d1-467c-a69e-2bd84cb6666c}</Project>
       <Name>Compatibility.Android.UnitTests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Controls\ControlGallery.csproj">
+    <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core.csproj">
       <Project>{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}</Project>
       <Name>ControlGallery</Name>
     </ProjectReference>
@@ -211,15 +211,15 @@
     <ProguardConfiguration Include="..\..\..\..\.nuspec\proguard.cfg">
       <Link>proguard.cfg</Link>
     </ProguardConfiguration>
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj">
+    <ProjectReference Include="..\..\..\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj">
       <Project>{3b72465b-acae-43ae-9327-10f372fe5f80}</Project>
       <Name>Compatibility.Android.FormsViewGroup</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Android\Compatibility.Android.csproj">
+    <ProjectReference Include="..\..\..\Core\src\Android\Compatibility.Android.csproj">
       <Project>{0e16e70a-d6dd-4323-ad5d-363abff42d6a}</Project>
       <Name>Compatibility.Android</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj">
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
       <Name>Controls.Core</Name>
     </ProjectReference>

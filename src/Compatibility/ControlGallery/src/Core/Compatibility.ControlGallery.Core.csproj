@@ -118,15 +118,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj">
+    <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj">
       <Name>Controls.Build.Tasks</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -164,6 +164,6 @@
     <Copy SourceFiles="@(ConfigFile)" DestinationFiles="controlgallery.config" Condition="!Exists('controlgallery.config')" />
   </Target>
 
-  <Import Project="..\Xamarin.Forms.Controls.Issues.Shared\ControlGallery.Issues.Shared.projitems" Label="Shared" />
+  <Import Project="..\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems" Label="Shared" />
 
 </Project>

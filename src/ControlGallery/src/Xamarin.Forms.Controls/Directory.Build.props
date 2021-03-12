@@ -1,4 +1,0 @@
-<Project>
-  <Import Project="..\..\..\..\Directory.Build.props" />
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
-</Project> 
