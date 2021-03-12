@@ -5,15 +5,13 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public abstract partial class HandlerTestBase<THandler>
+	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
-		protected abstract Type GetStubType();
-
 		[Fact(DisplayName = "Automation Id is set correctly")]
 		[InlineData()]
 		public async Task SetAutomationId()
 		{
-			var view = (StubBase)Activator.CreateInstance(GetStubType());
+			var view = new TStub();
 			view.AutomationId = "TestId";
 			var id = await GetValueAsync((IView)view, handler => GetAutomationId(handler));
 			Assert.Equal(view.AutomationId, id);

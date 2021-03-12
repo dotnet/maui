@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Entry)]
-	public partial class EntryHandlerTests : HandlerTestBase<EntryHandler>
+	public partial class EntryHandlerTests : HandlerTestBase<EntryHandler, EntryStub>
 	{
 		public EntryHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
@@ -208,7 +208,5 @@ namespace Microsoft.Maui.DeviceTests
 			else
 				Assert.Equal(0, eventFiredCount);
 		}
-
-		protected override Type GetStubType() => typeof(EntryStub);
 	}
 }

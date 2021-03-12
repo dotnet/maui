@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Label)]
-	public partial class LabelHandlerTests : HandlerTestBase<LabelHandler>
+	public partial class LabelHandlerTests : HandlerTestBase<LabelHandler, LabelStub>
 	{
 		public LabelHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
@@ -149,7 +149,5 @@ namespace Microsoft.Maui.DeviceTests
 				nameof(ILabel.Text),
 				() => label.Text = newText);
 		}
-
-		protected override Type GetStubType() => typeof(LabelStub);
 	}
 }

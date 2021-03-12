@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 {
 	[Category(TestCategory.Layout)]
-	public partial class LayoutHandlerTests : HandlerTestBase<LayoutHandler>
+	public partial class LayoutHandlerTests : HandlerTestBase<LayoutHandler, LayoutStub>
 	{
 		public LayoutHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
@@ -48,7 +48,5 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			Assert.Equal(0, count);
 		}
-
-		protected override Type GetStubType() => typeof(LayoutStub);
 	}
 }

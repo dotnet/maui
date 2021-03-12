@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Button)]
-	public partial class ButtonHandlerTests : HandlerTestBase<ButtonHandler>
+	public partial class ButtonHandlerTests : HandlerTestBase<ButtonHandler, ButtonStub>
 	{
 		public ButtonHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
@@ -51,7 +51,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(clicked);
 		}
-
-		protected override Type GetStubType() => typeof(ButtonStub);
 	}
 }

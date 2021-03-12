@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Editor)]
-	public partial class EditorHandlerTests : HandlerTestBase<EditorHandler>
+	public partial class EditorHandlerTests : HandlerTestBase<EditorHandler, EditorStub>
 	{
 		public EditorHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
@@ -46,7 +46,5 @@ namespace Microsoft.Maui.DeviceTests
 				setValue,
 				unsetValue);
 		}
-
-		protected override Type GetStubType() => typeof(EditorStub);
 	}
 }

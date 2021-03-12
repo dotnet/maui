@@ -1,13 +1,15 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Essentials;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Collection(TestCollections.Handlers)]
-	public partial class HandlerTestBase<THandler> : TestBase
+	public partial class HandlerTestBase<THandler, TStub> : TestBase
 		where THandler : IViewHandler
+		where TStub : StubBase, IView, new()
 	{
 		readonly HandlerTestFixture _fixture;
 

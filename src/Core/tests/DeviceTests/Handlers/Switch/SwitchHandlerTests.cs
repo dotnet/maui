@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Switch)]
-	public partial class SwitchHandlerTests : HandlerTestBase<SwitchHandler>
+	public partial class SwitchHandlerTests : HandlerTestBase<SwitchHandler, SwitchStub>
 	{
 		public SwitchHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
@@ -71,7 +71,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateThumbColor(switchStub, Color.Red, () => switchStub.ThumbColor = Color.Red);
 		}
-
-		protected override Type GetStubType() => typeof(SwitchStub);
 	}
 }

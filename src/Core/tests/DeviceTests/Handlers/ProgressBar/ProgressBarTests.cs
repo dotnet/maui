@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category("ProgressBarHandler")]
-	public partial class ProgressBarHandlerTests : HandlerTestBase<ProgressBarHandler>
+	public partial class ProgressBarHandlerTests : HandlerTestBase<ProgressBarHandler, ProgressBarStub>
 	{
 		public ProgressBarHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
@@ -29,7 +29,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(progressBar, () => progressBar.Progress, GetNativeProgress, progressBar.Progress);
 		}
-
-		protected override Type GetStubType() => typeof(ProgressBarStub);
 	}
 }

@@ -3,7 +3,7 @@ using Android.Views;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class HandlerTestBase<THandler>
+	public partial class HandlerTestBase<THandler, TStub>
 	{
 		protected THandler CreateHandler(IView view)
 		{

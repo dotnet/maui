@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Slider)]
-	public partial class SliderHandlerTests : HandlerTestBase<SliderHandler>
+	public partial class SliderHandlerTests : HandlerTestBase<SliderHandler, SliderStub>
 	{
 		public SliderHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
@@ -103,7 +103,5 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(double.IsInfinity(size.Width));
 			Assert.False(double.IsInfinity(size.Height));
 		}
-
-		protected override Type GetStubType() => typeof(SliderStub);
 	}
 }
