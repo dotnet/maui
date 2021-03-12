@@ -1,3 +1,4 @@
+using Android.Graphics;
 using Android.Util;
 using Android.Widget;
 
@@ -24,6 +25,9 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateCharacterSpacing(this TextView textView, ILabel label) =>
+			textView.LetterSpacing = label.CharacterSpacing.ToEm();
+
 		public static void UpdateFont(this TextView textView, ILabel label, IFontManager fontManager)
 		{
 			var font = label.Font;
@@ -45,10 +49,25 @@ namespace Microsoft.Maui
 			}
 
 			textView.SetPadding(
-					(int)context.ToPixels(label.Padding.Left),
-					(int)context.ToPixels(label.Padding.Top),
-					(int)context.ToPixels(label.Padding.Right),
-					(int)context.ToPixels(label.Padding.Bottom));
+				(int)context.ToPixels(label.Padding.Left),
+				(int)context.ToPixels(label.Padding.Top),
+				(int)context.ToPixels(label.Padding.Right),
+				(int)context.ToPixels(label.Padding.Bottom));
+		}
+
+		public static void UpdateTextDecorations(this TextView textView, ILabel label)
+		{
+			var textDecorations = label.TextDecorations;
+
+			if ((textDecorations & TextDecorations.Strikethrough) == 0)
+				textView.PaintFlags &= ~PaintFlags.StrikeThruText;
+			else
+				textView.PaintFlags |= PaintFlags.StrikeThruText;
+
+			if ((textDecorations & TextDecorations.Underline) == 0)
+				textView.PaintFlags &= ~PaintFlags.UnderlineText;
+			else
+				textView.PaintFlags |= PaintFlags.UnderlineText;
 		}
 	}
 }

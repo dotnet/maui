@@ -328,6 +328,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 		}
 
+		[PortHandler]
 		void UpdateTextDecorations()
 		{
 			if (!Element.IsSet(Label.TextDecorationsProperty))
@@ -355,6 +356,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			_lastSizeRequest = null;
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			if (Forms.IsLollipopOrNewer)

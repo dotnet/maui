@@ -249,6 +249,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				_perfectSizeValid = false;
 		}
 
+		[PortHandler]
 		void UpdateTextDecorations()
 		{
 			if (IsElementOrControlEmpty)
@@ -402,6 +403,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			if (IsElementOrControlEmpty)

@@ -1,7 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Platform.iOS;
-using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -19,12 +18,22 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateTextColor(label);
 		}
 
+		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(label);
+		}
+
 		public static void MapPadding(LabelHandler handler, ILabel label)
 		{
 			handler.TypedNativeView?.UpdatePadding(label);
 		}
 
-		public static void MapFont(LabelHandler handler, ILabel label)
+		public static void MapTextDecorations(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdateTextDecorations(label);
+		}
+
+		static void MapFont(LabelHandler handler, ILabel label)
 		{
 			var services = App.Current?.Services ?? 
 				throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
