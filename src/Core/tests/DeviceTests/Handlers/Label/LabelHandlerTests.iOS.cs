@@ -69,6 +69,29 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(20, insets.Bottom);
 		}
 
+		[Fact(DisplayName = "TextDecorations Initializes Correctly")]
+		public async Task TextDecorationsInitializesCorrectly()
+		{
+			var xplatTextDecorations = TextDecorations.Underline;
+
+			var labelHandler = new LabelStub()
+			{
+				TextDecorations = xplatTextDecorations
+			};
+
+			var values = await GetValueAsync(labelHandler, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelHandler.TextDecorations,
+					NativeViewValue = GetNativeTextDecorations(handler)
+				};
+			});
+
+			Assert.Equal(xplatTextDecorations, values.ViewValue);
+			Assert.True(values.NativeViewValue != null);
+		}
+
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>
 			(UILabel)labelHandler.View;
 
@@ -118,5 +141,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		UILineBreakMode GetNativeLineBreakMode(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).LineBreakMode;
+
+		NSAttributedString GetNativeTextDecorations(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).AttributedText;
 	}
 }

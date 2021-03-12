@@ -48,6 +48,9 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
 
+			var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
+			verticalStack.Add(underlineLabel);
+
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
 			var button2 = new Button()
 			{
@@ -62,6 +65,9 @@ namespace Maui.Controls.Sample.Pages
 			horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout" });
 
 			verticalStack.Add(horizontalStack);
+
+			verticalStack.Add(new Editor());
+			verticalStack.Add(new Editor { Text = "Editor" });
 
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>

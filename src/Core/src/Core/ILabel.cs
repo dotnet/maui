@@ -19,5 +19,11 @@ namespace Microsoft.Maui
 		/// Gets the space between the text of the Label and it's border.
 		/// </summary>
 		Thickness Padding { get; }
+
+		/// <summary>
+		/// Gets the text decoration applied to the Label.
+		/// Underline and strikethrough text decorations can be applied.
+		/// </summary>
+		TextDecorations TextDecorations { get; }
 	}
 }

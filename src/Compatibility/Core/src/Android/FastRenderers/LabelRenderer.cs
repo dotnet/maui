@@ -328,6 +328,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 		}
 
+		[PortHandler]
 		void UpdateTextDecorations()
 		{
 			if (!Element.IsSet(Label.TextDecorationsProperty))

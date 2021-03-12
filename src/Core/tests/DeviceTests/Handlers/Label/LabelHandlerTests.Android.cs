@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Android.Graphics;
 using Android.Text;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
@@ -78,6 +79,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedBottom, bottom);
 		}
 
+		[Fact(DisplayName = "[LabelHandler] TextDecorations Initializes Correctly")]
+		public async Task TextDecorationsInitializesCorrectly()
+		{
+			var xplatTextDecorations = TextDecorations.Underline;
+
+			var labelHandler = new LabelStub()
+			{
+				TextDecorations = xplatTextDecorations
+			};
+
+			var values = await GetValueAsync(labelHandler, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelHandler.TextDecorations,
+					NativeViewValue = GetNativeTextDecorations(handler)
+				};
+			});
+
+			PaintFlags expectedValue = PaintFlags.UnderlineText;
+
+			Assert.Equal(xplatTextDecorations, values.ViewValue);
+			Assert.True(values.NativeViewValue.HasFlag(expectedValue));
+		}
+
 		TextView GetNativeLabel(LabelHandler labelHandler) =>
 			(TextView)labelHandler.View;
 
@@ -120,5 +146,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		TextUtils.TruncateAt GetNativeLineBreakMode(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Ellipsize;
+
+		PaintFlags GetNativeTextDecorations(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).PaintFlags;
 	}
 }

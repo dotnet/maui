@@ -15,5 +15,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public int MaxLines { get; set; } = -1;
 
 		public LineBreakMode LineBreakMode { get; set; } = LineBreakMode.WordWrap;
+
+		public TextDecorations TextDecorations { get; set; }
 	}
 }
