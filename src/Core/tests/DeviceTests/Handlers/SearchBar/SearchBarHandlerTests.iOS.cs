@@ -10,5 +10,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeEntry(searchBarHandler).Text;
+
+		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
+			GetNativeEntry(searchBarHandler).Placeholder;
 	}
 }

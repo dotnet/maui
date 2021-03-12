@@ -304,6 +304,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.UserInteractionEnabled = Element.IsEnabled;
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdatePlaceholder()
 		{
 			if (_textField == null)

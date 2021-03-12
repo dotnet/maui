@@ -18,5 +18,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public TextDecorations TextDecorations { get; set; }
 
+		public int MaxLines { get; set; } = -1;
 	}
 }

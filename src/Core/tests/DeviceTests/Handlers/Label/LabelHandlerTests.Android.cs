@@ -138,6 +138,9 @@ namespace Microsoft.Maui.DeviceTests
 		Android.Views.TextAlignment GetNativeTextAlignment(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).TextAlignment;
 
+		int GetNativeMaxLines(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).MaxLines;
+
 		Task ValidateNativeBackgroundColor(ILabel label, Color color)
 		{
 			return InvokeOnMainThreadAsync(() =>

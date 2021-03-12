@@ -44,7 +44,14 @@ namespace Microsoft.Maui
 			textView.Gravity = label.HorizontalTextAlignment.ToHorizontalGravityFlags();
 		}
 
-		public static void UpdatePadding(this TextView textView, ILabel label) 
+		public static void UpdateMaxLines(this TextView textView, ILabel label)
+		{
+			int maxLinex = label.MaxLines;
+
+			textView.SetMaxLines(maxLinex);
+		}
+
+		public static void UpdatePadding(this TextView textView, ILabel label)
 		{
 			var context = textView.Context;
 

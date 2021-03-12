@@ -5,7 +5,7 @@
     "identity": "Microsoft.Maui.SingleProject",
     "name": ".NET Maui Mobile Application",
     "description": "A project for creating a .NET MAUI application for iOS and Android",
-    "shortName": "maui-mobile",
+    "shortName": "maui",
     "tags": {
       "language": "C#",
       "type": "project"

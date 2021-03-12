@@ -46,9 +46,9 @@ namespace Microsoft.Maui
 				textField.AutocorrectionType = UITextAutocorrectionType.No;
 		}
 
-		public static void UpdatePlaceholder(this UITextField editText, IEntry entry)
+		public static void UpdatePlaceholder(this UITextField textField, IEntry entry)
 		{
-			editText.Placeholder = entry.Placeholder;
+			textField.Placeholder = entry.Placeholder;
 		}
 
 		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)
