@@ -57,7 +57,7 @@ namespace Microsoft.Maui
 
 			if (!entry.IsTextPredictionEnabled && ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions))
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
-			
+
 			if (entry.IsReadOnly)
 				editText.InputType = InputTypes.Null;
 		}

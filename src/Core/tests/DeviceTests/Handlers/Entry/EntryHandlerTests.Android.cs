@@ -36,7 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativePlaceholder(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Hint;
 
-		bool GetNativeIsReadOnly(EntryHandler entryHandler) 
+		bool GetNativeIsReadOnly(EntryHandler entryHandler)
 		{
 			var editText = GetNativeEntry(entryHandler);
 
