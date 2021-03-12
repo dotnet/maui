@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 				// Add the binlog as a test attachment
 				var binlog = IOPath.Combine(IOPath.GetDirectoryName(projectFile), "msbuild.binlog");
-				if (File.Exists (binlog))
+				if (File.Exists(binlog))
 				{
 					TestContext.AddTestAttachment(binlog);
 				}
