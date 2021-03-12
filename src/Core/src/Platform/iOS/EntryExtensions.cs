@@ -55,5 +55,10 @@ namespace Microsoft.Maui
 		{
 			textField.UserInteractionEnabled = !entry.IsReadOnly;
 		}
+
+		public static void UpdateKeyboard(this UITextField textField, IEntry entry)
+		{
+			// TODO
+		}
 	}
 }
