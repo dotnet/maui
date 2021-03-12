@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
+		[PortHandler]
 		protected override FormsEditText CreateNativeControl()
 		{
 			return new FormsEditText(Context)
@@ -100,6 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler("Partially ported")]
 		protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
 		{
 			base.OnElementChanged(e);
@@ -249,6 +251,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		void UpdateText()
 		{
 			string newText = Element.UpdateFormsText(Element.Text, Element.TextTransform);

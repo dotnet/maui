@@ -296,10 +296,15 @@
 
         <!-- iOS Only -->
         <!-- If on Windows, using build host, copy the files over to build server host too -->
+        <ItemGroup Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'">
+            <_SharedFontsToCopyToBuildServer Include="@(_SharedFontBundleResource);@(_SharedFontPListFiles)">
+                <TargetPath>%(Identity)</TargetPath>
+            </_SharedFontsToCopyToBuildServer>
+        </ItemGroup>
         <CopyFilesToBuildServer
             Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'"
             SessionId="$(BuildSessionId)"
-            Files="@(_SharedFontBundleResource);@(_SharedFontPListFiles)" />
+            Files="@(_SharedFontsToCopyToBuildServer)" />
 
         <!-- Touch/create our stamp file for outputs -->
         <Touch Files="$(_SharedFontStampFile)" AlwaysCreate="True" />
@@ -367,10 +372,15 @@
 
         <!-- iOS Only -->
         <!-- If on Windows, using build host, copy the files over to build server host too -->
+        <ItemGroup Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'">
+            <_SharedImagesToCopyToBuildServer Include="@(_ResizetizerCollectedBundleResourceImages)">
+                <TargetPath>%(Identity)</TargetPath>
+            </_SharedImagesToCopyToBuildServer>
+        </ItemGroup>
         <CopyFilesToBuildServer
             Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'"
             SessionId="$(BuildSessionId)"
-            Files="@(_ResizetizerCollectedBundleResourceImages)" />
+            Files="@(_SharedImagesToCopyToBuildServer)" />
 
         <!-- Android -->
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
