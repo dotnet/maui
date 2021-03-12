@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.Maui.Graphics.Blazor.WebGL

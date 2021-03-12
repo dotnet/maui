@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Graphics.Blazor
         private readonly string _contextName;
         private readonly IJSInProcessRuntime _runtime;
 
-        public ElementRef Canvas { get; }
+        public ElementReference Canvas { get; }
 
         
         internal RenderingContext(CanvasComponentBase reference, string contextName, object parameters = null)

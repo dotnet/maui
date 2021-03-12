@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Graphics.Blazor
             string defaultValue = "black")
         {
             if (color != null)
-                return color.ToHexString();
+                return color.ToHex();
 
             return defaultValue;
         }

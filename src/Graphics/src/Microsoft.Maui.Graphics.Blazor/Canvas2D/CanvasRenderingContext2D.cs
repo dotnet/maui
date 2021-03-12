@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Graphics.Blazor.Canvas2D
         public void Ellipse(double x, double y, double radiusX, double radiusY, double rotation, double startAngle, double endAngle, bool anticlockwise = false) => this.CallMethod<object>(ELLIPSE_METHOD, x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise);
         public void Fill() => this.CallMethod<object>(FILL_METHOD);
         public void Stroke() => this.CallMethod<object>(STROKE_METHOD);
-        public void DrawFocusIfNeeded(ElementRef elementReference) => this.CallMethod<object>(DRAW_FOCUS_IF_NEEDED_METHOD, elementReference);
+        public void DrawFocusIfNeeded(ElementReference elementReference) => this.CallMethod<object>(DRAW_FOCUS_IF_NEEDED_METHOD, elementReference);
         public void ScrollPathIntoView() => this.CallMethod<object>(SCROLL_PATH_INTO_VIEW_METHOD);
         public void Clip(string fillRule = "nonzero") => this.CallMethod<object>(CLIP_METHOD, fillRule);
         public bool IsPointInPath(double x, double y) => this.CallMethod<bool>(IS_POINT_IN_PATH_METHOD, x, y);

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <OutputType>Library</OutputType>
     <IsPackable>false</IsPackable>
     <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
@@ -18,7 +18,11 @@
     <RootNamespace>Microsoft.Maui.Graphics.Blazor.JS</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.9.0-preview3-19154-02" />
+     <PackageReference Include="Microsoft.AspNetCore.Components" Version="5.0.4" />
+     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.4" />
+     <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="5.0.4" />
+  </ItemGroup>
+  <ItemGroup>
     <WebpackInputs Include="**\*.ts" Exclude="dist\**;node_modules\**" />
   </ItemGroup>
   <Target Name="EnsureNpmRestored" Condition="!Exists('node_modules')">

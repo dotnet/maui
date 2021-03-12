@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Microsoft.Maui.Graphics.Blazor
@@ -8,19 +9,23 @@ namespace Microsoft.Maui.Graphics.Blazor
         private BlazorCanvas _blazorCanvas;
 
         [Parameter]
+#pragma warning disable BL0004 // Component parameter should be public.
         protected long width { get; set; }
+#pragma warning restore BL0004 // Component parameter should be public.
 
         [Parameter]
+#pragma warning disable BL0004 // Component parameter should be public.
         protected long height { get; set; }
+#pragma warning restore BL0004 // Component parameter should be public.
 
         [Inject] 
         public IJSRuntime JSRuntime { get; set; }
         
         protected readonly string id = Guid.NewGuid().ToString();
 
-        protected ElementRef canvas;
+        protected ElementReference canvas;
 
-        internal ElementRef CanvasReference => canvas;
+        internal ElementReference CanvasReference => canvas;
 
         public string Id => id;
 
@@ -43,8 +48,8 @@ namespace Microsoft.Maui.Graphics.Blazor
                 return _blazorCanvas;
             }
         }
-        
-        protected override async void OnAfterRender()
+
+        protected override async void OnAfterRender(bool firstRender)
         {
             if (!_initialized)
             {

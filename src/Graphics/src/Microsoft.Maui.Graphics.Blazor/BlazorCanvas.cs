@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics.Blazor.Canvas2D;
+﻿using System;
+using Microsoft.Maui.Graphics.Blazor.Canvas2D;
 using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics.Blazor

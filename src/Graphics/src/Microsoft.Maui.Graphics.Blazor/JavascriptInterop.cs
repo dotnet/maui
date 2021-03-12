@@ -5,13 +5,15 @@ namespace Microsoft.Maui.Graphics.Blazor
 {
     public static class JavascriptInterop
     {
-        public static Task<float> SetupCanvas(
+        public static async Task<float> SetupCanvas(
             this IJSRuntime runtime,
             string id)
         {
-            return runtime.InvokeAsync<float>(
+            var t = await runtime.InvokeAsync<float>(
                 "SystemDrawingInterop.SetupCanvas",
                 id );
+
+            return t;
         }
         
         public static Task<bool> PointIsInPath(
@@ -24,17 +26,19 @@ namespace Microsoft.Maui.Graphics.Blazor
             return PointIsInPath(runtime, pathDefinition, x, y);
         }
         
-        public static Task<bool> PointIsInPath(
+        public static async Task<bool> PointIsInPath(
             this IJSRuntime runtime,
             string path,
             float x,
             float y)
         {
-            return runtime.InvokeAsync<bool>(
+            var b = await runtime.InvokeAsync<bool>(
                 "SystemDrawingInterop.PointIsInPath",
                 path,
                 x,
                 y);
+
+            return b;
         }
     }
 }
