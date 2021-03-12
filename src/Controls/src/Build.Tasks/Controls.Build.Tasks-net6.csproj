@@ -10,7 +10,7 @@
 		<AssemblyName>Microsoft.Maui.Controls.Build.Tasks</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
 		<Description>Microsoft MAUI Build Task</Description>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>netstandard2.0</TargetFramework>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<!-- <SignAssembly Condition=" '$(_DisableStrongNamer)' != 'True' ">True</SignAssembly>
 		<DisableStrongNamer Condition=" '$(_DisableStrongNamer)' == 'True' ">True</DisableStrongNamer>
@@ -55,9 +55,9 @@
 		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Pdb.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Rocks.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 
-		<None Include="..\Core\bin\$(Configuration)\net6.0\Microsoft.Maui.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
-		<None Include="..\Core\bin\$(Configuration)\net6.0\Microsoft.Maui.Controls.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
-		<None Include="..\Xaml\bin\$(Configuration)\net6.0\Microsoft.Maui.Controls.Xaml.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
+		<None Include="..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
+		<None Include="..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
+		<None Include="..\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 	</ItemGroup>
 
 	<PropertyGroup>
