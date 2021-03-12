@@ -33,6 +33,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
+		
+		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			string originalText = "Test";
+			var xplatCharacterSpacing = 4;
+
+			var slider = new SearchBarStub()
+			{
+				CharacterSpacing = xplatCharacterSpacing,
+				Text = originalText
+			};
+
+			var values = await GetValueAsync(slider, (handler) =>
+			{
+				return new
+				{
+					ViewValue = slider.CharacterSpacing,
+					NativeViewValue = GetNativeText(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.NotEqual(originalText, values.NativeViewValue);
+		}
 
 		UISearchBar GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			(UISearchBar)searchBarHandler.View;

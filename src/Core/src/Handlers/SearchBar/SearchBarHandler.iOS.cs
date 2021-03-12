@@ -29,5 +29,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateHorizontalTextAlignment(searchBar, handler._textField);
 		}
+
+		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(searchBar, TextField);
+		}
 	}
 }
