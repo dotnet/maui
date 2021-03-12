@@ -35,6 +35,12 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Color.LightBlue });
 
+			var passwordEntry = new Entry() { IsPassword = true };
+			var numericEntry = new Entry() { Keyboard = Keyboard.Numeric };
+
+			verticalStack.Add(passwordEntry);
+			verticalStack.Add(numericEntry);
+
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
 			var button2 = new Button()
 			{
