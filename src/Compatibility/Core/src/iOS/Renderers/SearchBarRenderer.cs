@@ -333,6 +333,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void UpdateText()
 		{
 			// There is at least one scenario where modifying the Element's Text value from TextChanged

@@ -44,6 +44,10 @@ namespace Maui.Controls.Sample.Pages
 				}
 			};
 
+			var searchBar = new SearchBar();
+			searchBar.Text = "A search query";
+			verticalStack.Add(searchBar);
+
 			var label = new Label { Text = "This will disappear in ~5 seconds", Background = Brush.Fuchsia };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
