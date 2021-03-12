@@ -1,13 +1,12 @@
-﻿using Android.Text;
-using Android.Widget;
+﻿using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EditorHandlerTests
 	{
-		EditText GetNativeEditor(EditorHandler editorHandler) =>
-			(EditText)editorHandler.View;
+		AppCompatEditText GetNativeEditor(EditorHandler editorHandler) =>
+			(AppCompatEditText)editorHandler.View;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
