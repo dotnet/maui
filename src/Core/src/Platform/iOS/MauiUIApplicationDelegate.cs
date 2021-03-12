@@ -1,16 +1,16 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Maui.Hosting;
 using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class MauiUIApplicationDelegate<TApplication> : UIApplicationDelegate, IUIApplicationDelegate where TApplication : MauiApp
+	public class MauiUIApplicationDelegate<TApplication> : UIApplicationDelegate, IUIApplicationDelegate where TApplication : App
 	{
+		bool _isSuspended;
+		App? _app;
+
 		public override UIWindow? Window
 		{
 			get;
@@ -24,11 +24,17 @@ namespace Microsoft.Maui
 
 			var host = app.CreateBuilder().ConfigureServices(ConfigureNativeServices).Build(app);
 
-			if (MauiApp.Current == null || MauiApp.Current.Services == null)
-				throw new InvalidOperationException("App was not intialized");
+			if (App.Current == null)
+				throw new InvalidOperationException($"App is not {nameof(App)}");
 
+			_app = App.Current;
 
-			var mauiContext = new MauiContext(MauiApp.Current.Services);
+			if (_app.Services == null)
+				throw new InvalidOperationException("App was not initialized");
+
+			_app.OnCreated();
+
+			var mauiContext = new MauiContext(_app.Services);
 			var window = app.CreateWindow(new ActivationState(mauiContext));
 
 			window.MauiContext = mauiContext;
@@ -49,6 +55,25 @@ namespace Microsoft.Maui
 			Window.MakeKeyAndVisible();
 
 			return true;
+		}
+		public override void OnActivated(UIApplication application)
+		{
+			if (_isSuspended)
+			{
+				_isSuspended = false;
+				_app?.OnResumed();
+			}
+		}
+
+		public override void OnResignActivation(UIApplication application)
+		{
+			_isSuspended = true;
+			_app?.OnPaused();
+		}
+
+		public override void WillTerminate(UIApplication application)
+		{
+			_app?.OnStopped();
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)

@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Hosting
 		}
 		public IDictionary<object, object> Properties => new Dictionary<object, object>();
 
-		public IHost Build(IApp app)
+		public IHost Build(IApplication app)
 		{
 			_app = app as App;
 			return Build();

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Maui
 {
-	public class MauiApplication<TApplication> : global::Android.App.Application where TApplication : MauiApp
+	public class MauiApplication<TApplication> : global::Android.App.Application where TApplication : App
 	{
 		public MauiApplication(IntPtr handle, JniHandleOwnership ownerShip) : base(handle, ownerShip)
 		{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 			base.OnCreate();
 		}
 
-		//configure native services like HandlersContext, ImageSourceHandlers etc.. 
+		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
 		}

@@ -12,6 +12,11 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 				.ConfigureServices(ConfigureNativeServices);
 		}
 
+		public override IWindow CreateWindow(IActivationState state)
+		{
+			throw new System.NotImplementedException();
+		}
+
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
 			services.AddSingleton<IMauiContext>(provider => new HandlersContextStub(provider));

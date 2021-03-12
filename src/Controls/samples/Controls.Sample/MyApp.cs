@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModel;
@@ -13,7 +14,7 @@ using Microsoft.Maui.Hosting;
 
 namespace Maui.Controls.Sample
 {
-	public class MyApp : MauiApp
+	public class MyApp : App
 	{
 		public readonly static bool UseXamlPage = false;
 
@@ -45,15 +46,35 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
 				});
 
-		//IAppState state
+		// IAppState state
 		public override IWindow CreateWindow(IActivationState state)
 		{
 			Forms.Init(state);
 			return Services.GetRequiredService<IWindow>();
 		}
+
+		public override void OnCreated()
+		{
+			Debug.WriteLine("Application Created.");
+		}
+
+		public override void OnPaused()
+		{
+			Debug.WriteLine("Application Paused.");
+		}
+
+		public override void OnResumed()
+		{
+			Debug.WriteLine("Application Resumed.");
+		}
+
+		public override void OnStopped()
+		{
+			Debug.WriteLine("Application Stopped.");
+		}
 	}
 
-	//to use DI ServiceCollection and not the MAUI one
+	// To use DI ServiceCollection and not the MAUI one
 	public class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
 	{
 		public ServiceCollection CreateBuilder(IServiceCollection services)

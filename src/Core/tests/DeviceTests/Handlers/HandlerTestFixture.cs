@@ -40,6 +40,6 @@ namespace Microsoft.Maui.DeviceTests
 			_context = null;
 		}
 
-		public IApp App => _app;
+		public IApplication App => _app;
 	}
 }

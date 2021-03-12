@@ -16,7 +16,7 @@ namespace Microsoft.Maui.DeviceTests
 			_fixture = fixture;
 		}
 
-		public IApp App => _fixture.App;
+		public IApplication App => _fixture.App;
 
 		public Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			MainThread.InvokeOnMainThreadAsync(func);
