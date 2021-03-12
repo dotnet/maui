@@ -250,6 +250,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				_perfectSizeValid = false;
 		}
 
+		[PortHandler]
 		void UpdateTextDecorations()
 		{
 			if (IsElementOrControlEmpty)

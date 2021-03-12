@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui.Controls
 {
-	public partial class Entry : IEntry
+	public partial class Editor : IEditor
 	{
 		Font? _font;
 
