@@ -14,8 +14,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
 
-		public TextAlignment VerticalTextAlignment { get; set; }
-
 		public TextDecorations TextDecorations { get; set; }
 
 		public int MaxLines { get; set; } = -1;
