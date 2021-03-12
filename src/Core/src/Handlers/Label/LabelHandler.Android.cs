@@ -42,7 +42,12 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateLineBreakMode(label);
 		}
 
-		public static void MapPadding(LabelHandler handler, ILabel label) 
+		public static void MapMaxLines(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdateMaxLines(label);
+		}
+
+		public static void MapPadding(LabelHandler handler, ILabel label)
 		{
 			handler.TypedNativeView?.UpdatePadding(label);
 		}
@@ -52,9 +57,9 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateTextDecorations(label);
 		}
 
-		static void MapFont(LabelHandler handler, ILabel label)
+		public static void MapFont(LabelHandler handler, ILabel label)
 		{
-			var services = App.Current?.Services 
+			var services = App.Current?.Services
 				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
 			var fontManager = services.GetRequiredService<IFontManager>();
 

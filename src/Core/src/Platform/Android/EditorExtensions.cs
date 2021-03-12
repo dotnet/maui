@@ -1,10 +1,10 @@
-﻿using Android.Widget;
+﻿using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
 {
 	public static class EditorExtensions
 	{
-		public static void UpdateText(this EditText editText, IEditor editor)
+		public static void UpdateText(this AppCompatEditText editText, IEditor editor)
 		{
 			string text = editor.Text;
 

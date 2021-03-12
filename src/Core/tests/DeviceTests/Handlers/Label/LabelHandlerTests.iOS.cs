@@ -110,6 +110,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
 
+		int GetNativeMaxLines(LabelHandler labelHandler) =>
+ 			(int)GetNativeLabel(labelHandler).Lines;
+
 		double GetNativeCharacterSpacing(LabelHandler labelHandler)
 		{
 			var nativeLabel = GetNativeLabel(labelHandler);

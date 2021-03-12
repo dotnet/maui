@@ -125,6 +125,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Typeface.IsItalic;
 
+		int GetNativeMaxLines(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).MaxLines;
+
 		Task ValidateNativeBackgroundColor(ILabel label, Color color)
 		{
 			return InvokeOnMainThreadAsync(() =>

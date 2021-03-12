@@ -1,14 +1,14 @@
 ﻿using Android.Views;
 using Android.Views.InputMethods;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : AbstractViewHandler<IEditor, EditText>
+	public partial class EditorHandler : AbstractViewHandler<IEditor, AppCompatEditText>
 	{
-		protected override EditText CreateNativeView()
+		protected override AppCompatEditText CreateNativeView()
 		{
-			var editText = new EditText(Context)
+			var editText = new AppCompatEditText(Context)
 			{
 				ImeOptions = ImeAction.Done
 			};
