@@ -1,10 +1,10 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Xunit;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
