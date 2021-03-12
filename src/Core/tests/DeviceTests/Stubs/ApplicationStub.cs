@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	class AppStub : App, IDisposable
+	class ApplicationStub : Application, IDisposable
 	{
 		public override IWindow CreateWindow(IActivationState state)
 		{

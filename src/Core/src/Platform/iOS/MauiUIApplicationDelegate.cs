@@ -6,10 +6,11 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class MauiUIApplicationDelegate<TApplication> : UIApplicationDelegate, IUIApplicationDelegate where TApplication : App
+	public class MauiUIApplicationDelegate<TApplication> : UIApplicationDelegate, IUIApplicationDelegate
+		where TApplication : Application
 	{
 		bool _isSuspended;
-		App? _app;
+		Application? _application;
 
 		public override UIWindow? Window
 		{
@@ -17,30 +18,30 @@ namespace Microsoft.Maui
 			set;
 		}
 
-		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
+		public override bool FinishedLaunching(UIApplication nativeApplication, NSDictionary launchOptions)
 		{
-			if (!(Activator.CreateInstance(typeof(TApplication)) is TApplication app))
+			if (!(Activator.CreateInstance(typeof(TApplication)) is TApplication application))
 				throw new InvalidOperationException($"We weren't able to create the App {typeof(TApplication)}");
 
-			var host = app.CreateBuilder().ConfigureServices(ConfigureNativeServices).Build(app);
+			var host = application.CreateBuilder().ConfigureServices(ConfigureNativeServices).Build(application);
 
-			if (App.Current == null)
-				throw new InvalidOperationException($"App is not {nameof(App)}");
+			if (Application.Current == null)
+				throw new InvalidOperationException($"App is not {nameof(Application)}");
 
-			_app = App.Current;
+			_application = Application.Current;
 
-			if (_app.Services == null)
+			if (_application.Services == null)
 				throw new InvalidOperationException("App was not initialized");
 
-			_app.OnCreated();
+			_application.OnCreated();
 
-			var mauiContext = new MauiContext(_app.Services);
-			var window = app.CreateWindow(new ActivationState(mauiContext));
+			var mauiContext = new MauiContext(_application.Services);
+			var window = _application.CreateWindow(new ActivationState(mauiContext));
 
 			window.MauiContext = mauiContext;
 
-			//Hack for now we set this on the App Static but this should be on IFrameworkElement
-			App.Current.SetHandlerContext(window.MauiContext);
+			// Hack for now we set this on the App Static but this should be on IFrameworkElement
+			Application.Current.SetHandlerContext(window.MauiContext);
 
 			var content = (window.Page as IView) ?? window.Page.View;
 
@@ -56,24 +57,25 @@ namespace Microsoft.Maui
 
 			return true;
 		}
+
 		public override void OnActivated(UIApplication application)
 		{
 			if (_isSuspended)
 			{
 				_isSuspended = false;
-				_app?.OnResumed();
+				_application?.OnResumed();
 			}
 		}
 
 		public override void OnResignActivation(UIApplication application)
 		{
 			_isSuspended = true;
-			_app?.OnPaused();
+			_application?.OnPaused();
 		}
 
 		public override void WillTerminate(UIApplication application)
 		{
-			_app?.OnStopped();
+			_application?.OnStopped();
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)

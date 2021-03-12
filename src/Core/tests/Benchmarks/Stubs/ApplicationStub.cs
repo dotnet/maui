@@ -4,7 +4,7 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Handlers.Benchmarks
 {
-	class MockApp : App
+	class ApplicationStub : Application
 	{
 		public override IAppHostBuilder CreateBuilder()
 		{
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public override IWindow CreateWindow(IActivationState state)
 		{
-			throw new System.NotImplementedException();
+			return new WindowStub();
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)

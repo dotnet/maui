@@ -5,9 +5,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	class ContextStub : IMauiContext, IDisposable
 	{
-		AppStub _app;
+		ApplicationStub _app;
 
-		public ContextStub(AppStub app)
+		public ContextStub(ApplicationStub app)
 		{
 			_app = app;
 		}

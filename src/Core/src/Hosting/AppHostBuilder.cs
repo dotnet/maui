@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Hosting
 		readonly List<Action<HostBuilderContext, IFontCollection>> _configureFontsActions = new List<Action<HostBuilderContext, IFontCollection>>();
 		readonly List<IConfigureContainerAdapter> _configureContainerActions = new List<IConfigureContainerAdapter>();
 		readonly Func<IServiceCollection> _serviceColectionFactory = new Func<IServiceCollection>(() => new MauiServiceCollection());
+
 		IServiceFactoryAdapter _serviceProviderFactory = new ServiceFactoryAdapter<IServiceCollection>(new MauiServiceProviderFactory());
+
 		bool _hostBuilt;
 		HostBuilderContext? _hostBuilderContext;
 		IHostEnvironment? _hostEnvironment;
@@ -26,17 +28,18 @@ namespace Microsoft.Maui.Hosting
 		IServiceCollection? _services;
 		IConfiguration? _hostConfiguration;
 		IConfiguration? _appConfiguration;
-		App? _app;
+		Application? _application;
 
 		public AppHostBuilder()
 		{
 
 		}
+
 		public IDictionary<object, object> Properties => new Dictionary<object, object>();
 
-		public IHost Build(IApplication app)
+		public IHost Build(IApplication application)
 		{
-			_app = app as App;
+			_application = application as Application;
 			return Build();
 		}
 
@@ -68,7 +71,7 @@ namespace Microsoft.Maui.Hosting
 
 			//we do this here because we can't inject the provider on the App ctor
 			//before we register the user ConfigureServices should this live in IApp ?
-			_app?.SetServiceProvider(_serviceProvider);
+			_application?.SetServiceProvider(_serviceProvider);
 
 			return new AppHost(_serviceProvider, null);
 		}

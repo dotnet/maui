@@ -5,21 +5,22 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
+using MauiApplication = Microsoft.Maui.Application;
 
 namespace Maui.Controls.Sample.ViewModel
 {
 	public class MainPageViewModel : ViewModelBase
 	{
-		private readonly IConfiguration Configuration;
+		readonly IConfiguration Configuration;
 		ITextService textService;
 
-		public MainPageViewModel() : this(new ITextService[] { App.Current.Services.GetService<ITextService>() })
+		public MainPageViewModel() : this(new ITextService[] { MauiApplication.Current.Services.GetService<ITextService>() })
 		{
 		}
 
 		public MainPageViewModel(IEnumerable<ITextService> textServices)
 		{
-			Configuration = App.Current.Services.GetService<IConfiguration>();
+			Configuration = MauiApplication.Current.Services.GetService<IConfiguration>();
 
 			//var logger = App.Current.Services.GetService<ILogger<MainPageViewModel>>();
 

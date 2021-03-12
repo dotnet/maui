@@ -5,12 +5,13 @@ using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using Google.Android.Material.AppBar;
+using MauiApplication = Microsoft.Maui.Application;
 
 namespace Microsoft.Maui
 {
 	public class MauiAppCompatActivity : AppCompatActivity
 	{
-		App? _app;
+		MauiApplication? _application;
 
 		AndroidApplicationLifecycleState _currentState;
 		AndroidApplicationLifecycleState _previousState;
@@ -19,25 +20,25 @@ namespace Microsoft.Maui
 		{
 			base.OnCreate(savedInstanceState);
 
-			if (App.Current == null)
-				throw new InvalidOperationException($"App is not {nameof(App)}");
+			if (MauiApplication.Current == null)
+				throw new InvalidOperationException($"App is not {nameof(Application)}");
 
-			_app = App.Current;
+			_application = MauiApplication.Current;
 
-			if (_app.Services == null)
+			if (_application.Services == null)
 				throw new InvalidOperationException("App was not initialized");
 
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnCreate;
 
-			var mauiContext = new MauiContext(_app.Services, this);
+			var mauiContext = new MauiContext(_application.Services, this);
 			var state = new ActivationState(mauiContext, savedInstanceState);
-			var window = _app.CreateWindow(state);
+			var window = _application.CreateWindow(state);
 
 			window.MauiContext = mauiContext;
 
 			//Hack for now we set this on the App Static but this should be on IFrameworkElement
-			App.Current.SetHandlerContext(window.MauiContext);
+			MauiApplication.Current.SetHandlerContext(window.MauiContext);
 
 			var content = (window.Page as IView) ??
 				window.Page.View;
@@ -112,13 +113,13 @@ namespace Microsoft.Maui
 		void UpdateApplicationLifecycleState()
 		{
 			if (_previousState == AndroidApplicationLifecycleState.OnCreate && _currentState == AndroidApplicationLifecycleState.OnStart)
-				_app?.OnCreated();
+				_application?.OnCreated();
 			else if (_previousState == AndroidApplicationLifecycleState.OnRestart && _currentState == AndroidApplicationLifecycleState.OnStart)
-				_app?.OnResumed();
+				_application?.OnResumed();
 			else if (_previousState == AndroidApplicationLifecycleState.OnPause && _currentState == AndroidApplicationLifecycleState.OnStop)
-				_app?.OnPaused();
+				_application?.OnPaused();
 			else if (_currentState == AndroidApplicationLifecycleState.OnDestroy)
-				_app?.OnStopped();
+				_application?.OnStopped();
 		}
 	}
 }

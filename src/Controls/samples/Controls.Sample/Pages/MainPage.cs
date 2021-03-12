@@ -2,15 +2,15 @@ using Maui.Controls.Sample.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using MauiApplication = Microsoft.Maui.Application;
 
 namespace Maui.Controls.Sample.Pages
 {
-
 	public class MainPage : ContentPage, IPage
 	{
-		MainPageViewModel _viewModel;
+		readonly MainPageViewModel _viewModel;
 
-		public MainPage() : this(App.Current.Services.GetService<MainPageViewModel>())
+		public MainPage() : this(MauiApplication.Current.Services.GetService<MainPageViewModel>())
 		{
 
 		}

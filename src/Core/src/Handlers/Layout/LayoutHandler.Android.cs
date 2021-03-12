@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Android.Views;
 
 namespace Microsoft.Maui.Handlers
@@ -29,14 +27,14 @@ namespace Microsoft.Maui.Handlers
 
 			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = App.Current?.Context ?? throw new InvalidOperationException($"The MauiApp.Current.Context can't be null.");
+			_ = Application.Current?.Context ?? throw new InvalidOperationException($"The MauiApp.Current.Context can't be null.");
 
 			TypedNativeView.CrossPlatformMeasure = VirtualView.Measure;
 			TypedNativeView.CrossPlatformArrange = VirtualView.Arrange;
 
 			foreach (var child in VirtualView.Children)
 			{
-				TypedNativeView.AddView(child.ToNative(App.Current.Context));
+				TypedNativeView.AddView(child.ToNative(Application.Current.Context));
 			}
 		}
 
@@ -44,9 +42,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = App.Current?.Context ?? throw new InvalidOperationException($"The MauiApp.Current.Context can't be null.");
+			_ = Application.Current?.Context ?? throw new InvalidOperationException($"The MauiApp.Current.Context can't be null.");
 
-			TypedNativeView.AddView(child.ToNative(App.Current.Context!), 0);
+			TypedNativeView.AddView(child.ToNative(Application.Current.Context!), 0);
 		}
 
 		public void Remove(IView child)

@@ -4,20 +4,20 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
-	public abstract class App : IApplication
+	public abstract class Application : IApplication
 	{
 		IServiceProvider? _serviceProvider;
 		IMauiContext? _context;
 
-		protected App()
+		protected Application()
 		{
 			if (Current != null)
-				throw new InvalidOperationException($"Only one {nameof(App)} instance is allowed");
+				throw new InvalidOperationException($"Only one {nameof(Application)} instance is allowed");
 
 			Current = this;
 		}
 
-		public static App? Current { get; internal set; }
+		public static Application? Current { get; internal set; }
 
 		public IServiceProvider? Services => _serviceProvider;
 

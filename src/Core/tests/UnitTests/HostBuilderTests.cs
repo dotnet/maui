@@ -14,31 +14,31 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanBuildAHost()
 		{
-			var host = App.CreateDefaultBuilder().Build();
+			var host = Application.CreateDefaultBuilder().Build();
 			Assert.NotNull(host);
 		}
 
 		[Fact]
 		public void CanGetStaticApp()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder().Build(app);
 
-			Assert.NotNull(App.Current);
-			Assert.Equal(App.Current, app);
+			Assert.NotNull(Application.Current);
+			Assert.Equal(Application.Current, app);
 		}
 
 		[Fact]
 		public void ShouldntCreateMultipleApp()
 		{
-			var app = new AppStub();
-			Assert.Throws<InvalidOperationException>(() => new AppStub());
+			var app = new ApplicationStub();
+			Assert.Throws<InvalidOperationException>(() => new ApplicationStub());
 		}
 
 		[Fact]
 		public void CanGetServices()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder().Build(app);
 
 			Assert.NotNull(app.Services);
@@ -47,20 +47,20 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanGetStaticServices()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder().Build(app);
 
-			Assert.NotNull(App.Current.Services);
-			Assert.Equal(app.Services, App.Current.Services);
+			Assert.NotNull(Application.Current.Services);
+			Assert.Equal(app.Services, Application.Current.Services);
 		}
 
 		[Fact]
 		public void HandlerContextNullBeforeBuild()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder();
 
-			var handlerContext = App.Current.Context;
+			var handlerContext = Application.Current.Context;
 
 			Assert.Null(handlerContext);
 		}
@@ -68,10 +68,10 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void HandlerContextAfterBuild()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder().Build(app);
 
-			var handlerContext = App.Current.Context;
+			var handlerContext = Application.Current.Context;
 
 			Assert.NotNull(handlerContext);
 		}
@@ -79,10 +79,10 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanHandlerProviderContext()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder().Build(app);
 
-			var handlerContext = App.Current.Context;
+			var handlerContext = Application.Current.Context;
 
 			Assert.IsAssignableFrom<IMauiHandlersServiceProvider>(handlerContext.Handlers);
 		}
@@ -90,12 +90,12 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanRegisterAndGetHandler()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder()
 				.RegisterHandler<IViewStub, ViewHandlerStub>()
 				.Build(app);
 
-			var handler = App.Current.Context.Handlers.GetHandler(typeof(IViewStub));
+			var handler = Application.Current.Context.Handlers.GetHandler(typeof(IViewStub));
 			Assert.NotNull(handler);
 			Assert.IsType<ViewHandlerStub>(handler);
 		}
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanRegisterAndGetHandlerWithDictionary()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder()
 				.RegisterHandlers(new Dictionary<Type, Type>
 				{
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.UnitTests
 				})
 				.Build(app);
 
-			var handler = App.Current.Context.Handlers.GetHandler(typeof(IViewStub));
+			var handler = Application.Current.Context.Handlers.GetHandler(typeof(IViewStub));
 			Assert.NotNull(handler);
 			Assert.IsType<ViewHandlerStub>(handler);
 		}
@@ -119,12 +119,12 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanRegisterAndGetHandlerForType()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder()
 				.RegisterHandler<IViewStub, ViewHandlerStub>()
 				.Build(app);
 
-			var handler = App.Current.Context.Handlers.GetHandler(typeof(ViewStub));
+			var handler = Application.Current.Context.Handlers.GetHandler(typeof(ViewStub));
 			Assert.NotNull(handler);
 			Assert.IsType<ViewHandlerStub>(handler);
 		}
@@ -132,10 +132,10 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void DefaultHandlersAreRegistered()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder().Build(app);
 
-			var handler = App.Current.Context.Handlers.GetHandler(typeof(IButton));
+			var handler = Application.Current.Context.Handlers.GetHandler(typeof(IButton));
 			Assert.NotNull(handler);
 			Assert.IsType<ButtonHandler>(handler);
 		}
@@ -143,13 +143,13 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanSpecifyHandler()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder()
 				.RegisterHandler<ButtonStub, ButtonHandlerStub>()
 				.Build(app);
 
-			var defaultHandler = App.Current.Context.Handlers.GetHandler(typeof(IButton));
-			var specificHandler = App.Current.Context.Handlers.GetHandler(typeof(ButtonStub));
+			var defaultHandler = Application.Current.Context.Handlers.GetHandler(typeof(IButton));
+			var specificHandler = Application.Current.Context.Handlers.GetHandler(typeof(ButtonStub));
 			Assert.NotNull(defaultHandler);
 			Assert.NotNull(specificHandler);
 			Assert.IsType<ButtonHandler>(defaultHandler);
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void WillRetrieveDifferentTransientServices()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder()
 				.ConfigureServices((ctx, services) => services.AddTransient<IFooService, FooService>())
 				.Build(app);
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void WillRetrieveSameSingletonServices()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder()
 				.ConfigureServices((ctx, services) => services.AddSingleton<IFooService, FooService>())
 				.Build(app);
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void WillRetrieveMixedServices()
 		{
-			var app = new AppStub();
+			var app = new ApplicationStub();
 			app.CreateBuilder()
 				.ConfigureServices((ctx, services) =>
 				{
@@ -196,10 +196,10 @@ namespace Microsoft.Maui.UnitTests
 
 		public void Dispose()
 		{
-			(App.Current as AppStub)?.ClearApp();
+			(Application.Current as ApplicationStub)?.ClearApp();
 		}
 
-		static void AssertTransient<TInterface, TConcrete>(AppStub app)
+		static void AssertTransient<TInterface, TConcrete>(ApplicationStub app)
 		{
 			var service1 = app.Services.GetService<TInterface>();
 
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.UnitTests
 			Assert.NotEqual(service1, service2);
 		}
 
-		static void AssertSingleton<TInterface, TConcrete>(AppStub app)
+		static void AssertSingleton<TInterface, TConcrete>(ApplicationStub app)
 		{
 			var service1 = app.Services.GetService<TInterface>();
 

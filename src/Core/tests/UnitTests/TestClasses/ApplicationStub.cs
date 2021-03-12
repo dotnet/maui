@@ -5,7 +5,7 @@ using Microsoft.Maui.UnitTests.TestClasses;
 
 namespace Microsoft.Maui.Tests
 {
-	class AppStub : App
+	class ApplicationStub : Application
 	{
 		public void ConfigureServices(HostBuilderContext ctx, IServiceCollection services)
 		{

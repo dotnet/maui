@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.UnitTests.TestClasses
+﻿namespace Microsoft.Maui.Handlers.Benchmarks
 {
 	class WindowStub : IWindow
 	{

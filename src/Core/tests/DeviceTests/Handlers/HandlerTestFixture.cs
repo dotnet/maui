@@ -8,13 +8,13 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public class HandlerTestFixture : IDisposable
 	{
-		AppStub _app;
+		ApplicationStub _app;
 		IHost _host;
 		IMauiContext _context;
 
 		public HandlerTestFixture()
 		{
-			_app = new AppStub();
+			_app = new ApplicationStub();
 			_context = new ContextStub(_app);
 			_host = _app
 				.CreateBuilder()
