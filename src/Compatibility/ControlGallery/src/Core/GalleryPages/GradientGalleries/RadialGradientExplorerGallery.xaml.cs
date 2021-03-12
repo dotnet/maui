@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
 {
 	public partial class RadialGradientExplorerGallery : ContentPage
 	{

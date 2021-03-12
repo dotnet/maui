@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	public class PickerGallery : ContentPage
 	{

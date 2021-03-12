@@ -11,13 +11,13 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 	[Category(UITestCategories.DisplayAlert)]
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 #endif

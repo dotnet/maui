@@ -10,12 +10,12 @@ using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
 #if UITEST
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 
 	[Preserve(AllMembers = true)]

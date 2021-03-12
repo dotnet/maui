@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	public class MaterialProgressBarGallery : ContentPage
 	{

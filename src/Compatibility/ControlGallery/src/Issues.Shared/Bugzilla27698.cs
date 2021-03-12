@@ -7,10 +7,10 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Issue(IssueTracker.Bugzilla, 27698, "[iOS] DisplayAlert and DisplayActionSheet are shown below master page ")]
 	public class Bugzilla27698 : TestFlyoutPage // or TestFlyoutPage, etc ...

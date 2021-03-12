@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 using Microsoft.Maui.Controls;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	public partial class Bugzilla27417Xaml : ContentPage
 	{

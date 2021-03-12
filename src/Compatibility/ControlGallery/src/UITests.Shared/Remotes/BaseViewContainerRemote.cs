@@ -5,8 +5,9 @@ using System.Threading;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
+	using IApp = Xamarin.UITest.IApp;
 	internal abstract partial class BaseViewContainerRemote
 	{
 		//bool requiresDismissal;
@@ -32,7 +33,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		public string LayeredLabelQuery { get; private set; }
 
-		protected BaseViewContainerRemote(IApp app, Enum formsType, string platformViewType)
+		protected BaseViewContainerRemote(Xamarin.UITest.IApp app, Enum formsType, string platformViewType)
 		{
 			App = app;
 			PlatformViewType = platformViewType;
@@ -273,7 +274,7 @@ namespace Xamarin.Forms.Core.UITests
 			return false;
 		}
 
-		static bool MaybeGetProperty<T>(IApp app, string query, string[] propertyPath, out object result)
+		static bool MaybeGetProperty<T>(Xamarin.UITest.IApp app, string query, string[] propertyPath, out object result)
 		{
 			try
 			{

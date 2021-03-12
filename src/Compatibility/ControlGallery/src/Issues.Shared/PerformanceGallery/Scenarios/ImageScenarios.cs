@@ -3,7 +3,7 @@ using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 using IOPath = System.IO.Path;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PerformanceGallery.Scenarios
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PerformanceGallery.Scenarios
 {
 	[Preserve(AllMembers = true)]
 	internal class ImageScenario1 : PerformanceScenario

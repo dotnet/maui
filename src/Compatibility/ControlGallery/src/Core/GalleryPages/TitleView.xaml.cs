@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class TitleView : ContentPage

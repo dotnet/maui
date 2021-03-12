@@ -5,12 +5,12 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.RefreshView)]
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
-		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 		public void IsRefreshingAndCommandTest_SwipeDown()
 		{
 			RunningApp.WaitForElement(q => q.Marked("IsRefreshing: False"));
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
-		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 		public void RefreshDisablesWithCommand()
 		{
 			RunningApp.WaitForElement("IsRefreshing: False");

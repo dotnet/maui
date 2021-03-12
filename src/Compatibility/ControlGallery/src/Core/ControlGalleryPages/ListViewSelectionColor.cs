@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	internal sealed class ListViewSelectionColor : ContentPage
 	{

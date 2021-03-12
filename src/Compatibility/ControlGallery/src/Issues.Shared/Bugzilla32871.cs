@@ -5,10 +5,10 @@ using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using NUnit.Framework;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.Bugzilla)]

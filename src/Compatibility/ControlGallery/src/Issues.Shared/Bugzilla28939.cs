@@ -1,9 +1,9 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Issue(IssueTracker.Bugzilla, 28939, " Entry Control loses cursor position to either beginning or end of input ",
 		PlatformAffected.WinPhone)]

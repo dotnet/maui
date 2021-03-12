@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Controls.ControlGallery.Tests
+﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests
 {
 	public abstract class CrossPlatformTestFixture
 	{

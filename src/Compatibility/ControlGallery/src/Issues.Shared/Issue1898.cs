@@ -9,13 +9,13 @@ using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1898, "TabbedPage Page not watching icon changes", PlatformAffected.Android, issueTestNumber: 1)]
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	internal class Issue1898Setup
 	{
 #if UITEST
-		internal static void RunUITests(IApp RunningApp)
+		internal static void RunUITests(Xamarin.UITest.IApp RunningApp)
 		{
 			RunningApp.WaitForElement(Title1);
 			RunningApp.Tap(ChangeTitle1);

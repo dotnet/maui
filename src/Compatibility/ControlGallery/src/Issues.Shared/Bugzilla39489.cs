@@ -7,18 +7,18 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
 
 #if UITEST
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 #if UITEST
 	[Category(UITestCategories.Maps)]
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Issue(IssueTracker.Bugzilla, 39489, "Memory leak when using NavigationPage with Maps", PlatformAffected.Android | PlatformAffected.iOS)]
 	public class Bugzilla39489 : TestNavigationPage

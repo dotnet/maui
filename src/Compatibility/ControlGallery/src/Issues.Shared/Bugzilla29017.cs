@@ -8,10 +8,10 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[Category(Core.UITests.UITestCategories.Bugzilla)]
+	[Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Issue(IssueTracker.Bugzilla, 29017, "Pin clicked does not work on iOS maps")]
 	public class Issue29017 : TestContentPage // or TestFlyoutPage, etc ...

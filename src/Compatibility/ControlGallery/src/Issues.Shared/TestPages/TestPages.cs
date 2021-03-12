@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.CustomAttributes;
 using NUnit.Framework.Interfaces;
 using IOPath = System.IO.Path;
 
 #if UITEST
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 
@@ -17,8 +16,11 @@ using Xamarin.UITest;
 [assembly: Category("Issues")]
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
+#if UITEST
+	using IApp = Xamarin.UITest.IApp;
+#endif
 	internal static class AppPaths
 	{
 		public static string ApkPath = "../../../../src/Microsoft.Maui.Controls.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
@@ -75,7 +77,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				appConfiguration = appConfiguration.EnableLocalScreenshots();
 			}
 
-			var app = appConfiguration.StartApp(UITest.Configuration.AppDataMode.DoNotClear);
+			var app = appConfiguration.StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
 
 			return app;
 		}
@@ -458,7 +460,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 	}
 
 #if UITEST
-	[Category(Core.UITests.UITestCategories.FlyoutPage)]
+	[Category(Compatibility.UITests.UITestCategories.FlyoutPage)]
 #endif
 	public abstract class TestFlyoutPage : FlyoutPage
 	{
@@ -875,7 +877,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 }
 
 #if UITEST
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	using System;
 	using NUnit.Framework;

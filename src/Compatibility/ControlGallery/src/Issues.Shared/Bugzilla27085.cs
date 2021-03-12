@@ -7,10 +7,10 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[Category(Core.UITests.UITestCategories.Bugzilla)]
+	[Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Issue(IssueTracker.Bugzilla, 27085, "EntryCell has no possibility to hide keyboard on iOS")]
 	public class Bugzilla27085 : TestContentPage // or TestFlyoutPage, etc ...

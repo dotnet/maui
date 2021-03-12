@@ -8,10 +8,10 @@ using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 8766, "[Bug] CollectionView.EmptyView does not inherit parent Visual", PlatformAffected.All)]
 	public class Issue8766 : TestContentPage

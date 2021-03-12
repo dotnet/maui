@@ -12,11 +12,11 @@ using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 // https://github.com/xamarin/Xamarin.Forms/issues/9711#issuecomment-602520024
 
 #if UITEST
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 9711, "[Bug] iOS Failed to marshal the Objective-C object HeaderWrapperView", PlatformAffected.iOS)]

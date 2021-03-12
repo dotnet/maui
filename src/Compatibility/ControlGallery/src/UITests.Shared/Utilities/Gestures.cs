@@ -3,8 +3,9 @@ using System.Linq;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
+	using IApp = global::Xamarin.UITest.IApp;
 	internal static class Gestures
 	{
 		public static bool ScrollForElement(this IApp app, string query, Drag drag, int maxSteps = 25)

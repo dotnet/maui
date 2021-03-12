@@ -2,7 +2,7 @@ using System.IO;
 
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	internal static class Logger
 	{

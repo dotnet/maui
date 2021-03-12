@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Maui.Controls.ControlGallery.TabIndexTest
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.TabIndexTest
 {
 	public static class Colors
 	{

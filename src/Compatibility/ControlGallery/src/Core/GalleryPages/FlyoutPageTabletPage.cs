@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.ControlGallery.Issues;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	public class FlyoutPageTabletPage : ContentPage
 	{

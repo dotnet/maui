@@ -5,15 +5,16 @@ using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using System.Text.RegularExpressions;
 using System.Threading;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+
 #if __IOS__
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.UITest
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
+	using IApp = global::Xamarin.UITest.IApp;
 	internal static class AppExtensions
 	{
 #if __WINDOWS__
@@ -179,13 +180,7 @@ namespace Xamarin.UITest
 			return app.WaitForElement(marked)[0].ReadText();
 #endif
 		}
-	}
-}
 
-namespace Xamarin.Forms.Core.UITests
-{
-	internal static class AppExtensions
-	{
 		const string goToTestButtonQuery = "* marked:'GoToTestButton'";
 
 		public static AppRect ScreenBounds(this IApp app)

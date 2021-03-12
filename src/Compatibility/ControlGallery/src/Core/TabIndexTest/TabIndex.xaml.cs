@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Microsoft.Maui.Controls.ControlGallery.TabIndexTest
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.TabIndexTest
 {
 	public partial class TabIndex : ContentPage
 	{

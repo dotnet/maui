@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1583, "WebView fails to load from urlwebviewsource with non-ascii characters (works with Uri)", PlatformAffected.iOS, issueTestNumber: 1)]
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 		public async Task Issue1583_1_WebviewTest()
 		{
 			RunningApp.WaitForElement(q => q.Marked("label"), "Could not find label", TimeSpan.FromSeconds(10), null, null);

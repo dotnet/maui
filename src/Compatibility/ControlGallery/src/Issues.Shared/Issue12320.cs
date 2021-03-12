@@ -9,16 +9,16 @@ using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 12320, "[iOS] TabBarIsVisible = True/False doesn't work on Back Navigation When using BackButtonBehavior",
 		PlatformAffected.iOS)]
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github10000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github10000)]
 	[NUnit.Framework.Category(UITestCategories.Shell)]
 #endif
 	public class Issue12320 : TestShell

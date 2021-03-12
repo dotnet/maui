@@ -8,12 +8,12 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Animation)]
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Ignore("Fails intermittently on TestCloud")]
-		[Category(Core.UITests.UITestCategories.ManualReview)]
+		[Category(Compatibility.UITests.UITestCategories.ManualReview)]
 		public void AnimationCancel()
 		{
 			RunningApp.WaitForElement(ButtonId);

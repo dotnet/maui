@@ -8,12 +8,12 @@ using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.ListView)]
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 		public void TestCorrectListItemsRemoved()
 		{
 			RunningApp.WaitForElement(q => q.Button("RemoveBtn"));

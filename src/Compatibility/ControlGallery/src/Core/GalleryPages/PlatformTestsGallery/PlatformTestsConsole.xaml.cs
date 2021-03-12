@@ -10,7 +10,7 @@ using Microsoft.Maui.Controls.Xaml;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformTestsGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformTestsGallery
 {
 	[Preserve(AllMembers = true)]
 	[XamlCompilation(XamlCompilationOptions.Compile)]

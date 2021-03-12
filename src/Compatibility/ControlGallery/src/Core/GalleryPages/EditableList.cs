@@ -3,7 +3,7 @@ using System.Linq;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	internal class MessagesViewModel : ViewModelBase
 	{

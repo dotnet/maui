@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	[TestFixture]
 	[Category(UITestCategories.ActionSheet)]

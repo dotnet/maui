@@ -6,7 +6,7 @@
              mc:Ignorable="d"
              xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
              xmlns:issues="using:Microsoft.Maui.Controls.ControlGallery.Issues"
-             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue10679">
+             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue10679">
     <Shell.Resources>
         <ResourceDictionary>
 

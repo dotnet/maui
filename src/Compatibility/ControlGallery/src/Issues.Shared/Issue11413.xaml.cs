@@ -4,10 +4,10 @@ using Microsoft.Maui.Controls.CustomAttributes;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 11413,
 		"[Bug] Rectangle shape - Incorrect rendering/crash (depending on platform)",

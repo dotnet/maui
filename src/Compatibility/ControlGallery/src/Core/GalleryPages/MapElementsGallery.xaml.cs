@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Xaml;
 using Map = Microsoft.Maui.Controls.Maps;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapElementsGallery : ContentPage

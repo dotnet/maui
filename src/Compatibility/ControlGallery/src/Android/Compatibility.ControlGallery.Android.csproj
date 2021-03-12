@@ -122,7 +122,7 @@
     <Compile Include="_59457CustomRenderer.cs" />
     <Compile Include="_60122ImageRenderer.cs" />
     <Compile Include="ContentDescriptionEffectRenderer.cs" />
-    <Compile Include="..\Xamarin.Forms.Controls\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs">
+    <Compile Include="..\Core\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs">
       <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
     </Compile>
     <Compile Include="ApiLabelRenderer.cs" />
@@ -203,12 +203,12 @@
       <Name>Compatibility.Android.UnitTests</Name>
     </ProjectReference>
     <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core.csproj">
-      <Project>{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}</Project>
-      <Name>ControlGallery</Name>
+      <Project>{E7D17A14-8399-4139-BDAA-EE4C1A3447FC}</Project>
+      <Name>Compatibility.ControlGallery.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="$(FromSource) == 'true'">
-    <ProguardConfiguration Include="..\..\..\..\.nuspec\proguard.cfg">
+    <ProguardConfiguration Include="..\..\..\..\..\.nuspec\proguard.cfg">
       <Link>proguard.cfg</Link>
     </ProguardConfiguration>
     <ProjectReference Include="..\..\..\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj">

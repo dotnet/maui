@@ -10,16 +10,16 @@ using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4597, "[Android] ImageCell not loading images and setting ImageSource to null has no effect",
 		PlatformAffected.Android)]
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.Image)]
 	[NUnit.Framework.Category(UITestCategories.ListView)]
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			imageVisible = GetImage();
 			Assert.AreEqual(0, imageVisible.Length);
 
-			UITest.Queries.AppResult[] GetImage()
+			Xamarin.UITest.Queries.AppResult[] GetImage()
 			{
 				return RunningApp
 					.Query(app => app.Marked(_theListView).Descendant())
@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			RunningApp.WaitForElement(_appearText);
 		}
 
-		UITest.Queries.AppResult TestForImageVisible()
+		Xamarin.UITest.Queries.AppResult TestForImageVisible()
 		{
 			var images = RunningApp.QueryUntilPresent(() =>
 			{
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				if (result[0].Rect.Height > 1)
 					return result;
 
-				return new UITest.Queries.AppResult[0];
+				return new Xamarin.UITest.Queries.AppResult[0];
 			}, 10, 4000);
 
 			Assert.AreEqual(1, images.Length);
@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			return imageVisible;
 		}
 
-		void TestForImageNotVisible(UITest.Queries.AppResult previousFinding)
+		void TestForImageNotVisible(Xamarin.UITest.Queries.AppResult previousFinding)
 		{
 			var imageVisible = RunningApp.Query(_fileNameAutomationId);
 

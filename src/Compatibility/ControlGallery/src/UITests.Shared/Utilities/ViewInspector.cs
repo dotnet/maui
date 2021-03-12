@@ -1,8 +1,9 @@
 ﻿using System.Linq;
 using Xamarin.UITest;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
+	using IApp = Xamarin.UITest.IApp;
 	internal static class ViewInspector
 	{
 		public static void LogPropertiesForView(this IApp app, string query, bool isOnParent = false)
@@ -317,7 +318,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		}
 
-		static bool MaybeGetLayerProperty<T>(IApp app, string query, string property, out object result)
+		static bool MaybeGetLayerProperty<T>(Xamarin.UITest.IApp app, string query, string property, out object result)
 		{
 
 			try
@@ -333,7 +334,7 @@ namespace Xamarin.Forms.Core.UITests
 			return true;
 		}
 
-		static bool MaybeGetProperty<T>(IApp app, string query, string property, out object result)
+		static bool MaybeGetProperty<T>(Xamarin.UITest.IApp app, string query, string property, out object result)
 		{
 
 			try

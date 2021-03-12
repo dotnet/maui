@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.SwipeViewGalleries
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class SwipeItemViewIsEnabledGallery : ContentPage

@@ -6,7 +6,7 @@
              xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
              mc:Ignorable="d"
              Title="Test 12582"
-             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue12582">
+             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue12582">
     <Grid
         RowSpacing="0">
         <Grid.RowDefinitions>

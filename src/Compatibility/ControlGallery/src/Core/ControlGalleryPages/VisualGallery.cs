@@ -6,7 +6,7 @@ using System.Text;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.ControlGallery.Issues;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	public class VisualGallery : VisualControlsPage
 	{

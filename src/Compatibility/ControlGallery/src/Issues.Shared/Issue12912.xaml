@@ -7,7 +7,7 @@
     mc:Ignorable="d"
     Title="Test 12912"
     xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
-    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue12912">
+    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue12912">
     <StackLayout>
         <Label
             Padding="12"

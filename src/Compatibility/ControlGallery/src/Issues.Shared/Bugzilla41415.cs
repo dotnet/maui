@@ -7,7 +7,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41415, "ScrollX and ScrollY values are not consistent with iOS", PlatformAffected.Android)]
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[Ignore("Fails intermittently on TestCloud")]
-		[Category(Core.UITests.UITestCategories.ManualReview)]
+		[Category(Compatibility.UITests.UITestCategories.ManualReview)]
 		public void Bugzilla41415Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(ButtonText));

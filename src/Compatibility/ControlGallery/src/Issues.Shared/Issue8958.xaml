@@ -2,12 +2,12 @@
 <controls:TestContentPage
     x:Name="Issue8958Page"
     xmlns="http://xamarin.com/schemas/2014/forms"
-    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:d="http://xamarin.com/schemas/2014/forms/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue8958"
+    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue8958"
     Title="Issue 8958">
     <ContentPage.Content>
         <Grid

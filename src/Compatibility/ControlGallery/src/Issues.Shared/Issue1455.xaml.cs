@@ -15,10 +15,10 @@ using Xamarin.UITest.Queries;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1455, "Context action are not changed when selected item changed on Android", PlatformAffected.Android)]
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __ANDROID__
 		[Test]
-		[Category(Core.UITests.UITestCategories.ListView)]
+		[Category(Compatibility.UITests.UITestCategories.ListView)]
 		public void RefreshContextActions()
 		{
 			RunningApp.WaitForElement("Cell 1");

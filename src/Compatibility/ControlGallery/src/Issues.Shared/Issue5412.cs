@@ -10,11 +10,11 @@ using Xamarin.UITest;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[Category(Core.UITests.UITestCategories.FlyoutPage)]
-	[Category(Core.UITests.UITestCategories.Navigation)]
+	[Category(Compatibility.UITests.UITestCategories.FlyoutPage)]
+	[Category(Compatibility.UITests.UITestCategories.Navigation)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5412, "5412 - (NavigationBar disappears on FlyoutPage)", PlatformAffected.UWP)]

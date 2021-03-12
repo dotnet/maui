@@ -3,7 +3,7 @@ using System.Linq;
 using NUnit.Framework;
 using Xamarin.UITest;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	[Category(UITestCategories.CarouselView)]
 	[Category(UITestCategories.UwpIgnore)]

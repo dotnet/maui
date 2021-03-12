@@ -2,7 +2,7 @@
 
 
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	public interface IMultiWindowService
 	{

@@ -8,12 +8,12 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 #if UITEST && __WINDOWS__
 using Xamarin.UITest;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 #endif
 
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if APP
 	[XamlCompilation(XamlCompilationOptions.Compile)]
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		const string AddRangeWithCleanCommandId = "AddRangeWithCleanCommandId";
 
 		[Test]
-		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 		public  void Issue7167Test()
 		{
 			// arrange

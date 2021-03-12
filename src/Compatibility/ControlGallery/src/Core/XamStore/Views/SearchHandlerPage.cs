@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using static Microsoft.Maui.Controls.ControlGallery.DynamicViewGallery;
 using static Microsoft.Maui.Controls.ControlGallery.XamStore.BasePage;
 
-namespace Microsoft.Maui.Controls.ControlGallery.XamStore
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 {
 	[Preserve(AllMembers = true)]
 	public class SearchHandlerPage : ContentPage

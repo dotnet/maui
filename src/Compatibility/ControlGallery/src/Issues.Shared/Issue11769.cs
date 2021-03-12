@@ -9,15 +9,15 @@ using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 11769, "[Bug] Shell throws exception when delay adding Shell Content", issueTestNumber: 2)]
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github10000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github10000)]
 	[NUnit.Framework.Category(UITestCategories.Shell)]
 #endif
 
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 11769, "[Bug] Shell throws exception when delay adding Shell Section", issueTestNumber: 1)]
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github10000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github10000)]
 	[NUnit.Framework.Category(UITestCategories.Shell)]
 #endif
 
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 11769, "[Bug] Shell throws exception when delay adding Shell Item", issueTestNumber: 0)]
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github10000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github10000)]
 	[NUnit.Framework.Category(UITestCategories.Shell)]
 #endif
 

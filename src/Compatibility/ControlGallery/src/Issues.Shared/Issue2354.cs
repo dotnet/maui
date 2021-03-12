@@ -7,15 +7,15 @@ using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Image)]
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.ListView)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Image)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.ListView)]
 	[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 #endif
 	[Preserve(AllMembers = true)]

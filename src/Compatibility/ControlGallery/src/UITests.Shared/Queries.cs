@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
+	using IApp = Xamarin.UITest.IApp;
 	internal static class GalleryQueries
 	{
 		public const string AutomationIDGallery = "* marked:'AutomationID Gallery'";

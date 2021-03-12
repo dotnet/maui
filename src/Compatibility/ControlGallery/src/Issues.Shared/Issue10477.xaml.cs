@@ -3,12 +3,12 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.CustomAttributes;
 
 #if UITEST
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 10477, "[Bug] CollectionView Header Controls with Commands Don't work when EmptyView is Visible", PlatformAffected.Android)]
 	public partial class Issue10477 : TestContentPage

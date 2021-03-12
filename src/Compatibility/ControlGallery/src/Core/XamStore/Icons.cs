@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Maui.Controls.ControlGallery.XamStore
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 {
 	static class Icons
 	{

@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
-    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue10897"
+    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue10897"
     Title="Issue 10897">
     <CarouselView ItemsSource="{Binding CarouselItems}">
         <CarouselView.ItemTemplate>

@@ -1,11 +1,12 @@
 using NUnit.Framework;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
+	using IApp = Xamarin.UITest.IApp;
 
 	[TestFixture]
 	[Category(UITestCategories.Entry)]

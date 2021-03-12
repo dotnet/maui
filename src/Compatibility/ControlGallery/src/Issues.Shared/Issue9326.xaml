@@ -4,9 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:d="http://xamarin.com/schemas/2014/forms/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"      
-    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery"
     mc:Ignorable="d"
-    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue9326"
+    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue9326"
     Title="Issue 9326">
     <ContentPage.Content>
         <RefreshView

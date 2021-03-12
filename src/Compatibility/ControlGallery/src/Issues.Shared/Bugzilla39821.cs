@@ -10,10 +10,10 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 39821, "ViewExtension.TranslateTo cannot be invoked on Main thread")]
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Ignore("Fails intermittently on TestCloud")]
-		[Category(Core.UITests.UITestCategories.ManualReview)]
+		[Category(Compatibility.UITests.UITestCategories.ManualReview)]
 		public void DoesNotCrash()
 		{
 			RunningApp.Tap(q => q.Marked("Animate"));

@@ -13,11 +13,11 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2411, "ListView.ScrollTo not working in TabbedPage", PlatformAffected.Android)]
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			RunningApp.WaitForElement(q => q.Marked("99 99 99 99 99 99"));
 
 			var listViewBound = RunningApp.Query(q => q.Marked("listView"))[0].Rect;
-			Microsoft.Maui.Controls.UITests.Gestures.ScrollForElement(RunningApp, "* marked:'0 0 0 0 0 0'", new Microsoft.Maui.Controls.UITests.Drag(listViewBound, Microsoft.Maui.Controls.UITests.Drag.Direction.TopToBottom, Microsoft.Maui.Controls.UITests.Drag.DragLength.Long));
+			Microsoft.Maui.Controls.Compatibility.UITests.Gestures.ScrollForElement(RunningApp, "* marked:'0 0 0 0 0 0'", new Microsoft.Maui.Controls.Compatibility.UITests.Drag(listViewBound, Microsoft.Maui.Controls.Compatibility.UITests.Drag.Direction.TopToBottom, Microsoft.Maui.Controls.Compatibility.UITests.Drag.DragLength.Long));
 			RunningApp.Screenshot("Scrolled to Top");
 
 			RunningApp.Tap(q => q.Marked("Crash in ScrollToPosition.End"));

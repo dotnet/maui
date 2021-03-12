@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Threading;
 using NUnit.Framework;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	[TestFixture]
 	[Category(UITestCategories.ToolbarItem)]

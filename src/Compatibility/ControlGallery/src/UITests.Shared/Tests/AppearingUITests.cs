@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 #if __MACOS__
 	[Ignore("Not tested on the MAC")]

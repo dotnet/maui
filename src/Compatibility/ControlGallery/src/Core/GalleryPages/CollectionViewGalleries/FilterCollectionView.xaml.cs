@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class FilterCollectionView : ContentPage

@@ -5,17 +5,18 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 
 #if __IOS__
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
+	using IApp = Xamarin.UITest.IApp;
 	/// <summary>
 	/// Decorator for IApp which only takes screenshots if the SCREENSHOTS symbol  is specified
 	/// </summary>
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 	{
 		readonly IApp _app;
 
-		public ScreenshotConditionalApp(IApp app)
+		public ScreenshotConditionalApp(Xamarin.UITest.IApp app)
 		{
 			_app = app;
 		}

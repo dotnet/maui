@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	internal class SwitchCoreGalleryPage : CoreGalleryPage<Switch>
 	{

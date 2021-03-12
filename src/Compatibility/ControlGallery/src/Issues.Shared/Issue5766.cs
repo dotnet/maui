@@ -6,11 +6,15 @@ using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
+#if UITEST
+	using IApp = Xamarin.UITest.IApp;
+#endif
+
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5766, "Frame size gets corrupted when ListView is scrolled", PlatformAffected.Android)]
 #if UITEST
@@ -96,7 +100,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST && __ANDROID__
-		UITest.Queries.AppRect[] GetLabels(IApp RunningApp, string label)
+		Xamarin.UITest.Queries.AppRect[] GetLabels(Xamarin.UITest.IApp RunningApp, string label)
 		{
 			return RunningApp
 				.Query(q => q.Class("FormsTextView"))
@@ -105,7 +109,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				.ToArray();
 		}
 
-		bool RectIsEquals(UITest.Queries.AppRect[] left, UITest.Queries.AppRect[] right)
+		bool RectIsEquals(Xamarin.UITest.Queries.AppRect[] left, Xamarin.UITest.Queries.AppRect[] right)
 		{
 			if (left.Length != right.Length)
 				return false;

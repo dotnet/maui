@@ -6,15 +6,15 @@ using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
 using Xamarin.UITest;
 using Xamarin.UITest.Android;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.DisplayAlert)]
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2809, "Secondary ToolbarItems cause app to hang during PushAsync", PlatformAffected.iOS)]

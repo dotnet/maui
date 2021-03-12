@@ -5,12 +5,12 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.CarouselView)]
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		}
 
-		void SwipePreviousItem(UITest.Queries.AppRect rect)
+		void SwipePreviousItem(Xamarin.UITest.Queries.AppRect rect)
 		{
 #if __ANDROID__
 			RunningApp.DragCoordinates(rect.X + 10, rect.Y, rect.X + rect.Width - 10, rect.Y);

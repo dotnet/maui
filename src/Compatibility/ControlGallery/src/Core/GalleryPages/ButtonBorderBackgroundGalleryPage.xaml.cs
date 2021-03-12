@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ButtonBorderBackgroundGalleryPage : ContentPage

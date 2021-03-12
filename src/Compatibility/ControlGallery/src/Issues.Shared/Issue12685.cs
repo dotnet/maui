@@ -5,15 +5,15 @@ using Microsoft.Maui.Controls.Shapes;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 12685, "[iOs][Bug] TapGestureRecognizer in Path does not work on iOS", PlatformAffected.iOS)]
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github10000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github10000)]
 	[NUnit.Framework.Category(UITestCategories.Shape)]
 #endif
 	public partial class Issue12685 : TestContentPage

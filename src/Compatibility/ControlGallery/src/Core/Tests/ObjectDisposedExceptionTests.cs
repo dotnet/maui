@@ -2,7 +2,7 @@
 using System.Collections;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Tests
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests
 {
 	[TestFixture]
 	public class ObjectDisposedExceptionTests : CrossPlatformTestFixture

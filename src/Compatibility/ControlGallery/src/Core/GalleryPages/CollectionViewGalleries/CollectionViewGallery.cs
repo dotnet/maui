@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGallerie
 using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.SelectionGalleries;
 using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.SpacingGalleries;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	public class CollectionViewGallery : ContentPage
 	{

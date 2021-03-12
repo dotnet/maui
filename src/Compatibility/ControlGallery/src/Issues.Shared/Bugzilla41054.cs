@@ -13,7 +13,7 @@ using NUnit.Framework;
 [assembly: NUnit.Framework.Category("Issues")]
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	public class Bugzilla41054NumericValidationBehavior : Behavior<Entry>
 	{
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 	}
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41054, "Cannot update Entry.Text from attached Behavior on UWP", PlatformAffected.Default)]

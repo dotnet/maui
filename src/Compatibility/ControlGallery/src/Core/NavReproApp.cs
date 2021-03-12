@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	// Not quite sure how to turn this into a test case, effectively replace the normal Application with this to repro issues reported.
 	// Full repro requires assignment to MainPage, hence the issue

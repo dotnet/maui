@@ -5,10 +5,10 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
 
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 38284, "when creating a map in iOS, if the map is not visible when the page is created the zoom level is offn")]

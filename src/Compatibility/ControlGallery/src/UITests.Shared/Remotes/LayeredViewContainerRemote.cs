@@ -3,11 +3,12 @@ using System.Linq;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
+	using IApp = Xamarin.UITest.IApp;
 	internal sealed class LayeredViewContainerRemote : BaseViewContainerRemote
 	{
-		public LayeredViewContainerRemote(IApp app, Enum formsType, string platformViewType)
+		public LayeredViewContainerRemote(Xamarin.UITest.IApp app, Enum formsType, string platformViewType)
 			: base(app, formsType, platformViewType)
 		{
 		}

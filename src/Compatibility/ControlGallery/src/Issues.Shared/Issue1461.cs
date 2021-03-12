@@ -7,25 +7,26 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 
 #if UITEST
 	public static class Issue1461Helpers
 	{
-		public static bool ShouldRunTest(IApp app)
+		public static bool ShouldRunTest(Xamarin.UITest.IApp app)
 		{
 			return app.IsTablet();
 		}
 	}
 #endif
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1461, "1461 - (Popover in Portrait and Landscape)", PlatformAffected.iOS)]

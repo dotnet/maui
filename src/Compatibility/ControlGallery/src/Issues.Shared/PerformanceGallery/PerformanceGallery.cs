@@ -9,15 +9,16 @@ using Microsoft.Maui.Controls.Internals;
 using Plugin.DeviceInfo;
 
 #if UITEST
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[Category(Microsoft.Maui.Controls.UITests.UITestCategories.Performance)] 
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+	[Category(UITestCategories.Performance)] 
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0, "Performance Testing")]

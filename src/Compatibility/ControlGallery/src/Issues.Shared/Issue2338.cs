@@ -8,14 +8,14 @@ using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.LifeCycle)]
 	[NUnit.Framework.Category(UITestCategories.Navigation)]
 #endif
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 
-		public async Task TestForSuccess(IApp RunningApp, Type type)
+		public async Task TestForSuccess(Xamarin.UITest.IApp RunningApp, Type type)
 		{
 			var test = tests.FirstOrDefault(x => x.Value == type);
 			RunningApp.WaitForElement(test.Key);
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		// Various tests are commented out on certain platforms because
 		// https://github.com/xamarin/Xamarin.Forms/issues/3188
 		[Test]
-		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 		public async Task SwapMainPageOut()
 		{
 			await TestForSuccess(RunningApp, typeof(Issue2338_SwapMainPageDuringAppearing));

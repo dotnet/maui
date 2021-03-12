@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.ControlGallery.TabIndexTest
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.TabIndexTest
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class DaysOfWeekView : Grid

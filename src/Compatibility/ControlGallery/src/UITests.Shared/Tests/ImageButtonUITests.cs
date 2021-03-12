@@ -1,9 +1,10 @@
 using System.Threading;
 using NUnit.Framework;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
+	using IApp = Xamarin.UITest.IApp;
 	[TestFixture]
 	[Category(UITestCategories.Image)]
 	internal class ImageButtonUITests : _ViewUITests
@@ -84,7 +85,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[UiTest(typeof(ImageButton), "Clicked")]
-		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+		[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 		public void Clicked()
 		{
 			var remote = new EventViewContainerRemote(App, Test.ImageButton.Clicked, PlatformViewType);
@@ -102,7 +103,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[UiTest(typeof(ImageButton), "Pressed")]
-		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+		[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 		public void Pressed()
 		{
 			var remote = new EventViewContainerRemote(App, Test.ImageButton.Pressed, PlatformViewType);

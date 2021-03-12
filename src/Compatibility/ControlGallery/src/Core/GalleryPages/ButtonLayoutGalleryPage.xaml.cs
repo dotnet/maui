@@ -8,7 +8,7 @@ using AndroidSpecific = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpe
 using ButtonImagePosition = Microsoft.Maui.Controls.Button.ButtonContentLayout.ImagePosition;
 using iOSSpecific = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	[Preserve(AllMembers = true)]
 	[XamlCompilation(XamlCompilationOptions.Compile)]

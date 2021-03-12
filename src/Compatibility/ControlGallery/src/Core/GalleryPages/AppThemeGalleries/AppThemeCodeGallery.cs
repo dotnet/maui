@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.AppThemeGalleries
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppThemeGalleries
 {
 	public class AppThemeCodeGallery : ContentPage
 	{

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 {
 	public static class GalleryBuilder
 	{

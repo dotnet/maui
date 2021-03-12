@@ -2,7 +2,7 @@
 using Microsoft.Maui.Controls.Internals;
 
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6556, "Button.CornerRadius doesn't work on WPF", PlatformAffected.WPF)]

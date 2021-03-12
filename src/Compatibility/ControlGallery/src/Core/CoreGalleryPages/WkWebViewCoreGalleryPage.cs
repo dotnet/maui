@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	internal class WkWebViewCoreGalleryPage : CoreGalleryPage<WkWebView>
 	{

@@ -7,11 +7,11 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	// Note that this test currently fails on UWP because of https://bugzilla.xamarin.com/show_bug.cgi?id=60478
 #if UITEST
-	[Category(Core.UITests.UITestCategories.Bugzilla)]
+	[Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 29257, "CarouselPage.CurrentPage Does Not Work Properly When Used Inside a NavigationPage ")]

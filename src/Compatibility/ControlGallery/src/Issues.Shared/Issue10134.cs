@@ -5,12 +5,12 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Shell)]
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			var element1 = RunningApp.WaitForElement("Tab 1", "Shell hasn't loaded")[0].Rect;
 			RunningApp.WaitForNoElement("Tab 12", "Tab shouldn't be visible");
 
-			UITest.Queries.AppRect element2 = element1;
+			Xamarin.UITest.Queries.AppRect element2 = element1;
 
 			for (int i = 2; i < 20; i++)
 			{

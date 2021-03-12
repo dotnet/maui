@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
 {
 	public partial class AnimateBrushGallery : ContentPage
 	{

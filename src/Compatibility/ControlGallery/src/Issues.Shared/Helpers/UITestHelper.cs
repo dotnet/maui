@@ -7,10 +7,11 @@ using Xamarin.UITest;
 using NUnit.Framework;
 using Xamarin.UITest.Queries;
 using System.Linq;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
+	using IApp = Xamarin.UITest.IApp;
 	public static class UITestHelper
 	{
 		public static bool IsWindowClosedException(this Exception exc)

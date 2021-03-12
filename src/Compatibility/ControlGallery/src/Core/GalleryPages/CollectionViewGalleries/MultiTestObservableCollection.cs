@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.GroupingGalleries;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	internal class MultiTestObservableCollection<T> : List<T>, INotifyCollectionChanged
 	{

@@ -5,15 +5,15 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 206, "ViewCell with Label's text does not resize when value is changed", PlatformAffected.iOS)]
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if !__MACOS__
 			var scrollRect = RunningApp.RootViewRect();
-			Microsoft.Maui.Controls.UITests.Gestures.ScrollForElement(RunningApp, "* marked:'9'", new Microsoft.Maui.Controls.UITests.Drag(scrollRect, Microsoft.Maui.Controls.UITests.Drag.Direction.BottomToTop, Microsoft.Maui.Controls.UITests.Drag.DragLength.Long));
+			Microsoft.Maui.Controls.Compatibility.UITests.Gestures.ScrollForElement(RunningApp, "* marked:'9'", new Microsoft.Maui.Controls.Compatibility.UITests.Drag(scrollRect, Microsoft.Maui.Controls.Compatibility.UITests.Drag.Direction.BottomToTop, Microsoft.Maui.Controls.Compatibility.UITests.Drag.DragLength.Long));
 			RunningApp.Screenshot("I see 9");
 #endif
 

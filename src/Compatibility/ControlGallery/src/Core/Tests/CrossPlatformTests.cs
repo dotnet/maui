@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Tests
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests
 {
 	[TestFixture]
 	public class CrossPlatformTests : CrossPlatformTestFixture

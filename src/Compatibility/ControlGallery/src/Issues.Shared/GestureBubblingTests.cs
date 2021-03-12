@@ -9,10 +9,10 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest.Queries;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	// This is similar to the test for 35477, but tests all of the basic controls to make sure that they all exhibit
 	// the same behavior across all the platforms. The question is whether tapping a control inside of a frame
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test, TestCaseSource(nameof(TestCases))]
-		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 		public void VerifyTapBubbling(string menuItem, bool frameShouldRegisterTap)
 		{
 			var results = RunningApp.WaitForElement(q => q.Marked(menuItem));

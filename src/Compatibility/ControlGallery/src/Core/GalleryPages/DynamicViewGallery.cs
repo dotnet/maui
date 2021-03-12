@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	[Preserve(AllMembers = true)]
 	public class DynamicViewGallery : ContentPage

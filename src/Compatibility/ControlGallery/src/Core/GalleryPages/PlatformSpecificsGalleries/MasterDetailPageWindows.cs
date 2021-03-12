@@ -8,7 +8,7 @@ using static Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecifi
 
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
 	public class FlyoutPageWindows : FlyoutPage
 	{

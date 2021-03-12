@@ -12,16 +12,16 @@ using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 11723, "[Bug] ContentPage in NavigationStack misplaced initially",
 		PlatformAffected.iOS)]
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github10000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github10000)]
 	[NUnit.Framework.Category(UITestCategories.Shell)]
 #endif
 	public class Issue11723 : TestShell
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		}
 
-		void CompareTextLocation(UITest.Queries.AppRect initialRect, int i)
+		void CompareTextLocation(Xamarin.UITest.Queries.AppRect initialRect, int i)
 		{
 			var newRect = RunningApp.WaitForFirstElement($"InitialText{i}").Rect;
 

@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using static Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.RefreshView;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class RefreshViewWindows : ContentPage

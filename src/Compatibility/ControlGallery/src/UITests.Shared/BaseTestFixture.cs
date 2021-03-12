@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using NUnit.Framework;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Controls.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
+	using IApp = Xamarin.UITest.IApp;
 	internal abstract class BaseTestFixture
 	{
 		// TODO: Landscape tests
@@ -115,7 +116,7 @@ namespace Xamarin.Forms.Core.UITests
 }
 #if UITEST
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	using NUnit.Framework;
 

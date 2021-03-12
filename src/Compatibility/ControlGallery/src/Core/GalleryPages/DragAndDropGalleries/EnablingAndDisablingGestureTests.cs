@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.DragAndDropGalleries
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DragAndDropGalleries
 {
 
 

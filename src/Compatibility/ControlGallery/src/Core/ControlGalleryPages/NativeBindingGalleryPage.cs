@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	public class NativeBindingGalleryPage : ContentPage
 	{

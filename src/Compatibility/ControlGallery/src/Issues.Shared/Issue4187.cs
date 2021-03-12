@@ -9,10 +9,10 @@ using NUnit.Framework;
 using System.Threading;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4187, "Picker list shows up, when focus is set on other controls", PlatformAffected.Android)]
@@ -145,14 +145,14 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __ANDROID__
 
-		UITest.Queries.AppResult[] GetPickerEditText(UITest.IApp RunningApp) =>
+		Xamarin.UITest.Queries.AppResult[] GetPickerEditText(Xamarin.UITest.IApp RunningApp) =>
 			RunningApp.Query(q => q.TextField()).Where(x => x.Class.Contains("PickerEditText")).ToArray();
 
 		[Test]
 		public void Issue4187Test()
 		{
 			RunningApp.WaitForElement("Text 1");
-			UITest.Queries.AppResult[] fields = RunningApp.Query(q => q.TextField());
+			Xamarin.UITest.Queries.AppResult[] fields = RunningApp.Query(q => q.TextField());
 
 			Assert.AreEqual(7, GetPickerEditText(RunningApp).Length, "picker count");
 			TapOnPicker(1);

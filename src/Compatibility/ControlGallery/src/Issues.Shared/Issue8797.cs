@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 8797, "[Bug] Word wrapped Label not measured correctly",
 		PlatformAffected.Android | PlatformAffected.iOS)]

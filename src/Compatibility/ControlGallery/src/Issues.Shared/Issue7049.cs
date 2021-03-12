@@ -6,7 +6,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7049, "Null reference exception on some Android devices - Microsoft.Maui.Controls.Platform.Android.PageRenderer.Microsoft.Maui.Controls.Platform.Android.IOrderedTraversalController.UpdateTraversalOrder", PlatformAffected.Android)]

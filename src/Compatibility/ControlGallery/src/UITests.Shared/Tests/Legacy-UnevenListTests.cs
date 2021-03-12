@@ -2,8 +2,9 @@
 using Xamarin.UITest;
 using Xamarin.UITest.iOS;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
+	using IApp = Xamarin.UITest.IApp;
 	[TestFixture]
 	[Ignore("check if the last one fails")]
 	[Category(UITestCategories.Cells)]
@@ -29,7 +30,7 @@ namespace Xamarin.Forms.Core.UITests
 			}
 		}
 
-		public static bool ShouldRunTest(IApp app)
+		public static bool ShouldRunTest(Xamarin.UITest.IApp app)
 		{
 			return app.IsPhone();
 		}

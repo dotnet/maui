@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.ControlGallery.XamStore
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 {
 	public class BasePage : ContentPage
 	{

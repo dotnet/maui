@@ -1,8 +1,8 @@
 using System.Threading;
 using NUnit.Framework;
-using Xamarin.Forms.CustomAttributes;
+using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	[TestFixture]
 	[Category(UITestCategories.TimePicker)]

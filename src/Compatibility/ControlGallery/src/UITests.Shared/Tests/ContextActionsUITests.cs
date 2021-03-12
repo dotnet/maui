@@ -6,7 +6,7 @@ using Xamarin.UITest.Android;
 using Xamarin.UITest.iOS;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	[TestFixture]
 	[Category(UITestCategories.Cells)]

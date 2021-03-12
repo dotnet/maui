@@ -6,7 +6,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.ControlGallery.XamStore
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 {
 	[Preserve(AllMembers = true)]
 	public partial class DemoShellPage : ContentPage

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Controls.ControlGallery
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	public sealed class FailImageSource : ImageSource
 	{
