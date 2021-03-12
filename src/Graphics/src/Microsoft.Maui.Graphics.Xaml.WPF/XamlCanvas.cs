@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -551,13 +552,13 @@ namespace Microsoft.Maui.Graphics.Xaml
             switch (verticalAlignment)
             {
                 case VerticalAlignment.Top:
-                    block.VerticalAlignment = Windows.VerticalAlignment.Top;
+                    block.VerticalAlignment = System.Windows.VerticalAlignment.Top;
                     break;
                 case VerticalAlignment.Center:
-                    block.VerticalAlignment = Windows.VerticalAlignment.Center;
+                    block.VerticalAlignment = System.Windows.VerticalAlignment.Center;
                     break;
                 case VerticalAlignment.Bottom:
-                    block.VerticalAlignment = Windows.VerticalAlignment.Bottom;
+                    block.VerticalAlignment = System.Windows.VerticalAlignment.Bottom;
                     break;
             }
 

@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Graphics.Xaml
                         };
 
                         foreach (var stop in _fillPaint.Stops)
-                            brush.GradientStops.Add(new Windows.Media.GradientStop(stop.Color.AsWpfColor(), stop.Offset));
+                            brush.GradientStops.Add(new System.Windows.Media.GradientStop(stop.Color.AsWpfColor(), stop.Offset));
 
                         return brush;
                     }
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Graphics.Xaml
                         brush.RadiusY = radius;
 
                         foreach (var stop in _fillPaint.Stops)
-                            brush.GradientStops.Add(new Windows.Media.GradientStop(stop.Color.AsWpfColor(), stop.Offset));
+                            brush.GradientStops.Add(new System.Windows.Media.GradientStop(stop.Color.AsWpfColor(), stop.Offset));
 
                         return brush;
                     }
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Graphics.Xaml
                     return new SolidColorBrush(_fillPaint.BlendStartAndEndColors().AsWpfColor());
                 }
 
-                return new SolidColorBrush(Windows.Media.Colors.White);
+                return new SolidColorBrush(System.Windows.Media.Colors.White);
             }
         }
 

@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics.Xaml
+﻿using System;
+
+namespace Microsoft.Maui.Graphics.Xaml
 {
     public class XamlCanvasSession : IDisposable
     {

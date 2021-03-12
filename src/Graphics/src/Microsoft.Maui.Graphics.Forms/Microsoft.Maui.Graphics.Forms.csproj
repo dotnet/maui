@@ -14,5 +14,9 @@
     <ItemGroup>
         <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
     </ItemGroup>
+    <!--<ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.Mac20' ">
+        <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+        <PackageReference Include="NETStandard.Library" Version="2.0.0" />
+    </ItemGroup>-->
     <Import Project="..\targets\MultiTargeting.targets" />
 </Project>

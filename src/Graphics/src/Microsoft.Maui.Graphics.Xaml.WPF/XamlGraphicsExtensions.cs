@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Media;
 
 namespace Microsoft.Maui.Graphics.Xaml
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Graphics.Xaml
     {
         public static System.Windows.Media.Color AsWpfColor(this Color target)
         {
-            return Windows.Media.Color.FromArgb(
+            return System.Windows.Media.Color.FromArgb(
                 (byte) (255 * target.Alpha),
                 (byte) (255 * target.Red),
                 (byte) (255 * target.Green),
