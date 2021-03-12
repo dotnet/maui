@@ -47,6 +47,16 @@ namespace Microsoft.Maui
 			nativeLabel.UpdateCharacterSpacing(label);
 		}
 
+		public static void UpdateMaxLines(this UILabel nativeLabel, ILabel label)
+		{
+			int maxLines = label.MaxLines;
+
+			if (maxLines >= 0)
+			{
+				nativeLabel.Lines = maxLines;
+			}
+		}
+
 		public static void UpdatePadding(this MauiLabel nativeLabel, ILabel label)
 		{
 			nativeLabel.TextInsets = new UIEdgeInsets(

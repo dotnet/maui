@@ -149,5 +149,17 @@ namespace Microsoft.Maui.DeviceTests
 				nameof(ILabel.Text),
 				() => label.Text = newText);
 		}
+
+		[Fact(DisplayName = "MaxLines Initializes Correctly")]
+		public async Task MaxLinesInitializesCorrectly()
+		{
+			var label = new LabelStub()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				MaxLines = 2
+			};
+
+			await ValidatePropertyInitValue(label, () => label.MaxLines, GetNativeMaxLines, label.MaxLines);
+		}
 	}
 }
