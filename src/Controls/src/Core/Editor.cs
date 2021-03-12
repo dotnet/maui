@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public class Editor : InputView, IEditorController, IFontElement, IElementConfiguration<Editor>
+	public partial class Editor : InputView, IEditorController, IFontElement, IElementConfiguration<Editor>
 	{
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
@@ -62,6 +62,9 @@ namespace Microsoft.Maui.Controls
 
 		protected void UpdateAutoSizeOption()
 		{
+			// Null out the Maui font value so it will be recreated next time it's accessed
+			_font = null;
+
 			if (AutoSize == EditorAutoSizeOption.TextChanges)
 			{
 				InvalidateMeasure();
