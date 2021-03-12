@@ -35,7 +35,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>
     <AndroidKeyStore>True</AndroidKeyStore>
-    <AndroidSigningKeyStore>$(MSBuildThisFileDirectory)../../../../eng/debug.keystore</AndroidSigningKeyStore>
+    <AndroidSigningKeyStore>$(MSBuildThisFileDirectory)../../../../../eng/debug.keystore</AndroidSigningKeyStore>
     <AndroidSigningStorePass>android</AndroidSigningStorePass>
     <AndroidSigningKeyAlias>androiddebugkey</AndroidSigningKeyAlias>
     <AndroidSigningKeyPass>android</AndroidSigningKeyPass>
