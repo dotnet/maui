@@ -63,6 +63,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateIsReadOnly(entry);
 		}
 
+		public static void MapKeyboard(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateKeyboard(entry);
+		}
+
 		void OnTextChanged(string? text)
 		{
 			if (VirtualView == null || TypedNativeView == null)

@@ -19,5 +19,10 @@ namespace Microsoft.Maui
 		/// Gets a value indicating whether or not the view is read-only.
 		/// </summary>
 		bool IsReadOnly { get; }
+
+		/// <summary>
+		/// Gets the keyboard type for the given input control.
+		/// </summary>
+		Keyboard Keyboard{ get; }
 	}
 }
