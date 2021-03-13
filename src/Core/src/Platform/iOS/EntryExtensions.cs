@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using Microsoft.Maui.Platform.iOS;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -58,7 +59,10 @@ namespace Microsoft.Maui
 
 		public static void UpdateKeyboard(this UITextField textField, IEntry entry)
 		{
-			// TODO
+			var keyboard = entry.Keyboard;
+
+			textField.ApplyKeyboard(keyboard);
+			textField.ReloadInputViews();
 		}
 	}
 }
