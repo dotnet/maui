@@ -1,5 +1,6 @@
 ﻿using System;
 using Android.App;
+using Android.Text.Format;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.Time = new TimeSpan(args.HourOfDay, args.Minute, 0);
 			}
 
-			var dialog = new TimePickerDialog(Context!, onTimeSetCallback, hour, minute, _timePicker != null && _timePicker.Is24HourView(VirtualView));
+			var dialog = new TimePickerDialog(Context!, onTimeSetCallback, hour, minute, Use24HourView);
 
 			return dialog;
 		}
@@ -74,6 +75,10 @@ namespace Microsoft.Maui.Handlers
 		void HidePickerDialog()
 		{
 			_dialog?.Hide();
+			_dialog = null;
 		}
+
+		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(TypedNativeView?.Context)
+			&& VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
 	}
 }

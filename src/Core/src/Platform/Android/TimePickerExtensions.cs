@@ -1,6 +1,4 @@
-﻿using Android.Text.Format;
-
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	public static class TimePickerExtensions
 	{
@@ -20,11 +18,6 @@ namespace Microsoft.Maui
 			var format = timePicker.Format;
 
 			mauiTimePicker.Text = time.ToFormattedString(format);
-		}
-
-		internal static bool Is24HourView(this MauiTimePicker mauiTimePicker, ITimePicker? timePicker)
-		{
-			return timePicker != null && (DateFormat.Is24HourFormat(mauiTimePicker.Context) && timePicker.Format == "t" || timePicker.Format == "HH:mm");
 		}
 	}
 }
