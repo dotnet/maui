@@ -48,8 +48,19 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
 
+
+			var paddingButton = new Button
+			{
+				Padding = new Thickness(40),
+				Text = "This button has a padding!!",
+				BackgroundColor = Color.Purple,
+			};
+
+			verticalStack.Add(paddingButton);
+
 			var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
 			verticalStack.Add(underlineLabel);
+
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
 			var button2 = new Button()

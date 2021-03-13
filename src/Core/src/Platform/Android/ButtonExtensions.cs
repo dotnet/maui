@@ -23,6 +23,23 @@ namespace Microsoft.Maui
 		public static void UpdateTextColor(this AppCompatButton appCompatButton, IButton button, XColor defaultColor) =>
 			appCompatButton.SetTextColor(button.TextColor.Cleanse(defaultColor).ToNative());
 
+		public static void UpdatePadding(this AppCompatButton appCompatButton, IButton button)
+		{
+			var context = appCompatButton.Context;
+
+			if (context == null)
+			{
+				return;
+			}
+			var padding = button.Padding;
+
+			appCompatButton.SetPadding(
+					(int)context.ToPixels(padding.Left),
+					(int)context.ToPixels(padding.Top),
+					(int)context.ToPixels(padding.Right),
+					(int)context.ToPixels(padding.Bottom));
+		}
+
 		static XColor Cleanse(this XColor color, XColor defaultColor) => color.IsDefault ? defaultColor : color;
 	}
 }
