@@ -28,6 +28,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateHorizontalTextAlignment(label);
 		}
 
+		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdateLineBreakMode(label);
+		}
+
 		public static void MapMaxLines(LabelHandler handler, ILabel label)
 		{
 			handler.TypedNativeView?.UpdateMaxLines(label);

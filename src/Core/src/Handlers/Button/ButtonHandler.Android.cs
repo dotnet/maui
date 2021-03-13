@@ -51,6 +51,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateTextColor(button);
 		}
 
+		public static void MapPadding(ButtonHandler handler, IButton button) 
+		{
+			handler.TypedNativeView?.UpdatePadding(button);
+		}
+
 		public bool OnTouch(IButton? button, AView? v, MotionEvent? e)
 		{
 			switch (e?.ActionMasked)

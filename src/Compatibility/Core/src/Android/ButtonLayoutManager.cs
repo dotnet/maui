@@ -230,6 +230,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UpdateLineBreakMode();
 		}
 
+		[PortHandler]
 		void UpdatePadding()
 		{
 			AButton view = View;
