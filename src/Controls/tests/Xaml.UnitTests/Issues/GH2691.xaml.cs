@@ -4,7 +4,7 @@ using System.IO;
 using Microsoft.Build.Utilities;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
-using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.MSBuild.UnitTests;
 using NUnit.Framework;
@@ -12,7 +12,7 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public partial class Gh2691 : ContentPage
+	public partial class Gh2691 : Controls.ContentPage
 	{
 		public Gh2691()
 		{
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 							 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							 xmlns:test=""http://xamarin.com/schemas/2014/forms/customurl1""
 							 xmlns:test2=""http://xamarin.com/schemas/2014/forms/customurl2""
-							 xmlns:test3=""clr-namespace:Microsoft.Maui.Controls.ControlGallery.CustomNamespace1;assembly=Microsoft.Maui.Controls.ControlGallery""
+							 xmlns:test3=""clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace1;assembly=Microsoft.Maui.Controls.Compatibility.ControlGallery""
 							 xmlns:test4=""using:Microsoft.Maui.Controls.Xaml.UnitTests""
 							 x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.Gh2691"">
 					<ContentPage.Content>
@@ -68,23 +68,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Gh2691 issue2691 = new Gh2691(useCompiledXaml);
 
 				// http://xamarin.com/schemas/2014/forms/customurl1 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace1
-				var button = issue2691.FindByName("_testButton1") as Microsoft.Maui.Controls.ControlGallery.CustomNamespace1.CustomButton;
+				var button = issue2691.FindByName("_testButton1") as Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace1.CustomButton;
 				Assert.IsNotNull(button);
 
 				// http://xamarin.com/schemas/2014/forms/customurl1 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace2
-				var label1 = issue2691.FindByName("_testLabel1") as Microsoft.Maui.Controls.ControlGallery.CustomNamespace2.CustomLabel;
+				var label1 = issue2691.FindByName("_testLabel1") as Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace2.CustomLabel;
 				Assert.IsNotNull(label1);
 
 				// http://xamarin.com/schemas/2014/forms/customurl2 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace3
-				var label2 = issue2691.FindByName("_testLabel2") as Microsoft.Maui.Controls.ControlGallery.CustomNamespace3.CustomLabel;
+				var label2 = issue2691.FindByName("_testLabel2") as Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace3.CustomLabel;
 				Assert.IsNotNull(label2);
 
 				// http://xamarin.com/schemas/2014/forms/customurl2 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace3
-				var stack = issue2691.FindByName("_testStackLayout") as Microsoft.Maui.Controls.ControlGallery.CustomNamespace3.CustomStackLayout;
+				var stack = issue2691.FindByName("_testStackLayout") as Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace3.CustomStackLayout;
 				Assert.IsNotNull(stack);
 
-				// clr-namespace:Microsoft.Maui.Controls.ControlGallery.CustomNamespace1;assembly=Microsoft.Maui.Controls.ControlGallery
-				var button2 = issue2691.FindByName("_testButton2") as Microsoft.Maui.Controls.ControlGallery.CustomNamespace1.CustomButton;
+				// clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace1;assembly=Microsoft.Maui.Controls.Compatibility.ControlGallery
+				var button2 = issue2691.FindByName("_testButton2") as Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace1.CustomButton;
 				Assert.IsNotNull(button2);
 
 				// using:Microsoft.Maui.Controls.Xaml.UnitTests
