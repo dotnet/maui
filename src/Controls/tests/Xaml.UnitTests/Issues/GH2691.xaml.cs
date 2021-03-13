@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var references = string.Join(";",
 					IOPath.GetFullPath(
 						IOPath.Combine(
-							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.ControlGallery.dll")),
+							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.Compatibility.ControlGallery.dll")),
 					IOPath.GetFullPath(
 						IOPath.Combine(
 							TestContext.CurrentContext.TestDirectory, "Microsoft.Maui.Controls.dll"))
