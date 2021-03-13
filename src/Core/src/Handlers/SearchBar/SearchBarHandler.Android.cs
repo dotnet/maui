@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdatePlaceholder(searchBar);
 		}
+		
+		
 
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
