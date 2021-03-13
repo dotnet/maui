@@ -1,4 +1,5 @@
 ﻿using Android.Content.Res;
+using Android.OS;
 using Android.Text;
 using Android.Text.Method;
 using Android.Widget;
@@ -62,26 +63,23 @@ namespace Microsoft.Maui
 					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
 					{
 						if (!entry.IsTextPredictionEnabled)
-							nativeInputTypeToUpdate = nativeInputTypeToUpdate | InputTypes.TextFlagNoSuggestions;
+							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
 					}
 				}
 
 				if (keyboard == Keyboard.Numeric)
 				{
-					// editText.KeyListener = GetDigitsKeyListener(editText.InputType);
+					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 				}
 
 				if (entry.IsPassword)
 				{
 					if (((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText))
-						nativeInputTypeToUpdate = nativeInputTypeToUpdate | InputTypes.TextVariationPassword;
+						nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
 
 					if (((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber))
-						nativeInputTypeToUpdate = nativeInputTypeToUpdate | InputTypes.NumberVariationPassword;
+						nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
 				}
-
-				if (!entry.IsTextPredictionEnabled && ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions))
-					nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
 
 				editText.InputType = nativeInputTypeToUpdate;
 			}
@@ -114,13 +112,5 @@ namespace Microsoft.Maui
 			editText.FocusableInTouchMode = isEditable;
 			editText.Focusable = isEditable;
 		}
-
-		//protected virtual NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
-		//{
-		//	// Override this in a custom renderer to use a different NumberKeyListener
-		//	// or to filter out input types you don't want to allow
-		//	// (e.g., inputTypes &= ~InputTypes.NumberFlagSigned to disallow the sign)
-		//	return LocalizedDigitsKeyListener.Create(inputTypes);
-		//}
 	}
 }
