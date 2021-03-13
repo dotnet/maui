@@ -5,7 +5,7 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Picker)]
-	public partial class PickerHandlerTests : HandlerTestBase<PickerHandler>
+	public partial class PickerHandlerTests : HandlerTestBase<PickerHandler, PickerStub>
 	{
 		public PickerHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
