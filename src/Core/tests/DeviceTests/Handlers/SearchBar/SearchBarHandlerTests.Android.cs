@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue, 4);
+			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
 		}
 
 		SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
