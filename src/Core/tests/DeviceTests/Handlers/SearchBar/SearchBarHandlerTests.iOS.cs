@@ -51,12 +51,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = slider.CharacterSpacing,
-					NativeViewValue = GetNativeText(handler)
+					NativeViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.NotEqual(originalText, values.NativeViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
 		}
 
 		UISearchBar GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
@@ -77,6 +77,14 @@ namespace Microsoft.Maui.DeviceTests
 				return UITextAlignment.Left;
 
 			return textField.TextAlignment;
+		}
+		
+		double GetNativeCharacterSpacing(SearchBarHandler searchBarHandler)
+		{
+			var searchBar = GetNativeEntry(searchBarHandler);
+			var textField = searchBar.FindDescendantView<UITextField>();
+
+			return textField.AttributedText.GetCharacterSpacing();
 		}
 	}
 }
