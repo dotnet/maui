@@ -354,6 +354,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 		}
 
+		[PortHandler]
 		void UpdateLineBreakMode()
 		{
 #if __MOBILE__

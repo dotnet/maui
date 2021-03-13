@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Android.Text;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -36,6 +37,21 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(fontManager.DefaultTypeface, nativeLabel.Typeface);
 			else
 				Assert.NotEqual(fontManager.DefaultTypeface, nativeLabel.Typeface);
+		}
+
+		[Fact(DisplayName = "Negative MaxLines value with wrap is correct")]
+		public async Task NegativeMaxValueWithWrapIsCorrect()
+		{
+			var label = new LabelStub()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				MaxLines = -1,
+				LineBreakMode = LineBreakMode.WordWrap
+			};
+
+			var nativeValue = await GetValueAsync(label, GetNativeMaxLines);
+
+			Assert.Equal(int.MaxValue, nativeValue);
 		}
 
 		[Fact(DisplayName = "Padding Initializes Correctly")]
@@ -127,6 +143,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetNativeCharacterSpacing(LabelHandler labelHandler) =>
 			Math.Round(GetNativeLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, 4);
+
+		TextUtils.TruncateAt GetNativeLineBreakMode(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).Ellipsize;
 
 		PaintFlags GetNativeTextDecorations(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).PaintFlags;

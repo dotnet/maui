@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -6,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Button)]
-	public partial class ButtonHandlerTests : HandlerTestBase<ButtonHandler>
+	public partial class ButtonHandlerTests : HandlerTestBase<ButtonHandler, ButtonStub>
 	{
 		public ButtonHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{

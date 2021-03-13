@@ -27,6 +27,9 @@ namespace Microsoft.Maui
 				nativeView.BackgroundColor = color.ToNative();
 		}
 
+		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
+			nativeView.AccessibilityIdentifier = view.AutomationId;
+
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView
 		{
 			var queue = new Queue<UIView>();

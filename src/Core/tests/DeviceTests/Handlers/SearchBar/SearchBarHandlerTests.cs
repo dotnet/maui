@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.SearchBar)]
-	public partial class SearchBarHandlerTests : HandlerTestBase<SearchBarHandler>
+	public partial class SearchBarHandlerTests : HandlerTestBase<SearchBarHandler, SearchBarStub>
 	{
 		public SearchBarHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{

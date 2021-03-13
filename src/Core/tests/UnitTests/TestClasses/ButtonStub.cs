@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Tests
 
 		public double CharacterSpacing { get; set; }
 
+		public Thickness Padding { get; set; }
+
 		public void Clicked() { }
 
 		public void Pressed() { }

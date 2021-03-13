@@ -35,6 +35,23 @@ namespace Microsoft.Maui
 			appCompatButton.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
+		public static void UpdatePadding(this AppCompatButton appCompatButton, IButton button)
+		{
+			var context = appCompatButton.Context;
+
+			if (context == null)
+			{
+				return;
+			}
+			var padding = button.Padding;
+
+			appCompatButton.SetPadding(
+					(int)context.ToPixels(padding.Left),
+					(int)context.ToPixels(padding.Top),
+					(int)context.ToPixels(padding.Right),
+					(int)context.ToPixels(padding.Bottom));
+		}
+
 		static XColor Cleanse(this XColor color, XColor defaultColor) => color.IsDefault ? defaultColor : color;
 	}
 }

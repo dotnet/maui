@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -6,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 {
 	[Category(TestCategory.Layout)]
-	public partial class LayoutHandlerTests : HandlerTestBase<LayoutHandler>
+	public partial class LayoutHandlerTests : HandlerTestBase<LayoutHandler, LayoutStub>
 	{
 		public LayoutHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
