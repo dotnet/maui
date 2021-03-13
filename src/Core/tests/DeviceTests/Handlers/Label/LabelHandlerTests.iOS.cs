@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
-			Assert.True(values.NativeViewValue.HasFlag(expectedValue));
+			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
 		[Fact(DisplayName = "Padding Initializes Correctly")]
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(xplatTextDecorations, values.ViewValue);
-			Assert.True(values.NativeViewValue != null);
+			Assert.NotNull(values.NativeViewValue);
 		}
 
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>

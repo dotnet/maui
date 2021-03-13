@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 				HorizontalTextAlignment = xplatHorizontalTextAlignment
 			};
 
-			Android.Views.TextAlignment expectedValue = Android.Views.TextAlignment.ViewEnd;
+			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.End;
 
 			var values = await GetValueAsync(labelStub, (handler) =>
 			{
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
-			Assert.True(values.NativeViewValue == expectedValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
 		[Fact(DisplayName = "Padding Initializes Correctly")]
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 			PaintFlags expectedValue = PaintFlags.UnderlineText;
 
 			Assert.Equal(xplatTextDecorations, values.ViewValue);
-			Assert.True(values.NativeViewValue.HasFlag(expectedValue));
+			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
 		TextView GetNativeLabel(LabelHandler labelHandler) =>
@@ -135,8 +135,8 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Typeface.IsItalic;
 
-		Android.Views.TextAlignment GetNativeTextAlignment(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).TextAlignment;
+		Android.Views.GravityFlags GetNativeTextAlignment(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).Gravity;
 
 		int GetNativeMaxLines(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).MaxLines;
