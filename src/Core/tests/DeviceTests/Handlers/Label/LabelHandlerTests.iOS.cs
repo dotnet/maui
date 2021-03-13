@@ -36,7 +36,22 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
 		}
 
-		[Fact]
+		[Fact(DisplayName = "Negative MaxLines value with wrap is correct")]
+		public async Task NegativeMaxValueWithWrapIsCorrect()
+		{
+			var label = new LabelStub()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				MaxLines = -1,
+				LineBreakMode = LineBreakMode.WordWrap,
+			};
+
+			var nativeValue = await GetValueAsync(label, GetNativeMaxLines);
+
+			Assert.Equal(0, nativeValue);
+		}
+
+		[Fact(DisplayName = "Padding Initializes Correctly")]
 		public async Task PaddingInitializesCorrectly()
 		{
 			var label = new LabelStub()
@@ -123,6 +138,9 @@ namespace Microsoft.Maui.DeviceTests
 				return GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
 			});
 		}
+
+		UILineBreakMode GetNativeLineBreakMode(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).LineBreakMode;
 
 		NSAttributedString GetNativeTextDecorations(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).AttributedText;

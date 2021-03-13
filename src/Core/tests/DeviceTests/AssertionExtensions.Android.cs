@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Android.Text;
 using Android.Views;
 using Android.Widget;
 using Xunit;
@@ -168,5 +169,17 @@ namespace Microsoft.Maui.DeviceTests
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
+
+		public static TextUtils.TruncateAt ToNative(this LineBreakMode mode) =>
+			mode switch
+			{
+				LineBreakMode.NoWrap => null,
+				LineBreakMode.WordWrap => null,
+				LineBreakMode.CharacterWrap => null,
+				LineBreakMode.HeadTruncation => TextUtils.TruncateAt.Start,
+				LineBreakMode.TailTruncation => TextUtils.TruncateAt.End,
+				LineBreakMode.MiddleTruncation => TextUtils.TruncateAt.Middle,
+				_ => throw new ArgumentOutOfRangeException(nameof(mode))
+			};
 	}
 }

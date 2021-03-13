@@ -6,6 +6,11 @@ namespace Microsoft.Maui
 	public interface ILabel : IView, IText
 	{
 		/// <summary>
+		/// Gets the option for line breaking.
+		/// </summary>
+		LineBreakMode LineBreakMode { get; }
+
+		/// <summary>
 		/// Gets the maximum number of lines allowed in the Label.
 		/// </summary>
 		int MaxLines { get; }
