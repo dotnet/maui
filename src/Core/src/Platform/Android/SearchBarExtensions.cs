@@ -30,5 +30,10 @@ namespace Microsoft.Maui
 				editText.LetterSpacing = searchBar.CharacterSpacing.ToEm();
 			}
 		}
+
+		public static void UpdatePlaceholder(this SearchView searchView, ISearchBar searchBar)
+		{
+			searchView.QueryHint = searchBar.Placeholder;
+		}
 	}
 }
