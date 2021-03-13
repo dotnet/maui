@@ -13,5 +13,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateText(searchBar);
 		}
+
+		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.TypedNativeView?.UpdatePlaceholder(searchBar);
+		}
 	}
 }

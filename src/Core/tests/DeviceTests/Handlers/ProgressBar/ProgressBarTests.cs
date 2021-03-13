@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -6,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category("ProgressBarHandler")]
-	public partial class ProgressBarHandlerTests : HandlerTestBase<ProgressBarHandler>
+	public partial class ProgressBarHandlerTests : HandlerTestBase<ProgressBarHandler, ProgressBarStub>
 	{
 		public ProgressBarHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{

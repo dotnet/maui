@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -6,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Label)]
-	public partial class LabelHandlerTests : HandlerTestBase<LabelHandler>
+	public partial class LabelHandlerTests : HandlerTestBase<LabelHandler, LabelStub>
 	{
 		public LabelHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
@@ -147,6 +148,18 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeCharacterSpacing,
 				nameof(ILabel.Text),
 				() => label.Text = newText);
+		}
+
+		[Fact(DisplayName = "MaxLines Initializes Correctly")]
+		public async Task MaxLinesInitializesCorrectly()
+		{
+			var label = new LabelStub()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				MaxLines = 2
+			};
+
+			await ValidatePropertyInitValue(label, () => label.MaxLines, GetNativeMaxLines, label.MaxLines);
 		}
 	}
 }
