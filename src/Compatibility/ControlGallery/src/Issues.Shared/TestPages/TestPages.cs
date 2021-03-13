@@ -23,9 +23,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 #endif
 	internal static class AppPaths
 	{
-		public static string ApkPath = "../../../../src/Microsoft.Maui.Controls.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
+		public static string ApkPath = "../../../../src/Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
 
-		public static string MacOSPath = "../../../../src/Microsoft.Maui.Controls.ControlGallery.MacOS/bin/Debug/Microsoft.Maui.Controls.ControlGallery.MacOS.app";
+		public static string MacOSPath = "../../../../src/MacOS/bin/Debug/Microsoft.Maui.Controls.ControlGallery.MacOS.app";
 
 		// Have to continue using the old BundleId for now; Test Cloud doesn't like
 		// when you change the BundleId
