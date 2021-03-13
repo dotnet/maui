@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
-using Foundation;
 
 namespace Microsoft.Maui
 {
@@ -17,13 +15,7 @@ namespace Microsoft.Maui
 
 		public static string ToFormattedString(this TimeSpan time, string format)
 		{
-			string iOSLocale = NSLocale.CurrentLocale.CountryCode;
-			var cultureInfo = CultureInfo.GetCultures(CultureTypes.AllCultures)
-				.Where(c => c.Name.EndsWith("-" + iOSLocale)).FirstOrDefault();
-
-			if (cultureInfo == null)
-				cultureInfo = CultureInfo.InvariantCulture;
-
+			var cultureInfo = Culture.CurrentCulture;
 
 			return time.ToFormattedString(format, cultureInfo);
 		}

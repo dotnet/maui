@@ -28,12 +28,7 @@ namespace Microsoft.Maui
 			if (picker != null)
 				picker.Date = new DateTime(1, 1, 1).Add(timePicker.Time).ToNSDate();
 
-			string iOSLocale = NSLocale.CurrentLocale.CountryCode;
-			var cultureInfo = CultureInfo.GetCultures(CultureTypes.AllCultures)
-				.Where(c => c.Name.EndsWith("-" + iOSLocale)).FirstOrDefault();
-
-			if (cultureInfo == null)
-				cultureInfo = CultureInfo.InvariantCulture;
+			var cultureInfo = Culture.CurrentCulture;
 
 			if (string.IsNullOrEmpty(timePicker.Format))
 			{
