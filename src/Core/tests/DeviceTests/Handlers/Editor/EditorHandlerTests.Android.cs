@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Android.Text;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -34,6 +35,33 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
 			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
 		}
+	
+		[Theory(DisplayName = "Font Family Initializes Correctly")]
+		[InlineData(null)]
+		[InlineData("monospace")]
+		[InlineData("Dokdo")]
+		public async Task FontFamilyInitializesCorrectly(string family)
+		{
+			var label = new EditorStub()
+			{
+				Text = "Test",
+				Font = Font.OfSize(family, 10)
+			};
+
+			var handler = await CreateHandlerAsync(label);
+			var nativeEditor = GetNativeEditor(handler);
+
+			var fontManager = App.Services.GetRequiredService<IFontManager>();
+
+			var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
+
+			Assert.Equal(nativeFont, nativeEditor.Typeface);
+
+			if (string.IsNullOrEmpty(family))
+				Assert.Equal(fontManager.DefaultTypeface, nativeEditor.Typeface);
+			else
+				Assert.NotEqual(fontManager.DefaultTypeface, nativeEditor.Typeface);
+		}
 
 		AppCompatEditText GetNativeEditor(EditorHandler editorHandler) =>
 			(AppCompatEditText)editorHandler.View;
@@ -55,5 +83,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+		
 	}
 }
