@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -6,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Label)]
-	public partial class LabelHandlerTests : HandlerTestBase<LabelHandler>
+	public partial class LabelHandlerTests : HandlerTestBase<LabelHandler, LabelStub>
 	{
 		public LabelHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
