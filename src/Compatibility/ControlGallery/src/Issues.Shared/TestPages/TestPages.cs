@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 #endif
 	internal static class AppPaths
 	{
-		public static string ApkPath = "../../../../src/Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
+		public static string ApkPath = "../../../../src/Android/bin/Debug/com.microsoft.mauicompatibilitygallery-Signed.apk";
 
 		public static string MacOSPath = "../../../../src/MacOS/bin/Debug/Microsoft.Maui.Controls.ControlGallery.MacOS.app";
 

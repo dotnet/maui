@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	// This is the AppCompat version of Activity1
 
-	[Activity(Label = "Xamarin Forms", Icon = "@drawable/icon", Theme = "@style/MyTheme",
+	[Activity(Label = "Microsoft Maui Controls Compatibility Gallery", Icon = "@drawable/icon", Theme = "@style/MyTheme",
 		MainLauncher = true, HardwareAccelerated = true, 
 		ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.UiMode)]
 	[IntentFilter(new[] { Intent.ActionView },
