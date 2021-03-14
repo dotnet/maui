@@ -37,6 +37,16 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateCharacterSpacing(label);
 		}
 
+		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdateHorizontalTextAlignment(label);
+		}
+
+		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
+		{
+			handler.TypedNativeView?.UpdateLineBreakMode(label);
+		}
+
 		public static void MapMaxLines(LabelHandler handler, ILabel label)
 		{
 			handler.TypedNativeView?.UpdateMaxLines(label);

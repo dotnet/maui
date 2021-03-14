@@ -148,6 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			Control.Enabled = Element.IsEnabled;
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			Button button = Element;

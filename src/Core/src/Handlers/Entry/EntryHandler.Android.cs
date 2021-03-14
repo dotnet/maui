@@ -1,6 +1,8 @@
-﻿using Android.Content.Res;
+﻿using System;
+using Android.Content.Res;
 using Android.Text;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -56,6 +58,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.TypedNativeView?.UpdatePlaceholder(entry);
+		}
+
+		public static void MapFont(EntryHandler handler, IEntry entry)
+		{
+			var services = App.Current?.Services
+				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
+			var fontManager = services.GetRequiredService<IFontManager>();
+
+			handler.TypedNativeView?.UpdateFont(entry, fontManager);
 		}
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)

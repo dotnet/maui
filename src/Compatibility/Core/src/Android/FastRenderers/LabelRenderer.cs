@@ -309,6 +309,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				SetTextColor(c.ToAndroid());
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			Font f = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
@@ -365,6 +366,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 		}
 
+		[PortHandler]
 		void UpdateLineBreakMode()
 		{
 			this.SetLineBreakMode(Element);
