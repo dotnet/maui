@@ -31,6 +31,12 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateFont(this UIButton nativeButton, IButton button, IFontManager fontManager)
+		{
+			var uiFont = fontManager.GetFont(button.Font);
+			nativeButton.TitleLabel.Font = uiFont;
+		}
+
 		public static void UpdatePadding(this UIButton nativeButton, IButton button)
 		{
 			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
@@ -39,6 +45,5 @@ namespace Microsoft.Maui
 					(float)button.Padding.Bottom,
 					(float)button.Padding.Right);
 		}
-
 	}
 }

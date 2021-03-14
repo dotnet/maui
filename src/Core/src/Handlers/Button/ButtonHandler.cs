@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IButton.Text)] = MapText,
 			[nameof(IButton.TextColor)] = MapTextColor,
+			[nameof(ILabel.Font)] = MapFont,
 			[nameof(IButton.Padding)] = MapPadding,
 		};
 
