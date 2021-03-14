@@ -40,6 +40,11 @@ namespace Microsoft.Maui
 			textView.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
+		public static void UpdateHorizontalTextAlignment(this TextView textView, ILabel label)
+		{
+			textView.Gravity = label.HorizontalTextAlignment.ToHorizontalGravityFlags();
+		}
+
 		public static void UpdateLineBreakMode(this TextView textView, ILabel label)
 		{
 			textView.SetLineBreakMode(label);
