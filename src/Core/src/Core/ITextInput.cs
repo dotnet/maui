@@ -21,8 +21,8 @@ namespace Microsoft.Maui
 		bool IsReadOnly { get; }
 
 		/// <summary>
-		/// Gets the keyboard type for the given input control.
+		/// Gets the keyboard input type.
 		/// </summary>
-		Keyboard Keyboard{ get; }
+		Keyboard Keyboard { get; }
 	}
 }
