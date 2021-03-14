@@ -36,7 +36,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Color.LightBlue });
 
 			var passwordEntry = new Entry() { IsPassword = true };
-			var numericEntry = new Entry() { Keyboard = Keyboard.Numeric };
+			var numericEntry = new Entry() { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" };
 
 			verticalStack.Add(passwordEntry);
 			verticalStack.Add(numericEntry);
