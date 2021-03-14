@@ -31,6 +31,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Font Font { get; set; }
 
-		public Keyboard Keyboard { get; set; }
+		public Keyboard Keyboard { get; set; } = Keyboard.Default;
 	}
 }

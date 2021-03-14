@@ -1,7 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Core.DeviceTests.Data;
 using Xunit;
+using Xunit.Extensions;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -206,6 +208,60 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, eventFiredCount);
 			else
 				Assert.Equal(0, eventFiredCount);
+		}
+
+		[Theory(DisplayName = "Validates Numeric Keyboard")]
+		[ClassData(typeof(NumericKeyboardClassData))]
+		public async Task ValidateNumericKeyboard(Keyboard keyboard, bool expected)
+		{
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsNumericKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Email Keyboard")]
+		[ClassData(typeof(EmailKeyboardClassData))]
+		public async Task ValidateEmailKeyboard(Keyboard keyboard, bool expected)
+		{
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsEmailKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Telephone Keyboard")]
+		[ClassData(typeof(TelephoneKeyboardClassData))]
+		public async Task ValidateTelephoneKeyboard(Keyboard keyboard, bool expected)
+		{
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsTelephoneKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Url Keyboard")]
+		[ClassData(typeof(UrlKeyboardClassData))]
+		public async Task ValidateUrlKeyboard(Keyboard keyboard, bool expected)
+		{
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsUrlKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Text Keyboard")]
+		[ClassData(typeof(TextKeyboardClassData))]
+		public async Task ValidateTextKeyboard(Keyboard keyboard, bool expected)
+		{
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsTextKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Chat Keyboard")]
+		[ClassData(typeof(ChatKeyboardClassData))]
+		public async Task ValidateChatKeyboard(Keyboard keyboard, bool expected)
+		{
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsChatKeyboard, expected);
 		}
 	}
 }
