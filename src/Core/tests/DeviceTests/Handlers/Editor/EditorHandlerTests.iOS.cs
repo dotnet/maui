@@ -73,5 +73,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
+			
+		double GetNativeUnscaledFontSize(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).Font.PointSize;
 	}
 }
