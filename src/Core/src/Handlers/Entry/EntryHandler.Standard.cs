@@ -13,5 +13,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(IViewHandler handler, IEntry entry) { }
 		public static void MapIsReadOnly(IViewHandler handler, IEntry entry) { }
 		public static void MapKeyboard(IViewHandler handler, IEntry entry) { }
+		public static void MapFont(IViewHandler handler, IEntry entry) { }
 	}
 }

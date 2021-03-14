@@ -309,6 +309,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				SetTextColor(c.ToAndroid());
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			Font f = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
@@ -328,6 +329,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 		}
 
+		[PortHandler]
 		void UpdateTextDecorations()
 		{
 			if (!Element.IsSet(Label.TextDecorationsProperty))
@@ -364,12 +366,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 		}
 
+		[PortHandler]
 		void UpdateLineBreakMode()
 		{
 			this.SetLineBreakMode(Element);
 			_lastSizeRequest = null;
 		}
 
+		[PortHandler]
 		void UpdateMaxLines()
 		{
 			this.SetMaxLines(Element);

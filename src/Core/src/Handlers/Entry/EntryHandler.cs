@@ -10,7 +10,8 @@
 			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,
-			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly
+			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
+			[nameof(IEntry.Font)] = MapFont
 		};
 
 		public EntryHandler() : base(EntryMapper)

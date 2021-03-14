@@ -1,11 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -18,6 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var defaultHandlers = new List<Type>
 			{
 				  typeof(Button) ,
+		  typeof(Editor),
 				  typeof(Entry) ,
 				  typeof(ContentPage) ,
 				  typeof(Page) ,
@@ -58,7 +53,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return builder;
 		}
 
-
 		public static IAppHostBuilder RegisterCompatibilityRenderer<TControlType, TMauiType, TRenderer>(this IAppHostBuilder builder)
 			where TMauiType : IFrameworkElement
 		{
@@ -75,6 +69,5 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static IAppHostBuilder RegisterCompatibilityRenderer<TControlType, TRenderer>(this IAppHostBuilder builder)
 			where TControlType : IFrameworkElement =>
 				builder.RegisterCompatibilityRenderer<TControlType, TControlType, TRenderer>();
-
 	}
 }

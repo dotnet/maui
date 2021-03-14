@@ -27,6 +27,8 @@ namespace Microsoft.Maui.Tests
 
 		public Thickness Margin => throw new NotImplementedException();
 
+		public string AutomationId => throw new NotImplementedException();
+
 		public void Arrange(Rectangle bounds)
 		{
 			throw new NotImplementedException();

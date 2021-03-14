@@ -47,9 +47,9 @@ namespace Microsoft.Maui
 				textField.AutocorrectionType = UITextAutocorrectionType.No;
 		}
 
-		public static void UpdatePlaceholder(this UITextField editText, IEntry entry)
+		public static void UpdatePlaceholder(this UITextField textField, IEntry entry)
 		{
-			editText.Placeholder = entry.Placeholder;
+			textField.Placeholder = entry.Placeholder;
 		}
 
 		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)
@@ -63,6 +63,12 @@ namespace Microsoft.Maui
 
 			textField.ApplyKeyboard(keyboard);
 			textField.ReloadInputViews();
+		}
+			
+		public static void UpdateFont(this UITextField textField, IEntry entry, IFontManager fontManager)
+		{
+			var uiFont = fontManager.GetFont(entry.Font);
+			textField.Font = uiFont;
 		}
 	}
 }

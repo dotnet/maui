@@ -287,6 +287,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.AdjustsFontSizeToFitWidth = Element.OnThisPlatform().AdjustsFontSizeToFitWidth();
 		}
 
+		[PortHandler]
 		protected virtual void UpdateFont()
 		{
 			if (initialSize == CGSize.Empty)

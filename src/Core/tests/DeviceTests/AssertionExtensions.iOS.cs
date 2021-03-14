@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	internal static class AssertionExtensions
+	internal static partial class AssertionExtensions
 	{
 		public static string CreateColorAtPointError(this UIImage bitmap, UIColor expectedColor, int x, int y)
 		{
@@ -183,5 +183,17 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(false, CreateColorError(bitmap, $"Color {expectedColor} not found."));
 			return bitmap;
 		}
+
+		public static UILineBreakMode ToNative(this LineBreakMode mode) =>
+		mode switch
+		{
+			LineBreakMode.NoWrap => UILineBreakMode.Clip,
+			LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+			LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+			LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+			LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+			LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+			_ => throw new ArgumentOutOfRangeException(nameof(mode))
+		};
 	}
 }
