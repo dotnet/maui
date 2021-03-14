@@ -4,13 +4,13 @@
 	{
 		public static PropertyMapper<IEntry, EntryHandler> EntryMapper = new PropertyMapper<IEntry, EntryHandler>(ViewHandler.ViewMapper)
 		{
+			[nameof(IEntry.Keyboard)] = MapKeyboard,
 			[nameof(IEntry.Text)] = MapText,
 			[nameof(IEntry.TextColor)] = MapTextColor,
 			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,
-			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
-			[nameof(IEntry.Keyboard)] = MapKeyboard
+			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly
 		};
 
 		public EntryHandler() : base(EntryMapper)
