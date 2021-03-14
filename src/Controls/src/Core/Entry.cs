@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
 		public new static readonly BindableProperty TextColorProperty = InputView.TextColorProperty;
+		public new static readonly BindableProperty KeyboardProperty = InputView.KeyboardProperty;
 
 		public new static readonly BindableProperty CharacterSpacingProperty = InputView.CharacterSpacingProperty;
 
