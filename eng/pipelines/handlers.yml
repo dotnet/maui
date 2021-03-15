@@ -57,8 +57,7 @@ variables:
     value: '--v'
 
 parameters:
-  - name: BuildConfigurations
-    default: [ Debug, Release ]
+  BuildConfigurations: [ Debug, Release ]
 
 resources:
   repositories:
