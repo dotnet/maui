@@ -9,6 +9,7 @@ using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using Java.Lang;
+using Microsoft.Maui.Platform.Android;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

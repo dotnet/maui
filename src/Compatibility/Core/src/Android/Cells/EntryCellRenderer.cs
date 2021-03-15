@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Text;
 using Android.Text.Method;
 using Android.Views;
+using Microsoft.Maui.Platform.Android;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

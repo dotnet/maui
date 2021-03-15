@@ -6,7 +6,7 @@ using Java.Text;
 
 namespace Microsoft.Maui.Platform.Android
 {
-	internal class LocalizedDigitsKeyListener : NumberKeyListener
+	public class LocalizedDigitsKeyListener : NumberKeyListener
 	{
 		readonly char _decimalSeparator;
 

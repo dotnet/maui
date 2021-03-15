@@ -13,6 +13,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="AppCompat\Resource.cs" />
+    <Compile Remove="Renderers\LocalizedDigitsKeyListener.cs" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\anim\enterfromleft.xml" />
