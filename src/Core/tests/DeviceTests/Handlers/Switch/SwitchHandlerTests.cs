@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -6,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Switch)]
-	public partial class SwitchHandlerTests : HandlerTestBase<SwitchHandler>
+	public partial class SwitchHandlerTests : HandlerTestBase<SwitchHandler, SwitchStub>
 	{
 		public SwitchHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -6,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Button)]
-	public partial class ButtonHandlerTests : HandlerTestBase<ButtonHandler>
+	public partial class ButtonHandlerTests : HandlerTestBase<ButtonHandler, ButtonStub>
 	{
 		public ButtonHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
@@ -49,6 +50,39 @@ namespace Microsoft.Maui.DeviceTests
 			await PerformClick(button);
 
 			Assert.True(clicked);
+		}
+
+		[Theory(DisplayName = "Font Size Initializes Correctly")]
+		[InlineData(1)]
+		[InlineData(10)]
+		[InlineData(20)]
+		[InlineData(100)]
+		public async Task FontSizeInitializesCorrectly(int fontSize)
+		{
+			var button = new ButtonStub()
+			{
+				Text = "Test",
+				Font = Font.OfSize("Arial", fontSize)
+			};
+
+			await ValidatePropertyInitValue(button, () => button.Font.FontSize, GetNativeUnscaledFontSize, button.Font.FontSize);
+		}
+
+		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
+		[InlineData(FontAttributes.None, false, false)]
+		[InlineData(FontAttributes.Bold, true, false)]
+		[InlineData(FontAttributes.Italic, false, true)]
+		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
+		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
+		{
+			var button = new ButtonStub()
+			{
+				Text = "Test",
+				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
+			};
+
+			await ValidatePropertyInitValue(button, () => button.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
+			await ValidatePropertyInitValue(button, () => button.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
 		}
 	}
 }

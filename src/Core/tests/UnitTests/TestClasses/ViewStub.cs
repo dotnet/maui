@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Tests
 
 		public bool IsArrangeValid { get; }
 
+		public string AutomationId { get; }
+
 		public void Arrange(Rectangle bounds) { }
 
 		public void InvalidateArrange() { }

@@ -8,5 +8,10 @@ namespace Microsoft.Maui
 		{
 			searchView.SetQuery(searchBar.Text, false);
 		}
+
+		public static void UpdatePlaceholder(this SearchView searchView, ISearchBar searchBar)
+		{
+			searchView.QueryHint = searchBar.Placeholder;
+		}
 	}
 }

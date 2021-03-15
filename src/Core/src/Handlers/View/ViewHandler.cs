@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IView.Background)] = MapBackground,
 			[nameof(IView.Frame)] = MapFrame,
-			[nameof(IView.IsEnabled)] = MapIsEnabled
+			[nameof(IView.IsEnabled)] = MapIsEnabled,
+			[nameof(IView.AutomationId)] = MapAutomationId
 		};
 
 		public static void MapFrame(IViewHandler handler, IView view)
@@ -32,6 +33,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IViewHandler handler, IView view)
 		{
 			(handler.NativeView as NativeView)?.UpdateBackground(view);
+		}
+
+		public static void MapAutomationId(IViewHandler handler, IView view)
+		{
+			(handler.NativeView as NativeView)?.UpdateAutomationId(view);
 		}
 
 	}

@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Android.Text;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -39,7 +40,48 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultTypeface, nativeLabel.Typeface);
 		}
 
-		[Fact]
+		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
+		{
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var labelStub = new LabelStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
+			};
+
+			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.End;
+
+			var values = await GetValueAsync(labelStub, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelStub.HorizontalTextAlignment,
+					NativeViewValue = GetNativeTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
+		[Fact(DisplayName = "Negative MaxLines value with wrap is correct")]
+		public async Task NegativeMaxValueWithWrapIsCorrect()
+		{
+			var label = new LabelStub()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				MaxLines = -1,
+				LineBreakMode = LineBreakMode.WordWrap
+			};
+
+			var nativeValue = await GetValueAsync(label, GetNativeMaxLines);
+
+			Assert.Equal(int.MaxValue, nativeValue);
+		}
+
+		[Fact(DisplayName = "Padding Initializes Correctly")]
 		public async Task PaddingInitializesCorrectly()
 		{
 			var label = new LabelStub()
@@ -86,7 +128,7 @@ namespace Microsoft.Maui.DeviceTests
 			PaintFlags expectedValue = PaintFlags.UnderlineText;
 
 			Assert.Equal(xplatTextDecorations, values.ViewValue);
-			Assert.True(values.NativeViewValue.HasFlag(expectedValue));
+			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
 		TextView GetNativeLabel(LabelHandler labelHandler) =>
@@ -110,6 +152,12 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Typeface.IsItalic;
 
+		Android.Views.GravityFlags GetNativeTextAlignment(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).Gravity;
+
+		int GetNativeMaxLines(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).MaxLines;
+    
 		Task ValidateNativeBackground(ILabel label, Color color)
 		{
 			return InvokeOnMainThreadAsync(() =>
@@ -125,6 +173,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetNativeCharacterSpacing(LabelHandler labelHandler) =>
 			Math.Round(GetNativeLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, 4);
+
+		TextUtils.TruncateAt GetNativeLineBreakMode(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).Ellipsize;
 
 		PaintFlags GetNativeTextDecorations(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).PaintFlags;

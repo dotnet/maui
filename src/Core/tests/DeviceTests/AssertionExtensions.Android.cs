@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Android.Text;
 using Android.Views;
 using Android.Widget;
 using Xunit;
@@ -10,7 +11,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	internal static class AssertionExtensions
+	internal static partial class AssertionExtensions
 	{
 		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
@@ -168,5 +169,17 @@ namespace Microsoft.Maui.DeviceTests
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
+
+		public static TextUtils.TruncateAt ToNative(this LineBreakMode mode) =>
+			mode switch
+			{
+				LineBreakMode.NoWrap => null,
+				LineBreakMode.WordWrap => null,
+				LineBreakMode.CharacterWrap => null,
+				LineBreakMode.HeadTruncation => TextUtils.TruncateAt.Start,
+				LineBreakMode.TailTruncation => TextUtils.TruncateAt.End,
+				LineBreakMode.MiddleTruncation => TextUtils.TruncateAt.Middle,
+				_ => throw new ArgumentOutOfRangeException(nameof(mode))
+			};
 	}
 }

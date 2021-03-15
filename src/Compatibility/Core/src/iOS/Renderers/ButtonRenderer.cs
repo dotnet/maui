@@ -200,6 +200,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ButtonElementManager.OnButtonTouchDown(this.Element);
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			Control.TitleLabel.Font = Element.ToUIFont();

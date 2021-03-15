@@ -37,7 +37,48 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
 		}
 
-		[Fact]
+		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
+		{
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var labelStub = new LabelStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
+			};
+
+			UITextAlignment expectedValue = UITextAlignment.Right;
+
+			var values = await GetValueAsync(labelStub, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelStub.HorizontalTextAlignment,
+					NativeViewValue = GetNativeTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
+		[Fact(DisplayName = "Negative MaxLines value with wrap is correct")]
+		public async Task NegativeMaxValueWithWrapIsCorrect()
+		{
+			var label = new LabelStub()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				MaxLines = -1,
+				LineBreakMode = LineBreakMode.WordWrap,
+			};
+
+			var nativeValue = await GetValueAsync(label, GetNativeMaxLines);
+
+			Assert.Equal(0, nativeValue);
+		}
+
+		[Fact(DisplayName = "Padding Initializes Correctly")]
 		public async Task PaddingInitializesCorrectly()
 		{
 			var label = new LabelStub()
@@ -75,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(xplatTextDecorations, values.ViewValue);
-			Assert.True(values.NativeViewValue != null);
+			Assert.NotNull(values.NativeViewValue);
 		}
 
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>
@@ -96,6 +137,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
 
+		int GetNativeMaxLines(LabelHandler labelHandler) =>
+ 			(int)GetNativeLabel(labelHandler).Lines;
+
 		double GetNativeCharacterSpacing(LabelHandler labelHandler)
 		{
 			var nativeLabel = GetNativeLabel(labelHandler);
@@ -114,6 +158,9 @@ namespace Microsoft.Maui.DeviceTests
 			return kerning.DoubleValue;
 		}
 
+		UITextAlignment GetNativeTextAlignment(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).TextAlignment;
+
 		Task ValidateNativeBackground(ILabel label, Color color)
 		{
 			return InvokeOnMainThreadAsync(() =>
@@ -121,6 +168,9 @@ namespace Microsoft.Maui.DeviceTests
 				return GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
 			});
 		}
+
+		UILineBreakMode GetNativeLineBreakMode(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).LineBreakMode;
 
 		NSAttributedString GetNativeTextDecorations(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).AttributedText;
