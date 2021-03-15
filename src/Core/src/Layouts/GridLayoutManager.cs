@@ -27,10 +27,7 @@ namespace Microsoft.Maui.Layouts
 			foreach (var view in Grid.Children)
 			{
 				var cell = structure.ComputeFrameFor(view);
-
-				// This is basically LayoutOptions.Start as a default
-				var destination = new Rectangle(cell.X, cell.Y, view.DesiredSize.Width, view.DesiredSize.Height);
-				view.Arrange(destination);
+				view.Arrange(cell);
 			}
 		}
 

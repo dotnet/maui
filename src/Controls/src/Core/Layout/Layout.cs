@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Layouts;
 
-
-
 // This is a temporary namespace until we rename everything and move the legacy layouts
 namespace Microsoft.Maui.Controls.Layout2
 {
