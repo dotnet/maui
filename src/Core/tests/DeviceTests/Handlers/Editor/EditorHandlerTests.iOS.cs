@@ -44,5 +44,8 @@ namespace Microsoft.Maui.DeviceTests
             var editor = GetNativeEditor(editorHandler);
             return editor.AttributedText.GetCharacterSpacing();
         }
-    }
+		
+		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
+	}
 }

@@ -10,6 +10,6 @@
 
 		public double CharacterSpacing { get; set; }
 
-		public bool IsTextPredictionEnabled { get; }
+		public bool IsTextPredictionEnabled { get; set; }
 	}
 }
