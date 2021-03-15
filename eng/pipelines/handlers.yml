@@ -112,7 +112,8 @@ stages:
               bootsMacCatalyst: MacCatalyst.Pkg
               artifact: nuget
         pool:
-          vmImage: variables[$(vmImage)]
+          name: variables['$(poolName)']
+          vmImage: variables['$(vmImage)']
         steps:
           - template: common/dotnet-install.yml
           - pwsh: |
