@@ -86,7 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 			return nativeEntry.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				nativeEntry.AutocorrectionType == UITextAutocorrectionType.Yes;
 		}
-			
+
 		double GetNativeUnscaledFontSize(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Font.PointSize;
 
