@@ -130,6 +130,31 @@ namespace Microsoft.Maui.DeviceTests
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
+		[Fact(DisplayName = "LineHeight Initializes Correctly")]
+		public async Task LineHeightInitializesCorrectly()
+		{
+			var xplatLineHeight = 1.5d;
+
+			var labelHandler = new LabelStub()
+			{
+				LineHeight = xplatLineHeight
+			};
+
+			var values = await GetValueAsync(labelHandler, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelHandler.LineHeight,
+					NativeViewValue = GetNativeLineHeight(handler)
+				};
+			});
+
+			float expectedValue = 1.5f;
+
+			Assert.Equal(xplatLineHeight, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
+		}
+
 		TextView GetNativeLabel(LabelHandler labelHandler) =>
 			(TextView)labelHandler.View;
 
@@ -178,5 +203,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		PaintFlags GetNativeTextDecorations(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).PaintFlags;
+			
+		float GetNativeLineHeight(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).LineSpacingMultiplier;
 	}
 }

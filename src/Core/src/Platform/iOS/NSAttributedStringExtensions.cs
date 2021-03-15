@@ -25,5 +25,28 @@ namespace Microsoft.Maui
 			);
 			return mutableAttributedString;
 		}
+		public static NSMutableAttributedString? WithLineHeight(this NSAttributedString attributedString, double lineHeight)
+		{
+			if (attributedString == null || attributedString.Length == 0)
+				return null;
+
+			var attribute = (NSParagraphStyle) attributedString.GetAttribute(UIStringAttributeKey.ParagraphStyle, 0, out _);
+
+			// if we need to un-set the line height but there is no attribute to modify then we do nothing
+			if (lineHeight == -1 && attribute == null)
+				return null;
+
+			var mutableParagraphStyle = new NSMutableParagraphStyle(attribute);
+			mutableParagraphStyle.LineHeightMultiple = new nfloat(lineHeight >=0 ? lineHeight : -1);
+
+			var mutableAttributedString = new NSMutableAttributedString(attributedString);
+			mutableAttributedString.AddAttribute
+			(
+				UIStringAttributeKey.ParagraphStyle,
+				NSObject.FromObject(mutableParagraphStyle) ,
+				new NSRange(0, mutableAttributedString.Length)
+			);
+			return mutableAttributedString;
+		}
 	}
 }

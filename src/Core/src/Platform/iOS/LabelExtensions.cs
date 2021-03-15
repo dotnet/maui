@@ -139,5 +139,12 @@ namespace Microsoft.Maui
 
 			nativeLabel.AttributedText = newAttributedText;
 		}
+		internal static void UpdateLineHeight(this UILabel nativeLabel, ILabel label)
+		{
+			var modAttrText = nativeLabel.AttributedText?.WithLineHeight(label.LineHeight);
+
+			if (modAttrText != null)
+				nativeLabel.AttributedText = modAttrText;
+		}
 	}
 }
