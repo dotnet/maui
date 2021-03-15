@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.EditingDidEnd += OnEnded;
 			nativeView.EditingChanged += OnEditing;
 
-			if (VirtualView != null)
+			if (VirtualView != null && VirtualView.Items != null)
 				((INotifyCollectionChanged)VirtualView.Items).CollectionChanged += OnCollectionChanged;
 
 			base.ConnectHandler(nativeView);
@@ -71,9 +71,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.EditingDidEnd -= OnEnded;
 			nativeView.EditingChanged -= OnEditing;
-		
-			if (VirtualView != null)
-				((INotifyCollectionChanged) VirtualView.Items).CollectionChanged -= OnCollectionChanged;
+
+			if (VirtualView != null && VirtualView.Items != null)
+				((INotifyCollectionChanged)VirtualView.Items).CollectionChanged -= OnCollectionChanged;
 
 			if (_pickerView != null)
 			{
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Handlers
 			_pickerView.Select(Math.Max(formsIndex, 0), 0, true);
 		}
 	}
-		
+
 	public class PickerSource : UIPickerViewModel
 	{
 		IPicker? _virtualView;
