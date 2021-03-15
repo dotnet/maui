@@ -73,7 +73,7 @@ stages:
           clean: all
         displayName: Build Windows Phase
         timeoutInMinutes: 60
-        condition: $[ variables['BuildCondition'] ]
+        condition: ne(variables['Build.Reason'], 'PullRequest')
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
@@ -277,7 +277,7 @@ stages:
           clean: all
         displayName: Build .NET 6 macOS
         timeoutInMinutes: 120
-        condition: $[ variables['BuildCondition'] ]
+        # condition: $[ variables['BuildCondition'] ]
         pool:
           name: $(macOSXNet6VmPool)
           vmImage: $(macOSXNet6VmImage)
