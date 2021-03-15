@@ -318,7 +318,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
 		}
 
-		[PortHandler("Partially ported")]
+		[PortHandler("IsSpellCheckEnabled is missing.")]
+		[PortHandler("No override for GetDigitsKeyListener")]
 		void UpdateInputType()
 		{
 			Entry model = Element;
