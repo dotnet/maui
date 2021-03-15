@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 		
 		public static void MapFont(EntryHandler handler, IEntry entry)
 		{
-			var services = App.Current?.Services
+			var services = Application.Current?.Services
 				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
 			var fontManager = services.GetRequiredService<IFontManager>();
 
