@@ -5,6 +5,7 @@ using SizeF = CoreGraphics.CGSize;
 using Foundation;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Maui.Platform.iOS;
 
 #if __MOBILE__
 using UIKit;
