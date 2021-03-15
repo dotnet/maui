@@ -277,6 +277,7 @@ stages:
           clean: all
         displayName: Build .NET 6 macOS
         timeoutInMinutes: 120
+        condition: $(BuildCondition)
         pool:
           name: $(macOSXNet6VmPool)
           vmImage: $(macOSXNet6VmImage)
@@ -285,11 +286,12 @@ stages:
           DotNet.Tools: ~/.dotnet/tools
         strategy:
           matrix:
-            ${{ ne(variables['Build.Reason'], 'PullRequest') }}:
-              debug:
-                BuildConfiguration:  'Debug'
             release:
+              BuildCondition: true
               BuildConfiguration:  'Release'
+            debug:
+              BuildCondition: ne(variables['Build.Reason'], 'PullRequest')
+              BuildConfiguration:  'Debug'
         steps:
           - task: UseDotNet@2
             displayName: install .NET Core 3.1
