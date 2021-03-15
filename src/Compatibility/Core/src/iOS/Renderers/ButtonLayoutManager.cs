@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

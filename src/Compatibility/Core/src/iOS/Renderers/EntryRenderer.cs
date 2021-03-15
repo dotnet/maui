@@ -7,6 +7,7 @@ using Foundation;
 using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry;
+using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
