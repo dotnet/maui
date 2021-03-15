@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Platform.Android
 				}
 			}
 
-			return stripped == null ? (filterFormatted != null ? filterFormatted : new String("")) : stripped;
+			return stripped ?? filterFormatted ?? new String("");
 		}
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
 	}
