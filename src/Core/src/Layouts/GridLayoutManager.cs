@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -122,6 +121,9 @@ namespace Microsoft.Maui.Layouts
 				{ 
 					height += _rows[n].Size;
 				}
+
+				// TODO ezhart this isn't correctly accounting for row spacing when spanning multiple rows
+				// (and column spacing is probably wrong, too)
 
 				return new Rectangle(left, top, width, height);
 			}

@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		Dictionary<IView, GridInfo> _viewInfo = new Dictionary<IView, GridInfo>();
 
+		// TODO ezhart This needs to override Remove and clean up any row/column/span info for the removed child
+
 		public int GetColumn(IView view)
 		{
 			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
