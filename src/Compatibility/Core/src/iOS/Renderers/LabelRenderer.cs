@@ -418,7 +418,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (string.IsNullOrEmpty(Element.Text))
 				return;
 #if __MOBILE__
-			var textAttr = Control.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
+			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (textAttr != null)
 				Control.AttributedText = textAttr;

@@ -233,8 +233,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_textField == null)
 				return;
 
-			_textField.AttributedText = _textField.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
-			_textField.AttributedPlaceholder = _textField.AttributedPlaceholder.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+			_textField.AttributedText = _textField.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
+			_textField.AttributedPlaceholder = _textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 		}
 
 		void UpdateHorizontalTextAlignment()
@@ -323,14 +323,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					? targetColor : ColorExtensions.PlaceholderColor.ToColor();
 
 				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, color);
-				_textField.AttributedPlaceholder.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 
 			}
 			else
 			{
 				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, targetColor.IsDefault 
 					? ColorExtensions.PlaceholderColor.ToColor() : targetColor);
-				_textField.AttributedPlaceholder.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 			}
 		}
 
