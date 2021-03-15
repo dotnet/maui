@@ -68,26 +68,20 @@ stages:
   - stage: windows
     displayName: Build Windows
     jobs:
-      - job: win_hosted
-        workspace:
-          clean: all
-        displayName: Build Windows Phase
-        timeoutInMinutes: 60
-        pool:
-          name: $(vs2019VmPool)
-          vmImage: $(vs2019VmImage)
-          demands:
-            msbuild
-        strategy:
-          matrix:
-            release:
-              BuildCondition: true
-              BuildConfiguration: 'Release'
-            debug:
-              BuildCondition: ne(variables['Build.Reason'], 'PullRequest')
-              BuildConfiguration: 'Debug'
-        steps:
-          - ${{ if eq(variables['BuildCondition'], 'true') }}:
+      - ${{ each BuildCondition in ['Debug', 'Release'] }}:
+        - job: win_hosted
+          workspace:
+            clean: all
+          displayName: Build Windows Phase
+          timeoutInMinutes: 60
+          pool:
+            name: $(vs2019VmPool)
+            vmImage: $(vs2019VmImage)
+            demands:
+              msbuild
+                # BuildCondition: ne(variables['Build.Reason'], 'PullRequest')
+                # BuildConfiguration: 'Debug'
+          steps:
             - template: common/build-windows.yml
 
   # - stage: build_osx
