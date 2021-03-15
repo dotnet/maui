@@ -74,10 +74,10 @@ stages:
     displayName: Build Windows
     jobs:
       - ${{ each BuildCondition in parameters.BuildConfigurations }}:
-        - job: win_hosted_$(BuildCondition)
+        - job: win_hosted_${{ BuildCondition }}
           workspace:
             clean: all
-          displayName: Build Windows Phase ($(BuildCondition))
+          displayName: Build Windows Phase (${{ BuildCondition }})
           # condition: or(ne(variables['Build.Reason'], 'PullRequest'), eq('${{ BuildCondition }}', 'Release'))
           timeoutInMinutes: 60
           pool:
