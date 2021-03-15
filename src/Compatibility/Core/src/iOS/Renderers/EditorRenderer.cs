@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
