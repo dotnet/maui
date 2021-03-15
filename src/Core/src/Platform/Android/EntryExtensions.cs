@@ -1,13 +1,8 @@
 using Android.Content.Res;
-using Android.OS;
 using Android.Text;
-using Android.Text.Method;
-using Android.Widget;
-using Microsoft.Maui.Platform.Android;
 using Android.Util;
-using Android.Content.Res;
-using Android.Text;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Platform.Android;
 
 namespace Microsoft.Maui
 {

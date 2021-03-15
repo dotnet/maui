@@ -1,8 +1,6 @@
-using Android.Text;
-using Android.Text.Method;
-using Android.Widget;
 using System.Threading.Tasks;
 using Android.Text;
+using Android.Text.Method;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
