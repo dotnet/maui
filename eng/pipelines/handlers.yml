@@ -120,11 +120,13 @@ stages:
               dotnet tool install --global boots
               boots $(bootsAndroid)
               boots $(bootsiOS)
-              if ($(bootsMacCatalyst)) {
-                boots $(bootsMacCatalyst)
-              }
             displayName: install .NET workloads
             errorActionPreference: stop
+          - pwsh: |
+              boots $(bootsMacCatalyst)
+            displayName: install .NET workloads
+            errorActionPreference: stop
+            condition: eq(variables['System.PhaseName'], 'macos')
           - bash: |
               set -x
               mkdir -p ~/Library/Preferences/Xamarin
@@ -132,7 +134,7 @@ stages:
               /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
               cat ~/Library/Preferences/Xamarin/Settings.plist || true
             displayName: configure vsmac xcode
-            condition: eq('$(System.PhaseName)', 'macos')
+            condition: eq(variables['System.PhaseName'], 'macos')
           - pwsh: ./.nuspec/package.ps1 -configuration Release
             displayName: pack nugets
             errorActionPreference: stop
@@ -180,7 +182,7 @@ stages:
           vmImage: $(vmImage)
         steps:
           - task: UseDotNet@2
-            condition: eq('$(System.PhaseName)', 'macos')
+            condition: eq(variables['System.PhaseName'], 'macos')
             displayName: install .NET Core 3.1
             inputs:
               version: 3.1.x
@@ -190,11 +192,13 @@ stages:
               dotnet tool install --global boots
               boots $(bootsAndroid)
               boots $(bootsiOS)
-              if ($(bootsMacCatalyst)) {
-                boots $(bootsMacCatalyst)
-              }
             displayName: install .NET workloads
             errorActionPreference: stop
+          - pwsh: |
+              boots $(bootsMacCatalyst)
+            displayName: install .NET workloads
+            errorActionPreference: stop
+            condition: eq(variables['System.PhaseName'], 'macos')
           - pwsh: |
               dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
               dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration).binlog
