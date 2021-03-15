@@ -2,13 +2,8 @@
 using Android.Views;
 using Android.Widget;
 using Android.Runtime;
-using ARect = Android.Graphics.Rect;
-
-#if __ANDROID_29__
 using AndroidX.Core.Graphics.Drawable;
-#else
-using Android.Support.V4.Graphics.Drawable;
-#endif
+using ARect = Android.Graphics.Rect;
 
 namespace Microsoft.Maui
 {
