@@ -91,24 +91,26 @@ stages:
     displayName: Pack .NET 6
     dependsOn: []
     jobs:
-      - job: net6_pack
+      - job: pack_net6
+        workspace:
+          clean: all
+        displayName: Pack .NET 6
+        timeoutInMinutes: 120
         strategy:
           matrix:
             windows:
-              vmImage: windows-latest
+              poolName: $(vs2019VmPool)
+              vmImage: $(vs2019VmImage)
               bootsAndroid: $(Android.Msi)
               bootsiOS: $(iOS.Msi)
               artifact: nuget-windows
             macos:
-              vmImage: macOS-latest
+              poolName: $(macOSXNet6VmPool)
+              vmImage: $(macOSXNet6VmImage)
               bootsAndroid: $(Android.Pkg)
               bootsiOS: $(iOS.Pkg)
               bootsMacCatalyst: $(MacCatalyst.Pkg)
               artifact: nuget
-        workspace:
-          clean: all
-        displayName: Pack .NET 6 Windows
-        timeoutInMinutes: 120
         pool:
           vmImage: $(vmImage)
         steps:
@@ -152,97 +154,52 @@ stages:
     displayName: Build .NET 6
     dependsOn: []
     jobs:
-      - job: net6_windows
+      - job: build_net6
         workspace:
           clean: all
-        displayName: Build .NET 6 Windows
+        displayName: Build .NET 6
         timeoutInMinutes: 120
-        condition: ne(variables['Build.Reason'], 'PullRequest')
-        pool:
-          vmImage:  windows-latest
         strategy:
           matrix:
-            debug:
-              BuildConfiguration:  'Debug'
-            release:
-              BuildConfiguration:  'Release'
-        steps:
-
-          - template: common/dotnet-install.yml
-
-          - powershell: |
-              & dotnet tool install --global boots
-              & boots $(Android.Msi)
-              & boots $(iOS.Msi)
-            displayName: install .NET workloads
-            errorActionPreference: stop
-
-          - powershell: |
-              & dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration)-buildtasks.binlog
-              & dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)\$(BuildConfiguration).binlog
-            displayName: build samples
-            errorActionPreference: stop
-
-          - task: PublishBuildArtifacts@1
-            displayName: publish artifacts
-            inputs:
-              artifactName: NET6-WINDOWS
-              targetPath: $(Build.ArtifactStagingDirectory)
-            condition: always()
-
-      - job: net6_macos
-        workspace:
-          clean: all
-        displayName: Build .NET 6 macOS
-        timeoutInMinutes: 120
-        # condition: $[ variables['BuildCondition'] ]
+            windows:
+              poolName: $(vs2019VmPool)
+              vmImage: $(vs2019VmImage)
+              bootsAndroid: $(Android.Msi)
+              bootsiOS: $(iOS.Msi)
+            macos:
+              poolName: $(macOSXNet6VmPool)
+              vmImage: $(macOSXNet6VmImage)
+              bootsAndroid: $(Android.Pkg)
+              bootsiOS: $(iOS.Pkg)
+              bootsMacCatalyst: $(MacCatalyst.Pkg)
         pool:
-          name: $(macOSXNet6VmPool)
-          vmImage: $(macOSXNet6VmImage)
-        variables:
-          DotNet.Root: /usr/local/share/dotnet/
-          DotNet.Tools: ~/.dotnet/tools
-        strategy:
-          matrix:
-            release:
-              BuildCondition: true
-              BuildConfiguration:  'Release'
-            debug:
-              BuildCondition: ne(variables['Build.Reason'], 'PullRequest')
-              BuildConfiguration:  'Debug'
+          name: $(poolName)
+          vmImage: $(vmImage)
         steps:
           - task: UseDotNet@2
             displayName: install .NET Core 3.1
             inputs:
               version: 3.1.x
               installationPath: $(DotNet.Root)
-
           - template: common/dotnet-install.yml
-
-          - bash: |
+          - pwsh: |
               dotnet tool install --global boots
-              boots $(Android.Pkg)
-              boots $(iOS.Pkg)
-              boots $(MacCatalyst.Pkg)
+              boots $(bootsAndroid)
+              boots $(bootsiOS)
+              if ($(bootsMacCatalyst)) {
+                boots $(bootsMacCatalyst)
+              }
             displayName: install .NET workloads
-
-          - bash: |
-              set -x
-              mkdir -p ~/Library/Preferences/Xamarin
-              rm -f ~/Library/Preferences/Xamarin/Settings.plist
-              /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
-              cat ~/Library/Preferences/Xamarin/Settings.plist || true
-            displayName: configure vsmac xcode
-
-          - bash: |
-              dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $BUILDCONFIGURATION -bl:$BUILD_ARTIFACTSTAGINGDIRECTORY/logs/$BUILDCONFIGURATION-buildtasks.binlog &&
-              dotnet build Microsoft.Maui-net6.sln -c $BUILDCONFIGURATION -bl:$BUILD_ARTIFACTSTAGINGDIRECTORY/logs/$BUILDCONFIGURATION.binlog
+            errorActionPreference: stop
+          - pwsh: |
+              dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
+              dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration).binlog
             displayName: build samples
-
+            errorActionPreference: stop
           - task: PublishBuildArtifacts@1
             displayName: publish artifacts
             inputs:
-              artifactName: NET6-OSX
+              artifactName: NET6-$(System.PhaseName)
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
 
