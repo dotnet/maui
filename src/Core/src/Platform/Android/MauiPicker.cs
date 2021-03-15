@@ -7,11 +7,11 @@ using ARect = Android.Graphics.Rect;
 
 namespace Microsoft.Maui
 {
-	public class NativePicker : NativePickerBase
+	public class MauiPicker : MauiPickerBase
 	{
 		public bool ShowPopupOnFocus { get; set; }
 
-		public NativePicker(Context? context) : base(context)
+		public MauiPicker(Context? context) : base(context)
 		{
 			PickerManager.Init(this);
 		}
@@ -37,9 +37,9 @@ namespace Microsoft.Maui
 		}
 	}
 
-	public class NativePickerBase : EditText
+	public class MauiPickerBase : EditText
 	{
-		public NativePickerBase(Context? context) : base(context)
+		public MauiPickerBase(Context? context) : base(context)
 		{
 			DrawableCompat.Wrap(Background);
 		}

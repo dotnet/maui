@@ -2,20 +2,18 @@
 using System.Collections.Specialized;
 using System.Linq;
 using Android.App;
-using Android.Text;
-using Android.Text.Style;
 using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : AbstractViewHandler<IPicker, NativePicker>
+	public partial class PickerHandler : AbstractViewHandler<IPicker, MauiPicker>
 	{
 		AlertDialog? _dialog;
 
-		protected override NativePicker CreateNativeView() =>
-			new NativePicker(Context);
+		protected override MauiPicker CreateNativeView() =>
+			new MauiPicker(Context);
 
-		protected override void ConnectHandler(NativePicker nativeView)
+		protected override void ConnectHandler(MauiPicker nativeView)
 		{
 			nativeView.FocusChange += OnFocusChange;
 			nativeView.Click += OnClick;
@@ -26,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(NativePicker nativeView)
+		protected override void DisconnectHandler(MauiPicker nativeView)
 		{
 			nativeView.FocusChange -= OnFocusChange;
 			nativeView.Click -= OnClick;

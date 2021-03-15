@@ -2,13 +2,13 @@
 {
 	public static class PickerExtensions
 	{ 
-		public static void UpdateTitle(this NativePicker nativePicker, IPicker picker) =>
+		public static void UpdateTitle(this MauiPicker nativePicker, IPicker picker) =>
 			UpdatePicker(nativePicker, picker);
 
-		public static void UpdateSelectedIndex(this NativePicker nativePicker, IPicker picker) =>
+		public static void UpdateSelectedIndex(this MauiPicker nativePicker, IPicker picker) =>
 			UpdatePicker(nativePicker, picker);
 
-		internal static void UpdatePicker(this NativePicker nativePicker, IPicker picker)
+		internal static void UpdatePicker(this MauiPicker nativePicker, IPicker picker)
 		{
 			nativePicker.Hint = picker.Title;
 
@@ -20,7 +20,7 @@
 			nativePicker.SetSelectedItem(picker);
 		}
 
-		internal static void SetSelectedItem(this NativePicker nativePicker, IPicker picker)
+		internal static void SetSelectedItem(this MauiPicker nativePicker, IPicker picker)
 		{
 			if (picker == null || nativePicker == null)
 				return;

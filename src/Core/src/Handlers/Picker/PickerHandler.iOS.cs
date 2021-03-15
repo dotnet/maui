@@ -5,15 +5,15 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : AbstractViewHandler<IPicker, NativePicker>
+	public partial class PickerHandler : AbstractViewHandler<IPicker, MauiPicker>
 	{
 		UIPickerView? _pickerView;
 
-		protected override NativePicker CreateNativeView()
+		protected override MauiPicker CreateNativeView()
 		{
 			_pickerView = new UIPickerView();
 
-			var nativePicker = new NativePicker(_pickerView) { BorderStyle = UITextBorderStyle.RoundedRect };
+			var nativePicker = new MauiPicker(_pickerView) { BorderStyle = UITextBorderStyle.RoundedRect };
 
 			var width = UIScreen.MainScreen.Bounds.Width;
 			var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 			return nativePicker;
 		}
 
-		protected override void ConnectHandler(NativePicker nativeView)
+		protected override void ConnectHandler(MauiPicker nativeView)
 		{
 			nativeView.EditingDidEnd += OnEnded;
 			nativeView.EditingChanged += OnEditing;
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(NativePicker nativeView)
+		protected override void DisconnectHandler(MauiPicker nativeView)
 		{
 			nativeView.EditingDidEnd -= OnEnded;
 			nativeView.EditingChanged -= OnEditing;
