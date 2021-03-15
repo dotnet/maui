@@ -3,32 +3,37 @@
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Provides the methods and events to respond to Application lifecycle changes.
+	/// Provides the methods and events to respond to Window lifecycle changes.
 	/// </summary>
-	public interface IApplicationLifetime
+	public interface IWindowLifetime
 	{
 		/// <summary>
-		/// Called when the application is first created.
+		/// Called when the Window is created.
 		/// </summary>
 		void OnCreated();
 
 		/// <summary>
-		/// Called when the application content will start interacting with the user.
+		/// Called when the application is not visible to the user.
 		/// </summary>
 		void OnResumed();
 
 		/// <summary>
-		/// Called when the application is not visible to the user.
+		/// Called before the application is closed.
 		/// </summary>
 		void OnPaused();
 
 		/// <summary>
-		/// Called before the application is closed.
+		/// Called when the Window is closed.
 		/// </summary>
 		void OnStopped();
 
 		/// <summary>
 		/// This event is raised when the window is closed.
+		/// </summary>
+		event EventHandler? Closed;
+
+		/// <summary>
+		/// This event is raised when the window is created.
 		/// </summary>
 		event EventHandler? Created;
 
@@ -38,7 +43,7 @@ namespace Microsoft.Maui
 		event EventHandler? Resumed;
 
 		/// <summary>
-		/// This event is raised when the window is pasued.
+		/// This event is raised when the window is paused.
 		/// </summary>
 		event EventHandler? Paused;
 

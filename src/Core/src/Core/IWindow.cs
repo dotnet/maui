@@ -3,7 +3,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Provides the ability to create, configure, show, and manage Windows.
 	/// </summary>
-	public interface IWindow
+	public interface IWindow : IWindowLifetime
 	{
 		/// <summary>
 		/// Gets or sets the .NET MAUI Context.
