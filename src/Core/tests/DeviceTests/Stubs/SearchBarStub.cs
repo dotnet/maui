@@ -2,8 +2,10 @@
 {
 	public partial class SearchBarStub : StubBase, ISearchBar
 	{
-		private string _text;
+		string _text;
 
 		public string Text { get => _text; set => SetProperty(ref _text, value); }
+
+		public string Placeholder { get; set; }
 	}
 }
