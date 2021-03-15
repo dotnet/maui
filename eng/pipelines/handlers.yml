@@ -73,7 +73,7 @@ stages:
           clean: all
         displayName: Build Windows Phase
         timeoutInMinutes: 60
-        condition: variables['BuildCondition']
+        condition: $[ variables['BuildCondition'] ]
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
@@ -277,7 +277,7 @@ stages:
           clean: all
         displayName: Build .NET 6 macOS
         timeoutInMinutes: 120
-        condition: variables['BuildCondition']
+        condition: $[ variables['BuildCondition'] ]
         pool:
           name: $(macOSXNet6VmPool)
           vmImage: $(macOSXNet6VmImage)
@@ -330,8 +330,7 @@ stages:
 
   - template: common/device-tests.yml
     parameters:
-      ${{ eq(variables['Build.Reason'], 'PullRequest') }}:
-        androidApiLevels: [ 30 ]
+      androidApiLevels: [ 30 ]
       projects:
         - name: essentials
           desc: Essentials
