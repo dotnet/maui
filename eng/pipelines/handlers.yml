@@ -73,6 +73,7 @@ stages:
           clean: all
         displayName: Build Windows Phase
         timeoutInMinutes: 60
+        condition: $(BuildCondition)
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
@@ -81,10 +82,11 @@ stages:
         strategy:
           matrix:
             release:
-              BuildConfiguration:  'Release'
-            ${{ ne(variables['Build.Reason'], 'PullRequest') }}:
-              debug:
-                BuildConfiguration:  'Debug'
+              BuildCondition: true
+              BuildConfiguration: 'Release'
+            debug:
+              BuildCondition: ne(variables['Build.Reason'], 'PullRequest')
+              BuildConfiguration: 'Debug'
         steps:
           - template: common/build-windows.yml
 
