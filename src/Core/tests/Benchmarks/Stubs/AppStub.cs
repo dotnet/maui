@@ -1,20 +1,10 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Maui.Hosting;
-
 namespace Microsoft.Maui.Handlers.Benchmarks
 {
-	class MockApp : App
+	class AppStub : MauiApp
 	{
-		public override IAppHostBuilder CreateBuilder()
+		public override IWindow CreateWindow(IActivationState state)
 		{
-			return base.CreateBuilder()
-				.ConfigureServices(ConfigureNativeServices);
-		}
-
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
-			services.AddSingleton<IMauiContext>(provider => new HandlersContextStub(provider));
+			return new WindowStub();
 		}
 	}
 }

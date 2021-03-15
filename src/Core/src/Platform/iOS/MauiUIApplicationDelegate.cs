@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,7 +7,9 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class MauiUIApplicationDelegate<TApplication> : UIApplicationDelegate, IUIApplicationDelegate where TApplication : MauiApp
+	public class MauiUIApplicationDelegate<TStartup, TApplication> : UIApplicationDelegate, IUIApplicationDelegate
+		where TStartup : IStartup
+		where TApplication : MauiApp
 	{
 		public override UIWindow? Window
 		{
@@ -19,22 +19,32 @@ namespace Microsoft.Maui
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
+			if (!(Activator.CreateInstance(typeof(TStartup)) is TStartup startup))
+				throw new InvalidOperationException($"We weren't able to create the Startup {typeof(TStartup)}");
+
+			var appBuilder = AppHostBuilder
+				.CreateDefaultAppBuilder()
+				.ConfigureServices(ConfigureNativeServices);
+
+			startup.Configure(appBuilder);
+
+			appBuilder.Build();
+
 			if (!(Activator.CreateInstance(typeof(TApplication)) is TApplication app))
 				throw new InvalidOperationException($"We weren't able to create the App {typeof(TApplication)}");
 
-			var host = app.CreateBuilder().ConfigureServices(ConfigureNativeServices).Build(app);
+			appBuilder.SetServiceProvider(app);
 
-			if (MauiApp.Current == null || MauiApp.Current.Services == null)
+			if (app == null || app.Services == null)
 				throw new InvalidOperationException("App was not intialized");
 
-
-			var mauiContext = new MauiContext(MauiApp.Current.Services);
+			var mauiContext = new MauiContext(app.Services);
 			var window = app.CreateWindow(new ActivationState(mauiContext));
 
 			window.MauiContext = mauiContext;
 
-			//Hack for now we set this on the App Static but this should be on IFrameworkElement
-			App.Current.SetHandlerContext(window.MauiContext);
+			// Hack for now we set this on the App Static but this should be on IFrameworkElement
+			app.SetHandlerContext(window.MauiContext);
 
 			var content = (window.Page as IView) ?? window.Page.View;
 

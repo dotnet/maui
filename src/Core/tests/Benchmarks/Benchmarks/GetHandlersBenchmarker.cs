@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	[MemoryDiagnoser]
 	public class GetHandlersBenchmarker
 	{
-		MockApp _app;
+		AppStub _app;
 
 		Registrar<IFrameworkElement, IViewHandler> _registrar;
 
@@ -16,10 +16,18 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[GlobalSetup(Target = nameof(GetHandlerUsingDI))]
 		public void SetupForDI()
 		{
-			_app = new MockApp();
-			_app.CreateBuilder()
-				.RegisterHandler<IButton, ButtonHandler>()
-				.Build(_app);
+			var startup = new StartupStub();
+
+			var appBuilder = AppHostBuilder
+				.CreateDefaultAppBuilder();
+
+			startup.Configure(appBuilder);
+
+			appBuilder.Build();
+
+			_app = new AppStub();
+
+			appBuilder.SetServiceProvider(_app);
 		}
 
 		[GlobalSetup(Target = nameof(GetHandlerUsingRegistrar))]

@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
@@ -14,6 +12,7 @@ namespace Microsoft.Maui
 		{
 			if (Current != null)
 				throw new InvalidOperationException($"Only one {nameof(App)} instance is allowed");
+
 			Current = this;
 		}
 
@@ -22,9 +21,6 @@ namespace Microsoft.Maui
 		public IServiceProvider? Services => _serviceProvider;
 
 		public IMauiContext? Context => _context;
-
-		//move to abstract
-		public virtual IAppHostBuilder CreateBuilder() => CreateDefaultBuilder();
 
 		internal void SetServiceProvider(IServiceProvider provider)
 		{
@@ -35,16 +31,6 @@ namespace Microsoft.Maui
 		internal void SetHandlerContext(IMauiContext? context)
 		{
 			_context = context;
-		}
-
-		public static IAppHostBuilder CreateDefaultBuilder()
-		{
-			var builder = new AppHostBuilder();
-
-			builder.UseMauiHandlers();
-			builder.UseFonts();
-
-			return builder;
 		}
 	}
 }

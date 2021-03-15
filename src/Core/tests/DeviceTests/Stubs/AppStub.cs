@@ -6,7 +6,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public override IWindow CreateWindow(IActivationState state)
 		{
-			throw new NotImplementedException();
+			return new WindowStub();
 		}
 
 		public void Dispose()

@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Hosting
 		readonly List<Action<HostBuilderContext, IFontCollection>> _configureFontsActions = new List<Action<HostBuilderContext, IFontCollection>>();
 		readonly List<IConfigureContainerAdapter> _configureContainerActions = new List<IConfigureContainerAdapter>();
 		readonly Func<IServiceCollection> _serviceColectionFactory = new Func<IServiceCollection>(() => new MauiServiceCollection());
+
 		IServiceFactoryAdapter _serviceProviderFactory = new ServiceFactoryAdapter<IServiceCollection>(new MauiServiceProviderFactory());
+
 		bool _hostBuilt;
 		HostBuilderContext? _hostBuilderContext;
 		IHostEnvironment? _hostEnvironment;
@@ -34,43 +36,29 @@ namespace Microsoft.Maui.Hosting
 		}
 		public IDictionary<object, object> Properties => new Dictionary<object, object>();
 
-		public IHost Build(IApp app)
+		public static IAppHostBuilder CreateDefaultAppBuilder()
 		{
-			_app = app as App;
-			return Build();
+			var builder = new AppHostBuilder();
+
+			builder.UseMauiHandlers();
+			builder.UseFonts();
+
+			return builder;
 		}
 
 		public IHost Build()
+			=> InternalBuild();
+
+		public void SetServiceProvider(IApp app)
 		{
-			_services = _serviceColectionFactory();
-
-			if (_hostBuilt)
-				throw new InvalidOperationException("Build can only be called once.");
-
-			_hostBuilt = true;
-
-			// the order is important here
-			BuildHostConfiguration();
-			CreateHostingEnvironment();
-			CreateHostBuilderContext();
-			BuildAppConfiguration();
-
-			if (_services == null)
-				throw new InvalidOperationException("The ServiceCollection cannot be null");
-
-			ConfigureHandlers(_services);
-			CreateServiceProvider(_services);
+			_app = app as MauiApp;
 
 			if (_serviceProvider == null)
 				throw new InvalidOperationException($"The ServiceProvider cannot be null");
 
-			BuildFontRegistrar(_serviceProvider);
-
 			//we do this here because we can't inject the provider on the App ctor
 			//before we register the user ConfigureServices should this live in IApp ?
 			_app?.SetServiceProvider(_serviceProvider);
-
-			return new AppHost(_serviceProvider, null);
 		}
 
 		public IAppHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
@@ -125,6 +113,38 @@ namespace Microsoft.Maui.Hosting
 		}
 #pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint
 
+		internal IHost InternalBuild()
+		{
+			_services = _serviceColectionFactory();
+
+			if (_hostBuilt)
+				throw new InvalidOperationException("Build can only be called once.");
+
+			_hostBuilt = true;
+
+			// the order is important here
+			BuildHostConfiguration();
+			CreateHostingEnvironment();
+			CreateHostBuilderContext();
+			BuildAppConfiguration();
+
+			if (_services == null)
+				throw new InvalidOperationException("The ServiceCollection cannot be null");
+
+			ConfigureHandlers(_services);
+			CreateServiceProvider(_services);
+
+			if (_serviceProvider == null)
+				throw new InvalidOperationException($"The ServiceProvider cannot be null");
+
+			BuildFontRegistrar(_serviceProvider);
+
+			//we do this here because we can't inject the provider on the App ctor
+			//before we register the user ConfigureServices should this live in IApp ?
+			_app?.SetServiceProvider(_serviceProvider);
+
+			return new AppHost(_serviceProvider, null);
+		}
 
 		void BuildHostConfiguration()
 		{

@@ -14,10 +14,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		public HandlerTestFixture()
 		{
-			_app = new AppStub();
-			_context = new ContextStub(_app);
-			_host = _app
-				.CreateBuilder()
+			StartupStub startup = new StartupStub();
+
+			var appBuilder = AppHostBuilder
+				.CreateDefaultAppBuilder()
 				.ConfigureFonts((ctx, fonts) =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
@@ -25,8 +25,17 @@ namespace Microsoft.Maui.DeviceTests
 				.ConfigureServices((ctx, services) =>
 				{
 					services.AddSingleton(_context);
-				})
-				.Build(_app);
+				});
+
+			startup.Configure(appBuilder);
+
+			_host = appBuilder.Build();
+
+			_app = new AppStub();
+
+			appBuilder.SetServiceProvider(_app);
+
+			_context = new ContextStub(_app);
 		}
 
 		public void Dispose()
