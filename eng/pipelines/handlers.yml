@@ -177,6 +177,7 @@ stages:
           vmImage: $(vmImage)
         steps:
           - task: UseDotNet@2
+            condition: eq('$(System.PhaseName)', 'macos')
             displayName: install .NET Core 3.1
             inputs:
               version: 3.1.x
