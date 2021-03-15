@@ -66,10 +66,5 @@ namespace Microsoft.Maui
 
 			picker.SelectedItem = picker.Items[index];
 		}
-
-		internal static void UpdateAttributedPlaceholder(this MauiPicker nativePicker, NSAttributedString nsAttributedString)
-		{
-			nativePicker.AttributedPlaceholder = nsAttributedString;
-		}
 	}
 }

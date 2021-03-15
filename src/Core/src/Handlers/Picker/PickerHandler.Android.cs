@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnClick(object? sender, EventArgs e)
 		{
-			if (VirtualView != null && _dialog == null)
+			if (_dialog == null && VirtualView != null)
 			{
 				using (var builder = new AlertDialog.Builder(Context))
 				{
