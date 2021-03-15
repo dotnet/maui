@@ -277,7 +277,7 @@ stages:
           clean: all
         displayName: Build .NET 6 macOS
         timeoutInMinutes: 120
-        condition: $[ variables['BuildCondition'] ]
+        # condition: $[ variables['BuildCondition'] ]
         pool:
           name: $(macOSXNet6VmPool)
           vmImage: $(macOSXNet6VmImage)
