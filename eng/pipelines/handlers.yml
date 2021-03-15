@@ -58,7 +58,7 @@ variables:
 
 parameters:
   - name: BuildConfigurations
-    value:
+    values:
       - Debug
       - Release
 
@@ -78,14 +78,13 @@ stages:
         - job: win_hosted_$(BuildCondition)
           workspace:
             clean: all
-          displayName: Build Windows Phase $(BuildCondition)
+          displayName: Build Windows Phase ($(BuildCondition))
           condition: or(ne(variables['Build.Reason'], 'PullRequest'), eq('${{ BuildCondition }}', 'Release'))
           timeoutInMinutes: 60
           pool:
             name: $(vs2019VmPool)
             vmImage: $(vs2019VmImage)
-            demands:
-              msbuild
+            demands: [ msbuild ]
           steps:
             - template: common/build-windows.yml
 
