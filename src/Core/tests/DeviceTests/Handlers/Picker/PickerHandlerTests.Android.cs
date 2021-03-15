@@ -17,8 +17,8 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(picker, () => picker.Title, GetNativeTitle, picker.Title);
 		}
 
-		NativePicker GetNativePicker(PickerHandler pickerHandler) =>
-			(NativePicker)pickerHandler.View;
+		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
+			(MauiPicker)pickerHandler.View;
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Hint;
