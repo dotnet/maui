@@ -68,11 +68,11 @@ stages:
   - stage: windows
     displayName: Build Windows
     jobs:
-      - ${{ each BuildCondition in ['Debug', 'Release'] }}:
-        - job: win_hosted
+      - ${{ each BuildCondition in (['Debug', 'Release']) }}:
+        - job: win_hosted_$(BuildCondition)
           workspace:
             clean: all
-          displayName: Build Windows Phase
+          displayName: Build Windows Phase $(BuildCondition)
           timeoutInMinutes: 60
           pool:
             name: $(vs2019VmPool)
