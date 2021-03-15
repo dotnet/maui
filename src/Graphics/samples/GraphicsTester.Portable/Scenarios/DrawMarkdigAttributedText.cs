@@ -1,5 +1,5 @@
-﻿using System.Graphics;
-using System.Graphics.Text;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Text;
 
 namespace GraphicsTester.Scenarios
 {

@@ -21,13 +21,13 @@ jobs:
         nuget-version: '5.x'
 
     - name: NuGet Restore
-      run: nuget restore build/Build.System.Graphics.Windows.sln
+      run: nuget restore build/Build.Microsoft.Maui.Graphics.Windows.sln
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Build
-      run: msbuild build/Build.System.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+      run: msbuild build/Build.Microsoft.Maui.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
 
   build-on-mac:
     runs-on: macos-latest
@@ -35,21 +35,13 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
-              
+
     - name: Setup DotNet
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '5.0'
 
-    - name: Install NuGet
-      uses: nuget/setup-nuget@v1
-      with:
-        nuget-version: '5.x'
-            
-    - name: NuGet Restore
-      run: nuget restore build/Build.System.Graphics.Mac.sln
-    
     - name: Build
-      run: msbuild build/Build.System.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
-  
-      
+      run: msbuild build/Build.Microsoft.Maui.Graphics.Mac.sln /verbosity:normal /r /t:Rebuild /p:Configuration=Release
+
+

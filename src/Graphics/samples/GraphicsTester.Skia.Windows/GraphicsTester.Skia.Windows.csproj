@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -12,7 +12,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.17763.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <Version>1.0.0.0</Version>
   </PropertyGroup>
@@ -59,8 +59,8 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\System.Graphics.GDI.Winforms\System.Graphics.GDI.Winforms.csproj" />
-    <ProjectReference Include="..\..\src\System.Graphics.Skia.WPF\System.Graphics.Skia.WPF.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.GDI.Winforms\Microsoft.Maui.Graphics.GDI.Winforms.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Skia.WPF\Microsoft.Maui.Graphics.Skia.WPF.csproj" />
     <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj">
     </ProjectReference>
   </ItemGroup>

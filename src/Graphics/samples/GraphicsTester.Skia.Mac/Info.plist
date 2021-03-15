@@ -5,7 +5,7 @@
 	<key>CFBundleName</key>
 	<string>GraphicsTester.Skia</string>
 	<key>CFBundleIdentifier</key>
-	<string>system.graphics.graphicstester-skia</string>
+	<string>Microsoft.Maui.Graphics.graphicstester-skia</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>

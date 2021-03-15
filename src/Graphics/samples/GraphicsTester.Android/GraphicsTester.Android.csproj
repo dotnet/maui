@@ -70,9 +70,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj">
       <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
-      <Name>System.Graphics</Name>
+      <Name>Microsoft.Maui.Graphics</Name>
     </ProjectReference>
     <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj">
       <Project>{D1878E17-08A7-4858-94B8-DE8B38BE2632}</Project>

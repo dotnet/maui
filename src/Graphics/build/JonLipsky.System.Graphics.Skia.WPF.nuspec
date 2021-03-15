@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>JonLipsky.System.Graphics.Skia.WPF</id>
+    <id>JonLipsky.Microsoft.Maui.Graphics.Skia.WPF</id>
     <version>$version$</version>
-    <title>JonLipsky.System.Graphics.Skia.WPF</title>
+    <title>JonLipsky.Microsoft.Maui.Graphics.Skia.WPF</title>
     <authors>Jon Lipsky</authors>
     <owners>jonlipsky</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Support for System.Graphics using Skia on WPF</description>
-    <summary>This allows you to use Skia as a System.Graphics target in WPF.</summary>
+    <description>Support for Microsoft.Maui.Graphics using Skia on WPF</description>
+    <summary>This allows you to use Skia as a Microsoft.Maui.Graphics target in WPF.</summary>
     <copyright>Jon Lipsky</copyright>
-    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
+    <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="JonLipsky.System.Graphics" version="$version$"/>
+        <dependency id="JonLipsky.Microsoft.Maui.Graphics" version="$version$"/>
         <dependency id="SkiaSharp" version="2.80.2"/>
         <dependency id="SkiaSharp.Views" version="2.80.2"/>
         <dependency id="SkiaSharp.Views.WPF" version="2.80.2"/>
@@ -24,7 +24,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="src/System.Graphics.Skia.WPF/bin/Release/net5.0-windows/System.Graphics.Skia.WPF.dll" target="lib/netstandard2.0/System.Graphics.Skia.WPF.dll"/>
-    <file src="src/System.Graphics.Skia.WPF/bin/Release/net5.0-windows/System.Graphics.Skia.WPF.pdb" target="lib/netstandard2.0/System.Graphics.Skia.WPF.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.WPF/bin/Release/net5.0-windows/Microsoft.Maui.Graphics.Skia.WPF.dll" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Skia.WPF.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia.WPF/bin/Release/net5.0-windows/Microsoft.Maui.Graphics.Skia.WPF.pdb" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Skia.WPF.pdb"/>
   </files>
 </package>

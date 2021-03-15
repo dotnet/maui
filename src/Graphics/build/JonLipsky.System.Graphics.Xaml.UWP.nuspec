@@ -1,27 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>JonLipsky.System.Graphics.Xaml.UWP</id>
+    <id>JonLipsky.Microsoft.Maui.Graphics.Xaml.UWP</id>
     <version>$version$</version>
-    <title>JonLipsky.System.Graphics.Xaml.UWP</title>
+    <title>JonLipsky.Microsoft.Maui.Graphics.Xaml.UWP</title>
     <authors>Jon Lipsky</authors>
     <owners>jonlipsky</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>System.Graphics for UWP powered by Xaml</description>
-    <summary>System.Graphics for UWP powered by Xaml</summary>
+    <description>Microsoft.Maui.Graphics for UWP powered by Xaml</description>
+    <summary>Microsoft.Maui.Graphics for UWP powered by Xaml</summary>
     <copyright>Jon Lipsky</copyright>
-    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
+    <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="JonLipsky.System.Graphics" version="$version$"/>
+        <dependency id="JonLipsky.Microsoft.Maui.Graphics" version="$version$"/>
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="src/System.Graphics.Xaml.UWP/bin/Release/System.Graphics.Xaml.UWP.dll" target="lib/uap/System.Graphics.Xaml.UWP.dll"/>
-    <file src="src/System.Graphics.Xaml.UWP/bin/Release/System.Graphics.Xaml.UWP.pdb" target="lib/uap/System.Graphics.Xaml.UWP.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Xaml.UWP/bin/Release/Microsoft.Maui.Graphics.Xaml.UWP.dll" target="lib/uap/Microsoft.Maui.Graphics.Xaml.UWP.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Xaml.UWP/bin/Release/Microsoft.Maui.Graphics.Xaml.UWP.pdb" target="lib/uap/Microsoft.Maui.Graphics.Xaml.UWP.dll"/>
   </files>
 </package>

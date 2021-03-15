@@ -1,32 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>JonLipsky.System.Graphics</id>
+    <id>JonLipsky.Microsoft.Maui.Graphics</id>
     <version>$version$</version>
-    <title>JonLipsky.System.Graphics</title>
+    <title>JonLipsky.Microsoft.Maui.Graphics</title>
     <authors>Jon Lipsky</authors>
     <owners>jonlipsky</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A cross-platform graphics abstraction for dotnet.</description>
     <summary>This library allows you to target the native graphics platforms with a common cross-platform abstraction allowing you to share drawing code.</summary>
     <copyright>Jon Lipsky</copyright>
-    <projectUrl>https://github.com/jonlipsky/System.Graphics</projectUrl>
-    <repository type="git" url="https://github.com/jonlipsky/System.Graphics"/>
+    <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
     </dependencies>
   </metadata>
   <files>
-    <file src="src/System.Graphics/bin/Release/netstandard2.0/System.Graphics.dll" target="lib/netstandard2.0/System.Graphics.dll"/>
-    <file src="src/System.Graphics/bin/Release/netstandard2.0/System.Graphics.pdb" target="lib/netstandard2.0/System.Graphics.pdb"/>
-    <file src="src/System.Graphics/bin/Release/netstandard2.1/System.Graphics.dll" target="lib/netstandard2.1/System.Graphics.dll"/>
-    <file src="src/System.Graphics/bin/Release/netstandard2.1/System.Graphics.pdb" target="lib/netstandard2.1/System.Graphics.pdb"/>
-    <file src="src/System.Graphics/bin/Release/xamarin.ios10/System.Graphics.dll" target="lib/xamarin.ios10/System.Graphics.dll"/>
-    <file src="src/System.Graphics/bin/Release/xamarin.ios10/System.Graphics.pdb" target="lib/xamarin.ios10/System.Graphics.pdb"/>
-    <file src="src/System.Graphics/bin/Release/monoandroid10.0/System.Graphics.dll" target="lib/monoandroid10.0/System.Graphics.dll"/>
-    <file src="src/System.Graphics/bin/Release/monoandroid10.0/System.Graphics.pdb" target="lib/monoandroid10.0/System.Graphics.pdb"/>
-    <file src="src/System.Graphics/bin/Release/xamarin.mac20/System.Graphics.dll" target="lib/xamarin.mac20/System.Graphics.dll"/>
-    <file src="src/System.Graphics/bin/Release/xamarin.mac20/System.Graphics.pdb" target="lib/xamarin.mac20/System.Graphics.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/Release/netstandard2.0/Microsoft.Maui.Graphics.dll" target="lib/netstandard2.0/Microsoft.Maui.Graphics.dll"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/Release/netstandard2.0/Microsoft.Maui.Graphics.pdb" target="lib/netstandard2.0/Microsoft.Maui.Graphics.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/Release/netstandard2.1/Microsoft.Maui.Graphics.dll" target="lib/netstandard2.1/Microsoft.Maui.Graphics.dll"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/Release/netstandard2.1/Microsoft.Maui.Graphics.pdb" target="lib/netstandard2.1/Microsoft.Maui.Graphics.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/Release/xamarin.ios10/Microsoft.Maui.Graphics.dll" target="lib/xamarin.ios10/Microsoft.Maui.Graphics.dll"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/Release/xamarin.ios10/Microsoft.Maui.Graphics.pdb" target="lib/xamarin.ios10/Microsoft.Maui.Graphics.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/Release/monoandroid10.0/Microsoft.Maui.Graphics.dll" target="lib/monoandroid10.0/Microsoft.Maui.Graphics.dll"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/Release/monoandroid10.0/Microsoft.Maui.Graphics.pdb" target="lib/monoandroid10.0/Microsoft.Maui.Graphics.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/Release/xamarin.mac20/Microsoft.Maui.Graphics.dll" target="lib/xamarin.mac20/Microsoft.Maui.Graphics.dll"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/Release/xamarin.mac20/Microsoft.Maui.Graphics.pdb" target="lib/xamarin.mac20/Microsoft.Maui.Graphics.pdb"/>
   </files>
 </package>

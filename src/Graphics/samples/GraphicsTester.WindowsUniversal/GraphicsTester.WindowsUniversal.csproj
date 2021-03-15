@@ -130,17 +130,17 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj">
       <Project>{76f3031e-341e-43cc-bd92-b23f83495db7}</Project>
-      <Name>System.Graphics.Core</Name>
+      <Name>Microsoft.Maui.Graphics.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\System.Graphics.SharpDX.UWP\System.Graphics.SharpDX.UWP.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.SharpDX.UWP\Microsoft.Maui.Graphics.SharpDX.UWP.csproj">
       <Project>{694e970d-5c18-483f-bc48-d6d86da8e78f}</Project>
-      <Name>System.Graphics.SharpDX.UWP</Name>
+      <Name>Microsoft.Maui.Graphics.SharpDX.UWP</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\System.Graphics.Win2D.UWP\System.Graphics.Win2D.UWP.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Win2D.UWP\Microsoft.Maui.Graphics.Win2D.UWP.csproj">
       <Project>{20794e60-3bfd-46f4-bc0b-87b3959aa3c7}</Project>
-      <Name>System.Graphics.Win2D.UWP</Name>
+      <Name>Microsoft.Maui.Graphics.Win2D.UWP</Name>
     </ProjectReference>
     <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj">
       <Project>{5f0cd247-afcb-4b1e-86e1-85d59e650fff}</Project>

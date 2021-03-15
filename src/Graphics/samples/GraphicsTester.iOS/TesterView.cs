@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Graphics;
-using System.Graphics.CoreGraphics;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.CoreGraphics;
 using CoreGraphics;
 using Foundation;
 using GraphicsTester.Scenarios;

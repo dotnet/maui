@@ -1,5 +1,5 @@
-﻿using System.Graphics;
-using System.Graphics.SharpDX;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.SharpDX;
 using System.Windows;
 using GraphicsTester.Scenarios;
 

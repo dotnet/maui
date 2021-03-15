@@ -18,7 +18,7 @@ jobs:
         nuget-version: '5.x'
 
     - name: NuGet Restore
-      run: nuget restore build/Build.System.Graphics.Windows.sln
+      run: nuget restore build/Build.Microsoft.Maui.Graphics.Windows.sln
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -30,31 +30,31 @@ jobs:
 #        version: '0.1.${{ github.run_number }}'   
         
     - name: Build
-      run: msbuild build/Build.System.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+      run: msbuild build/Build.Microsoft.Maui.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.GDI.Winforms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.GDI.Winforms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.SharpDX.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.SharpDX.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.SharpDX.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.SharpDX.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.Skia.WPF.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Skia.WPF.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.Text.WPF.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Text.WPF.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.Win2D.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Win2D.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.Xaml.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Xaml.UWP.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.Xaml.WPF.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Xaml.WPF.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: 'Upload Artifacts'
       uses: actions/upload-artifact@v2
@@ -81,25 +81,25 @@ jobs:
         version: '0.1.${{ github.run_number }}'              
               
     - name: NuGet Restore
-      run: nuget restore build/Build.System.Graphics.Mac.sln
+      run: nuget restore build/Build.Microsoft.Maui.Graphics.Mac.sln
     
     - name: Build
-      run: msbuild build/Build.System.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+      run: msbuild build/Build.Microsoft.Maui.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
     
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.Skia.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Skia.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.Skia.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Skia.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: nuget pack build/JonLipsky.System.Graphics.Text.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Text.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: 'Upload Artifacts'
       uses: actions/upload-artifact@v2

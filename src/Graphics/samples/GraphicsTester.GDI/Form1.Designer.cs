@@ -1,4 +1,4 @@
-﻿using System.Graphics.GDI;
+﻿using Microsoft.Maui.Graphics.GDI;
 
 namespace GraphicsTester.GDI
 {

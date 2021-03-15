@@ -5,7 +5,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>GraphicsTester.Mac</string>
 	<key>CFBundleIdentifier</key>
-	<string>system.graphics.GraphicsTester.Mac</string>
+	<string>Microsoft.Maui.Graphics.GraphicsTester.Mac</string>
 	<key>CFBundleName</key>
 	<string>GraphicsTester.Mac</string>
 	<key>CFBundleVersion</key>

@@ -9,7 +9,7 @@
     <AssemblyName>GraphicsTester.SharpDX.Windows</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <WarningLevel>4</WarningLevel>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.17763.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <Version>1.0.0.0</Version>
   </PropertyGroup>
@@ -36,8 +36,8 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\System.Graphics.SharpDX.WPF\System.Graphics.SharpDX.WPF.csproj" />
-    <ProjectReference Include="..\..\src\System.Graphics\System.Graphics.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.SharpDX.WPF\Microsoft.Maui.Graphics.SharpDX.WPF.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
     <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj">
     </ProjectReference>
   </ItemGroup>

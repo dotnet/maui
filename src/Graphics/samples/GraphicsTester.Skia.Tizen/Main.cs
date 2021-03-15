@@ -2,7 +2,7 @@ using System;
 using ElmSharp;
 using Tizen.Applications;
 using GraphicsTester.Scenarios;
-using System.Graphics.Skia.Views;
+using Microsoft.Maui.Graphics.Skia.Views;
 
 namespace GraphicsTester.Skia.Tizen
 {
