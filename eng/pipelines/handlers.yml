@@ -87,7 +87,7 @@ stages:
               BuildCondition: ne(variables['Build.Reason'], 'PullRequest')
               BuildConfiguration: 'Debug'
         steps:
-          - $[ variables['BuildCondition'] ]:
+          - ${{ variables['BuildCondition'] }}:
             - template: common/build-windows.yml
 
   # - stage: build_osx
