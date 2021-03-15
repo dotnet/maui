@@ -123,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences);
 		}
-		
+
 		double GetNativeUnscaledFontSize(EntryHandler entryHandler)
 		{
 			var textView = GetNativeEntry(entryHandler);

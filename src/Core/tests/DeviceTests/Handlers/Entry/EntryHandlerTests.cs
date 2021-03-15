@@ -165,8 +165,8 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeIsReadOnly,
 				setValue,
 				unsetValue);
-		}		
-				
+		}
+
 		[Theory(DisplayName = "Font Size Initializes Correctly")]
 		[InlineData(1)]
 		[InlineData(10)]
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(initialText, e.OldValue);
 				Assert.Equal(newText ?? string.Empty, e.NewValue);
 			};
-		
+
 			await SetValueAsync(entry, newText, SetNativeText);
 
 			if (eventExpected)
