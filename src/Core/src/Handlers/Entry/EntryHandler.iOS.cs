@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Handlers
 			if (mauiText != nativeText)
 				VirtualView.Text = nativeText;
 		}
-		
+
 		public static void MapFont(EntryHandler handler, IEntry entry)
 		{
 			var services = Application.Current?.Services

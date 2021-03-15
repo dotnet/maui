@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsReadOnly(EntryHandler entryHandler) =>
 			!GetNativeEntry(entryHandler).UserInteractionEnabled;
-			
+
 		double GetNativeUnscaledFontSize(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Font.PointSize;
 

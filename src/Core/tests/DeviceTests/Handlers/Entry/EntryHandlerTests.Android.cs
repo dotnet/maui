@@ -72,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return !editText.Focusable && !editText.FocusableInTouchMode;
 		}
-		
+
 		double GetNativeUnscaledFontSize(EntryHandler entryHandler)
 		{
 			var textView = GetNativeEntry(entryHandler);

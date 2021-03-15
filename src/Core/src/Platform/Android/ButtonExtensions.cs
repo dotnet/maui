@@ -1,5 +1,5 @@
-using Android.Util;
 using Android.Content.Res;
+using Android.Util;
 using AndroidX.AppCompat.Widget;
 using XColor = Microsoft.Maui.Color;
 
