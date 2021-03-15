@@ -173,6 +173,8 @@ stages:
               bootsAndroid: $(Android.Pkg)
               bootsiOS: $(iOS.Pkg)
               bootsMacCatalyst: $(MacCatalyst.Pkg)
+              DotNet.Root: /usr/local/share/dotnet/
+              DotNet.Tools: ~/.dotnet/tools
         pool:
           name: $(poolName)
           vmImage: $(vmImage)
