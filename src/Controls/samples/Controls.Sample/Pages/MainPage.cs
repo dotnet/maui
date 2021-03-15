@@ -34,7 +34,7 @@ namespace Maui.Controls.Sample.Pages
 				"Phasellus mattis mollis libero ut semper. In sit amet sapien odio. " +
 				"Sed interdum ullamcorper dui eu rutrum. Vestibulum non sagittis justo. " +
 				"Cras rutrum scelerisque elit, et porta est lobortis ac. " +
-				"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";    
+				"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";
 
 			var verticalStack = new VerticalStackLayout() { Spacing = 5, Background = Brush.AntiqueWhite };
 
@@ -61,9 +61,9 @@ namespace Maui.Controls.Sample.Pages
 			};
 
 			verticalStack.Add(paddingButton);
-      
+
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
-      
+
 			var label = new Label { Text = "centered text", BackgroundColor = Color.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
@@ -76,10 +76,10 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
 			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
-    
-      var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
+
+			var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
 			verticalStack.Add(underlineLabel);
-      
+
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
 			var button2 = new Button()
 			{
