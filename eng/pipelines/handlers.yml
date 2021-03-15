@@ -126,7 +126,7 @@ stages:
               boots $(bootsMacCatalyst)
             displayName: install .NET workloads
             errorActionPreference: stop
-            condition: eq(variables['System.PhaseName'], 'macos')
+            condition: eq(variables['System.JobName'], 'macos')
           - bash: |
               set -x
               mkdir -p ~/Library/Preferences/Xamarin
@@ -134,7 +134,7 @@ stages:
               /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
               cat ~/Library/Preferences/Xamarin/Settings.plist || true
             displayName: configure vsmac xcode
-            condition: eq(variables['System.PhaseName'], 'macos')
+            condition: eq(variables['System.JobName'], 'macos')
           - pwsh: ./.nuspec/package.ps1 -configuration Release
             displayName: pack nugets
             errorActionPreference: stop
@@ -182,7 +182,7 @@ stages:
           vmImage: $(vmImage)
         steps:
           - task: UseDotNet@2
-            condition: eq(variables['System.PhaseName'], 'macos')
+            condition: eq(variables['System.JobName'], 'macos')
             displayName: install .NET Core 3.1
             inputs:
               version: 3.1.x
@@ -198,7 +198,7 @@ stages:
               boots $(bootsMacCatalyst)
             displayName: install .NET workloads
             errorActionPreference: stop
-            condition: eq(variables['System.PhaseName'], 'macos')
+            condition: eq(variables['System.JobName'], 'macos')
           - pwsh: |
               dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
               dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration).binlog
@@ -207,7 +207,7 @@ stages:
           - task: PublishBuildArtifacts@1
             displayName: publish artifacts
             inputs:
-              artifactName: NET6-$(System.PhaseName)
+              artifactName: NET6-$(System.JobName)
               targetPath: $(Build.ArtifactStagingDirectory)
             condition: always()
 
