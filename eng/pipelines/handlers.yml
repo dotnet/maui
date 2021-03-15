@@ -99,21 +99,21 @@ stages:
         strategy:
           matrix:
             windows:
-              poolName: vs2019VmPool
-              vmImage: vs2019VmImage
-              bootsAndroid: Android.Msi
-              bootsiOS: iOS.Msi
+              poolName: $(vs2019VmPool)
+              vmImage: $(vs2019VmImage)
+              bootsAndroid: $(Android.Msi)
+              bootsiOS: $(iOS.Msi)
               artifact: nuget-windows
             macos:
-              poolName: macOSXNet6VmPool
-              vmImage: macOSXNet6VmImage
-              bootsAndroid: Android.Pkg
-              bootsiOS: iOS.Pkg
-              bootsMacCatalyst: MacCatalyst.Pkg
+              poolName: $(macOSXNet6VmPool)
+              vmImage: $(macOSXNet6VmImage)
+              bootsAndroid: $(Android.Pkg)
+              bootsiOS: $(iOS.Pkg)
+              bootsMacCatalyst: $(MacCatalyst.Pkg)
               artifact: nuget
         pool:
-          name: variables['$(poolName)']
-          vmImage: variables['$(vmImage)']
+          name: $(poolName)
+          vmImage: $(vmImage)
         steps:
           - template: common/dotnet-install.yml
           - pwsh: |
