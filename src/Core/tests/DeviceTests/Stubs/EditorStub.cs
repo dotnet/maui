@@ -9,5 +9,7 @@
 		public Font Font { get; set; }
 
 		public double CharacterSpacing { get; set; }
+
+		public bool IsTextPredictionEnabled { get; }
 	}
 }

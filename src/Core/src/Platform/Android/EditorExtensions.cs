@@ -1,4 +1,5 @@
-﻿using AndroidX.AppCompat.Widget;
+﻿using Android.Text;
+using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
 {
@@ -22,6 +23,14 @@ namespace Microsoft.Maui
 		public static void UpdateCharacterSpacing(this AppCompatEditText editText, IEditor editor)
 		{
 			editText.LetterSpacing = editor.CharacterSpacing.ToEm();
+		}
+			
+		public static void UpdatePredictiveText(this AppCompatEditText editText, IEditor editor)
+		{
+			if(editor.IsTextPredictionEnabled)
+				return;
+			
+			editText.InputType |= InputTypes.TextFlagNoSuggestions;
 		}
 	}
 }
