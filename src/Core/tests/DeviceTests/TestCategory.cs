@@ -10,5 +10,6 @@
     public const string SearchBar = "SearchBar";
 		public const string Slider = "Slider";
 		public const string Switch = "Switch";
+		public const string View = "View";
 	}
 }

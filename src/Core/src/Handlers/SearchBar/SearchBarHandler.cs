@@ -4,7 +4,8 @@
 	{
 		public static PropertyMapper<ISearchBar, SearchBarHandler> SearchBarMapper = new PropertyMapper<ISearchBar, SearchBarHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(ISearchBar.Text)] = MapText
+			[nameof(ISearchBar.Text)] = MapText,
+			[nameof(ISearchBar.Placeholder)] = MapPlaceholder
 		};
 
 		public SearchBarHandler() : base(SearchBarMapper)

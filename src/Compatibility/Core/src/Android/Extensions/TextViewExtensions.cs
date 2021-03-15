@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	internal static class TextViewExtensions
 	{
+		[PortHandler("Partially ported")]
 		public static void SetMaxLines(this TextView textView, Label label)
 		{
 			var maxLines = label.MaxLines;
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public static void SetLineBreakMode(this TextView textView, Button button) =>
 			SetLineBreak(textView, button.LineBreakMode);
 
-
+		[PortHandler]
 		public static int SetLineBreak(TextView textView, LineBreakMode lineBreakMode)
 		{
 			int maxLines = Int32.MaxValue;

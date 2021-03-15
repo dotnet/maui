@@ -262,6 +262,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void UpdatePadding()
 		{
 			if (_disposed || _renderer == null || _element == null)

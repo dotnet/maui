@@ -5,7 +5,6 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {
-
 	public class MainPage : ContentPage, IPage
 	{
 		MainPageViewModel _viewModel;
@@ -24,14 +23,21 @@ namespace Maui.Controls.Sample.Pages
 
 		void SetupMauiLayout()
 		{
+			const string loremIpsum =
+				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
+				"Quisque ut dolor metus. Duis vel iaculis mauris, sit amet finibus mi. " +
+				"Etiam congue ornare risus, in facilisis libero tempor eget. " +
+				"Phasellus mattis mollis libero ut semper. In sit amet sapien odio. " +
+				"Sed interdum ullamcorper dui eu rutrum. Vestibulum non sagittis justo. " +
+				"Cras rutrum scelerisque elit, et porta est lobortis ac. " +
+				"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";
+
 			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
 
-			var searchBar = new SearchBar();
-			searchBar.Text = "A search query";
-			verticalStack.Add(searchBar);
-
-			var label = new Label { Text = "This will disappear in ~5 seconds", BackgroundColor = Color.Fuchsia };
+			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
+      
+			var label = new Label { Text = "centered text", BackgroundColor = Color.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
 			verticalStack.Add(label);
@@ -39,9 +45,24 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Color.LightBlue });
+			verticalStack.Add(new Label { Text = loremIpsum });
+			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
+			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
+			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
+
+
+			var paddingButton = new Button
+			{
+				Padding = new Thickness(40),
+				Text = "This button has a padding!!",
+				BackgroundColor = Color.Purple,
+			};
+
+			verticalStack.Add(paddingButton);
 
 			var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
 			verticalStack.Add(underlineLabel);
+
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
 			var button2 = new Button()
@@ -66,6 +87,7 @@ namespace Maui.Controls.Sample.Pages
 			{
 				System.Console.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
 			};
+
 			verticalStack.Add(entry);
 			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
@@ -77,14 +99,25 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Color.Purple });
 
+			var searchBar = new SearchBar();
+			searchBar.Text = "A search query";
+			verticalStack.Add(searchBar);
+
+			var placeholderSearchBar = new SearchBar();
+			placeholderSearchBar.Placeholder = "Placeholder";
+			verticalStack.Add(placeholderSearchBar);
+
 			verticalStack.Add(new Slider());
 
 			verticalStack.Add(new Switch());
 			verticalStack.Add(new Switch() { OnColor = Color.Green });
 			verticalStack.Add(new Switch() { ThumbColor = Color.Yellow });
 			verticalStack.Add(new Switch() { OnColor = Color.Green, ThumbColor = Color.Yellow });
+
 			verticalStack.Add(new DatePicker());
+
 			verticalStack.Add(new TimePicker());
+
 			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
 
 			Content = verticalStack;
