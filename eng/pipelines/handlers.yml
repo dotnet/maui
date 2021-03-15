@@ -56,6 +56,12 @@ variables:
   - name: provisionator.extraArguments
     value: '--v'
 
+parameters:
+  - name: BuildConfigurations
+    value:
+      - Debug
+      - Release
+
 resources:
   repositories:
     - repository: xamarin-templates
@@ -68,19 +74,18 @@ stages:
   - stage: windows
     displayName: Build Windows
     jobs:
-      - ${{ each BuildCondition in (['Debug', 'Release']) }}:
+      - ${{ each BuildCondition in parameters.BuildConfigurations }}:
         - job: win_hosted_$(BuildCondition)
           workspace:
             clean: all
           displayName: Build Windows Phase $(BuildCondition)
+          condition: or(ne(variables['Build.Reason'], 'PullRequest'), eq('${{ BuildCondition }}', 'Release'))
           timeoutInMinutes: 60
           pool:
             name: $(vs2019VmPool)
             vmImage: $(vs2019VmImage)
             demands:
               msbuild
-                # BuildCondition: ne(variables['Build.Reason'], 'PullRequest')
-                # BuildConfiguration: 'Debug'
           steps:
             - template: common/build-windows.yml
 
