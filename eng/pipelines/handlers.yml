@@ -80,10 +80,11 @@ stages:
             msbuild
         strategy:
           matrix:
-            debug:
-              BuildConfiguration:  'Debug'
             release:
               BuildConfiguration:  'Release'
+            ${{ ne(variables['Build.Reason'], 'PullRequest') }}:
+              debug:
+                BuildConfiguration:  'Debug'
         steps:
           - template: common/build-windows.yml
 
@@ -139,6 +140,7 @@ stages:
           clean: all
         displayName: Pack .NET 6 Windows
         timeoutInMinutes: 120
+        condition: ne(variables['Build.Reason'], 'PullRequest')
         pool:
           vmImage: windows-latest
         steps:
@@ -235,6 +237,7 @@ stages:
           clean: all
         displayName: Build .NET 6 Windows
         timeoutInMinutes: 120
+        condition: ne(variables['Build.Reason'], 'PullRequest')
         pool:
           vmImage:  windows-latest
         strategy:
@@ -280,8 +283,9 @@ stages:
           DotNet.Tools: ~/.dotnet/tools
         strategy:
           matrix:
-            debug:
-              BuildConfiguration:  'Debug'
+            ${{ ne(variables['Build.Reason'], 'PullRequest') }}:
+              debug:
+                BuildConfiguration:  'Debug'
             release:
               BuildConfiguration:  'Release'
         steps:
@@ -322,6 +326,8 @@ stages:
 
   - template: common/device-tests.yml
     parameters:
+      ${{ eq(variables['Build.Reason'], 'PullRequest') }}:
+        androidApiLevels: [ 30 ]
       projects:
         - name: essentials
           desc: Essentials
