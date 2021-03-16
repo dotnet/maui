@@ -54,7 +54,7 @@ namespace Microsoft.Maui
 				mutableAttributedString.AddAttribute
 				(
 					UIStringAttributeKey.KerningAdjustment,
-					NSObject.FromObject(characterSpacing), new NSRange(0, text != null ? text.Length - 1 : 0)
+					NSObject.FromObject(characterSpacing), new NSRange(0, text != null ? text.Length : 0)
 				);
 			}
 		}
