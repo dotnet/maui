@@ -1,5 +1,6 @@
 ﻿using Android.Content.Res;
 using Android.Text;
+using Android.Util;
 using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
@@ -83,6 +84,17 @@ namespace Microsoft.Maui
 
 			editText.FocusableInTouchMode = isEditable;
 			editText.Focusable = isEditable;
+		}
+
+		public static void UpdateFont(this AppCompatEditText editText, IEntry entry, IFontManager fontManager)
+		{
+			var font = entry.Font;
+
+			var tf = fontManager.GetTypeface(font);
+			editText.Typeface = tf;
+
+			var sp = fontManager.GetScaledPixel(font);
+			editText.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 	}
 }

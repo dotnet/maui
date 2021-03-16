@@ -1,9 +1,8 @@
-using Android.Views;
+﻿using Android.Views;
 using ATextAlignment = Android.Views.TextAlignment;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui
 {
-	[PortHandler]
 	internal static class AlignmentExtensions
 	{
 		internal static ATextAlignment ToTextAlignment(this TextAlignment alignment)
