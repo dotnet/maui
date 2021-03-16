@@ -225,6 +225,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_view.PaintFlags |= PaintFlags.UnderlineText;
 		}
 
+		[PortHandler]
 		void UpdateGravity()
 		{
 			Label label = Element;

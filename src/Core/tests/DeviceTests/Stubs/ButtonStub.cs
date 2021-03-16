@@ -12,6 +12,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Font Font { get; set; }
 
+		public Thickness Padding { get; set; }
+
 		public event EventHandler Pressed;
 		public event EventHandler Released;
 		public event EventHandler Clicked;

@@ -172,6 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				ClearFocus(Control);
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();
@@ -243,6 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_editText.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
 		}
 
+		[PortHandler]
 		void UpdatePlaceholder()
 		{
 			Control.SetQueryHint(Element.Placeholder);
@@ -253,6 +255,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_hintColorSwitcher?.UpdateTextColor(_editText, Element.PlaceholderColor, _editText.SetHintTextColor);
 		}
 
+		[PortHandler]
 		void UpdateText()
 		{
 			string query = Control.Query;

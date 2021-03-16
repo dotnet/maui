@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
@@ -84,10 +85,19 @@ namespace Microsoft.Maui.Handlers
 
 			// Even though <null> is technically different to "", it has no
 			// functional difference to apps. Thus, hide it.
-			var mauiText = VirtualView.Text ?? string.Empty;
+			var mauiText = VirtualView!.Text ?? string.Empty;
 			var nativeText = TypedNativeView.Text ?? string.Empty;
 			if (mauiText != nativeText)
 				VirtualView.Text = nativeText;
+		}
+
+		public static void MapFont(EntryHandler handler, IEntry entry)
+		{
+			var services = App.Current?.Services
+				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
+			var fontManager = services.GetRequiredService<IFontManager>();
+
+			handler.TypedNativeView?.UpdateFont(entry, fontManager);
 		}
 	}
 }

@@ -1,13 +1,15 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Essentials;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Collection(TestCollections.Handlers)]
-	public partial class HandlerTestBase<THandler> : TestBase
+	public partial class HandlerTestBase<THandler, TStub> : TestBase
 		where THandler : IViewHandler
+		where TStub : StubBase, IView, new()
 	{
 		readonly HandlerTestFixture _fixture;
 
@@ -21,10 +23,10 @@ namespace Microsoft.Maui.DeviceTests
 		public Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			MainThread.InvokeOnMainThreadAsync(func);
 
-		public Task InvokeOnMainThreadAsync(Action action) =>
+		protected Task InvokeOnMainThreadAsync(Action action) =>
 			MainThread.InvokeOnMainThreadAsync(action);
 
-		public Task InvokeOnMainThreadAsync(Func<Task> func) =>
+		protected Task InvokeOnMainThreadAsync(Func<Task> func) =>
 			MainThread.InvokeOnMainThreadAsync(func);
 
 		public Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func) =>

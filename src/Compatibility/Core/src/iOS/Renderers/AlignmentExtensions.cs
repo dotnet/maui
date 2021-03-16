@@ -1,8 +1,8 @@
 using UIKit;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[PortHandler]
 	internal static class AlignmentExtensions
 	{
 		internal static UITextAlignment ToNativeTextAlignment(this TextAlignment alignment, EffectiveFlowDirection flowDirection)
