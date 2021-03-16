@@ -69,8 +69,8 @@ parameters:
     type: object
     default:
       - name: windows
-        poolName: $(vs2019VmPool)
-        vmImage: $(vs2019VmImage)
+        poolName: 'Azure Pipelines'
+        vmImage: windows-latest
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
         artifact: net6-windows
@@ -199,10 +199,10 @@ stages:
               clean: all
             displayName: Build .NET 6 (${{ BuildPlatform.name }} | ${{ BuildCondition }})
             timeoutInMinutes: 120
-            condition: or(
-              ${{ parameters.BuildEverything }},
-              ne(variables['Build.Reason'], 'PullRequest'),
-              and(eq('${{ BuildPlatform.name }}', 'macos'), eq('${{ BuildCondition }}', 'Release')))
+            # condition: or(
+            #   ${{ parameters.BuildEverything }},
+            #   ne(variables['Build.Reason'], 'PullRequest'),
+            #   and(eq('${{ BuildPlatform.name }}', 'macos'), eq('${{ BuildCondition }}', 'Release')))
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
