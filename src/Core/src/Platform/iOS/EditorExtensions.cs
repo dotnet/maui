@@ -13,5 +13,15 @@ namespace Microsoft.Maui
 				textView.Text = text;
 			}
 		}
+
+		public static void UpdateCharacterSpacing(this UITextView textView, IEditor editor)
+		{
+			var textAttr = textView.AttributedText.AddCharacterSpacing(editor.Text, editor.CharacterSpacing);
+
+			if (textAttr != null)
+				textView.AttributedText = textAttr;
+
+			// TODO: Include AttributedText to Label Placeholder
+		}
 	}
 }
