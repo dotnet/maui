@@ -60,8 +60,8 @@ var UWP_APP_PACKAGES_PATH = Argument("UWP_APP_PACKAGES_PATH", "*/AppPackages/");
 var UWP_APP_DRIVER_INSTALL_PATH = Argument("UWP_APP_DRIVER_INSTALL_PATH", "https://github.com/microsoft/WinAppDriver/releases/download/v1.2-RC/WindowsApplicationDriver.msi");
 
 var ANDROID_BUNDLE_ID = "com.xamarin.xamarin_forms_controlgallery";
-var ANDROID_CONTROLGALLERY = "src/Compatibility/ControlGallery/src/Xamarin.Forms.ControlGallery.Android/";
-var ANDROID_CONTROLGALLERY_PROJ = $"{ANDROID_CONTROLGALLERY}Xamarin.Forms.ControlGallery.Android.csproj";
+var ANDROID_CONTROLGALLERY = "src/Compatibility/ControlGallery/src/Android/";
+var ANDROID_CONTROLGALLERY_PROJ = $"{ANDROID_CONTROLGALLERY}Compatibility.ControlGallery.Android.csproj";
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
 var ANDROID_TEST_PROJ = "./src/Compatibility/ControlGallery/test/Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj";
 

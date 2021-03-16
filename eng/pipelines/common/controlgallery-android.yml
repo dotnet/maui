@@ -57,7 +57,7 @@ steps:
   - task: CopyFiles@2
     displayName: 'Copy $(renderers)'
     inputs:
-      SourceFolder: src/Compatibility/ControlGallery/src/Xamarin.Forms.ControlGallery.Android/bin/$(BuildConfiguration)/
+      SourceFolder: src/Compatibility/ControlGallery/src/Android/bin/$(BuildConfiguration)/
       Contents: '**/*.apk'
       TargetFolder: '$(build.artifactstagingdirectory)/androidApp'
       CleanTargetFolder: true
