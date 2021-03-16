@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			// Running on the simulator
 			// var app = ConfigureApp.iOS
 			//				  .PreferIdeSettings()
-			//		  		  .AppBundle("../../../Microsoft.Maui.Controls.ControlGallery.iOS/bin/iPhoneSimulator/Debug/XamarinFormsControlGalleryiOS.app")
+			//		  		  .AppBundle("../../../Microsoft.Maui.Controls.ControlGallery.iOS/bin/iPhoneSimulator/Debug/CompatibilityControlGalleryiOS.app")
 			//				  .Debug()
 			//				  .StartApp();
 

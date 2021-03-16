@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -40,10 +40,10 @@
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\..\ControlGallery\src\Xamarin.Forms.Core.UITests.Shared\Utilities\NumericExtensions.cs">
+    <Compile Include="..\..\..\ControlGallery\src\UITests.Shared\Utilities\NumericExtensions.cs">
       <Link>NumericExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\..\..\..\ControlGallery\src\Xamarin.Forms.Core.UITests.Shared\Utilities\ParsingUtils.cs">
+    <Compile Include="..\..\..\ControlGallery\src\UITests.Shared\Utilities\ParsingUtils.cs">
       <Link>ParsingUtils.cs</Link>
     </Compile>
     <Compile Include="AssertionExtensions.cs" />
@@ -73,25 +73,23 @@
     <Compile Include="ShapeTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj">
-      <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj">
-      <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
-      <Name>Xamarin.Platform.Handlers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\iOS\Compatibility.iOS.csproj">
-      <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>
-      <Name>Xamarin.Forms.Platform.iOS</Name>
-      <IsAppExtension>false</IsAppExtension>
-      <IsWatchApp>false</IsWatchApp>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="NUnit">
       <Version>3.13.1</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj">
+      <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
+      <Name>Controls.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\iOS\Compatibility.iOS.csproj">
+      <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>
+      <Name>Compatibility.iOS</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>

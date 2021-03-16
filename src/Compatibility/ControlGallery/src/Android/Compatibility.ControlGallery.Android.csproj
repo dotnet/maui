@@ -206,8 +206,6 @@
       <Project>{E7D17A14-8399-4139-BDAA-EE4C1A3447FC}</Project>
       <Name>Compatibility.ControlGallery.Core</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup Condition="$(FromSource) == 'true'">
     <ProguardConfiguration Include="..\..\..\..\..\.nuspec\proguard.cfg">
       <Link>proguard.cfg</Link>
     </ProguardConfiguration>
