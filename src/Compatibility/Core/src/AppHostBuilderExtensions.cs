@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var defaultHandlers = new List<Type>
 			{
 				typeof(Button),
-        typeof(Editor),
+				typeof(Editor),
 				typeof(Entry),
 				typeof(ContentPage),
 				typeof(Page),
