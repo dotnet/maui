@@ -1,8 +1,7 @@
 ﻿namespace Microsoft.Maui
 {
-	public interface ICheck : IView
+	public interface ICheckBox : IView
 	{
 		bool IsChecked { get; set; }
-		Color Color { get; }
 	}
 }
