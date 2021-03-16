@@ -108,157 +108,162 @@ resources:
 
 stages:
 
-  - stage: windows
-    displayName: Build Windows
-    jobs:
-      - ${{ each BuildCondition in parameters.BuildConfigurations }}:
-        - job: win_hosted_${{ BuildCondition }}
-          workspace:
-            clean: all
-          displayName: Build Windows Phase (${{ BuildCondition }})
-          condition: or(ne(variables['Build.Reason'], 'PullRequest'), eq('${{ BuildCondition }}', 'Release'))
-          timeoutInMinutes: 60
-          pool:
-            name: $(vs2019VmPool)
-            vmImage: $(vs2019VmImage)
-            demands: [ msbuild ]
-          steps:
-            - template: common/build-windows.yml
+  # - stage: windows
+  #   displayName: Build Windows
+  #   jobs:
+  #     - ${{ each BuildCondition in parameters.BuildConfigurations }}:
+  #       - job: win_hosted_${{ BuildCondition }}
+  #         workspace:
+  #           clean: all
+  #         displayName: Build Windows Phase (${{ BuildCondition }})
+  #         condition: or(
+  #           ${{ parameters.BuildEverything }},
+  #           ne(variables['Build.Reason'], 'PullRequest'),
+  #           eq('${{ BuildCondition }}', 'Release'))
+  #         timeoutInMinutes: 60
+  #         pool:
+  #           name: $(vs2019VmPool)
+  #           vmImage: $(vs2019VmImage)
+  #           demands: [ msbuild ]
+  #         steps:
+  #           - template: common/build-windows.yml
 
-  - stage: pack_net6
-    displayName: Pack .NET 6
-    dependsOn: []
-    jobs:
-      - ${{ each BuildPlatform in parameters.PackPlatforms }}:
-        - job: pack_net6_${{ BuildPlatform.name }}
-          workspace:
-            clean: all
-          displayName: Pack .NET 6 (${{ BuildPlatform.name }})
-          timeoutInMinutes: 120
-          condition: or(
-            ${{ parameters.BuildEverything }},
-            ne(variables['Build.Reason'], 'PullRequest'),
-            eq('${{ BuildPlatform.name }}', 'macos'))
-          pool:
-            name: ${{ BuildPlatform.poolName }}
-            vmImage: ${{ BuildPlatform.vmImage }}
-          ${{ if eq(BuildPlatform.name, 'macos') }}:
-            variables:
-              DotNet.Root: /usr/local/share/dotnet/
-              DotNet.Tools: ~/.dotnet/tools
-          steps:
-            - ${{ if eq(BuildPlatform.name, 'macos') }}:
-              - task: UseDotNet@2
-                displayName: install .NET Core 3.1
-                inputs:
-                  version: 3.1.x
-                  installationPath: $(DotNet.Root)
-            - template: common/dotnet-install.yml
-            - pwsh: |
-                dotnet tool install --global boots
-                boots ${{ BuildPlatform.bootsAndroid }}
-                boots ${{ BuildPlatform.bootsiOS }}
-                if ('${{ BuildPlatform.name }}' -eq 'macos') {
-                  boots ${{ BuildPlatform.bootsMacCatalyst }}
-                }
-              displayName: install .NET workloads
-              errorActionPreference: stop
-            - ${{ if eq(BuildPlatform.name, 'macos') }}:
-              - bash: |
-                  set -x
-                  mkdir -p ~/Library/Preferences/Xamarin
-                  rm -f ~/Library/Preferences/Xamarin/Settings.plist
-                  /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
-                  cat ~/Library/Preferences/Xamarin/Settings.plist || true
-                displayName: configure vsmac xcode
-            - pwsh: ./.nuspec/package.ps1 -configuration Release
-              displayName: pack nugets
-              errorActionPreference: stop
-            - task: CopyFiles@2
-              displayName: 'Copy SignList.xml Files'
-              inputs:
-                Contents: |
-                  **/*.nupkg
-                  **/*.snupkg
-                  **/SignList.xml
-                TargetFolder: $(build.artifactstagingdirectory)
-                flattenFolders: true
-            - task: PublishBuildArtifacts@1
-              condition: always()
-              displayName: publish artifacts
-              inputs:
-                ArtifactName: ${{ BuildPlatform.artifact }}
+  # - stage: pack_net6
+  #   displayName: Pack .NET 6
+  #   dependsOn: []
+  #   jobs:
+  #     - ${{ each BuildPlatform in parameters.PackPlatforms }}:
+  #       - job: pack_net6_${{ BuildPlatform.name }}
+  #         workspace:
+  #           clean: all
+  #         displayName: Pack .NET 6 (${{ BuildPlatform.name }})
+  #         timeoutInMinutes: 120
+  #         condition: or(
+  #           ${{ parameters.BuildEverything }},
+  #           ne(variables['Build.Reason'], 'PullRequest'),
+  #           eq('${{ BuildPlatform.name }}', 'macos'))
+  #         pool:
+  #           name: ${{ BuildPlatform.poolName }}
+  #           vmImage: ${{ BuildPlatform.vmImage }}
+  #         ${{ if eq(BuildPlatform.name, 'macos') }}:
+  #           variables:
+  #             DotNet.Root: /usr/local/share/dotnet/
+  #             DotNet.Tools: ~/.dotnet/tools
+  #         steps:
+  #           - ${{ if eq(BuildPlatform.name, 'macos') }}:
+  #             - task: UseDotNet@2
+  #               displayName: install .NET Core 3.1
+  #               inputs:
+  #                 version: 3.1.x
+  #                 installationPath: $(DotNet.Root)
+  #           - template: common/dotnet-install.yml
+  #           - pwsh: |
+  #               dotnet tool install --global boots
+  #               boots ${{ BuildPlatform.bootsAndroid }}
+  #               boots ${{ BuildPlatform.bootsiOS }}
+  #               if ('${{ BuildPlatform.name }}' -eq 'macos') {
+  #                 boots ${{ BuildPlatform.bootsMacCatalyst }}
+  #               }
+  #             displayName: install .NET workloads
+  #             errorActionPreference: stop
+  #           - ${{ if eq(BuildPlatform.name, 'macos') }}:
+  #             - bash: |
+  #                 set -x
+  #                 mkdir -p ~/Library/Preferences/Xamarin
+  #                 rm -f ~/Library/Preferences/Xamarin/Settings.plist
+  #                 /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
+  #                 cat ~/Library/Preferences/Xamarin/Settings.plist || true
+  #               displayName: configure vsmac xcode
+  #           - pwsh: ./.nuspec/package.ps1 -configuration Release
+  #             displayName: pack nugets
+  #             errorActionPreference: stop
+  #           - task: CopyFiles@2
+  #             displayName: 'Copy SignList.xml Files'
+  #             inputs:
+  #               Contents: |
+  #                 **/*.nupkg
+  #                 **/*.snupkg
+  #                 **/SignList.xml
+  #               TargetFolder: $(build.artifactstagingdirectory)
+  #               flattenFolders: true
+  #           - task: PublishBuildArtifacts@1
+  #             condition: always()
+  #             displayName: publish artifacts
+  #             inputs:
+  #               ArtifactName: ${{ BuildPlatform.artifact }}
 
-  - stage: build_net6
-    displayName: Build .NET 6
-    dependsOn: []
-    jobs:
-      - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
-        - ${{ each BuildCondition in parameters.BuildConfigurations }}:
-          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildCondition }}
-            workspace:
-              clean: all
-            displayName: Build .NET 6 (${{ BuildPlatform.name }} | ${{ BuildCondition }})
-            timeoutInMinutes: 120
-            condition: or(
-              ${{ parameters.BuildEverything }},
-              ne(variables['Build.Reason'], 'PullRequest'),
-              and(eq('${{ BuildPlatform.name }}', 'macos'), eq('${{ BuildCondition }}', 'Release')))
-            pool:
-              name: ${{ BuildPlatform.poolName }}
-              vmImage: ${{ BuildPlatform.vmImage }}
-            ${{ if eq(BuildPlatform.name, 'macos') }}:
-              variables:
-                DotNet.Root: /usr/local/share/dotnet/
-                DotNet.Tools: ~/.dotnet/tools
-            steps:
-              - ${{ if eq(BuildPlatform.name, 'macos') }}:
-                - task: UseDotNet@2
-                  displayName: install .NET Core 3.1
-                  inputs:
-                    version: 3.1.x
-                    installationPath: $(DotNet.Root)
-              - template: common/dotnet-install.yml
-              - pwsh: |
-                  dotnet tool install --global boots
-                  boots ${{ BuildPlatform.bootsAndroid }}
-                  boots ${{ BuildPlatform.bootsiOS }}
-                  if ('${{ BuildPlatform.name }}' -eq 'macos') {
-                    boots ${{ BuildPlatform.bootsMacCatalyst }}
-                  }
-                displayName: install .NET workloads
-                errorActionPreference: stop
-              - ${{ if eq(BuildPlatform.name, 'macos') }}:
-                - bash: |
-                    set -x
-                    mkdir -p ~/Library/Preferences/Xamarin
-                    rm -f ~/Library/Preferences/Xamarin/Settings.plist
-                    /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
-                    cat ~/Library/Preferences/Xamarin/Settings.plist || true
-                  displayName: configure vsmac xcode
-              - pwsh: |
-                  dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
-                  dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration).binlog
-                displayName: build samples
-                errorActionPreference: stop
-              - task: PublishBuildArtifacts@1
-                condition: always()
-                displayName: publish artifacts
-                inputs:
-                  ArtifactName: ${{ BuildPlatform.artifact }}
+  # - stage: build_net6
+  #   displayName: Build .NET 6
+  #   dependsOn: []
+  #   jobs:
+  #     - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
+  #       - ${{ each BuildCondition in parameters.BuildConfigurations }}:
+  #         - job: build_net6_${{ BuildPlatform.name }}_${{ BuildCondition }}
+  #           workspace:
+  #             clean: all
+  #           displayName: Build .NET 6 (${{ BuildPlatform.name }} | ${{ BuildCondition }})
+  #           timeoutInMinutes: 120
+  #           condition: or(
+  #             ${{ parameters.BuildEverything }},
+  #             ne(variables['Build.Reason'], 'PullRequest'),
+  #             and(eq('${{ BuildPlatform.name }}', 'macos'), eq('${{ BuildCondition }}', 'Release')))
+  #           pool:
+  #             name: ${{ BuildPlatform.poolName }}
+  #             vmImage: ${{ BuildPlatform.vmImage }}
+  #           ${{ if eq(BuildPlatform.name, 'macos') }}:
+  #             variables:
+  #               DotNet.Root: /usr/local/share/dotnet/
+  #               DotNet.Tools: ~/.dotnet/tools
+  #           steps:
+  #             - ${{ if eq(BuildPlatform.name, 'macos') }}:
+  #               - task: UseDotNet@2
+  #                 displayName: install .NET Core 3.1
+  #                 inputs:
+  #                   version: 3.1.x
+  #                   installationPath: $(DotNet.Root)
+  #             - template: common/dotnet-install.yml
+  #             - pwsh: |
+  #                 dotnet tool install --global boots
+  #                 boots ${{ BuildPlatform.bootsAndroid }}
+  #                 boots ${{ BuildPlatform.bootsiOS }}
+  #                 if ('${{ BuildPlatform.name }}' -eq 'macos') {
+  #                   boots ${{ BuildPlatform.bootsMacCatalyst }}
+  #                 }
+  #               displayName: install .NET workloads
+  #               errorActionPreference: stop
+  #             - ${{ if eq(BuildPlatform.name, 'macos') }}:
+  #               - bash: |
+  #                   set -x
+  #                   mkdir -p ~/Library/Preferences/Xamarin
+  #                   rm -f ~/Library/Preferences/Xamarin/Settings.plist
+  #                   /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
+  #                   cat ~/Library/Preferences/Xamarin/Settings.plist || true
+  #                 displayName: configure vsmac xcode
+  #             - pwsh: |
+  #                 dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
+  #                 dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration).binlog
+  #               displayName: build samples
+  #               errorActionPreference: stop
+  #             - task: PublishBuildArtifacts@1
+  #               condition: always()
+  #               displayName: publish artifacts
+  #               inputs:
+  #                 ArtifactName: ${{ BuildPlatform.artifact }}
 
-  # - template: common/device-tests.yml
-  #   parameters:
-  #     androidApiLevels: [ 30 ]
-  #     projects:
-  #       - name: essentials
-  #         desc: Essentials
-  #         android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
-  #         ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
-  #       - name: core
-  #         desc: Core
-  #         android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
-  #         ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+  - template: common/device-tests.yml
+    parameters:
+      ${{ if or(not(parameters.BuildEverything), eq(variables['Build.Reason'], 'PullRequest')) }}:
+        androidApiLevels: [ 30 ]
+        iosVersions: [ 'latest' ]
+      projects:
+        - name: essentials
+          desc: Essentials
+          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
+        - name: core
+          desc: Core
+          android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
 
   # only sign using the private server
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:

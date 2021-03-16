@@ -50,8 +50,6 @@ stages:
               pool:
                 name: ${{ parameters.iosVmPool }}
                 vmImage: ${{ parameters.iosVmImage }}
-              variables:
-                ANDROID_EMULATORS: "system-images;ios-${{ version }};google_apis;x86"
               steps:
                 - template: device-tests-steps.yml
                   parameters:
