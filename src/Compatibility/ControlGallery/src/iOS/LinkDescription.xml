@@ -7,8 +7,9 @@
     <type fullname="*Effect" />
     <type fullname="*Service" />
   </assembly>
-  <assembly fullname="Xamarin.Forms.Controls">
-    <namespace fullname="Xamarin.Forms.Controls.Tests" />
+  <assembly fullname="Microsoft.Maui.Controls.Compatibility.ControlGallery">
+    <namespace fullname="Maui.Controls.Tests" />
+    <namespace fullname="Maui.Controls.Compatibility.Tests" />
   </assembly>
   <assembly fullname="nunit.framework"/>
   <assembly fullname="mscorlib">
@@ -16,6 +17,5 @@
     <type fullname="System.Runtime.CompilerServices.INotifyCompletion" />
     <type fullname="System.Runtime.CompilerServices.TaskAwaiter" />
   </assembly>
-  <assembly fullname="Microsoft.Maui.Controls.Compatibility.UnitTests" />
-  <assembly fullname="Xamarin.Platform" />
+  <assembly fullname="Microsoft.Maui.Controls.Compatibility.iOS.UnitTests" />
 </linker>
