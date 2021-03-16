@@ -18,5 +18,10 @@ namespace Microsoft.Maui
 
 			editText.SetSelection(text.Length);
 		}
+
+		public static void UpdateCharacterSpacing(this AppCompatEditText editText, IEditor editor)
+		{
+			editText.LetterSpacing = editor.CharacterSpacing.ToEm();
+		}
 	}
 }
