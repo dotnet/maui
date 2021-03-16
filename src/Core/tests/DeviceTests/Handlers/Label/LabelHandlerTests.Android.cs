@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using Android.Views;
+using ATextAlignemnt = Android.Views.TextAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -50,8 +52,6 @@ namespace Microsoft.Maui.DeviceTests
 				HorizontalTextAlignment = xplatHorizontalTextAlignment
 			};
 
-			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.End;
-
 			var values = await GetValueAsync(labelStub, (handler) =>
 			{
 				return new
@@ -62,7 +62,14 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+
+			(var gravity, var textAlignment) = values.NativeViewValue;
+
+			// Device Tests runner has RTL support enabled, so we expect TextAlignment values
+			// (If it didn't, we'd have to fall back to gravity)
+			var expectedValue = ATextAlignemnt.ViewEnd;
+
+			Assert.Equal(expectedValue, textAlignment);
 		}
 
 		[Fact(DisplayName = "Negative MaxLines value with wrap is correct")]
@@ -151,8 +158,11 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Typeface.IsItalic;
 
-		Android.Views.GravityFlags GetNativeTextAlignment(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Gravity;
+		(GravityFlags gravity, ATextAlignemnt alignment) GetNativeTextAlignment(LabelHandler labelHandler)
+		{
+			var textView = GetNativeLabel(labelHandler);
+			return (textView.Gravity, textView.TextAlignment);
+		}
 
 		int GetNativeMaxLines(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).MaxLines;
