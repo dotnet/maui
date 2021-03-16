@@ -63,7 +63,7 @@ var ANDROID_BUNDLE_ID = "com.xamarin.xamarin_forms_controlgallery";
 var ANDROID_CONTROLGALLERY = "src/Compatibility/ControlGallery/src/Android/";
 var ANDROID_CONTROLGALLERY_PROJ = $"{ANDROID_CONTROLGALLERY}Compatibility.ControlGallery.Android.csproj";
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
-var ANDROID_TEST_PROJ = "./src/Compatibility/ControlGallery/test/Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj";
+var ANDROID_TEST_PROJ = "./src/Compatibility/ControlGallery/test/Android.UITests/Compatibility.ControlGallery.Android.UITests.csproj";
 
 var BUILD_TASKS_PROJ ="Microsoft.Maui.BuildTasks.sln";
 
