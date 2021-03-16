@@ -6,7 +6,7 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.TimePicker)]
-	public partial class TimePickerHandlerTests : HandlerTestBase<TimePickerHandler>
+	public partial class TimePickerHandlerTests : HandlerTestBase<TimePickerHandler, TimePickerStub>
 	{
 		public TimePickerHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
