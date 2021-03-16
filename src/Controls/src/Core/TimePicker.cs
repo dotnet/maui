@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public class TimePicker : View, IFontElement, ITextElement, IElementConfiguration<TimePicker>
+	public partial class TimePicker : View, IFontElement, ITextElement, IElementConfiguration<TimePicker>
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(TimePicker), "t");
 
