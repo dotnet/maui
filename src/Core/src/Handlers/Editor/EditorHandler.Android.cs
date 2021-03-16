@@ -30,5 +30,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
 		}
+			
+		public static void MapPredictiveText(EditorHandler handler, IEditor editor)
+		{
+			handler.TypedNativeView?.UpdatePredictiveText(editor);
+		}
 	}
 }

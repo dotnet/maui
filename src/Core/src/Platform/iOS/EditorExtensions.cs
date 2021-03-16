@@ -23,5 +23,11 @@ namespace Microsoft.Maui
 
 			// TODO: Include AttributedText to Label Placeholder
 		}
+		
+		public static void UpdatePredictiveText(this UITextView textView, IEditor editor)
+		{
+			textView.AutocorrectionType = editor.IsTextPredictionEnabled 
+				? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No;
+		}
 	}
 }

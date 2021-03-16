@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using Android.Text;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -39,6 +40,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
+		
+		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
+			!GetNativeEditor(editorHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
 
         double GetNativeCharacterSpacing(EditorHandler editorHandler)
         {
