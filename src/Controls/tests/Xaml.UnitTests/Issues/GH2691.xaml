@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:test="http://xamarin.com/schemas/2014/forms/customurl1"
 			 xmlns:test2="http://xamarin.com/schemas/2014/forms/customurl2" 
-			 xmlns:test3="clr-namespace:Microsoft.Maui.Controls.ControlGallery.CustomNamespace1;assembly=Microsoft.Maui.Controls.ControlGallery"
+			 xmlns:test3="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace1;assembly=Microsoft.Maui.Controls.Compatibility.ControlGallery"
 			 xmlns:test4="using:Microsoft.Maui.Controls.Xaml.UnitTests"
              x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Gh2691">
 	<ContentPage.Content>

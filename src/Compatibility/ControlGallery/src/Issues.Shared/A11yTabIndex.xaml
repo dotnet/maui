@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.A11yTabIndex">
+    
+    <Grid RowSpacing="2">
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Label AutomationProperties.IsInAccessibleTree="false" 
+               Text="Turn on your screen reader and swipe between elements. The elements should be read in ascending order. It should *not* read Skip. It should *not* read this text." />
+
+        <BoxView Color="Blue" Grid.Row="1"/>
+        <Button x:Name="First" Text="One" TabIndex="-2" TextColor="White" Grid.Row="1" />
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <Button Text="Two" TabIndex="-1" TextColor="Gray"/>
+            <Label Text="Three" TextColor="Red" Grid.Column="1" AutomationProperties.IsInAccessibleTree="true"  />
+            <Button Text="Four" TextColor="Gray" Grid.Column="2"/>
+            <Button Text="Five" TextColor="Gray" Grid.Column="3"/>
+            <Button Text="Eight" TabIndex="1" Grid.Column="4" TextColor="Gray"/>
+
+        </Grid>
+
+        <Button Text="Skip" AutomationProperties.IsInAccessibleTree="False" TabIndex="3" Grid.Row="3"/>
+
+        <Frame BackgroundColor="Cornsilk" Margin="20" CornerRadius="2" BorderColor="Gray" Grid.Row="4"  AutomationProperties.IsInAccessibleTree="False">
+            <StackLayout>
+                <Button Text="Twelve" TabIndex="3"/>
+                <Button Text="Ten" TabIndex="2"/>
+            </StackLayout>
+        </Frame>
+
+        <Frame BackgroundColor="Cornsilk" Margin="20" CornerRadius="2" BorderColor="Gray" Grid.Row="5"  AutomationProperties.IsInAccessibleTree="False">
+            <StackLayout>
+                <StackLayout>
+                    <Button Text="Six" />
+                    <StackLayout Orientation="Horizontal">
+                        <Button Text="Nine" TabIndex="1"/>
+                        <Button Text="Thirteen" TabIndex="3"/>
+                    </StackLayout>
+                </StackLayout>
+                <StackLayout>
+                    <Button Text="Seven" />
+                    <StackLayout Orientation="Horizontal">
+                        <Button Text="Eleven" TabIndex="2"/>
+                        <Button Text="Fourteen" TabIndex="4"/>
+                    </StackLayout>
+                </StackLayout>
+            </StackLayout>
+        </Frame>
+
+    </Grid>
+</ContentPage>
