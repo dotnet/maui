@@ -252,8 +252,8 @@ stages:
 
   - template: common/device-tests.yml
     parameters:
-      ${{ if or(not(parameters.BuildEverything), eq(variables['Build.Reason'], 'PullRequest')) }}:
-        androidApiLevels: [ 30 ]
+      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
+        androidApiLevels: [ 30, 29, 21 ]
         iosVersions: [ 'latest' ]
       projects:
         - name: essentials

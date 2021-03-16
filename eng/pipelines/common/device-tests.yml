@@ -3,7 +3,7 @@ parameters:
   androidVmImage: '$(androidTestsVmImage)'
   iosVmPool: '$(iosTestsVmPool)'
   iosVmImage: '$(iosTestsVmImage)'
-  androidApiLevels: [ 30, 29, 21 ]
+  androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   projects:
     - name: name
