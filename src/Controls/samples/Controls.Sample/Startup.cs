@@ -19,6 +19,7 @@ namespace Maui.Controls.Sample
 		{
 			appBuilder
 				//.RegisterCompatibilityRenderers()
+				.UseMauiApp<MyApp>()
 				.ConfigureAppConfiguration((hostingContext, config) =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>

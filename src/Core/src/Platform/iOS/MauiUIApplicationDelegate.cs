@@ -7,20 +7,12 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class MauiUIApplicationDelegate<TStartup, TApplication> : UIApplicationDelegate, IUIApplicationDelegate
-		where TStartup : IStartup
-		where TApplication : MauiApp
+	public class MauiUIApplicationDelegate<TStartup> : MauiUIApplicationDelegate
+		where TStartup : IStartup, new()
 	{
-		public override UIWindow? Window
-		{
-			get;
-			set;
-		}
-
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			if (!(Activator.CreateInstance(typeof(TStartup)) is TStartup startup))
-				throw new InvalidOperationException($"We weren't able to create the Startup {typeof(TStartup)}");
+			var startup = new TStartup();
 
 			var appBuilder = AppHostBuilder
 				.CreateDefaultAppBuilder()
@@ -28,23 +20,22 @@ namespace Microsoft.Maui
 
 			startup.Configure(appBuilder);
 
-			appBuilder.Build();
-
-			if (!(Activator.CreateInstance(typeof(TApplication)) is TApplication app))
-				throw new InvalidOperationException($"We weren't able to create the App {typeof(TApplication)}");
-
-			appBuilder.SetServiceProvider(app);
-
-			if (app == null || app.Services == null)
+			var host = appBuilder.Build();
+			if (host.Services == null)
 				throw new InvalidOperationException("App was not intialized");
 
-			var mauiContext = new MauiContext(app.Services);
-			var window = app.CreateWindow(new ActivationState(mauiContext));
+			var services = host.Services;
+
+			CurrentApp = services.GetRequiredService<MauiApp>();
+			CurrentApp.SetServiceProvider(services);
+
+			var mauiContext = new MauiContext(services);
+			var window = CurrentApp.CreateWindow(new ActivationState(mauiContext));
 
 			window.MauiContext = mauiContext;
 
 			// Hack for now we set this on the App Static but this should be on IFrameworkElement
-			app.SetHandlerContext(window.MauiContext);
+			CurrentApp.SetHandlerContext(window.MauiContext);
 
 			var content = (window.Page as IView) ?? window.Page.View;
 
@@ -63,7 +54,13 @@ namespace Microsoft.Maui
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-
 		}
+	}
+
+	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
+	{
+		public override UIWindow? Window { get; set; }
+
+		public static MauiApp CurrentApp { get; internal set; } = null!;
 	}
 }

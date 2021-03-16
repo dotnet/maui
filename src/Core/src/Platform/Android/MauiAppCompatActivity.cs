@@ -21,10 +21,10 @@ namespace Microsoft.Maui
 		{
 			base.OnCreate(savedInstanceState);
 
-			if (App.Current as MauiApp == null)
+			if (MauiApplication.CurrentApp == null)
 				throw new InvalidOperationException($"App is not {nameof(MauiApp)}");
 
-			var mauiApp = (MauiApp)App.Current;
+			var mauiApp = MauiApplication.CurrentApp;
 
 			if (mauiApp.Services == null)
 				throw new InvalidOperationException("App was not initialized");
@@ -36,7 +36,7 @@ namespace Microsoft.Maui
 			window.MauiContext = mauiContext;
 
 			//Hack for now we set this on the App Static but this should be on IFrameworkElement
-			App.Current.SetHandlerContext(window.MauiContext);
+			MauiApplication.CurrentApp.SetHandlerContext(window.MauiContext);
 
 			var content = (window.Page as IView) ??
 				window.Page.View;

@@ -28,7 +28,6 @@ namespace Microsoft.Maui.Hosting
 		IServiceCollection? _services;
 		IConfiguration? _hostConfiguration;
 		IConfiguration? _appConfiguration;
-		App? _app;
 
 		public AppHostBuilder()
 		{
@@ -48,18 +47,6 @@ namespace Microsoft.Maui.Hosting
 
 		public IHost Build()
 			=> InternalBuild();
-
-		public void SetServiceProvider(IApp app)
-		{
-			_app = app as MauiApp;
-
-			if (_serviceProvider == null)
-				throw new InvalidOperationException($"The ServiceProvider cannot be null");
-
-			//we do this here because we can't inject the provider on the App ctor
-			//before we register the user ConfigureServices should this live in IApp ?
-			_app?.SetServiceProvider(_serviceProvider);
-		}
 
 		public IAppHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
 		{
@@ -138,10 +125,6 @@ namespace Microsoft.Maui.Hosting
 				throw new InvalidOperationException($"The ServiceProvider cannot be null");
 
 			BuildFontRegistrar(_serviceProvider);
-
-			//we do this here because we can't inject the provider on the App ctor
-			//before we register the user ConfigureServices should this live in IApp ?
-			_app?.SetServiceProvider(_serviceProvider);
 
 			return new AppHost(_serviceProvider, null);
 		}

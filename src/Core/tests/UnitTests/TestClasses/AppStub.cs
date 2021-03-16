@@ -1,17 +1,6 @@
-using Microsoft.Maui.UnitTests.TestClasses;
-
 namespace Microsoft.Maui.Tests
 {
-	class AppStub : MauiApp
+	class AppStub : App
 	{
-		public override IWindow CreateWindow(IActivationState state)
-		{
-			return new WindowStub();
-		}
-
-		internal void ClearApp()
-		{
-			Current = null;
-		}
 	}
 }

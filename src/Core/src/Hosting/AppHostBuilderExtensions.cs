@@ -59,5 +59,25 @@ namespace Microsoft.Maui.Hosting
 			});
 			return builder;
 		}
+
+		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder)
+			where TApp : MauiApp
+		{
+			builder.ConfigureServices((context, collection) =>
+			{
+				collection.AddSingleton<MauiApp, TApp>();
+			});
+			return builder;
+		}
+
+		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
+			where TApp : MauiApp
+		{
+			builder.ConfigureServices((context, collection) =>
+			{
+				collection.AddSingleton<TApp>(implementationFactory);
+			});
+			return builder;
+		}
 	}
 }

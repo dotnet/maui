@@ -9,14 +9,10 @@ namespace Maui.Controls.Sample.Pages
 	{
 		MainPageViewModel _viewModel;
 
-		public MainPage() : this(App.Current.Services.GetService<MainPageViewModel>())
-		{
-
-		}
-
 		public MainPage(MainPageViewModel viewModel)
 		{
 			BindingContext = _viewModel = viewModel;
+
 			SetupMauiLayout();
 			//SetupCompatibilityLayout();
 		}

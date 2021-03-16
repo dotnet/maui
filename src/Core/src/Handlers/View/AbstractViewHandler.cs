@@ -41,6 +41,12 @@ namespace Microsoft.Maui.Handlers
 
 		public object? NativeView => TypedNativeView;
 
+		public IServiceProvider? Services => MauiContext?.Services;
+
+		public IMauiContext? MauiContext { get; private set; }
+
+		public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;
+
 		public virtual void SetVirtualView(IView view)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));

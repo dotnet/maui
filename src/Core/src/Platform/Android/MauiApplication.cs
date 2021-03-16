@@ -6,19 +6,16 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
-	public class MauiApplication<TStartup, TApplication> : Android.App.Application
-		where TStartup : IStartup
-		where TApplication : MauiApp
+	public class MauiApplication<TStartup> : MauiApplication
+		where TStartup : IStartup, new()
 	{
 		public MauiApplication(IntPtr handle, JniHandleOwnership ownerShip) : base(handle, ownerShip)
 		{
-
 		}
 
 		public override void OnCreate()
 		{
-			if (!(Activator.CreateInstance(typeof(TStartup)) is TStartup startup))
-				throw new InvalidOperationException($"We weren't able to create the Startup {typeof(TStartup)}");
+			var startup = new TStartup();
 
 			var appBuilder = AppHostBuilder
 				.CreateDefaultAppBuilder()
@@ -26,12 +23,14 @@ namespace Microsoft.Maui
 
 			startup.Configure(appBuilder);
 
-			appBuilder.Build();
+			var host = appBuilder.Build();
+			if (host.Services == null)
+				throw new InvalidOperationException("App was not intialized");
 
-			if (!(Activator.CreateInstance(typeof(TApplication)) is TApplication app))
-				throw new InvalidOperationException($"We weren't able to create the App {typeof(TApplication)}");
+			var services = host.Services;
 
-			appBuilder.SetServiceProvider(app);
+			CurrentApp = services.GetRequiredService<MauiApp>();
+			CurrentApp.SetServiceProvider(services);
 
 			base.OnCreate();
 		}
@@ -39,7 +38,15 @@ namespace Microsoft.Maui
 		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-
 		}
+	}
+
+	public abstract class MauiApplication : Android.App.Application
+	{
+		public MauiApplication(IntPtr handle, JniHandleOwnership ownerShip) : base(handle, ownerShip)
+		{
+		}
+
+		public static MauiApp CurrentApp { get; internal set; } = null!;
 	}
 }

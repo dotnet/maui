@@ -1,17 +1,6 @@
-using System;
-
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	class AppStub : MauiApp, IDisposable
+	class AppStub : App
 	{
-		public override IWindow CreateWindow(IActivationState state)
-		{
-			return new WindowStub();
-		}
-
-		public void Dispose()
-		{
-			Current = null;
-		}
 	}
 }
