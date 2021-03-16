@@ -47,6 +47,14 @@ namespace Microsoft.Maui
 			nativeLabel.UpdateCharacterSpacing(label);
 		}
 
+		public static void UpdateHorizontalTextAlignment(this UILabel nativeLabel, ILabel label)
+		{
+			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
+			// TODO: Ezhart Update this when FlowDirection is available 
+			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
+			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToNative(true);
+		}
+
 		public static void UpdateLineBreakMode(this UILabel nativeLabel, ILabel label)
 		{
 			SetLineBreakMode(nativeLabel, label);

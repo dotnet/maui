@@ -69,7 +69,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(FontAttributes.Bold, true, false)]
 		[InlineData(FontAttributes.Italic, false, true)]
 		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
-		public async Task AttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
+		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
 		{
 			var label = new LabelStub()
 			{

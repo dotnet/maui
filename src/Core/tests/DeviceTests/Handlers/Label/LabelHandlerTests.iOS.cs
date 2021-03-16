@@ -36,6 +36,32 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
 		}
 
+		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
+		{
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var labelStub = new LabelStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
+			};
+
+			UITextAlignment expectedValue = UITextAlignment.Right;
+
+			var values = await GetValueAsync(labelStub, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelStub.HorizontalTextAlignment,
+					NativeViewValue = GetNativeTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
 		[Fact(DisplayName = "Negative MaxLines value with wrap is correct")]
 		public async Task NegativeMaxValueWithWrapIsCorrect()
 		{
@@ -89,7 +115,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(xplatTextDecorations, values.ViewValue);
-			Assert.True(values.NativeViewValue != null);
+			Assert.NotNull(values.NativeViewValue);
 		}
 
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>
@@ -130,6 +156,9 @@ namespace Microsoft.Maui.DeviceTests
 			var kerning = Assert.IsType<NSNumber>(value);
 			return kerning.DoubleValue;
 		}
+
+		UITextAlignment GetNativeTextAlignment(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).TextAlignment;
 
 		Task ValidateNativeBackgroundColor(ILabel label, Color color)
 		{

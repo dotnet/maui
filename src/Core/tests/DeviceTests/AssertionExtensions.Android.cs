@@ -11,7 +11,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	internal static class AssertionExtensions
+	internal static partial class AssertionExtensions
 	{
 		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{

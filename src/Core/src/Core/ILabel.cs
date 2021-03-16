@@ -3,7 +3,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a View that displays text.
 	/// </summary>
-	public interface ILabel : IView, IText, IPadding
+	public interface ILabel : IView, IText, ITextAlignment, IPadding
 	{
 		/// <summary>
 		/// Gets the option for line breaking.

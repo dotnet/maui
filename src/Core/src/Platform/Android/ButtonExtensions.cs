@@ -1,4 +1,5 @@
 using Android.Content.Res;
+using Android.Util;
 using AndroidX.AppCompat.Widget;
 using XColor = Microsoft.Maui.Color;
 
@@ -22,6 +23,17 @@ namespace Microsoft.Maui
 
 		public static void UpdateTextColor(this AppCompatButton appCompatButton, IButton button, XColor defaultColor) =>
 			appCompatButton.SetTextColor(button.TextColor.Cleanse(defaultColor).ToNative());
+
+		public static void UpdateFont(this AppCompatButton appCompatButton, IButton button, IFontManager fontManager)
+		{
+			var font = button.Font;
+
+			var tf = fontManager.GetTypeface(font);
+			appCompatButton.Typeface = tf;
+
+			var sp = fontManager.GetScaledPixel(font);
+			appCompatButton.SetTextSize(ComplexUnitType.Sp, sp);
+		}
 
 		public static void UpdatePadding(this AppCompatButton appCompatButton, IButton button)
 		{

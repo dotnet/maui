@@ -345,6 +345,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				Layer.RemoveBackgroundLayer();
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 #if __MOBILE__
