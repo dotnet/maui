@@ -119,6 +119,10 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new Slider());
 
+			verticalStack.Add(new Stepper());
+			verticalStack.Add(new Stepper { BackgroundColor = Color.IndianRed });
+			verticalStack.Add(new Stepper { Minimum = 0, Maximum = 10, Value = 5 });
+
 			verticalStack.Add(new Switch());
 			verticalStack.Add(new Switch() { OnColor = Color.Green });
 			verticalStack.Add(new Switch() { ThumbColor = Color.Yellow });
