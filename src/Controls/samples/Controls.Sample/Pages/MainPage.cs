@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
 
-			var label = new Label { Text = "centered text", BackgroundColor = Color.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
+			var label = new Label { Text = "End-aligned text", BackgroundColor = Color.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
 			verticalStack.Add(label);
