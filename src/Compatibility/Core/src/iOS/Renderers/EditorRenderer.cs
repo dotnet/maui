@@ -306,6 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			TextView.Font = font;
 		}
 
+		[PortHandler("Partially Ported")]
 		void UpdateKeyboard()
 		{
 			var keyboard = Element.Keyboard;
