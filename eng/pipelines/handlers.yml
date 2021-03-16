@@ -87,71 +87,71 @@ stages:
           steps:
             - template: common/build-windows.yml
 
-  # - stage: pack_net6
-  #   displayName: Pack .NET 6
-  #   dependsOn: []
-  #   jobs:
-  #     - job: pack_net6
-  #       workspace:
-  #         clean: all
-  #       displayName: Pack .NET 6
-  #       timeoutInMinutes: 120
-  #       strategy:
-  #         matrix:
-  #           windows:
-  #             poolName: $(vs2019VmPool)
-  #             vmImage: $(vs2019VmImage)
-  #             bootsAndroid: $(Android.Msi)
-  #             bootsiOS: $(iOS.Msi)
-  #             artifact: nuget-windows
-  #           macos:
-  #             poolName: $(macOSXNet6VmPool)
-  #             vmImage: $(macOSXNet6VmImage)
-  #             bootsAndroid: $(Android.Pkg)
-  #             bootsiOS: $(iOS.Pkg)
-  #             bootsMacCatalyst: $(MacCatalyst.Pkg)
-  #             artifact: nuget
-  #       pool:
-  #         name: $(poolName)
-  #         vmImage: $(vmImage)
-  #       steps:
-  #         - template: common/dotnet-install.yml
-  #         - pwsh: |
-  #             dotnet tool install --global boots
-  #             boots $(bootsAndroid)
-  #             boots $(bootsiOS)
-  #           displayName: install .NET workloads
-  #           errorActionPreference: stop
-  #         - pwsh: |
-  #             boots $(bootsMacCatalyst)
-  #           displayName: install .NET workloads
-  #           errorActionPreference: stop
-  #           condition: eq(variables['System.JobName'], 'macos')
-  #         - bash: |
-  #             set -x
-  #             mkdir -p ~/Library/Preferences/Xamarin
-  #             rm -f ~/Library/Preferences/Xamarin/Settings.plist
-  #             /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
-  #             cat ~/Library/Preferences/Xamarin/Settings.plist || true
-  #           displayName: configure vsmac xcode
-  #           condition: eq(variables['System.JobName'], 'macos')
-  #         - pwsh: ./.nuspec/package.ps1 -configuration Release
-  #           displayName: pack nugets
-  #           errorActionPreference: stop
-  #         - task: CopyFiles@2
-  #           displayName: 'Copy SignList.xml Files'
-  #           inputs:
-  #             Contents: |
-  #               **/*.nupkg
-  #               **/*.snupkg
-  #               **/SignList.xml
-  #             TargetFolder: $(build.artifactstagingdirectory)
-  #             flattenFolders: true
-  #         - task: PublishBuildArtifacts@1
-  #           displayName: publish artifacts
-  #           inputs:
-  #             ArtifactName: $(artifact)
-  #           condition: always()
+  - stage: pack_net6
+    displayName: Pack .NET 6
+    dependsOn: []
+    jobs:
+      - job: pack_net6
+        workspace:
+          clean: all
+        displayName: Pack .NET 6
+        timeoutInMinutes: 120
+        strategy:
+          matrix:
+            windows:
+              poolName: $(vs2019VmPool)
+              vmImage: $(vs2019VmImage)
+              bootsAndroid: $(Android.Msi)
+              bootsiOS: $(iOS.Msi)
+              artifact: nuget-windows
+            macos:
+              poolName: $(macOSXNet6VmPool)
+              vmImage: $(macOSXNet6VmImage)
+              bootsAndroid: $(Android.Pkg)
+              bootsiOS: $(iOS.Pkg)
+              bootsMacCatalyst: $(MacCatalyst.Pkg)
+              artifact: nuget
+        pool:
+          name: $(poolName)
+          vmImage: $(vmImage)
+        steps:
+          - template: common/dotnet-install.yml
+          - pwsh: |
+              dotnet tool install --global boots
+              boots $(bootsAndroid)
+              boots $(bootsiOS)
+            displayName: install .NET workloads
+            errorActionPreference: stop
+          - pwsh: |
+              boots $(bootsMacCatalyst)
+            displayName: install .NET workloads
+            errorActionPreference: stop
+            condition: eq(variables['System.JobName'], 'macos')
+          - bash: |
+              set -x
+              mkdir -p ~/Library/Preferences/Xamarin
+              rm -f ~/Library/Preferences/Xamarin/Settings.plist
+              /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
+              cat ~/Library/Preferences/Xamarin/Settings.plist || true
+            displayName: configure vsmac xcode
+            condition: eq(variables['System.JobName'], 'macos')
+          - pwsh: ./.nuspec/package.ps1 -configuration Release
+            displayName: pack nugets
+            errorActionPreference: stop
+          - task: CopyFiles@2
+            displayName: 'Copy SignList.xml Files'
+            inputs:
+              Contents: |
+                **/*.nupkg
+                **/*.snupkg
+                **/SignList.xml
+              TargetFolder: $(build.artifactstagingdirectory)
+              flattenFolders: true
+          - task: PublishBuildArtifacts@1
+            displayName: publish artifacts
+            inputs:
+              ArtifactName: $(artifact)
+            condition: always()
 
   # - stage: build_net6
   #   displayName: Build .NET 6
