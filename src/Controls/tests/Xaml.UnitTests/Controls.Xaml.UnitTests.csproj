@@ -26,7 +26,7 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ControlGallery\src\Xamarin.Forms.Controls\ControlGallery.csproj" />
+    <ProjectReference Include="..\..\..\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks.csproj" />
