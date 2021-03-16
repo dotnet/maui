@@ -100,22 +100,22 @@ resources:
       ref: refs/heads/main # still defaults to master even though main is the main branch
 
 stages:
-  - stage: windows
-    displayName: Build Windows
-    jobs:
-      - ${{ each BuildCondition in parameters.BuildConfigurations }}:
-        - job: win_hosted_${{ BuildCondition }}
-          workspace:
-            clean: all
-          displayName: Build Windows Phase (${{ BuildCondition }})
-          condition: or(ne(variables['Build.Reason'], 'PullRequest'), eq('${{ BuildCondition }}', 'Release'))
-          timeoutInMinutes: 60
-          pool:
-            name: $(vs2019VmPool)
-            vmImage: $(vs2019VmImage)
-            demands: [ msbuild ]
-          steps:
-            - template: common/build-windows.yml
+  # - stage: windows
+  #   displayName: Build Windows
+  #   jobs:
+  #     - ${{ each BuildCondition in parameters.BuildConfigurations }}:
+  #       - job: win_hosted_${{ BuildCondition }}
+  #         workspace:
+  #           clean: all
+  #         displayName: Build Windows Phase (${{ BuildCondition }})
+  #         condition: or(ne(variables['Build.Reason'], 'PullRequest'), eq('${{ BuildCondition }}', 'Release'))
+  #         timeoutInMinutes: 60
+  #         pool:
+  #           name: $(vs2019VmPool)
+  #           vmImage: $(vs2019VmImage)
+  #           demands: [ msbuild ]
+  #         steps:
+  #           - template: common/build-windows.yml
 
   - stage: pack_net6
     displayName: Pack .NET 6
@@ -167,10 +167,10 @@ stages:
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
             - task: PublishBuildArtifacts@1
+              condition: always()
               displayName: publish artifacts
               inputs:
                 ArtifactName: ${{ BuildPlatform.artifact }}
-              condition: always()
 
   # - stage: build_net6
   #   displayName: Build .NET 6
