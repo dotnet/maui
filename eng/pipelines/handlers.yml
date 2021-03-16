@@ -57,6 +57,9 @@ variables:
     value: '--v'
 
 parameters:
+  - name: BuildEverything
+    type: boolean
+    default: ne(variables['Build.Reason'], 'PullRequest')
   - name: BuildConfigurations
     type: object
     default:
@@ -129,6 +132,7 @@ stages:
             clean: all
           displayName: Pack .NET 6 (${{ BuildPlatform.name }})
           timeoutInMinutes: 120
+          condition: or(${{ parameters.BuildEverything }}, eq('${{ BuildPlatform.name }}', 'macos'))
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
