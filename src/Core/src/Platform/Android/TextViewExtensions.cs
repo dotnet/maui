@@ -5,7 +5,7 @@ using Android.Widget;
 
 namespace Microsoft.Maui
 {
-	public static class LabelExtensions
+	public static class TextViewExtensions
 	{
 		public static void UpdateText(this TextView textView, ILabel label)
 		{
@@ -40,9 +40,20 @@ namespace Microsoft.Maui
 			textView.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
-		public static void UpdateHorizontalTextAlignment(this TextView textView, ILabel label)
+		public static void UpdateHorizontalTextAlignment(this TextView textView, ITextAlignment text)
 		{
-			textView.Gravity = label.HorizontalTextAlignment.ToHorizontalGravityFlags();
+			if (textView.Context!.HasRtlSupport())
+			{
+				// We want to use TextAlignment where possible because it doesn't conflict with the
+				// overall gravity of the underlying control
+				textView.TextAlignment = text.HorizontalTextAlignment.ToTextAlignment();
+			}
+			else
+			{
+				// But if RTL support is not available for some reason, we have to resort
+				// to gravity, because Android will simply ignore text alignment
+				textView.Gravity = text.HorizontalTextAlignment.ToHorizontalGravityFlags();
+			}
 		}
 
 		public static void UpdateLineBreakMode(this TextView textView, ILabel label)
