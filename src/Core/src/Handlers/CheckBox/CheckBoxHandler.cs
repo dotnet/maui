@@ -2,13 +2,12 @@
 {
 	public partial class CheckBoxHandler
 	{
-		public static PropertyMapper<ICheck, CheckBoxHandler> CheckBoxMapper = new PropertyMapper<ICheck, CheckBoxHandler>(ViewHandler.ViewMapper)
+		public static PropertyMapper<ICheckBox, CheckBoxHandler> CheckBoxMapper = new PropertyMapper<ICheckBox, CheckBoxHandler>(ViewHandler.ViewMapper)
 		{
+			[nameof(ICheckBox.IsChecked)] = MapIsChecked,
 #if MONOANDROID
-			[nameof(ICheck.BackgroundColor)] = MapBackgroundColor,
+			[nameof(ICheckBox.BackgroundColor)] = MapBackgroundColor,
 #endif
-			[nameof(ICheck.IsChecked)] = MapIsChecked,
-			[nameof(ICheck.Color)] = MapColor
 		};
 
 		public CheckBoxHandler() : base(CheckBoxMapper)
@@ -20,20 +19,10 @@
 		{
 
 		}
-#if MONOANDROID
-		public static void MapBackgroundColor(CheckBoxHandler handler, ICheck check)
-		{
-			handler.TypedNativeView?.UpdateBackgroundColor(check);
-		}
-#endif
-		public static void MapIsChecked(CheckBoxHandler handler, ICheck check)
+
+		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
 		{
 			handler.TypedNativeView?.UpdateIsChecked(check);
-		}
-
-		public static void MapColor(CheckBoxHandler handler, ICheck check)
-		{
-			handler.TypedNativeView?.UpdateColor(check);
 		}
 	}
 }

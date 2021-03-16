@@ -3,6 +3,7 @@
 	public static class TestCategory
 	{
 		public const string Button = "Button";
+		public const string CheckBox = "CheckBox";
 		public const string Editor = "Editor";
 		public const string Entry = "Entry";
 		public const string Label = "Label";
