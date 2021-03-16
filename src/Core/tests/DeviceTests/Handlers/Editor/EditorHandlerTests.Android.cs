@@ -1,10 +1,8 @@
 ﻿using Android.Text;
 using AndroidX.AppCompat.Widget;
-using Microsoft.Maui.Handlers;
-using System.Threading.Tasks;
-using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
