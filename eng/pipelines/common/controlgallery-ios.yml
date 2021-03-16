@@ -77,7 +77,7 @@ steps:
   - task: CopyFiles@2
     displayName: 'Copy iOS dSYM'
     inputs:
-      SourceFolder: 'src/ControlGallery/src/Xamarin.Forms.ControlGallery.iOS/bin/iPhone/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app.dSYM/'
+      SourceFolder: 'src/Compatibility/ControlGallery/src/Xamarin.Forms.ControlGallery.iOS/bin/iPhone/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app.dSYM/'
       TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhone/XamarinFormsControlGalleryiOS.app.dSYM/'
       CleanTargetFolder: false
       flattenFolders: false
@@ -85,7 +85,7 @@ steps:
   - task: CopyFiles@2
     displayName: 'Copy iOS App'
     inputs:
-      SourceFolder: 'src/ControlGallery/src/Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app/'
+      SourceFolder: 'src/Compatibility/ControlGallery/src/Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app/'
       TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhoneSimulator/XamarinFormsControlGalleryiOS.app/'
       CleanTargetFolder: false
       flattenFolders: false
