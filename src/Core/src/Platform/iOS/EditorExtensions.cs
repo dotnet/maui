@@ -12,11 +12,24 @@ namespace Microsoft.Maui
 			{
 				textView.Text = text;
 			}
+
+			var placeholderLabel = textView.FindDescendantView<UILabel>();
+
+			if (placeholderLabel == null)
+				return;
+
+			placeholderLabel.Hidden = !string.IsNullOrEmpty(textView.Text);
 		}
 
-		public static void UpdatePlaceholder(UITextField text, IEditor editor)
+		public static void UpdatePlaceholder(this UITextView textView, IEditor editor)
 		{
+			var placeholderLabel = textView.FindDescendantView<UILabel>();
 
+			if (placeholderLabel == null)
+				return;
+
+			placeholderLabel.Text = editor.Placeholder;
+			placeholderLabel.SizeToFit();
 		}
 	}
 }

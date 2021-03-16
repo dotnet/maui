@@ -1,4 +1,5 @@
 using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -10,22 +11,18 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UITextView CreateNativeView()
 		{
-			return new UITextView(CGRect.Empty);
-		}
+			var textView = new UITextView(CGRect.Empty);
 
-		protected override void SetupDefaults(UITextField nativeView)
-		{
-			if (PlaceholderLabel == null)
+			PlaceholderLabel = new UILabel
 			{
-				PlaceholderLabel = new UILabel
-				{
-					BackgroundColor = UIColor.Clear,
-					Frame = new RectangleF(0, 0, Frame.Width, Frame.Height),
-					Lines = 0
-				};
-			}
+				BackgroundColor = UIColor.Clear,
+				Frame = new CGRect(0, 0, textView.Frame.Width, textView.Frame.Height),
+				Lines = 0
+			};
 
-			CreatePlaceholderLabel();
+			CreatePlaceholderLabel(textView);
+
+			return textView;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
@@ -38,27 +35,15 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPlaceholder(EditorHandler handler, IEditor editor)
 		{
-			PlaceholderLabel.Text = Element.Placeholder;
-			
-			PlaceholderLabel.SizeToFit();
+			handler.TypedNativeView?.UpdatePlaceholder(editor);
 		}
 
-		void CreatePlaceholderLabel()
+		void CreatePlaceholderLabel(UITextView textView)
 		{
-			if (TypedNativeView == null)
-			{
-				return;
-			}
+			textView.AddSubview(PlaceholderLabel);
 
-			if (VirtualView == null)
-			{
-				return;
-			}
-
-			TypedNativeView.AddSubview(PlaceholderLabel);
-
-			var edgeInsets = TypedNativeView.TextContainerInset;
-			var lineFragmentPadding = TypedNativeView.TextContainer.LineFragmentPadding;
+			var edgeInsets = textView.TextContainerInset;
+			var lineFragmentPadding = textView.TextContainer.LineFragmentPadding;
 
 			var vConstraints = NSLayoutConstraint.FromVisualFormat(
 				"V:|-" + edgeInsets.Top + "-[PlaceholderLabel]-" + edgeInsets.Bottom + "-|", 0, new NSDictionary(),
@@ -75,10 +60,11 @@ namespace Microsoft.Maui.Handlers
 
 			PlaceholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
 			// TODO: Add when we have CharacterSpacing
+			// TODO: maybe put in extension method for setting these properties
 			//PlaceholderLabel.AttributedText = PlaceholderLabel.AttributedText.AddCharacterSpacing(VirtualView.Placeholder, VirtualView.CharacterSpacing);
 
-			TypedNativeView.AddConstraints(hConstraints);
-			TypedNativeView.AddConstraints(vConstraints);
+			textView.AddConstraints(hConstraints);
+			textView.AddConstraints(vConstraints);
 		}
 	}
 }
