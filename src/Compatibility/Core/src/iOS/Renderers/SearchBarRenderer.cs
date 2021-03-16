@@ -236,6 +236,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_textField.AttributedPlaceholder = _textField.AttributedPlaceholder.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();

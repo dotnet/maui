@@ -4,6 +4,7 @@ using AGravityFlags = Android.Views.GravityFlags;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[PortHandler]
 	internal static class TextAlignmentExtensions
 	{
 		internal static void UpdateHorizontalAlignment(this EditText view, TextAlignment alignment, bool hasRtlSupport, AGravityFlags orMask = AGravityFlags.NoGravity)
