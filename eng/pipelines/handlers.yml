@@ -130,12 +130,17 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
+          ${{ if eq(BuildPlatform.name, 'macos') }}:
+            variables:
+              DotNet.Root: /usr/local/share/dotnet/
+              DotNet.Tools: ~/.dotnet/tools
           steps:
             - ${{ if eq(BuildPlatform.name, 'macos') }}:
               - task: UseDotNet@2
                 displayName: install .NET Core 3.1
                 inputs:
                   version: 3.1.x
+                  installationPath: $(DotNet.Root)
             - template: common/dotnet-install.yml
             - pwsh: |
                 dotnet tool install --global boots
