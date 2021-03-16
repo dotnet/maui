@@ -1,0 +1,393 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{BB933AF2-9498-4C4E-9F76-AF66A550BED3}</ProjectGuid>
+    <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility.ControlGallery.Android</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility.ControlGallery.Android</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <AndroidApplication>true</AndroidApplication>
+    <AndroidUseIntermediateDesignerFile>true</AndroidUseIntermediateDesignerFile>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <AndroidTargetFrameworkVersion Condition="'$(AndroidTargetFrameworkVersion)' == ''">v11.0</AndroidTargetFrameworkVersion>
+    <TargetFrameworkVersion>$(AndroidTargetFrameworkVersion)</TargetFrameworkVersion>
+    <AndroidManifest Condition="$(AndroidTargetFrameworkVersion) == 'v11.0'">Properties\AndroidManifest.xml</AndroidManifest>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <AndroidEnableMultiDex>true</AndroidEnableMultiDex>
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- default locally to using fast renderers but if we're running on CI don't set a value for ANDROID_RENDERERS.
+      This will let the old and new yaml configurations coexist -->
+    <ANDROID_RENDERERS Condition="'$(ANDROID_RENDERERS)' == ''">FAST</ANDROID_RENDERERS>
+    <DefineConstants Condition="'$(ANDROID_RENDERERS)' == 'FAST'">$(DefineConstants)</DefineConstants>
+    <DefineConstants Condition="'$(ANDROID_RENDERERS)' == 'LEGACY'">$(DefineConstants);LEGACY_RENDERERS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>
+    <AndroidKeyStore>True</AndroidKeyStore>
+    <AndroidSigningKeyStore>$(MSBuildThisFileDirectory)../../../../../eng/debug.keystore</AndroidSigningKeyStore>
+    <AndroidSigningStorePass>android</AndroidSigningStorePass>
+    <AndroidSigningKeyAlias>androiddebugkey</AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>android</AndroidSigningKeyPass>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG;HAVE_OPENTK</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidLinkMode>None</AndroidLinkMode>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    <AndroidSupportedAbis>armeabi-v7a;x86</AndroidSupportedAbis>
+    <Debugger>Xamarin</Debugger>
+    <DevInstrumentationEnabled>True</DevInstrumentationEnabled>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>$(DefineConstants);TRACE;HAVE_OPENTK</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AndroidDexTool>d8</AndroidDexTool>
+    <AndroidLinkTool>r8</AndroidLinkTool>
+    <AndroidEnableMultiDex>false</AndroidEnableMultiDex>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CI)' == 'true'">
+    <AndroidLinkMode>Full</AndroidLinkMode>
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
+    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+    <AndroidSupportedAbis>armeabi-v7a,x86</AndroidSupportedAbis>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Mono.Android" />
+    <Reference Include="Mono.Android.Export" />
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="OpenTK-1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Activity1.cs" />
+    <Compile Include="AttachedStateEffectRenderer.cs" />
+    <Compile Include="BorderEffect.cs" />
+    <Compile Include="BrokenNativeControl.cs" />
+    <Compile Include="CacheService.cs" />
+    <Compile Include="DrawableExtensions.cs" />
+    <Compile Include="DisposeLabelRenderer.cs" />
+    <Compile Include="DisposePageRenderer.cs" />
+    <Compile Include="FormsAppCompatActivity.cs" />
+    <Compile Include="Issue10182Activity.cs" />
+    <Compile Include="MainApplication.cs" />
+    <Compile Include="MultiWindowService.cs" />
+    <Compile Include="PerformanceTrackerRenderer.cs" />
+    <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
+    <Compile Include="Tests\TestingPlatformService.cs" />
+    <Compile Include="Tests\PlatformTestSettings.cs" />
+    <Compile Include="PreApplicationClassActivity.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegistrarValidationService.cs" />
+    <Compile Include="CustomRenderers.cs" />
+    <Compile Include="ColorPicker.cs" />
+    <Compile Include="SampleNativeControl.cs" />
+    <Compile Include="StaggeredCollectionViewRenderer.cs" />
+    <Compile Include="TestCloudService.cs" />
+    <Compile Include="_1909CustomRenderer.cs" />
+    <Compile Include="_2489CustomRenderer.cs" />
+    <Compile Include="_38989CustomRenderer.cs" />
+    <Compile Include="BrokenImageSourceHandler.cs" />
+    <Compile Include="_50787CustomRenderer.cs" />
+    <Compile Include="_57114CustomRenderer.cs" />
+    <Compile Include="_5749CustomRenderer.cs" />
+    <Compile Include="_58406EffectRenderer.cs" />
+    <Compile Include="_59457CustomRenderer.cs" />
+    <Compile Include="_60122ImageRenderer.cs" />
+    <Compile Include="ContentDescriptionEffectRenderer.cs" />
+    <Compile Include="..\Core\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs">
+      <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
+    </Compile>
+    <Compile Include="ApiLabelRenderer.cs" />
+    <Compile Include="Issue7249SwitchRenderer.cs" />
+    <Compile Include="_9087CustomRenderer.cs" />
+    <Compile Include="_10940CustomRenderer.cs" />
+    <Compile Include="RippleEffect.cs" />
+    <Compile Include="_12484CustomRenderer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\default.css" />
+    <AndroidResource Include="Resources\drawable\bank.png" />
+    <AndroidResource Include="Resources\drawable\crimson.jpg" />
+    <AndroidResource Include="Resources\drawable\oasis.jpg" />
+    <AndroidResource Include="Resources\drawable\cover1small.jpg" />
+    <AndroidResource Include="Resources\drawable\crimsonsmall.jpg" />
+    <AndroidResource Include="Resources\drawable\oasissmall.jpg" />
+    <AndroidResource Include="Resources\drawable\calculator.png" />
+    <AndroidResource Include="Resources\drawable\seth.png" />
+    <AndroidResource Include="Resources\drawable\menuIcon.png" />
+    <AndroidResource Include="Resources\drawable\photo.jpg" />
+    <AndroidAsset Include="Assets\WebImages\XamarinLogo.png" />
+    <AndroidAsset Include="Assets\local.html" />
+    <AndroidResource Include="Resources\values\Colors.xml" />
+    <AndroidResource Include="Resources\layout\NativeAndroidCell.axml" />
+    <AndroidResource Include="Resources\layout\NativeAndroidListViewCell.axml" />
+    <AndroidResource Include="Resources\drawable\CustomSelector.xml" />
+    <AndroidResource Include="Resources\drawable\CustomSelector2.xml" />
+    <AndroidResource Include="Resources\drawable\FlowerBuds.jpg" />
+    <AndroidResource Include="Resources\drawable\Fruits.jpg" />
+    <AndroidResource Include="Resources\drawable\Legumes.jpg" />
+    <AndroidResource Include="Resources\drawable\Vegetables.jpg" />
+    <AndroidResource Include="Resources\values\styles.xml" />
+    <AndroidResource Include="Resources\drawable\coffee.png" />
+    <AndroidResource Include="Resources\drawable\toolbar_close.png" />
+    <AndroidResource Include="Resources\drawable\test.jpg" />
+    <AndroidResource Include="Resources\drawable\invalidimage.jpg" />
+    <AndroidResource Include="Resources\values\strings.xml" />
+    <AndroidResource Include="Resources\drawable\icon_search.png" />
+    <AndroidResource Include="Resources\drawable\icon_bookmark.png" />
+    <AndroidResource Include="Resources\drawable\button_add.png" />
+    <AndroidResource Include="Resources\drawable\gamesflyout.png" />
+    <AndroidResource Include="Resources\drawable\filmflyout.png" />
+    <AndroidResource Include="Resources\drawable\headphoneflyout.png" />
+    <AndroidResource Include="Resources\drawable\newspaperflyout.png" />
+    <AndroidResource Include="Resources\drawable\booksflyout.png" />
+    <AndroidResource Include="Resources\drawable\homeflyout.png" />
+    <AndroidResource Include="Resources\drawable\xamarinlogo.png" />
+    <AndroidResource Include="Resources\drawable\cardBackground.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\Icon.png" />
+    <AndroidResource Include="Resources\drawable\cover1.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Compatibility\Maps\src\Android\Compatibility.Maps.Android.csproj">
+      <Project>{1d11ec11-4734-47d4-9b62-4d03cff67090}</Project>
+      <Name>Compatibility.Maps.Android</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj">
+      <Project>{f137fac5-3385-4b19-988b-4a14ed84ccc6}</Project>
+      <Name>Controls.Maps</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj">
+      <Project>{2964f669-7cd9-4d78-b4d9-804a965d58c0}</Project>
+      <Name>Controls.CustomAttributes</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Core\src\Android.AppLinks\Compatibility.Android.AppLinks.csproj">
+      <Project>{10553575-8e27-4e2c-9e88-90b015e80f1c}</Project>
+      <Name>Compatibility.Android.AppLinks</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Core\tests\Android\Compatibility.Android.UnitTests.csproj">
+      <Project>{a4c57790-71d1-467c-a69e-2bd84cb6666c}</Project>
+      <Name>Compatibility.Android.UnitTests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core.csproj">
+      <Project>{E7D17A14-8399-4139-BDAA-EE4C1A3447FC}</Project>
+      <Name>Compatibility.ControlGallery.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="$(FromSource) == 'true'">
+    <ProguardConfiguration Include="..\..\..\..\..\.nuspec\proguard.cfg">
+      <Link>proguard.cfg</Link>
+    </ProguardConfiguration>
+    <ProjectReference Include="..\..\..\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj">
+      <Project>{3b72465b-acae-43ae-9327-10f372fe5f80}</Project>
+      <Name>Compatibility.Android.FormsViewGroup</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Core\src\Android\Compatibility.Android.csproj">
+      <Project>{0e16e70a-d6dd-4323-ad5d-363abff42d6a}</Project>
+      <Name>Compatibility.Android</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj">
+      <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
+      <Name>Controls.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\Toolbar.axml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+    <AndroidResource Include="Resources\layout\Tabbar.axml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+    <AndroidResource Include="Resources\layout\Layout38989.axml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\AndroidManifest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\error.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\heart.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\cartman.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\drawable\caret_r.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\synchronize.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\synchronize_disabled.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\synchronize_enabled.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\anim\enter_from_left.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\anim\enter_from_right.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\anim\exit_to_left.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\anim\exit_to_right.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\red_button.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\test.jpg" />
+    <AndroidResource Include="Resources\drawable\grid.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\bell.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\loop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\home.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\games.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\film.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\books.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\headphone.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\newspaper.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\xamarinstore.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\person.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\card.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\star.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\jet.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\gear.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\mic.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>12.0.3</Version>
+    </PackageReference>
+    <PackageReference Include="NUnit">
+      <Version>3.13.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xam.Plugin.DeviceInfo">
+      <Version>3.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Build.Download" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+    <PackageReference Include="Xamarin.AndroidX.Browser" />
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
+    <PackageReference Include="Xamarin.AndroidX.Palette" />
+    <PackageReference Include="Xamarin.Google.Android.Material" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\fonts\ionicons.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidAsset>
+  </ItemGroup>
+  <ItemGroup>
+    <TransformFile Include="Assets\fonts\icons.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </TransformFile>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\GifOne.gif" />
+    <AndroidEnvironment Include="Environment.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\GifTwo.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <LinkDescription Include="LinkDescription.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\rb_unchecked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\rb_checked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\googlemap.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\googlemapsearch.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\coffee2.png">
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Properties\MapsKey.cs')">
+    <Compile Include="Properties\MapsKey.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+</Project>
