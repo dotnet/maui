@@ -59,7 +59,7 @@ variables:
 parameters:
   - name: BuildEverything
     type: boolean
-    default: ne(variables['Build.Reason'], 'PullRequest')
+    default: $[ ne(variables['Build.Reason'], 'PullRequest') ]
   - name: BuildConfigurations
     type: object
     default:
