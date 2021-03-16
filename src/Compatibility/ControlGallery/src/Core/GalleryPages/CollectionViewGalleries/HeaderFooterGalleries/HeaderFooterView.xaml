@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries.HeaderFooterView">
+    <ContentPage.Content>
+
+        <CollectionView x:Name="CollectionView" ItemsSource="{Binding Items}">
+            
+            <CollectionView.Header>
+
+                <Grid>
+                    <Image Source="oasis.jpg" Aspect="AspectFill" HeightRequest="100"></Image>
+                    <Label Text="{Binding HeaderText}" TextColor="AntiqueWhite" HorizontalTextAlignment="Center" 
+                           FontAttributes="Bold" FontSize="36" />
+                </Grid>
+
+            </CollectionView.Header>
+
+            <CollectionView.Footer>
+
+                <Grid>
+                    <Image Source="cover1.jpg" Aspect="AspectFill" HeightRequest="80"></Image>
+                    <Label Text="{Binding FooterText}" TextColor="AntiqueWhite" HorizontalTextAlignment="Center" Rotation="10" 
+                           FontAttributes="Bold" FontSize="20" />
+                </Grid>
+
+            </CollectionView.Footer>
+
+        </CollectionView>
+
+    </ContentPage.Content>
+</ContentPage>
