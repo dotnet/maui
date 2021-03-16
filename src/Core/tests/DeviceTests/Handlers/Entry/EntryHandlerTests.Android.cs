@@ -38,6 +38,32 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultTypeface, nativeEntry.Typeface);
 		}
 
+		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
+		{
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
+			};
+
+			Android.Views.TextAlignment expectedValue = Android.Views.TextAlignment.ViewEnd;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.HorizontalTextAlignment,
+					NativeViewValue = GetNativeTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
 		AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
 			(AppCompatEditText)entryHandler.View;
 
@@ -84,5 +110,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsItalic(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Typeface.IsItalic;
+
+		Android.Views.TextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).TextAlignment;
 	}
 }
