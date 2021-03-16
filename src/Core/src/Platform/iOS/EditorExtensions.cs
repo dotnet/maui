@@ -26,10 +26,8 @@ namespace Microsoft.Maui
 		
 		public static void UpdatePredictiveText(this UITextView textView, IEditor editor)
 		{
-			if(editor.IsTextPredictionEnabled)
-				return;
-			
-			textView.AutocorrectionType = UITextAutocorrectionType.No;
+			textView.AutocorrectionType = editor.IsTextPredictionEnabled 
+				? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No;
 		}
 	}
 }
