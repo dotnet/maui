@@ -7,9 +7,10 @@ namespace Microsoft.Maui
 {
 	public static class EntryExtensions
 	{
-		static readonly int[][] ColorStates = {
-			new[] { global::Android.Resource.Attribute.StateEnabled },
-			new[] { -global::Android.Resource.Attribute.StateEnabled }
+		static readonly int[][] ColorStates =
+		{
+			new[] { Android.Resource.Attribute.StateEnabled },
+			new[] { -Android.Resource.Attribute.StateEnabled }
 		};
 
 		public static void UpdateText(this AppCompatEditText editText, IEntry entry)
@@ -45,22 +46,9 @@ namespace Microsoft.Maui
 			editText.SetInputType(entry);
 		}
 
-		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateHorizontalTextAlignment(this AppCompatEditText editText, IEntry entry)
 		{
-			editText.InputType = InputTypes.ClassText;
-			editText.InputType |= InputTypes.TextFlagMultiLine;
-
-			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassText) == InputTypes.ClassText))
-				editText.InputType |= InputTypes.TextVariationPassword;
-
-			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))
-				editText.InputType |= InputTypes.NumberVariationPassword;
-
-			if (!entry.IsTextPredictionEnabled && ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions))
-				editText.InputType |= InputTypes.TextFlagNoSuggestions;
-
-			if (entry.IsReadOnly)
-				editText.InputType = InputTypes.Null;
+			editText.UpdateHorizontalAlignment(entry.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this AppCompatEditText editText, IEntry entry)
@@ -95,6 +83,24 @@ namespace Microsoft.Maui
 
 			var sp = fontManager.GetScaledPixel(font);
 			editText.SetTextSize(ComplexUnitType.Sp, sp);
+		}
+
+		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
+		{
+			editText.InputType = InputTypes.ClassText;
+			editText.InputType |= InputTypes.TextFlagMultiLine;
+
+			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassText) == InputTypes.ClassText))
+				editText.InputType |= InputTypes.TextVariationPassword;
+
+			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))
+				editText.InputType |= InputTypes.NumberVariationPassword;
+
+			if (!entry.IsTextPredictionEnabled && ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions))
+				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+
+			if (entry.IsReadOnly)
+				editText.InputType = InputTypes.Null;
 		}
 	}
 }
