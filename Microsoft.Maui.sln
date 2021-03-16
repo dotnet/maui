@@ -45,7 +45,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2ACC7FFA-2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "src\Core\src\Core.csproj", "{29913989-0F70-48D8-8EDE-B1DD217F21D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compatibility.Android.FormsViewGroup", "src\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj", "{3B72465B-ACAE-43AE-9327-10F372FE5F80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup", "src\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj", "{3B72465B-ACAE-43AE-9327-10F372FE5F80}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compatibility.iOS", "src\Compatibility\Core\src\iOS\Compatibility.iOS.csproj", "{271193C1-6E7C-429C-A36D-3F1BE5267231}"
 EndProject
@@ -147,14 +147,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SingleProject", "SingleProj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.CustomAttributes", "src\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj", "{D816B818-F58F-4738-93AE-924EFAB7A07F}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ControlGallery.Issues.Shared", "src\ControlGallery\src\Xamarin.Forms.Controls.Issues.Shared\ControlGallery.Issues.Shared.shproj", "{0F0DB9CC-EA65-429C-9363-38624BF8F49C}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.ControlGallery.Issues.Shared", "src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.shproj", "{AE2513CB-4E5E-4E5C-8237-88954D4C9433}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery", "src\ControlGallery\src\Xamarin.Forms.Controls\ControlGallery.csproj", "{B5F94CCB-5868-43BD-89B5-B66C97C3A741}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Core", "src\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj", "{B5F94CCB-5868-43BD-89B5-B66C97C3A741}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		src\ControlGallery\src\Xamarin.Forms.Controls.Issues.Shared\ControlGallery.Issues.Shared.projitems*{0f0db9cc-ea65-429c-9363-38624bf8f49c}*SharedItemsImports = 13
-		src\ControlGallery\src\Xamarin.Forms.Controls.Issues.Shared\ControlGallery.Issues.Shared.projitems*{b5f94ccb-5868-43bd-89b5-b66c97c3a741}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{ae2513cb-4e5e-4e5c-8237-88954d4c9433}*SharedItemsImports = 13
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{b5f94ccb-5868-43bd-89b5-b66c97c3a741}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1465,7 +1465,7 @@ Global
 		{62DBB813-E489-45D7-BF32-E64D04649CC8} = {B688531D-C2BD-41FC-9694-5311346DB789}
 		{CB2072E0-A437-4811-AE17-16CAE0DDA1B1} = {99FDF6CA-DCF8-4CB2-B2EA-E24CCB601232}
 		{D816B818-F58F-4738-93AE-924EFAB7A07F} = {75A2CD30-BB85-4CA6-AC95-86A8A538A690}
-		{0F0DB9CC-EA65-429C-9363-38624BF8F49C} = {75A2CD30-BB85-4CA6-AC95-86A8A538A690}
+		{AE2513CB-4E5E-4E5C-8237-88954D4C9433} = {75A2CD30-BB85-4CA6-AC95-86A8A538A690}
 		{B5F94CCB-5868-43BD-89B5-B66C97C3A741} = {75A2CD30-BB85-4CA6-AC95-86A8A538A690}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

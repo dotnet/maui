@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
-			 xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery;assembly=Microsoft.Maui.Controls.ControlGallery"
+			 xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery;assembly=Microsoft.Maui.Controls.Compatibility.ControlGallery"
 			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Issue3076">
 	<StackLayout>
 		<local:Issue3076Button VerticalContentAlignment="Start" x:Name="local"/>
