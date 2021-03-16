@@ -80,12 +80,12 @@ parameters:
     type: object
     default:
       - name: windows
-        poolName: ''
+        poolName: 'Azure Pipelines'
         vmImage: windows-latest
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
       - name: macos
-        poolName: ''
+        poolName: 'Azure Pipelines'
         vmImage: macos-latest
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
