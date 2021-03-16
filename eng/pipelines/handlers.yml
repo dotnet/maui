@@ -84,12 +84,14 @@ parameters:
         vmImage: windows-latest
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
+        artifact: nuget-windows
       - name: macos
         poolName: 'Azure Pipelines'
         vmImage: macos-latest
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
+        artifact: nuget
 
 resources:
   repositories:
