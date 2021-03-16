@@ -41,10 +41,8 @@ namespace Microsoft.Maui.DeviceTests
 
         double GetNativeCharacterSpacing(EditorHandler editorHandler)
         {
-            var searchBar = GetNativeEditor(editorHandler);
-            var textField = searchBar.FindDescendantView<UITextField>();
-
-            return textField.AttributedText.GetCharacterSpacing();
+            var editor = GetNativeEditor(editorHandler);
+            return editor.AttributedText.GetCharacterSpacing();
         }
     }
 }
