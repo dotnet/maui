@@ -7,12 +7,13 @@ namespace Microsoft.Maui.Handlers
 	public partial class SearchBarHandler : AbstractViewHandler<ISearchBar, SearchView>
 	{
 		EditText? _editText;
+		public EditText? QueryEditor => _editText;
 
 		protected override SearchView CreateNativeView()
 		{
 			var searchView = new SearchView(Context);
 
-			_editText ??= searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+			_editText = searchView.GetChildrenOfType<EditText>().First();
 
 			return searchView;
 		}
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.TypedNativeView?.UpdateHorizontalTextAlignment(searchBar, handler._editText);
+			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
 		}
 	}
 }
