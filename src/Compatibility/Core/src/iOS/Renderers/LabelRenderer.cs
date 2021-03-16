@@ -345,6 +345,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				Layer.RemoveBackgroundLayer();
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 #if __MOBILE__
@@ -354,6 +355,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 		}
 
+		[PortHandler]
 		void UpdateLineBreakMode()
 		{
 #if __MOBILE__
@@ -603,6 +605,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateMaxLines()
 		{
 			if (Element.MaxLines >= 0)

@@ -236,6 +236,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_textField.AttributedPlaceholder = _textField.AttributedPlaceholder.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();
@@ -304,6 +305,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.UserInteractionEnabled = Element.IsEnabled;
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdatePlaceholder()
 		{
 			if (_textField == null)
@@ -332,6 +334,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void UpdateText()
 		{
 			// There is at least one scenario where modifying the Element's Text value from TextChanged
