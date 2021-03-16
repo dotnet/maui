@@ -172,6 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				ClearFocus(Control);
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();

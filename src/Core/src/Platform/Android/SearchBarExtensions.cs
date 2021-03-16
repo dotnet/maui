@@ -1,4 +1,4 @@
-﻿using AndroidX.AppCompat.Widget;
+﻿using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui
 {
