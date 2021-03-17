@@ -128,6 +128,28 @@ stages:
           steps:
             - template: common/build-windows.yml
 
+  - stage: build_osx
+    displayName: iOS
+    dependsOn: []
+    jobs:
+      - job: ios
+        workspace:
+          clean: all
+        displayName: Build ControlGallery iOS
+        timeoutInMinutes: 120
+        pool:
+          name:  $(macOSXVmPool)
+          vmImage: $(macOSXVmImage)
+          demands:
+            - sh
+            - Xamarin.iOS
+        variables:
+          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+          provisionator.extraArguments : '--v'
+        steps:
+          - template: common/controlgallery-ios.yml
+
   - stage: pack_net6
     displayName: Pack .NET 6
     dependsOn: []
