@@ -181,7 +181,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		double GetNativeCharacterSpacing(LabelHandler labelHandler) =>
-			Math.Round(GetNativeLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, 4);
+			Math.Round(GetNativeLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, EmCoefficientPrecision);
 
 		TextUtils.TruncateAt GetNativeLineBreakMode(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Ellipsize;

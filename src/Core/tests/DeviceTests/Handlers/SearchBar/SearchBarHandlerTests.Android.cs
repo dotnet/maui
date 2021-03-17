@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Android.Widget;
+﻿using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -36,6 +36,32 @@ namespace Microsoft.Maui.DeviceTests
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
+		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			var xplatCharacterSpacing = 4;
+
+			var searchBar = new SearchBarStub()
+			{
+				CharacterSpacing = xplatCharacterSpacing,
+				Text = "Test"
+			};
+
+			float expectedValue = searchBar.CharacterSpacing.ToEm();
+
+			var values = await GetValueAsync(searchBar, (handler) =>
+			{
+				return new
+				{
+					ViewValue = searchBar.CharacterSpacing,
+					NativeViewValue = GetNativeCharacterSpacing(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
+		}
+
 		SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			(SearchView)searchBarHandler.View;
 
@@ -45,14 +71,23 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).QueryHint;
 
-		Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
+		double GetNativeCharacterSpacing(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
-			if (editText == null)
-				return Android.Views.TextAlignment.Inherit;
+			if (editText != null)
+			{
+				return editText.LetterSpacing;
+			}
 
+			return -1;
+		}
+
+		Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
 			return editText.TextAlignment;
 		}
 	}
