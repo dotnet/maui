@@ -109,15 +109,15 @@ namespace Maui.Controls.Sample.Pages
 			searchBar.Text = "A search query";
 			verticalStack.Add(searchBar);
 
-			var searchBar = new SearchBar();
-			searchBar.Text = "A search query";
-			verticalStack.Add(searchBar);
-
 			var placeholderSearchBar = new SearchBar();
 			placeholderSearchBar.Placeholder = "Placeholder";
 			verticalStack.Add(placeholderSearchBar);
 
 			verticalStack.Add(new Slider());
+
+			verticalStack.Add(new Stepper());
+			verticalStack.Add(new Stepper { BackgroundColor = Color.IndianRed });
+			verticalStack.Add(new Stepper { Minimum = 0, Maximum = 10, Value = 5 });
 
 			verticalStack.Add(new Switch());
 			verticalStack.Add(new Switch() { OnColor = Color.Green });
