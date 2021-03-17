@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 			Current = this;
 		}
 
-		public static App? Current { get; internal set; }
+		public static MauiApp? Current { get; internal set; }
 
 		public abstract IWindow CreateWindow(IActivationState state);
 	}

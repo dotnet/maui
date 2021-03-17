@@ -6,7 +6,7 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
-	public class MauiApplication<TStartup> : MauiApplication
+	public class MauiApplication<TStartup> : Android.App.Application
 		where TStartup : IStartup, new()
 	{
 		public MauiApplication(IntPtr handle, JniHandleOwnership ownerShip) : base(handle, ownerShip)
@@ -29,8 +29,8 @@ namespace Microsoft.Maui
 
 			var services = host.Services;
 
-			CurrentApp = services.GetRequiredService<MauiApp>();
-			CurrentApp.SetServiceProvider(services);
+			var app = services.GetRequiredService<MauiApp>();
+			app.SetServiceProvider(services);
 
 			base.OnCreate();
 		}
@@ -39,14 +39,5 @@ namespace Microsoft.Maui
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
 		}
-	}
-
-	public abstract class MauiApplication : Android.App.Application
-	{
-		public MauiApplication(IntPtr handle, JniHandleOwnership ownerShip) : base(handle, ownerShip)
-		{
-		}
-
-		public static MauiApp CurrentApp { get; internal set; } = null!;
 	}
 }

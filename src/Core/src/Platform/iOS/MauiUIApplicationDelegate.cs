@@ -7,9 +7,15 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class MauiUIApplicationDelegate<TStartup> : MauiUIApplicationDelegate
+	public class MauiUIApplicationDelegate<TStartup> : UIApplicationDelegate, IUIApplicationDelegate
 		where TStartup : IStartup, new()
 	{
+		public override UIWindow? Window
+		{
+			get;
+			set;
+		}
+
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			var startup = new TStartup();
@@ -26,16 +32,16 @@ namespace Microsoft.Maui
 
 			var services = host.Services;
 
-			CurrentApp = services.GetRequiredService<MauiApp>();
-			CurrentApp.SetServiceProvider(services);
+			var app = services.GetRequiredService<MauiApp>();
+			app.SetServiceProvider(services);
 
 			var mauiContext = new MauiContext(services);
-			var window = CurrentApp.CreateWindow(new ActivationState(mauiContext));
+			var window = app.CreateWindow(new ActivationState(mauiContext));
 
 			window.MauiContext = mauiContext;
 
 			// Hack for now we set this on the App Static but this should be on IFrameworkElement
-			CurrentApp.SetHandlerContext(window.MauiContext);
+			app.SetHandlerContext(window.MauiContext);
 
 			var content = (window.Page as IView) ?? window.Page.View;
 
@@ -55,12 +61,5 @@ namespace Microsoft.Maui
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
 		}
-	}
-
-	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
-	{
-		public override UIWindow? Window { get; set; }
-
-		public static MauiApp CurrentApp { get; internal set; } = null!;
 	}
 }
