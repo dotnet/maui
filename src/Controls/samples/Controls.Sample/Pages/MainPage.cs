@@ -36,7 +36,6 @@ namespace Maui.Controls.Sample.Pages
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
 
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
-
 			var label = new Label { Text = "End-aligned text", BackgroundColor = Color.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
@@ -104,6 +103,11 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Color.Purple });
+
+			var searchBar = new SearchBar();
+			searchBar.CharacterSpacing = 4;
+			searchBar.Text = "A search query";
+			verticalStack.Add(searchBar);
 
 			var searchBar = new SearchBar();
 			searchBar.Text = "A search query";

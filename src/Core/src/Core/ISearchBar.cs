@@ -9,5 +9,10 @@
 		/// Gets a string containing the query text in the SearchBar.
 		/// </summary>
 		string Text { get; }
+
+		/// <summary>
+		/// Gets a string containing the query text in the SearchBar.
+		/// </summary>
+		double CharacterSpacing { get; }
 	}
 }

@@ -143,18 +143,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var nativeLabel = GetNativeLabel(labelHandler);
 			var text = nativeLabel.AttributedText;
-			if (text == null)
-				return 0;
-
-			var value = text.GetAttribute(UIStringAttributeKey.KerningAdjustment, 0, out var range);
-			if (value == null)
-				return 0;
-
-			Assert.Equal(0, range.Location);
-			Assert.Equal(text.Length, range.Length);
-
-			var kerning = Assert.IsType<NSNumber>(value);
-			return kerning.DoubleValue;
+			return text.GetCharacterSpacing();
 		}
 
 		UITextAlignment GetNativeTextAlignment(LabelHandler labelHandler) =>
