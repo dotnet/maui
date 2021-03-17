@@ -387,6 +387,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateAttributedPlaceholder(placeHolder);
 		}
 
+		[PortHandler]
 		void UpdateMaxLength()
 		{
 			var currentControlText = Control.Text;

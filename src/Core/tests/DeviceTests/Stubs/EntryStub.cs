@@ -24,11 +24,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsReadOnly { get; set; }
 
+		public Font Font { get; set; }
+
+		public int MaxLength { get; set; } = int.MaxValue;
+
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
 
 		void OnTextChanged(string oldValue, string newValue) =>
 			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
-
-		public Font Font { get; set; }
 	}
 }

@@ -1,4 +1,5 @@
-﻿using Android.Content.Res;
+﻿using System.Collections.Generic;
+using Android.Content.Res;
 using Android.Text;
 using Android.Util;
 using AndroidX.AppCompat.Widget;
@@ -45,27 +46,32 @@ namespace Microsoft.Maui
 			editText.SetInputType(entry);
 		}
 
-		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
-		{
-			editText.InputType = InputTypes.ClassText;
-			editText.InputType |= InputTypes.TextFlagMultiLine;
-
-			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassText) == InputTypes.ClassText))
-				editText.InputType |= InputTypes.TextVariationPassword;
-
-			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))
-				editText.InputType |= InputTypes.NumberVariationPassword;
-
-			if (!entry.IsTextPredictionEnabled && ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions))
-				editText.InputType |= InputTypes.TextFlagNoSuggestions;
-
-			if (entry.IsReadOnly)
-				editText.InputType = InputTypes.Null;
-		}
-
 		public static void UpdateIsTextPredictionEnabled(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.SetInputType(entry);
+		}
+
+		public static void UpdateMaxLength(this AppCompatEditText editText, IEntry entry)
+		{
+			var currentFilters = new List<IInputFilter>(editText?.GetFilters() ?? new IInputFilter[0]);
+
+			for (var i = 0; i < currentFilters.Count; i++)
+			{
+				if (currentFilters[i] is InputFilterLengthFilter)
+				{
+					currentFilters.RemoveAt(i);
+					break;
+				}
+			}
+
+			currentFilters.Add(new InputFilterLengthFilter(entry.MaxLength));
+
+			editText?.SetFilters(currentFilters.ToArray());
+
+			var currentControlText = editText?.Text;
+
+			if (editText != null && currentControlText != null && currentControlText.Length > entry.MaxLength)
+				editText.Text = currentControlText.Substring(0, entry.MaxLength);
 		}
 
 		public static void UpdatePlaceholder(this AppCompatEditText editText, IEntry entry)
@@ -95,6 +101,24 @@ namespace Microsoft.Maui
 
 			var sp = fontManager.GetScaledPixel(font);
 			editText.SetTextSize(ComplexUnitType.Sp, sp);
+		}
+
+		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
+		{
+			editText.InputType = InputTypes.ClassText;
+			editText.InputType |= InputTypes.TextFlagMultiLine;
+
+			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassText) == InputTypes.ClassText))
+				editText.InputType |= InputTypes.TextVariationPassword;
+
+			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))
+				editText.InputType |= InputTypes.NumberVariationPassword;
+
+			if (!entry.IsTextPredictionEnabled && ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions))
+				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+
+			if (entry.IsReadOnly)
+				editText.InputType = InputTypes.Null;
 		}
 	}
 }
