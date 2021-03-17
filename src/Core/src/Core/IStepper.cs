@@ -7,8 +7,8 @@
 	public interface IStepper : IView, IRange
 	{
 		/// <summary>
-		/// Gets the increment by which Value is increased or decreased.
+		/// Gets the amount by which Value is increased or decreased.
 		/// </summary>
-		double Increment { get; }
+		double Step { get; }
 	}
 }

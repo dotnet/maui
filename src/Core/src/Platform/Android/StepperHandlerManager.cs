@@ -85,7 +85,7 @@ namespace Microsoft.Maui
 				if (!(HandlerHolder.StepperHandler?.VirtualView is IStepper stepper))
 					return;
 
-				var increment = stepper.Increment;
+				var increment = stepper.Step;
 
 				if (view == HandlerHolder.StepperHandler.DownButton)
 					increment = -increment;
