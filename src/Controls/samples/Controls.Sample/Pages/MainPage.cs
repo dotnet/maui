@@ -79,6 +79,8 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 
+			verticalStack.Add(new DatePicker());
+
 			verticalStack.Add(new Editor());
 			verticalStack.Add(new Editor { Text = "Editor" });
 
