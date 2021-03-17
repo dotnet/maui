@@ -291,6 +291,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();

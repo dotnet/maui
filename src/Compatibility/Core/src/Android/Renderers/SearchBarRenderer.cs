@@ -233,6 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			view.ClearFocus();
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();

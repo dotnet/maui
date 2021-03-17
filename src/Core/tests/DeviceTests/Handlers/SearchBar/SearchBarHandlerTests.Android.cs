@@ -90,5 +90,38 @@ namespace Microsoft.Maui.DeviceTests
 			var editText = searchView.GetChildrenOfType<EditText>().First();
 			return editText.TextAlignment;
 		}
+
+		double GetNativeUnscaledFontSize(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+
+			if (editText == null)
+				return -1;
+
+			return editText.TextSize / editText.Resources.DisplayMetrics.Density;
+		}
+
+		bool GetNativeIsBold(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+
+			if (editText == null)
+				return false;
+
+			return editText.Typeface.IsBold;
+		}
+
+		bool GetNativeIsItalic(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+
+			if (editText == null)
+				return false;
+
+			return editText.Typeface.IsItalic;
+		}
 	}
 }
