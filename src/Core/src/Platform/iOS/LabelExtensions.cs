@@ -79,32 +79,6 @@ namespace Microsoft.Maui
 				(float)label.Padding.Right);
 		}
 
-		public static void UpdateTextDecorations(this UILabel nativeLabel, ILabel label)
-		{
-			if (nativeLabel.AttributedText != null && !(nativeLabel.AttributedText?.Length > 0))
-				return;
-
-			var textDecorations = label?.TextDecorations;
-
-			var newAttributedText = nativeLabel.AttributedText != null ? new NSMutableAttributedString(nativeLabel.AttributedText) : new NSMutableAttributedString(label?.Text ?? string.Empty);
-			var strikeThroughStyleKey = UIStringAttributeKey.StrikethroughStyle;
-			var underlineStyleKey = UIStringAttributeKey.UnderlineStyle;
-
-			var range = new NSRange(0, newAttributedText.Length);
-
-			if ((textDecorations & TextDecorations.Strikethrough) == 0)
-				newAttributedText.RemoveAttribute(strikeThroughStyleKey, range);
-			else
-				newAttributedText.AddAttribute(strikeThroughStyleKey, NSNumber.FromInt32((int)NSUnderlineStyle.Single), range);
-
-			if ((textDecorations & TextDecorations.Underline) == 0)
-				newAttributedText.RemoveAttribute(underlineStyleKey, range);
-			else
-				newAttributedText.AddAttribute(underlineStyleKey, NSNumber.FromInt32((int)NSUnderlineStyle.Single), range);
-
-			nativeLabel.AttributedText = newAttributedText;
-		}
-
 		internal static void SetLineBreakMode(this UILabel nativeLabel, ILabel label)
 		{
 			int maxLines = label.MaxLines;

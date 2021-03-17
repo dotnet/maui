@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
@@ -125,6 +126,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var labelHandler = new LabelStub()
 			{
+				Text = "test",
 				LineHeight = xplatLineHeight
 			};
 
