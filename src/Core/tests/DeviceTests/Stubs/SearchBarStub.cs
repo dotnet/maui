@@ -9,5 +9,7 @@
 		public string Placeholder { get; set; }
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
+
+		public double CharacterSpacing { get; set; }
 	}
 }

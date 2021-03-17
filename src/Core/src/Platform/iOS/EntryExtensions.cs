@@ -38,12 +38,12 @@ namespace Microsoft.Maui
 				textField.SecureTextEntry = entry.IsPassword;
 		}
 
-		public static void UpdateHorizontalTextAlignment(this UITextField textField, IEntry entry)
+		public static void UpdateHorizontalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
 		{
 			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
 			// TODO: Update this when FlowDirection is available 
 			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
-			textField.TextAlignment = entry.HorizontalTextAlignment.ToNative(true);
+			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(true);
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this UITextField textField, IEntry entry)
