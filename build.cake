@@ -19,7 +19,7 @@ PowerShell:
 // ADDINS
 //////////////////////////////////////////////////////////////////////
 #addin "nuget:?package=Cake.Android.SdkManager&version=3.0.2"
-#addin "nuget:?package=Cake.Boots&version=1.0.3.556"
+#addin "nuget:?package=Cake.Boots&version=1.0.4.600-preview1"
 #addin "nuget:?package=Cake.AppleSimulator&version=0.2.0"
 #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
 
