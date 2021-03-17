@@ -30,6 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var stepper = new StepperStub()
 			{
+				Minimum = 0,
 				Maximum = 50
 			};
 
@@ -41,7 +42,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var stepper = new StepperStub()
 			{
-				Minimum = 10
+				Minimum = 10,
+				Maximum = 50
 			};
 
 			await ValidatePropertyInitValue(stepper, () => stepper.Minimum, GetNativeMinimum, stepper.Minimum);
