@@ -8,6 +8,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Maui.Controls.Sample
 {
@@ -18,7 +19,7 @@ namespace Maui.Controls.Sample
 		public void Configure(IAppHostBuilder appBuilder)
 		{
 			appBuilder
-				//.RegisterCompatibilityRenderers()
+				.RegisterCompatibilityRenderers()
 				.UseMauiApp<MyApp>()
 				.ConfigureAppConfiguration((hostingContext, config) =>
 				{

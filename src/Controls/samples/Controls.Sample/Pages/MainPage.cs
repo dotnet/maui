@@ -85,7 +85,7 @@ namespace Maui.Controls.Sample.Pages
 			};
 
 			verticalStack.Add(entry);
-			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
+			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed, FontFamily = "Dokdo" });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
@@ -116,7 +116,10 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
 
-			Content = verticalStack;
+			Content = new ScrollView
+			{
+				Content = verticalStack
+			};
 		}
 
 		void SetupCompatibilityLayout()
