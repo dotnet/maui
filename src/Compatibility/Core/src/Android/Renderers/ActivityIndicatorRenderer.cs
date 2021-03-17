@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			AutoPackage = false;
 		}
 
+		[PortHandler]
 		protected override AProgressBar CreateNativeControl()
 		{
 			return new AProgressBar(Context) { Indeterminate = true };
@@ -42,6 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UpdateColor();
 		}
 
+		[PortHandler]
 		void UpdateColor()
 		{
 			if (Element == null || Control == null)
@@ -55,6 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Control.IndeterminateDrawable?.ClearColorFilter();
 		}
 
+		[PortHandler]
 		void UpdateVisibility()
 		{
 			if (Element == null || Control == null)

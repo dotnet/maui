@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Hosting
 		{
 			builder.RegisterHandlers(new Dictionary<Type, Type>
 			{
+				{  typeof(IActivityIndicator), typeof(ActivityIndicatorHandler) },
 				{ typeof(IButton), typeof(ButtonHandler) },
 				{ typeof(ICheckBox), typeof(CheckBoxHandler) },
 				{ typeof(IEditor), typeof(EditorHandler) },

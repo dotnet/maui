@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	public class ActivityIndicator : View, IColorElement, IElementConfiguration<ActivityIndicator>
+	public partial class ActivityIndicator : View, IColorElement, IElementConfiguration<ActivityIndicator>
 	{
 		public static readonly BindableProperty IsRunningProperty = BindableProperty.Create("IsRunning", typeof(bool), typeof(ActivityIndicator), default(bool));
 

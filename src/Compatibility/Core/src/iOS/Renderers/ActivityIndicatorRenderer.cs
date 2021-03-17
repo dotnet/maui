@@ -5,6 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[PortHandler]
 	public sealed class UIActivityIndicatorViewDelegate : UIActivityIndicatorView
     {
         ActivityIndicator _element;
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		}
 
+		[PortHandler]
 		protected override void OnElementChanged(ElementChangedEventArgs<ActivityIndicator> e)
 		{
 			if (e.NewElement != null)
@@ -69,11 +71,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateIsRunning();
 		}
 
+		[PortHandler]
 		void UpdateColor()
 		{
 			Control.Color = Element.Color == Color.Default ? null : Element.Color.ToUIColor();
 		}
 
+		[PortHandler]
 		void UpdateIsRunning()
 		{
 			if (Control?.Superview == null)
