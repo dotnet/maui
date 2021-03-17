@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Android.Widget;
+﻿using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -68,18 +68,27 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Query;
 
+		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).QueryHint;
 
-		Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
+		double GetNativeCharacterSpacing(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
-				return Android.Views.TextAlignment.Inherit;
+			if (editText != null)
 			{
+				return editText.LetterSpacing;
 			}
 
 			return -1;
+		}
+
+		Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+			return editText.TextAlignment;
 		}
 	}
 }

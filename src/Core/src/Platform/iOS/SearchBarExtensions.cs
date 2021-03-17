@@ -13,28 +13,5 @@ namespace Microsoft.Maui
 		{
 			uiSearchBar.Placeholder = searchBar.Placeholder;
 		}
-
-		public static void UpdateHorizontalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar)
-		{
-			UpdateHorizontalTextAlignment(uiSearchBar, searchBar, null);
-		}
-		
-		public static void UpdateCharacterSpacing(this UISearchBar uiSearchBar, ISearchBar searchBar)
-		{
-			uiSearchBar.UpdateCharacterSpacing(searchBar, null);
-		}
-
-		public static void UpdateCharacterSpacing(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
-		{
-			textField ??= uiSearchBar.FindDescendantView<UITextField>();
-
-			if (textField == null)
-				return;
-
-			textField.AttributedText = textField.AttributedText?.AddCharacterSpacing(searchBar.Text, searchBar.CharacterSpacing);
-			// TODO: Update this when FlowDirection is available 
-			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
-			textField.TextAlignment = searchBar.HorizontalTextAlignment.ToNative(true);
-		}
 	}
 }

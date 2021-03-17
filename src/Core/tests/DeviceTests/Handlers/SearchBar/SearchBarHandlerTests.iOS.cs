@@ -81,7 +81,7 @@ namespace Microsoft.Maui.DeviceTests
 		
 		double GetNativeCharacterSpacing(SearchBarHandler searchBarHandler)
 		{
-			var searchBar = GetNativeEntry(searchBarHandler);
+			var searchBar = GetNativeSearchBar(searchBarHandler);
 			var textField = searchBar.FindDescendantView<UITextField>();
 
 			return textField.AttributedText.GetCharacterSpacing();
