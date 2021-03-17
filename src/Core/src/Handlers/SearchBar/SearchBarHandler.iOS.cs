@@ -1,3 +1,5 @@
+using System;
+using System.Drawing;
 using Microsoft.Extensions.DependencyInjection;
 using UIKit;
 
@@ -27,13 +29,15 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdatePlaceholder(searchBar);
 		}
 
+		// TODO ezhart The extension methods are handling the dependent property updates; those should be in the mapping
+
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			var services = App.Current?.Services ??
 				throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
 			var fontManager = services.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(searchBar, fontManager, handler._textField);
+			handler.QueryEditor?.UpdateFont(searchBar, fontManager);
 		}
 
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)

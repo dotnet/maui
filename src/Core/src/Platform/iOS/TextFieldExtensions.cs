@@ -13,5 +13,13 @@ namespace Microsoft.Maui
 
 			// TODO: Include AttributedText to Label Placeholder
 		}
+
+		public static void UpdateFont(this UITextField textField, ISearchBar searchBar, IFontManager fontManager)
+		{
+			var uiFont = fontManager.GetFont(searchBar.Font);
+			textField.Font = uiFont;
+
+			textField.UpdateCharacterSpacing(searchBar);
+		}
 	}
 }
