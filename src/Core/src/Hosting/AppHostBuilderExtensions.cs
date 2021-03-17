@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Hosting
 				{ typeof(ILabel), typeof(LabelHandler) },
 				{ typeof(IProgress), typeof(ProgressBarHandler) },
 				{ typeof(ISlider), typeof(SliderHandler) },
+				{ typeof(IStepper), typeof(StepperHandler) },
 				{ typeof(ISwitch), typeof(SwitchHandler) },
 				{ typeof(ITimePicker), typeof(TimePickerHandler) }
 			});
