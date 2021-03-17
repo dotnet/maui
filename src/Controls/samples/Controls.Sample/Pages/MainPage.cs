@@ -109,10 +109,6 @@ namespace Maui.Controls.Sample.Pages
 			searchBar.Text = "A search query";
 			verticalStack.Add(searchBar);
 
-			var searchBar = new SearchBar();
-			searchBar.Text = "A search query";
-			verticalStack.Add(searchBar);
-
 			var placeholderSearchBar = new SearchBar();
 			placeholderSearchBar.Placeholder = "Placeholder";
 			verticalStack.Add(placeholderSearchBar);
