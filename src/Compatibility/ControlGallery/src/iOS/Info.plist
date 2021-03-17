@@ -24,9 +24,9 @@
 	<key>MinimumOSVersion</key>
 	<string>8.0</string>
 	<key>CFBundleDisplayName</key>
-	<string>Xamarin Forms</string>
+	<string>Maui Compatibility Gallery</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.xamarin.xamarin-forms-controlgallery</string>
+	<string>com.microsoft.mauicompatibilitygallery</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>CFBundleIconFiles</key>
@@ -130,7 +130,7 @@
 		</dict>
 	</dict>
 	<key>CFBundleName</key>
-	<string>XamControl</string>
+	<string>MauiCompatibilityControlGallery</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to photos.</string>
 	<key>UILaunchStoryboardName</key>

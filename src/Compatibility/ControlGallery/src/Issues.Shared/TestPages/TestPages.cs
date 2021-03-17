@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		// Have to continue using the old BundleId for now; Test Cloud doesn't like
 		// when you change the BundleId
-		public static string BundleId = "com.xamarin.xamarin-forms-controlgallery";
+		public static string BundleId = "com.microsoft.mauicompatibilitygallery";
 
 		// Have to continue using the old BundleId for now; Test Cloud doesn't like
 		// when you change the BundleId

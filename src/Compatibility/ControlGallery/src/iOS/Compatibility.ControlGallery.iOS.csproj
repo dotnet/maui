@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
-    <DefineConstants>DEBUG;HAVE_OPENTK;$(DefineConstants);</DefineConstants>
+    <DefineConstants>ENABLE_TEST_CLOUD;DEBUG;HAVE_OPENTK;$(DefineConstants);</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -60,7 +60,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\iPhone\Debug</OutputPath>
-    <DefineConstants>DEBUG;__UNIFIED__;__MOBILE__;__IOS__;HAVE_OPENTK;$(DefineConstants);</DefineConstants>
+    <DefineConstants>ENABLE_TEST_CLOUD;DEBUG;__UNIFIED__;__MOBILE__;__IOS__;HAVE_OPENTK;$(DefineConstants);</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
