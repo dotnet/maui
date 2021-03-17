@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				typeof(Page) ,
 				typeof(Label) ,
 				typeof(Slider),
+				typeof(Stepper),
 				typeof(Switch)
 			};
 
