@@ -69,5 +69,10 @@ namespace Microsoft.Maui
 			var uiFont = fontManager.GetFont(entry.Font);
 			textField.Font = uiFont;
 		}
+
+		public static void UpdateReturnType(this UITextField textField, IEntry entry)
+		{
+			textField.ReturnKeyType = entry.ReturnType.ToNative();
+		}
 	}
 }

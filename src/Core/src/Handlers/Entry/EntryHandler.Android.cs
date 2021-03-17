@@ -79,6 +79,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateIsReadOnly(entry);
 		}
 
+		public static void MapReturnType(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateReturnType(entry);
+		}
+
 		void OnTextChanged(string? text)
 		{
 			if (VirtualView == null || TypedNativeView == null)

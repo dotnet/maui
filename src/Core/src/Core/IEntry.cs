@@ -14,5 +14,10 @@
 		/// Gets a value that controls whether text prediction and automatic text correction is on or off.
 		/// </summary>
 		bool IsTextPredictionEnabled { get; }
+
+		/// <summary>
+		/// Gets an enumeration value that controls the appearance of the return button.
+		/// </summary>
+		ReturnType ReturnType { get; }
 	}
 }

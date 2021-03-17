@@ -102,5 +102,10 @@ namespace Microsoft.Maui
 			if (entry.IsReadOnly)
 				editText.InputType = InputTypes.Null;
 		}
+		
+		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
+		{
+			editText.ImeOptions = entry.ReturnType.ToNative();
+		}
 	}
 }

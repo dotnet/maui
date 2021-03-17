@@ -11,7 +11,8 @@
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
-			[nameof(IEntry.Font)] = MapFont
+			[nameof(IEntry.Font)] = MapFont,
+			[nameof(IEntry.ReturnType)] = MapReturnType
 		};
 
 		public EntryHandler() : base(EntryMapper)
