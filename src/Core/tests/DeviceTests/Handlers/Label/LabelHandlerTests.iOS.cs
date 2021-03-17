@@ -118,6 +118,30 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(values.NativeViewValue);
 		}
 
+		[Fact(DisplayName = "LineHeight Initializes Correctly")]
+		public async Task LineHeightInitializesCorrectly()
+		{
+			var xplatLineHeight = 1.5d;
+
+			var labelHandler = new LabelStub()
+			{
+				LineHeight = xplatLineHeight
+			};
+
+			var values = await GetValueAsync(labelHandler, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelHandler.LineHeight,
+					NativeViewValue = GetNativeLineHeight(handler)
+				};
+			});
+
+			nfloat expectedValue = new nfloat(1.5f);
+			Assert.Equal(xplatLineHeight, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
+		}
+
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>
 			(UILabel)labelHandler.View;
 
@@ -162,5 +186,20 @@ namespace Microsoft.Maui.DeviceTests
 
 		NSAttributedString GetNativeTextDecorations(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).AttributedText;
+
+		nfloat GetNativeLineHeight(LabelHandler labelHandler)
+		{
+			var attrText = GetNativeLabel(labelHandler).AttributedText;
+
+			if(attrText == null)
+				return new nfloat(-1.0f);
+
+			var paragraphStyle = (NSParagraphStyle)attrText.GetAttribute(UIStringAttributeKey.ParagraphStyle, 0, out _);
+
+			if(paragraphStyle == null)
+				return new nfloat(-1.0f);
+
+			return paragraphStyle.LineHeightMultiple;
+		}
 	}
 }
