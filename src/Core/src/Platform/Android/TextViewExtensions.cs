@@ -143,5 +143,13 @@ namespace Microsoft.Maui
 			textView.SetSingleLine(singleLine);
 			textView.SetMaxLines(maxLines);
 		}
+
+		internal static void UpdateLineHeight(this TextView textView, ILabel label, float lineSpacingAddDefault, float lineSpacingMultDefault)
+		{
+			if (label.LineHeight == - 1)
+				textView.SetLineSpacing(lineSpacingAddDefault, lineSpacingMultDefault);
+			else if (label.LineHeight >= 0)
+				textView.SetLineSpacing(0, (float)label.LineHeight);
+		}
 	}
 }
