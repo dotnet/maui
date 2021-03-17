@@ -45,7 +45,7 @@ if(String.IsNullOrWhiteSpace(target))
 
 var IOS_SIM_NAME = GetBuildVariable("IOS_SIM_NAME", "iPhone 7");
 var IOS_SIM_RUNTIME = GetBuildVariable("IOS_SIM_RUNTIME", "com.apple.CoreSimulator.SimRuntime.iOS-12-4");
-var IOS_CONTROLGALLERY = "src/Compatibility/ControlGallery/src/Android/";
+var IOS_CONTROLGALLERY = "src/Compatibility/ControlGallery/src/iOS/";
 var IOS_CONTROLGALLERY_PROJ = $"{IOS_CONTROLGALLERY}Compatibility.ControlGallery.iOS.csproj";
 var IOS_TEST_PROJ = "./src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj";
 var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $".src/Compatibility/ControlGallery/test/iOS.UITests/bin/{configuration}/Compatibility.ControlGallery.iOS.UITests.dll");
