@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Handlers;
+using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
