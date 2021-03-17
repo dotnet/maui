@@ -92,5 +92,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<ValueChangedEventArgs> ValueChanged;
 
 		public IPlatformElementConfiguration<T, Stepper> On<T>() where T : IConfigPlatform => _platformConfigurationRegistry.Value.On<T>();
+
+		double IStepper.Step => Increment;
 	}
 }

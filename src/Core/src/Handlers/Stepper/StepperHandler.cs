@@ -6,7 +6,7 @@
 		{
 			[nameof(IStepper.Minimum)] = MapMinimum,
 			[nameof(IStepper.Maximum)] = MapMaximum,
-			[nameof(IStepper.Increment)] = MapIncrement,
+			[nameof(IStepper.Step)] = MapIncrement,
 			[nameof(IStepper.Value)] = MapValue
 		};
 
