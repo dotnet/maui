@@ -111,6 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		internal static UIReturnKeyType ToUIReturnKeyType(this ReturnType returnType)
 		{
 			switch (returnType)
