@@ -6,6 +6,7 @@
 		{
 			[nameof(ISearchBar.Text)] = MapText,
 			[nameof(ISearchBar.Placeholder)] = MapPlaceholder,
+			[nameof(ISearchBar.Font)] = MapFont,
 			[nameof(ISearchBar.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing
 		};
