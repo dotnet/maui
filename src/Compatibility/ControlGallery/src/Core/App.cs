@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	public class App : Application
 	{
-		public const string AppName = "XamarinFormsControls";
+		public const string AppName = "CompatibilityGalleryControls";
 
 		// ReSharper disable once InconsistentNaming
 		public static int IOSVersion = -1;

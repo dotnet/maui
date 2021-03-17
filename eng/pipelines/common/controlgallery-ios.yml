@@ -65,28 +65,28 @@ steps:
     displayName: 'Copy iOS Files for UITest'
     inputs:
       Contents: |
-        **/XamarinFormsControlGalleryiOS.ipa
-        **/Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
-        **/Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
-        **/Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
-        **/Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
-        **/Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
+        **/CompatibilityControlGalleryiOS.ipa
+        **/iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+        **/iOS.UITests/bin/$(BuildConfiguration)/nunit.*
+        **/iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
+        **/iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
+        **/iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
       TargetFolder: '$(build.artifactstagingdirectory)/ios'
       flattenFolders: true
 
   - task: CopyFiles@2
     displayName: 'Copy iOS dSYM'
     inputs:
-      SourceFolder: 'src/ControlGallery/src/Xamarin.Forms.ControlGallery.iOS/bin/iPhone/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app.dSYM/'
-      TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhone/XamarinFormsControlGalleryiOS.app.dSYM/'
+      SourceFolder: 'src/Compatibility/ControlGallery/src/iOS/bin/iPhone/$(BuildConfiguration)/CompatibilityControlGalleryiOS.app.dSYM/'
+      TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhone/CompatibilityControlGalleryiOS.app.dSYM/'
       CleanTargetFolder: false
       flattenFolders: false
 
   - task: CopyFiles@2
     displayName: 'Copy iOS App'
     inputs:
-      SourceFolder: 'src/ControlGallery/src/Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app/'
-      TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhoneSimulator/XamarinFormsControlGalleryiOS.app/'
+      SourceFolder: 'src/Compatibility/ControlGallery/src/iOS/bin/iPhoneSimulator/$(BuildConfiguration)/CompatibilityControlGalleryiOS.app/'
+      TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhoneSimulator/CompatibilityControlGalleryiOS.app/'
       CleanTargetFolder: false
       flattenFolders: false
 

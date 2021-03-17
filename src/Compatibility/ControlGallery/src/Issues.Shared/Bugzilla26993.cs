@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			RunningApp.Screenshot("Load local HTML");
 
 			RunningApp.WaitForNoElement(q => q.Class("WKWebView").Css("#LinkID0"));
-			UITest.Queries.AppWebResult[] newElem =
+			var newElem =
 			  RunningApp.QueryUntilPresent(() => RunningApp.Query(q => q.Class("WKWebView").Css("a")));
 
 			Assert.AreEqual("#LocalHtmlPageLink", newElem[0].Id);

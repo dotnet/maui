@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var mainBounds = RunningApp.RootViewRect();
 
-			Microsoft.Maui.Controls.UITests.Gestures.Pan (RunningApp, new Microsoft.Maui.Controls.UITests.Drag (mainBounds, 0, 125, 75, 125, Microsoft.Maui.Controls.UITests.Drag.Direction.LeftToRight));
+			UITests.Gestures.Pan (RunningApp, new UITests.Drag (mainBounds, 0, 125, 75, 125, UITests.Drag.Direction.LeftToRight));
 			System.Threading.Thread.Sleep (3);
 			RunningApp.Screenshot ("Crash?");
 			RunningApp.WaitForElement (q => q.Marked ("Swipe lightly left and right to crash this page"));

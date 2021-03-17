@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public static bool IsTablet(this IApp app)
 		{
 #if __IOS__
-			if (app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			if (app is ScreenshotConditionalApp sca)
 			{
 				return sca.IsTablet;
 			}
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public static bool IsPhone(this IApp app)
 		{
 #if __IOS__
-			if (app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			if (app is ScreenshotConditionalApp sca)
 			{
 				return sca.IsPhone;
 			}
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 #if __IOS__
 		public static void SendAppToBackground(this IApp app, TimeSpan timeSpan)
 		{
-			if (app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			if (app is ScreenshotConditionalApp sca)
 			{
 				sca.SendAppToBackground(timeSpan);
 				Thread.Sleep(timeSpan.Add(TimeSpan.FromSeconds(2)));
