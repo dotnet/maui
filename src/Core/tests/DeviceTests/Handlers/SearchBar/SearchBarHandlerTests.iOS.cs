@@ -86,5 +86,38 @@ namespace Microsoft.Maui.DeviceTests
 
 			return textField.AttributedText.GetCharacterSpacing();
 		}
+
+		double GetNativeUnscaledFontSize(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return -1;
+
+			return textField.Font.PointSize;
+		}
+
+		bool GetNativeIsBold(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return false;
+
+			return textField.Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
+		}
+
+		bool GetNativeIsItalic(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return false;
+
+			return textField.Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
+		}
 	}
 }
