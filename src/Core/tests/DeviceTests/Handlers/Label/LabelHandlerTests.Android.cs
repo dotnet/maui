@@ -2,12 +2,12 @@ using System;
 using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Text;
+using Android.Views;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
-using Android.Views;
 using ATextAlignemnt = Android.Views.TextAlignment;
 
 namespace Microsoft.Maui.DeviceTests
