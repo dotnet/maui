@@ -2,7 +2,7 @@
 {
 	public partial class StepperStub : StubBase, IStepper
 	{
-		public double Increment { get; set; }
+		public double Step { get; set; }
 
 		public double Minimum { get; set; }
 
