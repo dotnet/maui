@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Maui.Controls.Sample.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
@@ -112,6 +114,23 @@ namespace Maui.Controls.Sample.Pages
 			var placeholderSearchBar = new SearchBar();
 			placeholderSearchBar.Placeholder = "Placeholder";
 			verticalStack.Add(placeholderSearchBar);
+
+
+			var monkeyList = new List<string>
+			{
+				"Baboon",
+				"Capuchin Monkey",
+				"Blue Monkey",
+				"Squirrel Monkey",
+				"Golden Lion Tamarin",
+				"Howler Monkey",
+				"Japanese Macaque"
+			};
+
+			var picker = new Picker { Title = "Select a monkey" };
+
+			picker.ItemsSource = monkeyList;
+			verticalStack.Add(picker);
 
 			verticalStack.Add(new Slider());
 
