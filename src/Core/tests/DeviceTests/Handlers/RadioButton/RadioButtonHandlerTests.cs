@@ -3,7 +3,7 @@
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.RadioButton)]
-	public partial class RadioButtonHandlerTests : HandlerTestBase<RadioButtonHandler>
+	public partial class RadioButtonHandlerTests : HandlerTestBase<RadioButtonHandler, RadioButtonStub>
 	{
 		public RadioButtonHandlerTests(HandlerTestFixture fixture) : base(fixture)
 		{
