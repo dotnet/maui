@@ -14,5 +14,5 @@ steps:
   displayName: 'NuGet Restore'
 
 - script: |
-    dotnet build build/Build.Microsoft.Maui.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+    msbuild build build/Build.Microsoft.Maui.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
   displayName: 'Build'
