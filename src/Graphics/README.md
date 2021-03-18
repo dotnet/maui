@@ -4,7 +4,7 @@ Microsoft.Maui.Graphics is a cross-platform graphics library for iOS, Android, W
 
 # Motivation
 
-Within the dotnet ecosystem there are multiple graphics libraries available depending on your target platforms; however, if you are doing cross-platform development there is not a unified graphics abstraction.  Some legacy API's (System.Drawing, I'm looking at you) only have limited support/usefulness on non-Windows platforms.  SkiaSharp runs almost everywhere these days, but for many use cases the native graphics abstractions are needed.
+[.NET MAUI](https://github.com/dotnet/maui) needs a multi-platform graphics abstraction that is backed by native API-s on all platforms.
 
 # Goals
 * No dependencies on System.Drawing
