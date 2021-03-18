@@ -10,17 +10,15 @@ namespace Microsoft.Maui
 {
 	public static class BrushExtensions
 	{
-		const string BackgroundLayer = "BackgroundLayer";
+		internal const string BackgroundLayer = "BackgroundLayer";
 
 		public static void UpdateBackground(this UIView control, IBrush brush)
 		{
 			if (control == null)
 				return;
 
-			UIView view = ShouldUseParentView(control) ? control.Superview : control;
-
 			// Remove previous background gradient layer if any
-			RemoveBackgroundLayer(view);
+			RemoveBackgroundLayer(control);
 
 			if (Brush.IsNullOrEmpty(brush))
 				return;
@@ -30,7 +28,7 @@ namespace Microsoft.Maui
 			if (backgroundLayer != null)
 			{
 				control.BackgroundColor = UIColor.Clear;
-				view.InsertBackgroundLayer(backgroundLayer, 0);
+				control.InsertBackgroundLayer(backgroundLayer, 0);
 			}
 		}
 
@@ -41,7 +39,7 @@ namespace Microsoft.Maui
 
 			if (brush is SolidColorBrush solidColorBrush)
 			{
-				var linearGradientLayer = new CALayer
+				var solidColorLayer = new CALayer
 				{
 					Name = BackgroundLayer,
 					ContentsGravity = CALayer.GravityResizeAspectFill,
@@ -49,7 +47,7 @@ namespace Microsoft.Maui
 					BackgroundColor = solidColorBrush.Color.ToCGColor()
 				};
 
-				return linearGradientLayer;
+				return solidColorLayer;
 			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)
@@ -199,14 +197,6 @@ namespace Microsoft.Maui
 
 				return locations;
 			}
-		}
-
-		static bool ShouldUseParentView(UIView view)
-		{
-			if (view is UILabel)
-				return true;
-
-			return false;
 		}
 	}
 }
