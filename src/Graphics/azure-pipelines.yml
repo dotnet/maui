@@ -15,7 +15,7 @@ steps:
 - task: NuGetCommand@2
   inputs:
     command: 'pack'
-    packagesToPack: '**/*.nuspec'
+    packagesToPack: 'build/JonLipsky.Microsoft.Maui.Graphics.nuspec'
     packDestination: '$(Build.ArtifactStagingDirectory)'
     versioningScheme : 'byEnvVar'
     versionEnvVar: 'NugetVersion'
