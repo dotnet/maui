@@ -4,24 +4,33 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : AbstractViewHandler<IDatePicker, MauiDatePicker>
 	{
-		static AlertDialog? Dialog;
+		DatePickerDialog? _dialog;
 
 		protected override MauiDatePicker CreateNativeView()
 		{
-			return new MauiDatePicker(Context)
+			var mauiDatePicker = new MauiDatePicker(Context)
 			{
 				ShowPicker = ShowPickerDialog,
 				HidePicker = HidePickerDialog
 			};
+
+			var date = VirtualView?.Date;
+
+			if (date != null)
+				_dialog = CreateDatePickerDialog(date.Value.Year, date.Value.Month, date.Value.Day);
+
+			return mauiDatePicker;
 		}
+
+		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
 
 		protected override void DisconnectHandler(MauiDatePicker nativeView)
 		{
-			if (Dialog != null)
+			if (_dialog != null)
 			{
-				Dialog.Hide();
-				Dialog.Dispose();
-				Dialog = null;
+				_dialog.Hide();
+				_dialog.Dispose();
+				_dialog = null;
 			}
 
 			base.DisconnectHandler(nativeView);
@@ -50,12 +59,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.TypedNativeView?.UpdateMinimumDate(datePicker, Dialog as DatePickerDialog);
+			handler.TypedNativeView?.UpdateMinimumDate(datePicker, handler._dialog);
 		}
 
 		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.TypedNativeView?.UpdateMaximumDate(datePicker, Dialog as DatePickerDialog);
+			handler.TypedNativeView?.UpdateMaximumDate(datePicker, handler._dialog);
 		}
 
 		void ShowPickerDialog()
@@ -69,13 +78,17 @@ namespace Microsoft.Maui.Handlers
 
 		void ShowPickerDialog(int year, int month, int day)
 		{
-			Dialog = CreateDatePickerDialog(year, month, day);
-			Dialog.Show();
+			if (_dialog == null)
+				_dialog = CreateDatePickerDialog(year, month, day);
+			else
+				_dialog.UpdateDate(year, month, day);
+
+			_dialog.Show();
 		}
 
 		void HidePickerDialog()
 		{
-			Dialog?.Hide();
+			_dialog?.Hide();
 		}
 	}
 }

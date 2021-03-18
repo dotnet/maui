@@ -13,12 +13,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Date Initializes Correctly")]
-		public async Task TextInitializesCorrectly()
+		public async Task DateInitializesCorrectly()
 		{
-			var datePicker = new DatePickerStub()
-			{
-				Date = DateTime.Today
-			};
+			var datePicker = new DatePickerStub();
+
+			datePicker.Date = DateTime.Today;
 
 			await ValidatePropertyInitValue(datePicker, () => datePicker.Date, GetNativeDate, datePicker.Date);
 		}

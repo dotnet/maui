@@ -7,18 +7,17 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : AbstractViewHandler<IDatePicker, MauiDatePicker>
 	{
-		static UIDatePicker? Picker;
-		static UIColor? DefaultTextColor;
+		UIDatePicker? _picker;
 
 		protected override MauiDatePicker CreateNativeView()
 		{
 			MauiDatePicker nativeDatePicker = new MauiDatePicker();
 
-			Picker = new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
+			_picker = new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
 
 			if (NativeVersion.IsAtLeast(14))
 			{
-				Picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
+				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
 
 			var width = UIScreen.MainScreen.Bounds.Width;
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 
 			toolbar.SetItems(new[] { spacer, doneButton }, false);
 
-			nativeDatePicker.InputView = Picker;
+			nativeDatePicker.InputView = _picker;
 			nativeDatePicker.InputAccessoryView = toolbar;
 
 			nativeDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
@@ -46,27 +45,22 @@ namespace Microsoft.Maui.Handlers
 			return nativeDatePicker;
 		}
 
+		internal UIDatePicker? DatePickerDialog { get{ return _picker;} }
+
 		protected override void ConnectHandler(MauiDatePicker nativeView)
 		{
-			if (Picker != null)
-				Picker.ValueChanged += OnValueChanged;
+			if (_picker != null)
+				_picker.ValueChanged += OnValueChanged;
 
 			base.ConnectHandler(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiDatePicker nativeView)
 		{
-			if (Picker != null)
-				Picker.ValueChanged -= OnValueChanged;
+			if (_picker != null)
+				_picker.ValueChanged -= OnValueChanged;
 
 			base.DisconnectHandler(nativeView);
-		}
-
-		protected override void SetupDefaults(MauiDatePicker nativeView)
-		{
-			DefaultTextColor = nativeView.TextColor;
-
-			base.SetupDefaults(nativeView);
 		}
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
@@ -81,12 +75,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.TypedNativeView?.UpdateMinimumDate(datePicker, Picker);
+			handler.TypedNativeView?.UpdateMinimumDate(datePicker, handler._picker);
 		}
 
 		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.TypedNativeView?.UpdateMaximumDate(datePicker, Picker);
+			handler.TypedNativeView?.UpdateMaximumDate(datePicker, handler._picker);
 		}
 
 		void OnValueChanged(object sender, EventArgs e)
@@ -96,10 +90,10 @@ namespace Microsoft.Maui.Handlers
 
 		void SetVirtualViewDate()
 		{
-			if (VirtualView == null || Picker == null)
+			if (VirtualView == null || _picker == null)
 				return;
 
-			VirtualView.Date = Picker.Date.ToDateTime().Date;
+			VirtualView.Date = _picker.Date.ToDateTime().Date;
 		}
 	}
 }

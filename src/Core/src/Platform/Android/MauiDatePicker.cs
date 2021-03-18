@@ -31,7 +31,26 @@ namespace Microsoft.Maui
 		{
 		}
 
-		private void Initialize()
+		public Action? ShowPicker { get; set; }
+		public Action? HidePicker { get; set; }
+
+		public void OnClick(View? v)
+		{
+			ShowPicker?.Invoke();
+		}
+
+		protected override void OnFocusChanged(bool gainFocus, [GeneratedEnum] FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect)
+		{
+			base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
+
+			if (gainFocus)
+			{
+				if (Clickable)
+					CallOnClick();
+			}
+		}
+
+		void Initialize()
 		{
 			DrawableCompat.Wrap(Background);
 
@@ -40,14 +59,6 @@ namespace Microsoft.Maui
 			InputType = InputTypes.Null;
 
 			SetOnClickListener(this);
-		}
-
-		public Action? ShowPicker { get; set; }
-		public Action? HidePicker { get; set; }
-
-		public void OnClick(View? v)
-		{
-			ShowPicker?.Invoke();
 		}
 	}
 }
