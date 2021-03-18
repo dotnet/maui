@@ -5,7 +5,7 @@ using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui
 {
-	public static class SearchBarExtensions
+	public static class SearchViewExtensions
 	{
 		public static void UpdateText(this SearchView searchView, ISearchBar searchBar)
 		{

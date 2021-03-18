@@ -5,7 +5,7 @@ using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
 {
-	public static class EntryExtensions
+	public static class EditTextExtensions
 	{
 		static readonly int[][] ColorStates =
 		{
@@ -20,6 +20,23 @@ namespace Microsoft.Maui
 
 			if (oldText != newText)
 				editText.Text = newText;
+
+			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
+		}
+
+		public static void UpdateText(this AppCompatEditText editText, IEditor editor)
+		{
+			string text = editor.Text;
+
+			if (editText.Text == text)
+				return;
+
+			editText.Text = text;
+
+			if (string.IsNullOrEmpty(text))
+				return;
+
+			editText.SetSelection(text.Length);
 		}
 
 		public static void UpdateTextColor(this AppCompatEditText editText, IEntry entry, ColorStateList? defaultColor)
@@ -56,6 +73,14 @@ namespace Microsoft.Maui
 			editText.SetInputType(entry);
 		}
 
+		public static void UpdateIsTextPredictionEnabled(this AppCompatEditText editText, IEditor editor)
+		{
+			if (editor.IsTextPredictionEnabled)
+				return;
+
+			editText.InputType |= InputTypes.TextFlagNoSuggestions;
+		}
+
 		public static void UpdatePlaceholder(this AppCompatEditText editText, IEntry entry)
 		{
 			if (editText.Hint == entry.Placeholder)
@@ -84,6 +109,16 @@ namespace Microsoft.Maui
 			var sp = fontManager.GetScaledPixel(font);
 			editText.SetTextSize(ComplexUnitType.Sp, sp);
 		}
+		
+		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
+		{
+			editText.ImeOptions = entry.ReturnType.ToNative();
+		}
+
+		public static void UpdateCharacterSpacing(this AppCompatEditText editText, IEditor editor)
+		{
+			editText.LetterSpacing = editor.CharacterSpacing.ToEm();
+		}
 
 		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
 		{
@@ -101,11 +136,6 @@ namespace Microsoft.Maui
 
 			if (entry.IsReadOnly)
 				editText.InputType = InputTypes.Null;
-		}
-		
-		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
-		{
-			editText.ImeOptions = entry.ReturnType.ToNative();
 		}
 	}
 }

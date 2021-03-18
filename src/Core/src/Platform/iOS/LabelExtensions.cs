@@ -1,4 +1,3 @@
-using Foundation;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
 

@@ -6,7 +6,7 @@
 		{
 			[nameof(IEditor.Text)] = MapText,
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
-			[nameof(IEditor.IsTextPredictionEnabled)] = MapPredictiveText
+			[nameof(IEditor.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled
 		};
 
 		public EditorHandler() : base(EditorMapper)

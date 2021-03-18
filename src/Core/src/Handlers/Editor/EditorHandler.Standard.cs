@@ -10,6 +10,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCharacterSpacing(IViewHandler handler, IEditor editor) { }
 		
-		public static void MapPredictiveText(EditorHandler handler, IEditor editor) { }
+		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) { }
 	}
 }
