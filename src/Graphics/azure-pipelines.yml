@@ -17,6 +17,8 @@ steps:
     command: 'pack'
     packagesToPack: '**/*.nuspec'
     packDestination: '$(Build.ArtifactStagingDirectory)'
+    versioningScheme : 'byEnvVar'
+    versionEnvVar: 'NugetVersion'
 
 - task: PublishBuildArtifacts@1
   condition: always()
