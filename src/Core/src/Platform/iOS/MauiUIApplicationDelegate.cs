@@ -55,24 +55,18 @@ namespace Microsoft.Maui
 
 		public override void OnActivated(UIApplication application)
 		{
-			base.OnActivated(application);
-
 			foreach (var iOSApplicationDelegateHandler in GetIosLifecycleHandler())
 				iOSApplicationDelegateHandler.OnActivated(application);
 		}
 
 		public override void OnResignActivation(UIApplication application)
 		{
-			base.OnResignActivation(application);
-
 			foreach (var iOSApplicationDelegateHandler in GetIosLifecycleHandler())
 				iOSApplicationDelegateHandler.OnResignActivation(application);
 		}
 
 		public override void WillTerminate(UIApplication application)
 		{
-			base.WillTerminate(application);
-
 			foreach (var iOSApplicationDelegateHandler in GetIosLifecycleHandler())
 				iOSApplicationDelegateHandler.WillTerminate(application);
 		}
