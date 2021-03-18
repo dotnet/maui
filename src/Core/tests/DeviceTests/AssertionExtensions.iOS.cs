@@ -5,6 +5,7 @@ using Foundation;
 using Microsoft.Maui.Essentials;
 using UIKit;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -212,6 +213,16 @@ namespace Microsoft.Maui.DeviceTests
 			var kerning = Assert.IsType<NSNumber>(value);
 
 			return kerning.DoubleValue;
+		}
+
+		public static void AssertHasUnderline(this NSAttributedString attributedString)
+		{
+			var value = attributedString.GetAttribute(UIStringAttributeKey.UnderlineStyle, 0, out var range);
+
+			if (value == null)
+			{
+				throw new XunitException("Label does not have the UnderlineStyle attribute");
+			}
 		}
 	}
 }

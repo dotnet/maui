@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdatePlaceholder(searchBar);
 		}
 
-		// TODO ezhart The extension methods are handling the dependent property updates; those should be in the mapping
-
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			var services = App.Current?.Services ??

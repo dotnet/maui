@@ -1,4 +1,5 @@
-﻿using Foundation;
+﻿using System;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -31,24 +32,55 @@ namespace Microsoft.Maui
 			if (attributedString == null || attributedString.Length == 0)
 				return null;
 
-			var attribute = (NSParagraphStyle) attributedString.GetAttribute(UIStringAttributeKey.ParagraphStyle, 0, out _);
+			var attribute = (NSParagraphStyle)attributedString.GetAttribute(UIStringAttributeKey.ParagraphStyle, 0, out _);
 
 			// if we need to un-set the line height but there is no attribute to modify then we do nothing
 			if (lineHeight == -1 && attribute == null)
 				return null;
 
 			var mutableParagraphStyle = new NSMutableParagraphStyle();
-			mutableParagraphStyle.LineHeightMultiple = new System.nfloat(lineHeight >= 0 ? lineHeight : -1);
+			mutableParagraphStyle.LineHeightMultiple = new nfloat(lineHeight >= 0 ? lineHeight : -1);
 
 			var mutableAttributedString = new NSMutableAttributedString(attributedString);
 			mutableAttributedString.AddAttribute
 			(
 				UIStringAttributeKey.ParagraphStyle,
-				mutableParagraphStyle ,
+				mutableParagraphStyle,
 				new NSRange(0, mutableAttributedString.Length)
 			);
 
 			return mutableAttributedString;
+		}
+
+		public static NSMutableAttributedString? WithDecorations(this NSAttributedString attributedString, TextDecorations decorations)
+		{
+			if (attributedString == null || attributedString.Length == 0)
+				return null;
+
+			var mutable = new NSMutableAttributedString(attributedString);
+
+			var range = new NSRange(0, mutable.Length);
+
+			UpdateDecoration(mutable, UIStringAttributeKey.StrikethroughStyle, range,
+				decorations & TextDecorations.Strikethrough);
+
+			UpdateDecoration(mutable, UIStringAttributeKey.UnderlineStyle, range,
+				decorations & TextDecorations.Underline);
+
+			return mutable;
+		}
+
+		static void UpdateDecoration(NSMutableAttributedString attributedString, NSString key, 
+			NSRange range, TextDecorations decorations) 
+		{
+			if (decorations == 0)
+			{
+				attributedString.RemoveAttribute(key, range);
+			}
+			else
+			{
+				attributedString.AddAttribute(key, NSNumber.FromInt32((int)NSUnderlineStyle.Single), range);
+			}
 		}
 	}
 }
