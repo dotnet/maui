@@ -1,28 +1,23 @@
-using Microsoft.Maui.Handlers;
 using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Tests;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Tests;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
-	public class HostBuilderTests
+	public class HostBuilderHandlerTests
 	{
 		[Fact]
 		public void CanBuildAHost()
 		{
-			var host = AppHostBuilder.CreateDefaultAppBuilder().Build();
+			var host = AppHostBuilder
+				.CreateDefaultAppBuilder()
+				.Build();
+
 			Assert.NotNull(host);
-		}
-
-		[Fact]
-		public void CanGetServices()
-		{
-			var application = CreateDefaultApp();
-
-			Assert.NotNull(application.Services);
 		}
 
 		[Fact]
@@ -76,7 +71,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var application = new AppStub();
 
-			application.SetServiceProvider(host.Services);
+			host.SetServiceProvider(application);
 
 			Assert.NotNull(application);
 
@@ -104,7 +99,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var application = new AppStub();
 
-			application.SetServiceProvider(host.Services);
+			host.SetServiceProvider(application);
 
 			Assert.NotNull(application);
 
@@ -129,7 +124,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var application = new AppStub();
 
-			application.SetServiceProvider(host.Services);
+			host.SetServiceProvider(application);
 
 			Assert.NotNull(application);
 
@@ -153,7 +148,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var application = new AppStub();
 
-			application.SetServiceProvider(host.Services);
+			host.SetServiceProvider(application);
 
 			Assert.NotNull(application);
 
@@ -178,7 +173,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var application = new AppStub();
 
-			application.SetServiceProvider(host.Services);
+			host.SetServiceProvider(application);
 
 			Assert.NotNull(application);
 
@@ -191,7 +186,7 @@ namespace Microsoft.Maui.UnitTests
 			Assert.IsType<ButtonHandlerStub>(specificHandler);
 		}
 
-		internal AppStub CreateDefaultApp(bool build = true)
+		static AppStub CreateDefaultApp(bool build = true)
 		{
 			var startup = new StartupStub();
 
@@ -200,17 +195,12 @@ namespace Microsoft.Maui.UnitTests
 
 			startup.Configure(appBuilder);
 
-			IServiceProvider services = null;
-			if (build)
-			{
-				var host=appBuilder.Build();
-				services = host.Services;
-			}
+			var host = build ? appBuilder.Build() : null;
 
 			var application = new AppStub();
 
 			if (build)
-				application.SetServiceProvider(services);
+				host.SetServiceProvider(application);
 
 			return application;
 		}

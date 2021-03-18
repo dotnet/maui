@@ -23,11 +23,11 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 			startup.Configure(appBuilder);
 
-			appBuilder.Build();
+			var host = appBuilder.Build();
 
 			_app = new AppStub();
 
-			appBuilder.SetServiceProvider(_app);
+			host.SetServiceProvider(_app);
 		}
 
 		[GlobalSetup(Target = nameof(GetHandlerUsingRegistrar))]

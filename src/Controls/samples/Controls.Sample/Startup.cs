@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModel;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
-using Microsoft.Maui.Hosting;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Hosting;
 
 namespace Maui.Controls.Sample
 {
@@ -31,7 +31,8 @@ namespace Maui.Controls.Sample
 						{"Logging:LogLevel:Default", "Warning"}
 					});
 				})
-				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
+				.UseMauiServiceProviderFactory(true)
+				//.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
 				.ConfigureServices((hostingContext, services) =>
 				{
 					services.AddSingleton<ITextService, TextService>();

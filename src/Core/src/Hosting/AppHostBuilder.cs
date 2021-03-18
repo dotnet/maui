@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Hosting
 		readonly List<IConfigureContainerAdapter> _configureContainerActions = new List<IConfigureContainerAdapter>();
 		readonly Func<IServiceCollection> _serviceColectionFactory = new Func<IServiceCollection>(() => new MauiServiceCollection());
 
-		IServiceFactoryAdapter _serviceProviderFactory = new ServiceFactoryAdapter<IServiceCollection>(new MauiServiceProviderFactory());
+		IServiceFactoryAdapter _serviceProviderFactory = new ServiceFactoryAdapter<IServiceCollection>(new MauiServiceProviderFactory(false));
 
 		bool _hostBuilt;
 		HostBuilderContext? _hostBuilderContext;
@@ -45,8 +45,34 @@ namespace Microsoft.Maui.Hosting
 			return builder;
 		}
 
-		public IHost Build()
-			=> InternalBuild();
+		public IAppHost Build()
+		{
+			_services = _serviceColectionFactory();
+
+			if (_hostBuilt)
+				throw new InvalidOperationException("Build can only be called once.");
+
+			_hostBuilt = true;
+
+			// the order is important here
+			BuildHostConfiguration();
+			CreateHostingEnvironment();
+			CreateHostBuilderContext();
+			BuildAppConfiguration();
+
+			if (_services == null)
+				throw new InvalidOperationException("The ServiceCollection cannot be null");
+
+			ConfigureHandlers(_services);
+			CreateServiceProvider(_services);
+
+			if (_serviceProvider == null)
+				throw new InvalidOperationException($"The ServiceProvider cannot be null");
+
+			BuildFontRegistrar(_serviceProvider);
+
+			return new AppHost(_serviceProvider, null);
+		}
 
 		public IAppHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
 		{
@@ -99,35 +125,6 @@ namespace Microsoft.Maui.Hosting
 			return this;
 		}
 #pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint
-
-		internal IHost InternalBuild()
-		{
-			_services = _serviceColectionFactory();
-
-			if (_hostBuilt)
-				throw new InvalidOperationException("Build can only be called once.");
-
-			_hostBuilt = true;
-
-			// the order is important here
-			BuildHostConfiguration();
-			CreateHostingEnvironment();
-			CreateHostBuilderContext();
-			BuildAppConfiguration();
-
-			if (_services == null)
-				throw new InvalidOperationException("The ServiceCollection cannot be null");
-
-			ConfigureHandlers(_services);
-			CreateServiceProvider(_services);
-
-			if (_serviceProvider == null)
-				throw new InvalidOperationException($"The ServiceProvider cannot be null");
-
-			BuildFontRegistrar(_serviceProvider);
-
-			return new AppHost(_serviceProvider, null);
-		}
 
 		void BuildHostConfiguration()
 		{
@@ -277,6 +274,11 @@ namespace Microsoft.Maui.Hosting
 		IHostBuilder IHostBuilder.ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate)
 		{
 			return ConfigureContainer<TContainerBuilder>(configureDelegate);
+		}
+
+		IHost IHostBuilder.Build()
+		{
+			return Build();
 		}
 	}
 }

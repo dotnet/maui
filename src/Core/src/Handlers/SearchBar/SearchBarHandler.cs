@@ -14,7 +14,7 @@
 
 		}
 
-		public SearchBarHandler(PropertyMapper mapper) : base(mapper ?? SearchBarMapper)
+		public SearchBarHandler(PropertyMapper? mapper = null) : base(mapper ?? SearchBarMapper)
 		{
 
 		}

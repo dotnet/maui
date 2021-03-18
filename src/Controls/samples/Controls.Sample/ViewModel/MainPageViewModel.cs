@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.Configuration;
 
@@ -12,10 +10,10 @@ namespace Maui.Controls.Sample.ViewModel
 		readonly ITextService _textService;
 		string _text;
 
-		public MainPageViewModel(IConfiguration configuration, IEnumerable<ITextService> textServices)
+		public MainPageViewModel(IConfiguration configuration, ITextService textService)
 		{
 			_configuration = configuration;
-			_textService = textServices.FirstOrDefault();
+			_textService = textService;
 
 			Console.WriteLine($"Value from config: {_configuration["MyKey"]}");
 

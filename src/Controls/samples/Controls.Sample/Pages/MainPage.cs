@@ -1,5 +1,4 @@
 using Maui.Controls.Sample.ViewModel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 

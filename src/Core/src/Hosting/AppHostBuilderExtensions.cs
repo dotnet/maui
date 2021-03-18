@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting.Internal;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -76,8 +77,14 @@ namespace Microsoft.Maui.Hosting
 		{
 			builder.ConfigureServices((context, collection) =>
 			{
-				collection.AddSingleton<TApp>(implementationFactory);
+				collection.AddSingleton<MauiApp>(implementationFactory);
 			});
+			return builder;
+		}
+
+		public static IAppHostBuilder UseMauiServiceProviderFactory(this IAppHostBuilder builder, bool constructorInjection)
+		{
+			builder.UseServiceProviderFactory(new MauiServiceProviderFactory(constructorInjection));
 			return builder;
 		}
 	}

@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 			var services = host.Services;
 
 			var app = services.GetRequiredService<MauiApp>();
-			app.SetServiceProvider(services);
+			host.SetServiceProvider(app);
 
 			base.OnCreate();
 		}

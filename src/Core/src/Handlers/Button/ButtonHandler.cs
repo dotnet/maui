@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public ButtonHandler(PropertyMapper mapper) : base(mapper ?? ButtonMapper)
+		public ButtonHandler(PropertyMapper? mapper = null) : base(mapper ?? ButtonMapper)
 		{
 		}
 	}

@@ -6,7 +6,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	{
 		static void Main(string[] args)
 		{
-			BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).RunAllJoined();
+			BenchmarkRunner.Run<MauiServiceProviderBenchmarker>();
+			//BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).RunAllJoined();
 		}
 	}
 }

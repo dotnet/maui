@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests
 		where TStub : StubBase, IView, new()
 	{
 		AppStub _app;
-		IHost _host;
+		IAppHost _host;
 		IMauiContext _context;
 
 		public HandlerTestBase()
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			_app = new AppStub();
 
-			_app.SetServiceProvider(_host.Services);
+			_host.SetServiceProvider(_app);
 
 			_context = new ContextStub(_host.Services);
 			_app.SetHandlerContext(_context);
