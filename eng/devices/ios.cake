@@ -14,11 +14,49 @@ var TEST_RESULTS = Argument("results", EnvironmentVariable("IOS_TEST_RESULTS") ?
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
 string CONFIGURATION = "Release";
+bool DEVICE_CLEANUP = Argument("cleanup", true);
 
 Information("Project File: {0}", PROJECT);
 Information("Build Binary Log (binlog): {0}", BINLOG);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
+
+Setup(context =>
+{
+	Cleanup();
+});
+
+Teardown(context =>
+{
+	Cleanup();
+});
+
+void Cleanup()
+{
+	if (!DEVICE_CLEANUP)
+		return;
+
+	// delete the XHarness simulators first, if it exists
+	Information("Deleting XHarness simulator if exists...");
+	var sims = ListAppleSimulators();
+	var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
+	foreach (var sim in xharness) {
+		Information("Deleting XHarness simulator {0} ({1})...", sim.Name, sim.UDID);
+		StartProcess("xcrun", "simctl shutdown " + sim.UDID);
+		var retries = 3;
+		while (retries > 0) {
+			var exitCode = StartProcess("xcrun", "simctl delete " + sim.UDID);
+			if (exitCode == 0) {
+				retries = 0;
+			} else {
+				retries--;
+				System.Threading.Thread.Sleep(1000);
+			}
+		}
+	}
+}
+
+Task("Cleanup");
 
 Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
