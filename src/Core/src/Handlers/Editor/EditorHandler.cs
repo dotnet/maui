@@ -8,7 +8,7 @@
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEditor.MaxLength)] = MapMaxLength,
 			[nameof(IEditor.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled
-			[nameof(ILabel.Font)] = MapFont
+			[nameof(IEditor.Font)] = MapFont
 		};
 
 		public EditorHandler() : base(EditorMapper)

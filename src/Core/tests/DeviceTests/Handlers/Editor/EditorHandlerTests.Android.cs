@@ -42,13 +42,13 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("Dokdo")]
 		public async Task FontFamilyInitializesCorrectly(string family)
 		{
-			var label = new EditorStub()
+			var editor = new EditorStub()
 			{
 				Text = "Test",
 				Font = Font.OfSize(family, 10)
 			};
 
-			var handler = await CreateHandlerAsync(label);
+			var handler = await CreateHandlerAsync(editor);
 			var nativeEditor = GetNativeEditor(handler);
 
 			var fontManager = App.Services.GetRequiredService<IFontManager>();
