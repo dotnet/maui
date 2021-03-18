@@ -10,8 +10,8 @@ namespace Maui.Controls.Sample.Droid
 	{
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
-			base.OnCreate(savedInstanceState);
-			//Microsoft.Maui.Controls.Essentials.Platform.Init(this, savedInstanceState);
+			base.OnCreate(savedInstanceState);			//Microsoft.Maui.Controls.Essentials.Platform.Init(this, savedInstanceState);
+			
 		}
 	}
 }
