@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace Microsoft.Maui
 {
@@ -12,17 +13,16 @@ namespace Microsoft.Maui
 			return time.ToFormattedString(format);
 		}
 
-		public static string ToFormattedString(this TimeSpan time, string format)
+		public static string ToFormattedString(this TimeSpan time, string format, CultureInfo? cultureInfo = null)
 		{
+			cultureInfo ??= CultureInfo.CurrentCulture;
+
 			if (string.IsNullOrEmpty(format))
 			{
-				var timeFormat = "t";
-				return DateTime.Today.Add(time).ToString(timeFormat);
+				format = cultureInfo.DateTimeFormat.ShortTimePattern;
 			}
-			else
-			{
-				return DateTime.Today.Add(time).ToString(format);
-			}
+
+			return DateTime.Today.Add(time).ToString(format, cultureInfo);
 		}
 	}
 }

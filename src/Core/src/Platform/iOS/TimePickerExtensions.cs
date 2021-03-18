@@ -32,7 +32,6 @@ namespace Microsoft.Maui
 
 			if (string.IsNullOrEmpty(timePicker.Format))
 			{
-				string timeformat = cultureInfo.DateTimeFormat.ShortTimePattern;
 				NSLocale locale = new NSLocale(cultureInfo.TwoLetterISOLanguageName);
 
 				if (picker != null)
