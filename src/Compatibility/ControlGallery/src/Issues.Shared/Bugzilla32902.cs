@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 #if UITEST
 using Xamarin.UITest.iOS;
 using Xamarin.UITest;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 #endif
 

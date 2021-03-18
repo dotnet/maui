@@ -1,12 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <linker>
-  <assembly fullname="Microsoft.Maui.Controls.ControlGallery.Android">
-    <namespace fullname="Microsoft.Maui.Controls.ControlGallery.Android.Tests" />
-    <namespace fullname="Xamarin.Forms.Controls.Issues" />
+  <assembly fullname="Microsoft.Maui.Controls.Compatibility.ControlGallery.Android">
+    <namespace fullname="Microsoft.Maui.Controls.Compatibility.ControlGallery.Android.Tests" />
+    <namespace fullname="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues" />
     <type fullname="*Renderer" />
   </assembly>
-  <assembly fullname="Xamarin.Forms.Controls">
-    <namespace fullname="Xamarin.Forms.Controls.Tests" />
+   <assembly fullname="Microsoft.Maui.Controls.Compatibility.ControlGallery">
+    <namespace fullname="Maui.Controls.Tests" />
+    <namespace fullname="Maui.Controls.Compatibility.Tests" />
   </assembly>
   <assembly fullname="nunit.framework"/>
   <assembly fullname="mscorlib">
@@ -14,6 +15,6 @@
     <type fullname="System.Runtime.CompilerServices.INotifyCompletion" />
     <type fullname="System.Runtime.CompilerServices.TaskAwaiter" />
   </assembly>
-  <assembly fullname="Xamarin.Forms.Platform.Android.UnitTests" />
-  <assembly fullname="Xamarin.Platform" />
+  <assembly fullname="Microsoft.Maui.Controls.Compatibility.Android.UnitTests" />
+  <assembly fullname="Microsoft.Maui" />
 </linker>

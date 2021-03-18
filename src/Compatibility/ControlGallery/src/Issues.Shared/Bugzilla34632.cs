@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 using Xamarin.UITest;
 using NUnit.Framework;
 using Xamarin.UITest.iOS;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues

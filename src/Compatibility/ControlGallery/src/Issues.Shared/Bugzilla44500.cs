@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override async void Init()
 		{
 			// If you run this test and see a ton of errors like this in your console:
-			// 2017-05-31 17:09:17.662 XamarinFormsControlGalleryiOS[933:703025] AX Exchange error: Error Domain=Accessibility Code=0 "Remote service does not respond to _accessibilityMachPort" UserInfo={NSLocalizedDescription=Remote service does not respond to _accessibilityMachPort}
+			// 2017-05-31 17:09:17.662 CompatibilityControlGalleryiOS[933:703025] AX Exchange error: Error Domain=Accessibility Code=0 "Remote service does not respond to _accessibilityMachPort" UserInfo={NSLocalizedDescription=Remote service does not respond to _accessibilityMachPort}
 			// That's just a Calabash bug, you can safely ignore it. 
 			// If you want to avoid having your console spammed, remove 'Xamarin.Calabash.Start();' from your application. 
 
