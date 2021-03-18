@@ -31,6 +31,4 @@
     <SharedFont Include="Resources\Fonts\*" />
   </ItemGroup>
 
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
-
 </Project>
