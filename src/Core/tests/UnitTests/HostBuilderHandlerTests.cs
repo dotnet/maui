@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Tests;
@@ -21,61 +22,28 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void HandlerContextNullBeforeBuild()
+		public void CanGetIMauiHandlersServiceProviderFromServices()
 		{
-			var application = CreateDefaultApp(false);
+			var host = AppHostBuilder
+				.CreateDefaultAppBuilder()
+				.Build();
 
-			Assert.NotNull(application);
-
-			var handlerContext = application.Context;
-
-			Assert.Null(handlerContext);
-		}
-
-		[Fact]
-		public void HandlerContextAfterBuild()
-		{
-			var application = CreateDefaultApp();
-
-			Assert.NotNull(application);
-
-			var handlerContext = application.Context;
-
-			Assert.NotNull(handlerContext);
-		}
-
-		[Fact]
-		public void CanHandlerProviderContext()
-		{
-			var application = CreateDefaultApp();
-
-			Assert.NotNull(application);
-
-			var handlerContext = application.Context;
-
-			Assert.IsAssignableFrom<IMauiHandlersServiceProvider>(handlerContext.Handlers);
+			Assert.NotNull(host);
+			Assert.NotNull(host.Services);
+			Assert.NotNull(host.Handlers);
+			Assert.IsType<MauiHandlersServiceProvider>(host.Handlers);
+			Assert.Equal(host.Handlers, host.Services.GetService<IMauiHandlersServiceProvider>());
 		}
 
 		[Fact]
 		public void CanRegisterAndGetHandler()
 		{
-			var startup = new StartupStub();
-
-			var appBuilder = AppHostBuilder
+			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
-				.RegisterHandler<IViewStub, ViewHandlerStub>();
+				.RegisterHandler<IViewStub, ViewHandlerStub>()
+				.Build();
 
-			startup.Configure(appBuilder);
-
-			var host = appBuilder.Build();
-
-			var application = new AppStub();
-
-			host.SetServiceProvider(application);
-
-			Assert.NotNull(application);
-
-			var handler = application.Context.Handlers.GetHandler(typeof(IViewStub));
+			var handler = host.Handlers.GetHandler(typeof(IViewStub));
 
 			Assert.NotNull(handler);
 			Assert.IsType<ViewHandlerStub>(handler);
@@ -84,26 +52,15 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanRegisterAndGetHandlerWithDictionary()
 		{
-			var startup = new StartupStub();
-
-			var appBuilder = AppHostBuilder
+			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
 				.RegisterHandlers(new Dictionary<Type, Type>
 				{
 					{ typeof(IViewStub), typeof(ViewHandlerStub) }
-				});
+				})
+				.Build();
 
-			startup.Configure(appBuilder);
-
-			var host = appBuilder.Build();
-
-			var application = new AppStub();
-
-			host.SetServiceProvider(application);
-
-			Assert.NotNull(application);
-
-			var handler = application.Context.Handlers.GetHandler(typeof(IViewStub));
+			var handler = host.Handlers.GetHandler(typeof(IViewStub));
 
 			Assert.NotNull(handler);
 			Assert.IsType<ViewHandlerStub>(handler);
@@ -112,23 +69,12 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanRegisterAndGetHandlerForType()
 		{
-			var startup = new StartupStub();
-
-			var appBuilder = AppHostBuilder
+			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
-				.RegisterHandler<IViewStub, ViewHandlerStub>();
+				.RegisterHandler<IViewStub, ViewHandlerStub>()
+				.Build();
 
-			startup.Configure(appBuilder);
-
-			var host = appBuilder.Build();
-
-			var application = new AppStub();
-
-			host.SetServiceProvider(application);
-
-			Assert.NotNull(application);
-
-			var handler = application.Context.Handlers.GetHandler(typeof(ViewStub));
+			var handler = host.Handlers.GetHandler(typeof(ViewStub));
 
 			Assert.NotNull(handler);
 			Assert.IsType<ViewHandlerStub>(handler);
@@ -137,22 +83,11 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void DefaultHandlersAreRegistered()
 		{
-			var startup = new StartupStub();
+			var host = AppHostBuilder
+				.CreateDefaultAppBuilder()
+				.Build();
 
-			var appBuilder = AppHostBuilder
-				.CreateDefaultAppBuilder();
-
-			startup.Configure(appBuilder);
-
-			var host = appBuilder.Build();
-
-			var application = new AppStub();
-
-			host.SetServiceProvider(application);
-
-			Assert.NotNull(application);
-
-			var handler = application.Context.Handlers.GetHandler(typeof(IButton));
+			var handler = host.Handlers.GetHandler(typeof(IButton));
 
 			Assert.NotNull(handler);
 			Assert.IsType<ButtonHandler>(handler);
@@ -161,48 +96,18 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanSpecifyHandler()
 		{
-			var startup = new StartupStub();
-
-			var appBuilder = AppHostBuilder
+			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
-				.RegisterHandler<ButtonStub, ButtonHandlerStub>();
+				.RegisterHandler<ButtonStub, ButtonHandlerStub>()
+				.Build();
 
-			startup.Configure(appBuilder);
-
-			var host = appBuilder.Build();
-
-			var application = new AppStub();
-
-			host.SetServiceProvider(application);
-
-			Assert.NotNull(application);
-
-			var defaultHandler = application.Context.Handlers.GetHandler(typeof(IButton));
-			var specificHandler = application.Context.Handlers.GetHandler(typeof(ButtonStub));
+			var defaultHandler = host.Handlers.GetHandler(typeof(IButton));
+			var specificHandler = host.Handlers.GetHandler(typeof(ButtonStub));
 
 			Assert.NotNull(defaultHandler);
 			Assert.NotNull(specificHandler);
 			Assert.IsType<ButtonHandler>(defaultHandler);
 			Assert.IsType<ButtonHandlerStub>(specificHandler);
-		}
-
-		static AppStub CreateDefaultApp(bool build = true)
-		{
-			var startup = new StartupStub();
-
-			var appBuilder = AppHostBuilder
-				.CreateDefaultAppBuilder();
-
-			startup.Configure(appBuilder);
-
-			var host = build ? appBuilder.Build() : null;
-
-			var application = new AppStub();
-
-			if (build)
-				host.SetServiceProvider(application);
-
-			return application;
 		}
 	}
 }

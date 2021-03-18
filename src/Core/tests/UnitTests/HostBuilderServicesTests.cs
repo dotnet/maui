@@ -16,6 +16,7 @@ namespace Microsoft.Maui.UnitTests
 				.CreateDefaultAppBuilder()
 				.Build();
 
+			Assert.NotNull(host);
 			Assert.NotNull(host.Services);
 		}
 

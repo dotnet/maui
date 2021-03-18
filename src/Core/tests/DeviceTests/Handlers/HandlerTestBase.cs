@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
@@ -18,16 +17,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		public HandlerTestBase()
 		{
-			var startup = new StartupStub();
-
 			var appBuilder = AppHostBuilder
 				.CreateDefaultAppBuilder()
 				.ConfigureFonts((ctx, fonts) =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
 				});
-
-			startup.Configure(appBuilder);
 
 			_host = appBuilder.Build();
 
@@ -36,7 +31,6 @@ namespace Microsoft.Maui.DeviceTests
 			_host.SetServiceProvider(_app);
 
 			_context = new ContextStub(_host.Services);
-			_app.SetHandlerContext(_context);
 		}
 
 		public void Dispose()

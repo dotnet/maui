@@ -35,9 +35,6 @@ namespace Microsoft.Maui
 
 			window.MauiContext = mauiContext;
 
-			//Hack for now we set this on the App Static but this should be on IFrameworkElement
-			MauiApp.Current.SetHandlerContext(window.MauiContext);
-
 			var content = (window.Page as IView) ??
 				window.Page.View;
 
