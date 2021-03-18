@@ -257,6 +257,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return false;
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
@@ -401,6 +402,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return newLength <= Element?.MaxLength;
 		}
 
+		[PortHandler]
 		void UpdateReturnType()
 		{
 			if (Control == null || Element == null)

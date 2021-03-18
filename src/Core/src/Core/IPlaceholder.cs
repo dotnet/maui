@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Provides functionality to be able to use a Placeholder.
 	/// </summary>
-	public interface IPlaceholder : IView
+	public interface IPlaceholder 
 	{
 		/// <summary>
 		/// Gets the placeholder or hint text.
