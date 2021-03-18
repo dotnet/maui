@@ -28,22 +28,22 @@ namespace Microsoft.Maui
 		void OnStopped();
 
 		/// <summary>
-		/// This event is raised when the window is closed.
+		/// This event is raised when the application is closed.
 		/// </summary>
 		event EventHandler? Created;
 
 		/// <summary>
-		/// This event is raised when the window is resumed.
+		/// This event is raised when the application is resumed.
 		/// </summary>
 		event EventHandler? Resumed;
 
 		/// <summary>
-		/// This event is raised when the window is pasued.
+		/// This event is raised when the application is pasued.
 		/// </summary>
 		event EventHandler? Paused;
 
 		/// <summary>
-		/// This event is raised when the window is closed.
+		/// This event is raised when the application is closed.
 		/// </summary>
 		event EventHandler? Stopped;
 	}
