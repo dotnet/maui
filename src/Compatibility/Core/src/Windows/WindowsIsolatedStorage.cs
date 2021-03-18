@@ -5,11 +5,11 @@ using Windows.Storage;
 using Windows.Storage.FileProperties;
 using Windows.Storage.Streams;
 
-#if !UWP_16299
-using FileMode = Microsoft.Maui.Controls.Compatibility.Internals.FileMode;
-using FileAccess = Microsoft.Maui.Controls.Compatibility.Internals.FileAccess;
-using FileShare = Microsoft.Maui.Controls.Compatibility.Internals.FileShare;
-#endif
+//#if !UWP_16299
+//using FileMode = Microsoft.Maui.Controls.Compatibility.FileMode;
+//using FileAccess = Microsoft.Maui.Controls.Compatibility.Internals.FileAccess;
+//using FileShare = Microsoft.Maui.Controls.Compatibility.Internals.FileShare;
+//#endif
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

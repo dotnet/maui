@@ -155,8 +155,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		static IEnumerable<string> GetAllFontPossibilities(string fontFamily)
 		{
+			// WINUI3
+			var fontRegistrar = (IFontRegistrar)MauiApp.Current.Services.GetService(typeof(IFontRegistrar));
+						
 			//First check Alias
-			var (hasFontAlias, fontPostScriptName) = FontRegistrar.HasFont(fontFamily);
+			var (hasFontAlias, fontPostScriptName) = fontRegistrar.HasFont(fontFamily);
 			if (hasFontAlias)
 			{
 				var familyName = FindFontFamilyName(fontPostScriptName);
@@ -178,7 +181,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var hasExtension = !string.IsNullOrWhiteSpace(fontFile.Extension);
 			if (hasExtension)
 			{
-				var (hasFont, filePath) = FontRegistrar.HasFont(fontFile.FileNameWithExtension());
+				var (hasFont, filePath) = fontRegistrar.HasFont(fontFile.FileNameWithExtension());
 				if (hasFont)
 				{
 					var familyName = FindFontFamilyName(filePath);
@@ -193,7 +196,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			foreach (var ext in extensions)
 			{
-				var (hasFont, filePath) = FontRegistrar.HasFont(fontFile.FileNameWithExtension(ext));
+				var (hasFont, filePath) = fontRegistrar.HasFont(fontFile.FileNameWithExtension(ext));
 				if (hasFont)
 				{
 					var familyName = FindFontFamilyName(filePath);

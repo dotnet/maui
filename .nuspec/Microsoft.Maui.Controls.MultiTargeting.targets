@@ -29,7 +29,7 @@
     <Compile Remove="**\Standard\*.cs" />
     <None Include="**\Standard\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetPlatformIdentifier)' != 'Windows' ">
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) != true ">
     <Compile Remove="**\*.Windows.cs" />
     <None Include="**\*.Windows.cs" />
     <Compile Remove="**\*.xaml.cs" />
@@ -76,16 +76,16 @@
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
   </ItemGroup>
-  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'Windows' ">
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
   </PropertyGroup>
-  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'Windows' ">
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PackageReference Include="Microsoft.ProjectReunion" Version="0.5.0-prerelease" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.5.0-prerelease" />
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="0.5.0-prerelease" />
   </ItemGroup>
-  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="'$(TargetPlatformIdentifier)' == 'Windows' ">
+  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PropertyGroup>
       <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
     </PropertyGroup>

@@ -1,7 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="Net6WinUIWorkaround" 
-          BeforeTargets="_GetSdkToolsPathsFromSdk" 
-          Condition="'$(TargetPlatformIdentifier)' == 'Windows' ">
+          BeforeTargets="_GetSdkToolsPathsFromSdk"
+          Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PropertyGroup>
       <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
     </PropertyGroup>
