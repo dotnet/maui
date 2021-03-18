@@ -25,6 +25,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
+				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) => services.AddTransient<IFooBarService, FooBarService>())
 				.Build();
 
@@ -36,6 +37,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
+				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) => services.AddTransient<IFooBarService, FooDualConstructor>())
 				.Build();
 
@@ -49,6 +51,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
+				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) =>
 				{
 					services.AddTransient<IFooService, FooService>();
@@ -68,6 +71,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
+				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) =>
 				{
 					services.AddTransient<IFooBarService, FooDefaultValueConstructor>();
@@ -88,6 +92,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
+				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) =>
 				{
 					services.AddTransient<IBarService, BarService>();
@@ -110,6 +115,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
+				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) =>
 				{
 					services.AddTransient<IFooBarService, FooDefaultSystemValueConstructor>();
