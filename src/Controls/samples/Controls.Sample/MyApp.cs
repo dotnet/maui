@@ -11,11 +11,11 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Hosting;
-using MauiApp = Microsoft.Maui.Application;
+using Application = Microsoft.Maui.Application;
 
 namespace Maui.Controls.Sample
 {
-	public class MyApp : MauiApp
+	public class MyApp : Application
 	{
 		public readonly static bool UseXamlPage = false;
 

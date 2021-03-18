@@ -1,10 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
+using Application = Microsoft.Maui.Application;
 
 namespace Maui.Controls.Sample.SingleProject
 {
-	public class MyApp : MauiApp
+	public class MyApp : Application
 	{
 		public override IAppHostBuilder CreateBuilder() => 
 			base.CreateBuilder().ConfigureServices((ctx, services) =>
