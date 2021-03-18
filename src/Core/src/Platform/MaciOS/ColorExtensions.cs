@@ -33,7 +33,6 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-
 				if (NativeVersion.IsAtLeast(13))
 					return UIColor.PlaceholderTextColor;
 
@@ -45,7 +44,6 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-
 				if (NativeVersion.IsAtLeast(13))
 					return UIColor.SecondaryLabelColor;
 
@@ -57,7 +55,6 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-
 				if (NativeVersion.IsAtLeast(13))
 					return UIColor.SystemBackgroundColor;
 

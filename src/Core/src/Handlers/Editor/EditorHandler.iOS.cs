@@ -1,32 +1,47 @@
 using CoreGraphics;
-using Foundation;
 using UIKit;
+using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : AbstractViewHandler<IEditor, UITextView>
+	public partial class EditorHandler : AbstractViewHandler<IEditor, MauiTextView>
 	{
 		static readonly int BaseHeight = 30;
-		UILabel PlaceholderLabel { get; set; }
+	
+		static readonly UIColor DefaultPlaceholderColor = ColorExtensions.PlaceholderColor;
 
-		protected override UITextView CreateNativeView()
+		protected override MauiTextView CreateNativeView()
 		{
-			var textView = new UITextView(CGRect.Empty);
+			return new MauiTextView(CGRect.Empty);
+		}
 
-			PlaceholderLabel = new UILabel
-			{
-				BackgroundColor = UIColor.Clear,
-				Frame = new CGRect(0, 0, textView.Frame.Width, textView.Frame.Height),
-				Lines = 0
-			};
-
-			CreatePlaceholderLabel(textView);
-
-			return textView;
+		protected override void SetupDefaults(MauiTextView nativeView) 
+		{
+			nativeView.PlaceholderTextColor = DefaultPlaceholderColor;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			new SizeRequest(new Size(widthConstraint, BaseHeight));
+
+		protected override void ConnectHandler(MauiTextView nativeView)
+		{
+			nativeView.Changed += OnChanged;
+		}
+
+		protected override void DisconnectHandler(MauiTextView nativeView)
+		{
+			nativeView.Changed -= OnChanged;
+		}
+
+		void OnChanged(object? sender, System.EventArgs e) => OnTextChanged();
+
+		void OnTextChanged()
+		{
+			if (TypedNativeView == null)
+				return;
+
+			TypedNativeView.HidePlaceholder(!string.IsNullOrEmpty(TypedNativeView.Text));
+		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
@@ -38,33 +53,9 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdatePlaceholder(editor);
 		}
 
-		void CreatePlaceholderLabel(UITextView textView)
+		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor) 
 		{
-			textView.AddSubview(PlaceholderLabel);
-
-			var edgeInsets = textView.TextContainerInset;
-			var lineFragmentPadding = textView.TextContainer.LineFragmentPadding;
-
-			var vConstraints = NSLayoutConstraint.FromVisualFormat(
-				"V:|-" + edgeInsets.Top + "-[PlaceholderLabel]-" + edgeInsets.Bottom + "-|", 0, new NSDictionary(),
-				NSDictionary.FromObjectsAndKeys(
-					new NSObject[] {PlaceholderLabel}, new NSObject[] {new NSString("PlaceholderLabel")})
-			);
-
-			var hConstraints = NSLayoutConstraint.FromVisualFormat(
-				"H:|-" + lineFragmentPadding + "-[PlaceholderLabel]-" + lineFragmentPadding + "-|",
-				0, new NSDictionary(),
-				NSDictionary.FromObjectsAndKeys(
-					new NSObject[] { PlaceholderLabel }, new NSObject[] { new NSString("PlaceholderLabel") })
-			);
-
-			PlaceholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
-			// TODO: Add when we have CharacterSpacing
-			// TODO: maybe put in extension method for setting these properties
-			//PlaceholderLabel.AttributedText = PlaceholderLabel.AttributedText.AddCharacterSpacing(VirtualView.Placeholder, VirtualView.CharacterSpacing);
-
-			textView.AddConstraints(hConstraints);
-			textView.AddConstraints(vConstraints);
+			handler.TypedNativeView?.UpdatePlaceholderColor(editor, DefaultPlaceholderColor);
 		}
 	}
 }

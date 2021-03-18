@@ -9,5 +9,12 @@
 		public Font Font { get; set; }
 
 		public double CharacterSpacing { get; set; }
+
+		public bool IsReadOnly { get;set; }
+
+		public string Placeholder { get;set; }
+
+		public Color PlaceholderColor { get; set; }
+		
 	}
 }

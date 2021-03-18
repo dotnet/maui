@@ -5,6 +5,9 @@
 	/// </summary>
 	public interface IEditor : IView, ITextInput
 	{
-
+		/// <summary>
+		/// Gets or sets the placeholder text color. 
+		/// </summary>
+		Color PlaceholderColor { get; set; }
 	}
 }

@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_placeholderLabel.AttributedText = placeHolder;
 		}
 
+		[PortHandler]
 		protected internal override void UpdatePlaceholderColor()
 		{
 			Color placeholderColor = Element.PlaceholderColor;

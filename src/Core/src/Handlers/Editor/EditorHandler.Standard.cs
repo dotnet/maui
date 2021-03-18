@@ -9,5 +9,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(IViewHandler handler, IEditor editor) { }
 
 		public static void MapPlaceholder(IViewHandler handler, IEditor editor) { }
+
+		public static void MapPlaceholderColor(IViewHandler handler, IEditor editor) { }
 	}
 }

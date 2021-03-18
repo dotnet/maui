@@ -1,4 +1,5 @@
 using UIKit;
+using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui
 {
@@ -12,24 +13,20 @@ namespace Microsoft.Maui
 			{
 				textView.Text = text;
 			}
-
-			var placeholderLabel = textView.FindDescendantView<UILabel>();
-
-			if (placeholderLabel == null)
-				return;
-
-			placeholderLabel.Hidden = !string.IsNullOrEmpty(textView.Text);
 		}
 
-		public static void UpdatePlaceholder(this UITextView textView, IEditor editor)
+		public static void UpdatePlaceholder(this MauiTextView textView, IEditor editor)
 		{
-			var placeholderLabel = textView.FindDescendantView<UILabel>();
+			textView.PlaceholderText = editor.Placeholder;
+		}
 
-			if (placeholderLabel == null)
-				return;
-
-			placeholderLabel.Text = editor.Placeholder;
-			placeholderLabel.SizeToFit();
+		public static void UpdatePlaceholderColor(this MauiTextView textView, IEditor editor, UIColor? defaultPlaceholderColor)
+		{
+			Color placeholderColor = editor.PlaceholderColor;
+			if (placeholderColor.IsDefault)
+				textView.PlaceholderTextColor = defaultPlaceholderColor;
+			else
+				textView.PlaceholderTextColor = placeholderColor.ToNative();
 		}
 	}
 }
