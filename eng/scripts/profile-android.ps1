@@ -38,6 +38,9 @@ The $(Configuration) MSBuild property. Defaults to 'Debug'.
 Additional command-line arguments to pass to MSBuild. For example,
 '-extra /p:AotAssemblies=True' would enable AOT.
 
+.PARAMETER xamarinformsversion
+The Xamarin.Forms version to run hello world on
+
 .PARAMETER sleep
 
 The number of seconds to wait between each app launch. Defaults to 3,
@@ -86,7 +89,8 @@ param
     [string] $package,
     [string] $configuration = 'Debug',
     [string] $extra,
-    [string] $androidapi = 'android-30',
+    [string] $xamarinformsversion = '4.7.0.1351',
+    [string] $androidapi = 'android-28',
     [int] $sleep = 3,
     [int] $iterations = 10
 )
@@ -168,7 +172,7 @@ Function Build-App{
     $isFlutter = -not $project.EndsWith("csproj")
     if(-not $isFlutter)
     {
-        & $msbuild $project /v:minimal /nologo /restore /t:Clean,Install /p:Configuration=$configuration $extra
+        & $msbuild $project /v:minimal /nologo /restore /t:Clean,Install /p:Configuration=$configuration /p:XamarinFormsVersion=$xamarinformsversion $extra
     }
     else
     {
