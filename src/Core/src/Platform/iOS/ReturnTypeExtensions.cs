@@ -3,7 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public static class ReturnKeyTypeExtensions
+	public static class ReturnTypeExtensions
 	{
 		public static UIReturnKeyType ToNative(this ReturnType returnType)
 		{

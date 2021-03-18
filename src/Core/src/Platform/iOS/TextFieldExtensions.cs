@@ -77,7 +77,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateCharacterSpacing(this UITextField textField, IText textView)
 		{
-			var textAttr = textField.AttributedText?.AddCharacterSpacing(textView.Text, textView.CharacterSpacing);
+			var textAttr = textField.AttributedText?.WithCharacterSpacing(textView.CharacterSpacing);
 
 			if (textAttr != null)
 				textField.AttributedText = textAttr;

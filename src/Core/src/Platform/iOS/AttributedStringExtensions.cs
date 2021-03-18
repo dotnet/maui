@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public static class NSAttributedStringExtensions
+	public static class AttributedStringExtensions
 	{
 		public static NSMutableAttributedString? WithCharacterSpacing(this NSAttributedString attributedString, double characterSpacing)
 		{

@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui
 {
-	public static class EditorExtensions
+	public static class TextViewExtensions
 	{
 		public static void UpdateText(this UITextView textView, IEditor editor)
 		{
@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateCharacterSpacing(this UITextView textView, IEditor editor)
 		{
-			var textAttr = textView.AttributedText.AddCharacterSpacing(editor.Text, editor.CharacterSpacing);
+			var textAttr = textView.AttributedText?.WithCharacterSpacing(editor.CharacterSpacing);
 
 			if (textAttr != null)
 				textView.AttributedText = textAttr;
