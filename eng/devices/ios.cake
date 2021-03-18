@@ -41,7 +41,7 @@ void Cleanup()
 	var sims = ListAppleSimulators();
 	var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
 	foreach (var sim in xharness) {
-		Information("Deleting XHarness simulator {0}...", sim.Name);
+		Information("Deleting XHarness simulator {0} ({1})...", sim.Name, sim.UDID);
 		StartProcess("xcrun", "simctl shutdown " + sim.UDID);
 		var retries = 3;
 		while (retries > 0) {
