@@ -2,7 +2,7 @@
 {
 	public enum FlowDirection 
 	{ 
-		LeftToRight,
-		RightToLeft
+		LeftToRight = 0,
+		RightToLeft = 1
 	}
 }
