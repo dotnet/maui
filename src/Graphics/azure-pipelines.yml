@@ -7,10 +7,10 @@ trigger:
 - main
 
 pool:
-  vmImage: macos-latest
+  vmImage: macOS-latest
 
 steps:
-- script: nuget restore build/Build.Microsoft.Maui.Graphics.Mac.sln
+- script: dotnet restore build/Build.Microsoft.Maui.Graphics.Mac.sln
   displayName: 'NuGet Restore'
 
 - script: |
