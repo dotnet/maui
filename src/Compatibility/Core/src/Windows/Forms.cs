@@ -22,7 +22,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static Window MainWindow { get; set; }
 
 		public static bool IsInitialized { get; private set; }
-		
+
+		public static void Init(IActivationState state)
+		{
+		}
+
 		public static void Init(
 			Microsoft.UI.Xaml.LaunchActivatedEventArgs launchActivatedEventArgs,
 			WindowsBasePage mainWindow,

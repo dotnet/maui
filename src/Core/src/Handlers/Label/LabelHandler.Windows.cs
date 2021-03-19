@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : AbstractViewHandler<ILabel, TextBlock>
 	{
-		protected override TextBlock CreateNativeView() => throw new NotImplementedException();
+		protected override TextBlock CreateNativeView() => new TextBlock();
 
 		public static void MapText(IViewHandler handler, ILabel label) { }
 		public static void MapTextColor(IViewHandler handler, ILabel label) { }

@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : AbstractViewHandler<IEntry, TextBox>
 	{
-		protected override TextBox CreateNativeView() => throw new NotImplementedException();
+		protected override TextBox CreateNativeView() => new TextBox();
 
 		public static void MapText(IViewHandler handler, IEntry entry) { }
 		public static void MapTextColor(IViewHandler handler, IEntry entry) { }

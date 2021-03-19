@@ -5,6 +5,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ProgressBarHandler : AbstractViewHandler<IProgress, ProgressBar>
 	{
-		protected override ProgressBar CreateNativeView() => throw new NotImplementedException();
+		protected override ProgressBar CreateNativeView() => new ProgressBar();
 	}
 }
