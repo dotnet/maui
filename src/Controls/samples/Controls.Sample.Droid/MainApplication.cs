@@ -4,7 +4,7 @@ using Android.Runtime;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
-namespace MauiSampleApp.Droid
+namespace MauiControlsSample.Droid
 {
 	[Application]
 	public class MainApplication : MauiApplication<Startup>

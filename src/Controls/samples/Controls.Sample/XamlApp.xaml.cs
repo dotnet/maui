@@ -1,11 +1,11 @@
 ﻿using System;
-using MauiSampleApp.Services;
+using MauiControlsSample.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 
-namespace MauiSampleApp
+namespace MauiControlsSample
 {
 	public partial class XamlApp : Application
 	{

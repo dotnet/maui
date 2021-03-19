@@ -1,6 +1,6 @@
 using Microsoft.Maui;
 
-namespace MauiSampleApp.Controls
+namespace MauiControlsSample.Controls
 {
 	public class Window : IWindow
 	{

@@ -1,6 +1,6 @@
-﻿using MauiSampleApp.Pages;
-using MauiSampleApp.Services;
-using MauiSampleApp.ViewModel;
+﻿using MauiControlsSample.Pages;
+using MauiControlsSample.Services;
+using MauiControlsSample.ViewModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -10,7 +10,7 @@ using Microsoft.Maui.Hosting;
 using System;
 using System.Collections.Generic;
 
-namespace MauiSampleApp
+namespace MauiControlsSample
 {
 	public class Startup : IStartup
 	{

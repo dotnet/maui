@@ -1,4 +1,4 @@
-namespace MauiSampleApp.Services
+namespace MauiControlsSample.Services
 {
 	public interface ITextService
 	{

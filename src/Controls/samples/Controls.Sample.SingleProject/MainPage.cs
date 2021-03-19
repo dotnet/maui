@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
-namespace MauiSampleApp.SingleProject
+namespace MauiControlsSample.SingleProject
 {
 	public class MainPage : ContentPage, IPage
 	{

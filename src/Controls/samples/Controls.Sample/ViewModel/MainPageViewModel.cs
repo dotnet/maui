@@ -1,8 +1,8 @@
 using System;
-using MauiSampleApp.Services;
+using MauiControlsSample.Services;
 using Microsoft.Extensions.Configuration;
 
-namespace MauiSampleApp.ViewModel
+namespace MauiControlsSample.ViewModel
 {
 	public class MainPageViewModel : ViewModelBase
 	{

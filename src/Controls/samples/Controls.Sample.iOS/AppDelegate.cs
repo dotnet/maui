@@ -1,7 +1,7 @@
 using Foundation;
 using Microsoft.Maui;
 
-namespace MauiSampleApp.iOS
+namespace MauiControlsSample.iOS
 {
 	[Register("AppDelegate")]
 	public class AppDelegate : MauiUIApplicationDelegate<Startup>

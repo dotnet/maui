@@ -1,6 +1,6 @@
 ﻿using UIKit;
 
-namespace MauiSampleApp.SingleProject
+namespace MauiControlsSample.SingleProject
 {
 	public class Application
 	{

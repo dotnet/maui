@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using MauiSampleApp.ViewModel;
+using MauiControlsSample.ViewModel;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
-namespace MauiSampleApp.Pages
+namespace MauiControlsSample.Pages
 {
 	public class MainPage : ContentPage, IPage
 	{
