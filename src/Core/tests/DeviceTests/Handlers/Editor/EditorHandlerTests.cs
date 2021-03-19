@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -46,7 +45,27 @@ namespace Microsoft.Maui.DeviceTests
 				setValue,
 				unsetValue);
 		}
-		
+
+		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[InlineData(2)]
+		[InlineData(5)]
+		[InlineData(8)]
+		[InlineData(10)]
+		public async Task MaxLengthInitializesCorrectly(int maxLength)
+		{
+			string text = "Lorem ipsum dolor sit amet";
+
+			var editor = new EditorStub()
+			{
+				MaxLength = maxLength,
+				Text = text
+			};
+
+			var expected = text.Substring(0, maxLength);
+
+			await ValidatePropertyInitValue(editor, () => editor.Text, GetNativeText, expected);
+		}
+
 		[Theory(DisplayName = "Is Text Prediction Enabled")]
 		[InlineData(true)]
 		[InlineData(false)]

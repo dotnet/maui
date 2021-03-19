@@ -1,4 +1,5 @@
-﻿using Android.Content.Res;
+﻿using System.Collections.Generic;
+using Android.Content.Res;
 using Android.Text;
 using Android.Util;
 using AndroidX.AppCompat.Widget;
@@ -120,6 +121,28 @@ namespace Microsoft.Maui
 			editText.LetterSpacing = editor.CharacterSpacing.ToEm();
 		}
 
+		public static void UpdateMaxLength(this AppCompatEditText editText, IEditor editor)
+		{
+			var currentFilters = new List<IInputFilter>(editText?.GetFilters() ?? new IInputFilter[0]);
+
+			for (var i = 0; i < currentFilters.Count; i++)
+			{
+				if (currentFilters[i] is InputFilterLengthFilter)
+				{
+					currentFilters.RemoveAt(i);
+					break;
+				}
+			}
+
+			currentFilters.Add(new InputFilterLengthFilter(editor.MaxLength));
+
+			if (editText == null)
+				return;
+
+			editText.SetFilters(currentFilters.ToArray());
+			editText.Text = TrimToMaxLength(editor.Text, editor.MaxLength);
+		}
+
 		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.InputType = InputTypes.ClassText;
@@ -136,6 +159,14 @@ namespace Microsoft.Maui
 
 			if (entry.IsReadOnly)
 				editText.InputType = InputTypes.Null;
+		}
+
+		internal static string? TrimToMaxLength(string currentText, int maxLength)
+		{
+			if (currentText == null || currentText.Length <= maxLength)
+				return currentText;
+
+			return currentText.Substring(0, maxLength);
 		}
 	}
 }

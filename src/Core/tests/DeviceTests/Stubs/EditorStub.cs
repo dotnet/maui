@@ -10,6 +10,8 @@
 
 		public double CharacterSpacing { get; set; }
 
+		public int MaxLength { get; set; } = int.MaxValue;
+
 		public bool IsTextPredictionEnabled { get; set; }
 	}
 }

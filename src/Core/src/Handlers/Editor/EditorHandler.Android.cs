@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 
 			editText.SetSingleLine(false);
 			editText.Gravity = GravityFlags.Top;
-			editText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
+			editText.TextAlignment = Android.Views.TextAlignment.ViewStart;
 			editText.SetHorizontallyScrolling(false);
 
 			return editText;
@@ -30,7 +30,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
 		}
-			
+
+		public static void MapMaxLength(EditorHandler handler, IEditor editor)
+		{
+			handler.TypedNativeView?.UpdateMaxLength(editor);
+		}
+
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
 		{
 			handler.TypedNativeView?.UpdateIsTextPredictionEnabled(editor);
