@@ -14,7 +14,7 @@ namespace Microsoft.Maui
 
 		public override RectangleF GetCaretRectForPosition(UITextPosition? position)
 		{
-			return new RectangleF();
+			return RectangleF.Empty;
 		}
 	}
 }
