@@ -2,26 +2,26 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class CheckBoxHandler : AbstractViewHandler<ICheckBox, NativeCheckBox>
+	public partial class CheckBoxHandler : AbstractViewHandler<ICheckBox, CheckBox>
 	{
 		protected virtual float MinimumSize => 44f;
 
-		protected override NativeCheckBox CreateNativeView()
+		protected override CheckBox CreateNativeView()
 		{
-			return new NativeCheckBox
+			return new CheckBox
 			{
 				MinimumViewSize = MinimumSize
 			};
 		}
 
-		protected override void ConnectHandler(NativeCheckBox nativeView)
+		protected override void ConnectHandler(CheckBox nativeView)
 		{
 			base.ConnectHandler(nativeView);
 
 			nativeView.CheckedChanged += OnCheckedChanged;
 		}
 
-		protected override void DisconnectHandler(NativeCheckBox nativeView)
+		protected override void DisconnectHandler(CheckBox nativeView)
 		{
 			base.DisconnectHandler(nativeView);
 
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCheckedChanged(object? sender, EventArgs e)
 		{
-			if (sender is NativeCheckBox nativeView && VirtualView != null)
+			if (sender is CheckBox nativeView && VirtualView != null)
 			{
 				VirtualView.IsChecked = nativeView.IsChecked;
 			}

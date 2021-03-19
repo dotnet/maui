@@ -2,7 +2,7 @@
 {
 	public static class CheckBoxExtensions
 	{
-		public static void UpdateIsChecked(this NativeCheckBox nativeCheckBox, ICheckBox check)
+		public static void UpdateIsChecked(this CheckBox nativeCheckBox, ICheckBox check)
 		{
 			nativeCheckBox.IsChecked = check.IsChecked;
 		}
