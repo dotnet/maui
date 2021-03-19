@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using MauiSampleApp.Pages;
+﻿using MauiSampleApp.Pages;
 using MauiSampleApp.Services;
 using MauiSampleApp.ViewModel;
 using Microsoft.Extensions.Configuration;
@@ -9,13 +7,15 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Hosting;
+using System;
+using System.Collections.Generic;
 
 namespace MauiSampleApp
 {
 	public class Startup : IStartup
 	{
 		public readonly static bool UseXamlPage = false;
-		public readonly static bool UseXamlApp = false;
+		public readonly static bool UseXamlApp = true;
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{

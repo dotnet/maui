@@ -31,10 +31,4 @@
     <SharedFont Include="Resources\Fonts\*" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="XamlApp.xaml.cs">
-      <DependentUpon>XamlApp.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
 </Project>
