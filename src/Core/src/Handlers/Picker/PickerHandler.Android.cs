@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Handlers
 				using (var builder = new AlertDialog.Builder(Context))
 				{
 					builder.SetTitle(VirtualView.Title ?? string.Empty);
-					
+
 					string[] items = VirtualView.Items.ToArray();
 
 					builder.SetItems(items, (s, e) =>

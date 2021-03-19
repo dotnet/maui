@@ -1,7 +1,7 @@
 ﻿using System;
 using Foundation;
-using UIKit;
 using Microsoft.Maui.Handlers;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateTitle(this MauiPicker nativePicker, IPicker picker) =>
 			nativePicker.UpdatePicker(picker);
-				
+
 		public static void UpdateSelectedIndex(this MauiPicker nativePicker, IPicker picker) =>
 			nativePicker.SetSelectedIndex(picker, picker.SelectedIndex);
 

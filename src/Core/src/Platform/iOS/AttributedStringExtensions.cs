@@ -70,8 +70,8 @@ namespace Microsoft.Maui
 			return mutable;
 		}
 
-		static void UpdateDecoration(NSMutableAttributedString attributedString, NSString key, 
-			NSRange range, TextDecorations decorations) 
+		static void UpdateDecoration(NSMutableAttributedString attributedString, NSString key,
+			NSRange range, TextDecorations decorations)
 		{
 			if (decorations == 0)
 			{

@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
-		
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return textField.TextAlignment;
 		}
-		
+
 		double GetNativeCharacterSpacing(SearchBarHandler searchBarHandler)
 		{
 			var searchBar = GetNativeSearchBar(searchBarHandler);
