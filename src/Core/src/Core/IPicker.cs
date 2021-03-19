@@ -36,6 +36,6 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the character spacing.
 		/// </summary>
-		int CharacterSpacing { get; set; }
+		double CharacterSpacing { get; set; }
 	}
 }
