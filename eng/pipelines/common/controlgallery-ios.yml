@@ -71,6 +71,7 @@ steps:
         **/iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
         **/iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
         **/iOS.UITests/bin/$(BuildConfiguration)/Microsoft.Maui.*
+        **/iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
       TargetFolder: '$(build.artifactstagingdirectory)/ios'
       flattenFolders: true
 
