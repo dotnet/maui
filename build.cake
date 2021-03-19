@@ -19,7 +19,7 @@ PowerShell:
 // ADDINS
 //////////////////////////////////////////////////////////////////////
 #addin "nuget:?package=Cake.Android.SdkManager&version=3.0.2"
-#addin "nuget:?package=Cake.Boots&version=1.0.3.556"
+#addin "nuget:?package=Cake.Boots&version=1.0.4.600-preview1"
 #addin "nuget:?package=Cake.AppleSimulator&version=0.2.0"
 #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
 
@@ -45,25 +45,26 @@ if(String.IsNullOrWhiteSpace(target))
 
 var IOS_SIM_NAME = GetBuildVariable("IOS_SIM_NAME", "iPhone 7");
 var IOS_SIM_RUNTIME = GetBuildVariable("IOS_SIM_RUNTIME", "com.apple.CoreSimulator.SimRuntime.iOS-12-4");
-var IOS_CONTROLGALLERY_PROJ = "src/ControlGallery/src/Xamarin.Forms.ControlGallery.iOS/Xamarin.Forms.ControlGallery.iOS.csproj";
-var IOS_TEST_PROJ = "./src/ControlGallery/test/Xamarin.Forms.Core.iOS.UITests/Xamarin.Forms.Core.iOS.UITests.csproj";
-var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $"./src/ControlGallery/test/Xamarin.Forms.Core.iOS.UITests/bin/{configuration}/Xamarin.Forms.Core.iOS.UITests.dll");
-var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $"./src/ControlGallery/test/Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/{configuration}/XamarinFormsControlGalleryiOS.app");
-var IOS_BUNDLE_ID = "com.xamarin.xamarin-forms-controlgallery";
+var IOS_CONTROLGALLERY = "src/Compatibility/ControlGallery/src/iOS/";
+var IOS_CONTROLGALLERY_PROJ = $"{IOS_CONTROLGALLERY}Compatibility.ControlGallery.iOS.csproj";
+var IOS_TEST_PROJ = "./src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj";
+var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $".src/Compatibility/ControlGallery/test/iOS.UITests/bin/{configuration}/Compatibility.ControlGallery.iOS.UITests.dll");
+var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $".src/Compatibility/ControlGallery/test/iOS/bin/iPhoneSimulator/{configuration}/CompatibilityControlGalleryiOS.app");
+var IOS_BUNDLE_ID = "com.microsoft.mauicompatibilitygallery";
 var IOS_BUILD_IPA = Argument("IOS_BUILD_IPA", (target == "cg-ios-deploy") ? true : (false || isCIBuild) );
 Guid IOS_SIM_UDID = Argument("IOS_SIM_UDID", Guid.Empty);
 
 var UWP_PACKAGE_ID = "0d4424f6-1e29-4476-ac00-ba22c3789cb6";
-var UWP_TEST_LIBRARY = GetBuildVariable("UWP_TEST_LIBRARY", $"./src/ControlGallery/test/Xamarin.Forms.Core.Windows.UITests/bin/{configuration}/Xamarin.Forms.Core.Windows.UITests.dll");
+var UWP_TEST_LIBRARY = GetBuildVariable("UWP_TEST_LIBRARY", $"./src/Compatibility/ControlGallery/test/Xamarin.Forms.Core.Windows.UITests/bin/{configuration}/Xamarin.Forms.Core.Windows.UITests.dll");
 var UWP_PFX_PATH = Argument("UWP_PFX_PATH", "Xamarin.Forms.ControlGallery.WindowsUniversal\\Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx");
 var UWP_APP_PACKAGES_PATH = Argument("UWP_APP_PACKAGES_PATH", "*/AppPackages/");
 var UWP_APP_DRIVER_INSTALL_PATH = Argument("UWP_APP_DRIVER_INSTALL_PATH", "https://github.com/microsoft/WinAppDriver/releases/download/v1.2-RC/WindowsApplicationDriver.msi");
 
 var ANDROID_BUNDLE_ID = "com.xamarin.xamarin_forms_controlgallery";
-var ANDROID_CONTROLGALLERY = "src/ControlGallery/src/Xamarin.Forms.ControlGallery.Android/";
-var ANDROID_CONTROLGALLERY_PROJ = $"{ANDROID_CONTROLGALLERY}Xamarin.Forms.ControlGallery.Android.csproj";
+var ANDROID_CONTROLGALLERY = "src/Compatibility/ControlGallery/src/Android/";
+var ANDROID_CONTROLGALLERY_PROJ = $"{ANDROID_CONTROLGALLERY}Compatibility.ControlGallery.Android.csproj";
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
-var ANDROID_TEST_PROJ = "./src/ControlGallery/test/Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj";
+var ANDROID_TEST_PROJ = "./src/Compatibility/ControlGallery/test/Android.UITests/Compatibility.ControlGallery.Android.UITests.csproj";
 
 var BUILD_TASKS_PROJ ="Microsoft.Maui.BuildTasks.sln";
 

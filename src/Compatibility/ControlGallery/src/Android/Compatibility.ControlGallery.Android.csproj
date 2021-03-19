@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="../../../../../eng/ControlGallery.Build.props" />
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="..\..\..\..\..\eng\Environment.Build.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -33,7 +32,7 @@
     <DefineConstants Condition="'$(ANDROID_RENDERERS)' == 'LEGACY'">$(DefineConstants);LEGACY_RENDERERS</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>
+    <DefineConstants>$(DefineConstants);HAVE_OPENTK;ENABLE_TEST_CLOUD</DefineConstants>
     <AndroidKeyStore>True</AndroidKeyStore>
     <AndroidSigningKeyStore>$(MSBuildThisFileDirectory)../../../../../eng/debug.keystore</AndroidSigningKeyStore>
     <AndroidSigningStorePass>android</AndroidSigningStorePass>
@@ -206,8 +205,6 @@
       <Project>{E7D17A14-8399-4139-BDAA-EE4C1A3447FC}</Project>
       <Name>Compatibility.ControlGallery.Core</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup Condition="$(FromSource) == 'true'">
     <ProguardConfiguration Include="..\..\..\..\..\.nuspec\proguard.cfg">
       <Link>proguard.cfg</Link>
     </ProguardConfiguration>

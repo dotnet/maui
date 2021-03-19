@@ -50,6 +50,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateIsPassword(entry);
 		}
 
+		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateHorizontalTextAlignment(entry);
+		}
+
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry)
 		{
 			handler.TypedNativeView?.UpdateIsTextPredictionEnabled(entry);
@@ -72,6 +77,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
 		{
 			handler.TypedNativeView?.UpdateIsReadOnly(entry);
+		}
+
+		public static void MapReturnType(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateReturnType(entry);
 		}
 
 		void OnTextChanged(string? text)

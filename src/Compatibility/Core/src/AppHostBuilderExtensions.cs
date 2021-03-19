@@ -12,13 +12,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var defaultHandlers = new List<Type>
 			{
 				typeof(Button),
-				typeof(DatePicker),
+        typeof(DatePicker),
 				typeof(Editor),
-				typeof(Entry),
+				typeof(Entry) ,
 				typeof(ContentPage),
 				typeof(Page),
 				typeof(Label),
 				typeof(Slider),
+				typeof(Stepper),
 				typeof(Switch)
 			};
 

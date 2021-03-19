@@ -36,15 +36,20 @@ namespace Microsoft.Maui.Hosting
 		{
 			builder.RegisterHandlers(new Dictionary<Type, Type>
 			{
-				{  typeof(IButton), typeof(ButtonHandler) },
-				{  typeof(IDatePicker), typeof(DatePickerHandler) },
-				{  typeof(IEditor), typeof(EditorHandler) },
-				{  typeof(IEntry), typeof(EntryHandler) },
-				{  typeof(ILayout), typeof(LayoutHandler) },
-				{  typeof(ILabel), typeof(LabelHandler) },
-				{  typeof(IProgress), typeof(ProgressBarHandler) },
-				{  typeof(ISlider), typeof(SliderHandler) },
-				{  typeof(ISwitch), typeof(SwitchHandler) }
+				{ typeof(IActivityIndicator), typeof(ActivityIndicatorHandler) },
+				{ typeof(IButton), typeof(ButtonHandler) },
+				{ typeof(ICheckBox), typeof(CheckBoxHandler) },
+        { typeof(IDatePicker), typeof(DatePickerHandler) },
+				{ typeof(IEditor), typeof(EditorHandler) },
+				{ typeof(IEntry), typeof(EntryHandler) },
+				{ typeof(ILayout), typeof(LayoutHandler) },
+				{ typeof(ILabel), typeof(LabelHandler) },
+				{ typeof(IPicker), typeof(PickerHandler) },
+				{ typeof(IProgress), typeof(ProgressBarHandler) },
+				{ typeof(ISlider), typeof(SliderHandler) },
+				{ typeof(IStepper), typeof(StepperHandler) },
+				{ typeof(ISwitch), typeof(SwitchHandler) },
+				{ typeof(ITimePicker), typeof(TimePickerHandler) }
 			});
 
 			return builder;

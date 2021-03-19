@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class TestBase
 	{
-		public global::Android.Content.Context DefaultContext =>
+		public const int EmCoefficientPrecision = 4;
+
+		public Android.Content.Context DefaultContext =>
 			Platform.DefaultContext;
 	}
 }
