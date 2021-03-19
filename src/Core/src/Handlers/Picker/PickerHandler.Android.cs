@@ -44,6 +44,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateSelectedIndex(picker);
 		}
 
+		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(picker);
+		}
+
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
 		{
 			if (TypedNativeView == null)

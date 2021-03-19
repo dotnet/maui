@@ -8,6 +8,11 @@
 		public static void UpdateSelectedIndex(this MauiPicker nativePicker, IPicker picker) =>
 			UpdatePicker(nativePicker, picker);
 
+		public static void UpdateCharacterSpacing(this MauiPicker nativePicker, IPicker picker)
+		{
+			nativePicker.LetterSpacing = picker.CharacterSpacing.ToEm();
+		}
+
 		internal static void UpdatePicker(this MauiPicker nativePicker, IPicker picker)
 		{
 			nativePicker.Hint = picker.Title;
