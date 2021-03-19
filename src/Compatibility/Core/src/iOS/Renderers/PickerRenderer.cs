@@ -11,6 +11,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[PortHandler]
 	internal class ReadOnlyField : NoCaretField
 	{
 		readonly HashSet<string> enableActions;
@@ -32,6 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		}
 
+		[PortHandler]
 		protected override UITextField CreateNativeControl()
 		{
 			return new ReadOnlyField { BorderStyle = UITextBorderStyle.RoundedRect };
@@ -56,6 +58,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		protected abstract override TControl CreateNativeControl();
+
+		[PortHandler("Partially ported, still missing code related to TitleColor, etc.")]
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
 			if (e.OldElement != null)
@@ -231,6 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected virtual void UpdateAttributedPlaceholder(NSAttributedString nsAttributedString) => 
 			Control.AttributedPlaceholder = nsAttributedString;
 
+		[PortHandler]
 		void UpdatePicker()
 		{
 			var selectedIndex = Element.SelectedIndex;
@@ -266,6 +271,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				((IVisualElementController)Element).NativeSizeChanged();
 		}
 
+		[PortHandler]
 		void UpdatePickerSelectedIndex(int formsIndex)
 		{
 			var source = (PickerSource)_picker.Model;
@@ -334,6 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.Dispose(disposing);
 		}
 
+		[PortHandler]
 		class PickerSource : UIPickerViewModel
 		{
 			PickerRendererBase<TControl> _renderer;

@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Android.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Handlers
@@ -27,10 +29,24 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdatePlaceholder(searchBar);
 		}
+		
+		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			var services = App.Current?.Services
+				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
+			var fontManager = services.GetRequiredService<IFontManager>();
+
+			handler.TypedNativeView?.UpdateFont(searchBar, fontManager, handler._editText);
+		}
 
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
+		}
+
+		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
 		}
 	}
 }
