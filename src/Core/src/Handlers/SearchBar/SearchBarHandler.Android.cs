@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdatePlaceholder(searchBar);
 		}
-		
+
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			var services = App.Current?.Services

@@ -5,6 +5,6 @@
 	/// </summary>
 	public interface ISearchBar : IView, IText, IPlaceholder, ITextAlignment
 	{
-		
+
 	}
 }

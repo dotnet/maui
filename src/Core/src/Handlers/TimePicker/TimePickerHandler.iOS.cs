@@ -6,7 +6,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override MauiTimePicker CreateNativeView()
 		{
-			return new MauiTimePicker(() => {
+			return new MauiTimePicker(() =>
+			{
 				SetVirtualViewTime();
 				TypedNativeView?.ResignFirstResponder();
 			});
