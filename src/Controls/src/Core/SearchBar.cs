@@ -89,23 +89,25 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
-		{
-		}
+		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
+			HandleFontChanged();
 
-		void IFontElement.OnFontSizeChanged(double oldValue, double newValue)
-		{
-		}
+		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
+			HandleFontChanged();
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (SearchBar)this);
 
-		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
-		{
-		}
+		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
+			HandleFontChanged();
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
+		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
+			HandleFontChanged();
+
+		void HandleFontChanged()
 		{
+			// Null out the Maui font value so it will be recreated next time it's accessed
+			_font = null;
 		}
 
 		public event EventHandler SearchButtonPressed;

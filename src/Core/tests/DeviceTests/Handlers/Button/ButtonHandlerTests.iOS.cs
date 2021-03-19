@@ -43,17 +43,15 @@ namespace Microsoft.Maui.DeviceTests
 				Padding = new Thickness(5, 10, 15, 20)
 			};
 
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var handler = await CreateHandlerAsync(button);
-				var uiButton = (UIButton)handler.View;
-				var insets = uiButton.ContentEdgeInsets;
+			var handler = await CreateHandlerAsync(button);
+			var uiButton = (UIButton)handler.View;
 
-				Assert.Equal(5, insets.Left);
-				Assert.Equal(10, insets.Top);
-				Assert.Equal(15, insets.Right);
-				Assert.Equal(20, insets.Bottom);
-			});
+			var insets = await InvokeOnMainThreadAsync(() => { return uiButton.ContentEdgeInsets; });
+
+			Assert.Equal(5, insets.Left);
+			Assert.Equal(10, insets.Top);
+			Assert.Equal(15, insets.Right);
+			Assert.Equal(20, insets.Bottom);
 		}
 
 		UIButton GetNativeButton(ButtonHandler buttonHandler) =>
