@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls
 			MinimumWidth = -1;
 		}
 
+		[TypeConverter(typeof(GridLengthTypeConverter))]
 		public GridLength Width
 		{
 			get { return (GridLength)GetValue(WidthProperty); }
