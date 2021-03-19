@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync(label);
 			var nativeLabel = GetNativeLabel(handler);
 
-			var fontManager = App.Services.GetRequiredService<IFontManager>();
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
 			var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
 

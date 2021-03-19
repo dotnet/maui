@@ -6,7 +6,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 #endif
 
-using Maui.Controls.Sample;
+using MauiSampleApp;
 
 namespace Sample.MacCatalyst
 {

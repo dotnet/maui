@@ -26,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync(entry);
 			var nativeEntry = GetNativeEntry(handler);
 
-			var fontManager = App.Services.GetRequiredService<IFontManager>();
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
 			var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
 

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0-android</TargetFramework>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Maui.Controls.Sample.Droid</RootNamespace>
+    <RootNamespace>MauiSampleApp.Droid</RootNamespace>
     <AssemblyName>Maui.Controls.Sample.Droid</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

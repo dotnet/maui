@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT'">$(TargetFrameworks);net6.0-maccatalyst</TargetFrameworks>
-    <RootNamespace>Maui.Controls.Sample</RootNamespace>
+    <RootNamespace>MauiSampleApp</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

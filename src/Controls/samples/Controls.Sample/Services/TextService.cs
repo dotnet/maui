@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Maui.Controls.Sample.Services
+namespace MauiSampleApp.Services
 {
 	public class TextService : ITextService
 	{

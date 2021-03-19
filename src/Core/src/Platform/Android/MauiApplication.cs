@@ -6,10 +6,10 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
-	public class MauiApplication<TStartup> : Android.App.Application
+	public class MauiApplication<TStartup> : MauiApplication
 		where TStartup : IStartup, new()
 	{
-		public MauiApplication(IntPtr handle, JniHandleOwnership ownerShip) : base(handle, ownerShip)
+		public MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{
 		}
 
@@ -24,13 +24,9 @@ namespace Microsoft.Maui
 			startup.Configure(appBuilder);
 
 			var host = appBuilder.Build();
-			if (host.Services == null)
-				throw new InvalidOperationException("App was not intialized");
 
-			var services = host.Services;
-
-			var app = services.GetRequiredService<MauiApp>();
-			host.SetServiceProvider(app);
+			Services = host.Services;
+			Application = Services.GetRequiredService<IApplication>();
 
 			base.OnCreate();
 		}
@@ -39,5 +35,19 @@ namespace Microsoft.Maui
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
 		}
+	}
+
+	public abstract class MauiApplication : Android.App.Application
+	{
+		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
+		{
+			Current = this;
+		}
+
+		public static MauiApplication Current { get; private set; } = null!;
+
+		public IServiceProvider Services { get; protected set; } = null!;
+
+		public IApplication Application { get; protected set; } = null!;
 	}
 }

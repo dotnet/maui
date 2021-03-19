@@ -4,7 +4,7 @@
     <TargetFramework>net6.0-ios</TargetFramework>
     <RuntimeIdentifier>ios-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Maui.Controls.Sample.iOS</RootNamespace>
+    <RootNamespace>MauiSampleApp.iOS</RootNamespace>
     <AssemblyName>Maui.Controls.Sample.iOS</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

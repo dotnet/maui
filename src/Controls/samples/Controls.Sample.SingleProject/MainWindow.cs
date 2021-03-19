@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 
-namespace Maui.Controls.Sample.SingleProject
+namespace MauiSampleApp.SingleProject
 {
 	public class MainWindow : IWindow
 	{

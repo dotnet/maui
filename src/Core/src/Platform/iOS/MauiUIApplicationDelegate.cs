@@ -7,15 +7,9 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class MauiUIApplicationDelegate<TStartup> : UIApplicationDelegate, IUIApplicationDelegate
+	public class MauiUIApplicationDelegate<TStartup> : MauiUIApplicationDelegate
 		where TStartup : IStartup, new()
 	{
-		public override UIWindow? Window
-		{
-			get;
-			set;
-		}
-
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			var startup = new TStartup();
@@ -30,13 +24,12 @@ namespace Microsoft.Maui
 			if (host.Services == null)
 				throw new InvalidOperationException("App was not intialized");
 
-			var services = host.Services;
+			Services = host.Services;
 
-			var app = services.GetRequiredService<MauiApp>();
-			host.SetServiceProvider(app);
+			Application = Services.GetRequiredService<IApplication>();
 
-			var mauiContext = new MauiContext(services);
-			var window = app.CreateWindow(new ActivationState(mauiContext));
+			var mauiContext = new MauiContext(Services);
+			var window = Application.CreateWindow(new ActivationState(mauiContext));
 
 			window.MauiContext = mauiContext;
 
@@ -58,5 +51,21 @@ namespace Microsoft.Maui
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
 		}
+	}
+
+	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
+	{
+		protected MauiUIApplicationDelegate()
+		{
+			Current = this;
+		}
+
+		public static MauiUIApplicationDelegate Current { get; private set; } = null!;
+
+		public override UIWindow? Window { get; set; }
+
+		public IServiceProvider Services { get; protected set; } = null!;
+
+		public IApplication Application { get; protected set; } = null!;
 	}
 }

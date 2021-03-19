@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 		where THandler : IViewHandler
 		where TStub : StubBase, IView, new()
 	{
-		AppStub _app;
+		IApplication _app;
 		IAppHost _host;
 		IMauiContext _context;
 
@@ -26,9 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			_host = appBuilder.Build();
 
-			_app = new AppStub();
-
-			_host.SetServiceProvider(_app);
+			_app = new ApplicationStub();
 
 			_context = new ContextStub(_host.Services);
 		}
@@ -41,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 			_context = null;
 		}
 
-		public IApp App => _app;
+		public IApplication App => _app;
 
 		public IMauiContext MauiContext => _context;
 

@@ -6,6 +6,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public static class AppHostBuilderExtensions
 	{
+		public static IAppHostBuilder RegisterCompatibilityForms(this IAppHostBuilder builder)
+		{
+#if __ANDROID__
+			Forms.Init(new InitializationOptions(Android.App.Application.Context, null, null) { Flags = InitializationFlags.SkipRenderers });
+#endif
+
+			return builder;
+		}
+
 		public static IAppHostBuilder RegisterCompatibilityRenderers(this IAppHostBuilder builder)
 		{
 			// This won't really be a thing once we have all the handlers built

@@ -1,8 +1,8 @@
-using Maui.Controls.Sample.ViewModel;
+using MauiSampleApp.ViewModel;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
-namespace Maui.Controls.Sample.Pages
+namespace MauiSampleApp.Pages
 {
 	public class MainPage : ContentPage, IPage
 	{

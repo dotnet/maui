@@ -1,17 +1,10 @@
 using System;
-using Android.App;
-using Android.Content;
-using Android.Content.Res;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
-using AndroidX.AppCompat.Content.Res;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Core.Widget;
 using Google.Android.Material.AppBar;
-using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui
 {
@@ -21,22 +14,19 @@ namespace Microsoft.Maui
 		{
 			base.OnCreate(savedInstanceState);
 
-			if (MauiApp.Current == null)
-				throw new InvalidOperationException($"App is not {nameof(MauiApp)}");
+			var mauiApp = MauiApplication.Current.Application;
+			if (mauiApp == null)
+				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
 
-			var mauiApp = MauiApp.Current;
+			var services = MauiApplication.Current.Services;
 
-			if (mauiApp.Services == null)
-				throw new InvalidOperationException("App was not initialized");
-
-			var mauiContext = new MauiContext(mauiApp.Services, this);
+			var mauiContext = new MauiContext(services, this);
 			var state = new ActivationState(mauiContext, savedInstanceState);
 			var window = mauiApp.CreateWindow(state);
 
 			window.MauiContext = mauiContext;
 
-			var content = (window.Page as IView) ??
-				window.Page.View;
+			var content = (window.Page as IView) ?? window.Page.View;
 
 			CoordinatorLayout parent = new CoordinatorLayout(this);
 

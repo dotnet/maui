@@ -1,23 +1,27 @@
-using System;
+﻿using System;
 using MauiSampleApp.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace MauiSampleApp
 {
-	public class MyApp : IApplication
+	public partial class XamlApp : Application
 	{
-		public MyApp(IServiceProvider services, ITextService textService)
+		public XamlApp(IServiceProvider services, ITextService textService)
 		{
+			InitializeComponent();
+
 			Services = services;
 
+			Console.WriteLine($"The .NET Purple color is {Resources["DotNetPurple"]}");
 			Console.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 		}
 
 		public IServiceProvider Services { get; }
 
-		public IWindow CreateWindow(IActivationState activationState)
+		public override IWindow CreateWindow(IActivationState activationState)
 		{
 			Forms.Init(activationState);
 

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Maui.Controls.Sample.Pages;
-using Maui.Controls.Sample.Services;
-using Maui.Controls.Sample.ViewModel;
+using MauiSampleApp.Pages;
+using MauiSampleApp.Services;
+using MauiSampleApp.ViewModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -10,17 +10,29 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Hosting;
 
-namespace Maui.Controls.Sample
+namespace MauiSampleApp
 {
 	public class Startup : IStartup
 	{
 		public readonly static bool UseXamlPage = false;
+		public readonly static bool UseXamlApp = false;
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
+			if (UseXamlApp)
+			{
+				appBuilder = appBuilder
+					.RegisterCompatibilityForms()
+					.UseMauiApp<XamlApp>();
+			}
+			else
+			{
+				appBuilder = appBuilder
+					.UseMauiApp<MyApp>();
+			}
+
 			appBuilder
 				.RegisterCompatibilityRenderers()
-				.UseMauiApp<MyApp>()
 				.ConfigureAppConfiguration((hostingContext, config) =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>

@@ -1,7 +1,7 @@
-using Maui.Controls.Sample.Controls;
+using MauiSampleApp.Controls;
 using Microsoft.Maui;
 
-namespace Maui.Controls.Sample
+namespace MauiSampleApp
 {
 	public class MainWindow : Window
 	{

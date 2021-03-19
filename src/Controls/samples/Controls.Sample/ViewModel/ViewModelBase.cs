@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Maui.Controls.Sample.ViewModel
+namespace MauiSampleApp.ViewModel
 {
 	public abstract class ViewModelBase : INotifyPropertyChanged
 	{

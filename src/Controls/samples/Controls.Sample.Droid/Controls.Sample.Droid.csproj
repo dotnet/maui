@@ -10,7 +10,7 @@
     <TemplateGuid>{84dd83c5-0fe3-4294-9419-09e7c8ba324f}</TemplateGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Maui.Controls.Sample.Droid</RootNamespace>
+    <RootNamespace>MauiSampleApp.Droid</RootNamespace>
     <AssemblyName>Maui.Controls.Sample.Droid</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <Deterministic>True</Deterministic>
