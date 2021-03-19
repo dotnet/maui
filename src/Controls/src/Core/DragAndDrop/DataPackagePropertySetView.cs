@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 
 		public DataPackagePropertySetView(DataPackagePropertySet dataPackagePropertySet)
 		{
-			_ = dataPackagePropertySet ?? throw new System.ArgumentNullException(nameof(dataPackagePropertySet));
+			_ = dataPackagePropertySet ?? throw new global::System.ArgumentNullException(nameof(dataPackagePropertySet));
 			_dataPackagePropertySet = dataPackagePropertySet;
 		}
 
