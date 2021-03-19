@@ -3,7 +3,7 @@
 	[PortHandler]
 	public static class UnitExtensions
 	{
-		public static float EmCoefficient = 0.0624f;
+		public const float EmCoefficient = 0.0624f;
 
 		public static float ToEm(this double pt)
 		{

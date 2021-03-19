@@ -173,6 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				ClearFocus(Control);
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();
@@ -233,6 +234,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			view.ClearFocus();
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();
@@ -264,6 +266,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Control.SetQuery(text, false);
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			if (!Forms.IsLollipopOrNewer)

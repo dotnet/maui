@@ -5,7 +5,10 @@
 		public static PropertyMapper<ISearchBar, SearchBarHandler> SearchBarMapper = new PropertyMapper<ISearchBar, SearchBarHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(ISearchBar.Text)] = MapText,
-			[nameof(ISearchBar.Placeholder)] = MapPlaceholder
+			[nameof(ISearchBar.Placeholder)] = MapPlaceholder,
+			[nameof(ISearchBar.Font)] = MapFont,
+			[nameof(ISearchBar.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing
 		};
 
 		public SearchBarHandler() : base(SearchBarMapper)

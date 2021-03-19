@@ -299,6 +299,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.ImeOptions = _currentInputImeFlag;
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			EditText.UpdateTextAlignment(Element.HorizontalTextAlignment, Element.VerticalTextAlignment);
@@ -398,6 +399,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		void UpdateReturnType()
 		{
 			if (Control == null || Element == null)

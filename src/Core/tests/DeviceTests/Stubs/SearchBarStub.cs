@@ -7,5 +7,13 @@
 		public string Text { get => _text; set => SetProperty(ref _text, value); }
 
 		public string Placeholder { get; set; }
+
+		public Color TextColor { get; set; }
+
+		public double CharacterSpacing { get; set; }
+
+		public Font Font { get; set; }
+
+		public TextAlignment HorizontalTextAlignment { get; set; }
 	}
 }

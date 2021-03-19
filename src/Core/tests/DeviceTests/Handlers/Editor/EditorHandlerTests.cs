@@ -46,5 +46,18 @@ namespace Microsoft.Maui.DeviceTests
 				setValue,
 				unsetValue);
 		}
+		
+		[Theory(DisplayName = "Is Text Prediction Enabled")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsTextPredictionEnabledCorrectly(bool isEnabled)
+		{
+			var editor = new EditorStub()
+			{
+				IsTextPredictionEnabled = isEnabled
+			};
+
+			await ValidatePropertyInitValue(editor, () => editor.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
+		}
 	}
 }

@@ -432,6 +432,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			_perfectSizeValid = false;
 		}
 
+		[PortHandler("Partially. Mapped LineHeight")]
 		void UpdateText()
 		{
 			if (IsElementOrControlEmpty)

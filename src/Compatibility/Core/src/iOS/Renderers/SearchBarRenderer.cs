@@ -227,6 +227,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateOnTextChanged();
 		}
 
+		[PortHandler("The code related to Placeholder remains to be ported")]
 		void UpdateCharacterSpacing()
 		{
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();
@@ -237,6 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_textField.AttributedPlaceholder = _textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();
@@ -290,6 +292,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();
