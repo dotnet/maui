@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 		Font Font { get; }
 
 		/// <summary>
-		/// Gets the character spacing.
+		/// Gets the spacing between characters of the text.
 		/// </summary>
 		double CharacterSpacing { get; }
 	}

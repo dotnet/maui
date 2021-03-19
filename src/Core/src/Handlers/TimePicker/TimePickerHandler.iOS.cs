@@ -38,6 +38,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateTime(timePicker);
 		}
 
+		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(timePicker);
+		}
+
 		void OnValueChanged(object? sender, EventArgs e)
 		{
 			SetVirtualViewTime();
