@@ -14,4 +14,16 @@ namespace Microsoft.Maui
 		/// <param name="appBuilder">Defines a class that provides the mechanisms to configure an application's dependencies.</param>
 		void Configure(IAppHostBuilder appBuilder);
 	}
+
+	/// <summary>
+	/// Allow to create a custom IAppHostBuilder instance.
+	/// </summary>
+	public interface IHostBuilderStartup
+	{
+		/// <summary>
+		/// Create and configure a builder object.
+		/// </summary>
+		/// <returns>The new instance of the IAppHostBuilder.</returns>
+		public IAppHostBuilder CreateHostBuilder();
+	}
 }

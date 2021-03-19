@@ -20,9 +20,21 @@ namespace Microsoft.Maui
 		{
 			var startup = new TStartup();
 
-			var appBuilder = AppHostBuilder
-				.CreateDefaultAppBuilder()
-				.ConfigureServices(ConfigureNativeServices);
+			IAppHostBuilder appBuilder;
+
+			if (startup is IHostBuilderStartup hostBuilderStartup)
+			{
+				appBuilder = hostBuilderStartup
+					.CreateHostBuilder();
+			}
+			else
+			{
+				appBuilder = AppHostBuilder
+					.CreateDefaultAppBuilder();
+			}
+
+			appBuilder.
+				ConfigureServices(ConfigureNativeServices);
 
 			startup.Configure(appBuilder);
 
