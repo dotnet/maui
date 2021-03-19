@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using Microsoft.Maui.Platform.iOS;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -81,6 +82,14 @@ namespace Microsoft.Maui
 
 			if (textAttr != null)
 				textField.AttributedText = textAttr;
+		}
+
+		public static void UpdateKeyboard(this UITextField textField, IEntry entry)
+		{
+			var keyboard = entry.Keyboard;
+
+			textField.ApplyKeyboard(keyboard);
+			textField.ReloadInputViews();
 		}
 
 		public static void UpdateFont(this UITextField textField, IText textView, IFontManager fontManager)

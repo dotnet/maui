@@ -35,8 +35,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		void OnTextChanged(string oldValue, string newValue) =>
 			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
 
-		public Font Font { get; set; }
-
 		public Keyboard Keyboard { get; set; } = Keyboard.Default;
 	}
 }
