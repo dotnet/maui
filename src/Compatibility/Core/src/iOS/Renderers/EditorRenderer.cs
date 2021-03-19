@@ -383,6 +383,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return newLength <= Element.MaxLength;
 		}
 
+		[PortHandler]
 		void UpdateReadOnly()
 		{
 			TextView.UserInteractionEnabled = !Element.IsReadOnly;
