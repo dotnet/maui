@@ -29,6 +29,9 @@ namespace Microsoft.Maui
 		public static void UpdateCharacterSpacing(this TextView textView, ILabel label) =>
 			textView.LetterSpacing = label.CharacterSpacing.ToEm();
 
+		public static void UpdateCharacterSpacing(this TextView textView, ISearchBar searchBar) =>
+			textView.LetterSpacing = searchBar.CharacterSpacing.ToEm();
+
 		public static void UpdateFont(this TextView textView, ILabel label, IFontManager fontManager)
 		{
 			var font = label.Font;
@@ -139,6 +142,14 @@ namespace Microsoft.Maui
 
 			textView.SetSingleLine(singleLine);
 			textView.SetMaxLines(maxLines);
+		}
+
+		internal static void UpdateLineHeight(this TextView textView, ILabel label, float lineSpacingAddDefault, float lineSpacingMultDefault)
+		{
+			if (label.LineHeight == - 1)
+				textView.SetLineSpacing(lineSpacingAddDefault, lineSpacingMultDefault);
+			else if (label.LineHeight >= 0)
+				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
 	}
 }

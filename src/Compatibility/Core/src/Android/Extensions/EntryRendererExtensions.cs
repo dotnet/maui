@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	internal static class EntryRendererExtensions
 	{
-
+		[PortHandler]
 		internal static ImeAction ToAndroidImeAction(this ReturnType returnType)
 		{
 			switch (returnType)

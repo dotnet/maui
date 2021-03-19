@@ -49,7 +49,7 @@ steps:
         **/Android.UITests/bin/$(BuildConfiguration)/nunit.*
         **/Android.UITests/bin/$(BuildConfiguration)/NUnit3.*
         **/Android.UITests/bin/$(BuildConfiguration)/Plugin.*
-        **/Android.UITests/bin/$(BuildConfiguration)/Xamarin.*
+        **/Android.UITests/bin/$(BuildConfiguration)/Microsoft.Maui.*
       TargetFolder: '$(build.artifactstagingdirectory)/android'
       CleanTargetFolder: true
       flattenFolders: true

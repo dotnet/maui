@@ -4,6 +4,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[PortHandler("NativeCheckBox")]
 	public class FormsCheckBox : UIButton
 	{
 		static UIImage _checked;

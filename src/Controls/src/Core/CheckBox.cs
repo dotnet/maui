@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	public class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement
+	public partial class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CheckBox>> _platformConfigurationRegistry;
 		public const string IsCheckedVisualState = "IsChecked";

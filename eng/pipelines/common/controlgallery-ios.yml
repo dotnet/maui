@@ -39,13 +39,13 @@ steps:
   - task: InstallAppleCertificate@2
     displayName: 'Install an Apple certificate'
     inputs:
-      certSecureFile: 'XamarinForms.p12'
+      certSecureFile: 'Maui.p12'
       certPwd: $(P12password)
 
   - task: InstallAppleProvisioningProfile@1
     displayName: 'Install an Apple provisioning profile'
     inputs:
-      provProfileSecureFile: 'Xamarin Forms iOS Provisioning.mobileprovision'
+      provProfileSecureFile: 'Maui_iOS_Provisioning.mobileprovision'
 
   - task: Bash@3
     displayName: 'Build Control Gallery IPA'
@@ -70,7 +70,7 @@ steps:
         **/iOS.UITests/bin/$(BuildConfiguration)/nunit.*
         **/iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
         **/iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
-        **/iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
+        **/iOS.UITests/bin/$(BuildConfiguration)/Microsoft.Maui.*
       TargetFolder: '$(build.artifactstagingdirectory)/ios'
       flattenFolders: true
 
