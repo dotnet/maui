@@ -16,10 +16,10 @@ namespace Microsoft.Maui
 
 		public static void UpdateIncrement(this UIStepper nativeStepper, IStepper stepper)
 		{
-			var increment = stepper.Step;
+			var increment = stepper.Interval;
 
 			if (increment > 0)
-				nativeStepper.StepValue = stepper.Step;
+				nativeStepper.StepValue = stepper.Interval;
 		}
 
 		public static void UpdateValue(this UIStepper nativeStepper, IStepper stepper)
