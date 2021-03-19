@@ -117,7 +117,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.Arrange(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			// We expect that the starting view (0) should be arranged on the left,
 			// and the next rectangle (1) should be on the right
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.Arrange(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			// We expect that the starting view (0) should be arranged on the right,
 			// and the next rectangle (1) should be on the left
