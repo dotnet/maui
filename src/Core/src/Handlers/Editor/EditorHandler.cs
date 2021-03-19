@@ -11,6 +11,7 @@
 			[nameof(IEditor.MaxLength)] = MapMaxLength,
 			[nameof(IEditor.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEditor.Font)] = MapFont
+			[nameof(IEditor.IsReadOnly)] = MapIsReadOnly,
 		};
 
 		public EditorHandler() : base(EditorMapper)

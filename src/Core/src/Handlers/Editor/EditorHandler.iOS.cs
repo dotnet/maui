@@ -60,6 +60,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateMaxLength(editor);
 		}
+		
+		public static void MapIsReadOnly(EditorHandler handler, IEditor editor)
+		{
+			handler.TypedNativeView?.UpdateIsReadOnly(editor);
+		}
 
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
 		{

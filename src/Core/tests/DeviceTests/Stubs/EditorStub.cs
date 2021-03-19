@@ -18,9 +18,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public double CharacterSpacing { get; set; }
 
-		public bool IsReadOnly { get;set; }
+		public bool IsReadOnly { get; set; }
 
-		public string Placeholder { get;set; }
+		public string Placeholder { get; set; }
 
 		public Color PlaceholderColor { get; set; }
 
@@ -32,5 +32,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		void OnTextChanged(string oldValue, string newValue) =>
 			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
+
 	}
 }

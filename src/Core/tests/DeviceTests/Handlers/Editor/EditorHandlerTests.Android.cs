@@ -75,7 +75,11 @@ namespace Microsoft.Maui.DeviceTests
 		Color GetNativePlaceholderColor(EditorHandler editorHandler) =>
 			((uint)GetNativeEditor(editorHandler).CurrentHintTextColor).ToColor();
 			
-		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
+
+        bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
+            !GetNativeEditor(editorHandler).Focusable;
+
+        bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			!GetNativeEditor(editorHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
 
 		double GetNativeCharacterSpacing(EditorHandler editorHandler)

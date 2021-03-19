@@ -80,10 +80,21 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var editor = new EditorStub()
 			{
+				IsReadOnly = isReadOnly,
 				Text = "Test"
 			};
 
-			await ValidatePropertyInitValue(editor, () => editor.Placeholder, GetNativePlaceholderText, editor.Placeholder);
+		}
+		
+		public async Task IsReadOnlyInitializesCorrectly(bool isReadOnly)
+		{
+			var editor = new EditorStub()
+			{
+				IsReadOnly = isReadOnly,
+				Text = "Test"
+			};
+
+			await ValidatePropertyInitValue(editor, () => editor.IsReadOnly, GetNativeIsReadOnly, editor.IsReadOnly);
 		}
 
 		[Theory(DisplayName = "PlaceholderText Updates Correctly")]
