@@ -83,9 +83,9 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 
-			verticalStack.Add(new Microsoft.Maui.Controls.CheckBox());
-			verticalStack.Add(new Microsoft.Maui.Controls.CheckBox { BackgroundColor = Color.LightPink });
-			verticalStack.Add(new Microsoft.Maui.Controls.CheckBox { IsChecked = true, Color = Color.Aquamarine });
+			verticalStack.Add(new CheckBox());
+			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
+			verticalStack.Add(new CheckBox { IsChecked = true, Color = Color.Aquamarine });
       
 			verticalStack.Add(new Editor());
 			verticalStack.Add(new Editor { Text = "Editor" });

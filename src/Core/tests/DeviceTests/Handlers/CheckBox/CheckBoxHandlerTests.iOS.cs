@@ -4,8 +4,8 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CheckBoxHandlerTests
 	{
-		CheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
-			(CheckBox)checkBoxHandler.View;
+		MauiCheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
+			(MauiCheckBox)checkBoxHandler.View;
 
 		bool GetNativeIsChecked(CheckBoxHandler checkBoxHandler) =>
 			GetNativeCheckBox(checkBoxHandler).IsChecked;

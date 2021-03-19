@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class CheckBox : UIButton
+	public class MauiCheckBox : UIButton
 	{
 		// All these values were chosen to just match the android drawables that are used
 		const float DefaultSize = 18.0f;
@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public CheckBox()
+		public MauiCheckBox()
 		{
 			ContentMode = UIViewContentMode.Center;
 			ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
