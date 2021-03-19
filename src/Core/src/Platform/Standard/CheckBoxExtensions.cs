@@ -4,7 +4,7 @@
 	{
 		public static void UpdateIsChecked(this object nothing, ICheckBox check)
 		{
-		
+
 		}
 
 		public static void UpdateColor(this object nothing, ICheckBox check)

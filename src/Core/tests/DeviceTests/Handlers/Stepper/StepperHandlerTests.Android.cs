@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Android.Widget;
-using Xunit;
 using Android.Graphics.Drawables;
+using Android.Widget;
 using Microsoft.Maui.Handlers;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {

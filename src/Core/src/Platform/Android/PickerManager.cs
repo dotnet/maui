@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 		}
 
 		public static void OnTouchEvent(EditText sender, MotionEvent? e)
-		{ 
+		{
 			if (e != null && e.Action == MotionEventActions.Up && !sender.IsFocused)
 			{
 				sender.RequestFocus();
