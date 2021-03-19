@@ -240,25 +240,5 @@ namespace Microsoft.Maui.DeviceTests
 			else
 				Assert.Equal(0, eventFiredCount);
 		}
-
-		[Theory(DisplayName = "MaxLength Initializes Correctly")]
-		[InlineData(2)]
-		[InlineData(5)]
-		[InlineData(8)]
-		[InlineData(10)]
-		public async Task MaxLengthInitializesCorrectly(int maxLength)
-		{
-			string text = "Lorem ipsum dolor sit amet";
-
-			var entry = new EntryStub()
-			{
-				MaxLength = maxLength,
-				Text = text
-			};
-
-			var expected = text.Substring(0, maxLength);
-
-			await ValidatePropertyInitValue(entry, () => entry.Text, GetNativeText, expected);
-		}
 	}
 }

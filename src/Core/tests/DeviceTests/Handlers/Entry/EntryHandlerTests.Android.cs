@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
-using AColor = global::Android.Graphics.Color;
+using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -36,6 +36,29 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(fontManager.DefaultTypeface, nativeEntry.Typeface);
 			else
 				Assert.NotEqual(fontManager.DefaultTypeface, nativeEntry.Typeface);
+		}
+
+		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[InlineData(2)]
+		[InlineData(5)]
+		[InlineData(8)]
+		[InlineData(10)]
+		public async Task MaxLengthInitializesCorrectly(int maxLength)
+		{
+			string text = "Lorem ipsum dolor sit amet";
+
+			var entry = new EntryStub()
+			{
+				MaxLength = maxLength,
+				Text = text
+			};
+
+			var handler = await CreateHandlerAsync(entry);
+			var nativeEntry = GetNativeEntry(handler);
+
+			var expected = text.Substring(0, maxLength);
+
+			Assert.Equal(expected, nativeEntry.Text);
 		}
 
 		AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
