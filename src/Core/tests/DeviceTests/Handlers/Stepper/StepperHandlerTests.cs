@@ -8,10 +8,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Stepper)]
 	public partial class StepperHandlerTests : HandlerTestBase<StepperHandler, StepperStub>
 	{
-		public StepperHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact(DisplayName = "Is Value Initializes Correctly")]
 		public async Task ValueInitializesCorrectly()
 		{

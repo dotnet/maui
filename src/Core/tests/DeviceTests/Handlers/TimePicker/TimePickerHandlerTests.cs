@@ -8,10 +8,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TimePicker)]
 	public partial class TimePickerHandlerTests : HandlerTestBase<TimePickerHandler, TimePickerStub>
 	{
-		public TimePickerHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact(DisplayName = "Time Initializes Correctly")]
 		public async Task IsToggledInitializesCorrectly()
 		{
