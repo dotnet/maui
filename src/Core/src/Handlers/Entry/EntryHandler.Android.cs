@@ -84,6 +84,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateReturnType(entry);
 		}
 
+		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateClearButtonVisibility(entry);
+		}
+
 		void OnTextChanged(string? text)
 		{
 			if (VirtualView == null || TypedNativeView == null)

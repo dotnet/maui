@@ -19,5 +19,7 @@
 		/// Gets an enumeration value that controls the appearance of the return button.
 		/// </summary>
 		ReturnType ReturnType { get; }
+
+		ClearButtonVisibility ClearButtonVisibility { get; }
 	}
 }

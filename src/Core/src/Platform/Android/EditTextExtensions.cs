@@ -110,6 +110,22 @@ namespace Microsoft.Maui
 			editText.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
+		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry)
+		{
+			// TODO: Get it from IEntry, not from AppCompatEditText.
+			bool isFocused = editText.IsFocused;
+
+			if (isFocused)
+			{
+				bool showClearBtn = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
+
+				// UpdateClearBtn(showClearBtn);
+
+				//if (!showClearBtn && isFocused)
+				//	ListenForCloseBtnTouch(false);
+			}
+		}
+
 		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.ImeOptions = entry.ReturnType.ToNative();

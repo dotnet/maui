@@ -12,7 +12,8 @@
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEntry.Font)] = MapFont,
-			[nameof(IEntry.ReturnType)] = MapReturnType
+			[nameof(IEntry.ReturnType)] = MapReturnType,
+			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility
 		};
 
 		public EntryHandler() : base(EntryMapper)
