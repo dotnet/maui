@@ -1,4 +1,5 @@
 ﻿using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Util;
 using AndroidX.AppCompat.Widget;
@@ -110,20 +111,42 @@ namespace Microsoft.Maui
 			editText.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
-		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Drawable? ClearButtonDrawable)
 		{
-			// TODO: Get it from IEntry, not from AppCompatEditText.
-			bool isFocused = editText.IsFocused;
-
-			if (isFocused)
+			// Places clear button drawable at the end or start of the EditText based on FlowDirection.
+			void ShowClearButton()
 			{
-				bool showClearBtn = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
-
-				// UpdateClearBtn(showClearBtn);
-
-				//if (!showClearBtn && isFocused)
-				//	ListenForCloseBtnTouch(false);
+				if (entry.FlowDirection == FlowDirection.RightToLeft)
+				{
+					editText.SetCompoundDrawablesWithIntrinsicBounds(ClearButtonDrawable, null, null, null);
+				}
+				else
+				{
+					editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, ClearButtonDrawable, null);
+				}
 			}
+
+			// Hides clear button drawable from the control.
+			void HideClearButton()
+			{
+				editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+			}
+
+			bool isFocused = editText.IsFocused;
+			bool hasText = entry.Text?.Length > 0;
+
+			bool shouldDisplayClearButton = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing 
+				&& hasText 
+				&& isFocused;
+
+			if (shouldDisplayClearButton)
+			{
+				ShowClearButton();
+			}
+			else
+			{
+				HideClearButton();
+			}	
 		}
 
 		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
