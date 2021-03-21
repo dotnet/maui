@@ -127,9 +127,7 @@ namespace Microsoft.Maui.Handlers
 			if (TypedNativeView == null || VirtualView == null)
 				return false;
 
-			// Update clear button visibility.
-			TypedNativeView.UpdateClearButtonVisibility(VirtualView, ClearButtonDrawable);
-
+			// Check whether the touched position inbounds with clear button.
 			return HandleClearButtonTouched(motionEvent);
 		}
 
