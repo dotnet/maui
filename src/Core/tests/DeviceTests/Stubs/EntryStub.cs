@@ -29,6 +29,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public TextAlignment HorizontalTextAlignment { get; set; }
 
 		public ReturnType ReturnType { get; set; }
+		public ClearButtonVisibility ClearButtonVisibility { get; set; }
 
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
 
