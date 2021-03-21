@@ -9,6 +9,6 @@
 		/// <summary>
 		/// Gets the amount by which Value is increased or decreased.
 		/// </summary>
-		double Step { get; }
+		double Interval { get; }
 	}
 }

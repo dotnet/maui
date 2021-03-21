@@ -1,4 +1,4 @@
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a framework-level set of properties, events, and methods for .NET MAUI elements. 
@@ -73,7 +73,7 @@ namespace Microsoft.Maui
 		/// Gets a value indicating whether the computed size and position of child elements in this element's layout are valid.
 		/// </summary>
 		void InvalidateMeasure();
-
+				
 		/// <summary>
 		/// Method that is called to invalidate the layout of this FrameworkElement.
 		/// </summary>
@@ -83,5 +83,10 @@ namespace Microsoft.Maui
 		/// Id used by automation tools to interact with this FrameworkElement
 		/// </summary>
 		string AutomationId { get; }
+
+		/// <summary>
+		/// Direction in which the UI elements on the page are scanned by the eye
+		/// </summary>
+		FlowDirection FlowDirection { get; }
 	}
 }

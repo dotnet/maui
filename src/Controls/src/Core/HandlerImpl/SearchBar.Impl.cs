@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Controls
+﻿namespace Microsoft.Maui.Controls
 {
 	public partial class SearchBar : ISearchBar
 	{
