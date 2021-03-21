@@ -139,6 +139,11 @@ namespace Microsoft.Maui
 			editText.LetterSpacing = editor.CharacterSpacing.ToEm();
 		}
 
+		public static void UpdateCharacterSpacing(this AppCompatEditText editText, IEntry editor)
+		{
+			editText.LetterSpacing = editor.CharacterSpacing.ToEm();
+		}
+
 		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.InputType = InputTypes.ClassText;

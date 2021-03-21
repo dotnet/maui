@@ -16,5 +16,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsReadOnly(IViewHandler handler, IEntry entry) { }
 		public static void MapFont(IViewHandler handler, IEntry entry) { }
 		public static void MapReturnType(IViewHandler handler, IEntry entry) { }
+		public static void MapCharacterSpacing(IViewHandler handler, IEntry entry) { }
 	}
 }
