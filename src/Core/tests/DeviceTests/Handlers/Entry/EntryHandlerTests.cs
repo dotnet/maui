@@ -198,6 +198,21 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
 		}
 
+		[Theory(DisplayName = "Validates clear button visibility.")]
+		[InlineData(ClearButtonVisibility.WhileEditing, true)]
+		[InlineData(ClearButtonVisibility.Never, false)]
+		public async Task ValidateClearButtonVisibility(ClearButtonVisibility clearButtonVisibility, bool expected)
+		{
+			var entryStub = new EntryStub()
+			{
+				ClearButtonVisibility = clearButtonVisibility,
+				Text = "Test text input.",
+				FlowDirection = FlowDirection.LeftToRight
+			};
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeClearButtonVisibility, expected);
+		}
+
 		[Theory(DisplayName = "TextChanged Events Fire Correctly")]
 		// null/empty
 		[InlineData(null, null, false)]

@@ -119,6 +119,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
 
+		bool GetNativeClearButtonVisibility(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).ClearButtonMode == UITextFieldViewMode.WhileEditing;
+
 		UITextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 

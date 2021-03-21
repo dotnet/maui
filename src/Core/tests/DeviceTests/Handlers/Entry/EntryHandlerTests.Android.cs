@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
@@ -142,5 +144,23 @@ namespace Microsoft.Maui.DeviceTests
 
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ImeOptions;
+
+		bool GetNativeClearButtonVisibility(EntryHandler entryHandler)
+		{
+			var nativeEntry = GetNativeEntry(entryHandler);
+			var unfocusedDrawables = nativeEntry.GetCompoundDrawables();
+
+			bool compoundsValidWhenUnfocused = !unfocusedDrawables.Any(a => a != null);
+
+			// This will display 'X' drawable.
+			nativeEntry.RequestFocus();
+
+			var focusedDrawables = nativeEntry.GetCompoundDrawables();
+
+			// Index 2 for FlowDirection.LeftToRight.
+			bool compoundsValidWhenFocused = focusedDrawables.Length == 4 && focusedDrawables[2] != null;
+
+			return compoundsValidWhenFocused && compoundsValidWhenUnfocused;
+		}
 	}
 }
