@@ -205,8 +205,8 @@ stages:
               displayName: 'Copy SignList.xml Files'
               inputs:
                 Contents: |
-                  **/*.nupkg
-                  **/*.snupkg
+                  **/Microsoft.Maui.*.nupkg
+                  **/Microsoft.Maui.*.snupkg
                   **/SignList.xml
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true

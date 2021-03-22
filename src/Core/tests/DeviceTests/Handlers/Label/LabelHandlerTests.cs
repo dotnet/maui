@@ -9,10 +9,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Label)]
 	public partial class LabelHandlerTests : HandlerTestBase<LabelHandler, LabelStub>
 	{
-		public LabelHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact(DisplayName = "Background Color Initializes Correctly")]
 		public async Task BackgroundColorInitializesCorrectly()
 		{

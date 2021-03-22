@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Maui.Controls.Sample.ViewModel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
@@ -11,14 +10,10 @@ namespace Maui.Controls.Sample.Pages
 	{
 		MainPageViewModel _viewModel;
 
-		public MainPage() : this(App.Current.Services.GetService<MainPageViewModel>())
-		{
-
-		}
-
 		public MainPage(MainPageViewModel viewModel)
 		{
 			BindingContext = _viewModel = viewModel;
+
 			SetupMauiLayout();
 			//SetupCompatibilityLayout();
 		}
@@ -98,8 +93,7 @@ namespace Maui.Controls.Sample.Pages
 			};
 
 			verticalStack.Add(entry);
-
-			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
+			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed, FontFamily = "Dokdo" });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
@@ -155,7 +149,10 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
 
-			Content = verticalStack;
+			Content = new ScrollView
+			{
+				Content = verticalStack
+			};
 		}
 
 		void SetupCompatibilityLayout()

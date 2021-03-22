@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Tests
+﻿namespace Microsoft.Maui.Handlers.Benchmarks
 {
 	interface IFooService
 	{
@@ -20,9 +20,19 @@
 	{
 	}
 
-	class FooBarService : IFooBarService
+	class FooBarWithFooService : IFooBarService
 	{
-		public FooBarService(IFooService foo, IBarService bar)
+		public FooBarWithFooService(IFooService foo)
+		{
+			Foo = foo;
+		}
+
+		public IFooService Foo { get; }
+	}
+
+	class FooBarWithFooAndBarService : IFooBarService
+	{
+		public FooBarWithFooAndBarService(IFooService foo, IBarService bar)
 		{
 			Foo = foo;
 			Bar = bar;

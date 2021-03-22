@@ -1,20 +1,23 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting
 {
 	class MauiServiceProvider : IMauiServiceProvider
 	{
-		IMauiServiceCollection _collection;
+		readonly IMauiServiceCollection _collection;
+		readonly bool _constructorInjection;
 
 		// TODO: do this properly and support scopes
-		IDictionary<ServiceDescriptor, object?> _singletons;
+		readonly IDictionary<ServiceDescriptor, object?> _singletons;
 
-		public MauiServiceProvider(IMauiServiceCollection collection)
+		public MauiServiceProvider(IMauiServiceCollection collection, bool constructorInjection)
 		{
 			_collection = collection ?? throw new ArgumentNullException(nameof(collection));
+			_constructorInjection = constructorInjection;
 			_singletons = new ConcurrentDictionary<ServiceDescriptor, object?>();
 		}
 
@@ -66,7 +69,12 @@ namespace Microsoft.Maui.Hosting
 		object? CreateInstance(ServiceDescriptor item)
 		{
 			if (item.ImplementationType != null)
-				return Activator.CreateInstance(item.ImplementationType);
+			{
+				if (_constructorInjection)
+					return CreateInstance(item.ImplementationType);
+				else
+					return Activator.CreateInstance(item.ImplementationType);
+			}
 
 			if (item.ImplementationInstance != null)
 				return item.ImplementationInstance;
@@ -75,6 +83,48 @@ namespace Microsoft.Maui.Hosting
 				return item.ImplementationFactory(this);
 
 			throw new InvalidOperationException($"You need to provide an {nameof(item.ImplementationType)}, an {nameof(item.ImplementationFactory)} or an {nameof(item.ImplementationInstance)}.");
+		}
+
+		object? CreateInstance(Type implementationType)
+		{
+			(ConstructorInfo Constructor, ParameterInfo[] Parameters) match = default;
+			var constructors = implementationType.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			for (var i = 0; i < constructors.Length; i++)
+			{
+				var ctor = constructors[i];
+				if (!ctor.IsFamily && !ctor.IsPrivate)
+				{
+					var parameters = ctor.GetParameters();
+					if (match.Parameters == null || parameters.Length > match.Parameters.Length)
+						match = (ctor, parameters);
+				}
+			}
+
+			if (match.Constructor == null)
+				throw new InvalidOperationException($"The type '{implementationType.Name}' did not have any public or internal constructors.");
+
+			var paramCount = match.Parameters!.Length;
+
+			if (paramCount == 0)
+				return match.Constructor.Invoke(null);
+
+			var paramValues = new object?[paramCount];
+
+			for (var i = 0; i < paramCount; i++)
+			{
+				var param = match.Parameters[i];
+				var value = GetService(param.ParameterType);
+				if (value == null)
+				{
+					if (!param.HasDefaultValue)
+						throw new InvalidOperationException($"No service for type '{param.ParameterType}' has been registered.");
+					else
+						value = param.DefaultValue;
+				}
+				paramValues[i] = value;
+			}
+
+			return match.Constructor.Invoke(paramValues);
 		}
 	}
 }

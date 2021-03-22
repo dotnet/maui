@@ -4,7 +4,8 @@ namespace Microsoft.Maui.Hosting
 {
 	class MauiHandlersServiceProvider : MauiServiceProvider, IMauiHandlersServiceProvider
 	{
-		public MauiHandlersServiceProvider(IMauiServiceCollection collection) : base(collection)
+		public MauiHandlersServiceProvider(IMauiServiceCollection collection)
+			: base(collection, false)
 		{
 		}
 
