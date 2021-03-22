@@ -29,8 +29,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12
 		.nuspec\Microsoft.Maui.Controls.SingleProject.targets = .nuspec\Microsoft.Maui.Controls.SingleProject.targets
 		.nuspec\Microsoft.Maui.Controls.targets = .nuspec\Microsoft.Maui.Controls.targets
 		.nuspec\Microsoft.Maui.Resizetizer.targets = .nuspec\Microsoft.Maui.Resizetizer.targets
-		.nuspec\package.ps1 = .nuspec\package.ps1
 		.nuspec\proguard.cfg = .nuspec\proguard.cfg
+		eng\package.ps1 = eng\package.ps1
+		eng\dogfood.ps1 = eng\dogfood.ps1
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core", "src\Controls\src\Core\Controls.Core.csproj", "{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}"
