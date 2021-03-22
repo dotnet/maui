@@ -94,6 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_placeholderLabel.TextColor = placeholderColor.ToUIColor();
 		}
 
+		[PortHandler]
 		void CreatePlaceholderLabel()
 		{
 			if (Control == null)
@@ -341,7 +342,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		protected internal abstract void UpdatePlaceholderText();
+
+		[PortHandler]
 		protected internal abstract void UpdatePlaceholderColor();
 		protected internal abstract void UpdateCharacterSpacing();
 
