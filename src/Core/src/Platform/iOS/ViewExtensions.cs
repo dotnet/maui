@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using CoreAnimation;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public static class ViewExtensions
 	{
+		const string ClipShapeLayer = "ClipShapeLayer";
+
 		public static UIColor? GetBackgroundColor(this UIView view)
 			=> view?.BackgroundColor;
 
@@ -47,6 +50,77 @@ namespace Microsoft.Maui
 			}
 
 			return null;
+		}
+
+		public static void UpdateClip(this UIView nativeView, IView view)
+		{
+			var shouldUpdateClip = nativeView.ShouldUpdateClip(view);
+
+			if (!shouldUpdateClip)
+				return;
+
+			var geometry = view.Clip;
+			var nativeGeometry = geometry.ToNative();
+
+			var maskLayer = new CAShapeLayer
+			{
+				Name = ClipShapeLayer,
+				Path = nativeGeometry.Data,
+				FillRule = nativeGeometry.IsNonzeroFillRule ? CAShapeLayer.FillRuleNonZero : CAShapeLayer.FillRuleEvenOdd
+			};
+
+			if (NativeVersion.IsAtLeast(11))
+			{
+				if (geometry != null)
+					nativeView.Layer.Mask = maskLayer;
+				else
+					nativeView.Layer.Mask = null;
+			}
+			else
+			{
+				if (geometry != null)
+				{
+					var maskView = new UIView
+					{
+						Frame = nativeView.Frame,
+						BackgroundColor = UIColor.Black
+					};
+
+					maskView.Layer.Mask = maskLayer;
+					nativeView.MaskView = maskView;
+				}
+				else
+					nativeView.MaskView = null;
+			}
+		}
+
+		internal static bool ShouldUpdateClip(this UIView nativeView, IView view)
+		{
+			if (view == null || nativeView == null)
+				return false;
+
+			bool hasClipShapeLayer;
+
+			if (NativeVersion.IsAtLeast(11))
+				hasClipShapeLayer =
+					nativeView.Layer != null &&
+					nativeView.Layer.Mask != null &&
+					nativeView.Layer.Mask?.Name == ClipShapeLayer;
+			else
+				hasClipShapeLayer =
+					nativeView.MaskView != null &&
+					nativeView.MaskView.Layer.Mask != null &&
+					nativeView.MaskView.Layer.Mask?.Name == ClipShapeLayer;
+			
+			var geometry = view.Clip;
+
+			if (geometry != null)
+				return true;
+
+			if (geometry == null && hasClipShapeLayer)
+				return true;
+
+			return false;
 		}
 	}
 }

@@ -314,6 +314,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 	}
 
+	[PortHandler]
 	public static class PointExtensions
 	{
 		public static Point ToPoint(this PointF point)

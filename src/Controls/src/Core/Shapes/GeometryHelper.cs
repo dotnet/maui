@@ -265,6 +265,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
+		[PortHandler]
 		// More information: http://www.charlespetzold.com/blog/2008/01/Mathematics-of-ArcSegment.html
 		public static void FlattenArc(List<Point> points, Point pt1, Point pt2, double radiusX, double radiusY, double angleRotation,
 			bool isLargeArc, bool isCounterclockwise, double tolerance)

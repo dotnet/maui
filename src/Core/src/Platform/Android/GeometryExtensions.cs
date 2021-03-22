@@ -1,25 +1,21 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Android.Content;
 using Android.Graphics;
-using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 using APath = Android.Graphics.Path;
-using FormsRectangle = Microsoft.Maui.Rectangle;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui
 {
-	[PortHandler]
 	public static class GeometryExtensions
 	{
-		public static APath ToAPath(this Graphics.IGeometry geometry, Context context)
+		public static APath ToNative(this IGeometry geometry, Context context)
 		{
 			APath path = new APath();
 
-			float density = context.Resources.DisplayMetrics.Density;
+			float density = context.Resources?.DisplayMetrics?.Density ?? 1.0f;
 
-			if (geometry is LineGeometry)
+			if (geometry is LineGeometry lineGeometry)
 			{
-				LineGeometry lineGeometry = geometry as LineGeometry;
-
 				path.MoveTo(
 					density * (float)lineGeometry.StartPoint.X,
 					density * (float)lineGeometry.StartPoint.Y);
@@ -28,45 +24,39 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					density * (float)lineGeometry.EndPoint.X,
 					density * (float)lineGeometry.EndPoint.Y);
 			}
-			else if (geometry is RectangleGeometry)
+			else if (geometry is RectangleGeometry rectangleGeometry)
 			{
-				FormsRectangle rect = (geometry as RectangleGeometry).Rect;
+				Rect rect = rectangleGeometry.Rect;
 
 				path.AddRect(
 					density * (float)rect.Left,
 					density * (float)rect.Top,
 					density * (float)rect.Right,
 					density * (float)rect.Bottom,
-					APath.Direction.Cw);
+					APath.Direction.Cw!);
 			}
-			else if (geometry is EllipseGeometry)
+			else if (geometry is EllipseGeometry ellipseGeometry)
 			{
-				EllipseGeometry ellipseGeometry = geometry as EllipseGeometry;
-
 				path.AddOval(new RectF(
 					density * (float)(ellipseGeometry.Center.X - ellipseGeometry.RadiusX),
 					density * (float)(ellipseGeometry.Center.Y - ellipseGeometry.RadiusY),
 					density * (float)(ellipseGeometry.Center.X + ellipseGeometry.RadiusX),
 					density * (float)(ellipseGeometry.Center.Y + ellipseGeometry.RadiusY)),
-					APath.Direction.Cw);
+					APath.Direction.Cw!);
 			}
-			else if (geometry is GeometryGroup)
+			else if (geometry is GeometryGroup geometryGroup)
 			{
-				GeometryGroup geometryGroup = geometry as GeometryGroup;
-
-				path.SetFillType(geometryGroup.FillRule == FillRule.Nonzero ? APath.FillType.Winding : APath.FillType.EvenOdd);
+				path.SetFillType(geometryGroup.FillRule == FillRule.Nonzero ? APath.FillType.Winding! : APath.FillType.EvenOdd!);
 
 				foreach (Geometry child in geometryGroup.Children)
 				{
-					APath childPath = child.ToAPath(context);
+					APath childPath = child.ToNative(context);
 					path.AddPath(childPath);
 				}
 			}
-			else if (geometry is PathGeometry)
+			else if (geometry is PathGeometry pathGeometry)
 			{
-				PathGeometry pathGeometry = geometry as PathGeometry;
-
-				path.SetFillType(pathGeometry.FillRule == FillRule.Nonzero ? APath.FillType.Winding : APath.FillType.EvenOdd);
+				path.SetFillType(pathGeometry.FillRule == FillRule.Nonzero ? APath.FillType.Winding! : APath.FillType.EvenOdd!);
 
 				foreach (PathFigure pathFigure in pathGeometry.Figures)
 				{
@@ -79,19 +69,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					foreach (PathSegment pathSegment in pathFigure.Segments)
 					{
 						// LineSegment
-						if (pathSegment is LineSegment)
+						if (pathSegment is LineSegment lineSegment)
 						{
-							LineSegment lineSegment = pathSegment as LineSegment;
-
 							path.LineTo(
 								density * (float)lineSegment.Point.X,
 								density * (float)lineSegment.Point.Y);
 							lastPoint = lineSegment.Point;
 						}
 						// PolylineSegment
-						else if (pathSegment is PolyLineSegment)
+						else if (pathSegment is PolyLineSegment polylineSegment)
 						{
-							PolyLineSegment polylineSegment = pathSegment as PolyLineSegment;
 							PointCollection points = polylineSegment.Points;
 
 							for (int i = 0; i < points.Count; i++)
@@ -100,13 +87,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 									density * (float)points[i].X,
 									density * (float)points[i].Y);
 							}
-							lastPoint = points[points.Count - 1];
+							lastPoint = points[^1];
 						}
 						// BezierSegment
-						else if (pathSegment is BezierSegment)
+						else if (pathSegment is BezierSegment bezierSegment)
 						{
-							BezierSegment bezierSegment = pathSegment as BezierSegment;
-
 							path.CubicTo(
 								density * (float)bezierSegment.Point1.X, density * (float)bezierSegment.Point1.Y,
 								density * (float)bezierSegment.Point2.X, density * (float)bezierSegment.Point2.Y,
@@ -115,9 +100,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 							lastPoint = bezierSegment.Point3;
 						}
 						// PolyBezierSegment
-						else if (pathSegment is PolyBezierSegment)
+						else if (pathSegment is PolyBezierSegment polyBezierSegment)
 						{
-							PolyBezierSegment polyBezierSegment = pathSegment as PolyBezierSegment;
 							PointCollection points = polyBezierSegment.Points;
 
 							if (points.Count >= 3)
@@ -131,24 +115,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 								}
 							}
 
-							lastPoint = points[points.Count - 1];
+							lastPoint = points[^1];
 						}
 						// QuadraticBezierSegment
-						else if (pathSegment is QuadraticBezierSegment)
+						else if (pathSegment is QuadraticBezierSegment quadraticBezierSegment)
 						{
-							QuadraticBezierSegment bezierSegment = pathSegment as QuadraticBezierSegment;
 
 							path.QuadTo(
-								density * (float)bezierSegment.Point1.X, density * (float)bezierSegment.Point1.Y,
-								density * (float)bezierSegment.Point2.X, density * (float)bezierSegment.Point2.Y);
+								density * (float)quadraticBezierSegment.Point1.X, density * (float)quadraticBezierSegment.Point1.Y,
+								density * (float)quadraticBezierSegment.Point2.X, density * (float)quadraticBezierSegment.Point2.Y);
 
-							lastPoint = bezierSegment.Point2;
+							lastPoint = quadraticBezierSegment.Point2;
 						}
 						// PolyQuadraticBezierSegment
-						else if (pathSegment is PolyQuadraticBezierSegment)
+						else if (pathSegment is PolyQuadraticBezierSegment polyQuadraticBezierSegment)
 						{
-							PolyQuadraticBezierSegment polyBezierSegment = pathSegment as PolyQuadraticBezierSegment;
-							PointCollection points = polyBezierSegment.Points;
+							PointCollection points = polyQuadraticBezierSegment.Points;
 
 							if (points.Count >= 2)
 							{
@@ -160,13 +142,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 								}
 							}
 
-							lastPoint = points[points.Count - 1];
+							lastPoint = points[^1];
 						}
 						// ArcSegment
-						else if (pathSegment is ArcSegment)
+						else if (pathSegment is ArcSegment arcSegment)
 						{
-							ArcSegment arcSegment = pathSegment as ArcSegment;
-
 							List<Point> points = new List<Point>();
 
 							GeometryHelper.FlattenArc(
@@ -188,7 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 							}
 
 							if (points.Count > 0)
-								lastPoint = points[points.Count - 1];
+								lastPoint = points[^1];
 						}
 					}
 

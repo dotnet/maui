@@ -3,6 +3,7 @@ using Android.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[PortHandler]
 	public static class CanvasExtensions
 	{
 		public static void ClipShape(this Canvas canvas, Context context, VisualElement element)

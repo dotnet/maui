@@ -4,6 +4,7 @@ using Maui.Controls.Sample.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -52,7 +53,6 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
 			verticalStack.Add(new Label { Text = "This should have five times the line height!", LineHeight = 5 });
 
-
 			var paddingButton = new Button
 			{
 				Padding = new Thickness(40),
@@ -69,12 +69,21 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ActivityIndicator { Color = Color.Red, IsRunning = true });
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
+
+			var ellipseGeometry = new EllipseGeometry
+			{
+				Center = new Point(50, 50),
+				RadiusX = 100,
+				RadiusY = 100
+			};
+
 			var button2 = new Button()
 			{
 				TextColor = Color.Green,
 				Text = "Hello I'm a button",
 				BackgroundColor = Color.Purple,
-				Margin = new Thickness(12)
+				Margin = new Thickness(12),
+				Clip = ellipseGeometry
 			};
 
 			horizontalStack.Add(button);
@@ -94,7 +103,7 @@ namespace Maui.Controls.Sample.Pages
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
 			{
-				System.Console.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
+				Console.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
 			};
 
 			verticalStack.Add(entry);
@@ -109,15 +118,16 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Color.Purple });
 
-			var searchBar = new SearchBar();
-			searchBar.CharacterSpacing = 4;
-			searchBar.Text = "A search query";
+			var searchBar = new SearchBar
+			{
+				CharacterSpacing = 4,
+				Text = "A search query"
+			};
 			verticalStack.Add(searchBar);
 
 			var placeholderSearchBar = new SearchBar();
 			placeholderSearchBar.Placeholder = "Placeholder";
 			verticalStack.Add(placeholderSearchBar);
-
 
 			var monkeyList = new List<string>
 			{
@@ -198,6 +208,6 @@ namespace Maui.Controls.Sample.Pages
 			Content = verticalStack;
 		}
 
-		public IView View { get => (IView)Content; set => Content = (View)value; }
+		public IView View { get => Content; set => Content = (View)value; }
 	}
 }

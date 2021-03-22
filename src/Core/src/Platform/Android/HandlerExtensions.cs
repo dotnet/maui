@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Hosting;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -15,7 +14,6 @@ namespace Microsoft.Maui
 
 			if (handler == null)
 			{
-
 				handler = context.Handlers.GetHandler(view.GetType());
 
 				if (handler == null)

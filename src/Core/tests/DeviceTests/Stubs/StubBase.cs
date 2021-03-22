@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -31,6 +32,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public string AutomationId { get; set; }
 
 		public FlowDirection FlowDirection { get; set; }
+
+		public IGeometry Clip { get; set; }
 
 		public void Arrange(Rectangle bounds)
 		{

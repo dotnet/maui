@@ -1,46 +1,39 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using CoreGraphics;
-using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 
-#if __MOBILE__
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
-#else
-namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
-#endif
+namespace Microsoft.Maui
 {
-    [PortHandler]
+    public class PathData
+    {
+        public CGPath? Data { get; set; }
+        public bool IsNonzeroFillRule { get; set; }
+    }
+
     public static class GeometryExtensions
     {
-        public static PathData ToCGPath(this Graphics.IGeometry geometry, Transform renderTransform = null)
+        public static PathData ToNative(this IGeometry geometry)
         {
             PathData pathData = new PathData
             {
                 Data = new CGPath()
             };
 
-            CGAffineTransform transform;
+            CGAffineTransform transform = CGAffineTransform.MakeIdentity();
 
-            if (renderTransform == null)
-                transform = CGAffineTransform.MakeIdentity();
-            else
-                transform = renderTransform.ToCGAffineTransform();
-
-            if (geometry is LineGeometry)
+            if (geometry is LineGeometry lineGeometry)
             {
-                LineGeometry lineGeometry = geometry as LineGeometry;
-                pathData.Data.MoveToPoint(transform, lineGeometry.StartPoint.ToPointF());
-                pathData.Data.AddLineToPoint(transform, lineGeometry.EndPoint.ToPointF());
+                pathData.Data.MoveToPoint(transform, lineGeometry.StartPoint.ToNative());
+                pathData.Data.AddLineToPoint(transform, lineGeometry.EndPoint.ToNative());
             }
-            else if (geometry is RectangleGeometry)
+            else if (geometry is RectangleGeometry rectangleGeometry)
             {
-                Rect rect = (geometry as RectangleGeometry).Rect;
+                Rect rect = rectangleGeometry.Rect;
                 pathData.Data.AddRect(transform, new CGRect(rect.X, rect.Y, rect.Width, rect.Height));
             }
-            else if (geometry is EllipseGeometry)
+            else if (geometry is EllipseGeometry ellipseGeometry)
             {
-                EllipseGeometry ellipseGeometry = geometry as EllipseGeometry;
-
                 CGRect rect = new CGRect(
                     ellipseGeometry.Center.X - ellipseGeometry.RadiusX,
                     ellipseGeometry.Center.Y - ellipseGeometry.RadiusY,
@@ -49,68 +42,58 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
                 pathData.Data.AddEllipseInRect(transform, rect);
             }
-            else if (geometry is GeometryGroup)
+            else if (geometry is GeometryGroup geometryGroup)
             {
-                GeometryGroup geometryGroup = geometry as GeometryGroup;
-
                 pathData.IsNonzeroFillRule = geometryGroup.FillRule == FillRule.Nonzero;
 
                 foreach (Geometry child in geometryGroup.Children)
                 {
-                    PathData pathChild = child.ToCGPath(renderTransform);
+                    PathData pathChild = child.ToNative();
                     pathData.Data.AddPath(pathChild.Data);
                 }
             }
-            else if (geometry is PathGeometry)
+            else if (geometry is PathGeometry pathGeometry)
             {
-                PathGeometry pathGeometry = geometry as PathGeometry;
-
                 pathData.IsNonzeroFillRule = pathGeometry.FillRule == FillRule.Nonzero;
 
                 foreach (PathFigure pathFigure in pathGeometry.Figures)
                 {
-                    pathData.Data.MoveToPoint(transform, pathFigure.StartPoint.ToPointF());
+                    pathData.Data.MoveToPoint(transform, pathFigure.StartPoint.ToNative());
                     Point lastPoint = pathFigure.StartPoint;
 
                     foreach (PathSegment pathSegment in pathFigure.Segments)
                     {
                         // LineSegment
-                        if (pathSegment is LineSegment)
+                        if (pathSegment is LineSegment lineSegment)
                         {
-                            LineSegment lineSegment = pathSegment as LineSegment;
-
-                            pathData.Data.AddLineToPoint(transform, lineSegment.Point.ToPointF());
+                            pathData.Data.AddLineToPoint(transform, lineSegment.Point.ToNative());
                             lastPoint = lineSegment.Point;
                         }
                         // PolyLineSegment
-                        else if (pathSegment is PolyLineSegment)
+                        else if (pathSegment is PolyLineSegment polylineSegment)
                         {
-                            PolyLineSegment polylineSegment = pathSegment as PolyLineSegment;
                             PointCollection points = polylineSegment.Points;
 
                             for (int i = 0; i < points.Count; i++)
-                                pathData.Data.AddLineToPoint(transform, points[i].ToPointF());
+                                pathData.Data.AddLineToPoint(transform, points[i].ToNative());
 
-                            lastPoint = points[points.Count - 1];
+                            lastPoint = points[^1];
                         }
 
                         // BezierSegment
-                        if (pathSegment is BezierSegment)
+                        if (pathSegment is BezierSegment bezierSegment)
                         {
-                            BezierSegment bezierSegment = pathSegment as BezierSegment;
-
                             pathData.Data.AddCurveToPoint(
                                 transform,
-                                bezierSegment.Point1.ToPointF(),
-                                bezierSegment.Point2.ToPointF(),
-                                bezierSegment.Point3.ToPointF());
+                                bezierSegment.Point1.ToNative(),
+                                bezierSegment.Point2.ToNative(),
+                                bezierSegment.Point3.ToNative());
 
                             lastPoint = bezierSegment.Point3;
                         }
                         // PolyBezierSegment
-                        else if (pathSegment is PolyBezierSegment)
+                        else if (pathSegment is PolyBezierSegment polyBezierSegment)
                         {
-                            PolyBezierSegment polyBezierSegment = pathSegment as PolyBezierSegment;
                             PointCollection points = polyBezierSegment.Points;
 
                             if (points.Count >= 3)
@@ -119,33 +102,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
                                 {
                                     pathData.Data.AddCurveToPoint(
                                         transform,
-                                        points[i].ToPointF(),
-                                        points[i + 1].ToPointF(),
-                                        points[i + 2].ToPointF());
+                                        points[i].ToNative(),
+                                        points[i + 1].ToNative(),
+                                        points[i + 2].ToNative());
                                 }
                             }
 
-                            lastPoint = points[points.Count - 1];
+                            lastPoint = points[^1];
                         }
 
                         // QuadraticBezierSegment
-                        if (pathSegment is QuadraticBezierSegment)
+                        if (pathSegment is QuadraticBezierSegment quadraticBezierSegment)
                         {
-                            QuadraticBezierSegment bezierSegment = pathSegment as QuadraticBezierSegment;
-
                             pathData.Data.AddQuadCurveToPoint(
                                 transform,
-                                new nfloat(bezierSegment.Point1.X),
-                                new nfloat(bezierSegment.Point1.Y),
-                                new nfloat(bezierSegment.Point2.X),
-                                new nfloat(bezierSegment.Point2.Y));
+                                new nfloat(quadraticBezierSegment.Point1.X),
+                                new nfloat(quadraticBezierSegment.Point1.Y),
+                                new nfloat(quadraticBezierSegment.Point2.X),
+                                new nfloat(quadraticBezierSegment.Point2.Y));
 
-                            lastPoint = bezierSegment.Point2;
+                            lastPoint = quadraticBezierSegment.Point2;
                         }
                         // PolyQuadraticBezierSegment
-                        else if (pathSegment is PolyQuadraticBezierSegment)
+                        else if (pathSegment is PolyQuadraticBezierSegment polyBezierSegment)
                         {
-                            PolyQuadraticBezierSegment polyBezierSegment = pathSegment as PolyQuadraticBezierSegment;
                             PointCollection points = polyBezierSegment.Points;
 
                             if (points.Count >= 2)
@@ -161,13 +141,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
                                 }
                             }
 
-                            lastPoint = points[points.Count - 1];
+                            lastPoint = points[^1];
                         }
                         // ArcSegment
-                        else if (pathSegment is ArcSegment)
+                        else if (pathSegment is ArcSegment arcSegment)
                         {
-                            ArcSegment arcSegment = pathSegment as ArcSegment;
-
                             List<Point> points = new List<Point>();
 
                             GeometryHelper.FlattenArc(
@@ -184,11 +162,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
                             CGPoint[] cgpoints = new CGPoint[points.Count];
 
                             for (int i = 0; i < points.Count; i++)
-                                cgpoints[i] = transform.TransformPoint(points[i].ToPointF());
+                                cgpoints[i] = transform.TransformPoint(points[i].ToNative());
 
                             pathData.Data.AddLines(cgpoints);
 
-                            lastPoint = points.Count > 0 ? points[points.Count - 1] : Point.Zero;
+                            lastPoint = points.Count > 0 ? points[^1] : Point.Zero;
                         }
                     }
 

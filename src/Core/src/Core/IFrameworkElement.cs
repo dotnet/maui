@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a framework-level set of properties, events, and methods for .NET MAUI elements. 
@@ -80,13 +82,18 @@
 		void InvalidateArrange();
 
 		/// <summary>
-		/// Id used by automation tools to interact with this FrameworkElement
+		/// Id used by automation tools to interact with this FrameworkElement.
 		/// </summary>
 		string AutomationId { get; }
 
 		/// <summary>
-		/// Direction in which the UI elements on the page are scanned by the eye
+		/// Direction in which the UI elements on the page are scanned by the eye.
 		/// </summary>
 		FlowDirection FlowDirection { get; }
+
+		/// <summary>
+		/// Gets the geometry used to define the outline of the contents of a View.
+		/// </summary>
+		IGeometry Clip { get; }
 	}
 }

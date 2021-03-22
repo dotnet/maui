@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Controls
 
 		internal static readonly BindableProperty TransformProperty = BindableProperty.Create("Transform", typeof(string), typeof(VisualElement), null, propertyChanged: OnTransformChanged);
 
-		public static readonly BindableProperty ClipProperty = BindableProperty.Create(nameof(Clip), typeof(Geometry), typeof(VisualElement), null,
+		public static readonly BindableProperty ClipProperty = BindableProperty.Create(nameof(Clip), typeof(IGeometry), typeof(VisualElement), null,
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
 				if (oldvalue != null)
@@ -71,22 +72,22 @@ namespace Microsoft.Maui.Controls
 
 		void NotifyClipChanges()
 		{
-			if (Clip != null)
+			if (Clip is Shapes.Geometry geometry)
 			{
-				Clip.PropertyChanged += OnClipChanged;
+				geometry.PropertyChanged += OnClipChanged;
 
-				if (Clip is GeometryGroup geometryGroup)
+				if (geometry is Shapes.GeometryGroup geometryGroup)
 					geometryGroup.InvalidateGeometryRequested += InvalidateGeometryRequested;
 			}
 		}
 
 		void StopNotifyingClipChanges()
 		{
-			if (Clip != null)
+			if (Clip is Shapes.Geometry geometry)
 			{
-				Clip.PropertyChanged -= OnClipChanged;
+				geometry.PropertyChanged -= OnClipChanged;
 
-				if (Clip is GeometryGroup geometryGroup)
+				if (geometry is Shapes.GeometryGroup geometryGroup)
 					geometryGroup.InvalidateGeometryRequested -= InvalidateGeometryRequested;
 			}
 		}
@@ -558,9 +559,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[TypeConverter(typeof(PathGeometryConverter))]
-		public Geometry Clip
+		public IGeometry Clip
 		{
-			get { return (Geometry)GetValue(ClipProperty); }
+			get { return (IGeometry)GetValue(ClipProperty); }
 			set { SetValue(ClipProperty, value); }
 		}
 

@@ -39,5 +39,10 @@ namespace Microsoft.Maui
 
 			nativeView.SetTag(AutomationTagId, view.AutomationId);
 		}
+
+		public static void UpdateClip(this AView nativeView, IView view)
+		{ 
+			nativeView.Invalidate();
+		}
 	}
 }
