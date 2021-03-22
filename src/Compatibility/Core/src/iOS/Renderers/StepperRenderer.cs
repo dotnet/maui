@@ -65,26 +65,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateIncrement();
 		}
 
+		[PortHandler]
 		void OnValueChanged(object sender, EventArgs e)
 		{
 			((IElementController)Element).SetValueFromRenderer(Stepper.ValueProperty, Control.Value);
 		}
 
+		[PortHandler]
 		void UpdateIncrement()
 		{
 			Control.StepValue = Element.Increment;
 		}
 
+		[PortHandler]
 		void UpdateMaximum()
 		{
 			Control.MaximumValue = Element.Maximum;
 		}
 
+		[PortHandler]
 		void UpdateMinimum()
 		{
 			Control.MinimumValue = Element.Minimum;
 		}
 
+		[PortHandler]
 		void UpdateValue()
 		{
 			if (Control.Value != Element.Value)

@@ -6,7 +6,9 @@
 		{
 			[nameof(ISearchBar.Text)] = MapText,
 			[nameof(ISearchBar.Placeholder)] = MapPlaceholder,
-			[nameof(ISearchBar.HorizontalTextAlignment)] = MapHorizontalTextAlignment
+			[nameof(ISearchBar.Font)] = MapFont,
+			[nameof(ISearchBar.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing
 		};
 
 		public SearchBarHandler() : base(SearchBarMapper)
@@ -14,7 +16,7 @@
 
 		}
 
-		public SearchBarHandler(PropertyMapper mapper) : base(mapper ?? SearchBarMapper)
+		public SearchBarHandler(PropertyMapper? mapper = null) : base(mapper ?? SearchBarMapper)
 		{
 
 		}

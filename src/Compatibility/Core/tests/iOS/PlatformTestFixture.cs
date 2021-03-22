@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
-	[Internals.Preserve(AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public class PlatformTestFixture
 	{
 		protected static UIColor EmptyBackground = new UIColor(0f,0f,0f,0f);

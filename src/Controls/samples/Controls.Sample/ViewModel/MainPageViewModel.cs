@@ -1,40 +1,25 @@
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Maui;
 
 namespace Maui.Controls.Sample.ViewModel
 {
 	public class MainPageViewModel : ViewModelBase
 	{
-		private readonly IConfiguration Configuration;
-		ITextService textService;
-
-		public MainPageViewModel() : this(new ITextService[] { App.Current.Services.GetService<ITextService>() })
-		{
-		}
-
-		public MainPageViewModel(IEnumerable<ITextService> textServices)
-		{
-			Configuration = App.Current.Services.GetService<IConfiguration>();
-
-			//var logger = App.Current.Services.GetService<ILogger<MainPageViewModel>>();
-
-			//logger.LogInformation("hello");
-
-			textService = textServices.FirstOrDefault();
-			Text = textService.GetText();
-		}
-
-		//public MainPageViewModel(ITextService textService)
-		//{
-		//	Text = textService.GetText();
-		//}
-
+		readonly IConfiguration _configuration;
+		readonly ITextService _textService;
 		string _text;
+
+		public MainPageViewModel(IConfiguration configuration, ITextService textService)
+		{
+			_configuration = configuration;
+			_textService = textService;
+
+			Console.WriteLine($"Value from config: {_configuration["MyKey"]}");
+
+			Text = _textService.GetText();
+		}
+
 		public string Text
 		{
 			get => _text;

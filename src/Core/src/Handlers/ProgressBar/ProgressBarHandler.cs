@@ -17,7 +17,7 @@
 
 		}
 
-		public ProgressBarHandler(PropertyMapper mapper) : base(mapper ?? ProgressMapper)
+		public ProgressBarHandler(PropertyMapper? mapper = null) : base(mapper ?? ProgressMapper)
 		{
 
 		}

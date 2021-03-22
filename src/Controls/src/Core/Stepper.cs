@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public class Stepper : View, IElementConfiguration<Stepper>
+	public class Stepper : View, IElementConfiguration<Stepper>, IStepper
 	{
 		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Stepper), 100.0,
 			validateValue: (bindable, value) => (double)value > ((Stepper)bindable).Minimum,
@@ -92,5 +92,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<ValueChangedEventArgs> ValueChanged;
 
 		public IPlatformElementConfiguration<T, Stepper> On<T>() where T : IConfigPlatform => _platformConfigurationRegistry.Value.On<T>();
+
+		double IStepper.Interval => Increment;
 	}
 }

@@ -45,11 +45,13 @@ steps:
     displayName: 'Copy Android Files for UITest'
     inputs:
       Contents: |
-        **/Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
-        **/Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/nunit.*
-        **/Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/NUnit3.*
-        **/Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Plugin.*
-        **/Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Xamarin.*
+        **/Android.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+        **/Android.UITests/bin/$(BuildConfiguration)/nunit.*
+        **/Android.UITests/bin/$(BuildConfiguration)/NUnit3.*
+        **/Android.UITests/bin/$(BuildConfiguration)/Plugin.*
+        **/Android.UITests/bin/$(BuildConfiguration)/Microsoft.Maui.*
+        **/Android.UITests/bin/$(BuildConfiguration)/Xamarin.*
+        **/Android.UITests/bin/$(BuildConfiguration)/Controls.*
       TargetFolder: '$(build.artifactstagingdirectory)/android'
       CleanTargetFolder: true
       flattenFolders: true
@@ -57,7 +59,7 @@ steps:
   - task: CopyFiles@2
     displayName: 'Copy $(renderers)'
     inputs:
-      SourceFolder: src/ControlGallery/src/Xamarin.Forms.ControlGallery.Android/bin/$(BuildConfiguration)/
+      SourceFolder: src/Compatibility/ControlGallery/src/Android/bin/$(BuildConfiguration)/
       Contents: '**/*.apk'
       TargetFolder: '$(build.artifactstagingdirectory)/androidApp'
       CleanTargetFolder: true

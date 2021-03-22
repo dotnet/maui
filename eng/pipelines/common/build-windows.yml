@@ -16,7 +16,9 @@ steps:
       provisioning_script: $(provisionator.path)
       provisioning_extra_args: $(provisionator.extraArguments)
 
-  - template: dotnet-install.yml
+  - powershell: |
+      & dotnet build src\DotNet\DotNet.csproj -bl:${{ parameters.artifactsTargetFolder }}\$(BuildConfiguration)-dotnet.binlog
+    displayName: install .NET
 
   - powershell: |
       $(System.DefaultWorkingDirectory)/build.ps1 --target provision --TeamProject="$(System.TeamProject)"
@@ -67,7 +69,7 @@ steps:
     displayName: 'Copy Files dlls'
     inputs:
       Contents: |
-        **/bin/**/*.dll
+        src/**/bin/**/*.dll
       TargetFolder: ${{ parameters.artifactsTargetFolder }}
   
   - task: PublishBuildArtifacts@1

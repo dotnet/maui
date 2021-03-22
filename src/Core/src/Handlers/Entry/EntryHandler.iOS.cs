@@ -57,6 +57,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateIsPassword(entry);
 		}
 
+		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateHorizontalTextAlignment(entry);
+		}
+
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry)
 		{
 			handler.TypedNativeView?.UpdateIsTextPredictionEnabled(entry);
@@ -75,6 +80,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
 		{
 			handler.TypedNativeView?.UpdateIsReadOnly(entry);
+		}
+
+		public static void MapReturnType(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateReturnType(entry);
 		}
 
 		void OnEditingChanged(object? sender, EventArgs e) => OnTextChanged();
@@ -98,9 +108,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFont(EntryHandler handler, IEntry entry)
 		{
-			var services = App.Current?.Services
-				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
-			var fontManager = services.GetRequiredService<IFontManager>();
+			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
 			handler.TypedNativeView?.UpdateFont(entry, fontManager);
 		}

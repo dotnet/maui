@@ -32,12 +32,41 @@ dotnet tool install Cake.Tool -g
 #### IDE
 - If you have Visual Studio 16.9 P4 installed you can open `Maui.sln` and run it from there.
 
-#### Command Line
+#### .NET 6
 
+You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visual Studio:
+
+```dotnetcli
+dotnet cake --target=VS-NET6
 ```
-dotnet build src\Controls\samples\Controls.Sample.Droid\Maui.Controls.Sample.Droid-net6.csproj -t:Run
-dotnet build src\Controls\samples\Controls.Sample.iOS\Maui.Controls.Sample.iOS-net6.csproj -t:Run
+_NOTE: VS Mac is not yet supported._
+
+You can also run commands individually:
+```dotnetcli
+# Provision .NET 6 in bin\dotnet
+dotnet build src\DotNet\DotNet.csproj
+# Builds Maui MSBuild tasks
+.\bin\dotnet\dotnet build Microsoft.Maui.BuildTasks-net6.sln
+# Builds the rest of Maui
+.\bin\dotnet\dotnet build Microsoft.Maui-net6.sln
+# (Windows-only) to launch Visual Studio
+.\eng\dogfood.ps1
 ```
+
+To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotnet`:
+```dotnetcli
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.Droid\Maui.Controls.Sample.Droid-net6.csproj -t:Run
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.iOS\Maui.Controls.Sample.iOS-net6.csproj -t:Run
+```
+
+Try try out a "single project", you will need the `-f` switch to choose the platform:
+
+```dotnetcli
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj t:Run -f net6.0-android --no-restore
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj t:Run -f net6.0-ios --no-restore
+```
+
+Note that `--no-restore` is a workaround until [dotnet#15485](https://github.com/dotnet/sdk/issues/15485) is fixed in a future preview.
 
 ## Current News
 
@@ -135,7 +164,7 @@ Do you have questions? Do not worry, we have prepared a complete [FAQ](https://g
 ## How to Engage, Contribute, and Give Feedback
 
 Some of the best ways to [contribute](./.github/CONTRIBUTING.md) are to try things out, file issues, join in design conversations,
-and make pull-requests. Proposals for changes specific to MAUI can be found [here for discussion](../../issues).
+and make pull-requests. Proposals for changes specific to MAUI can be found [here for discussion](https://github.com/dotnet/maui/issues).
 
 See [CONTRIBUTING](./.github/CONTRIBUTING.md)
 

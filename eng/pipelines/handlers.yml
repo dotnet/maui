@@ -46,7 +46,6 @@ schedules:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
-  - template: /eng/pipelines/common/variables-net6.yml
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)/logs
   - name: provisionator.xcode
@@ -55,6 +54,8 @@ variables:
     value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
   - name: provisionator.extraArguments
     value: '--v'
+  - name: DotNet.Path
+    value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
 
 parameters:
   - name: BuildEverything
@@ -128,6 +129,49 @@ stages:
           steps:
             - template: common/build-windows.yml
 
+  - stage: build_osx
+    displayName: iOS
+    dependsOn: []
+    jobs:
+      - job: ios
+        workspace:
+          clean: all
+        displayName: Build ControlGallery iOS
+        timeoutInMinutes: 120
+        pool:
+          name:  $(macOSXVmPool)
+          vmImage: $(macOSXVmImage)
+          demands:
+            - sh
+            - Xamarin.iOS
+        variables:
+          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+          provisionator.extraArguments : '--v'
+        steps:
+          - template: common/controlgallery-ios.yml
+
+  - stage: build_android
+    displayName: Android
+    dependsOn: []
+    jobs:
+      - job: android
+        workspace:
+          clean: all
+        displayName: Build ControlGallery Android
+        timeoutInMinutes: 120
+        pool:
+          name:  $(macOSXVmPool)
+          vmImage: $(macOSXVmImage)
+        variables:
+          renderers: 'FAST'
+          outputfolder: 'newRenderers'
+          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+          provisionator.extraArguments : '--v'
+        steps:
+          - template: common/controlgallery-android.yml
+
   - stage: pack_net6
     displayName: Pack .NET 6
     dependsOn: []
@@ -145,27 +189,7 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-          ${{ if eq(BuildPlatform.name, 'macos') }}:
-            variables:
-              DotNet.Root: /usr/local/share/dotnet/
-              DotNet.Tools: ~/.dotnet/tools
           steps:
-            - ${{ if eq(BuildPlatform.name, 'macos') }}:
-              - task: UseDotNet@2
-                displayName: install .NET Core 3.1
-                inputs:
-                  version: 3.1.x
-                  installationPath: $(DotNet.Root)
-            - template: common/dotnet-install.yml
-            - pwsh: |
-                dotnet tool install --global boots
-                boots ${{ BuildPlatform.bootsAndroid }}
-                boots ${{ BuildPlatform.bootsiOS }}
-                if ('${{ BuildPlatform.bootsMacCatalyst }}' -ne '') {
-                  boots ${{ BuildPlatform.bootsMacCatalyst }}
-                }
-              displayName: install .NET workloads
-              errorActionPreference: stop
             - ${{ if eq(BuildPlatform.name, 'macos') }}:
               - bash: |
                   set -x
@@ -174,15 +198,15 @@ stages:
                   /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
                   cat ~/Library/Preferences/Xamarin/Settings.plist || true
                 displayName: configure vsmac xcode
-            - pwsh: ./.nuspec/package.ps1 -configuration Release
+            - pwsh: ./eng/package.ps1 -configuration Release
               displayName: pack nugets
               errorActionPreference: stop
             - task: CopyFiles@2
               displayName: 'Copy SignList.xml Files'
               inputs:
                 Contents: |
-                  **/*.nupkg
-                  **/*.snupkg
+                  **/Microsoft.Maui.*.nupkg
+                  **/Microsoft.Maui.*.snupkg
                   **/SignList.xml
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
@@ -210,27 +234,7 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-            ${{ if eq(BuildPlatform.name, 'macos') }}:
-              variables:
-                DotNet.Root: /usr/local/share/dotnet/
-                DotNet.Tools: ~/.dotnet/tools
             steps:
-              - ${{ if eq(BuildPlatform.name, 'macos') }}:
-                - task: UseDotNet@2
-                  displayName: install .NET Core 3.1
-                  inputs:
-                    version: 3.1.x
-                    installationPath: $(DotNet.Root)
-              - template: common/dotnet-install.yml
-              - pwsh: |
-                  dotnet tool install --global boots
-                  boots ${{ BuildPlatform.bootsAndroid }}
-                  boots ${{ BuildPlatform.bootsiOS }}
-                  if ('${{ BuildPlatform.bootsMacCatalyst }}' -ne '') {
-                    boots ${{ BuildPlatform.bootsMacCatalyst }}
-                  }
-                displayName: install .NET workloads
-                errorActionPreference: stop
               - ${{ if eq(BuildPlatform.name, 'macos') }}:
                 - bash: |
                     set -x
@@ -240,8 +244,9 @@ stages:
                     cat ~/Library/Preferences/Xamarin/Settings.plist || true
                   displayName: configure vsmac xcode
               - pwsh: |
-                  dotnet build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
-                  dotnet build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration).binlog
+                  & dotnet build src/DotNet/DotNet.csproj -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
+                  & $(DotNet.Path) build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
+                  & $(DotNet.Path) build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration).binlog
                 displayName: build samples
                 errorActionPreference: stop
               - task: PublishBuildArtifacts@1

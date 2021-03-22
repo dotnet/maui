@@ -1,5 +1,6 @@
+using System;
+using System.Collections.Generic;
 using Maui.Controls.Sample.ViewModel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
@@ -9,14 +10,10 @@ namespace Maui.Controls.Sample.Pages
 	{
 		MainPageViewModel _viewModel;
 
-		public MainPage() : this(App.Current.Services.GetService<MainPageViewModel>())
-		{
-
-		}
-
 		public MainPage(MainPageViewModel viewModel)
 		{
 			BindingContext = _viewModel = viewModel;
+
 			SetupMauiLayout();
 			//SetupCompatibilityLayout();
 		}
@@ -36,8 +33,7 @@ namespace Maui.Controls.Sample.Pages
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
 
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
-
-			var label = new Label { Text = "centered text", BackgroundColor = Color.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
+			var label = new Label { Text = "End-aligned text", BackgroundColor = Color.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
 			verticalStack.Add(label);
@@ -49,6 +45,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
 			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
+			verticalStack.Add(new Label { Text = "This should have five times the line height!", LineHeight = 5 });
 
 
 			var paddingButton = new Button
@@ -63,6 +60,8 @@ namespace Maui.Controls.Sample.Pages
 			var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
 			verticalStack.Add(underlineLabel);
 
+			verticalStack.Add(new ActivityIndicator());
+			verticalStack.Add(new ActivityIndicator { Color = Color.Red, IsRunning = true });
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
 			var button2 = new Button()
@@ -79,8 +78,13 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 
+			verticalStack.Add(new CheckBox());
+			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
+			verticalStack.Add(new CheckBox { IsChecked = true, Color = Color.Aquamarine });
+
 			verticalStack.Add(new Editor());
 			verticalStack.Add(new Editor { Text = "Editor" });
+			verticalStack.Add(new Editor { Text = "Predictive Text Off", IsTextPredictionEnabled = false });
 
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
@@ -89,7 +93,7 @@ namespace Maui.Controls.Sample.Pages
 			};
 
 			verticalStack.Add(entry);
-			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
+			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed, FontFamily = "Dokdo" });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
@@ -101,6 +105,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Color.Purple });
 
 			var searchBar = new SearchBar();
+			searchBar.CharacterSpacing = 4;
 			searchBar.Text = "A search query";
 			verticalStack.Add(searchBar);
 
@@ -108,7 +113,28 @@ namespace Maui.Controls.Sample.Pages
 			placeholderSearchBar.Placeholder = "Placeholder";
 			verticalStack.Add(placeholderSearchBar);
 
+
+			var monkeyList = new List<string>
+			{
+				"Baboon",
+				"Capuchin Monkey",
+				"Blue Monkey",
+				"Squirrel Monkey",
+				"Golden Lion Tamarin",
+				"Howler Monkey",
+				"Japanese Macaque"
+			};
+
+			var picker = new Picker { Title = "Select a monkey" };
+
+			picker.ItemsSource = monkeyList;
+			verticalStack.Add(picker);
+
 			verticalStack.Add(new Slider());
+
+			verticalStack.Add(new Stepper());
+			verticalStack.Add(new Stepper { BackgroundColor = Color.IndianRed });
+			verticalStack.Add(new Stepper { Minimum = 0, Maximum = 10, Value = 5 });
 
 			verticalStack.Add(new Switch());
 			verticalStack.Add(new Switch() { OnColor = Color.Green });
@@ -121,7 +147,10 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
 
-			Content = verticalStack;
+			Content = new ScrollView
+			{
+				Content = verticalStack
+			};
 		}
 
 		void SetupCompatibilityLayout()
