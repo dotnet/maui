@@ -9,12 +9,6 @@
     <PackageId>Microsoft.Maui.Core</PackageId>
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
-
-  <PropertyGroup>
-    <!-- TODO: disable Fast Deployment temporarily --> 
-    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Include="..\..\..\.nuspec\Microsoft.Maui.Core.props" Visible="False" Pack="True" PackagePath="buildTransitive" />
     <None Include="..\..\..\.nuspec\Microsoft.Maui.Core.targets" Visible="False" Pack="True" PackagePath="buildTransitive" />

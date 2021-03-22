@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
 using Foundation;
 using UIKit;
 
@@ -8,22 +7,22 @@ namespace Microsoft.Maui
 {
 	public static class TimePickerExtensions
 	{
-		public static void UpdateFormat(this MauiTimePicker nativeView, ITimePicker view)
+		public static void UpdateFormat(this MauiTimePicker mauiTimePicker, ITimePicker view)
 		{
-			nativeView.UpdateTime(view, null);
+			mauiTimePicker.UpdateTime(view, null);
 		}
 
-		public static void UpdateFormat(this MauiTimePicker nativeView, ITimePicker view, UIDatePicker? picker)
+		public static void UpdateFormat(this MauiTimePicker mauiTimePicker, ITimePicker view, UIDatePicker? picker)
 		{
-			nativeView.UpdateTime(view, picker);
+			mauiTimePicker.UpdateTime(view, picker);
 		}
 
-		public static void UpdateTime(this MauiTimePicker nativeView, ITimePicker view)
+		public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker view)
 		{
-			nativeView.UpdateTime(view, null);
+			mauiTimePicker.UpdateTime(view, null);
 		}
 
-		public static void UpdateTime(this MauiTimePicker nativeTimePicker, ITimePicker timePicker, UIDatePicker? picker)
+		public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, UIDatePicker? picker)
 		{
 			if (picker != null)
 				picker.Date = new DateTime(1, 1, 1).Add(timePicker.Time).ToNSDate();
@@ -41,7 +40,7 @@ namespace Microsoft.Maui
 			var time = timePicker.Time;
 			var format = timePicker.Format;
 
-			nativeTimePicker.Text = time.ToFormattedString(format, cultureInfo);
+			mauiTimePicker.Text = time.ToFormattedString(format, cultureInfo);
 
 			if (timePicker.Format?.Contains('H') == true)
 			{
@@ -59,6 +58,16 @@ namespace Microsoft.Maui
 				if (picker != null)
 					picker.Locale = locale;
 			}
+
+			mauiTimePicker.UpdateCharacterSpacing(timePicker);
+		}
+
+		public static void UpdateCharacterSpacing(this MauiTimePicker mauiTimePicker, ITimePicker view)
+		{
+			var textAttr = mauiTimePicker.AttributedText?.WithCharacterSpacing(view.CharacterSpacing);
+
+			if (textAttr != null)
+				mauiTimePicker.AttributedText = textAttr;
 		}
 	}
 }
