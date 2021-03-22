@@ -3,7 +3,7 @@ using Android.App;
 using Android.Runtime;
 using Microsoft.Maui;
 
-namespace MauiControlsSample.SingleProject
+namespace Maui.Controls.Sample.SingleProject
 {
 	[Application]
 	public class MainApplication : MauiApplication<Startup>

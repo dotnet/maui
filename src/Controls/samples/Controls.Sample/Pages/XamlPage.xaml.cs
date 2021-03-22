@@ -2,7 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace MauiControlsSample.Pages
+namespace Maui.Controls.Sample.Pages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class XamlPage : ContentPage, IPage

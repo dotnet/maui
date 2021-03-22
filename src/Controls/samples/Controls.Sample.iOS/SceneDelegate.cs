@@ -1,7 +1,7 @@
 using Foundation;
 using UIKit;
 
-namespace MauiControlsSample
+namespace Maui.Controls.Sample
 {
 	[Register("SceneDelegate")]
 	public class SceneDelegate : UIResponder, IUIWindowSceneDelegate

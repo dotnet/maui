@@ -2,7 +2,7 @@ using Android.App;
 using Android.OS;
 using Microsoft.Maui;
 
-namespace MauiControlsSample.Droid
+namespace Maui.Controls.Sample.Droid
 {
 	[Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
 	public class MainActivity : MauiAppCompatActivity

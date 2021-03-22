@@ -1,10 +1,10 @@
 using System;
-using MauiControlsSample.Services;
+using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
 
-namespace MauiControlsSample
+namespace Maui.Controls.Sample
 {
 	public class MyApp : IApplication
 	{

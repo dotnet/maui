@@ -1,7 +1,7 @@
 ﻿using Foundation;
 using Microsoft.Maui;
 
-namespace MauiControlsSample.SingleProject
+namespace Maui.Controls.Sample.SingleProject
 {
 	[Register("AppDelegate")]
 	public class AppDelegate : MauiUIApplicationDelegate<Startup>

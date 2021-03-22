@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
-    <RootNamespace>MauiControlsSample</RootNamespace>
+    <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

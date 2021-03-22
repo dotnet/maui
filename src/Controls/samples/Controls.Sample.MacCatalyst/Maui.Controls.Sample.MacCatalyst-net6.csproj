@@ -6,7 +6,7 @@
     <TargetFramework Condition=" '$(OS)' == 'Windows_NT' ">net6.0-ios</TargetFramework>
     <RuntimeIdentifier Condition=" '$(OS)' == 'Windows_NT' ">ios-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
-    <RootNamespace>MauiControlsSample.MacCatalyst</RootNamespace>
+    <RootNamespace>Maui.Controls.Sample.MacCatalyst</RootNamespace>
     <AssemblyName>Maui.Controls.Sample.MacCatalyst</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
