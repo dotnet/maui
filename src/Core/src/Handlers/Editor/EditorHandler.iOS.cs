@@ -29,6 +29,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
 			handler.TypedNativeView?.UpdateText(editor);
+
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, editor);
 		}
 
 		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
@@ -46,10 +49,31 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdatePredictiveText(editor);
 		}
 
-		protected virtual bool OnShouldChangeText(UITextView textView, NSRange range, string text)
+		public static void MapFormatting(EditorHandler handler, IEditor editor)
 		{
-			var newLength = textView.Text?.Length + text.Length - range.Length;
-			return newLength <= VirtualView?.MaxLength;
+			handler.TypedNativeView?.UpdateMaxLength(editor);
+
+			// Update all of the attributed text formatting properties
+			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
+		}
+
+		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString)
+		{
+			var currLength = textView?.Text?.Length ?? 0;
+
+			// fix a crash on undo
+			if (range.Length + range.Location > currLength)
+				return false;
+
+			if (VirtualView == null || TypedNativeView == null)
+				return false;
+
+			var addLength = replacementString?.Length ?? 0;
+			var remLength = range.Length;
+
+			var newLength = currLength + addLength - remLength;
+
+			return newLength <= VirtualView.MaxLength;
 		}
 	}
 }

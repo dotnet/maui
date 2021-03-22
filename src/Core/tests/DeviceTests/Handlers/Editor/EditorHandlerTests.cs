@@ -49,7 +49,8 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(10)]
 		public async Task MaxLengthInitializesCorrectly(int maxLength)
 		{
-			string text = "Lorem ipsum dolor sit amet";
+			const string text = "Lorem ipsum dolor sit amet";
+			var expectedText = text.Substring(0, maxLength);
 
 			var editor = new EditorStub()
 			{
@@ -57,9 +58,38 @@ namespace Microsoft.Maui.DeviceTests
 				Text = text
 			};
 
-			var expected = text.Substring(0, maxLength);
+			var nativeText = await GetValueAsync(editor, GetNativeText);
 
-			await ValidatePropertyInitValue(editor, () => editor.Text, GetNativeText, expected);
+			Assert.Equal(expectedText, nativeText);
+			//TODO: Until Editor gets text update events
+			//Assert.Equal(expectedText, editor.Text);
+		}
+
+		[Theory(DisplayName = "MaxLength Clips Native Text Correctly")]
+		[InlineData(2)]
+		[InlineData(5)]
+		[InlineData(8)]
+		[InlineData(10)]
+		public async Task MaxLengthClipsNativeTextCorrectly(int maxLength)
+		{
+			const string text = "Lorem ipsum dolor sit amet";
+			var expectedText = text.Substring(0, maxLength);
+
+			var editor = new EditorStub()
+			{
+				MaxLength = maxLength,
+			};
+
+			var nativeText = await GetValueAsync(editor, handler =>
+			{
+				editor.Text = text;
+
+				return GetNativeText(handler);
+			});
+
+			Assert.Equal(expectedText, nativeText);
+			//TODO: Until Editor gets text update events
+			//Assert.Equal(expectedText, editor.Text);
 		}
 
 		[Theory(DisplayName = "Is Text Prediction Enabled")]

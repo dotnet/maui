@@ -7,9 +7,16 @@ namespace Microsoft.Maui
 {
 	public static class TextViewExtensions
 	{
-		public static void UpdateText(this TextView textView, ILabel label)
+		public static void UpdateText(this TextView textView, ILabel label) =>
+			UpdateText(textView, label.Text);
+
+		public static void UpdateText(this TextView textView, string newText)
 		{
-			textView.Text = label.Text;
+			newText ??= string.Empty;
+			var oldText = textView.Text ?? string.Empty;
+
+			if (oldText != newText)
+				textView.Text = newText;
 		}
 
 		public static void UpdateTextColor(this TextView textView, ILabel label, Color defaultColor)
@@ -26,16 +33,23 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateCharacterSpacing(this TextView textView, IEditor editor) =>
+			UpdateCharacterSpacing(textView, editor.CharacterSpacing);
+
 		public static void UpdateCharacterSpacing(this TextView textView, ILabel label) =>
-			textView.LetterSpacing = label.CharacterSpacing.ToEm();
+			UpdateCharacterSpacing(textView, label.CharacterSpacing);
 
 		public static void UpdateCharacterSpacing(this TextView textView, ISearchBar searchBar) =>
-			textView.LetterSpacing = searchBar.CharacterSpacing.ToEm();
+			UpdateCharacterSpacing(textView, searchBar.CharacterSpacing);
 
-		public static void UpdateFont(this TextView textView, ILabel label, IFontManager fontManager)
+		public static void UpdateCharacterSpacing(this TextView textView, double characterSpacing) =>
+			textView.LetterSpacing = characterSpacing.ToEm();
+
+		public static void UpdateFont(this TextView textView, ILabel label, IFontManager fontManager) =>
+			UpdateFont(textView, label.Font, fontManager);
+
+		public static void UpdateFont(this TextView textView, Font font, IFontManager fontManager)
 		{
-			var font = label.Font;
-
 			var tf = fontManager.GetTypeface(font);
 			textView.Typeface = tf;
 

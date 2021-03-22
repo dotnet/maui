@@ -369,6 +369,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				TextView.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler]
 		protected virtual bool ShouldChangeText(UITextView textView, NSRange range, string text)
 		{
 			var newLength = textView.Text.Length + text.Length - range.Length;
