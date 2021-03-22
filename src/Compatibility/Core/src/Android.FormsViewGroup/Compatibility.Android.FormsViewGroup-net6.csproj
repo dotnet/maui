@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0-android</TargetFrameworks>
+    <TargetFramework>net6.0-android</TargetFramework>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.Android</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup</AssemblyName>
     <OutputType>Library</OutputType>

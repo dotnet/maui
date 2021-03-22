@@ -17,13 +17,11 @@ namespace Microsoft.Maui
 		{
 			var startup = new TStartup();
 
-			var appBuilder = AppHostBuilder
-				.CreateDefaultAppBuilder()
-				.ConfigureServices(ConfigureNativeServices);
-
-			startup.Configure(appBuilder);
-
-			var host = appBuilder.Build();
+			var host = startup
+				.CreateAppHostBuilder()
+				.ConfigureServices(ConfigureNativeServices)
+				.ConfigureUsing(startup)
+				.Build();
 
 			Services = host.Services;
 			Application = Services.GetRequiredService<IApplication>();

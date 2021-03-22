@@ -14,23 +14,19 @@ namespace Microsoft.Maui
 		{
 			var startup = new TStartup();
 
-			var appBuilder = AppHostBuilder
-				.CreateDefaultAppBuilder()
-				.ConfigureServices(ConfigureNativeServices);
-
-			startup.Configure(appBuilder);
-
-			var host = appBuilder.Build();
-			if (host.Services == null)
-				throw new InvalidOperationException("App was not intialized");
+			var host = startup
+				.CreateAppHostBuilder()
+				.ConfigureServices(ConfigureNativeServices)
+				.ConfigureUsing(startup)
+				.Build();
 
 			Services = host.Services;
-
 			Application = Services.GetRequiredService<IApplication>();
 
 			var mauiContext = new MauiContext(Services);
-			var window = Application.CreateWindow(new ActivationState(mauiContext));
 
+			var activationState = new ActivationState(mauiContext);
+			var window = Application.CreateWindow(activationState);
 			window.MauiContext = mauiContext;
 
 			var content = (window.Page as IView) ?? window.Page.View;

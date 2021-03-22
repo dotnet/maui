@@ -3,11 +3,11 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class NativeActivityIndicator : UIActivityIndicatorView
+	public class MauiActivityIndicator : UIActivityIndicatorView
 	{
 		IActivityIndicator? _virtualView;
 
-		public NativeActivityIndicator(CGRect rect, IActivityIndicator? virtualView) : base(rect)
+		public MauiActivityIndicator(CGRect rect, IActivityIndicator? virtualView) : base(rect)
 			=> _virtualView = virtualView;
 
 		public override void Draw(CGRect rect)

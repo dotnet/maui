@@ -19,11 +19,13 @@ namespace Microsoft.Maui
 				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
 
 			var services = MauiApplication.Current.Services;
+			if (mauiApp == null)
+				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
 			var mauiContext = new MauiContext(services, this);
+
 			var state = new ActivationState(mauiContext, savedInstanceState);
 			var window = mauiApp.CreateWindow(state);
-
 			window.MauiContext = mauiContext;
 
 			var content = (window.Page as IView) ?? window.Page.View;

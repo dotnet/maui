@@ -1,4 +1,6 @@
-﻿using MauiControlsSample.Pages;
+﻿using System;
+using System.Collections.Generic;
+using MauiControlsSample.Pages;
 using MauiControlsSample.Services;
 using MauiControlsSample.ViewModel;
 using Microsoft.Extensions.Configuration;
@@ -7,8 +9,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Hosting;
-using System;
-using System.Collections.Generic;
 
 namespace MauiControlsSample
 {
