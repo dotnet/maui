@@ -1,3 +1,6 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" >
-
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true AND OutputType == 'WinExe'">
+    <!-- This tells Maui.Controls to not process the WinUI Xaml files -->
+    <EnableDefaultXamlItems>false</EnableDefaultXamlItems>
+  </PropertyGroup>
 </Project>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
-	<TargetFrameworks Condition=" '$(OS)' == 'Windows_NT'">$(TargetFrameworks);net6.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT'">$(TargetFrameworks);net6.0-windows10.0.19041.0</TargetFrameworks>
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
@@ -14,11 +14,11 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
   </PropertyGroup>
-  
+
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <Page Remove="**\*.xaml" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
