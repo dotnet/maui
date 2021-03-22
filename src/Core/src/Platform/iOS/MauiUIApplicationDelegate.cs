@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Maui.Hosting;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -93,6 +96,6 @@ namespace Microsoft.Maui
 		}
 
 		IEnumerable<IIosApplicationDelegateHandler> GetIosLifecycleHandler() =>
-			App.Current?.Services?.GetServices<IIosApplicationDelegateHandler>() ?? Enumerable.Empty<IIosApplicationDelegateHandler>();
+			MauiApp.Current?.Services?.GetServices<IIosApplicationDelegateHandler>() ?? Enumerable.Empty<IIosApplicationDelegateHandler>();
 	}
 }

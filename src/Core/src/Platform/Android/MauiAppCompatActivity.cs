@@ -132,6 +132,6 @@ namespace Microsoft.Maui
 		}
 
 		IEnumerable<IAndroidLifecycleHandler> GetAndroidLifecycleHandler() =>
-			App.Current?.Services?.GetServices<IAndroidLifecycleHandler>() ?? Enumerable.Empty<IAndroidLifecycleHandler>();
+			MauiApp.Current?.Services?.GetServices<IAndroidLifecycleHandler>() ?? Enumerable.Empty<IAndroidLifecycleHandler>();
 	}
 }

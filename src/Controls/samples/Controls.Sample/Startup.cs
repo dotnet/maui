@@ -31,8 +31,8 @@ namespace Maui.Controls.Sample
 						{"Logging:LogLevel:Default", "Warning"}
 					});
 				})
-				.UseMauiServiceProviderFactory(true)
-				//.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
+				//.UseMauiServiceProviderFactory(true)
+				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
 				.ConfigureServices((hostingContext, services) =>
 				{
 					services.AddSingleton<ITextService, TextService>();
@@ -57,7 +57,7 @@ namespace Maui.Controls.Sample
 				});
 		}
 
-		// To use DI ServiceCollection and not the MAUI one
+		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
 		public class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
 		{
 			public ServiceCollection CreateBuilder(IServiceCollection services)

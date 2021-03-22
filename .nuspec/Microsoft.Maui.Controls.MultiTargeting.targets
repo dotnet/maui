@@ -32,10 +32,10 @@
   <ItemGroup Condition="$(TargetFramework.StartsWith('netcoreapp')) != true ">
     <Compile Remove="**\*.Win32.cs" />
     <None Include="**\*.Win32.cs" />
-    <Compile Remove="**\*.xaml.cs" />
-    <None Include="**\*.xaml.cs" />
-    <Compile Remove="**\*.xaml" />
-    <None Include="**\*.xaml" />
+    <Compile Remove="**\*.Win32.xaml.cs" />
+    <None Include="**\*.Win32.xaml.cs" />
+    <Compile Remove="**\*.Win32.xaml" />
+    <None Include="**\*.Win32.xaml" />
     <Compile Remove="**\Win32\*.cs" />
     <None Include="**\Win32\*.cs" />
   </ItemGroup>
