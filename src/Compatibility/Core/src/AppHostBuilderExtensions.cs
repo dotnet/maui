@@ -9,8 +9,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static IAppHostBuilder RegisterCompatibilityForms(this IAppHostBuilder builder)
 		{
 #if __ANDROID__
-			Forms.Init(new InitializationOptions(Android.App.Application.Context, null, null) { Flags = InitializationFlags.SkipRenderers });
+			var options = new InitializationOptions(Android.App.Application.Context, null, null);
+#elif __IOS__
+			var options = new InitializationOptions();
 #endif
+
+			options.Flags |= InitializationFlags.SkipRenderers;
+
+			Forms.Init(options);
 
 			return builder;
 		}
