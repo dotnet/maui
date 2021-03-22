@@ -6,9 +6,9 @@ using Microsoft.Maui;
 namespace Maui.Controls.Sample.SingleProject
 {
 	[Application]
-	public class MainApplication : MauiApplication<MyApp>
+	public class MainApplication : MauiApplication<Startup>
 	{
-		public MainApplication(IntPtr handle, JniHandleOwnership ownerShip) : base(handle, ownerShip)
+		public MainApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{
 		}
 	}

@@ -14,7 +14,7 @@
 
 		}
 
-		public EditorHandler(PropertyMapper mapper) : base(mapper ?? EditorMapper)
+		public EditorHandler(PropertyMapper? mapper = null) : base(mapper ?? EditorMapper)
 		{
 
 		}

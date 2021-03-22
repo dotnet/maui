@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public LabelHandler(PropertyMapper mapper) : base(mapper ?? LabelMapper)
+		public LabelHandler(PropertyMapper? mapper = null) : base(mapper ?? LabelMapper)
 		{
 
 		}
