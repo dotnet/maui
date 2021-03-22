@@ -2,12 +2,12 @@ using System;
 using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Text;
+using Android.Views;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
-using Android.Views;
 using ATextAlignemnt = Android.Views.TextAlignment;
 
 namespace Microsoft.Maui.DeviceTests
@@ -137,6 +137,31 @@ namespace Microsoft.Maui.DeviceTests
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
+		[Fact(DisplayName = "LineHeight Initializes Correctly")]
+		public async Task LineHeightInitializesCorrectly()
+		{
+			var xplatLineHeight = 1.5d;
+
+			var labelHandler = new LabelStub()
+			{
+				LineHeight = xplatLineHeight
+			};
+
+			var values = await GetValueAsync(labelHandler, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelHandler.LineHeight,
+					NativeViewValue = GetNativeLineHeight(handler)
+				};
+			});
+
+			float expectedValue = 1.5f;
+
+			Assert.Equal(xplatLineHeight, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
+		}
+
 		TextView GetNativeLabel(LabelHandler labelHandler) =>
 			(TextView)labelHandler.View;
 
@@ -181,12 +206,15 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		double GetNativeCharacterSpacing(LabelHandler labelHandler) =>
-			Math.Round(GetNativeLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, 4);
+			Math.Round(GetNativeLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, EmCoefficientPrecision);
 
 		TextUtils.TruncateAt GetNativeLineBreakMode(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Ellipsize;
 
 		PaintFlags GetNativeTextDecorations(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).PaintFlags;
+
+		float GetNativeLineHeight(LabelHandler labelHandler) =>
+			GetNativeLabel(labelHandler).LineSpacingMultiplier;
 	}
 }

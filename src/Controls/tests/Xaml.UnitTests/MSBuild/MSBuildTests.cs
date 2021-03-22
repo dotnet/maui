@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 using Mono.Cecil;
@@ -184,9 +185,25 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 					}
 			};
 
+			var ext = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
+			var dotnet = IOPath.Combine(testDirectory, "..", "..", "..", "..", "..", "..", "..", "bin", "dotnet", $"dotnet{ext}");
+			if (!File.Exists (dotnet))
+			{
+				Console.WriteLine($"Using 'dotnet', did not find: {dotnet}");
+
+				// If we don't have .\bin\dotnet\dotnet, try the system one
+				dotnet = "dotnet";
+			}
+			else
+			{
+				dotnet = IOPath.GetFullPath(dotnet);
+
+				Console.WriteLine($"Using '{dotnet}'");
+			}
+
 			var psi = new ProcessStartInfo
 			{
-				FileName = "dotnet",
+				FileName = dotnet,
 				Arguments = $"build -v:{verbosity} -nologo {projectFile} -t:{target} -bl {additionalArgs}",
 				CreateNoWindow = true,
 				WindowStyle = ProcessWindowStyle.Hidden,

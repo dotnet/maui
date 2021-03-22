@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Tests
 
 		public string AutomationId => throw new NotImplementedException();
 
+		public FlowDirection FlowDirection => throw new NotImplementedException();
+
 		public void Arrange(Rectangle bounds)
 		{
 			throw new NotImplementedException();

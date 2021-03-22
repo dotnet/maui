@@ -8,6 +8,7 @@ using CoreLocation;
 using MapKit;
 using ObjCRuntime;
 using RectangleF = CoreGraphics.CGRect;
+using Microsoft.Maui.Controls.Maps;
 
 #if __MOBILE__
 using UIKit;

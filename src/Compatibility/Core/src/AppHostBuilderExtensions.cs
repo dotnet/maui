@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				typeof(Label),
 				typeof(RadioButton),
 				typeof(Slider),
-				typeof(Switch)
+				typeof(Stepper),
+				typeof(Switch),
+				typeof(SearchBar)
 			};
 
 			Forms.RegisterCompatRenderers(
