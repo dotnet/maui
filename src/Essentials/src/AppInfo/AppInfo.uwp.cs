@@ -1,6 +1,7 @@
 using System.Globalization;
 using Windows.ApplicationModel;
-using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
+using System;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -23,6 +24,6 @@ namespace Microsoft.Maui.Essentials
             Windows.System.Launcher.LaunchUriAsync(new System.Uri("ms-settings:appsfeatures-app")).WatchForError();
 
         static AppTheme PlatformRequestedTheme() =>
-            Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
+			throw new NotImplementedException("WINUI"); //Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
     }
 }

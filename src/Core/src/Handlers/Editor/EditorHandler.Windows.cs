@@ -8,5 +8,9 @@ namespace Microsoft.Maui.Handlers
 		protected override TextBox CreateNativeView() => new TextBox();
 
 		public static void MapText(IViewHandler handler, IEditor editor) { }
+
+		public static void MapCharacterSpacing(IViewHandler handler, IEditor editor) { }
+
+		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) { }
 	}
 }
