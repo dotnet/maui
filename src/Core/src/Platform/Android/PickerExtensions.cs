@@ -1,7 +1,7 @@
 ﻿namespace Microsoft.Maui
 {
 	public static class PickerExtensions
-	{ 
+	{
 		public static void UpdateTitle(this MauiPicker nativePicker, IPicker picker) =>
 			UpdatePicker(nativePicker, picker);
 

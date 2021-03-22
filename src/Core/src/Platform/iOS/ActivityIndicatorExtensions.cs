@@ -2,7 +2,7 @@
 {
 	public static class ActivityIndicatorExtensions
 	{
-		public static void UpdateIsRunning(this NativeActivityIndicator activityIndicatorView, IActivityIndicator activityIndicator)
+		public static void UpdateIsRunning(this MauiActivityIndicator activityIndicatorView, IActivityIndicator activityIndicator)
 		{
 			if (activityIndicator.IsRunning)
 				activityIndicatorView.StartAnimating();
@@ -10,7 +10,7 @@
 				activityIndicatorView.StopAnimating();
 		}
 
-		public static void UpdateColor(this NativeActivityIndicator activityIndicatorView, IActivityIndicator activityIndicator)
+		public static void UpdateColor(this MauiActivityIndicator activityIndicatorView, IActivityIndicator activityIndicator)
 		{
 			activityIndicatorView.Color = activityIndicator.Color == Color.Default ? null : activityIndicator.Color.ToNative();
 		}

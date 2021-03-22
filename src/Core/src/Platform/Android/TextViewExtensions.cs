@@ -146,7 +146,7 @@ namespace Microsoft.Maui
 
 		internal static void UpdateLineHeight(this TextView textView, ILabel label, float lineSpacingAddDefault, float lineSpacingMultDefault)
 		{
-			if (label.LineHeight == - 1)
+			if (label.LineHeight == -1)
 				textView.SetLineSpacing(lineSpacingAddDefault, lineSpacingMultDefault);
 			else if (label.LineHeight >= 0)
 				textView.SetLineSpacing(0, (float)label.LineHeight);

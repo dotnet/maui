@@ -1,17 +1,13 @@
 ﻿using System.Threading.Tasks;
-using Xunit;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Stepper)]
 	public partial class StepperHandlerTests : HandlerTestBase<StepperHandler, StepperStub>
 	{
-		public StepperHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact(DisplayName = "Is Value Initializes Correctly")]
 		public async Task ValueInitializesCorrectly()
 		{

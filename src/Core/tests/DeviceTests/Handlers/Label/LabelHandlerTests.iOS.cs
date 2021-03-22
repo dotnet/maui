@@ -147,7 +147,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact]
 		[Category(TestCategory.TextFormatting)]
-		public async Task CanSetAlignmentAndLineHeight() 
+		public async Task CanSetAlignmentAndLineHeight()
 		{
 			// Verifying that setting LineHeight (which requires an attributed string on iOS)
 			// doesn't cancel out the text alignment value (which can be set without an attributed string)
@@ -237,7 +237,7 @@ namespace Microsoft.Maui.DeviceTests
 			double xplatLineHeight = 2;
 			var expectedLineHeight = xplatLineHeight;
 
-			var label = new LabelStub() { Text = "test", LineHeight = xplatLineHeight }; 
+			var label = new LabelStub() { Text = "test", LineHeight = xplatLineHeight };
 
 			var handler = await CreateHandlerAsync(label);
 
@@ -302,9 +302,10 @@ namespace Microsoft.Maui.DeviceTests
 			return text.GetCharacterSpacing();
 		}
 
-		async Task<NSAttributedString> GetAttributedText(LabelHandler labelHandler) 
+		async Task<NSAttributedString> GetAttributedText(LabelHandler labelHandler)
 		{
-			return await InvokeOnMainThreadAsync(() => {
+			return await InvokeOnMainThreadAsync(() =>
+			{
 				var label = GetNativeLabel(labelHandler);
 				return label.AttributedText;
 			});
@@ -328,12 +329,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var attrText = GetNativeLabel(labelHandler).AttributedText;
 
-			if(attrText == null)
+			if (attrText == null)
 				return new nfloat(-1.0f);
 
 			var paragraphStyle = (NSParagraphStyle)attrText.GetAttribute(UIStringAttributeKey.ParagraphStyle, 0, out _);
 
-			if(paragraphStyle == null)
+			if (paragraphStyle == null)
 				return new nfloat(-1.0f);
 
 			return paragraphStyle.LineHeightMultiple;

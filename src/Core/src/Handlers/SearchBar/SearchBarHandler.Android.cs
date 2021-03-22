@@ -29,12 +29,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdatePlaceholder(searchBar);
 		}
-		
+
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			var services = App.Current?.Services
-				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
-			var fontManager = services.GetRequiredService<IFontManager>();
+			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
 			handler.TypedNativeView?.UpdateFont(searchBar, fontManager, handler._editText);
 		}

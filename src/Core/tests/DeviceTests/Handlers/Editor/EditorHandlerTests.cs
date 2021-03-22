@@ -9,10 +9,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Editor)]
 	public partial class EditorHandlerTests : HandlerTestBase<EditorHandler, EditorStub>
 	{
-		public EditorHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
 		{
@@ -46,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 				setValue,
 				unsetValue);
 		}
-		
+
 		[Theory(DisplayName = "Is Text Prediction Enabled")]
 		[InlineData(true)]
 		[InlineData(false)]

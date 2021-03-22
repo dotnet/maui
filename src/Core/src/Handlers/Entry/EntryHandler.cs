@@ -20,7 +20,7 @@
 
 		}
 
-		public EntryHandler(PropertyMapper mapper) : base(mapper ?? EntryMapper)
+		public EntryHandler(PropertyMapper? mapper = null) : base(mapper ?? EntryMapper)
 		{
 
 		}

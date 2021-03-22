@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Foundation;
-using UIKit;
 using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui
 {
