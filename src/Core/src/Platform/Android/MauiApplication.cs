@@ -2,24 +2,48 @@ using System;
 using Android.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
-	public class MauiApplication<TApplication> : global::Android.App.Application where TApplication : MauiApp
+	public class MauiApplication<TStartup> : Android.App.Application
+		where TStartup : IStartup, new()
 	{
 		public MauiApplication(IntPtr handle, JniHandleOwnership ownerShip) : base(handle, ownerShip)
 		{
-
 		}
-		IHost? _host;
+
 		public override void OnCreate()
 		{
-			if (!(Activator.CreateInstance(typeof(TApplication)) is TApplication app))
-				throw new InvalidOperationException($"We weren't able to create the App {typeof(TApplication)}");
+			var startup = new TStartup();
 
-			_host = app.CreateBuilder().ConfigureServices(ConfigureNativeServices).Build(app);
+			IAppHostBuilder appBuilder;
 
-			//_host.Start();
+			if (startup is IHostBuilderStartup hostBuilderStartup)
+			{
+				appBuilder = hostBuilderStartup
+					.CreateHostBuilder();
+			}
+			else
+			{
+				appBuilder = AppHostBuilder
+					.CreateDefaultAppBuilder();
+			}
+
+			appBuilder.
+				ConfigureServices(ConfigureNativeServices);
+
+			startup.Configure(appBuilder);
+
+			var host = appBuilder.Build();
+			if (host.Services == null)
+				throw new InvalidOperationException("App was not intialized");
+
+			var services = host.Services;
+
+			var app = services.GetRequiredService<MauiApp>();
+			host.SetServiceProvider(app);
+
 			base.OnCreate();
 		}
 

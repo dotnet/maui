@@ -161,6 +161,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			EditText.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
 		}
 
+		[PortHandler]
 		protected void UpdateCharacterSpacing()
 		{
 			if (Forms.IsLollipopOrNewer)

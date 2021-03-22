@@ -21,8 +21,7 @@ namespace Microsoft.Maui
 				if (handler == null)
 					throw new Exception($"Handler not found for view {view}");
 
-				if (handler is IAndroidViewHandler ahandler)
-					ahandler.SetContext(context.Context);
+				handler.SetMauiContext(context);
 
 				view.Handler = handler;
 			}

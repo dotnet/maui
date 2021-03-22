@@ -239,6 +239,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				try
 				{
 					handler = Forms.ActivationState.Context.Handlers.GetHandler(element.GetType());
+					handler.SetMauiContext(Forms.ActivationState.Context);
 				}
 				catch
 				{

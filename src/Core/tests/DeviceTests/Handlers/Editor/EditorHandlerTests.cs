@@ -9,10 +9,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Editor)]
 	public partial class EditorHandlerTests : HandlerTestBase<EditorHandler, EditorStub>
 	{
-		public EditorHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
 		{
@@ -58,6 +54,23 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(editor, () => editor.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
+		}
+
+		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task IsTextPredictionEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
+		{
+			var editor = new EditorStub();
+
+			await ValidatePropertyUpdatesValue(
+				editor,
+				nameof(IEditor.IsTextPredictionEnabled),
+				GetNativeIsTextPredictionEnabled,
+				setValue,
+				unsetValue);
 		}
 	}
 }

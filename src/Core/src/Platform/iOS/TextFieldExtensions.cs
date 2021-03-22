@@ -54,6 +54,14 @@ namespace Microsoft.Maui
 				textField.AutocorrectionType = UITextAutocorrectionType.No;
 		}
 
+		public static void UpdateMaxLength(this UITextField textField, IEntry entry)
+		{
+			var currentControlText = textField.Text;
+
+			if (currentControlText?.Length > entry.MaxLength)
+				textField.Text = currentControlText.Substring(0, entry.MaxLength);
+		}
+
 		public static void UpdatePlaceholder(this UITextField textField, IEntry entry)
 		{
 			textField.Placeholder = entry.Placeholder;

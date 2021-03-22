@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,7 +6,8 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class MauiUIApplicationDelegate<TApplication> : UIApplicationDelegate, IUIApplicationDelegate where TApplication : MauiApp
+	public class MauiUIApplicationDelegate<TStartup> : UIApplicationDelegate, IUIApplicationDelegate
+		where TStartup : IStartup, new()
 	{
 		public override UIWindow? Window
 		{
@@ -18,22 +17,39 @@ namespace Microsoft.Maui
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			if (!(Activator.CreateInstance(typeof(TApplication)) is TApplication app))
-				throw new InvalidOperationException($"We weren't able to create the App {typeof(TApplication)}");
+			var startup = new TStartup();
 
-			var host = app.CreateBuilder().ConfigureServices(ConfigureNativeServices).Build(app);
+			IAppHostBuilder appBuilder;
 
-			if (App.Current == null || App.Current.Services == null)
+			if (startup is IHostBuilderStartup hostBuilderStartup)
+			{
+				appBuilder = hostBuilderStartup
+					.CreateHostBuilder();
+			}
+			else
+			{
+				appBuilder = AppHostBuilder
+					.CreateDefaultAppBuilder();
+			}
+
+			appBuilder.
+				ConfigureServices(ConfigureNativeServices);
+
+			startup.Configure(appBuilder);
+
+			var host = appBuilder.Build();
+			if (host.Services == null)
 				throw new InvalidOperationException("App was not intialized");
 
+			var services = host.Services;
 
-			var mauiContext = new MauiContext(App.Current.Services);
+			var app = services.GetRequiredService<MauiApp>();
+			host.SetServiceProvider(app);
+
+			var mauiContext = new MauiContext(services);
 			var window = app.CreateWindow(new ActivationState(mauiContext));
 
 			window.MauiContext = mauiContext;
-
-			//Hack for now we set this on the App Static but this should be on IFrameworkElement
-			App.Current.SetHandlerContext(window.MauiContext);
 
 			var content = (window.Page as IView) ?? window.Page.View;
 

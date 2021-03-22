@@ -2,7 +2,7 @@
 using Android.OS;
 using Microsoft.Maui;
 
-namespace Maui.Controls.Sample
+namespace Maui.Controls.Sample.Services
 {
 	public class CustomAndroidLifecycleHandler : AndroidLifecycleHandler
 	{

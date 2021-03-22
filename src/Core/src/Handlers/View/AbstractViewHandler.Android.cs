@@ -6,9 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class AbstractViewHandler<TVirtualView, TNativeView> : IAndroidViewHandler
 	{
-		public void SetContext(Context context) => Context = context;
-
-		public Context? Context { get; private set; }
+		public Context? Context => MauiContext?.Context;
 
 		public void SetFrame(Rectangle frame)
 		{

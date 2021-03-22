@@ -85,7 +85,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue);
 		}
 
-
 		UITextField GetNativeEntry(EntryHandler entryHandler) =>
 			(UITextField)entryHandler.View;
 

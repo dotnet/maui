@@ -8,10 +8,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.CheckBox)]
 	public partial class CheckBoxHandlerTests : HandlerTestBase<CheckBoxHandler, CheckBoxStub>
 	{
-		public CheckBoxHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Theory(DisplayName = "IsChecked Initializes Correctly")]
 		[InlineData(true)]
 		[InlineData(false)]
