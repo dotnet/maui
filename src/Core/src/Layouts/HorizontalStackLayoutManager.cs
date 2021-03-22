@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Layouts
 			return new Size(finalWidth, measure.Height);
 		}
 
-		public override void Arrange(Rectangle bounds) 
+		public override void Arrange(Rectangle bounds)
 		{
 			if (Stack.FlowDirection == FlowDirection.LeftToRight)
 			{
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Layouts
 			double totalRequestedWidth = 0;
 			double requestedHeight = 0;
 
-			for(int n = 0; n < views.Count; n ++)
+			for (int n = 0; n < views.Count; n++)
 			{
 				var child = views[n];
 				var measure = child.IsMeasureValid ? child.DesiredSize : child.Measure(double.PositiveInfinity, heightConstraint);
@@ -68,14 +68,14 @@ namespace Microsoft.Maui.Layouts
 		{
 			double xPostition = 0;
 
-			for(int n = views.Count - 1; n >= 0; n--)
+			for (int n = views.Count - 1; n >= 0; n--)
 			{
 				var child = views[n];
 				xPostition += ArrangeChild(child, spacing, xPostition);
 			}
 		}
 
-		static double ArrangeChild(IView child, int spacing, double x) 
+		static double ArrangeChild(IView child, int spacing, double x)
 		{
 			var destination = new Rectangle(x, 0, child.DesiredSize.Width, child.DesiredSize.Height);
 			child.Arrange(destination);

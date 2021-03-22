@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Layouts
 				? margin.Left
 				: margin.Right;
 
-			return new Rectangle(bounds.X + xMarginAdjustment, bounds.Y + margin.Top, 
+			return new Rectangle(bounds.X + xMarginAdjustment, bounds.Y + margin.Top,
 				frameWidth, frameHeight);
 		}
 
