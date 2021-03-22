@@ -51,6 +51,7 @@ steps:
         **/Android.UITests/bin/$(BuildConfiguration)/Plugin.*
         **/Android.UITests/bin/$(BuildConfiguration)/Microsoft.Maui.*
         **/Android.UITests/bin/$(BuildConfiguration)/Xamarin.*
+        **/Android.UITests/bin/$(BuildConfiguration)/Controls.*
       TargetFolder: '$(build.artifactstagingdirectory)/android'
       CleanTargetFolder: true
       flattenFolders: true
