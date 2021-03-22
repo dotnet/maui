@@ -14,5 +14,10 @@ namespace Microsoft.Maui
 		/// Gets a value indicating whether or not the view is read-only.
 		/// </summary>
 		bool IsReadOnly { get; }
+
+		/// <summary>
+		/// Gets the maximum allowed length of input.
+		/// </summary>
+		int MaxLength { get; }
 	}
 }

@@ -60,6 +60,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateIsTextPredictionEnabled(entry);
 		}
 
+		public static void MapMaxLength(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateMaxLength(entry);
+		}
+
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.TypedNativeView?.UpdatePlaceholder(entry);
