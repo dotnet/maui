@@ -1,6 +1,6 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="Microsoft.Net.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0;Xamarin.Mac20;tizen40</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
         <RootNamespace>Microsoft.Maui.Graphics.Skia</RootNamespace>
         <Version>2.0.0</Version>
     </PropertyGroup>
@@ -13,7 +13,7 @@
     <ItemGroup>
         <PackageReference Include="SkiaSharp" Version="2.80.2" />
         <PackageReference Include="SkiaSharp.Views" Version="2.80.2" />
-        <PackageReference Include="NETStandard.Library" Version="2.0.3" />
+        
     </ItemGroup>
 
     <ItemGroup>
