@@ -9,9 +9,17 @@ $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
 $ext = if ($IsWindows) { ".exe" } else { "" }
 $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/dotnet$ext
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
+$winuisln = Join-Path $PSScriptRoot ../Microsoft.Maui.WinUI.sln
 
+& msbuild $winuisln `
+    /p:configuration=$configuration `
+    /p:SymbolPackageFormat=snupkg
+    
 # Build with .\bin\dotnet\dotnet.exe
-& $dotnet pack $sln `
-    -c:$configuration `
-    -p:SymbolPackageFormat=snupkg `
-    -bl:$artifacts/maui-$configuration.binlog
+# & $dotnet pack $sln `
+#     -c:$configuration `
+#     -p:SymbolPackageFormat=snupkg `
+#     -bl:$artifacts/maui-$configuration.binlog
+
+
+
