@@ -72,7 +72,7 @@ steps:
         **/iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
         **/iOS.UITests/bin/$(BuildConfiguration)/Microsoft.Maui.*
         **/iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
-        **/Android.UITests/bin/$(BuildConfiguration)/Controls.*
+        **/iOS.UITests/bin/$(BuildConfiguration)/Controls.*
       TargetFolder: '$(build.artifactstagingdirectory)/ios'
       flattenFolders: true
 
