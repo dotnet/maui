@@ -121,5 +121,7 @@ namespace Microsoft.Maui.Controls
 			IsMeasureValid = true;
 			return DesiredSize;
 		}
+
+		Maui.FlowDirection IFrameworkElement.FlowDirection => FlowDirection.ToPlatformFlowDirection();
 	}
 }

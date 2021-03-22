@@ -1,7 +1,7 @@
 ﻿using Android.Content;
+using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Android.Runtime;
 using AndroidX.Core.Graphics.Drawable;
 using ARect = Android.Graphics.Rect;
 
