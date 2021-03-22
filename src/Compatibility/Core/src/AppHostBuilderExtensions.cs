@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static IAppHostBuilder RegisterCompatibilityForms(this IAppHostBuilder builder)
 		{
 #if __ANDROID__
-			var options = new InitializationOptions(Android.App.Application.Context, null, null);
+			var options = new InitializationOptions(global::Android.App.Application.Context, null, null);
 #elif __IOS__
 			var options = new InitializationOptions();
 #endif
