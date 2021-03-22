@@ -1,4 +1,5 @@
 ﻿using System;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
@@ -25,6 +26,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.EditingChanged += OnEditingChanged;
 			nativeView.EditingDidEnd += OnEditingEnded;
 			nativeView.TextPropertySet += OnTextPropertySet;
+			nativeView.ShouldChangeCharacters += OnShouldChangeCharacters;
 		}
 
 		protected override void DisconnectHandler(MauiTextField nativeView)
@@ -32,6 +34,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.EditingChanged -= OnEditingChanged;
 			nativeView.EditingDidEnd -= OnEditingEnded;
 			nativeView.TextPropertySet -= OnTextPropertySet;
+			nativeView.ShouldChangeCharacters -= OnShouldChangeCharacters;
 		}
 
 		protected override void SetupDefaults(MauiTextField nativeView)
@@ -45,6 +48,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(EntryHandler handler, IEntry entry)
 		{
 			handler.TypedNativeView?.UpdateText(entry);
+
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, entry);
 		}
 
 		public static void MapTextColor(EntryHandler handler, IEntry entry)
@@ -87,6 +93,27 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateReturnType(entry);
 		}
 
+		public static void MapFont(EntryHandler handler, IEntry entry)
+		{
+			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+
+			handler.TypedNativeView?.UpdateFont(entry, fontManager);
+		}
+
+		public static void MapFormatting(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateMaxLength(entry);
+
+			// Update all of the attributed text formatting properties
+			handler.TypedNativeView?.UpdateCharacterSpacing(entry);
+
+			// Setting any of those may have removed text alignment settings,
+			// so we need to make sure those are applied, too
+			handler.TypedNativeView?.UpdateHorizontalTextAlignment(entry);
+		}
+
 		void OnEditingChanged(object? sender, EventArgs e) => OnTextChanged();
 
 		void OnEditingEnded(object? sender, EventArgs e) => OnTextChanged();
@@ -106,13 +133,23 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.Text = nativeText;
 		}
 
-		public static void MapFont(EntryHandler handler, IEntry entry)
+		bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString)
 		{
-			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+			var currLength = textField?.Text?.Length ?? 0;
 
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+			// fix a crash on undo
+			if (range.Length + range.Location > currLength)
+				return false;
 
-			handler.TypedNativeView?.UpdateFont(entry, fontManager);
+			if (VirtualView == null || TypedNativeView == null)
+				return false;
+
+			var addLength = replacementString?.Length ?? 0;
+			var remLength = range.Length;
+
+			var newLength = currLength + addLength - remLength;
+
+			return newLength <= VirtualView.MaxLength;
 		}
 	}
 }

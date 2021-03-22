@@ -397,6 +397,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler]
 		bool ShouldChangeCharacters(UITextField textField, NSRange range, string replacementString)
 		{
 			var newLength = textField?.Text?.Length + replacementString?.Length - range.Length;

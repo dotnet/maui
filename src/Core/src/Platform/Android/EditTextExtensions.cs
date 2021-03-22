@@ -77,9 +77,9 @@ namespace Microsoft.Maui
 		public static void UpdateIsTextPredictionEnabled(this AppCompatEditText editText, IEditor editor)
 		{
 			if (editor.IsTextPredictionEnabled)
-				return;
-
-			editText.InputType |= InputTypes.TextFlagNoSuggestions;
+				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
+			else
+				editText.InputType |= InputTypes.TextFlagNoSuggestions;
 		}
 
 		public static void UpdateMaxLength(this AppCompatEditText editText, IEntry entry)
@@ -98,11 +98,6 @@ namespace Microsoft.Maui
 			currentFilters.Add(new InputFilterLengthFilter(entry.MaxLength));
 
 			editText?.SetFilters(currentFilters.ToArray());
-
-			var currentControlText = editText?.Text;
-
-			if (editText != null && currentControlText != null && currentControlText.Length > entry.MaxLength)
-				editText.Text = currentControlText.Substring(0, entry.MaxLength);
 		}
 
 		public static void UpdatePlaceholder(this AppCompatEditText editText, IEntry entry)
