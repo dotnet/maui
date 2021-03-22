@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateMaximumDate(datePicker, handler._picker);
 		}
 
-		void OnValueChanged(object sender, EventArgs e)
+		void OnValueChanged(object? sender, EventArgs? e)
 		{
 			SetVirtualViewDate();
 		}
