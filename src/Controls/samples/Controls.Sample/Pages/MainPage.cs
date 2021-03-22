@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Pages
 {
 	public class MainPage : ContentPage, IPage
 	{
-		MainPageViewModel _viewModel;
+		readonly MainPageViewModel _viewModel;
 
 		public MainPage() : this(App.Current.Services.GetService<MainPageViewModel>())
 		{
@@ -125,8 +125,10 @@ namespace Maui.Controls.Sample.Pages
 			};
 			verticalStack.Add(searchBar);
 
-			var placeholderSearchBar = new SearchBar();
-			placeholderSearchBar.Placeholder = "Placeholder";
+			var placeholderSearchBar = new SearchBar
+			{
+				Placeholder = "Placeholder"
+			};
 			verticalStack.Add(placeholderSearchBar);
 
 			var monkeyList = new List<string>
