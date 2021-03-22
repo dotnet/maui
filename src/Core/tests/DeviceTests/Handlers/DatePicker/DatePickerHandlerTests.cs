@@ -8,10 +8,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.DatePicker)]
 	public partial class DatePickerHandlerTests : HandlerTestBase<DatePickerHandler, DatePickerStub>
 	{
-		public DatePickerHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact(DisplayName = "Date Initializes Correctly")]
 		public async Task DateInitializesCorrectly()
 		{
