@@ -18,7 +18,7 @@ $winuisln = Join-Path $PSScriptRoot ../Microsoft.Maui.WinUI.sln
     /p:configuration=$configuration `
     /p:SymbolPackageFormat=snupkg
     
-Build with .\bin\dotnet\dotnet.exe
+# Build with .\bin\dotnet\dotnet.exe
 & $dotnet pack $sln `
     -c:$configuration `
     -p:SymbolPackageFormat=snupkg `
