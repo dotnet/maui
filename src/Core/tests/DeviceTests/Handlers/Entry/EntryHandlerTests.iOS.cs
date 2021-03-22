@@ -34,6 +34,58 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
 		}
 
+		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
+		{
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
+			};
+
+			UITextAlignment expectedValue = UITextAlignment.Right;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.HorizontalTextAlignment,
+					NativeViewValue = GetNativeTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
+		[Fact(DisplayName = "ReturnType Initializes Correctly")]
+		public async Task ReturnTypeInitializesCorrectly()
+		{
+			var xplatReturnType = ReturnType.Next;
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				ReturnType = xplatReturnType
+			};
+
+			UIReturnKeyType expectedValue = UIReturnKeyType.Next;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.ReturnType,
+					NativeViewValue = GetNativeReturnType(handler)
+				};
+			});
+
+			Assert.Equal(xplatReturnType, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
+		}
+
+
 		UITextField GetNativeEntry(EntryHandler entryHandler) =>
 			(UITextField)entryHandler.View;
 
@@ -57,7 +109,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsReadOnly(EntryHandler entryHandler) =>
 			!GetNativeEntry(entryHandler).UserInteractionEnabled;
-			
+
 		double GetNativeUnscaledFontSize(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Font.PointSize;
 
@@ -66,5 +118,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsItalic(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
+
+		UITextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).TextAlignment;
+
+		UIReturnKeyType GetNativeReturnType(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).ReturnKeyType;
 	}
 }

@@ -56,5 +56,38 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Placeholder, GetNativePlaceholder, searchBar.Placeholder);
 		}
+
+		[Theory(DisplayName = "Font Size Initializes Correctly")]
+		[InlineData(1)]
+		[InlineData(10)]
+		[InlineData(20)]
+		[InlineData(100)]
+		public async Task FontSizeInitializesCorrectly(int fontSize)
+		{
+			var searchBar = new SearchBarStub()
+			{
+				Text = "Test",
+				Font = Font.OfSize("Arial", fontSize)
+			};
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSize, GetNativeUnscaledFontSize, searchBar.Font.FontSize);
+		}
+
+		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
+		[InlineData(FontAttributes.None, false, false)]
+		[InlineData(FontAttributes.Bold, true, false)]
+		[InlineData(FontAttributes.Italic, false, true)]
+		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
+		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
+		{
+			var searchBar = new SearchBarStub()
+			{
+				Text = "Test",
+				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
+			};
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
+			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
+		}
 	}
 }

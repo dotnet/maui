@@ -45,7 +45,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync(button);
 			var uiButton = (UIButton)handler.View;
-			var insets = uiButton.ContentEdgeInsets;
+
+			var insets = await InvokeOnMainThreadAsync(() => { return uiButton.ContentEdgeInsets; });
 
 			Assert.Equal(5, insets.Left);
 			Assert.Equal(10, insets.Top);

@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public class SearchBar : InputView, IFontElement, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>
+	public partial class SearchBar : InputView, IFontElement, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>
 	{
 		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create("SearchCommand", typeof(ICommand), typeof(SearchBar), null, propertyChanged: OnCommandChanged);
 
@@ -89,23 +89,26 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
-		{
-		}
-
-		void IFontElement.OnFontSizeChanged(double oldValue, double newValue)
-		{
-		}
-
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (SearchBar)this);
 
-		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
-		{
-		}
+		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
+			HandleFontChanged();
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
+		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
+			HandleFontChanged();
+
+		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
+			HandleFontChanged();
+
+		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
+			HandleFontChanged();
+
+		void HandleFontChanged()
 		{
+			// Null out the Maui font value so it will be recreated next time it's accessed
+			_font = null;
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		public event EventHandler SearchButtonPressed;

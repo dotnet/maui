@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateFont(button, fontManager);
 		}
 
-		public static void MapPadding(ButtonHandler handler, IButton button) 
+		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
 			handler.TypedNativeView?.UpdatePadding(button);
 		}

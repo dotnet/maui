@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Contacts;
 using CoreLocation;
+using Microsoft.Maui.Controls.Maps;
 
 #if __MOBILE__
 using AddressBookUI;

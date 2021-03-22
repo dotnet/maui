@@ -11,6 +11,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
 			handler.TypedNativeView?.UpdateText(label);
+
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, label);
 		}
 
 		public static void MapTextColor(LabelHandler handler, ILabel label)
@@ -20,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(label);
+			MapFormatting(handler, label);
 		}
 
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
@@ -45,7 +48,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateTextDecorations(label);
+			MapFormatting(handler, label);
 		}
 
 		public static void MapFont(LabelHandler handler, ILabel label)
@@ -55,6 +58,23 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = services.GetRequiredService<IFontManager>();
 
 			handler.TypedNativeView?.UpdateFont(label, fontManager);
+		}
+
+		public static void MapLineHeight(LabelHandler handler, ILabel label)
+		{
+			MapFormatting(handler, label);
+		}
+
+		public static void MapFormatting(LabelHandler handler, ILabel label)
+		{
+			// Update all of the attributed text formatting properties
+			handler.TypedNativeView?.UpdateLineHeight(label);
+			handler.TypedNativeView?.UpdateTextDecorations(label);
+			handler.TypedNativeView?.UpdateCharacterSpacing(label);
+
+			// Setting any of those may have removed text alignment settings,
+			// so we need to make sure those are applied, too
+			handler.TypedNativeView?.UpdateHorizontalTextAlignment(label);
 		}
 	}
 }

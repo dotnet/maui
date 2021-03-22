@@ -248,6 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		void UpdateLineHeight()
 		{
 			_lastSizeRequest = null;
