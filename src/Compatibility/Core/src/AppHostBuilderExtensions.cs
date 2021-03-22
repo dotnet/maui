@@ -12,15 +12,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var defaultHandlers = new List<Type>
 			{
 				typeof(Button),
+				typeof(ContentPage),
 				typeof(Editor),
 				typeof(Entry),
-				typeof(ContentPage),
-				typeof(Page),
 				typeof(Label),
+				typeof(Page),
+				typeof(SearchBar),
 				typeof(Slider),
 				typeof(Stepper),
 				typeof(Switch),
-				typeof(SearchBar)
 			};
 
 			Forms.RegisterCompatRenderers(

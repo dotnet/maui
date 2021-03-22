@@ -129,7 +129,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact(DisplayName = "First View in RTL Horizontal Stack is on the right")]
-		public void RtlShouldHaveFirstItemOnTheRight() 
+		public void RtlShouldHaveFirstItemOnTheRight()
 		{
 			var stack = BuildStack(viewCount: 2, viewWidth: 100, viewHeight: 100);
 			stack.FlowDirection.Returns(FlowDirection.RightToLeft);

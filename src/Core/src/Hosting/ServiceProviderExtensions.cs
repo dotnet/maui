@@ -4,8 +4,8 @@ namespace Microsoft.Maui.Hosting
 {
 	public static class ServiceProviderExtensions
 	{
-		internal static IServiceProvider BuildServiceProvider(this IMauiServiceCollection serviceCollection)
-			=> new MauiServiceProvider(serviceCollection);
+		internal static IServiceProvider BuildServiceProvider(this IMauiServiceCollection serviceCollection, bool constructorInjection)
+			=> new MauiServiceProvider(serviceCollection, constructorInjection);
 
 		internal static IMauiHandlersServiceProvider BuildHandlersServiceProvider(this IMauiServiceCollection serviceCollection)
 			=> new MauiHandlersServiceProvider(serviceCollection);

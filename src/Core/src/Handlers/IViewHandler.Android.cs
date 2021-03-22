@@ -5,8 +5,6 @@ namespace Microsoft.Maui
 {
 	public interface IAndroidViewHandler : IViewHandler
 	{
-		void SetContext(Context context);
-
 		AView? View { get; }
 	}
 }
