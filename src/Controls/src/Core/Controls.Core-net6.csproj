@@ -19,6 +19,10 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
 	</ItemGroup>
+  <ItemGroup>
+    <None Include="bin\$(Configuration)\net6.0-windows10.0.19041.0\Microsoft.Maui.Controls.dll" Visible="False" Pack="True" PackagePath="lib\net6.0-windows10.0.19041" />
+    <None Include="bin\$(Configuration)\net6.0-windows10.0.19041.0\Microsoft.Maui.Controls.pdb" Visible="False" Pack="True" PackagePath="lib\net6.0-windows10.0.19041" />
+  </ItemGroup>
 	<PropertyGroup>
     <GitInfoReportImportance>high</GitInfoReportImportance>
   </PropertyGroup>
