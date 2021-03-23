@@ -9,10 +9,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category("ProgressBarHandler")]
 	public partial class ProgressBarHandlerTests : HandlerTestBase<ProgressBarHandler, ProgressBarStub>
 	{
-		public ProgressBarHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Theory(DisplayName = "Progress Initializes Correctly")]
 		[InlineData(0.25)]
 		[InlineData(0.5)]

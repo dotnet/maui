@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.Maui;
 
 namespace Microsoft.Maui.Layouts
@@ -40,7 +40,11 @@ namespace Microsoft.Maui.Layouts
 			var frameWidth = Math.Max(0, bounds.Width - margin.HorizontalThickness);
 			var frameHeight = Math.Max(0, bounds.Height - margin.VerticalThickness);
 
-			return new Rectangle(bounds.X + margin.Left, bounds.Y + margin.Top,
+			var xMarginAdjustment = frameworkElement.FlowDirection == FlowDirection.LeftToRight
+				? margin.Left
+				: margin.Right;
+
+			return new Rectangle(bounds.X + xMarginAdjustment, bounds.Y + margin.Top,
 				frameWidth, frameHeight);
 		}
 

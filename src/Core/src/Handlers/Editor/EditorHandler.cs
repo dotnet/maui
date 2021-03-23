@@ -6,14 +6,16 @@
 		{
 			[nameof(IEditor.Text)] = MapText,
 			[nameof(IEditor.Placeholder)] = MapPlaceholder,
-			[nameof(IEditor.PlaceholderColor)] = MapPlaceholderColor
+			[nameof(IEditor.PlaceholderColor)] = MapPlaceholderColor,
+			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
+			[nameof(IEditor.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled
 		};
 
 		public EditorHandler() : base(EditorMapper)
 		{
 		}
 
-		public EditorHandler(PropertyMapper mapper) : base(mapper ?? EditorMapper)
+		public EditorHandler(PropertyMapper? mapper = null) : base(mapper ?? EditorMapper)
 		{
 
 		}

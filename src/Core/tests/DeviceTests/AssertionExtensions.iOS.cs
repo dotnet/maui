@@ -1,9 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Essentials;
 using UIKit;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -195,5 +197,32 @@ namespace Microsoft.Maui.DeviceTests
 			LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
 			_ => throw new ArgumentOutOfRangeException(nameof(mode))
 		};
+
+		public static double GetCharacterSpacing(this NSAttributedString text)
+		{
+			if (text == null)
+				return 0;
+
+			var value = text.GetAttribute(UIStringAttributeKey.KerningAdjustment, 0, out var range);
+			if (value == null)
+				return 0;
+
+			Assert.Equal(0, range.Location);
+			Assert.Equal(text.Length, range.Length);
+
+			var kerning = Assert.IsType<NSNumber>(value);
+
+			return kerning.DoubleValue;
+		}
+
+		public static void AssertHasUnderline(this NSAttributedString attributedString)
+		{
+			var value = attributedString.GetAttribute(UIStringAttributeKey.UnderlineStyle, 0, out var range);
+
+			if (value == null)
+			{
+				throw new XunitException("Label does not have the UnderlineStyle attribute");
+			}
+		}
 	}
 }

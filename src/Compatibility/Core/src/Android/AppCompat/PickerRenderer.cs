@@ -109,6 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			}
 		}
 
+		[PortHandler("Partially ported, still missing code related to TitleColor, etc.")]
 		void IPickerRenderer.OnClick()
 		{
 			Picker model = Element;
@@ -160,6 +161,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			EditText.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
 		}
 
+		[PortHandler]
 		protected void UpdateCharacterSpacing()
 		{
 			if (Forms.IsLollipopOrNewer)
@@ -168,6 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			}
 		}
 
+		[PortHandler("Partially ported, still missing code related to TitleColor, etc.")]
 		void UpdatePicker()
 		{
 			UpdatePlaceHolderText();

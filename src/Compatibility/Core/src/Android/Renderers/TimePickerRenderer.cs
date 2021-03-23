@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		AlertDialog _dialog;
 		bool _disposed;
 
+		[PortHandler]
 		bool Is24HourView
 		{
 			get => (DateFormat.Is24HourFormat(Context) && Element.Format == (string)TimePicker.FormatProperty.DefaultValue) || Element.Format?.Contains('H') == true;
@@ -154,6 +155,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Element.Unfocus();
 		}
 
+		[PortHandler]
 		void SetTime(TimeSpan time)
 		{
 			if (String.IsNullOrEmpty(Element.Format))
@@ -176,6 +178,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			if (Forms.IsLollipopOrNewer)

@@ -121,6 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementChanged(e);
 		}
 
+		[PortHandler]
 		protected virtual void UpdateTintColor()
 		{
 			if (Element == null)
@@ -129,6 +130,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.CheckBoxTintColor = Element.Color;
 		}
 
+		[PortHandler]
 		void OnControlCheckedChanged(object sender, EventArgs e)
 		{
 			Element.IsChecked = Control.IsChecked;

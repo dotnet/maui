@@ -71,6 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_placeholderLabel.SizeToFit();
 		}
 
+		[PortHandler("Partially ported")]
 		protected internal override void UpdateCharacterSpacing()
 		{
 			var textAttr = TextView.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
@@ -308,6 +309,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			TextView.Font = font;
 		}
 
+		[PortHandler("Partially Ported")]
 		void UpdateKeyboard()
 		{
 			var keyboard = Element.Keyboard;

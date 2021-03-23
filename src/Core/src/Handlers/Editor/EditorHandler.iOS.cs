@@ -1,3 +1,4 @@
+using System;
 using CoreGraphics;
 using UIKit;
 using Microsoft.Maui.Platform.iOS;
@@ -56,6 +57,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor) 
 		{
 			handler.TypedNativeView?.UpdatePlaceholderColor(editor, DefaultPlaceholderColor);
+		}
+		
+		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
+		}
+
+		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
+		{
+			handler.TypedNativeView?.UpdatePredictiveText(editor);
 		}
 	}
 }

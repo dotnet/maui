@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(ILabel.LineBreakMode)] = MapLineBreakMode,
 			[nameof(ILabel.Padding)] = MapPadding,
-			[nameof(ILabel.TextDecorations)] = MapTextDecorations
+			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
+			[nameof(ILabel.LineHeight)] = MapLineHeight
 		};
 
 		public LabelHandler() : base(LabelMapper)
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public LabelHandler(PropertyMapper mapper) : base(mapper ?? LabelMapper)
+		public LabelHandler(PropertyMapper? mapper = null) : base(mapper ?? LabelMapper)
 		{
 
 		}

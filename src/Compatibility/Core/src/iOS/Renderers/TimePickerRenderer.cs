@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		}
 
+		[PortHandler]
 		protected override UITextField CreateNativeControl()
 		{
 			return new NoCaretField { BorderStyle = UITextBorderStyle.RoundedRect };
@@ -193,6 +194,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.Text = Control.Text;
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			var textAttr = Control.AttributedText.AddCharacterSpacing(Control.Text, Element.CharacterSpacing);
@@ -201,6 +203,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.AttributedText = textAttr;
 		}
 
+		[PortHandler]
 		void UpdateTime()
 		{
 			_picker.Date = new DateTime(1, 1, 1).Add(Element.Time).ToNSDate();
@@ -237,6 +240,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Element.InvalidateMeasureNonVirtual(Controls.Internals.InvalidationTrigger.MeasureChanged);
 		}
 
+		[PortHandler]
 		void UpdateElementTime()
 		{
 			ElementController.SetValueFromRenderer(TimePicker.TimeProperty, _picker.Date.ToDateTime() - new DateTime(1, 1, 1));

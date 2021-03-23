@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Tests
 
 		}
 
-		public ViewHandlerStub(PropertyMapper mapper) : base(mapper ?? MockViewMapper)
+		public ViewHandlerStub(PropertyMapper mapper = null) : base(mapper ?? MockViewMapper)
 		{
 
 		}

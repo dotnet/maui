@@ -11,5 +11,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(IViewHandler handler, IEditor editor) { }
 
 		public static void MapPlaceholderColor(IViewHandler handler, IEditor editor) { }
+		
+		public static void MapCharacterSpacing(IViewHandler handler, IEditor editor) { }
+
+		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) { }
 	}
 }

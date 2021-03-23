@@ -2,9 +2,8 @@ using System.Collections;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UIKit;
-using Microsoft.Maui.Controls.Compatibility.Shapes;
-using static Microsoft.Maui.Controls.Compatibility.Core.UITests.NumericExtensions;
-using static Microsoft.Maui.Controls.Compatibility.Core.UITests.ParsingUtils;
+using static Microsoft.Maui.Controls.Compatibility.UITests.NumericExtensions;
+using static Microsoft.Maui.Controls.Compatibility.UITests.ParsingUtils;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
@@ -19,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Description("Reused ShapeView Renderers Correctly")]
 		public async Task ReusedShapeViewReRenderers()
 		{
-			var view = new Microsoft.Maui.Controls.Compatibility.Shapes.Rectangle
+			var view = new Microsoft.Maui.Controls.Shapes.Rectangle
 			{
 				Fill = SolidColorBrush.Purple,
 				HeightRequest = 21,
