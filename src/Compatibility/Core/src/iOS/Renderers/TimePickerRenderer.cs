@@ -195,6 +195,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.Text = Control.Text;
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);

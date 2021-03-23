@@ -26,6 +26,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Font Font { get; set; }
 
+		public int MaxLength { get; set; } = int.MaxValue;
+
 		public TextAlignment HorizontalTextAlignment { get; set; }
 
 		public ReturnType ReturnType { get; set; }

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public SwitchHandler(PropertyMapper mapper) : base(mapper ?? SwitchMapper)
+		public SwitchHandler(PropertyMapper? mapper = null) : base(mapper ?? SwitchMapper)
 		{
 
 		}

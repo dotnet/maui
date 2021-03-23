@@ -17,6 +17,6 @@ namespace Microsoft.Maui.Hosting
 		new IAppHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory);
 		new IAppHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory);
 #pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
-		IHost Build(IApp app);
+		new IAppHost Build();
 	}
 }

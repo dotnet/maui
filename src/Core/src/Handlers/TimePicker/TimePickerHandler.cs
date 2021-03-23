@@ -5,7 +5,8 @@
 		public static PropertyMapper<ITimePicker, TimePickerHandler> TimePickerMapper = new PropertyMapper<ITimePicker, TimePickerHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(ITimePicker.Format)] = MapFormat,
-			[nameof(ITimePicker.Time)] = MapTime
+			[nameof(ITimePicker.Time)] = MapTime,
+			[nameof(ITimePicker.CharacterSpacing)] = MapCharacterSpacing
 		};
 
 		public TimePickerHandler() : base(TimePickerMapper)

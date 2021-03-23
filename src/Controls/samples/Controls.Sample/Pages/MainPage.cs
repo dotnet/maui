@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Maui.Controls.Sample.ViewModel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
@@ -11,14 +10,10 @@ namespace Maui.Controls.Sample.Pages
 	{
 		MainPageViewModel _viewModel;
 
-		public MainPage() : this(App.Current.Services.GetService<MainPageViewModel>())
-		{
-
-		}
-
 		public MainPage(MainPageViewModel viewModel)
 		{
 			BindingContext = _viewModel = viewModel;
+
 			SetupMauiLayout();
 			//SetupCompatibilityLayout();
 		}
@@ -92,7 +87,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new CheckBox());
 			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
 			verticalStack.Add(new CheckBox { IsChecked = true, Color = Color.Aquamarine });
-      
+
 			verticalStack.Add(new Editor());
 			verticalStack.Add(new Editor { Text = "Editor" });
 			verticalStack.Add(new Editor { Text = "Predictive Text Off", IsTextPredictionEnabled = false });
@@ -104,12 +99,12 @@ namespace Maui.Controls.Sample.Pages
 			};
 
 			verticalStack.Add(entry);
-
-			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed });
+			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed, FontFamily = "Dokdo" });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
 			verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true });
+			verticalStack.Add(new Entry { MaxLength = 5, Placeholder = "MaxLength text" });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });
@@ -155,10 +150,14 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new DatePicker());
 
 			verticalStack.Add(new TimePicker());
+			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
 			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
 
-			Content = verticalStack;
+			Content = new ScrollView
+			{
+				Content = verticalStack
+			};
 		}
 
 		void SetupCompatibilityLayout()

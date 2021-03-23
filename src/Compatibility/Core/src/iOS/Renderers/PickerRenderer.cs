@@ -187,6 +187,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdatePicker();
 		}
 
+		[PortHandler("The code related to Placeholder remains to be ported")]
 		protected void UpdateCharacterSpacing()
 		{
 			if (Control == null)

@@ -14,5 +14,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public int SelectedIndex { get; set; } = -1;
 
 		public object SelectedItem { get; set; }
+
+		public double CharacterSpacing { get; set; }
 	}
 }

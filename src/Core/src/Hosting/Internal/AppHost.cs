@@ -1,22 +1,26 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
-	internal class AppHost : IHost, IAsyncDisposable
+	internal class AppHost : IAppHost, IAsyncDisposable
 	{
 		readonly ILogger<AppHost>? _logger;
 
 		public AppHost(IServiceProvider services, ILogger<AppHost>? logger)
 		{
 			Services = services ?? throw new ArgumentNullException(nameof(services));
+			Handlers = Services.GetRequiredService<IMauiHandlersServiceProvider>();
+
 			_logger = logger;
 		}
 
 		public IServiceProvider Services { get; }
+
+		public IMauiHandlersServiceProvider Handlers { get; }
 
 		public async Task StartAsync(CancellationToken cancellationToken = default)
 		{

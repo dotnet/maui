@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsPassword(IViewHandler handler, IEntry entry) { }
 		public static void MapHorizontalTextAlignment(IViewHandler handler, IEntry entry) { }
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, IEntry entry) { }
+		public static void MapMaxLength(IViewHandler handler, IEntry entry) { }
 		public static void MapPlaceholder(IViewHandler handler, IEntry entry) { }
 		public static void MapIsReadOnly(IViewHandler handler, IEntry entry) { }
 		public static void MapKeyboard(IViewHandler handler, IEntry entry) { }

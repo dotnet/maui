@@ -19,5 +19,9 @@ namespace Microsoft.Maui
 		/// Gets the keyboard input type.
 		/// </summary>
 		Keyboard Keyboard { get; }
+
+		/// Gets the maximum allowed length of input.
+		/// </summary>
+		int MaxLength { get; }
 	}
 }

@@ -670,7 +670,7 @@ Task("NuGetPack")
     var settings = new DotNetCoreToolSettings
     {
         DiagnosticOutput = true,
-        ArgumentCustomization = args => args.Append($"./.nuspec/package.ps1 -configuration \"{configuration}\"")
+        ArgumentCustomization = args => args.Append($"./eng/package.ps1 -configuration \"{configuration}\"")
     };
 
    DotNetCoreTool("pwsh", settings);
@@ -886,12 +886,12 @@ Task("Android100")
 
 
 Task("VS-NET6")
-    .IsDependentOn("Clean")
     .Does(() =>
     {
-        DotNetCoreRestore("Microsoft.Maui-net6.sln");
-        DotNetCoreBuild("Microsoft.Maui-net6.sln");
-        StartVisualStudio("Microsoft.Maui-net6.sln");
+        DotNetCoreBuild("./src/DotNet/Dotnet.csproj");
+        var ext = IsRunningOnWindows() ? ".exe" : "";
+        DotNetCoreBuild("./Microsoft.Maui.BuildTasks-net6.sln", new DotNetCoreBuildSettings { ToolPath = $"./bin/dotnet/dotnet{ext}" });
+        StartVisualStudioForDotNet6();
     });
 
 Task("VS")
@@ -1204,6 +1204,22 @@ void StartVisualStudio(string sln = "./Microsoft.Maui.sln")
     }
     else
          StartProcess("open", new ProcessSettings{ Arguments = sln });
+}
+
+void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
+{
+    if (isCIBuild)
+        return;
+    if (!IsRunningOnWindows())
+    {
+        Information("This target is only supported on Windows.");
+        return;
+    }
+    var vsLatest = VSWhereLatest();
+    if (vsLatest == null)
+        throw new Exception("Unable to find Visual Studio!");
+    var devenv = vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe");
+    StartProcess("powershell", $"./eng/dogfood.ps1 -vs '{devenv}' -sln '{sln}'");
 }
 
 MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarget.MSIL, string buildConfiguration = null)

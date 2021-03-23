@@ -13,5 +13,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			get => _time;
 			set => SetProperty(ref _time, value);
 		}
+
+		public double CharacterSpacing { get; set; }
 	}
 }
