@@ -1,6 +1,6 @@
 param(
   [string] $configuration = 'Debug',
-  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\PublicPreview\MSBuild\Current\Bin\MSBuild.exe"
+  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
 )
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
