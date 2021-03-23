@@ -18,7 +18,8 @@ if ($IsWindows)
 {
   & $msbuild $winuisln `
     /p:configuration=$configuration `
-    /p:SymbolPackageFormat=snupkg
+    /p:SymbolPackageFormat=snupkg `
+    /t:restore;build
 }
     
 # Build with .\bin\dotnet\dotnet.exe
