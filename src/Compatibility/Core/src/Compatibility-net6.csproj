@@ -93,5 +93,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
   </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
+    <None Include="bin\$(Configuration)\net6.0-windows10.0.19041.0\Microsoft.Maui.Controls.Compatibility.pri" Visible="False" Pack="True" PackagePath="runtimes\net6.0-windows10.0.19041.0\native" />
+  </ItemGroup>
 </Project>
 
