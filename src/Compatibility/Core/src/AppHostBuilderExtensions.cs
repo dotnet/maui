@@ -8,17 +8,21 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		public static IAppHostBuilder RegisterCompatibilityForms(this IAppHostBuilder builder)
 		{
-#if !WINDOWS
+			// TODO: This should not be immediately run, but rather a registered delegate with values
+			//       of the Context and LaunchActivatedEventArgs passed in.
+
 #if __ANDROID__
 			var options = new InitializationOptions(global::Android.App.Application.Context, null, null);
 #elif __IOS__
 			var options = new InitializationOptions();
+#elif WINDOWS
+			var options = new InitializationOptions(MauiWinUIApplication.Current.LaunchActivatedEventArgs);
 #endif
 
 			options.Flags |= InitializationFlags.SkipRenderers;
 
 			Forms.Init(options);
-#endif
+			Forms.InitDispatcher(MauiWinUIApplication.Current.MainWindow.DispatcherQueue, options);
 
 			return builder;
 		}

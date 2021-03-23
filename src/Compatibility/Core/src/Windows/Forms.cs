@@ -3,15 +3,26 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Resources.Core;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
+	public struct InitializationOptions
+	{
+		public InitializationOptions(UI.Xaml.LaunchActivatedEventArgs args)
+		{
+			this = default(InitializationOptions);
+			LaunchActivatedEventArgs = args;
+		}
+		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs;
+		public InitializationFlags Flags;
+	}
+
 	public static partial class Forms
 	{
 		const string LogFormat = "[{0}] {1}";
@@ -25,32 +36,46 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState state)
 		{
+			SetupInit(state.LaunchActivatedEventArgs, null, null);
 		}
 
 		public static void Init(
-			Microsoft.UI.Xaml.LaunchActivatedEventArgs launchActivatedEventArgs,
+			UI.Xaml.LaunchActivatedEventArgs launchActivatedEventArgs,
 			WindowsBasePage mainWindow,
 			IEnumerable<Assembly> rendererAssemblies = null)
 		{
-			if (IsInitialized)
-				return;
-			
+			SetupInit(launchActivatedEventArgs, mainWindow, rendererAssemblies);
+		}
+
+		public static void Init(InitializationOptions options) =>
+			SetupInit(options.LaunchActivatedEventArgs, null, null, options);
+
+		static void SetupInit(
+			UI.Xaml.LaunchActivatedEventArgs launchActivatedEventArgs,
+			WindowsBasePage mainWindow,
+			IEnumerable<Assembly> rendererAssemblies = null,
+			InitializationOptions? maybeOptions = null)
+		{
 			var accent = (WSolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			Color.SetAccent(accent.ToFormsColor());
 
-#if !UWP_16299
-			Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
-#else
-			Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
-#endif
-			if (!Microsoft.UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
+			if (!IsInitialized)
 			{
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
+#if !UWP_16299
+				Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
+#else
+				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
+#endif
+			}
+
+			if (!UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
+			{
+				UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
 			}
 
 			try
 			{
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new Microsoft.UI.Xaml.Controls.XamlControlsResources());
+				UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new UI.Xaml.Controls.XamlControlsResources());
 			}
 			catch
 			{
@@ -61,6 +86,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.SetFlowDirection(GetFlowDirection());
 
 			Device.SetFlags(s_flags);
+
+			// use field and not property to avoid exception in getter
+			if (Device.info != null)
+			{
+				Device.info.Dispose();
+				Device.info = null;
+			}
 			Device.Info = new WindowsDeviceInfo();
 
 			switch (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)
@@ -88,27 +120,47 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
 			s_state = launchActivatedEventArgs.UWPLaunchActivatedEventArgs.PreviousExecutionState;
 
-
-			MainWindow = mainWindow;
-			Microsoft.Maui.Controls.Compatibility.Forms.InitDispatcher(mainWindow.DispatcherQueue);
-			mainWindow.LoadApplication(mainWindow.CreateApplication());
-			mainWindow.Activate();
+			if (mainWindow != null)
+			{
+				MainWindow = mainWindow;
+				InitDispatcher(mainWindow.DispatcherQueue, maybeOptions);
+				mainWindow.LoadApplication(mainWindow.CreateApplication());
+				mainWindow.Activate();
+			}
 		}
 
-#pragma warning disable CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-		public static void InitDispatcher(Microsoft.System.DispatcherQueue dispatcher)
-#pragma warning restore CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+		public static void InitDispatcher(System.DispatcherQueue dispatcher, InitializationOptions? maybeOptions = null)
 		{
 			var platformServices = new WindowsPlatformServices(dispatcher);
 
 			Device.PlatformServices = platformServices;
 			Device.PlatformInvalidator = platformServices;
 
-			Registrar.RegisterAll(new[] { typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute), typeof(ExportFontAttribute) });
+			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
+				RegisterCompatRenderers();
 
 			IsInitialized = true;
 
 			Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
+		}
+
+		static bool IsInitializedRenderers;
+
+		internal static void RegisterCompatRenderers()
+		{
+			if (IsInitializedRenderers)
+				return;
+
+			IsInitializedRenderers = true;
+
+			// Only need to do this once
+			Registrar.RegisterAll(new[]
+			{
+				typeof(ExportRendererAttribute),
+				typeof(ExportCellAttribute),
+				typeof(ExportImageSourceHandlerAttribute),
+				typeof(ExportFontAttribute)
+			});
 		}
 
 		static FlowDirection GetFlowDirection()
@@ -122,10 +174,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return FlowDirection.MatchParent;
 		}
 
-		internal static Microsoft.UI.Xaml.ResourceDictionary GetTabletResources()
+		internal static UI.Xaml.ResourceDictionary GetTabletResources()
 		{
-			return new Microsoft.UI.Xaml.ResourceDictionary {
-				Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility.Platform.UAP/Resources.xbf")
+			return new UI.Xaml.ResourceDictionary
+			{
+				Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/Resources.xbf")
 			};
 		}
 	}
