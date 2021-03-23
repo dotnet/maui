@@ -7,7 +7,6 @@ using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Activation;
-using Windows.ApplicationModel.Resources.Core;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -68,10 +67,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 #endif
 			}
 
-			if (!UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
-			{
-				UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
-			}
+			//if (!UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
+			//{
+			//	UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
+			//}
 
 			try
 			{
@@ -87,50 +86,43 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.SetFlags(s_flags);
 
-			// use field and not property to avoid exception in getter
-			if (Device.info != null)
-			{
-				Device.info.Dispose();
-				Device.info = null;
-			}
-			Device.Info = new WindowsDeviceInfo();
+			// TODO: MAUI
+			//// use field and not property to avoid exception in getter
+			//if (Device.info != null)
+			//{
+			//	Device.info.Dispose();
+			//	Device.info = null;
+			//}
+			//Device.Info = new WindowsDeviceInfo();
 
-			switch (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)
-			{
-				case "Windows.Desktop":
-					if (Windows.UI.ViewManagement.UIViewSettings.GetForCurrentView().UserInteractionMode ==
-						Windows.UI.ViewManagement.UserInteractionMode.Touch)
-						Device.SetIdiom(TargetIdiom.Tablet);
-					else
-						Device.SetIdiom(TargetIdiom.Desktop);
-					break;
-				case "Windows.Mobile":
-					Device.SetIdiom(TargetIdiom.Phone);
-					break;
-				case "Windows.Xbox":
-					Device.SetIdiom(TargetIdiom.TV);
-					break;
-				default:
-					Device.SetIdiom(TargetIdiom.Unsupported);
-					break;
-			}
+			// TODO: MAUI
+			//switch (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)
+			//{
+			//	case "Windows.Desktop":
+			//		if (Windows.UI.ViewManagement.UIViewSettings.GetForCurrentView().UserInteractionMode ==
+			//			Windows.UI.ViewManagement.UserInteractionMode.Touch)
+			//			Device.SetIdiom(TargetIdiom.Tablet);
+			//		else
+			//			Device.SetIdiom(TargetIdiom.Desktop);
+			//		break;
+			//	case "Windows.Mobile":
+			//		Device.SetIdiom(TargetIdiom.Phone);
+			//		break;
+			//	case "Windows.Xbox":
+			//		Device.SetIdiom(TargetIdiom.TV);
+			//		break;
+			//	default:
+			//		Device.SetIdiom(TargetIdiom.Unsupported);
+			//		break;
+			//}
 
 			ExpressionSearch.Default = new WindowsExpressionSearch();
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
 			s_state = launchActivatedEventArgs.UWPLaunchActivatedEventArgs.PreviousExecutionState;
 
-			if (mainWindow != null)
-			{
-				MainWindow = mainWindow;
-				InitDispatcher(mainWindow.DispatcherQueue, maybeOptions);
-				mainWindow.LoadApplication(mainWindow.CreateApplication());
-				mainWindow.Activate();
-			}
-		}
+			var dispatcher = mainWindow?.DispatcherQueue ?? System.DispatcherQueue.GetForCurrentThread();
 
-		public static void InitDispatcher(System.DispatcherQueue dispatcher, InitializationOptions? maybeOptions = null)
-		{
 			var platformServices = new WindowsPlatformServices(dispatcher);
 
 			Device.PlatformServices = platformServices;
@@ -139,9 +131,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
 				RegisterCompatRenderers();
 
-			IsInitialized = true;
+			if (mainWindow != null)
+			{
+				MainWindow = mainWindow;
 
-			Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
+				// TODO: MAUI Do this for MAUI
+				Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
+
+				mainWindow.LoadApplication(mainWindow.CreateApplication());
+				mainWindow.Activate();
+			}
+
+			IsInitialized = true;
 		}
 
 		static bool IsInitializedRenderers;
@@ -165,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		static FlowDirection GetFlowDirection()
 		{
-			string resourceFlowDirection = ResourceContext.GetForCurrentView().QualifierValues["LayoutDirection"];
+			string resourceFlowDirection = "LTR"; // TODO MAUI ResourceContext.GetForCurrentView().QualifierValues["LayoutDirection"];
 			if (resourceFlowDirection == "LTR")
 				return FlowDirection.LeftToRight;
 			else if (resourceFlowDirection == "RTL")

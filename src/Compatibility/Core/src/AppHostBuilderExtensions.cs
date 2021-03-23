@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			options.Flags |= InitializationFlags.SkipRenderers;
 
 			Forms.Init(options);
-			Forms.InitDispatcher(MauiWinUIApplication.Current.MainWindow.DispatcherQueue, options);
 
 			return builder;
 		}
