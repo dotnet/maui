@@ -21,9 +21,9 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize(family, 10)
 			};
 
-			var nativeFont = await GetValueAsync(entry, handler => GetNativeEntry(handler).Font);
+			var (services, nativeFont) = await GetValueAsync(entry, handler => (handler.Services, GetNativeEntry(handler).Font));
 
-			var fontManager = App.Services.GetRequiredService<IFontManager>();
+			var fontManager = services.GetRequiredService<IFontManager>();
 
 			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
 
@@ -83,6 +83,37 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(xplatReturnType, values.ViewValue);
 			Assert.Equal(expectedValue, values.NativeViewValue);
+		}
+
+		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			string originalText = "Some Test Text";
+			var xplatCharacterSpacing = 4;
+
+			var entry = new EntryStub()
+			{
+				CharacterSpacing = xplatCharacterSpacing,
+				Text = originalText
+			};
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.CharacterSpacing,
+					NativeViewValue = GetNativeCharacterSpacing(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
+		}
+
+		double GetNativeCharacterSpacing(EntryHandler entryHandler)
+		{
+			var entry = GetNativeEntry(entryHandler);
+			return entry.AttributedText.GetCharacterSpacing();
 		}
 
 		UITextField GetNativeEntry(EntryHandler entryHandler) =>

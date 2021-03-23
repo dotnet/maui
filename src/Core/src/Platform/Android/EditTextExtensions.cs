@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Android.Content.Res;
 using Android.Text;
-using Android.Util;
 using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
@@ -16,28 +15,16 @@ namespace Microsoft.Maui
 
 		public static void UpdateText(this AppCompatEditText editText, IEntry entry)
 		{
-			var newText = entry.Text ?? string.Empty;
-			var oldText = editText.Text ?? string.Empty;
-
-			if (oldText != newText)
-				editText.Text = newText;
+			editText.UpdateText(entry.Text);
 
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
 		}
 
 		public static void UpdateText(this AppCompatEditText editText, IEditor editor)
 		{
-			string text = editor.Text;
+			editText.UpdateText(editor.Text);
 
-			if (editText.Text == text)
-				return;
-
-			editText.Text = text;
-
-			if (string.IsNullOrEmpty(text))
-				return;
-
-			editText.SetSelection(text.Length);
+			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
 		public static void UpdateTextColor(this AppCompatEditText editText, IEntry entry, ColorStateList? defaultColor)
@@ -82,9 +69,15 @@ namespace Microsoft.Maui
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
 		}
 
-		public static void UpdateMaxLength(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateMaxLength(this AppCompatEditText editText, IEntry entry) =>
+			UpdateMaxLength(editText, entry.MaxLength);
+
+		public static void UpdateMaxLength(this AppCompatEditText editText, IEditor editor) =>
+			UpdateMaxLength(editText, editor.MaxLength);
+
+		public static void UpdateMaxLength(this AppCompatEditText editText, int maxLength)
 		{
-			var currentFilters = new List<IInputFilter>(editText?.GetFilters() ?? new IInputFilter[0]);
+			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
 
 			for (var i = 0; i < currentFilters.Count; i++)
 			{
@@ -95,9 +88,11 @@ namespace Microsoft.Maui
 				}
 			}
 
-			currentFilters.Add(new InputFilterLengthFilter(entry.MaxLength));
+			currentFilters.Add(new InputFilterLengthFilter(maxLength));
 
-			editText?.SetFilters(currentFilters.ToArray());
+			editText.SetFilters(currentFilters.ToArray());
+
+			editText.Text = TrimToMaxLength(editText.Text, maxLength);
 		}
 
 		public static void UpdatePlaceholder(this AppCompatEditText editText, IEntry entry)
@@ -118,25 +113,12 @@ namespace Microsoft.Maui
 			editText.Focusable = isEditable;
 		}
 
-		public static void UpdateFont(this AppCompatEditText editText, IEntry entry, IFontManager fontManager)
-		{
-			var font = entry.Font;
-
-			var tf = fontManager.GetTypeface(font);
-			editText.Typeface = tf;
-
-			var sp = fontManager.GetScaledPixel(font);
-			editText.SetTextSize(ComplexUnitType.Sp, sp);
-		}
+		public static void UpdateFont(this AppCompatEditText editText, IEntry entry, IFontManager fontManager) =>
+			editText.UpdateFont(entry.Font, fontManager);
 
 		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.ImeOptions = entry.ReturnType.ToNative();
-		}
-
-		public static void UpdateCharacterSpacing(this AppCompatEditText editText, IEditor editor)
-		{
-			editText.LetterSpacing = editor.CharacterSpacing.ToEm();
 		}
 
 		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
@@ -156,5 +138,10 @@ namespace Microsoft.Maui
 			if (entry.IsReadOnly)
 				editText.InputType = InputTypes.Null;
 		}
+
+		internal static string? TrimToMaxLength(string? currentText, int maxLength) =>
+			currentText?.Length > maxLength
+				? currentText.Substring(0, maxLength)
+				: currentText;
 	}
 }

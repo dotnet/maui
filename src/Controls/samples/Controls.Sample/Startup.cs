@@ -15,12 +15,24 @@ namespace Maui.Controls.Sample
 	public class Startup : IStartup
 	{
 		public readonly static bool UseXamlPage = false;
+		public readonly static bool UseXamlApp = true;
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
+			if (UseXamlApp)
+			{
+				appBuilder = appBuilder
+					.RegisterCompatibilityForms()
+					.UseMauiApp<XamlApp>();
+			}
+			else
+			{
+				appBuilder = appBuilder
+					.UseMauiApp<MyApp>();
+			}
+
 			appBuilder
 				.RegisterCompatibilityRenderers()
-				.UseMauiApp<MyApp>()
 				.ConfigureAppConfiguration((hostingContext, config) =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>

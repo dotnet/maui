@@ -321,29 +321,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return BitmapFactory.DecodeResourceAsync(resource, IdFromTitle(name, DrawableClass, _drawableDefType, resource, context.PackageName));
 		}
 
-		[Obsolete("GetDrawable(this Resources, string) is obsolete as of version 2.5. "
-			+ "Please use GetDrawable(this Context, string) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Drawable GetDrawable(this Resources resource, string name)
-		{
-			int id = IdFromTitle(name, DrawableClass, _drawableDefType, resource);
-			if (id == 0)
-			{
-				Log.Warning("Could not load image named: {0}", name);
-				return null;
-			}
-
-			return AndroidAppCompat.GetDrawable(Forms.Context, id);
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		static void LogInfoToPreviewer(string message)
-		{
-			Java.Lang.Class designerHost = Java.Lang.Class.FromType(typeof(ImageRenderer)).ClassLoader.LoadClass("mono.android.HostProcessConnection");
-			Java.Lang.Reflect.Method reportMethod = designerHost.GetMethod("logInfo", Java.Lang.Class.FromType(typeof(Java.Lang.String)));
-			reportMethod.Invoke(null, message);
-		}
-
 		public static Drawable GetDrawable(this Context context, string name)
 		{
 			int id = IdFromTitle(name, DrawableClass, _drawableDefType, context);
@@ -362,42 +339,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return IdFromTitle(title, DrawableClass, _drawableDefType, context);
 		}
 
-		[Obsolete("GetDrawableByName(string) is obsolete as of version 4.8. "
-			+ "Please use GetDrawableId(string, context) instead.")]
-		public static int GetDrawableByName(string name)
-		{
-			return IdFromTitle(name, DrawableClass, _drawableDefType, Forms.ApplicationContext);
-		}
-
-		[Obsolete("GetResourceByName(string) is obsolete as of version 4.8. "
-			+ "Please use GetResource(string, context) instead.")]
-		public static int GetResourceByName(string name)
-		{
-			return IdFromTitle(name, ResourceClass, "id", Forms.ApplicationContext);
-		}
-
 		public static int GetResource(this Context context, string title)
 		{
 			return IdFromTitle(title, ResourceClass, "id", context);
 		}
 
-		[Obsolete("GetLayoutByName(string) is obsolete as of version 4.8. "
-			+ "Please use GetLayout(string, context) instead.")]
-		public static int GetLayoutByName(string name)
-		{
-			return IdFromTitle(name, LayoutClass, "layout", Forms.ApplicationContext);
-		}
-
 		public static int GetLayout(this Context context, string name)
 		{
 			return IdFromTitle(name, LayoutClass, "layout", context);
-		}
-
-		[Obsolete("GetStyleByName(string) is obsolete as of version 4.8. "
-			+ "Please use GetStyle(string, context) instead.")]
-		public static int GetStyleByName(string name)
-		{
-			return IdFromTitle(name, StyleClass, "style", Forms.ApplicationContext);
 		}
 
 		public static int GetStyle(this Context context, string name)

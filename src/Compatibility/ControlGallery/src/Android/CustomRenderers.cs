@@ -264,10 +264,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 		protected override global::Android.Widget.ListView CreateNativeControl()
 		{
-#pragma warning disable 618
-			// Disabled the warning so we have a test that this obsolete stuff still works
-			return new global::Android.Widget.ListView(Forms.Context);
-#pragma warning restore 618
+			return new global::Android.Widget.ListView(Context);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<NativeListView> e)
@@ -289,10 +286,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			{
 				// subscribe
 
-#pragma warning disable 618
-				// Disabled the warning so we have a test that this obsolete stuff still works
-				Control.Adapter = new NativeListViewAdapter(Forms.Context.GetActivity(), e.NewElement);
-#pragma warning restore 618
+				Control.Adapter = new NativeListViewAdapter(Context.GetActivity(), e.NewElement);
 				Control.ItemClick += Clicked;
 			}
 		}
@@ -309,10 +303,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			{
 				// update the Items list in the UITableViewSource
 
-#pragma warning disable 618
-				// Disabled the warning so we have a test that this obsolete stuff still works
-				Control.Adapter = new NativeListViewAdapter(Forms.Context.GetActivity(), Element);
-#pragma warning restore 618
+				Control.Adapter = new NativeListViewAdapter(Context.GetActivity(), Element);
 			}
 		}
 	}
@@ -471,10 +462,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			if (e.NewElement != null)
 			{
 				// subscribe
-#pragma warning disable 618
-				// Disabled the warning so we have a test that this obsolete stuff still works
-				Control.Adapter = new NativeAndroidListViewAdapter(Forms.Context.GetActivity(), e.NewElement);
-#pragma warning restore 618
+				Control.Adapter = new NativeAndroidListViewAdapter(Context.GetActivity(), e.NewElement);
 				Control.ItemClick += Clicked;
 			}
 		}
@@ -496,10 +484,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			{
 				// update the Items list in the UITableViewSource
 
-#pragma warning disable 618
-				// Disabled the warning so we have a test that this obsolete stuff still works
-				Control.Adapter = new NativeAndroidListViewAdapter(Forms.Context.GetActivity(), Element);
-#pragma warning restore 618
+				Control.Adapter = new NativeAndroidListViewAdapter(Context.GetActivity(), Element);
 			}
 		}
 	}

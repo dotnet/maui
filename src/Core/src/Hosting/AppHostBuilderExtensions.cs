@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Hosting
 				{ typeof(IActivityIndicator), typeof(ActivityIndicatorHandler) },
 				{ typeof(IButton), typeof(ButtonHandler) },
 				{ typeof(ICheckBox), typeof(CheckBoxHandler) },
+        { typeof(IDatePicker), typeof(DatePickerHandler) },
 				{ typeof(IEditor), typeof(EditorHandler) },
 				{ typeof(IEntry), typeof(EntryHandler) },
 				{ typeof(ILabel), typeof(LabelHandler) },
@@ -68,21 +69,21 @@ namespace Microsoft.Maui.Hosting
 		}
 
 		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder)
-			where TApp : MauiApp
+			where TApp : class, IApplication
 		{
 			builder.ConfigureServices((context, collection) =>
 			{
-				collection.AddSingleton<MauiApp, TApp>();
+				collection.AddSingleton<IApplication, TApp>();
 			});
 			return builder;
 		}
 
 		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
-			where TApp : MauiApp
+			where TApp : class, IApplication
 		{
 			builder.ConfigureServices((context, collection) =>
 			{
-				collection.AddSingleton<MauiApp>(implementationFactory);
+				collection.AddSingleton<IApplication>(implementationFactory);
 			});
 			return builder;
 		}
