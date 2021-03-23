@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample
 	public class Startup : IStartup
 	{
 		public readonly static bool UseXamlPage = false;
-		public readonly static bool UseXamlApp = true;
+		public readonly static bool UseXamlApp = false;
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
