@@ -1,6 +1,10 @@
 using System.Globalization;
 using Windows.ApplicationModel;
+#if NET6_0
 using Microsoft.UI.Xaml;
+#else
+using Windows.UI.Xaml;
+#endif
 using System;
 
 namespace Microsoft.Maui.Essentials
