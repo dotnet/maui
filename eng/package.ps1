@@ -15,12 +15,12 @@ $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
 $winuisln = Join-Path $PSScriptRoot ../Microsoft.Maui.WinUI.sln
 
 # Modify global.json, so the IDE can load
-$globaljson = Join-Path $PSScriptRoot ../global.json
-[xml] $xml = Get-Content (Join-Path $PSScriptRoot Version.props)
-$json = Get-Content $globaljson | ConvertFrom-Json
-$json | Add-Member sdk (New-Object -TypeName PSObject) -Force
-$json.sdk | Add-Member version $xml.Project.PropertyGroup.MicrosoftNETSdkPackageVersion -Force
-$json | ConvertTo-Json | Set-Content $globaljson
+# $globaljson = Join-Path $PSScriptRoot ../global.json
+# [xml] $xml = Get-Content (Join-Path $PSScriptRoot Version.props)
+# $json = Get-Content $globaljson | ConvertFrom-Json
+# $json | Add-Member sdk (New-Object -TypeName PSObject) -Force
+# $json.sdk | Add-Member version $xml.Project.PropertyGroup.MicrosoftNETSdkPackageVersion -Force
+# $json | ConvertTo-Json | Set-Content $globaljson
 
 
 # Build with .\bin\dotnet\dotnet.exe
@@ -34,13 +34,13 @@ if ($IsWindows)
   & $msbuild $winuisln `
     /p:configuration=$configuration `
     /t:restore `
-    /p:MauiPlatforms=net6.0-windows10.0.19041.0
+    /p:MauiPlatforms=net5.0-windows10.0.19041.0
   
   & $msbuild $winuisln `
     /p:configuration=$configuration `
     /p:SymbolPackageFormat=snupkg `
     /t:build `
-    /p:MauiPlatforms=net6.0-windows10.0.19041.0
+    /p:MauiPlatforms=net5.0-windows10.0.19041.0
 }
     
 # Build with .\bin\dotnet\dotnet.exe
