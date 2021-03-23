@@ -86,7 +86,7 @@
     </PropertyGroup>
   </Target>
   
-  <ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <None Include="bin\$(Configuration)\net6.0-windows10.0.19041.0\Microsoft.Maui.Essentials.dll" Visible="False" Pack="True" PackagePath="lib\net6.0-windows10.0.19041" />
     <None Include="bin\$(Configuration)\net6.0-windows10.0.19041.0\Microsoft.Maui.Essentials.pdb" Visible="False" Pack="True" PackagePath="lib\net6.0-windows10.0.19041" />
    </ItemGroup>
