@@ -7,10 +7,10 @@ using Android.Views.InputMethods;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using AActivity = Android.App.Activity;
-using AColor = Android.Graphics.Color;
-using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AAttribute = Android.Resource.Attribute;
+using AColor = Android.Graphics.Color;
+using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
 
 namespace Microsoft.Maui
 {

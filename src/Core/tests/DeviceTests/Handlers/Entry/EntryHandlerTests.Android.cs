@@ -190,7 +190,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		Android.Views.TextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
-			
+
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ImeOptions;
 	}

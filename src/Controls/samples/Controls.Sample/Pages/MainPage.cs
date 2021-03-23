@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
 			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
-			verticalStack.Add(new Label { Text = "This should have five times the line height!", LineHeight = 5});
+			verticalStack.Add(new Label { Text = "This should have five times the line height!", LineHeight = 5 });
 
 
 			var paddingButton = new Button

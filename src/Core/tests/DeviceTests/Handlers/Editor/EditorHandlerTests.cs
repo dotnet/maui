@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 				setValue,
 				unsetValue);
 		}
-		
+
 		[Theory(DisplayName = "Is Text Prediction Enabled")]
 		[InlineData(true)]
 		[InlineData(false)]

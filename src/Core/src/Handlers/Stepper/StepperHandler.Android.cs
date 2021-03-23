@@ -1,6 +1,6 @@
 using System;
-using Android.Widget;
 using Android.Views;
+using Android.Widget;
 using AButton = Android.Widget.Button;
 using AOrientation = Android.Widget.Orientation;
 

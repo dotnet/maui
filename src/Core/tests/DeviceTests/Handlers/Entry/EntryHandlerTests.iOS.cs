@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
-		
+
 		[Fact(DisplayName = "ReturnType Initializes Correctly")]
 		public async Task ReturnTypeInitializesCorrectly()
 		{
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		UITextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
-			
+
 		UIReturnKeyType GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ReturnKeyType;
 	}
