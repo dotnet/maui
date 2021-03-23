@@ -14,6 +14,15 @@ $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/dotnet$ext
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
 $winuisln = Join-Path $PSScriptRoot ../Microsoft.Maui.WinUI.sln
 
+# Modify global.json, so the IDE can load
+$globaljson = Join-Path $PSScriptRoot ../global.json
+[xml] $xml = Get-Content (Join-Path $PSScriptRoot Version.props)
+$json = Get-Content $globaljson | ConvertFrom-Json
+$json | Add-Member sdk (New-Object -TypeName PSObject) -Force
+$json.sdk | Add-Member version $xml.Project.PropertyGroup.MicrosoftNETSdkPackageVersion -Force
+$json | ConvertTo-Json | Set-Content $globaljson
+
+
 # Build with .\bin\dotnet\dotnet.exe
 & $dotnet build $sln `
     -c:$configuration `
