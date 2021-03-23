@@ -1,6 +1,6 @@
 param(
   [string] $configuration = 'Debug',
-  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\PublicPreview\MSBuild\Current\Bin\MSBuild.exe"
 )
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
@@ -14,9 +14,12 @@ $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/dotnet$ext
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
 $winuisln = Join-Path $PSScriptRoot ../Microsoft.Maui.WinUI.sln
 
-& $msbuild $winuisln `
+if ($IsWindows)
+{
+  & $msbuild $winuisln `
     /p:configuration=$configuration `
     /p:SymbolPackageFormat=snupkg
+}
     
 # Build with .\bin\dotnet\dotnet.exe
 & $dotnet pack $sln `
