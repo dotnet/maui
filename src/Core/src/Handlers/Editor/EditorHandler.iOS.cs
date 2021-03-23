@@ -16,11 +16,6 @@ namespace Microsoft.Maui.Handlers
 			return new MauiTextView(CGRect.Empty);
 		}
 
-		protected override void SetupDefaults(MauiTextView nativeView)
-		{
-			nativeView.PlaceholderTextColor = DefaultPlaceholderColor;
-		}
-
 		protected override void ConnectHandler(MauiTextView nativeView)
 		{
 			nativeView.Changed += OnChanged;

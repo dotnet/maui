@@ -95,12 +95,31 @@ namespace Microsoft.Maui
 			editText.Text = TrimToMaxLength(editText.Text, maxLength);
 		}
 
-		public static void UpdatePlaceholder(this AppCompatEditText editText, IEntry entry)
+		public static void UpdatePlaceholder(this AppCompatEditText editText, IPlaceholder textInput)
 		{
-			if (editText.Hint == entry.Placeholder)
+			if (editText.Hint == textInput.Placeholder)
 				return;
 
-			editText.Hint = entry.Placeholder;
+			editText.Hint = textInput.Placeholder;
+		}
+
+		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IEditor editor, ColorStateList? defaultColor)
+		{
+			var placeholderTextColor = editor.PlaceholderColor;
+			if (placeholderTextColor.IsDefault)
+			{
+				editText.SetHintTextColor(defaultColor);
+			}
+			else
+			{
+				var androidColor = placeholderTextColor.ToNative();
+
+				if (!editText.HintTextColors.IsOneColor(ColorExtensions.States, androidColor))
+				{
+					var acolor = androidColor.ToArgb();
+					editText.SetHintTextColor(new ColorStateList(ColorExtensions.States, new[] { acolor, acolor }));
+				}
+			}
 		}
 
 		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEntry entry)
