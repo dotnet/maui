@@ -21,9 +21,9 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize(family, 10)
 			};
 
-			var nativeFont = await GetValueAsync(entry, handler => GetNativeEntry(handler).Font);
+			var (services, nativeFont) = await GetValueAsync(entry, handler => (handler.Services, GetNativeEntry(handler).Font));
 
-			var fontManager = App.Services.GetRequiredService<IFontManager>();
+			var fontManager = services.GetRequiredService<IFontManager>();
 
 			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
 
