@@ -446,7 +446,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Category(GridSpan)]
-		[Fact(DisplayName ="Simple row spanning")]
+		[Fact(DisplayName = "Simple row spanning")]
 		public void ViewSpansRows()
 		{
 			var grid = CreateGridLayout(rows: "auto, auto");
@@ -464,7 +464,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Category(GridSpan)]
-		[Fact(DisplayName ="Simple row spanning with multiple views")]
+		[Fact(DisplayName = "Simple row spanning with multiple views")]
 		public void ViewSpansRowsWhenOtherViewsPresent()
 		{
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto");
@@ -486,7 +486,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Category(GridSpan)]
 		[Category(GridSpacing)]
-		[Fact(DisplayName ="Row spanning with row spacing")]
+		[Fact(DisplayName = "Row spanning with row spacing")]
 		public void RowSpanningShouldAccountForSpacing()
 		{
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto", rowSpacing: 5);
@@ -510,7 +510,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Category(GridSpan)]
-		[Fact(DisplayName ="Simple column spanning with multiple views")]
+		[Fact(DisplayName = "Simple column spanning with multiple views")]
 		public void ViewSpansColumnsWhenOtherViewsPresent()
 		{
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto");
@@ -532,7 +532,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Category(GridSpan)]
 		[Category(GridSpacing)]
-		[Fact(DisplayName ="Column spanning with column spacing")]
+		[Fact(DisplayName = "Column spanning with column spacing")]
 		public void ColumnSpanningShouldAccountForSpacing()
 		{
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto", colSpacing: 5);
@@ -556,7 +556,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Category(GridSpan)]
-		[Fact(DisplayName ="Row-spanning views smaller than the views confined to the row should not affect row size")]
+		[Fact(DisplayName = "Row-spanning views smaller than the views confined to the row should not affect row size")]
 		public void SmallerSpanningViewsShouldNotAffectRowSize() 
 		{
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto");
@@ -577,7 +577,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Category(GridSpan)]
-		[Fact(DisplayName ="Column-spanning views smaller than the views confined to the column should not affect column size")]
+		[Fact(DisplayName = "Column-spanning views smaller than the views confined to the column should not affect column size")]
 		public void SmallerSpanningViewsShouldNotAffectColumnSize()
 		{
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto");
@@ -599,7 +599,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 
 		[Category(GridAbsoluteSizing)]
-		[Fact(DisplayName ="Empty absolute rows/columns still affect Grid size")]
+		[Fact(DisplayName = "Empty absolute rows/columns still affect Grid size")]
 		public void EmptyAbsoluteRowsAndColumnsAffectSize()
 		{
 			var grid = CreateGridLayout(rows: "10, 40", columns: "15, 85");
@@ -617,7 +617,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Category(GridSpan)]
-		[Fact(DisplayName ="Row and column spans should be able to mix")]
+		[Fact(DisplayName = "Row and column spans should be able to mix")]
 		public void MixedRowAndColumnSpans()
 		{
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto");
