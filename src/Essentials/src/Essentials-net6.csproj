@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.Net.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(EssentialsPlatforms)</TargetFrameworks>
+    <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
     <RootNamespace>Microsoft.Maui.Essentials</RootNamespace>
     <PackageId>Microsoft.Maui.Essentials</PackageId>
