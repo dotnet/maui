@@ -34,7 +34,8 @@ if ($IsWindows)
   & $msbuild $winuisln `
     /p:configuration=$configuration `
     /p:SymbolPackageFormat=snupkg `
-    /t:restore;build
+    /t:restore;build `
+    /p:MauiPlatforms=net6.0-windows10.0.19041.0
 }
     
 # Build with .\bin\dotnet\dotnet.exe
