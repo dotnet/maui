@@ -1,6 +1,6 @@
 using System.Globalization;
 using Windows.ApplicationModel;
-#if NET6_0
+#if NET6_0 || NET5_0
 using Microsoft.UI.Xaml;
 #else
 using Windows.UI.Xaml;
