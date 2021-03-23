@@ -85,6 +85,37 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue);
 		}
 
+		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			string originalText = "Some Test Text";
+			var xplatCharacterSpacing = 4;
+
+			var entry = new EntryStub()
+			{
+				CharacterSpacing = xplatCharacterSpacing,
+				Text = originalText
+			};
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.CharacterSpacing,
+					NativeViewValue = GetNativeCharacterSpacing(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
+		}
+
+		double GetNativeCharacterSpacing(EntryHandler entryHandler)
+		{
+			var entry = GetNativeEntry(entryHandler);
+			return entry.AttributedText.GetCharacterSpacing();
+		}
+
 		UITextField GetNativeEntry(EntryHandler entryHandler) =>
 			(UITextField)entryHandler.View;
 

@@ -33,6 +33,9 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateCharacterSpacing(this TextView textView, IEntry entry) =>
+			UpdateCharacterSpacing(textView, entry.CharacterSpacing);
+
 		public static void UpdateCharacterSpacing(this TextView textView, IEditor editor) =>
 			UpdateCharacterSpacing(textView, editor.CharacterSpacing);
 

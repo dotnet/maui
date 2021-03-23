@@ -114,6 +114,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateHorizontalTextAlignment(entry);
 		}
 
+		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(entry);
+		}
+
 		void OnEditingChanged(object? sender, EventArgs e) => OnTextChanged();
 
 		void OnEditingEnded(object? sender, EventArgs e) => OnTextChanged();

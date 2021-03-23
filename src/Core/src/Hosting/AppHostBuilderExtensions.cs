@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Hosting
 				{ typeof(IActivityIndicator), typeof(ActivityIndicatorHandler) },
 				{ typeof(IButton), typeof(ButtonHandler) },
 				{ typeof(ICheckBox), typeof(CheckBoxHandler) },
+        { typeof(IDatePicker), typeof(DatePickerHandler) },
 				{ typeof(IEditor), typeof(EditorHandler) },
 				{ typeof(IEntry), typeof(EntryHandler) },
 				{ typeof(ILabel), typeof(LabelHandler) },
