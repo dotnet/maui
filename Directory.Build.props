@@ -3,8 +3,15 @@
   <PropertyGroup>
     <BuildForWinUI>false</BuildForWinUI>
     <BuildForWinUI Condition="'$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln'">true</BuildForWinUI>
+
+    <!-- If the platforms are passed in as a build property just use those for essentials-->
+    <EssentialsPlatforms Condition="'$(MauiPlatforms)' != ''">$(MauiPlatforms)</EssentialsPlatforms>
+
     <MauiPlatforms>net6.0-android;net6.0-ios;net6.0-maccatalyst</MauiPlatforms>
     <MauiPlatforms Condition="'$(BuildForWinUI)' == 'true'">net6.0-windows10.0.19041.0</MauiPlatforms>
+
+    <EssentialsPlatforms Condition="'$(EssentialsPlatforms)' == ''">net6.0;$(MauiPlatforms)</EssentialsPlatforms>
+
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
