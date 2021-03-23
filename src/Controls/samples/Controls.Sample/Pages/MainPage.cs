@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.ViewModel;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {
-	public class MainPage : ContentPage, IPage
+	public class MainPage : BasePage
 	{
 		MainPageViewModel _viewModel;
 
@@ -81,9 +82,9 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new CheckBox());
 			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
 			verticalStack.Add(new CheckBox { IsChecked = true, Color = Color.Aquamarine });
-      
-      verticalStack.Add(new DatePicker());
-      
+
+			verticalStack.Add(new DatePicker());
+
 			verticalStack.Add(new Editor());
 			verticalStack.Add(new Editor { Text = "Editor" });
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", MaxLength = 10 });
@@ -200,7 +201,5 @@ namespace Maui.Controls.Sample.Pages
 
 			Content = verticalStack;
 		}
-
-		public IView View { get => (IView)Content; set => Content = (View)value; }
 	}
 }
