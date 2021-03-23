@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		public static IAppHostBuilder RegisterCompatibilityForms(this IAppHostBuilder builder)
 		{
+#if !WINDOWS
 #if __ANDROID__
 			var options = new InitializationOptions(global::Android.App.Application.Context, null, null);
 #elif __IOS__
@@ -17,6 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			options.Flags |= InitializationFlags.SkipRenderers;
 
 			Forms.Init(options);
+#endif
 
 			return builder;
 		}
@@ -28,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				typeof(Button),
 				typeof(ContentPage),
-        typeof(DatePicker),
+				typeof(DatePicker),
 				typeof(Editor),
 				typeof(Entry),
 				typeof(Label),

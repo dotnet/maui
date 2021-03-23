@@ -156,8 +156,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static IEnumerable<string> GetAllFontPossibilities(string fontFamily)
 		{
 			// WINUI3
-			var fontRegistrar = (IFontRegistrar)MauiApp.Current.Services.GetService(typeof(IFontRegistrar));
-						
+			var fontRegistrar = (IFontRegistrar)MauiWinUIApplication.Current.Services.GetService(typeof(IFontRegistrar));
+
 			//First check Alias
 			var (hasFontAlias, fontPostScriptName) = fontRegistrar.HasFont(fontFamily);
 			if (hasFontAlias)

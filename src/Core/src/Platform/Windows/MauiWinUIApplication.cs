@@ -1,67 +1,58 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
 {
-	public class MauiWinUIApplication<TStartup> : Microsoft.UI.Xaml.Application
+	public class MauiWinUIApplication<TStartup> : MauiWinUIApplication
 		where TStartup : IStartup, new()
 	{
-		//MauiWinUIWindow? m_window;
+		//MauiWinUIWindow? _window;
 
-		protected override void OnLaunched(LaunchActivatedEventArgs args)
+		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
 			var startup = new TStartup();
 
-			IAppHostBuilder appBuilder;
+			var host = startup
+				.CreateAppHostBuilder()
+				.ConfigureServices(ConfigureNativeServices)
+				.ConfigureUsing(startup)
+				.Build();
 
-			if (startup is IHostBuilderStartup hostBuilderStartup)
-			{
-				appBuilder = hostBuilderStartup
-					.CreateHostBuilder();
-			}
-			else
-			{
-				appBuilder = AppHostBuilder
-					.CreateDefaultAppBuilder();
-			}
+			Services = host.Services;
+			Application = Services.GetRequiredService<IApplication>();
 
-			appBuilder.
-				ConfigureServices(ConfigureNativeServices);
+			//var mauiContext = new MauiContext(Services);
 
-			startup.Configure(appBuilder);
+			//_window = new MauiWinUIWindow();
 
-			var host = appBuilder.Build();
-			if (host.Services == null)
-				throw new InvalidOperationException("App was not intialized");
+			//var activationState = new ActivationState(args, _window, mauiContext);
+			//var window = Application.CreateWindow(activationState);
+			//window.MauiContext = mauiContext;
 
-			var services = host.Services;
+			//var content = (window.Page as IView) ?? window.Page.View;
 
-			var app = services.GetRequiredService<MauiApp>();
-			host.SetServiceProvider(app);
+			//_window.Content = content.ToNative(window.MauiContext);
 
-
-			//m_window = new MauiWinUIWindow();
-
-			//var content = window.Page.View;//(window.Page as IView) ?? window.Page.View;
-
-			//m_window.Content = new ContentControl()
-			//{
-			//	Content = content.ToNative(window.MauiContext)
-			//};
-
-			//m_window.Activate();
-
+			//_window.Activate();
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-
 		}
+	}
+
+	public class MauiWinUIApplication : UI.Xaml.Application
+	{
+		protected MauiWinUIApplication()
+		{
+		}
+
+		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;
+
+		public IServiceProvider Services { get; protected set; } = null!;
+
+		public IApplication Application { get; protected set; } = null!;
 	}
 }

@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui

@@ -24,7 +24,7 @@ using Maui.Controls.Sample;
 namespace Controls.Sample.WinUI3
 {
 
-	public class MiddleApp : MauiWinUIApplication<MyApp>
+	public class MiddleApp : MauiWinUIApplication<Startup>
 	{
 
 	}

@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 	public static class ViewExtensions
 	{
 		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view)
-		{			
+		{
 			if (nativeView is Control control)
 				control.IsEnabled = view.IsEnabled;
 		}
@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 				return;
 
 			control.Background = view.BackgroundColor.ToNative();
-			
+
 		}
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view)

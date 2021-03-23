@@ -12,9 +12,10 @@
 			Context = context;
 		}
 
-		public Microsoft.UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; }
-		
-		public global::Microsoft.UI.Xaml.Window MainWindow { get; }
+		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; }
+
+		public UI.Xaml.Window MainWindow { get; }
+
 		public IMauiContext Context { get; }
 	}
 }
