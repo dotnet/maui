@@ -91,6 +91,14 @@ namespace Microsoft.Maui
 				textField.AttributedText = textAttr;
 		}
 
+		public static void UpdateCharacterSpacing(this UITextField textField, IEntry textView)
+		{
+			var textAttr = textField.AttributedText?.WithCharacterSpacing(textView.CharacterSpacing);
+
+			if (textAttr != null)
+				textField.AttributedText = textAttr;
+		}
+
 		public static void UpdateFont(this UITextField textField, IText textView, IFontManager fontManager)
 		{
 			var uiFont = fontManager.GetFont(textView.Font);

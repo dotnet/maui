@@ -390,6 +390,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				EditText.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			if (Forms.IsLollipopOrNewer)

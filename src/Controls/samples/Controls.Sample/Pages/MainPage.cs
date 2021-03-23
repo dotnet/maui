@@ -82,7 +82,9 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new CheckBox());
 			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
 			verticalStack.Add(new CheckBox { IsChecked = true, Color = Color.Aquamarine });
-
+      
+      verticalStack.Add(new DatePicker());
+      
 			verticalStack.Add(new Editor());
 			verticalStack.Add(new Editor { Text = "Editor" });
 			verticalStack.Add(new Editor { Text = "Predictive Text Off", IsTextPredictionEnabled = false });
@@ -100,6 +102,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
 			verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true });
 			verticalStack.Add(new Entry { MaxLength = 5, Placeholder = "MaxLength text" });
+			verticalStack.Add(new Entry { Text = "This should be text with character spacing", CharacterSpacing = 10 });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });
