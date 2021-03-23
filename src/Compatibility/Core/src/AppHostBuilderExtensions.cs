@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				typeof(Button),
 				typeof(ContentPage),
+        typeof(DatePicker),
 				typeof(Editor),
 				typeof(Entry),
 				typeof(Label),
