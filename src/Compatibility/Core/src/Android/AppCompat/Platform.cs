@@ -313,6 +313,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				try
 				{
 					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType());
+					handler.SetMauiContext(Forms.MauiContext);
 				}
 				catch
 				{
@@ -340,10 +341,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				else if (handler is IVisualElementRenderer ver)
 					renderer = ver;
 				else if (handler is IAndroidViewHandler vh)
-				{
-					vh.SetContext(context);
 					renderer = new HandlerToRendererShim(vh);
-				}
 			}
 
 			renderer.SetElement(element);

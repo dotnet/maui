@@ -9,10 +9,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Button)]
 	public partial class ButtonHandlerTests : HandlerTestBase<ButtonHandler, ButtonStub>
 	{
-		public ButtonHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
 		{

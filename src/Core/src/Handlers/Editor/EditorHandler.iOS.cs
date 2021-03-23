@@ -1,5 +1,5 @@
-﻿using System;
-using CoreGraphics;
+﻿using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -13,12 +13,25 @@ namespace Microsoft.Maui.Handlers
 			return new UITextView(CGRect.Empty);
 		}
 
+		protected override void ConnectHandler(UITextView nativeView)
+		{
+			nativeView.ShouldChangeText += OnShouldChangeText;
+		}
+
+		protected override void DisconnectHandler(UITextView nativeView)
+		{
+			nativeView.ShouldChangeText -= OnShouldChangeText;
+		}
+
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			new SizeRequest(new Size(widthConstraint, BaseHeight));
 
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
 			handler.TypedNativeView?.UpdateText(editor);
+
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, editor);
 		}
 
 		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
@@ -26,9 +39,41 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
 		}
 
+		public static void MapMaxLength(EditorHandler handler, IEditor editor)
+		{
+			handler.TypedNativeView?.UpdateMaxLength(editor);
+		}
+
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
 		{
 			handler.TypedNativeView?.UpdatePredictiveText(editor);
+		}
+
+		public static void MapFormatting(EditorHandler handler, IEditor editor)
+		{
+			handler.TypedNativeView?.UpdateMaxLength(editor);
+
+			// Update all of the attributed text formatting properties
+			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
+		}
+
+		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString)
+		{
+			var currLength = textView?.Text?.Length ?? 0;
+
+			// fix a crash on undo
+			if (range.Length + range.Location > currLength)
+				return false;
+
+			if (VirtualView == null || TypedNativeView == null)
+				return false;
+
+			var addLength = replacementString?.Length ?? 0;
+			var remLength = range.Length;
+
+			var newLength = currLength + addLength - remLength;
+
+			return newLength <= VirtualView.MaxLength;
 		}
 	}
 }

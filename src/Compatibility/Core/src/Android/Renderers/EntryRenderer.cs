@@ -366,6 +366,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control?.ClearFocus();
 		}
 
+		[PortHandler]
 		void UpdateMaxLength()
 		{
 			var currentFilters = new List<IInputFilter>(EditText?.GetFilters() ?? new IInputFilter[0]);
@@ -389,6 +390,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				EditText.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			if (Forms.IsLollipopOrNewer)

@@ -5,6 +5,7 @@
 		public const string ActivityIndicator = "ActivityIndicator";
 		public const string Button = "Button";
 		public const string CheckBox = "CheckBox";
+    public const string DatePicker = "DatePicker";
 		public const string Editor = "Editor";
 		public const string Entry = "Entry";
 		public const string Label = "Label";

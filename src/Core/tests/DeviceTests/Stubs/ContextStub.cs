@@ -3,29 +3,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	class ContextStub : IMauiContext, IDisposable
+	class ContextStub : IMauiContext
 	{
-		AppStub _app;
-
-		public ContextStub(AppStub app)
+		public ContextStub(IServiceProvider services)
 		{
-			_app = app;
+			Services = services;
 		}
 
-		public IServiceProvider Services =>
-			_app.Services;
+		public IServiceProvider Services { get; }
 
 		public IMauiHandlersServiceProvider Handlers =>
 			Services.GetRequiredService<IMauiHandlersServiceProvider>();
 
 #if __ANDROID__
-		public Android.Content.Context Context =>
-			Android.App.Application.Context;
+		public Android.Content.Context Context => Platform.DefaultContext;
 #endif
-
-		public void Dispose()
-		{
-			_app = null;
-		}
 	}
 }
