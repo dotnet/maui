@@ -201,6 +201,7 @@ stages:
             - task: UseDotNet@2
               inputs:
                 version: 6.x
+                includePreviewVersions: true
             - pwsh: ./eng/package.ps1 -configuration Release
               displayName: pack nugets
               errorActionPreference: stop

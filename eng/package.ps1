@@ -58,7 +58,8 @@ try {
         /p:configuration=$configuration `
         /p:SymbolPackageFormat=snupkg `
         /t:pack `
-        /p:Packing=true
+        /p:Packing=true `
+        /bl:"$artifacts//maui-pack-$configuration.binlog"
     }
     else
     {
