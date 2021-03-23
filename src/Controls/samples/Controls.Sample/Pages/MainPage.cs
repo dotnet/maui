@@ -35,7 +35,6 @@ namespace Maui.Controls.Sample.Pages
 			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
 
-
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
 
 			var label = new Label { Text = "centered text", BackgroundColor = Color.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
@@ -96,7 +95,6 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
 			verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true });
-
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });
