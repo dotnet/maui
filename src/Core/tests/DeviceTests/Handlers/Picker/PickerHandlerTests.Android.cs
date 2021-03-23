@@ -64,7 +64,7 @@ namespace Microsoft.Maui.DeviceTests
 		double GetNativeCharacterSpacing(PickerHandler pickerHandler)
 		{
 			var mauiPicker = GetNativePicker(pickerHandler);
-		
+
 			if (mauiPicker != null)
 			{
 				return mauiPicker.LetterSpacing;

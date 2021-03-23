@@ -1,0 +1,11 @@
+﻿<Application xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             xmlns:maui="clr-namespace:Microsoft.Maui;assembly=Microsoft.Maui"
+             x:Class="Maui.Controls.Sample.XamlApp">
+    <Application.Resources>
+        <ResourceDictionary>
+            <maui:Color x:Key="DotNetPurple">#512BD4</maui:Color>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

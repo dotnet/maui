@@ -108,7 +108,57 @@ namespace Microsoft.Maui.DeviceTests
 				setValue,
 				unsetValue);
 		}
-		
+
+		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[InlineData(2)]
+		[InlineData(5)]
+		[InlineData(8)]
+		[InlineData(10)]
+		public async Task MaxLengthInitializesCorrectly(int maxLength)
+		{
+			const string text = "Lorem ipsum dolor sit amet";
+			var expectedText = text.Substring(0, maxLength);
+
+			var editor = new EditorStub()
+			{
+				MaxLength = maxLength,
+				Text = text
+			};
+
+			var nativeText = await GetValueAsync(editor, GetNativeText);
+
+			Assert.Equal(expectedText, nativeText);
+			//TODO: Until Editor gets text update events
+			//Assert.Equal(expectedText, editor.Text);
+		}
+
+		[Theory(DisplayName = "MaxLength Clips Native Text Correctly")]
+		[InlineData(2)]
+		[InlineData(5)]
+		[InlineData(8)]
+		[InlineData(10)]
+		public async Task MaxLengthClipsNativeTextCorrectly(int maxLength)
+		{
+			const string text = "Lorem ipsum dolor sit amet";
+			var expectedText = text.Substring(0, maxLength);
+
+			var editor = new EditorStub()
+			{
+				MaxLength = maxLength,
+			};
+
+			var nativeText = await GetValueAsync(editor, handler =>
+			{
+				editor.Text = text;
+
+				return GetNativeText(handler);
+			});
+
+			Assert.Equal(expectedText, nativeText);
+			//TODO: Until Editor gets text update events
+			//Assert.Equal(expectedText, editor.Text);
+		}
+
 		[Theory(DisplayName = "Is Text Prediction Enabled")]
 		[InlineData(true)]
 		[InlineData(false)]

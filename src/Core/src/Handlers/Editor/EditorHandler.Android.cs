@@ -1,7 +1,7 @@
+using Android.Content.Res;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
-using Android.Content.Res;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 			editText.SetSingleLine(false);
 			editText.Gravity = GravityFlags.Top;
-			editText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
+			editText.TextAlignment = Android.Views.TextAlignment.ViewStart;
 			editText.SetHorizontallyScrolling(false);
 
 			return editText;
@@ -36,18 +36,23 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapPlaceholder(EditorHandler handler, IEditor editor)
-        {
-	        handler.TypedNativeView?.UpdatePlaceholder(editor);
-        }
+		{
+			handler.TypedNativeView?.UpdatePlaceholder(editor);
+		}
 
-		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor) 
+		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor)
 		{
 			handler.TypedNativeView?.UpdatePlaceholderColor(editor, DefaultPlaceholderTextColors);
 		}
-		
+
 		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
 		{
 			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
+		}
+
+		public static void MapMaxLength(EditorHandler handler, IEditor editor)
+		{
+			handler.TypedNativeView?.UpdateMaxLength(editor);
 		}
 
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)

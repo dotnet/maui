@@ -8,6 +8,7 @@
 			[nameof(IEditor.Placeholder)] = MapPlaceholder,
 			[nameof(IEditor.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
+			[nameof(IEditor.MaxLength)] = MapMaxLength,
 			[nameof(IEditor.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled
 		};
 
