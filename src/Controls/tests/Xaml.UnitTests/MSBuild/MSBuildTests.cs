@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			var ext = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
 			var dotnet = IOPath.Combine(testDirectory, "..", "..", "..", "..", "..", "..", "..", "bin", "dotnet", $"dotnet{ext}");
-			if (!File.Exists (dotnet))
+			if (!File.Exists(dotnet))
 			{
 				Console.WriteLine($"Using 'dotnet', did not find: {dotnet}");
 
