@@ -48,8 +48,8 @@ var IOS_SIM_RUNTIME = GetBuildVariable("IOS_SIM_RUNTIME", "com.apple.CoreSimulat
 var IOS_CONTROLGALLERY = "src/Compatibility/ControlGallery/src/iOS/";
 var IOS_CONTROLGALLERY_PROJ = $"{IOS_CONTROLGALLERY}Compatibility.ControlGallery.iOS.csproj";
 var IOS_TEST_PROJ = "./src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj";
-var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $".src/Compatibility/ControlGallery/test/iOS.UITests/bin/{configuration}/Microsoft.Maui.Controls.iOS.UITests.dll");
-var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $".src/Compatibility/ControlGallery/src/iOS/bin/iPhoneSimulator/{configuration}/CompatibilityControlGalleryiOS.app");
+var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $"./src/Compatibility/ControlGallery/test/iOS.UITests/bin/{configuration}/Microsoft.Maui.Controls.iOS.UITests.dll");
+var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $"./src/Compatibility/ControlGallery/src/iOS/bin/iPhoneSimulator/{configuration}/CompatibilityControlGalleryiOS.app");
 var IOS_BUNDLE_ID = "com.microsoft.mauicompatibilitygallery";
 var IOS_BUILD_IPA = Argument("IOS_BUILD_IPA", (target == "cg-ios-deploy") ? true : (false || isCIBuild) );
 Guid IOS_SIM_UDID = Argument("IOS_SIM_UDID", Guid.Empty);
