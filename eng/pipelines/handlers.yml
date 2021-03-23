@@ -198,6 +198,9 @@ stages:
                   /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
                   cat ~/Library/Preferences/Xamarin/Settings.plist || true
                 displayName: configure vsmac xcode
+            - task: UseDotNet@2
+              inputs:
+                version: 6.x
             - pwsh: ./eng/package.ps1 -configuration Release
               displayName: pack nugets
               errorActionPreference: stop

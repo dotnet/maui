@@ -52,6 +52,23 @@ try {
     # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
     $env:PATH=($env:DOTNET_ROOT + ";" + $env:PATH)
 
+    if ($IsWindows)
+    {
+      & $msbuild $sln `
+        /p:configuration=$configuration `
+        /p:SymbolPackageFormat=snupkg `
+        /t:pack `
+        /p:Packing=true
+    }
+    else
+    {
+      # Build with .\bin\dotnet\dotnet.exe
+      & $dotnet pack $sln `
+          -c:$configuration `
+          -p:SymbolPackageFormat=snupkg `
+          -bl:$artifacts/maui-pack-$configuration.binlog
+    }
+
 } finally {
     if (-Not $modify) {
         $env:DOTNET_INSTALL_DIR = $oldDOTNET_INSTALL_DIR
@@ -65,22 +82,6 @@ try {
 }
 
 
-if ($IsWindows)
-{
-  & $msbuild $sln `
-    /p:configuration=$configuration `
-    /p:SymbolPackageFormat=snupkg `
-    /t:pack `
-    /p:Packing=true
-}
-else
-{
-  # Build with .\bin\dotnet\dotnet.exe
-  & $dotnet pack $sln `
-      -c:$configuration `
-      -p:SymbolPackageFormat=snupkg `
-      -bl:$artifacts/maui-pack-$configuration.binlog
-}
 
 
 
