@@ -14,6 +14,12 @@ $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/dotnet$ext
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
 $winuisln = Join-Path $PSScriptRoot ../Microsoft.Maui.WinUI.sln
 
+# Build with .\bin\dotnet\dotnet.exe
+& $dotnet build $sln `
+    -c:$configuration `
+    -p:SymbolPackageFormat=snupkg `
+    -bl:$artifacts/maui-build-$configuration.binlog
+
 if ($IsWindows)
 {
   & $msbuild $winuisln `
@@ -26,7 +32,7 @@ if ($IsWindows)
 & $dotnet pack $sln `
     -c:$configuration `
     -p:SymbolPackageFormat=snupkg `
-    -bl:$artifacts/maui-$configuration.binlog
+    -bl:$artifacts/maui-pack-$configuration.binlog
 
 
 
