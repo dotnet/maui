@@ -173,10 +173,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			MeasureAndArrange(grid, double.PositiveInfinity, double.NegativeInfinity);
 
 			// Column width is 100, viewSize is less than that, so it should be able to layout out at full size
-			AssertArranged(view0, 0, 0, viewSize.Width, viewSize.Height);
+			AssertArranged(view0, 0, 0, 100, 10);
 
 			// Since the first column is 100 wide, we expect the view in the second column to start at x = 100
-			AssertArranged(view1, 100, 0, viewSize.Width, viewSize.Height);
+			AssertArranged(view1, 100, 0, 100, 10);
 		}
 
 		[Category(GridAbsoluteSizing)]
@@ -202,16 +202,16 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Assuming no constraints on space
 			MeasureAndArrange(grid, double.PositiveInfinity, double.NegativeInfinity);
 
-			AssertArranged(view0, 0, 0, 10, 10);
+			AssertArranged(view0, 0, 0, 100, 10);
 
 			// Since the first column is 100 wide, we expect the view in the second column to start at x = 100
-			AssertArranged(view1, 100, 0, 10, 10);
+			AssertArranged(view1, 100, 0, 100, 10);
 
 			// First column, second row, so y should be 10
-			AssertArranged(view2, 0, 10, 10, 10);
+			AssertArranged(view2, 0, 10, 100, 30);
 
 			// Second column, second row, so 100, 10
-			AssertArranged(view3, 100, 10, 10, 10);
+			AssertArranged(view3, 100, 10, 100, 30);
 		}
 
 		[Category(GridAbsoluteSizing), Category(GridAutoSizing)]
@@ -234,10 +234,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			MeasureAndArrange(grid, double.PositiveInfinity, double.NegativeInfinity);
 
 			// Column width is 100, viewSize is less, so it should be able to layout at full size
-			AssertArranged(view0, 0, 0, viewSize.Width, viewSize.Height);
+			AssertArranged(view0, 0, 0, 100, viewSize.Height);
 
 			// Since the first column is 100 wide, we expect the view in the second column to start at x = 100
-			AssertArranged(view1, 100, 0, viewSize.Width, viewSize.Height);
+			AssertArranged(view1, 100, 0, 100, viewSize.Height);
 		}
 
 		[Category(GridAbsoluteSizing), Category(GridAutoSizing)]
@@ -260,10 +260,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			MeasureAndArrange(grid, double.PositiveInfinity, double.NegativeInfinity);
 
 			// Row height is 100, so full view should fit
-			AssertArranged(view0, 0, 0, viewSize.Width, viewSize.Height);
+			AssertArranged(view0, 0, 0, viewSize.Width, 100);
 
 			// Since the first row is 100 tall, we expect the view in the second row to start at y = 100
-			AssertArranged(view1, 0, 100, viewSize.Width, viewSize.Height);
+			AssertArranged(view1, 0, 100, viewSize.Width, 100);
 		}
 
 		[Category(GridSpacing)]
@@ -481,7 +481,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(100, measuredSize.Height);
 
 			AssertArranged(view0, 0, 0, 100, 100);
-			AssertArranged(view1, 100, 25, 50, 50);
+			AssertArranged(view1, 100, 25, 50, 75);
 		}
 
 		[Category(GridSpan)]
@@ -527,7 +527,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(100 + 50, measuredSize.Height);
 
 			AssertArranged(view0, 0, 0, 100, 100);
-			AssertArranged(view1, 25, 100, 50, 50);
+			AssertArranged(view1, 25, 100, 75, 50);
 		}
 
 		[Category(GridSpan)]
@@ -572,7 +572,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(30 + 50, measuredSize.Width);
 			Assert.Equal(50, measuredSize.Height);
 
-			AssertArranged(view0, 0, 0, 30, 30);
+			AssertArranged(view0, 0, 0, 30, 50);
 			AssertArranged(view1, 30, 0, 50, 50);
 		}
 
@@ -593,7 +593,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(50, measuredSize.Width);
 			Assert.Equal(30 + 50, measuredSize.Height);
 
-			AssertArranged(view0, 0, 0, 30, 30);
+			AssertArranged(view0, 0, 0, 50, 30);
 			AssertArranged(view1, 0, 30, 50, 50);
 		}
 
@@ -613,7 +613,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(15 + 85, measuredSize.Width);
 			Assert.Equal(10 + 40, measuredSize.Height);
 
-			AssertArranged(view0, 15, 10, 30, 30);
+			AssertArranged(view0, 15, 10, 85, 40);
 		}
 
 		[Category(GridSpan)]
@@ -633,12 +633,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(60, measuredSize.Width);
 			Assert.Equal(60, measuredSize.Height);
 
-			AssertArranged(view0, 0, 0, 60, 30);
-			AssertArranged(view1, 15, 0, 30, 60);
+			AssertArranged(view0, 0, 0, 60, 45);
+			AssertArranged(view1, 15, 0, 45, 60);
 		}
 
 		[Category(GridSpan)]
-		[Fact(DisplayName ="Row span including absolute row should not modify absolute size")]
+		[Fact(DisplayName = "Row span including absolute row should not modify absolute size")]
 		public void RowSpanShouldNotModifyAbsoluteRowSize()
 		{
 			var grid = CreateGridLayout(rows: "auto, 20", columns: "auto, auto");
@@ -658,11 +658,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// The item in the second row starts at y = 80 because the auto row above had to distribute
 			// all the extra space into row 0; row 1 is absolute, so no tinkering with it to make stuff fit
-			AssertArranged(view1, 100, 80, 50, 10);
+			AssertArranged(view1, 100, 80, 50, 20);
 		}
 
 		[Category(GridSpan)]
-		[Fact(DisplayName ="Column span including absolute column should not modify absolute size")]
+		[Fact(DisplayName = "Column span including absolute column should not modify absolute size")]
 		public void ColumnSpanShouldNotModifyAbsoluteColumnSize()
 		{
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, 20");
@@ -680,9 +680,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			AssertArranged(view0, 0, 0, 100, 100);
 
-			// The item in the second row starts at y = 80 because the auto row above had to distribute
-			// all the extra space into row 0; row 1 is absolute, so no tinkering with it to make stuff fit
-			AssertArranged(view1, 80, 100, 50, 10);
+			// The item in the second row starts at x = 80 because the auto column before it had to distribute
+			// all the extra space into column 0; column 1 is absolute, so no tinkering with it to make stuff fit
+			AssertArranged(view1, 80, 100, 20, 10);
 		}
 	}
 }
