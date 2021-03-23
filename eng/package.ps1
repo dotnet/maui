@@ -33,8 +33,13 @@ if ($IsWindows)
 {
   & $msbuild $winuisln `
     /p:configuration=$configuration `
+    /t:restore `
+    /p:MauiPlatforms=net6.0-windows10.0.19041.0
+  
+  & $msbuild $winuisln `
+    /p:configuration=$configuration `
     /p:SymbolPackageFormat=snupkg `
-    /t:restore;build `
+    /t:build `
     /p:MauiPlatforms=net6.0-windows10.0.19041.0
 }
     
