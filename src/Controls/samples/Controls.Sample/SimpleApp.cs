@@ -18,7 +18,8 @@ namespace Maui.Controls.Sample
 				//Page = new SimplePage()
 				Page = new SimpleButtonIsPage
 				{
-					Text = "Yup, very simple!"
+					Text = "Yup, very simple!",
+					FontFamily = "Dokdo",
 				}
 			};
 		}

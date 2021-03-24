@@ -86,11 +86,19 @@ namespace Microsoft.Maui
 			// First check Alias
 			if (_fontRegistrar.TryGetFont(fontFamily, out var fontPostScriptName))
 			{
-				var familyName = FindFontFamilyName(fontPostScriptName);
-				var file = FontFile.FromString(Path.GetFileName(fontPostScriptName!));
-				var formatted = $"{fontPostScriptName}#{familyName ?? file.GetPostScriptNameWithSpaces()}";
+				if (fontPostScriptName!.Contains("://") && fontPostScriptName.Contains("#"))
+				{
+					// The registrar has given us a perfect path, so use it exactly
+					yield return fontPostScriptName;
+				}
+				else
+				{
+					var familyName = FindFontFamilyName(fontPostScriptName);
+					var file = FontFile.FromString(Path.GetFileName(fontPostScriptName));
+					var formatted = $"{fontPostScriptName}#{familyName ?? file.GetPostScriptNameWithSpaces()}";
 
-				yield return formatted;
+					yield return formatted;
+				}
 				yield break;
 			}
 

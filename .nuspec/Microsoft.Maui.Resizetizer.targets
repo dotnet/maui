@@ -222,17 +222,11 @@
         BeforeTargets="$(ProcessSharedFontsBeforeTargets)"
         DependsOnTargets="$(ProcessSharedFontsDependsOnTargets)">
 
-        <DetectInvalidResourceOutputFilenamesTask
-            Items="@(SharedFont)"
-            ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
-        </DetectInvalidResourceOutputFilenamesTask>
-
         <!-- Copy font files over -->
         <Copy
             SourceFiles="@(SharedFont)"
             DestinationFolder="$(IntermediateOutputPath)sp\fonts\"
             SkipUnchangedFiles="true" />
-
 
         <ItemGroup>
             <_SharedFontCopied Include="$(IntermediateOutputPath)sp\fonts\*" />

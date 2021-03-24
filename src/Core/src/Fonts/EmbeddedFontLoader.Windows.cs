@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using Windows.Storage;
 
 namespace Microsoft.Maui
@@ -10,14 +9,11 @@ namespace Microsoft.Maui
 	{
 		const string FontCacheFolderName = "fonts";
 
-		public (bool success, string? filePath) LoadFont(EmbeddedFont font) =>
-			LoadFontAsync(font).Result;
-
-		public async Task<(bool success, string? filePath)> LoadFontAsync(EmbeddedFont font)
+		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
 		{
-			var tmpdir = await ApplicationData.Current.LocalFolder.CreateFolderAsync(FontCacheFolderName, CreationCollisionOption.OpenIfExists);
+			var tmpdir = ApplicationData.Current.LocalFolder.CreateFolderAsync(FontCacheFolderName, CreationCollisionOption.OpenIfExists).AsTask().Result;
 
-			var file = await tmpdir.TryGetItemAsync(font.FontName);
+			var file = tmpdir.TryGetItemAsync(font.FontName).AsTask().Result;
 			if (file != null)
 				return (true, CleanseFilePath(file.Path));
 
@@ -27,8 +23,8 @@ namespace Microsoft.Maui
 				if (font.ResourceStream == null)
 					throw new InvalidOperationException("ResourceStream was null.");
 
-				newFile = await tmpdir.CreateFileAsync(font.FontName);
-				using (var fileStream = await newFile.OpenStreamForReadAsync())
+				newFile = tmpdir.CreateFileAsync(font.FontName).AsTask().Result;
+				using (var fileStream = newFile.OpenStreamForWriteAsync().Result)
 				{
 					font.ResourceStream.CopyTo(fileStream);
 				}
@@ -40,7 +36,7 @@ namespace Microsoft.Maui
 				Debug.WriteLine(ex);
 
 				if (newFile != null)
-					await newFile.DeleteAsync();
+					newFile.DeleteAsync().AsTask().Wait();
 			}
 
 			return (false, null);
