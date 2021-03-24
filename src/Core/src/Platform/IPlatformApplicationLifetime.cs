@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Allow to get specific lifecycle events for each platform.
 	/// </summary>
-	public interface IPlatformLifecycleHandler
+	public interface IPlatformApplicationLifetime
 	{
 	
 	}

@@ -43,7 +43,7 @@ namespace Microsoft.Maui
 
 			Window.MakeKeyAndVisible();
 
-			foreach (var iOSApplicationDelegateHandler in GetIosLifecycleHandler())
+			foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
 				iOSApplicationDelegateHandler.FinishedLaunching(application, launchOptions);
 
 			return true;
@@ -51,29 +51,41 @@ namespace Microsoft.Maui
 
 		public override void OnActivated(UIApplication application)
 		{
-			foreach (var iOSApplicationDelegateHandler in GetIosLifecycleHandler())
+			foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
 				iOSApplicationDelegateHandler.OnActivated(application);
 		}
 
 		public override void OnResignActivation(UIApplication application)
 		{
-			foreach (var iOSApplicationDelegateHandler in GetIosLifecycleHandler())
+			foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
 				iOSApplicationDelegateHandler.OnResignActivation(application);
 		}
 
 		public override void WillTerminate(UIApplication application)
 		{
-			foreach (var iOSApplicationDelegateHandler in GetIosLifecycleHandler())
+			foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
 				iOSApplicationDelegateHandler.WillTerminate(application);
+		}
+
+		public override void DidEnterBackground(UIApplication application)
+		{
+			foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
+				iOSApplicationDelegateHandler.DidEnterBackground(application);
+		}
+
+		public override void WillEnterForeground(UIApplication application)
+		{
+			foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
+				iOSApplicationDelegateHandler.WillEnterForeground(application);
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-			services.AddTransient<IIosApplicationDelegateHandler, IosApplicationDelegateHandler>();
+			services.AddTransient<IIosApplicationLifetime, IosApplicationLifetime>();
 		}
 
-		IEnumerable<IIosApplicationDelegateHandler> GetIosLifecycleHandler() =>
-			Services?.GetServices<IIosApplicationDelegateHandler>() ?? Enumerable.Empty<IIosApplicationDelegateHandler>();
+		IEnumerable<IIosApplicationLifetime> GetIosApplicationLifetime() =>
+			Services?.GetServices<IIosApplicationLifetime>() ?? Enumerable.Empty<IIosApplicationLifetime>();
 	}
 
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate

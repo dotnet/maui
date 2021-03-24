@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Maui.Controls.Sample
 {
-	public class CustomIosLifecycleHandler : IosApplicationDelegateHandler
+	public class CustomIosLifecycleHandler : IosApplicationLifetime
 	{
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
@@ -20,6 +20,10 @@ namespace Maui.Controls.Sample
 		public override void OnResignActivation(UIApplication application) => LogMember();
 
 		public override void WillTerminate(UIApplication application) => LogMember();
+
+		public override void DidEnterBackground(UIApplication application) => LogMember();
+
+		public override void WillEnterForeground(UIApplication application) => LogMember();
 
 		static void LogMember([CallerMemberName] string name = "") =>
 			Debug.WriteLine("LIFECYCLE: " + name);

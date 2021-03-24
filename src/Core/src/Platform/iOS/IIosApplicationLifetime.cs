@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Allow to get iOS UIApplication lifecycle callbacks.
 	/// </summary>
-	public interface IIosApplicationDelegateHandler : IPlatformLifecycleHandler
+	public interface IIosApplicationLifetime : IPlatformApplicationLifetime
 	{
 		/// <summary>
 		/// Method invoked after the application has launched to configure the main window and view controller.
@@ -33,5 +33,17 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="application">Reference to the UIApplication that invoked this delegate method.</param>
 		void WillTerminate(UIApplication application);
+
+		/// <summary>
+		/// Indicates that the application has entered the background.
+		/// </summary>
+		/// <param name="application">Reference to the UIApplication that invoked this delegate method.</param>
+		void DidEnterBackground(UIApplication application);
+
+		/// <summary>
+		/// Called prior to the application returning from a backgrounded state.
+		/// </summary>
+		/// <param name="application">Reference to the UIApplication that invoked this delegate method.</param>
+		void WillEnterForeground(UIApplication application);
 	}
 }

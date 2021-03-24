@@ -9,27 +9,40 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Allow to get Android Activity lifecycle callbacks.
 	/// </summary>
-	public interface IAndroidLifecycleHandler : IPlatformLifecycleHandler
+	public interface IAndroidApplicationLifetime : IPlatformApplicationLifetime
 	{
 		/// <summary>
 		/// Called when the activity is starting.
 		/// </summary>
 		/// <param name="activity">The activity on which we receive lifecycle events callbacks.</param>
-		/// <param name="savedInstanceState">Previous state saved</param>
+		/// <param name="savedInstanceState">Previous state saved.</param>
 		void OnCreate(Activity activity, Bundle? savedInstanceState);
+
+		/// <summary>
+		/// Called when activity start-up is complete (after OnStart() and OnRestoreInstanceState(Bundle) have been called).
+		/// </summary>
+		/// <param name="activity">The activity on which we receive lifecycle events callbacks.</param>
+		/// <param name="savedInstanceState">Previous state saved.</param>
+		void OnPostCreate(Activity activity, Bundle? savedInstanceState);
 
 		/// <summary>
 		/// Called when the activity had been stopped, but is now again being displayed to the user. 
 		/// </summary>
-		/// <param name="activity">The activity on which we receive lifecycle events callbacks</param>
+		/// <param name="activity">The activity on which we receive lifecycle events callbacks.</param>
 		void OnStart(Activity activity);
 
 		/// <summary>
 		/// Called for your activity to start interacting with the user.
 		/// This is an indicator that the activity became active and ready to receive input.
 		/// </summary>
-		/// <param name="activity">The activity on which we receive lifecycle events callbacks</param>
+		/// <param name="activity">The activity on which we receive lifecycle events callbacks.</param>
 		void OnResume(Activity activity);
+
+		/// <summary>
+		/// Called when activity resume is complete (after OnResume() has been called).
+		/// </summary>
+		/// <param name="activity">The activity on which we receive lifecycle events callbacks.</param>
+		void OnPostResume(Activity activity);
 
 		/// <summary>
 		/// Called as part of the activity lifecycle when the user no longer actively interacts with the activity,
@@ -88,5 +101,11 @@ namespace Microsoft.Maui
 		/// <param name="resultCode">The integer result code returned by the child activity.</param>
 		/// <param name="data">An Intent, which can return result data to the caller.</param>
 		void OnActivityResult(Activity activity, int requestCode, [GeneratedEnum] Result resultCode, Intent? data);
+
+		/// <summary>
+		/// Called when the activity has detected the user's press of the back key.
+		/// </summary>
+		/// <param name="activity">The activity on which we receive lifecycle events callbacks.</param>
+		void OnBackPressed(Activity activity);
 	}
 }

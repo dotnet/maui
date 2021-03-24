@@ -44,80 +44,96 @@ namespace Microsoft.Maui
 
 			parent.AddView(content.ToNative(window.MauiContext), new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
 
-			foreach (var androidLifecycleHandler in GetAndroidLifecycleHandler())
-				androidLifecycleHandler.OnCreate(this, savedInstanceState);
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnCreate(this, savedInstanceState);
+		}
+
+		protected override void OnPostCreate(Bundle? savedInstanceState)
+		{
+			base.OnPostCreate(savedInstanceState);
+
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnPostCreate(this, savedInstanceState);
 		}
 
 		protected override void OnStart()
 		{
 			base.OnStart();
 
-			foreach (var androidLifecycleHandler in GetAndroidLifecycleHandler())
-				androidLifecycleHandler.OnStart(this);
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnStart(this);
 		}
 
 		protected override void OnPause()
 		{
 			base.OnPause();
 
-			foreach (var androidLifecycleHandler in GetAndroidLifecycleHandler())
-				androidLifecycleHandler.OnPause(this);
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnPause(this);
 		}
 
 		protected override void OnResume()
 		{
 			base.OnResume();
 
-			foreach (var androidLifecycleHandler in GetAndroidLifecycleHandler())
-				androidLifecycleHandler.OnResume(this);
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnResume(this);
+		}
+
+		protected override void OnPostResume()
+		{
+			base.OnPostResume();
+
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnPostResume(this);
 		}
 
 		protected override void OnRestart()
 		{
 			base.OnRestart();
 
-			foreach (var androidLifecycleHandler in GetAndroidLifecycleHandler())
-				androidLifecycleHandler.OnRestart(this);
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnRestart(this);
 		}
 
 		protected override void OnDestroy()
 		{
 			base.OnDestroy();
 
-			foreach (var androidLifecycleHandler in GetAndroidLifecycleHandler())
-				androidLifecycleHandler.OnDestroy(this);
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnDestroy(this);
 		}
 
 		protected override void OnSaveInstanceState(Bundle outState)
 		{
 			base.OnSaveInstanceState(outState);
 
-			foreach (var androidLifecycleHandler in GetAndroidLifecycleHandler())
-				androidLifecycleHandler.OnSaveInstanceState(this, outState);
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnSaveInstanceState(this, outState);
 		}
 
 		protected override void OnRestoreInstanceState(Bundle savedInstanceState)
 		{
 			base.OnRestoreInstanceState(savedInstanceState);
 
-			foreach (var androidLifecycleHandler in GetAndroidLifecycleHandler())
-				androidLifecycleHandler.OnRestoreInstanceState(this, savedInstanceState);
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnRestoreInstanceState(this, savedInstanceState);
 		}
 
 		public override void OnConfigurationChanged(Configuration newConfig)
 		{
 			base.OnConfigurationChanged(newConfig);
 
-			foreach (var androidLifecycleHandler in GetAndroidLifecycleHandler())
-				androidLifecycleHandler.OnConfigurationChanged(this, newConfig);
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnConfigurationChanged(this, newConfig);
 		}
 
 		protected override void OnActivityResult(int requestCode, [GeneratedEnum] Android.App.Result resultCode, Intent? data)
 		{
 			base.OnActivityResult(requestCode, resultCode, data);
 
-			foreach (var androidLifecycleHandler in GetAndroidLifecycleHandler())
-				androidLifecycleHandler.OnActivityResult(this, requestCode, resultCode, data);
+			foreach (var androidApplicationLifetime in GetAndroidApplicationLifetime())
+				androidApplicationLifetime.OnActivityResult(this, requestCode, resultCode, data);
 		}
 
 		void AddToolbar(ViewGroup parent)
@@ -130,7 +146,7 @@ namespace Microsoft.Maui
 			parent.AddView(appbarLayout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
 		}
 
-		IEnumerable<IAndroidLifecycleHandler> GetAndroidLifecycleHandler() =>
-			MauiApplication.Current?.Services?.GetServices<IAndroidLifecycleHandler>() ?? Enumerable.Empty<IAndroidLifecycleHandler>();
+		IEnumerable<IAndroidApplicationLifetime> GetAndroidApplicationLifetime() =>
+			MauiApplication.Current?.Services?.GetServices<IAndroidApplicationLifetime>() ?? Enumerable.Empty<IAndroidApplicationLifetime>();
 	}
 }

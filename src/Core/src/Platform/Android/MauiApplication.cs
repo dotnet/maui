@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-			services.AddTransient<IAndroidLifecycleHandler, AndroidLifecycleHandler>();
+			services.AddTransient<IAndroidApplicationLifetime, AndroidApplicationLifetime>();
 		}
 	}
 

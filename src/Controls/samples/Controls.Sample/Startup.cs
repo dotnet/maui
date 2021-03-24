@@ -58,9 +58,9 @@ namespace Maui.Controls.Sample
 					services.AddTransient<IWindow, MainWindow>();
 
 #if __ANDROID__
-					services.AddTransient<IAndroidLifecycleHandler, CustomAndroidLifecycleHandler>();
+					services.AddTransient<IAndroidApplicationLifetime, CustomAndroidLifecycleHandler>();
 #elif __IOS__
-					services.AddTransient<IIosApplicationDelegateHandler, CustomIosLifecycleHandler>();
+					services.AddTransient<IIosApplicationLifetime, CustomIosLifecycleHandler>();
 #endif
 				})
 				.ConfigureFonts((hostingContext, fonts) =>

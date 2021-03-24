@@ -6,11 +6,16 @@ using Android.Runtime;
 
 namespace Microsoft.Maui
 {
-	public class AndroidLifecycleHandler : IAndroidLifecycleHandler
+	public class AndroidApplicationLifetime : IAndroidApplicationLifetime
 	{
 		public virtual void OnCreate(Activity activity, Bundle? savedInstanceState)
 		{
 	
+		}
+
+		public virtual void OnPostCreate(Activity activity, Bundle? savedInstanceState)
+		{
+
 		}
 
 		public virtual void OnDestroy(Activity activity)
@@ -24,6 +29,11 @@ namespace Microsoft.Maui
 		}
 
 		public virtual void OnResume(Activity activity)
+		{
+
+		}
+
+		public virtual void OnPostResume(Activity activity)
 		{
 
 		}
@@ -59,6 +69,11 @@ namespace Microsoft.Maui
 		}
 
 		public virtual void OnActivityResult(Activity activity, int requestCode, [GeneratedEnum] Result resultCode, Intent? data)
+		{
+
+		}
+
+		public virtual void OnBackPressed(Activity activity)
 		{
 
 		}

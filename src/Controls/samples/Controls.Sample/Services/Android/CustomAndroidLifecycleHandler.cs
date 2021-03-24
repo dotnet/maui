@@ -7,15 +7,19 @@ using Microsoft.Maui;
 
 namespace Maui.Controls.Sample.Services
 {
-	public class CustomAndroidLifecycleHandler : AndroidLifecycleHandler
+	public class CustomAndroidLifecycleHandler : AndroidApplicationLifetime
 	{
 		public override void OnCreate(Activity activity, Bundle savedInstanceState) => LogMember();
+
+		public override void OnPostCreate(Activity activity, Bundle savedInstanceState) => LogMember();
 
 		public override void OnDestroy(Activity activity) => LogMember();
 
 		public override void OnPause(Activity activity) => LogMember();
 
 		public override void OnResume(Activity activity) => LogMember();
+
+		public override void OnPostResume(Activity activity) => LogMember();
 
 		public override void OnStart(Activity activity) => LogMember();
 
