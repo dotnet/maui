@@ -24,15 +24,15 @@ jobs:
         dotnet-version: '5.0'
 
     - name: Install DotNet Preview
-        shell: pwsh
-        run: |
-          $ProgressPreference = 'SilentlyContinue'
-          Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
-          & .\dotnet-install.ps1 -Version $env:DotNetVersion -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
-          & dotnet --list-sdks
-          & dotnet tool install --global boots --add-source "https://api.nuget.org/v3/index.json"
-          & boots $env:AndroidMsi
-          & boots $env:iOSMsi
+      shell: pwsh
+      run: |
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+        & .\dotnet-install.ps1 -Version $env:DotNetVersion -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+        & dotnet --list-sdks
+        & dotnet tool install --global boots --add-source "https://api.nuget.org/v3/index.json"
+        & boots $env:AndroidMsi
+        & boots $env:iOSMsi
 
     - name: Install NuGet
       uses: nuget/setup-nuget@v1
