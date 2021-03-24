@@ -33,6 +33,7 @@ jobs:
         & dotnet tool install --global boots --add-source "https://api.nuget.org/v3/index.json"
         & boots $env:AndroidMsi
         & boots $env:iOSMsi
+        Out-File -FilePath "$env:ProgramFiles\dotnet\sdk\$env:DotNetVersion\EnableWorkloadResolver.sentinel"
 
     - name: Install NuGet
       uses: nuget/setup-nuget@v1
@@ -75,6 +76,7 @@ jobs:
         boots $AndroidPkg
         boots $iOSPkg
         boots $MacCatalystPkg
+        touch ~/.dotnet/sdk/$DotNetVersion/EnableWorkloadResolver.sentinel
 
     - name: Build
       run: |
