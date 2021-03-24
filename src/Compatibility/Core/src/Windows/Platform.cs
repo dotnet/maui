@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (!current.Resources.ContainsKey(ShellRenderer.ShellStyle))
 			{
 				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility.Platform.UAP/Shell/ShellStyles.xbf");
+				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Shell/ShellStyles.xbf");
 				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
 			}
 

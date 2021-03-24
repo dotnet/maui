@@ -74,9 +74,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Microsoft.Maui.Controls.Internals.Registrar.Registered.Register(
 				controlType,
 				rendererType);
-#if !WINDOWS
+
 			builder.RegisterHandler(controlType, typeof(RendererToHandlerShim));
-#endif
 
 			return builder;
 		}
@@ -89,9 +88,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Controls.Internals.Registrar.Registered.Register(
 				typeof(TControlType),
 				typeof(TRenderer));
-#if !WINDOWS
+
 			builder.RegisterHandler<TMauiType, RendererToHandlerShim>();
-#endif
 
 			return builder;
 		}
