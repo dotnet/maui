@@ -20,6 +20,7 @@ namespace Maui.Controls.Sample
 				{
 					Text = "Yup, very simple!",
 					FontFamily = "Dokdo",
+					BackgroundColor = Color.Red,
 				}
 			};
 		}

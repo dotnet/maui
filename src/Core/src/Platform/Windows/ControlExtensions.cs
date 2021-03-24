@@ -11,5 +11,15 @@ namespace Microsoft.Maui
 			nativeControl.FontStyle = font.FontAttributes.ToFontStyle();
 			nativeControl.FontWeight = font.FontAttributes.ToFontWeight();
 		}
+
+		public static void UpdateIsEnabled(this Control nativeControl, bool isEnabled)
+		{
+			nativeControl.IsEnabled = isEnabled;
+		}
+
+		public static void UpdateBackgroundColor(this Control nativeControl, Color color)
+		{
+			nativeControl.Background = color.ToNative();
+		}
 	}
 }
