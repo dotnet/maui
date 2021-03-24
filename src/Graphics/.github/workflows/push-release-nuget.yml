@@ -17,6 +17,18 @@ jobs:
       uses: nuget/setup-nuget@v1
       with:
         nuget-version: '5.x'
+
+    - name: Install DotNet Preview
+      shell: bash
+      run: >
+        export PATH="/usr/local/share/dotnet/:~/.dotnet/tools:$PATH" &&
+        curl -L https://raw.githubusercontent.com/dotnet/install-scripts/7a9d5dcab92cf131fc2d8977052f8c2c2d540e22/src/dotnet-install.sh > dotnet-install.sh &&
+        sh dotnet-install.sh --version $DotNetVersion --install-dir $DOTNET_ROOT --verbose &&
+        dotnet --list-sdks &&
+        dotnet tool install --global boots --add-source "https://api.nuget.org/v3/index.json" &&
+        boots $AndroidPkg &&
+        boots $iOSPkg &&
+        boots $MacCatalystPkg
               
     - name: Update project version
       uses: roryprimrose/set-vs-sdk-project-version@v1
@@ -27,7 +39,7 @@ jobs:
     - name: NuGet Restore
       run: >
         nuget restore build/Build.Microsoft.Maui.Graphics.Mac.sln
-        nuget restore build/Build.Microsoft.Maui.Graphics-net6.sln
+        dotnet restore build/Build.Microsoft.Maui.Graphics-net6.sln
     
 #    - name: Build
 #      run: msbuild build/Build.Microsoft.Maui.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
