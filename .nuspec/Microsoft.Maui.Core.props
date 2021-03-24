@@ -10,6 +10,4 @@
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
-
-
 </Project>

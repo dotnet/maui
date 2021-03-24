@@ -50,10 +50,18 @@ if ($IsWindows)
         # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
         $env:PATH=($env:DOTNET_ROOT + ";" + $env:PATH)
 
+        # Have to build the solution first so the xbf files are there for pack
         & $msbuild $sln `
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
             /restore `
+            /t:build `
+            /p:Packing=true `
+            /bl:"$artifacts/maui-build-$configuration.binlog"
+
+        & $msbuild $sln `
+            /p:configuration=$configuration `
+            /p:SymbolPackageFormat=snupkg `
             /t:pack `
             /p:Packing=true `
             /bl:"$artifacts/maui-pack-$configuration.binlog"
