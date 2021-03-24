@@ -6,4 +6,15 @@
       <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
     </PropertyGroup>
   </Target>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true AND OutputType == 'WinExe'">
+    <!-- This tells Maui.Controls to not process the WinUI Xaml files -->
+    <EnableDefaultXamlItems>false</EnableDefaultXamlItems>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true AND OutputType != 'WinExe'">
+    <!-- This tells Reunion to not process our xaml files -->
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
 </Project>
