@@ -40,8 +40,8 @@ namespace Maui.Controls.Sample.Pages
 			label.Margin = new Thickness(15, 10, 20, 15);
 
 			verticalStack.Add(label);
-			verticalStack.Add(new Label { Text = "This should be BIG text!", FontSize = 24 });
-			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold });
+			verticalStack.Add(new Label { Text = "This should be BIG text!", FontSize = 24, HorizontalOptions = LayoutOptions.End });
+			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Color.LightBlue });
 			verticalStack.Add(new Label { Text = loremIpsum });
@@ -77,7 +77,7 @@ namespace Maui.Controls.Sample.Pages
 
 			horizontalStack.Add(button);
 			horizontalStack.Add(button2);
-			horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout" });
+			horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout", VerticalOptions = LayoutOptions.Center });
 
 			verticalStack.Add(horizontalStack);
 

@@ -59,8 +59,8 @@ namespace Microsoft.Maui.Handlers
 			var deviceWidthConstraint = Context.ToPixels(widthConstraint);
 			var deviceHeightConstraint = Context.ToPixels(heightConstraint);
 
-			var widthSpec = MeasureSpecMode.Exactly.MakeMeasureSpec((int)deviceWidthConstraint);
-			var heightSpec = MeasureSpecMode.Exactly.MakeMeasureSpec((int)deviceHeightConstraint);
+			var widthSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceWidthConstraint);
+			var heightSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceHeightConstraint);
 
 			TypedNativeView.Measure(widthSpec, heightSpec);
 

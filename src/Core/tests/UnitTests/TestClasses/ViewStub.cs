@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Maui;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Tests
 {
@@ -30,6 +30,10 @@ namespace Microsoft.Maui.Tests
 		public string AutomationId => throw new NotImplementedException();
 
 		public FlowDirection FlowDirection => throw new NotImplementedException();
+
+
+		public LayoutAlignment HorizontalLayoutAlignment { get; set; }
+		public LayoutAlignment VerticalLayoutAlignment { get; set; }
 
 		public void Arrange(Rectangle bounds)
 		{
