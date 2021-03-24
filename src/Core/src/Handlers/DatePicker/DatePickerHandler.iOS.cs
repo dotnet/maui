@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 			return nativeDatePicker;
 		}
 
-		internal UIDatePicker? DatePickerDialog { get{ return _picker;} }
+		internal UIDatePicker? DatePickerDialog { get { return _picker; } }
 
 		protected override void ConnectHandler(MauiDatePicker nativeView)
 		{
