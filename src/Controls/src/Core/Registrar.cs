@@ -293,6 +293,15 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
+		// This is used when you're running an app that only knows about handlers (.NET MAUI app)
+		// If the user has called Forms.Init() this will register all found types 
+		// into the handlers registrar and then it will use this factory to create a shim
+		internal static Func<object, IViewHandler> RendererToHandlerShim { get; private set; }
+		public static void RegisterRendererToHandlerShim(Func<object, IViewHandler> handlerShim)
+		{
+			RendererToHandlerShim = handlerShim;
+		}
+
 		public static void RegisterStylesheets(InitializationFlags flags)
 		{
 			if ((flags & InitializationFlags.DisableCss) == InitializationFlags.DisableCss)
