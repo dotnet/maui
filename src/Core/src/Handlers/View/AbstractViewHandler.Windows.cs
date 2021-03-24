@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -32,7 +31,6 @@ namespace Microsoft.Maui.Handlers
 
 			return new SizeRequest(result);
 		}
-			
 
 		void SetupContainer()
 		{
