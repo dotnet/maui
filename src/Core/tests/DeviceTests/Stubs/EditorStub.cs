@@ -18,6 +18,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public double CharacterSpacing { get; set; }
 
+		public bool IsReadOnly { get;set; }
+
+		public string Placeholder { get;set; }
+
+		public Color PlaceholderColor { get; set; }
+
 		public int MaxLength { get; set; } = int.MaxValue;
 
 		public bool IsTextPredictionEnabled { get; set; }

@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Maui;
 
 namespace Microsoft.Maui
 {

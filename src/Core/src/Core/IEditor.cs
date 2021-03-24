@@ -3,13 +3,13 @@
 	/// <summary>
 	/// Represents a View used to accept multi-line input.
 	/// </summary>
-	public interface IEditor : IView, IText
+	public interface IEditor : IView, ITextInput
 	{
 		/// <summary>
-		/// Gets the maximum allowed length of input.
+		/// Gets or sets the placeholder text color.
 		/// </summary>
-		int MaxLength { get; }
-
+		Color PlaceholderColor { get; set; }
+		
 		/// <summary>
 		/// Gets a value that controls whether text prediction and automatic text correction is on or off.
 		/// </summary>

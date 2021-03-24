@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected override EditText EditText => Control;
 
+		[PortHandler]
 		protected override void UpdatePlaceholderColor()
 		{
 			_hintColorSwitcher = _hintColorSwitcher ?? new TextColorSwitcher(EditText.HintTextColors, Element.UseLegacyColorManagement());
@@ -269,6 +270,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		abstract protected void UpdateTextColor();
 
+		[PortHandler]
 		protected virtual void UpdatePlaceholderText()
 		{
 			if (EditText.Hint == Element.Placeholder)
@@ -277,6 +279,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.Hint = Element.Placeholder;
 		}
 
+		[PortHandler]
 		abstract protected void UpdatePlaceholderColor();
 
 		void OnKeyboardBackPressed(object sender, EventArgs eventArgs)

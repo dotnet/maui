@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using Microsoft.Maui.Platform.iOS;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -60,12 +61,18 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
 		}
 
-		UITextView GetNativeEditor(EditorHandler editorHandler) =>
-			(UITextView)editorHandler.View;
+		MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
+			(MauiTextView)editorHandler.View;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
 
+		string GetNativePlaceholderText(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).PlaceholderText;
+
+		Color GetNativePlaceholderColor(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).PlaceholderTextColor.ToColor();
+			
 		double GetNativeCharacterSpacing(EditorHandler editorHandler)
 		{
 			var editor = GetNativeEditor(editorHandler);
