@@ -6,7 +6,8 @@
 		{
 			[nameof(IPicker.Title)] = MapTitle,
 			[nameof(IPicker.SelectedIndex)] = MapSelectedIndex,
-			[nameof(IPicker.CharacterSpacing)] = MapCharacterSpacing
+			[nameof(IPicker.CharacterSpacing)] = MapCharacterSpacing,
+			[nameof(IPicker.Font)] = MapFont
 		};
 
 		public PickerHandler() : base(PickerMapper)

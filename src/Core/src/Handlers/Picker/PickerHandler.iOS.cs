@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using Microsoft.Extensions.DependencyInjection;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -104,6 +105,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker)
 		{
 			handler.TypedNativeView?.UpdateCharacterSpacing(picker);
+		}
+
+		public static void MapFont(PickerHandler handler, IPicker picker)
+		{
+			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+
+			handler.TypedNativeView?.UpdateFont(picker, fontManager);
 		}
 
 		void OnCollectionChanged(object? sender, EventArgs e)

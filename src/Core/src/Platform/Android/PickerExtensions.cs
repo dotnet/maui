@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using Android.Util;
+
+namespace Microsoft.Maui
 {
 	public static class PickerExtensions
 	{
@@ -11,6 +13,16 @@
 		public static void UpdateCharacterSpacing(this MauiPicker nativePicker, IPicker picker)
 		{
 			nativePicker.LetterSpacing = picker.CharacterSpacing.ToEm();
+		}
+
+		public static void UpdateFont(this MauiPicker nativePicker, IPicker picker, IFontManager fontManager)
+		{
+			var font = picker.Font;
+			var tf = fontManager.GetTypeface(font);
+			nativePicker.Typeface = tf;
+
+			var sp = fontManager.GetScaledPixel(font);
+			nativePicker.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
 		internal static void UpdatePicker(this MauiPicker nativePicker, IPicker picker)

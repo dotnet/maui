@@ -1,7 +1,5 @@
 ﻿using System;
-using Foundation;
 using Microsoft.Maui.Handlers;
-using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -36,6 +34,12 @@ namespace Microsoft.Maui
 
 			if (textAttr != null)
 				nativePicker.AttributedText = textAttr;
+		}
+
+		public static void UpdateFont(this MauiPicker nativePicker, IPicker picker, IFontManager fontManager)
+		{
+			var uiFont = fontManager.GetFont(picker.Font);
+			nativePicker.Font = uiFont;
 		}
 
 		internal static void SetSelectedIndex(this MauiPicker nativePicker, IPicker picker, int selectedIndex = 0)

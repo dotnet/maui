@@ -16,5 +16,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public object SelectedItem { get; set; }
 
 		public double CharacterSpacing { get; set; }
+
+		public Font Font { get; set; }
 	}
 }
