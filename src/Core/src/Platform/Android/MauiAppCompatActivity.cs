@@ -4,6 +4,7 @@ using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.OS;
+using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
@@ -130,6 +131,6 @@ namespace Microsoft.Maui
 		}
 
 		IEnumerable<IAndroidLifecycleHandler> GetAndroidLifecycleHandler() =>
-			MauiApp.Current?.Services?.GetServices<IAndroidLifecycleHandler>() ?? Enumerable.Empty<IAndroidLifecycleHandler>();
+			MauiApplication.Current?.Services?.GetServices<IAndroidLifecycleHandler>() ?? Enumerable.Empty<IAndroidLifecycleHandler>();
 	}
 }

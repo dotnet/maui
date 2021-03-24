@@ -73,7 +73,7 @@ namespace Microsoft.Maui
 		}
 
 		IEnumerable<IIosApplicationDelegateHandler> GetIosLifecycleHandler() =>
-			MauiApp.Current?.Services?.GetServices<IIosApplicationDelegateHandler>() ?? Enumerable.Empty<IIosApplicationDelegateHandler>();
+			Services?.GetServices<IIosApplicationDelegateHandler>() ?? Enumerable.Empty<IIosApplicationDelegateHandler>();
 	}
 
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
