@@ -119,6 +119,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateCharacterSpacing(entry);
 		}
 
+		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateClearButtonVisibility(entry);
+		}
+
 		void OnEditingChanged(object? sender, EventArgs e) => OnTextChanged();
 
 		void OnEditingEnded(object? sender, EventArgs e) => OnTextChanged();
