@@ -303,6 +303,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				TextView.InputAccessoryView.Hidden = !Element.IsEnabled;
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateFont()
 		{
 			var font = Element.ToUIFont();

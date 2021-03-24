@@ -188,5 +188,21 @@ namespace Microsoft.Maui.DeviceTests
 				setValue,
 				unsetValue);
 		}
+		
+		[Theory(DisplayName = "Font Size Initializes Correctly")]
+		[InlineData(1)]
+		[InlineData(10)]
+		[InlineData(20)]
+		[InlineData(100)]
+		public async Task FontSizeInitializesCorrectly(int fontSize)
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Test",
+				Font = Font.OfSize("Arial", fontSize)
+			};
+
+			await ValidatePropertyInitValue(editor, () => editor.Font.FontSize, GetNativeUnscaledFontSize, editor.Font.FontSize);
+		}
 	}
 }

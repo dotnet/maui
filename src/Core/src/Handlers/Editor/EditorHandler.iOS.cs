@@ -1,6 +1,8 @@
 ﻿using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Platform.iOS;
+using System;
+using Microsoft.Extensions.DependencyInjection;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -99,6 +101,15 @@ namespace Microsoft.Maui.Handlers
 			var newLength = currLength + addLength - remLength;
 
 			return newLength <= VirtualView.MaxLength;
+		}
+
+		public static void MapFont(EditorHandler handler, IEditor editor)
+		{
+			var services = handler.Services ??
+				throw new InvalidOperationException($"Unable to find service provider, the handler.Services was null.");
+			var fontManager = services.GetRequiredService<IFontManager>();
+
+			handler.TypedNativeView?.UpdateFont(editor, fontManager);
 		}
 	}
 }

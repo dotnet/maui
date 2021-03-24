@@ -140,6 +140,17 @@ namespace Microsoft.Maui
 			editText.ImeOptions = entry.ReturnType.ToNative();
 		}
 
+		public static void UpdateFont(this AppCompatEditText editText, IEditor editor, IFontManager fontManager)
+		{
+			var font = editor.Font;
+
+			var tf = fontManager.GetTypeface(font);
+			editText.Typeface = tf;
+
+			var sp = fontManager.GetScaledPixel(font);
+			editText.SetTextSize(Android.Util.ComplexUnitType.Sp, sp);
+		}
+
 		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.InputType = InputTypes.ClassText;
