@@ -6,15 +6,15 @@
     <StackLayout Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
         <Label Text="Welcome to"
                FontSize="32"
-               TextColor="Black" 
-               HorizontalOptions="CenterAndExpand" />
+               TextColor="Black"
+               HorizontalOptions="Center" />
         <Label Text=".NET Multi-platform App UI"
                FontSize="24"
-               TextColor="Black" 
-               HorizontalOptions="CenterAndExpand" />
+               TextColor="Black"
+               HorizontalOptions="Center" />
         <Button x:Name="CountBtn"
                 Text="Click Me!"
-                HorizontalOptions="CenterAndExpand"
+                HorizontalOptions="Center"
                 Clicked="OnButtonClicked"/>
     </StackLayout>
 
