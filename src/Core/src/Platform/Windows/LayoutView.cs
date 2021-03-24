@@ -21,8 +21,7 @@ namespace Microsoft.Maui
 			var height = availableSize.Height;
 
 			var crossPlatformSize = CrossPlatformMeasure(width, height);
-			var returnValue = base.MeasureOverride(new Windows.Foundation.Size(crossPlatformSize.Width, crossPlatformSize.Height));
-			return returnValue;
+			return new Windows.Foundation.Size(crossPlatformSize.Width, crossPlatformSize.Height);
 		}
 
 		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
