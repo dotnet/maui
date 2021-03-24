@@ -67,6 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 #endif
 			}
 
+			//TODO WINUI3
 			//if (!UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
 			//{
 			//	UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.SetFlags(s_flags);
 
-			// TODO: MAUI
+			//TODO WINUI3
 			//// use field and not property to avoid exception in getter
 			//if (Device.info != null)
 			//{
@@ -95,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			//}
 			//Device.Info = new WindowsDeviceInfo();
 
-			// TODO: MAUI
+			//TODO WINUI3
 			//switch (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)
 			//{
 			//	case "Windows.Desktop":
@@ -135,7 +136,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				MainWindow = mainWindow;
 
-				// TODO: MAUI Do this for MAUI
+				//TODO WINUI3
 				Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
 
 				mainWindow.LoadApplication(mainWindow.CreateApplication());
@@ -166,7 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		static FlowDirection GetFlowDirection()
 		{
-			string resourceFlowDirection = "LTR"; // TODO MAUI ResourceContext.GetForCurrentView().QualifierValues["LayoutDirection"];
+			string resourceFlowDirection = "LTR"; //TODO WINUI3 ResourceContext.GetForCurrentView().QualifierValues["LayoutDirection"];
 			if (resourceFlowDirection == "LTR")
 				return FlowDirection.LeftToRight;
 			else if (resourceFlowDirection == "RTL")
