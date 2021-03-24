@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Maui;
 using NSubstitute;
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			for (int n = 0; n < viewCount; n++)
 			{
-				var view = CreateTestView(new Size(viewWidth, viewHeight));
+				var view = LayoutTestHelpers.CreateTestView(new Size(viewWidth, viewHeight));
 				children.Add(view);
 			}
 
