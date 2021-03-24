@@ -66,7 +66,7 @@ jobs:
         boots $AndroidPkg
         boots $iOSPkg
         boots $MacCatalystPkg
-        touch ~/.dotnet/sdk/$DotNetVersion/EnableWorkloadResolver.sentinel
+        touch /Users/runner/.dotnet/sdk/6.0.100-preview.2.21155.3/EnableWorkloadResolver.sentinel
 
     - name: Build
       run: |
