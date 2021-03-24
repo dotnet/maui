@@ -35,22 +35,12 @@ jobs:
         & boots $env:iOSMsi
         Out-File -FilePath "$env:ProgramFiles\dotnet\sdk\$env:DotNetVersion\EnableWorkloadResolver.sentinel"
 
-    - name: Install NuGet
-      uses: nuget/setup-nuget@v1
-      with:
-        nuget-version: '5.x'
-
-    - name: NuGet Restore
-      run: |
-        nuget restore build/Build.Microsoft.Maui.Graphics.Windows.sln
-        dotnet restore build/Build.Microsoft.Maui.Graphics-net6.sln
-
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Build
       run: |
-        msbuild build/Build.Microsoft.Maui.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+        msbuild build/Build.Microsoft.Maui.Graphics.Windows.sln /verbosity:normal /r /t:Build /p:Configuration=Release
         dotnet build build/Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=Release
 
   build-on-mac:
