@@ -32,9 +32,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static Window MainWindow { get; set; }
 
 		public static bool IsInitialized { get; private set; }
+		public static IMauiContext MauiContext { get; private set; }
 
 		public static void Init(IActivationState state)
 		{
+			MauiContext = state.Context;
 			SetupInit(state.LaunchActivatedEventArgs, null, null);
 		}
 
@@ -163,6 +165,29 @@ namespace Microsoft.Maui.Controls.Compatibility
 				typeof(ExportImageSourceHandlerAttribute),
 				typeof(ExportFontAttribute)
 			});
+		}
+
+		internal static void RegisterCompatRenderers(
+			Assembly[] assemblies,
+			Assembly defaultRendererAssembly,
+			Action<Type> viewRegistered)
+		{
+			if (IsInitializedRenderers)
+				return;
+
+			IsInitializedRenderers = true;
+
+			// Only need to do this once
+			Controls.Internals.Registrar.RegisterAll(
+				assemblies,
+				defaultRendererAssembly,
+				new[] {
+						typeof(ExportRendererAttribute),
+						typeof(ExportCellAttribute),
+						typeof(ExportImageSourceHandlerAttribute),
+						typeof(ExportFontAttribute)
+					}, default(InitializationFlags),
+				viewRegistered);
 		}
 
 		static FlowDirection GetFlowDirection()

@@ -33,18 +33,20 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				typeof(Button),
 				typeof(ContentPage),
+				typeof(Page),
+
+#if !WINDOWS
 				typeof(DatePicker),
 				typeof(Editor),
 				typeof(Entry),
 				typeof(Label),
-				typeof(Page),
 				typeof(SearchBar),
 				typeof(Slider),
 				typeof(Stepper),
 				typeof(Switch),
+#endif
 			};
 
-#if !WINDOWS
 			Forms.RegisterCompatRenderers(
 				new[] { typeof(RendererToHandlerShim).Assembly },
 				typeof(RendererToHandlerShim).Assembly,
@@ -58,7 +60,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 					builder.RegisterHandler(controlType, typeof(RendererToHandlerShim));
 				});
-#endif
 
 			return builder;
 		}
