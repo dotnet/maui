@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Resizetizer
 	{
 		SKBitmap bmp;
 
-		public SkiaSharpBitmapTools(SharedImageInfo info, ILogger logger)
+		public SkiaSharpBitmapTools(ResizeImageInfo info, ILogger logger)
 			: this(info.Filename, info.BaseSize, info.TintColor, logger)
 		{
 		}

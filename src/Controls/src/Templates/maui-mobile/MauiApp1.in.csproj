@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SharedImage Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" IsAppIcon="true" />
+    <MauiImage Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" IsAppIcon="true" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui.Resizetizer
 {
-	public enum SharedImageType
+	public enum ImageType
 	{
 		Vector,
 		Bitmap

@@ -25,9 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SharedImage Include="Resources\Images\*" />
-    <SharedImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
-    <SharedFont Include="Resources\Fonts\*" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
+    <MauiFont Include="Resources\Fonts\*" />
   </ItemGroup>
 
 </Project>

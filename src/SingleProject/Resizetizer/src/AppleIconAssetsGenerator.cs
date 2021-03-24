@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class AppleIconAssetsGenerator
 	{
-		public AppleIconAssetsGenerator(SharedImageInfo info, string appIconName, string intermediateOutputPath, DpiPath[] dpis, ILogger logger)
+		public AppleIconAssetsGenerator(ResizeImageInfo info, string appIconName, string intermediateOutputPath, DpiPath[] dpis, ILogger logger)
 		{
 			Info = info;
 			Logger = logger;
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public DpiPath[] Dpis { get; }
 
-		public SharedImageInfo Info { get; private set; }
+		public ResizeImageInfo Info { get; private set; }
 		public string IntermediateOutputPath { get; private set; }
 		public ILogger Logger { get; private set; }
 
