@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Layouts
 			return new Size(finalWidth, measure.Height);
 		}
 
-		public override void ArrangeChildren(Rectangle childBounds)
+		public override void ArrangeChildren(Rectangle bounds)
 		{
 			if (Stack.FlowDirection == FlowDirection.LeftToRight)
 			{
