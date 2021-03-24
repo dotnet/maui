@@ -1,9 +1,11 @@
+using System;
 using Microsoft.Maui;
 
 namespace Microsoft.Maui
 {
 	public interface IViewHandler
 	{
+		void SetMauiContext(IMauiContext mauiContext);
 		void SetVirtualView(IView view);
 		void UpdateValue(string property);
 		void DisconnectHandler();

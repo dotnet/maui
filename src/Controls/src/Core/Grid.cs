@@ -5,9 +5,10 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 
+
 namespace Microsoft.Maui.Controls
 {
-	public partial class Grid : Layout<View>, IGridController, IElementConfiguration<Grid>
+	public partial class Grid : Layout<View>, IGridController, IElementConfiguration<Grid>, IGridLayout
 	{
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row", typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0);
 
@@ -381,5 +382,48 @@ namespace Microsoft.Maui.Controls
 				Parent.ColumnDefinitions.Count
 			);
 		}
+
+		int IGridLayout.GetRow(IView view)
+		{
+			if (view is BindableObject bo)
+			{
+				return GetRow(bo);
+			}
+
+			throw new InvalidEnumArgumentException($"{nameof(view)} must be a BindableObject");
+		}
+
+		int IGridLayout.GetColumn(IView view)
+		{
+			if (view is BindableObject bo)
+			{
+				return GetColumn(bo);
+			}
+
+			throw new InvalidEnumArgumentException($"{nameof(view)} must be a BindableObject");
+		}
+
+		int IGridLayout.GetRowSpan(IView view)
+		{
+			if (view is BindableObject bo)
+			{
+				return GetRowSpan(bo);
+			}
+
+			throw new InvalidEnumArgumentException($"{nameof(view)} must be a BindableObject");
+		}
+
+		int IGridLayout.GetColumnSpan(IView view)
+		{
+			if (view is BindableObject bo)
+			{
+				return GetColumnSpan(bo);
+			}
+
+			throw new InvalidEnumArgumentException($"{nameof(view)} must be a BindableObject");
+		}
+
+		IReadOnlyList<IGridRowDefinition> IGridLayout.RowDefinitions => RowDefinitions.ToList();
+		IReadOnlyList<IGridColumnDefinition> IGridLayout.ColumnDefinitions => ColumnDefinitions.ToList();
 	}
 }

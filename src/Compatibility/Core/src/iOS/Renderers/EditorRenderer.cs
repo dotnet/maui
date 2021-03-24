@@ -63,6 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_placeholderLabel.Font = Element.ToUIFont();
 		}
 
+		[PortHandler]
 		protected internal override void UpdatePlaceholderText()
 		{
 			_placeholderLabel.Text = Element.Placeholder;
@@ -84,6 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_placeholderLabel.AttributedText = placeHolder;
 		}
 
+		[PortHandler]
 		protected internal override void UpdatePlaceholderColor()
 		{
 			Color placeholderColor = Element.PlaceholderColor;
@@ -93,6 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_placeholderLabel.TextColor = placeholderColor.ToUIColor();
 		}
 
+		[PortHandler]
 		void CreatePlaceholderLabel()
 		{
 			if (Control == null)
@@ -300,6 +303,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				TextView.InputAccessoryView.Hidden = !Element.IsEnabled;
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateFont()
 		{
 			var font = Element.ToUIFont();
@@ -341,7 +345,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		protected internal abstract void UpdatePlaceholderText();
+
+		[PortHandler]
 		protected internal abstract void UpdatePlaceholderColor();
 		protected internal abstract void UpdateCharacterSpacing();
 
@@ -360,6 +367,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				TextView.TextColor = textColor.ToUIColor();
 		}
 
+		[PortHandler]
 		void UpdateMaxLength()
 		{
 			var currentControlText = TextView.Text;
@@ -368,6 +376,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				TextView.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler]
 		protected virtual bool ShouldChangeText(UITextView textView, NSRange range, string text)
 		{
 			var newLength = textView.Text.Length + text.Length - range.Length;

@@ -83,6 +83,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateIsTextPredictionEnabled(entry);
 		}
 
+		public static void MapMaxLength(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateMaxLength(entry);
+		}
+
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.TypedNativeView?.UpdatePlaceholder(entry);
@@ -90,9 +95,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFont(EntryHandler handler, IEntry entry)
 		{
-			var services = App.Current?.Services
-				?? throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
-			var fontManager = services.GetRequiredService<IFontManager>();
+			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
 			handler.TypedNativeView?.UpdateFont(entry, fontManager);
 		}
@@ -105,6 +110,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapReturnType(EntryHandler handler, IEntry entry)
 		{
 			handler.TypedNativeView?.UpdateReturnType(entry);
+		}
+
+		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(entry);
 		}
 
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)

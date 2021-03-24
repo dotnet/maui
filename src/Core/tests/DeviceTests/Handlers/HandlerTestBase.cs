@@ -2,23 +2,46 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Collection(TestCollections.Handlers)]
-	public partial class HandlerTestBase<THandler, TStub> : TestBase
+	public partial class HandlerTestBase<THandler, TStub> : TestBase, IDisposable
 		where THandler : IViewHandler
 		where TStub : StubBase, IView, new()
 	{
-		readonly HandlerTestFixture _fixture;
+		IApplication _app;
+		IAppHost _host;
+		IMauiContext _context;
 
-		public HandlerTestBase(HandlerTestFixture fixture)
+		public HandlerTestBase()
 		{
-			_fixture = fixture;
+			var appBuilder = AppHostBuilder
+				.CreateDefaultAppBuilder()
+				.ConfigureFonts((ctx, fonts) =>
+				{
+					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
+				});
+
+			_host = appBuilder.Build();
+
+			_app = new ApplicationStub();
+
+			_context = new ContextStub(_host.Services);
 		}
 
-		public IApp App => _fixture.App;
+		public void Dispose()
+		{
+			_host.Dispose();
+			_host = null;
+			_app = null;
+			_context = null;
+		}
+
+		public IApplication App => _app;
+
+		public IMauiContext MauiContext => _context;
 
 		public Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			MainThread.InvokeOnMainThreadAsync(func);

@@ -2,30 +2,50 @@ using System;
 using Android.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
-	public class MauiApplication<TApplication> : global::Android.App.Application where TApplication : MauiApp
+	public class MauiApplication<TStartup> : MauiApplication
+		where TStartup : IStartup, new()
 	{
-		public MauiApplication(IntPtr handle, JniHandleOwnership ownerShip) : base(handle, ownerShip)
+		public MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{
-
 		}
-		IHost? _host;
+
 		public override void OnCreate()
 		{
-			if (!(Activator.CreateInstance(typeof(TApplication)) is TApplication app))
-				throw new InvalidOperationException($"We weren't able to create the App {typeof(TApplication)}");
+			var startup = new TStartup();
 
-			_host = app.CreateBuilder().ConfigureServices(ConfigureNativeServices).Build(app);
+			var host = startup
+				.CreateAppHostBuilder()
+				.ConfigureServices(ConfigureNativeServices)
+				.ConfigureUsing(startup)
+				.Build();
 
-			//_host.Start();
+			Services = host.Services;
+			Application = Services.GetRequiredService<IApplication>();
+
 			base.OnCreate();
 		}
 
-		//configure native services like HandlersContext, ImageSourceHandlers etc.. 
+		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
 		}
+	}
+
+	public abstract class MauiApplication : Android.App.Application
+	{
+		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
+		{
+			Current = this;
+		}
+
+		public static MauiApplication Current { get; private set; } = null!;
+
+		public IServiceProvider Services { get; protected set; } = null!;
+
+		public IApplication Application { get; protected set; } = null!;
 	}
 }

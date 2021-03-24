@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -9,10 +8,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Entry)]
 	public partial class EntryHandlerTests : HandlerTestBase<EntryHandler, EntryStub>
 	{
-		public EntryHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
 		{
@@ -255,6 +250,54 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, eventFiredCount);
 			else
 				Assert.Equal(0, eventFiredCount);
+		}
+
+		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[InlineData(2)]
+		[InlineData(5)]
+		[InlineData(8)]
+		[InlineData(10)]
+		public async Task MaxLengthInitializesCorrectly(int maxLength)
+		{
+			const string text = "Lorem ipsum dolor sit amet";
+			var expectedText = text.Substring(0, maxLength);
+
+			var entry = new EntryStub()
+			{
+				MaxLength = maxLength,
+				Text = text
+			};
+
+			var nativeText = await GetValueAsync(entry, GetNativeText);
+
+			Assert.Equal(expectedText, nativeText);
+			Assert.Equal(expectedText, entry.Text);
+		}
+
+		[Theory(DisplayName = "MaxLength Clips Native Text Correctly")]
+		[InlineData(2)]
+		[InlineData(5)]
+		[InlineData(8)]
+		[InlineData(10)]
+		public async Task MaxLengthClipsNativeTextCorrectly(int maxLength)
+		{
+			const string text = "Lorem ipsum dolor sit amet";
+			var expectedText = text.Substring(0, maxLength);
+
+			var entry = new EntryStub()
+			{
+				MaxLength = maxLength,
+			};
+
+			var nativeText = await GetValueAsync(entry, handler =>
+			{
+				entry.Text = text;
+
+				return GetNativeText(handler);
+			});
+
+			Assert.Equal(expectedText, nativeText);
+			Assert.Equal(expectedText, entry.Text);
 		}
 	}
 }

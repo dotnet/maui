@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Primitives;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a framework-level set of properties, events, and methods for .NET MAUI elements. 
@@ -73,7 +75,7 @@
 		/// Gets a value indicating whether the computed size and position of child elements in this element's layout are valid.
 		/// </summary>
 		void InvalidateMeasure();
-				
+
 		/// <summary>
 		/// Method that is called to invalidate the layout of this FrameworkElement.
 		/// </summary>
@@ -88,5 +90,15 @@
 		/// Direction in which the UI elements on the page are scanned by the eye
 		/// </summary>
 		FlowDirection FlowDirection { get; }
+
+		/// <summary>
+		/// Determines the horizontal aspect of this element's arrangement in a container
+		/// </summary>
+		LayoutAlignment HorizontalLayoutAlignment { get; }
+
+		/// <summary>
+		/// Determines the vertical aspect of this element's arrangement in a container
+		/// </summary>
+		LayoutAlignment VerticalLayoutAlignment { get; }
 	}
 }

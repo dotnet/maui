@@ -43,13 +43,13 @@ var target = Argument("target", "Default");
 if(String.IsNullOrWhiteSpace(target))
     target = "Default";
 
-var IOS_SIM_NAME = GetBuildVariable("IOS_SIM_NAME", "iPhone 7");
-var IOS_SIM_RUNTIME = GetBuildVariable("IOS_SIM_RUNTIME", "com.apple.CoreSimulator.SimRuntime.iOS-12-4");
+var IOS_SIM_NAME = GetBuildVariable("IOS_SIM_NAME", "iPhone 8");
+var IOS_SIM_RUNTIME = GetBuildVariable("IOS_SIM_RUNTIME", "com.apple.CoreSimulator.SimRuntime.iOS-14-4");
 var IOS_CONTROLGALLERY = "src/Compatibility/ControlGallery/src/iOS/";
 var IOS_CONTROLGALLERY_PROJ = $"{IOS_CONTROLGALLERY}Compatibility.ControlGallery.iOS.csproj";
 var IOS_TEST_PROJ = "./src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj";
-var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $".src/Compatibility/ControlGallery/test/iOS.UITests/bin/{configuration}/Compatibility.ControlGallery.iOS.UITests.dll");
-var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $".src/Compatibility/ControlGallery/test/iOS/bin/iPhoneSimulator/{configuration}/CompatibilityControlGalleryiOS.app");
+var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $"./src/Compatibility/ControlGallery/test/iOS.UITests/bin/{configuration}/Microsoft.Maui.Controls.iOS.UITests.dll");
+var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $"./src/Compatibility/ControlGallery/src/iOS/bin/iPhoneSimulator/{configuration}/CompatibilityControlGalleryiOS.app");
 var IOS_BUNDLE_ID = "com.microsoft.mauicompatibilitygallery";
 var IOS_BUILD_IPA = Argument("IOS_BUILD_IPA", (target == "cg-ios-deploy") ? true : (false || isCIBuild) );
 Guid IOS_SIM_UDID = Argument("IOS_SIM_UDID", Guid.Empty);
@@ -60,7 +60,7 @@ var UWP_PFX_PATH = Argument("UWP_PFX_PATH", "Xamarin.Forms.ControlGallery.Window
 var UWP_APP_PACKAGES_PATH = Argument("UWP_APP_PACKAGES_PATH", "*/AppPackages/");
 var UWP_APP_DRIVER_INSTALL_PATH = Argument("UWP_APP_DRIVER_INSTALL_PATH", "https://github.com/microsoft/WinAppDriver/releases/download/v1.2-RC/WindowsApplicationDriver.msi");
 
-var ANDROID_BUNDLE_ID = "com.xamarin.xamarin_forms_controlgallery";
+var ANDROID_BUNDLE_ID = "com.microsoft.mauicompatibilitygallery";
 var ANDROID_CONTROLGALLERY = "src/Compatibility/ControlGallery/src/Android/";
 var ANDROID_CONTROLGALLERY_PROJ = $"{ANDROID_CONTROLGALLERY}Compatibility.ControlGallery.Android.csproj";
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
@@ -670,7 +670,7 @@ Task("NuGetPack")
     var settings = new DotNetCoreToolSettings
     {
         DiagnosticOutput = true,
-        ArgumentCustomization = args => args.Append($"./.nuspec/package.ps1 -configuration \"{configuration}\"")
+        ArgumentCustomization = args => args.Append($"./eng/package.ps1 -configuration \"{configuration}\"")
     };
 
    DotNetCoreTool("pwsh", settings);
@@ -886,12 +886,12 @@ Task("Android100")
 
 
 Task("VS-NET6")
-    .IsDependentOn("Clean")
     .Does(() =>
     {
-        DotNetCoreRestore("Microsoft.Maui-net6.sln");
-        DotNetCoreBuild("Microsoft.Maui-net6.sln");
-        StartVisualStudio("Microsoft.Maui-net6.sln");
+        DotNetCoreBuild("./src/DotNet/Dotnet.csproj");
+        var ext = IsRunningOnWindows() ? ".exe" : "";
+        DotNetCoreBuild("./Microsoft.Maui.BuildTasks-net6.sln", new DotNetCoreBuildSettings { ToolPath = $"./bin/dotnet/dotnet{ext}" });
+        StartVisualStudioForDotNet6();
     });
 
 Task("VS")
@@ -1204,6 +1204,22 @@ void StartVisualStudio(string sln = "./Microsoft.Maui.sln")
     }
     else
          StartProcess("open", new ProcessSettings{ Arguments = sln });
+}
+
+void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
+{
+    if (isCIBuild)
+        return;
+    if (!IsRunningOnWindows())
+    {
+        Information("This target is only supported on Windows.");
+        return;
+    }
+    var vsLatest = VSWhereLatest();
+    if (vsLatest == null)
+        throw new Exception("Unable to find Visual Studio!");
+    var devenv = vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe");
+    StartProcess("powershell", $"./eng/dogfood.ps1 -vs '{devenv}' -sln '{sln}'");
 }
 
 MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarget.MSIL, string buildConfiguration = null)

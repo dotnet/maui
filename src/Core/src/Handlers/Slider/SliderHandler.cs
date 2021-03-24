@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public SliderHandler(PropertyMapper mapper) : base(mapper ?? SliderMapper)
+		public SliderHandler(PropertyMapper? mapper = null) : base(mapper ?? SliderMapper)
 		{
 
 		}

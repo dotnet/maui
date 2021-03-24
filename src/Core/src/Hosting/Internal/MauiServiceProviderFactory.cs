@@ -5,6 +5,13 @@ namespace Microsoft.Maui.Hosting.Internal
 {
 	internal class MauiServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
 	{
+		readonly bool _constructorInjection;
+
+		public MauiServiceProviderFactory(bool constructorInjection)
+		{
+			_constructorInjection = constructorInjection;
+		}
+
 		public IServiceCollection CreateBuilder(IServiceCollection services)
 		{
 			if (services is IMauiServiceCollection mauiServiceCollection)
@@ -21,10 +28,9 @@ namespace Microsoft.Maui.Hosting.Internal
 		public IServiceProvider CreateServiceProvider(IServiceCollection containerBuilder)
 		{
 			if (containerBuilder is IMauiServiceCollection mauiServiceCollection)
-				return mauiServiceCollection.BuildServiceProvider();
+				return mauiServiceCollection.BuildServiceProvider(_constructorInjection);
 			else
 				throw new InvalidCastException($"{nameof(containerBuilder)} is not {nameof(IMauiServiceCollection)}");
-
 		}
 	}
 }

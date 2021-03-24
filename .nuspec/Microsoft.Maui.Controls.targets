@@ -18,8 +18,7 @@
 	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
 
 	<ItemGroup>
-		<ProjectCapability Include="XamarinForms" />
-		<ProjectCapability Include="Maui" />
+		<ProjectCapability Include="Maui" Condition="'$(_ExcludeMauiProjectCapability)' != 'true'" />
 	</ItemGroup>
 
 	<!-- Check Tasks ABI and other validations -->

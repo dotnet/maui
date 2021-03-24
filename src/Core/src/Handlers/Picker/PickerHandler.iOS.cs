@@ -101,6 +101,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateSelectedIndex(picker);
 		}
 
+		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(picker);
+		}
+
 		void OnCollectionChanged(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || TypedNativeView == null)

@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls
 			return (self & EffectiveFlowDirection.Explicit) == EffectiveFlowDirection.Explicit;
 		}
 
-		public static Maui.FlowDirection ToPlatformFlowDirection(this FlowDirection flowDirection) 
+		public static Maui.FlowDirection ToPlatformFlowDirection(this FlowDirection flowDirection)
 		{
 			return flowDirection.ToEffectiveFlowDirection().IsLeftToRight()
 					? Maui.FlowDirection.LeftToRight : Maui.FlowDirection.RightToLeft;

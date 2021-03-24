@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Hosting
 		readonly List<Action<HostBuilderContext, IFontCollection>> _configureFontsActions = new List<Action<HostBuilderContext, IFontCollection>>();
 		readonly List<IConfigureContainerAdapter> _configureContainerActions = new List<IConfigureContainerAdapter>();
 		readonly Func<IServiceCollection> _serviceColectionFactory = new Func<IServiceCollection>(() => new MauiServiceCollection());
-		IServiceFactoryAdapter _serviceProviderFactory = new ServiceFactoryAdapter<IServiceCollection>(new MauiServiceProviderFactory());
+
+		IServiceFactoryAdapter _serviceProviderFactory = new ServiceFactoryAdapter<IServiceCollection>(new MauiServiceProviderFactory(false));
+
 		bool _hostBuilt;
 		HostBuilderContext? _hostBuilderContext;
 		IHostEnvironment? _hostEnvironment;
@@ -26,7 +28,6 @@ namespace Microsoft.Maui.Hosting
 		IServiceCollection? _services;
 		IConfiguration? _hostConfiguration;
 		IConfiguration? _appConfiguration;
-		App? _app;
 
 		public AppHostBuilder()
 		{
@@ -34,13 +35,17 @@ namespace Microsoft.Maui.Hosting
 		}
 		public IDictionary<object, object> Properties => new Dictionary<object, object>();
 
-		public IHost Build(IApp app)
+		public static IAppHostBuilder CreateDefaultAppBuilder()
 		{
-			_app = app as App;
-			return Build();
+			var builder = new AppHostBuilder();
+
+			builder.UseMauiHandlers();
+			builder.UseFonts();
+
+			return builder;
 		}
 
-		public IHost Build()
+		public IAppHost Build()
 		{
 			_services = _serviceColectionFactory();
 
@@ -65,10 +70,6 @@ namespace Microsoft.Maui.Hosting
 				throw new InvalidOperationException($"The ServiceProvider cannot be null");
 
 			BuildFontRegistrar(_serviceProvider);
-
-			//we do this here because we can't inject the provider on the App ctor
-			//before we register the user ConfigureServices should this live in IApp ?
-			_app?.SetServiceProvider(_serviceProvider);
 
 			return new AppHost(_serviceProvider, null);
 		}
@@ -124,7 +125,6 @@ namespace Microsoft.Maui.Hosting
 			return this;
 		}
 #pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint
-
 
 		void BuildHostConfiguration()
 		{
@@ -274,6 +274,11 @@ namespace Microsoft.Maui.Hosting
 		IHostBuilder IHostBuilder.ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate)
 		{
 			return ConfigureContainer<TContainerBuilder>(configureDelegate);
+		}
+
+		IHost IHostBuilder.Build()
+		{
+			return Build();
 		}
 	}
 }

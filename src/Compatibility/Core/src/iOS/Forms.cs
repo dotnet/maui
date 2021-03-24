@@ -27,9 +27,15 @@ using TNativeView = AppKit.NSView;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
+	public struct InitializationOptions
+	{
+		public InitializationFlags Flags;
+	}
+
 	public static class Forms
 	{
-		public static IActivationState ActivationState { get; private set; }
+		internal static IMauiContext MauiContext { get; private set; }
+
 		public static bool IsInitialized { get; private set; }
 
 		static IFontManager s_fontManager;
@@ -174,37 +180,47 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static void Init() =>
-			Init(new ActivationState(new MauiContext()));
+			SetupInit(new MauiContext());
 
-		public static void Init(IActivationState activationState)
+		public static void Init(InitializationOptions options) =>
+			SetupInit(new MauiContext(), options);
+
+		public static void Init(IActivationState activationState) =>
+			SetupInit(activationState.Context);
+
+		static void SetupInit(IMauiContext context, InitializationOptions? maybeOptions = null)
 		{
-			if (IsInitialized)
-				return;
-
-			ActivationState = activationState;
-			IsInitialized = true;
+			MauiContext = context;
 
 			Microsoft.Maui.Controls.Internals.Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
 			//TODO: MAUI Accent Color?
 			Color.SetAccent(Color.FromRgba(50, 79, 133, 255));
 
-			Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
+			if (!IsInitialized)
+			{
+				// Only need to do this once
+				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
+			}
 
 #if __MOBILE__
 			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 #else
-			// Subscribe to notifications in OS Theme changes
-			NSDistributedNotificationCenter.GetDefaultCenter().AddObserver((NSString)"AppleInterfaceThemeChangedNotification", (n) =>
+			if (!IsInitialized)
 			{
-				var interfaceStyle = NSUserDefaults.StandardUserDefaults.StringForKey("AppleInterfaceStyle");
+				// Only need to do this once
+				// Subscribe to notifications in OS Theme changes
+				NSDistributedNotificationCenter.GetDefaultCenter().AddObserver((NSString)"AppleInterfaceThemeChangedNotification", (n) =>
+				{
+					var interfaceStyle = NSUserDefaults.StandardUserDefaults.StringForKey("AppleInterfaceStyle");
 
-				var aquaAppearance = NSAppearance.GetAppearance(interfaceStyle == "Dark" ? NSAppearance.NameDarkAqua : NSAppearance.NameAqua);
-				NSApplication.SharedApplication.Appearance = aquaAppearance;
+					var aquaAppearance = NSAppearance.GetAppearance(interfaceStyle == "Dark" ? NSAppearance.NameDarkAqua : NSAppearance.NameAqua);
+					NSApplication.SharedApplication.Appearance = aquaAppearance;
 
-				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(interfaceStyle == "Dark" ? OSAppTheme.Dark : OSAppTheme.Light));
-			});
+					Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(interfaceStyle == "Dark" ? OSAppTheme.Dark : OSAppTheme.Light));
+				});
+			}
 
 			Device.SetIdiom(TargetIdiom.Desktop);
 			Device.SetFlowDirection(NSApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
@@ -221,21 +237,44 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.PlatformServices = platformServices;
 
+			// use field and not property to avoid exception in getter
+			if (Device.info is IDisposable infoDisposable)
+			{
+				infoDisposable.Dispose();
+				Device.info = null;
+			}
+
 #if __MOBILE__
 			Device.PlatformInvalidator = platformServices;
 			Device.Info = new IOSDeviceInfo();
 #else
 			Device.Info = new Platform.macOS.MacDeviceInfo();
 #endif
-			if(!IsInitializedRenderers)
-			{
-				IsInitializedRenderers = true;
-				Controls.Internals.Registrar.RegisterAll(new[]
-					{ typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute), typeof(ExportFontAttribute) });
-			}
+			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
+				RegisterCompatRenderers();
 
 			ExpressionSearch.Default = new iOSExpressionSearch();
+
+			IsInitialized = true;
 		}
+
+		internal static void RegisterCompatRenderers()
+		{
+			if (!IsInitializedRenderers)
+			{
+				IsInitializedRenderers = true;
+
+				// Only need to do this once
+				Controls.Internals.Registrar.RegisterAll(new[]
+				{
+					typeof(ExportRendererAttribute),
+					typeof(ExportCellAttribute),
+					typeof(ExportImageSourceHandlerAttribute),
+					typeof(ExportFontAttribute)
+				});
+			}
+		}
+
 		internal static void RegisterCompatRenderers(
 			Assembly[] assemblies,
 			Assembly defaultRendererAssembly,

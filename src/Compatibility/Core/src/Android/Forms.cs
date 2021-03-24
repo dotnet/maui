@@ -62,12 +62,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isPieOrNewer;
 		static FontManager s_fontManager;
 
-		[Obsolete("Context is obsolete as of version 2.5. Please use a local context instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Context Context { get; internal set; }
-
 		// One per process; does not change, suitable for loading resources (e.g., ResourceProvider)
-		internal static Context ApplicationContext { get; private set; }
+		internal static Context ApplicationContext { get; private set; } = global::Android.App.Application.Context;
 		internal static IMauiContext MauiContext { get; private set; }
 
 		public static bool IsInitialized { get; private set; }
@@ -232,30 +228,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd();
 		}
 
-		/// <summary>
-		/// Sets title bar visibility programmatically. Must be called after Microsoft.Maui.Controls.Compatibility.Forms.Init() method
-		/// </summary>
-		/// <param name="visibility">Title bar visibility enum</param>
-		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 2.5. "
-			+ "Please use SetTitleBarVisibility(Activity, AndroidTitleBarVisibility) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
-		{
-			if (Context.GetActivity() == null)
-				throw new NullReferenceException("Must be called after Microsoft.Maui.Controls.Compatibility.Forms.Init() method");
-
-			if (visibility == AndroidTitleBarVisibility.Never)
-			{
-				if (!Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
-					Context.GetActivity().Window.AddFlags(WindowManagerFlags.Fullscreen);
-			}
-			else
-			{
-				if (Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
-					Context.GetActivity().Window.ClearFlags(WindowManagerFlags.Fullscreen);
-			}
-		}
-
 		public static void SetTitleBarVisibility(Activity activity, AndroidTitleBarVisibility visibility)
 		{
 			if (visibility == AndroidTitleBarVisibility.Never)
@@ -358,16 +330,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var activity = context.Context;
 			Profile.FrameBegin();
 			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
-			if (!IsInitialized)
-			{
-				// Only need to get this once; it won't change
-				ApplicationContext = activity.ApplicationContext;
-				MauiContext = context;
-			}
 
-#pragma warning disable 618 // Still have to set this up so obsolete code can function
-			Context = activity;
-#pragma warning restore 618
+			// Allow this multiple times to support the app and then the activity
+			ApplicationContext = activity.ApplicationContext;
+			MauiContext = context;
 
 			if (!IsInitialized)
 			{
@@ -418,7 +384,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Profile.FramePartition("RegisterAll");
 
-			RegisterCompatRenderers(maybeOptions);
+			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
+				RegisterCompatRenderers(maybeOptions);
 
 			Profile.FramePartition("Epilog");
 
