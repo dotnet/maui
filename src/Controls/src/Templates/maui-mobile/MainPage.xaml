@@ -4,6 +4,7 @@
              BackgroundColor="White">
 
     <StackLayout Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
+
         <Label Text="Welcome to"
                FontSize="32"
                TextColor="Black"
@@ -12,10 +13,16 @@
                FontSize="24"
                TextColor="Black"
                HorizontalOptions="Center" />
-        <Button x:Name="CountBtn"
-                Text="Click Me!"
+
+        <Button Text="Click Me!"
                 HorizontalOptions="Center"
                 Clicked="OnButtonClicked"/>
+        <Label x:Name="CountLabel"
+               Text="Click the button above!"
+               FontSize="20"
+               TextColor="Black"
+               HorizontalOptions="Center" />
+
     </StackLayout>
 
 </ContentPage>

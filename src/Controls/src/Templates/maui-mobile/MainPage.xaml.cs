@@ -18,7 +18,7 @@ namespace MauiApp1
 		private void OnButtonClicked(object sender, EventArgs e)
 		{
 			count++;
-			CountBtn.Text = $"You clicked {count} times.";
+			CountLabel.Text = $"You clicked {count} times!";
 		}
 
 		public IView View { get => (IView)Content; set => Content = (View)value; }
