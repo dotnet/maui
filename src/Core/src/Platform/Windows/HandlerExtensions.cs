@@ -20,6 +20,8 @@ namespace Microsoft.Maui
 				if (handler == null)
 					throw new Exception($"Handler not found for view {view}");
 
+				handler.SetMauiContext(context);
+
 				view.Handler = handler;
 			}
 

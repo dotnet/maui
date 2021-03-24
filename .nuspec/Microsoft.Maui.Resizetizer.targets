@@ -46,6 +46,7 @@
         <_ResizetizerIsiOSApp Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
         <_ResizetizerIsUWPApp Condition="'$(TargetPlatformIdentifier)' == 'UAP' And '$(OutputType)' == 'AppContainerExe'">True</_ResizetizerIsUWPApp>
         <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(TargetPlatformIdentifier)' == 'Windows'">True</_ResizetizerIsWPFApp>
+        <_ResizetizerIsWinUIApp>False</_ResizetizerIsWinUIApp>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -54,9 +55,10 @@
         <_ResizetizerIsiOSApp Condition="('$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst') And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
         <_ResizetizerIsUWPApp Condition="'$(TargetPlatformIdentifier)'=='UAP' And '$(OutputType)' == 'AppContainerExe'">True</_ResizetizerIsUWPApp>
         <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(TargetPlatformIdentifier)'=='Windows'">True</_ResizetizerIsWPFApp>
+        <_ResizetizerIsWinUIApp Condition="'$(ProjectReunionWinUI)'=='True' And '$(TargetPlatformIdentifier)'=='Windows' And '$(OutputType)' == 'WinExe'">True</_ResizetizerIsWinUIApp>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True'">
+    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWinUIApp)' == 'True'">
         <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
 
         <ResizetizeDependsOnTargets>
@@ -109,8 +111,8 @@
         </ProcessSharedFontsAfterTargets>
     </PropertyGroup>
 
-    <!-- UWP -->
-    <PropertyGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True'">
+    <!-- UWP / WinUI -->
+    <PropertyGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWinUIApp)' == 'True'">
         <ResizetizerPlatformType>uwp</ResizetizerPlatformType>
 
         <ResizetizeBeforeTargets>
@@ -275,8 +277,8 @@
 
         </ItemGroup>
 
-        <!-- UWP -->
-        <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True'">
+        <!-- UWP / WinUI -->
+        <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWinUIApp)' == 'True'">
 
             <ContentWithTargetPath Include="@(_SharedFontCopied)" Condition="'@(_SharedFontCopied)' != ''">
                 <TargetPath>Assets\$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</TargetPath>
@@ -392,8 +394,8 @@
             <FileWrites Include="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
-        <!-- UWP -->
-        <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True'">
+        <!-- UWP / WinUI -->
+        <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWinUIApp)' == 'True'">
             <ContentWithTargetPath Include="@(_ResizetizerCollectedImages)">
                 <TargetPath>Assets\%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
             </ContentWithTargetPath>

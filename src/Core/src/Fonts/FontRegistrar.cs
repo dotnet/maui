@@ -138,6 +138,7 @@ namespace Microsoft.Maui
 				return assetStream;
 
 			// TODO: check other folders as well
+#elif WINDOWS
 #endif
 
 			throw new FileNotFoundException($"Native font with the name {nativeFont.Filename} was not found.");
