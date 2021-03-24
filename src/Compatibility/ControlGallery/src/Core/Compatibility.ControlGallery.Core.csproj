@@ -119,10 +119,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj">
-      <Name>Controls.Build.Tasks</Name>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
