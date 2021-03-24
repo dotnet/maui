@@ -66,11 +66,11 @@ jobs:
 
     - name: Install DotNet Preview
       shell: bash
-      run: >
-        export PATH="/usr/local/share/dotnet/:~/.dotnet/tools:$PATH" &&
-        curl -L https://raw.githubusercontent.com/dotnet/install-scripts/7a9d5dcab92cf131fc2d8977052f8c2c2d540e22/src/dotnet-install.sh > dotnet-install.sh &&
-        sh dotnet-install.sh --version $DotNetVersion --install-dir $DOTNET_ROOT --verbose &&
-        dotnet --list-sdks &&
+      run: |
+        export PATH="/usr/local/share/dotnet/:~/.dotnet/tools:$PATH"
+        curl -L https://raw.githubusercontent.com/dotnet/install-scripts/7a9d5dcab92cf131fc2d8977052f8c2c2d540e22/src/dotnet-install.sh > dotnet-install.sh
+        sh dotnet-install.sh --version $DotNetVersion --install-dir $DOTNET_ROOT --verbose
+        dotnet --list-sdks
         dotnet tool install --global boots --add-source "https://api.nuget.org/v3/index.json"
         boots $AndroidPkg
         boots $iOSPkg
