@@ -22,12 +22,26 @@ namespace Maui.Controls.Sample
 				TextColor = Color.Green,
 				Padding = new Thickness(10, 10, 10, 10),
 			});
-			
+			layout.Add(new Label
+			{
+				Text = "Yup, Label",
+				TextColor = Color.Red
+			});
+
+			//layout.Add(new Entry
+			//{
+			//	Text = "I am an entry"
+			//});
+
 
 
 			return new Window
 			{
 				Page = layout
+				//Page = new SimplePage()
+				//{
+				//	Content = layout
+				//}
 			};
 		}
 

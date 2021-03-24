@@ -106,6 +106,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 				VisualElementRenderer);
 		}
 
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return VisualElementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
+		}
+
 		public override void UpdateValue(string property)
 		{
 			base.UpdateValue(property);
