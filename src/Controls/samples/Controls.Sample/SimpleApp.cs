@@ -13,19 +13,38 @@ namespace Maui.Controls.Sample
 		{
 			Forms.Init(activationState);
 
+			var layout = new VerticalStackLayoutIsPage();
+			layout.Add(new Button
+			{
+				Text = "Yup, very simple!",
+				FontFamily = "Dokdo",
+				BackgroundColor = Color.Red,
+				TextColor = Color.Green,
+				Padding = new Thickness(10, 10, 10, 10),
+			});
+			
+
+
 			return new Window
 			{
-				//Page = new SimplePage()
-				Page = new SimpleButtonIsPage
-				{
-					Text = "Yup, very simple!",
-					FontFamily = "Dokdo",
-					BackgroundColor = Color.Red,
-					TextColor = Color.Green,
-					Padding = new Thickness(10, 10, 10, 10),
-				}
+				Page = layout
 			};
 		}
+
+		class SimplePage : BasePage, IPage
+		{
+
+		}
+
+		class VerticalStackLayoutIsPage : VerticalStackLayout, IPage
+		{
+			public VerticalStackLayoutIsPage()
+			{
+			}
+
+			public IView View { get => this; set => throw new NotImplementedException(); }
+		}
+
 
 		class SimpleButtonIsPage : Button, IPage
 		{
