@@ -6,6 +6,21 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public static class AppHostBuilderExtensions
 	{
+		public static IAppHostBuilder RegisterCompatibilityForms(this IAppHostBuilder builder)
+		{
+#if __ANDROID__
+			var options = new InitializationOptions(global::Android.App.Application.Context, null, null);
+#elif __IOS__
+			var options = new InitializationOptions();
+#endif
+
+			options.Flags |= InitializationFlags.SkipRenderers;
+
+			Forms.Init(options);
+
+			return builder;
+		}
+
 		public static IAppHostBuilder RegisterCompatibilityRenderers(this IAppHostBuilder builder)
 		{
 			// This won't really be a thing once we have all the handlers built
@@ -13,6 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				typeof(Button),
 				typeof(ContentPage),
+		typeof(DatePicker),
 				typeof(Editor),
 				typeof(Entry),
 				typeof(Label),

@@ -6,10 +6,10 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
-	public class MauiApplication<TStartup> : Android.App.Application
+	public class MauiApplication<TStartup> : MauiApplication
 		where TStartup : IStartup, new()
 	{
-		public MauiApplication(IntPtr handle, JniHandleOwnership ownerShip) : base(handle, ownerShip)
+		public MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{
 		}
 
@@ -17,32 +17,14 @@ namespace Microsoft.Maui
 		{
 			var startup = new TStartup();
 
-			IAppHostBuilder appBuilder;
+			var host = startup
+				.CreateAppHostBuilder()
+				.ConfigureServices(ConfigureNativeServices)
+				.ConfigureUsing(startup)
+				.Build();
 
-			if (startup is IHostBuilderStartup hostBuilderStartup)
-			{
-				appBuilder = hostBuilderStartup
-					.CreateHostBuilder();
-			}
-			else
-			{
-				appBuilder = AppHostBuilder
-					.CreateDefaultAppBuilder();
-			}
-
-			appBuilder.
-				ConfigureServices(ConfigureNativeServices);
-
-			startup.Configure(appBuilder);
-
-			var host = appBuilder.Build();
-			if (host.Services == null)
-				throw new InvalidOperationException("App was not intialized");
-
-			var services = host.Services;
-
-			var app = services.GetRequiredService<MauiApp>();
-			host.SetServiceProvider(app);
+			Services = host.Services;
+			Application = Services.GetRequiredService<IApplication>();
 
 			base.OnCreate();
 		}
@@ -52,5 +34,19 @@ namespace Microsoft.Maui
 		{
 			services.AddTransient<IAndroidLifecycleHandler, AndroidLifecycleHandler>();
 		}
+	}
+
+	public abstract class MauiApplication : Android.App.Application
+	{
+		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
+		{
+			Current = this;
+		}
+
+		public static MauiApplication Current { get; private set; } = null!;
+
+		public IServiceProvider Services { get; protected set; } = null!;
+
+		public IApplication Application { get; protected set; } = null!;
 	}
 }

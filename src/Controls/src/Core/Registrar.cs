@@ -11,13 +11,8 @@ namespace Microsoft.Maui.Controls
 	[Flags]
 	public enum InitializationFlags : long
 	{
-		DisableCss = 1 << 0
-	}
-
-	// Previewer uses reflection to bind to this method; Removal or modification of visibility will break previewer.
-	internal static class Registrar
-	{
-		internal static void RegisterAll(Type[] attrTypes) => Internals.Registrar.RegisterAll(attrTypes);
+		DisableCss = 1 << 0,
+		SkipRenderers = 1 << 1,
 	}
 }
 

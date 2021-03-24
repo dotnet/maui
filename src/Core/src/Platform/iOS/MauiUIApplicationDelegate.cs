@@ -9,49 +9,26 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class MauiUIApplicationDelegate<TStartup> : UIApplicationDelegate, IUIApplicationDelegate
+	public class MauiUIApplicationDelegate<TStartup> : MauiUIApplicationDelegate
 		where TStartup : IStartup, new()
 	{
-		public override UIWindow? Window
-		{
-			get;
-			set;
-		}
-
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			var startup = new TStartup();
 
-			IAppHostBuilder appBuilder;
+			var host = startup
+				.CreateAppHostBuilder()
+				.ConfigureServices(ConfigureNativeServices)
+				.ConfigureUsing(startup)
+				.Build();
 
-			if (startup is IHostBuilderStartup hostBuilderStartup)
-			{
-				appBuilder = hostBuilderStartup
-					.CreateHostBuilder();
-			}
-			else
-			{
-				appBuilder = AppHostBuilder
-					.CreateDefaultAppBuilder();
-			}
+			Services = host.Services;
+			Application = Services.GetRequiredService<IApplication>();
 
-			appBuilder.
-				ConfigureServices(ConfigureNativeServices);
+			var mauiContext = new MauiContext(Services);
 
-			startup.Configure(appBuilder);
-
-			var host = appBuilder.Build();
-			if (host.Services == null)
-				throw new InvalidOperationException("App was not intialized");
-
-			var services = host.Services;
-
-			var app = services.GetRequiredService<MauiApp>();
-			host.SetServiceProvider(app);
-
-			var mauiContext = new MauiContext(services);
-			var window = app.CreateWindow(new ActivationState(mauiContext));
-
+			var activationState = new ActivationState(mauiContext);
+			var window = Application.CreateWindow(activationState);
 			window.MauiContext = mauiContext;
 
 			var content = (window.Page as IView) ?? window.Page.View;
@@ -97,5 +74,21 @@ namespace Microsoft.Maui
 
 		IEnumerable<IIosApplicationDelegateHandler> GetIosLifecycleHandler() =>
 			MauiApp.Current?.Services?.GetServices<IIosApplicationDelegateHandler>() ?? Enumerable.Empty<IIosApplicationDelegateHandler>();
+	}
+
+	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
+	{
+		protected MauiUIApplicationDelegate()
+		{
+			Current = this;
+		}
+
+		public static MauiUIApplicationDelegate Current { get; private set; } = null!;
+
+		public override UIWindow? Window { get; set; }
+
+		public IServiceProvider Services { get; protected set; } = null!;
+
+		public IApplication Application { get; protected set; } = null!;
 	}
 }
