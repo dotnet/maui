@@ -2,6 +2,7 @@
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
+using Android.Util;
 using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
