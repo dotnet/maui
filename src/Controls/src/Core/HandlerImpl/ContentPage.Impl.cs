@@ -34,8 +34,23 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
+			var width = widthConstraint;
+			var height = heightConstraint;
+
+#if WINDOWS
+			if (double.IsInfinity(width))
+			{
+				width = 800;
+			}
+
+			if (double.IsInfinity(height))
+			{
+				height = 800;
+			}
+#endif
+
 			IsMeasureValid = true;
-			return new Size(widthConstraint, heightConstraint);
+			return new Size(width, height);
 		}
 
 		protected override void ArrangeOverride(Rectangle bounds)

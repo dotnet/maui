@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Action<Rectangle>? CrossPlatformArrange { get; set; }
 
-
+		
 		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
 		{
 			if (CrossPlatformMeasure == null)
@@ -26,12 +26,17 @@ namespace Microsoft.Maui
 
 		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
 		{
+			if (CrossPlatformMeasure == null)
+			{
+				return base.ArrangeOverride(finalSize);
+			}
+
 			var width = finalSize.Width;
 			var height = finalSize.Height;
 
-			CrossPlatformMeasure?.Invoke(width, height);
+			var size = CrossPlatformMeasure.Invoke(width, height);
 			CrossPlatformArrange?.Invoke(new Rectangle(0, 0, width, height));
-			return base.ArrangeOverride(finalSize);
+			return new Windows.Foundation.Size(size.Width, size.Height);
 		}
 	}
 }
