@@ -12,14 +12,25 @@ namespace Microsoft.Maui
 			nativeControl.FontWeight = font.FontAttributes.ToFontWeight();
 		}
 
-		public static void UpdateIsEnabled(this Control nativeControl, bool isEnabled)
-		{
+		public static void UpdateIsEnabled(this Control nativeControl, bool isEnabled) =>
 			nativeControl.IsEnabled = isEnabled;
-		}
 
-		public static void UpdateBackgroundColor(this Control nativeControl, Color color)
+		public static void UpdateForegroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			nativeControl.Foreground = color.IsDefault && defaultBrush != null ? defaultBrush : color.ToNative();
+
+		public static void UpdateBackgroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			nativeControl.Background = color.IsDefault && defaultBrush != null ? defaultBrush : color.ToNative();
+
+		public static void UpdatePadding(this Control nativeControl, Thickness padding, UI.Xaml.Thickness? defaultThickness = null)
 		{
-			nativeControl.Background = color.ToNative();
+			var newPadding = defaultThickness ?? new UI.Xaml.Thickness();
+
+			newPadding.Left += padding.Left;
+			newPadding.Top += padding.Top;
+			newPadding.Right += padding.Right;
+			newPadding.Bottom += padding.Bottom;
+
+			nativeControl.Padding = newPadding;
 		}
 	}
 }

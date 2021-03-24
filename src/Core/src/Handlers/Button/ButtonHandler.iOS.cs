@@ -45,6 +45,11 @@ namespace Microsoft.Maui.Handlers
 			base.SetupDefaults(nativeView);
 		}
 
+		public static void MapBackgroundColor(ButtonHandler handler, IButton button)
+		{
+			handler.TypedNativeView?.UpdateBackgroundColor(button);
+		}
+
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
 			handler.TypedNativeView?.UpdateText(button);
