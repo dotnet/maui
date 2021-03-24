@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
 {
@@ -34,9 +35,36 @@ namespace Microsoft.Maui
 
 			var content = (window.Page as IView) ?? window.Page.View;
 
-			MainWindow.Content = content.ToNative(window.MauiContext);
+			var canvas = CreateRootContainer();
+			canvas.Children.Add(content.ToNative(window.MauiContext));
+			MainWindow.Content = canvas;
 
 			MainWindow.Activate();
+		}
+
+		Canvas CreateRootContainer()
+		{
+			var current = Microsoft.UI.Xaml.Application.Current;
+
+			if (!current.Resources.ContainsKey("RootContainerStyle"))
+			{
+				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new UI.Xaml.ResourceDictionary
+				{
+					Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf")
+				});
+			}
+
+			if (!current.Resources.ContainsKey("ShellNavigationView"))
+			{
+				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
+				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Shell/ShellStyles.xbf");
+				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
+			}
+
+			return new Canvas
+			{
+				Style = (Microsoft.UI.Xaml.Style)current.Resources["RootContainerStyle"]
+			};
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)

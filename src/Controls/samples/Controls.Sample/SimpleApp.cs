@@ -27,6 +27,11 @@ namespace Maui.Controls.Sample
 				Text = "Yup, Label",
 				TextColor = Color.Red
 			});
+			layout.Add(new Entry
+			{
+				Text = "Yup, Label",
+				TextColor = Color.Red
+			});
 
 			//layout.Add(new Entry
 			//{
