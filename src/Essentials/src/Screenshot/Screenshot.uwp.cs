@@ -4,7 +4,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
-#if NET6_0
+#if NET6_0 || NET5_0
 using Microsoft.UI.Xaml;
 #else
 using Windows.UI.Xaml;
