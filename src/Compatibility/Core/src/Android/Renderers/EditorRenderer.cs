@@ -210,6 +210,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				ElementController.SendCompleted();
 		}
 
+		[PortHandler]
 		protected virtual void UpdateFont()
 		{
 			EditText.Typeface = Element.ToTypeface();
