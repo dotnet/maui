@@ -1,7 +1,9 @@
-﻿using Android.Views;
+﻿using Android.Content.Res;
+using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Microsoft.Maui.Handlers
 {

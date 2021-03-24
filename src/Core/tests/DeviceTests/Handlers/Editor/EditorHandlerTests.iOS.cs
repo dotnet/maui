@@ -10,9 +10,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EditorHandlerTests
 	{
-		MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
-			(MauiTextView)editorHandler.View;
-			
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -64,8 +61,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
 		}
 
-		UITextView GetNativeEditor(EditorHandler editorHandler) =>
-			(UITextView)editorHandler.View;
+		MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
+			(MauiTextView)editorHandler.View;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
