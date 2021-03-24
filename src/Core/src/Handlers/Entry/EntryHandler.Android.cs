@@ -94,6 +94,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateReturnType(entry);
 		}
 
+		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(entry);
+		}
+
 		void OnTextChanged(string? text)
 		{
 			if (VirtualView == null || TypedNativeView == null)

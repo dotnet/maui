@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>
+	public partial class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
 

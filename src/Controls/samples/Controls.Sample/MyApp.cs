@@ -6,16 +6,21 @@ using Microsoft.Maui.Controls.Compatibility;
 
 namespace Maui.Controls.Sample
 {
-	public class MyApp : MauiApp
+	public class MyApp : IApplication
 	{
-		public MyApp(ITextService textService)
+		public MyApp(IServiceProvider services, ITextService textService)
 		{
+			Services = services;
+
 			Console.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 		}
 
-		public override IWindow CreateWindow(IActivationState state)
+		public IServiceProvider Services { get; }
+
+		public IWindow CreateWindow(IActivationState activationState)
 		{
-			Forms.Init(state);
+			Forms.Init(activationState);
+
 			return Services.GetRequiredService<IWindow>();
 		}
 	}

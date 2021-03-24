@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Hosting
 {
 	class MauiServiceProvider : IMauiServiceProvider
 	{
+		static readonly Type ServiceProviderType = typeof(IServiceProvider);
+
 		readonly IMauiServiceCollection _collection;
 		readonly bool _constructorInjection;
 
@@ -113,7 +115,7 @@ namespace Microsoft.Maui.Hosting
 			for (var i = 0; i < paramCount; i++)
 			{
 				var param = match.Parameters[i];
-				var value = GetService(param.ParameterType);
+				var value = GetServiceCore(param.ParameterType);
 				if (value == null)
 				{
 					if (!param.HasDefaultValue)
@@ -125,6 +127,14 @@ namespace Microsoft.Maui.Hosting
 			}
 
 			return match.Constructor.Invoke(paramValues);
+		}
+
+		object? GetServiceCore(Type type)
+		{
+			if (ServiceProviderType.IsAssignableFrom(type))
+				return this;
+
+			return GetService(type);
 		}
 	}
 }

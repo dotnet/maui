@@ -10,6 +10,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[PortHandler]
 	internal class NoCaretField : UITextField
 	{
 		public NoCaretField() : base(new RectangleF())
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		}
 
+		[PortHandler]
 		protected override UITextField CreateNativeControl()
 		{
 			return new NoCaretField { BorderStyle = UITextBorderStyle.RoundedRect };
@@ -220,11 +222,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (textAttr != null)
 				Control.AttributedText = textAttr;
 		}
+
+		[PortHandler]
 		void UpdateMaximumDate()
 		{
 			_picker.MaximumDate = Element.MaximumDate.ToNSDate();
 		}
 
+		[PortHandler]
 		void UpdateMinimumDate()
 		{
 			_picker.MinimumDate = Element.MinimumDate.ToNSDate();
