@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFont(EditorHandler handler, IEditor editor)
 		{
 			var services = handler.Services ??
-				throw new InvalidOperationException($"Unable to find service provider, the App.Current.Services was null.");
+				throw new InvalidOperationException($"Unable to find service provider, the handler.Services was null.");
 			var fontManager = services.GetRequiredService<IFontManager>();
 
 			handler.TypedNativeView?.UpdateFont(editor, fontManager);
