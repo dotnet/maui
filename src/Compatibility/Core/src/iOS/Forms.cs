@@ -192,8 +192,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			MauiContext = context;
 
-			Microsoft.Maui.Controls.Internals.Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
-
 			//TODO: MAUI Accent Color?
 			Color.SetAccent(Color.FromRgba(50, 79, 133, 255));
 

@@ -329,7 +329,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			var activity = context.Context;
 			Profile.FrameBegin();
-			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
 			// Allow this multiple times to support the app and then the activity
 			ApplicationContext = activity.ApplicationContext;

@@ -10,17 +10,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		internal IVisualElementRenderer VisualElementRenderer { get; private set; }
 
-		public static IViewHandler CreateShim(object renderer)
-		{
-			if (renderer is IViewHandler handler)
-				return handler;
-
-			if (renderer is IVisualElementRenderer ivr)
-				return new RendererToHandlerShim(ivr);
-
-			return new RendererToHandlerShim();
-		}
-
 		public RendererToHandlerShim() : base(ViewHandler.ViewMapper)
 		{
 		}
