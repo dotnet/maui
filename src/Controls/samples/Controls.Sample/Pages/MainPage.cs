@@ -91,6 +91,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Editor { Text = "Editor" });
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", MaxLength = 10 });
 			verticalStack.Add(new Editor { Text = "Predictive Text Off", IsTextPredictionEnabled = false });
+			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", FontSize = 10, FontFamily = "dokdo_regular"});
 
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>

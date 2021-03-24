@@ -36,7 +36,9 @@ namespace Microsoft.Maui
 			var content = (window.Page as IView) ?? window.Page.View;
 
 			var canvas = CreateRootContainer();
+
 			canvas.Children.Add(content.ToNative(window.MauiContext));
+
 			MainWindow.Content = canvas;
 
 			MainWindow.Activate();
@@ -44,26 +46,12 @@ namespace Microsoft.Maui
 
 		Canvas CreateRootContainer()
 		{
-			var current = Microsoft.UI.Xaml.Application.Current;
-
-			if (!current.Resources.ContainsKey("RootContainerStyle"))
-			{
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new UI.Xaml.ResourceDictionary
-				{
-					Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf")
-				});
-			}
-
-			if (!current.Resources.ContainsKey("ShellNavigationView"))
-			{
-				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Shell/ShellStyles.xbf");
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
-			}
+			// TODO WINUI should this be some other known constant or via some mechanism? Or done differently?
+			Resources.TryGetValue("RootContainerStyle", out object style);
 
 			return new Canvas
 			{
-				Style = (Microsoft.UI.Xaml.Style)current.Resources["RootContainerStyle"]
+				Style = style as UI.Xaml.Style
 			};
 		}
 

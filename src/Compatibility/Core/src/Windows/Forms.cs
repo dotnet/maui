@@ -69,11 +69,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 #endif
 			}
 
-			//TODO WINUI3
-			//if (!UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
-			//{
-			//	UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
-			//}
+			if (!UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
+			{
+				UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
+			}
 
 			try
 			{
@@ -205,7 +204,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			return new UI.Xaml.ResourceDictionary
 			{
-				Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/Resources.xbf")
+				Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf")
 			};
 		}
 	}
