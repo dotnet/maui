@@ -30,29 +30,20 @@ namespace Maui.Controls.Sample
 			layout.Add(new Entry
 			{
 				Text = "Yup, Label",
-				TextColor = Color.Red
+				TextColor = Color.Red,
+				HeightRequest = 200,
+				WidthRequest = 200
 			});
 
-			//layout.Add(new Entry
-			//{
-			//	Text = "I am an entry"
-			//});
-
-
+			layout.Add(new Entry
+			{
+				Text = "I am an entry"
+			});
 
 			return new Window
 			{
 				Page = layout
-				//Page = new SimplePage()
-				//{
-				//	Content = layout
-				//}
 			};
-		}
-
-		class SimplePage : BasePage, IPage
-		{
-
 		}
 
 		class VerticalStackLayoutIsPage : VerticalStackLayout, IPage
