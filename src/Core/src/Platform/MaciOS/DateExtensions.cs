@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 		{
 			return ReferenceDate.AddSeconds(date.SecondsSinceReferenceDate);
 		}
-    
+
 		public static NSDate ToNSDate(this DateTime date)
 		{
 			return NSDate.FromTimeIntervalSinceReferenceDate((date - ReferenceDate).TotalSeconds);

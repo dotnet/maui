@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Layouts
 		public ILayout Layout { get; }
 
 		public abstract Size Measure(double widthConstraint, double heightConstraint);
-		public abstract void Arrange(Rectangle bounds);
+		public abstract void ArrangeChildren(Rectangle childBounds);
 
 		public static double ResolveConstraints(double externalConstraint, double desiredLength)
 		{
