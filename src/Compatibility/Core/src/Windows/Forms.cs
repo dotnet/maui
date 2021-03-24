@@ -36,8 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState state)
 		{
-			MauiContext = state.Context;
-			SetupInit(state.LaunchActivatedEventArgs, null, null);
+			SetupInit(state.Context, state.LaunchActivatedEventArgs, null, null);
 		}
 
 		public static void Init(
@@ -45,18 +44,22 @@ namespace Microsoft.Maui.Controls.Compatibility
 			WindowsBasePage mainWindow,
 			IEnumerable<Assembly> rendererAssemblies = null)
 		{
-			SetupInit(launchActivatedEventArgs, mainWindow, rendererAssemblies);
+			SetupInit(new MauiContext(), launchActivatedEventArgs, mainWindow, rendererAssemblies);
 		}
 
 		public static void Init(InitializationOptions options) =>
-			SetupInit(options.LaunchActivatedEventArgs, null, null, options);
+			SetupInit(new MauiContext(), options.LaunchActivatedEventArgs, null, null, options);
 
 		static void SetupInit(
+			IMauiContext mauiContext,
 			UI.Xaml.LaunchActivatedEventArgs launchActivatedEventArgs,
 			WindowsBasePage mainWindow,
 			IEnumerable<Assembly> rendererAssemblies = null,
 			InitializationOptions? maybeOptions = null)
 		{
+			MauiContext = mauiContext;
+			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
+
 			var accent = (WSolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			Color.SetAccent(accent.ToFormsColor());
 

@@ -40,6 +40,8 @@ namespace Maui.Controls.Sample
 				Text = "I am an entry"
 			});
 
+			layout.Add(new Image { Source = "dotnet_bot.png" });
+
 			return new Window
 			{
 				Page = layout
