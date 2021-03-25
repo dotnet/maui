@@ -21,12 +21,12 @@ jobs:
     - name: Setup DotNet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0'
+        dotnet-version: '3.1.x'
 
     - name: Setup DotNet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.x'
+        dotnet-version: '5.0'
 
     - name: Install DotNet Preview
       shell: pwsh
@@ -56,12 +56,12 @@ jobs:
     - name: Setup DotNet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0'
+        dotnet-version: '3.1.x'
 
     - name: Setup DotNet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.x'
+        dotnet-version: '5.0'
 
     - name: Install DotNet Preview
       shell: bash
