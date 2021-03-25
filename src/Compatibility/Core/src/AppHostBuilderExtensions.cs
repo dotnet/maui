@@ -35,14 +35,19 @@ namespace Microsoft.Maui.Controls.Compatibility
 				typeof(ContentPage),
 				typeof(Page),
 #if !WINDOWS
+				typeof(ActivityIndicator),
+				typeof(CheckBox),
 				typeof(DatePicker),
 				typeof(Editor),
 				typeof(Entry),
 				typeof(Label),
+				typeof(Picker),
+				typeof(ProgressBar),
 				typeof(SearchBar),
 				typeof(Slider),
 				typeof(Stepper),
 				typeof(Switch),
+				typeof(TimePicker),
 #endif
 			};
 
