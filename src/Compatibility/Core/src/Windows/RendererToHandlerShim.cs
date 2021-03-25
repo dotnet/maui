@@ -123,13 +123,5 @@ namespace Microsoft.Maui.Controls.Compatibility
 				SetFrame(VisualElementRenderer.Element.Bounds);
 			}
 		}
-
-		public override void SetFrame(Rectangle rect)
-		{
-			if ((rect.Height >= 0 || rect.Width >= 0) && VisualElementRenderer is UIElement fe)
-				fe.Measure(new Windows.Foundation.Size(rect.Size.Width, rect.Size.Height));
-
-			base.SetFrame(rect);
-		}
 	}
 }
