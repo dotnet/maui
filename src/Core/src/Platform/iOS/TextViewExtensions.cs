@@ -43,5 +43,10 @@ namespace Microsoft.Maui
 			var uiFont = fontManager.GetFont(editor.Font);
 			textView.Font = uiFont;
 		}
+		
+		public static void UpdateIsReadOnly(this UITextView textView, IEditor editor)
+		{
+			textView.UserInteractionEnabled = !editor.IsReadOnly;
+		}
 	}
 }

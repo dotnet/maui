@@ -319,6 +319,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return currentText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler]
 		void UpdateIsReadOnly()
 		{
 			bool isReadOnly = !Element.IsReadOnly;

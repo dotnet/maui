@@ -134,6 +134,15 @@ namespace Microsoft.Maui
 			editText.Focusable = isEditable;
 		}
 
+		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEditor editor)
+		{
+			bool isReadOnly = !editor.IsReadOnly;
+
+			editText.FocusableInTouchMode = isReadOnly;
+			editText.Focusable = isReadOnly;
+			editText.SetCursorVisible(isReadOnly);
+		}
+
 		public static void UpdateFont(this AppCompatEditText editText, IEntry entry, IFontManager fontManager)
 		{
 			var font = entry.Font;
