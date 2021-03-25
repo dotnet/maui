@@ -82,7 +82,20 @@ namespace Maui.Controls.Sample.Pages
 			var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
 			verticalStack.Add(underlineLabel);
 
-			verticalStack.Add(new ActivityIndicator());
+			verticalStack.Add(new Label
+			{
+				Padding = new Thickness(30),
+				Background = new RadialGradientBrush(
+					new GradientStopCollection
+					{
+						new GradientStop(Color.DarkBlue, 0),
+						new GradientStop(Color.Yellow, 0.6f),
+						new GradientStop(Color.LightPink, 1)
+					},
+					new Point(0.5, 0.5),
+					0.3f)
+			});
+
 			verticalStack.Add(new ActivityIndicator { Color = Color.Red, IsRunning = true });
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
