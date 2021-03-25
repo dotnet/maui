@@ -16,6 +16,12 @@
     <Company>Microsoft</Company>
     <Product>Microsoft MAUI</Product>
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
+    <!--
+      Workaround for:
+      https://github.com/xamarin/xamarin-macios/issues/10887
+      https://github.com/xamarin/xamarin-android/issues/5751
+    -->
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>
