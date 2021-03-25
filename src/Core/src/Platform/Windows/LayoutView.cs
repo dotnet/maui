@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 	{
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Action<Rectangle>? CrossPlatformArrange { get; set; }
-		public Func<IReadOnlyList<IView>>? RetrieveChildren { get; internal set; }
+		internal Action? CrossPlatformArrangeChildren { get; set; }
 
 		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
 		{
@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 
 		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
 		{
-			if (CrossPlatformMeasure == null || RetrieveChildren == null)
+			if (CrossPlatformMeasure == null)
 			{
 				return base.ArrangeOverride(finalSize);
 			}
@@ -38,29 +38,7 @@ namespace Microsoft.Maui
 
 			var size = CrossPlatformMeasure.Invoke(width, height);
 			CrossPlatformArrange?.Invoke(new Rectangle(0, 0, width, height));
-
-			// TODO Quick ugly way to call arrange again on all the children
-			foreach(var element in RetrieveChildren())
-			{
-				var frame = element.Frame;
-				foreach (var child in Children)
-				{
-					if (element.Handler == null)
-						continue;
-
-					if(element.Handler.NativeView is UIElement uIElement &&
-						child == uIElement)
-					{
-						uIElement.Arrange(new Windows.Foundation.Rect(
-							frame.X,
-							frame.Y,
-							frame.Width,
-							frame.Height
-							));
-						break;
-					}
-				}
-			}
+			CrossPlatformArrangeChildren?.Invoke();
 
 			return new Windows.Foundation.Size(size.Width, size.Height);
 		}
