@@ -10,45 +10,20 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Label)]
 	public partial class LabelHandlerTests : HandlerTestBase<LabelHandler, LabelStub>
 	{
-		[Fact(DisplayName = "SolidColorBrush Background Initializes Correctly")]
-		public async Task SolidColorBrushBackgroundInitializesCorrectly()
+		[Fact(DisplayName = "Background Initializes Correctly")]
+		public async Task BackgroundInitializesCorrectly()
 		{
-			var color = Color.Blue;
+			var brush = Brush.Blue;
 
 			var label = new LabelStub()
 			{
-				Background = new SolidColorBrush(color),
+				Background = brush,
 				Text = "Test"
 			};
 
-			await ValidateNativeBackground(label, color);
+			await ValidateNativeBackground(label, brush);
 		}
-
-		[Fact(DisplayName = "GradientBrush Background Initializes Correctly")]
-		public async Task GradientBrushBackgroundInitializesCorrectly()
-		{
-			var color1 = Color.Red;
-			var color2 = Color.Blue;
-
-			var label = new LabelStub()
-			{
-				Background = new LinearGradientBrush
-				{
-					StartPoint = new Point(0, 0),
-					EndPoint = new Point(1, 0),
-					GradientStops = new GradientStopCollection
-					{
-						new GradientStop { Color = color1, Offset = 0.1f },
-						new GradientStop { Color = color2, Offset = 0.9f }
-					}
-				},
-				Text = "Test"
-			};
-
-			await ValidateNativeBackground(label, color1);
-			await ValidateNativeBackground(label, color2);
-		}
-
+				
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
 		{

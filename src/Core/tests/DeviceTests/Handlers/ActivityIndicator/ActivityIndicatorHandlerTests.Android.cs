@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Android.Views;
 using Android.Widget;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -14,8 +15,8 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsRunning(ActivityIndicatorHandler activityIndicatorHandler) =>
 			GetNativeActivityIndicator(activityIndicatorHandler).Visibility == ViewStates.Visible;
 
-		Task ValidateColor(IActivityIndicator activityIndicator, Color color, Action action = null) =>
-			ValidateHasColor(activityIndicator, color, action);
+		Task ValidateNativeBackground(IActivityIndicator activityIndicator, SolidColorBrush brush, Action action = null) =>
+			ValidateHasColor(activityIndicator, brush.Color, action);
 
 		Task ValidateHasColor(IActivityIndicator activityIndicator, Color color, Action action = null)
 		{

@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
+using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.ViewModel;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Brush = Microsoft.Maui.Graphics.Brush;
-using GradientStop = Microsoft.Maui.Graphics.GradientStop;
-using GradientStopCollection = Microsoft.Maui.Graphics.GradientStopCollection;
-using LinearGradientBrush = Microsoft.Maui.Graphics.LinearGradientBrush;
+using Debug = System.Diagnostics.Debug;
 
 namespace Maui.Controls.Sample.Pages
 {
 	public class MainPage : ContentPage, IPage
 	{
-		readonly MainPageViewModel _viewModel;
+		MainPageViewModel _viewModel;
 
 		public MainPage(MainPageViewModel viewModel)
 		{
@@ -33,32 +31,8 @@ namespace Maui.Controls.Sample.Pages
 				"Cras rutrum scelerisque elit, et porta est lobortis ac. " +
 				"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";
 
-			var verticalStack = new VerticalStackLayout() { Spacing = 5, Background = Brush.AntiqueWhite };
-
-			var horizontalStack = new HorizontalStackLayout()
-			{
-				Spacing = 2,
-				Background = new LinearGradientBrush
-				{
-					StartPoint = new Point(0, 0),
-					EndPoint = new Point(1, 0),
-					GradientStops = new GradientStopCollection
-					{
-						new GradientStop { Color = Color.FromHex("#cc2b5e"), Offset = 0.1f },
-						new GradientStop { Color = Color.FromHex("#753a88"), Offset = 0.8f }
-					}
-				}
-			};
-
-			var paddingButton = new Button
-			{
-				Padding = new Thickness(40),
-				Text = "This button has a padding!!",
-				BackgroundColor = Color.Purple,
-			};
-
-			verticalStack.Add(paddingButton);
-
+			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
+			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
 
 			verticalStack.Add(CreateSampleGrid());
 
@@ -70,7 +44,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = "This should be BIG text!", FontSize = 24, HorizontalOptions = LayoutOptions.End });
 			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
-			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), Background = Brush.LightBlue });
+			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Color.LightBlue });
 			verticalStack.Add(new Label { Text = loremIpsum });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
 			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
@@ -131,7 +105,7 @@ namespace Maui.Controls.Sample.Pages
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
 			{
-				System.Console.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
+				Debug.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
 			};
 
 			verticalStack.Add(entry);
@@ -144,7 +118,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Text = "This should be text with character spacing", CharacterSpacing = 10 });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
-			verticalStack.Add(new ProgressBar { Progress = 0.5, Background = Brush.LightCoral });
+			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Color.Purple });
 
 			var searchBar = new SearchBar();
@@ -155,7 +129,6 @@ namespace Maui.Controls.Sample.Pages
 			var placeholderSearchBar = new SearchBar();
 			placeholderSearchBar.Placeholder = "Placeholder";
 			verticalStack.Add(placeholderSearchBar);
-
 
 			var monkeyList = new List<string>
 			{
@@ -197,13 +170,12 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-
 		void SetupCompatibilityLayout()
 		{
-			var verticalStack = new StackLayout() { Spacing = 5, Background = Brush.AntiqueWhite };
-			var horizontalStack = new StackLayout() { Orientation = StackOrientation.Horizontal, Spacing = 2, Background = Brush.CornflowerBlue };
+			var verticalStack = new StackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
+			var horizontalStack = new StackLayout() { Orientation = StackOrientation.Horizontal, Spacing = 2, BackgroundColor = Color.CornflowerBlue };
 
-			var label = new Label { Text = "This will disappear in ~5 seconds", Background = Brush.Fuchsia };
+			var label = new Label { Text = "This will disappear in ~5 seconds", BackgroundColor = Color.Fuchsia };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
 			verticalStack.Add(label);

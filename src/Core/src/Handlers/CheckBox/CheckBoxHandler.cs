@@ -6,7 +6,7 @@
 		{
 			[nameof(ICheckBox.IsChecked)] = MapIsChecked,
 #if MONOANDROID
-			[nameof(ICheckBox.BackgroundColor)] = MapBackgroundColor,
+			[nameof(ICheckBox.Background)] = MapBackground
 #endif
 		};
 

@@ -192,12 +192,17 @@ namespace Microsoft.Maui.DeviceTests
 
 		int GetNativeMaxLines(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).MaxLines;
-    
-		Task ValidateNativeBackground(ILabel label, Color color)
+
+		Task ValidateNativeBackground(ILabel label, SolidColorBrush brush, Action action = null) =>
+			ValidateHasColor(label, brush.Color, action);
+
+		Task ValidateHasColor(ILabel label, Color color, Action action = null)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				return GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
+				var nativeLabel = GetNativeLabel(CreateHandler(label));
+				action?.Invoke();
+				nativeLabel.AssertContainsColor(color);
 			});
 		}
 

@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -21,16 +22,16 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(activityIndicator, () => activityIndicator.IsRunning, GetNativeIsRunning, activityIndicator.IsRunning);
 		}
 
-		[Fact(DisplayName = "BackgroundColor Updates Correctly")]
-		public async Task BackgroundColorUpdatesCorrectly()
+		[Fact(DisplayName = "Background Updates Correctly")]
+		public async Task BackgroundUpdatesCorrectly()
 		{
 			var activityIndicator = new ActivityIndicatorStub()
 			{
-				BackgroundColor = Color.Yellow,
+				Background = Brush.Yellow,
 				IsRunning = true
 			};
 
-			await ValidateColor(activityIndicator, Color.Yellow, () => activityIndicator.BackgroundColor = Color.Yellow);
+			await ValidateNativeBackground(activityIndicator, Brush.Yellow, () => activityIndicator.Background = Brush.Yellow);
 		}
 	}
 }

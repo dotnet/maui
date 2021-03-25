@@ -1,10 +1,7 @@
-﻿using Android.Content.Res;
-using Android.Graphics;
-using AndroidX.AppCompat.Widget;
-using AndroidX.Core.Widget;
+﻿using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Graphics;
 using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
-using XColor = Microsoft.Maui.Color;
 
 namespace Microsoft.Maui
 {
@@ -18,12 +15,14 @@ namespace Microsoft.Maui
 			new int[] { -AAttribute.StateEnabled, -AAttribute.StatePressed },
 		};
 
-		public static void UpdateBackgroundColor(this AppCompatCheckBox nativeCheckBox, ICheckBox check)
+		public static void UpdateBackground(this AppCompatCheckBox nativeCheckBox, ICheckBox check)
 		{
-			if (check.BackgroundColor == XColor.Default)
+			IBrush background = check.Background;
+
+			if (Brush.IsNullOrEmpty(background))
 				nativeCheckBox.SetBackgroundColor(AColor.Transparent);
 			else
-				nativeCheckBox.SetBackgroundColor(check.BackgroundColor.ToNative());
+				nativeCheckBox.UpdateBackground(background);
 		}
 
 		public static void UpdateIsChecked(this AppCompatCheckBox nativeCheckBox, ICheckBox check)
