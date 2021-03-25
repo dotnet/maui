@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 			// Remove previous background gradient layer if any
 			RemoveBackgroundLayer(control);
 
-			if (Brush.IsNullOrEmpty(brush))
+			if (brush.IsNullOrEmpty())
 				return;
 
 			var backgroundLayer = GetBackgroundLayer(control, brush);
@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 			if (control == null)
 				return null;
 
-			if (brush is SolidColorBrush solidColorBrush)
+			if (brush is ISolidColorBrush solidColorBrush)
 			{
 				var solidColorLayer = new CALayer
 				{
@@ -50,7 +50,7 @@ namespace Microsoft.Maui
 				return solidColorLayer;
 			}
 
-			if (brush is LinearGradientBrush linearGradientBrush)
+			if (brush is ILinearGradientBrush linearGradientBrush)
 			{
 				var p1 = linearGradientBrush.StartPoint;
 				var p2 = linearGradientBrush.EndPoint;
@@ -75,7 +75,7 @@ namespace Microsoft.Maui
 				return linearGradientLayer;
 			}
 
-			if (brush is RadialGradientBrush radialGradientBrush)
+			if (brush is IRadialGradientBrush radialGradientBrush)
 			{
 				var center = radialGradientBrush.Center;
 				var radius = radialGradientBrush.Radius;
@@ -167,7 +167,7 @@ namespace Microsoft.Maui
 			return new CGPoint(x, y);
 		}
 
-		static NSNumber[] GetCAGradientLayerLocations(List<GradientStop> gradientStops)
+		static NSNumber[] GetCAGradientLayerLocations(List<IGradientStop> gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
 				return new NSNumber[0];

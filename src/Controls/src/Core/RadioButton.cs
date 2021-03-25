@@ -1,7 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -218,7 +217,6 @@ namespace Microsoft.Maui.Controls
 		bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
 		bool IBorderElement.IsBorderColorSet() => IsSet(BorderElement.BorderColorProperty);
 		bool IBorderElement.IsBorderWidthSet() => IsSet(BorderElement.BorderWidthProperty);
-		IBrush IBorderElement.Background => Background;
 
 		protected internal override void ChangeVisualState()
 		{

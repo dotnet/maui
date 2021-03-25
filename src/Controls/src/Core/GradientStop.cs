@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Controls
 {
-	public class GradientStop : Element
+	public partial class GradientStop : Element
 	{
 		public static readonly BindableProperty ColorProperty = BindableProperty.Create(
 			nameof(Color), typeof(Color), typeof(GradientStop), Color.Default);

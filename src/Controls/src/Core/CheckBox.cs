@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -62,6 +61,5 @@ namespace Microsoft.Maui.Controls
 		bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
 		bool IBorderElement.IsBorderColorSet() => false;
 		bool IBorderElement.IsBorderWidthSet() => false;
-		IBrush IBorderElement.Background => Background;
 	}
 }

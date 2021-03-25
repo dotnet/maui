@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Controls
 {
-	public class RadialGradientBrush : GradientBrush
+	public partial class RadialGradientBrush : GradientBrush
 	{
 		public RadialGradientBrush()
 		{

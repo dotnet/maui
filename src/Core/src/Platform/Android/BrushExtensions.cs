@@ -18,20 +18,20 @@ namespace Microsoft.Maui
 				view.SetBackground(null);
 			}
 
-			if (Brush.IsNullOrEmpty(brush))
+			if (brush.IsNullOrEmpty())
 				return;
 
-			if (brush is LinearGradientBrush linearGradientBrush)
+			if (brush is ILinearGradientBrush linearGradientBrush)
 			{
-				GradientStopCollection gradients = linearGradientBrush.GradientStops;
+				IGradientStopCollection gradients = linearGradientBrush.GradientStops;
 
 				if (!IsValidGradient(gradients))
 					return;
 			}
 
-			if (brush is RadialGradientBrush radialGradientBrush)
+			if (brush is IRadialGradientBrush radialGradientBrush)
 			{
-				GradientStopCollection gradients = radialGradientBrush.GradientStops;
+				IGradientStopCollection gradients = radialGradientBrush.GradientStops;
 
 				if (!IsValidGradient(gradients))
 					return;
@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 			view.SetPaintGradient(brush);
 		}
 
-		internal static bool IsValidGradient(GradientStopCollection gradients)
+		internal static bool IsValidGradient(IGradientStopCollection gradients)
 		{
 			if (gradients == null || gradients.Count == 0)
 				return false;
@@ -57,7 +57,7 @@ namespace Microsoft.Maui
 
 			gradientStrokeDrawable.SetStroke(0, Color.Default.ToNative());
 
-			if (brush is SolidColorBrush solidColorBrush)
+			if (brush is ISolidColorBrush solidColorBrush)
 			{
 				var color = solidColorBrush.Color.IsDefault ? Color.Default.ToNative() : solidColorBrush.Color.ToNative();
 				gradientStrokeDrawable.SetColor(color);
@@ -69,7 +69,7 @@ namespace Microsoft.Maui
 			view.Background = gradientStrokeDrawable;
 		}
 
-		internal static Tuple<int[], float[]> GetGradientBrushData(this GradientBrush gradientBrush)
+		internal static Tuple<int[], float[]> GetGradientBrushData(this IGradientBrush gradientBrush)
 		{
 			var orderStops = gradientBrush.GradientStops;
 

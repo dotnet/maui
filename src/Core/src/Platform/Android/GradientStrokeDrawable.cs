@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 
 		public void SetGradient(IBrush brush)
 		{
-			if (brush is LinearGradientBrush linearGradientBrush)
+			if (brush is ILinearGradientBrush linearGradientBrush)
 			{
 				var p1 = linearGradientBrush.StartPoint;
 				var x1 = (float)p1.X;
@@ -55,7 +55,7 @@ namespace Microsoft.Maui
 				SetShaderFactory(new GradientShaderFactory(linearGradientShader));
 			}
 
-			if (brush is RadialGradientBrush radialGradientBrush)
+			if (brush is IRadialGradientBrush radialGradientBrush)
 			{
 				var center = radialGradientBrush.Center;
 				float centerX = (float)center.X;

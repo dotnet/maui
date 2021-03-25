@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 		{
 			IBrush background = check.Background;
 
-			if (Brush.IsNullOrEmpty(background))
+			if (background.IsNullOrEmpty())
 				nativeCheckBox.SetBackgroundColor(AColor.Transparent);
 			else
 				nativeCheckBox.UpdateBackground(background);

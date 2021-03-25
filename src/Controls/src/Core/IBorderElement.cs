@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -10,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		Color BorderColor { get; }
 		int CornerRadius { get; }
 		Color BackgroundColor { get; }
-		IBrush Background { get; }
+		Brush Background { get; }
 		double BorderWidth { get; }
 
 		//note to implementor: but implement the methods explicitly

@@ -5,7 +5,7 @@ using System.ComponentModel;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(GradientStops))]
-	public abstract class GradientBrush : Brush
+	public abstract partial class GradientBrush : Brush
 	{
 		public GradientBrush()
 		{

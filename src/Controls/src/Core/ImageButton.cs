@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -142,8 +141,6 @@ namespace Microsoft.Maui.Controls
 		void IBorderElement.OnBorderColorPropertyChanged(Color oldValue, Color newValue)
 		{
 		}
-
-		IBrush IBorderElement.Background => Background;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsLoading(bool isLoading) => SetValue(IsLoadingPropertyKey, isLoading);
