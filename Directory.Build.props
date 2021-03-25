@@ -6,7 +6,8 @@
     <MauiPlatforms>net6.0-android;net6.0-ios;net6.0-maccatalyst</MauiPlatforms>
     <MauiPlatforms Condition="'$(Packing)' == 'true'">$(MauiPlatforms);net6.0-windows10.0.19041.0</MauiPlatforms>
     <MauiPlatforms Condition="'$(BuildForWinUI)' == 'true'">net6.0-windows10.0.19041.0</MauiPlatforms>
-    <MauiCorePlatforms Condition="'$(Packing)' == ''">net6.0-android;net6.0-ios;net6.0-maccatalyst;net6.0-windows10.0.19041.0</MauiCorePlatforms>
+    <MauiCorePlatforms Condition="'$(Packing)' == ''">net6.0-android;net6.0-ios;net6.0-maccatalyst</MauiCorePlatforms>
+    <MauiCorePlatforms Condition="$([MSBuild]::IsOSPlatform('windows'))">$(MauiPlatforms);net6.0-windows10.0.19041.0</MauiCorePlatforms>
     <MauiCorePlatforms Condition="'$(BuildForWinUI)' == 'true'">net6.0-windows10.0.19041.0</MauiCorePlatforms>
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>
@@ -19,7 +20,8 @@
     <Company>Microsoft</Company>
     <Product>Microsoft MAUI</Product>
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
-  </PropertyGroup>
+  
+</PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>
   </PropertyGroup>
