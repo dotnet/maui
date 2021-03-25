@@ -8,10 +8,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		public static IAppHostBuilder RegisterCompatibilityForms(this IAppHostBuilder builder)
 		{
+			// TODO: This should not be immediately run, but rather a registered delegate with values
+			//       of the Context and LaunchActivatedEventArgs passed in.
+
 #if __ANDROID__
 			var options = new InitializationOptions(global::Android.App.Application.Context, null, null);
 #elif __IOS__
 			var options = new InitializationOptions();
+#elif WINDOWS
+			var options = new InitializationOptions(MauiWinUIApplication.Current.LaunchActivatedEventArgs);
 #endif
 
 			options.Flags |= InitializationFlags.SkipRenderers;
@@ -28,15 +33,22 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				typeof(Button),
 				typeof(ContentPage),
-		typeof(DatePicker),
+				typeof(Page),
+#if !WINDOWS
+				typeof(ActivityIndicator),
+				typeof(CheckBox),
+				typeof(DatePicker),
 				typeof(Editor),
 				typeof(Entry),
 				typeof(Label),
-				typeof(Page),
+				typeof(Picker),
+				typeof(ProgressBar),
 				typeof(SearchBar),
 				typeof(Slider),
 				typeof(Stepper),
 				typeof(Switch),
+				typeof(TimePicker),
+#endif
 			};
 
 			Forms.RegisterCompatRenderers(
@@ -68,6 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				rendererType);
 
 			builder.RegisterHandler(controlType, typeof(RendererToHandlerShim));
+
 			return builder;
 		}
 
@@ -81,6 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				typeof(TRenderer));
 
 			builder.RegisterHandler<TMauiType, RendererToHandlerShim>();
+
 			return builder;
 		}
 

@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 			if (!(obj is GradientStop dest))
 				return false;
 
-			return Color == dest.Color && System.Math.Abs(Offset - dest.Offset) < 0.00001;
+			return Color == dest.Color && global::System.Math.Abs(Offset - dest.Offset) < 0.00001;
 		}
 
 		public override int GetHashCode()

@@ -1,4 +1,4 @@
-#pragma warning disable CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+#pragma warning disable CA1416 // Validate platform compatibility
 using System;
 using System.ComponentModel;
 using Windows.UI.Core;
@@ -117,11 +117,8 @@ if(bases.length == 0){
 			}
 			webView.NavigationStarting -= OnNavigationStarted;
 			webView.NavigationCompleted -= OnNavigationCompleted;
-
-			// TODO WINUI3
-			//	webView.SeparateProcessLost -= OnSeparateProcessLost;
-			//webView.NavigationFailed -= OnNavigationFailed;
-			//webView.ScriptNotify -= OnScriptNotify;
+			webView.CoreProcessFailed -= OnCoreProcessFailed;
+			webView.WebMessageReceived -= OnWebMessageReceived;
 		}
 
 		void Connect(WWebView webView)
@@ -131,10 +128,8 @@ if(bases.length == 0){
 				return;
 			}
 
-			// TODO WINUI3
-			//webView.SeparateProcessLost += OnSeparateProcessLost;
-			//webView.NavigationFailed += OnNavigationFailed;
-			//webView.ScriptNotify += OnScriptNotify;
+			webView.CoreProcessFailed += OnCoreProcessFailed;
+			webView.WebMessageReceived += OnWebMessageReceived;
 			webView.NavigationStarting += OnNavigationStarted;
 			webView.NavigationCompleted += OnNavigationCompleted;
 		}
@@ -413,7 +408,7 @@ if(bases.length == 0){
 			Control.Reload();
 		}
 
-		async void OnNavigationCompleted(WWebView sender, WebView2NavigationCompletedEventArgs e)
+		async void NavigationSucceeded(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
 		{
 			// TODO WINUI3
 			//if (e.Uri != null)
@@ -426,22 +421,32 @@ if(bases.length == 0){
 
 			if (Element.OnThisPlatform().IsJavaScriptAlertEnabled())
 				await Control.ExecuteScriptAsync("window.alert = function(message){ window.external.notify(message); };");
+
 		}
 
-		// TODO WINUI3
-		//void OnNavigationFailed(object sender, WebViewNavigationFailedEventArgs e)
-		//{
-		//	if (e.Uri != null)
-		//		SendNavigated(new UrlWebViewSource { Url = e.Uri.AbsoluteUri }, _eventState, WebNavigationResult.Failure);
-		//}
+		void NavigationFailed(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
+		{
+			Uri uri = sender.Source;
+			if (uri != null)
+				SendNavigated(new UrlWebViewSource { Url = uri.AbsoluteUri }, _eventState, WebNavigationResult.Failure);
 
-		//async void OnScriptNotify(object sender, NotifyEventArgs e)
-		//{
-		//	if (Element.OnThisPlatform().IsJavaScriptAlertEnabled())
-		//		await new Windows.UI.Popups.MessageDialog(e.Value).ShowAsync();
-		//}
+		}
 
-		void OnNavigationStarted(WWebView sender, WebView2NavigationStartingEventArgs e)
+		void OnNavigationCompleted(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
+		{
+			if (e.IsSuccess)
+				NavigationSucceeded(sender, e);
+			else
+				NavigationFailed(sender, e);
+		}
+
+		async void OnWebMessageReceived(WWebView sender, Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
+		{
+			if (Element.OnThisPlatform().IsJavaScriptAlertEnabled())
+				await new Windows.UI.Popups.MessageDialog(e.TryGetWebMessageAsString()).ShowAsync();
+		}
+
+		void OnNavigationStarted(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs e)
 		{
 			// TODO WINUI3
 			//Uri uri = e.Uri;
@@ -491,10 +496,10 @@ if(bases.length == 0){
 			Load();
 		}
 
-		// TODO WINUI3
-		//void OnSeparateProcessLost(WWebView sender, WebViewSeparateProcessLostEventArgs e)
-		//{
-		//	UpdateExecutionMode();
-		//}
+		void OnCoreProcessFailed(WWebView sender, Web.WebView2.Core.CoreWebView2ProcessFailedEventArgs args)
+		{
+			UpdateExecutionMode();
+		}
 	}
 }
+#pragma warning restore CA1416 // Validate platform compatibility

@@ -13,7 +13,7 @@
 		<ResourceDictionary Source="FormsAutoSuggestBoxStyle.xaml" />
         <ResourceDictionary Source="MasterDetailControlStyle.xaml" />
         <ResourceDictionary Source="FlyoutPageControlStyle.xaml" />
-		<ResourceDictionary Source="TabbedPageStyle.xaml" />
+		<!--<ResourceDictionary Source="TabbedPageStyle.xaml" />-->
 		<ResourceDictionary Source="SliderStyle.xaml" />
 		<ResourceDictionary Source="CollectionView/ItemsViewStyles.xaml" />
         <ResourceDictionary Source="PickerStyle.xaml" />

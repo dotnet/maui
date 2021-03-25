@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.Net.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
-    <!-- <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net5.0-windows10.0.18362.0;</TargetFrameworks> -->
+    <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
     <RootNamespace>Microsoft.Maui.Essentials</RootNamespace>
     <PackageId>Microsoft.Maui.Essentials</PackageId>
@@ -16,6 +15,11 @@
     <Configurations>Debug;Release</Configurations>
     <LangVersion>8.0</LangVersion>
  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
@@ -42,11 +46,11 @@
     <Compile Include="**\*.netstandard.cs" />
     <Compile Include="**\*.netstandard.*.cs" />
   </ItemGroup>
-  <PropertyGroup Condition=" $(TargetFramework.Contains('-windows10.0')) ">
+  <PropertyGroup Condition=" $(TargetFramework.Contains('-windows')) ">
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
   </PropertyGroup>
-  <ItemGroup Condition=" $(TargetFramework.Contains('-windows10.0')) ">
+  <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
     <Compile Include="**\*.uwp.cs" />
     <Compile Include="**\*.uwp.*.cs" />
   </ItemGroup>
@@ -81,4 +85,9 @@
     <Compile Include="**\*.macos.cs" />
     <Compile Include="**\*.macos.*.cs" />
   </ItemGroup> -->
+  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <PropertyGroup>
+      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
+    </PropertyGroup>
+  </Target>
 </Project>

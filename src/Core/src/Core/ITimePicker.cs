@@ -21,5 +21,10 @@ namespace Microsoft.Maui
 		/// Gets the spacing between characters of the text.
 		/// </summary>
 		double CharacterSpacing { get; }
+
+		/// <summary>
+		/// Gets the font family, style and size of the font.
+		/// </summary>
+		Font Font { get; }
 	}
 }

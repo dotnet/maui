@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Text;
+using Android.Util;
 using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
@@ -95,12 +97,31 @@ namespace Microsoft.Maui
 			editText.Text = TrimToMaxLength(editText.Text, maxLength);
 		}
 
-		public static void UpdatePlaceholder(this AppCompatEditText editText, IEntry entry)
+		public static void UpdatePlaceholder(this AppCompatEditText editText, IPlaceholder textInput)
 		{
-			if (editText.Hint == entry.Placeholder)
+			if (editText.Hint == textInput.Placeholder)
 				return;
 
-			editText.Hint = entry.Placeholder;
+			editText.Hint = textInput.Placeholder;
+		}
+
+		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IEditor editor, ColorStateList? defaultColor)
+		{
+			var placeholderTextColor = editor.PlaceholderColor;
+			if (placeholderTextColor.IsDefault)
+			{
+				editText.SetHintTextColor(defaultColor);
+			}
+			else
+			{
+				var androidColor = placeholderTextColor.ToNative();
+
+				if (!editText.HintTextColors.IsOneColor(ColorExtensions.States, androidColor))
+				{
+					var acolor = androidColor.ToArgb();
+					editText.SetHintTextColor(new ColorStateList(ColorExtensions.States, new[] { acolor, acolor }));
+				}
+			}
 		}
 
 		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEntry entry)
@@ -113,12 +134,79 @@ namespace Microsoft.Maui
 			editText.Focusable = isEditable;
 		}
 
-		public static void UpdateFont(this AppCompatEditText editText, IEntry entry, IFontManager fontManager) =>
-			editText.UpdateFont(entry.Font, fontManager);
+		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEditor editor)
+		{
+			bool isReadOnly = !editor.IsReadOnly;
+
+			editText.FocusableInTouchMode = isReadOnly;
+			editText.Focusable = isReadOnly;
+			editText.SetCursorVisible(isReadOnly);
+		}
+
+		public static void UpdateFont(this AppCompatEditText editText, IEntry entry, IFontManager fontManager)
+		{
+			var font = entry.Font;
+
+			var tf = fontManager.GetTypeface(font);
+			editText.Typeface = tf;
+
+			var sp = fontManager.GetScaledPixel(font);
+			editText.SetTextSize(ComplexUnitType.Sp, sp);
+		}
+
+		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Drawable? ClearButtonDrawable)
+		{
+			// Places clear button drawable at the end or start of the EditText based on FlowDirection.
+			void ShowClearButton()
+			{
+				if (entry.FlowDirection == FlowDirection.RightToLeft)
+				{
+					editText.SetCompoundDrawablesWithIntrinsicBounds(ClearButtonDrawable, null, null, null);
+				}
+				else
+				{
+					editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, ClearButtonDrawable, null);
+				}
+			}
+
+			// Hides clear button drawable from the control.
+			void HideClearButton()
+			{
+				editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+			}
+
+			bool isFocused = editText.IsFocused;
+			bool hasText = entry.Text?.Length > 0;
+
+			bool shouldDisplayClearButton = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing
+				&& hasText
+				&& isFocused;
+
+			if (shouldDisplayClearButton)
+			{
+				ShowClearButton();
+			}
+			else
+			{
+				HideClearButton();
+			}
+		}
+
 
 		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.ImeOptions = entry.ReturnType.ToNative();
+		}
+
+		public static void UpdateFont(this AppCompatEditText editText, IEditor editor, IFontManager fontManager)
+		{
+			var font = editor.Font;
+
+			var tf = fontManager.GetTypeface(font);
+			editText.Typeface = tf;
+
+			var sp = fontManager.GetScaledPixel(font);
+			editText.SetTextSize(Android.Util.ComplexUnitType.Sp, sp);
 		}
 
 		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)

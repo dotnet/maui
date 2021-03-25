@@ -182,10 +182,6 @@ stages:
             clean: all
           displayName: Pack .NET 6 (${{ BuildPlatform.name }})
           timeoutInMinutes: 120
-          condition: or(
-            ${{ parameters.BuildEverything }},
-            ne(variables['Build.Reason'], 'PullRequest'),
-            eq('${{ BuildPlatform.name }}', 'macos'))
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
@@ -198,6 +194,11 @@ stages:
                   /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
                   cat ~/Library/Preferences/Xamarin/Settings.plist || true
                 displayName: configure vsmac xcode
+            - ${{ if eq(BuildPlatform.name, 'windows') }}:
+              - task: UseDotNet@2
+                inputs:
+                  version: 6.x
+                  includePreviewVersions: true
             - pwsh: ./eng/package.ps1 -configuration Release
               displayName: pack nugets
               errorActionPreference: stop
@@ -230,7 +231,7 @@ stages:
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
-              and(eq('${{ BuildPlatform.name }}', 'macos'), eq('${{ BuildCondition }}', 'Release')))
+              eq('${{ BuildCondition }}', 'Release'))
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}

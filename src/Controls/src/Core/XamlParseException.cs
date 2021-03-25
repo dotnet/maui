@@ -24,12 +24,10 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 		}
 
-#if !NETSTANDARD1_0
-		protected XamlParseException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+		protected XamlParseException(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context)
 			: base(info, context)
 		{
 		}
-#endif
 
 		internal XamlParseException(string message, IServiceProvider serviceProvider, Exception innerException = null)
 			: this(message, GetLineInfo(serviceProvider), innerException)

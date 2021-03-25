@@ -172,6 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Element.InvalidateMeasureNonVirtual(Internals.InvalidationTrigger.MeasureChanged);
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			EditText.Typeface = Element.ToTypeface();

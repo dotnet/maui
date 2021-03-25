@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
 
@@ -80,33 +81,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measurement = manager.Measure(double.PositiveInfinity, 100);
 			Assert.Equal(expectedWidth, measurement.Width);
-		}
-
-		[Fact]
-		public void ViewsArrangedWithDesiredHeights()
-		{
-			var stack = CreateTestLayout();
-			var manager = new HorizontalStackLayoutManager(stack);
-
-			var view1 = LayoutTestHelpers.CreateTestView(new Size(100, 200));
-			var view2 = LayoutTestHelpers.CreateTestView(new Size(100, 150));
-
-			var children = new List<IView>() { view1, view2 }.AsReadOnly();
-			stack.Children.Returns(children);
-
-			var measurement = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measurement));
-
-			// The tallest IView is 200, so the stack should be that tall
-			Assert.Equal(200, measurement.Height);
-
-			// We expect the first IView to be at 0,0 with a width of 100 and a height of 200
-			var expectedRectangle1 = new Rectangle(0, 0, 100, 200);
-			view1.Received().Arrange(Arg.Is(expectedRectangle1));
-
-			// We expect the second IView to be at 100, 0 with a width of 100 and a height of 150
-			var expectedRectangle2 = new Rectangle(100, 0, 100, 150);
-			view2.Received().Arrange(Arg.Is(expectedRectangle2));
 		}
 
 		[Fact(DisplayName = "First View in LTR Horizontal Stack is on the left")]
