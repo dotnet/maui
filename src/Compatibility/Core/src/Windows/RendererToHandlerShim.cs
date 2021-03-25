@@ -109,6 +109,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			if (widthConstraint < 0 || heightConstraint < 0)
+				return Size.Zero;
+
 			return VisualElementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
@@ -119,6 +122,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				SetFrame(VisualElementRenderer.Element.Bounds);
 			}
+		}
+
+		public override void SetFrame(Rectangle rect)
+		{
+			if ((rect.Height >= 0 || rect.Width >= 0) && VisualElementRenderer is UIElement fe)
+				fe.Measure(new Windows.Foundation.Size(rect.Size.Width, rect.Size.Height));
+
+			base.SetFrame(rect);
 		}
 	}
 }

@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class AbstractViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
-		public void SetFrame(Rectangle rect)
+		public virtual void SetFrame(Rectangle rect)
 		{
 			var nativeView = View;
 
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 			if (nativeView == null)
 				return Size.Zero;
 
-			if (widthConstraint <= 0 || heightConstraint <= 0)
+			if (widthConstraint < 0 || heightConstraint < 0)
 				return Size.Zero;
 
 			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
