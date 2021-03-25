@@ -143,19 +143,19 @@
 
     <!-- Finds absolute paths to any MauiImage in this project -->
     <!-- App head projects will invoke this target on their project references to collect images -->
-    <Target Name="GetSharedItems" Outputs="@(ExportedSharedItem)">
+    <Target Name="GetMauiItems" Outputs="@(ExportedMauiItem)">
 
         <ItemGroup>
-            <SharedItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' == ''" />
-            <SharedItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
+            <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' == ''" />
+            <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
         </ItemGroup>
 
         <ItemGroup>
-            <SharedItem Include="@(MauiFont)" ItemGroupName="MauiFont" />
+            <MauiItem Include="@(MauiFont)" ItemGroupName="MauiFont" />
         </ItemGroup>
 
-        <ConvertToAbsolutePath Paths="@(SharedItem)">
-            <Output TaskParameter="AbsolutePaths" ItemName="ExportedSharedItem" />
+        <ConvertToAbsolutePath Paths="@(MauiItem)">
+            <Output TaskParameter="AbsolutePaths" ItemName="ExportedMauiItem" />
         </ConvertToAbsolutePath>
 
     </Target>
@@ -167,35 +167,35 @@
         BeforeTargets="$(ResizetizeCollectItemsBeforeTargets)"
         AfterTargets="$(ResizetizeCollectItemsAfterTargets)">
 
-        <CallTarget Targets="GetSharedItems" Condition="'$(ResizetizerIncludeSelfProject)' == 'True'">
+        <CallTarget Targets="GetMauiItems" Condition="'$(ResizetizerIncludeSelfProject)' == 'True'">
             <Output
                 TaskParameter="TargetOutputs"
-                ItemName="ImportedSharedItem" />
+                ItemName="ImportedMauiItem" />
         </CallTarget>
 
-        <!-- Invoke the GetSharedItems target on all project references -->
+        <!-- Invoke the GetMauiItems target on all project references -->
         <!-- This will accumulate images into our MauiImage group -->
-        <!--<MSBuild Targets="GetSharedItems" Projects="@(_MSBuildProjectReferenceExistent)">-->
+        <!--<MSBuild Targets="GetMauiItems" Projects="@(_MSBuildProjectReferenceExistent)">-->
         <MSBuild
-            Targets="GetSharedItems"
+            Targets="GetMauiItems"
             Projects="@(ProjectReference)"
             SkipNonexistentProjects="true"
             SkipNonexistentTargets="true">
             <Output
                 TaskParameter="TargetOutputs"
-                ItemName="ImportedSharedItem" />
+                ItemName="ImportedMauiItem" />
         </MSBuild>
 
         <ItemGroup>
             <MauiImage
-                Include="@(ImportedSharedItem)"
-                Condition="'%(ImportedSharedItem.ItemGroupName)' == 'MauiImage'" />
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiImage'" />
         </ItemGroup>
 
         <ItemGroup>
             <MauiFont
-                Include="@(ImportedSharedItem)"
-                Condition="'%(ImportedSharedItem.ItemGroupName)' == 'MauiFont'" />
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiFont'" />
         </ItemGroup>
 
 
