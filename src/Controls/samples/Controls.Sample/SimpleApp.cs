@@ -45,7 +45,15 @@ namespace Maui.Controls.Sample
 				IsRunning = true
 			});
 
-			layout.Add(new Image { Source = "dotnet_bot.png" });
+			// TODO: until we move the image loader to core we need this double value
+			layout.Add(new Image
+			{
+#if WINDOWS
+				Source = "Assets/dotnet_bot.png"
+#else
+				Source = "dotnet_bot.png"
+#endif
+			});
 
 			return new Window
 			{
@@ -67,9 +75,9 @@ namespace Maui.Controls.Sample
 		{
 			public SimpleButtonIsPage()
 			{
-				Clicked += delegate { Debug.WriteLine("CLICKED"); };
-				Pressed += delegate { Debug.WriteLine("PRESSED"); };
-				Released += delegate { Debug.WriteLine("RELEASED"); };
+				Clicked += (sender, e) => Debug.WriteLine("CLICKED");
+				Pressed += (sender, e) => Debug.WriteLine("PRESSED");
+				Released += (sender, e) => Debug.WriteLine("RELEASED");
 			}
 
 			public IView View { get => this; set => throw new NotImplementedException(); }

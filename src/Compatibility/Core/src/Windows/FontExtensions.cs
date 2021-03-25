@@ -11,6 +11,7 @@ using WApplication = Microsoft.UI.Xaml.Application;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	// TODO: this needs to use the new FontManager in Core
 	public static class FontExtensions
 	{
 		[ThreadStatic]

@@ -153,10 +153,11 @@ namespace Microsoft.Maui
 
 		string? FindFontFamilyName(string? fontFile)
 		{
-			// TODO: MAUI needs a build of Win2D or some implementation of CanvasFontSet
-
 			try
 			{
+				// TODO: WINUI3 needs a build of Win2D or some implementation of CanvasFontSet
+				throw new NotImplementedException("A build of Win2D for WinUI is needed.");
+
 				//	var fontUri = new Uri(fontFile, UriKind.RelativeOrAbsolute);
 
 				//	// CanvasFontSet only supports ms-appx:// and ms-appdata:// font URIs
@@ -169,7 +170,7 @@ namespace Microsoft.Maui
 				//		}
 				//	}
 
-				return null;
+				//	return null;
 			}
 			catch (Exception ex)
 			{
