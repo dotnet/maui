@@ -126,6 +126,16 @@ namespace Microsoft.Maui.Controls
 		Maui.FlowDirection IFrameworkElement.FlowDirection => FlowDirection.ToPlatformFlowDirection();
 		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => default;
-		IBrush IFrameworkElement.Background => Background;
+		IBrush IFrameworkElement.Background
+		{
+			get
+			{
+				if (!Background.IsNullOrEmpty())
+					return Background;
+				if (!BackgroundColor.IsDefault)
+					return new SolidColorBrush(BackgroundColor);
+				return null;
+			}
+		}
 	}
 }
