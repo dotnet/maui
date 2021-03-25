@@ -4,7 +4,7 @@ using Microsoft.Maui;
 namespace MauiApp1
 {
 	[Register("AppDelegate")]
-	public class AppDelegate : MauiUIApplicationDelegate<Application>
+	public class AppDelegate : MauiUIApplicationDelegate<Startup>
 	{
 	}
 }
