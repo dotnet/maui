@@ -8,17 +8,19 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public static class BrushExtensions
+	public static partial class BrushExtensions
 	{
-		internal const string BackgroundLayer = "BackgroundLayer";
+		const string BackgroundLayer = "BackgroundLayer";
 
 		public static void UpdateBackground(this UIView control, IBrush brush)
 		{
 			if (control == null)
 				return;
 
+			UIView view = ShouldUseParentView(control) ? control.Superview : control;
+
 			// Remove previous background gradient layer if any
-			RemoveBackgroundLayer(control);
+			RemoveBackgroundLayer(view);
 
 			if (brush.IsNullOrEmpty())
 				return;
@@ -28,7 +30,7 @@ namespace Microsoft.Maui
 			if (backgroundLayer != null)
 			{
 				control.BackgroundColor = UIColor.Clear;
-				control.InsertBackgroundLayer(backgroundLayer, 0);
+				view.InsertBackgroundLayer(backgroundLayer, 0);
 			}
 		}
 
@@ -39,7 +41,7 @@ namespace Microsoft.Maui
 
 			if (brush is ISolidColorBrush solidColorBrush)
 			{
-				var solidColorLayer = new CALayer
+				var linearGradientLayer = new CALayer
 				{
 					Name = BackgroundLayer,
 					ContentsGravity = CALayer.GravityResizeAspectFill,
@@ -47,7 +49,7 @@ namespace Microsoft.Maui
 					BackgroundColor = solidColorBrush.Color.ToCGColor()
 				};
 
-				return solidColorLayer;
+				return linearGradientLayer;
 			}
 
 			if (brush is ILinearGradientBrush linearGradientBrush)
@@ -104,6 +106,28 @@ namespace Microsoft.Maui
 			return null;
 		}
 
+		public static UIImage? GetBackgroundImage(this UIView control, IBrush brush)
+		{
+			if (control == null || brush == null || brush.IsEmpty)
+				return null;
+
+			var backgroundLayer = control.GetBackgroundLayer(brush);
+
+			if (backgroundLayer == null)
+				return null;
+
+			UIGraphics.BeginImageContextWithOptions(backgroundLayer.Bounds.Size, false, UIScreen.MainScreen.Scale);
+
+			if (UIGraphics.GetCurrentContext() == null)
+				return null;
+
+			backgroundLayer.RenderInContext(UIGraphics.GetCurrentContext());
+			UIImage gradientImage = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return gradientImage;
+		}
+
 		public static void InsertBackgroundLayer(this UIView view, CALayer backgroundLayer, int index = -1)
 		{
 			InsertBackgroundLayer(view.Layer, backgroundLayer, index);
@@ -144,6 +168,38 @@ namespace Microsoft.Maui
 						subLayer?.RemoveFromSuperLayer();
 				}
 			}
+		}
+
+		public static void UpdateBackgroundLayer(this UIView view)
+		{
+			if (view == null || view.Frame.IsEmpty)
+				return;
+
+			var layer = view.Layer;
+
+			UpdateBackgroundLayer(layer, view.Bounds);
+		}
+
+		static void UpdateBackgroundLayer(this CALayer layer, CGRect bounds)
+		{
+			if (layer != null && layer.Sublayers != null)
+			{
+				foreach (var sublayer in layer.Sublayers)
+				{
+					UpdateBackgroundLayer(sublayer, bounds);
+
+					if (sublayer.Name == BackgroundLayer && sublayer.Frame != bounds)
+						sublayer.Frame = bounds;
+				}
+			}
+		}
+
+		static bool ShouldUseParentView(UIView view)
+		{
+			if (view is UILabel)
+				return true;
+
+			return false;
 		}
 
 		static CGPoint GetRadialGradientBrushEndPoint(Point startPoint, double radius)
