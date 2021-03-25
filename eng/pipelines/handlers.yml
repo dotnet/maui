@@ -184,8 +184,7 @@ stages:
           timeoutInMinutes: 120
           condition: or(
             ${{ parameters.BuildEverything }},
-            ne(variables['Build.Reason'], 'PullRequest'),
-            eq('${{ BuildPlatform.name }}', 'windows'))
+            ne(variables['Build.Reason'], 'PullRequest'))
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
@@ -235,7 +234,7 @@ stages:
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
-              and(eq('${{ BuildPlatform.name }}', 'macos'), eq('${{ BuildCondition }}', 'Release')))
+              eq('${{ BuildCondition }}', 'Release'))
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
