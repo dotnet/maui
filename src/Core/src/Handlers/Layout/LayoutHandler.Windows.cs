@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				CrossPlatformMeasure = VirtualView.Measure,
 				CrossPlatformArrange = VirtualView.Arrange,
+				RetrieveChildren = () => VirtualView.Children
 			};
 
 			return view;
