@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Microsoft.Maui;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
-using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {

@@ -178,8 +178,8 @@ namespace Microsoft.Maui
 			bool isFocused = editText.IsFocused;
 			bool hasText = entry.Text?.Length > 0;
 
-			bool shouldDisplayClearButton = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing 
-				&& hasText 
+			bool shouldDisplayClearButton = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing
+				&& hasText
 				&& isFocused;
 
 			if (shouldDisplayClearButton)
@@ -189,7 +189,7 @@ namespace Microsoft.Maui
 			else
 			{
 				HideClearButton();
-			}	
+			}
 		}
 
 

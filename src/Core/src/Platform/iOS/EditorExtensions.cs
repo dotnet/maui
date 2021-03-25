@@ -1,5 +1,5 @@
-using UIKit;
 using Microsoft.Maui.Platform.iOS;
+using UIKit;
 
 namespace Microsoft.Maui
 {

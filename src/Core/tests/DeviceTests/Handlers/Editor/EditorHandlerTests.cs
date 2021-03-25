@@ -85,7 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(editor, () => editor.Placeholder, GetNativePlaceholderText, editor.Placeholder);
 		}
-		
+
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.DeviceTests
 				setValue,
 				unsetValue);
 		}
-		
+
 		[Theory(DisplayName = "Font Size Initializes Correctly")]
 		[InlineData(1)]
 		[InlineData(10)]

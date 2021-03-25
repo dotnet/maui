@@ -1,9 +1,9 @@
-﻿using Android.Content.Res;
+﻿using System;
+using Android.Content.Res;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateMaxLength(editor);
 		}
-		
+
 		public static void MapIsReadOnly(EditorHandler handler, IEditor editor)
 		{
 			handler.TypedNativeView?.UpdateIsReadOnly(editor);
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateIsTextPredictionEnabled(editor);
 		}
-		
+
 		public static void MapFont(EditorHandler handler, IEditor editor)
 		{
 			var services = handler.Services

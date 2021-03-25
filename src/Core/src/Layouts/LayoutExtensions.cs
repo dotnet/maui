@@ -58,14 +58,14 @@ namespace Microsoft.Maui.Layouts
 			return Thickness.Zero;
 		}
 
-		static double AlignHorizontal(IFrameworkElement frameworkElement, Rectangle bounds, Thickness margin) 
+		static double AlignHorizontal(IFrameworkElement frameworkElement, Rectangle bounds, Thickness margin)
 		{
 			var alignment = frameworkElement.HorizontalLayoutAlignment;
 			var desiredWidth = frameworkElement.DesiredSize.Width;
 			var startX = bounds.X;
 
 			if (frameworkElement.FlowDirection == FlowDirection.LeftToRight)
-			{ 
+			{
 				return AlignHorizontal(startX, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment);
 			}
 
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Layouts
 			return AlignHorizontal(startX, margin.Right, margin.Left, bounds.Width, desiredWidth, alignment);
 		}
 
-		static double AlignHorizontal(double startX, double startMargin, double endMargin, double boundsWidth, 
+		static double AlignHorizontal(double startX, double startMargin, double endMargin, double boundsWidth,
 			double desiredWidth, LayoutAlignment horizontalLayoutAlignment)
 		{
 			double frameX = 0;
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Layouts
 			return frameX;
 		}
 
-		static double AlignVertical(IFrameworkElement frameworkElement, Rectangle bounds, Thickness margin) 
+		static double AlignVertical(IFrameworkElement frameworkElement, Rectangle bounds, Thickness margin)
 		{
 			double frameY = 0;
 
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Layouts
 
 					frameY = (bounds.Height - frameworkElement.DesiredSize.Height) / 2;
 					var offset = (margin.Top - margin.Bottom) / 2;
-					frameY += offset; 
+					frameY += offset;
 					break;
 
 				case LayoutAlignment.End:

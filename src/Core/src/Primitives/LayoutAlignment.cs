@@ -15,7 +15,7 @@
 		/// <summary>
 		/// Align with the leading edge of the available space, as determined by FlowDirection
 		/// </summary>
-		Start, 
+		Start,
 
 		/// <summary>
 		/// Center in the available space

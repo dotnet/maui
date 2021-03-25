@@ -1,8 +1,8 @@
-﻿using Microsoft.Maui.Platform.iOS;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 using Xunit;
 
@@ -72,23 +72,23 @@ namespace Microsoft.Maui.DeviceTests
 
 		Color GetNativePlaceholderColor(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).PlaceholderTextColor.ToColor();
-			
+
 		double GetNativeCharacterSpacing(EditorHandler editorHandler)
 		{
 			var editor = GetNativeEditor(editorHandler);
 			return editor.AttributedText.GetCharacterSpacing();
 		}
 
-			
+
 		double GetNativeUnscaledFontSize(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Font.PointSize;
-			
-       
 
-        bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
-            !GetNativeEditor(editorHandler).UserInteractionEnabled;
 
-        bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
+
+		bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
+			!GetNativeEditor(editorHandler).UserInteractionEnabled;
+
+		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
 	}
 }
