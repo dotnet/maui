@@ -248,6 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_textField.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
+		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();

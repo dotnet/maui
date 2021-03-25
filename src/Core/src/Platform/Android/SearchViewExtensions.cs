@@ -37,5 +37,20 @@ namespace Microsoft.Maui
 			var sp = fontManager.GetScaledPixel(font);
 			editText.SetTextSize(ComplexUnitType.Sp, sp);
 		}
+
+		public static void UpdateVerticalTextAlignment(this SearchView searchView, ISearchBar searchBar)
+		{
+			searchView.UpdateVerticalTextAlignment(searchBar, null);
+		}
+
+		public static void UpdateVerticalTextAlignment(this SearchView searchView, ISearchBar searchBar, EditText? editText)
+		{
+			editText ??= searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+
+			if (editText == null)
+				return;
+
+			editText.UpdateVerticalAlignment(searchBar.VerticalTextAlignment, TextAlignment.Center.ToVerticalGravityFlags());
+		}
 	}
 }

@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SearchBarHandler : AbstractViewHandler<ISearchBar, UISearchBar>
 	{
 		UITextField? _editor;
+
 		public UITextField? QueryEditor => _editor;
 
 		protected override UISearchBar CreateNativeView()
@@ -29,6 +30,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdatePlaceholder(searchBar);
 		}
 
+		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
+		}
+
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
@@ -43,9 +49,9 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
 		}
 
-		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
+			handler.TypedNativeView?.UpdateVerticalTextAlignment(searchBar, handler?._editor);
 		}
 	}
 }
