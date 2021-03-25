@@ -47,10 +47,47 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				renderer = new DefaultRenderer();
 			}
 
+			// This code is duplicated across all platforms currently
+			// So if any changes are made here please make sure to apply them to other platform.cs files
 			if (renderer == null)
 			{
-				renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ??
-												  new DefaultRenderer();
+				IViewHandler handler = null;
+
+				//TODO: Handle this with AppBuilderHost
+				try
+				{
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType());
+					handler.SetMauiContext(Forms.MauiContext);
+				}
+				catch
+				{
+					// TODO define better catch response or define if this is needed?
+				}
+
+				if (handler == null)
+				{
+					renderer = Microsoft.Maui.Controls.Internals.Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element)
+										?? new DefaultRenderer();
+				}
+				// This means the only thing registered is the RendererToHandlerShim
+				// Which is only used when you are running a .NET MAUI app
+				// This indicates that the user hasn't registered a specific handler for this given type
+				else if (handler is RendererToHandlerShim shim)
+				{
+					renderer = shim.VisualElementRenderer;
+
+					if (renderer == null)
+					{
+						renderer = Microsoft.Maui.Controls.Internals.Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element)
+										?? new DefaultRenderer();
+					}
+				}
+				else if (handler is IVisualElementRenderer ver)
+					renderer = ver;
+				else if (handler is INativeViewHandler vh)
+				{
+					renderer = new HandlerToRendererShim(vh);
+				}
 			}
 
 			renderer.SetElement(element);
@@ -84,7 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (!current.Resources.ContainsKey(ShellRenderer.ShellStyle))
 			{
 				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility.Platform.UAP/Shell/ShellStyles.xbf");
+				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Shell/ShellStyles.xbf");
 				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
 			}
 

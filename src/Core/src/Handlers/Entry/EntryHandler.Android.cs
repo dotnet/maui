@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		// TODO: Maybe better to have generic version in IAndroidViewHandler?
+		// TODO: Maybe better to have generic version in INativeViewHandler?
 		class EntryTouchListener : Java.Lang.Object, IOnTouchListener
 		{
 			public EntryHandler? Handler { get; set; }
@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		// TODO: Maybe better to have generic version in IAndroidViewHandler?
+		// TODO: Maybe better to have generic version in INativeViewHandler?
 		class EntryFocusChangeListener : Java.Lang.Object, IOnFocusChangeListener
 		{
 			public EntryHandler? Handler { get; set; }

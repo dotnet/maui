@@ -894,6 +894,16 @@ Task("VS-NET6")
         StartVisualStudioForDotNet6();
     });
 
+
+Task("VS-WINUI")
+    .Does(() =>
+    {
+        DotNetCoreBuild("./src/DotNet/Dotnet.csproj");
+        var ext = IsRunningOnWindows() ? ".exe" : "";
+        DotNetCoreBuild("./Microsoft.Maui.BuildTasks-net6.sln", new DotNetCoreBuildSettings { ToolPath = $"./bin/dotnet/dotnet{ext}" });
+        StartVisualStudioForDotNet6("./Microsoft.Maui.WinUI.sln");
+    });
+
 Task("VS")
     .Description("Builds projects necessary so solution compiles on VS")
     .IsDependentOn("Clean")

@@ -4,7 +4,7 @@ using Microsoft.Maui;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class AbstractViewHandler<TVirtualView, TNativeView> : IAndroidViewHandler
+	public partial class AbstractViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
 		public Context? Context => MauiContext?.Context;
 

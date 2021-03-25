@@ -1,3 +1,4 @@
+/*
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 
 		TaskCompletionSource<CommandBar> _commandBarTcs;
-	    ToolbarPlacement _toolbarPlacement;
+		ToolbarPlacement _toolbarPlacement;
 		bool _toolbarDynamicOverflowEnabled = true;
 
 		public WBrush ToolbarBackground
@@ -46,23 +47,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set { SetValue(TitleVisibilityProperty, value); }
 		}
 
-        public ToolbarPlacement ToolbarPlacement
-	    {
-	        get { return _toolbarPlacement; }
-	        set
-	        {
-	            _toolbarPlacement = value;
+		public ToolbarPlacement ToolbarPlacement
+		{
+			get { return _toolbarPlacement; }
+			set
+			{
+				_toolbarPlacement = value;
 
-				_toolbarPlacementHelper. UpdateToolbarPlacement();
-	        }
-	    }
+				_toolbarPlacementHelper.UpdateToolbarPlacement();
+			}
+		}
 
 		public bool ToolbarDynamicOverflowEnabled
 		{
 			get { return _toolbarDynamicOverflowEnabled; }
 			set
 			{
-				_toolbarDynamicOverflowEnabled = value; 
+				_toolbarDynamicOverflowEnabled = value;
 				UpdateToolbarDynamicOverflowEnabled();
 			}
 		}
@@ -106,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return containerItem;
 		}
 
-		static void SetPivotItemAutomationName(FrameworkElement frameworkElement, 
+		static void SetPivotItemAutomationName(FrameworkElement frameworkElement,
 			DataContextChangedEventArgs dataContextChangedEventArgs)
 		{
 			var pivotItem = frameworkElement as PivotItem;
@@ -115,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (pivotItem != null && page?.Title != null)
 			{
 				// This way we can find tabs with automation (for testing, etc.)
-				Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(pivotItem, page.Title);	
+				Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(pivotItem, page.Title);
 			}
 		}
 
@@ -128,3 +129,4 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 }
+*/

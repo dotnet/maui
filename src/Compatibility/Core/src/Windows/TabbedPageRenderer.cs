@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Linq;
 using System.Collections.Specialized;
@@ -25,7 +26,7 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class TabbedPageRenderer : IVisualElementRenderer, ITitleProvider, IToolbarProvider, 
+	public class TabbedPageRenderer : IVisualElementRenderer, ITitleProvider, IToolbarProvider,
 		IToolBarForegroundBinder
 	{
 		const string TabBarHeaderStackPanelName = "TabbedPageHeaderStackPanel";
@@ -167,13 +168,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (Control == null)
 				{
-					Control = new FormsPivot {
+					Control = new FormsPivot
+					{
 						Style = (Microsoft.UI.Xaml.Style)Microsoft.UI.Xaml.Application.Current.Resources["TabbedPageStyle"],
 					};
 
 					Control.SelectionChanged += OnSelectionChanged;
 
-					Tracker = new BackgroundTracker<Pivot>(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty) {
+					Tracker = new BackgroundTracker<Pivot>(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty)
+					{
 						Element = (Page)element,
 						Control = Control,
 						Container = Control
@@ -258,7 +261,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateSelectedTabColors();
 		}
 
-		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e) 
+		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			e.Apply(Element.Children, Control.Items);
 			switch (e.Action)
@@ -267,7 +270,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				case NotifyCollectionChangedAction.Remove:
 				case NotifyCollectionChangedAction.Replace:
 					if (e.NewItems != null)
-						for (int i = 0; i< e.NewItems.Count; i++)
+						for (int i = 0; i < e.NewItems.Count; i++)
 							((Page)e.NewItems[i]).PropertyChanged += OnChildPagePropertyChanged;
 					if (e.OldItems != null)
 						for (int i = 0; i < e.OldItems.Count; i++)
@@ -278,7 +281,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						page.PropertyChanged += OnChildPagePropertyChanged;
 					break;
 			}
-			
+
 			Control.UpdateLayout();
 			EnsureBarColors(e.Action);
 		}
@@ -298,7 +301,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		void OnChildPagePropertyChanged(object sender, PropertyChangedEventArgs e) {
+		void OnChildPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
 			var page = sender as Page;
 			if (page != null)
 			{
@@ -353,10 +357,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateBarBackgroundColor()
 		{
-			if (Element == null) return;
+			if (Element == null)
+				return;
 			var barBackgroundColor = Element.BarBackgroundColor;
 
-			if (barBackgroundColor == _barBackgroundColor) return;
+			if (barBackgroundColor == _barBackgroundColor)
+				return;
 			_barBackgroundColor = barBackgroundColor;
 
 			ApplyBarBackgroundColor();
@@ -380,10 +386,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void ApplyBarBackgroundColor(bool force = false)
 		{
 			var controlToolbarBackground = Control.ToolbarBackground;
-			if (controlToolbarBackground == null && _barBackgroundColor.IsDefault) return;
+			if (controlToolbarBackground == null && _barBackgroundColor.IsDefault)
+				return;
 
 			var brush = GetBarBackgroundBrush();
-			if (brush == controlToolbarBackground && !force) 
+			if (brush == controlToolbarBackground && !force)
 				return;
 
 			TitleProvider.BarBackgroundBrush = brush;
@@ -417,10 +424,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateBarTextColor()
 		{
-			if (Element == null) return;
+			if (Element == null)
+				return;
 			var barTextColor = Element.BarTextColor;
 
-			if (barTextColor == _barTextColor) return;
+			if (barTextColor == _barTextColor)
+				return;
 			_barTextColor = barTextColor;
 
 			ApplyBarTextColor();
@@ -429,7 +438,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void ApplyBarTextColor(bool force = false)
 		{
 			var controlToolbarForeground = Control.ToolbarForeground;
-			if (controlToolbarForeground == null && _barTextColor.IsDefault) return;
+			if (controlToolbarForeground == null && _barTextColor.IsDefault)
+				return;
 
 			var brush = GetBarForegroundBrush();
 			if (brush == controlToolbarForeground && !force)
@@ -564,7 +574,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Element.CurrentPage = page;
 		}
 
-		protected void UpdateAccessKey(TextBlock control) {
+		protected void UpdateAccessKey(TextBlock control)
+		{
 
 			if (control != null && control.DataContext is Page page)
 			{
@@ -590,8 +601,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void SetAppBarForegroundBinding(FrameworkElement element)
 		{
 			element.SetBinding(Microsoft.UI.Xaml.Controls.Control.ForegroundProperty,
-				new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("ToolbarForeground"), 
-					Source = Control, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
+				new Microsoft.UI.Xaml.Data.Binding
+				{
+					Path = new PropertyPath("ToolbarForeground"),
+					Source = Control,
+					RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent }
+				});
 		}
 
 		void UpdateSelectedTabColors()
@@ -632,3 +647,4 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 }
+*/

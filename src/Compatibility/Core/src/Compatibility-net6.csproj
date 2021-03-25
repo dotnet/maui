@@ -1,18 +1,46 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
     <Nullable>disable</Nullable>
     <EnableDefaultItems>false</EnableDefaultItems>
     <AndroidRoot>Android\</AndroidRoot>
     <iOSRoot>iOS\</iOSRoot>
+    <WindowsRoot>Windows\</WindowsRoot>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
   </PropertyGroup>
+  
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
+    <DefineConstants>$(DefineConstants);WINDOWS_UWP;WINDOWS</DefineConstants>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+  
+  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <PropertyGroup>
+      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
+    </PropertyGroup>
+  </Target>
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <PackageReference Include="Microsoft.ProjectReunion" Version="0.5.0-prerelease" />
+    <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.5.0-prerelease" />
+    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="0.5.0-prerelease" />
+  </ItemGroup>
 
   <!--<Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />-->
+  
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <Compile Include="$(WindowsRoot)**\*.cs"></Compile>
+    <Page Include="$(WindowsRoot)**\*.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Remove="Windows\TabbedPageStyle.xaml" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
+  </ItemGroup>
   
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <Compile Include="$(AndroidRoot)**\*.cs"></Compile>
@@ -47,12 +75,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--<None Include="**\bin\**\*.cs" />
-    <None Include="**\obj\**\*.cs" />
-    <None Include="obj\**\*.cs" />
-    <Compile Remove="**\bin\**\*.cs" />
-    <Compile Remove="**\obj\**\*.cs" />
-    <Compile Remove="obj\**\*.cs" />-->
     <Compile Include="..\..\..\Controls\src\Core\Crc64.cs">
       <Link>Crc64.cs</Link>
     </Compile>
@@ -67,8 +89,13 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
+    <None Include="bin\$(Configuration)\net6.0-windows10.0.19041.0\Microsoft.Maui.Controls.Compatibility.pri" Visible="False" Pack="True" PackagePath="runtimes\net6.0-windows10.0.19041.0\native" />  
+    <None Include="bin\$(Configuration)\net6.0-windows10.0.19041.0\Microsoft.Maui.Controls.Compatibility\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\net6.0-windows10.0.19041\Microsoft.Maui.Controls.Compatibility;runtimes\net6.0-windows10.0.19041.0\native\Microsoft.Maui.Controls.Compatibility" />
   </ItemGroup>
 </Project>
 
