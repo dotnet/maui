@@ -7,9 +7,6 @@
     </PropertyGroup>
   </Target>
   <Target Name="_RemoveIncompatibleXamlFiles" BeforeTargets="BeforeBuild" Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PropertyGroup>
-      <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">10.0.17763.0</TargetPlatformMinVersion>
-    </PropertyGroup>
     <ItemGroup Condition="$(OutputType) != 'WinExe'">
       <Page Remove="**/*.xaml">
       </Page>
