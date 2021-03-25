@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(MauiCorePlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui</RootNamespace>
     <AssemblyName>Microsoft.Maui</AssemblyName>
     <Nullable>enable</Nullable>
