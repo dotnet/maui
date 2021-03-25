@@ -1,6 +1,6 @@
-﻿using UIKit;
-using CoreGraphics;
+﻿using CoreGraphics;
 using Foundation;
+using UIKit;
 
 namespace Microsoft.Maui.Platform.iOS
 {

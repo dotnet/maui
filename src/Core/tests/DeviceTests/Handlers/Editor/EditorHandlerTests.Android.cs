@@ -35,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
 			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
 		}
-		
+
 		[Theory(DisplayName = "Font Family Initializes Correctly")]
 		[InlineData(null)]
 		[InlineData("monospace")]
@@ -74,12 +74,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		Color GetNativePlaceholderColor(EditorHandler editorHandler) =>
 			((uint)GetNativeEditor(editorHandler).CurrentHintTextColor).ToColor();
-			
 
-        bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
-            !GetNativeEditor(editorHandler).Focusable;
 
-        bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
+		bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
+			!GetNativeEditor(editorHandler).Focusable;
+
+		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			!GetNativeEditor(editorHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
 
 		double GetNativeCharacterSpacing(EditorHandler editorHandler)
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
-		
+
 		double GetNativeUnscaledFontSize(EditorHandler editorHandler)
 		{
 			var textView = GetNativeEditor(editorHandler);

@@ -162,7 +162,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return compoundsValidWhenFocused && compoundsValidWhenUnfocused;
 		}
-		
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{

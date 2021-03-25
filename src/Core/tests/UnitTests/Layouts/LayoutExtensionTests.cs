@@ -1,8 +1,8 @@
-﻿using Microsoft.Maui.Layouts;
+﻿using System.Collections.Generic;
+using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
-using Microsoft.Maui.Primitives;
-using System.Collections.Generic;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {
@@ -76,34 +76,34 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(90, desiredSize.Height);
 		}
 
-		public static IEnumerable<object[]> AlignmentTestData() 
+		public static IEnumerable<object[]> AlignmentTestData()
 		{
 			var margin = Thickness.Zero;
 
 			// No margin
-			yield return new object[] { LayoutAlignment.Start, margin, 0, 100};
+			yield return new object[] { LayoutAlignment.Start, margin, 0, 100 };
 			yield return new object[] { LayoutAlignment.Center, margin, 100, 100 };
-			yield return new object[] { LayoutAlignment.End, margin, 200, 100};
-			yield return new object[] { LayoutAlignment.Fill, margin, 0, 300};
+			yield return new object[] { LayoutAlignment.End, margin, 200, 100 };
+			yield return new object[] { LayoutAlignment.Fill, margin, 0, 300 };
 
 			// Even margin
 			margin = new Thickness(10);
-			yield return new object[] { LayoutAlignment.Start, margin, 10, 100};
-			yield return new object[] { LayoutAlignment.Center, margin, 100, 100};
-			yield return new object[] { LayoutAlignment.End, margin, 190, 100};
+			yield return new object[] { LayoutAlignment.Start, margin, 10, 100 };
+			yield return new object[] { LayoutAlignment.Center, margin, 100, 100 };
+			yield return new object[] { LayoutAlignment.End, margin, 190, 100 };
 			yield return new object[] { LayoutAlignment.Fill, margin, 10, 280 };
 
 			// Lopsided margin
 			margin = new Thickness(5, 5, 10, 10);
-			yield return new object[] { LayoutAlignment.Start, margin, 5, 100};
-			yield return new object[] { LayoutAlignment.Center, margin, 97.5, 100 }; 
+			yield return new object[] { LayoutAlignment.Start, margin, 5, 100 };
+			yield return new object[] { LayoutAlignment.Center, margin, 97.5, 100 };
 			yield return new object[] { LayoutAlignment.End, margin, 190, 100 };
 			yield return new object[] { LayoutAlignment.Fill, margin, 5, 285 };
 		}
 
 		[Theory]
 		[MemberData(nameof(AlignmentTestData))]
-		public void FrameAccountsForHorizontalLayoutAlignment(LayoutAlignment layoutAlignment, Thickness margin, 
+		public void FrameAccountsForHorizontalLayoutAlignment(LayoutAlignment layoutAlignment, Thickness margin,
 			double expectedX, double expectedWidth)
 		{
 			var widthConstraint = 300;
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Theory]
 		[MemberData(nameof(AlignmentTestData))]
-		public void FrameAccountsForVerticalLayoutAlignment(LayoutAlignment layoutAlignment, Thickness margin, 
+		public void FrameAccountsForVerticalLayoutAlignment(LayoutAlignment layoutAlignment, Thickness margin,
 			double expectedY, double expectedHeight)
 		{
 			var widthConstraint = 50;

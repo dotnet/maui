@@ -1,8 +1,8 @@
-﻿using CoreGraphics;
+﻿using System;
+using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Platform.iOS;
-using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateMaxLength(editor);
 		}
-		
+
 		public static void MapIsReadOnly(EditorHandler handler, IEditor editor)
 		{
 			handler.TypedNativeView?.UpdateIsReadOnly(editor);

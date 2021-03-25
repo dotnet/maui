@@ -12,14 +12,14 @@ namespace Microsoft.Maui.Layouts
 
 		public IGridLayout Grid { get; }
 
-		public override Size Measure(double widthConstraint, double heightConstraint) 
+		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
 			var structure = new GridStructure(Grid, widthConstraint, heightConstraint);
 
 			return new Size(structure.GridWidth(), structure.GridHeight());
 		}
 
-		public override void ArrangeChildren(Rectangle childBounds) 
+		public override void ArrangeChildren(Rectangle childBounds)
 		{
 			var structure = new GridStructure(Grid, childBounds.Width, childBounds.Height);
 
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Layouts
 			}
 		}
 
-		class GridStructure 
+		class GridStructure
 		{
 			readonly IGridLayout _grid;
 			readonly double _gridWidthConstraint;
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Layouts
 
 			readonly Dictionary<SpanKey, Span> _spans = new Dictionary<SpanKey, Span>();
 
-			public GridStructure(IGridLayout grid, double widthConstraint, double heightConstraint) 
+			public GridStructure(IGridLayout grid, double widthConstraint, double heightConstraint)
 			{
 				_grid = grid;
 				_gridWidthConstraint = widthConstraint;
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Layouts
 				MeasureCells();
 			}
 
-			void InitializeCells() 
+			void InitializeCells()
 			{
 				for (int n = 0; n < _grid.Children.Count; n++)
 				{
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			public Rectangle ComputeFrameFor(IView view) 
+			public Rectangle ComputeFrameFor(IView view)
 			{
 				var firstColumn = _grid.GetColumn(view);
 				var lastColumn = firstColumn + _grid.GetColumnSpan(view);
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Layouts
 				double height = 0;
 
 				for (int n = firstRow; n < lastRow; n++)
-				{ 
+				{
 					height += _rows[n].Size;
 				}
 
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Layouts
 				return sum;
 			}
 
-			void MeasureCells() 
+			void MeasureCells()
 			{
 				for (int n = 0; n < _cells.Length; n++)
 				{
@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Layouts
 				ResolveSpans();
 			}
 
-			void TrackSpan(Span span) 
+			void TrackSpan(Span span)
 			{
 				if (_spans.TryGetValue(span.Key, out Span? otherSpan))
 				{
@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			void ResolveSpans() 
+			void ResolveSpans()
 			{
 				foreach (var span in _spans.Values)
 				{
@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			void ResolveSpan(Definition[] definitions, int start, int length, double spacing, double requestedSize) 
+			void ResolveSpan(Definition[] definitions, int start, int length, double spacing, double requestedSize)
 			{
 				double currentSize = 0;
 				var end = start + length;
@@ -361,8 +361,8 @@ namespace Microsoft.Maui.Layouts
 			}
 		}
 
-		class Cell 
-		{ 
+		class Cell
+		{
 			public int ViewIndex { get; }
 			public int Row { get; }
 			public int Column { get; }
@@ -372,8 +372,8 @@ namespace Microsoft.Maui.Layouts
 			public GridLengthType ColumnGridLengthType { get; }
 			public GridLengthType RowGridLengthType { get; }
 
-			public Cell(int viewIndex, int row, int column, int rowSpan, int columnSpan, 
-				GridLengthType columnGridLengthType, GridLengthType rowGridLengthType) 
+			public Cell(int viewIndex, int row, int column, int rowSpan, int columnSpan,
+				GridLengthType columnGridLengthType, GridLengthType rowGridLengthType)
 			{
 				ViewIndex = viewIndex;
 				Row = row;
@@ -395,15 +395,15 @@ namespace Microsoft.Maui.Layouts
 		}
 
 		[Flags]
-		enum GridLengthType 
-		{ 
-			None = 0, 
+		enum GridLengthType
+		{
+			None = 0,
 			Absolute = 1,
 			Auto = 2,
 			Star = 4
 		}
 
-		static GridLengthType ToGridLengthType(GridUnitType gridUnitType) 
+		static GridLengthType ToGridLengthType(GridUnitType gridUnitType)
 		{
 			return gridUnitType switch
 			{
@@ -414,8 +414,8 @@ namespace Microsoft.Maui.Layouts
 			};
 		}
 
-		abstract class Definition 
-		{ 
+		abstract class Definition
+		{
 			public double Size { get; set; }
 
 			public void Update(double size)
@@ -451,8 +451,8 @@ namespace Microsoft.Maui.Layouts
 
 			public override bool IsAuto => RowDefinition.Height.IsAuto;
 
-			public Row(IGridRowDefinition rowDefinition) 
-			{ 
+			public Row(IGridRowDefinition rowDefinition)
+			{
 				RowDefinition = rowDefinition;
 				if (rowDefinition.Height.IsAbsolute)
 				{
