@@ -51,7 +51,7 @@ namespace Microsoft.Maui
 			if (pickerView?.Model is PickerSource source)
 			{
 				source.SelectedIndex = selectedIndex;
-				source.SelectedItem = selectedIndex >= 0 ? picker.Items[selectedIndex] : null;
+				source.SelectedItem = (selectedIndex >= 0 && picker.Items.Count > selectedIndex) ? picker.Items[selectedIndex] : null;
 			}
 
 			pickerView?.Select(Math.Max(selectedIndex, 0), 0, true);
