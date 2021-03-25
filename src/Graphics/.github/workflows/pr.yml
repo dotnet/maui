@@ -36,7 +36,7 @@ jobs:
         & .\dotnet-install.ps1 -Version $env:DotNetVersion -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
         & dotnet --list-sdks
         & dotnet tool install --global redth.net.maui.check --add-source "https://api.nuget.org/v3/index.json"
-        & maui-check --skip openjdk --skip androidsdk --skip androidemulator --fix --non-interactive
+        & maui-check --skip openjdk --skip androidsdk --skip androidemulator --fix --non-interactive -m https://gist.githubusercontent.com/Redth/27851853593f9d87c28282c1edaa2917/raw/0399cc01da2fd2afc86ff37d94b451131d1f9a15/dotnet-maui-check-manifest.json
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -71,7 +71,7 @@ jobs:
         sh dotnet-install.sh --version $DotNetVersion --install-dir $DOTNET_ROOT --verbose
         dotnet --list-sdks
         dotnet tool install --global redth.net.maui.check --add-source "https://api.nuget.org/v3/index.json"
-        maui-check --skip openjdk --skip androidsdk --skip androidemulator --fix --non-interactive
+        maui-check --skip openjdk --skip androidsdk --skip androidemulator --fix --non-interactive -m https://gist.githubusercontent.com/Redth/27851853593f9d87c28282c1edaa2917/raw/0399cc01da2fd2afc86ff37d94b451131d1f9a15/dotnet-maui-check-manifest.json
 
     - name: Build
       run: |
