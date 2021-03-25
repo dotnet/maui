@@ -562,6 +562,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.UserInteractionEnabled = !Element.IsReadOnly;
 		}
 
+		[PortHandler]
 		void UpdateClearButtonVisibility()
 		{
 			Control.ClearButtonMode = Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing ? UITextFieldViewMode.WhileEditing : UITextFieldViewMode.Never;

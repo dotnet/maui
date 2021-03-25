@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Controls
 
 		Thickness Maui.IView.Margin => new Thickness();
 
+		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
+
 		void Maui.ILayout.Add(IView child)
 		{
 			Content = (View)child;
@@ -76,5 +78,7 @@ namespace Microsoft.Maui.Controls
 				layout.ResolveLayoutChanges();
 
 		}
+
+
 	}
 }

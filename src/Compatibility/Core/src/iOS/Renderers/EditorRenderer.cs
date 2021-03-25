@@ -63,6 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_placeholderLabel.Font = Element.ToUIFont();
 		}
 
+		[PortHandler]
 		protected internal override void UpdatePlaceholderText()
 		{
 			_placeholderLabel.Text = Element.Placeholder;
@@ -84,6 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_placeholderLabel.AttributedText = placeHolder;
 		}
 
+		[PortHandler]
 		protected internal override void UpdatePlaceholderColor()
 		{
 			Color placeholderColor = Element.PlaceholderColor;
@@ -93,6 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_placeholderLabel.TextColor = placeholderColor.ToUIColor();
 		}
 
+		[PortHandler]
 		void CreatePlaceholderLabel()
 		{
 			if (Control == null)
@@ -342,7 +345,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		protected internal abstract void UpdatePlaceholderText();
+
+		[PortHandler]
 		protected internal abstract void UpdatePlaceholderColor();
 		protected internal abstract void UpdateCharacterSpacing();
 
@@ -377,6 +383,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return newLength <= Element.MaxLength;
 		}
 
+		[PortHandler]
 		void UpdateReadOnly()
 		{
 			TextView.UserInteractionEnabled = !Element.IsReadOnly;

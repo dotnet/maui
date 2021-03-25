@@ -34,7 +34,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				typeof(Button),
 				typeof(ContentPage),
 				typeof(Page),
-
 #if !WINDOWS
 				typeof(DatePicker),
 				typeof(Editor),

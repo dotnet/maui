@@ -7,19 +7,19 @@ namespace Microsoft.Maui
 {
 	public static class TimePickerExtensions
 	{
-		public static void UpdateFormat(this MauiTimePicker mauiTimePicker, ITimePicker view)
+		public static void UpdateFormat(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 		{
-			mauiTimePicker.UpdateTime(view, null);
+			mauiTimePicker.UpdateTime(timePicker, null);
 		}
 
-		public static void UpdateFormat(this MauiTimePicker mauiTimePicker, ITimePicker view, UIDatePicker? picker)
+		public static void UpdateFormat(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, UIDatePicker? picker)
 		{
-			mauiTimePicker.UpdateTime(view, picker);
+			mauiTimePicker.UpdateTime(timePicker, picker);
 		}
 
-		public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker view)
+		public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 		{
-			mauiTimePicker.UpdateTime(view, null);
+			mauiTimePicker.UpdateTime(timePicker, null);
 		}
 
 		public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, UIDatePicker? picker)
@@ -62,12 +62,18 @@ namespace Microsoft.Maui
 			mauiTimePicker.UpdateCharacterSpacing(timePicker);
 		}
 
-		public static void UpdateCharacterSpacing(this MauiTimePicker mauiTimePicker, ITimePicker view)
+		public static void UpdateCharacterSpacing(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 		{
-			var textAttr = mauiTimePicker.AttributedText?.WithCharacterSpacing(view.CharacterSpacing);
+			var textAttr = mauiTimePicker.AttributedText?.WithCharacterSpacing(timePicker.CharacterSpacing);
 
 			if (textAttr != null)
 				mauiTimePicker.AttributedText = textAttr;
+		}
+
+		public static void UpdateFont(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, IFontManager fontManager)
+		{
+			var uiFont = fontManager.GetFont(timePicker.Font);
+			mauiTimePicker.Font = uiFont;
 		}
 	}
 }
