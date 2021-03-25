@@ -257,6 +257,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return false;
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
@@ -374,6 +375,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.Text = text;
 		}
 
+		[PortHandler ("Partially ported ...")]
 		void UpdateCharacterSpacing()
 		{
 			var textAttr = Control.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
@@ -387,6 +389,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateAttributedPlaceholder(placeHolder);
 		}
 
+		[PortHandler]
 		void UpdateMaxLength()
 		{
 			var currentControlText = Control.Text;
@@ -395,12 +398,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler]
 		bool ShouldChangeCharacters(UITextField textField, NSRange range, string replacementString)
 		{
 			var newLength = textField?.Text?.Length + replacementString?.Length - range.Length;
 			return newLength <= Element?.MaxLength;
 		}
 
+		[PortHandler]
 		void UpdateReturnType()
 		{
 			if (Control == null || Element == null)
@@ -557,6 +562,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.UserInteractionEnabled = !Element.IsReadOnly;
 		}
 
+		[PortHandler]
 		void UpdateClearButtonVisibility()
 		{
 			Control.ClearButtonMode = Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing ? UITextFieldViewMode.WhileEditing : UITextFieldViewMode.Never;

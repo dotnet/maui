@@ -1,6 +1,6 @@
 using UIKit;
 
-namespace Sample.iOS
+namespace Maui.Controls.Sample.iOS
 {
 	public class Application
 	{

@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             xmlns:enums="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.TabIndexTest"
+             x:Name="this"
+             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.TabIndexTest.DayView">
+  <ContentView.Content>
+        <StackLayout BindingContext="{x:Reference this}"
+                     HorizontalOptions="FillAndExpand"
+                     AutomationProperties.IsInAccessibleTree="False">
+            <Frame Margin="0"
+                   Padding="0"
+                   HasShadow="False"
+                   WidthRequest="32" 
+                   HeightRequest="32" 
+                   CornerRadius="16"
+                   HorizontalOptions="Center"
+                   BackgroundColor="{Binding ButtonBackgroundColor}"
+                   AutomationProperties.IsInAccessibleTree="True">
+                <Label TextColor="{Binding TextColor}"
+                       AutomationProperties.IsInAccessibleTree="False"
+                       HorizontalOptions="FillAndExpand"
+                       VerticalOptions="FillAndExpand"
+                       VerticalTextAlignment="Center"
+                       HorizontalTextAlignment="Center">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Sunday}">
+                            <Setter Property="Text" Value="S"/>
+                        </DataTrigger>
+
+                        <DataTrigger TargetType="Label" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Monday}">
+                            <Setter Property="Text" Value="M"/>
+                        </DataTrigger>
+
+                        <DataTrigger TargetType="Label" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Tuesday}">
+                            <Setter Property="Text" Value="T"/>
+                        </DataTrigger>
+
+                        <DataTrigger TargetType="Label" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Wednesday}">
+                            <Setter Property="Text" Value="W"/>
+                        </DataTrigger>
+
+                        <DataTrigger TargetType="Label" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Thursday}">
+                            <Setter Property="Text" Value="T"/>
+                        </DataTrigger>
+
+                        <DataTrigger TargetType="Label" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Friday}">
+                            <Setter Property="Text" Value="F"/>
+                        </DataTrigger>
+
+                        <DataTrigger TargetType="Label" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Saturday}">
+                            <Setter Property="Text" Value="S"/>
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+                <!-- The view's accessibility label triggers -->
+                <Frame.Triggers>
+                    <DataTrigger TargetType="Frame" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Sunday}">
+                        <Setter Property="AutomationProperties.Name" Value="Sunday"/>
+                        <!--<Setter Property="TabIndex" Value="1"/>-->
+                    </DataTrigger>
+
+                    <DataTrigger TargetType="Frame" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Monday}">
+                        <Setter Property="AutomationProperties.Name" Value="Monday"/>
+                        <!--<Setter Property="TabIndex" Value="2"/>-->
+                    </DataTrigger>
+
+                    <DataTrigger TargetType="Frame" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Tuesday}">
+                        <Setter Property="AutomationProperties.Name" Value="Tuesday"/>
+                        <!--<Setter Property="TabIndex" Value="3"/>-->
+                    </DataTrigger>
+
+                    <DataTrigger TargetType="Frame" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Wednesday}">
+                        <Setter Property="AutomationProperties.Name" Value="Wednesday"/>
+                        <!--<Setter Property="TabIndex" Value="4"/>-->
+                    </DataTrigger>
+
+                    <DataTrigger TargetType="Frame" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Thursday}">
+                        <Setter Property="AutomationProperties.Name" Value="Thursday"/>
+                        <!--<Setter Property="TabIndex" Value="5"/>-->
+                    </DataTrigger>
+
+                    <DataTrigger TargetType="Frame" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Friday}">
+                        <Setter Property="AutomationProperties.Name" Value="Friday"/>
+                        <!--<Setter Property="TabIndex" Value="6"/>-->
+                    </DataTrigger>
+
+                    <DataTrigger TargetType="Frame" Binding="{Binding Day}" Value="{x:Static enums:DaysOfWeek.Saturday}">
+                        <Setter Property="AutomationProperties.Name" Value="Saturday"/>
+                        <!--<Setter Property="TabIndex" Value="7"/>-->
+                    </DataTrigger>
+
+                    <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
+                        <Setter Property="AutomationProperties.HelpText" Value="On"/>
+                    </DataTrigger>
+
+                    <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="False">
+                        <Setter Property="AutomationProperties.HelpText" Value="Off"/>
+                    </DataTrigger>
+                </Frame.Triggers>
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding TouchCommand}"/>
+                </Frame.GestureRecognizers>
+            </Frame>
+        </StackLayout>
+    </ContentView.Content>
+</ContentView>

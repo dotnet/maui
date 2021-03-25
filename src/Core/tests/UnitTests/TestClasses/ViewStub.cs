@@ -1,4 +1,6 @@
+using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Tests
 {
@@ -28,7 +30,13 @@ namespace Microsoft.Maui.Tests
 
 		public string AutomationId { get; }
 
-		public void Arrange(Rectangle bounds) { }
+		public FlowDirection FlowDirection { get; set; }
+
+		public LayoutAlignment HorizontalLayoutAlignment { get; set; }
+    
+		public LayoutAlignment VerticalLayoutAlignment { get; set; }
+
+    public void Arrange(Rectangle bounds) { }
 
 		public void InvalidateArrange() { }
 

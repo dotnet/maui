@@ -1,4 +1,5 @@
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui
 {
@@ -85,5 +86,20 @@ namespace Microsoft.Maui
 		/// Id used by automation tools to interact with this FrameworkElement
 		/// </summary>
 		string AutomationId { get; }
+
+		/// <summary>
+		/// Direction in which the UI elements on the page are scanned by the eye
+		/// </summary>
+		FlowDirection FlowDirection { get; }
+
+		/// <summary>
+		/// Determines the horizontal aspect of this element's arrangement in a container
+		/// </summary>
+		LayoutAlignment HorizontalLayoutAlignment { get; }
+
+		/// <summary>
+		/// Determines the vertical aspect of this element's arrangement in a container
+		/// </summary>
+		LayoutAlignment VerticalLayoutAlignment { get; }
 	}
 }

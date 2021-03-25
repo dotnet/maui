@@ -21,9 +21,9 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize(family, 10)
 			};
 
-			var nativeFont = await GetValueAsync(button, handler => GetNativeButton(handler).Font);
+			var (services, nativeFont) = await GetValueAsync(button, handler => (handler.Services, GetNativeButton(handler).Font));
 
-			var fontManager = App.Services.GetRequiredService<IFontManager>();
+			var fontManager = services.GetRequiredService<IFontManager>();
 
 			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
 
@@ -45,7 +45,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync(button);
 			var uiButton = (UIButton)handler.View;
-			var insets = uiButton.ContentEdgeInsets;
+
+			var insets = await InvokeOnMainThreadAsync(() => { return uiButton.ContentEdgeInsets; });
 
 			Assert.Equal(5, insets.Left);
 			Assert.Equal(10, insets.Top);

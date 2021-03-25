@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		IPlatformElementConfiguration<PlatformConfiguration.Android, CheckBox> _platformElementConfiguration;
 		CheckBox _checkBox;
 
+		[PortHandler]
 		static int[][] _checkedStates = new int[][]
 					{
 						new int[] { AAttribute.StateEnabled, AAttribute.StateChecked },
@@ -186,6 +187,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			((IElementController)Element).SetValueFromRenderer(CheckBox.IsCheckedProperty, isChecked);
 		}
 
+		[PortHandler]
 		void UpdateIsChecked()
 		{
 			if (Element == null || Control == null)
@@ -211,6 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return list;
 		}
 
+		[PortHandler]
 		void UpdateBackgroundColor()
 		{
 			if (Element.BackgroundColor == Color.Default)
@@ -226,6 +229,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			this.UpdateBackground(background);
 		}
 
+		[PortHandler]
 		void UpdateOnColor()
 		{
 			if (Element == null || Control == null)

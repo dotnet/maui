@@ -10,10 +10,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Label)]
 	public partial class LabelHandlerTests : HandlerTestBase<LabelHandler, LabelStub>
 	{
-		public LabelHandlerTests(HandlerTestFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact(DisplayName = "SolidColorBrush Background Initializes Correctly")]
 		public async Task SolidColorBrushBackgroundInitializesCorrectly()
 		{

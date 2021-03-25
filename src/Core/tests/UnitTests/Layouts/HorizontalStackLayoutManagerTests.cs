@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
 
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new HorizontalStackLayoutManager(stack);
 
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.Arrange(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			var expectedRectangle = new Rectangle(0, 0, 100, 100);
 			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle));
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new HorizontalStackLayoutManager(stack);
 
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.Arrange(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			var expectedRectangle0 = new Rectangle(0, 0, 100, 100);
 			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle0));
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var stack = CreateTestLayout();
 
-			var view = CreateTestView(new Size(viewWidth, 100));
+			var view = LayoutTestHelpers.CreateTestView(new Size(viewWidth, 100));
 
 			var children = new List<IView>() { view }.AsReadOnly();
 
@@ -82,31 +83,42 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(expectedWidth, measurement.Width);
 		}
 
-		[Fact]
-		public void ViewsArrangedWithDesiredHeights()
+		[Fact(DisplayName = "First View in LTR Horizontal Stack is on the left")]
+		public void LtrShouldHaveFirstItemOnTheLeft()
 		{
-			var stack = CreateTestLayout();
+			var stack = BuildStack(viewCount: 2, viewWidth: 100, viewHeight: 100);
+			stack.FlowDirection.Returns(FlowDirection.LeftToRight);
+
 			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
-			var view1 = CreateTestView(new Size(100, 200));
-			var view2 = CreateTestView(new Size(100, 150));
+			// We expect that the starting view (0) should be arranged on the left,
+			// and the next rectangle (1) should be on the right
+			var expectedRectangle0 = new Rectangle(0, 0, 100, 100);
+			var expectedRectangle1 = new Rectangle(100, 0, 100, 100);
 
-			var children = new List<IView>() { view1, view2 }.AsReadOnly();
-			stack.Children.Returns(children);
+			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle0));
+			stack.Children[1].Received().Arrange(Arg.Is(expectedRectangle1));
+		}
 
-			var measurement = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.Arrange(new Rectangle(Point.Zero, measurement));
+		[Fact(DisplayName = "First View in RTL Horizontal Stack is on the right")]
+		public void RtlShouldHaveFirstItemOnTheRight()
+		{
+			var stack = BuildStack(viewCount: 2, viewWidth: 100, viewHeight: 100);
+			stack.FlowDirection.Returns(FlowDirection.RightToLeft);
 
-			// The tallest IView is 200, so the stack should be that tall
-			Assert.Equal(200, measurement.Height);
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
-			// We expect the first IView to be at 0,0 with a width of 100 and a height of 200
-			var expectedRectangle1 = new Rectangle(0, 0, 100, 200);
-			view1.Received().Arrange(Arg.Is(expectedRectangle1));
+			// We expect that the starting view (0) should be arranged on the right,
+			// and the next rectangle (1) should be on the left
+			var expectedRectangle0 = new Rectangle(100, 0, 100, 100);
+			var expectedRectangle1 = new Rectangle(0, 0, 100, 100);
 
-			// We expect the second IView to be at 100, 0 with a width of 100 and a height of 150
-			var expectedRectangle2 = new Rectangle(100, 0, 100, 150);
-			view2.Received().Arrange(Arg.Is(expectedRectangle2));
+			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle0));
+			stack.Children[1].Received().Arrange(Arg.Is(expectedRectangle1));
 		}
 	}
 }

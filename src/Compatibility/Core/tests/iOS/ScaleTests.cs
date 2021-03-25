@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using static Microsoft.Maui.Controls.Compatibility.Core.UITests.NumericExtensions;
-using static Microsoft.Maui.Controls.Compatibility.Core.UITests.ParsingUtils;
+using static Microsoft.Maui.Controls.Compatibility.UITests.NumericExtensions;
+using static Microsoft.Maui.Controls.Compatibility.UITests.ParsingUtils;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {

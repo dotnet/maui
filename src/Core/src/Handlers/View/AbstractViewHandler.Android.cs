@@ -6,9 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class AbstractViewHandler<TVirtualView, TNativeView> : IAndroidViewHandler
 	{
-		public void SetContext(Context context) => Context = context;
-
-		public Context? Context { get; private set; }
+		public Context? Context => MauiContext?.Context;
 
 		public void SetFrame(Rectangle frame)
 		{
@@ -61,8 +59,8 @@ namespace Microsoft.Maui.Handlers
 			var deviceWidthConstraint = Context.ToPixels(widthConstraint);
 			var deviceHeightConstraint = Context.ToPixels(heightConstraint);
 
-			var widthSpec = MeasureSpecMode.Exactly.MakeMeasureSpec((int)deviceWidthConstraint);
-			var heightSpec = MeasureSpecMode.Exactly.MakeMeasureSpec((int)deviceHeightConstraint);
+			var widthSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceWidthConstraint);
+			var heightSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceHeightConstraint);
 
 			TypedNativeView.Measure(widthSpec, heightSpec);
 

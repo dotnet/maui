@@ -121,5 +121,9 @@ namespace Microsoft.Maui.Controls
 			IsMeasureValid = true;
 			return DesiredSize;
 		}
+
+		Maui.FlowDirection IFrameworkElement.FlowDirection => FlowDirection.ToPlatformFlowDirection();
+		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => default;
+		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => default;
 	}
 }

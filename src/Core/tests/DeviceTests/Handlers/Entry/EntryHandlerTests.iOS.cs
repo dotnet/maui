@@ -21,9 +21,9 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize(family, 10)
 			};
 
-			var nativeFont = await GetValueAsync(entry, handler => GetNativeEntry(handler).Font);
+			var (services, nativeFont) = await GetValueAsync(entry, handler => (handler.Services, GetNativeEntry(handler).Font));
 
-			var fontManager = App.Services.GetRequiredService<IFontManager>();
+			var fontManager = services.GetRequiredService<IFontManager>();
 
 			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
 
@@ -32,6 +32,88 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
 			else
 				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
+		}
+
+		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
+		{
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
+			};
+
+			UITextAlignment expectedValue = UITextAlignment.Right;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.HorizontalTextAlignment,
+					NativeViewValue = GetNativeTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
+		[Fact(DisplayName = "ReturnType Initializes Correctly")]
+		public async Task ReturnTypeInitializesCorrectly()
+		{
+			var xplatReturnType = ReturnType.Next;
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				ReturnType = xplatReturnType
+			};
+
+			UIReturnKeyType expectedValue = UIReturnKeyType.Next;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.ReturnType,
+					NativeViewValue = GetNativeReturnType(handler)
+				};
+			});
+
+			Assert.Equal(xplatReturnType, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
+		}
+
+		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			string originalText = "Some Test Text";
+			var xplatCharacterSpacing = 4;
+
+			var entry = new EntryStub()
+			{
+				CharacterSpacing = xplatCharacterSpacing,
+				Text = originalText
+			};
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.CharacterSpacing,
+					NativeViewValue = GetNativeCharacterSpacing(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
+		}
+
+		double GetNativeCharacterSpacing(EntryHandler entryHandler)
+		{
+			var entry = GetNativeEntry(entryHandler);
+			return entry.AttributedText.GetCharacterSpacing();
 		}
 
 		UITextField GetNativeEntry(EntryHandler entryHandler) =>
@@ -66,5 +148,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsItalic(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
+
+		bool GetNativeClearButtonVisibility(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).ClearButtonMode == UITextFieldViewMode.WhileEditing;
+
+		UITextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).TextAlignment;
+
+		UIReturnKeyType GetNativeReturnType(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).ReturnKeyType;
 	}
 }

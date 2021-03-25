@@ -26,6 +26,16 @@ namespace Microsoft.Maui
 			view.Background = drawable;
 		}
 
+		public static bool GetClipToOutline(this AView view)
+		{
+			return view.ClipToOutline;
+		}
+
+		public static void SetClipToOutline(this AView view, bool value)
+		{
+			view.ClipToOutline = value;
+		}
+
 		public static void UpdateAutomationId(this AView nativeView, IView view)
 		{
 			if (AutomationTagId == DefaultAutomationTagId)

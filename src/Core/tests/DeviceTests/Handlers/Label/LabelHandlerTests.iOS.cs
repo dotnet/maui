@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,9 +25,9 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize(family, 10)
 			};
 
-			var nativeFont = await GetValueAsync(label, handler => GetNativeLabel(handler).Font);
+			var (services, nativeFont) = await GetValueAsync(label, handler => (handler.Services, GetNativeLabel(handler).Font));
 
-			var fontManager = App.Services.GetRequiredService<IFontManager>();
+			var fontManager = services.GetRequiredService<IFontManager>();
 
 			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
 
@@ -103,6 +104,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var labelHandler = new LabelStub()
 			{
+				Text = "Test", // Native values won't actually apply unless there's text
 				TextDecorations = xplatTextDecorations
 			};
 
@@ -111,12 +113,166 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelHandler.TextDecorations,
-					NativeViewValue = GetNativeTextDecorations(handler)
+					GetNativeLabel(handler).AttributedText
 				};
 			});
 
 			Assert.Equal(xplatTextDecorations, values.ViewValue);
-			Assert.NotNull(values.NativeViewValue);
+			values.AttributedText.AssertHasUnderline();
+		}
+
+		[Fact(DisplayName = "LineHeight Initializes Correctly")]
+		public async Task LineHeightInitializesCorrectly()
+		{
+			var xplatLineHeight = 1.5d;
+
+			var labelHandler = new LabelStub()
+			{
+				Text = "test",
+				LineHeight = xplatLineHeight
+			};
+
+			var values = await GetValueAsync(labelHandler, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelHandler.LineHeight,
+					NativeViewValue = GetNativeLineHeight(handler)
+				};
+			});
+
+			nfloat expectedValue = new nfloat(1.5f);
+			Assert.Equal(xplatLineHeight, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
+		}
+
+		[Fact]
+		[Category(TestCategory.TextFormatting)]
+		public async Task CanSetAlignmentAndLineHeight()
+		{
+			// Verifying that setting LineHeight (which requires an attributed string on iOS)
+			// doesn't cancel out the text alignment value (which can be set without an attributed string)
+
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+			double xplatLineHeight = 2;
+
+			var label = new LabelStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment,
+				LineHeight = xplatLineHeight
+			};
+
+			var expectedAlignment = UITextAlignment.Right;
+			var expectedLineHeight = xplatLineHeight;
+
+			var handler = await CreateHandlerAsync(label);
+			var actualAlignment = await InvokeOnMainThreadAsync(() => GetNativeTextAlignment(handler));
+			var actualLineHeight = await InvokeOnMainThreadAsync(() => GetNativeLineHeight(handler));
+
+			Assert.Equal(expectedLineHeight, actualLineHeight);
+			Assert.Equal(expectedAlignment, actualAlignment);
+		}
+
+		[Fact]
+		[Category(TestCategory.TextFormatting)]
+		public async Task LineHeightAppliedWhenTextAdded()
+		{
+			double xplatLineHeight = 2;
+			var expectedLineHeight = xplatLineHeight;
+
+			var label = new LabelStub() { LineHeight = xplatLineHeight }; // No text set
+
+			var handler = await CreateHandlerAsync(label);
+
+			label.Text = "Now we have text";
+			await InvokeOnMainThreadAsync(() => handler.UpdateValue(nameof(label.Text)));
+
+			var actualLineHeight = await InvokeOnMainThreadAsync(() => GetNativeLineHeight(handler));
+
+			Assert.Equal(expectedLineHeight, actualLineHeight);
+		}
+
+		[Fact]
+		[Category(TestCategory.TextFormatting)]
+		public async Task CharacterSpacingAppliedWhenTextAdded()
+		{
+			double xplatCharacterSpacing = 1.5;
+			var expectedCharacterSpacing = xplatCharacterSpacing;
+
+			var label = new LabelStub() { CharacterSpacing = xplatCharacterSpacing }; // No text set
+
+			var handler = await CreateHandlerAsync(label);
+
+			label.Text = "Now we have text";
+			await InvokeOnMainThreadAsync(() => handler.UpdateValue(nameof(label.Text)));
+
+			var actualCharacterSpacing = await InvokeOnMainThreadAsync(() => GetNativeCharacterSpacing(handler));
+
+			Assert.Equal(expectedCharacterSpacing, actualCharacterSpacing);
+		}
+
+		[Fact]
+		[Category(TestCategory.TextFormatting)]
+		public async Task TextDecorationsAppliedWhenTextAdded()
+		{
+			TextDecorations xplatTextDecorations = TextDecorations.Underline;
+
+			var label = new LabelStub() { TextDecorations = xplatTextDecorations }; // No text set
+
+			var handler = await CreateHandlerAsync(label);
+
+			label.Text = "Now we have text";
+			await InvokeOnMainThreadAsync(() => handler.UpdateValue(nameof(label.Text)));
+
+			var attributedText = await InvokeOnMainThreadAsync(() => GetAttributedText(handler));
+
+			attributedText.AssertHasUnderline();
+		}
+
+		[Fact]
+		[Category(TestCategory.TextFormatting)]
+		public async Task LineHeightSurvivesTextDecorations()
+		{
+			TextDecorations xplatTextDecorations = TextDecorations.Underline;
+			double xplatLineHeight = 2;
+			var expectedLineHeight = xplatLineHeight;
+
+			var label = new LabelStub() { Text = "test", LineHeight = xplatLineHeight };
+
+			var handler = await CreateHandlerAsync(label);
+
+			label.TextDecorations = xplatTextDecorations;
+			await InvokeOnMainThreadAsync(() => handler.UpdateValue(nameof(label.TextDecorations)));
+
+			var actualLineHeight = await InvokeOnMainThreadAsync(() => GetNativeLineHeight(handler));
+			var attributedText = await InvokeOnMainThreadAsync(() => GetAttributedText(handler));
+
+			Assert.Equal(expectedLineHeight, actualLineHeight);
+			attributedText.AssertHasUnderline();
+		}
+
+		[Fact]
+		[Category(TestCategory.TextFormatting)]
+		public async Task LineHeightSurvivesCharacterSpacing()
+		{
+			double xplatCharacterSpacing = 1.5;
+			var expectedCharacterSpacing = xplatCharacterSpacing;
+			double xplatLineHeight = 2;
+			var expectedLineHeight = xplatLineHeight;
+
+			var label = new LabelStub() { Text = "test", LineHeight = xplatLineHeight };
+
+			var handler = await CreateHandlerAsync(label);
+
+			label.CharacterSpacing = xplatCharacterSpacing;
+			await InvokeOnMainThreadAsync(() => handler.UpdateValue(nameof(label.CharacterSpacing)));
+
+			var actualLineHeight = await InvokeOnMainThreadAsync(() => GetNativeLineHeight(handler));
+			var actualCharacterSpacing = await InvokeOnMainThreadAsync(() => GetNativeCharacterSpacing(handler));
+
+			Assert.Equal(expectedLineHeight, actualLineHeight);
+			Assert.Equal(expectedCharacterSpacing, actualCharacterSpacing);
 		}
 
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>
@@ -144,18 +300,16 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var nativeLabel = GetNativeLabel(labelHandler);
 			var text = nativeLabel.AttributedText;
-			if (text == null)
-				return 0;
+			return text.GetCharacterSpacing();
+		}
 
-			var value = text.GetAttribute(UIStringAttributeKey.KerningAdjustment, 0, out var range);
-			if (value == null)
-				return 0;
-
-			Assert.Equal(0, range.Location);
-			Assert.Equal(text.Length, range.Length);
-
-			var kerning = Assert.IsType<NSNumber>(value);
-			return kerning.DoubleValue;
+		async Task<NSAttributedString> GetAttributedText(LabelHandler labelHandler)
+		{
+			return await InvokeOnMainThreadAsync(() =>
+			{
+				var label = GetNativeLabel(labelHandler);
+				return label.AttributedText;
+			});
 		}
 
 		UITextAlignment GetNativeTextAlignment(LabelHandler labelHandler) =>
@@ -172,7 +326,19 @@ namespace Microsoft.Maui.DeviceTests
 		UILineBreakMode GetNativeLineBreakMode(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).LineBreakMode;
 
-		NSAttributedString GetNativeTextDecorations(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).AttributedText;
+		nfloat GetNativeLineHeight(LabelHandler labelHandler)
+		{
+			var attrText = GetNativeLabel(labelHandler).AttributedText;
+
+			if (attrText == null)
+				return new nfloat(-1.0f);
+
+			var paragraphStyle = (NSParagraphStyle)attrText.GetAttribute(UIStringAttributeKey.ParagraphStyle, 0, out _);
+
+			if (paragraphStyle == null)
+				return new nfloat(-1.0f);
+
+			return paragraphStyle.LineHeightMultiple;
+		}
 	}
 }

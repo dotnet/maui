@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -30,6 +31,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Thickness Margin { get; set; }
 
 		public string AutomationId { get; set; }
+
+		public FlowDirection FlowDirection { get; set; }
+
+		public LayoutAlignment HorizontalLayoutAlignment { get; set; }
+
+		public LayoutAlignment VerticalLayoutAlignment { get; set; }
 
 		public void Arrange(Rectangle bounds)
 		{

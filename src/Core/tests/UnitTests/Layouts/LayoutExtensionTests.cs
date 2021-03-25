@@ -1,5 +1,6 @@
-using Microsoft.Maui;
+﻿using System.Collections.Generic;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
 
@@ -27,12 +28,18 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(60, frame.Height);
 		}
 
-		[Fact]
-		public void FrameSizeGoesToZeroWhenMarginsExceedBounds()
+		[Theory]
+		[InlineData(LayoutAlignment.Fill)]
+		[InlineData(LayoutAlignment.Start)]
+		[InlineData(LayoutAlignment.Center)]
+		[InlineData(LayoutAlignment.End)]
+		public void FrameSizeGoesToZeroWhenMarginsExceedBounds(LayoutAlignment layoutAlignment)
 		{
 			var element = Substitute.For<IView>();
 			var margin = new Thickness(200);
 			element.Margin.Returns(margin);
+			element.HorizontalLayoutAlignment.Returns(layoutAlignment);
+			element.VerticalLayoutAlignment.Returns(layoutAlignment);
 
 			var bounds = new Rectangle(0, 0, 100, 100);
 			var frame = element.ComputeFrame(bounds);
@@ -67,6 +74,120 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			Assert.Equal(140, desiredSize.Width);
 			Assert.Equal(90, desiredSize.Height);
+		}
+
+		public static IEnumerable<object[]> AlignmentTestData()
+		{
+			var margin = Thickness.Zero;
+
+			// No margin
+			yield return new object[] { LayoutAlignment.Start, margin, 0, 100 };
+			yield return new object[] { LayoutAlignment.Center, margin, 100, 100 };
+			yield return new object[] { LayoutAlignment.End, margin, 200, 100 };
+			yield return new object[] { LayoutAlignment.Fill, margin, 0, 300 };
+
+			// Even margin
+			margin = new Thickness(10);
+			yield return new object[] { LayoutAlignment.Start, margin, 10, 100 };
+			yield return new object[] { LayoutAlignment.Center, margin, 100, 100 };
+			yield return new object[] { LayoutAlignment.End, margin, 190, 100 };
+			yield return new object[] { LayoutAlignment.Fill, margin, 10, 280 };
+
+			// Lopsided margin
+			margin = new Thickness(5, 5, 10, 10);
+			yield return new object[] { LayoutAlignment.Start, margin, 5, 100 };
+			yield return new object[] { LayoutAlignment.Center, margin, 97.5, 100 };
+			yield return new object[] { LayoutAlignment.End, margin, 190, 100 };
+			yield return new object[] { LayoutAlignment.Fill, margin, 5, 285 };
+		}
+
+		[Theory]
+		[MemberData(nameof(AlignmentTestData))]
+		public void FrameAccountsForHorizontalLayoutAlignment(LayoutAlignment layoutAlignment, Thickness margin,
+			double expectedX, double expectedWidth)
+		{
+			var widthConstraint = 300;
+			var heightConstraint = 50;
+			var viewSize = new Size(100, 50);
+
+			var element = Substitute.For<IView>();
+
+			element.Margin.Returns(margin);
+			element.DesiredSize.Returns(viewSize);
+			element.HorizontalLayoutAlignment.Returns(layoutAlignment);
+
+			var frame = element.ComputeFrame(new Rectangle(0, 0, widthConstraint, heightConstraint));
+
+			Assert.Equal(expectedX, frame.Left);
+			Assert.Equal(expectedWidth, frame.Width);
+		}
+
+		[Theory]
+		[MemberData(nameof(AlignmentTestData))]
+		public void FrameAccountsForVerticalLayoutAlignment(LayoutAlignment layoutAlignment, Thickness margin,
+			double expectedY, double expectedHeight)
+		{
+			var widthConstraint = 50;
+			var heightConstraint = 300;
+			var viewSize = new Size(50, 100);
+
+			var element = Substitute.For<IView>();
+
+			element.Margin.Returns(margin);
+			element.DesiredSize.Returns(viewSize);
+			element.VerticalLayoutAlignment.Returns(layoutAlignment);
+
+			var frame = element.ComputeFrame(new Rectangle(0, 0, widthConstraint, heightConstraint));
+
+			Assert.Equal(expectedY, frame.Top);
+			Assert.Equal(expectedHeight, frame.Height);
+		}
+
+		public static IEnumerable<object[]> AlignmentTestDataRtl()
+		{
+			var margin = Thickness.Zero;
+
+			// No margin
+			yield return new object[] { LayoutAlignment.Start, margin, 200, 100 };
+			yield return new object[] { LayoutAlignment.Center, margin, 100, 100 };
+			yield return new object[] { LayoutAlignment.End, margin, 0, 100 };
+			yield return new object[] { LayoutAlignment.Fill, margin, 0, 300 };
+
+			// Even margin
+			margin = new Thickness(10);
+			yield return new object[] { LayoutAlignment.Start, margin, 190, 100 };
+			yield return new object[] { LayoutAlignment.Center, margin, 100, 100 };
+			yield return new object[] { LayoutAlignment.End, margin, 10, 100 };
+			yield return new object[] { LayoutAlignment.Fill, margin, 10, 280 };
+
+			// Lopsided margin
+			margin = new Thickness(5, 5, 10, 10);
+			yield return new object[] { LayoutAlignment.Start, margin, 195, 100 };
+			yield return new object[] { LayoutAlignment.Center, margin, 102.5, 100 };
+			yield return new object[] { LayoutAlignment.End, margin, 10, 100 };
+			yield return new object[] { LayoutAlignment.Fill, margin, 10, 285 };
+		}
+
+		[Theory]
+		[MemberData(nameof(AlignmentTestDataRtl))]
+		public void FrameAccountsForHorizontalLayoutAlignmentRtl(LayoutAlignment layoutAlignment, Thickness margin,
+			double expectedX, double expectedWidth)
+		{
+			var widthConstraint = 300;
+			var heightConstraint = 50;
+			var viewSize = new Size(100, 50);
+
+			var element = Substitute.For<IView>();
+
+			element.Margin.Returns(margin);
+			element.DesiredSize.Returns(viewSize);
+			element.FlowDirection.Returns(FlowDirection.RightToLeft);
+			element.HorizontalLayoutAlignment.Returns(layoutAlignment);
+
+			var frame = element.ComputeFrame(new Rectangle(0, 0, widthConstraint, heightConstraint));
+
+			Assert.Equal(expectedX, frame.Left);
+			Assert.Equal(expectedWidth, frame.Width);
 		}
 	}
 }

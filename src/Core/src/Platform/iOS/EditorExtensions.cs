@@ -1,17 +1,22 @@
-﻿using UIKit;
+using Microsoft.Maui.Platform.iOS;
+using UIKit;
 
 namespace Microsoft.Maui
 {
 	public static class EditorExtensions
 	{
-		public static void UpdateText(this UITextView textView, IEditor editor)
+		public static void UpdatePlaceholder(this MauiTextView textView, IEditor editor)
 		{
-			string text = editor.Text;
+			textView.PlaceholderText = editor.Placeholder;
+		}
 
-			if (textView.Text != text)
-			{
-				textView.Text = text;
-			}
+		public static void UpdatePlaceholderColor(this MauiTextView textView, IEditor editor, UIColor? defaultPlaceholderColor)
+		{
+			Color placeholderColor = editor.PlaceholderColor;
+			if (placeholderColor.IsDefault)
+				textView.PlaceholderTextColor = defaultPlaceholderColor;
+			else
+				textView.PlaceholderTextColor = placeholderColor.ToNative();
 		}
 	}
 }
