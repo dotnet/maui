@@ -279,12 +279,10 @@
     <Compile Include="Shapes\PolygonRenderer.cs" />
     <Compile Include="Shapes\PolylineRenderer.cs" />
     <Compile Include="Shapes\RectangleRenderer.cs" />
-    <Compile Include="Extensions\BrushExtensions.cs" />
     <Compile Include="CollectionView\LoopObservableItemsSource.cs" />
     <Compile Include="CollectionView\LoopListSource.cs" />
     <Compile Include="CollectionView\ILoopItemsViewSource.cs" />
     <Compile Include="Renderers\IDisconnectable.cs" />
-    <Compile Include="Extensions\BrushExtensions.shared.cs" />
     <Compile Include="Renderers\ShellFlyoutHeaderContainer.cs" />
   </ItemGroup>
   <ItemGroup>
