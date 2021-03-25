@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample
 			});
 			layout.Add(new Entry
 			{
-				Text = "Yup, Label",
+				Text = "Yup, Entry",
 				TextColor = Color.Red,
 				HeightRequest = 200,
 				WidthRequest = 200
@@ -38,6 +38,11 @@ namespace Maui.Controls.Sample
 			layout.Add(new Entry
 			{
 				Text = "I am an entry"
+			});
+
+			layout.Add(new ActivityIndicator
+			{
+				IsRunning = true
 			});
 
 			layout.Add(new Image { Source = "dotnet_bot.png" });
