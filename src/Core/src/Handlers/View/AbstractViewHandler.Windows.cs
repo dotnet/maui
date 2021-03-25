@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class AbstractViewHandler<TVirtualView, TNativeView>
+	public abstract partial class AbstractViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
 		public void SetFrame(Rectangle rect)
 		{

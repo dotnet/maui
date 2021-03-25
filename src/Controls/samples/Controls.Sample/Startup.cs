@@ -16,20 +16,10 @@ namespace Maui.Controls.Sample
 	{
 		public readonly static bool UseXamlPage = false;
 		public readonly static bool UseXamlApp = false;
-#if WINDOWS
-		public readonly static bool UseSimpleApp = true;
-#else
-		public readonly static bool UseSimpleApp = false;
-#endif
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
-			if (UseSimpleApp)
-			{
-				appBuilder = appBuilder
-					.UseMauiApp<SimpleApp>();
-			}
-			else if (UseXamlApp)
+			if (UseXamlApp)
 			{
 				appBuilder = appBuilder
 					.RegisterCompatibilityForms()

@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 
 		public FontFamily GetFontFamily(Font font)
 		{
-			if (font.IsDefault || (font.FontAttributes == FontAttributes.None && string.IsNullOrEmpty(font.FontFamily)))
+			if (font.IsDefault || string.IsNullOrWhiteSpace(font.FontFamily))
 				return DefaultFontFamily;
 
 			return _fonts.GetOrAdd(font.FontFamily, CreateFontFamily);

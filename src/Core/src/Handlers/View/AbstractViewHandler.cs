@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class AbstractViewHandler<TVirtualView, TNativeView> : IViewHandler
 		where TVirtualView : class, IView
-#if !NETSTANDARD || IOS || ANDROID
+#if !NETSTANDARD || IOS || ANDROID || WINDOWS
 		where TNativeView : NativeView
 #else
 		where TNativeView : class
