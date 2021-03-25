@@ -2,8 +2,8 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <ItemGroup>
-        <AvailableItemName Include="SharedImage" />
-        <AvailableItemName Include="SharedFont" />
+        <AvailableItemName Include="MauiImage" />
+        <AvailableItemName Include="MauiFont" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -12,7 +12,7 @@
 
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
-        TaskName="Microsoft.Maui.Resizetizer.ResizetizeSharedImages" />
+        TaskName="Microsoft.Maui.Resizetizer.ResizetizeImages" />
 
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
@@ -30,8 +30,8 @@
 
         <_ResizetizerInputsFile>$(IntermediateOutputPath)resizetizer.inputs</_ResizetizerInputsFile>
         <_ResizetizerStampFile>$(IntermediateOutputPath)resizetizer.stamp</_ResizetizerStampFile>
-        <_SharedFontInputsFile>$(IntermediateOutputPath)sharedfont.inputs</_SharedFontInputsFile>
-        <_SharedFontStampFile>$(IntermediateOutputPath)sharedfont.stamp</_SharedFontStampFile>
+        <_MauiFontInputsFile>$(IntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
+        <_MauiFontStampFile>$(IntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
@@ -65,10 +65,10 @@
             $(ResizetizeDependsOnTargets);
             ResizetizeCollectItems;
         </ResizetizeDependsOnTargets>
-        <ProcessSharedFontsDependsOnTargets>
-            $(ProcessSharedFontsDependsOnTargets);
+        <ProcessMauiFontsDependsOnTargets>
+            $(ProcessMauiFontsDependsOnTargets);
             ResizetizeCollectItems;
-        </ProcessSharedFontsDependsOnTargets>
+        </ProcessMauiFontsDependsOnTargets>
     </PropertyGroup>
 
     <!-- iOS -->
@@ -85,10 +85,10 @@
             ResizetizeCollectItems;
         </ResizetizeAfterTargets>
 
-        <ProcessSharedFontsAfterTargets>
-            $(ProcessSharedFontsAfterTargets);
+        <ProcessMauiFontsAfterTargets>
+            $(ProcessMauiFontsAfterTargets);
             _CompileCoreMLModels;
-        </ProcessSharedFontsAfterTargets>
+        </ProcessMauiFontsAfterTargets>
     </PropertyGroup>
 
     <!-- Android -->
@@ -105,10 +105,10 @@
             ResizetizeCollectItems;
         </ResizetizeAfterTargets>
 
-        <ProcessSharedFontsAfterTargets>
-            $(ProcessSharedFontsAfterTargets);
+        <ProcessMauiFontsAfterTargets>
+            $(ProcessMauiFontsAfterTargets);
             ResizetizeCollectItems;
-        </ProcessSharedFontsAfterTargets>
+        </ProcessMauiFontsAfterTargets>
     </PropertyGroup>
 
     <!-- UWP / WinUI -->
@@ -120,10 +120,10 @@
             AssignTargetPaths;
         </ResizetizeBeforeTargets>
 
-        <ProcessSharedFontsBeforeTargets>
-            $(ProcessSharedFontsBeforeTargets);
+        <ProcessMauiFontsBeforeTargets>
+            $(ProcessMauiFontsBeforeTargets);
             AssignTargetPaths;
-        </ProcessSharedFontsBeforeTargets>
+        </ProcessMauiFontsBeforeTargets>
     </PropertyGroup>
 
     <!-- WPF -->
@@ -135,27 +135,27 @@
             FileClassification;
         </ResizetizeBeforeTargets>
 
-        <ProcessSharedFontsBeforeTargets>
-            $(ProcessSharedFontsBeforeTargets);
+        <ProcessMauiFontsBeforeTargets>
+            $(ProcessMauiFontsBeforeTargets);
             FileClassification;
-        </ProcessSharedFontsBeforeTargets>
+        </ProcessMauiFontsBeforeTargets>
     </PropertyGroup>
 
-    <!-- Finds absolute paths to any SharedImage in this project -->
+    <!-- Finds absolute paths to any MauiImage in this project -->
     <!-- App head projects will invoke this target on their project references to collect images -->
-    <Target Name="GetSharedItems" Outputs="@(ExportedSharedItem)">
+    <Target Name="GetMauiItems" Outputs="@(ExportedMauiItem)">
 
         <ItemGroup>
-            <SharedItem Include="@(SharedImage)" ItemGroupName="SharedImage" Condition="'%(SharedImage.ForegroundFile)' == ''" />
-            <SharedItem Include="@(SharedImage)" ItemGroupName="SharedImage" Condition="'%(SharedImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(SharedImage.ForegroundFile)'))" />
+            <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' == ''" />
+            <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
         </ItemGroup>
 
         <ItemGroup>
-            <SharedItem Include="@(SharedFont)" ItemGroupName="SharedFont" />
+            <MauiItem Include="@(MauiFont)" ItemGroupName="MauiFont" />
         </ItemGroup>
 
-        <ConvertToAbsolutePath Paths="@(SharedItem)">
-            <Output TaskParameter="AbsolutePaths" ItemName="ExportedSharedItem" />
+        <ConvertToAbsolutePath Paths="@(MauiItem)">
+            <Output TaskParameter="AbsolutePaths" ItemName="ExportedMauiItem" />
         </ConvertToAbsolutePath>
 
     </Target>
@@ -167,35 +167,35 @@
         BeforeTargets="$(ResizetizeCollectItemsBeforeTargets)"
         AfterTargets="$(ResizetizeCollectItemsAfterTargets)">
 
-        <CallTarget Targets="GetSharedItems" Condition="'$(ResizetizerIncludeSelfProject)' == 'True'">
+        <CallTarget Targets="GetMauiItems" Condition="'$(ResizetizerIncludeSelfProject)' == 'True'">
             <Output
                 TaskParameter="TargetOutputs"
-                ItemName="ImportedSharedItem" />
+                ItemName="ImportedMauiItem" />
         </CallTarget>
 
-        <!-- Invoke the GetSharedItems target on all project references -->
-        <!-- This will accumulate images into our SharedImage group -->
-        <!--<MSBuild Targets="GetSharedItems" Projects="@(_MSBuildProjectReferenceExistent)">-->
+        <!-- Invoke the GetMauiItems target on all project references -->
+        <!-- This will accumulate images into our MauiImage group -->
+        <!--<MSBuild Targets="GetMauiItems" Projects="@(_MSBuildProjectReferenceExistent)">-->
         <MSBuild
-            Targets="GetSharedItems"
+            Targets="GetMauiItems"
             Projects="@(ProjectReference)"
             SkipNonexistentProjects="true"
             SkipNonexistentTargets="true">
             <Output
                 TaskParameter="TargetOutputs"
-                ItemName="ImportedSharedItem" />
+                ItemName="ImportedMauiItem" />
         </MSBuild>
 
         <ItemGroup>
-            <SharedImage
-                Include="@(ImportedSharedItem)"
-                Condition="'%(ImportedSharedItem.ItemGroupName)' == 'SharedImage'" />
+            <MauiImage
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiImage'" />
         </ItemGroup>
 
         <ItemGroup>
-            <SharedFont
-                Include="@(ImportedSharedItem)"
-                Condition="'%(ImportedSharedItem.ItemGroupName)' == 'SharedFont'" />
+            <MauiFont
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiFont'" />
         </ItemGroup>
 
 
@@ -203,70 +203,70 @@
         <!-- This allows us to invalidate the build based on not just input image files changing but project item metadata as well -->
         <WriteLinesToFile
             File="$(_ResizetizerInputsFile)"
-            Lines="@(SharedImage->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);IsAppIcon=%(IsAppIcon);ForegroundScale=%(ForegroundScale);ForegroundFile=%(ForegroundFile)')"
+            Lines="@(MauiImage->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);IsAppIcon=%(IsAppIcon);ForegroundScale=%(ForegroundScale);ForegroundFile=%(ForegroundFile)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 
         <WriteLinesToFile
-            File="$(_SharedFontInputsFile)"
-            Lines="@(SharedFont->'File=%(Identity);Link=%(Link);Alias=%(Alias)')"
+            File="$(_MauiFontInputsFile)"
+            Lines="@(MauiFont->'File=%(Identity);Link=%(Link);Alias=%(Alias)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 
     </Target>
 
-    <Target Name="ProcessSharedFonts"
-        Inputs="@(SharedFont);$(_SharedFontInputsFile)"
-        Outputs="$(_SharedFontStampFile)"
-        AfterTargets="$(ProcessSharedFontsAfterTargets)"
-        BeforeTargets="$(ProcessSharedFontsBeforeTargets)"
-        DependsOnTargets="$(ProcessSharedFontsDependsOnTargets)">
+    <Target Name="ProcessMauiFonts"
+        Inputs="@(MauiFont);$(_MauiFontInputsFile)"
+        Outputs="$(_MauiFontStampFile)"
+        AfterTargets="$(ProcessMauiFontsAfterTargets)"
+        BeforeTargets="$(ProcessMauiFontsBeforeTargets)"
+        DependsOnTargets="$(ProcessMauiFontsDependsOnTargets)">
 
         <!-- Copy font files over -->
         <Copy
-            SourceFiles="@(SharedFont)"
+            SourceFiles="@(MauiFont)"
             DestinationFolder="$(IntermediateOutputPath)sp\fonts\"
             SkipUnchangedFiles="true" />
 
         <ItemGroup>
-            <_SharedFontCopied Include="$(IntermediateOutputPath)sp\fonts\*" />
+            <_MauiFontCopied Include="$(IntermediateOutputPath)sp\fonts\*" />
         </ItemGroup>
 
-        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_SharedFontCopied)' != ''">
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopied)' != ''">
 
             <!-- iOS Expects fonts to be in this group -->
-            <_SharedFontBundleResource Include="@(_SharedFontCopied)">
-                <LogicalName>$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</LogicalName>
-                <TargetPath>$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</TargetPath>
-            </_SharedFontBundleResource>
+            <_MauiFontBundleResource Include="@(_MauiFontCopied)">
+                <LogicalName>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</LogicalName>
+                <TargetPath>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</TargetPath>
+            </_MauiFontBundleResource>
 
-            <BundleResource Include="@(_SharedFontBundleResource)" />
+            <BundleResource Include="@(_MauiFontBundleResource)" />
 
         </ItemGroup>
 
         <!-- Create a partial info.plist for iOS -->
         <CreatePartialInfoPlistTask
-            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_SharedFontCopied)' != ''"
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopied)' != ''"
             IntermediateOutputPath="$(IntermediateOutputPath)sp\"
             PlistName="FontInfo.plist"
-            CustomFonts="@(_SharedFontCopied)">
+            CustomFonts="@(_MauiFontCopied)">
             <Output
                 TaskParameter="PListFiles"
-                ItemName="_SharedFontPListFiles" />
+                ItemName="_MauiFontPListFiles" />
 
         </CreatePartialInfoPlistTask>
 
         <!-- iOS - Partial Info.plist for font registration  -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' ">
-            <_PartialAppManifest Include="@(_SharedFontPListFiles)" Condition="'@(_SharedFontPListFiles)' != ''" />
-            <FileWrites Include="@(_SharedFontPListFiles)" Condition="'@(_SharedFontPListFiles)' != ''" />
+            <_PartialAppManifest Include="@(_MauiFontPListFiles)" Condition="'@(_MauiFontPListFiles)' != ''" />
+            <FileWrites Include="@(_MauiFontPListFiles)" Condition="'@(_MauiFontPListFiles)' != ''" />
         </ItemGroup>
 
         <!-- Android -->
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
 
-            <AndroidAsset Include="@(_SharedFontCopied)" Condition="'@(_SharedFontCopied)' != ''">
-                <Link>$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</Link>
+            <AndroidAsset Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
+                <Link>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</Link>
             </AndroidAsset>
 
         </ItemGroup>
@@ -274,8 +274,8 @@
         <!-- UWP / WinUI -->
         <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWinUIApp)' == 'True'">
 
-            <ContentWithTargetPath Include="@(_SharedFontCopied)" Condition="'@(_SharedFontCopied)' != ''">
-                <TargetPath>Assets\$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</TargetPath>
+            <ContentWithTargetPath Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
+                <TargetPath>Assets\$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</TargetPath>
             </ContentWithTargetPath>
 
         </ItemGroup>
@@ -283,9 +283,9 @@
         <!-- WPF -->
         <ItemGroup Condition="'$(_ResizetizerIsWPFApp)' == 'True'">
 
-            <Resource Include="@(_SharedFontCopied)" Condition="'@(_SharedFontCopied)' != ''">
-                <LogicalName>$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</LogicalName>
-                <Link>$([System.IO.Path]::GetFileName(%(_SharedFontCopied.Identity)))</Link>
+            <Resource Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
+                <LogicalName>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</LogicalName>
+                <Link>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</Link>
             </Resource>
 
         </ItemGroup>
@@ -293,34 +293,34 @@
         <!-- iOS Only -->
         <!-- If on Windows, using build host, copy the files over to build server host too -->
         <ItemGroup Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'">
-            <_SharedFontsToCopyToBuildServer Include="@(_SharedFontBundleResource);@(_SharedFontPListFiles)">
+            <_MauiFontsToCopyToBuildServer Include="@(_MauiFontBundleResource);@(_MauiFontPListFiles)">
                 <TargetPath>%(Identity)</TargetPath>
-            </_SharedFontsToCopyToBuildServer>
+            </_MauiFontsToCopyToBuildServer>
         </ItemGroup>
         <CopyFilesToBuildServer
             Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'"
             SessionId="$(BuildSessionId)"
-            Files="@(_SharedFontsToCopyToBuildServer)" />
+            Files="@(_MauiFontsToCopyToBuildServer)" />
 
         <!-- Touch/create our stamp file for outputs -->
-        <Touch Files="$(_SharedFontStampFile)" AlwaysCreate="True" />
+        <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
 
         <!-- Include our fonts and stamp file as filewrites so they don't get rm'd -->
         <ItemGroup>
-            <FileWrites Include="$(_SharedFontStampFile)" />
-            <FileWrites Include="@(_SharedFontCopied)" />
+            <FileWrites Include="$(_MauiFontStampFile)" />
+            <FileWrites Include="@(_MauiFontCopied)" />
         </ItemGroup>
     </Target>
 
     <Target Name="ResizetizeImages"
-        Inputs="@(SharedImage);$(_ResizetizerInputsFile)"
+        Inputs="@(MauiImage);$(_ResizetizerInputsFile)"
         Outputs="$(_ResizetizerStampFile)"
         AfterTargets="$(ResizetizeAfterTargets)"
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
 
         <DetectInvalidResourceOutputFilenamesTask
-            Items="@(SharedImage)"
+            Items="@(MauiImage)"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
         </DetectInvalidResourceOutputFilenamesTask>
 
@@ -330,12 +330,12 @@
         </PropertyGroup>
 
         <!-- Resize the images -->
-        <ResizetizeSharedImages
+        <ResizetizeImages
             PlatformType="$(ResizetizerPlatformType)"
             IntermediateOutputPath="$(ResizetizerIntermediateOutputPath)"
             InputsFile="$(_ResizetizerInputsFile)"
-            SharedImages="@(SharedImage)">
-        </ResizetizeSharedImages>
+            Images="@(MauiImage)">
+        </ResizetizeImages>
 
         <ItemGroup>
             <!-- Get Images that were generated -->
@@ -369,14 +369,14 @@
         <!-- iOS Only -->
         <!-- If on Windows, using build host, copy the files over to build server host too -->
         <ItemGroup Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'">
-            <_SharedImagesToCopyToBuildServer Include="@(_ResizetizerCollectedBundleResourceImages)">
+            <_MauiImagesToCopyToBuildServer Include="@(_ResizetizerCollectedBundleResourceImages)">
                 <TargetPath>%(Identity)</TargetPath>
-            </_SharedImagesToCopyToBuildServer>
+            </_MauiImagesToCopyToBuildServer>
         </ItemGroup>
         <CopyFilesToBuildServer
             Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'"
             SessionId="$(BuildSessionId)"
-            Files="@(_SharedImagesToCopyToBuildServer)" />
+            Files="@(_MauiImagesToCopyToBuildServer)" />
 
         <!-- Android -->
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">

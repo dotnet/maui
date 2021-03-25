@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Resizetizer
 	{
 		SKSvg svg;
 
-		public SkiaSharpSvgTools(SharedImageInfo info, ILogger logger)
+		public SkiaSharpSvgTools(ResizeImageInfo info, ILogger logger)
 			: this(info.Filename, info.BaseSize, info.TintColor, logger)
 		{
 		}
