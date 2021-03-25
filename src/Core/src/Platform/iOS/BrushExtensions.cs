@@ -17,10 +17,8 @@ namespace Microsoft.Maui
 			if (control == null)
 				return;
 
-			UIView view = ShouldUseParentView(control) ? control.Superview : control;
-
 			// Remove previous background gradient layer if any
-			RemoveBackgroundLayer(view);
+			RemoveBackgroundLayer(control);
 
 			if (brush.IsNullOrEmpty())
 				return;
@@ -30,7 +28,7 @@ namespace Microsoft.Maui
 			if (backgroundLayer != null)
 			{
 				control.BackgroundColor = UIColor.Clear;
-				view.InsertBackgroundLayer(backgroundLayer, 0);
+				control.InsertBackgroundLayer(backgroundLayer, 0);
 			}
 		}
 
@@ -41,7 +39,7 @@ namespace Microsoft.Maui
 
 			if (brush is ISolidColorBrush solidColorBrush)
 			{
-				var linearGradientLayer = new CALayer
+				var solidColorLayer = new CALayer
 				{
 					Name = BackgroundLayer,
 					ContentsGravity = CALayer.GravityResizeAspectFill,
@@ -49,7 +47,7 @@ namespace Microsoft.Maui
 					BackgroundColor = solidColorBrush.Color.ToCGColor()
 				};
 
-				return linearGradientLayer;
+				return solidColorLayer;
 			}
 
 			if (brush is ILinearGradientBrush linearGradientBrush)
@@ -192,14 +190,6 @@ namespace Microsoft.Maui
 						sublayer.Frame = bounds;
 				}
 			}
-		}
-
-		static bool ShouldUseParentView(UIView view)
-		{
-			if (view is UILabel)
-				return true;
-
-			return false;
 		}
 
 		static CGPoint GetRadialGradientBrushEndPoint(Point startPoint, double radius)
