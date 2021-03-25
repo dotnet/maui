@@ -30,10 +30,8 @@ jobs:
         Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
         & .\dotnet-install.ps1 -Version $env:DotNetVersion -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
         & dotnet --list-sdks
-        & dotnet tool install --global boots --add-source "https://api.nuget.org/v3/index.json"
-        & boots $env:AndroidMsi
-        & boots $env:iOSMsi
-        Out-File -FilePath "$env:ProgramFiles\dotnet\sdk\$env:DotNetVersion\EnableWorkloadResolver.sentinel"
+        & dotnet tool install --global redth.net.maui.check --add-source "https://api.nuget.org/v3/index.json"
+        & maui-check --skip openjdk --skip androidsdk --skip androidemulator --fix --non-interactive
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -62,11 +60,8 @@ jobs:
         curl -L https://raw.githubusercontent.com/dotnet/install-scripts/7a9d5dcab92cf131fc2d8977052f8c2c2d540e22/src/dotnet-install.sh > dotnet-install.sh
         sh dotnet-install.sh --version $DotNetVersion --install-dir $DOTNET_ROOT --verbose
         dotnet --list-sdks
-        dotnet tool install --global boots --add-source "https://api.nuget.org/v3/index.json"
-        boots $AndroidPkg
-        boots $iOSPkg
-        boots $MacCatalystPkg
-        touch /Users/runner/.dotnet/sdk/6.0.100-preview.2.21155.3/EnableWorkloadResolver.sentinel
+        dotnet tool install --global redth.net.maui.check --add-source "https://api.nuget.org/v3/index.json"
+        maui-check --skip openjdk --skip androidsdk --skip androidemulator --fix --non-interactive
 
     - name: Build
       run: |
