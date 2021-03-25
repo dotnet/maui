@@ -6,7 +6,8 @@
 		{
 			[nameof(ITimePicker.Format)] = MapFormat,
 			[nameof(ITimePicker.Time)] = MapTime,
-			[nameof(ITimePicker.CharacterSpacing)] = MapCharacterSpacing
+			[nameof(ITimePicker.CharacterSpacing)] = MapCharacterSpacing,
+			[nameof(ITimePicker.Font)] = MapFont
 		};
 
 		public TimePickerHandler() : base(TimePickerMapper)

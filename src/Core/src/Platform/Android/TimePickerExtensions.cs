@@ -17,6 +17,9 @@
 			mauiTimePicker.LetterSpacing = timePicker.CharacterSpacing.ToEm();
 		}
 
+		public static void UpdateFont(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, IFontManager fontManager) =>
+			mauiTimePicker.UpdateFont(timePicker.Font, fontManager);
+
 		internal static void SetTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 		{
 			var time = timePicker.Time;
