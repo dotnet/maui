@@ -182,9 +182,6 @@ stages:
             clean: all
           displayName: Pack .NET 6 (${{ BuildPlatform.name }})
           timeoutInMinutes: 120
-          condition: or(
-            ${{ parameters.BuildEverything }},
-            ne(variables['Build.Reason'], 'PullRequest'))
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
