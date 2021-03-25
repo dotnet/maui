@@ -62,6 +62,13 @@ namespace Microsoft.Maui.Handlers
 					{
 						element.Handler?.SetFrame(element.Frame);
 					}
+				},
+				CrossPlatformInvalidateChildrenMeasure = () =>
+				{
+					foreach (var element in VirtualView.Children)
+					{
+						element.InvalidateMeasure();
+					}
 				}
 			};
 

@@ -24,6 +24,9 @@ namespace Microsoft.Maui.Handlers
 			if (nativeView == null)
 				return Size.Zero;
 
+			if (widthConstraint <= 0 || heightConstraint <= 0)
+				return Size.Zero;
+
 			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
 
 			nativeView.Measure(constraint);
