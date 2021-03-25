@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -516,7 +515,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);
 				else
 				{
-					IBrush background = Element.Background;
+					Brush background = Element.Background;
 
 					if (!Brush.IsNullOrEmpty(background))
 						View.UpdateBackground(Element.Background);

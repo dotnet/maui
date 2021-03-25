@@ -8,7 +8,6 @@ using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -377,7 +376,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					else
 						View.BackgroundColor = Element.BackgroundColor.ToUIColor();
 
-					IBrush background = Element.Background;
+					Brush background = Element.Background;
 					View.UpdateBackground(background);
 				}
 			});

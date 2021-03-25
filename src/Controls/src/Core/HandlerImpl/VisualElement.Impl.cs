@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -125,5 +126,6 @@ namespace Microsoft.Maui.Controls
 		Maui.FlowDirection IFrameworkElement.FlowDirection => FlowDirection.ToPlatformFlowDirection();
 		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => default;
+		IBrush IFrameworkElement.Background => Background;
 	}
 }

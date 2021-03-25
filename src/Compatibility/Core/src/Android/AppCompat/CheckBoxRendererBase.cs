@@ -9,7 +9,6 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -224,7 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateBackground()
 		{
-			IBrush background = Element.Background;
+			Brush background = Element.Background;
 
 			this.UpdateBackground(background);
 		}

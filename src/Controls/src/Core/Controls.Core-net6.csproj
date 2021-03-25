@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net6.0;net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+   <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
     <Nullable>disable</Nullable>
-	</PropertyGroup>
+  </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Controls</PackageId>
   </PropertyGroup>
@@ -22,4 +22,9 @@
 	<PropertyGroup>
     <GitInfoReportImportance>high</GitInfoReportImportance>
   </PropertyGroup>
+  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <PropertyGroup>
+      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
+    </PropertyGroup>
+  </Target>
 </Project>

@@ -1,5 +1,5 @@
 using System;
-using Windows.Phone.Devices.Notification;
+using Windows.Devices.Haptics;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -8,12 +8,13 @@ namespace Microsoft.Maui.Essentials
         internal static bool IsSupported
             => Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Phone.Devices.Notification.VibrationDevice") && DefaultDevice != null;
 
-        static VibrationDevice DefaultDevice => VibrationDevice.GetDefault();
+        static VibrationDevice DefaultDevice =>
+			throw new NotImplementedException("WINUI"); //VibrationDevice.GetDefault();
 
-        static void PlatformVibrate(TimeSpan duration) =>
-            DefaultDevice.Vibrate(duration);
+		static void PlatformVibrate(TimeSpan duration) =>
+			throw new NotImplementedException("WINUI");// DefaultDevice.Vibrate(duration);
 
         static void PlatformCancel() =>
-            DefaultDevice.Cancel();
-    }
+			throw new NotImplementedException("WINUI");//DefaultDevice.Cancel();
+	}
 }

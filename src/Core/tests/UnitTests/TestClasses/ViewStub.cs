@@ -33,10 +33,10 @@ namespace Microsoft.Maui.Tests
 		public FlowDirection FlowDirection { get; set; }
 
 		public LayoutAlignment HorizontalLayoutAlignment { get; set; }
-    
+
 		public LayoutAlignment VerticalLayoutAlignment { get; set; }
 
-    public void Arrange(Rectangle bounds) { }
+		public void Arrange(Rectangle bounds) { }
 
 		public void InvalidateArrange() { }
 

@@ -2,7 +2,6 @@ using System;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
-using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -35,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			InvalidateSelf();
 		}
 
-		public void SetGradient(IBrush brush)
+		public void SetGradient(Brush brush)
 		{
 			if (brush is LinearGradientBrush linearGradientBrush)
 			{

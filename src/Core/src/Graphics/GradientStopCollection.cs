@@ -2,8 +2,8 @@
 
 namespace Microsoft.Maui.Graphics
 {
-    public class GradientStopCollection : ObservableCollection<GradientStop>
-    {
+	public class GradientStopCollection : ObservableCollection<GradientStop>
+	{
 
-    }
+	}
 }

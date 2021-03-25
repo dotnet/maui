@@ -6,7 +6,6 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using CoreGraphics;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -309,7 +308,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (NativeView == null)
 				return;
 
-			IBrush background = Element.Background;
+			Brush background = Element.Background;
 
 			NativeView.UpdateBackground(background);
 		}

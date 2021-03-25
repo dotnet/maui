@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
@@ -12,7 +13,7 @@ namespace Maui.Controls.Sample
 		{
 			Services = services;
 
-			Console.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
+			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 		}
 
 		public IServiceProvider Services { get; }

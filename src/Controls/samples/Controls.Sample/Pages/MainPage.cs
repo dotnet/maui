@@ -8,7 +8,7 @@ using Debug = System.Diagnostics.Debug;
 
 namespace Maui.Controls.Sample.Pages
 {
-	public class MainPage : ContentPage, IPage
+	public class MainPage : BasePage
 	{
 		MainPageViewModel _viewModel;
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls
 			_indicatorView.PropertyChanged += _indicatorViewPropertyChanged;
 		}
 
-		void _indicatorViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void _indicatorViewPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == IndicatorView.IndicatorsShapeProperty.PropertyName
 				|| e.PropertyName == IndicatorView.IndicatorTemplateProperty.PropertyName)

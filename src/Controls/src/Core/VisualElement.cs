@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -200,7 +199,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create("BackgroundColor", typeof(Color), typeof(VisualElement), Color.Default);
 
-		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(IBrush), typeof(VisualElement), Brush.Default,
+		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
 				if (oldvalue != null)
@@ -214,10 +213,10 @@ namespace Microsoft.Maui.Controls
 
 		void NotifyBackgroundChanges()
 		{
-			if (Background is Brush brush)
+			if (Background != null)
 			{
-				brush.Parent = this;
-				brush.PropertyChanged += OnBackgroundChanged;
+				Background.Parent = this;
+				Background.PropertyChanged += OnBackgroundChanged;
 
 				if (Background is GradientBrush gradientBrush)
 					gradientBrush.InvalidateGradientBrushRequested += InvalidateGradientBrushRequested;
@@ -226,10 +225,10 @@ namespace Microsoft.Maui.Controls
 
 		void StopNotifyingBackgroundChanges()
 		{
-			if (Background is Brush brush)
+			if (Background != null)
 			{
-				brush.Parent = null;
-				brush.PropertyChanged -= OnBackgroundChanged;
+				Background.Parent = null;
+				Background.PropertyChanged -= OnBackgroundChanged;
 
 				if (Background is GradientBrush gradientBrush)
 					gradientBrush.InvalidateGradientBrushRequested -= InvalidateGradientBrushRequested;
@@ -387,9 +386,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[TypeConverter(typeof(BrushTypeConverter))]
-		public IBrush Background
+		public Brush Background
 		{
-			get { return (IBrush)GetValue(BackgroundProperty); }
+			get { return (Brush)GetValue(BackgroundProperty); }
 			set { SetValue(BackgroundProperty, value); }
 		}
 

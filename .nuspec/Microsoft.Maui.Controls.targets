@@ -43,7 +43,7 @@
 
 	<Target Name="_ValidateNETFrameworkVersion"
 			BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
-			Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion.Substring(1))' &lt; '4.6.1' AND '$(MauiDisableFrameworkVersionValidation)' != 'True'">
+			Condition="'$(ProjectExt)' != '.wapproj' AND '$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion.Substring(1))' &lt; '4.6.1' AND '$(MauiDisableFrameworkVersionValidation)' != 'True'">
 		<Error Code="XF004"
 			Text="Microsoft.Maui requires .NETFramework >= v4.6.1. You have '$(TargetFrameworkVersion)'" />
 	</Target>

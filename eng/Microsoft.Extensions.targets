@@ -28,5 +28,6 @@
         Update="Microsoft.Extensions.Logging"
         Version="$(_MicrosoftHostingVersion)"
     />
+
   </ItemGroup>
 </Project>

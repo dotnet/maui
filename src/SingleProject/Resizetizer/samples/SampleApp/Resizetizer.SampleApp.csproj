@@ -20,15 +20,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SharedImage Include="camera.svg" BaseSize="44" />
-    <SharedImage Include="camera2.svg" BaseSize="44" TintColor="#FF00FF00" />
-    <SharedImage Include="loginbg.png" BaseSize="123,105" />
-    <SharedImage Include="loginbg.png" BaseSize="123,105" Link="changed_name.png" />
+    <MauiImage Include="camera.svg" BaseSize="44" />
+    <MauiImage Include="camera2.svg" BaseSize="44" TintColor="#FF00FF00" />
+    <MauiImage Include="loginbg.png" BaseSize="123,105" />
+    <MauiImage Include="loginbg.png" BaseSize="123,105" Link="changed_name.png" />
 
-    <SharedImage Include="appicon.svg" IsAppIcon="true" ForegroundFile="appiconfg.svg" ForegroundScale="0.65" />
-    <SharedImage Include="camera.svg" IsAppIcon="true" ForegroundFile="appiconfg.svg" ForegroundScale="0.65" Link="new_name" />
+    <MauiImage Include="appicon.svg" IsAppIcon="true" ForegroundFile="appiconfg.svg" ForegroundScale="0.65" />
+    <MauiImage Include="camera.svg" IsAppIcon="true" ForegroundFile="appiconfg.svg" ForegroundScale="0.65" Link="new_name" />
 
-    <SharedFont Include="feather.ttf" Alias="Feather" />
+    <MauiFont Include="feather.ttf" Alias="Feather" />
   </ItemGroup>
 
   <Import Project="..\..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />

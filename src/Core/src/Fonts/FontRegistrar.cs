@@ -61,9 +61,18 @@ namespace Microsoft.Maui
 				}
 				else if (_nativeFonts.TryGetValue(font, out var foundNativeFont))
 				{
-					using var stream = GetNativeFontStream(foundNativeFont);
+					if (CanUsePackagedNativeFonts)
+					{
+						var match = (true, GetNativeFontUri(foundNativeFont));
+						_fontLookupCache[font] = match;
+						return match;
+					}
+					else
+					{
+						using var stream = GetNativeFontStream(foundNativeFont);
 
-					return TryLoadFont(font, foundNativeFont.Filename, foundNativeFont.Alias, stream);
+						return TryLoadFont(font, foundNativeFont.Filename, foundNativeFont.Alias, stream);
+					}
 				}
 			}
 			catch (Exception ex)
@@ -109,6 +118,40 @@ namespace Microsoft.Maui
 				return false;
 
 			return path.Replace(file, "").EndsWith(".", StringComparison.Ordinal);
+		}
+
+		bool CanUsePackagedNativeFonts =>
+#if WINDOWS
+			true;
+#else
+			false;
+#endif
+
+		string GetNativeFontUri((string Filename, string? Alias) nativeFont)
+		{
+#if WINDOWS
+			var alias = nativeFont.Alias;
+			if (!string.IsNullOrEmpty(alias))
+				alias = "#" + alias;
+
+			var root = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+
+			var packagePath = Path.Combine(root, "Assets", nativeFont.Filename);
+			if (File.Exists(packagePath))
+				return $"ms-appx:///Assets/{nativeFont.Filename}{alias}";
+
+			packagePath = Path.Combine(root, "Fonts", nativeFont.Filename);
+			if (File.Exists(packagePath))
+				return $"ms-appx:///Fonts/{nativeFont.Filename}{alias}";
+
+			packagePath = Path.Combine(root, "Assets", "Fonts", nativeFont.Filename);
+			if (File.Exists(packagePath))
+				return $"ms-appx:///Assets/Fonts/{nativeFont.Filename}{alias}";
+
+			// TODO: check other folders as well
+#endif
+
+			throw new FileNotFoundException($"Native font with the name {nativeFont.Filename} was not found.");
 		}
 
 		Stream GetNativeFontStream((string Filename, string? Alias) nativeFont)

@@ -1,5 +1,3 @@
-using Microsoft.Maui.Graphics;
-
 namespace Microsoft.Maui.Controls
 {
 	static class BarElement
@@ -8,7 +6,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(IBarElement.BarBackgroundColor), typeof(Color), typeof(IBarElement), default(Color));
 
 		public static readonly BindableProperty BarBackgroundProperty =
-			BindableProperty.Create(nameof(IBarElement.BarBackground), typeof(IBrush), typeof(IBarElement), default(Brush));
+			BindableProperty.Create(nameof(IBarElement.BarBackground), typeof(Brush), typeof(IBarElement), default(Brush));
 
 		public static readonly BindableProperty BarTextColorProperty =
 			BindableProperty.Create(nameof(IBarElement.BarTextColor), typeof(Color), typeof(IBarElement), default(Color));

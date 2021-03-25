@@ -6,7 +6,6 @@ using Android.Graphics.Drawables;
 using Android.Views;
 using AndroidX.CardView.Widget;
 using AndroidX.Core.View;
-using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 
@@ -285,7 +284,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			if (_disposed)
 				return;
 
-			IBrush background = Element.Background;
+			Brush background = Element.Background;
 
 			if (Brush.IsNullOrEmpty(background))
 			{

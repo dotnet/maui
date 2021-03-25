@@ -1,7 +1,6 @@
 using System.Linq;
 using CoreAnimation;
 using CoreGraphics;
-using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -10,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		const string BackgroundLayer = "BackgroundLayer";
 
-		public static void UpdateBackground(this UIView control, IBrush brush)
+		public static void UpdateBackground(this UIView control, Brush brush)
 		{
 			if (control == null)
 				return;
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		public static CALayer GetBackgroundLayer(this UIView control, IBrush brush)
+		public static CALayer GetBackgroundLayer(this UIView control, Brush brush)
 		{
 			if (control == null)
 				return null;
@@ -104,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return null;
 		}
 
-		public static UIImage GetBackgroundImage(this UIView control, IBrush brush)
+		public static UIImage GetBackgroundImage(this UIView control, Brush brush)
 		{
 			if (control == null || brush == null || brush.IsEmpty)
 				return null;

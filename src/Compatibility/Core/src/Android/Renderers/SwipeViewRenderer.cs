@@ -12,7 +12,6 @@ using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
-using Microsoft.Maui.Graphics;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using APointF = Android.Graphics.PointF;
 using ARect = Android.Graphics.Rect;
@@ -121,7 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected override void UpdateBackground()
 		{
-			IBrush background = Element.Background;
+			Brush background = Element.Background;
 
 			if (Brush.IsNullOrEmpty(background))
 				return;

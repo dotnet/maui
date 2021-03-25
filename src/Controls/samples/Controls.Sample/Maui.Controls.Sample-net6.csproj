@@ -1,10 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
+    <DefineConstants>$(DefineConstants);WINDOWS_UWP;WINDOWS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,13 +24,18 @@
     <ProjectReference Include="..\..\src\Xaml\Controls.Xaml-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
-    <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks-net6.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
-    <SharedImage Include="Resources\Images\*" />
-    <SharedImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
-    <SharedFont Include="Resources\Fonts\*" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
+    <MauiFont Include="Resources\Fonts\*" />
   </ItemGroup>
+
+  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <PropertyGroup>
+      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
+    </PropertyGroup>
+  </Target>
 
 </Project>

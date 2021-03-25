@@ -5,6 +5,8 @@ using NativeView = UIKit.UIView;
 using NativeView = AppKit.NSView;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
+#elif WINDOWS
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using NativeView = System.Object;
 #endif
@@ -13,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class AbstractViewHandler<TVirtualView, TNativeView> : IViewHandler
 		where TVirtualView : class, IView
-#if !NETSTANDARD || IOS || ANDROID
+#if !NETSTANDARD || IOS || ANDROID || WINDOWS
 		where TNativeView : NativeView
 #else
 		where TNativeView : class

@@ -4,7 +4,6 @@ using Android.Content;
 using Android.Views;
 using Android.Views.Accessibility;
 using AndroidX.Core.Content;
-using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AColorRes = Android.Resource.Color;
 using AView = Android.Views.View;
@@ -129,7 +128,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 				else
 				{
-					IBrush background = Element.Background;
+					Brush background = Element.Background;
 
 					if (!Brush.IsNullOrEmpty(background))
 						this.UpdateBackground(background);

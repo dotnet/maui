@@ -3,7 +3,6 @@ using System.ComponentModel;
 
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;
@@ -211,7 +210,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 		}
 
-		protected override void SetBackground(IBrush brush)
+		protected override void SetBackground(Brush brush)
 		{
 			if (IsElementOrControlEmpty)
 				return;
@@ -272,7 +271,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (IsElementOrControlEmpty)
 				return;
 
-			IBrush brush = Element.Background;
+			Brush brush = Element.Background;
 
 			if (!Brush.IsNullOrEmpty(brush))
 				SetBackground(brush);

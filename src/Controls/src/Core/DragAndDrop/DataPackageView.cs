@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 
 		internal DataPackageView(DataPackage dataPackage)
 		{
-			_ = dataPackage ?? throw new System.ArgumentNullException(nameof(dataPackage));
+			_ = dataPackage ?? throw new global::System.ArgumentNullException(nameof(dataPackage));
 			DataPackage = dataPackage;
 			PropertiesInternal = new DataPackagePropertySetView(DataPackage.PropertiesInternal);
 			Properties = new DataPackagePropertySetView(DataPackage.Properties);

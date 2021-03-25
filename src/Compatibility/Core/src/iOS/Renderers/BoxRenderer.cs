@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Graphics;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
@@ -92,7 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			SetNeedsDisplay();
 		}
 
-		protected override void SetBackground(IBrush brush)
+		protected override void SetBackground(Brush brush)
 		{
 			if (Element == null)
 				return;

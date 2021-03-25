@@ -6,7 +6,6 @@ using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.CollectionView;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
 
@@ -477,7 +476,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (!(this is RecyclerView recyclerView))
 				return;
 
-			IBrush background = Element.Background;
+			Brush background = Element.Background;
 
 			recyclerView.UpdateBackground(background);
 		}

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -267,6 +268,7 @@ namespace Microsoft.Maui.Controls
 
 		double IBorderElement.BorderWidthDefaultValue => (double)BorderWidthProperty.DefaultValue;
 
+		IBrush IBorderElement.Background => Background;
 
 		/// <summary>
 		/// Flag to prevent overwriting the value of CornerRadius
