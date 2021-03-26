@@ -29,6 +29,12 @@ namespace Microsoft.Maui
 
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
 			nativeView.AccessibilityIdentifier = view.AutomationId;
+		
+		public static void UpdateSemantics(this UIView nativeView, IView view)
+		{
+			nativeView.AccessibilityLabel = view.Semantics.Description;
+			nativeView.AccessibilityHint = view.Semantics.Hint;
+		}
 
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView
 		{

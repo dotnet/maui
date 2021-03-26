@@ -4,7 +4,9 @@
                    x:Class="Maui.Controls.Sample.Pages.XamlPage">
 
     <StackLayout>
-        <Label Text="Welcome to Microsoft MAUI!"
+        <Label SemanticProperties.Hint="Hint text"  
+               SemanticProperties.Description="Description text" 
+               Text="Welcome to Microsoft MAUI!"
                VerticalOptions="CenterAndExpand"
                HorizontalOptions="CenterAndExpand" />
     </StackLayout>

@@ -125,5 +125,25 @@ namespace Microsoft.Maui.Controls
 		Maui.FlowDirection IFrameworkElement.FlowDirection => FlowDirection.ToPlatformFlowDirection();
 		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => default;
+
+		Maui.Semantics? _semantics;
+		public Maui.Semantics Semantics
+		{
+            get
+            {
+				Maui.Semantics semantics;
+
+				if (_semantics == null)
+				{
+					semantics = new Maui.Semantics();
+					_semantics = semantics;
+				}
+
+				semantics.Hint = SemanticProperties.GetHint(this);
+				semantics.Description = SemanticProperties.GetDescription(this);
+
+				return _semantics.Value;
+            }
+		}
 	}
 }
