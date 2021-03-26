@@ -32,6 +32,27 @@ namespace Microsoft.Maui
 		public static void UpdateTextColor(this AppCompatEditText editText, IEntry entry, ColorStateList? defaultColor)
 		{
 			var textColor = entry.TextColor;
+
+			if (textColor.IsDefault)
+			{
+				editText.SetTextColor(defaultColor);
+			}
+			else
+			{
+				var androidColor = textColor.ToNative();
+
+				if (!editText.TextColors.IsOneColor(ColorStates, androidColor))
+				{
+					var acolor = androidColor.ToArgb();
+					editText.SetTextColor(new ColorStateList(ColorStates, new[] { acolor, acolor }));
+				}
+			}
+		}
+
+		public static void UpdateTextColor(this AppCompatEditText editText, IEditor editor, ColorStateList? defaultColor)
+		{
+			var textColor = editor.TextColor;
+
 			if (textColor.IsDefault)
 			{
 				editText.SetTextColor(defaultColor);

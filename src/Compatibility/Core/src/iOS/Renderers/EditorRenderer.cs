@@ -357,6 +357,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			TextView.UpdateTextAlignment(Element);
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateTextColor()
 		{
 			var textColor = Element.TextColor;

@@ -83,12 +83,13 @@ namespace Microsoft.Maui.DeviceTests
 		double GetNativeUnscaledFontSize(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Font.PointSize;
 
-
-
 		bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
 			!GetNativeEditor(editorHandler).UserInteractionEnabled;
 
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
+
+		Color GetNativeTextColor(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).TextColor.ToColor();
 	}
 }

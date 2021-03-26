@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : AbstractViewHandler<IEditor, AppCompatEditText>
 	{
+		static ColorStateList? DefaultTextColors { get; set; }
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
 
 		protected override AppCompatEditText CreateNativeView()
@@ -29,12 +30,19 @@ namespace Microsoft.Maui.Handlers
 		protected override void SetupDefaults(AppCompatEditText nativeView)
 		{
 			base.SetupDefaults(nativeView);
+
+			DefaultTextColors = nativeView.TextColors;
 			DefaultPlaceholderTextColors = nativeView.HintTextColors;
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
 			handler.TypedNativeView?.UpdateText(editor);
+		}
+
+		public static void MapTextColor(EditorHandler handler, IEditor editor)
+		{
+			handler.TypedNativeView?.UpdateTextColor(editor, DefaultTextColors);
 		}
 
 		public static void MapPlaceholder(EditorHandler handler, IEditor editor)

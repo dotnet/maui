@@ -5,6 +5,7 @@
 		public static PropertyMapper<IEditor, EditorHandler> EditorMapper = new PropertyMapper<IEditor, EditorHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IEditor.Text)] = MapText,
+			[nameof(IEditor.TextColor)] = MapTextColor,
 			[nameof(IEditor.Placeholder)] = MapPlaceholder,
 			[nameof(IEditor.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
