@@ -118,7 +118,7 @@ stages:
 # only sign using the private server
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - stage: nuget_signing
-      dependsOn: pack_net6
+      dependsOn: windows
       displayName: Sign Nuget
       jobs:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
