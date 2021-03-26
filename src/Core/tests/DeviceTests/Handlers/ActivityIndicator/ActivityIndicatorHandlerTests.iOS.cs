@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Graphics;
 using UIKit;
 using Xunit;
 
@@ -14,9 +13,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsRunning(ActivityIndicatorHandler activityIndicatorHandler) =>
 			GetNativeActivityIndicator(activityIndicatorHandler).IsAnimating;
-
-		Task ValidateNativeBackground(IActivityIndicator activityIndicator, SolidColorBrush brush, Action action = null) =>
-			ValidateHasColor(activityIndicator, brush.Color, action);
 
 		Task ValidateHasColor(IActivityIndicator activityIndicator, Color color, Action action = null)
 		{

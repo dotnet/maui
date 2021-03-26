@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Graphics;
 using System;
 
 namespace Microsoft.Maui.DeviceTests
@@ -43,9 +42,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			return 0;
 		}
-
-		Task ValidateNativeBackground(IStepper stepper, SolidColorBrush brush, Action action = null) =>
-			ValidateHasColor(stepper, brush.Color, action);
 
 		Task ValidateHasColor(IStepper stepper, Color color, Action action = null)
 		{

@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
@@ -314,9 +313,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		UITextAlignment GetNativeTextAlignment(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).TextAlignment;
-
-		Task ValidateNativeBackground(ILabel label, SolidColorBrush brush, Action action = null) =>
-			ValidateHasColor(label, brush.Color, action);
 
 		Task ValidateHasColor(ILabel label, Color color, Action action = null)
 		{

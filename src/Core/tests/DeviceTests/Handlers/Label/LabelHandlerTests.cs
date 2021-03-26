@@ -1,6 +1,6 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Background Initializes Correctly")]
 		public async Task BackgroundInitializesCorrectly()
 		{
-			var brush = Brush.Blue;
+			var brush = new BrushStub(Color.Blue);
 
 			var label = new LabelStub()
 			{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test"
 			};
 
-			await ValidateNativeBackground(label, brush);
+			await ValidateHasColor(label, Color.Blue);
 		}
 
 		[Fact(DisplayName = "Text Initializes Correctly")]

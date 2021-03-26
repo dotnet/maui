@@ -6,7 +6,6 @@ using Android.Views;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 using ATextAlignemnt = Android.Views.TextAlignment;
@@ -192,9 +191,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		int GetNativeMaxLines(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).MaxLines;
-
-		Task ValidateNativeBackground(ILabel label, SolidColorBrush brush, Action action = null) =>
-			ValidateHasColor(label, brush.Color, action);
 
 		Task ValidateHasColor(ILabel label, Color color, Action action = null)
 		{

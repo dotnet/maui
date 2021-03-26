@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Graphics;
 using UIKit;
-using System;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -19,9 +19,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetNativeMinimum(StepperHandler stepperHandler) =>
 			GetNativeStepper(stepperHandler).MinimumValue;
-
-		Task ValidateNativeBackground(IStepper stepper, SolidColorBrush brush, Action action = null) =>
-			ValidateHasColor(stepper, brush.Color, action);
 
 		Task ValidateHasColor(IStepper stepper, Color color, Action action = null)
 		{
