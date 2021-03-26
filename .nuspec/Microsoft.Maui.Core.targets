@@ -6,4 +6,14 @@
       <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
     </PropertyGroup>
   </Target>
+  <Target Name="_RemoveIncompatibleXamlFiles" BeforeTargets="BeforeBuild" Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <ItemGroup Condition="$(OutputType) != 'WinExe'">
+      <Page Remove="**/*.xaml">
+      </Page>
+    </ItemGroup>
+    <ItemGroup Condition="$(OutputType) == 'WinExe'">
+      <EmbeddedResource Remove="**\*.xaml"></EmbeddedResource>
+      <Compile Remove="**\*.xaml"></Compile>
+    </ItemGroup>
+  </Target>
 </Project>
