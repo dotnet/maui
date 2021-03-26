@@ -96,6 +96,13 @@ namespace Maui.Controls.Sample.Pages
 					0.3f)
 			});
 
+			verticalStack.Add(new Label
+			{
+				Text = "This should be translucent red",
+				Padding = new Thickness(30),
+				Background = new TranslucentRedBrush()
+			});
+
 			verticalStack.Add(new ActivityIndicator { Color = Color.Red, IsRunning = true });
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
@@ -225,5 +232,20 @@ namespace Maui.Controls.Sample.Pages
 
 			return layout;
 		}
+	}
+
+	partial class TranslucentRedBrush : Brush
+	{
+		public override bool IsEmpty => false;
+
+#if IOS || __IOS__
+		public override CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default) =>
+			new CoreAnimation.CALayer
+			{
+				ContentsGravity = CoreAnimation.CALayer.GravityResizeAspectFill,
+				BackgroundColor = UIKit.UIColor.Red.ColorWithAlpha(0.5f).CGColor,
+				Frame = frame,
+			};
+#endif
 	}
 }

@@ -1,10 +1,14 @@
 using System.Collections.Generic;
+using CoreAnimation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public static class ViewExtensions
 	{
+		const string BackgroundLayerName = "MauiBackgroundLayer";
+
 		public static UIColor? GetBackgroundColor(this UIView view)
 			=> view?.BackgroundColor;
 
@@ -21,9 +25,20 @@ namespace Microsoft.Maui
 			if (nativeView == null)
 				return;
 
-			var background = view.Background;
+			// Remove previous background gradient layer if any
+			nativeView.RemoveBackgroundLayer();
 
-			nativeView.UpdateBackground(background);
+			var brush = view.Background;
+			if (brush.IsNullOrEmpty())
+				return;
+
+			var backgroundLayer = brush?.ToCALayer(nativeView.Bounds);
+			if (backgroundLayer != null)
+			{
+				backgroundLayer.Name = BackgroundLayerName;
+				nativeView.BackgroundColor = UIColor.Clear;
+				nativeView.InsertBackgroundLayer(backgroundLayer, 0);
+			}
 		}
 
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
@@ -46,6 +61,65 @@ namespace Microsoft.Maui
 			}
 
 			return null;
+		}
+
+		public static void UpdateBackgroundLayerFrame(this UIView view)
+		{
+			if (view == null || view.Frame.IsEmpty)
+				return;
+
+			var layer = view.Layer;
+			if (layer == null || layer.Sublayers == null)
+				return;
+
+			foreach (var sublayer in layer.Sublayers)
+			{
+				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != view.Bounds)
+				{
+					sublayer.Frame = view.Bounds;
+					break;
+				}
+			}
+		}
+
+		static void InsertBackgroundLayer(this UIView control, CALayer backgroundLayer, int index = -1)
+		{
+			control.RemoveBackgroundLayer();
+
+			if (backgroundLayer != null)
+			{
+				var layer = control.Layer;
+				if (index > -1)
+					layer.InsertSublayer(backgroundLayer, index);
+				else
+					layer.AddSublayer(backgroundLayer);
+			}
+		}
+
+		static void RemoveBackgroundLayer(this UIView control)
+		{
+			var layer = control.Layer;
+
+			if (layer == null)
+				return;
+
+			if (layer.Name == BackgroundLayerName)
+			{
+				layer.RemoveFromSuperLayer();
+				return;
+			}
+
+			if (layer.Sublayers == null || layer.Sublayers.Length == 0)
+				return;
+
+			foreach (var subLayer in layer.Sublayers)
+			{
+				if (subLayer.Name == BackgroundLayerName)
+				{
+					subLayer.RemoveFromSuperLayer();
+					break;
+				}
+			}
 		}
 	}
 }

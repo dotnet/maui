@@ -1,5 +1,6 @@
 using Android.Graphics.Drawables;
 using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui

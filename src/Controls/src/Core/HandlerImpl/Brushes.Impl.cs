@@ -6,10 +6,17 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Brush : IBrush
 	{
+#if __IOS__ || IOS
+		public abstract CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default);
+#endif
 	}
 
 	public partial class SolidColorBrush : ISolidColorBrush
 	{
+#if __IOS__ || IOS
+		public override CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default) =>
+			this.CreateCALayer(frame);
+#endif
 	}
 
 	public partial class GradientStop : IGradientStop
@@ -44,9 +51,17 @@ namespace Microsoft.Maui.Controls
 
 	public partial class LinearGradientBrush : ILinearGradientBrush
 	{
+#if __IOS__ || IOS
+		public override CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default) =>
+			this.CreateCALayer(frame);
+#endif
 	}
 
 	public partial class RadialGradientBrush : IRadialGradientBrush
 	{
+#if __IOS__ || IOS
+		public override CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default) =>
+			this.CreateCALayer(frame);
+#endif
 	}
 }

@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Defines objects used to fill the interiors of Views. 
 	/// </summary>
-	public interface IBrush
+	public partial interface IBrush
 	{
 		/// <summary>
 		/// Returns a value that indicates whether the Brush is empty.

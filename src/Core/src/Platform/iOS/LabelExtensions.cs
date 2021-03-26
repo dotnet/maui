@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateBackground(this MauiLabel nativeLabel, ILabel label)
 		{
-			nativeLabel.SetBackground(label.Background);
+			nativeLabel.BackgroundLayer = label.Background?.ToCALayer();
 		}
 
 		public static void UpdateText(this UILabel nativeLabel, ILabel label)

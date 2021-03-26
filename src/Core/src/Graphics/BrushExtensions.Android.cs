@@ -3,13 +3,12 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
 using Android.OS;
-using Microsoft.Maui.Graphics;
 using static Android.Graphics.Drawables.GradientDrawable;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Graphics
 {
-	public static class BrushExtensions
+	public static partial class BrushExtensions
 	{
 		public static void UpdateBackground(this AView view, IBrush brush)
 		{
