@@ -2,6 +2,16 @@ variables:
 - name: BuildVersion
   value: $[counter('release-counter', 1)]
 
+parameters:
+  - name: BuildEverything
+    type: boolean
+    default: false
+  - name: BuildConfigurations
+    type: object
+    default:
+      - Debug
+      - Release
+
 trigger:
   branches:
     include:
@@ -40,52 +50,83 @@ pr:
     - README.md
     - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
+  
+resources:
+  repositories:
+    - repository: xamarin-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
+      ref: refs/heads/main # still defaults to master even though main is the main branch
 
-pool:
-  vmImage: windows-latest
+stages:
+  - stage: windows
+    displayName: Build Windows
+    jobs:
+      - ${{ each BuildCondition in parameters.BuildConfigurations }}:
+        - job: win_hosted_${{ BuildCondition }}
+          workspace:
+            clean: all
+          displayName: Build Windows Phase (${{ BuildCondition }})
+          timeoutInMinutes: 60
+          pool:
+            vmImage:  windows-latest
+          steps:
+            - task: NuGetToolInstaller@1
+              displayName: 'Use NuGet 5.7.0'
+              inputs:
+                versionSpec: 5.7.0
 
-steps:
+            - task: DotNetCoreCLI@2
+              displayName: 'Install NET6'
+              inputs:
+                command: 'build'
+                projects: src\external\DotNet\DotNet.csproj 
 
-- task: NuGetToolInstaller@1
-  displayName: 'Use NuGet 5.7.0'
-  inputs:
-    versionSpec: 5.7.0
+            - task: NuGetCommand@2
+              displayName: 'Restore sln'
+              inputs:
+                command: 'restore'
+                restoreSolution: build\Build.Microsoft.Maui.Graphics.Windows.sln
 
-- task: DotNetCoreCLI@2
-  displayName: 'Install NET6'
-  inputs:
-    command: 'build'
-    projects: |
-      src\external\DotNet\DotNet.csproj 
+            - task: MSBuild@1
+              displayName: 'Build Graphics with MSBUILD'
+              inputs:
+                solution: build\Build.Microsoft.Maui.Graphics.Windows.sln
+                configuration: $(BuildConfiguration)
+                msbuildArguments: /verbosity:normal /t:Build
 
-- task: NuGetCommand@2
-  displayName: 'Restore sln'
-  inputs:
-    command: 'restore'
-    restoreSolution: build\Build.Microsoft.Maui.Graphics.Windows.sln
+            - script: src\bin\dotnet\dotnet build build\Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=$(BuildConfiguration)
+              displayName: 'Build Graphics with NET6'
 
-- task: MSBuild@1
-  displayName: 'Build Graphics with MSBUILD'
-  inputs:
-    solution: build\Build.Microsoft.Maui.Graphics.Windows.sln
-    configuration: Release
-    msbuildArguments: /verbosity:normal /t:Build
+            - task: NuGetCommand@2
+              displayName: 'Pack nupkg'
+              inputs:
+                command: 'pack'
+                packagesToPack: 'build/Microsoft.Maui.Graphics.nuspec'
+                packDestination: '$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)'
+                basePath: '$(System.DefaultWorkingDirectory)'
+                versioningScheme : 'byEnvVar'
+                versionEnvVar: 'BUILD_BUILDNUMBER'
 
-- script: src\bin\dotnet\dotnet build build\Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=Release
-  displayName: 'Build Graphics with NET6'
+            - task: PublishBuildArtifacts@1
+              condition: always()
+              displayName: publish artifacts
+              inputs:
+                ArtifactName: nuget
 
-- task: NuGetCommand@2
-  displayName: 'Pack nupkg'
-  inputs:
-    command: 'pack'
-    packagesToPack: 'build/Microsoft.Maui.Graphics.nuspec'
-    packDestination: '$(Build.ArtifactStagingDirectory)'
-    basePath: '$(System.DefaultWorkingDirectory)'
-    versioningScheme : 'byEnvVar'
-    versionEnvVar: 'BUILD_BUILDNUMBER'
-
-- task: PublishBuildArtifacts@1
-  condition: always()
-  displayName: publish artifacts
-  inputs:
-    ArtifactName: nuget
+# only sign using the private server
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - stage: nuget_signing
+      dependsOn: pack_net6
+      displayName: Sign Nuget
+      jobs:
+        - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+          parameters:
+            teamName: Maui
+            usePipelineArtifactTasks: false
+            targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+            signedArtifactName: nuget
+            signedArtifactPath: signed
+            displayName: Sign Phase
+            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
