@@ -20,5 +20,17 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(checkBoxStub, () => checkBoxStub.IsChecked, GetNativeIsChecked, checkBoxStub.IsChecked);
 		}
+
+		[Fact(DisplayName = "Color Updates Correctly")]
+		public async Task ColorUpdatesCorrectly()
+		{
+			var checkBoxStub = new CheckBoxStub()
+			{
+				Color = Color.Red,
+				IsChecked = true
+			};
+
+			await ValidateColor(checkBoxStub, Color.Red, () => checkBoxStub.Color = Color.Red);
+		}
 	}
 }

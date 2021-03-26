@@ -3,5 +3,6 @@
 	public partial class CheckBoxStub : StubBase, ICheckBox
 	{
 		public bool IsChecked { get; set; }
+		public Color Color { get; set; }
 	}
 }

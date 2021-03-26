@@ -9,5 +9,10 @@
 		/// Gets a value that indicates whether the CheckBox is checked.
 		/// </summary>
 		bool IsChecked { get; set; }
+
+		/// <summary>
+		/// Gets the CheckBox Color.
+		/// </summary>
+		Color Color { get; }
 	}
 }

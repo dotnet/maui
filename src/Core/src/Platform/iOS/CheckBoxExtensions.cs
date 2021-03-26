@@ -6,5 +6,10 @@
 		{
 			nativeCheckBox.IsChecked = check.IsChecked;
 		}
+
+		public static void UpdateColor(this MauiCheckBox nativeCheckBox, ICheckBox check)
+		{
+			nativeCheckBox.CheckBoxTintColor = check.Color;
+		}
 	}
 }
