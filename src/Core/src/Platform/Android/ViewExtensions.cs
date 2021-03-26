@@ -34,11 +34,6 @@ namespace Microsoft.Maui
 			nativeView.Background = brush?.ToDrawable();
 		}
 
-		public static void SetBackground(this AView view, Drawable? drawable)
-		{
-			view.Background = drawable;
-		}
-
 		public static bool GetClipToOutline(this AView view)
 		{
 			return view.ClipToOutline;
