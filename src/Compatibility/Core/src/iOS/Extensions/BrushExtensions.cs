@@ -1,26 +1,25 @@
-﻿using System.Collections.Generic;
 using System.Linq;
 using CoreAnimation;
 using CoreGraphics;
-using Foundation;
-using Microsoft.Maui.Graphics;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public static partial class BrushExtensions
 	{
 		const string BackgroundLayer = "BackgroundLayer";
 
-		public static void UpdateBackground(this UIView control, IBrush brush)
+		public static void UpdateBackground(this UIView control, Brush brush)
 		{
 			if (control == null)
 				return;
 
-			// Remove previous background gradient layer if any
-			RemoveBackgroundLayer(control);
+			UIView view = ShouldUseParentView(control) ? control.Superview : control;
 
-			if (brush.IsNullOrEmpty())
+			// Remove previous background gradient layer if any
+			RemoveBackgroundLayer(view);
+
+			if (Brush.IsNullOrEmpty(brush))
 				return;
 
 			var backgroundLayer = GetBackgroundLayer(control, brush);
@@ -28,18 +27,18 @@ namespace Microsoft.Maui
 			if (backgroundLayer != null)
 			{
 				control.BackgroundColor = UIColor.Clear;
-				control.InsertBackgroundLayer(backgroundLayer, 0);
+				view.InsertBackgroundLayer(backgroundLayer, 0);
 			}
 		}
 
-		public static CALayer? GetBackgroundLayer(this UIView control, IBrush brush)
+		public static CALayer GetBackgroundLayer(this UIView control, Brush brush)
 		{
 			if (control == null)
 				return null;
 
-			if (brush is ISolidColorBrush solidColorBrush)
+			if (brush is SolidColorBrush solidColorBrush)
 			{
-				var solidColorLayer = new CALayer
+				var linearGradientLayer = new CALayer
 				{
 					Name = BackgroundLayer,
 					ContentsGravity = CALayer.GravityResizeAspectFill,
@@ -47,10 +46,10 @@ namespace Microsoft.Maui
 					BackgroundColor = solidColorBrush.Color.ToCGColor()
 				};
 
-				return solidColorLayer;
+				return linearGradientLayer;
 			}
 
-			if (brush is ILinearGradientBrush linearGradientBrush)
+			if (brush is LinearGradientBrush linearGradientBrush)
 			{
 				var p1 = linearGradientBrush.StartPoint;
 				var p2 = linearGradientBrush.EndPoint;
@@ -75,7 +74,7 @@ namespace Microsoft.Maui
 				return linearGradientLayer;
 			}
 
-			if (brush is IRadialGradientBrush radialGradientBrush)
+			if (brush is RadialGradientBrush radialGradientBrush)
 			{
 				var center = radialGradientBrush.Center;
 				var radius = radialGradientBrush.Radius;
@@ -104,7 +103,7 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		public static UIImage? GetBackgroundImage(this UIView control, IBrush brush)
+		public static UIImage GetBackgroundImage(this UIView control, Brush brush)
 		{
 			if (control == null || brush == null || brush.IsEmpty)
 				return null;
@@ -121,7 +120,7 @@ namespace Microsoft.Maui
 
 			backgroundLayer.RenderInContext(UIGraphics.GetCurrentContext());
 			UIImage gradientImage = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+			UIGraphics.EndImageContext(); 
 
 			return gradientImage;
 		}
@@ -155,7 +154,7 @@ namespace Microsoft.Maui
 			if (layer != null)
 			{
 				if (layer.Name == BackgroundLayer)
-					layer.RemoveFromSuperLayer();
+					layer?.RemoveFromSuperLayer();
 
 				if (layer.Sublayers == null || layer.Sublayers.Count() == 0)
 					return;
@@ -174,70 +173,30 @@ namespace Microsoft.Maui
 				return;
 
 			var layer = view.Layer;
+
+			UpdateBackgroundLayer(layer, view.Bounds);
+		}
+
+		static void UpdateBackgroundLayer(this CALayer layer, CGRect bounds)
+		{
 			if (layer != null && layer.Sublayers != null)
 			{
 				foreach (var sublayer in layer.Sublayers)
 				{
-					if (sublayer.Name == BackgroundLayer && sublayer.Frame != view.Bounds)
-					{
-						sublayer.Frame = view.Bounds;
-						break;
-					}
+					UpdateBackgroundLayer(sublayer, bounds);
+
+					if (sublayer.Name == BackgroundLayer && sublayer.Frame != bounds)
+						sublayer.Frame = bounds;
 				}
 			}
 		}
 
-		static CGPoint GetRadialGradientBrushEndPoint(Point startPoint, double radius)
+		static bool ShouldUseParentView(UIView view)
 		{
-			double x = startPoint.X == 1 ? (startPoint.X - radius) : (startPoint.X + radius);
+			if (view is UILabel)
+				return true;
 
-			if (x < 0)
-				x = 0;
-
-			if (x > 1)
-				x = 1;
-
-			double y = startPoint.Y == 1 ? (startPoint.Y - radius) : (startPoint.Y + radius);
-
-			if (y < 0)
-				y = 0;
-
-			if (y > 1)
-				y = 1;
-
-			return new CGPoint(x, y);
-		}
-
-		static NSNumber[] GetCAGradientLayerLocations(List<IGradientStop> gradientStops)
-		{
-			if (gradientStops == null || gradientStops.Count == 0)
-				return new NSNumber[0];
-
-			if (gradientStops.Count > 1 && gradientStops.Any(gt => gt.Offset != 0))
-				return gradientStops.Select(x => new NSNumber(x.Offset)).ToArray();
-			else
-			{
-				int itemCount = gradientStops.Count;
-				int index = 0;
-				float step = 1.0f / itemCount;
-
-				NSNumber[] locations = new NSNumber[itemCount];
-
-				foreach (var gradientStop in gradientStops)
-				{
-					float location = step * index;
-					bool setLocation = !gradientStops.Any(gt => gt.Offset > location);
-
-					if (gradientStop.Offset == 0 && setLocation)
-						locations[index] = new NSNumber(location);
-					else
-						locations[index] = new NSNumber(gradientStop.Offset);
-
-					index++;
-				}
-
-				return locations;
-			}
+			return false;
 		}
 	}
 }

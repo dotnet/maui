@@ -1,4 +1,5 @@
 using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 
 #if __IOS__ || IOS || MACCATALYST
 using NativeColor = UIKit.UIColor;
@@ -13,7 +14,12 @@ namespace Microsoft.Maui.Handlers
 		public void SetFrame(Rectangle rect)
 		{
 			if (View != null)
+			{
 				View.Frame = rect.ToCGRect();
+
+				if (VirtualView?.Background?.IsNullOrEmpty() == false)
+					View.UpdateBackgroundLayer();
+			}
 		}
 
 		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint)

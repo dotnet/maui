@@ -1,4 +1,6 @@
-﻿using CoreGraphics;
+﻿using CoreAnimation;
+using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform.iOS
@@ -6,6 +8,8 @@ namespace Microsoft.Maui.Platform.iOS
 	public class MauiLabel : UILabel
 	{
 		public UIEdgeInsets TextInsets { get; set; }
+
+		public CALayer? BackgroundLayer { get; private set; }
 
 		public MauiLabel(CGRect frame) : base(frame)
 		{
@@ -15,7 +19,28 @@ namespace Microsoft.Maui.Platform.iOS
 		{
 		}
 
-		public override void DrawText(CGRect rect) => base.DrawText(TextInsets.InsetRect(rect));
+		public void SetBackground(IBrush? brush)
+		{
+			if (brush == null)
+				BackgroundLayer = null;
+			else
+				BackgroundLayer = this.GetBackgroundLayer(brush);
+		}
+
+		public override void DrawText(CGRect rect)
+		{
+			if (BackgroundLayer != null)
+			{
+				var context = UIGraphics.GetCurrentContext();
+				context.SaveState();
+
+				BackgroundLayer?.RenderInContext(context);
+
+				context.RestoreState();
+			}
+
+			base.DrawText(TextInsets.InsetRect(rect));
+		}
 
 		public override CGSize SizeThatFits(CGSize size) => AddInsets(base.SizeThatFits(size));
 

@@ -4,6 +4,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static PropertyMapper<ILabel, LabelHandler> LabelMapper = new PropertyMapper<ILabel, LabelHandler>(ViewHandler.ViewMapper)
 		{
+#if __IOS__ || IOS
+			[nameof(ICheckBox.Background)] = MapBackground,
+#endif
 			[nameof(ILabel.TextColor)] = MapTextColor,
 			[nameof(ILabel.Text)] = MapText,
 			[nameof(ILabel.CharacterSpacing)] = MapCharacterSpacing,

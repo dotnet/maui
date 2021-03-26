@@ -5,6 +5,11 @@ namespace Microsoft.Maui
 {
 	public static class LabelExtensions
 	{
+		public static void UpdateBackground(this MauiLabel nativeLabel, ILabel label)
+		{
+			nativeLabel.SetBackground(label.Background);
+		}
+
 		public static void UpdateText(this UILabel nativeLabel, ILabel label)
 		{
 			nativeLabel.Text = label.Text;
