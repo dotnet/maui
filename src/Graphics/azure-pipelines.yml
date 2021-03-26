@@ -93,10 +93,10 @@ stages:
               displayName: 'Build Graphics with MSBUILD'
               inputs:
                 solution: build\Build.Microsoft.Maui.Graphics.Windows.sln
-                configuration: $(BuildConfiguration)
+                configuration: ${{ BuildCondition }}
                 msbuildArguments: /verbosity:normal /t:Build
 
-            - script: src\bin\dotnet\dotnet build build\Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=$(BuildConfiguration)
+            - script: src\bin\dotnet\dotnet build build\Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=${{ BuildCondition }}
               displayName: 'Build Graphics with NET6'
 
             - task: NuGetCommand@2
@@ -104,7 +104,7 @@ stages:
               inputs:
                 command: 'pack'
                 packagesToPack: 'build/Microsoft.Maui.Graphics.nuspec'
-                packDestination: '$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)'
+                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
                 basePath: '$(System.DefaultWorkingDirectory)'
                 versioningScheme : 'byEnvVar'
                 versionEnvVar: 'BUILD_BUILDNUMBER'
