@@ -67,6 +67,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public void SetElement(VisualElement element)
 		{
+			
+			System.Diagnostics.Debug.WriteLine($">>>>>> ScrollViewRenderer SetElement");
+			
+
 			ScrollView oldElement = _view;
 			_view = (ScrollView)element;
 

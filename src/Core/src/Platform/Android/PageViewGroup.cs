@@ -1,32 +1,31 @@
-using System;
+﻿using System;
 using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
-using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Handlers
 {
-	public class LayoutViewGroup : ViewGroup
+	// TODO ezhart At this point, PageViewGroup is almost exactly a clone of LayoutViewGroup; we may be able to drop this class entirely
+	public class PageViewGroup : ViewGroup
 	{
-		public LayoutViewGroup(Context context) : base(context)
+		public PageViewGroup(Context context) : base(context)
 		{
 		}
 
-		public LayoutViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+		public PageViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
 		}
 
-		public LayoutViewGroup(Context context, IAttributeSet attrs) : base(context, attrs)
+		public PageViewGroup(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
 		}
 
-		public LayoutViewGroup(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
+		public PageViewGroup(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 		}
 
-		public LayoutViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
+		public PageViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
 		}
 
@@ -66,13 +65,13 @@ namespace Microsoft.Maui.Handlers
 			var deviceIndependentRight = Context.FromPixels(r);
 			var deviceIndependentBottom = Context.FromPixels(b);
 
-			var destination = Rectangle.FromLTRB(deviceIndependentLeft, deviceIndependentTop,
+			var destination = Graphics.Rectangle.FromLTRB(deviceIndependentLeft, deviceIndependentTop,
 				deviceIndependentRight, deviceIndependentBottom);
 
 			CrossPlatformArrange(destination);
 		}
 
-		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Action<Rectangle>? CrossPlatformArrange { get; set; }
+		internal Func<double, double, Graphics.Size>? CrossPlatformMeasure { get; set; }
+		internal Func<Graphics.Rectangle, Graphics.Size>? CrossPlatformArrange { get; set; }
 	}
 }

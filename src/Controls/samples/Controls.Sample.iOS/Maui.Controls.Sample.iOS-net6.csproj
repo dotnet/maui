@@ -7,6 +7,7 @@
     <RootNamespace>Maui.Controls.Sample.iOS</RootNamespace>
     <AssemblyName>Maui.Controls.Sample.iOS</AssemblyName>
     <IsPackable>false</IsPackable>
+    <PackageId>Maui.Controls.Sample.iOS-net6</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

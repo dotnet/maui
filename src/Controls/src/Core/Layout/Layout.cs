@@ -46,32 +46,27 @@ namespace Microsoft.Maui.Controls.Layout2
 			return DesiredSize;
 		}
 
-		protected override void ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			if (!IsMeasureValid)
-			{
-				return;
-			}
-
-			if (IsArrangeValid)
-			{
-				return;
-			}
-
-			Arrange(bounds);
+			base.ArrangeOverride(bounds);
 
 			LayoutManager.ArrangeChildren(Frame);
-			IsArrangeValid = true;
-			Handler?.SetFrame(Frame);
+
+			foreach (var child in Children)
+			{
+				child.Handler?.SetFrame(child.Frame);
+			}
+
+			return Frame.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()
 		{
-			base.InvalidateMeasure();
+			base.InvalidateMeasureOverride();
 
 			foreach (var child in Children)
 			{
-				child.InvalidateArrange();
+				child.InvalidateMeasure();
 			}
 		}
 
@@ -82,9 +77,8 @@ namespace Microsoft.Maui.Controls.Layout2
 
 			_children.Add(child);
 
-			// TODO MAUI
-			if (child is Element ve)
-				ve.Parent = this;
+			if (child is Element element)
+				element.Parent = this;
 
 			InvalidateMeasure();
 
@@ -98,9 +92,8 @@ namespace Microsoft.Maui.Controls.Layout2
 
 			_children.Remove(child);
 
-			// TODO MAUI
-			if (child is Element ve)
-				ve.Parent = null;
+			if (child is Element element)
+				element.Parent = null;
 
 			InvalidateMeasure();
 

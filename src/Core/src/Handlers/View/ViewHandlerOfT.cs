@@ -119,5 +119,4 @@ namespace Microsoft.Maui.Handlers
 			private protected set => base.VirtualView = value;
 		}
 	}
-
 }

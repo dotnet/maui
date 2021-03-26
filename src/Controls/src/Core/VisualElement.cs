@@ -892,7 +892,7 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(trigger);
 		}
 
-		bool _stopTheRecursion;
+		//bool _stopTheRecursion;
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_measureCache.Clear();
@@ -903,12 +903,12 @@ namespace Microsoft.Maui.Controls
 			// to here first and new bits going to IFrameworkElement.InvalidateMeasure
 			// first and each one needs to call the other so this short circuits the ping pong
 
-			if (IsMeasureValid && !_stopTheRecursion)
-			{
-				_stopTheRecursion = true;
-				((IFrameworkElement)this).InvalidateMeasure();
-				_stopTheRecursion = false;
-			}
+			//if (IsMeasureValid && !_stopTheRecursion)
+			//{
+			//	_stopTheRecursion = true;
+			//	((IFrameworkElement)this).InvalidateMeasure();
+			//	_stopTheRecursion = false;
+			//}
 		}
 
 		void IVisualElementController.InvalidateMeasure(InvalidationTrigger trigger) => InvalidateMeasureInternal(trigger);

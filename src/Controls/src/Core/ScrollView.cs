@@ -276,6 +276,7 @@ namespace Microsoft.Maui.Controls
 
 			SizeRequest contentRequest = Content.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
 			contentRequest.Minimum = new Size(Math.Min(40, contentRequest.Minimum.Width), Math.Min(40, contentRequest.Minimum.Height));
+
 			return contentRequest;
 		}
 

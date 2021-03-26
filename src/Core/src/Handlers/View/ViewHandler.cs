@@ -21,7 +21,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.BackgroundColor)] = MapBackgroundColor,
-			[nameof(IView.Frame)] = MapFrame,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
 			[nameof(IView.Semantics)] = MapSemantics,
 		};
@@ -71,6 +70,7 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
+		// TODO ezhart This should maybe be called NativeArrange or something
 		public abstract void SetFrame(Rectangle frame);
 
 		private protected void ConnectHandler(NativeView? nativeView)
@@ -87,11 +87,6 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.Handler = null;
 
 			VirtualView = null;
-		}
-
-		public static void MapFrame(IViewHandler handler, IView view)
-		{
-			handler.SetFrame(view.Frame);
 		}
 
 		public static void MapIsEnabled(IViewHandler handler, IView view)
