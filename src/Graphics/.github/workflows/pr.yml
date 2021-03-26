@@ -1,5 +1,13 @@
 name: Validate Pull Request
 
+env:
+  DotNetVersion: 6.0.100-preview.2.21155.3
+  AndroidMsi: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4534967/main/f4d8fe238b15eadfc7842749bf13e5fca3e2f2d2/Microsoft.NET.Workload.Android.11.0.200.148.msi
+  AndroidPkg: https://dl.internalx.com/vsts-devdiv/Xamarin.Android/public/net6/4534967/main/f4d8fe238b15eadfc7842749bf13e5fca3e2f2d2/Microsoft.NET.Workload.Android-11.0.200-ci.f4d8fe238b15eadfc7842749bf13e5fca3e2f2d2.148.pkg
+  iOSMsi: https://bosstoragemirror.azureedge.net/wrench/main/98c8649d0c7d1e3c4c8d8d09e022befa853fb1e7/4541181/package/Microsoft.NET.Workload.iOS.14.4.100-ci.main.1192.msi
+  iOSPkg: https://bosstoragemirror.azureedge.net/wrench/main/98c8649d0c7d1e3c4c8d8d09e022befa853fb1e7/4541181/package/notarized/Microsoft.iOS.Bundle.14.4.100-ci.main.1192.pkg
+  MacCatalystPkg: https://bosstoragemirror.azureedge.net/wrench/main/98c8649d0c7d1e3c4c8d8d09e022befa853fb1e7/4541181/package/notarized/Microsoft.MacCatalyst.Bundle.14.3.100-ci.main.337.pkg
+
 on: [pull_request]
 
 jobs:
@@ -13,21 +21,30 @@ jobs:
     - name: Setup DotNet
       uses: actions/setup-dotnet@v1
       with:
+        dotnet-version: '3.1.x'
+
+    - name: Setup DotNet
+      uses: actions/setup-dotnet@v1
+      with:
         dotnet-version: '5.0'
 
-    - name: Install NuGet
-      uses: nuget/setup-nuget@v1
-      with:
-        nuget-version: '5.x'
-
-    - name: NuGet Restore
-      run: nuget restore build/Build.Microsoft.Maui.Graphics.Windows.sln
+    - name: Install DotNet Preview
+      shell: pwsh
+      run: |
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+        & .\dotnet-install.ps1 -Version $env:DotNetVersion -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+        & dotnet --list-sdks
+        & dotnet tool install --global redth.net.maui.check --add-source "https://api.nuget.org/v3/index.json"
+        & maui-check --skip openjdk --skip androidsdk --skip androidemulator --fix --non-interactive -m https://gist.githubusercontent.com/Redth/27851853593f9d87c28282c1edaa2917/raw/0399cc01da2fd2afc86ff37d94b451131d1f9a15/dotnet-maui-check-manifest.json
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Build
-      run: msbuild build/Build.Microsoft.Maui.Graphics.Windows.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+      run: |
+        msbuild build/Build.Microsoft.Maui.Graphics.Windows.sln /verbosity:normal /r /t:Build /p:Configuration=Release
+        dotnet build build/Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=Release
 
   build-on-mac:
     runs-on: macos-latest
@@ -39,9 +56,26 @@ jobs:
     - name: Setup DotNet
       uses: actions/setup-dotnet@v1
       with:
+        dotnet-version: '3.1.x'
+
+    - name: Setup DotNet
+      uses: actions/setup-dotnet@v1
+      with:
         dotnet-version: '5.0'
 
+    - name: Install DotNet Preview
+      shell: bash
+      run: |
+        export PATH="/usr/local/share/dotnet/:~/.dotnet/tools:$PATH"
+        curl -L https://raw.githubusercontent.com/dotnet/install-scripts/7a9d5dcab92cf131fc2d8977052f8c2c2d540e22/src/dotnet-install.sh > dotnet-install.sh
+        sh dotnet-install.sh --version $DotNetVersion --install-dir $DOTNET_ROOT --verbose
+        dotnet --list-sdks
+        dotnet tool install --global redth.net.maui.check --add-source "https://api.nuget.org/v3/index.json"
+        maui-check --skip openjdk --skip androidsdk --skip androidemulator --fix --non-interactive -m https://gist.githubusercontent.com/Redth/27851853593f9d87c28282c1edaa2917/raw/0399cc01da2fd2afc86ff37d94b451131d1f9a15/dotnet-maui-check-manifest.json
+
     - name: Build
-      run: msbuild build/Build.Microsoft.Maui.Graphics.Mac.sln /verbosity:normal /r /t:Rebuild /p:Configuration=Release
+      run: |
+        msbuild build/Build.Microsoft.Maui.Graphics.Mac.sln /verbosity:normal /r /t:Rebuild /p:Configuration=Release
+        dotnet build build/Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=Release
 
 

@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Maui.Graphics", "..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj", "{76F3031E-341E-43CC-BD92-B23F83495DB7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Graphics.Text.Markdig", "..\src\Microsoft.Maui.Graphics.Text.Markdig\Microsoft.Maui.Graphics.Text.Markdig.csproj", "{ED36FB6D-7278-465D-9C44-D01927258BA1}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2BAF0999-6876-4091-9FCE-CBC56D80BEC3}"
@@ -15,6 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{8A2197EB-6E30-495D-9DE9-2E40032FB2E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Maui.Graphics-net6", "..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics-net6.csproj", "{8E78C89F-7AE7-4342-BFFE-227873D89397}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Maui.Graphics.Text.Markdig-net6", "..\src\Microsoft.Maui.Graphics.Text.Markdig\Microsoft.Maui.Graphics.Text.Markdig-net6.csproj", "{E450989E-DAE2-4646-9BD3-09F706589A74}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -31,25 +31,25 @@ Global
 		AppStore|Any CPU = AppStore|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{76F3031E-341E-43CC-BD92-B23F83495DB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{76F3031E-341E-43CC-BD92-B23F83495DB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{76F3031E-341E-43CC-BD92-B23F83495DB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{76F3031E-341E-43CC-BD92-B23F83495DB7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{76F3031E-341E-43CC-BD92-B23F83495DB7}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
-		{76F3031E-341E-43CC-BD92-B23F83495DB7}.AppStore|Any CPU.Build.0 = Debug|Any CPU
-		{ED36FB6D-7278-465D-9C44-D01927258BA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ED36FB6D-7278-465D-9C44-D01927258BA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ED36FB6D-7278-465D-9C44-D01927258BA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ED36FB6D-7278-465D-9C44-D01927258BA1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ED36FB6D-7278-465D-9C44-D01927258BA1}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
-		{ED36FB6D-7278-465D-9C44-D01927258BA1}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{8E78C89F-7AE7-4342-BFFE-227873D89397}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E78C89F-7AE7-4342-BFFE-227873D89397}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E78C89F-7AE7-4342-BFFE-227873D89397}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E78C89F-7AE7-4342-BFFE-227873D89397}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E78C89F-7AE7-4342-BFFE-227873D89397}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E78C89F-7AE7-4342-BFFE-227873D89397}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{E450989E-DAE2-4646-9BD3-09F706589A74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E450989E-DAE2-4646-9BD3-09F706589A74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E450989E-DAE2-4646-9BD3-09F706589A74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E450989E-DAE2-4646-9BD3-09F706589A74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E450989E-DAE2-4646-9BD3-09F706589A74}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{E450989E-DAE2-4646-9BD3-09F706589A74}.AppStore|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{76F3031E-341E-43CC-BD92-B23F83495DB7} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
-		{ED36FB6D-7278-465D-9C44-D01927258BA1} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
+		{8E78C89F-7AE7-4342-BFFE-227873D89397} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
+		{E450989E-DAE2-4646-9BD3-09F706589A74} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B07E734-6AE2-4A12-AD60-C072F3695854}

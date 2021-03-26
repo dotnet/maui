@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>JonLipsky.Microsoft.Maui.Graphics.Text.Markdig</id>
+    <id>Microsoft.Maui.Graphics.Text.Markdig</id>
     <version>$version$</version>
-    <title>JonLipsky.Microsoft.Maui.Graphics.Text.Markdig</title>
-    <authors>Jon Lipsky</authors>
-    <owners>jonlipsky</owners>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <title>Microsoft.Maui.Graphics.Text.Markdig</title>
+    <authors>Microsoft, Jon Lipsky</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>True</requireLicenseAcceptance>
     <description>Markdown support for Microsoft.Maui.Graphics attributed text powered by Markdig</description>
     <summary>Markdown support for Microsoft.Maui.Graphics attributed text powered by Markdig</summary>
-    <copyright>Jon Lipsky</copyright>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</projectUrl>
-    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics"/>
+    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics.git"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
       <group>
-        <dependency id="JonLipsky.Microsoft.Maui.Graphics" version="$version$"/>
+        <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
         <dependency id="Markdig" version="0.22.1"/>
       </group>
     </dependencies>
