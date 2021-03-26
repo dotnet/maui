@@ -2,6 +2,6 @@
 {
 	public interface ISolidColorBrush : IBrush
 	{
-		Color Color { get; set; }
+		Color Color { get; }
 	}
 }

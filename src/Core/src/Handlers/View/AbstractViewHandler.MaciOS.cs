@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 				View.Frame = rect.ToCGRect();
 
 				if (VirtualView?.Background?.IsNullOrEmpty() == false)
-					View.UpdateBackgroundLayer();
+					View.UpdateBackgroundLayerFrame();
 			}
 		}
 

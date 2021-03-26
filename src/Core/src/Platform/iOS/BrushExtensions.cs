@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 {
 	public static partial class BrushExtensions
 	{
-		const string BackgroundLayer = "BackgroundLayer";
+		const string BackgroundLayer = "MauiBackgroundLayer";
 
 		public static void UpdateBackground(this UIView control, IBrush brush)
 		{
@@ -18,21 +18,20 @@ namespace Microsoft.Maui
 				return;
 
 			// Remove previous background gradient layer if any
-			RemoveBackgroundLayer(control);
+			control.Layer.RemoveBackgroundLayer();
 
 			if (brush.IsNullOrEmpty())
 				return;
 
-			var backgroundLayer = GetBackgroundLayer(control, brush);
-
+			var backgroundLayer = CreateBackgroundLayer(control, brush);
 			if (backgroundLayer != null)
 			{
 				control.BackgroundColor = UIColor.Clear;
-				control.InsertBackgroundLayer(backgroundLayer, 0);
+				control.Layer.InsertBackgroundLayer(backgroundLayer, 0);
 			}
 		}
 
-		public static CALayer? GetBackgroundLayer(this UIView control, IBrush brush)
+		public static CALayer? CreateBackgroundLayer(this UIView control, IBrush brush)
 		{
 			if (control == null)
 				return null;
@@ -104,33 +103,6 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		public static UIImage? GetBackgroundImage(this UIView control, IBrush brush)
-		{
-			if (control == null || brush == null || brush.IsEmpty)
-				return null;
-
-			var backgroundLayer = control.GetBackgroundLayer(brush);
-
-			if (backgroundLayer == null)
-				return null;
-
-			UIGraphics.BeginImageContextWithOptions(backgroundLayer.Bounds.Size, false, UIScreen.MainScreen.Scale);
-
-			if (UIGraphics.GetCurrentContext() == null)
-				return null;
-
-			backgroundLayer.RenderInContext(UIGraphics.GetCurrentContext());
-			UIImage gradientImage = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			return gradientImage;
-		}
-
-		public static void InsertBackgroundLayer(this UIView view, CALayer backgroundLayer, int index = -1)
-		{
-			InsertBackgroundLayer(view.Layer, backgroundLayer, index);
-		}
-
 		public static void InsertBackgroundLayer(this CALayer layer, CALayer backgroundLayer, int index = -1)
 		{
 			RemoveBackgroundLayer(layer);
@@ -144,45 +116,45 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void RemoveBackgroundLayer(this UIView view)
-		{
-			if (view != null)
-				RemoveBackgroundLayer(view.Layer);
-		}
-
 		public static void RemoveBackgroundLayer(this CALayer layer)
 		{
-			if (layer != null)
+			if (layer == null)
+				return;
+
+			if (layer.Name == BackgroundLayer)
 			{
-				if (layer.Name == BackgroundLayer)
-					layer.RemoveFromSuperLayer();
+				layer.RemoveFromSuperLayer();
+				return;
+			}
 
-				if (layer.Sublayers == null || layer.Sublayers.Count() == 0)
-					return;
+			if (layer.Sublayers == null || layer.Sublayers.Count() == 0)
+				return;
 
-				foreach (var subLayer in layer.Sublayers)
+			foreach (var subLayer in layer.Sublayers)
+			{
+				if (subLayer.Name == BackgroundLayer)
 				{
-					if (subLayer.Name == BackgroundLayer)
-						subLayer?.RemoveFromSuperLayer();
+					subLayer.RemoveFromSuperLayer();
+					break;
 				}
 			}
 		}
 
-		public static void UpdateBackgroundLayer(this UIView view)
+		public static void UpdateBackgroundLayerFrame(this UIView view)
 		{
 			if (view == null || view.Frame.IsEmpty)
 				return;
 
 			var layer = view.Layer;
-			if (layer != null && layer.Sublayers != null)
+			if (layer == null || layer.Sublayers == null)
+				return;
+
+			foreach (var sublayer in layer.Sublayers)
 			{
-				foreach (var sublayer in layer.Sublayers)
+				if (sublayer.Name == BackgroundLayer && sublayer.Frame != view.Bounds)
 				{
-					if (sublayer.Name == BackgroundLayer && sublayer.Frame != view.Bounds)
-					{
-						sublayer.Frame = view.Bounds;
-						break;
-					}
+					sublayer.Frame = view.Bounds;
+					break;
 				}
 			}
 		}

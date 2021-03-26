@@ -2,6 +2,6 @@
 {
 	public interface IGradientBrush : IBrush
 	{
-		IGradientStopCollection GradientStops { get; set; }
+		IGradientStopCollection GradientStops { get; }
 	}
 }

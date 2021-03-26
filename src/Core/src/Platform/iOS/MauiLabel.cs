@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform.iOS
 			if (brush == null)
 				BackgroundLayer = null;
 			else
-				BackgroundLayer = this.GetBackgroundLayer(brush);
+				BackgroundLayer = this.CreateBackgroundLayer(brush);
 		}
 
 		public override void DrawText(CGRect rect)

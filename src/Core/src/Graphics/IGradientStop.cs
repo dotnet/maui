@@ -2,8 +2,8 @@
 {
 	public interface IGradientStop
 	{
-		Color Color { get; set; }
+		Color Color { get; }
 
-		float Offset { get; set; }
+		float Offset { get; }
 	}
 }

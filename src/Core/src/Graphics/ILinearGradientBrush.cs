@@ -2,8 +2,8 @@
 {
 	public interface ILinearGradientBrush : IGradientBrush
 	{
-		Point StartPoint { get; set; }
+		Point StartPoint { get; }
 
-		Point EndPoint { get; set; }
+		Point EndPoint { get; }
 	}
 }

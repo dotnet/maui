@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Graphics
 {
-	public interface IGradientStopCollection : IList<IGradientStop>
+	public interface IGradientStopCollection : IReadOnlyList<IGradientStop>
 	{
 	}
 }

@@ -2,8 +2,8 @@
 {
 	public interface IRadialGradientBrush : IGradientBrush
 	{
-		Point Center { get; set; }
+		Point Center { get; }
 
-		double Radius { get; set; }
+		double Radius { get; }
 	}
 }
