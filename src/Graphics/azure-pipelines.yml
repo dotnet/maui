@@ -105,6 +105,7 @@ stages:
                 command: 'pack'
                 packagesToPack: 'build/Microsoft.Maui.Graphics.nuspec'
                 packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
+                buildProperties: configuration=${{ BuildCondition }}
                 basePath: '$(System.DefaultWorkingDirectory)'
                 versioningScheme : 'byEnvVar'
                 versionEnvVar: 'BUILD_BUILDNUMBER'
