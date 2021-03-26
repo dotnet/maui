@@ -109,6 +109,13 @@ stages:
                 basePath: '$(System.DefaultWorkingDirectory)'
                 versioningScheme : 'byEnvVar'
                 versionEnvVar: 'BUILD_BUILDNUMBER'
+            
+            - task: CopyFiles@2
+              displayName: 'Copy SignList.xml Files'
+              inputs:
+                Contents: eng/SignList.xml
+                TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
+                flattenFolders: true
 
             - task: PublishBuildArtifacts@1
               condition: always()
