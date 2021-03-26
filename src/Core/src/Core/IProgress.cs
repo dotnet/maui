@@ -11,5 +11,10 @@
 		/// Progress values less than 0 will be clamped to 0, values greater than 1 will be clamped to 1.
 		/// </summary>
 		double Progress { get; }
+
+		/// <summary>
+		/// Get the color of the progress bar.
+		/// </summary>
+		Color ProgressColor { get; }
 	}
 }

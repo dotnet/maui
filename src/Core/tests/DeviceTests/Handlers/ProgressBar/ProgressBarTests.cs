@@ -1,12 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category("ProgressBarHandler")]
+	[Category(TestCategory.ProgressBar)]
 	public partial class ProgressBarHandlerTests : HandlerTestBase<ProgressBarHandler, ProgressBarStub>
 	{
 		[Theory(DisplayName = "Progress Initializes Correctly")]
@@ -24,6 +23,23 @@ namespace Microsoft.Maui.DeviceTests
 			var expected = progressBar.Progress;
 
 			await ValidatePropertyInitValue(progressBar, () => progressBar.Progress, GetNativeProgress, progressBar.Progress);
+		}
+
+		[Theory(DisplayName = "Progress Color Initializes Correctly")]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#0000FF")]
+		public async Task ProgressColorInitializesCorrectly(string colorHex)
+		{
+			Color progressColor = Color.FromHex(colorHex);
+
+			var progressBar = new ProgressBarStub()
+			{
+				Progress = 0.9,
+				ProgressColor = progressColor
+			};
+
+			await ValidateNativeProgressColor(progressBar, progressColor);
 		}
 	}
 }
