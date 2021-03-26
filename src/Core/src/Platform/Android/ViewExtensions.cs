@@ -1,5 +1,4 @@
 using Android.Graphics.Drawables;
-using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -18,8 +17,21 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this AView nativeView, IView view)
 		{
-			var background = view.Background;
-			nativeView.UpdateBackground(background);
+			if (view == null)
+				return;
+
+			// Remove previous background gradient if any
+			if (view.Background is MauiDrawable mauiDrawable)
+			{
+				nativeView.Background = null;
+				mauiDrawable.Dispose();
+			}
+
+			var brush = view.Background;
+			if (brush.IsNullOrEmpty())
+				return;
+
+			nativeView.Background = brush?.ToDrawable();
 		}
 
 		public static void SetBackground(this AView view, Drawable? drawable)

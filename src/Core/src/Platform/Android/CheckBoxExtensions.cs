@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 			if (background.IsNullOrEmpty())
 				nativeCheckBox.SetBackgroundColor(AColor.Transparent);
 			else
-				nativeCheckBox.UpdateBackground(background);
+				nativeCheckBox.UpdateBackground((IView)check);
 		}
 
 		public static void UpdateIsChecked(this AppCompatCheckBox nativeCheckBox, ICheckBox check)

@@ -1,265 +1,37 @@
-﻿using System;
-using Android.Graphics;
-using Android.Graphics.Drawables;
-using Android.Graphics.Drawables.Shapes;
-using Android.OS;
-using static Android.Graphics.Drawables.GradientDrawable;
-using AView = Android.Views.View;
+﻿using Android.Graphics.Drawables;
 
 namespace Microsoft.Maui.Graphics
 {
 	public static partial class BrushExtensions
 	{
-		public static void UpdateBackground(this AView view, IBrush brush)
+		public static Drawable? CreateDrawable(this ISolidColorBrush solidColorBrush)
 		{
-			if (view == null)
-				return;
-
-			if (view.Background is GradientStrokeDrawable)
-			{
-				// Remove previous background gradient if any
-				view.SetBackground(null);
-			}
-
-			if (brush.IsNullOrEmpty())
-				return;
-
-			if (brush is ILinearGradientBrush linearGradientBrush)
-			{
-				IGradientStopCollection gradients = linearGradientBrush.GradientStops;
-
-				if (!IsValidGradient(gradients))
-					return;
-			}
-
-			if (brush is IRadialGradientBrush radialGradientBrush)
-			{
-				IGradientStopCollection gradients = radialGradientBrush.GradientStops;
-
-				if (!IsValidGradient(gradients))
-					return;
-			}
-
-			view.SetPaintGradient(brush);
+			var drawable = new MauiDrawable();
+			drawable.SetBrush(solidColorBrush);
+			return drawable;
 		}
 
-		public static void UpdateBackground(this Paint paint, IBrush brush, int height, int width)
+		public static Drawable? CreateDrawable(this ILinearGradientBrush linearGradientBrush)
 		{
-			if (paint == null || brush == null || brush.IsEmpty)
-				return;
+			if (!linearGradientBrush.IsValid())
+				return null;
 
-			if (brush is ISolidColorBrush solidColorBrush)
-			{
-				var backgroundColor = solidColorBrush.Color;
-				paint.Color = backgroundColor.ToNative();
-			}
-
-			if (brush is ILinearGradientBrush linearGradientBrush)
-			{
-				var p1 = linearGradientBrush.StartPoint;
-				var x1 = (float)p1.X;
-				var y1 = (float)p1.Y;
-
-				var p2 = linearGradientBrush.EndPoint;
-				var x2 = (float)p2.X;
-				var y2 = (float)p2.Y;
-
-				var gradientBrushData = linearGradientBrush.GetGradientBrushData();
-				var colors = gradientBrushData.Item1;
-				var offsets = gradientBrushData.Item2;
-
-				if (colors.Length < 2)
-					return;
-
-				var linearGradientShader = new LinearGradient(
-					width * x1,
-					height * y1,
-					width * x2,
-					height * y2,
-					colors,
-					offsets,
-					Shader.TileMode.Clamp!);
-
-				paint.SetShader(linearGradientShader);
-			}
-
-			if (brush is IRadialGradientBrush radialGradientBrush)
-			{
-				var center = radialGradientBrush.Center;
-				float centerX = (float)center.X;
-				float centerY = (float)center.Y;
-				float radius = (float)radialGradientBrush.Radius;
-
-				var gradientBrushData = radialGradientBrush.GetGradientBrushData();
-				var colors = gradientBrushData.Item1;
-				var offsets = gradientBrushData.Item2;
-
-				if (colors.Length < 2)
-					return;
-
-				var radialGradientShader = new RadialGradient(
-					width * centerX,
-					height * centerY,
-					Math.Max(height, width) * radius,
-					colors,
-					offsets,
-					Shader.TileMode.Clamp!);
-
-				paint.SetShader(radialGradientShader);
-			}
+			var drawable = new MauiDrawable();
+			drawable.SetBrush(linearGradientBrush);
+			return drawable;
 		}
 
-		public static void UpdateBackground(this GradientDrawable gradientDrawable, IBrush brush, int height, int width)
+		public static Drawable? CreateDrawable(this IRadialGradientBrush radialGradientBrush)
 		{
-			if (gradientDrawable == null || brush == null || brush.IsEmpty)
-				return;
+			if (!radialGradientBrush.IsValid())
+				return null;
 
-			if (brush is ISolidColorBrush solidColorBrush)
-			{
-				Color bgColor = solidColorBrush.Color;
-				gradientDrawable.SetColor(bgColor.IsDefault ? Color.Default.ToNative() : bgColor.ToNative());
-			}
-
-			if (brush is ILinearGradientBrush linearGradientBrush)
-			{
-				var p1 = linearGradientBrush.StartPoint;
-				var x1 = (float)p1.X;
-				var y1 = (float)p1.Y;
-
-				var p2 = linearGradientBrush.EndPoint;
-				var x2 = (float)p2.X;
-				var y2 = (float)p2.Y;
-
-				const double Rad2Deg = 180.0 / Math.PI;
-
-				float xDiff = x2 - x1;
-				float yDiff = y2 - y1;
-
-				double angle = Math.Atan2(yDiff, xDiff) * Rad2Deg;
-
-				if (angle < 0)
-					angle += 360;
-
-				var gradientBrushData = linearGradientBrush.GetGradientBrushData();
-				var colors = gradientBrushData.Item1;
-
-				if (colors.Length < 2)
-					return;
-
-				gradientDrawable.SetGradientType(GradientType.LinearGradient);
-				gradientDrawable.SetColors(colors);
-				SetGradientOrientation(gradientDrawable, angle);
-			}
-
-			if (brush is IRadialGradientBrush radialGradientBrush)
-			{
-				var center = radialGradientBrush.Center;
-				float centerX = (float)center.X;
-				float centerY = (float)center.Y;
-				float radius = (float)radialGradientBrush.Radius;
-
-				var gradientBrushData = radialGradientBrush.GetGradientBrushData();
-				var colors = gradientBrushData.Item1;
-
-				if (colors.Length < 2)
-					return;
-
-				gradientDrawable.SetGradientType(GradientType.RadialGradient);
-				gradientDrawable.SetGradientCenter(centerX, centerY);
-				gradientDrawable.SetGradientRadius(Math.Max(height, width) * radius);
-				gradientDrawable.SetColors(colors);
-			}
+			var drawable = new MauiDrawable();
+			drawable.SetBrush(radialGradientBrush);
+			return drawable;
 		}
 
-		public static bool UseGradients(this GradientDrawable gradientDrawable)
-		{
-			if (!NativeVersion.IsAtLeast(BuildVersionCodes.N))
-				return false;
-
-			var colors = gradientDrawable.GetColors();
-			return colors != null && colors.Length > 1;
-		}
-
-		internal static bool IsValidGradient(IGradientStopCollection gradients)
-		{
-			if (gradients == null || gradients.Count == 0)
-				return false;
-
-			return true;
-		}
-
-		internal static void SetPaintGradient(this AView view, IBrush brush)
-		{
-			var gradientStrokeDrawable = new GradientStrokeDrawable
-			{
-				Shape = new RectShape()
-			};
-
-			gradientStrokeDrawable.SetStroke(0, Color.Default.ToNative());
-
-			if (brush is ISolidColorBrush solidColorBrush)
-			{
-				var color = solidColorBrush.Color.IsDefault ? Color.Default.ToNative() : solidColorBrush.Color.ToNative();
-				gradientStrokeDrawable.SetColor(color);
-			}
-			else
-				gradientStrokeDrawable.SetGradient(brush);
-
-			view.Background?.Dispose();
-			view.Background = gradientStrokeDrawable;
-		}
-
-		internal static void SetGradientOrientation(this GradientDrawable drawable, double angle)
-		{
-			Orientation orientation = Orientation.LeftRight!;
-
-			switch (angle)
-			{
-				case 0:
-					orientation = Orientation.LeftRight!;
-					break;
-				case 45:
-					orientation = Orientation.TlBr!;
-					break;
-				case 90:
-					orientation = Orientation.TopBottom!;
-					break;
-				case 135:
-					orientation = Orientation.TrBl!;
-					break;
-				case 180:
-					orientation = Orientation.RightLeft!;
-					break;
-				case 225:
-					orientation = Orientation.BrTl!;
-					break;
-				case 270:
-					orientation = Orientation.BottomTop!;
-					break;
-				case 315:
-					orientation = Orientation.BlTr!;
-					break;
-			}
-
-			drawable.SetOrientation(orientation);
-		}
-
-		internal static Tuple<int[], float[]> GetGradientBrushData(this IGradientBrush gradientBrush)
-		{
-			var orderStops = gradientBrush.GradientStops;
-
-			int[] colors = new int[orderStops.Count];
-			float[] offsets = new float[orderStops.Count];
-
-			int count = 0;
-			foreach (var orderStop in orderStops)
-			{
-				colors[count] = orderStop.Color.ToNative().ToArgb();
-				offsets[count] = orderStop.Offset;
-				count++;
-			}
-
-			return Tuple.Create(colors, offsets);
-		}
+		static bool IsValid(this IGradientBrush? gradientBrush) =>
+			gradientBrush?.GradientStops?.Count > 0;
 	}
 }

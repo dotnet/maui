@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Controls
 	{
 #if __IOS__ || IOS
 		public abstract CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default);
+#elif __ANDROID__ || ANDROID
+		public abstract Android.Graphics.Drawables.Drawable ToDrawable();
 #endif
 	}
 
@@ -16,6 +18,9 @@ namespace Microsoft.Maui.Controls
 #if __IOS__ || IOS
 		public override CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default) =>
 			this.CreateCALayer(frame);
+#elif __ANDROID__ || ANDROID
+		public override Android.Graphics.Drawables.Drawable ToDrawable() =>
+			this.CreateDrawable();
 #endif
 	}
 
@@ -54,6 +59,9 @@ namespace Microsoft.Maui.Controls
 #if __IOS__ || IOS
 		public override CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default) =>
 			this.CreateCALayer(frame);
+#elif __ANDROID__ || ANDROID
+		public override Android.Graphics.Drawables.Drawable ToDrawable() =>
+			this.CreateDrawable();
 #endif
 	}
 
@@ -62,6 +70,9 @@ namespace Microsoft.Maui.Controls
 #if __IOS__ || IOS
 		public override CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default) =>
 			this.CreateCALayer(frame);
+#elif __ANDROID__ || ANDROID
+		public override Android.Graphics.Drawables.Drawable ToDrawable() =>
+			this.CreateDrawable();
 #endif
 	}
 }

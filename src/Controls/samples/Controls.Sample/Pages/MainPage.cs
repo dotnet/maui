@@ -246,6 +246,13 @@ namespace Maui.Controls.Sample.Pages
 				BackgroundColor = UIKit.UIColor.Red.ColorWithAlpha(0.5f).CGColor,
 				Frame = frame,
 			};
+#elif MONOANDROID || __ANDROID__
+		public override Android.Graphics.Drawables.Drawable ToDrawable()
+		{
+			var drawable = new Microsoft.Maui.Graphics.MauiDrawable();
+			drawable.SetColor(Android.Graphics.Color.Argb(127, 255, 0, 0));
+			return drawable;
+		}
 #endif
 	}
 }
