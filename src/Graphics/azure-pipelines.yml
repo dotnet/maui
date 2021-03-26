@@ -1,3 +1,7 @@
+variables:
+- name: BuildVersion
+  value: $[counter('release-counter', 1)]
+
 trigger:
   branches:
     include:
@@ -41,31 +45,44 @@ pool:
   vmImage: windows-latest
 
 steps:
-- script: dotnet restore build/Build.Microsoft.Maui.Graphics.Mac.sln
-  displayName: 'NuGet Restore'
 
-- task: MSBuild@1
-  displayName: 'Build Legacy'
+- task: NuGetToolInstaller@1
+  displayName: 'Use NuGet 5.7.0'
   inputs:
-    solution: build/Build.Microsoft.Maui.Graphics.Windows.sln
-    configuration: Release
-    restoreNugetPackages: true
-    msbuildArguments: /verbosity:normal /t:Build
- 
+    versionSpec: 5.7.0
+
 - task: DotNetCoreCLI@2
-  displayName: 'Build NET6'
+  displayName: 'Install NET6'
   inputs:
     command: 'build'
-    projects: build/Build.Microsoft.Maui.Graphics-net6.sln
-    arguments: -p:Configuration=Release
+    projects: |
+      src\external\DotNet\DotNet.csproj 
 
 - task: NuGetCommand@2
+  displayName: 'Restore sln'
+  inputs:
+    command: 'restore'
+    restoreSolution: build\Build.Microsoft.Maui.Graphics.Windows.sln
+
+- task: MSBuild@1
+  displayName: 'Build Graphics with MSBUILD'
+  inputs:
+    solution: build\Build.Microsoft.Maui.Graphics.Windows.sln
+    configuration: Release
+    msbuildArguments: /verbosity:normal /t:Build
+
+- script: src\bin\dotnet\dotnet build build\Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=Release
+  displayName: 'Build Graphics with NET6'
+
+- task: NuGetCommand@2
+  displayName: 'Pack nupkg'
   inputs:
     command: 'pack'
-    packagesToPack: 'build/JonLipsky.Microsoft.Maui.Graphics.nuspec'
+    packagesToPack: 'build/Microsoft.Maui.Graphics.nuspec'
     packDestination: '$(Build.ArtifactStagingDirectory)'
+    basePath: '$(System.DefaultWorkingDirectory)'
     versioningScheme : 'byEnvVar'
-    versionEnvVar: 'NugetVersion'
+    versionEnvVar: 'BUILD_BUILDNUMBER'
 
 - task: PublishBuildArtifacts@1
   condition: always()
