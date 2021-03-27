@@ -2,6 +2,7 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -9,6 +10,7 @@ namespace Microsoft.Maui.Hosting
 	{
 		IAppHostBuilder ConfigureHandlers(Action<HostBuilderContext, IServiceCollection> configureDelegate);
 		IAppHostBuilder ConfigureFonts(Action<HostBuilderContext, IFontCollection> configureDelegate);
+		IAppHostBuilder ConfigureLifecycleEvents(Action<HostBuilderContext, ILifecycleBuilder> configureDelegate);
 		new IAppHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate);
 		new IAppHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate);
 		new IAppHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate);

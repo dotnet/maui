@@ -5,12 +5,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting.Internal;
+using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Hosting
 {
 	public class AppHostBuilder
 		: IAppHostBuilder
 	{
+		readonly List<Action<HostBuilderContext, ILifecycleBuilder>> _configureLifecycleActions = new List<Action<HostBuilderContext, ILifecycleBuilder>>();
 		readonly List<Action<HostBuilderContext, IServiceCollection>> _configureHandlersActions = new List<Action<HostBuilderContext, IServiceCollection>>();
 		readonly List<Action<IConfigurationBuilder>> _configureHostConfigActions = new List<Action<IConfigurationBuilder>>();
 		readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppConfigActions = new List<Action<HostBuilderContext, IConfigurationBuilder>>();
@@ -64,6 +66,8 @@ namespace Microsoft.Maui.Hosting
 				throw new InvalidOperationException("The ServiceCollection cannot be null");
 
 			ConfigureHandlers(_services);
+			BuildLifecycleHandler(_services);
+
 			CreateServiceProvider(_services);
 
 			if (_serviceProvider == null)
@@ -108,6 +112,12 @@ namespace Microsoft.Maui.Hosting
 		public IAppHostBuilder ConfigureHandlers(Action<HostBuilderContext, IServiceCollection> configureDelegate)
 		{
 			_configureHandlersActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
+			return this;
+		}
+
+		public IAppHostBuilder ConfigureLifecycleEvents(Action<HostBuilderContext, ILifecycleBuilder> configureDelegate)
+		{
+			_configureLifecycleActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
 			return this;
 		}
 
@@ -244,6 +254,22 @@ namespace Microsoft.Maui.Hosting
 			{
 				fontRegistrar.Register(font.Filename, font.Alias);
 			}
+		}
+
+		void BuildLifecycleHandler(IServiceCollection? services)
+		{
+			if (services == null)
+				throw new ArgumentNullException(nameof(services));
+
+			var lifecycleBuilder = new LifecycleBuilder();
+			foreach (var action in _configureLifecycleActions)
+			{
+				if (_hostBuilderContext != null)
+					action(_hostBuilderContext, lifecycleBuilder);
+			}
+
+			var service = lifecycleBuilder.Build();
+			services.AddSingleton(service);
 		}
 
 		IHostBuilder IHostBuilder.ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
