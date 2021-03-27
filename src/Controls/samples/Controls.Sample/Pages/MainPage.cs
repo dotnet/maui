@@ -255,7 +255,7 @@ namespace Maui.Controls.Sample.Pages
 		}
 #elif WINDOWS
 		public override Microsoft.UI.Xaml.Media.Brush ToNative() =>
-			null;
+			new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(127, 255, 0, 0));
 #endif
 	}
 }
