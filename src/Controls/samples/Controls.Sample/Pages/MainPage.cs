@@ -58,6 +58,8 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
 
+			verticalStack.Add(new Button { Text = "Hello World!" });
+
 			verticalStack.Add(new Button
 			{
 				Padding = new Thickness(40),

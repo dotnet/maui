@@ -16,11 +16,17 @@ namespace Microsoft.Maui
 		public static void UpdateIsEnabled(this Control nativeControl, bool isEnabled) =>
 			nativeControl.IsEnabled = isEnabled;
 
-		public static void UpdateForegroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Foreground = color.IsDefault && defaultBrush != null ? defaultBrush : color.ToNative();
+		public static void UpdateForegroundColor(this Control nativeControl, Color color) =>
+			nativeControl.UpdateProperty(Control.ForegroundProperty, color);
 
-		public static void UpdateBackground(this Control nativeControl, IBrush? brush, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Background = brush?.ToNative() ?? defaultBrush;
+		public static void UpdateBackground(this Control nativeControl, IBrush? brush) =>
+			nativeControl.UpdateProperty(Control.BackgroundProperty, brush?.ToNative());
+
+		public static void UpdateBackground(this Border nativeControl, IBrush? brush) =>
+			nativeControl.UpdateProperty(Border.BackgroundProperty, brush?.ToNative());
+
+		public static void UpdateBackground(this Panel nativeControl, IBrush? brush) =>
+			nativeControl.UpdateProperty(Panel.BackgroundProperty, brush?.ToNative());
 
 		public static void UpdatePadding(this Control nativeControl, Thickness padding, UI.Xaml.Thickness? defaultThickness = null)
 		{
