@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Controls
 		public abstract CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default);
 #elif __ANDROID__ || ANDROID
 		public abstract Android.Graphics.Drawables.Drawable ToDrawable();
+#elif WINDOWS
+		public abstract UI.Xaml.Media.Brush ToNative();
 #endif
 	}
 
@@ -21,6 +23,9 @@ namespace Microsoft.Maui.Controls
 #elif __ANDROID__ || ANDROID
 		public override Android.Graphics.Drawables.Drawable ToDrawable() =>
 			this.CreateDrawable();
+#elif WINDOWS
+		public override UI.Xaml.Media.Brush ToNative() =>
+			this.CreateBrush();
 #endif
 	}
 
@@ -62,6 +67,9 @@ namespace Microsoft.Maui.Controls
 #elif __ANDROID__ || ANDROID
 		public override Android.Graphics.Drawables.Drawable ToDrawable() =>
 			this.CreateDrawable();
+#elif WINDOWS
+		public override UI.Xaml.Media.Brush ToNative() =>
+			this.CreateBrush();
 #endif
 	}
 
@@ -73,6 +81,9 @@ namespace Microsoft.Maui.Controls
 #elif __ANDROID__ || ANDROID
 		public override Android.Graphics.Drawables.Drawable ToDrawable() =>
 			this.CreateDrawable();
+#elif WINDOWS
+		public override UI.Xaml.Media.Brush ToNative() =>
+			this.CreateBrush();
 #endif
 	}
 }

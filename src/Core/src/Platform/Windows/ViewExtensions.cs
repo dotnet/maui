@@ -9,8 +9,8 @@ namespace Microsoft.Maui
 		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
 			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
 
-		public static void UpdateBackgroundColor(this FrameworkElement nativeView, IView view) =>
-			(nativeView as Control)?.UpdateBackgroundColor(view.BackgroundColor);
+		public static void UpdateBackground(this FrameworkElement nativeView, IView view) =>
+			(nativeView as Control)?.UpdateBackground(view.Background);
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);

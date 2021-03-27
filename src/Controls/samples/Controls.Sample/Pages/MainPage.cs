@@ -253,6 +253,9 @@ namespace Maui.Controls.Sample.Pages
 			drawable.SetColor(Android.Graphics.Color.Argb(127, 255, 0, 0));
 			return drawable;
 		}
+#elif WINDOWS
+		public override Microsoft.UI.Xaml.Media.Brush ToNative() =>
+			null;
 #endif
 	}
 }
