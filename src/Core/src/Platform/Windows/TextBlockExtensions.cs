@@ -11,5 +11,10 @@ namespace Microsoft.Maui
 			nativeControl.FontStyle = font.FontAttributes.ToFontStyle();
 			nativeControl.FontWeight = font.FontAttributes.ToFontWeight();
 		}
+
+		public static void UpdateText(this TextBlock nativeControl, IText text)
+		{
+			nativeControl.Text = text.Text;
+		}
 	}
 }
