@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this AppCompatCheckBox nativeCheckBox, ICheckBox check)
 		{
-			IBrush background = check.Background;
+			var background = check.Background;
 
 			if (background.IsNullOrEmpty())
 				nativeCheckBox.SetBackgroundColor(AColor.Transparent);
