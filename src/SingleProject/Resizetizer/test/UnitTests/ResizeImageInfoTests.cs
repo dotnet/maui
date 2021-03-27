@@ -2,7 +2,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
-	public class SharedImageInfoTests
+	public class ResizeImageInfoTests
 	{
 		public class IsVector
 		{
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData("IMAGE.PNG", false)]
 			public void ReturnsCorrectFolder(string filename, bool isVector)
 			{
-				var info = new SharedImageInfo
+				var info = new ResizeImageInfo
 				{
 					Filename = filename
 				};
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData("IMAGE")]
 			public void SupportsNoExtension(string filename)
 			{
-				var info = new SharedImageInfo
+				var info = new ResizeImageInfo
 				{
 					Filename = filename
 				};
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData(null)]
 			public void DoesNotCrashOnNullOrEmpty(string filename)
 			{
-				var info = new SharedImageInfo
+				var info = new ResizeImageInfo
 				{
 					Filename = filename
 				};

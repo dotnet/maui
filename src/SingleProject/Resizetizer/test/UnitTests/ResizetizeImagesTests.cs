@@ -10,26 +10,26 @@ using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
-	public class ResizetizeSharedImagesTests
+	public class ResizetizeImagesTests
 	{
-		public abstract class ExecuteForApp : MSBuildTaskTestFixture<ResizetizeSharedImages>
+		public abstract class ExecuteForApp : MSBuildTaskTestFixture<ResizetizeImages>
 		{
 			public ExecuteForApp(string type)
-				: base(Path.Combine(Path.GetTempPath(), "ResizetizeSharedImagesTests", type, Path.GetRandomFileName()))
+				: base(Path.Combine(Path.GetTempPath(), "ResizetizeImagesTests", type, Path.GetRandomFileName()))
 			{
 			}
 
-			protected ResizetizeSharedImages GetNewTask(string type, params ITaskItem[] items) =>
-				new ResizetizeSharedImages
+			protected ResizetizeImages GetNewTask(string type, params ITaskItem[] items) =>
+				new ResizetizeImages
 				{
 					PlatformType = type,
 					IntermediateOutputPath = DestinationDirectory,
 					InputsFile = "resizetizer.inputs",
-					SharedImages = items,
+					Images = items,
 					BuildEngine = this,
 				};
 
-			protected ITaskItem GetCopiedResource(ResizetizeSharedImages task, string path) =>
+			protected ITaskItem GetCopiedResource(ResizetizeImages task, string path) =>
 				task.CopiedResources.Single(c => c.ItemSpec.Replace("\\", "/").EndsWith(path));
 
 			protected void AssertFileSize(string file, int width, int height)
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 			}
 
-			ResizetizeSharedImages GetNewTask(params ITaskItem[] items) =>
+			ResizetizeImages GetNewTask(params ITaskItem[] items) =>
 				GetNewTask("android", items);
 
 			[Fact]
@@ -406,7 +406,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 			}
 
-			ResizetizeSharedImages GetNewTask(params ITaskItem[] items) =>
+			ResizetizeImages GetNewTask(params ITaskItem[] items) =>
 				GetNewTask("ios", items);
 
 			[Fact]

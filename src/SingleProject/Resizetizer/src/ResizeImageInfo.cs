@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Maui.Resizetizer
 {
-	internal class SharedImageInfo
+	internal class ResizeImageInfo
 	{
 		public string Alias { get; set; }
 

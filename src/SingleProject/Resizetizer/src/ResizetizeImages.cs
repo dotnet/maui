@@ -10,7 +10,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {
-	public class ResizetizeSharedImages : AsyncTask, ILogger
+	public class ResizetizeImages : AsyncTask, ILogger
 	{
 		[Required]
 		public string PlatformType { get; set; } = "android";
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string InputsFile { get; set; }
 
-		public ITaskItem[] SharedImages { get; set; }
+		public ITaskItem[] Images { get; set; }
 
 		[Output]
 		public ITaskItem[] CopiedResources { get; set; }
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			Svg.SvgDocument.SkipGdiPlusCapabilityCheck = true;
 
-			var images = ParseImageTaskItems(SharedImages);
+			var images = ParseImageTaskItems(Images);
 
 			var dpis = DpiPath.GetDpis(PlatformType);
 
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Resizetizer
 			return System.Threading.Tasks.Task.CompletedTask;
 		}
 
-		void ProcessAppIcon(SharedImageInfo img, ConcurrentBag<ResizedImageInfo> resizedImages)
+		void ProcessAppIcon(ResizeImageInfo img, ConcurrentBag<ResizedImageInfo> resizedImages)
 		{
 			var appIconName = img.OutputName;
 
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Resizetizer
 			}
 		}
 
-		void ProcessImageResize(SharedImageInfo img, DpiPath[] dpis, ConcurrentBag<ResizedImageInfo> resizedImages)
+		void ProcessImageResize(ResizeImageInfo img, DpiPath[] dpis, ConcurrentBag<ResizedImageInfo> resizedImages)
 		{
 			var resizer = new Resizer(img, IntermediateOutputPath, this);
 
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Resizetizer
 			}
 		}
 
-		void ProcessImageCopy(SharedImageInfo img, DpiPath originalScaleDpi, ConcurrentBag<ResizedImageInfo> resizedImages)
+		void ProcessImageCopy(ResizeImageInfo img, DpiPath originalScaleDpi, ConcurrentBag<ResizedImageInfo> resizedImages)
 		{
 			var resizer = new Resizer(img, IntermediateOutputPath, this);
 
@@ -220,16 +220,16 @@ namespace Microsoft.Maui.Resizetizer
 			Log?.LogMessage(message);
 		}
 
-		List<SharedImageInfo> ParseImageTaskItems(ITaskItem[] images)
+		List<ResizeImageInfo> ParseImageTaskItems(ITaskItem[] images)
 		{
-			var r = new List<SharedImageInfo>();
+			var r = new List<ResizeImageInfo>();
 
 			if (images == null)
 				return r;
 
 			foreach (var image in images)
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 
 				var fileInfo = new FileInfo(image.GetMetadata("FullPath"));
 				if (!fileInfo.Exists)

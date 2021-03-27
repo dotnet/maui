@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void BasicNoScaleReturnsOriginalSize()
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.svg";
 				var tools = new SkiaSharpSvgTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void BasicNoScaleNoResizeReturnsOriginalSize()
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.svg";
 				info.Resize = false;
 				var tools = new SkiaSharpSvgTools(info, Logger);
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void BasicWithDownScaleReturnsDownScaledSize()
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.svg";
 				var tools = new SkiaSharpSvgTools(info, Logger);
 				var dpiPath = new DpiPath("", 0.5m);
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void BasicWithColorsKeepsColors()
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.svg";
 				var tools = new SkiaSharpSvgTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void WithBaseSizeResizes()
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.svg";
 				info.BaseSize = new Size(512, 512);
 				var tools = new SkiaSharpSvgTools(info, Logger);
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void WithBaseSizeAndScaleResizes()
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.svg";
 				info.BaseSize = new Size(512, 512);
 				var tools = new SkiaSharpSvgTools(info, Logger);
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void ColorizedReturnsColored()
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.svg";
 				info.TintColor = Color.Red;
 				var tools = new SkiaSharpSvgTools(info, Logger);
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void ColorizedWithAlphaReturnsColored()
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.svg";
 				info.TintColor = Color.FromArgb(127, Color.Red);
 				var tools = new SkiaSharpSvgTools(info, Logger);
@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void ColorizedWithNamedReturnsColored()
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.svg";
 				info.TintColor = Color.FromName("Red");
 				var tools = new SkiaSharpSvgTools(info, Logger);
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void ColorizedWithColorsReplacesColors()
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.svg";
 				info.TintColor = Color.Red;
 				var tools = new SkiaSharpSvgTools(info, Logger);
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Fact]
 			public void ColorizedWithAlphaWithColorsReplacesColors()
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.svg";
 				info.TintColor = Color.FromArgb(127, Color.Red);
 				var tools = new SkiaSharpSvgTools(info, Logger);
