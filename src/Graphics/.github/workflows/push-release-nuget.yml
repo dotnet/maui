@@ -17,18 +17,6 @@ jobs:
       uses: nuget/setup-nuget@v1
       with:
         nuget-version: '5.x'
-
-    - name: Install DotNet Preview
-      shell: bash
-      run: >
-        export PATH="/usr/local/share/dotnet/:~/.dotnet/tools:$PATH" &&
-        curl -L https://raw.githubusercontent.com/dotnet/install-scripts/7a9d5dcab92cf131fc2d8977052f8c2c2d540e22/src/dotnet-install.sh > dotnet-install.sh &&
-        sh dotnet-install.sh --version $DotNetVersion --install-dir $DOTNET_ROOT --verbose &&
-        dotnet --list-sdks &&
-        dotnet tool install --global boots --add-source "https://api.nuget.org/v3/index.json" &&
-        boots $AndroidPkg &&
-        boots $iOSPkg &&
-        boots $MacCatalystPkg
               
     - name: Update project version
       uses: roryprimrose/set-vs-sdk-project-version@v1
@@ -37,32 +25,27 @@ jobs:
         version: '0.1.${{ github.run_number }}'              
               
     - name: NuGet Restore
-      run: >
-        nuget restore build/Build.Microsoft.Maui.Graphics.Mac.sln
-        dotnet restore build/Build.Microsoft.Maui.Graphics-net6.sln
+      run: nuget restore build/Build.Microsoft.Maui.Graphics.Mac.sln
     
-#    - name: Build
-#      run: msbuild build/Build.Microsoft.Maui.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
+    - name: Build
+      run: msbuild build/Build.Microsoft.Maui.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
     
-#    - name: NuGet Pack
-#      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
-
-#    - name: NuGet Pack
-#      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Skia.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
-
-#    - name: NuGet Pack
-#      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
-
-#    - name: NuGet Pack
-#      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Skia.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
     - name: NuGet Pack
-      run: >
-        nuget pack build/Microsoft.Maui.Graphics.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
-        nuget pack build/Microsoft.Maui.Graphics.Text.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .        
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Skia.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Skia.Forms.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
+
+    - name: NuGet Pack
+      run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Text.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
  
     - name: Publish package to NuGet
       run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate --source https://api.nuget.org/v3/index.json
       working-directory: . 
-
 
