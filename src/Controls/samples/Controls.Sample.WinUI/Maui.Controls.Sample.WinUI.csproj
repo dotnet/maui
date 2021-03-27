@@ -10,9 +10,9 @@
     <EnableDefaultXamlItems>false</EnableDefaultXamlItems>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.ProjectReunion" Version="0.5.0-prerelease" />
-    <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.5.0-prerelease" />
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="0.5.0-prerelease" />
+    <PackageReference Include="Microsoft.ProjectReunion" />
+    <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
+    <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
   <ItemGroup>
