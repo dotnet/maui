@@ -1,7 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-
-namespace Microsoft.Maui.LifecycleEvents
+﻿namespace Microsoft.Maui.LifecycleEvents
 {
 	public static class AndroidLifecycleBuilderExtensions
 	{
@@ -20,13 +17,5 @@ namespace Microsoft.Maui.LifecycleEvents
 		public static IAndroidLifecycleBuilder OnSaveInstanceState(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnSaveInstanceState del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnStart(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnStart del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnStop(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnStop del) => lifecycle.OnEvent(del);
-
-		static IAndroidLifecycleBuilder OnEvent<TDelegate>(this IAndroidLifecycleBuilder lifecycle, TDelegate del, [CallerMemberName] string? eventName = null)
-			where TDelegate : Delegate
-		{
-			lifecycle.Add(eventName ?? typeof(TDelegate).Name, del);
-
-			return lifecycle;
-		}
 	}
 }

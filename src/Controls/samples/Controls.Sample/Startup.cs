@@ -88,18 +88,17 @@ namespace Maui.Controls.Sample
 #if __ANDROID__
 				.ConfigureAndroidLifecycleEvents((ctx, life) =>
 				{
-					int counter = 2;
+					var shouldPreventBack = 1;
 
 					life.OnResume(a =>
 						{
 							LogEvent(nameof(AndroidLifecycle.OnResume), "shortcut");
-							CurrentActivity = a;
 						})
 						.OnPressingBack(a =>
 						{
 							LogEvent(nameof(AndroidLifecycle.OnPressingBack), "shortcut");
 
-							return counter-- > 0;
+							return shouldPreventBack-- > 0;
 						})
 						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut"))
 						.OnRestoreInstanceState((a, b) =>
@@ -122,16 +121,6 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
 				});
 		}
-
-#if __ANDROID__
-		public static Android.App.Activity CurrentActivity;
-
-		[Android.App.Activity]
-		public class TestActivity : Android.App.Activity
-		{
-
-		}
-#endif
 
 		void LogEvent(string eventName, string type = null)
 		{
