@@ -88,10 +88,18 @@ namespace Maui.Controls.Sample
 #if __ANDROID__
 				.ConfigureAndroidLifecycleEvents((ctx, life) =>
 				{
+					int counter = 2;
+
 					life.OnResume(a =>
 						{
 							LogEvent(nameof(AndroidLifecycle.OnResume), "shortcut");
 							CurrentActivity = a;
+						})
+						.OnPressingBack(a =>
+						{
+							LogEvent(nameof(AndroidLifecycle.OnPressingBack), "shortcut");
+
+							return counter-- > 0;
 						})
 						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut"))
 						.OnRestoreInstanceState((a, b) =>

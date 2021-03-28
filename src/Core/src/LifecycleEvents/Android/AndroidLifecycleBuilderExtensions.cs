@@ -13,6 +13,7 @@ namespace Microsoft.Maui.LifecycleEvents
 		public static IAndroidLifecycleBuilder OnPause(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnPause del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnPostCreate(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnPostCreate del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnPostResume(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnPostResume del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnPressingBack(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnPressingBack del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnRestart(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnRestart del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnRestoreInstanceState(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnRestoreInstanceState del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnResume(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnResume del) => lifecycle.OnEvent(del);

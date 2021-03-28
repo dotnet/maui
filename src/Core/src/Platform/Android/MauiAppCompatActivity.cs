@@ -10,8 +10,10 @@ namespace Microsoft.Maui
 {
 	public partial class MauiAppCompatActivity : AppCompatActivity
 	{
-		void MauiOnCreate(Bundle? savedInstanceState)
+		protected override void OnCreate(Bundle? savedInstanceState)
 		{
+			base.OnCreate(savedInstanceState);
+
 			var mauiApp = MauiApplication.Current.Application;
 			if (mauiApp == null)
 				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
