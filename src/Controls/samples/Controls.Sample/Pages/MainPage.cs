@@ -41,6 +41,9 @@ namespace Maui.Controls.Sample.Pages
 			var label = new Label { Text = "End-aligned text", BackgroundColor = Color.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
+			SemanticProperties.SetHint(label, "Hint Text");
+			SemanticProperties.SetDescription(label, "Description Text");
+
 			verticalStack.Add(label);
 			verticalStack.Add(new Label { Text = "This should be BIG text!", FontSize = 24, HorizontalOptions = LayoutOptions.End });
 			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
