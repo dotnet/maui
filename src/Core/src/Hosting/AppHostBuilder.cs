@@ -242,6 +242,10 @@ namespace Microsoft.Maui.Hosting
 			if (serviceProvider == null)
 				throw new ArgumentNullException(nameof(serviceProvider));
 
+			var fontRegistrar = serviceProvider.GetService<IFontRegistrar>();
+			if (fontRegistrar == null)
+				return;
+
 			var fontCollection = new FontCollection();
 			foreach (var action in _configureFontsActions)
 			{
@@ -249,7 +253,6 @@ namespace Microsoft.Maui.Hosting
 					action(_hostBuilderContext, fontCollection);
 			}
 
-			var fontRegistrar = serviceProvider.GetRequiredService<IFontRegistrar>();
 			foreach (var font in fontCollection)
 			{
 				fontRegistrar.Register(font.Filename, font.Alias);

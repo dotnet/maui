@@ -26,9 +26,11 @@ namespace Microsoft.Maui
 			});
 
 			if (!preventBack)
-				base.OnBackPressed();
+			{
+				MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del => del(this));
 
-			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del => del(this));
+				base.OnBackPressed();
+			}
 		}
 
 		public override void OnConfigurationChanged(Configuration newConfig)
