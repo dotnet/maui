@@ -34,7 +34,6 @@ namespace Maui.Controls.Sample.Pages
 			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
 
-
 			verticalStack.Add(CreateSampleGrid());
 
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
@@ -59,14 +58,6 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(hiddenClearButtonEntry);
 
 			verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
-			var paddingButton = new Button
-			{
-				Padding = new Thickness(40),
-				Text = "This button has a padding!!",
-				BackgroundColor = Color.Purple,
-			};
-
-			verticalStack.Add(paddingButton);
 
 			var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
 			verticalStack.Add(underlineLabel);
@@ -85,9 +76,20 @@ namespace Maui.Controls.Sample.Pages
 
 			horizontalStack.Add(button);
 			horizontalStack.Add(button2);
+
 			horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout", VerticalOptions = LayoutOptions.Center });
 
 			verticalStack.Add(horizontalStack);
+
+			var paddingButton = new Button
+			{
+				Padding = new Thickness(40),
+				Text = "This button has a padding!!",
+				BackgroundColor = Color.Purple,
+			};
+
+			verticalStack.Add(paddingButton);
+			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 
 			verticalStack.Add(new CheckBox());
 			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
