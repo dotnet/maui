@@ -96,8 +96,10 @@ namespace Microsoft.Maui.Essentials
 				if (_trackVersions)
 					VersionTracking.Track();
 
+#if __ANDROID__
 				if (_useLegaceSecureStorage)
 					SecureStorage.LegacyKeyHashFallback = _useLegaceSecureStorage;
+#endif
 			}
 
 			void HandleOnAppAction(object sender, AppActionEventArgs e)

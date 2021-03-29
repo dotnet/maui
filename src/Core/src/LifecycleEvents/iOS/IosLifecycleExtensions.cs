@@ -1,22 +1,9 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.LifecycleEvents
 {
 	public static class IosLifecycleExtensions
 	{
-		public static IAppHostBuilder ConfigureIosLifecycleEvents(this IAppHostBuilder builder, Action<HostBuilderContext, IIosLifecycleBuilder> configureDelegate)
-		{
-			builder.ConfigureLifecycleEvents((ctx, lifecycleBuilder) =>
-			{
-				lifecycleBuilder.AddIos(iOSBuilder => configureDelegate?.Invoke(ctx, iOSBuilder));
-			});
-
-			return builder;
-		}
-
 		public static ILifecycleBuilder AddIos(this ILifecycleBuilder builder, Action<IIosLifecycleBuilder> configureDelegate)
 		{
 			var iOS = new IosLifecycleBuilder(builder);

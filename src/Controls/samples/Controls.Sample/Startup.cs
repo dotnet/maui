@@ -82,39 +82,38 @@ namespace Maui.Controls.Sample
 						.OnSaveInstanceState((a, b) => LogEvent(nameof(AndroidLifecycle.OnSaveInstanceState)))
 						.OnStart((a) => LogEvent(nameof(AndroidLifecycle.OnStart)))
 						.OnStop((a) => LogEvent(nameof(AndroidLifecycle.OnStop))));
+
+					events.AddAndroid(life =>
+					{
+						var shouldPreventBack = 1;
+
+						life.OnResume(a =>
+							{
+								LogEvent(nameof(AndroidLifecycle.OnResume), "shortcut");
+							})
+							.OnPressingBack(a =>
+							{
+								LogEvent(nameof(AndroidLifecycle.OnPressingBack), "shortcut");
+
+								return shouldPreventBack-- > 0;
+							})
+							.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut"))
+							.OnRestoreInstanceState((a, b) =>
+							{
+								LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState), "shortcut");
+
+								Debug.WriteLine($"{b.GetString("test2", "fail")} == {b.GetBoolean("test", false)}");
+							})
+							.OnSaveInstanceState((a, b) =>
+							{
+								LogEvent(nameof(AndroidLifecycle.OnSaveInstanceState), "shortcut");
+
+								b.PutBoolean("test", true);
+								b.PutString("test2", "yay");
+							});
+					});
 #endif
 				})
-#if __ANDROID__
-				.ConfigureAndroidLifecycleEvents((ctx, life) =>
-				{
-					var shouldPreventBack = 1;
-
-					life.OnResume(a =>
-						{
-							LogEvent(nameof(AndroidLifecycle.OnResume), "shortcut");
-						})
-						.OnPressingBack(a =>
-						{
-							LogEvent(nameof(AndroidLifecycle.OnPressingBack), "shortcut");
-
-							return shouldPreventBack-- > 0;
-						})
-						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut"))
-						.OnRestoreInstanceState((a, b) =>
-						{
-							LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState), "shortcut");
-
-							Debug.WriteLine($"{b.GetString("test2", "fail")} == {b.GetBoolean("test", false)}");
-						})
-						.OnSaveInstanceState((a, b) =>
-						{
-							LogEvent(nameof(AndroidLifecycle.OnSaveInstanceState), "shortcut");
-
-							b.PutBoolean("test", true);
-							b.PutString("test2", "yay");
-						});
-				})
-#endif
 				.ConfigureFonts((hostingContext, fonts) =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");

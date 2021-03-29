@@ -1,22 +1,9 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.LifecycleEvents
 {
 	public static class AndroidLifecycleExtensions
 	{
-		public static IAppHostBuilder ConfigureAndroidLifecycleEvents(this IAppHostBuilder builder, Action<HostBuilderContext, IAndroidLifecycleBuilder> configureDelegate)
-		{
-			builder.ConfigureLifecycleEvents((ctx, lifecycleBuilder) =>
-			{
-				lifecycleBuilder.AddAndroid(androidBuilder => configureDelegate?.Invoke(ctx, androidBuilder));
-			});
-
-			return builder;
-		}
-
 		public static ILifecycleBuilder AddAndroid(this ILifecycleBuilder builder, Action<IAndroidLifecycleBuilder> configureDelegate)
 		{
 			var android = new AndroidLifecycleBuilder(builder);
