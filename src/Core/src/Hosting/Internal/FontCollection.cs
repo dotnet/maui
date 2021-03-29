@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Hosting
+namespace Microsoft.Maui.Hosting.Internal
 {
 	class FontCollection : IFontCollection
 	{

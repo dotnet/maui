@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -47,6 +48,17 @@ namespace Maui.Controls.Sample
 				})
 				//.UseMauiServiceProviderFactory(true)
 				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
+				.ConfigureEssentials((ctx, essentials) =>
+				{
+					essentials
+						.UseMapServiceToken("YOUR-KEY-HERE")
+						.AddAppAction("test_action", "Test App Action")
+						.AddAppAction("second_action", "Second App Action")
+						.OnAppAction(appAction =>
+						{
+							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
+						});
+				})
 				.ConfigureServices((hostingContext, services) =>
 				{
 					services.AddSingleton<ITextService, TextService>();
@@ -58,15 +70,11 @@ namespace Maui.Controls.Sample
 						services.AddTransient<IPage, MainPage>();
 
 					services.AddTransient<IWindow, MainWindow>();
-
-#if __ANDROID__
-					//services.AddTransient<IAndroidApplicationLifetime, CustomAndroidLifecycleHandler>();
-#elif __IOS__
-					//services.AddTransient<IIosApplicationLifetime, CustomIosLifecycleHandler>();
-#endif
 				})
 				.ConfigureLifecycleEvents((ctx, events) =>
 				{
+					events.Add("CustomEventName", () => LogEvent("CustomEventName"));
+
 #if __ANDROID__
 					events.AddAndroid(lifecycleBuilder => lifecycleBuilder
 						.OnActivityResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnActivityResult), b.ToString()))
@@ -74,9 +82,11 @@ namespace Maui.Controls.Sample
 						.OnConfigurationChanged((a, b) => LogEvent(nameof(AndroidLifecycle.OnConfigurationChanged)))
 						.OnCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnCreate)))
 						.OnDestroy((a) => LogEvent(nameof(AndroidLifecycle.OnDestroy)))
+						.OnNewIntent((a, b) => LogEvent(nameof(AndroidLifecycle.OnNewIntent)))
 						.OnPause((a) => LogEvent(nameof(AndroidLifecycle.OnPause)))
 						.OnPostCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnPostCreate)))
 						.OnPostResume((a) => LogEvent(nameof(AndroidLifecycle.OnPostResume)))
+						.OnRequestPermissionsResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnRequestPermissionsResult)))
 						.OnRestart((a) => LogEvent(nameof(AndroidLifecycle.OnRestart)))
 						.OnRestoreInstanceState((a, b) => LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState)))
 						.OnResume((a) => LogEvent(nameof(AndroidLifecycle.OnResume)))

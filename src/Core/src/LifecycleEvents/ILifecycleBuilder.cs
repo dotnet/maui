@@ -5,7 +5,5 @@ namespace Microsoft.Maui.LifecycleEvents
 	public interface ILifecycleBuilder
 	{
 		void Add(string eventName, Delegate action);
-
-		ILifecycleEventService Build();
 	}
 }

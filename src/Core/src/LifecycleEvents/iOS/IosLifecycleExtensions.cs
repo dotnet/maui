@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 
@@ -36,9 +37,6 @@ namespace Microsoft.Maui.LifecycleEvents
 
 			public void Add(string eventName, Delegate action) =>
 				_builder.Add(eventName, action);
-
-			public ILifecycleEventService Build() =>
-				_builder.Build();
 		}
 	}
 }

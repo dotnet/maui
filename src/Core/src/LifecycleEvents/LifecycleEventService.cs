@@ -16,7 +16,7 @@ namespace Microsoft.Maui.LifecycleEvents
 			delegates.Add(action);
 		}
 
-		public IEnumerable<TDelegate> GetDelegates<TDelegate>(string eventName)
+		public IEnumerable<TDelegate> GetEventDelegates<TDelegate>(string eventName)
 			where TDelegate : Delegate
 		{
 			if (_mapper.TryGetValue(eventName, out var delegates) && delegates != null)
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.LifecycleEvents
 			return Enumerable.Empty<TDelegate>();
 		}
 
-		public bool HasDelegates(string eventName) =>
+		public bool ContainsEvent(string eventName) =>
 			_mapper.TryGetValue(eventName, out var delegates) && delegates?.Count > 0;
 	}
 }

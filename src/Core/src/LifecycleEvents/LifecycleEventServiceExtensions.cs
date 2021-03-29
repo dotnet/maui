@@ -4,9 +4,21 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.LifecycleEvents
 {
-	internal static class LifecycleEventServiceExtensions
+	public static class LifecycleEventServiceExtensions
 	{
-		public static void InvokeLifecycleEvents<TDelegate>(this IServiceProvider services, Action<TDelegate> action)
+		public static void InvokeEvents(this ILifecycleEventService lifecycleService, string eventName) =>
+			lifecycleService.InvokeEvents<Action>(eventName, action => action?.Invoke());
+
+		public static void InvokeEvents<TDelegate>(this ILifecycleEventService lifecycleService, string eventName, Action<TDelegate> action)
+			where TDelegate : Delegate
+		{
+			var delegates = lifecycleService.GetEventDelegates<TDelegate>(eventName);
+
+			foreach (var del in delegates)
+				action?.Invoke(del);
+		}
+
+		internal static void InvokeLifecycleEvents<TDelegate>(this IServiceProvider services, Action<TDelegate> action)
 			where TDelegate : Delegate
 		{
 			if (services == null)
@@ -15,10 +27,10 @@ namespace Microsoft.Maui.LifecycleEvents
 			var delegates = services.GetLifecycleEventDelegates<TDelegate>();
 
 			foreach (var del in delegates)
-				action(del);
+				action?.Invoke(del);
 		}
 
-		public static IEnumerable<TDelegate> GetLifecycleEventDelegates<TDelegate>(this IServiceProvider services, string? eventName = null)
+		internal static IEnumerable<TDelegate> GetLifecycleEventDelegates<TDelegate>(this IServiceProvider services, string? eventName = null)
 			where TDelegate : Delegate
 		{
 			var lifecycleServices = services?.GetServices<ILifecycleEventService>();
@@ -29,11 +41,11 @@ namespace Microsoft.Maui.LifecycleEvents
 				eventName = typeof(TDelegate).Name;
 
 			foreach (var lifecycleService in lifecycleServices)
-				foreach (var del in lifecycleService.GetDelegates<TDelegate>(eventName))
+				foreach (var del in lifecycleService.GetEventDelegates<TDelegate>(eventName))
 					yield return del;
 		}
 
-		public static bool HasLifecycleEventDelegates<TDelegate>(this IServiceProvider services, string? eventName = null)
+		internal static bool ContainsLifecycleEvent<TDelegate>(this IServiceProvider services, string? eventName = null)
 			where TDelegate : Delegate
 		{
 			var lifecycleServices = services?.GetServices<ILifecycleEventService>();
@@ -44,7 +56,7 @@ namespace Microsoft.Maui.LifecycleEvents
 				eventName = typeof(TDelegate).Name;
 
 			foreach (var lifecycleService in lifecycleServices)
-				if (lifecycleService.HasDelegates(eventName))
+				if (lifecycleService.ContainsEvent(eventName))
 					return true;
 
 			return false;

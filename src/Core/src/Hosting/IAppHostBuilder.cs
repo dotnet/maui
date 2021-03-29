@@ -2,15 +2,13 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Hosting
 {
 	public interface IAppHostBuilder : IHostBuilder
 	{
-		IAppHostBuilder ConfigureHandlers(Action<HostBuilderContext, IServiceCollection> configureDelegate);
 		IAppHostBuilder ConfigureFonts(Action<HostBuilderContext, IFontCollection> configureDelegate);
-		IAppHostBuilder ConfigureLifecycleEvents(Action<HostBuilderContext, ILifecycleBuilder> configureDelegate);
+		IAppHostBuilder ConfigureServices<TBuilder>(Action<HostBuilderContext, TBuilder> configureDelegate) where TBuilder : IServiceCollectionBuilder, new();
 		new IAppHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate);
 		new IAppHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate);
 		new IAppHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate);

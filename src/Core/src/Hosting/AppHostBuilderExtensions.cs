@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting.Internal;
 
@@ -8,6 +9,13 @@ namespace Microsoft.Maui.Hosting
 {
 	public static class AppHostBuilderExtensions
 	{
+		public static IAppHostBuilder ConfigureHandlers(this IAppHostBuilder builder, Action<HostBuilderContext, IServiceCollection> configureDelegate)
+		{
+			builder.ConfigureServices<HandlerCollectionBuilder>(configureDelegate);
+
+			return builder;
+		}
+
 		public static IAppHostBuilder RegisterHandlers(this IAppHostBuilder builder, Dictionary<Type, Type> handlers)
 		{
 			foreach (var handler in handlers)
@@ -92,6 +100,16 @@ namespace Microsoft.Maui.Hosting
 		{
 			builder.UseServiceProviderFactory(new MauiServiceProviderFactory(constructorInjection));
 			return builder;
+		}
+
+		class HandlerCollectionBuilder : MauiServiceCollection, IServiceCollectionBuilder
+		{
+			public void Build(IServiceCollection services)
+			{
+				var provider = new MauiHandlersServiceProvider(this);
+
+				services.AddSingleton<IMauiHandlersServiceProvider>(provider);
+			}
 		}
 	}
 }

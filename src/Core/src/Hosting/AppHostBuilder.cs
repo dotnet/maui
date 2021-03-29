@@ -5,15 +5,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting.Internal;
-using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Hosting
 {
-	public class AppHostBuilder
-		: IAppHostBuilder
+	public class AppHostBuilder : IAppHostBuilder
 	{
-		readonly List<Action<HostBuilderContext, ILifecycleBuilder>> _configureLifecycleActions = new List<Action<HostBuilderContext, ILifecycleBuilder>>();
-		readonly List<Action<HostBuilderContext, IServiceCollection>> _configureHandlersActions = new List<Action<HostBuilderContext, IServiceCollection>>();
+		readonly Dictionary<Type, List<Action<HostBuilderContext, IServiceCollectionBuilder>>> _configureServiceCollectionBuilderActions = new Dictionary<Type, List<Action<HostBuilderContext, IServiceCollectionBuilder>>>();
 		readonly List<Action<IConfigurationBuilder>> _configureHostConfigActions = new List<Action<IConfigurationBuilder>>();
 		readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppConfigActions = new List<Action<HostBuilderContext, IConfigurationBuilder>>();
 		readonly List<Action<HostBuilderContext, IServiceCollection>> _configureServicesActions = new List<Action<HostBuilderContext, IServiceCollection>>();
@@ -31,10 +28,6 @@ namespace Microsoft.Maui.Hosting
 		IConfiguration? _hostConfiguration;
 		IConfiguration? _appConfiguration;
 
-		public AppHostBuilder()
-		{
-
-		}
 		public IDictionary<object, object> Properties => new Dictionary<object, object>();
 
 		public static IAppHostBuilder CreateDefaultAppBuilder()
@@ -65,8 +58,7 @@ namespace Microsoft.Maui.Hosting
 			if (_services == null)
 				throw new InvalidOperationException("The ServiceCollection cannot be null");
 
-			ConfigureHandlers(_services);
-			BuildLifecycleHandler(_services);
+			BuildServiceCollections(_services);
 
 			CreateServiceProvider(_services);
 
@@ -86,8 +78,7 @@ namespace Microsoft.Maui.Hosting
 
 		public IAppHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate)
 		{
-			_configureContainerActions.Add(new ConfigureContainerAdapter<TContainerBuilder>(configureDelegate
-			 ?? throw new ArgumentNullException(nameof(configureDelegate))));
+			_configureContainerActions.Add(new ConfigureContainerAdapter<TContainerBuilder>(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate))));
 			return this;
 		}
 
@@ -109,15 +100,21 @@ namespace Microsoft.Maui.Hosting
 			return this;
 		}
 
-		public IAppHostBuilder ConfigureHandlers(Action<HostBuilderContext, IServiceCollection> configureDelegate)
+		public IAppHostBuilder ConfigureServices<TServiceGroup>(Action<HostBuilderContext, TServiceGroup> configureDelegate)
+			where TServiceGroup : IServiceCollectionBuilder, new()
 		{
-			_configureHandlersActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
-			return this;
-		}
+			_ = configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate));
 
-		public IAppHostBuilder ConfigureLifecycleEvents(Action<HostBuilderContext, ILifecycleBuilder> configureDelegate)
-		{
-			_configureLifecycleActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
+			var groupType = typeof(TServiceGroup);
+
+			if (!_configureServiceCollectionBuilderActions.TryGetValue(groupType, out var list))
+			{
+				list = new List<Action<HostBuilderContext, IServiceCollectionBuilder>>();
+				_configureServiceCollectionBuilderActions.Add(groupType, list);
+			}
+
+			list.Add((ctx, grp) => configureDelegate(ctx, (TServiceGroup)grp));
+
 			return this;
 		}
 
@@ -221,20 +218,23 @@ namespace Microsoft.Maui.Hosting
 			return _serviceProviderFactory.CreateServiceProvider(containerBuilder);
 		}
 
-		void ConfigureHandlers(IServiceCollection? services)
+		void BuildServiceCollections(IServiceCollection? services)
 		{
 			if (services == null)
 				throw new ArgumentNullException(nameof(services));
 
-			//we need to use our own ServiceCollction because the default ServiceCollection
-			//enforces the instance to implement the servicetype
-			var _handlersCollection = new MauiServiceCollection();
-			foreach (var configureHandlersAction in _configureHandlersActions)
+			foreach (var pair in _configureServiceCollectionBuilderActions)
 			{
-				if (_hostBuilderContext != null)
-					configureHandlersAction(_hostBuilderContext, _handlersCollection);
+				var instance = (IServiceCollectionBuilder)Activator.CreateInstance(pair.Key);
+
+				foreach (var action in pair.Value)
+				{
+					if (_hostBuilderContext != null)
+						action(_hostBuilderContext, instance);
+				}
+
+				instance.Build(services);
 			}
-			services.AddSingleton(_handlersCollection.BuildHandlersServiceProvider());
 		}
 
 		void BuildFontRegistrar(IServiceProvider? serviceProvider)
@@ -254,22 +254,6 @@ namespace Microsoft.Maui.Hosting
 			{
 				fontRegistrar.Register(font.Filename, font.Alias);
 			}
-		}
-
-		void BuildLifecycleHandler(IServiceCollection? services)
-		{
-			if (services == null)
-				throw new ArgumentNullException(nameof(services));
-
-			var lifecycleBuilder = new LifecycleBuilder();
-			foreach (var action in _configureLifecycleActions)
-			{
-				if (_hostBuilderContext != null)
-					action(_hostBuilderContext, lifecycleBuilder);
-			}
-
-			var service = lifecycleBuilder.Build();
-			services.AddSingleton(service);
 		}
 
 		IHostBuilder IHostBuilder.ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)

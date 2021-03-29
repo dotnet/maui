@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.Content.Res;
 using Android.OS;
 
@@ -25,6 +26,8 @@ namespace Microsoft.Maui.LifecycleEvents
 		public delegate void OnActivityResult(Activity activity, int requestCode, Result resultCode, Intent? data);
 		public delegate void OnBackPressed(Activity activity);
 		public delegate void OnConfigurationChanged(Activity activity, Configuration newConfig);
+		public delegate void OnNewIntent(Activity activity, Intent? intent);
+		public delegate void OnRequestPermissionsResult(Activity activity, int requestCode, string[] permissions, Permission[] grantResults);
 		public delegate void OnRestoreInstanceState(Activity activity, Bundle savedInstanceState);
 
 		// Custom events

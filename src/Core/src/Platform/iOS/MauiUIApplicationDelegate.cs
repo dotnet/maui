@@ -1,7 +1,7 @@
 using System;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Hosting.Internal;
 using Microsoft.Maui.LifecycleEvents;
 using UIKit;
 
