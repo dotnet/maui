@@ -11,5 +11,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public DateTime MinimumDate { get; set; }
 
 		public DateTime MaximumDate { get; set; }
+
+		public double CharacterSpacing { get; set; }
 	}
 }
