@@ -46,8 +46,12 @@ namespace Microsoft.Maui
 
 		public static void UpdateSemantics(this AView nativeView, IView view)
 		{
-			var semantics = view.Semantics;
 
+			// this code is wrong			
+			var semantics = view.Semantics;
+			if  (semantics.Hint == null && semantics.Description == null)
+				return;
+			
 			// Need to test Pre API 26 talkback (verify on all TextView based controls)
 			if (nativeView is TextInputLayout til)
 			{

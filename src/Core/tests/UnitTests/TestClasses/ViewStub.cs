@@ -31,9 +31,11 @@ namespace Microsoft.Maui.Tests
 
 		public FlowDirection FlowDirection => throw new NotImplementedException();
 
-
 		public LayoutAlignment HorizontalLayoutAlignment { get; set; }
+
 		public LayoutAlignment VerticalLayoutAlignment { get; set; }
+
+		public Semantics Semantics => throw new NotImplementedException();
 
 		public void Arrange(Rectangle bounds)
 		{
