@@ -5,6 +5,7 @@ using Maui.Controls.Sample.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.LifecycleEvents;
 using Debug = System.Diagnostics.Debug;
 
@@ -79,10 +80,13 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ActivityIndicator { Color = Color.Red, IsRunning = true });
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
-			button.Clicked += (sender, e) =>
+			button.Clicked += async (sender, e) =>
 			{
 				var events = _services.GetRequiredService<ILifecycleEventService>();
 				events.InvokeEvents("CustomEventName");
+
+				var location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Lowest));
+				Debug.WriteLine($"I tracked you down to {location.Latitude}, {location.Longitude}! You can't hide!");
 			};
 
 			var button2 = new Button()
