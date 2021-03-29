@@ -1,4 +1,3 @@
-using System;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
@@ -13,11 +12,6 @@ namespace Microsoft.Maui
 
 		public static void UpdateTextColor(this Button nativeButton, IButton button, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			nativeButton.UpdateForegroundColor(button.TextColor, defaultBrush);
-
-		public static void UpdateCharacterSpacing(this Button nativeButton, IButton button)
-		{
-			throw new NotImplementedException();
-		}
 		
 		public static void UpdatePadding(this Button nativeButton, IButton button, UI.Xaml.Thickness? defaultThickness = null) =>
 			nativeButton.UpdatePadding(button.Padding, defaultThickness);
