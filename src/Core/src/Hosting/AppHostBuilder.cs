@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Hosting
 
 			foreach (var pair in _configureServiceCollectionBuilderActions)
 			{
-				var instance = (IServiceCollectionBuilder)Activator.CreateInstance(pair.Key);
+				var instance = (IServiceCollectionBuilder)Activator.CreateInstance(pair.Key)!;
 
 				foreach (var action in pair.Value)
 				{
