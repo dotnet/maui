@@ -4,6 +4,6 @@ namespace Microsoft.Maui.Hosting
 {
 	public interface IAppHost : IHost
 	{
-		IMauiHandlersServiceProvider Handlers { get; }
+		IMauiHandlersServiceProvider? Handlers { get; }
 	}
 }

@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Hosting
 {
 	public interface IAppHostBuilder : IHostBuilder
 	{
-		IAppHostBuilder ConfigureFonts(Action<HostBuilderContext, IFontCollection> configureDelegate);
 		IAppHostBuilder ConfigureServices<TBuilder>(Action<HostBuilderContext, TBuilder> configureDelegate) where TBuilder : IServiceCollectionBuilder, new();
 		new IAppHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate);
 		new IAppHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate);

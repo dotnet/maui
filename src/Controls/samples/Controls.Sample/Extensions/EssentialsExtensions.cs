@@ -64,7 +64,11 @@ namespace Microsoft.Maui.Essentials
 				return this;
 			}
 
-			public async void Build(IServiceCollection services)
+			public void Build(IServiceCollection services)
+			{
+			}
+
+			public async void Configure(IServiceProvider services)
 			{
 #if WINDOWS
 				// Platform.MapServiceToken = _mapServiceToken;

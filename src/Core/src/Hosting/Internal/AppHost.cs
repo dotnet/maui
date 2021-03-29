@@ -13,14 +13,14 @@ namespace Microsoft.Maui.Hosting.Internal
 		public AppHost(IServiceProvider services, ILogger<AppHost>? logger)
 		{
 			Services = services ?? throw new ArgumentNullException(nameof(services));
-			Handlers = Services.GetRequiredService<IMauiHandlersServiceProvider>();
+			Handlers = Services.GetService<IMauiHandlersServiceProvider>();
 
 			_logger = logger;
 		}
 
 		public IServiceProvider Services { get; }
 
-		public IMauiHandlersServiceProvider Handlers { get; }
+		public IMauiHandlersServiceProvider? Handlers { get; }
 
 		public async Task StartAsync(CancellationToken cancellationToken = default)
 		{

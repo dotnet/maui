@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample
 			if (UseXamlApp)
 			{
 				appBuilder = appBuilder
-					.RegisterCompatibilityForms()
+					.UseCompatibilityForms()
 					.UseMauiApp<XamlApp>();
 			}
 			else
@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample
 			}
 
 			appBuilder
-				.RegisterCompatibilityRenderers()
+				.UseDefaultCompatibilityRenderers()
 				.ConfigureAppConfiguration((hostingContext, config) =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>
@@ -48,17 +48,6 @@ namespace Maui.Controls.Sample
 				})
 				//.UseMauiServiceProviderFactory(true)
 				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
-				.ConfigureEssentials((ctx, essentials) =>
-				{
-					essentials
-						.UseMapServiceToken("YOUR-KEY-HERE")
-						.AddAppAction("test_action", "Test App Action")
-						.AddAppAction("second_action", "Second App Action")
-						.OnAppAction(appAction =>
-						{
-							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
-						});
-				})
 				.ConfigureServices((hostingContext, services) =>
 				{
 					services.AddSingleton<ITextService, TextService>();
@@ -129,6 +118,17 @@ namespace Maui.Controls.Sample
 				.ConfigureFonts((hostingContext, fonts) =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
+				})
+				.ConfigureEssentials((ctx, essentials) =>
+				{
+					essentials
+						.UseMapServiceToken("YOUR-KEY-HERE")
+						.AddAppAction("test_action", "Test App Action")
+						.AddAppAction("second_action", "Second App Action")
+						.OnAppAction(appAction =>
+						{
+							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
+						});
 				});
 		}
 

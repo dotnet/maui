@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Hosting
 	public class AppHostBuilder : IAppHostBuilder
 	{
 		readonly Dictionary<Type, List<Action<HostBuilderContext, IServiceCollectionBuilder>>> _configureServiceCollectionBuilderActions = new Dictionary<Type, List<Action<HostBuilderContext, IServiceCollectionBuilder>>>();
+		readonly List<IServiceCollectionBuilder> _configureServiceCollectionBuilderInstances = new List<IServiceCollectionBuilder>();
 		readonly List<Action<IConfigurationBuilder>> _configureHostConfigActions = new List<Action<IConfigurationBuilder>>();
 		readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppConfigActions = new List<Action<HostBuilderContext, IConfigurationBuilder>>();
 		readonly List<Action<HostBuilderContext, IServiceCollection>> _configureServicesActions = new List<Action<HostBuilderContext, IServiceCollection>>();
-		readonly List<Action<HostBuilderContext, IFontCollection>> _configureFontsActions = new List<Action<HostBuilderContext, IFontCollection>>();
 		readonly List<IConfigureContainerAdapter> _configureContainerActions = new List<IConfigureContainerAdapter>();
 		readonly Func<IServiceCollection> _serviceColectionFactory = new Func<IServiceCollection>(() => new MauiServiceCollection());
 
@@ -34,8 +34,10 @@ namespace Microsoft.Maui.Hosting
 		{
 			var builder = new AppHostBuilder();
 
-			builder.UseMauiHandlers();
-			builder.UseFonts();
+			builder.UseMauiServiceProviderFactory(false);
+
+			builder.UseDefaultMauiHandlers();
+			builder.ConfigureFonts();
 
 			return builder;
 		}
@@ -65,7 +67,7 @@ namespace Microsoft.Maui.Hosting
 			if (_serviceProvider == null)
 				throw new InvalidOperationException($"The ServiceProvider cannot be null");
 
-			BuildFontRegistrar(_serviceProvider);
+			ConfigureServiceCollectionBuilders(_serviceProvider);
 
 			return new AppHost(_serviceProvider, null);
 		}
@@ -91,12 +93,6 @@ namespace Microsoft.Maui.Hosting
 		public IAppHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
 		{
 			_configureServicesActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
-			return this;
-		}
-
-		public IAppHostBuilder ConfigureFonts(Action<HostBuilderContext, IFontCollection> configureDelegate)
-		{
-			_configureFontsActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
 			return this;
 		}
 
@@ -234,28 +230,19 @@ namespace Microsoft.Maui.Hosting
 				}
 
 				instance.Build(services);
+
+				_configureServiceCollectionBuilderInstances.Add(instance);
 			}
 		}
 
-		void BuildFontRegistrar(IServiceProvider? serviceProvider)
+		void ConfigureServiceCollectionBuilders(IServiceProvider? serviceProvider)
 		{
 			if (serviceProvider == null)
 				throw new ArgumentNullException(nameof(serviceProvider));
 
-			var fontRegistrar = serviceProvider.GetService<IFontRegistrar>();
-			if (fontRegistrar == null)
-				return;
-
-			var fontCollection = new FontCollection();
-			foreach (var action in _configureFontsActions)
+			foreach (var instance in _configureServiceCollectionBuilderInstances)
 			{
-				if (_hostBuilderContext != null)
-					action(_hostBuilderContext, fontCollection);
-			}
-
-			foreach (var font in fontCollection)
-			{
-				fontRegistrar.Register(font.Filename, font.Alias);
+				instance.Configure(serviceProvider);
 			}
 		}
 

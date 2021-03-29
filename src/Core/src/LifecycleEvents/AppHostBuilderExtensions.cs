@@ -20,6 +20,10 @@ namespace Microsoft.Maui.LifecycleEvents
 			{
 				services.AddSingleton<ILifecycleEventService>(this);
 			}
+
+			public void Configure(IServiceProvider services)
+			{
+			}
 		}
 	}
 }
