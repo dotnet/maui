@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Essentials
 			readonly List<AppAction> _appActions = new List<AppAction>();
 			Action<AppAction> _appActionHandlers;
 			bool _trackVersions;
+
 			bool _useLegaceSecureStorage;
 			string _mapServiceToken;
 
@@ -67,7 +68,6 @@ namespace Microsoft.Maui.Essentials
 				return this;
 			}
 
-
 			public IEssentialsBuilder UseVersionTracking()
 			{
 				_trackVersions = true;
@@ -88,18 +88,16 @@ namespace Microsoft.Maui.Essentials
 			{
 #if WINDOWS
 				// Platform.MapServiceToken = _mapServiceToken;
+#elif __ANDROID__
+				SecureStorage.LegacyKeyHashFallback = _useLegaceSecureStorage;
 #endif
+
 				AppActions.OnAppAction += HandleOnAppAction;
 
 				await AppActions.SetAsync(_appActions);
 
 				if (_trackVersions)
 					VersionTracking.Track();
-
-#if __ANDROID__
-				if (_useLegaceSecureStorage)
-					SecureStorage.LegacyKeyHashFallback = _useLegaceSecureStorage;
-#endif
 			}
 
 			void HandleOnAppAction(object sender, AppActionEventArgs e)
