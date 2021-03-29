@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Essentials
 {
 	public static class EssentialsExtensions
 	{
-		public static IAppHostBuilder ConfigureEssentials(this IAppHostBuilder builder, Action<HostBuilderContext, IEssentialsBuilder> configureDelegate)
+		public static IAppHostBuilder ConfigureEssentials(this IAppHostBuilder builder, Action<HostBuilderContext, IEssentialsBuilder> configureDelegate = null)
 		{
 			builder.ConfigureLifecycleEvents((ctx, life) =>
 			{
@@ -32,7 +32,8 @@ namespace Microsoft.Maui.Essentials
 #endif
 			});
 
-			builder.ConfigureServices<EssentialsBuilder>(configureDelegate);
+			if (configureDelegate != null)
+				builder.ConfigureServices<EssentialsBuilder>(configureDelegate);
 
 			return builder;
 		}
@@ -42,9 +43,11 @@ namespace Microsoft.Maui.Essentials
 
 		class EssentialsBuilder : IEssentialsBuilder, IServiceCollectionBuilder
 		{
-			string _mapServiceToken;
-			Action<AppAction> _appActionHandlers;
 			readonly List<AppAction> _appActions = new List<AppAction>();
+			Action<AppAction> _appActionHandlers;
+			bool _trackVersions;
+			bool _useLegaceSecureStorage;
+			string _mapServiceToken;
 
 			public IEssentialsBuilder UseMapServiceToken(string token)
 			{
@@ -64,6 +67,19 @@ namespace Microsoft.Maui.Essentials
 				return this;
 			}
 
+
+			public IEssentialsBuilder UseVersionTracking()
+			{
+				_trackVersions = true;
+				return this;
+			}
+
+			public IEssentialsBuilder UseLegacySecureStorage()
+			{
+				_useLegaceSecureStorage = true;
+				return this;
+			}
+
 			public void Build(IServiceCollection services)
 			{
 			}
@@ -76,6 +92,12 @@ namespace Microsoft.Maui.Essentials
 				AppActions.OnAppAction += HandleOnAppAction;
 
 				await AppActions.SetAsync(_appActions);
+
+				if (_trackVersions)
+					VersionTracking.Track();
+
+				if (_useLegaceSecureStorage)
+					SecureStorage.LegacyKeyHashFallback = _useLegaceSecureStorage;
 			}
 
 			void HandleOnAppAction(object sender, AppActionEventArgs e)
@@ -83,14 +105,5 @@ namespace Microsoft.Maui.Essentials
 				_appActionHandlers?.Invoke(e.AppAction);
 			}
 		}
-	}
-
-	public interface IEssentialsBuilder
-	{
-		IEssentialsBuilder UseMapServiceToken(string token);
-
-		IEssentialsBuilder AddAppAction(AppAction appAction);
-
-		IEssentialsBuilder OnAppAction(Action<AppAction> action);
 	}
 }
