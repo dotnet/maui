@@ -62,8 +62,8 @@ namespace Microsoft.Maui
 				MauiHotReloadHelper.AddActiveView(ihr);
 			}
 
-
-			if (MainView != null && _view != null)
+			MainView = null;
+			if (_view != null)
 			{
 				_ = _context ?? throw new ArgumentNullException(nameof(_context));
 				MainView = _view.ToNative(_context);
