@@ -4,7 +4,7 @@ using Android.OS;
 using Android.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Maui.Hosting.Internal;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
