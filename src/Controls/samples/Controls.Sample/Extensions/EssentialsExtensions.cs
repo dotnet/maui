@@ -47,8 +47,10 @@ namespace Microsoft.Maui.Essentials
 			Action<AppAction> _appActionHandlers;
 			bool _trackVersions;
 
+#pragma warning disable CS0414 // Remove unread private members
 			bool _useLegaceSecureStorage;
 			string _mapServiceToken;
+#pragma warning restore CS0414 // Remove unread private members
 
 			public IEssentialsBuilder UseMapServiceToken(string token)
 			{

@@ -62,7 +62,7 @@ namespace Maui.Controls.Sample
 				})
 				.ConfigureLifecycleEvents((ctx, events) =>
 				{
-					events.Add("CustomEventName", () => LogEvent("CustomEventName"));
+					events.AddEvent("CustomEventName", () => LogEvent("CustomEventName"));
 
 #if __ANDROID__
 					events.AddAndroid(lifecycleBuilder => lifecycleBuilder

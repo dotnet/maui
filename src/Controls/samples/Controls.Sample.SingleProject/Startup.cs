@@ -9,7 +9,8 @@ namespace Maui.Controls.Sample.SingleProject
 		public void Configure(IAppHostBuilder appBuilder)
 		{
 			appBuilder
-				.RegisterCompatibilityRenderers()
+				.UseDefaultCompatibilityRenderers()
+				.UseCompatibilityForms()
 				.UseMauiApp<MyApp>();
 		}
 	}

@@ -8,7 +8,7 @@ namespace Microsoft.Maui.LifecycleEvents
 	{
 		readonly Dictionary<string, List<Delegate>> _mapper = new Dictionary<string, List<Delegate>>();
 
-		public void Add(string eventName, Delegate action)
+		public void AddEvent(string eventName, Delegate action)
 		{
 			if (!_mapper.TryGetValue(eventName, out var delegates) && delegates == null)
 				_mapper[eventName] = delegates = new List<Delegate>();

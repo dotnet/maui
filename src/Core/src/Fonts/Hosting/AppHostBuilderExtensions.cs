@@ -36,7 +36,10 @@ namespace Microsoft.Maui.Hosting
 
 				foreach (var font in this)
 				{
-					fontRegistrar.Register(font.Filename, font.Alias);
+					if (font.Assembly == null)
+						fontRegistrar.Register(font.Filename, font.Alias);
+					else
+						fontRegistrar.Register(font.Filename, font.Alias, font.Assembly);
 				}
 			}
 		}

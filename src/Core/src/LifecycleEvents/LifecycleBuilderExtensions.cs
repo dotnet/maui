@@ -5,14 +5,26 @@ namespace Microsoft.Maui.LifecycleEvents
 {
 	public static class LifecycleBuilderExtensions
 	{
-		public static ILifecycleBuilder Add(this ILifecycleBuilder builder, string eventName, Action action) =>
-			builder.OnEvent(action, eventName);
+		public static ILifecycleBuilder AddEvent(this ILifecycleBuilder builder, string eventName, Action action)
+		{
+			builder.AddEvent(eventName, action);
 
-		internal static TLifecycleBuilder OnEvent<TDelegate, TLifecycleBuilder>(this TLifecycleBuilder builder, TDelegate del, [CallerMemberName] string? eventName = null)
+			return builder;
+		}
+
+		public static ILifecycleBuilder AddEvent<TDelegate>(this ILifecycleBuilder builder, string eventName, TDelegate action)
+			where TDelegate : Delegate
+		{
+			builder.AddEvent(eventName, action);
+
+			return builder;
+		}
+
+		internal static TLifecycleBuilder OnEvent<TLifecycleBuilder, TDelegate>(this TLifecycleBuilder builder, TDelegate action, [CallerMemberName] string? eventName = null)
 			where TLifecycleBuilder : ILifecycleBuilder
 			where TDelegate : Delegate
 		{
-			builder.Add(eventName ?? typeof(TDelegate).Name, del);
+			builder.AddEvent(eventName ?? typeof(TDelegate).Name, action);
 
 			return builder;
 		}

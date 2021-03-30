@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Hosting
 		readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppConfigActions = new List<Action<HostBuilderContext, IConfigurationBuilder>>();
 		readonly List<Action<HostBuilderContext, IServiceCollection>> _configureServicesActions = new List<Action<HostBuilderContext, IServiceCollection>>();
 		readonly List<IConfigureContainerAdapter> _configureContainerActions = new List<IConfigureContainerAdapter>();
-		readonly Func<IServiceCollection> _serviceColectionFactory = new Func<IServiceCollection>(() => new MauiServiceCollection());
+		readonly Func<IServiceCollection> _serviceCollectionFactory = new Func<IServiceCollection>(() => new MauiServiceCollection());
 
 		IServiceFactoryAdapter _serviceProviderFactory = new ServiceFactoryAdapter<IServiceCollection>(new MauiServiceProviderFactory(false));
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Hosting
 
 		public IAppHost Build()
 		{
-			_services = _serviceColectionFactory();
+			_services = _serviceCollectionFactory();
 
 			if (_hostBuilt)
 				throw new InvalidOperationException("Build can only be called once.");
@@ -96,20 +96,19 @@ namespace Microsoft.Maui.Hosting
 			return this;
 		}
 
-		public IAppHostBuilder ConfigureServices<TServiceGroup>(Action<HostBuilderContext, TServiceGroup> configureDelegate)
-			where TServiceGroup : IServiceCollectionBuilder, new()
+		public IAppHostBuilder ConfigureServices<TBuilder>(Action<HostBuilderContext, TBuilder> configureDelegate)
+			where TBuilder : IServiceCollectionBuilder, new()
 		{
 			_ = configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate));
 
-			var groupType = typeof(TServiceGroup);
-
-			if (!_configureServiceCollectionBuilderActions.TryGetValue(groupType, out var list))
+			var key = typeof(TBuilder);
+			if (!_configureServiceCollectionBuilderActions.TryGetValue(key, out var list))
 			{
 				list = new List<Action<HostBuilderContext, IServiceCollectionBuilder>>();
-				_configureServiceCollectionBuilderActions.Add(groupType, list);
+				_configureServiceCollectionBuilderActions.Add(key, list);
 			}
 
-			list.Add((ctx, grp) => configureDelegate(ctx, (TServiceGroup)grp));
+			list.Add((context, builder) => configureDelegate(context, (TBuilder)builder));
 
 			return this;
 		}
