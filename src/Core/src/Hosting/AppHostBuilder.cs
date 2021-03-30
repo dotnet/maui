@@ -10,8 +10,8 @@ namespace Microsoft.Maui.Hosting
 {
 	public class AppHostBuilder : IAppHostBuilder
 	{
-		readonly Dictionary<Type, List<Action<HostBuilderContext, IServiceCollectionBuilder>>> _configureServiceCollectionBuilderActions = new Dictionary<Type, List<Action<HostBuilderContext, IServiceCollectionBuilder>>>();
-		readonly List<IServiceCollectionBuilder> _configureServiceCollectionBuilderInstances = new List<IServiceCollectionBuilder>();
+		readonly Dictionary<Type, List<Action<HostBuilderContext, IMauiServiceBuilder>>> _configureServiceBuilderActions = new Dictionary<Type, List<Action<HostBuilderContext, IMauiServiceBuilder>>>();
+		readonly List<IMauiServiceBuilder> _configureServiceBuilderInstances = new List<IMauiServiceBuilder>();
 		readonly List<Action<IConfigurationBuilder>> _configureHostConfigActions = new List<Action<IConfigurationBuilder>>();
 		readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppConfigActions = new List<Action<HostBuilderContext, IConfigurationBuilder>>();
 		readonly List<Action<HostBuilderContext, IServiceCollection>> _configureServicesActions = new List<Action<HostBuilderContext, IServiceCollection>>();
@@ -97,15 +97,15 @@ namespace Microsoft.Maui.Hosting
 		}
 
 		public IAppHostBuilder ConfigureServices<TBuilder>(Action<HostBuilderContext, TBuilder> configureDelegate)
-			where TBuilder : IServiceCollectionBuilder, new()
+			where TBuilder : IMauiServiceBuilder, new()
 		{
 			_ = configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate));
 
 			var key = typeof(TBuilder);
-			if (!_configureServiceCollectionBuilderActions.TryGetValue(key, out var list))
+			if (!_configureServiceBuilderActions.TryGetValue(key, out var list))
 			{
-				list = new List<Action<HostBuilderContext, IServiceCollectionBuilder>>();
-				_configureServiceCollectionBuilderActions.Add(key, list);
+				list = new List<Action<HostBuilderContext, IMauiServiceBuilder>>();
+				_configureServiceBuilderActions.Add(key, list);
 			}
 
 			list.Add((context, builder) => configureDelegate(context, (TBuilder)builder));
@@ -218,9 +218,9 @@ namespace Microsoft.Maui.Hosting
 			if (services == null)
 				throw new ArgumentNullException(nameof(services));
 
-			foreach (var pair in _configureServiceCollectionBuilderActions)
+			foreach (var pair in _configureServiceBuilderActions)
 			{
-				var instance = (IServiceCollectionBuilder)Activator.CreateInstance(pair.Key)!;
+				var instance = (IMauiServiceBuilder)Activator.CreateInstance(pair.Key)!;
 
 				foreach (var action in pair.Value)
 				{
@@ -228,9 +228,9 @@ namespace Microsoft.Maui.Hosting
 						action(_hostBuilderContext, instance);
 				}
 
-				instance.Build(services);
+				instance.ConfigureServices(services);
 
-				_configureServiceCollectionBuilderInstances.Add(instance);
+				_configureServiceBuilderInstances.Add(instance);
 			}
 		}
 
@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Hosting
 			if (serviceProvider == null)
 				throw new ArgumentNullException(nameof(serviceProvider));
 
-			foreach (var instance in _configureServiceCollectionBuilderInstances)
+			foreach (var instance in _configureServiceBuilderInstances)
 			{
 				instance.Configure(serviceProvider);
 			}

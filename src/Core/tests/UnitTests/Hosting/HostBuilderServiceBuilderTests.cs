@@ -10,7 +10,7 @@ using Xunit;
 namespace Microsoft.Maui.UnitTests
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
-	public class HostBuilderServiceCollectionBuilderTests
+	public class HostBuilderServiceBuilderTests
 	{
 		[Fact]
 		public void MultipleServicesAreRegisteredWithoutBuilder()
@@ -130,9 +130,9 @@ namespace Microsoft.Maui.UnitTests
 			}
 		}
 
-		class MultipleRegistrationBuilder : MappingService, IServiceCollectionBuilder
+		class MultipleRegistrationBuilder : MappingService, IMauiServiceBuilder
 		{
-			public void Build(IServiceCollection services)
+			public void ConfigureServices(IServiceCollection services)
 			{
 				services.AddSingleton<MappingService>(this);
 			}
@@ -142,12 +142,12 @@ namespace Microsoft.Maui.UnitTests
 			}
 		}
 
-		class ServiceBuilderStub : IServiceCollectionBuilder
+		class ServiceBuilderStub : IMauiServiceBuilder
 		{
 			public event Action<IServiceCollection> BuildInvoked;
 			public event Action<IServiceProvider> ConfigureInvoked;
 
-			public void Build(IServiceCollection services)
+			public void ConfigureServices(IServiceCollection services)
 			{
 				BuildInvoked?.Invoke(services);
 			}

@@ -3,9 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting
 {
-	public interface IServiceCollectionBuilder
+	public interface IMauiServiceBuilder
 	{
-		void Build(IServiceCollection services);
+		void ConfigureServices(IServiceCollection services);
 
 		void Configure(IServiceProvider services);
 	}

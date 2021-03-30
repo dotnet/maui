@@ -14,9 +14,9 @@ namespace Microsoft.Maui.LifecycleEvents
 			return builder;
 		}
 
-		class LifecycleBuilder : LifecycleEventService, ILifecycleBuilder, IServiceCollectionBuilder
+		class LifecycleBuilder : LifecycleEventService, ILifecycleBuilder, IMauiServiceBuilder
 		{
-			public void Build(IServiceCollection services)
+			public void ConfigureServices(IServiceCollection services)
 			{
 				services.AddSingleton<ILifecycleEventService>(this);
 			}

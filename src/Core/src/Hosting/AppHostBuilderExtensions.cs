@@ -66,9 +66,9 @@ namespace Microsoft.Maui.Hosting
 			return builder;
 		}
 
-		class HandlerCollectionBuilder : MauiServiceCollection, IMauiHandlersCollection, IServiceCollectionBuilder
+		class HandlerCollectionBuilder : MauiServiceCollection, IMauiHandlersCollection, IMauiServiceBuilder
 		{
-			public void Build(IServiceCollection services)
+			public void ConfigureServices(IServiceCollection services)
 			{
 				var provider = new MauiHandlersServiceProvider(this);
 
