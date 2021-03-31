@@ -4,8 +4,8 @@
         "LanguageSet": "VS_Main_Languages",
         "LocItems": [
             {
-                "SourceFile": "src\\Compatibility\\Core\\src\\iOS\\Resources\\Resources.resx",
-                "LclFile": "loc\\{Lang}\\src\\Compatibility\\Core\\src\\iOS\\Resources\\Resources.resx.lcl",
+                "SourceFile": "src\\Compatibility\\Core\\src\\iOS\\Resources\\StringResources.resx",
+                "LclFile": "loc\\{Lang}\\src\\Compatibility\\Core\\src\\iOS\\Resources\\StringResources.resx.lcl",
                 "CopyOption": "LangIDOnName",
                 "OutputPath": "src\\Compatibility\\Core\\src\\iOS\\Resources\\"
             },
