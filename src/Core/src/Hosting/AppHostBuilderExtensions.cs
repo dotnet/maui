@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Handlers;
@@ -110,7 +111,18 @@ namespace Microsoft.Maui.Hosting
 			Reloadify.Reload.Instance.FinishedReload = () => {
 				MauiHotReloadHelper.TriggerReload();
 			};
-			Reloadify.Reload.Init(ideIp,idePort);
+			Task.Run(async () =>
+			{
+				try
+				{
+					var success = await Reloadify.Reload.Init(ideIp, idePort);
+					Console.WriteLine($"HotReload Initialize: {success}");
+				}
+				catch(Exception ex)
+				{
+					Console.WriteLine(ex);
+				}
+			});
 			return builder;
 		}
 
