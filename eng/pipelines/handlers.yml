@@ -266,8 +266,14 @@ stages:
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
 
-  # only sign using the private server
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+          stages:
+  
+  - template: common/security_compliance.yml
+  - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+  - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+  - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
+ 
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # only sign using the private server
     - stage: nuget_signing
       dependsOn: pack_net6
       displayName: Sign Nuget

@@ -1,0 +1,130 @@
+stages:
+  - stage: security_compliance
+    displayName: Security and Compliance checks
+    jobs:
+    # Check - "Code Analysis CredScan"
+    - job: run_static_analysis
+      displayName: CredScan
+      pool: $(HostedWinVS2019)
+      timeoutInMinutes: 60
+      cancelTimeoutInMinutes: 5
+      steps:
+      - checkout: self
+      - template: security/xa-static-analysis/v2.yml@templates
+        parameters:
+          credScanSuppressionsFile: $(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json
+
+    # Check - "Code Analysis Policheck Compliance"
+    # For a full list of termType and the correct code refer to https://github.com/xamarin/yaml-templates/blob/master/security/policheck/v1.yml
+    - job: run_policheck_compliance
+      displayName: 'Policheck Compliance Source'
+      pool: $(HostedWinVS2019)
+      timeoutInMinutes: 60
+      cancelTimeoutInMinutes: 5
+      strategy:
+        matrix:
+          SourceCodeOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.xml'
+            TERM_TYPE: '0029a9'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          CzechResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.cs.xml'
+            TERM_TYPE: '0025a1029'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          GermanResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.de.xml'
+            TERM_TYPE: '0036a1031'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          EnglishResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.en.xml'
+            TERM_TYPE: '0029a9'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          SpanishResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.es.xml'
+            TERM_TYPE: '0099a1034'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          FrenchResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.fr.xml'
+            TERM_TYPE: '0033a1036'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          ItalianResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.it.xml'
+            TERM_TYPE: '0051a1040'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          JapaneseResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.ja.xml'
+            TERM_TYPE: '0052a1041'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          KoreanResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.ko.xml'
+            TERM_TYPE: '0060a1042'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          PolishResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.pl.xml'
+            TERM_TYPE: '0079a1045'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          PortugeseBrazilianResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.pt-br.xml'
+            TERM_TYPE: '0080a1046'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          RussianResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.ru.xml'
+            TERM_TYPE: '0087a1049'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          TurkeyResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.tr.xml'
+            TERM_TYPE: '0107a1055'
+            OPTIONS_PE: ''
+            OPTIONS_RULES_DB_PATH: ''
+          ChineseSimplifiedResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.zh-hans.xml'
+            TERM_TYPE: '0021a2052'
+            OPTIONS_PE: '1|2|3|4'
+            OPTIONS_RULES_DB_PATH: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\Rule-zh-all.mdb'
+          ChineseTraditionalResourceOnly:
+            EXCLUSION_FILE: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\UserExclusion.zh-hant.xml'
+            TERM_TYPE: '0022a3076'
+            OPTIONS_PE: '1|2|3|4'
+            OPTIONS_RULES_DB_PATH: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\Rule-zh-all.mdb'
+      steps:
+      - checkout: self
+      - template: security/policheck/v1.yml@templates
+        parameters:
+          exclusionFile: $(EXCLUSION_FILE)
+          termType: $(TERM_TYPE)
+          pE: $(OPTIONS_PE)
+          rulesDBPath: $(OPTIONS_RULES_DB_PATH)
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
+        displayName: 'TSA V2 upload to MAUI_main'
+        inputs:
+          tsaVersion: TsaV2
+          codeBaseName: 'maui_main'
+          uploadAPIScan: false
+          uploadBinSkim: false
+          uploadCredScan: true
+          uploadFortifySCA: false
+          uploadFxCop: false
+          uploadModernCop: false
+          uploadPREfast: false
+          uploadRoslyn: false
+          uploadTSLint: false
+          validateCompatibility: Warning
+        enabled: false
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
+        displayName: 'Post Analysis'
+        inputs:
+          AllTools: true
