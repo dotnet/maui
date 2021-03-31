@@ -7,10 +7,14 @@ variables:
   value: true
 - name: DOTNET_VERSION
   value: 5.0.102
+- name: LocBranchPrefix
+  value: 'loc-hb'
+- name: LocBranch
+  value: 'oneloc'
 - name: isMainBranch
   value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 - name: isLocBranch
-  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/oneloc')]
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/$(LocBranch)')]
 - name: isTargetMainBranch
   value: $[eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')]
 - name: isTargetLocBranch
@@ -19,8 +23,6 @@ variables:
   value: $[startsWith(variables['System.PullRequest.SourceBranch'], 'refs/heads/$(LocBranchPrefix)')]
 - name: isPullRequest
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
-- name: LocBranchPrefix
-  value: 'loc-hb'
 # Common Agent Pools in use
 - name: HostedWinVS2019
   value: Hosted Windows 2019 with VS2019

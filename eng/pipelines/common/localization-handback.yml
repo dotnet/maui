@@ -20,7 +20,7 @@ stages:
               git config user.email "vs-mobiletools-engineering-service2@microsoft.com"
               git config user.name "VS Mobile Engineering Serice Account"
               Invoke-Git checkout main
-              Invoke-Git merge origin/loc --no-commit
+              Invoke-Git merge origin/$(LocBranch) --no-commit
             displayName: 'Merge loc Branch'
 
           - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
