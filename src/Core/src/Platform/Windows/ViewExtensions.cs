@@ -17,19 +17,23 @@ namespace Microsoft.Maui
 
 		public static void UpdateSemantics(this FrameworkElement nativeView, IView view)
 		{
-			AutomationProperties.SetName(nativeView, view.Semantics.Description);
-			AutomationProperties.SetHelpText(nativeView, view.Semantics.Hint);
+			var semantics = view.Semantics;
+			if (semantics == null)
+				return;
+
+			AutomationProperties.SetName(nativeView, semantics.Description);
+			AutomationProperties.SetHelpText(nativeView, semantics.Hint);
 
 			// For now if users are only setting the boolean IsHeading property then we just
 			// default WinUI to heading Level1
-			if (view.Semantics.IsHeading && view.Semantics.HeadingLevel == SemanticHeadingLevel.Default)
+			if (semantics.IsHeading && semantics.HeadingLevel == SemanticHeadingLevel.Default)
 				AutomationProperties.SetHeadingLevel(nativeView, UI.Xaml.Automation.Peers.AutomationHeadingLevel.Level1);
-			else if (!view.Semantics.IsHeading && view.Semantics.HeadingLevel == SemanticHeadingLevel.Default)
+			else if (!semantics.IsHeading && semantics.HeadingLevel == SemanticHeadingLevel.Default)
 				AutomationProperties.SetHeadingLevel(nativeView, UI.Xaml.Automation.Peers.AutomationHeadingLevel.None);
-			else if (view.Semantics.HeadingLevel == SemanticHeadingLevel.None)
+			else if (semantics.HeadingLevel == SemanticHeadingLevel.None)
 				AutomationProperties.SetHeadingLevel(nativeView, UI.Xaml.Automation.Peers.AutomationHeadingLevel.None);
 			else
-				AutomationProperties.SetHeadingLevel(nativeView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)view.Semantics.HeadingLevel));
+				AutomationProperties.SetHeadingLevel(nativeView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
 
 		}
 	}
