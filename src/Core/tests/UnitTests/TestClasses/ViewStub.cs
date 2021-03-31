@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Tests
 
 		public LayoutAlignment VerticalLayoutAlignment { get; set; }
 
-		public Semantics Semantics => throw new NotImplementedException();
+		public Semantics Semantics { get; set; } = new Semantics();
 
 		public void Arrange(Rectangle bounds)
 		{
