@@ -1,7 +1,7 @@
 stages:
   - stage: merge_translations_updates
     displayName: 'Merge Translations Updates'
-    dependsOn: [validate]
+    dependsOn: []
     condition: and( succeeded(), and( eq(variables.isTargetMainBranch, true), variables.isLocPRBranch ) ) 
 
     jobs:
