@@ -3,6 +3,7 @@ using AView = Android.Views.View;
 using ATextView = Android.Widget.TextView;
 using AEditText = Android.Widget.EditText;
 using System;
+using AAccessibilityDelegate = Android.Views.View.AccessibilityDelegate;
 
 namespace Microsoft.Maui
 {
@@ -44,49 +45,54 @@ namespace Microsoft.Maui
 			nativeView.SetTag(AutomationTagId, view.AutomationId);
 		}
 
+		class MauiAccessibilityDelegate : AAccessibilityDelegate
+		{
+			public IView? View { get; set; }
+
+			public MauiAccessibilityDelegate(IView view)
+			{
+				View = view;
+			}
+
+			public override void OnInitializeAccessibilityNodeInfo(AView? host, Android.Views.Accessibility.AccessibilityNodeInfo? info)
+            {
+				if  (View == null)
+					return;
+
+				base.OnInitializeAccessibilityNodeInfo(host, info);
+
+				var semantics = View.Semantics;
+				if (semantics == null)
+					return;
+
+				if (info == null)
+					return;
+
+				if (!string.IsNullOrEmpty(semantics.Hint))
+				{
+					info.HintText = semantics.Hint;
+				}
+			}
+		}
+
 		public static void UpdateSemantics(this AView nativeView, IView view)
 		{
-
-			// this code is wrong			
+			// this code is wrong
 			var semantics = view.Semantics;
-			if  (semantics.Hint == null && semantics.Description == null)
+			if (semantics == null)
 				return;
-			
-			// Need to test Pre API 26 talkback (verify on all TextView based controls)
-			if (nativeView is TextInputLayout til)
-			{
-				til.ContentDescription = semantics.Description;
-				til.Hint = view.Semantics.Hint;
-			}
-			else if (
-				nativeView is ATextView tvPreApi26 &&
 
-				// TODO IS this right?
-				view is ILabel &&
-				//!(nativeView is AEditText) &&
-				!NativeVersion.IsAtLeast(26))
-			{
-				string? contentDescription;
+			nativeView.ContentDescription = semantics.Description;
 
-				if (string.IsNullOrEmpty(semantics.Description))
-					contentDescription = tvPreApi26.Text;
+			if (!string.IsNullOrEmpty(semantics.Hint))
+			{
+				if (nativeView.GetAccessibilityDelegate() is MauiAccessibilityDelegate mad)
+					mad.View = view;
 				else
-					contentDescription = semantics.Description;
+					nativeView.SetAccessibilityDelegate(new MauiAccessibilityDelegate(view));
+			}
 
-				tvPreApi26.ContentDescription = $"{contentDescription}, {semantics.Hint}";
-				tvPreApi26.Hint = semantics.Hint;
-			}
-			else if (nativeView is ATextView tv)
-			{
-				tv.ContentDescription = semantics.Description;
-				tv.Hint = semantics.Hint;
-			}
-			else
-            {
-				// TODO IS this right?
-				//var text = $"{semantics.Description}, {semantics.Hint}";
-				nativeView.ContentDescription = semantics.Description;
-			}
+			nativeView.AccessibilityHeading = semantics.IsHeading;
 		}
 	}
 }

@@ -103,6 +103,10 @@ namespace Microsoft.Maui.Handlers
 		protected virtual void DisconnectHandler(TNativeView nativeView)
 		{
 
+#if MONOANDROID
+			nativeView.SetAccessibilityDelegate(null);
+#endif
+
 		}
 
 		void IViewHandler.DisconnectHandler()

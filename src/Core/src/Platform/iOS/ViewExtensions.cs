@@ -34,6 +34,11 @@ namespace Microsoft.Maui
 		{
 			nativeView.AccessibilityLabel = view.Semantics.Description;
 			nativeView.AccessibilityHint = view.Semantics.Hint;
+
+			if (view.Semantics.IsHeading)
+				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;
+			else
+				nativeView.AccessibilityTraits |= ~UIAccessibilityTrait.Header;
 		}
 
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView
