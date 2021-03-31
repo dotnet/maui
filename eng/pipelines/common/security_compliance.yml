@@ -10,7 +10,7 @@ stages:
       cancelTimeoutInMinutes: 5
       steps:
       - checkout: self
-      - template: security/xa-static-analysis/v2.yml@templates
+      - template: security/xa-static-analysis/v2.yml@xamarin-templates
         parameters:
           credScanSuppressionsFile: $(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json
 
@@ -100,7 +100,7 @@ stages:
             OPTIONS_RULES_DB_PATH: '$(System.DefaultWorkingDirectory)\eng\automation\policheck\Rule-zh-all.mdb'
       steps:
       - checkout: self
-      - template: security/policheck/v1.yml@templates
+      - template: security/policheck/v1.yml@xamarin-templates
         parameters:
           exclusionFile: $(EXCLUSION_FILE)
           termType: $(TERM_TYPE)
