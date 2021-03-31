@@ -14,7 +14,7 @@ variables:
 - name: isMainBranch
   value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 - name: isLocBranch
-  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/$(LocBranch)')]
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/oneloc')]
 - name: isTargetMainBranch
   value: $[eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')]
 - name: isTargetLocBranch
