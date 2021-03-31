@@ -118,11 +118,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Cancel" xml:space="preserve">
-    <value>취소</value>
+    <value>Cancel</value>
     <comment>ContextActionCell Cancel button</comment>
   </data>
   <data name="More" xml:space="preserve">
-    <value>기타</value>
+    <value>More</value>
     <comment>ContextActionCell More button</comment>
   </data>
 </root>
