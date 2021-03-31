@@ -1,0 +1,31 @@
+<Project>
+  <Import Project="eng\Version.props" />
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GitDefaultBranch>main</GitDefaultBranch>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Company>Microsoft</Company>
+    <Product>Microsoft MAUI Graphics</Product>
+    <Authors>Microsoft</Authors>
+    <Owners>microsoft</Owners>
+    <NeutralLanguage>en</NeutralLanguage>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/dotnet/Microsoft.Maui.Graphics.git</RepositoryUrl>
+    <ProjectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</ProjectUrl>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageVersion>0.0.1-alpha1</PackageVersion>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
+  </PropertyGroup>
+  <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
+  <Target Name="GitVersion" />
+  <Target Name="GitInfo" />
+  <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
+</Project>

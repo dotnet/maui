@@ -1,0 +1,141 @@
+variables:
+- name: BuildVersion
+  value: $[counter('release-counter', 1)]
+
+parameters:
+  - name: BuildEverything
+    type: boolean
+    default: false
+  - name: BuildConfigurations
+    type: object
+    default:
+      - Debug
+      - Release
+
+trigger:
+  branches:
+    include:
+    - main
+  tags:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+    - main
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
+  
+resources:
+  repositories:
+    - repository: xamarin-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
+      ref: refs/heads/main # still defaults to master even though main is the main branch
+
+stages:
+  - stage: windows
+    displayName: Build Windows
+    jobs:
+      - ${{ each BuildCondition in parameters.BuildConfigurations }}:
+        - job: win_hosted_${{ BuildCondition }}
+          workspace:
+            clean: all
+          displayName: Build Windows Phase (${{ BuildCondition }})
+          timeoutInMinutes: 60
+          pool:
+            vmImage:  windows-latest
+          steps:
+            - task: NuGetToolInstaller@1
+              displayName: 'Use NuGet 5.7.0'
+              inputs:
+                versionSpec: 5.7.0
+
+            - task: DotNetCoreCLI@2
+              displayName: 'Install NET6'
+              inputs:
+                command: 'build'
+                projects: src\external\DotNet\DotNet.csproj 
+
+            - task: NuGetCommand@2
+              displayName: 'Restore sln'
+              inputs:
+                command: 'restore'
+                restoreSolution: build\Build.Microsoft.Maui.Graphics.Windows.sln
+
+            - task: MSBuild@1
+              displayName: 'Build Graphics with MSBUILD'
+              inputs:
+                solution: build\Build.Microsoft.Maui.Graphics.Windows.sln
+                configuration: ${{ BuildCondition }}
+                msbuildArguments: /verbosity:normal /t:Build
+
+            - script: src\bin\dotnet\dotnet build build\Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=${{ BuildCondition }}
+              displayName: 'Build Graphics with NET6'
+
+            - task: NuGetCommand@2
+              displayName: 'Pack nupkg'
+              inputs:
+                command: 'pack'
+                packagesToPack: 'build/Microsoft.Maui.Graphics.nuspec'
+                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
+                configuration: ${{ BuildCondition }}
+                basePath: '$(System.DefaultWorkingDirectory)'
+                versioningScheme : 'byEnvVar'
+                versionEnvVar: 'BUILD_BUILDNUMBER'
+            
+            - task: CopyFiles@2
+              displayName: 'Copy SignList.xml Files'
+              inputs:
+                Contents: eng/SignList.xml
+                TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
+                flattenFolders: true
+
+            - task: PublishBuildArtifacts@1
+              condition: always()
+              displayName: publish artifacts
+              inputs:
+                ArtifactName: nuget
+
+# only sign using the private server
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - stage: nuget_signing
+      dependsOn: windows
+      displayName: Sign Nuget
+      jobs:
+        - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+          parameters:
+            teamName: Maui
+            usePipelineArtifactTasks: false
+            targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+            artifactPath: release
+            signedArtifactName: nuget
+            signedArtifactPath: signed
+            displayName: Sign Phase
+            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))

@@ -44,4 +44,3 @@ jobs:
     - name: Build
       run: msbuild build/Build.Microsoft.Maui.Graphics.Mac.sln /verbosity:normal /r /t:Rebuild /p:Configuration=Release
 
-

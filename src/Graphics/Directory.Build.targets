@@ -1,0 +1,4 @@
+<Project>
+  <Import Project="eng\Git.Build.targets" />
+  <Import Project="eng\Version.targets" />
+</Project>
