@@ -1,5 +1,3 @@
-using Microsoft.Maui;
-
 namespace Microsoft.Maui
 {
 	public static class ViewExtensions

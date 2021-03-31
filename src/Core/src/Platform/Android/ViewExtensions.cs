@@ -1,8 +1,4 @@
-using Google.Android.Material.TextField;
 using AView = Android.Views.View;
-using ATextView = Android.Widget.TextView;
-using AEditText = Android.Widget.EditText;
-using System;
 using AAccessibilityDelegate = Android.Views.View.AccessibilityDelegate;
 
 namespace Microsoft.Maui
