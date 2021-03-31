@@ -48,7 +48,7 @@ stages:
               Invoke-Git checkout -B ${branchName}
               Write-Host ("##vso[task.setvariable variable=HANDBACK_BRANCH_NAME;]$branchName")
               #-- Stage Build Changes
-              Invoke-Git add Maui
+              Invoke-Git add .
               #-- Only commit/push if there are changed files.
               $changedFiles = $(git status --porcelain | Measure-Object | Select-Object -expand Count)
               if ($changedFiles -gt 0)
