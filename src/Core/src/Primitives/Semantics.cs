@@ -1,5 +1,6 @@
 namespace Microsoft.Maui
 {
+<<<<<<< HEAD
 	public enum SemanticHeadingLevel
 	{
 		Default = -1,
@@ -52,6 +53,24 @@ namespace Microsoft.Maui
 				&& string.Equals(IsHeading, other.IsHeading);
 		}
 
+=======
+	public struct Semantics
+	{
+		public string Description { get; set; }
+		
+		public string Hint { get; set; }
+
+		bool Equals(Semantics other)
+		{
+			return string.Equals(Description, other.Description) && string.Equals(Hint, other.Hint);
+		}
+
+		public static Semantics FromLabel(string label)
+        {
+			return new Semantics() { Description = label };
+        }
+
+>>>>>>> 01a52bb2284ab127341c3d8e7547e9cb4158dbb8
 		public override bool Equals(object? obj)
 		{
 			if (ReferenceEquals(null, obj))
@@ -71,7 +90,10 @@ namespace Microsoft.Maui
 			{
 				int hashCode = Description != null ? Description.GetHashCode() : 0;
 				hashCode = Hint != null ? (hashCode * 397) ^ Hint.GetHashCode() : 0;
+<<<<<<< HEAD
 				hashCode = (hashCode * 397) ^ IsHeading.GetHashCode();
+=======
+>>>>>>> 01a52bb2284ab127341c3d8e7547e9cb4158dbb8
 
 				return hashCode;
 			}
@@ -89,7 +111,11 @@ namespace Microsoft.Maui
 
 		public override string ToString()
 		{
+<<<<<<< HEAD
 			return string.Format("Description: {0}, Hint: {1}, IsHeading: {2}", Description, Hint, IsHeading);
+=======
+			return string.Format("Description: {0}, Hint: {1}", Description, Hint);
+>>>>>>> 01a52bb2284ab127341c3d8e7547e9cb4158dbb8
 		}
 	}
 }
