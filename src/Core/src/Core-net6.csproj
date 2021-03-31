@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
 		<PackageReference Include="Microsoft.Maui.Graphics" />
-    <PackageReference Include="Reloadify3000" Version="1.0.3" />
+    <PackageReference Include="Reloadify3000" Version="1.0.4" />
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\Microsoft.Maui.pri" Visible="False" Pack="True" PackagePath="runtimes\$(WindowsTargetFramework)\native" />
