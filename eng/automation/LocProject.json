@@ -1,0 +1,23 @@
+{
+    "Projects": [
+      {
+        "LanguageSet": "VS_Main_Languages",
+        "LocItems": [
+            {
+                "SourceFile": "src\\Compatibility\\Core\\src\\iOS\\Resources\\StringResources.resx",
+                "LclFile": "loc\\{Lang}\\src\\Compatibility\\Core\\src\\iOS\\Resources\\StringResources.resx.lcl",
+                "CopyOption": "LangIDOnName",
+                "OutputPath": "src\\Compatibility\\Core\\src\\iOS\\Resources\\"
+            },
+            {
+                "SourceFile": "src\\Controls\\src\\Build.Tasks\\ErrorMessages.resx",
+                "LclFile": "loc\\{Lang}\\src\\Controls\\src\\Build.Tasks\\ErrorMessages.resx.lcl",
+                "CopyOption": "LangIDOnName",
+                "OutputPath": "src\\Controls\\src\\Build.Tasks\\xlf\\"
+            }
+        ],
+        "LssFiles": [],
+        "CloneLanguageSet": ""
+      }
+    ]
+}

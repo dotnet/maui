@@ -1,0 +1,27 @@
+stages:
+  - stage: localization_handoff
+    displayName: Localization Handoff
+    dependsOn: []
+    condition: and(succeeded(), eq(variables.isMainBranch, true))
+
+    jobs:
+      - job : generate_lci
+        displayName: 'Process outgoing strings'
+        pool:  $(HostedWinVS2019)
+        steps:
+
+          - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
+            displayName: 'Localization Build'
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
+            inputs:
+              locProj: 'eng/automation/LocProject.json'
+              outDir: '$(Build.ArtifactStagingDirectory)'
+              packageSourceAuth: patAuth
+              patVariable: "$(OneLocBuildPAT)"
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'

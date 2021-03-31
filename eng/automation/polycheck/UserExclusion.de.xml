@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PoliCheckExclusions>
+	<!-- NOTE: All names you provide must be in Upper Case, as apparently that is the string comparison PoliCheck does ¯\_(ツ)_/¯ -->
+	
+	<!-- Each of these exclusions is a folder name - if \[name]\ exists in the file path, it will be skipped -->
+	<!--<Exclusion Type="FolderPathFull">ABC|XYZ</Exclusion>-->
+	
+	<!-- Each of these exclusions is a folder name - if any folder or file starts with "\[name]", it will be
+	skipped -->
+	<Exclusion Type="FolderPathStart">BOT_PROVISIONING|BUILD|COMMON|CONTROLS|DRAWING|REFLECTION|VIEWMODELS|XAMARIN.PROPERTYEDITING.MAC|XAMARIN.PROPERTYEDITING.MAC.STANDALONE|XAMARIN.PROPERTYEDITING.TESTS|XAMARIN.PROPERTYEDITING.WINDOWS|XAMARIN.PROPERTYEDITING.WINDOWS.STANDALONE</Exclusion>
+	
+	<!-- Each of these file types will be completely skipped for the entire scan -->
+	<Exclusion Type="FileType">.CS|.CSPROJ</Exclusion>
+	
+	<!-- The specified file names will be skipped during the scan regardless which folder they are in -->
+	<Exclusion Type="FileName">RESOURCES.CS.RESX|RESOURCES.RESX|RESOURCES.ES.RESX|RESOURCES.FR.RESX|RESOURCES.IT.RESX|RESOURCES.JA.RESX|RESOURCES.KO.RESX|RESOURCES.PL.RESX|RESOURCES.PT-BR.RESX|RESOURCES.RU.RESX|RESOURCES.TR.RESX|RESOURCES.ZH-HANS.RESX|RESOURCES.ZH-HANT.RESX</Exclusion>
+</PoliCheckExclusions>
