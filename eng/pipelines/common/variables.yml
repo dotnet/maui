@@ -10,11 +10,11 @@ variables:
 - name: LocBranchPrefix
   value: 'loc-hb'
 - name: LocBranch
-  value: 'oneloc'
+  value: 'loc'
 - name: isMainBranch
-  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/oneloc')]
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 - name: isLocBranch
-  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/oneloc')]
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/loc')]
 - name: isTargetMainBranch
   value: $[eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')]
 - name: isTargetLocBranch
