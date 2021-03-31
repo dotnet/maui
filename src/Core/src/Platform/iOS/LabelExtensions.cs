@@ -73,6 +73,22 @@ namespace Microsoft.Maui
 				(float)label.Padding.Bottom,
 				(float)label.Padding.Right);
 		}
+				
+		public static void UpdateTextDecorations(this UILabel nativeLabel, ILabel label)
+		{
+			var modAttrText = nativeLabel.AttributedText?.WithDecorations(label.TextDecorations);
+
+			if (modAttrText != null)
+				nativeLabel.AttributedText = modAttrText;
+		}
+
+		public static void UpdateLineHeight(this UILabel nativeLabel, ILabel label)
+		{
+			var modAttrText = nativeLabel.AttributedText?.WithLineHeight(label.LineHeight);
+
+			if (modAttrText != null)
+				nativeLabel.AttributedText = modAttrText;
+		}
 
 		internal static void SetLineBreakMode(this UILabel nativeLabel, ILabel label)
 		{
@@ -107,22 +123,6 @@ namespace Microsoft.Maui
 			}
 
 			nativeLabel.Lines = maxLines;
-		}
-
-		public static void UpdateTextDecorations(this UILabel nativeLabel, ILabel label)
-		{
-			var modAttrText = nativeLabel.AttributedText?.WithDecorations(label.TextDecorations);
-
-			if (modAttrText != null)
-				nativeLabel.AttributedText = modAttrText;
-		}
-
-		internal static void UpdateLineHeight(this UILabel nativeLabel, ILabel label)
-		{
-			var modAttrText = nativeLabel.AttributedText?.WithLineHeight(label.LineHeight);
-
-			if (modAttrText != null)
-				nativeLabel.AttributedText = modAttrText;
 		}
 	}
 }
