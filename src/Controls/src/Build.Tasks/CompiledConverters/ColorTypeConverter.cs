@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 using Mono.Cecil.Cil;
 
 namespace Microsoft.Maui.Controls.XamlC
@@ -22,10 +23,10 @@ namespace Microsoft.Maui.Controls.XamlC
 				if (value.StartsWith("#", StringComparison.Ordinal))
 				{
 					var color = Color.FromHex(value);
-					yield return Instruction.Create(OpCodes.Ldc_R8, color.R);
-					yield return Instruction.Create(OpCodes.Ldc_R8, color.G);
-					yield return Instruction.Create(OpCodes.Ldc_R8, color.B);
-					yield return Instruction.Create(OpCodes.Ldc_R8, color.A);
+					yield return Instruction.Create(OpCodes.Ldc_R8, color.Red);
+					yield return Instruction.Create(OpCodes.Ldc_R8, color.Green);
+					yield return Instruction.Create(OpCodes.Ldc_R8, color.Blue);
+					yield return Instruction.Create(OpCodes.Ldc_R8, color.Alpha);
 
 					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui", "Microsoft.Maui", "Color"), parameterTypes: new[] {
 						("mscorlib", "System", "Double"),

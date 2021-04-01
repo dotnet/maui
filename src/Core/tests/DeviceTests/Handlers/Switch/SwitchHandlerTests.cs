@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -28,10 +29,10 @@ namespace Microsoft.Maui.DeviceTests
 			var switchStub = new SwitchStub()
 			{
 				IsToggled = isToggled,
-				TrackColor = Color.Red
+				TrackColor = Colors.Red
 			};
 
-			await ValidateTrackColor(switchStub, Color.Red);
+			await ValidateTrackColor(switchStub, Colors.Red);
 		}
 
 		[Fact(DisplayName = "Track Color Updates Correctly")]
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 				IsToggled = true
 			};
 
-			await ValidateTrackColor(switchStub, Color.Red, () => switchStub.TrackColor = Color.Red);
+			await ValidateTrackColor(switchStub, Colors.Red, () => switchStub.TrackColor = Colors.Red);
 		}
 
 		[Fact(DisplayName = "ThumbColor Initializes Correctly")]
@@ -51,10 +52,10 @@ namespace Microsoft.Maui.DeviceTests
 			var switchStub = new SwitchStub()
 			{
 				IsToggled = true,
-				ThumbColor = Color.Blue
+				ThumbColor = Colors.Blue
 			};
 
-			await ValidateThumbColor(switchStub, Color.Blue);
+			await ValidateThumbColor(switchStub, Colors.Blue);
 		}
 
 		[Fact(DisplayName = "Track Color Updates Correctly")]
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 				IsToggled = true
 			};
 
-			await ValidateThumbColor(switchStub, Color.Red, () => switchStub.ThumbColor = Color.Red);
+			await ValidateThumbColor(switchStub, Colors.Red, () => switchStub.ThumbColor = Colors.Red);
 		}
 	}
 }
