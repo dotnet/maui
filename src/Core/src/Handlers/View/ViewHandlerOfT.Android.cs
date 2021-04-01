@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public Context? Context => MauiContext?.Context;
 
-		public void SetFrame(Rectangle frame)
+		public override void SetFrame(Rectangle frame)
 		{
 			var nativeView = View;
 
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Layout((int)left, (int)top, (int)right, (int)bottom);
 		}
 
-		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (TypedNativeView == null)
 			{
@@ -68,24 +68,14 @@ namespace Microsoft.Maui.Handlers
 			return Context.FromPixels(TypedNativeView.MeasuredWidth, TypedNativeView.MeasuredHeight);
 		}
 
-		void SetupContainer()
+		protected override void SetupContainer()
 		{
 
 		}
 
-		void RemoveContainer()
+		protected override void RemoveContainer()
 		{
 
-		}
-
-		partial void DisconnectHandler(TNativeView nativeView, TVirtualView virtualView)
-		{
-			ViewCompat.SetAccessibilityDelegate(nativeView, null);
-		}
-
-		partial void ConnectHandler(TNativeView nativeView, TVirtualView virtualView)
-		{
-			
 		}
 	}
 }

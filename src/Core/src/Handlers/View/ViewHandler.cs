@@ -15,7 +15,7 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler
+	public abstract partial class ViewHandler : IViewHandler
 	{
 		public static PropertyMapper<IView> ViewMapper = new PropertyMapper<IView>
 		{
@@ -25,6 +25,62 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Semantics)] = MapSemantics
 		};
+
+
+		bool _hasContainer;
+
+		public abstract object? NativeView { get; }
+
+		public bool HasContainer
+		{
+			get => _hasContainer;
+			set
+			{
+				if (_hasContainer == value)
+					return;
+
+				_hasContainer = value;
+
+				if (value)
+					SetupContainer();
+				else
+					RemoveContainer();
+			}
+		}
+
+		protected abstract void SetupContainer();
+
+		protected abstract void RemoveContainer();
+
+		public IMauiContext? MauiContext { get; private set; }
+
+		IView? IViewHandler.VirtualView => null;
+
+		public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;
+
+		public abstract void SetVirtualView(IView view);
+
+		public abstract void UpdateValue(string property);
+
+		void IViewHandler.DisconnectHandler()
+		{
+		}
+
+		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
+
+		public abstract void SetFrame(Rectangle frame);
+
+#if !MONOANDROID
+		private protected void ConnectHandler(NativeView nativeView)
+		{
+
+		}
+
+		private protected void DisconnectHandler(NativeView nativeView)
+		{
+
+		}
+#endif
 
 		public static void MapFrame(IViewHandler handler, IView view)
 		{
@@ -46,34 +102,11 @@ namespace Microsoft.Maui.Handlers
 			(handler.NativeView as NativeView)?.UpdateAutomationId(view);
 		}
 
-		private static void MapSemantics(IViewHandler handler, IView view)
+#if !MONOANDROID
+		public static void MapSemantics(IViewHandler handler, IView view)
 		{
-#if MONOANDROID
-			// Check if view needs an Accessibility delegate
-			// Maybe there's a way to register a delegate here against 
-			// Disconnect per the life cycle code
-			if (!string.IsNullOrEmpty(view.Semantics.Hint))
-			{
-				var accessibilityDelegate = 
-					AndroidX.Core.View.ViewCompat.GetAccessibilityDelegate(handler.NativeView as NativeView);
-				if (accessibilityDelegate is MauiAccessibilityDelegate mad)
-					mad.View = view;
-				else if (accessibilityDelegate == null)
-					AndroidX.Core.View.ViewCompat.SetAccessibilityDelegate(handler.NativeView as NativeView, new MauiAccessibilityDelegate(view));
-			}
-#endif
 			(handler.NativeView as NativeView)?.UpdateSemantics(view);
 		}
-
-		private protected void Disconnect(IViewHandler handler, IView view)
-		{
-#if MONOANDROID
-			AndroidX.Core.View.ViewCompat.SetAccessibilityDelegate(handler.NativeView as NativeView, null);
 #endif
-		}
-
-		private protected void Connect(IViewHandler handler, IView view)
-		{
-		}
 	}
 }

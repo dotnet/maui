@@ -10,13 +10,13 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
-		public void SetFrame(Rectangle rect)
+		public override void SetFrame(Rectangle rect)
 		{
 			if (View != null)
 				View.Frame = rect.ToCGRect();
 		}
 
-		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (TypedNativeView == null)
 			{
@@ -39,12 +39,12 @@ namespace Microsoft.Maui.Handlers
 			return size;
 		}
 
-		void SetupContainer()
+		protected override void SetupContainer()
 		{
 
 		}
 
-		void RemoveContainer()
+		protected override void RemoveContainer()
 		{
 
 
