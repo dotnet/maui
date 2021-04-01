@@ -43,6 +43,7 @@ schedules:
   branches:
     include:
     - main
+    - loc
 
 variables:
   - template: /eng/pipelines/common/variables.yml
@@ -273,7 +274,7 @@ stages:
   - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
   - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
  
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # only sign using the private server
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Sign only using the private server
     - stage: nuget_signing
       dependsOn: pack_net6
       displayName: Sign Nuget
