@@ -1,12 +1,13 @@
 using System;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, TextView>
 	{
-		static Color DefaultTextColor { get; set; }
+		static Color? DefaultTextColor { get; set; }
 		static float LineSpacingAddDefault { get; set; }
 		static float LineSpacingMultDefault { get; set; }
 
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (nativeView.TextColors == null)
 			{
-				DefaultTextColor = Color.Default;
+				DefaultTextColor = null;
 			}
 			else
 			{
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateTextColor(label, DefaultTextColor);
+			handler.NativeView?.UpdateTextColor(label, DefaultTextColor!);
 		}
 
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)

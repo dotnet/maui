@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			_imageSource.Focused += (object sender, FocusEventArgs e) =>
 			{
-				_imageSource.TextColor = Color.Default;
+				_imageSource.TextColor = null;
 			};
 
 			_loadImageButton = new Button { Text = "Load Image" };

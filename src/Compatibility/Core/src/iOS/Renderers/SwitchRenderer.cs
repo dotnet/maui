@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using UIKit;
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (Element != null)
 			{
-				if (Element.OnColor == Color.Default)
+				if (Element.OnColor == null)
 					Control.OnTintColor = _defaultOnColor;
 				else
 					Control.OnTintColor = Element.OnColor.ToUIColor();

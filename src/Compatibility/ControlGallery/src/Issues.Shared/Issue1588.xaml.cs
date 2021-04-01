@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			"LabelTextColor",
 			typeof(Color),
 			typeof(LabledEntry),
-			Color.Default,
+			null,
 			BindingMode.TwoWay,
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			"EntryTextColor",
 			typeof(Color),
 			typeof(LabledEntry),
-			Color.Default,
+			null,
 			BindingMode.TwoWay,
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			"PlaceholderColor",
 			typeof(Color),
 			typeof(LabledEntry),
-			Color.Default,
+			null,
 			BindingMode.TwoWay,
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{

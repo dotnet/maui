@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using CoreGraphics;
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (cancelButton == null)
 				return;
 
-			if (Element.CancelButtonColor == Color.Default)
+			if (Element.CancelButtonColor == null)
 			{
 				cancelButton.SetTitleColor(_cancelButtonTextColorDefaultNormal, UIControlState.Normal);
 				cancelButton.SetTitleColor(_cancelButtonTextColorDefaultHighlighted, UIControlState.Highlighted);

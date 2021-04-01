@@ -50,7 +50,7 @@
 
 		void UpdateBackgroundColor(Color? color)
 		{
-			var backgroundColor = color ?? Color.Default;
+			var backgroundColor = color ?? null;
 
 			ActivityIndicator.BackgroundColor = backgroundColor;
 			Button.BackgroundColor = backgroundColor;

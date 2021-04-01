@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -653,16 +653,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			Assert.AreEqual(Color.Pink, button.TextColor);
-			Assert.AreEqual(Color.Default, button.BackgroundColor);
+			Assert.AreEqual(null, button.BackgroundColor);
 
 			Assert.AreEqual(Color.Pink, myButton.TextColor);
-			Assert.AreEqual(Color.Default, myButton.BackgroundColor);
+			Assert.AreEqual(null, myButton.BackgroundColor);
 
 			Assert.AreEqual(Color.Pink, label.BackgroundColor);
-			Assert.AreEqual(Color.Default, label.TextColor);
+			Assert.AreEqual(null, label.TextColor);
 
-			Assert.AreEqual(Color.Default, myLabel.BackgroundColor);
-			Assert.AreEqual(Color.Default, myLabel.TextColor);
+			Assert.AreEqual(null, myLabel.BackgroundColor);
+			Assert.AreEqual(null, myLabel.TextColor);
 		}
 
 		[Test]
@@ -708,10 +708,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			Assert.AreEqual(Color.Pink, button.TextColor);
-			Assert.AreEqual(Color.Default, button.BackgroundColor);
+			Assert.AreEqual(null, button.BackgroundColor);
 
 			Assert.AreEqual(Color.Pink, label.BackgroundColor);
-			Assert.AreEqual(Color.Default, label.TextColor);
+			Assert.AreEqual(null, label.TextColor);
 		}
 
 		[Test]
@@ -756,10 +756,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			(cv.Content as StackLayout).Children.Add(label);
 
 			Assert.AreEqual(Color.Pink, button.TextColor);
-			Assert.AreEqual(Color.Default, button.BackgroundColor);
+			Assert.AreEqual(null, button.BackgroundColor);
 
 			Assert.AreEqual(Color.Pink, label.BackgroundColor);
-			Assert.AreEqual(Color.Default, label.TextColor);
+			Assert.AreEqual(null, label.TextColor);
 		}
 
 		[Test]
@@ -806,7 +806,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var label1 = new Label();
 
 			Assume.That(label0.TextColor, Is.EqualTo(Color.Pink));
-			Assume.That(label1.TextColor, Is.EqualTo(Color.Default));
+			Assume.That(label1.TextColor, Is.EqualTo(null));
 
 			var rd0 = new ResourceDictionary {
 				new Style (typeof(Label)) {
@@ -837,7 +837,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			mockApp.MainPage = new ContentPage { Content = layout };
 			//Assert.That(label0.TextColor, Is.EqualTo(Color.Pink));
-			//Assert.That(label1.TextColor, Is.EqualTo(Color.Default));
+			//Assert.That(label1.TextColor, Is.EqualTo(null));
 
 			Assert.That(label0.TextColor, Is.EqualTo(Color.Pink));
 			Assert.That(label1.TextColor, Is.EqualTo(Color.Olive));

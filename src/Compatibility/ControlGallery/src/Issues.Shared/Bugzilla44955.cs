@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				if (text == null)
 					entry.BackgroundColor = Color.Red;
 				else
-					entry.BackgroundColor = text.Trim() != "" ? Color.Default : Color.Red;
+					entry.BackgroundColor = text.Trim() != "" ? null : Color.Red;
 			}
 		}
 	}

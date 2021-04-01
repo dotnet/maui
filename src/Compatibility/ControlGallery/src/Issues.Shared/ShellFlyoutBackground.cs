@@ -64,10 +64,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Command = new Command(() =>
 						{
 							FlyoutBackground = null;
-							if(FlyoutBackgroundColor == Color.Default)
+							if(FlyoutBackgroundColor == null)
 								FlyoutBackgroundColor = Color.Red;
 							else
-								FlyoutBackgroundColor = Color.Default;
+								FlyoutBackgroundColor = null;
 						})
 					},
 					new Button()
@@ -77,10 +77,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Command = new Command(() =>
 						{
 							FlyoutBackground = null;
-							if(FlyoutBackgroundColor == Color.Default)
+							if(FlyoutBackgroundColor == null)
 								FlyoutBackgroundColor = Color.Red.MultiplyAlpha(0.7);
 							else
-								FlyoutBackgroundColor = Color.Default;
+								FlyoutBackgroundColor = null;
 						})
 					},
 					new Button()
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 									new GradientStop(Color.DarkBlue, 1.0f),
 								});
 
-							FlyoutBackgroundColor = Color.Default;
+							FlyoutBackgroundColor = null;
 							if(FlyoutBackground != null)
 								FlyoutBackground = null;
 							else

@@ -50,7 +50,7 @@
 
 		void UpdateBackgroundColor(Color? color)
 		{
-			var backgroundColor = color ?? Color.Default;
+			var backgroundColor = color ?? null;
 
 			Button.BackgroundColor = backgroundColor;
 			BoxView.BackgroundColor = backgroundColor;

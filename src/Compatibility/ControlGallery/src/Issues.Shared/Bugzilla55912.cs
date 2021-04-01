@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Grid.SetRow(testGrid, 1);
 			testGrid.Children.Add(gridLabel);
 
-			var testStack = new StackLayout { BackgroundColor = Color.Default, AutomationId = "teststack" };
+			var testStack = new StackLayout { BackgroundColor = null, AutomationId = "teststack" };
 			var stackLabel = new Label
 			{
 				AutomationId = StackLabelId,

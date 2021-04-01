@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO.IsolatedStorage;
 using System.Reflection;
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				case "HoloBlueBright":
 					return Color.FromHex("#ff00ddff");
 				default:
-					return Color.Default;
+					return null;
 			}
 		}
 

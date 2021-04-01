@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public class Gh12025NavPage : NavigationPage
 	{
-		public static new readonly BindableProperty IconColorProperty = BindableProperty.CreateAttached("IconColor", typeof(Color), typeof(Page), Color.Default);
+		public static new readonly BindableProperty IconColorProperty = BindableProperty.CreateAttached("IconColor", typeof(Color), typeof(Page), null);
 		public static void SetIconColor(Page page, Color barTintColor) => page.SetValue(IconColorProperty, barTintColor);
 		public static Color GetIconColor(Page page) => (Color)page.GetValue(IconColorProperty);
 	}

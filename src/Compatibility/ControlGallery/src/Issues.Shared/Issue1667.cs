@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				blue.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Color.Blue);
 
 				var defaultColor = new Button { Text = "Default" };
-				defaultColor.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Color.Default);
+				defaultColor.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(null);
 
 				layout.Children.Add(red);
 				layout.Children.Add(blue);

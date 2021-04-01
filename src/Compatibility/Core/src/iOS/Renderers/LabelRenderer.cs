@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
@@ -319,12 +319,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected override void SetBackgroundColor(Color color)
 		{
 #if __MOBILE__
-			if (color == Color.Default)
+			if (color == null)
 				BackgroundColor = UIColor.Clear;
 			else
 				BackgroundColor = color.ToUIColor();
 #else
-			if (color == Color.Default)
+			if (color == null)
 				Layer.BackgroundColor = NSColor.Clear.CGColor;
 			else
 				Layer.BackgroundColor = color.ToCGColor();

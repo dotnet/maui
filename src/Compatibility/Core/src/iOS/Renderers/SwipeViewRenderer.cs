@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected override void SetBackgroundColor(Color color)
 		{
-			if (Element.BackgroundColor != Color.Default)
+			if (Element.BackgroundColor != null)
 				BackgroundColor = Element.BackgroundColor.ToUIColor();
 			else
 				BackgroundColor = ColorExtensions.BackgroundColor;
@@ -408,7 +408,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var emptyContentView = new UIView
 			{
-				BackgroundColor = Color.Default.ToUIColor()
+				BackgroundColor = null.ToUIColor()
 			};
 
 			return emptyContentView;

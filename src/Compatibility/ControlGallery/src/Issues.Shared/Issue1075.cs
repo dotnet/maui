@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				if (picker.SelectedIndex == -1)
 				{
-					boxView.Color = Color.Default;
+					boxView.Color = null;
 				}
 				else
 				{

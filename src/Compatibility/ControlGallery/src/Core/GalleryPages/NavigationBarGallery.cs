@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 								if (toggleBarTextColor % 2 == 0) {
 									rootNavPage.BarTextColor = Color.Teal;
 								} else {
-									rootNavPage.BarTextColor = Color.Default;
+									rootNavPage.BarTextColor = null;
 								}
 								toggleBarTextColor++;
 							})
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 								if (toggleBarBackgroundColor % 2 == 0) {
 									rootNavPage.BarBackgroundColor = Color.Navy;
 								} else {
-									rootNavPage.BarBackgroundColor = Color.Default;
+									rootNavPage.BarBackgroundColor = null;
 								}
 								toggleBarBackgroundColor++;
 
@@ -88,8 +88,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 						new Button {
 							Text = "Change Both to default",
 							Command = new Command (() => {
-								rootNavPage.BarTextColor = Color.Default;
-								rootNavPage.BarBackgroundColor = Color.Default;
+								rootNavPage.BarTextColor = null;
+								rootNavPage.BarBackgroundColor = null;
 							})
 						},
 						new Button {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Android.Content;
 using Android.Text;
 using Android.Views;
@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void SetDefaultMainTextColor(Color defaultColor)
 		{
 			_defaultMainTextColor = defaultColor;
-			if (_mainTextColor == Color.Default)
+			if (_mainTextColor == null)
 				_mainText.SetTextColor(defaultColor.ToAndroid());
 		}
 
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (_detailTextColor == color)
 				return;
 
-			if (_defaultDetailColor == Color.Default)
+			if (_defaultDetailColor == null)
 				_defaultDetailColor = Color.FromUint((uint)_detailText.CurrentTextColor);
 
 			_detailTextColor = color;
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public void SetMainTextColor(Color color)
 		{
-			Color defaultColorToSet = _defaultMainTextColor == Color.Default ? _androidDefaultTextColor : _defaultMainTextColor;
+			Color defaultColorToSet = _defaultMainTextColor == null ? _androidDefaultTextColor : _defaultMainTextColor;
 
 			_mainTextColor = color;
 			_mainText.SetTextColor(color.ToAndroid(defaultColorToSet));

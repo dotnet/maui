@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Primitives;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {

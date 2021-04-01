@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 				else
 				{
-					passwordColorDefaultToggle.TextColor = Color.Default;
+					passwordColorDefaultToggle.TextColor = null;
 					passwordToggleButton.Text = "Toggle Password Box (Default)";
 				}
 			};
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 				else
 				{
-					searchbarTextColorDefaultToggle.TextColor = Color.Default;
+					searchbarTextColorDefaultToggle.TextColor = null;
 					searchbarTextColorDefaultToggle.Text = "Default SearchBar Text Color";
 				}
 			};
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 				else
 				{
-					searchbarPlaceholderColorDefaultToggle.PlaceholderColor = Color.Default;
+					searchbarPlaceholderColorDefaultToggle.PlaceholderColor = null;
 					searchbarPlaceholderColorDefaultToggle.Placeholder = "Default Placeholder Color";
 				}
 			};
@@ -154,14 +154,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			buttonColorDefaultToggle.Clicked += (s, e) =>
 			{
-				if (buttonColorDefaultToggle.TextColor == Color.Default)
+				if (buttonColorDefaultToggle.TextColor == null)
 				{
 					buttonColorDefaultToggle.TextColor = Color.Red;
 					buttonColorDefaultToggle.Text = "Custom Color (Click To Toggle)";
 				}
 				else
 				{
-					buttonColorDefaultToggle.TextColor = Color.Default;
+					buttonColorDefaultToggle.TextColor = null;
 					buttonColorDefaultToggle.Text = defaultLabel;
 				}
 
@@ -204,14 +204,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Command = new Command(o =>
 				{
-					if (labelColorDefaultToggle.TextColor == Color.Default)
+					if (labelColorDefaultToggle.TextColor == null)
 					{
 						labelColorDefaultToggle.TextColor = Color.Green;
 						labelColorDefaultToggle.Text = "Custom Label Color (Tap To Toggle)";
 					}
 					else
 					{
-						labelColorDefaultToggle.TextColor = Color.Default;
+						labelColorDefaultToggle.TextColor = null;
 						labelColorDefaultToggle.Text = defaultText;
 					}
 				})
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 				else
 				{
-					entryTextColorDefaultToggle.TextColor = Color.Default;
+					entryTextColorDefaultToggle.TextColor = null;
 					entryTextColorDefaultToggle.Text = defaultEntryColor;
 				}
 			};
@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 				else
 				{
-					entryPlaceholderColorDefaultToggle.PlaceholderColor = Color.Default;
+					entryPlaceholderColorDefaultToggle.PlaceholderColor = null;
 					entryPlaceholderColorDefaultToggle.Placeholder = defaultPlaceholderColorText;
 				}
 			};
@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 				else
 				{
-					timePickerColorDefaultToggle.TextColor = Color.Default;
+					timePickerColorDefaultToggle.TextColor = null;
 					timePickerColorLabel.Text = defaultText;
 				}
 			};
@@ -383,7 +383,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 				else
 				{
-					pickerColorDefaultToggle.TextColor = Color.Default;
+					pickerColorDefaultToggle.TextColor = null;
 					pickerColorLabel.Text = defaultText;
 				}
 			};
@@ -455,7 +455,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 				else
 				{
-					pickerColorDefaultToggle.TextColor = Color.Default;
+					pickerColorDefaultToggle.TextColor = null;
 					pickerColorLabel.Text = defaultText;
 				}
 			};

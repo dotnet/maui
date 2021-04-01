@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Grad
 		{
 			var backgroundColor = GetColorFromString(e.NewTextValue);
 
-			if (backgroundColor != Color.Default)
+			if (backgroundColor != null)
 			{
 				GradientView.BackgroundColor = backgroundColor;
 				BackgroundColorEntry.BackgroundColor = backgroundColor;
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Grad
 		{
 			var borderColor = GetColorFromString(e.NewTextValue);
 
-			if (borderColor != Color.Default)
+			if (borderColor != null)
 			{
 				GradientView.BorderColor = borderColor;
 				BorderColorEntry.BackgroundColor = borderColor;
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Grad
 		Color GetColorFromString(string value)
 		{
 			if (string.IsNullOrEmpty(value))
-				return Color.Default;
+				return null;
 
 			try
 			{
@@ -210,7 +210,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Grad
 			}
 			catch (Exception)
 			{
-				return Color.Default;
+				return null;
 			}
 		}
 	}

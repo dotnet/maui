@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Android.Content;
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var image = FindViewById<ImageView>(searchViewCloseButtonId);
 				if (image != null && image.Drawable != null)
 				{
-					if (Element.CancelButtonColor != Color.Default)
+					if (Element.CancelButtonColor != null)
 						image.Drawable.SetColorFilter(Element.CancelButtonColor, FilterMode.SrcIn);
 					else
 						image.Drawable.ClearColorFilter();

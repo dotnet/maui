@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
@@ -43,8 +43,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				// Verify that Entry0 has no VisualStateGroups
 				Assert.False(entry0.HasVisualStateGroups());
-				Assert.That(Color.Default, Is.EqualTo(entry0.TextColor));
-				Assert.That(Color.Default, Is.EqualTo(entry0.PlaceholderColor));
+				Assert.That(null, Is.EqualTo(entry0.TextColor));
+				Assert.That(null, Is.EqualTo(entry0.PlaceholderColor));
 
 				var entry1 = layout.Entry1;
 
@@ -55,8 +55,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.Contains("Normal", groups[0].States.Select(state => state.Name).ToList());
 				Assert.Contains("Disabled", groups[0].States.Select(state => state.Name).ToList());
 
-				Assert.AreEqual(Color.Default, entry1.TextColor);
-				Assert.AreEqual(Color.Default, entry1.PlaceholderColor);
+				Assert.AreEqual(null, entry1.TextColor);
+				Assert.AreEqual(null, entry1.PlaceholderColor);
 
 				// Change the state of Entry1
 				Assert.True(VisualStateManager.GoToState(entry1, "Disabled"));
@@ -66,8 +66,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual(Color.LightGray, entry1.PlaceholderColor);
 
 				// Verify that Entry0 was unaffected
-				Assert.AreEqual(Color.Default, entry0.TextColor);
-				Assert.AreEqual(Color.Default, entry0.PlaceholderColor);
+				Assert.AreEqual(null, entry0.TextColor);
+				Assert.AreEqual(null, entry0.PlaceholderColor);
 			}
 
 			[TestCase(false)]
@@ -77,8 +77,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var layout = new VisualStateManagerTests(useCompiledXaml);
 				var entry1 = layout.Entry1;
 
-				Assert.AreEqual(Color.Default, entry1.TextColor);
-				Assert.AreEqual(Color.Default, entry1.PlaceholderColor);
+				Assert.AreEqual(null, entry1.TextColor);
+				Assert.AreEqual(null, entry1.PlaceholderColor);
 
 				// Change the state of Entry1
 				var groups = VisualStateManager.GetVisualStateGroups(entry1);
@@ -92,8 +92,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(VisualStateManager.GoToState(entry1, "Normal"));
 
 				// And verify that the changes reverted
-				Assert.AreEqual(Color.Default, entry1.TextColor);
-				Assert.AreEqual(Color.Default, entry1.PlaceholderColor);
+				Assert.AreEqual(null, entry1.TextColor);
+				Assert.AreEqual(null, entry1.PlaceholderColor);
 			}
 
 			[TestCase(false)]

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var contentView = new ContentView();
 
 			Assert.Null(contentView.Content);
-			Assert.AreEqual(Color.Default, contentView.BackgroundColor);
+			Assert.AreEqual(null, contentView.BackgroundColor);
 			Assert.AreEqual(new Thickness(0), contentView.Padding);
 		}
 

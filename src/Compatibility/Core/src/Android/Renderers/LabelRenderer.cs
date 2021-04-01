@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		float _lastTextSize = -1f;
 		Typeface _lastTypeface;
 
-		Color _lastUpdateColor = Color.Default;
+		Color _lastUpdateColor = null;
 		FormsTextView _view;
 		bool _wasFormatted;
 
@@ -279,7 +279,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_wasFormatted)
 				{
 					_view.SetTextColor(_labelTextColorDefault);
-					_lastUpdateColor = Color.Default;
+					_lastUpdateColor = null;
 				}
 
 				switch (Element.TextType)

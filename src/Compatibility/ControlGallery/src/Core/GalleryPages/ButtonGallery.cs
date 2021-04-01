@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				alert.Text = result ? "Accepted" : "Cancelled";
 			};
 
-			borderButton.Clicked += (sender, args) => borderButton.BackgroundColor = Color.Default;
+			borderButton.Clicked += (sender, args) => borderButton.BackgroundColor = null;
 
 			Content = new ScrollView
 			{

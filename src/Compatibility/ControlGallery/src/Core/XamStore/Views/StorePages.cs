@@ -531,7 +531,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class UpdatesPage : BasePage
 	{
-		public UpdatesPage() : base("Available Updates", Color.Default)
+		public UpdatesPage() : base("Available Updates", null)
 		{
 			AddSearchHandler("Search Updates", SearchBoxVisibility.Collapsible);
 		}
@@ -540,7 +540,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class InstalledPage : BasePage
 	{
-		public InstalledPage() : base("Installed Items", Color.Default)
+		public InstalledPage() : base("Installed Items", null)
 		{
 			AddSearchHandler("Search Installed", SearchBoxVisibility.Collapsible);
 		}
@@ -549,7 +549,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class LibraryPage : BasePage
 	{
-		public LibraryPage() : base("My Library", Color.Default)
+		public LibraryPage() : base("My Library", null)
 		{
 			AddSearchHandler("Search Apps", SearchBoxVisibility.Collapsible);
 		}
@@ -558,13 +558,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class NotificationsPage : BasePage
 	{
-		public NotificationsPage() : base("Notifications", Color.Default) { }
+		public NotificationsPage() : base("Notifications", null) { }
 	}
 
 	[Preserve(AllMembers = true)]
 	public class SubscriptionsPage : BasePage
 	{
-		public SubscriptionsPage() : base("My Subscriptions", Color.Default) { }
+		public SubscriptionsPage() : base("My Subscriptions", null) { }
 	}
 
 	[Preserve(AllMembers = true)]
@@ -588,7 +588,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class MoviesPage : BasePage
 	{
-		public MoviesPage() : base("Hot Movies", Color.Default)
+		public MoviesPage() : base("Hot Movies", null)
 		{
 			AddSearchHandler("Search Movies", SearchBoxVisibility.Expanded);
 		}
@@ -597,7 +597,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class BooksPage : BasePage
 	{
-		public BooksPage() : base("Bookstore", Color.Default)
+		public BooksPage() : base("Bookstore", null)
 		{
 			AddSearchHandler("Search Books", SearchBoxVisibility.Expanded);
 		}
@@ -606,7 +606,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class MusicPage : BasePage
 	{
-		public MusicPage() : base("Music", Color.Default)
+		public MusicPage() : base("Music", null)
 		{
 			AddSearchHandler("Search Music", SearchBoxVisibility.Expanded);
 		}
@@ -615,7 +615,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class NewsPage : BasePage
 	{
-		public NewsPage() : base("Newspapers", Color.Default)
+		public NewsPage() : base("Newspapers", null)
 		{
 			AddSearchHandler("Search Papers", SearchBoxVisibility.Expanded);
 		}
@@ -624,19 +624,19 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class AccountsPage : BasePage
 	{
-		public AccountsPage() : base("Account Items", Color.Default) { }
+		public AccountsPage() : base("Account Items", null) { }
 	}
 
 	[Preserve(AllMembers = true)]
 	public class WishlistPage : BasePage
 	{
-		public WishlistPage() : base("My Wishlist", Color.Default) { }
+		public WishlistPage() : base("My Wishlist", null) { }
 	}
 
 	[Preserve(AllMembers = true)]
 	public class SettingsPage : BasePage
 	{
-		public SettingsPage() : base("Settings", Color.Default) { }
+		public SettingsPage() : base("Settings", null) { }
 	}
 
 }

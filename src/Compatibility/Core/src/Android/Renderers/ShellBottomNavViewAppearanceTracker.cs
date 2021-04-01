@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Google.Android.Material.BottomNavigation;
@@ -64,10 +64,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var oldBackground = bottomView.Background;
 			var colorDrawable = oldBackground as ColorDrawable;
 			var colorChangeRevealDrawable = oldBackground as ColorChangeRevealDrawable;
-			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ?? Color.Default.ToAndroid();
+			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ?? null.ToAndroid();
 			AColor newColor;
 
-			if (color == Color.Default)
+			if (color == null)
 				newColor = Color.White.ToAndroid();
 			else
 				newColor = color.ToAndroid();

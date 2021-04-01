@@ -64,9 +64,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					}
 					else
 					{
-						grid.BackgroundColor = Color.Default;
-						contentView.BackgroundColor = Color.Default;
-						stackLayout.BackgroundColor = Color.Default;
+						grid.BackgroundColor = null;
+						contentView.BackgroundColor = null;
+						stackLayout.BackgroundColor = null;
 					}
 
 					_flag = !_flag;

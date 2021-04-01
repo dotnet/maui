@@ -24,7 +24,7 @@ Tap the second button once to turn the Editor background color to Green. Tap the
 			var entry = new Entry();
 
 			entryButton.Clicked +=
-				(sender, args) => { entry.BackgroundColor = entry.BackgroundColor != Color.Green ? Color.Green : Color.Default; };
+				(sender, args) => { entry.BackgroundColor = entry.BackgroundColor != Color.Green ? Color.Green : null; };
 
 			var editorButton = new Button { Text = "Toggle Editor Background (Green/Default)" };
 			var editor = new Editor()
@@ -33,7 +33,7 @@ Tap the second button once to turn the Editor background color to Green. Tap the
 			};
 
 			editorButton.Clicked +=
-				(sender, args) => { editor.BackgroundColor = editor.BackgroundColor != Color.Green ? Color.Green : Color.Default; };
+				(sender, args) => { editor.BackgroundColor = editor.BackgroundColor != Color.Green ? Color.Green : null; };
 
 			var layout = new StackLayout
 			{

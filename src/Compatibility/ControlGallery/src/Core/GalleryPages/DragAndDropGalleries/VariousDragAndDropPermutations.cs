@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Drag
 
 			dragRecognizer.DropCompleted += (_, __) =>
 			{
-				DraggingColor = Color.Default;
+				DraggingColor = null;
 				OnPropertyChanged(nameof(DraggingColor));
 			};
 

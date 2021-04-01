@@ -1,4 +1,4 @@
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.Views;
@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected void SetDefaultBackgroundColor(IVisualElementRenderer renderer)
 		{
-			if (ChildView.BackgroundColor == Color.Default)
+			if (ChildView.BackgroundColor == null)
 			{
 				TypedArray colors = Context.Theme.ObtainStyledAttributes(new[] { global::Android.Resource.Attribute.ColorBackground });
 				renderer.View.SetBackgroundColor(new global::Android.Graphics.Color(colors.GetColor(0, 0)));

@@ -54,14 +54,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "Change Bar Text",
 				Command = new Command(() =>
 				{
-					if (BarTextColor == Color.Default)
+					if (BarTextColor == null)
 					{
 						BarTextColor = Color.HotPink;
 						btnChangeBarText.Text = $"Bar Text: HotPink";
 					}
 					else
 					{
-						BarTextColor = Color.Default;
+						BarTextColor = null;
 						btnChangeBarText.Text = $"Bar Text: Default";
 					}
 				})
@@ -73,14 +73,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "Change Item Color",
 				Command = new Command(() =>
 				{
-					if (On<Android>().Element.UnselectedTabColor == Color.Default)
+					if (On<Android>().Element.UnselectedTabColor == null)
 					{
 						On<Android>().Element.UnselectedTabColor = new Color(0, 255, 0, 128);
 						btnChangeBarItemColorText.Text = $"Item Color: Less Green";
 					}
 					else
 					{
-						On<Android>().Element.UnselectedTabColor = Color.Default;
+						On<Android>().Element.UnselectedTabColor = null;
 						btnChangeBarItemColorText.Text = $"Item Color: Default";
 					}
 				})
@@ -92,14 +92,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "Change Selected Item Color",
 				Command = new Command(() =>
 				{
-					if (On<Android>().Element.SelectedTabColor == Color.Default)
+					if (On<Android>().Element.SelectedTabColor == null)
 					{
 						On<Android>().Element.SelectedTabColor = Color.Green;
 						btnChangeBarSelectedItemColorText.Text = $"Selected Item Color: Green";
 					}
 					else
 					{
-						On<Android>().Element.SelectedTabColor = Color.Default;
+						On<Android>().Element.SelectedTabColor = null;
 						btnChangeBarSelectedItemColorText.Text = $"Selected Item Color: Default";
 					}
 				})
@@ -146,10 +146,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							Text = "Change Bar Background Color",
 							Command = new Command(()=>
 							{
-								if(BarBackgroundColor == Color.Default)
+								if(BarBackgroundColor == null)
 									BarBackgroundColor = Color.Fuchsia;
 								else
-									BarBackgroundColor = Color.Default;
+									BarBackgroundColor = null;
 							})
 						},
 						btnAddPage,

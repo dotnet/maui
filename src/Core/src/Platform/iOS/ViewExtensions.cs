@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 
 			var color = view.BackgroundColor;
 
-			if (!color.IsDefault)
+			if (color != null)
 				nativeView.BackgroundColor = color.ToNative();
 		}
 

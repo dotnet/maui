@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			CurrentPageChanged += (s, e) =>
 			{
 				if (CurrentPage is FirstPage)
-					BarBackgroundColor = Color.Default;
+					BarBackgroundColor = null;
 				if (CurrentPage is SecondPage)
 					BarBackgroundColor = Color.MediumOrchid;
 			};

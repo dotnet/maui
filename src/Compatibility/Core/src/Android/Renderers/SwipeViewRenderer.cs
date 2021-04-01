@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected override void UpdateBackgroundColor()
 		{
-			if (Element.BackgroundColor != Color.Default)
+			if (Element.BackgroundColor != null)
 				SetBackgroundColor(Element.BackgroundColor.ToAndroid());
 			else
 				Control?.SetWindowBackground();
@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		AView CreateEmptyContent()
 		{
 			var emptyContentView = new AView(_context);
-			emptyContentView.SetBackgroundColor(Color.Default.ToAndroid());
+			emptyContentView.SetBackgroundColor(null.ToAndroid());
 
 			return emptyContentView;
 		}

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool FlagsSet { get; set; }
 
 		static bool _ColorButtonNormalSet;
-		static Color _ColorButtonNormal = Color.Default;
+		static Color _ColorButtonNormal = null;
 		public static Color ColorButtonNormalOverride { get; set; }
 
 		internal static BuildVersionCodes SdkInt
@@ -518,7 +518,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			Color rc = ColorButtonNormalOverride;
 
-			if (ColorButtonNormalOverride == Color.Default)
+			if (ColorButtonNormalOverride == null)
 			{
 				using (var value = new TypedValue())
 				{
@@ -850,13 +850,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 						color = ContextCompat.GetColor(_context, AndroidResource.Color.WidgetEditTextDark);
 						break;
 					default:
-						return Color.Default;
+						return null;
 				}
 
 				if (color != 0)
 					return new AColor(color).ToColor();
 
-				return Color.Default;
+				return null;
 			}
 
 			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)

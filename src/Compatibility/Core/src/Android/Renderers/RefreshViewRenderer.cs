@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.OS;
@@ -133,9 +133,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (RefreshView == null)
 				return;
 
-			if (RefreshView.RefreshColor != Color.Default)
+			if (RefreshView.RefreshColor != null)
 				SetColorSchemeColors(RefreshView.RefreshColor.ToAndroid());
-			if (RefreshView.BackgroundColor != Color.Default)
+			if (RefreshView.BackgroundColor != null)
 				SetProgressBackgroundColorSchemeColor(RefreshView.BackgroundColor.ToAndroid());
 		}
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestHSLModifiers()
 		{
-			var color = Color.Default;
+			var color = null;
 			Assert.Throws<InvalidOperationException>(() => color.WithHue(.1));
 			Assert.Throws<InvalidOperationException>(() => color.WithLuminosity(.1));
 			Assert.Throws<InvalidOperationException>(() => color.WithSaturation(.1));
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			color = color.MultiplyAlpha(0.25);
 			Assert.AreEqual(.25, color.A);
 
-			color = Color.Default;
+			color = null;
 			Assert.Throws<InvalidOperationException>(() => color = color.MultiplyAlpha(0.25));
 
 			color = Color.FromHsla(1, 1, 1, 1);
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var brighter = color.AddLuminosity(0.2);
 			Assert.That(brighter.Luminosity, Is.EqualTo(color.Luminosity + 0.2).Within(0.001));
 
-			color = Color.Default;
+			color = null;
 			Assert.Throws<InvalidOperationException>(() => color.AddLuminosity(0.2));
 		}
 
@@ -321,12 +321,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(Color.FromHsla(0.66916666666666669, 1, 0.5), converter.ConvertFromInvariantString("hsl(240.9,100%, 50%)"));
 			Assert.AreEqual(Color.FromHsva(0.89166666666666669, .71, 1, .8), converter.ConvertFromInvariantString("hsva(321,71%, 100%, .8)"));
 			Assert.AreEqual(Color.FromHsv(0.89166666666666669, .71, 1), converter.ConvertFromInvariantString("hsv(321,71%, 100%)"));
-			Assert.AreEqual(Color.Default, converter.ConvertFromInvariantString("Color.Default"));
+			Assert.AreEqual(null, converter.ConvertFromInvariantString("null"));
 			Assert.AreEqual(Color.Accent, converter.ConvertFromInvariantString("Accent"));
 			var hotpink = Color.FromHex("#FF69B4");
 			Color.Accent = hotpink;
 			Assert.AreEqual(Color.Accent, converter.ConvertFromInvariantString("Accent"));
-			Assert.AreEqual(Color.Default, converter.ConvertFromInvariantString("#12345"));
+			Assert.AreEqual(null, converter.ConvertFromInvariantString("#12345"));
 			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString(""));
 			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString("rgb(0,0,255"));
 			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString("hsl(12, 100%)"));
@@ -342,8 +342,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestDefault()
 		{
-			Assert.AreEqual(Color.Default, default(Color));
-			Assert.AreEqual(Color.Default, new Color());
+			Assert.AreEqual(null, default(Color));
+			Assert.AreEqual(null, new Color());
 		}
 
 		[Test]
@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestDefaultColorToSystemDrawingColorEmpty()
 		{
-			Assert.AreEqual(System.Drawing.Color.Empty, (System.Drawing.Color)Color.Default);
+			Assert.AreEqual(System.Drawing.Color.Empty, (System.Drawing.Color)null);
 		}
 
 		[Test]
@@ -377,7 +377,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestSystemDrawingColorEmptyToColorDefault()
 		{
-			Assert.AreEqual(Color.Default, (Color)System.Drawing.Color.Empty);
+			Assert.AreEqual(null, (Color)System.Drawing.Color.Empty);
 		}
 
 		[Test]

@@ -93,8 +93,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			Device.StartTimer(TimeSpan.FromSeconds(2), () =>
 			{
-				BarBackgroundColor = Color.Default;
-				BarTextColor = Color.Default;
+				BarBackgroundColor = null;
+				BarTextColor = null;
 
 				return false;
 			});
@@ -139,8 +139,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 				Device.StartTimer(TimeSpan.FromSeconds(6), () =>
 				{
-					BarBackgroundColor = Color.Default;
-					BarTextColor = Color.Default;
+					BarBackgroundColor = null;
+					BarTextColor = null;
 
 					return false;
 				});

@@ -23,8 +23,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var clearSelectedTabColorButton = new Button { Text = "Button" };
 			clearSelectedTabColorButton.Clicked += (s, a) =>
 			{
-				UnselectedTabColor = Color.Default;
-				SelectedTabColor = Color.Default;
+				UnselectedTabColor = null;
+				SelectedTabColor = null;
 			};
 
 			var tabTwo = new ContentPage

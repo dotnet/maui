@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected virtual ColorStateList GetColorStateList()
 		{
-			var tintColor = Element.Color == Color.Default ? Color.Accent.ToAndroid() : Element.Color.ToAndroid();
+			var tintColor = Element.Color == null ? Color.Accent.ToAndroid() : Element.Color.ToAndroid();
 
 			var list = new ColorStateList(
 					_checkedStates,
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		void UpdateBackgroundColor()
 		{
-			if (Element.BackgroundColor == Color.Default)
+			if (Element.BackgroundColor == null)
 				SetBackgroundColor(AColor.Transparent);
 			else
 				SetBackgroundColor(Element.BackgroundColor.ToAndroid());

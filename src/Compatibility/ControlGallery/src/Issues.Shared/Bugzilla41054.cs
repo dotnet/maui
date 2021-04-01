@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			double result;
 			bool isValid = double.TryParse(args.NewTextValue, out result);
-			((Entry)sender).TextColor = isValid ? Color.Default : Color.Red;
+			((Entry)sender).TextColor = isValid ? null : Color.Red;
 		}
 	}
 #if UITEST

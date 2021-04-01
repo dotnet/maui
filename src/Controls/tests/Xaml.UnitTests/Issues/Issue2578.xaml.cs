@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Issue2578 layout = new Issue2578(useCompiledXaml);
 
 				Assert.AreEqual(null, layout.label.Text);
-				Assert.AreEqual(Color.Default, layout.label.BackgroundColor);
+				Assert.AreEqual(null, layout.label.BackgroundColor);
 				Assert.AreEqual(Color.Olive, layout.label.TextColor);
 				layout.label.Text = "Foo";
 				Assert.AreEqual(Color.Red, layout.label.BackgroundColor);

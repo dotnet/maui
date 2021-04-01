@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -426,7 +426,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 				// If not iOS 13, but 11+ we can only get the named colors
 				if (!IsiOS13OrNewer && IsiOS11OrNewer)
-					return (resultColor = UIColor.FromName(name)) == null ? Color.Default : resultColor.ToColor();
+					return (resultColor = UIColor.FromName(name)) == null ? null : resultColor.ToColor();
 
 				// If iOS 13+ check all dynamic colors too
 				switch (name)
@@ -506,7 +506,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (resultColor == null)
-					return Color.Default;
+					return null;
 
 				return resultColor.ToColor();
 #elif __MACOS__
@@ -677,11 +677,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (resultColor == null)
-					return Color.Default;
+					return null;
 
 				return resultColor.ToColor(NSColorSpace.GenericRGBColorSpace);
 #else
-				return Color.Default;
+				return null;
 #endif
 			}
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				oldElement.PropertyChanged -= _propertyChangeHandler;
 			}
 
-			Color currentColor = oldElement?.BackgroundColor ?? Color.Default;
+			Color currentColor = oldElement?.BackgroundColor ?? null;
 
 			if (element.BackgroundColor != currentColor)
 				UpdateBackgroundColor();

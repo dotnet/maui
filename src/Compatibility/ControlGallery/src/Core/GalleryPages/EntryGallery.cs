@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			toggleColorButton.Clicked += (sender, e) =>
 			{
-				if (normal.TextColor == Color.Default)
+				if (normal.TextColor == null)
 				{
 					normal.TextColor = Color.Red;
 					password.TextColor = Color.Red;
@@ -69,9 +69,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				}
 				else
 				{
-					normal.TextColor = Color.Default;
-					password.TextColor = Color.Default;
-					numericPassword.TextColor = Color.Default;
+					normal.TextColor = null;
+					password.TextColor = null;
+					numericPassword.TextColor = null;
 				}
 			};
 

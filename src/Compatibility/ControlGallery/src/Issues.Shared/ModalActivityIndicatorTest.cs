@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			colorToggle.Clicked += (sender, args) =>
 			{
-				vm.Color = vm.Color.IsDefault ? Color.Green : Color.Default;
+				vm.Color = vm.Color.IsDefault ? Color.Green : null;
 			};
 
 			Content = new StackLayout()
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			public ModalActivityIndicatorModel()
 			{
-				_color = Color.Default;
+				_color = null;
 			}
 
 			public bool IsBusy

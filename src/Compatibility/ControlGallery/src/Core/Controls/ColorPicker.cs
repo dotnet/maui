@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		public static readonly BindableProperty UseDefaultProperty = BindableProperty.Create(nameof(UseDefault), typeof(bool), typeof(ColorPicker), false,
 			propertyChanged: OnColorChanged);
 
-		public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(ColorPicker), Color.Default,
+		public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(ColorPicker), null,
 			propertyChanged: OnColorChanged);
 
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(ColorPicker), "Pick a color:",
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			if (bindable is ColorPicker picker)
 			{
-				var color = picker.UseDefault ? Color.Default : picker.Color;
+				var color = picker.UseDefault ? null : picker.Color;
 				picker._hexLabel.Text = color.IsDefault ? "<default>" : ColorToHex(color);
 				picker._box.BackgroundColor = color;
 				picker.ColorPicked?.Invoke(picker, new ColorPickedEventArgs(color));

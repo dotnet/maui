@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			bigbUtton.Clicked += async (sender, e) =>
 			{
 				await scroller.ScrollToAsync(actv, ScrollToPosition.Center, true);
-				actv.Color = Color.Default;
+				actv.Color = null;
 			};
 
 			Content = scroller;
