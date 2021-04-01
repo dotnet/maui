@@ -1,36 +1,36 @@
 namespace Microsoft.Maui
 {
+	public enum SemanticHeadingLevel
+	{
+		None = 0,
+		Level1 = 1,
+		Level2 = 2,
+		Level3 = 3,
+		Level4 = 4,
+		Level5 = 5,
+		Level6 = 6,
+		Level7 = 7,
+		Level8 = 8,
+		Level9 = 9
+	}
+
 	public partial class Semantics
 	{
-		bool _isHeading;
-
 		public string? Description { get; set; }
 
 		public string? Hint { get; set; }
+
+		public bool IsHeading => HeadingLevel != SemanticHeadingLevel.None;
 
 		public Semantics()
 		{
 		}
 
-		public bool IsHeading 
-		{ 
-			get
-			{
-#if WINDOWS
-				if (HeadingLevel == SemanticHeadingLevel.None)
-					return false;
-				else if (HeadingLevel != SemanticHeadingLevel.Default)
-					return true;
-#endif
-				return _isHeading;
-			}
-			
-			set => _isHeading = value; 
-		}
+		public SemanticHeadingLevel HeadingLevel { get; set; } = SemanticHeadingLevel.Default;
 
 		public override string ToString()
 		{
-			return string.Format("Description: {0}, Hint: {1}, IsHeading: {2}", Description, Hint, IsHeading);
+			return string.Format("Description: {0}, Hint: {1}, HeadingLevel: {2}", Description, Hint, HeadingLevel);
 		}
 	}
 }

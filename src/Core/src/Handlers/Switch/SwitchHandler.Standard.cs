@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwitchHandler : AbstractViewHandler<ISwitch, object>
+	public partial class SwitchHandler : ViewHandler<ISwitch, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

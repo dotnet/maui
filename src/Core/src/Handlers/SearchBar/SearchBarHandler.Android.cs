@@ -6,7 +6,7 @@ using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : AbstractViewHandler<ISearchBar, SearchView>
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchView>
 	{
 		EditText? _editText;
 		public EditText? QueryEditor => _editText;

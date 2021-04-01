@@ -29,6 +29,7 @@ namespace Microsoft.Maui
 			if (info == null)
 				return;
 
+
 			if (!string.IsNullOrEmpty(semantics.Hint))
 			{
 				info.HintText = semantics.Hint;

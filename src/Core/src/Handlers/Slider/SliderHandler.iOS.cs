@@ -3,7 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SliderHandler : AbstractViewHandler<ISlider, UISlider>
+	public partial class SliderHandler : ViewHandler<ISlider, UISlider>
 	{
 		static UIColor? DefaultMinTrackColor;
 		static UIColor? DefaultMaxTrackColor;

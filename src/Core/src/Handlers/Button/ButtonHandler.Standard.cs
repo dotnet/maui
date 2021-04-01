@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : AbstractViewHandler<IButton, object>
+	public partial class ButtonHandler : ViewHandler<IButton, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

@@ -8,7 +8,7 @@ using NativeView = AppKit.NSView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LayoutHandler : AbstractViewHandler<ILayout, LayoutView>
+	public partial class LayoutHandler : ViewHandler<ILayout, LayoutView>
 	{
 		protected override LayoutView CreateNativeView()
 		{

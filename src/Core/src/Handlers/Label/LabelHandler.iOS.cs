@@ -4,7 +4,7 @@ using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : AbstractViewHandler<ILabel, MauiLabel>
+	public partial class LabelHandler : ViewHandler<ILabel, MauiLabel>
 	{
 		protected override MauiLabel CreateNativeView() => new MauiLabel();
 

@@ -6,7 +6,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : AbstractViewHandler<IButton, AppCompatButton>
+	public partial class ButtonHandler : ViewHandler<IButton, AppCompatButton>
 	{
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();

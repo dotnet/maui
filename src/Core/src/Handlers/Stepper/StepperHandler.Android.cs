@@ -6,7 +6,7 @@ using AOrientation = Android.Widget.Orientation;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : AbstractViewHandler<IStepper, LinearLayout>, IStepperHandler
+	public partial class StepperHandler : ViewHandler<IStepper, LinearLayout>, IStepperHandler
 	{
 		AButton? _downButton;
 		AButton? _upButton;

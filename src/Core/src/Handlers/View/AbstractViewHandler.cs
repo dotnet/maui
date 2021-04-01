@@ -13,7 +13,7 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class AbstractViewHandler<TVirtualView, TNativeView> : 
+	public abstract partial class ViewHandler<TVirtualView, TNativeView> :
 		ViewHandler,
 		IViewHandler
 		where TVirtualView : class, IView
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 		bool _hasContainer;
 		static bool HasSetDefaults;
 
-		protected AbstractViewHandler(PropertyMapper mapper)
+		protected ViewHandler(PropertyMapper mapper)
 		{
 			_ = mapper ?? throw new ArgumentNullException(nameof(mapper));
 			_defaultMapper = mapper;
@@ -108,8 +108,10 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual void DisconnectHandler(TNativeView nativeView)
 		{
+
 			if (VirtualView != null)
 				DisconnectHandler(nativeView, VirtualView);
+
 		}
 
 		void IViewHandler.DisconnectHandler()

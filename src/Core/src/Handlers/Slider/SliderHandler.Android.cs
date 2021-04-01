@@ -4,7 +4,7 @@ using Android.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SliderHandler : AbstractViewHandler<ISlider, SeekBar>
+	public partial class SliderHandler : ViewHandler<ISlider, SeekBar>
 	{
 		static ColorStateList? DefaultProgressTintList { get; set; }
 		static ColorStateList? DefaultProgressBackgroundTintList { get; set; }

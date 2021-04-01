@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class DatePickerHandler : AbstractViewHandler<IDatePicker, MauiDatePicker>
+	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
 		DatePickerDialog? _dialog;
 

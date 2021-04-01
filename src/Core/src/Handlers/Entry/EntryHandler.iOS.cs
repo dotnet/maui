@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : AbstractViewHandler<IEntry, MauiTextField>
+	public partial class EntryHandler : ViewHandler<IEntry, MauiTextField>
 	{
 		static readonly int BaseHeight = 30;
 

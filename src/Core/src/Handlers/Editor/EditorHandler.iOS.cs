@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : AbstractViewHandler<IEditor, MauiTextView>
+	public partial class EditorHandler : ViewHandler<IEditor, MauiTextView>
 	{
 		static readonly int BaseHeight = 30;
 

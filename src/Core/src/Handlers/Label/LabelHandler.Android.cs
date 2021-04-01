@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : AbstractViewHandler<ILabel, TextView>
+	public partial class LabelHandler : ViewHandler<ILabel, TextView>
 	{
 		static Color DefaultTextColor { get; set; }
 		static float LineSpacingAddDefault { get; set; }

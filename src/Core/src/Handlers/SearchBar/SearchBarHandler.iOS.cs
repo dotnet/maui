@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : AbstractViewHandler<ISearchBar, UISearchBar>
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, UISearchBar>
 	{
 		UITextField? _editor;
 		public UITextField? QueryEditor => _editor;

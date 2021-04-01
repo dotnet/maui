@@ -8,7 +8,7 @@ using NativeColor = AppKit.NSColor;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class AbstractViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
 		public void SetFrame(Rectangle rect)
 		{

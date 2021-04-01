@@ -10,7 +10,7 @@ using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : AbstractViewHandler<IEntry, AppCompatEditText>
+	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
 	{
 		TextWatcher Watcher { get; } = new TextWatcher();
 		EntryTouchListener TouchListener { get; } = new EntryTouchListener();

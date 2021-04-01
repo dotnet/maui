@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : AbstractViewHandler<IButton, UIButton>
+	public partial class ButtonHandler : ViewHandler<IButton, UIButton>
 	{
 		static readonly UIControlState[] ControlStates = { UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
 

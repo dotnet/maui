@@ -6,7 +6,7 @@ using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwitchHandler : AbstractViewHandler<ISwitch, ASwitch>
+	public partial class SwitchHandler : ViewHandler<ISwitch, ASwitch>
 	{
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
 		static ColorStateList? DefaultTrackColorStateList { get; set; }

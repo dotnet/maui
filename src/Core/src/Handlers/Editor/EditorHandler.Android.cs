@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : AbstractViewHandler<IEditor, AppCompatEditText>
+	public partial class EditorHandler : ViewHandler<IEditor, AppCompatEditText>
 	{
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
 

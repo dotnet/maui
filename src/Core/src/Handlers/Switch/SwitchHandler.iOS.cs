@@ -4,7 +4,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwitchHandler : AbstractViewHandler<ISwitch, UISwitch>
+	public partial class SwitchHandler : ViewHandler<ISwitch, UISwitch>
 	{
 		static UIColor? DefaultOnTrackColor;
 		static UIColor? DefaultOffTrackColor;

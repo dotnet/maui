@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ProgressBarHandler : AbstractViewHandler<IProgress, UIProgressView>
+	public partial class ProgressBarHandler : ViewHandler<IProgress, UIProgressView>
 	{
 		protected override UIProgressView CreateNativeView()
 		{
