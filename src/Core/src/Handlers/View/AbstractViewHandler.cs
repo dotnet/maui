@@ -95,18 +95,19 @@ namespace Microsoft.Maui.Handlers
 			_mapper.UpdateProperties(this, VirtualView);
 		}
 
+		partial void ConnectHandler(TNativeView nativeView, TVirtualView virtualView);
+
 		protected virtual void ConnectHandler(TNativeView nativeView)
 		{
-
+			if(VirtualView != null)
+				ConnectHandler(nativeView, VirtualView);
 		}
+		partial void DisconnectHandler(TNativeView nativeView, TVirtualView virtualView);
 
 		protected virtual void DisconnectHandler(TNativeView nativeView)
 		{
-
-#if MONOANDROID
-			nativeView.SetAccessibilityDelegate(null);
-#endif
-
+			if (VirtualView != null)
+				DisconnectHandler(nativeView, VirtualView);
 		}
 
 		void IViewHandler.DisconnectHandler()

@@ -1,9 +1,12 @@
 ﻿using Android.Views;
+using Android.Widget;
+using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	public class MauiAccessibilityDelegate : View.AccessibilityDelegate
+	public class MauiAccessibilityDelegate : AccessibilityDelegateCompat
 	{
 		public IView? View { get; set; }
 
@@ -12,7 +15,7 @@ namespace Microsoft.Maui
 			View = view;
 		}
 
-		public override void OnInitializeAccessibilityNodeInfo(AView? host, Android.Views.Accessibility.AccessibilityNodeInfo? info)
+		public override void OnInitializeAccessibilityNodeInfo(AView? host, AccessibilityNodeInfoCompat? info)
 		{
 			if (View == null)
 				return;
@@ -29,6 +32,9 @@ namespace Microsoft.Maui
 			if (!string.IsNullOrEmpty(semantics.Hint))
 			{
 				info.HintText = semantics.Hint;
+
+				if (host is EditText)
+					info.ShowingHintText = false;
 			}
 		}
 	}

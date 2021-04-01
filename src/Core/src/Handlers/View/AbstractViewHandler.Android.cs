@@ -1,5 +1,6 @@
 using Android.Content;
 using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui;
 
 namespace Microsoft.Maui.Handlers
@@ -75,6 +76,16 @@ namespace Microsoft.Maui.Handlers
 		void RemoveContainer()
 		{
 
+		}
+
+		partial void DisconnectHandler(TNativeView nativeView, TVirtualView virtualView)
+		{
+			ViewCompat.SetAccessibilityDelegate(nativeView, null);
+		}
+
+		partial void ConnectHandler(TNativeView nativeView, TVirtualView virtualView)
+		{
+			
 		}
 	}
 }

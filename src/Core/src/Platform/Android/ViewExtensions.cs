@@ -1,3 +1,4 @@
+using AndroidX.Core.View;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -40,7 +41,6 @@ namespace Microsoft.Maui
 			nativeView.SetTag(AutomationTagId, view.AutomationId);
 		}
 
-		
 		public static void UpdateSemantics(this AView nativeView, IView view)
 		{
 			var semantics = view.Semantics;
@@ -50,14 +50,14 @@ namespace Microsoft.Maui
 			nativeView.ContentDescription = semantics.Description;
 
 			if (!string.IsNullOrEmpty(semantics.Hint))
-			{
-				if (nativeView.GetAccessibilityDelegate() is MauiAccessibilityDelegate mad)
+			{	
+				if (ViewCompat.GetAccessibilityDelegate(nativeView) is MauiAccessibilityDelegate mad)
 					mad.View = view;
 				else
-					nativeView.SetAccessibilityDelegate(new MauiAccessibilityDelegate(view));
+					ViewCompat.SetAccessibilityDelegate(nativeView, new MauiAccessibilityDelegate(view));
 			}
 
-			nativeView.AccessibilityHeading = semantics.IsHeading;
+			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
 		}
 	}
 }
