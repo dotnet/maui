@@ -6,7 +6,7 @@ variables:
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 5.0.102
+  value: 5.0.201
 - name: LocBranchPrefix
   value: 'loc-hb'
 - name: LocBranch
