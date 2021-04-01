@@ -21,18 +21,20 @@ namespace Maui.Controls.Sample
 		{
 			if (UseXamlApp)
 			{
+				// Use all the Forms features
 				appBuilder = appBuilder
-					.UseCompatibilityForms()
+					.UseFormsCompatibility()
 					.UseMauiApp<XamlApp>();
 			}
 			else
 			{
+				// Use just the Forms renderers
 				appBuilder = appBuilder
+					.UseCompatibilityRenderers()
 					.UseMauiApp<MyApp>();
 			}
 
 			appBuilder
-				.UseDefaultCompatibilityRenderers()
 				.ConfigureAppConfiguration((hostingContext, config) =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>
@@ -64,7 +66,7 @@ namespace Maui.Controls.Sample
 		}
 
 		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
-		public class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
+		class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
 		{
 			public ServiceCollection CreateBuilder(IServiceCollection services)
 				=> new ServiceCollection { services };

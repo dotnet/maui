@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Hosting
 			return builder;
 		}
 
-		public static IAppHostBuilder UseDefaultMauiHandlers(this IAppHostBuilder builder)
+		public static IAppHostBuilder UseMauiHandlers(this IAppHostBuilder builder)
 		{
 			builder.ConfigureMauiHandlers((_, handlersCollection) => handlersCollection.AddHandlers(DefaultMauiHandlers));
 			return builder;

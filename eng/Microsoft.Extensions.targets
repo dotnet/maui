@@ -20,6 +20,10 @@
         Version="$(_MicrosoftDependencyInjectionVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Hosting"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.Hosting.Abstractions"
         Version="$(_MicrosoftHostingVersion)"
     />
@@ -29,6 +33,10 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.Logging.Console"
         Version="$(_MicrosoftHostingVersion)"
     />
     <PackageReference
