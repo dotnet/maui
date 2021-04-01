@@ -50,10 +50,11 @@ namespace Microsoft.Maui
 			nativeView.ContentDescription = semantics.Description;
 
 			if (!string.IsNullOrEmpty(semantics.Hint))
-			{	
-				if (ViewCompat.GetAccessibilityDelegate(nativeView) is MauiAccessibilityDelegate mad)
+			{
+				var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(nativeView);
+				if (accessibilityDelegate is MauiAccessibilityDelegate mad)
 					mad.View = view;
-				else
+				else if (accessibilityDelegate == null)
 					ViewCompat.SetAccessibilityDelegate(nativeView, new MauiAccessibilityDelegate(view));
 			}
 
