@@ -15,7 +15,7 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ViewHandler
+	public abstract partial class ViewHandler
 	{
 		public static PropertyMapper<IView> ViewMapper = new PropertyMapper<IView>
 		{
@@ -48,8 +48,32 @@ namespace Microsoft.Maui.Handlers
 
 		private static void MapSemantics(IViewHandler handler, IView view)
 		{
+#if MONOANDROID
+			// Check if view needs an Accessibility delegate
+			// Maybe there's a way to register a delegate here against 
+			// Disconnect per the life cycle code
+			if (!string.IsNullOrEmpty(view.Semantics.Hint))
+			{
+				var accessibilityDelegate = 
+					AndroidX.Core.View.ViewCompat.GetAccessibilityDelegate(handler.NativeView as NativeView);
+				if (accessibilityDelegate is MauiAccessibilityDelegate mad)
+					mad.View = view;
+				else if (accessibilityDelegate == null)
+					AndroidX.Core.View.ViewCompat.SetAccessibilityDelegate(handler.NativeView as NativeView, new MauiAccessibilityDelegate(view));
+			}
+#endif
 			(handler.NativeView as NativeView)?.UpdateSemantics(view);
 		}
 
+		private protected void Disconnect(IViewHandler handler, IView view)
+		{
+#if MONOANDROID
+			AndroidX.Core.View.ViewCompat.SetAccessibilityDelegate(handler.NativeView as NativeView, null);
+#endif
+		}
+
+		private protected void Connect(IViewHandler handler, IView view)
+		{
+		}
 	}
 }

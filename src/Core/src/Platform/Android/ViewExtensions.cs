@@ -49,14 +49,15 @@ namespace Microsoft.Maui
 
 			nativeView.ContentDescription = semantics.Description;
 
-			if (!string.IsNullOrEmpty(semantics.Hint))
-			{
-				var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(nativeView);
-				if (accessibilityDelegate is MauiAccessibilityDelegate mad)
-					mad.View = view;
-				else if (accessibilityDelegate == null)
-					ViewCompat.SetAccessibilityDelegate(nativeView, new MauiAccessibilityDelegate(view));
-			}
+			// Set the delegate here?
+			//if (!string.IsNullOrEmpty(semantics.Hint))
+			//{
+			//	var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(nativeView);
+			//	if (accessibilityDelegate is MauiAccessibilityDelegate mad)
+			//		mad.View = view;
+			//	else if (accessibilityDelegate == null)
+			//		ViewCompat.SetAccessibilityDelegate(nativeView, new MauiAccessibilityDelegate(view));
+			//}
 
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
 		}

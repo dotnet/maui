@@ -13,7 +13,9 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class AbstractViewHandler<TVirtualView, TNativeView> : IViewHandler
+	public abstract partial class AbstractViewHandler<TVirtualView, TNativeView> : 
+		ViewHandler,
+		IViewHandler
 		where TVirtualView : class, IView
 #if !NETSTANDARD || IOS || ANDROID || WINDOWS
 		where TNativeView : NativeView
