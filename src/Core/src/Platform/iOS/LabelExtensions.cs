@@ -73,7 +73,7 @@ namespace Microsoft.Maui
 				(float)label.Padding.Bottom,
 				(float)label.Padding.Right);
 		}
-				
+
 		public static void UpdateTextDecorations(this UILabel nativeLabel, ILabel label)
 		{
 			var modAttrText = nativeLabel.AttributedText?.WithDecorations(label.TextDecorations);
