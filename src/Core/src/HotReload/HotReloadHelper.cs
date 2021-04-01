@@ -65,7 +65,7 @@ namespace Microsoft.Maui.HotReload
 			}
 			catch (MissingMethodException ex)
 			{
-				Debug.WriteLine("You are using Comet.Reload on a view that requires Parameters. Please call `HotReloadHelper.Register(this, params);` in the constructor;");
+				Debug.WriteLine("You are using trying to HotReload a view that requires Parameters. Please call `HotReloadHelper.Register(this, params);` in the constructor;");
 				throw ex;
 			}
 
