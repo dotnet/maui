@@ -172,8 +172,7 @@ namespace Microsoft.Maui.Hosting
 
 			foreach (Action<HostBuilderContext, IServiceCollection> configureServicesAction in _configureServicesActions)
 			{
-				if (_hostBuilderContext != null)
-					configureServicesAction(_hostBuilderContext, services);
+				configureServicesAction(_hostBuilderContext!, services);
 			}
 
 			_serviceProvider = ConfigureContainerAndGetProvider(services);
@@ -186,18 +185,15 @@ namespace Microsoft.Maui.Hosting
 
 		void BuildAppConfiguration()
 		{
-			if (_hostBuilderContext == null)
-				return;
-
 			var configBuilder = new ConfigurationBuilder();
 			configBuilder.AddConfiguration(_hostConfiguration);
 			foreach (var buildAction in _configureAppConfigActions)
 			{
-				buildAction(_hostBuilderContext, configBuilder);
+				buildAction(_hostBuilderContext!, configBuilder);
 			}
 			_appConfiguration = configBuilder.Build();
 
-			_hostBuilderContext.Configuration = _appConfiguration;
+			_hostBuilderContext!.Configuration = _appConfiguration;
 		}
 
 		IServiceProvider ConfigureContainerAndGetProvider(IServiceCollection services)
@@ -206,8 +202,7 @@ namespace Microsoft.Maui.Hosting
 
 			foreach (IConfigureContainerAdapter containerAction in _configureContainerActions)
 			{
-				if (_hostBuilderContext != null)
-					containerAction.ConfigureContainer(_hostBuilderContext, containerBuilder);
+				containerAction.ConfigureContainer(_hostBuilderContext!, containerBuilder);
 			}
 
 			return _serviceProviderFactory.CreateServiceProvider(containerBuilder);
@@ -224,11 +219,10 @@ namespace Microsoft.Maui.Hosting
 
 				foreach (var action in pair.Value)
 				{
-					if (_hostBuilderContext != null)
-						action(_hostBuilderContext, instance);
+					action(_hostBuilderContext!, instance);
 				}
 
-				instance.ConfigureServices(services);
+				instance.ConfigureServices(_hostBuilderContext!, services);
 
 				_configureServiceBuilderInstances.Add(instance);
 			}
@@ -241,7 +235,7 @@ namespace Microsoft.Maui.Hosting
 
 			foreach (var instance in _configureServiceBuilderInstances)
 			{
-				instance.Configure(serviceProvider);
+				instance.Configure(_hostBuilderContext!, serviceProvider);
 			}
 		}
 

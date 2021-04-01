@@ -45,7 +45,7 @@ namespace Maui.Controls.Sample
 				})
 				.UseMauiServiceProviderFactory(true)
 				//.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
-				.ConfigureServices((hostingContext, services) =>
+				.ConfigureServices(services =>
 				{
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
@@ -57,7 +57,7 @@ namespace Maui.Controls.Sample
 
 					services.AddTransient<IWindow, MainWindow>();
 				})
-				.ConfigureFonts((hostingContext, fonts) =>
+				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
 				});
