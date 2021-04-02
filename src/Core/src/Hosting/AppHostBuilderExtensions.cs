@@ -53,6 +53,13 @@ namespace Microsoft.Maui.Hosting
 			return builder;
 		}
 
+		public static IAppHostBuilder ConfigureServices<TBuilder>(this IAppHostBuilder builder, Action<TBuilder> configureDelegate)
+			where TBuilder : IMauiServiceBuilder, new()
+		{
+			builder.ConfigureServices<TBuilder>((_, services) => configureDelegate(services));
+			return builder;
+		}
+
 		public static IAppHostBuilder ConfigureAppConfiguration(this IAppHostBuilder builder, Action<IConfigurationBuilder> configureDelegate)
 		{
 			builder.ConfigureAppConfiguration((_, config) => configureDelegate(config));
