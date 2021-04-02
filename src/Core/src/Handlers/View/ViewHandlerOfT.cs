@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Handlers
 		where TVirtualView : class, IView
 	{
 		TVirtualView? _virtualView;
-		NativeView? _nativeView;
 
 		public new TVirtualView? VirtualView
 		{
@@ -29,18 +28,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			_virtualView = (TVirtualView?)virtualView;
 			base.SetVirtualViewCore(virtualView);
-		}
-
-		public new NativeView? View
-		{
-			get => _nativeView;
-			private set => SetNativeViewCore(value);
-		}
-
-		private protected override void SetNativeViewCore(object? nativeView)
-		{
-			_nativeView = (NativeView?)nativeView;
-			base.SetNativeViewCore(nativeView);
 		}
 	}
 
@@ -70,13 +57,13 @@ namespace Microsoft.Maui.Handlers
 		public new TNativeView? View
 		{
 			get => _nativeView; 
-			private set => SetNativeViewCore(value);
+			private set => SetViewCore(value);
 		}
 
-		private protected override void SetNativeViewCore(object? nativeView)
+		private protected override void SetViewCore(NativeView? nativeView)
 		{
 			_nativeView = (TNativeView?)nativeView;
-			base.SetNativeViewCore(nativeView);
+			base.SetViewCore(nativeView);
 		}
 
 		public IServiceProvider? Services => MauiContext?.Services;
@@ -129,12 +116,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual void ConnectHandler(TNativeView nativeView)
 		{
-			ConnectHandler(nativeView);
+			base.ConnectHandler(nativeView);
 		}
 
 		protected virtual void DisconnectHandler(TNativeView nativeView)
 		{
-			DisconnectHandler(nativeView);
+			base.DisconnectHandler(nativeView);
 		}
 
 		void IViewHandler.DisconnectHandler()

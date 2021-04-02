@@ -28,7 +28,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSemantics(IViewHandler handler, IView view)
 		{
-			if (handler is ViewHandler viewHandler &&
+			if (view.Semantics != null &&
+				handler is ViewHandler viewHandler &&
 				viewHandler.AccessibilityDelegate == null &&
 				ViewCompat.GetAccessibilityDelegate(handler.View as NativeView) == null)
 			{
