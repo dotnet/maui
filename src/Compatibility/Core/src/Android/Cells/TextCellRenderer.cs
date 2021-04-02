@@ -81,10 +81,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var cell = (TextCell)Cell;
 			View.MainText = cell.Text;
 
-			//TODO: Fix with Color.Accent
-			//if (!cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
-			//	View.SetDefaultMainTextColor(Color.Accent);
-			//else
+			if (!cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
+				View.SetDefaultMainTextColor(Application.AccentColor);
+			else
 				View.SetDefaultMainTextColor(null);
 
 			View.SetMainTextColor(cell.TextColor);

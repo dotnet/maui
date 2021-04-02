@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				bottomView.ItemIconTintList = _defaultList;
 			}
 
-			SetBackgroundColor(bottomView, Color.White);
+			SetBackgroundColor(bottomView, Colors.White);
 		}
 
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)

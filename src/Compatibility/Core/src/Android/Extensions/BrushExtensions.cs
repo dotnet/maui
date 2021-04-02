@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 using static Android.Graphics.Drawables.GradientDrawable;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
+using Paint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

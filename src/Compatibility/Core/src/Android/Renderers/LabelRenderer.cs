@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			_lastUpdateColor = c;
 
-			if (c.IsDefault)
+			if (c == null)
 				_view.SetTextColor(_labelTextColorDefault);
 			else
 				_view.SetTextColor(c.ToAndroid());

@@ -699,7 +699,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Color separatorColor = _listView.SeparatorColor;
 
 			if (isHeader || separatorColor != null)
-				bline.SetBackgroundColor(separatorColor.ToAndroid(Color.Accent));
+				bline.SetBackgroundColor(separatorColor.ToAndroid(Application.AccentColor));
 			else
 			{
 				if (s_dividerHorizontalDarkId == int.MinValue)

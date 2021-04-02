@@ -140,8 +140,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		#endregion IAppearanceObserver
 
 		public static readonly Color DefaultBackgroundColor = Color.FromRgb(33, 150, 243);
-		public static readonly Color DefaultForegroundColor = Color.White;
-		public static readonly Color DefaultTitleColor = Color.White;
+		public static readonly Color DefaultForegroundColor = Colors.White;
+		public static readonly Color DefaultTitleColor = Colors.White;
 		public static readonly Color DefaultUnselectedColor = Color.FromRgba(255, 255, 255, 180);
 
 		bool _disposed;
