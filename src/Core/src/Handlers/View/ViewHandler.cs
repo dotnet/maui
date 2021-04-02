@@ -117,23 +117,23 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsEnabled(IViewHandler handler, IView view)
 		{
-			(handler.View as NativeView)?.UpdateIsEnabled(view);
+			handler.View?.UpdateIsEnabled(view);
 		}
 
 		public static void MapBackgroundColor(IViewHandler handler, IView view)
 		{
-			(handler.View as NativeView)?.UpdateBackgroundColor(view);
+			handler.View?.UpdateBackgroundColor(view);
 		}
 
 		public static void MapAutomationId(IViewHandler handler, IView view)
 		{
-			(handler.View as NativeView)?.UpdateAutomationId(view);
+			handler.View?.UpdateAutomationId(view);
 		}
 
 #if !MONOANDROID
 		public static void MapSemantics(IViewHandler handler, IView view)
 		{
-			(handler.View as NativeView)?.UpdateSemantics(view);
+			handler.View?.UpdateSemantics(view);
 		}
 #endif
 	}
