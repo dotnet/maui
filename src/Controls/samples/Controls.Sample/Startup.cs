@@ -62,11 +62,11 @@ namespace Maui.Controls.Sample
 
 					services.AddTransient<IWindow, MainWindow>();
 				})
-				.ConfigureFonts((hostingContext, fonts) =>
+				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
 				})
-				.ConfigureEssentials((ctx, essentials) =>
+				.ConfigureEssentials(essentials =>
 				{
 					essentials
 						.UseVersionTracking()
@@ -78,7 +78,7 @@ namespace Maui.Controls.Sample
 							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
 						});
 				})
-				.ConfigureLifecycleEvents((ctx, events) =>
+				.ConfigureLifecycleEvents(events =>
 				{
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));
 

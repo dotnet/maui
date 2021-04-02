@@ -9,6 +9,16 @@ namespace Microsoft.Maui.Essentials
 {
 	public static class EssentialsExtensions
 	{
+		public static IAppHostBuilder ConfigureEssentials(this IAppHostBuilder builder, Action<IEssentialsBuilder> configureDelegate = null)
+		{
+			if (configureDelegate == null)
+				builder.ConfigureEssentials((Action<HostBuilderContext, IEssentialsBuilder>)null);
+			else
+				builder.ConfigureEssentials((_, essentials) => configureDelegate(essentials));
+
+			return builder;
+		}
+
 		public static IAppHostBuilder ConfigureEssentials(this IAppHostBuilder builder, Action<HostBuilderContext, IEssentialsBuilder> configureDelegate = null)
 		{
 			builder.ConfigureLifecycleEvents(life =>
