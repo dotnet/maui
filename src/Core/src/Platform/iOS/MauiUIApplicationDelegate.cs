@@ -3,6 +3,7 @@ using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.LifecycleEvents;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -41,7 +42,34 @@ namespace Microsoft.Maui
 
 			Window.MakeKeyAndVisible();
 
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application, launchOptions));
+
 			return true;
+		}
+
+		public override void OnActivated(UIApplication application)
+		{
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.OnActivated>(del => del(application));
+		}
+
+		public override void OnResignActivation(UIApplication application)
+		{
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.OnResignActivation>(del => del(application));
+		}
+
+		public override void WillTerminate(UIApplication application)
+		{
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillTerminate>(del => del(application));
+		}
+
+		public override void DidEnterBackground(UIApplication application)
+		{
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.DidEnterBackground>(del => del(application));
+		}
+
+		public override void WillEnterForeground(UIApplication application)
+		{
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
