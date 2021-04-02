@@ -18,12 +18,12 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (TypedNativeView == null)
+			if (View == null)
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}
 
-			var sizeThatFits = TypedNativeView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
+			var sizeThatFits = View.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
 
 			var size = new Size(
 				sizeThatFits.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Width,
@@ -31,9 +31,9 @@ namespace Microsoft.Maui.Handlers
 
 			if (double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
 			{
-				TypedNativeView.SizeToFit();
+				View.SizeToFit();
 
-				size = new Size(TypedNativeView.Frame.Width, TypedNativeView.Frame.Height);
+				size = new Size(View.Frame.Width, View.Frame.Height);
 			}
 
 			return size;

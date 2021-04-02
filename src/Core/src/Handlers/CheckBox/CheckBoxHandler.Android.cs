@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 		// This is an Android-specific mapping
 		public static void MapBackgroundColor(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.TypedNativeView?.UpdateBackgroundColor(check);
+			handler.View?.UpdateBackgroundColor(check);
 		}
 
 		protected override AppCompatCheckBox CreateNativeView()

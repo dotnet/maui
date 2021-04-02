@@ -39,22 +39,22 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(StepperHandler handler, IStepper stepper)
 		{
-			handler.TypedNativeView?.UpdateMinimum(stepper);
+			handler.View?.UpdateMinimum(stepper);
 		}
 
 		public static void MapMaximum(StepperHandler handler, IStepper stepper)
 		{
-			handler.TypedNativeView?.UpdateMaximum(stepper);
+			handler.View?.UpdateMaximum(stepper);
 		}
 
 		public static void MapIncrement(StepperHandler handler, IStepper stepper)
 		{
-			handler.TypedNativeView?.UpdateIncrement(stepper);
+			handler.View?.UpdateIncrement(stepper);
 		}
 
 		public static void MapValue(StepperHandler handler, IStepper stepper)
 		{
-			handler.TypedNativeView?.UpdateValue(stepper);
+			handler.View?.UpdateValue(stepper);
 		}
 
 		AButton IStepperHandler.CreateButton()

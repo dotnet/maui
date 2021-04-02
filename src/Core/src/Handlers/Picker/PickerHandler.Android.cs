@@ -36,35 +36,35 @@ namespace Microsoft.Maui.Handlers
 		}
 		public static void MapTitle(PickerHandler handler, IPicker picker)
 		{
-			handler.TypedNativeView?.UpdateTitle(picker);
+			handler.View?.UpdateTitle(picker);
 		}
 
 		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
 		{
-			handler.TypedNativeView?.UpdateSelectedIndex(picker);
+			handler.View?.UpdateSelectedIndex(picker);
 		}
 
 		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(picker);
+			handler.View?.UpdateCharacterSpacing(picker);
 		}
 
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
 		{
-			if (TypedNativeView == null)
+			if (View == null)
 				return;
 
 			if (e.HasFocus)
 			{
-				if (TypedNativeView.Clickable)
-					TypedNativeView.CallOnClick();
+				if (View.Clickable)
+					View.CallOnClick();
 				else
-					OnClick(TypedNativeView, EventArgs.Empty);
+					OnClick(View, EventArgs.Empty);
 			}
 			else if (_dialog != null)
 			{
 				_dialog.Hide();
-				TypedNativeView.ClearFocus();
+				View.ClearFocus();
 				_dialog = null;
 			}
 		}
@@ -79,12 +79,12 @@ namespace Microsoft.Maui.Handlers
 
 					string[] items = VirtualView.Items.ToArray();
 
-					builder.SetItems(items, (s, e) =>
+					builder.SetItems(items, (EventHandler<Android.Content.DialogClickEventArgs>)((s, e) =>
 					{
 						var selectedIndex = e.Which;
 						VirtualView.SelectedIndex = selectedIndex;
-						TypedNativeView?.UpdatePicker(VirtualView);
-					});
+						base.View?.UpdatePicker(VirtualView);
+					}));
 
 					builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
 
@@ -108,10 +108,10 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCollectionChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || TypedNativeView == null)
+			if (VirtualView == null || View == null)
 				return;
 
-			TypedNativeView.UpdatePicker(VirtualView);
+			View.UpdatePicker(VirtualView);
 		}
 	}
 }

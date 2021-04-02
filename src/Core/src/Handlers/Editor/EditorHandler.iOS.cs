@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateText(editor);
+			handler.View?.UpdateText(editor);
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, editor);
@@ -43,50 +43,50 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPlaceholder(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdatePlaceholder(editor);
+			handler.View?.UpdatePlaceholder(editor);
 		}
 
 		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdatePlaceholderColor(editor, DefaultPlaceholderColor);
+			handler.View?.UpdatePlaceholderColor(editor, DefaultPlaceholderColor);
 		}
 
 		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
+			handler.View?.UpdateCharacterSpacing(editor);
 		}
 
 		public static void MapMaxLength(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateMaxLength(editor);
+			handler.View?.UpdateMaxLength(editor);
 		}
 
 		public static void MapIsReadOnly(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateIsReadOnly(editor);
+			handler.View?.UpdateIsReadOnly(editor);
 		}
 
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdatePredictiveText(editor);
+			handler.View?.UpdatePredictiveText(editor);
 		}
 
 		public static void MapFormatting(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateMaxLength(editor);
+			handler.View?.UpdateMaxLength(editor);
 
 			// Update all of the attributed text formatting properties
-			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
+			handler.View?.UpdateCharacterSpacing(editor);
 		}
 
 		void OnChanged(object? sender, System.EventArgs e) => OnTextChanged();
 
 		void OnTextChanged()
 		{
-			if (TypedNativeView == null)
+			if (View == null)
 				return;
 
-			TypedNativeView.HidePlaceholder(!string.IsNullOrEmpty(TypedNativeView.Text));
+			View.HidePlaceholder(!string.IsNullOrEmpty(View.Text));
 		}
 
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString)
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Handlers
 			if (range.Length + range.Location > currLength)
 				return false;
 
-			if (VirtualView == null || TypedNativeView == null)
+			if (VirtualView == null || View == null)
 				return false;
 
 			var addLength = replacementString?.Length ?? 0;
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"Unable to find service provider, the handler.Services was null.");
 			var fontManager = services.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(editor, fontManager);
+			handler.View?.UpdateFont(editor, fontManager);
 		}
 	}
 }

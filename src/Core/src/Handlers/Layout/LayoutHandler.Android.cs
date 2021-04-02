@@ -27,36 +27,36 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
+			_ = View ?? throw new InvalidOperationException($"{nameof(View)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			TypedNativeView.CrossPlatformMeasure = VirtualView.Measure;
-			TypedNativeView.CrossPlatformArrange = VirtualView.Arrange;
+			View.CrossPlatformMeasure = VirtualView.Measure;
+			View.CrossPlatformArrange = VirtualView.Arrange;
 
 			foreach (var child in VirtualView.Children)
 			{
-				TypedNativeView.AddView(child.ToNative(MauiContext));
+				View.AddView(child.ToNative(MauiContext));
 			}
 		}
 
 		public void Add(IView child)
 		{
-			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
+			_ = View ?? throw new InvalidOperationException($"{nameof(View)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			TypedNativeView.AddView(child.ToNative(MauiContext), 0);
+			View.AddView(child.ToNative(MauiContext), 0);
 		}
 
 		public void Remove(IView child)
 		{
-			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
+			_ = View ?? throw new InvalidOperationException($"{nameof(View)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.Handler?.NativeView is View view)
+			if (child?.Handler?.View is View view)
 			{
-				TypedNativeView.RemoveView(view);
+				View.RemoveView(view);
 			}
 		}
 	}

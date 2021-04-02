@@ -97,7 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var (left, top, right, bottom) = GetNativePadding((TextView)handler.NativeView);
+			var (left, top, right, bottom) = GetNativePadding((TextView)handler.View);
 
 			var context = handler.View.Context;
 

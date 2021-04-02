@@ -34,37 +34,37 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateText(editor);
+			handler.View?.UpdateText(editor);
 		}
 
 		public static void MapPlaceholder(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdatePlaceholder(editor);
+			handler.View?.UpdatePlaceholder(editor);
 		}
 
 		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdatePlaceholderColor(editor, DefaultPlaceholderTextColors);
+			handler.View?.UpdatePlaceholderColor(editor, DefaultPlaceholderTextColors);
 		}
 
 		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
+			handler.View?.UpdateCharacterSpacing(editor);
 		}
 
 		public static void MapMaxLength(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateMaxLength(editor);
+			handler.View?.UpdateMaxLength(editor);
 		}
 
 		public static void MapIsReadOnly(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateIsReadOnly(editor);
+			handler.View?.UpdateIsReadOnly(editor);
 		}
 
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateIsTextPredictionEnabled(editor);
+			handler.View?.UpdateIsTextPredictionEnabled(editor);
 		}
 
 		public static void MapFont(EditorHandler handler, IEditor editor)
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Handlers
 				   ?? throw new InvalidOperationException($"Unable to find service provider, the handler.Services was null.");
 			var fontManager = services.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(editor, fontManager);
+			handler.View?.UpdateFont(editor, fontManager);
 		}
 	}
 }

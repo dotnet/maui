@@ -46,32 +46,32 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)
 		{
-			handler.TypedNativeView?.UpdateMinimum(slider);
+			handler.View?.UpdateMinimum(slider);
 		}
 
 		public static void MapMaximum(SliderHandler handler, ISlider slider)
 		{
-			handler.TypedNativeView?.UpdateMaximum(slider);
+			handler.View?.UpdateMaximum(slider);
 		}
 
 		public static void MapValue(SliderHandler handler, ISlider slider)
 		{
-			handler.TypedNativeView?.UpdateValue(slider);
+			handler.View?.UpdateValue(slider);
 		}
 
 		public static void MapMinimumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.TypedNativeView?.UpdateMinimumTrackColor(slider, DefaultProgressBackgroundTintList, DefaultProgressBackgroundTintMode);
+			handler.View?.UpdateMinimumTrackColor(slider, DefaultProgressBackgroundTintList, DefaultProgressBackgroundTintMode);
 		}
 
 		public static void MapMaximumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.TypedNativeView?.UpdateMaximumTrackColor(slider, DefaultProgressTintList, DefaultProgressTintMode);
+			handler.View?.UpdateMaximumTrackColor(slider, DefaultProgressTintList, DefaultProgressTintMode);
 		}
 
 		public static void MapThumbColor(SliderHandler handler, ISlider slider)
 		{
-			handler.TypedNativeView?.UpdateThumbColor(slider, DefaultThumbColorFilter);
+			handler.View?.UpdateThumbColor(slider, DefaultThumbColorFilter);
 		}
 
 		void OnProgressChanged(SeekBar seekBar, int progress, bool fromUser)

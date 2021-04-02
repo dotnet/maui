@@ -22,7 +22,7 @@
 
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.TypedNativeView?.UpdateIsChecked(check);
+			handler.View?.UpdateIsChecked(check);
 		}
 	}
 }

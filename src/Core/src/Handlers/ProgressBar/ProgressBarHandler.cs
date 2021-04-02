@@ -9,7 +9,7 @@
 
 		public static void MapProgress(ProgressBarHandler handler, IProgress progress)
 		{
-			handler.TypedNativeView?.UpdateProgress(progress);
+			handler.View?.UpdateProgress(progress);
 		}
 
 		public ProgressBarHandler() : base(ProgressMapper)

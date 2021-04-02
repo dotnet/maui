@@ -34,17 +34,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsToggled(SwitchHandler handler, ISwitch view)
 		{
-			handler.TypedNativeView?.UpdateIsToggled(view);
+			handler.View?.UpdateIsToggled(view);
 		}
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.TypedNativeView?.UpdateTrackColor(view, DefaultOnTrackColor, DefaultOffTrackColor);
+			handler.View?.UpdateTrackColor(view, DefaultOnTrackColor, DefaultOffTrackColor);
 		}
 
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.TypedNativeView?.UpdateThumbColor(view, DefaultThumbColor);
+			handler.View?.UpdateThumbColor(view, DefaultThumbColor);
 		}
 
 		void OnControlValueChanged(object? sender, EventArgs e)
@@ -52,8 +52,8 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null)
 				return;
 
-			if (TypedNativeView != null)
-				VirtualView.IsToggled = TypedNativeView.On;
+			if (View != null)
+				VirtualView.IsToggled = View.On;
 		}
 	}
 }

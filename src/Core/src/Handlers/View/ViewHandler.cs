@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Handlers
 
 
 		bool _hasContainer;
-
-		public abstract object? NativeView { get; }
+		private object? _nativeView;
+		private IView? _virtualView;
 
 		public bool HasContainer
 		{
@@ -54,7 +54,30 @@ namespace Microsoft.Maui.Handlers
 
 		public IMauiContext? MauiContext { get; private set; }
 
-		IView? IViewHandler.VirtualView => null;
+		public object? View
+		{
+			get => _nativeView;
+			private set => SetNativeViewCore(value);
+		}
+
+		// This is so I can shadow the NativeView on the base class
+		// but make sure both get set
+		// In C# 9 we can probably do a covariant override
+		protected private virtual void SetNativeViewCore(object? nativeView)
+		{
+			_nativeView = nativeView;
+		}
+
+		public IView? VirtualView 
+		{ 
+			get => _virtualView; 
+			private set => _virtualView = value; 
+		}
+
+		protected private virtual void SetVirtualViewCore(IView? virtualView)
+		{
+			_virtualView = virtualView;
+		}
 
 		public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;
 
@@ -89,23 +112,23 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsEnabled(IViewHandler handler, IView view)
 		{
-			(handler.NativeView as NativeView)?.UpdateIsEnabled(view);
+			(handler.View as NativeView)?.UpdateIsEnabled(view);
 		}
 
 		public static void MapBackgroundColor(IViewHandler handler, IView view)
 		{
-			(handler.NativeView as NativeView)?.UpdateBackgroundColor(view);
+			(handler.View as NativeView)?.UpdateBackgroundColor(view);
 		}
 
 		public static void MapAutomationId(IViewHandler handler, IView view)
 		{
-			(handler.NativeView as NativeView)?.UpdateAutomationId(view);
+			(handler.View as NativeView)?.UpdateAutomationId(view);
 		}
 
 #if !MONOANDROID
 		public static void MapSemantics(IViewHandler handler, IView view)
 		{
-			(handler.NativeView as NativeView)?.UpdateSemantics(view);
+			(handler.View as NativeView)?.UpdateSemantics(view);
 		}
 #endif
 	}

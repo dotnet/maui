@@ -47,21 +47,21 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackgroundColor(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateBackgroundColor(button);
+			handler.View?.UpdateBackgroundColor(button);
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateText(button);
+			handler.View?.UpdateText(button);
 		}
 
 		public static void MapTextColor(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateTextColor(button, ButtonTextColorDefaultNormal, ButtonTextColorDefaultHighlighted, ButtonTextColorDefaultDisabled);
+			handler.View?.UpdateTextColor(button, ButtonTextColorDefaultNormal, ButtonTextColorDefaultHighlighted, ButtonTextColorDefaultDisabled);
 		}
 		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdatePadding(button);
+			handler.View?.UpdatePadding(button);
 		}
 
 		public static void MapFont(ButtonHandler handler, IButton button)
@@ -70,19 +70,19 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(button, fontManager);
+			handler.View?.UpdateFont(button, fontManager);
 		}
 
 		void SetControlPropertiesFromProxy()
 		{
-			if (TypedNativeView == null)
+			if (View == null)
 				return;
 
 			foreach (UIControlState uiControlState in ControlStates)
 			{
-				TypedNativeView.SetTitleColor(UIButton.Appearance.TitleColor(uiControlState), uiControlState); // If new values are null, old values are preserved.
-				TypedNativeView.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
-				TypedNativeView.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
+				View.SetTitleColor(UIButton.Appearance.TitleColor(uiControlState), uiControlState); // If new values are null, old values are preserved.
+				View.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
+				View.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
 			}
 		}
 

@@ -88,7 +88,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var insets = ((MauiLabel)handler.NativeView).TextInsets;
+			var insets = ((MauiLabel)handler.View).TextInsets;
 
 			Assert.Equal(5, insets.Left);
 			Assert.Equal(10, insets.Top);

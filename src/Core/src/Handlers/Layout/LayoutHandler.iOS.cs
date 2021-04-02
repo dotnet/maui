@@ -30,38 +30,38 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
+			_ = View ?? throw new InvalidOperationException($"{nameof(View)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			TypedNativeView.CrossPlatformMeasure = VirtualView.Measure;
-			TypedNativeView.CrossPlatformArrange = VirtualView.Arrange;
+			View.CrossPlatformMeasure = VirtualView.Measure;
+			View.CrossPlatformArrange = VirtualView.Arrange;
 
 			foreach (var child in VirtualView.Children)
 			{
-				TypedNativeView.AddSubview(child.ToNative(MauiContext));
+				View.AddSubview(child.ToNative(MauiContext));
 			}
 		}
 
 		public void Add(IView child)
 		{
-			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
+			_ = View ?? throw new InvalidOperationException($"{nameof(View)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			TypedNativeView.AddSubview(child.ToNative(MauiContext));
-			TypedNativeView.SetNeedsLayout();
+			View.AddSubview(child.ToNative(MauiContext));
+			View.SetNeedsLayout();
 		}
 
 		public void Remove(IView child)
 		{
-			_ = TypedNativeView ?? throw new InvalidOperationException($"{nameof(TypedNativeView)} should have been set by base class.");
+			_ = View ?? throw new InvalidOperationException($"{nameof(View)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.Handler?.NativeView is NativeView nativeView)
+			if (child?.Handler?.View is NativeView nativeView)
 			{
 				nativeView.RemoveFromSuperview();
-				TypedNativeView.SetNeedsLayout();
+				View.SetNeedsLayout();
 			}
 		}
 	}

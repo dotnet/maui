@@ -20,6 +20,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).AccessibilityIdentifier;
+			((UIView)viewHandler.View).AccessibilityIdentifier;
 	}
 }

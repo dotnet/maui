@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (TypedNativeView == null)
+			if (View == null)
 			{
 				return Size.Zero;
 			}
@@ -63,9 +63,9 @@ namespace Microsoft.Maui.Handlers
 			var widthSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceWidthConstraint);
 			var heightSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceHeightConstraint);
 
-			TypedNativeView.Measure(widthSpec, heightSpec);
+			View.Measure(widthSpec, heightSpec);
 
-			return Context.FromPixels(TypedNativeView.MeasuredWidth, TypedNativeView.MeasuredHeight);
+			return Context.FromPixels(View.MeasuredWidth, View.MeasuredHeight);
 		}
 
 		protected override void SetupContainer()

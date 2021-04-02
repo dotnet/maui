@@ -28,42 +28,42 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateText(label);
+			handler.View?.UpdateText(label);
 		}
 
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateTextColor(label, DefaultTextColor);
+			handler.View?.UpdateTextColor(label, DefaultTextColor);
 		}
 
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(label);
+			handler.View?.UpdateCharacterSpacing(label);
 		}
 
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateHorizontalTextAlignment(label);
+			handler.View?.UpdateHorizontalTextAlignment(label);
 		}
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateLineBreakMode(label);
+			handler.View?.UpdateLineBreakMode(label);
 		}
 
 		public static void MapMaxLines(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateMaxLines(label);
+			handler.View?.UpdateMaxLines(label);
 		}
 
 		public static void MapPadding(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdatePadding(label);
+			handler.View?.UpdatePadding(label);
 		}
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateTextDecorations(label);
+			handler.View?.UpdateTextDecorations(label);
 		}
 
 		public static void MapFont(LabelHandler handler, ILabel label)
@@ -72,11 +72,11 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(label, fontManager);
+			handler.View?.UpdateFont(label, fontManager);
 		}
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateLineHeight(label, LineSpacingAddDefault, LineSpacingMultDefault);
+			handler.View?.UpdateLineHeight(label, LineSpacingAddDefault, LineSpacingMultDefault);
 		}
 	}
 }

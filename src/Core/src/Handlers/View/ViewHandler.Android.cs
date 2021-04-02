@@ -30,16 +30,16 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler is ViewHandler viewHandler &&
 				viewHandler.AccessibilityDelegate == null &&
-				ViewCompat.GetAccessibilityDelegate(handler.NativeView as NativeView) == null)
+				ViewCompat.GetAccessibilityDelegate(handler.View as NativeView) == null)
 			{
 				if(!string.IsNullOrEmpty(view.Semantics.Hint))
 				{
 					viewHandler.AccessibilityDelegate = new MauiAccessibilityDelegate() { Handler = viewHandler };
-					ViewCompat.SetAccessibilityDelegate(handler.NativeView as NativeView, viewHandler.AccessibilityDelegate);
+					ViewCompat.SetAccessibilityDelegate(handler.View as NativeView, viewHandler.AccessibilityDelegate);
 				}
 			}
 
-			(handler.NativeView as NativeView)?.UpdateSemantics(view);
+			(handler.View as NativeView)?.UpdateSemantics(view);
 		}
 
 		public void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)

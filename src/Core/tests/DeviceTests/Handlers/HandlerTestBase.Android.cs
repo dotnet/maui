@@ -17,6 +17,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
-			$"{((View)viewHandler.NativeView).GetTag(ViewExtensions.AutomationTagId)}";
+			$"{((View)viewHandler.View).GetTag(ViewExtensions.AutomationTagId)}";
 	}
 }
