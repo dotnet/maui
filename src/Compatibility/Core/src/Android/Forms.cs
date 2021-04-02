@@ -347,7 +347,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FramePartition("Color.SetAccent()");
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// This could change if the UI mode changes (e.g., if night mode is enabled)
-			Color.SetAccent(GetAccentColor(activity));
+			Application.AccentColor = GetAccentColor(activity);
 			_ColorButtonNormalSet = false;
 
 			if (!IsInitialized)

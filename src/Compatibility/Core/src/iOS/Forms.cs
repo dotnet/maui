@@ -195,15 +195,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Microsoft.Maui.Controls.Internals.Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
-			//TODO: MAUI Accent Color?
-			//Color.SetAccent(Color.FromRgba(50, 79, 133, 255));
+			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
 			if (!IsInitialized)
 			{
 				// Only need to do this once
 				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 			}
-
+			
 #if __MOBILE__
 			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());

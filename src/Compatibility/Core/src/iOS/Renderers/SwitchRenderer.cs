@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new UISwitch(RectangleF.Empty));
+					SetNativeControl(new UISwitch(CGRect.Empty));
 					Control.ValueChanged += OnControlValueChanged;
 				}
 
