@@ -24,19 +24,21 @@ namespace Maui.Controls.Sample
 		{
 			if (UseXamlApp)
 			{
+				// Use all the Forms features
 				appBuilder = appBuilder
-					.UseCompatibilityForms()
+					.UseFormsCompatibility()
 					.UseMauiApp<XamlApp>();
 			}
 			else
 			{
+				// Use just the Forms renderers
 				appBuilder = appBuilder
+					.UseCompatibilityRenderers()
 					.UseMauiApp<MyApp>();
 			}
 
 			appBuilder
-				.UseDefaultCompatibilityRenderers()
-				.ConfigureAppConfiguration((hostingContext, config) =>
+				.ConfigureAppConfiguration(config =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>
 					{
@@ -48,7 +50,7 @@ namespace Maui.Controls.Sample
 				})
 				//.UseMauiServiceProviderFactory(true)
 				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
-				.ConfigureServices((hostingContext, services) =>
+				.ConfigureServices(services =>
 				{
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
@@ -60,9 +62,25 @@ namespace Maui.Controls.Sample
 
 					services.AddTransient<IWindow, MainWindow>();
 				})
+				.ConfigureFonts((hostingContext, fonts) =>
+				{
+					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
+				})
+				.ConfigureEssentials((ctx, essentials) =>
+				{
+					essentials
+						.UseVersionTracking()
+						.UseMapServiceToken("YOUR-KEY-HERE")
+						.AddAppAction("test_action", "Test App Action")
+						.AddAppAction("second_action", "Second App Action")
+						.OnAppAction(appAction =>
+						{
+							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
+						});
+				})
 				.ConfigureLifecycleEvents((ctx, events) =>
 				{
-					events.AddEvent("CustomEventName", () => LogEvent("CustomEventName"));
+					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));
 
 #if __ANDROID__
 					events.AddAndroid(lifecycleBuilder => lifecycleBuilder
@@ -75,6 +93,7 @@ namespace Maui.Controls.Sample
 						.OnPause((a) => LogEvent(nameof(AndroidLifecycle.OnPause)))
 						.OnPostCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnPostCreate)))
 						.OnPostResume((a) => LogEvent(nameof(AndroidLifecycle.OnPostResume)))
+						.OnPressingBack((a) => LogEvent(nameof(AndroidLifecycle.OnPressingBack)) && false)
 						.OnRequestPermissionsResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnRequestPermissionsResult)))
 						.OnRestart((a) => LogEvent(nameof(AndroidLifecycle.OnRestart)))
 						.OnRestoreInstanceState((a, b) => LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState)))
@@ -112,33 +131,28 @@ namespace Maui.Controls.Sample
 								b.PutString("test2", "yay");
 							});
 					});
+#elif __IOS__
+					events.AddiOS(life =>
+					{
+						life.DidEnterBackground((a) => LogEvent(nameof(iOSLifecycle.DidEnterBackground)))
+							.FinishedLaunching((a, b) => LogEvent(nameof(iOSLifecycle.FinishedLaunching)) && true)
+							.OnActivated((a) => LogEvent(nameof(iOSLifecycle.OnActivated)))
+							.OnResignActivation((a) => LogEvent(nameof(iOSLifecycle.OnResignActivation)))
+							.WillEnterForeground((s) => LogEvent(nameof(iOSLifecycle.WillEnterForeground)))
+							.WillTerminate((s) => LogEvent(nameof(iOSLifecycle.WillTerminate)));
+					});
 #endif
-				})
-				.ConfigureFonts((hostingContext, fonts) =>
-				{
-					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
-				})
-				.ConfigureEssentials((ctx, essentials) =>
-				{
-					essentials
-						.UseVersionTracking()
-						.UseMapServiceToken("YOUR-KEY-HERE")
-						.AddAppAction("test_action", "Test App Action")
-						.AddAppAction("second_action", "Second App Action")
-						.OnAppAction(appAction =>
-						{
-							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
-						});
+
+					static bool LogEvent(string eventName, string type = null)
+					{
+						Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? "" : $" ({type})")}");
+						return true;
+					}
 				});
 		}
 
-		void LogEvent(string eventName, string type = null)
-		{
-			Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? "" : $" ({type})")}");
-		}
-
 		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
-		public class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
+		class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
 		{
 			public ServiceCollection CreateBuilder(IServiceCollection services)
 				=> new ServiceCollection { services };

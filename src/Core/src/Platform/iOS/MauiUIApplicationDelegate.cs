@@ -1,6 +1,7 @@
 using System;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using UIKit;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui
 
 			var host = startup
 				.CreateAppHostBuilder()
-				//.ConfigureServices(ConfigureNativeServices)
+				.ConfigureServices(ConfigureNativeServices)
 				.ConfigureUsing(startup)
 				.Build();
 
@@ -41,62 +42,39 @@ namespace Microsoft.Maui
 
 			Window.MakeKeyAndVisible();
 
-			//foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
-			//	iOSApplicationDelegateHandler.FinishedLaunching(application, launchOptions);
-
-			Current.Services?.InvokeLifecycleEvents<IosLifecycle.FinishedLaunching>(del => del(application, launchOptions));
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application, launchOptions));
 
 			return true;
 		}
 
 		public override void OnActivated(UIApplication application)
 		{
-			//foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
-			//	iOSApplicationDelegateHandler.OnActivated(application);
-
-			Current.Services?.InvokeLifecycleEvents<IosLifecycle.OnActivated>(del => del(application));
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.OnActivated>(del => del(application));
 		}
 
 		public override void OnResignActivation(UIApplication application)
 		{
-			//foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
-			//	iOSApplicationDelegateHandler.OnResignActivation(application);
-
-			Current.Services?.InvokeLifecycleEvents<IosLifecycle.OnResignActivation>(del => del(application));
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.OnResignActivation>(del => del(application));
 		}
 
 		public override void WillTerminate(UIApplication application)
 		{
-			//foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
-			//	iOSApplicationDelegateHandler.WillTerminate(application);
-
-			Current.Services?.InvokeLifecycleEvents<IosLifecycle.WillTerminate>(del => del(application));
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillTerminate>(del => del(application));
 		}
 
 		public override void DidEnterBackground(UIApplication application)
 		{
-			//foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
-			//	iOSApplicationDelegateHandler.DidEnterBackground(application);
-
-			Current.Services?.InvokeLifecycleEvents<IosLifecycle.DidEnterBackground>(del => del(application));
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.DidEnterBackground>(del => del(application));
 		}
 
 		public override void WillEnterForeground(UIApplication application)
 		{
-			//foreach (var iOSApplicationDelegateHandler in GetIosApplicationLifetime())
-			//	iOSApplicationDelegateHandler.WillEnterForeground(application);
-
-			Current.Services?.InvokeLifecycleEvents<IosLifecycle.WillEnterForeground>(del => del(application));
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
 		}
 
-		//void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		//{
-		//	services.AddTransient<IIosApplicationLifetime, IosApplicationLifetime>();
-		//}
-
-		//IEnumerable<IIosApplicationLifetime> GetIosApplicationLifetime() =>
-		//	Services?.GetServices<IIosApplicationLifetime>() ?? Enumerable.Empty<IIosApplicationLifetime>();
-
+		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
+		{
+		}
 	}
 
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate

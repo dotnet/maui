@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Tests;
 using Xunit;
@@ -70,15 +72,17 @@ namespace Microsoft.Maui.UnitTests
 					delegateInvoked++;
 					order.Add("Delegate1");
 
-					builder.BuildInvoked += services =>
+					builder.BuildInvoked += (context, services) =>
 					{
 						order.Add("Build");
+						Assert.NotNull(context);
 						Assert.NotNull(services);
 					};
 
-					builder.ConfigureInvoked += services =>
+					builder.ConfigureInvoked += (context, services) =>
 					{
 						order.Add("Configure");
+						Assert.NotNull(context);
 						Assert.NotNull(services);
 					};
 				})
@@ -108,16 +112,48 @@ namespace Microsoft.Maui.UnitTests
 				{
 					Assert.NotNull(context);
 					Assert.NotNull(builder);
-					builder.BuildInvoked += services =>
+					builder.BuildInvoked += (context, services) =>
 					{
+						Assert.NotNull(context);
 						Assert.NotNull(services);
 					};
-					builder.ConfigureInvoked += services =>
+					builder.ConfigureInvoked += (context, services) =>
 					{
+						Assert.NotNull(context);
 						Assert.NotNull(services);
 					};
 				})
 				.Build();
+		}
+		[Fact]
+		public void AppConfigurationReachesBuilder()
+		{
+			string buildValue = null;
+			string configureValue = null;
+
+			var host = new AppHostBuilder()
+				.ConfigureAppConfiguration((_, builder) =>
+				{
+					builder.AddInMemoryCollection(new Dictionary<string, string>
+					{
+						{ "key 1", "value 1" },
+					});
+				})
+				.ConfigureServices<ServiceBuilderStub>((context, builder) =>
+				{
+					builder.BuildInvoked += (context, services) =>
+					{
+						buildValue = context.Configuration["key 1"];
+					};
+					builder.ConfigureInvoked += (context, services) =>
+					{
+						configureValue = context.Configuration["key 1"];
+					};
+				})
+				.Build();
+
+			Assert.Equal("value 1", buildValue);
+			Assert.Equal("value 1", configureValue);
 		}
 
 		class CountingServiceBuilder : ServiceBuilderStub
@@ -132,29 +168,29 @@ namespace Microsoft.Maui.UnitTests
 
 		class MultipleRegistrationBuilder : MappingService, IMauiServiceBuilder
 		{
-			public void ConfigureServices(IServiceCollection services)
+			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
 			{
 				services.AddSingleton<MappingService>(this);
 			}
 
-			public void Configure(IServiceProvider services)
+			public void Configure(HostBuilderContext context, IServiceProvider services)
 			{
 			}
 		}
 
 		class ServiceBuilderStub : IMauiServiceBuilder
 		{
-			public event Action<IServiceCollection> BuildInvoked;
-			public event Action<IServiceProvider> ConfigureInvoked;
+			public event Action<HostBuilderContext, IServiceCollection> BuildInvoked;
+			public event Action<HostBuilderContext, IServiceProvider> ConfigureInvoked;
 
-			public void ConfigureServices(IServiceCollection services)
+			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
 			{
-				BuildInvoked?.Invoke(services);
+				BuildInvoked?.Invoke(context, services);
 			}
 
-			public void Configure(IServiceProvider services)
+			public void Configure(HostBuilderContext context, IServiceProvider services)
 			{
-				ConfigureInvoked?.Invoke(services);
+				ConfigureInvoked?.Invoke(context, services);
 			}
 		}
 

@@ -28,6 +28,12 @@ namespace Microsoft.Maui.Hosting
 		IConfiguration? _hostConfiguration;
 		IConfiguration? _appConfiguration;
 
+		public AppHostBuilder()
+		{
+			// This is here just to make sure that the IMauiHandlersServiceProvider gets registered.
+			this.ConfigureMauiHandlers(handlers => { });
+		}
+
 		public IDictionary<object, object> Properties => new Dictionary<object, object>();
 
 		public static IAppHostBuilder CreateDefaultAppBuilder()
@@ -36,7 +42,7 @@ namespace Microsoft.Maui.Hosting
 
 			builder.UseMauiServiceProviderFactory(false);
 
-			builder.UseDefaultMauiHandlers();
+			builder.UseMauiHandlers();
 			builder.ConfigureFonts();
 
 			return builder;
@@ -166,14 +172,15 @@ namespace Microsoft.Maui.Hosting
 		{
 			if (services == null)
 				throw new ArgumentNullException(nameof(services));
+			if (_hostBuilderContext == null)
+				throw new InvalidOperationException($"The HostBuilderContext was not set.");
 
 			if (_appConfiguration != null)
 				services.AddSingleton(_appConfiguration);
 
 			foreach (Action<HostBuilderContext, IServiceCollection> configureServicesAction in _configureServicesActions)
 			{
-				if (_hostBuilderContext != null)
-					configureServicesAction(_hostBuilderContext, services);
+				configureServicesAction(_hostBuilderContext, services);
 			}
 
 			_serviceProvider = ConfigureContainerAndGetProvider(services);
@@ -187,7 +194,7 @@ namespace Microsoft.Maui.Hosting
 		void BuildAppConfiguration()
 		{
 			if (_hostBuilderContext == null)
-				return;
+				throw new InvalidOperationException($"The HostBuilderContext was not set.");
 
 			var configBuilder = new ConfigurationBuilder();
 			configBuilder.AddConfiguration(_hostConfiguration);
@@ -202,12 +209,14 @@ namespace Microsoft.Maui.Hosting
 
 		IServiceProvider ConfigureContainerAndGetProvider(IServiceCollection services)
 		{
+			if (_hostBuilderContext == null)
+				throw new InvalidOperationException($"The HostBuilderContext was not set.");
+
 			object containerBuilder = _serviceProviderFactory.CreateBuilder(services);
 
 			foreach (IConfigureContainerAdapter containerAction in _configureContainerActions)
 			{
-				if (_hostBuilderContext != null)
-					containerAction.ConfigureContainer(_hostBuilderContext, containerBuilder);
+				containerAction.ConfigureContainer(_hostBuilderContext, containerBuilder);
 			}
 
 			return _serviceProviderFactory.CreateServiceProvider(containerBuilder);
@@ -217,6 +226,8 @@ namespace Microsoft.Maui.Hosting
 		{
 			if (services == null)
 				throw new ArgumentNullException(nameof(services));
+			if (_hostBuilderContext == null)
+				throw new InvalidOperationException($"The HostBuilderContext was not set.");
 
 			foreach (var pair in _configureServiceBuilderActions)
 			{
@@ -224,11 +235,10 @@ namespace Microsoft.Maui.Hosting
 
 				foreach (var action in pair.Value)
 				{
-					if (_hostBuilderContext != null)
-						action(_hostBuilderContext, instance);
+					action(_hostBuilderContext, instance);
 				}
 
-				instance.ConfigureServices(services);
+				instance.ConfigureServices(_hostBuilderContext, services);
 
 				_configureServiceBuilderInstances.Add(instance);
 			}
@@ -238,10 +248,12 @@ namespace Microsoft.Maui.Hosting
 		{
 			if (serviceProvider == null)
 				throw new ArgumentNullException(nameof(serviceProvider));
+			if (_hostBuilderContext == null)
+				throw new InvalidOperationException($"The HostBuilderContext was not set.");
 
 			foreach (var instance in _configureServiceBuilderInstances)
 			{
-				instance.Configure(serviceProvider);
+				instance.Configure(_hostBuilderContext, serviceProvider);
 			}
 		}
 

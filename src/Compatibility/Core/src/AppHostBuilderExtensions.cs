@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 #endif
 		};
 
-		public static IAppHostBuilder UseCompatibilityForms(this IAppHostBuilder builder)
+		public static IAppHostBuilder UseFormsCompatibility(this IAppHostBuilder builder)
 		{
 			// TODO: This should not be immediately run, but rather a registered delegate with values
 			//       of the Context and LaunchActivatedEventArgs passed in.
@@ -46,10 +46,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Forms.Init(options);
 
+			builder.UseCompatibilityRenderers();
+
 			return builder;
 		}
 
-		public static IAppHostBuilder UseDefaultCompatibilityRenderers(this IAppHostBuilder builder)
+		public static IAppHostBuilder UseCompatibilityRenderers(this IAppHostBuilder builder)
 		{
 			Forms.RegisterCompatRenderers(
 				new[] { typeof(RendererToHandlerShim).Assembly },

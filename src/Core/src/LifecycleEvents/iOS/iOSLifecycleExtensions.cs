@@ -2,22 +2,22 @@
 
 namespace Microsoft.Maui.LifecycleEvents
 {
-	public static class IosLifecycleExtensions
+	public static class iOSLifecycleExtensions
 	{
-		public static ILifecycleBuilder AddIos(this ILifecycleBuilder builder, Action<IIosLifecycleBuilder> configureDelegate)
+		public static ILifecycleBuilder AddiOS(this ILifecycleBuilder builder, Action<IiOSLifecycleBuilder> configureDelegate)
 		{
-			var iOS = new IosLifecycleBuilder(builder);
+			var iOS = new iOSLifecycleBuilder(builder);
 
 			configureDelegate?.Invoke(iOS);
 
 			return builder;
 		}
 
-		class IosLifecycleBuilder : IIosLifecycleBuilder
+		class iOSLifecycleBuilder : IiOSLifecycleBuilder
 		{
 			readonly ILifecycleBuilder _builder;
 
-			public IosLifecycleBuilder(ILifecycleBuilder builder)
+			public iOSLifecycleBuilder(ILifecycleBuilder builder)
 			{
 				_builder = builder;
 			}

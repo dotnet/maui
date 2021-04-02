@@ -18,10 +18,10 @@ namespace Maui.Controls.Sample.Pages
 
 		public MainPage(IServiceProvider services, MainPageViewModel viewModel)
 		{
+			_services = services;
 			BindingContext = _viewModel = viewModel;
 
 			SetupMauiLayout();
-			_services = services;
 			//SetupCompatibilityLayout();
 		}
 
@@ -83,7 +83,7 @@ namespace Maui.Controls.Sample.Pages
 			button.Clicked += async (sender, e) =>
 			{
 				var events = _services.GetRequiredService<ILifecycleEventService>();
-				events.InvokeEvents("CustomEventName");
+				events.InvokeEvents<Action<string>>("CustomEventName", action => action("VALUE"));
 
 				var location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Lowest));
 				Debug.WriteLine($"I tracked you down to {location.Latitude}, {location.Longitude}! You can't hide!");

@@ -5,7 +5,7 @@ A "single project", is a multi-targeted .NET Maui project, such as:
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
+    <TargetFrameworks>net6.0-ios;net6.0-android</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <!-- Opts into the new project type -->
     <SingleProject>true</SingleProject>

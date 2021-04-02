@@ -3,7 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui.LifecycleEvents
 {
-	public static class IosLifecycle
+	public static class iOSLifecycle
 	{
 		public delegate bool FinishedLaunching(UIApplication application, NSDictionary launchOptions);
 		public delegate void OnActivated(UIApplication application);

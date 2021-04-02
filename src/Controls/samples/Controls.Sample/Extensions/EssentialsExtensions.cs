@@ -82,11 +82,11 @@ namespace Microsoft.Maui.Essentials
 				return this;
 			}
 
-			public void ConfigureServices(IServiceCollection services)
+			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
 			{
 			}
 
-			public async void Configure(IServiceProvider services)
+			public async void Configure(HostBuilderContext context, IServiceProvider services)
 			{
 #if WINDOWS
 				// Platform.MapServiceToken = _mapServiceToken;
