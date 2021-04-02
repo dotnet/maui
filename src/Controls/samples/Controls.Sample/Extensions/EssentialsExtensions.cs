@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Essentials
 	{
 		public static IAppHostBuilder ConfigureEssentials(this IAppHostBuilder builder, Action<HostBuilderContext, IEssentialsBuilder> configureDelegate = null)
 		{
-			builder.ConfigureLifecycleEvents((ctx, life) =>
+			builder.ConfigureLifecycleEvents(life =>
 			{
 #if __ANDROID__
 				Platform.Init(MauiApplication.Current);
@@ -28,6 +28,20 @@ namespace Microsoft.Maui.Essentials
 					.OnResume((activity) =>
 					{
 						Platform.OnResume();
+					}));
+#elif __IOS__
+				life.AddiOS(ios => ios
+					.ContinueUserActivity((application, userActivity, completionHandler) =>
+					{
+						return Platform.ContinueUserActivity(application, userActivity, completionHandler);
+					})
+					.OpenUrl((application, url, options) =>
+					{
+						return Platform.OpenUrl(application, url, options);
+					})
+					.PerformActionForShortcutItem((application, shortcutItem, completionHandler) =>
+					{
+						Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
 					}));
 #endif
 			});

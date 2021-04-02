@@ -47,6 +47,35 @@ namespace Microsoft.Maui
 			return true;
 		}
 
+		public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
+		{
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.PerformActionForShortcutItem>(del => del(application, shortcutItem, completionHandler));
+		}
+
+		public override bool OpenUrl(UIApplication application, NSUrl url, NSDictionary options)
+		{
+			var wasHandled = false;
+
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.OpenUrl>(del =>
+			{
+				wasHandled = del(application, url, options) || wasHandled;
+			});
+
+			return wasHandled || base.OpenUrl(application, url, options);
+		}
+
+		public override bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
+		{
+			var wasHandled = false;
+
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.ContinueUserActivity>(del =>
+			{
+				wasHandled = del(application, userActivity, completionHandler) || wasHandled;
+			});
+
+			return wasHandled || base.ContinueUserActivity(application, userActivity, completionHandler);
+		}
+
 		public override void OnActivated(UIApplication application)
 		{
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.OnActivated>(del => del(application));
@@ -72,6 +101,7 @@ namespace Microsoft.Maui
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
 		}
 
+		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
 		}

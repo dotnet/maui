@@ -83,7 +83,8 @@ namespace Maui.Controls.Sample
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));
 
 #if __ANDROID__
-					events.AddAndroid(lifecycleBuilder => lifecycleBuilder
+					// Log everything in this one
+					events.AddAndroid(android => android
 						.OnActivityResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnActivityResult), b.ToString()))
 						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)))
 						.OnConfigurationChanged((a, b) => LogEvent(nameof(AndroidLifecycle.OnConfigurationChanged)))
@@ -102,45 +103,45 @@ namespace Maui.Controls.Sample
 						.OnStart((a) => LogEvent(nameof(AndroidLifecycle.OnStart)))
 						.OnStop((a) => LogEvent(nameof(AndroidLifecycle.OnStop))));
 
-					events.AddAndroid(life =>
-					{
-						var shouldPreventBack = 1;
+					// Add some cool features/things
+					var shouldPreventBack = 1;
+					events.AddAndroid(android => android
+						.OnResume(a =>
+						{
+							LogEvent(nameof(AndroidLifecycle.OnResume), "shortcut");
+						})
+						.OnPressingBack(a =>
+						{
+							LogEvent(nameof(AndroidLifecycle.OnPressingBack), "shortcut");
 
-						life.OnResume(a =>
-							{
-								LogEvent(nameof(AndroidLifecycle.OnResume), "shortcut");
-							})
-							.OnPressingBack(a =>
-							{
-								LogEvent(nameof(AndroidLifecycle.OnPressingBack), "shortcut");
+							return shouldPreventBack-- > 0;
+						})
+						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut"))
+						.OnRestoreInstanceState((a, b) =>
+						{
+							LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState), "shortcut");
 
-								return shouldPreventBack-- > 0;
-							})
-							.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut"))
-							.OnRestoreInstanceState((a, b) =>
-							{
-								LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState), "shortcut");
+							Debug.WriteLine($"{b.GetString("test2", "fail")} == {b.GetBoolean("test", false)}");
+						})
+						.OnSaveInstanceState((a, b) =>
+						{
+							LogEvent(nameof(AndroidLifecycle.OnSaveInstanceState), "shortcut");
 
-								Debug.WriteLine($"{b.GetString("test2", "fail")} == {b.GetBoolean("test", false)}");
-							})
-							.OnSaveInstanceState((a, b) =>
-							{
-								LogEvent(nameof(AndroidLifecycle.OnSaveInstanceState), "shortcut");
-
-								b.PutBoolean("test", true);
-								b.PutString("test2", "yay");
-							});
-					});
+							b.PutBoolean("test", true);
+							b.PutString("test2", "yay");
+						}));
 #elif __IOS__
-					events.AddiOS(life =>
-					{
-						life.DidEnterBackground((a) => LogEvent(nameof(iOSLifecycle.DidEnterBackground)))
-							.FinishedLaunching((a, b) => LogEvent(nameof(iOSLifecycle.FinishedLaunching)) && true)
-							.OnActivated((a) => LogEvent(nameof(iOSLifecycle.OnActivated)))
-							.OnResignActivation((a) => LogEvent(nameof(iOSLifecycle.OnResignActivation)))
-							.WillEnterForeground((s) => LogEvent(nameof(iOSLifecycle.WillEnterForeground)))
-							.WillTerminate((s) => LogEvent(nameof(iOSLifecycle.WillTerminate)));
-					});
+					// Log everything in this one
+					events.AddiOS(ios => ios
+						.ContinueUserActivity((a, b, c) => LogEvent(nameof(iOSLifecycle.ContinueUserActivity)) && false)
+						.DidEnterBackground((a) => LogEvent(nameof(iOSLifecycle.DidEnterBackground)))
+						.FinishedLaunching((a, b) => LogEvent(nameof(iOSLifecycle.FinishedLaunching)) && true)
+						.OnActivated((a) => LogEvent(nameof(iOSLifecycle.OnActivated)))
+						.OnResignActivation((a) => LogEvent(nameof(iOSLifecycle.OnResignActivation)))
+						.OpenUrl((a, b, c) => LogEvent(nameof(iOSLifecycle.OpenUrl)) && false)
+						.PerformActionForShortcutItem((a, b, c) => LogEvent(nameof(iOSLifecycle.PerformActionForShortcutItem)))
+						.WillEnterForeground((s) => LogEvent(nameof(iOSLifecycle.WillEnterForeground)))
+						.WillTerminate((s) => LogEvent(nameof(iOSLifecycle.WillTerminate))));
 #endif
 
 					static bool LogEvent(string eventName, string type = null)

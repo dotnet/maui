@@ -4,7 +4,6 @@ using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
 
 namespace Maui.Controls.Sample
 {
@@ -24,8 +23,6 @@ namespace Maui.Controls.Sample
 
 		public override IWindow CreateWindow(IActivationState activationState)
 		{
-			Forms.Init(activationState);
-
 			return Services.GetRequiredService<IWindow>();
 		}
 	}
