@@ -1225,7 +1225,7 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
         Information("This target is only supported on Windows.");
         return;
     }
-    var vsLatest = VSWhereLatest();
+    var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, });
     if (vsLatest == null)
         throw new Exception("Unable to find Visual Studio!");
     var devenv = vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe");
