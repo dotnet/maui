@@ -39,6 +39,11 @@ namespace Microsoft.Maui
 			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(true);
 		}
 
+		public static void UpdateVerticalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
+		{
+			textField.TextAlignment = textAlignment.VerticalTextAlignment.ToNative(true);
+		}
+
 		public static void UpdateIsTextPredictionEnabled(this UITextField textField, IEntry entry)
 		{
 			if (entry.IsTextPredictionEnabled)
