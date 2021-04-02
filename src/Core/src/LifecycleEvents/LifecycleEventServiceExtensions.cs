@@ -33,31 +33,29 @@ namespace Microsoft.Maui.LifecycleEvents
 		internal static IEnumerable<TDelegate> GetLifecycleEventDelegates<TDelegate>(this IServiceProvider services, string? eventName = null)
 			where TDelegate : Delegate
 		{
-			var lifecycleServices = services?.GetServices<ILifecycleEventService>();
-			if (lifecycleServices == null)
+			var lifecycleService = services?.GetService<ILifecycleEventService>();
+			if (lifecycleService == null)
 				yield break;
 
 			if (eventName == null)
 				eventName = typeof(TDelegate).Name;
 
-			foreach (var lifecycleService in lifecycleServices)
-				foreach (var del in lifecycleService.GetEventDelegates<TDelegate>(eventName))
-					yield return del;
+			foreach (var del in lifecycleService.GetEventDelegates<TDelegate>(eventName))
+				yield return del;
 		}
 
 		internal static bool ContainsLifecycleEvent<TDelegate>(this IServiceProvider services, string? eventName = null)
 			where TDelegate : Delegate
 		{
-			var lifecycleServices = services?.GetServices<ILifecycleEventService>();
-			if (lifecycleServices == null)
+			var lifecycleService = services?.GetService<ILifecycleEventService>();
+			if (lifecycleService == null)
 				return false;
 
 			if (eventName == null)
 				eventName = typeof(TDelegate).Name;
 
-			foreach (var lifecycleService in lifecycleServices)
-				if (lifecycleService.ContainsEvent(eventName))
-					return true;
+			if (lifecycleService.ContainsEvent(eventName))
+				return true;
 
 			return false;
 		}
