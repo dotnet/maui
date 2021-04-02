@@ -28,13 +28,13 @@ namespace Microsoft.Maui.Hosting
 		IConfiguration? _hostConfiguration;
 		IConfiguration? _appConfiguration;
 
-		public IDictionary<object, object> Properties => new Dictionary<object, object>();
-
 		public AppHostBuilder()
 		{
 			// This is here just to make sure that the IMauiHandlersServiceProvider gets registered.
 			this.ConfigureMauiHandlers(handlers => { });
 		}
+
+		public IDictionary<object, object> Properties => new Dictionary<object, object>();
 
 		public static IAppHostBuilder CreateDefaultAppBuilder()
 		{
