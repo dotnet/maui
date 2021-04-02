@@ -43,6 +43,12 @@ namespace Microsoft.Maui.Essentials
 					{
 						Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
 					}));
+#elif WINDOWS
+				life.AddWindows(windows => windows
+					.OnLaunched((application, args) =>
+					{
+						Platform.OnLaunched(args);
+					}));
 #endif
 			});
 

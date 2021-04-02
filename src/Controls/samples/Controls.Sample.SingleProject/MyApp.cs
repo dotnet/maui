@@ -6,6 +6,8 @@ namespace Maui.Controls.Sample.SingleProject
 	{
 		public IWindow CreateWindow(IActivationState activationState)
 		{
+			Microsoft.Maui.Controls.Compatibility.Forms.Init(activationState);
+
 			return new MainWindow();
 		}
 	}

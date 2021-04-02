@@ -2,18 +2,18 @@
 
 namespace Microsoft.Maui.LifecycleEvents
 {
-	public static class AndroidLifecycleExtensions
+	public static class WindowsLifecycleExtensions
 	{
-		public static ILifecycleBuilder AddAndroid(this ILifecycleBuilder builder, Action<IAndroidLifecycleBuilder> configureDelegate)
+		public static ILifecycleBuilder AddWindows(this ILifecycleBuilder builder, Action<IWindowsLifecycleBuilder> configureDelegate)
 		{
-			var lifecycle = new LifecycleBuilder(builder);
+			var windows = new LifecycleBuilder(builder);
 
-			configureDelegate?.Invoke(lifecycle);
+			configureDelegate?.Invoke(windows);
 
 			return builder;
 		}
 
-		class LifecycleBuilder : IAndroidLifecycleBuilder
+		class LifecycleBuilder : IWindowsLifecycleBuilder
 		{
 			readonly ILifecycleBuilder _builder;
 

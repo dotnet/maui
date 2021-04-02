@@ -140,8 +140,15 @@ namespace Maui.Controls.Sample
 						.OnResignActivation((a) => LogEvent(nameof(iOSLifecycle.OnResignActivation)))
 						.OpenUrl((a, b, c) => LogEvent(nameof(iOSLifecycle.OpenUrl)) && false)
 						.PerformActionForShortcutItem((a, b, c) => LogEvent(nameof(iOSLifecycle.PerformActionForShortcutItem)))
-						.WillEnterForeground((s) => LogEvent(nameof(iOSLifecycle.WillEnterForeground)))
-						.WillTerminate((s) => LogEvent(nameof(iOSLifecycle.WillTerminate))));
+						.WillEnterForeground((a) => LogEvent(nameof(iOSLifecycle.WillEnterForeground)))
+						.WillTerminate((a) => LogEvent(nameof(iOSLifecycle.WillTerminate))));
+#elif WINDOWS
+					// Log everything in this one
+					events.AddWindows(windows => windows
+						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
+						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
+						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
+						.OnVisibilityChanged((a, b) => LogEvent(nameof(WindowsLifecycle.OnVisibilityChanged))));
 #endif
 
 					static bool LogEvent(string eventName, string type = null)

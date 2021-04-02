@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Essentials
                                 continue;
                         }
                     }
-                    catch (System.Exception ex)
+                    catch (global::System.Exception ex)
                     {
                         Debug.WriteLine($"Unable to get Network Adapter, returning Unknown: {ex.Message}");
                     }
