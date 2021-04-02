@@ -48,8 +48,8 @@ namespace Maui.Controls.Sample
 						{"Logging:LogLevel:Default", "Warning"}
 					});
 				})
-				.UseMauiServiceProviderFactory(true)
-				//.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
+				//.UseMauiServiceProviderFactory(true)
+				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
 				.ConfigureServices(services =>
 				{
 					services.AddSingleton<ITextService, TextService>();
