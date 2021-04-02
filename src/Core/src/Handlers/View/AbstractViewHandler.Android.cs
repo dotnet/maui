@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var mode = MeasureSpecMode.AtMost;
 
-			if (explicitSize > -1)
+			if (explicitSize >= 0)
 			{
 				// We have a set value (i.e., a Width or Height)
 				mode = MeasureSpecMode.Exactly;
