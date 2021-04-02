@@ -8,6 +8,8 @@ using Android.Util;
 using Android.Views;
 using AndroidX.Core.View;
 using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 {
@@ -303,7 +305,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				return;
 			_lastUpdateColor = c;
 
-			if (c.IsDefault)
+			if (c == null)
 				SetTextColor(_labelTextColorDefault);
 			else
 				SetTextColor(c.ToAndroid());

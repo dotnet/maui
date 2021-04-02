@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -21,9 +22,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var minimumContainer = new ValueViewContainer<Slider>(Test.Slider.Minimum, new Slider { Maximum = 10 }, "Value", value => value.ToString());
 			var valueContainer = new ValueViewContainer<Slider>(Test.Slider.Value, new Slider { Value = 0.5 }, "Value", value => value.ToString());
 
-			var minTrackColorContainer = new ValueViewContainer<Slider>(Test.Slider.MinimumTrackColor, new Slider { MinimumTrackColor = Color.Red, Value = 0.5 }, "Value", value => value.ToString());
-			var maxTrackColorContainer = new ValueViewContainer<Slider>(Test.Slider.MaximumTrackColor, new Slider { MaximumTrackColor = Color.Red, Value = 0.5 }, "Value", value => value.ToString());
-			var thumbColorContainer = new ValueViewContainer<Slider>(Test.Slider.ThumbColor, new Slider { ThumbColor = Color.Red, Value = 0.5 }, "Value", value => value.ToString());
+			var minTrackColorContainer = new ValueViewContainer<Slider>(Test.Slider.MinimumTrackColor, new Slider { MinimumTrackColor = Colors.Red, Value = 0.5 }, "Value", value => value.ToString());
+			var maxTrackColorContainer = new ValueViewContainer<Slider>(Test.Slider.MaximumTrackColor, new Slider { MaximumTrackColor = Colors.Red, Value = 0.5 }, "Value", value => value.ToString());
+			var thumbColorContainer = new ValueViewContainer<Slider>(Test.Slider.ThumbColor, new Slider { ThumbColor = Colors.Red, Value = 0.5 }, "Value", value => value.ToString());
 			var thumbImageContainer = new ValueViewContainer<Slider>(Test.Slider.ThumbImage, new Slider { ThumbImageSource = "coffee.png", Value = 0.5 }, "Value", value => value.ToString());
 
 			var dragStartedContainer = new EventViewContainer<Slider>(Test.Slider.DragStarted, new Slider { Value = 0.5 });

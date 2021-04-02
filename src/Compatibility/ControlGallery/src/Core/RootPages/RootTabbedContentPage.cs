@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					Children = {
 						new Label { Text = "Hello" },
 						new AbsoluteLayout {
-							BackgroundColor = Color.Red,
+							BackgroundColor = Colors.Red,
 							VerticalOptions = LayoutOptions.FillAndExpand,
 							HorizontalOptions = LayoutOptions.FillAndExpand
 						}, clearSelectedTabColorButton
@@ -43,8 +44,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				}
 			};
 
-			UnselectedTabColor = Color.HotPink;
-			SelectedTabColor = Color.Green;
+			UnselectedTabColor = Colors.HotPink;
+			SelectedTabColor = Colors.Green;
 
 			Children.Add(tabOne);
 			Children.Add(tabTwo);

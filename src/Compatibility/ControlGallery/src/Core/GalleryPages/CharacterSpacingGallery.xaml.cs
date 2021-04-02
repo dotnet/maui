@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 {
@@ -15,8 +16,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 		public CharacterSpacingGallery()
 		{
 			InitializeComponent();
-			textColorPicker.InitWithColor(Color.Red);
-			placeholderColorPicker.InitWithColor(Color.BlueViolet);
+			textColorPicker.InitWithColor(Colors.Red);
+			placeholderColorPicker.InitWithColor(Colors.BlueViolet);
 		}
 
 		void Slider_OnValueChanged(object sender, ValueChangedEventArgs e)
@@ -65,8 +66,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 		void ResetButtonClicked(object sender, EventArgs e)
 		{
 			slider.Value = 0;
-			textColorPicker.InitWithColor(Color.Red);
-			placeholderColorPicker.InitWithColor(Color.BlueViolet);
+			textColorPicker.InitWithColor(Colors.Red);
+			placeholderColorPicker.InitWithColor(Colors.BlueViolet);
 		}
 	}
 }

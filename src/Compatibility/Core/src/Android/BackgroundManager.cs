@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -28,13 +29,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		static void UpdateBackgroundColor(AView Control, VisualElement Element, Color? color = null)
+		static void UpdateBackgroundColor(AView Control, VisualElement Element, Color color = null)
 		{
 			if (Element == null || Control == null)
 				return;
 
 			var finalColor = color ?? Element.BackgroundColor;
-			if (finalColor.IsDefault)
+			if (finalColor == null)
 				Control.SetBackground(null);
 			else
 				Control.SetBackgroundColor(finalColor.ToAndroid());

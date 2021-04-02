@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -283,7 +284,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					}
 					catch (Exception)
 					{
-						_imageSource.TextColor = Color.Red;
+						_imageSource.TextColor = Colors.Red;
 						_loadImageButton.IsEnabled = true;
 						_imageSource.IsEnabled = true;
 						_loadingIndicator.IsVisible = false;

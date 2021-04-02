@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Compatibility.Internals;
 using CoreAnimation;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;

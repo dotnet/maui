@@ -4,6 +4,7 @@ using Android.Content.Res;
 using Android.Views;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using APlatform = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform;
 using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentContainer = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.FragmentContainer;

@@ -14,6 +14,8 @@ using Android.Widget;
 using Microsoft.Maui.Controls.Internals;
 using AImageButton = Android.Widget.ImageButton;
 using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

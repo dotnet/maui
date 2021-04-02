@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -63,9 +64,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				if (normal.TextColor == null)
 				{
-					normal.TextColor = Color.Red;
-					password.TextColor = Color.Red;
-					numericPassword.TextColor = Color.Red;
+					normal.TextColor = Colors.Red;
+					password.TextColor = Colors.Red;
+					numericPassword.TextColor = Colors.Red;
 				}
 				else
 				{

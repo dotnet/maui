@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Views;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager.Widget;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {

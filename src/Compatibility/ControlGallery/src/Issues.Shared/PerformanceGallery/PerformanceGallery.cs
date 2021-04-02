@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using Plugin.DeviceInfo;
 
 #if UITEST
@@ -78,8 +79,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				FontSize = 6,
 				HorizontalTextAlignment = TextAlignment.Center,
 				VerticalTextAlignment = TextAlignment.Center,
-				BackgroundColor = Color.Accent,
-				TextColor = Color.White
+				//BackgroundColor = Colors.Accent,
+				TextColor = Colors.White
 			};
 
 			Content = new StackLayout { Children = { testRunRef, nextButton, _PerformanceTracker } };

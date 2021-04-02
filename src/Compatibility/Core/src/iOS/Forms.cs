@@ -14,6 +14,7 @@ using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;
@@ -195,7 +196,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Microsoft.Maui.Controls.Internals.Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
 			//TODO: MAUI Accent Color?
-			Color.SetAccent(Color.FromRgba(50, 79, 133, 255));
+			//Color.SetAccent(Color.FromRgba(50, 79, 133, 255));
 
 			if (!IsInitialized)
 			{

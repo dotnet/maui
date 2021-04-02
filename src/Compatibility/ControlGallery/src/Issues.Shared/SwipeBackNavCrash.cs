@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Children = {
 					new Label { Text = "Swipe lightly left and right to crash this page" },
-					new BoxView { Color = new Color (0.0) }
+					new BoxView { Color = new Color (0.0f) }
 				}
 			};
 		}

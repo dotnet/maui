@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			colorToggle.Clicked += (sender, args) =>
 			{
-				vm.Color = vm.Color.IsDefault ? Color.Green : null;
+				vm.Color = vm.Color == null ? Colors.Green : null;
 			};
 
 			Content = new StackLayout()
@@ -117,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 				var content = new StackLayout
 				{
-					BackgroundColor = Color.White,
+					BackgroundColor = Colors.White,
 					Spacing = 10,
 					Padding = new Thickness(
 						horizontalSize: 10,

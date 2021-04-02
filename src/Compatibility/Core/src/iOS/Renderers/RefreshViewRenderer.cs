@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -92,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_refreshControl == null)
 				return;
 
-			_refreshControl.BackgroundColor = color != null ? color.ToUIColor() : null;
+			_refreshControl.BackgroundColor = color?.ToUIColor();
 		}
 
 		protected override void SetBackground(Brush brush)

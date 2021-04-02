@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -20,13 +21,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			Button button = new Button
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				CornerRadius = 32,
 				BorderWidth = 0,
 				FontSize = 36,
 				HeightRequest = 64,
 				HorizontalOptions = LayoutOptions.Center,
-				TextColor = Color.White,
+				TextColor = Colors.White,
 				VerticalOptions = LayoutOptions.Center,
 				WidthRequest = 64,
 				AutomationId = "TestReady"
@@ -36,13 +37,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			FlatButton flatButton = new FlatButton
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				CornerRadius = 32,
 				BorderWidth = 0,
 				FontSize = 36,
 				HeightRequest = 64,
 				HorizontalOptions = LayoutOptions.Center,
-				TextColor = Color.White,
+				TextColor = Colors.White,
 				VerticalOptions = LayoutOptions.Center,
 				WidthRequest = 64
 			};

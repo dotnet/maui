@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 #if UITEST
 using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -32,13 +33,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 			layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 
-			var testGrid = new Grid { BackgroundColor = Color.Red, AutomationId = "testgrid" };
+			var testGrid = new Grid { BackgroundColor = Colors.Red, AutomationId = "testgrid" };
 			var gridLabel = new Label
 			{
 				AutomationId = GridLabelId,
 				Text = "This is a Grid with a TapGesture",
 				FontSize = 24,
-				BackgroundColor = Color.Green
+				BackgroundColor = Colors.Green
 			};
 			Grid.SetRow(testGrid, 1);
 			testGrid.Children.Add(gridLabel);
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				AutomationId = StackLabelId,
 				Text = "This StackLayout also has a TapGesture",
 				FontSize = 24,
-				BackgroundColor = Color.Green
+				BackgroundColor = Colors.Green
 			};
 			Grid.SetRow(testStack, 2);
 			testStack.Children.Add(stackLabel);

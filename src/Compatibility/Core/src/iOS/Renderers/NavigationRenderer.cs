@@ -14,6 +14,7 @@ using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -742,7 +743,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			// set Tint color (i. e. Back Button arrow and Text)
 			var iconColor = Current != null ? NavigationPage.GetIconColor(Current) : null;
-			if (iconColor.IsDefault)
+			if (iconColor == null)
 				iconColor = barTextColor;
 
 			NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
@@ -755,7 +756,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var barTextColor = NavPage.BarTextColor;
 			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
 
-			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor.Luminosity <= 0.5)
+			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor.GetLuminosity() <= 0.5)
 			{
 				// Use dark text color for status bar
 				if (Forms.IsiOS13OrNewer)

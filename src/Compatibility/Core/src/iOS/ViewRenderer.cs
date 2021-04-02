@@ -3,6 +3,7 @@ using System.ComponentModel;
 
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;

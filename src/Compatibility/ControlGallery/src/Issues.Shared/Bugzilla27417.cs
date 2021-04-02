@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -57,8 +58,8 @@ Button 8 have the image on the right and the text on the left." };
 							Children =
 							{
 								new Button { WidthRequest = 200, HeightRequest = 300, ImageSource = "coffee.png" },
-								new Button { Text = "Click Me", BackgroundColor = Color.Gray },
-								new Button { ImageSource = "coffee.png", BackgroundColor = Color.Gray },
+								new Button { Text = "Click Me", BackgroundColor = Colors.Gray },
+								new Button { ImageSource = "coffee.png", BackgroundColor = Colors.Gray },
 								CreateButton(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 10)),
 								CreateButton(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Top, 10)),
 								CreateButton(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Bottom, 10)),
@@ -77,7 +78,7 @@ Button 8 have the image on the right and the text on the left." };
 				Text = "Click Me",
 				ImageSource = "coffee.png",
 				ContentLayout = layout,
-				BackgroundColor = Color.Gray
+				BackgroundColor = Colors.Gray
 			};
 		}
 	}

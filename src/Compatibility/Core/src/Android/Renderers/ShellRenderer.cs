@@ -13,6 +13,9 @@ using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
+using Color = Microsoft.Maui.Graphics.Color;
+using Microsoft.Maui.Graphics;
+using Paint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

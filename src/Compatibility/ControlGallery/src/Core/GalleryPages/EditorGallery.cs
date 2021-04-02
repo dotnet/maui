@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		public EditorGalleryPage(string title, Keyboard keyboard)
 		{
 			Title = title;
-			BackgroundColor = Color.Red;
+			BackgroundColor = Colors.Red;
 			Padding = new Thickness(20);
 
 			var label = new Label

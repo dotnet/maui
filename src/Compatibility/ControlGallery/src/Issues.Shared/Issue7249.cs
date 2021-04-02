@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -53,9 +54,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var customSwitch = new Issue7249Switch
 			{
-				SwitchOffColor = Color.Red,
-				SwitchOnColor = Color.Green,
-				SwitchThumbColor = Color.Yellow,
+				SwitchOffColor = Colors.Red,
+				SwitchOnColor = Colors.Green,
+				SwitchThumbColor = Colors.Yellow,
 				HorizontalOptions = LayoutOptions.Start,
 				IsToggled = false
 			};

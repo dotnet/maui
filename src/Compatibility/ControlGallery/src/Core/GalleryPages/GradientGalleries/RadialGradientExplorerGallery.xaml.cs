@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
 {
@@ -115,9 +116,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Grad
 			if (!(_layout.Children.FirstOrDefault() is Entry entry))
 				return;
 
-			var red = (int)(selectedColor.Color.R * 255);
-			var green = (int)(selectedColor.Color.G * 255);
-			var blue = (int)(selectedColor.Color.B * 255);
+			var red = (int)(selectedColor.Color.Red * 255);
+			var green = (int)(selectedColor.Color.Green * 255);
+			var blue = (int)(selectedColor.Color.Blue * 255);
 
 			entry.Text = $"#{red:X2}{green:X2}{blue:X2}";
 		}

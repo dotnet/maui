@@ -6,8 +6,11 @@ using Android.Util;
 using Android.Views;
 using AndroidX.DrawerLayout.Widget;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
+using Color = Microsoft.Maui.Graphics.Color;
+using Paint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -303,7 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (_behavior == FlyoutBehavior.Locked)
 			{
-				SetScrimColor(Color.Transparent.ToAndroid());
+				SetScrimColor(Colors.Transparent.ToAndroid());
 				_scrimPaint = null;
 			}
 			else
@@ -326,7 +329,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					_scrimPaint = _scrimPaint ?? new Paint();
 					_scrimPaint.UpdateBackground(_scrimBrush, Height, Width);
-					SetScrimColor(Color.Transparent.ToAndroid());
+					SetScrimColor(Colors.Transparent.ToAndroid());
 				}
 			}
 		}

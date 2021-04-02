@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -285,7 +286,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			"Color",
 			typeof(Color),
 			typeof(Divider),
-			Color.Black,
+			Colors.Black,
 			BindingMode.TwoWay,
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{

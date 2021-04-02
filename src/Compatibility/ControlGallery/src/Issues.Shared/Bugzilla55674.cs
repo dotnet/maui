@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				if (CurrentPage is FirstPage)
 					BarBackgroundColor = null;
 				if (CurrentPage is SecondPage)
-					BarBackgroundColor = Color.MediumOrchid;
+					BarBackgroundColor = Colors.MediumOrchid;
 			};
 		}
 
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			public FirstPage()
 			{
-				BackgroundColor = Color.White;
+				BackgroundColor = Colors.White;
 			}
 
 			private View LoadPage()
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 				valueEntry = new Entry()
 				{
-					TextColor = Color.Black,
+					TextColor = Colors.Black,
 					WidthRequest = 250,
 					HorizontalOptions = LayoutOptions.Center
 				};
@@ -208,7 +209,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				{
 					VerticalOptions = LayoutOptions.FillAndExpand,
 					HorizontalOptions = LayoutOptions.FillAndExpand,
-					BackgroundColor = Color.White
+					BackgroundColor = Colors.White
 				};
 
 				pageItems.Children.Add(tv);

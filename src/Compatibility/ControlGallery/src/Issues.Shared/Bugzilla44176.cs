@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -58,9 +59,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				{
 					if (!_flag)
 					{
-						grid.BackgroundColor = Color.Red;
-						contentView.BackgroundColor = Color.Blue;
-						stackLayout.BackgroundColor = Color.Yellow;
+						grid.BackgroundColor = Colors.Red;
+						contentView.BackgroundColor = Colors.Blue;
+						stackLayout.BackgroundColor = Colors.Yellow;
 					}
 					else
 					{

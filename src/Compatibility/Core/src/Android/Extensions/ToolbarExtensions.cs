@@ -6,8 +6,10 @@ using Android.Graphics;
 using Android.Text;
 using Android.Text.Style;
 using Android.Views;
+using Microsoft.Maui.Graphics;
 using ATextView = global::Android.Widget.TextView;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -26,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public static void UpdateMenuItems(this AToolbar toolbar,
 			IEnumerable<ToolbarItem> sortedToolbarItems,
 			Context context,
-			Color? tintColor,
+			Color tintColor,
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> menuItemsCreated,
 			List<ToolbarItem> toolbarItemsCreated,
@@ -57,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			ToolbarItem item,
 			int? menuItemIndex,
 			Context context,
-			Color? tintColor,
+			Color tintColor,
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> menuItemsCreated,
 			List<ToolbarItem> toolbarItemsCreated,
@@ -75,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				if (item.Order != ToolbarItemOrder.Secondary && tintColor != null && tintColor != null)
 				{
-					var color = item.IsEnabled ? tintColor.Value.ToAndroid() : tintColor.Value.MultiplyAlpha(0.302).ToAndroid();
+					var color = item.IsEnabled ? tintColor.ToAndroid() : tintColor.MultiplyAlpha(0.302f).ToAndroid();
 					SpannableString titleTinted = new SpannableString(item.Text);
 					titleTinted.SetSpan(new ForegroundColorSpan(color), 0, titleTinted.Length(), 0);
 					newTitle = titleTinted;
@@ -128,14 +130,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (view is ATextView textView)
 				{
 					if (item.IsEnabled)
-						textView.SetTextColor(tintColor.Value.ToAndroid());
+						textView.SetTextColor(tintColor.ToAndroid());
 					else
-						textView.SetTextColor(tintColor.Value.MultiplyAlpha(0.302).ToAndroid());
+						textView.SetTextColor(tintColor.MultiplyAlpha(0.302f).ToAndroid());
 				}
 			}
 		}
 
-		internal static void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
+		internal static void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem, Color tintColor)
 		{
 			_ = context.ApplyDrawableAsync(toolBarItem, MenuItem.IconImageSourceProperty, baseDrawable =>
 			{
@@ -151,7 +153,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					using (var iconDrawable = newDrawable.Mutate())
 					{
 						if (tintColor != null)
-							iconDrawable.SetColorFilter(tintColor.Value.ToAndroid(Color.White), FilterMode.SrcAtop);
+							iconDrawable.SetColorFilter(tintColor.ToAndroid(Colors.White), FilterMode.SrcAtop);
 
 						if (!menuItem.IsEnabled)
 						{
@@ -170,7 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			ToolbarItem toolbarItem,
 			ICollection<ToolbarItem> toolbarItems,
 			Context context,
-			Color? tintColor,
+			Color tintColor,
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> currentMenuItems,
 			List<ToolbarItem> currentToolbarItems,

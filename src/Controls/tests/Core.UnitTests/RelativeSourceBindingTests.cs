@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -45,15 +46,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			StackLayout stack0 = new StackLayout
 			{
-				BackgroundColor = Color.Red
+				BackgroundColor = Colors.Red
 			};
 			StackLayout stack1 = new StackLayout
 			{
-				BackgroundColor = Color.Green
+				BackgroundColor = Colors.Green
 			};
 			StackLayout stack2 = new StackLayout
 			{
-				BackgroundColor = Color.Blue
+				BackgroundColor = Colors.Blue
 			};
 
 			Label label0 = new Label();

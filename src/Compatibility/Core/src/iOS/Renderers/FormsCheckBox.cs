@@ -1,5 +1,6 @@
 ﻿using System;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					return;
 
 				_tintColor = value;
-				CheckBoxTintUIColor = (CheckBoxTintColor.IsDefault ? null : CheckBoxTintColor.ToUIColor());
+				CheckBoxTintUIColor = CheckBoxTintColor?.ToUIColor();
 			}
 		}
 

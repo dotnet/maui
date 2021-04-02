@@ -19,8 +19,10 @@ using AndroidX.Core.Content;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.DualScreen.Android;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AndroidResource = Android.Resource;
+using Size = Microsoft.Maui.Graphics.Size;
 using Trace = System.Diagnostics.Trace;
 
 namespace Microsoft.Maui.Controls.Compatibility

@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests
 {
 	public class _9431Model : System.ComponentModel.INotifyPropertyChanged
 	{

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -26,13 +27,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		static ContentPage PasswordPage()
 		{
 			var passwordColorDefaultToggle = new Entry() { IsPassword = true, Text = "Default Password Color" };
-			var passwordColorInit = new Entry() { IsPassword = true, Text = "Should Be Red", TextColor = Color.Red };
+			var passwordColorInit = new Entry() { IsPassword = true, Text = "Should Be Red", TextColor = Colors.Red };
 			var passwordToggleButton = new Button() { Text = "Toggle Password Box (Default)" };
 			passwordToggleButton.Clicked += (sender, args) =>
 			{
-				if (passwordColorDefaultToggle.TextColor.IsDefault)
+				if (passwordColorDefaultToggle.TextColor == null)
 				{
-					passwordColorDefaultToggle.TextColor = Color.Red;
+					passwordColorDefaultToggle.TextColor = Colors.Red;
 					passwordToggleButton.Text = "Toggle Password Box (Red)";
 				}
 				else
@@ -65,9 +66,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var searchbarTextColorToggleButton = new Button() { Text = "Toggle SearchBar Color" };
 			searchbarTextColorToggleButton.Clicked += (sender, args) =>
 			{
-				if (searchbarTextColorDefaultToggle.TextColor.IsDefault)
+				if (searchbarTextColorDefaultToggle.TextColor == null)
 				{
-					searchbarTextColorDefaultToggle.TextColor = Color.Fuchsia;
+					searchbarTextColorDefaultToggle.TextColor = Colors.Fuchsia;
 					searchbarTextColorDefaultToggle.Text = "Should Be Fuchsia";
 				}
 				else
@@ -81,9 +82,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var searchbarPlaceholderToggleButton = new Button() { Text = "Toggle Placeholder Color" };
 			searchbarPlaceholderToggleButton.Clicked += (sender, args) =>
 			{
-				if (searchbarPlaceholderColorDefaultToggle.PlaceholderColor.IsDefault)
+				if (searchbarPlaceholderColorDefaultToggle.PlaceholderColor == null)
 				{
-					searchbarPlaceholderColorDefaultToggle.PlaceholderColor = Color.Lime;
+					searchbarPlaceholderColorDefaultToggle.PlaceholderColor = Colors.Lime;
 					searchbarPlaceholderColorDefaultToggle.Placeholder = "Should Be Lime";
 				}
 				else
@@ -123,14 +124,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var buttonColorInitted = new Button
 			{
 				Text = "This Should Always Be Red",
-				TextColor = Color.Red
+				TextColor = Colors.Red
 			};
 
 			const string disabledText = "Button is Disabled; Should have default disabled color.";
 			var buttonColorDisabled = new Button
 			{
 				Text = disabledText,
-				TextColor = Color.Green,
+				TextColor = Colors.Green,
 				IsEnabled = false
 			};
 
@@ -156,7 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				if (buttonColorDefaultToggle.TextColor == null)
 				{
-					buttonColorDefaultToggle.TextColor = Color.Red;
+					buttonColorDefaultToggle.TextColor = Colors.Red;
 					buttonColorDefaultToggle.Text = "Custom Color (Click To Toggle)";
 				}
 				else
@@ -197,7 +198,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var labelColorInitted = new Label
 			{
 				Text = "Should Always Be Blue",
-				TextColor = Color.Blue
+				TextColor = Colors.Blue
 			};
 
 			labelColorDefaultToggle.GestureRecognizers.Add(new TapGestureRecognizer
@@ -206,7 +207,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				{
 					if (labelColorDefaultToggle.TextColor == null)
 					{
-						labelColorDefaultToggle.TextColor = Color.Green;
+						labelColorDefaultToggle.TextColor = Colors.Green;
 						labelColorDefaultToggle.Text = "Custom Label Color (Tap To Toggle)";
 					}
 					else
@@ -235,8 +236,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		static ContentPage EntryPage()
 		{
-			var entryTextColorInit = new Entry { Text = "Should Always Be Red", TextColor = Color.Red };
-			var entryPlaceholderColorInit = new Entry { Placeholder = "Should Always Be Lime", PlaceholderColor = Color.Lime };
+			var entryTextColorInit = new Entry { Text = "Should Always Be Red", TextColor = Colors.Red };
+			var entryPlaceholderColorInit = new Entry { Placeholder = "Should Always Be Lime", PlaceholderColor = Colors.Lime };
 
 			const string defaultEntryColor = "Default Entry Text Color";
 			var entryTextColorDefaultToggle = new Entry { Text = defaultEntryColor };
@@ -244,9 +245,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var entryToggleButton = new Button { Text = "Toggle Entry Color" };
 			entryToggleButton.Clicked += (sender, args) =>
 			{
-				if (entryTextColorDefaultToggle.TextColor.IsDefault)
+				if (entryTextColorDefaultToggle.TextColor == null)
 				{
-					entryTextColorDefaultToggle.TextColor = Color.Fuchsia;
+					entryTextColorDefaultToggle.TextColor = Colors.Fuchsia;
 					entryTextColorDefaultToggle.Text = "Should Be Fuchsia";
 				}
 				else
@@ -262,9 +263,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var entryPlaceholderToggleButton = new Button { Text = "Toggle Placeholder Color" };
 			entryPlaceholderToggleButton.Clicked += (sender, args) =>
 			{
-				if (entryPlaceholderColorDefaultToggle.PlaceholderColor.IsDefault)
+				if (entryPlaceholderColorDefaultToggle.PlaceholderColor == null)
 				{
-					entryPlaceholderColorDefaultToggle.PlaceholderColor = Color.Lime;
+					entryPlaceholderColorDefaultToggle.PlaceholderColor = Colors.Lime;
 					entryPlaceholderColorDefaultToggle.Placeholder = "Should Be Lime";
 				}
 				else
@@ -296,7 +297,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		static ContentPage TimePickerPage()
 		{
-			var timePickerInit = new TimePicker { Time = new TimeSpan(11, 34, 00), TextColor = Color.Red };
+			var timePickerInit = new TimePicker { Time = new TimeSpan(11, 34, 00), TextColor = Colors.Red };
 			var timePickerColorDefaultToggle = new TimePicker { Time = new TimeSpan(11, 34, 00) };
 
 			var defaultText = "Should have default color text";
@@ -305,9 +306,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var toggleButton = new Button { Text = "Toggle TimePicker Text Color" };
 			toggleButton.Clicked += (sender, args) =>
 			{
-				if (timePickerColorDefaultToggle.TextColor.IsDefault)
+				if (timePickerColorDefaultToggle.TextColor == null)
 				{
-					timePickerColorDefaultToggle.TextColor = Color.Fuchsia;
+					timePickerColorDefaultToggle.TextColor = Colors.Fuchsia;
 					timePickerColorLabel.Text = "Should have fuchsia text";
 				}
 				else
@@ -322,7 +323,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var timePickerColorDisabled = new TimePicker
 			{
 				IsEnabled = false,
-				TextColor = Color.Green
+				TextColor = Colors.Green
 			};
 
 			var buttonToggleEnabled = new Button()
@@ -367,7 +368,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		static ContentPage DatePickerPage()
 		{
-			var pickerInit = new DatePicker { Date = new DateTime(1978, 12, 24), TextColor = Color.Red };
+			var pickerInit = new DatePicker { Date = new DateTime(1978, 12, 24), TextColor = Colors.Red };
 			var pickerColorDefaultToggle = new DatePicker { Date = new DateTime(1978, 12, 24) };
 
 			var defaultText = "Should have default color text";
@@ -376,9 +377,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var toggleButton = new Button { Text = "Toggle DatePicker Text Color" };
 			toggleButton.Clicked += (sender, args) =>
 			{
-				if (pickerColorDefaultToggle.TextColor.IsDefault)
+				if (pickerColorDefaultToggle.TextColor == null)
 				{
-					pickerColorDefaultToggle.TextColor = Color.Fuchsia;
+					pickerColorDefaultToggle.TextColor = Colors.Fuchsia;
 					pickerColorLabel.Text = "Should have fuchsia text";
 				}
 				else
@@ -393,7 +394,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var pickerColorDisabled = new DatePicker
 			{
 				IsEnabled = false,
-				TextColor = Color.Green
+				TextColor = Colors.Green
 			};
 
 			var buttonToggleEnabled = new Button()
@@ -438,7 +439,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		static ContentPage PickerPage()
 		{
-			var pickerInit = new Picker { TextColor = Color.Red, Items = { "Item 1", "Item 2", "Item 3" }, SelectedIndex = 1 };
+			var pickerInit = new Picker { TextColor = Colors.Red, Items = { "Item 1", "Item 2", "Item 3" }, SelectedIndex = 1 };
 
 			var pickerColorDefaultToggle = new Picker { Items = { "Item 1", "Item 2", "Item 3" }, SelectedIndex = 1 };
 
@@ -448,9 +449,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var toggleButton = new Button { Text = "Toggle Picker Text Color" };
 			toggleButton.Clicked += (sender, args) =>
 			{
-				if (pickerColorDefaultToggle.TextColor.IsDefault)
+				if (pickerColorDefaultToggle.TextColor == null)
 				{
-					pickerColorDefaultToggle.TextColor = Color.Fuchsia;
+					pickerColorDefaultToggle.TextColor = Colors.Fuchsia;
 					pickerColorLabel.Text = "Should have fuchsia text";
 				}
 				else
@@ -465,7 +466,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var pickerColorDisabled = new Picker
 			{
 				IsEnabled = false,
-				TextColor = Color.Green,
+				TextColor = Colors.Green,
 				Items = { "Item 1", "Item 2", "Item 3" },
 				SelectedIndex = 1
 			};

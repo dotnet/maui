@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var listView = new ListView();
 
-			var scrollView = new ScrollView { Content = new BoxView { Color = Color.Green } };
+			var scrollView = new ScrollView { Content = new BoxView { Color = Colors.Green } };
 
 			listView.Header = scrollView;
 			listView.RowHeight = 40;

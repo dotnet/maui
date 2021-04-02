@@ -2,6 +2,7 @@
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppThemeGalleries
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppT
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			var val = value as string;
-			return val == "1" ? Color.Green : Color.Red;
+			return val == "1" ? Colors.Green : Colors.Red;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

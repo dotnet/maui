@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -32,13 +33,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			On<Android>().SetToolbarPlacement(ToolbarPlacement.Bottom);
 
 			pageCountLabel = new Label() { AutomationId = "PageCount" };
-			var popButton1 = new Button() { Text = "Pop", BackgroundColor = Color.Blue };
+			var popButton1 = new Button() { Text = "Pop", BackgroundColor = Colors.Blue };
 			popButton1.Clicked += (s, a) => Navigation.PopModalAsync();
 
-			var popButton2 = new Button() { Text = "Pop 2", BackgroundColor = Color.Blue };
+			var popButton2 = new Button() { Text = "Pop 2", BackgroundColor = Colors.Blue };
 			popButton2.Clicked += (s, a) => Navigation.PopModalAsync();
 
-			var longerTest = new Button() { Text = "Manual Color Tests", BackgroundColor = Color.Blue };
+			var longerTest = new Button() { Text = "Manual Color Tests", BackgroundColor = Colors.Blue };
 
 			Children.Add(new ContentPage() { Title = "Page 1", Content = popButton1, IconImageSource = "coffee.png" });
 			Children.Add(new ContentPage() { Title = "Page 2", Content = popButton2, IconImageSource = "bank.png" });
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				{
 					if (BarTextColor == null)
 					{
-						BarTextColor = Color.HotPink;
+						BarTextColor = Colors.HotPink;
 						btnChangeBarText.Text = $"Bar Text: HotPink";
 					}
 					else
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				{
 					if (On<Android>().Element.SelectedTabColor == null)
 					{
-						On<Android>().Element.SelectedTabColor = Color.Green;
+						On<Android>().Element.SelectedTabColor = Colors.Green;
 						btnChangeBarSelectedItemColorText.Text = $"Selected Item Color: Green";
 					}
 					else
@@ -147,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							Command = new Command(()=>
 							{
 								if(BarBackgroundColor == null)
-									BarBackgroundColor = Color.Fuchsia;
+									BarBackgroundColor = Colors.Fuchsia;
 								else
 									BarBackgroundColor = null;
 							})

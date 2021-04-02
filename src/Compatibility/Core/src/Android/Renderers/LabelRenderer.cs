@@ -7,6 +7,8 @@ using Android.Text;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using Color = Microsoft.Maui.Graphics.Color;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

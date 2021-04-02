@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -13,10 +14,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				{ nameof(ActivityIndicator), (() => new ActivityIndicator() { IsRunning = false }, null) },
 				{ nameof(Frame), (() => new Frame {
-						BackgroundColor = Color.Blue,
+						BackgroundColor = Colors.Blue,
 						Content = new BoxView
 						{
-							BackgroundColor = Color.Yellow,
+							BackgroundColor = Colors.Yellow,
 							TranslationX = 50
 						}
 					}, null) },
@@ -98,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					{
 						HeightRequest = 1,
 						Margin = new Thickness(-10, 0),
-						Color = Color.Black
+						Color = Colors.Black
 					}
 				}
 			};
@@ -281,8 +282,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				actions.AddChild(new Button
 				{
 					Text = "X",
-					TextColor = Color.White,
-					BackgroundColor = Color.DarkRed,
+					TextColor = Colors.White,
+					BackgroundColor = Colors.DarkRed,
 					WidthRequest = 28,
 					HeightRequest = 28,
 					Margin = 0,
