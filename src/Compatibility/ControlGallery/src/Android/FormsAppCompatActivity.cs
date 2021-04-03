@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			Handlers.ViewHandler
 				.ViewMapper[nameof(IView.AutomationId)] = (h, v) =>
 				{
-					h.View.ContentDescription = v.AutomationId;
+					h.NativeView.ContentDescription = v.AutomationId;
 				};
 #endif
 
