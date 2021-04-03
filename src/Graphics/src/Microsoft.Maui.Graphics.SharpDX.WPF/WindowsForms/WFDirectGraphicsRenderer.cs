@@ -1,4 +1,4 @@
-﻿using SharpDX;
+using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DXGI;
 using System;

@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Graphics
+namespace Microsoft.Maui.Graphics
 {
     public static class FontUtils
     {

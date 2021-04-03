@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UIKit;
 
 namespace Microsoft.Maui.Graphics.Native

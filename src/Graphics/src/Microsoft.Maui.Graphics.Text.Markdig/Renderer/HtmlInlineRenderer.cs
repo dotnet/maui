@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics.Text.Immutable;
 using Markdig.Syntax.Inlines;
 using System;

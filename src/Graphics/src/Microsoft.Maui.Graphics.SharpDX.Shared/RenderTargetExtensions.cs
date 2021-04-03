@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using d2 = SharpDX.Direct2D1;
 using wic = SharpDX.WIC;
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Graphics.Text;
+using Microsoft.Maui.Graphics.Text;
 using System.Numerics;
 using Windows.Foundation;
 using Windows.UI.Text;

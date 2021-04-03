@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Maui.Graphics.Blazor.Canvas2D;
 using Microsoft.Maui.Graphics.Text;
 

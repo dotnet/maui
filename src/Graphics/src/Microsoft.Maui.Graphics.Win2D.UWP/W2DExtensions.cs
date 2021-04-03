@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Windows.UI;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;

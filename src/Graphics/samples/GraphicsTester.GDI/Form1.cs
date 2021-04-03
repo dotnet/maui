@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.GDI;
 using System.Windows.Forms;

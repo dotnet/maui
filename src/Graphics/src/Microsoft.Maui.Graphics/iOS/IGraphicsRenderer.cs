@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CoreGraphics;
 
 namespace Microsoft.Maui.Graphics.Native

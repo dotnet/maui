@@ -1,4 +1,4 @@
-﻿using SkiaSharp;
+using SkiaSharp;
 using System;
 
 namespace Microsoft.Maui.Graphics.Skia

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Maui.Graphics.CoreGraphics;
 using Microsoft.Maui.Graphics.Skia;
 using SkiaSharp.Views.iOS;

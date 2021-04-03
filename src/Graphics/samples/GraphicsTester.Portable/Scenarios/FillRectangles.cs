@@ -1,4 +1,4 @@
-﻿namespace GraphicsTester.Scenarios
+namespace GraphicsTester.Scenarios
 {
     public class FillRectangles : AbstractFillScenario
     {

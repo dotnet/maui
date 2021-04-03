@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using Android.Text;
 
 namespace Microsoft.Maui.Graphics.Native

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using SharpDX;
 using SharpDX.DXGI;

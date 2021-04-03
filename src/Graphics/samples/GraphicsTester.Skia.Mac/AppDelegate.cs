@@ -1,4 +1,4 @@
-﻿using AppKit;
+using AppKit;
 using Foundation;
 
 namespace GraphicsTester.Skia

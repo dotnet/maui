@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Graphics.Text
+namespace Microsoft.Maui.Graphics.Text
 {
     public class AttributedTextBlock
     {

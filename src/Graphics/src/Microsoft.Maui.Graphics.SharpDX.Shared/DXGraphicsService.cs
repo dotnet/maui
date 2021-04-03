@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Threading;
 using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.Maui.Graphics.Android;
 using Microsoft.Maui.Graphics.Forms.Android;
 using Android.Content;

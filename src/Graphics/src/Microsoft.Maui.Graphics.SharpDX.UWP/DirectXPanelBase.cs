@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Windows.Graphics.Display;
 using Windows.UI.Core;
 using Windows.UI.Xaml;

@@ -1,4 +1,4 @@
-﻿using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Direct3D11;

@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Graphics.SharpDX.WindowsForms;
+using Microsoft.Maui.Graphics.SharpDX.WindowsForms;
 using System.Windows.Forms.Integration;
 
 namespace Microsoft.Maui.Graphics.SharpDX.WPF

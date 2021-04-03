@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Skia;
 using SkiaSharp.Views.Tizen;
 using ElmSharp;

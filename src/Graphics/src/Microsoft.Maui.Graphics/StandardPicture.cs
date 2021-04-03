@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Graphics
+namespace Microsoft.Maui.Graphics
 {
     public delegate void DrawingCommand(ICanvas canvas);
 

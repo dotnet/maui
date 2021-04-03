@@ -1,4 +1,4 @@
-﻿using SharpDX.Mathematics.Interop;
+using SharpDX.Mathematics.Interop;
 
 namespace Microsoft.Maui.Graphics.SharpDX
 {

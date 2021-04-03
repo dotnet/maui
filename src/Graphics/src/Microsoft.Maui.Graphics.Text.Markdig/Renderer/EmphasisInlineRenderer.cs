@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Graphics.Text.Immutable;
+using Microsoft.Maui.Graphics.Text.Immutable;
 using Markdig.Syntax.Inlines;
 
 namespace Microsoft.Maui.Graphics.Text.Renderer

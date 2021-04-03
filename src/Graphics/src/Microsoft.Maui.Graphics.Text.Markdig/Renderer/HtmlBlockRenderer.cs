@@ -1,4 +1,4 @@
-﻿using Markdig.Syntax;
+using Markdig.Syntax;
 
 namespace Microsoft.Maui.Graphics.Text.Renderer
 {

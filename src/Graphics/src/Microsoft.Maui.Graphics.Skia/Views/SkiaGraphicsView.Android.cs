@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Graphics.Android;
+using Microsoft.Maui.Graphics.Android;
 using Microsoft.Maui.Graphics.Skia;
 using Android.App;
 using Android.Content;

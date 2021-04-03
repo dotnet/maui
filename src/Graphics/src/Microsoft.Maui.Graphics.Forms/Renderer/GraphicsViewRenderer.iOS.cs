@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.Maui.Graphics.CoreGraphics;
 using Microsoft.Maui.Graphics.Forms;
 using Microsoft.Maui.Graphics.Forms.iOS;

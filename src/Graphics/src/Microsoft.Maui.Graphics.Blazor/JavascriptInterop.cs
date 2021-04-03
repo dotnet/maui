@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Microsoft.Maui.Graphics.Blazor

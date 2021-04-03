@@ -1,4 +1,4 @@
-﻿using Xamarin.Forms;
+using Xamarin.Forms;
 
 namespace Microsoft.Maui.Graphics.Forms
 {

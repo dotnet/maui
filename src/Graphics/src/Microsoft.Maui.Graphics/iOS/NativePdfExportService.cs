@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Graphics.Native
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativePdfExportService : IPdfExportService
     {

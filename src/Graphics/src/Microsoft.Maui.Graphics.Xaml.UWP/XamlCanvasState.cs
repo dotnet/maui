@@ -1,4 +1,4 @@
-﻿using Windows.Foundation;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml.Media;

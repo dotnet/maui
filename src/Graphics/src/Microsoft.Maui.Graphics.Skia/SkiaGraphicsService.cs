@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia

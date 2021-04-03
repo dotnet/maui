@@ -1,4 +1,4 @@
-﻿using Windows.Graphics.Display;
+using Windows.Graphics.Display;
 using SharpDX.Direct2D1;
 #if WINDOWS_UWP
 

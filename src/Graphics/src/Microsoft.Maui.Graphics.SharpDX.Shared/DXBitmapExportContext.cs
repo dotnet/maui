@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using SharpDX;
 using SharpDX.Direct3D;
 using d2 = SharpDX.Direct2D1;

@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Text;

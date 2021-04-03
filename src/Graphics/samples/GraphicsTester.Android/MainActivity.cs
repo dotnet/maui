@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Android;
 using Android.App;
 using Android.Widget;

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics.Text.Immutable;
 
 namespace Microsoft.Maui.Graphics.Text

@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics;
 using System.Reflection;
 
 namespace GraphicsTester.Scenarios

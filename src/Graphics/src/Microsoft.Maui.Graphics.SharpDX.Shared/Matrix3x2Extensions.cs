@@ -1,4 +1,4 @@
-﻿using SharpDX;
+using SharpDX;
 
 namespace Microsoft.Maui.Graphics.SharpDX
 {
