@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			void onTimeSetCallback(object? obj, TimePickerDialog.TimeSetEventArgs args)
 			{
-				if (VirtualView == null || View == null)
+				if (VirtualView == null || NativeView == null)
 					return;
 
 				VirtualView.Time = new TimeSpan(args.HourOfDay, args.Minute, 0);
@@ -47,17 +47,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.View?.UpdateFormat(timePicker);
+			handler.NativeView?.UpdateFormat(timePicker);
 		}
 
 		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.View?.UpdateTime(timePicker);
+			handler.NativeView?.UpdateTime(timePicker);
 		}
 
 		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.View?.UpdateCharacterSpacing(timePicker);
+			handler.NativeView?.UpdateCharacterSpacing(timePicker);
 		}
 
 		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.View?.UpdateFont(timePicker, fontManager);
+			handler.NativeView?.UpdateFont(timePicker, fontManager);
 		}
 
 		void ShowPickerDialog()
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 			_dialog = null;
 		}
 
-		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(View?.Context)
+		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(NativeView?.Context)
 			&& VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
 	}
 }

@@ -36,35 +36,35 @@ namespace Microsoft.Maui.Handlers
 		}
 		public static void MapTitle(PickerHandler handler, IPicker picker)
 		{
-			handler.View?.UpdateTitle(picker);
+			handler.NativeView?.UpdateTitle(picker);
 		}
 
 		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
 		{
-			handler.View?.UpdateSelectedIndex(picker);
+			handler.NativeView?.UpdateSelectedIndex(picker);
 		}
 
 		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker)
 		{
-			handler.View?.UpdateCharacterSpacing(picker);
+			handler.NativeView?.UpdateCharacterSpacing(picker);
 		}
 
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
 		{
-			if (View == null)
+			if (NativeView == null)
 				return;
 
 			if (e.HasFocus)
 			{
-				if (View.Clickable)
-					View.CallOnClick();
+				if (NativeView.Clickable)
+					NativeView.CallOnClick();
 				else
-					OnClick(View, EventArgs.Empty);
+					OnClick(NativeView, EventArgs.Empty);
 			}
 			else if (_dialog != null)
 			{
 				_dialog.Hide();
-				View.ClearFocus();
+				NativeView.ClearFocus();
 				_dialog = null;
 			}
 		}
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Handlers
 					{
 						var selectedIndex = e.Which;
 						VirtualView.SelectedIndex = selectedIndex;
-						base.View?.UpdatePicker(VirtualView);
+						base.NativeView?.UpdatePicker(VirtualView);
 					}));
 
 					builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
@@ -108,10 +108,10 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCollectionChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || View == null)
+			if (VirtualView == null || NativeView == null)
 				return;
 
-			View.UpdatePicker(VirtualView);
+			NativeView.UpdatePicker(VirtualView);
 		}
 	}
 }

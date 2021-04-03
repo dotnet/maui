@@ -28,42 +28,42 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateText(label);
+			handler.NativeView?.UpdateText(label);
 		}
 
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateTextColor(label, DefaultTextColor);
+			handler.NativeView?.UpdateTextColor(label, DefaultTextColor);
 		}
 
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateCharacterSpacing(label);
+			handler.NativeView?.UpdateCharacterSpacing(label);
 		}
 
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateHorizontalTextAlignment(label);
+			handler.NativeView?.UpdateHorizontalTextAlignment(label);
 		}
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateLineBreakMode(label);
+			handler.NativeView?.UpdateLineBreakMode(label);
 		}
 
 		public static void MapMaxLines(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateMaxLines(label);
+			handler.NativeView?.UpdateMaxLines(label);
 		}
 
 		public static void MapPadding(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdatePadding(label);
+			handler.NativeView?.UpdatePadding(label);
 		}
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateTextDecorations(label);
+			handler.NativeView?.UpdateTextDecorations(label);
 		}
 
 		public static void MapFont(LabelHandler handler, ILabel label)
@@ -72,11 +72,11 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.View?.UpdateFont(label, fontManager);
+			handler.NativeView?.UpdateFont(label, fontManager);
 		}
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateLineHeight(label, LineSpacingAddDefault, LineSpacingMultDefault);
+			handler.NativeView?.UpdateLineHeight(label, LineSpacingAddDefault, LineSpacingMultDefault);
 		}
 	}
 }

@@ -2,11 +2,11 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class AbstractViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public abstract partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
 		public override void SetFrame(Rectangle rect)
 		{
-			var nativeView = View;
+			var nativeView = NativeView;
 
 			if (nativeView == null)
 				return;
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = View;
+			var nativeView = NativeView;
 
 			if (nativeView == null)
 				return Size.Zero;

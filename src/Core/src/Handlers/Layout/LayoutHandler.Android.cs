@@ -27,36 +27,36 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			_ = View ?? throw new InvalidOperationException($"{nameof(View)} should have been set by base class.");
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			View.CrossPlatformMeasure = VirtualView.Measure;
-			View.CrossPlatformArrange = VirtualView.Arrange;
+			NativeView.CrossPlatformMeasure = VirtualView.Measure;
+			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 
 			foreach (var child in VirtualView.Children)
 			{
-				View.AddView(child.ToNative(MauiContext));
+				NativeView.AddView(child.ToNative(MauiContext));
 			}
 		}
 
 		public void Add(IView child)
 		{
-			_ = View ?? throw new InvalidOperationException($"{nameof(View)} should have been set by base class.");
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			View.AddView(child.ToNative(MauiContext), 0);
+			NativeView.AddView(child.ToNative(MauiContext), 0);
 		}
 
 		public void Remove(IView child)
 		{
-			_ = View ?? throw new InvalidOperationException($"{nameof(View)} should have been set by base class.");
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.Handler?.View is View view)
+			if (child?.Handler?.NativeView is View view)
 			{
-				View.RemoveView(view);
+				NativeView.RemoveView(view);
 			}
 		}
 	}

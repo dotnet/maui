@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ActivityIndicatorHandlerTests
 	{
 		UIActivityIndicatorView GetNativeActivityIndicator(ActivityIndicatorHandler activityIndicatorHandler) =>
-			(UIActivityIndicatorView)activityIndicatorHandler.View;
+			(UIActivityIndicatorView)activityIndicatorHandler.NativeView;
 
 		bool GetNativeIsRunning(ActivityIndicatorHandler activityIndicatorHandler) =>
 			GetNativeActivityIndicator(activityIndicatorHandler).IsAnimating;

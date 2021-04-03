@@ -34,40 +34,40 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)
 		{
-			handler.View?.UpdateMinimum(slider);
+			handler.NativeView?.UpdateMinimum(slider);
 		}
 
 		public static void MapMaximum(SliderHandler handler, ISlider slider)
 		{
-			handler.View?.UpdateMaximum(slider);
+			handler.NativeView?.UpdateMaximum(slider);
 		}
 
 		public static void MapValue(SliderHandler handler, ISlider slider)
 		{
-			handler.View?.UpdateValue(slider);
+			handler.NativeView?.UpdateValue(slider);
 		}
 
 		public static void MapMinimumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.View?.UpdateMinimumTrackColor(slider, DefaultMinTrackColor);
+			handler.NativeView?.UpdateMinimumTrackColor(slider, DefaultMinTrackColor);
 		}
 
 		public static void MapMaximumTrackColor(SliderHandler handler, ISlider slider)
 		{
-			handler.View?.UpdateMaximumTrackColor(slider, DefaultMaxTrackColor);
+			handler.NativeView?.UpdateMaximumTrackColor(slider, DefaultMaxTrackColor);
 		}
 
 		public static void MapThumbColor(SliderHandler handler, ISlider slider)
 		{
-			handler.View?.UpdateThumbColor(slider, DefaultThumbColor);
+			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColor);
 		}
 
 		void OnControlValueChanged(object? sender, EventArgs eventArgs)
 		{
-			if (View == null || VirtualView == null)
+			if (NativeView == null || VirtualView == null)
 				return;
 
-			VirtualView.Value = View.Value;
+			VirtualView.Value = NativeView.Value;
 		}
 
 		void OnTouchDownControlEvent(object? sender, EventArgs e)

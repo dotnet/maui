@@ -7,7 +7,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 	{
 		double GetNativeChildCount(LayoutHandler layoutHandler)
 		{
-			return (layoutHandler.View as UIView).Subviews.Length;
+			return (layoutHandler.NativeView as UIView).Subviews.Length;
 		}
 	}
 }

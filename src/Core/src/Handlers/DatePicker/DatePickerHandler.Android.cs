@@ -49,22 +49,22 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.View?.UpdateFormat(datePicker);
+			handler.NativeView?.UpdateFormat(datePicker);
 		}
 
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.View?.UpdateDate(datePicker);
+			handler.NativeView?.UpdateDate(datePicker);
 		}
 
 		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.View?.UpdateMinimumDate(datePicker, handler._dialog);
+			handler.NativeView?.UpdateMinimumDate(datePicker, handler._dialog);
 		}
 
 		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.View?.UpdateMaximumDate(datePicker, handler._dialog);
+			handler.NativeView?.UpdateMaximumDate(datePicker, handler._dialog);
 		}
 
 		void ShowPickerDialog()

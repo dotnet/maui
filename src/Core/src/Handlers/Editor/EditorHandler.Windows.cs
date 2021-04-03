@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : AbstractViewHandler<IEditor, TextBox>
+	public partial class EditorHandler : ViewHandler<IEditor, TextBox>
 	{
 		protected override TextBox CreateNativeView() => new TextBox();
 

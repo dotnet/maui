@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateText(label);
+			handler.NativeView?.UpdateText(label);
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, label);
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateTextColor(label);
+			handler.NativeView?.UpdateTextColor(label);
 		}
 
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
@@ -28,22 +28,22 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateHorizontalTextAlignment(label);
+			handler.NativeView?.UpdateHorizontalTextAlignment(label);
 		}
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateLineBreakMode(label);
+			handler.NativeView?.UpdateLineBreakMode(label);
 		}
 
 		public static void MapMaxLines(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdateMaxLines(label);
+			handler.NativeView?.UpdateMaxLines(label);
 		}
 
 		public static void MapPadding(LabelHandler handler, ILabel label)
 		{
-			handler.View?.UpdatePadding(label);
+			handler.NativeView?.UpdatePadding(label);
 		}
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.View?.UpdateFont(label, fontManager);
+			handler.NativeView?.UpdateFont(label, fontManager);
 		}
 
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
@@ -68,13 +68,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFormatting(LabelHandler handler, ILabel label)
 		{
 			// Update all of the attributed text formatting properties
-			handler.View?.UpdateLineHeight(label);
-			handler.View?.UpdateTextDecorations(label);
-			handler.View?.UpdateCharacterSpacing(label);
+			handler.NativeView?.UpdateLineHeight(label);
+			handler.NativeView?.UpdateTextDecorations(label);
+			handler.NativeView?.UpdateCharacterSpacing(label);
 
 			// Setting any of those may have removed text alignment settings,
 			// so we need to make sure those are applied, too
-			handler.View?.UpdateHorizontalTextAlignment(label);
+			handler.NativeView?.UpdateHorizontalTextAlignment(label);
 		}
 	}
 }

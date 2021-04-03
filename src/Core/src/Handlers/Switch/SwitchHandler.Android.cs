@@ -54,17 +54,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsToggled(SwitchHandler handler, ISwitch view)
 		{
-			handler.View?.UpdateIsToggled(view);
+			handler.NativeView?.UpdateIsToggled(view);
 		}
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.View?.UpdateTrackColor(view, DefaultTrackColorStateList);
+			handler.NativeView?.UpdateTrackColor(view, DefaultTrackColorStateList);
 		}
 
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.View?.UpdateThumbColor(view, DefaultThumbColorStateList);
+			handler.NativeView?.UpdateThumbColor(view, DefaultThumbColorStateList);
 		}
 
 		void OnCheckedChanged(bool isToggled)

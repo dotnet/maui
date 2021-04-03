@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class TimePickerHandler : AbstractViewHandler<ITimePicker, Microsoft.UI.Xaml.Controls.TimePicker>
+	public partial class TimePickerHandler : ViewHandler<ITimePicker, Microsoft.UI.Xaml.Controls.TimePicker>
 	{
 		protected override Microsoft.UI.Xaml.Controls.TimePicker CreateNativeView() => new Microsoft.UI.Xaml.Controls.TimePicker();
 

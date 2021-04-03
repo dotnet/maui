@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override void SetFrame(Rectangle frame)
 		{
-			var nativeView = View;
+			var nativeView = NativeView;
 
 			if (nativeView == null)
 				return;
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (View == null)
+			if (NativeView == null)
 			{
 				return Size.Zero;
 			}
@@ -63,9 +63,9 @@ namespace Microsoft.Maui.Handlers
 			var widthSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceWidthConstraint);
 			var heightSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceHeightConstraint);
 
-			View.Measure(widthSpec, heightSpec);
+			NativeView.Measure(widthSpec, heightSpec);
 
-			return Context.FromPixels(View.MeasuredWidth, View.MeasuredHeight);
+			return Context.FromPixels(NativeView.MeasuredWidth, NativeView.MeasuredHeight);
 		}
 
 		protected override void SetupContainer()

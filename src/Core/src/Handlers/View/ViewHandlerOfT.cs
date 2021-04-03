@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected abstract TNativeView CreateNativeView();
 
-		public new TNativeView? View
+		public new TNativeView? NativeView
 		{
 			get => _nativeView; 
 			private set => SetViewCore(value);
@@ -78,18 +78,18 @@ namespace Microsoft.Maui.Handlers
 			bool setupNativeView = VirtualView == null;
 
 			SetVirtualViewCore(view);
-			View ??= CreateNativeView();
+			NativeView ??= CreateNativeView();
 
-			if (setupNativeView && View != null)
+			if (setupNativeView && NativeView != null)
 			{
-				ConnectHandler(View);
+				ConnectHandler(NativeView);
 			}
 
 			if (!HasSetDefaults)
 			{
-				if (View != null)
+				if (NativeView != null)
 				{
-					SetupDefaults(View);
+					SetupDefaults(NativeView);
 				}
 
 				HasSetDefaults = true;
@@ -126,8 +126,8 @@ namespace Microsoft.Maui.Handlers
 
 		void IViewHandler.DisconnectHandler()
 		{
-			if (View != null && VirtualView != null)
-				DisconnectHandler(View);
+			if (NativeView != null && VirtualView != null)
+				DisconnectHandler(NativeView);
 
 			if (VirtualView != null)
 				VirtualView.Handler = null;

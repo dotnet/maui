@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : AbstractViewHandler<ISearchBar, AutoSuggestBox>
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
 	{
 		protected override AutoSuggestBox CreateNativeView() => new AutoSuggestBox();
 

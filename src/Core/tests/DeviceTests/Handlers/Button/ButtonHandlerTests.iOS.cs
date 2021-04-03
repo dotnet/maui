@@ -44,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(button);
-			var uiButton = (UIButton)handler.View;
+			var uiButton = (UIButton)handler.NativeView;
 
 			var insets = await InvokeOnMainThreadAsync(() => { return uiButton.ContentEdgeInsets; });
 
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		UIButton GetNativeButton(ButtonHandler buttonHandler) =>
-			(UIButton)buttonHandler.View;
+			(UIButton)buttonHandler.NativeView;
 
 		string GetNativeText(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).CurrentTitle;

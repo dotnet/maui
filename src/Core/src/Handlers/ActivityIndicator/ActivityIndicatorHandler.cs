@@ -10,12 +10,12 @@
 
 		public static void MapIsRunning(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
-			handler.View?.UpdateIsRunning(activityIndicator);
+			handler.NativeView?.UpdateIsRunning(activityIndicator);
 		}
 
 		public static void MapColor(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
-			handler.View?.UpdateColor(activityIndicator);
+			handler.NativeView?.UpdateColor(activityIndicator);
 		}
 
 		public ActivityIndicatorHandler() : base(ActivityIndicatorMapper)

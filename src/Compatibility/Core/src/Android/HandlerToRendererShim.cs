@@ -23,9 +23,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public VisualElementTracker Tracker { get; private set; }
 
-		public ViewGroup ViewGroup => ViewHandler.View as ViewGroup;
+		public ViewGroup ViewGroup => ViewHandler.NativeView as ViewGroup;
 
-		public global::Android.Views.View View => ViewHandler.View as global::Android.Views.View;
+		public global::Android.Views.View View => ViewHandler.NativeView as global::Android.Views.View;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;

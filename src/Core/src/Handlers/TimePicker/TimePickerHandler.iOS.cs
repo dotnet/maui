@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 			return new MauiTimePicker(() =>
 			{
 				SetVirtualViewTime();
-				View?.ResignFirstResponder();
+				NativeView?.ResignFirstResponder();
 			});
 		}
 
@@ -32,17 +32,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.View?.UpdateFormat(timePicker);
+			handler.NativeView?.UpdateFormat(timePicker);
 		}
 
 		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.View?.UpdateTime(timePicker);
+			handler.NativeView?.UpdateTime(timePicker);
 		}
 
 		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.View?.UpdateCharacterSpacing(timePicker);
+			handler.NativeView?.UpdateCharacterSpacing(timePicker);
 		}
 
 		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.View?.UpdateFont(timePicker, fontManager);
+			handler.NativeView?.UpdateFont(timePicker, fontManager);
 		}
 
 		void OnValueChanged(object? sender, EventArgs e)
@@ -61,10 +61,10 @@ namespace Microsoft.Maui.Handlers
 
 		void SetVirtualViewTime()
 		{
-			if (VirtualView == null || View == null)
+			if (VirtualView == null || NativeView == null)
 				return;
 
-			VirtualView.Time = View.Date.ToDateTime() - new DateTime(1, 1, 1);
+			VirtualView.Time = NativeView.Date.ToDateTime() - new DateTime(1, 1, 1);
 		}
 	}
 }

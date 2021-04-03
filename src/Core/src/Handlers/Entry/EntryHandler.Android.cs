@@ -60,37 +60,37 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(EntryHandler handler, IEntry entry)
 		{
-			handler.View?.UpdateText(entry);
+			handler.NativeView?.UpdateText(entry);
 		}
 
 		public static void MapTextColor(EntryHandler handler, IEntry entry)
 		{
-			handler.View?.UpdateTextColor(entry, DefaultTextColors);
+			handler.NativeView?.UpdateTextColor(entry, DefaultTextColors);
 		}
 
 		public static void MapIsPassword(EntryHandler handler, IEntry entry)
 		{
-			handler.View?.UpdateIsPassword(entry);
+			handler.NativeView?.UpdateIsPassword(entry);
 		}
 
 		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
 		{
-			handler.View?.UpdateHorizontalTextAlignment(entry);
+			handler.NativeView?.UpdateHorizontalTextAlignment(entry);
 		}
 
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry)
 		{
-			handler.View?.UpdateIsTextPredictionEnabled(entry);
+			handler.NativeView?.UpdateIsTextPredictionEnabled(entry);
 		}
 
 		public static void MapMaxLength(EntryHandler handler, IEntry entry)
 		{
-			handler.View?.UpdateMaxLength(entry);
+			handler.NativeView?.UpdateMaxLength(entry);
 		}
 
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
-			handler.View?.UpdatePlaceholder(entry);
+			handler.NativeView?.UpdatePlaceholder(entry);
 		}
 
 		public static void MapFont(EntryHandler handler, IEntry entry)
@@ -99,42 +99,42 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.View?.UpdateFont(entry, fontManager);
+			handler.NativeView?.UpdateFont(entry, fontManager);
 		}
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
 		{
-			handler.View?.UpdateIsReadOnly(entry);
+			handler.NativeView?.UpdateIsReadOnly(entry);
 		}
 
 		public static void MapReturnType(EntryHandler handler, IEntry entry)
 		{
-			handler.View?.UpdateReturnType(entry);
+			handler.NativeView?.UpdateReturnType(entry);
 		}
 
 		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
 		{
-			handler.View?.UpdateCharacterSpacing(entry);
+			handler.NativeView?.UpdateCharacterSpacing(entry);
 		}
 
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)
 		{
-			handler.View?.UpdateClearButtonVisibility(entry, ClearButtonDrawable);
+			handler.NativeView?.UpdateClearButtonVisibility(entry, ClearButtonDrawable);
 		}
 
 		void OnFocusedChange(bool hasFocus)
 		{
-			if (View == null || VirtualView == null)
+			if (NativeView == null || VirtualView == null)
 				return;
 
 			// This will eliminate additional native property setting if not required.
 			if (VirtualView.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
-				View?.UpdateClearButtonVisibility(VirtualView, ClearButtonDrawable);
+				NativeView?.UpdateClearButtonVisibility(VirtualView, ClearButtonDrawable);
 		}
 
 		bool OnTouch(MotionEvent? motionEvent)
 		{
-			if (View == null || VirtualView == null)
+			if (NativeView == null || VirtualView == null)
 				return false;
 
 			// Check whether the touched position inbounds with clear button.
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextChanged(string? text)
 		{
-			if (VirtualView == null || View == null)
+			if (VirtualView == null || NativeView == null)
 				return;
 
 			// Even though <null> is technically different to "", it has no
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.Text = nativeText;
 
 			// Text changed should trigger clear button visibility.
-			View.UpdateClearButtonVisibility(VirtualView, ClearButtonDrawable);
+			NativeView.UpdateClearButtonVisibility(VirtualView, ClearButtonDrawable);
 		}
 
 		/// <summary>
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Handlers
 		/// <returns>True if clear button is clicked and Text is cleared. False if not.</returns>
 		bool HandleClearButtonTouched(MotionEvent? motionEvent)
 		{
-			if (motionEvent == null || View == null || VirtualView == null)
+			if (motionEvent == null || NativeView == null || VirtualView == null)
 				return false;
 
 			var rBounds = ClearButtonDrawable?.Bounds;
@@ -175,18 +175,18 @@ namespace Microsoft.Maui.Handlers
 				var y = motionEvent.GetY();
 
 				if (motionEvent.Action == MotionEventActions.Up
-					&& ((x >= (View.Right - rBounds.Width())
-					&& x <= (View.Right - View.PaddingRight)
-					&& y >= View.PaddingTop
-					&& y <= (View.Height - View.PaddingBottom)
+					&& ((x >= (NativeView.Right - rBounds.Width())
+					&& x <= (NativeView.Right - NativeView.PaddingRight)
+					&& y >= NativeView.PaddingTop
+					&& y <= (NativeView.Height - NativeView.PaddingBottom)
 					&& (VirtualView.FlowDirection == FlowDirection.LeftToRight))
-					|| (x >= (View.Left + View.PaddingLeft)
-					&& x <= (View.Left + rBounds.Width())
-					&& y >= View.PaddingTop
-					&& y <= (View.Height - View.PaddingBottom)
+					|| (x >= (NativeView.Left + NativeView.PaddingLeft)
+					&& x <= (NativeView.Left + rBounds.Width())
+					&& y >= NativeView.PaddingTop
+					&& y <= (NativeView.Height - NativeView.PaddingBottom)
 					&& VirtualView.FlowDirection == FlowDirection.RightToLeft)))
 				{
-					View.Text = null;
+					NativeView.Text = null;
 
 					return true;
 				}

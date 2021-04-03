@@ -23,30 +23,30 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(StepperHandler handler, IStepper stepper)
 		{
-			handler.View?.UpdateMinimum(stepper);
+			handler.NativeView?.UpdateMinimum(stepper);
 		}
 
 		public static void MapMaximum(StepperHandler handler, IStepper stepper)
 		{
-			handler.View?.UpdateMaximum(stepper);
+			handler.NativeView?.UpdateMaximum(stepper);
 		}
 
 		public static void MapIncrement(StepperHandler handler, IStepper stepper)
 		{
-			handler.View?.UpdateIncrement(stepper);
+			handler.NativeView?.UpdateIncrement(stepper);
 		}
 
 		public static void MapValue(StepperHandler handler, IStepper stepper)
 		{
-			handler.View?.UpdateValue(stepper);
+			handler.NativeView?.UpdateValue(stepper);
 		}
 
 		void OnValueChanged(object? sender, EventArgs e)
 		{
-			if (View == null || VirtualView == null)
+			if (NativeView == null || VirtualView == null)
 				return;
 
-			VirtualView.Value = View.Value;
+			VirtualView.Value = NativeView.Value;
 		}
 	}
 }

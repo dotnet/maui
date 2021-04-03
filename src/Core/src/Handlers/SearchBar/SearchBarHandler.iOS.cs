@@ -21,12 +21,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.View?.UpdateText(searchBar);
+			handler.NativeView?.UpdateText(searchBar);
 		}
 
 		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.View?.UpdatePlaceholder(searchBar);
+			handler.NativeView?.UpdatePlaceholder(searchBar);
 		}
 
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)

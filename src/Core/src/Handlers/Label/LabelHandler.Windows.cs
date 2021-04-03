@@ -3,12 +3,12 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : AbstractViewHandler<ILabel, TextBlock>
+	public partial class LabelHandler : ViewHandler<ILabel, TextBlock>
 	{
 		protected override TextBlock CreateNativeView() => new TextBlock();
 
 		public static void MapText(IViewHandler handler, ILabel label) =>
-			(handler as LabelHandler)?.TypedNativeView?.UpdateText(label);
+			(handler as LabelHandler)?.NativeView?.UpdateText(label);
 
 		public static void MapTextColor(IViewHandler handler, ILabel label) { }
 		public static void MapCharacterSpacing(IViewHandler handler, ILabel label) { }

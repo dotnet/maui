@@ -20,12 +20,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
-			((UIView)viewHandler.View).AccessibilityIdentifier;
+			((UIView)viewHandler.NativeView).AccessibilityIdentifier;
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
-			((UIView)viewHandler.View).AccessibilityLabel;
+			((UIView)viewHandler.NativeView).AccessibilityLabel;
 
 		protected string GetSemanticHint(IViewHandler viewHandler) =>
-			((UIView)viewHandler.View).AccessibilityHint;
+			((UIView)viewHandler.NativeView).AccessibilityHint;
 	}
 }

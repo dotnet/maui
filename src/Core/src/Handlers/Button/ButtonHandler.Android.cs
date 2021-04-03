@@ -45,17 +45,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackgroundColor(ButtonHandler handler, IButton button)
 		{
-			handler.View?.UpdateBackgroundColor(button);
+			handler.NativeView?.UpdateBackgroundColor(button);
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
-			handler.View?.UpdateText(button);
+			handler.NativeView?.UpdateText(button);
 		}
 
 		public static void MapTextColor(ButtonHandler handler, IButton button)
 		{
-			handler.View?.UpdateTextColor(button);
+			handler.NativeView?.UpdateTextColor(button);
 		}
 
 		public static void MapFont(ButtonHandler handler, IButton button)
@@ -64,12 +64,12 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.View?.UpdateFont(button, fontManager);
+			handler.NativeView?.UpdateFont(button, fontManager);
 		}
 
 		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
-			handler.View?.UpdatePadding(button);
+			handler.NativeView?.UpdatePadding(button);
 		}
 
 		public bool OnTouch(IButton? button, AView? v, MotionEvent? e)

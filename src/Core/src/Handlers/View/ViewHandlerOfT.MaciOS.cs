@@ -12,18 +12,18 @@ namespace Microsoft.Maui.Handlers
 	{
 		public override void SetFrame(Rectangle rect)
 		{
-			if (View != null)
-				View.Frame = rect.ToCGRect();
+			if (NativeView != null)
+				NativeView.Frame = rect.ToCGRect();
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (View == null)
+			if (NativeView == null)
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}
 
-			var sizeThatFits = View.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
+			var sizeThatFits = NativeView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
 
 			var size = new Size(
 				sizeThatFits.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Width,
@@ -31,9 +31,9 @@ namespace Microsoft.Maui.Handlers
 
 			if (double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
 			{
-				View.SizeToFit();
+				NativeView.SizeToFit();
 
-				size = new Size(View.Frame.Width, View.Frame.Height);
+				size = new Size(NativeView.Frame.Width, NativeView.Frame.Height);
 			}
 
 			return size;

@@ -62,7 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		MauiDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
-			(MauiDatePicker)datePickerHandler.View;
+			(MauiDatePicker)datePickerHandler.NativeView;
 
 		DateTime GetNativeDate(DatePickerHandler datePickerHandler)
 		{

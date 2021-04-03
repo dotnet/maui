@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 
 				if (VirtualView?.SelectedIndex == -1 && VirtualView.Items != null && VirtualView.Items.Count > 0)
 				{
-					View?.SetSelectedIndex(VirtualView, 0);
+					NativeView?.SetSelectedIndex(VirtualView, 0);
 				}
 
 				UpdatePickerFromPickerSource(pickerSource);
@@ -93,25 +93,25 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTitle(PickerHandler handler, IPicker picker)
 		{
-			handler.View?.UpdateTitle(picker);
+			handler.NativeView?.UpdateTitle(picker);
 		}
 
 		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
 		{
-			handler.View?.UpdateSelectedIndex(picker);
+			handler.NativeView?.UpdateSelectedIndex(picker);
 		}
 
 		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker)
 		{
-			handler.View?.UpdateCharacterSpacing(picker);
+			handler.NativeView?.UpdateCharacterSpacing(picker);
 		}
 
 		void OnCollectionChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || View == null)
+			if (VirtualView == null || NativeView == null)
 				return;
 
-			View.UpdatePicker(VirtualView);
+			NativeView.UpdatePicker(VirtualView);
 		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)
@@ -129,24 +129,24 @@ namespace Microsoft.Maui.Handlers
 
 		void OnEditing(object? sender, EventArgs eventArgs)
 		{
-			if (VirtualView == null || View == null)
+			if (VirtualView == null || NativeView == null)
 				return;
 
 			// Reset the TextField's Text so it appears as if typing with a keyboard does not work.
 			var selectedIndex = VirtualView.SelectedIndex;
 			var items = VirtualView.Items;
-			View.Text = selectedIndex == -1 || items == null ? string.Empty : items[selectedIndex];
+			NativeView.Text = selectedIndex == -1 || items == null ? string.Empty : items[selectedIndex];
 
 			// Also clears the undo stack (undo/redo possible on iPads)
-			View.UndoManager.RemoveAllActions();
+			NativeView.UndoManager.RemoveAllActions();
 		}
 
 		void UpdatePickerFromPickerSource(PickerSource pickerSource)
 		{
-			if (VirtualView == null || View == null)
+			if (VirtualView == null || NativeView == null)
 				return;
 
-			View.Text = pickerSource.SelectedItem;
+			NativeView.Text = pickerSource.SelectedItem;
 			VirtualView.SelectedIndex = pickerSource.SelectedIndex;
 		}
 
