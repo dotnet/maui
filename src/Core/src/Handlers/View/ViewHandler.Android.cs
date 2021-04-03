@@ -12,17 +12,13 @@ namespace Microsoft.Maui.Handlers
 	{
 		MauiAccessibilityDelegate? AccessibilityDelegate { get; set; }
 
-		private protected void ConnectHandler(NativeView nativeView)
-		{
-
-		}
-
-		private protected void DisconnectHandler(NativeView nativeView)
+		private protected virtual void DisconnectHandlerCore(NativeView nativeView)
 		{
 			if (AccessibilityDelegate != null)
 			{
 				AccessibilityDelegate.Handler = null;
 				ViewCompat.SetAccessibilityDelegate(nativeView, null);
+				AccessibilityDelegate = null;
 			}
 		}
 

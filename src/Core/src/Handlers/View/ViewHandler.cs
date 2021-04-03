@@ -26,10 +26,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Semantics)] = MapSemantics
 		};
 
-
 		bool _hasContainer;
-		private NativeView? _view;
-		private IView? _virtualView;
 
 		public bool HasContainer
 		{
@@ -56,27 +53,14 @@ namespace Microsoft.Maui.Handlers
 
 		public NativeView? NativeView
 		{
-			get => _view;
-			private set => SetViewCore(value);
-		}
-
-		// This is so I can shadow the NativeView on the base class
-		// but make sure both get set
-		// In C# 9 we can probably do a covariant override
-		protected private virtual void SetViewCore(NativeView? nativeView)
-		{
-			_view = nativeView;
+			get;
+			private protected set;
 		}
 
 		public IView? VirtualView 
 		{ 
-			get => _virtualView; 
-			private set => _virtualView = value; 
-		}
-
-		protected private virtual void SetVirtualViewCore(IView? virtualView)
-		{
-			_virtualView = virtualView;
+			get; 
+			private protected set; 
 		}
 
 		public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;
@@ -87,26 +71,26 @@ namespace Microsoft.Maui.Handlers
 
 		void IViewHandler.DisconnectHandler()
 		{
-			if (_view == null)
-				return;
+			if (NativeView != null && VirtualView != null)
+				DisconnectHandlerCore(NativeView);
 
-			DisconnectHandler((NativeView)_view);
+			if (VirtualView != null)
+				VirtualView.Handler = null;
+
+			VirtualView = null;
 		}
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
 		public abstract void SetFrame(Rectangle frame);
 
-#if !MONOANDROID
-		// We can clean this up with C# 9 covariant overrides
-		private protected void ConnectHandler(NativeView nativeView)
+		private protected virtual void ConnectHandlerCore(NativeView nativeView)
 		{
-
 		}
 
-		private protected void DisconnectHandler(NativeView nativeView)
+#if !MONOANDROID
+		private protected virtual void DisconnectHandlerCore(NativeView nativeView)
 		{
-
 		}
 #endif
 

@@ -13,24 +13,6 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView> : ViewHandler
-		where TVirtualView : class, IView
-	{
-		TVirtualView? _virtualView;
-
-		public new TVirtualView? VirtualView
-		{
-			get => _virtualView;
-			private set => SetVirtualViewCore(value);
-		}
-
-		private protected override void SetVirtualViewCore(IView? virtualView)
-		{
-			_virtualView = (TVirtualView?)virtualView;
-			base.SetVirtualViewCore(virtualView);
-		}
-	}
-
 	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView>,
 		IViewHandler
 		where TVirtualView : class, IView
@@ -43,7 +25,6 @@ namespace Microsoft.Maui.Handlers
 		protected readonly PropertyMapper _defaultMapper;
 		protected PropertyMapper _mapper;
 		static bool HasSetDefaults;
-		private TNativeView? _nativeView;
 
 		protected ViewHandler(PropertyMapper mapper)
 		{
@@ -56,14 +37,8 @@ namespace Microsoft.Maui.Handlers
 
 		public new TNativeView? NativeView
 		{
-			get => _nativeView; 
-			private set => SetViewCore(value);
-		}
-
-		private protected override void SetViewCore(NativeView? nativeView)
-		{
-			_nativeView = (TNativeView?)nativeView;
-			base.SetViewCore(nativeView);
+			get => (TNativeView?)base.NativeView;
+			private set => base.NativeView = value;
 		}
 
 		public IServiceProvider? Services => MauiContext?.Services;
@@ -77,12 +52,12 @@ namespace Microsoft.Maui.Handlers
 
 			bool setupNativeView = VirtualView == null;
 
-			SetVirtualViewCore(view);
+			VirtualView = (TVirtualView)view;
 			NativeView ??= CreateNativeView();
 
 			if (setupNativeView && NativeView != null)
 			{
-				ConnectHandler(NativeView);
+				ConnectHandlerCore(NativeView);
 			}
 
 			if (!HasSetDefaults)
@@ -114,25 +89,24 @@ namespace Microsoft.Maui.Handlers
 			_mapper.UpdateProperties(this, VirtualView);
 		}
 
+		private protected override void DisconnectHandlerCore(NativeView nativeView)
+		{
+			base.DisconnectHandlerCore(nativeView);
+			DisconnectHandler((TNativeView)nativeView);
+		}
+
+		private protected override void ConnectHandlerCore(NativeView nativeView)
+		{
+			base.ConnectHandlerCore(nativeView);
+			ConnectHandler((TNativeView)nativeView);
+		}
+
 		protected virtual void ConnectHandler(TNativeView nativeView)
 		{
-			base.ConnectHandler(nativeView);
 		}
 
 		protected virtual void DisconnectHandler(TNativeView nativeView)
 		{
-			base.DisconnectHandler(nativeView);
-		}
-
-		void IViewHandler.DisconnectHandler()
-		{
-			if (NativeView != null && VirtualView != null)
-				DisconnectHandler(NativeView);
-
-			if (VirtualView != null)
-				VirtualView.Handler = null;
-
-			SetVirtualViewCore(null);
 		}
 
 		public override void UpdateValue(string property)
@@ -140,4 +114,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual void SetupDefaults(TNativeView nativeView) { }
 	}
+
+	public abstract partial class ViewHandler<TVirtualView> : ViewHandler
+		where TVirtualView : class, IView
+	{
+		public new TVirtualView? VirtualView
+		{
+			get => (TVirtualView?)base.VirtualView;
+			private protected set => base.VirtualView = value;
+		}
+	}
+
 }
