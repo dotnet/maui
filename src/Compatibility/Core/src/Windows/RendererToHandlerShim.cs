@@ -1,12 +1,12 @@
 using System;
-using AbstractViewHandler = Microsoft.Maui.Handlers.AbstractViewHandler<Microsoft.Maui.IView, Microsoft.UI.Xaml.FrameworkElement>;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Microsoft.UI.Xaml.FrameworkElement>;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
-	public class RendererToHandlerShim : AbstractViewHandler
+	public class RendererToHandlerShim : ViewHandler
 	{
 		internal IVisualElementRenderer VisualElementRenderer { get; private set; }
 
