@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Handlers
 			if (AccessibilityDelegate != null)
 			{
 				AccessibilityDelegate.Handler = null;
-				ViewCompat.SetAccessibilityDelegate(nativeView, null);
+				AndroidX.Core.View.ViewCompat.SetAccessibilityDelegate(nativeView, null);
 				AccessibilityDelegate = null;
 			}
 #endif
