@@ -73,11 +73,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (NativeView != null && VirtualView != null)
 				DisconnectHandlerCore(NativeView);
-
-			if (VirtualView != null)
-				VirtualView.Handler = null;
-
-			VirtualView = null;
 		}
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
@@ -88,11 +83,21 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-#if !MONOANDROID
 		private protected virtual void DisconnectHandlerCore(NativeView nativeView)
 		{
-		}
+#if MONOANDROID
+			if (AccessibilityDelegate != null)
+			{
+				AccessibilityDelegate.Handler = null;
+				ViewCompat.SetAccessibilityDelegate(nativeView, null);
+				AccessibilityDelegate = null;
+			}
 #endif
+			if (VirtualView != null)
+				VirtualView.Handler = null;
+
+			VirtualView = null;
+		}
 
 		public static void MapFrame(IViewHandler handler, IView view)
 		{

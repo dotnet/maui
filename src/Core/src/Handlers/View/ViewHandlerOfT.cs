@@ -91,22 +91,22 @@ namespace Microsoft.Maui.Handlers
 
 		private protected override void DisconnectHandlerCore(NativeView nativeView)
 		{
-			base.DisconnectHandlerCore(nativeView);
 			DisconnectHandler((TNativeView)nativeView);
 		}
 
 		private protected override void ConnectHandlerCore(NativeView nativeView)
 		{
-			base.ConnectHandlerCore(nativeView);
 			ConnectHandler((TNativeView)nativeView);
 		}
 
 		protected virtual void ConnectHandler(TNativeView nativeView)
 		{
+			base.ConnectHandlerCore(nativeView);
 		}
 
 		protected virtual void DisconnectHandler(TNativeView nativeView)
 		{
+			base.DisconnectHandlerCore(nativeView);
 		}
 
 		public override void UpdateValue(string property)
