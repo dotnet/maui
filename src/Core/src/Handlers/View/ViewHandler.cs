@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Semantics)] = MapSemantics
 		};
 
+		internal ViewHandler() {}
+
 		bool _hasContainer;
 
 		public bool HasContainer
@@ -72,18 +74,18 @@ namespace Microsoft.Maui.Handlers
 		void IViewHandler.DisconnectHandler()
 		{
 			if (NativeView != null && VirtualView != null)
-				DisconnectHandlerCore(NativeView);
+				DisconnectHandler(NativeView);
 		}
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
 		public abstract void SetFrame(Rectangle frame);
 
-		private protected virtual void ConnectHandlerCore(NativeView nativeView)
+		private protected void ConnectHandler(NativeView nativeView)
 		{
 		}
 
-		private protected virtual void DisconnectHandlerCore(NativeView nativeView)
+		private protected void DisconnectHandler(NativeView nativeView)
 		{
 #if MONOANDROID
 			if (AccessibilityDelegate != null)

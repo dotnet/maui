@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (setupNativeView && NativeView != null)
 			{
-				ConnectHandlerCore(NativeView);
+				ConnectHandler(NativeView);
 			}
 
 			if (!HasSetDefaults)
@@ -89,24 +89,14 @@ namespace Microsoft.Maui.Handlers
 			_mapper.UpdateProperties(this, VirtualView);
 		}
 
-		private protected override void DisconnectHandlerCore(NativeView nativeView)
-		{
-			DisconnectHandler((TNativeView)nativeView);
-		}
-
-		private protected override void ConnectHandlerCore(NativeView nativeView)
-		{
-			ConnectHandler((TNativeView)nativeView);
-		}
-
 		protected virtual void ConnectHandler(TNativeView nativeView)
 		{
-			base.ConnectHandlerCore(nativeView);
+			base.ConnectHandler(nativeView);
 		}
 
 		protected virtual void DisconnectHandler(TNativeView nativeView)
 		{
-			base.DisconnectHandlerCore(nativeView);
+			base.DisconnectHandler(nativeView);
 		}
 
 		public override void UpdateValue(string property)
