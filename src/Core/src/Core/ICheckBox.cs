@@ -1,8 +1,7 @@
 ﻿namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Represents a View that is a type of button that can either be
-	/// checked or empty.
+	/// Represents a View which allows the user to select a binary choice.
 	/// </summary>
 	public interface ICheckBox : IView
 	{

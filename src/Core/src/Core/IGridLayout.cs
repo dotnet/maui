@@ -8,12 +8,12 @@ namespace Microsoft.Maui
 	public interface IGridLayout : ILayout
 	{
 		/// <summary>
-		/// A GridRowDefinition collection for the GridLayout instance.
+		/// An IGridRowDefinition collection for the GridLayout instance.
 		/// </summary>
 		IReadOnlyList<IGridRowDefinition> RowDefinitions { get; }
 
 		/// <summary>
-		/// A GridColumnDefinition collection for the GridLayout instance.
+		/// An IGridColumnDefinition collection for the GridLayout instance.
 		/// </summary>
 		IReadOnlyList<IGridColumnDefinition> ColumnDefinitions { get; }
 
