@@ -14,5 +14,21 @@ namespace Microsoft.Maui
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
+
+		internal static void UpdateProperty(this FrameworkElement nativeControl, DependencyProperty property, Color color)
+		{
+			if (color.IsDefault)
+				nativeControl.ClearValue(property);
+			else
+				nativeControl.SetValue(property, color.ToNative());
+		}
+
+		internal static void UpdateProperty(this FrameworkElement nativeControl, DependencyProperty property, object? value)
+		{
+			if (value == null)
+				nativeControl.ClearValue(property);
+			else
+				nativeControl.SetValue(property, value);
+		}
 	}
 }

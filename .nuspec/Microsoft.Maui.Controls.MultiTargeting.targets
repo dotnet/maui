@@ -32,10 +32,10 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) != true ">
     <Compile Remove="**\*.Windows.cs" />
     <None Include="**\*.Windows.cs" />
-    <Compile Remove="**\*.xaml.cs" />
-    <None Include="**\*.xaml.cs" />
-    <Compile Remove="**\*.xaml" />
-    <None Include="**\*.xaml" />
+    <Compile Remove="**\*.Windows.xaml.cs" />
+    <None Include="**\*.Windows.xaml.cs" />
+    <Compile Remove="**\*.Windows.xaml" />
+    <None Include="**\*.Windows.xaml" />
     <Compile Remove="**\Windows\*.cs" />
     <None Include="**\Windows\*.cs" />
   </ItemGroup>
