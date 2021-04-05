@@ -16,7 +16,7 @@
         This is needed for non SDK style project so the IDE will pick the correct LangVersion.
         Once this is an SDK style project it will pick this up from the Directory.Build.Props file correctly
      -->
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

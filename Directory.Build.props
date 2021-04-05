@@ -44,4 +44,8 @@
   <Target Name="GitInfo" />
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
-</Project>
+  
+  <ItemGroup Condition="'$(MSBuildVersion)' != '' AND '$(MSBuildVersion)' &lt; '16.7.0'  ">
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="3.9.0" PrivateAssets="all" />
+  </ItemGroup>
+  </Project>
