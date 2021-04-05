@@ -52,7 +52,9 @@ namespace Microsoft.Maui.HotReload
 		{
 			if (!IsEnabled)
 				return view;
-			if (!replacedViews.TryGetValue(view.GetType().FullName, out var newViewType))
+				
+			var viewType = view.GetType();
+			if (!replacedViews.TryGetValue(viewType.FullName, out var newViewType) || viewType == newViewType)
 				return view;
 
 			currentViews.TryGetValue(view, out var parameters);
