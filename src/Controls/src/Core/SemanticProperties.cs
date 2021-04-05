@@ -24,12 +24,8 @@ namespace Microsoft.Maui.Controls
 			UpdateSemanticsProperty(bindable);
 		}
 
-		static Semantics SetupSemanticsProperty(BindableObject bindable)
-		{
-			VisualElement ve = (VisualElement)bindable;
-			ve.SemanticsCore = ve.SemanticsCore ?? new Semantics();
-			return ve.SemanticsCore;
-		}
+		static Semantics SetupSemanticsProperty(BindableObject bindable) =>
+			((VisualElement)bindable).SetupSemantics();
 
 		static void UpdateSemanticsProperty(BindableObject bindable)
 		{

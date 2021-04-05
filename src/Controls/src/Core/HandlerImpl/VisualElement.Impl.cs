@@ -126,11 +126,16 @@ namespace Microsoft.Maui.Controls
 		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => default;
 
+		Maui.Semantics _semantics;
 		Maui.Semantics IFrameworkElement.Semantics
 		{
-			get => SemanticsCore;
+			get => _semantics;
 		}
 
-		internal Semantics SemanticsCore { get; set; }
+		internal Semantics SetupSemantics()
+		{
+			_semantics = _semantics ?? new Semantics();
+			return _semantics;
+		}
 	}
 }

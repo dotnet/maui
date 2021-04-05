@@ -71,24 +71,20 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract void UpdateValue(string property);
 
-		void IViewHandler.DisconnectHandler()
-		{
-			if (NativeView != null && VirtualView != null)
-				DisconnectHandler(NativeView);
-		}
+		void IViewHandler.DisconnectHandler() => DisconnectHandler(NativeView);
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
 		public abstract void SetFrame(Rectangle frame);
 
-		private protected void ConnectHandler(NativeView nativeView)
+		private protected void ConnectHandler(NativeView? nativeView)
 		{
 		}
 
-		private protected void DisconnectHandler(NativeView nativeView)
+		private protected void DisconnectHandler(NativeView? nativeView)
 		{
 #if MONOANDROID
-			if (AccessibilityDelegate != null)
+			if (nativeView.IsAlive() && AccessibilityDelegate != null)
 			{
 				AccessibilityDelegate.Handler = null;
 				AndroidX.Core.View.ViewCompat.SetAccessibilityDelegate(nativeView, null);
