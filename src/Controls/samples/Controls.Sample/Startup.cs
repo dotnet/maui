@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModel;
+using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -17,8 +18,9 @@ namespace Maui.Controls.Sample
 {
 	public class Startup : IStartup
 	{
-		public readonly static bool UseSemanticsPage = false;
-		public readonly static bool UseXamlPage = false;
+		enum PageType { Xaml, Semantics, Main, Blazor }
+		private PageType _pageType = PageType.Xaml;
+
 		public readonly static bool UseXamlApp = true;
 
 		public void Configure(IAppHostBuilder appBuilder)
@@ -39,6 +41,7 @@ namespace Maui.Controls.Sample
 			}
 
 			appBuilder
+				.RegisterBlazorMauiWebView()
 				.ConfigureAppConfiguration(config =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>
@@ -56,12 +59,21 @@ namespace Maui.Controls.Sample
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
 
-					if (UseXamlPage)
-						services.AddTransient<IPage, XamlPage>();
-					else if (UseSemanticsPage)
-						services.AddTransient<IPage, SemanticsPage>();
-					else
-						services.AddTransient<IPage, MainPage>();
+					switch (_pageType)
+					{
+						case PageType.Xaml:
+							services.AddTransient<IPage, XamlPage>();
+							break;
+						case PageType.Semantics:
+							services.AddTransient<IPage, SemanticsPage>();
+							break;
+						case PageType.Blazor:
+							services.AddTransient<IPage, BlazorPage>();
+							break;
+						case PageType.Main:
+							services.AddTransient<IPage, MainPage>();
+							break;
+					}
 
 					services.AddTransient<IWindow, MainWindow>();
 				})

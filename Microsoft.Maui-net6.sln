@@ -64,6 +64,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{50C758FE-4E1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{72397ADB-40A8-4B8E-8E08-2DBE2803C845}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorWebView", "BlazorWebView", "{1614D1A4-5C3D-4D5B-8C89-426E37A564EF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebView.Maui", "src\BlazorWebView\src\Microsoft.AspNetCore.Components.WebView.Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj", "{F7F2B379-52CE-4802-9EC9-0D7967B6BFB7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +145,10 @@ Global
 		{92644F6F-5946-48FC-A21A-A3D6EE24E8B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92644F6F-5946-48FC-A21A-A3D6EE24E8B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92644F6F-5946-48FC-A21A-A3D6EE24E8B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7F2B379-52CE-4802-9EC9-0D7967B6BFB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7F2B379-52CE-4802-9EC9-0D7967B6BFB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7F2B379-52CE-4802-9EC9-0D7967B6BFB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7F2B379-52CE-4802-9EC9-0D7967B6BFB7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -166,6 +174,7 @@ Global
 		{E8AD265B-3C67-4640-AC58-A522F9FB3361} = {09C264E9-E3F3-4586-9151-DCBB1F6DA7AB}
 		{C564DDD6-DE79-45CD-88EA-3F690481572A} = {09C264E9-E3F3-4586-9151-DCBB1F6DA7AB}
 		{50C758FE-4E10-409A-94F5-A75480960864} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
+		{F7F2B379-52CE-4802-9EC9-0D7967B6BFB7} = {1614D1A4-5C3D-4D5B-8C89-426E37A564EF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
