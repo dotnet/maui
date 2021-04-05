@@ -21,18 +21,20 @@ namespace Maui.Controls.Sample
 		{
 			if (UseXamlApp)
 			{
+				// Use all the Forms features
 				appBuilder = appBuilder
-					.RegisterCompatibilityForms()
+					.UseFormsCompatibility()
 					.UseMauiApp<XamlApp>();
 			}
 			else
 			{
+				// Use just the Forms renderers
 				appBuilder = appBuilder
+					.UseCompatibilityRenderers()
 					.UseMauiApp<MyApp>();
 			}
 
 			appBuilder
-				.RegisterCompatibilityRenderers()
 				.ConfigureAppConfiguration((hostingContext, config) =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>
@@ -45,7 +47,7 @@ namespace Maui.Controls.Sample
 				})
 				.UseMauiServiceProviderFactory(true)
 				//.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
-				.ConfigureServices((hostingContext, services) =>
+				.ConfigureServices(services =>
 				{
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
@@ -57,14 +59,14 @@ namespace Maui.Controls.Sample
 
 					services.AddTransient<IWindow, MainWindow>();
 				})
-				.ConfigureFonts((hostingContext, fonts) =>
+				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
 				});
 		}
 
-		// To use DI ServiceCollection and not the MAUI one
-		public class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
+		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
+		class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
 		{
 			public ServiceCollection CreateBuilder(IServiceCollection services)
 				=> new ServiceCollection { services };

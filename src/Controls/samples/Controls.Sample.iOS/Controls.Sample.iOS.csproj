@@ -71,9 +71,6 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Essentials" Version="1.5.1" />
-  </ItemGroup>
-  <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
   </ItemGroup>
   <ItemGroup>
@@ -95,6 +92,10 @@
       <Name>Compatibility.iOS</Name>
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj">
+      <Project>{8cb95d25-8442-42bc-82be-319d21138549}</Project>
+      <Name>Essentials</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Core\Controls.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
