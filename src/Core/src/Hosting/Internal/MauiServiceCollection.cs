@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Maui.Hosting
+namespace Microsoft.Maui.Hosting.Internal
 {
 	class MauiServiceCollection : IMauiServiceCollection
 	{

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework Condition="'$(BuildForNet6)' != 'true'">netcoreapp3.1</TargetFramework>

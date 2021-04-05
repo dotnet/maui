@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Hosting.Internal;
 using Microsoft.Maui.Tests;
 using Xunit;
 
@@ -36,11 +37,39 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void CanRegisterAndGetHandlerUsingType()
+		{
+			var host = AppHostBuilder
+				.CreateDefaultAppBuilder()
+				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<IViewStub, ViewHandlerStub>())
+				.Build();
+
+			var handler = host.Handlers.GetHandler(typeof(IViewStub));
+
+			Assert.NotNull(handler);
+			Assert.IsType<ViewHandlerStub>(handler);
+		}
+
+		[Fact]
 		public void CanRegisterAndGetHandler()
 		{
 			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
-				.RegisterHandler<IViewStub, ViewHandlerStub>()
+				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<IViewStub, ViewHandlerStub>())
+				.Build();
+
+			var handler = host.Handlers.GetHandler<IViewStub>();
+
+			Assert.NotNull(handler);
+			Assert.IsType<ViewHandlerStub>(handler);
+		}
+
+		[Fact]
+		public void CanRegisterAndGetHandlerWithType()
+		{
+			var host = AppHostBuilder
+				.CreateDefaultAppBuilder()
+				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler(typeof(IViewStub), typeof(ViewHandlerStub)))
 				.Build();
 
 			var handler = host.Handlers.GetHandler(typeof(IViewStub));
@@ -52,12 +81,14 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanRegisterAndGetHandlerWithDictionary()
 		{
+			var dic = new Dictionary<Type, Type>
+			{
+				{ typeof(IViewStub), typeof(ViewHandlerStub) }
+			};
+
 			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
-				.RegisterHandlers(new Dictionary<Type, Type>
-				{
-					{ typeof(IViewStub), typeof(ViewHandlerStub) }
-				})
+				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandlers(dic))
 				.Build();
 
 			var handler = host.Handlers.GetHandler(typeof(IViewStub));
@@ -67,11 +98,11 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void CanRegisterAndGetHandlerForType()
+		public void CanRegisterAndGetHandlerForConcreteType()
 		{
 			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
-				.RegisterHandler<IViewStub, ViewHandlerStub>()
+				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<IViewStub, ViewHandlerStub>())
 				.Build();
 
 			var handler = host.Handlers.GetHandler(typeof(ViewStub));
@@ -98,7 +129,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var host = AppHostBuilder
 				.CreateDefaultAppBuilder()
-				.RegisterHandler<ButtonStub, ButtonHandlerStub>()
+				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<ButtonStub, ButtonHandlerStub>())
 				.Build();
 
 			var defaultHandler = host.Handlers.GetHandler(typeof(IButton));

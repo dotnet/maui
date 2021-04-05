@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Maui.Hosting
+namespace Microsoft.Maui.Hosting.Internal
 {
 	class MauiServiceProvider : IMauiServiceProvider
 	{

@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui.Hosting
 {
-	internal static class StartupExtensions
+	public static class StartupExtensions
 	{
 		public static IAppHostBuilder CreateAppHostBuilder(this IStartup startup)
 		{

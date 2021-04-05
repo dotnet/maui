@@ -9,8 +9,7 @@ namespace MauiApp1
 		public void Configure(IAppHostBuilder appBuilder)
 		{
 			appBuilder
-				.RegisterCompatibilityForms()
-				.RegisterCompatibilityRenderers()
+				.UseFormsCompatibility()
 				.UseMauiApp<App>();
 		}
 	}

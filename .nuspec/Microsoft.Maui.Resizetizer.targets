@@ -179,6 +179,7 @@
         <MSBuild
             Targets="GetMauiItems"
             Projects="@(ProjectReference)"
+            BuildInParallel="true"
             SkipNonexistentProjects="true"
             SkipNonexistentTargets="true">
             <Output

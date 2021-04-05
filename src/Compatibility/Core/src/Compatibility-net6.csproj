@@ -82,6 +82,7 @@
       <Link>StreamWrapper.cs</Link>
     </Compile>
     <Compile Include="AppHostBuilderExtensions.cs" />
+    <Compile Include="MauiHandlersCollectionExtensions.cs" />
     
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Hosting
+namespace Microsoft.Maui.Hosting.Internal
 {
 	class MauiHandlersServiceProvider : MauiServiceProvider, IMauiHandlersServiceProvider
 	{

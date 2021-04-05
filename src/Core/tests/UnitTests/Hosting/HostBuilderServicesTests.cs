@@ -12,8 +12,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanGetServices()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = new AppHostBuilder()
 				.Build();
 
 			Assert.NotNull(host);
@@ -23,8 +22,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void GetServiceThrowsWhenConstructorParamTypesWereNotRegistered()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = new AppHostBuilder()
 				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) => services.AddTransient<IFooBarService, FooBarService>())
 				.Build();
@@ -35,8 +33,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void GetServiceThrowsOnMultipleConstructors()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = new AppHostBuilder()
 				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) => services.AddTransient<IFooBarService, FooDualConstructor>())
 				.Build();
@@ -49,8 +46,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void GetServiceCanReturnTypesThatHaveConstructorParams()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = new AppHostBuilder()
 				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) =>
 				{
@@ -69,8 +65,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void GetServiceCanReturnTypesThatHaveUnregisteredConstructorParamsButHaveDefaultValues()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = new AppHostBuilder()
 				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) =>
 				{
@@ -90,8 +85,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void GetServiceCanReturnTypesThatHaveRegisteredConstructorParamsAndHaveDefaultValues()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = new AppHostBuilder()
 				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) =>
 				{
@@ -113,8 +107,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void GetServiceCanReturnTypesThatHaveSystemDefaultValues()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = new AppHostBuilder()
 				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, services) =>
 				{
@@ -134,8 +127,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void WillRetrieveDifferentTransientServices()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = new AppHostBuilder()
 				.ConfigureServices((ctx, services) => services.AddTransient<IFooService, FooService>())
 				.Build();
 
@@ -145,8 +137,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void WillRetrieveSameSingletonServices()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = new AppHostBuilder()
 				.ConfigureServices((ctx, services) => services.AddSingleton<IFooService, FooService>())
 				.Build();
 
@@ -156,8 +147,7 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void WillRetrieveMixedServices()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = new AppHostBuilder()
 				.ConfigureServices((ctx, services) =>
 				{
 					services.AddSingleton<IFooService, FooService>();
