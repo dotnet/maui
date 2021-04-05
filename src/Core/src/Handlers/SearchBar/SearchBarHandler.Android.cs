@@ -31,11 +31,6 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdatePlaceholder(searchBar);
 		}
 
-		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
-		{
-			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
-		}
-
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
@@ -53,6 +48,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.TypedNativeView?.UpdateVerticalTextAlignment(searchBar, handler._editText);
+		}
+
+		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
 		}
 	}
 }

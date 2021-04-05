@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
+using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.ViewModel;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Debug = System.Diagnostics.Debug;
 
 namespace Maui.Controls.Sample.Pages
 {
-	public class MainPage : ContentPage, IPage
+	public class MainPage : BasePage
 	{
 		MainPageViewModel _viewModel;
 
@@ -104,7 +106,7 @@ namespace Maui.Controls.Sample.Pages
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
 			{
-				System.Console.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
+				Debug.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
 			};
 
 			verticalStack.Add(entry);

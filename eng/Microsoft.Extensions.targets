@@ -7,6 +7,9 @@
     <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
     <_MicrosoftDependencyInjectionVersion>5.0.1</_MicrosoftDependencyInjectionVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <_MicrosoftProjectReunionVersion>0.5.0</_MicrosoftProjectReunionVersion>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
@@ -27,6 +30,18 @@
     <PackageReference
         Update="Microsoft.Extensions.Logging"
         Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.ProjectReunion"
+        Version="$(_MicrosoftProjectReunionVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.ProjectReunion.Foundation"
+        Version="$(_MicrosoftProjectReunionVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.ProjectReunion.WinUI"
+        Version="$(_MicrosoftProjectReunionVersion)"
     />
   </ItemGroup>
 </Project>

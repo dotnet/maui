@@ -4,8 +4,11 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
+#if NET6_0 || NET5_0
+using Microsoft.UI.Xaml;
+#else
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media.Imaging;
+#endif
 
 namespace Microsoft.Maui.Essentials
 {
@@ -14,27 +17,28 @@ namespace Microsoft.Maui.Essentials
         internal static bool PlatformIsCaptureSupported =>
             true;
 
-        static async Task<ScreenshotResult> PlatformCaptureAsync()
+        static Task<ScreenshotResult> PlatformCaptureAsync()
         {
-            var element = Window.Current?.Content as FrameworkElement;
-            if (element == null)
-                throw new InvalidOperationException("Unable to find main window content.");
+			throw new NotImplementedException("WINUI");
+			//var element = Window.Current?.Content as FrameworkElement;
+			//if (element == null)
+			//    throw new InvalidOperationException("Unable to find main window content.");
 
-            var bmp = new RenderTargetBitmap();
+			//var bmp = new RenderTargetBitmap();
 
-            // NOTE: Return to the main thread so we can access view properties such as
-            //       width and height. Do not ConfigureAwait!
-            await bmp.RenderAsync(element);
+			//// NOTE: Return to the main thread so we can access view properties such as
+			////       width and height. Do not ConfigureAwait!
+			//await bmp.RenderAsync(element);
 
-            // get the view information first
-            var width = bmp.PixelWidth;
-            var height = bmp.PixelHeight;
+			//// get the view information first
+			//var width = bmp.PixelWidth;
+			//var height = bmp.PixelHeight;
 
-            // then potentially move to a different thread
-            var pixels = await bmp.GetPixelsAsync().AsTask().ConfigureAwait(false);
+			//// then potentially move to a different thread
+			//var pixels = await bmp.GetPixelsAsync().AsTask().ConfigureAwait(false);
 
-            return new ScreenshotResult(width, height, pixels);
-        }
+			//return new ScreenshotResult(width, height, pixels);
+		}
     }
 
     public partial class ScreenshotResult

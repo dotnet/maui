@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.StyleSheets;
 
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls
 
 		public string Text => Title;
 
-		void OnMenuItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void OnMenuItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.MenuItemTemplateProperty.PropertyName)
 				Shell.SetMenuItemTemplate(this, Shell.GetMenuItemTemplate(MenuItem));

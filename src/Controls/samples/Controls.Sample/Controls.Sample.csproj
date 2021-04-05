@@ -15,7 +15,6 @@
     <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
-    <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) == true ">
@@ -26,9 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SharedImage Include="Resources\Images\*" />
-    <SharedImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
-    <SharedFont Include="Resources\Fonts\*" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
+    <MauiFont Include="Resources\Fonts\*" />
   </ItemGroup>
+
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
 </Project>

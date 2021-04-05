@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class Resizer
 	{
-		public Resizer(SharedImageInfo info, string intermediateOutputPath, ILogger logger)
+		public Resizer(ResizeImageInfo info, string intermediateOutputPath, ILogger logger)
 		{
 			Info = info;
 			Logger = logger;
@@ -15,14 +15,14 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string IntermediateOutputPath { get; private set; }
 
-		public SharedImageInfo Info { get; private set; }
+		public ResizeImageInfo Info { get; private set; }
 
 		SkiaSharpTools tools;
 
 		public string GetFileDestination(DpiPath dpi)
 			=> GetFileDestination(Info, dpi, IntermediateOutputPath);
 
-		public static string GetFileDestination(SharedImageInfo info, DpiPath dpi, string intermediateOutputPath)
+		public static string GetFileDestination(ResizeImageInfo info, DpiPath dpi, string intermediateOutputPath)
 		{
 			var fullIntermediateOutputPath = new DirectoryInfo(intermediateOutputPath);
 

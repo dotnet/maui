@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Resizetizer
 				? new SkiaSharpSvgTools(filename, baseSize, tintColor, logger) as SkiaSharpTools
 				: new SkiaSharpBitmapTools(filename, baseSize, tintColor, logger);
 
-		public SkiaSharpTools(SharedImageInfo info, ILogger logger)
+		public SkiaSharpTools(ResizeImageInfo info, ILogger logger)
 			: this(info.Filename, info.BaseSize, info.TintColor, logger)
 		{
 		}

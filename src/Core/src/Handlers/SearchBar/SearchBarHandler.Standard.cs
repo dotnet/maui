@@ -8,9 +8,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapPlaceholder(IViewHandler handler, ISearchBar searchBar) { }
-		public static void MapCharacterSpacing(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapFont(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapHorizontalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapVerticalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapCharacterSpacing(IViewHandler handler, ISearchBar searchBar) { }
 	}
 }

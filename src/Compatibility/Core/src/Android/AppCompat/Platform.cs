@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				}
 				else if (handler is IVisualElementRenderer ver)
 					renderer = ver;
-				else if (handler is IAndroidViewHandler vh)
+				else if (handler is INativeViewHandler vh)
 					renderer = new HandlerToRendererShim(vh);
 			}
 

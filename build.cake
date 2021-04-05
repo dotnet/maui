@@ -894,6 +894,16 @@ Task("VS-NET6")
         StartVisualStudioForDotNet6();
     });
 
+
+Task("VS-WINUI")
+    .Does(() =>
+    {
+        DotNetCoreBuild("./src/DotNet/Dotnet.csproj");
+        var ext = IsRunningOnWindows() ? ".exe" : "";
+        DotNetCoreBuild("./Microsoft.Maui.BuildTasks-net6.sln", new DotNetCoreBuildSettings { ToolPath = $"./bin/dotnet/dotnet{ext}" });
+        StartVisualStudioForDotNet6("./Microsoft.Maui.WinUI.sln");
+    });
+
 Task("VS")
     .Description("Builds projects necessary so solution compiles on VS")
     .IsDependentOn("Clean")
@@ -1215,7 +1225,7 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
         Information("This target is only supported on Windows.");
         return;
     }
-    var vsLatest = VSWhereLatest();
+    var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, });
     if (vsLatest == null)
         throw new Exception("Unable to find Visual Studio!");
     var devenv = vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe");
