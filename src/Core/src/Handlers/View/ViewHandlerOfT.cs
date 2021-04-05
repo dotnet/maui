@@ -89,6 +89,12 @@ namespace Microsoft.Maui.Handlers
 			_mapper.UpdateProperties(this, VirtualView);
 		}
 
+		void IViewHandler.DisconnectHandler()
+		{
+			if (NativeView != null && VirtualView != null)
+				DisconnectHandler(NativeView);
+		}
+
 		protected virtual void ConnectHandler(TNativeView nativeView)
 		{
 			base.ConnectHandler(nativeView);
