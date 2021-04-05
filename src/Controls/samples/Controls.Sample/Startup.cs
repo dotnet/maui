@@ -64,7 +64,7 @@ namespace Maui.Controls.Sample
 				})
 				.ConfigureFonts(fonts =>
 				{
-					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
+					fonts.AddFont("Dokdo.ttf", "Dokdo");
 				})
 				.ConfigureEssentials(essentials =>
 				{
