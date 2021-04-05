@@ -85,13 +85,14 @@ namespace Microsoft.Maui.Handlers
 			return mode.MakeMeasureSpec(deviceConstraint);
 		}
 
-		void SetupContainer()
+		protected override void SetupContainer()
 		{
 
 		}
 
 		protected override void RemoveContainer()
 		{
+
 
 		}
 	}
