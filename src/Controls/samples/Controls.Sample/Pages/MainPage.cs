@@ -177,6 +177,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Switch() { OnColor = Color.Green, ThumbColor = Color.Yellow });
 
 			verticalStack.Add(new DatePicker());
+			verticalStack.Add(new DatePicker { CharacterSpacing = 6 });
 
 			verticalStack.Add(new TimePicker());
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
