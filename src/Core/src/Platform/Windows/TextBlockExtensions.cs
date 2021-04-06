@@ -12,9 +12,16 @@ namespace Microsoft.Maui
 			nativeControl.FontWeight = font.FontAttributes.ToFontWeight();
 		}
 
-		public static void UpdateText(this TextBlock nativeControl, IText text)
-		{
+		public static void UpdateFont(this TextBlock nativeControl, IText text, IFontManager fontManager) =>
+			nativeControl.UpdateFont(text.Font, fontManager);
+
+		public static void UpdateText(this TextBlock nativeControl, IText text) =>
 			nativeControl.Text = text.Text;
-		}
+
+		public static void UpdateTextColor(this TextBlock nativeControl, IText text) =>
+			nativeControl.UpdateProperty(TextBlock.ForegroundProperty, text.TextColor);
+
+		public static void UpdatePadding(this TextBlock nativeControl, ILabel label) =>
+			nativeControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToNative());
 	}
 }
