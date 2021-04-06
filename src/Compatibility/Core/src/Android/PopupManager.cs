@@ -7,7 +7,6 @@ using Android.Text;
 using Android.Views;
 using Android.Widget;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Platform.Android;
 using AppCompatActivity = AndroidX.AppCompat.App.AppCompatActivity;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 

@@ -12,7 +12,6 @@ using Android.Widget;
 using AndroidX.Core.Content;
 using Java.Lang;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
-using Microsoft.Maui.Platform.Android;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
