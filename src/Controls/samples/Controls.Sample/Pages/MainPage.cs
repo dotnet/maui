@@ -95,14 +95,14 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 
-			var paddingButton = new Button
+			verticalStack.Add(new Button { Text = "Default" });
+			verticalStack.Add(new Button { Text = "0 Padding", Padding = 0 });
+			verticalStack.Add(new Button
 			{
 				Padding = new Thickness(40),
-				Text = "This button has a padding!!",
+				Text = "This button has a padding of 40!!",
 				BackgroundColor = Color.Purple,
-			};
-
-			verticalStack.Add(paddingButton);
+			});
 			verticalStack.Add(new Button { Text = "CharacterSpacing" });
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 

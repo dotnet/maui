@@ -18,5 +18,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		Font IText.Font => Font;
+
+		Thickness IPadding.Padding => IsSet(PaddingProperty) ? Padding : new Thickness(double.NaN);
 	}
 }

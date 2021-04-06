@@ -28,6 +28,8 @@ namespace Microsoft.Maui
 			get { return Left == 0 && Top == 0 && Right == 0 && Bottom == 0; }
 		}
 
+		public bool IsNaN => Left == double.NaN && Top == double.NaN && Right == double.NaN && Bottom == double.NaN;
+
 		public Thickness(double uniformSize) : this(uniformSize, uniformSize, uniformSize, uniformSize)
 		{
 		}
@@ -97,5 +99,7 @@ namespace Microsoft.Maui
 		}
 
 		public static Thickness Zero = new Thickness(0);
+
+		public static Thickness NaN = new Thickness(double.NaN);
 	}
 }

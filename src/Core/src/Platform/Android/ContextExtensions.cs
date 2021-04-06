@@ -191,5 +191,19 @@ namespace Microsoft.Maui
 
 			return null;
 		}
+
+		public static Thickness GetThickness(this Context context, Thickness thickness, Thickness? defaultThickness = null)
+		{
+			return new Thickness(
+				Get(thickness.Left, defaultThickness?.Left ?? 0.0),
+				Get(thickness.Top, defaultThickness?.Top ?? 0.0),
+				Get(thickness.Right, defaultThickness?.Right ?? 0.0),
+				Get(thickness.Bottom, defaultThickness?.Bottom ?? 0.0));
+
+			double Get(double side, double def) =>
+				double.IsNaN(side)
+					? def
+					: context.ToPixels(side);
+		}
 	}
 }

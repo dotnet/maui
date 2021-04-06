@@ -21,18 +21,7 @@ namespace Microsoft.Maui
 		public static void UpdateBackgroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			nativeControl.Background = color.IsDefault && defaultBrush != null ? defaultBrush : color.ToNative();
 
-		public static void UpdatePadding(this Control nativeControl, Thickness padding, UI.Xaml.Thickness? defaultThickness = null)
-		{
-			// TODO: have a way to reset the padding
-			//       This is used for button, but this also means there can never be a 0 padding button
-			var newPadding = defaultThickness ?? new UI.Xaml.Thickness();
-
-			newPadding.Left += padding.Left;
-			newPadding.Top += padding.Top;
-			newPadding.Right += padding.Right;
-			newPadding.Bottom += padding.Bottom;
-
-			nativeControl.Padding = newPadding;
-		}
+		public static void UpdatePadding(this Control nativeControl, Thickness padding, UI.Xaml.Thickness? defaultThickness = null) =>
+			nativeControl.Padding = padding.ToNative(defaultThickness);
 	}
 }
