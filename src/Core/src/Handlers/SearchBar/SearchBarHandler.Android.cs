@@ -6,7 +6,7 @@ using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : AbstractViewHandler<ISearchBar, SearchView>
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchView>
 	{
 		EditText? _editText;
 		public EditText? QueryEditor => _editText;
@@ -22,12 +22,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.TypedNativeView?.UpdateText(searchBar);
+			handler.NativeView?.UpdateText(searchBar);
 		}
 
 		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.TypedNativeView?.UpdatePlaceholder(searchBar);
+			handler.NativeView?.UpdatePlaceholder(searchBar);
 		}
 
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(searchBar, fontManager, handler._editText);
+			handler.NativeView?.UpdateFont(searchBar, fontManager, handler._editText);
 		}
 
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)

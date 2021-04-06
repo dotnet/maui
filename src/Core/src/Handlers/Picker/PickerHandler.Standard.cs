@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : AbstractViewHandler<IPicker, object>
+	public partial class PickerHandler : ViewHandler<IPicker, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

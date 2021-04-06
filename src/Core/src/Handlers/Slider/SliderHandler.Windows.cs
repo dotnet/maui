@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SliderHandler : AbstractViewHandler<ISlider, Slider>
+	public partial class SliderHandler : ViewHandler<ISlider, Slider>
 	{
 		protected override Slider CreateNativeView() => new Slider();
 

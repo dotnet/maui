@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : AbstractViewHandler<IButton, Button>
+	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
 		static UI.Xaml.Thickness? DefaultPadding;
 		static UI.Xaml.Media.Brush? DefaultForeground;
@@ -46,17 +46,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackgroundColor(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateBackgroundColor(button, DefaultBackground);
+			handler.NativeView?.UpdateBackgroundColor(button, DefaultBackground);
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateText(button);
+			handler.NativeView?.UpdateText(button);
 		}
 
 		public static void MapTextColor(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateTextColor(button, DefaultForeground);
+			handler.NativeView?.UpdateTextColor(button, DefaultForeground);
 		}
 
 		public static void MapCharacterSpacing(ButtonHandler handler, IButton button) { }
@@ -67,12 +67,12 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(button, fontManager);
+			handler.NativeView?.UpdateFont(button, fontManager);
 		}
 
 		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdatePadding(button, DefaultPadding);
+			handler.NativeView?.UpdatePadding(button, DefaultPadding);
 		}
 
 		void OnClick(object sender, UI.Xaml.RoutedEventArgs e)

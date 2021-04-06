@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
-			(MauiPicker)pickerHandler.View;
+			(MauiPicker)pickerHandler.NativeView;
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Hint;

@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : AbstractViewHandler<ISearchBar, UISearchBar>
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, UISearchBar>
 	{
 		UITextField? _editor;
 		public UITextField? QueryEditor => _editor;
@@ -21,12 +21,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.TypedNativeView?.UpdateText(searchBar);
+			handler.NativeView?.UpdateText(searchBar);
 		}
 
 		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.TypedNativeView?.UpdatePlaceholder(searchBar);
+			handler.NativeView?.UpdatePlaceholder(searchBar);
 		}
 
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)

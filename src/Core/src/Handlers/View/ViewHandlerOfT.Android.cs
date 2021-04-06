@@ -1,16 +1,18 @@
 using Android.Content;
 using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class AbstractViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
+		View? INativeViewHandler.NativeView => (View?)base.NativeView;
 		public Context? Context => MauiContext?.Context;
 
-		public void SetFrame(Rectangle frame)
+		public override void SetFrame(Rectangle frame)
 		{
-			var nativeView = View;
+			var nativeView = NativeView;
 
 			if (nativeView == null)
 				return;
@@ -44,9 +46,9 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Layout((int)left, (int)top, (int)right, (int)bottom);
 		}
 
-		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (TypedNativeView == null || VirtualView == null || Context == null)
+			if (NativeView == null || VirtualView == null || Context == null)
 			{
 				return Size.Zero;
 			}
@@ -55,10 +57,10 @@ namespace Microsoft.Maui.Handlers
 			var widthSpec = CreateMeasureSpec(widthConstraint, VirtualView.Width);
 			var heightSpec = CreateMeasureSpec(heightConstraint, VirtualView.Height);
 
-			TypedNativeView.Measure(widthSpec, heightSpec);
+			NativeView.Measure(widthSpec, heightSpec);
 
 			// Convert back to xplat sizes for the return value
-			return Context.FromPixels(TypedNativeView.MeasuredWidth, TypedNativeView.MeasuredHeight);
+			return Context.FromPixels(NativeView.MeasuredWidth, NativeView.MeasuredHeight);
 		}
 
 		int CreateMeasureSpec(double constraint, double explicitSize)
@@ -84,13 +86,14 @@ namespace Microsoft.Maui.Handlers
 			return mode.MakeMeasureSpec(deviceConstraint);
 		}
 
-		void SetupContainer()
+		protected override void SetupContainer()
 		{
 
 		}
 
-		void RemoveContainer()
+		protected override void RemoveContainer()
 		{
+
 
 		}
 	}

@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class CheckBoxHandler : AbstractViewHandler<ICheckBox, MauiCheckBox>
+	public partial class CheckBoxHandler : ViewHandler<ICheckBox, MauiCheckBox>
 	{
 		protected virtual float MinimumSize => 44f;
 

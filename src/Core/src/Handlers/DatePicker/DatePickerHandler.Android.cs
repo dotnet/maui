@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class DatePickerHandler : AbstractViewHandler<IDatePicker, MauiDatePicker>
+	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
 		DatePickerDialog? _dialog;
 
@@ -51,27 +51,27 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.TypedNativeView?.UpdateFormat(datePicker);
+			handler.NativeView?.UpdateFormat(datePicker);
 		}
 
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.TypedNativeView?.UpdateDate(datePicker);
+			handler.NativeView?.UpdateDate(datePicker);
 		}
 
 		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.TypedNativeView?.UpdateMinimumDate(datePicker, handler._dialog);
+			handler.NativeView?.UpdateMinimumDate(datePicker, handler._dialog);
 		}
 
 		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.TypedNativeView?.UpdateMaximumDate(datePicker, handler._dialog);
+			handler.NativeView?.UpdateMaximumDate(datePicker, handler._dialog);
 		}
 
 		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(datePicker);
+			handler.NativeView?.UpdateCharacterSpacing(datePicker);
 		}
 
 		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(datePicker, fontManager);
+			handler.NativeView?.UpdateFont(datePicker, fontManager);
 		}
 
 		void ShowPickerDialog()

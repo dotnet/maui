@@ -3,14 +3,14 @@ using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class CheckBoxHandler : AbstractViewHandler<ICheckBox, AppCompatCheckBox>
+	public partial class CheckBoxHandler : ViewHandler<ICheckBox, AppCompatCheckBox>
 	{
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
 
 		// This is an Android-specific mapping
 		public static void MapBackgroundColor(CheckBoxHandler handler, ICheckBox check)
 		{
-			handler.TypedNativeView?.UpdateBackgroundColor(check);
+			handler.NativeView?.UpdateBackgroundColor(check);
 		}
 
 		protected override AppCompatCheckBox CreateNativeView()

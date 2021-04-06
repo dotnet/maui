@@ -31,6 +31,17 @@ namespace Microsoft.Maui
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
 
+		public static void UpdateSemantics(this FrameworkElement nativeView, IView view)
+		{
+			var semantics = view.Semantics;
+			if (semantics == null)
+				return;
+
+			AutomationProperties.SetName(nativeView, semantics.Description);
+			AutomationProperties.SetHelpText(nativeView, semantics.Hint);
+			AutomationProperties.SetHeadingLevel(nativeView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
+		}
+    
 		internal static void UpdateProperty(this FrameworkElement nativeControl, DependencyProperty property, Color color)
 		{
 			if (color.IsDefault)

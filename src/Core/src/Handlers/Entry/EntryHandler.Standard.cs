@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : AbstractViewHandler<IEntry, object>
+	public partial class EntryHandler : ViewHandler<IEntry, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

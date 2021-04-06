@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ActivityIndicatorHandlerTests
 	{
 		ProgressBar GetNativeActivityIndicator(ActivityIndicatorHandler activityIndicatorHandler) =>
-			(ProgressBar)activityIndicatorHandler.View;
+			(ProgressBar)activityIndicatorHandler.NativeView;
 
 		bool GetNativeIsRunning(ActivityIndicatorHandler activityIndicatorHandler) =>
 			GetNativeActivityIndicator(activityIndicatorHandler).Visibility == ViewStates.Visible;

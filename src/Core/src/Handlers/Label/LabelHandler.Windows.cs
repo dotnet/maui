@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : AbstractViewHandler<ILabel, FrameworkElement>
+	public partial class LabelHandler : ViewHandler<ILabel, FrameworkElement>
 	{
 		protected TextBlock? TextBlock { get; set; }
 
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 
 			handler.TextBlock?.UpdateFont(label, fontManager);
 		}
-
+    
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) { }
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label) { }

@@ -1,12 +1,15 @@
 using System;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class AbstractViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public abstract partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
-		public void SetFrame(Rectangle rect)
+		FrameworkElement? INativeViewHandler.NativeView => (FrameworkElement?)base.NativeView;
+
+		public override void SetFrame(Rectangle rect)
 		{
-			var nativeView = View;
+			var nativeView = NativeView;
 
 			if (nativeView == null)
 				return;
@@ -18,9 +21,9 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Arrange(new Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
 		}
 
-		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = View;
+			var nativeView = NativeView;
 
 			if (nativeView == null)
 				return Size.Zero;
@@ -36,12 +39,12 @@ namespace Microsoft.Maui.Handlers
 			return new SizeRequest(result);
 		}
 
-		void SetupContainer()
+		protected override void SetupContainer()
 		{
 
 		}
 
-		void RemoveContainer()
+		protected override void RemoveContainer()
 		{
 
 		}

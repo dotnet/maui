@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : AbstractViewHandler<IStepper, Button>
+	public partial class StepperHandler : ViewHandler<IStepper, Button>
 	{
 		protected override Button CreateNativeView() => new Button();
 

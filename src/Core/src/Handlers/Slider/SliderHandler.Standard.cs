@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SliderHandler : AbstractViewHandler<ISlider, object>
+	public partial class SliderHandler : ViewHandler<ISlider, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

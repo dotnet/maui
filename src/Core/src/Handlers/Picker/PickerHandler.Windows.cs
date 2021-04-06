@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : AbstractViewHandler<IPicker, ComboBox>
+	public partial class PickerHandler : ViewHandler<IPicker, ComboBox>
 	{
 		protected override ComboBox CreateNativeView() => new ComboBox();
 
