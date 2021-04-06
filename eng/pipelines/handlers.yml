@@ -277,7 +277,7 @@ stages:
             teamName: Maui
             usePipelineArtifactTasks: false
             targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
-            signedArtifactName: nuget
+            signedArtifactName: nuget-windows
             signedArtifactPath: signed
             displayName: Sign Phase
             condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
