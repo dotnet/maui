@@ -2,7 +2,8 @@
   <Import Project="eng\Version.props" />
   <PropertyGroup>
     <BuildForWinUI Condition="'$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln'">true</BuildForWinUI>
-    <MauiPlatforms>net6.0-android;net6.0-ios;net6.0-maccatalyst</MauiPlatforms>
+    <BuildForNet6 Condition="'$(SolutionFileName)' == 'Microsoft.Maui-net6.sln' or '$(BuildForWinUI)' == 'true'">true</BuildForNet6>
+    <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
     <MauiPlatforms Condition="'$(Packing)' == 'true'">$(MauiPlatforms);net6.0-windows10.0.19041.0</MauiPlatforms>
     <MauiPlatforms Condition="'$(BuildForWinUI)' == 'true'">net6.0-windows10.0.19041.0</MauiPlatforms>
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
@@ -16,12 +17,6 @@
     <Company>Microsoft</Company>
     <Product>Microsoft MAUI</Product>
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
-    <!--
-      Workaround for:
-      https://github.com/xamarin/xamarin-macios/issues/10887
-      https://github.com/xamarin/xamarin-android/issues/5751
-    -->
-    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>
@@ -43,4 +38,8 @@
   <Target Name="GitInfo" />
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
-</Project>
+  
+  <ItemGroup Condition="'$(MSBuildVersion)' != '' AND '$(MSBuildVersion)' &lt; '16.7.0'  ">
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="3.9.0" PrivateAssets="all" />
+  </ItemGroup>
+  </Project>

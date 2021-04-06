@@ -13,8 +13,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
 			{
-				Microsoft.UI.Xaml.Application.Current.Suspending += OnApplicationSuspending;
-				Microsoft.UI.Xaml.Application.Current.Resuming += OnApplicationResuming;
+
+				// TODO WINUI
+				// Microsoft.UI.Xaml.Application.Current.Suspending += OnApplicationSuspending;
+				// Microsoft.UI.Xaml.Application.Current.Resuming += OnApplicationResuming;
 			}
 		}
 

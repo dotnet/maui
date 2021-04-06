@@ -5,7 +5,7 @@
     <RootNamespace>Microsoft.Maui.Resizetizer</RootNamespace>
     <AssemblyName>Microsoft.Maui.Resizetizer</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <IncludeBuildOutput>False</IncludeBuildOutput>
     <NoWarn>$(NoWarn);NU5100;NU5128;</NoWarn>
     <IsTrimmable>false</IsTrimmable>

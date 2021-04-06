@@ -23,8 +23,8 @@ namespace Maui.Controls.Sample.WinUI3
 		public App()
 		{
 			InitializeComponent();
-
-			Suspending += OnSuspending;
+			//TODO WINUI
+			//Suspending += OnSuspending;
 		}
 
 		/// <summary>

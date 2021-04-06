@@ -3,8 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Activation;
 using Windows.UI.StartScreen;
+
+#if WINDOWS_UWP
+using Windows.ApplicationModel.Activation;
+#elif WINDOWS
+using Microsoft.UI.Xaml;
+#endif
 
 namespace Microsoft.Maui.Essentials
 {
@@ -21,9 +26,19 @@ namespace Microsoft.Maui.Essentials
 
         internal static async Task OnLaunched(LaunchActivatedEventArgs e)
         {
-            if (e?.Arguments?.StartsWith(appActionPrefix) ?? false)
+            var args = e?.Arguments;
+#if !WINDOWS_UWP
+            if (string.IsNullOrEmpty(args))
             {
-                var id = ArgumentsToId(e.Arguments);
+                var cliArgs = Environment.GetCommandLineArgs();
+                if (cliArgs?.Length > 1)
+                    args = cliArgs[1];
+            }
+#endif
+
+            if (args?.StartsWith(appActionPrefix) ?? false)
+            {
+                var id = ArgumentsToId(args);
 
                 if (!string.IsNullOrEmpty(id))
                 {
