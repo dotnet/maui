@@ -4,9 +4,9 @@ namespace Microsoft.Maui.Controls
 {
 	public class SemanticProperties
 	{
-		public static readonly BindableProperty DescriptionProperty = BindableProperty.CreateAttached("Description", typeof(string), typeof(SemanticProperties), default(string), propertyChanged : OnHintPropertyChanged);
+		public static readonly BindableProperty DescriptionProperty = BindableProperty.CreateAttached("Description", typeof(string), typeof(SemanticProperties), default(string), propertyChanged : OnDescriptionPropertyChanged);
 
-		public static readonly BindableProperty HintProperty = BindableProperty.CreateAttached("Hint", typeof(string), typeof(SemanticProperties), default(string), propertyChanged: OnDescriptionPropertyChanged);
+		public static readonly BindableProperty HintProperty = BindableProperty.CreateAttached("Hint", typeof(string), typeof(SemanticProperties), default(string), propertyChanged: OnHintPropertyChanged);
 		
 		public static readonly BindableProperty HeadingLevelProperty = BindableProperty.CreateAttached("HeadingLevel", typeof(SemanticHeadingLevel), typeof(SemanticProperties), SemanticHeadingLevel.None, propertyChanged: OnHeadingLevelPropertyChanged);
 
@@ -65,12 +65,12 @@ namespace Microsoft.Maui.Controls
 
 		public static SemanticHeadingLevel GetHeadingLevel(BindableObject bindable)
 		{
-			return (SemanticHeadingLevel)bindable.GetValue(HintProperty);
+			return (SemanticHeadingLevel)bindable.GetValue(HeadingLevelProperty);
 		}
 
 		public static void SetHeadingLevel(BindableObject bindable, SemanticHeadingLevel value)
 		{
-			bindable.SetValue(HintProperty, value);
+			bindable.SetValue(HeadingLevelProperty, value);
 		}
 	}
 }
