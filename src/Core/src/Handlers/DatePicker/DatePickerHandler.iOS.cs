@@ -1,5 +1,6 @@
 ﻿using System;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -86,6 +87,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.TypedNativeView?.UpdateCharacterSpacing(datePicker);
+		}
+
+		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+
+			handler.TypedNativeView?.UpdateFont(datePicker, fontManager);
 		}
 
 		void OnValueChanged(object? sender, EventArgs? e)
