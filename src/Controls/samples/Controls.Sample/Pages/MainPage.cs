@@ -110,8 +110,6 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
 			verticalStack.Add(new CheckBox { IsChecked = true, Color = Color.Aquamarine });
 
-			verticalStack.Add(new DatePicker());
-
 			verticalStack.Add(new Editor());
 			verticalStack.Add(new Editor { Text = "Editor" });
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", MaxLength = 10 });
@@ -178,6 +176,7 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new DatePicker());
 			verticalStack.Add(new DatePicker { CharacterSpacing = 6 });
+			verticalStack.Add(new DatePicker { FontSize = 24 });
 
 			verticalStack.Add(new TimePicker());
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
