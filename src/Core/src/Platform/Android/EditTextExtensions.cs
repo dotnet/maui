@@ -4,7 +4,6 @@ using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Util;
 using AndroidX.AppCompat.Widget;
-using Microsoft.Maui.Platform.Android;
 
 namespace Microsoft.Maui
 {
@@ -139,9 +138,6 @@ namespace Microsoft.Maui
 		{
 			editText.SetInputType(entry);
 		}
-
-		public static void UpdateFont(this AppCompatEditText editText, IEntry entry, IFontManager fontManager) =>
-			editText.UpdateFont(entry.Font, fontManager);
 
 		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEditor editor)
 		{

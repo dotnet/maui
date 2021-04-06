@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Android.Text;
+﻿using Android.Text;
 
-namespace Microsoft.Maui.Platform.Android
+namespace Microsoft.Maui
 {
 	public static class KeyboardExtensions
 	{
@@ -75,10 +72,10 @@ namespace Microsoft.Maui.Platform.Android
 				if (custom.Flags != KeyboardFlags.All)
 				{
 					if (capitalizedWordsEnabled)
-						result = result | InputTypes.TextFlagCapWords;
+						result |= InputTypes.TextFlagCapWords;
 
 					if (capitalizedCharacterEnabled)
-						result = result | InputTypes.TextFlagCapCharacters;
+						result |= InputTypes.TextFlagCapCharacters;
 				}
 			}
 			else
@@ -86,6 +83,7 @@ namespace Microsoft.Maui.Platform.Android
 				// Should never happens
 				result = InputTypes.TextVariationNormal;
 			}
+
 			return result;
 		}
 	}

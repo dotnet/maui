@@ -1,7 +1,5 @@
 using System.Threading.Tasks;
 using System.Linq;
-using System.Threading.Tasks;
-using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Method;
 using Android.Views.InputMethods;

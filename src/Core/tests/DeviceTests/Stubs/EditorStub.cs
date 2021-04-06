@@ -28,10 +28,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsTextPredictionEnabled { get; set; }
 
+		public Keyboard Keyboard { get; set; }
+
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
 
 		void OnTextChanged(string oldValue, string newValue) =>
 			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
-
 	}
 }

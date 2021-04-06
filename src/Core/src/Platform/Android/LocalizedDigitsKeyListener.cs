@@ -4,7 +4,7 @@ using Android.Text.Method;
 using Java.Lang;
 using Java.Text;
 
-namespace Microsoft.Maui.Platform.Android
+namespace Microsoft.Maui
 {
 	public class LocalizedDigitsKeyListener : NumberKeyListener
 	{
@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Platform.Android
 		// but we'll make it easy to localize the sign in the future just in case
 		const char SignCharacter = '-';
 
-		static Dictionary<char, LocalizedDigitsKeyListener>? s_unsignedCache;
-		static Dictionary<char, LocalizedDigitsKeyListener>? s_signedCache;
+		static Dictionary<char, LocalizedDigitsKeyListener>? UnsignedCache;
+		static Dictionary<char, LocalizedDigitsKeyListener>? SignedCache;
 
 		static char GetDecimalSeparator()
 		{
@@ -57,18 +57,18 @@ namespace Microsoft.Maui.Platform.Android
 
 		public static LocalizedDigitsKeyListener GetInstance(InputTypes inputTypes, char decimalSeparator)
 		{
-			if (s_signedCache == null)
-				s_signedCache = new Dictionary<char, LocalizedDigitsKeyListener>();
+			if (SignedCache == null)
+				SignedCache = new Dictionary<char, LocalizedDigitsKeyListener>();
 
 			if ((inputTypes & InputTypes.NumberFlagSigned) != 0)
 			{
-				return GetInstance(inputTypes, decimalSeparator, ref s_signedCache);
+				return GetInstance(inputTypes, decimalSeparator, ref SignedCache);
 			}
 
-			if (s_unsignedCache == null)
-				s_unsignedCache = new Dictionary<char, LocalizedDigitsKeyListener>();
+			if (UnsignedCache == null)
+				UnsignedCache = new Dictionary<char, LocalizedDigitsKeyListener>();
 
-			return GetInstance(inputTypes, decimalSeparator, ref s_unsignedCache);
+			return GetInstance(inputTypes, decimalSeparator, ref UnsignedCache);
 		}
 
 		static LocalizedDigitsKeyListener GetInstance(InputTypes inputTypes, char decimalSeparator, ref Dictionary<char, LocalizedDigitsKeyListener> cache)
@@ -101,12 +101,10 @@ namespace Microsoft.Maui.Platform.Android
 		{
 			if ((InputType & InputTypes.NumberFlagSigned) == 0)
 			{
-				return _acceptedChars ??
-					   (_acceptedChars = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', _decimalSeparator });
+				return _acceptedChars ??= new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', _decimalSeparator };
 			}
 
-			return _acceptedChars ??
-				   (_acceptedChars = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', SignCharacter, _decimalSeparator });
+			return _acceptedChars ??= new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', SignCharacter, _decimalSeparator };
 		}
 
 		static bool IsSignChar(char c)

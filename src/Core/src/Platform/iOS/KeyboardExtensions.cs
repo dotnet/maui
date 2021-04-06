@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Foundation;
-using UIKit;
+﻿using UIKit;
 
-namespace Microsoft.Maui.Platform.iOS
+namespace Microsoft.Maui
 {
-	public static class Extensions
+	public static class KeyboardExtensions
 	{
 		public static void ApplyKeyboard(this IUITextInput textInput, Keyboard keyboard)
 		{
