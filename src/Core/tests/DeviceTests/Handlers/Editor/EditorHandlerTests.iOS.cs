@@ -79,8 +79,11 @@ namespace Microsoft.Maui.DeviceTests
 			return editor.AttributedText.GetCharacterSpacing();
 		}
 
+
 		double GetNativeUnscaledFontSize(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Font.PointSize;
+
+
 
 		bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
 			!GetNativeEditor(editorHandler).UserInteractionEnabled;
