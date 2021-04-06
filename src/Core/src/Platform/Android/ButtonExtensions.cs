@@ -44,7 +44,10 @@ namespace Microsoft.Maui
 			if (context == null)
 				return;
 
-			var padding = defaultPadding ?? new Thickness();
+			// TODO: have a way to use default padding
+			//       Windows keeps the default as a base but this is also wrong.
+			// var padding = defaultPadding ?? new Thickness();
+			var padding = new Thickness();
 			padding.Left += context.ToPixels(button.Padding.Left);
 			padding.Top += context.ToPixels(button.Padding.Top);
 			padding.Right += context.ToPixels(button.Padding.Right);
