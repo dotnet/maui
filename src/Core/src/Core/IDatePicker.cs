@@ -26,5 +26,10 @@ namespace Microsoft.Maui
 		/// Gets the maximum DateTime selectable.
 		/// </summary>
 		DateTime MaximumDate { get; }
+
+		/// <summary>
+		/// Gets the spacing between characters of the text.
+		/// </summary>
+		double CharacterSpacing { get; }
 	}
 }

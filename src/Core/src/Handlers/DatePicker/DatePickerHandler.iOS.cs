@@ -83,6 +83,11 @@ namespace Microsoft.Maui.Handlers
 			handler.TypedNativeView?.UpdateMaximumDate(datePicker, handler._picker);
 		}
 
+		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(datePicker);
+		}
+
 		void OnValueChanged(object? sender, EventArgs? e)
 		{
 			SetVirtualViewDate();

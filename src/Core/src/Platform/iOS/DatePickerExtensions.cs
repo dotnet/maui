@@ -52,5 +52,13 @@ namespace Microsoft.Maui
 				picker.MaximumDate = datePicker.MaximumDate.ToNSDate();
 			}
 		}
+
+		public static void UpdateCharacterSpacing(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
+		{
+			var textAttr = nativeDatePicker.AttributedText?.WithCharacterSpacing(datePicker.CharacterSpacing);
+
+			if (textAttr != null)
+				nativeDatePicker.AttributedText = textAttr;
+		}
 	}
 }

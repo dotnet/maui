@@ -7,7 +7,8 @@
 			[nameof(IDatePicker.Format)] = MapFormat,
 			[nameof(IDatePicker.Date)] = MapDate,
 			[nameof(IDatePicker.MinimumDate)] = MapMinimumDate,
-			[nameof(IDatePicker.MaximumDate)] = MapMaximumDate
+			[nameof(IDatePicker.MaximumDate)] = MapMaximumDate,
+			[nameof(IDatePicker.CharacterSpacing)] = MapCharacterSpacing
 		};
 
 		public DatePickerHandler() : base(DatePickerMapper)
