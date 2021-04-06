@@ -8,6 +8,7 @@
 			[nameof(IEntry.TextColor)] = MapTextColor,
 			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			[nameof(IEntry.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEntry.MaxLength)] = MapMaxLength,
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,

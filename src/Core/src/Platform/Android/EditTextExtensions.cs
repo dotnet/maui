@@ -55,7 +55,12 @@ namespace Microsoft.Maui
 
 		public static void UpdateHorizontalTextAlignment(this AppCompatEditText editText, IEntry entry)
 		{
-			editText.UpdateHorizontalAlignment(entry.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
+			editText.UpdateTextAlignment(entry);
+		}
+
+		public static void UpdateVerticalTextAlignment(this AppCompatEditText editText, IEntry entry)
+		{
+			editText.UpdateTextAlignment(entry);
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this AppCompatEditText editText, IEntry entry)
@@ -231,5 +236,10 @@ namespace Microsoft.Maui
 			currentText?.Length > maxLength
 				? currentText.Substring(0, maxLength)
 				: currentText;
+
+		internal static void UpdateTextAlignment(this AppCompatEditText editText, IEntry entry)
+		{
+			editText.UpdateTextAlignment(entry.HorizontalTextAlignment, entry.VerticalTextAlignment);
+		}
 	}
 }

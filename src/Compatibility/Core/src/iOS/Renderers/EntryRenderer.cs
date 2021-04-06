@@ -263,6 +263,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
+		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
 			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();

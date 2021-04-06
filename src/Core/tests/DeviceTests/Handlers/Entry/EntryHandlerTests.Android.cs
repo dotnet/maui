@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
@@ -84,11 +83,37 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = entry.HorizontalTextAlignment,
-					NativeViewValue = GetNativeTextAlignment(handler)
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
+		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+		public async Task VerticalTextAlignmentInitializesCorrectly()
+		{
+			var xplatVerticalTextAlignment = TextAlignment.End;
+
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				VerticalTextAlignment = xplatVerticalTextAlignment
+			};
+
+			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.Bottom;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.VerticalTextAlignment,
+					NativeViewValue = GetGravityFlags(handler)
+				};
+			});
+
+			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
@@ -139,8 +164,11 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Typeface.IsItalic;
 
-		Android.Views.TextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
+		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
+
+		Android.Views.GravityFlags GetGravityFlags(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).Gravity;
 
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ImeOptions;

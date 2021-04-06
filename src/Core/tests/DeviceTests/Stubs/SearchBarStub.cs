@@ -15,5 +15,7 @@
 		public Font Font { get; set; }
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
+
+		public TextAlignment VerticalTextAlignment { get; set; }
 	}
 }
