@@ -81,16 +81,11 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
+		partial void DisconnectingHandler(NativeView? nativeView);
 		private protected void DisconnectHandler(NativeView? nativeView)
 		{
-#if MONOANDROID
-			if (nativeView.IsAlive() && AccessibilityDelegate != null)
-			{
-				AccessibilityDelegate.Handler = null;
-				AndroidX.Core.View.ViewCompat.SetAccessibilityDelegate(nativeView, null);
-				AccessibilityDelegate = null;
-			}
-#endif
+			DisconnectingHandler(nativeView);
+
 			if (VirtualView != null)
 				VirtualView.Handler = null;
 
@@ -117,11 +112,13 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateAutomationId(view);
 		}
 
-#if !MONOANDROID
+
+		static partial void MappingSemantics(IViewHandler handler, IView view);
+
 		public static void MapSemantics(IViewHandler handler, IView view)
 		{
+			MappingSemantics(handler, view);
 			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
 		}
-#endif
 	}
 }

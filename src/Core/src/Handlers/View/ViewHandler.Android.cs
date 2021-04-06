@@ -12,21 +12,30 @@ namespace Microsoft.Maui.Handlers
 	{
 		MauiAccessibilityDelegate? AccessibilityDelegate { get; set; }
 
-		public static void MapSemantics(IViewHandler handler, IView view)
+		partial void DisconnectingHandler(NativeView? nativeView)
+		{
+			if (nativeView.IsAlive() && AccessibilityDelegate != null)
+			{
+				AccessibilityDelegate.Handler = null;
+				AndroidX.Core.View.ViewCompat.SetAccessibilityDelegate(nativeView, null);
+				AccessibilityDelegate = null;
+			}
+		}
+
+		static partial void MappingSemantics(IViewHandler handler, IView view)
 		{
 			if (view.Semantics != null &&
 				handler is ViewHandler viewHandler &&
 				viewHandler.AccessibilityDelegate == null &&
 				ViewCompat.GetAccessibilityDelegate(handler.NativeView as NativeView) == null)
 			{
-				if(!string.IsNullOrEmpty(view.Semantics.Hint))
+				if (!string.IsNullOrEmpty(view.Semantics.Hint))
 				{
 					viewHandler.AccessibilityDelegate = new MauiAccessibilityDelegate() { Handler = viewHandler };
 					ViewCompat.SetAccessibilityDelegate(handler.NativeView as NativeView, viewHandler.AccessibilityDelegate);
 				}
 			}
 
-			(handler.NativeView as NativeView)?.UpdateSemantics(view);
 		}
 
 		public void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
