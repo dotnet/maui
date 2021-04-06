@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Maui;
 
 namespace Microsoft.Maui
 {
@@ -463,21 +462,20 @@ namespace Microsoft.Maui
 			return FromHsva(h / 360d, s / 100d, v / 100d, 1d);
 		}
 
-#if !NETSTANDARD1_0
-		public static implicit operator System.Drawing.Color(Color color)
+		public static implicit operator global::System.Drawing.Color(Color color)
 		{
 			if (color.IsDefault)
-				return System.Drawing.Color.Empty;
-			return System.Drawing.Color.FromArgb((byte)(color._a * 255), (byte)(color._r * 255), (byte)(color._g * 255), (byte)(color._b * 255));
+				return global::System.Drawing.Color.Empty;
+			return global::System.Drawing.Color.FromArgb((byte)(color._a * 255), (byte)(color._r * 255), (byte)(color._g * 255), (byte)(color._b * 255));
 		}
 
-		public static implicit operator Color(System.Drawing.Color color)
+		public static implicit operator Color(global::System.Drawing.Color color)
 		{
 			if (color.IsEmpty)
 				return Color.Default;
 			return FromRgba(color.R, color.G, color.B, color.A);
 		}
-#endif
+
 		#region Color Definitions
 
 		// matches colors in WPF's System.Windows.Media.Colors

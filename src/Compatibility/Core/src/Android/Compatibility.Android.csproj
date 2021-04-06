@@ -35,6 +35,7 @@
     <Compile Include="..\..\..\..\Controls\src\Core\Crc64.cs" Link="Crc64.cs" />
     <Compile Include="..\..\..\..\Controls\src\Core\StreamWrapper.cs" Link="StreamWrapper.cs" />
     <Compile Include="..\AppHostBuilderExtensions.cs" Link="AppHostBuilderExtensions.cs" />
+    <Compile Include="..\MauiHandlersCollectionExtensions.cs" Link="MauiHandlersCollectionExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Runtime.Serialization" />

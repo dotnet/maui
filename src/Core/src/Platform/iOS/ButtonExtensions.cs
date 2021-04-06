@@ -1,4 +1,3 @@
-using Microsoft.Maui;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -8,8 +7,8 @@ namespace Microsoft.Maui
 		public static void UpdateText(this UIButton nativeButton, IButton button) =>
 			nativeButton.SetTitle(button.Text, UIControlState.Normal);
 
-		public static void UpdateTextColor(this UIButton nativeButton, IButton button)
-			=> nativeButton.UpdateTextColor(button);
+		public static void UpdateTextColor(this UIButton nativeButton, IButton button) =>
+			nativeButton.UpdateTextColor(button);
 
 		public static void UpdateTextColor(this UIButton nativeButton, IButton button, UIColor? buttonTextColorDefaultNormal, UIColor? buttonTextColorDefaultHighlighted, UIColor? buttonTextColorDefaultDisabled)
 		{
@@ -31,6 +30,17 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateCharacterSpacing(this UIButton nativeButton, IButton button)
+		{
+			if (string.IsNullOrEmpty(button.Text))
+				return;
+
+			var textAttr = nativeButton.TitleLabel.AttributedText?.WithCharacterSpacing(button.CharacterSpacing);
+
+			if (textAttr != null)
+				nativeButton.TitleLabel.AttributedText = textAttr;
+		}
+
 		public static void UpdateFont(this UIButton nativeButton, IButton button, IFontManager fontManager)
 		{
 			var uiFont = fontManager.GetFont(button.Font);
@@ -40,10 +50,10 @@ namespace Microsoft.Maui
 		public static void UpdatePadding(this UIButton nativeButton, IButton button)
 		{
 			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
-					(float)button.Padding.Top,
-					(float)button.Padding.Left,
-					(float)button.Padding.Bottom,
-					(float)button.Padding.Right);
+				(float)button.Padding.Top,
+				(float)button.Padding.Left,
+				(float)button.Padding.Bottom,
+				(float)button.Padding.Right);
 		}
 	}
 }

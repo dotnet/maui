@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Controls
 
 		Thickness Maui.IView.Margin => new Thickness();
 
+		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
+
 		void Maui.ILayout.Add(IView child)
 		{
 			Content = (View)child;
@@ -34,8 +36,23 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
+			var width = widthConstraint;
+			var height = heightConstraint;
+
+#if WINDOWS
+			if (double.IsInfinity(width))
+			{
+				width = 800;
+			}
+
+			if (double.IsInfinity(height))
+			{
+				height = 800;
+			}
+#endif
+
 			IsMeasureValid = true;
-			return new Size(widthConstraint, heightConstraint);
+			return new Size(width, height);
 		}
 
 		protected override void ArrangeOverride(Rectangle bounds)
@@ -61,5 +78,7 @@ namespace Microsoft.Maui.Controls
 				layout.ResolveLayoutChanges();
 
 		}
+
+
 	}
 }

@@ -19,5 +19,10 @@
 		/// Gets an enumeration value that controls the appearance of the return button.
 		/// </summary>
 		ReturnType ReturnType { get; }
+
+		/// <summary>
+		/// Gets an enumeration value that shows/hides clear button on the Entry.
+		/// </summary>
+		ClearButtonVisibility ClearButtonVisibility { get; }
 	}
 }

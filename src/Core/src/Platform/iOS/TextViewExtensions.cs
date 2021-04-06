@@ -37,5 +37,16 @@ namespace Microsoft.Maui
 			textView.AutocorrectionType = editor.IsTextPredictionEnabled
 				? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No;
 		}
+
+		public static void UpdateFont(this UITextView textView, IEditor editor, IFontManager fontManager)
+		{
+			var uiFont = fontManager.GetFont(editor.Font);
+			textView.Font = uiFont;
+		}
+
+		public static void UpdateIsReadOnly(this UITextView textView, IEditor editor)
+		{
+			textView.UserInteractionEnabled = !editor.IsReadOnly;
+		}
 	}
 }

@@ -9,8 +9,7 @@
   https://github.com/dotnet/runtime/blob/1be117d8e7c0cd29ebc55cbcff2a7fa70604ed39/eng/common/tools.ps1#L109
 
   .PARAMETER vs
-  The path to Visual Studio, defaults to:
-  "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.exe".
+  The path to Visual Studio or the edition (Community, Enterprise, Preview), defaults to: "Enterprise".
 
   .PARAMETER sln
   The path to a .sln or .project file, defaults to "Microsoft.Maui-net6.sln".
@@ -29,14 +28,23 @@
   PS> .\scripts\dogfood.ps1 -vs "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe"
 
   .EXAMPLE
+  PS> .\scripts\dogfood.ps1 -vs "Preview"
+
+  .EXAMPLE
   PS> .\scripts\dogfood.ps1 -sln .\path\to\MySolution.sln
 #>
 
 param(
-  [string]$vs = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.exe",
+  [string]$vs = "Enterprise",
   [string]$sln,
   [switch]$modify
 )
+
+if ($vs.Contains("\") -Or $vs.Contains("/")) {
+    $realVS = $vs
+} else {
+    $realVS = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\$vs\Common7\IDE\devenv.exe"
+}
 
 $dotnet=Join-Path $PSScriptRoot ../bin/dotnet/
 $dotnet=(Get-Item $dotnet).FullName
@@ -62,6 +70,7 @@ $oldDOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR
 $oldDOTNET_MULTILEVEL_LOOKUP=$env:DOTNET_MULTILEVEL_LOOKUP
 $oldMSBuildEnableWorkloadResolver=$env:MSBuildEnableWorkloadResolver
 $old_ExcludeMauiProjectCapability=$env:_ExcludeMauiProjectCapability
+# $old_MSBuildDisableNodeReuse=$env:MSBuildDisableNodeReuse
 $oldPATH=$env:PATH
 
 try {
@@ -82,11 +91,14 @@ try {
     # This disables the Maui @(ProjectCapability), a temporary workaround for 16.9
     $env:_ExcludeMauiProjectCapability=$true
 
+    # # This tells MSBuild not to keep the process around
+    # $env:MSBuildDisableNodeReuse=1
+
     # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
     $env:PATH=($env:DOTNET_ROOT + ";" + $env:PATH)
 
     # Launch VS
-    & "$vs" "$sln"
+    & "$realVS" "$sln"
 } finally {
     if (-Not $modify) {
         $env:DOTNET_INSTALL_DIR = $oldDOTNET_INSTALL_DIR
@@ -95,6 +107,7 @@ try {
         $env:DOTNET_MULTILEVEL_LOOKUP=$oldDOTNET_MULTILEVEL_LOOKUP
         $env:MSBuildEnableWorkloadResolver=$oldMSBuildEnableWorkloadResolver
         $env:_ExcludeMauiProjectCapability=$old_ExcludeMauiProjectCapability
+        # $env:MSBuildDisableNodeReuse=$oldMSBuildDisableNodeReuse
         $env:PATH=$oldPATH
     }
 }

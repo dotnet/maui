@@ -50,3 +50,12 @@ Implements #
 - [ ] Adds an example of the property to the sample project (MainPage)
 - [ ] Adds the property to the stub class
 - [ ] Implements basic property tests in DeviceTests
+
+#### Does this PR touch anything that might effect accessibility?
+- [ ] APIs that modify focusability?
+- [ ] APIs that modify any text property on a control?
+- [ ] Does this PR modify view nesting or view arragement in anyway?
+- [ ] Is there the smallest possibility that your PR will change accessibility? 
+- [ ] I'm not sure, please help me
+
+If any of the above checkboxes apply to your PR then the PR will need to provide testing to demonstrate that accessibility still works. 

@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
 
 namespace Maui.Controls.Sample
 {
@@ -15,15 +15,15 @@ namespace Maui.Controls.Sample
 
 			Services = services;
 
-			Console.WriteLine($"The .NET Purple color is {Resources["DotNetPurple"]}");
-			Console.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
+			Debug.WriteLine($"The .NET Purple color is {Resources["DotNetPurple"]}");
+			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 		}
 
 		public IServiceProvider Services { get; }
 
 		public override IWindow CreateWindow(IActivationState activationState)
 		{
-			Forms.Init(activationState);
+			Microsoft.Maui.Controls.Compatibility.Forms.Init(activationState);
 
 			return Services.GetRequiredService<IWindow>();
 		}

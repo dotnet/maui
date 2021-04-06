@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 #if DEBUG
 				if (_stream.CanSeek)
-					System.Diagnostics.Debug.Assert(_stream.Position == _currentPosition);
+					global::System.Diagnostics.Debug.Assert(_stream.Position == _currentPosition);
 #endif
 				return _currentPosition;
 			}
@@ -429,7 +429,7 @@ namespace Microsoft.Maui.Controls.Internals
 			if (blockSize >= NetscapeApplicationExtensionID.Length)
 			{
 				var buffer = stream.CurrentBlockBuffer;
-				string identifier = System.Text.Encoding.UTF8.GetString(buffer, 0, NetscapeApplicationExtensionID.Length);
+				string identifier = global::System.Text.Encoding.UTF8.GetString(buffer, 0, NetscapeApplicationExtensionID.Length);
 				if (identifier.Equals(NetscapeApplicationExtensionID, StringComparison.OrdinalIgnoreCase))
 				{
 					await ParseNetscapeApplicationExtensionAsync(stream).ConfigureAwait(false);

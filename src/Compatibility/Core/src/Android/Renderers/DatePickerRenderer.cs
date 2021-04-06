@@ -179,6 +179,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			if (Forms.IsLollipopOrNewer)

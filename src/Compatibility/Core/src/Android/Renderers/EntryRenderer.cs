@@ -552,6 +552,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	}
 
 	// Entry clear button management
+	[PortHandler("Focus management part might need to be reworked after IsFocused implementation.")]
 	public abstract partial class EntryRendererBase<TControl>
 	{
 		Drawable _clearBtn;

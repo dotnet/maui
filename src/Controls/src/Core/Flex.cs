@@ -457,7 +457,7 @@ namespace Microsoft.Maui.Controls.Flex
 			((IEnumerable<Item>)this).GetEnumerator();
 
 		IEnumerator<Item> IEnumerable<Item>.GetEnumerator() =>
-			(Children ?? System.Linq.Enumerable.Empty<Item>()).GetEnumerator();
+			(Children ?? global::System.Linq.Enumerable.Empty<Item>()).GetEnumerator();
 
 		void ValidateChild(Item child)
 		{

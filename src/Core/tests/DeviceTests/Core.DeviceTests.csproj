@@ -16,7 +16,7 @@
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <SharedFont Include="Fonts\*" />
+    <MauiFont Include="Fonts\*" />
   </ItemGroup>
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
 </Project>

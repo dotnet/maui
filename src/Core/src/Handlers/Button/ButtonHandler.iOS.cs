@@ -45,6 +45,11 @@ namespace Microsoft.Maui.Handlers
 			base.SetupDefaults(nativeView);
 		}
 
+		public static void MapBackgroundColor(ButtonHandler handler, IButton button)
+		{
+			handler.TypedNativeView?.UpdateBackgroundColor(button);
+		}
+
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
 			handler.TypedNativeView?.UpdateText(button);
@@ -54,6 +59,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.TypedNativeView?.UpdateTextColor(button, ButtonTextColorDefaultNormal, ButtonTextColorDefaultHighlighted, ButtonTextColorDefaultDisabled);
 		}
+
+		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(button);
+		}
+
 		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
 			handler.TypedNativeView?.UpdatePadding(button);

@@ -105,5 +105,10 @@ namespace Microsoft.Maui
 			var uiFont = fontManager.GetFont(textView.Font);
 			textField.Font = uiFont;
 		}
+
+		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)
+		{
+			textField.ClearButtonMode = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing ? UITextFieldViewMode.WhileEditing : UITextFieldViewMode.Never;
+		}
 	}
 }
