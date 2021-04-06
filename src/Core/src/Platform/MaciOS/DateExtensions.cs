@@ -3,7 +3,7 @@ using Foundation;
 
 namespace Microsoft.Maui
 {
-	public static class DateExtensions
+	public static partial class DateExtensions
 	{
 		internal static DateTime ReferenceDate = new DateTime(2001, 1, 1, 0, 0, 0);
 

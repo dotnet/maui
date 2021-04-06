@@ -33,23 +33,14 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateCharacterSpacing(this TextView textView, IEntry entry) =>
-			UpdateCharacterSpacing(textView, entry.CharacterSpacing);
-
-		public static void UpdateCharacterSpacing(this TextView textView, IEditor editor) =>
-			UpdateCharacterSpacing(textView, editor.CharacterSpacing);
-
-		public static void UpdateCharacterSpacing(this TextView textView, ILabel label) =>
-			UpdateCharacterSpacing(textView, label.CharacterSpacing);
-
-		public static void UpdateCharacterSpacing(this TextView textView, ISearchBar searchBar) =>
-			UpdateCharacterSpacing(textView, searchBar.CharacterSpacing);
+		public static void UpdateCharacterSpacing(this TextView nativeDatePicker, IText text) =>
+			UpdateCharacterSpacing(nativeDatePicker, text.CharacterSpacing);
 
 		public static void UpdateCharacterSpacing(this TextView textView, double characterSpacing) =>
 			textView.LetterSpacing = characterSpacing.ToEm();
 
-		public static void UpdateFont(this TextView textView, ILabel label, IFontManager fontManager) =>
-			UpdateFont(textView, label.Font, fontManager);
+		public static void UpdateFont(this TextView textView, IText text, IFontManager fontManager) =>
+			UpdateFont(textView, text.Font, fontManager);
 
 		public static void UpdateFont(this TextView textView, Font font, IFontManager fontManager)
 		{

@@ -24,8 +24,6 @@ namespace Microsoft.Maui
 		public static void UpdateTextColor(this AppCompatButton appCompatButton, IButton button, XColor defaultColor) =>
 			appCompatButton.SetTextColor(button.TextColor.Cleanse(defaultColor).ToNative());
 
-		public static void UpdateCharacterSpacing(this AppCompatButton appCompatButton, IButton button) =>
-			appCompatButton.LetterSpacing = button.CharacterSpacing.ToEm();
 
 		public static void UpdateFont(this AppCompatButton appCompatButton, IButton button, IFontManager fontManager)
 		{
