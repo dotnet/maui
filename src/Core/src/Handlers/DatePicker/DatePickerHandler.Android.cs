@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(datePicker);
+			handler.NativeView?.UpdateCharacterSpacing(datePicker);
 		}
 
 		void ShowPickerDialog()

@@ -1,9 +1,12 @@
 using System;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
+		FrameworkElement? INativeViewHandler.NativeView => (FrameworkElement?)base.NativeView;
+
 		public override void SetFrame(Rectangle rect)
 		{
 			var nativeView = NativeView;

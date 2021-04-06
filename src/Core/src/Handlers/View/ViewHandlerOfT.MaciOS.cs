@@ -1,4 +1,5 @@
 using Microsoft.Maui;
+using UIKit;
 
 #if __IOS__ || IOS || MACCATALYST
 using NativeColor = UIKit.UIColor;
@@ -10,6 +11,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
+		UIView? INativeViewHandler.NativeView => (UIView?)base.NativeView;
+
 		public override void SetFrame(Rectangle rect)
 		{
 			if (NativeView != null)

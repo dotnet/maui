@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 		void SetVirtualView(IView view);
 		void UpdateValue(string property);
 		void DisconnectHandler();
-		NativeView? NativeView { get; }
+		object? NativeView { get; }
 		IView? VirtualView { get; }
 		bool HasContainer { get; set; }
 		Size GetDesiredSize(double widthConstraint, double heightConstraint);

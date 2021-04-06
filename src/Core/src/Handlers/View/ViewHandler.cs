@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 
 		public IMauiContext? MauiContext { get; private set; }
 
-		public NativeView? NativeView
+		public object? NativeView
 		{
 			get;
 			private protected set;
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract void UpdateValue(string property);
 
-		void IViewHandler.DisconnectHandler() => DisconnectHandler(NativeView);
+		void IViewHandler.DisconnectHandler() => DisconnectHandler(((NativeView?)NativeView));
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
@@ -104,23 +104,23 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsEnabled(IViewHandler handler, IView view)
 		{
-			handler.NativeView?.UpdateIsEnabled(view);
+			((NativeView?)handler.NativeView)?.UpdateIsEnabled(view);
 		}
 
 		public static void MapBackgroundColor(IViewHandler handler, IView view)
 		{
-			handler.NativeView?.UpdateBackgroundColor(view);
+			((NativeView?)handler.NativeView)?.UpdateBackgroundColor(view);
 		}
 
 		public static void MapAutomationId(IViewHandler handler, IView view)
 		{
-			handler.NativeView?.UpdateAutomationId(view);
+			((NativeView?)handler.NativeView)?.UpdateAutomationId(view);
 		}
 
 #if !MONOANDROID
 		public static void MapSemantics(IViewHandler handler, IView view)
 		{
-			handler.NativeView?.UpdateSemantics(view);
+			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
 		}
 #endif
 	}
