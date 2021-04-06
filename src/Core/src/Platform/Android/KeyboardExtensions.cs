@@ -42,6 +42,8 @@ namespace Microsoft.Maui
 				if (!capitalizedSentenceEnabled && !spellcheckEnabled && suggestionsEnabled)
 				{
 					// Due to the nature of android, TextFlagAutoCorrect includes Spellcheck
+
+					// TODO: Port Logger
 					// Log.Warning(null, "On Android, KeyboardFlags.Suggestions enables KeyboardFlags.Spellcheck as well due to a platform limitation.");
 					result = InputTypes.ClassText | InputTypes.TextFlagAutoCorrect;
 				}
