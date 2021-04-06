@@ -90,14 +90,14 @@ parameters:
         vmImage: windows-latest
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
-        artifact: nuget-windows
+        artifact: nuget
       - name: macos
         poolName: 'Azure Pipelines'
         vmImage: macos-latest
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
-        artifact: nuget
+        artifact: nuget-macos
 
 resources:
   repositories:
@@ -276,8 +276,8 @@ stages:
           parameters:
             teamName: Maui
             usePipelineArtifactTasks: false
-            targetFolder: $(Build.ArtifactStagingDirectory)/nuget-windows/signed
-            signedArtifactName: nuget-windows
+            targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+            signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
             condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
