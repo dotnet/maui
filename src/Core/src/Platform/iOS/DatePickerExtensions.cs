@@ -60,5 +60,11 @@ namespace Microsoft.Maui
 			if (textAttr != null)
 				nativeDatePicker.AttributedText = textAttr;
 		}
+
+		public static void UpdateFont(this MauiDatePicker nativeDatePicker, IDatePicker datePicker, IFontManager fontManager)
+		{
+			var uiFont = fontManager.GetFont(datePicker.Font);
+			nativeDatePicker.Font = uiFont;
+		}
 	}
 }

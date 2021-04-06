@@ -1,5 +1,6 @@
 ﻿using System;
 using Android.App;
+using Android.Util;
 
 namespace Microsoft.Maui
 {
@@ -44,6 +45,17 @@ namespace Microsoft.Maui
 		public static void UpdateCharacterSpacing(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
 		{
 			nativeDatePicker.LetterSpacing = datePicker.CharacterSpacing.ToEm();
+		}
+
+		public static void UpdateFont(this MauiDatePicker nativeDatePicker, IDatePicker datePicker, IFontManager fontManager)
+		{
+			var font = datePicker.Font;
+
+			var tf = fontManager.GetTypeface(font);
+			nativeDatePicker.Typeface = tf;
+
+			var sp = fontManager.GetScaledPixel(font);
+			nativeDatePicker.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
 		internal static void SetText(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)

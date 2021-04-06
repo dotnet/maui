@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -87,6 +88,33 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
 		}
 
+		[Theory(DisplayName = "Font Family Initializes Correctly")]
+		[InlineData(null)]
+		[InlineData("monospace")]
+		[InlineData("Dokdo")]
+		public async Task FontFamilyInitializesCorrectly(string family)
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = DateTime.Today,
+				Font = Font.OfSize(family, 10)
+			};
+
+			var handler = await CreateHandlerAsync(datePicker);
+			var nativeDatePicker = GetNativeDatePicker(handler);
+
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+
+			var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
+
+			Assert.Equal(nativeFont, nativeDatePicker.Typeface);
+
+			if (string.IsNullOrEmpty(family))
+				Assert.Equal(fontManager.DefaultTypeface, nativeDatePicker.Typeface);
+			else
+				Assert.NotEqual(fontManager.DefaultTypeface, nativeDatePicker.Typeface);
+		}
+
 		MauiDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
 			(MauiDatePicker)datePickerHandler.NativeView;
 
@@ -117,13 +145,13 @@ namespace Microsoft.Maui.DeviceTests
 		double GetNativeCharacterSpacing(DatePickerHandler datePickerHandler)
 		{
 			var mauiDatePicker = GetNativeDatePicker(datePickerHandler);
+			return mauiDatePicker.LetterSpacing;
+		}
 
-			if (mauiDatePicker != null)
-			{
-				return mauiDatePicker.LetterSpacing;
-			}
-
-			return -1;
+		double GetNativeUnscaledFontSize(DatePickerHandler datePickerHandler)
+		{
+			var mauiDatePicker = GetNativeDatePicker(datePickerHandler);
+			return mauiDatePicker.TextSize / mauiDatePicker.Resources.DisplayMetrics.Density;
 		}
 	}
 }
