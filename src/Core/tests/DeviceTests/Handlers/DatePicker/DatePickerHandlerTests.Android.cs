@@ -145,13 +145,13 @@ namespace Microsoft.Maui.DeviceTests
 		double GetNativeCharacterSpacing(DatePickerHandler datePickerHandler)
 		{
 			var mauiDatePicker = GetNativeDatePicker(datePickerHandler);
+			return mauiDatePicker.LetterSpacing;
+		}
 
-			if (mauiDatePicker != null)
-			{
-				return mauiDatePicker.LetterSpacing;
-			}
-
-			return -1;
+		double GetNativeUnscaledFontSize(DatePickerHandler datePickerHandler)
+		{
+			var mauiDatePicker = GetNativeDatePicker(datePickerHandler);
+			return mauiDatePicker.TextSize / mauiDatePicker.Resources.DisplayMetrics.Density;
 		}
 	}
 }
