@@ -10,11 +10,11 @@
 		/// Gets a value that indicates whether the ActivityIndicator should be visible and animating,
 		/// or hidden.
 		/// </summary>
-		bool IsRunning { get; }
+		bool? IsRunning { get; }
 
 		/// <summary>
 		/// Gets a Color value that defines the display color.
 		/// </summary>
-		Color Color { get; }
+		Color? Color { get; }
 	}
 }

@@ -2,6 +2,6 @@
 {
 	public interface ICheckBox : IView
 	{
-		bool IsChecked { get; set; }
+		bool? IsChecked { get; set; }
 	}
 }

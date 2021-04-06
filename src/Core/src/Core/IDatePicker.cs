@@ -10,26 +10,26 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the format of the date to display to the user. 
 		/// </summary>
-		string Format { get; set; }
+		string? Format { get; set; }
 
 		/// <summary>
 		/// Gets the displayed date.
 		/// </summary>
-		DateTime Date { get; set; }
+		DateTime? Date { get; set; }
 
 		/// <summary>
 		/// Gets the minimum DateTime selectable.
 		/// </summary>
-		DateTime MinimumDate { get; }
+		DateTime? MinimumDate { get; }
 
 		/// <summary>
 		/// Gets the maximum DateTime selectable.
 		/// </summary>
-		DateTime MaximumDate { get; }
+		DateTime? MaximumDate { get; }
 
 		/// <summary>
 		/// Gets the spacing between characters of the text.
 		/// </summary>
-		double CharacterSpacing { get; }
+		double? CharacterSpacing { get; }
 	}
 }

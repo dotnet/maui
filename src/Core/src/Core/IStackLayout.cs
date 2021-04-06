@@ -11,6 +11,6 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Identifies the Spacing between childs.
 		/// </summary>
-		int Spacing { get; }
+		int? Spacing { get; }
 	}
 }

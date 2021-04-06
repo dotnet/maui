@@ -4,7 +4,7 @@
 	{
 		public static void UpdateIsChecked(this MauiCheckBox nativeCheckBox, ICheckBox check)
 		{
-			nativeCheckBox.IsChecked = check.IsChecked;
+			nativeCheckBox.IsChecked = check.IsChecked == true;
 		}
 	}
 }

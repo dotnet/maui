@@ -8,6 +8,6 @@
 		/// <summary>
 		/// Gets the Padding
 		/// </summary>
-		Thickness Padding { get; }
+		Thickness? Padding { get; }
 	}
 }

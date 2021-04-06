@@ -10,21 +10,21 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// The format of the time to display to the user.
 		/// </summary>
-		string Format { get; }
+		string? Format { get; }
 
 		/// <summary>
 		/// Gets the displayed time.
 		/// </summary>
-		TimeSpan Time { get; set; }
+		TimeSpan? Time { get; set; }
 
 		/// <summary>
 		/// Gets the spacing between characters of the text.
 		/// </summary>
-		double CharacterSpacing { get; }
+		double? CharacterSpacing { get; }
 
 		/// <summary>
 		/// Gets the font family, style and size of the font.
 		/// </summary>
-		Font Font { get; }
+		Font? Font { get; }
 	}
 }

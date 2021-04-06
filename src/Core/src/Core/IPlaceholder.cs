@@ -8,6 +8,6 @@
 		/// <summary>
 		/// Gets the placeholder or hint text.
 		/// </summary>
-		string Placeholder { get; }
+		string? Placeholder { get; }
 	}
 }

@@ -8,16 +8,16 @@
 		/// <summary>
 		/// Gets or sets the minimum selectable value.
 		/// </summary>
-		double Minimum { get; }
+		double? Minimum { get; }
 
 		/// <summary>
 		/// Gets or sets the maximum selectable value.
 		/// </summary>
-		double Maximum { get; }
+		double? Maximum { get; }
 
 		/// <summary>
 		/// Gets or sets the current value.
 		/// </summary>
-		double Value { get; set; }
+		double? Value { get; set; }
 	}
 }

@@ -4,7 +4,7 @@
 	{
 		public static void UpdateIsRunning(this MauiActivityIndicator activityIndicatorView, IActivityIndicator activityIndicator)
 		{
-			if (activityIndicator.IsRunning)
+			if (activityIndicator.IsRunning == true)
 				activityIndicatorView.StartAnimating();
 			else
 				activityIndicatorView.StopAnimating();

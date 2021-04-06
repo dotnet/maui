@@ -10,6 +10,6 @@
 		/// Is a value that represents the current progress as a value from 0 to 1. 
 		/// Progress values less than 0 will be clamped to 0, values greater than 1 will be clamped to 1.
 		/// </summary>
-		double Progress { get; }
+		double? Progress { get; }
 	}
 }

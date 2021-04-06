@@ -10,27 +10,27 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets a value indicating whether this FrameworkElement is enabled in the user interface. 
 		/// </summary>
-		bool IsEnabled { get; }
+		bool? IsEnabled { get; }
 
 		/// <summary>
 		/// Gets the color which will fill the background of a FrameworkElement.
 		/// </summary>
-		Color BackgroundColor { get; }
+		Color? BackgroundColor { get; }
 
 		/// <summary>
 		/// Gets the bounds of the FrameworkElement.
 		/// </summary>
-		Rectangle Frame { get; }
+		Rectangle? Frame { get; }
 
 		/// <summary>
 		/// Gets the current rendered width of this FrameworkElement. 
 		/// </summary>
-		double Width { get; }
+		double? Width { get; }
 
 		/// <summary>
 		/// Gets the current rendered height of this FrameworkElement. 
 		/// </summary>
-		double Height { get; }
+		double? Height { get; }
 
 		/// <summary>
 		/// Gets or sets the View Handler of the FrameworkElement.
@@ -59,17 +59,17 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the current rendered Size of this FrameworkElement. 
 		/// </summary>
-		Size DesiredSize { get; }
+		Size? DesiredSize { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the current size returned by layout measure is valid.
 		/// </summary>
-		bool IsMeasureValid { get; }
+		bool? IsMeasureValid { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the computed size and position of child elements in this element's layout are valid.
 		/// </summary>
-		bool IsArrangeValid { get; }
+		bool? IsArrangeValid { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the computed size and position of child elements in this element's layout are valid.
@@ -84,21 +84,21 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Id used by automation tools to interact with this FrameworkElement
 		/// </summary>
-		string AutomationId { get; }
+		string? AutomationId { get; }
 
 		/// <summary>
 		/// Direction in which the UI elements on the page are scanned by the eye
 		/// </summary>
-		FlowDirection FlowDirection { get; }
+		FlowDirection? FlowDirection { get; }
 
 		/// <summary>
 		/// Determines the horizontal aspect of this element's arrangement in a container
 		/// </summary>
-		LayoutAlignment HorizontalLayoutAlignment { get; }
+		LayoutAlignment? HorizontalLayoutAlignment { get; }
 
 		/// <summary>
 		/// Determines the vertical aspect of this element's arrangement in a container
 		/// </summary>
-		LayoutAlignment VerticalLayoutAlignment { get; }
+		LayoutAlignment? VerticalLayoutAlignment { get; }
 	}
 }

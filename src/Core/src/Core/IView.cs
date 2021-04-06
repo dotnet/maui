@@ -8,6 +8,6 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// The Margin represents the distance between an view and its adjacent views.
 		/// </summary>
-		Thickness Margin { get; }
+		Thickness? Margin { get; }
 	}
 }

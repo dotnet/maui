@@ -8,17 +8,17 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets or sets the color of the portion of the slider track that contains the minimum value of the slider.
 		/// </summary>
-		Color MinimumTrackColor { get; }
+		Color? MinimumTrackColor { get; }
 
 		/// <summary>
 		/// Gets or sets the color of the portion of the slider track that contains the maximum value of the slider.
 		/// </summary>
-		Color MaximumTrackColor { get; }
+		Color? MaximumTrackColor { get; }
 
 		/// <summary>
 		/// Gets or sets the color of the slider thumb button.
 		/// </summary>
-		Color ThumbColor { get; }
+		Color? ThumbColor { get; }
 
 		/// <summary>
 		/// Notify when drag starts.

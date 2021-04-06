@@ -8,6 +8,6 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets or sets the view that contains the content of the Page.
 		/// </summary>
-		public IView View { get; set; }
+		IView? View { get; set; }
 	}
 }

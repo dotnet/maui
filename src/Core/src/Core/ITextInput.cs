@@ -8,16 +8,16 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets or sets the text.
 		/// </summary>
-		new string Text { get; set; }
+		new string? Text { get; set; }
 
 		/// <summary>
 		/// Gets a value indicating whether or not the view is read-only.
 		/// </summary>
-		bool IsReadOnly { get; }
+		bool? IsReadOnly { get; }
 
 		/// <summary>
 		/// Gets the maximum allowed length of input.
 		/// </summary>
-		int MaxLength { get; }
+		int? MaxLength { get; }
 	}
 }
