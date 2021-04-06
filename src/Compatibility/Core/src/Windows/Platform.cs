@@ -147,7 +147,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			InitializeStatusBar();
 
 			SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
-			Microsoft.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
+
+			// TODO WINUI
+			// Microsoft.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
 		}
 
 		async void OnResumingAsync(object sender, object e)

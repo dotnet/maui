@@ -1,9 +1,9 @@
 <Project>
   <!--Package versions-->
   <PropertyGroup>
-    <MicrosoftNETSdkPackageVersion>6.0.100-preview.3.21168.18</MicrosoftNETSdkPackageVersion>
-    <MicrosoftAndroidSdkPackageVersion>11.0.200-ci.main.175</MicrosoftAndroidSdkPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>14.3.100-ci.main.416</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>14.4.100-ci.main.1271</MicrosoftiOSSdkPackageVersion>
+    <MicrosoftNETSdkPackageVersion>6.0.100-preview.3.21201.23</MicrosoftNETSdkPackageVersion>
+    <MicrosoftAndroidSdkPackageVersion>11.0.200-preview.3.195</MicrosoftAndroidSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>14.3.100-ci.main.465</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>14.4.100-ci.main.1320</MicrosoftiOSSdkPackageVersion>
   </PropertyGroup>
 </Project>
