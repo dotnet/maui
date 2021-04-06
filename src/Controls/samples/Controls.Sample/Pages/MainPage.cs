@@ -97,6 +97,8 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new Button { Text = "Default" });
 			verticalStack.Add(new Button { Text = "0 Padding", Padding = 0 });
+			verticalStack.Add(new Button { Text = "NaN Padding", Padding = double.NaN });
+			verticalStack.Add(new Button { Text = "NaN,0,0,0 Padding", Padding = new Thickness(double.NaN, 0, 0, 0) });
 			verticalStack.Add(new Button
 			{
 				Padding = new Thickness(40),

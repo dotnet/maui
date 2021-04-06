@@ -49,11 +49,7 @@ namespace Microsoft.Maui
 
 		public static void UpdatePadding(this UIButton nativeButton, IButton button)
 		{
-			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
-				(float)button.Padding.Top,
-				(float)button.Padding.Left,
-				(float)button.Padding.Bottom,
-				(float)button.Padding.Right);
+			nativeButton.ContentEdgeInsets = button.Padding.ToNative();
 		}
 	}
 }
