@@ -4,6 +4,6 @@
 	{
 		Font? _font;
 
-		Font IDatePicker.Font => _font ??= Font.OfSize(FontFamily, FontSize).WithAttributes(FontAttributes);
+		Font ITextStyle.Font => _font ??= Font.OfSize(FontFamily, FontSize).WithAttributes(FontAttributes);
 	}
 }

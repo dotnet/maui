@@ -7,8 +7,13 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override ToggleSwitch CreateNativeView() => new ToggleSwitch();
 
+		[MissingMapper]
 		public static void MapIsToggled(SwitchHandler handler, ISwitch view) { }
+
+		[MissingMapper]
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view) { }
+
+		[MissingMapper]
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view) { }
 	}
 }

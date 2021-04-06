@@ -75,5 +75,8 @@ namespace Microsoft.Maui.Handlers
 
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
+
+		[MissingMapper]
+		public static void MapTextColor(EditorHandler handler, IEditor editor) { }
 	}
 }

@@ -41,7 +41,7 @@ namespace Microsoft.Maui
 			AutomationProperties.SetHelpText(nativeView, semantics.Hint);
 			AutomationProperties.SetHeadingLevel(nativeView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
 		}
-    
+
 		internal static void UpdateProperty(this FrameworkElement nativeControl, DependencyProperty property, Color color)
 		{
 			if (color.IsDefault)

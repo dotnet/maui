@@ -69,6 +69,9 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(timePicker, fontManager);
 		}
 
+		[MissingMapper]
+		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker) { }
+
 		void ShowPickerDialog()
 		{
 			if (VirtualView == null)

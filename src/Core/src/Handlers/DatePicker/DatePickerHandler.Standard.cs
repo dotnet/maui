@@ -12,5 +12,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker) { }
 		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker) { }
 		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker) { }
 	}
 }

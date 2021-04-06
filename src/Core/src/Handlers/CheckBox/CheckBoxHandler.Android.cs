@@ -7,12 +7,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
 
-		// This is an Android-specific mapping
-		public static void MapBackgroundColor(CheckBoxHandler handler, ICheckBox check)
-		{
-			handler.NativeView?.UpdateBackgroundColor(check);
-		}
-
 		protected override AppCompatCheckBox CreateNativeView()
 		{
 			var nativeCheckBox = new AppCompatCheckBox(Context)
@@ -35,6 +29,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			ChangeListener.Handler = null;
 			nativeView.SetOnCheckedChangeListener(null);
+		}
+
+		// This is an Android-specific mapping
+		public static void MapBackgroundColor(CheckBoxHandler handler, ICheckBox check)
+		{
+			handler.NativeView?.UpdateBackgroundColor(check);
+		}
+
+		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
+		{
+			handler.NativeView?.UpdateIsChecked(check);
 		}
 
 		void OnCheckedChanged(bool isChecked)

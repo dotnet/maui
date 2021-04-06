@@ -83,6 +83,9 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(datePicker, fontManager);
 		}
 
+		[MissingMapper]
+		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker) { }
+
 		void ShowPickerDialog()
 		{
 			if (VirtualView == null)

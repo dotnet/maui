@@ -9,5 +9,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray
 		};
+
+		public static void MapIsRunning(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		{
+			handler.NativeView?.UpdateIsRunning(activityIndicator);
+		}
+
+		public static void MapColor(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		{
+			handler.NativeView?.UpdateColor(activityIndicator);
+		}
 	}
 }

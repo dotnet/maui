@@ -7,11 +7,22 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override Slider CreateNativeView() => new Slider();
 
+		[MissingMapper]
 		public static void MapMinimum(IViewHandler handler, ISlider slider) { }
+
+		[MissingMapper]
 		public static void MapMaximum(IViewHandler handler, ISlider slider) { }
+
+		[MissingMapper]
 		public static void MapValue(IViewHandler handler, ISlider slider) { }
+
+		[MissingMapper]
 		public static void MapMinimumTrackColor(IViewHandler handler, ISlider slider) { }
+
+		[MissingMapper]
 		public static void MapMaximumTrackColor(IViewHandler handler, ISlider slider) { }
+
+		[MissingMapper]
 		public static void MapThumbColor(IViewHandler handler, ISlider slider) { }
 	}
 }

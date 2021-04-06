@@ -28,6 +28,11 @@ namespace Microsoft.Maui.Handlers
 			nativeView.CheckedChanged -= OnCheckedChanged;
 		}
 
+		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
+		{
+			handler.NativeView?.UpdateIsChecked(check);
+		}
+
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var size = base.GetDesiredSize(widthConstraint, heightConstraint);

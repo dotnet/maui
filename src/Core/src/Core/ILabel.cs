@@ -20,6 +20,7 @@ namespace Microsoft.Maui
 		/// Underline and strike-through text decorations can be applied.
 		/// </summary>
 		TextDecorations TextDecorations { get; }
+
 		/// <summary>
 		/// Gets the line height applied to the Label.
 		/// Underline and strike-through text decorations can be applied.

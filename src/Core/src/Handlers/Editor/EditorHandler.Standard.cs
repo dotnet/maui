@@ -14,5 +14,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) { }
 		public static void MapFont(IViewHandler handler, IEditor editor) { }
 		public static void MapIsReadOnly(IViewHandler handler, IEditor editor) { }
+		public static void MapTextColor(EditorHandler handler, IEditor editor) { }
 	}
 }

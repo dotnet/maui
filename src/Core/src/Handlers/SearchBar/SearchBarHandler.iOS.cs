@@ -47,5 +47,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
 		}
+
+		[MissingMapper]
+		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
+
+		[MissingMapper]
+		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
+
+		[MissingMapper]
+		public static void MapMaxLength(IViewHandler handler, ISearchBar searchBar) { }
+
+		[MissingMapper]
+		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
 	}
 }

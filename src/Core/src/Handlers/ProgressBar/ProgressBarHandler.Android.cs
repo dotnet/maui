@@ -13,5 +13,10 @@ namespace Microsoft.Maui.Handlers
 				Max = ProgressBarExtensions.Maximum
 			};
 		}
+
+		public static void MapProgress(ProgressBarHandler handler, IProgress progress)
+		{
+			handler.NativeView?.UpdateProgress(progress);
+		}
 	}
 }

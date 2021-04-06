@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a View for selecting a text item from a list of data.
 	/// </summary>
-	public interface IPicker : IView
+	public interface IPicker : IView, ITextStyle
 	{
 		/// <summary>
 		/// Gets the title for the Picker.
@@ -32,10 +32,5 @@ namespace Microsoft.Maui
 		/// Gets the selected item.
 		/// </summary>
 		object? SelectedItem { get; set; }
-
-		/// <summary>
-		/// Gets the character spacing.
-		/// </summary>
-		double CharacterSpacing { get; set; }
 	}
 }
