@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : AbstractViewHandler<IButton, AppCompatButton>
 	{
+		static Thickness? DefaultPadding;
+
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
 
@@ -19,6 +21,17 @@ namespace Microsoft.Maui.Handlers
 			};
 
 			return nativeButton;
+		}
+
+		protected override void SetupDefaults(AppCompatButton nativeView)
+		{
+			DefaultPadding = new Thickness(
+				nativeView.PaddingLeft,
+				nativeView.PaddingTop,
+				nativeView.PaddingRight,
+				nativeView.PaddingBottom);
+
+			base.SetupDefaults(nativeView);
 		}
 
 		protected override void ConnectHandler(AppCompatButton nativeView)
@@ -74,10 +87,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdatePadding(button);
+			handler.TypedNativeView?.UpdatePadding(button, DefaultPadding);
 		}
 
-		public bool OnTouch(IButton? button, AView? v, MotionEvent? e)
+		bool OnTouch(IButton? button, AView? v, MotionEvent? e)
 		{
 			switch (e?.ActionMasked)
 			{
@@ -92,12 +105,12 @@ namespace Microsoft.Maui.Handlers
 			return false;
 		}
 
-		public void OnClick(IButton? button, AView? v)
+		void OnClick(IButton? button, AView? v)
 		{
 			button?.Clicked();
 		}
 
-		public class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener
+		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener
 		{
 			public ButtonHandler? Handler { get; set; }
 
@@ -107,7 +120,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public class ButtonTouchListener : Java.Lang.Object, AView.IOnTouchListener
+		class ButtonTouchListener : Java.Lang.Object, AView.IOnTouchListener
 		{
 			public ButtonHandler? Handler { get; set; }
 
