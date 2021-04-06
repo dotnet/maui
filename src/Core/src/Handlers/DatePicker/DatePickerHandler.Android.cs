@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(datePicker, fontManager);
+			handler.NativeView?.UpdateFont(datePicker, fontManager);
 		}
 
 		void ShowPickerDialog()
