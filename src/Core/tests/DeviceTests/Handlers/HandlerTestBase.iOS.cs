@@ -27,5 +27,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected string GetSemanticHint(IViewHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityHint;
+
+		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
+			((UIView)viewHandler.NativeView).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header) 
+				? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 	}
 }

@@ -40,5 +40,15 @@ namespace Microsoft.Maui.DeviceTests
 			var id = await GetValueAsync((IView)view, handler => GetSemanticDescription(handler));
 			Assert.Equal(view.Semantics.Description, id);
 		}
+
+		[Fact(DisplayName = "Semantic Heading is set correctly")]
+		[InlineData()]
+		public async Task SetSemanticHeading()
+		{
+			var view = new TStub();
+			view.Semantics.HeadingLevel = SemanticHeadingLevel.Level1;
+			var id = await GetValueAsync((IView)view, handler => GetSemanticHeading(handler));
+			Assert.Equal(view.Semantics.HeadingLevel, id);
+		}
 	}
 }
