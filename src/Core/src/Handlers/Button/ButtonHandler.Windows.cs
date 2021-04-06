@@ -59,6 +59,8 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateTextColor(button, DefaultForeground);
 		}
 
+		public static void MapCharacterSpacing(ButtonHandler handler, IButton button) { }
+
 		public static void MapFont(ButtonHandler handler, IButton button)
 		{
 			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");

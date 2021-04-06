@@ -41,6 +41,11 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateCharacterSpacing(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
+		{
+			nativeDatePicker.LetterSpacing = datePicker.CharacterSpacing.ToEm();
+		}
+
 		internal static void SetText(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
 		{
 			nativeDatePicker.Text = datePicker.Date.ToString(datePicker.Format);

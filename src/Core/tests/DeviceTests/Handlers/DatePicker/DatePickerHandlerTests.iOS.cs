@@ -61,6 +61,30 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue);
 		}
 
+		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			var xplatCharacterSpacing = 4;
+
+			var datePicker = new DatePickerStub()
+			{
+				CharacterSpacing = xplatCharacterSpacing,
+				Date = DateTime.Today
+			};
+
+			var values = await GetValueAsync(datePicker, (handler) =>
+			{
+				return new
+				{
+					ViewValue = datePicker.CharacterSpacing,
+					NativeViewValue = GetNativeCharacterSpacing(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
+		}
+
 		MauiDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
 			(MauiDatePicker)datePickerHandler.NativeView;
 
@@ -86,6 +110,12 @@ namespace Microsoft.Maui.DeviceTests
 			var maxDate = dialog.MaximumDate;
 
 			return maxDate.ToDateTime();
+		}
+
+		double GetNativeCharacterSpacing(DatePickerHandler datePickerHandler)
+		{
+			var mauiDatePicker = GetNativeDatePicker(datePickerHandler);
+			return mauiDatePicker.AttributedText.GetCharacterSpacing();
 		}
 	}
 }

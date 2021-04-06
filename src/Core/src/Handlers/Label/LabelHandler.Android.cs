@@ -74,6 +74,7 @@ namespace Microsoft.Maui.Handlers
 
 			handler.NativeView?.UpdateFont(label, fontManager);
 		}
+
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
 			handler.NativeView?.UpdateLineHeight(label, LineSpacingAddDefault, LineSpacingMultDefault);

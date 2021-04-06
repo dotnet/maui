@@ -8,7 +8,7 @@ using Google.Android.Material.AppBar;
 
 namespace Microsoft.Maui
 {
-	public class MauiAppCompatActivity : AppCompatActivity
+	public partial class MauiAppCompatActivity : AppCompatActivity
 	{
 		protected override void OnCreate(Bundle? savedInstanceState)
 		{

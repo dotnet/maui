@@ -10,5 +10,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker) { }
 		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker) { }
 		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker) { }
 	}
 }

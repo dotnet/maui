@@ -9,6 +9,31 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonHandlerTests
 	{
+		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			string originalText = "Test";
+			var xplatCharacterSpacing = 4;
+
+			var button = new ButtonStub()
+			{
+				CharacterSpacing = xplatCharacterSpacing,
+				Text = originalText
+			};
+
+			var values = await GetValueAsync(button, (handler) =>
+			{
+				return new
+				{
+					ViewValue = button.CharacterSpacing,
+					NativeViewValue = GetNativeCharacterSpacing(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
+		}
+
 		[Theory(DisplayName = "Font Family Initializes Correctly")]
 		[InlineData(null)]
 		[InlineData("Times New Roman")]
@@ -79,5 +104,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsItalic(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).TitleLabel.Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
+
+		double GetNativeCharacterSpacing(ButtonHandler buttonHandler)
+		{
+			var button = GetNativeButton(buttonHandler);
+
+			var attributedText = button.TitleLabel.AttributedText;
+
+			return attributedText.GetCharacterSpacing();
+		}
 	}
 }
