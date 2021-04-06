@@ -276,7 +276,7 @@ stages:
           parameters:
             teamName: Maui
             usePipelineArtifactTasks: false
-            targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+            targetFolder: $(Build.ArtifactStagingDirectory)/nuget-windows/signed
             signedArtifactName: nuget-windows
             signedArtifactPath: signed
             displayName: Sign Phase
