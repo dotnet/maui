@@ -132,10 +132,9 @@ namespace Microsoft.Maui.Controls
 			get => _semantics;
 		}
 
-		internal Semantics SetupSemantics()
-		{
-			_semantics = _semantics ?? new Semantics();
-			return _semantics;
-		}
+		// We don't want to initialize Semantics until someone explicitly 
+		// wants to modify some aspect of the semantics class
+		internal Semantics SetupSemantics() => 
+			_semantics ??= new Maui.Semantics();
 	}
 }

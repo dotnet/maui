@@ -12,6 +12,11 @@ namespace Microsoft.Maui
 		{
 		}
 
+		/// <summary>
+		/// WinUI: Sets the heading level of the element
+		/// Other: Supports only one heading level, so setting this to 
+		/// any level will enable it as a heading.
+		/// </summary>
 		public SemanticHeadingLevel HeadingLevel { get; set; } = SemanticHeadingLevel.None;
 
 		public override string ToString()
