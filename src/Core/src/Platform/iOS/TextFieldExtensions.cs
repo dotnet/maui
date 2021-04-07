@@ -86,6 +86,10 @@ namespace Microsoft.Maui
 			var keyboard = entry.Keyboard;
 
 			textField.ApplyKeyboard(keyboard);
+
+			if (keyboard is not CustomKeyboard)
+				textField.UpdateIsTextPredictionEnabled(entry);
+
 			textField.ReloadInputViews();
 		}
 

@@ -16,7 +16,7 @@
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
 
-		public bool IsTextPredictionEnabled { get; set; }
+		public bool IsTextPredictionEnabled { get; set; } = true;
 
 		public bool IsReadOnly { get; set; }
 
