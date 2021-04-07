@@ -79,21 +79,30 @@ namespace Microsoft.Maui
 		public static void UpdateMaxLength(this AppCompatEditText editText, int maxLength)
 		{
 			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
+			var changed = false;
 
 			for (var i = 0; i < currentFilters.Count; i++)
 			{
 				if (currentFilters[i] is InputFilterLengthFilter)
 				{
 					currentFilters.RemoveAt(i);
+					changed = true;
 					break;
 				}
 			}
 
-			currentFilters.Add(new InputFilterLengthFilter(maxLength));
+			if (maxLength > 0)
+			{
+				currentFilters.Add(new InputFilterLengthFilter(maxLength));
+				changed = true;
+			}
 
-			editText.SetFilters(currentFilters.ToArray());
+			if (changed)
+				editText.SetFilters(currentFilters.ToArray());
 
-			editText.Text = TrimToMaxLength(editText.Text, maxLength);
+			var newText = TrimToMaxLength(editText.Text, maxLength);
+			if (editText.Text != newText)
+				editText.Text = newText;
 		}
 
 		public static void UpdatePlaceholder(this AppCompatEditText editText, IPlaceholder textInput)
@@ -204,7 +213,7 @@ namespace Microsoft.Maui
 		}
 
 		internal static string? TrimToMaxLength(string? currentText, int maxLength) =>
-			currentText?.Length > maxLength
+			maxLength >= 0 && currentText?.Length > maxLength
 				? currentText.Substring(0, maxLength)
 				: currentText;
 	}
