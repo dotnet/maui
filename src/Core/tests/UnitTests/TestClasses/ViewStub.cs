@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Primitives;
 
-namespace Microsoft.Maui.Tests
+namespace Microsoft.Maui.UnitTests
 {
 	class ViewStub : IViewStub
 	{

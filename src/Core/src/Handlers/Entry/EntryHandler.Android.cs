@@ -95,9 +95,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFont(EntryHandler handler, IEntry entry)
 		{
-			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
-
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.NativeView?.UpdateFont(entry, fontManager);
 		}

@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Tests;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests
