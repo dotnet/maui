@@ -2,7 +2,6 @@
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
-using Android.Util;
 using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
@@ -29,7 +28,7 @@ namespace Microsoft.Maui
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
-		public static void UpdateTextColor(this AppCompatEditText editText, IEntry entry, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
 			var textColor = entry.TextColor;
 			if (textColor.IsDefault)
@@ -143,17 +142,6 @@ namespace Microsoft.Maui
 			editText.SetCursorVisible(isReadOnly);
 		}
 
-		public static void UpdateFont(this AppCompatEditText editText, IEntry entry, IFontManager fontManager)
-		{
-			var font = entry.Font;
-
-			var tf = fontManager.GetTypeface(font);
-			editText.Typeface = tf;
-
-			var sp = fontManager.GetScaledPixel(font);
-			editText.SetTextSize(ComplexUnitType.Sp, sp);
-		}
-
 		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Drawable? ClearButtonDrawable)
 		{
 			// Places clear button drawable at the end or start of the EditText based on FlowDirection.
@@ -192,21 +180,9 @@ namespace Microsoft.Maui
 			}
 		}
 
-
 		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.ImeOptions = entry.ReturnType.ToNative();
-		}
-
-		public static void UpdateFont(this AppCompatEditText editText, IEditor editor, IFontManager fontManager)
-		{
-			var font = editor.Font;
-
-			var tf = fontManager.GetTypeface(font);
-			editText.Typeface = tf;
-
-			var sp = fontManager.GetScaledPixel(font);
-			editText.SetTextSize(Android.Util.ComplexUnitType.Sp, sp);
 		}
 
 		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
