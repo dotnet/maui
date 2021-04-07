@@ -40,17 +40,12 @@ namespace Microsoft.Maui
 
 		public static void UpdateLineBreakMode(this UILabel nativeLabel, ILabel label)
 		{
-			SetLineBreakMode(nativeLabel, label);
+			nativeLabel.SetLineBreakMode(label);
 		}
 
 		public static void UpdateMaxLines(this UILabel nativeLabel, ILabel label)
 		{
-			int maxLines = label.MaxLines;
-
-			if (maxLines >= 0)
-			{
-				nativeLabel.Lines = maxLines;
-			}
+			nativeLabel.SetLineBreakMode(label);
 		}
 
 		public static void UpdatePadding(this MauiLabel nativeLabel, ILabel label)

@@ -78,9 +78,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLines(this TextView textView, ILabel label)
 		{
-			int maxLinex = label.MaxLines;
-
-			textView.SetMaxLines(maxLinex);
+			textView.SetLineBreakMode(label);
 		}
 
 		public static void UpdatePadding(this TextView textView, ILabel label)
