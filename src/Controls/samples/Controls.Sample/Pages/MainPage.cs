@@ -114,7 +114,12 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Button { Text = "CharacterSpacing" });
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 
-			verticalStack.Add(new CheckBox());
+			var checkbox = new CheckBox();
+			checkbox.CheckedChanged += (sender, e) =>
+			{
+				Debug.WriteLine($"Checked Changed to '{e.Value}'");
+			};
+			verticalStack.Add(checkbox);
 			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
 			verticalStack.Add(new CheckBox { IsChecked = true, Color = Color.Aquamarine });
 

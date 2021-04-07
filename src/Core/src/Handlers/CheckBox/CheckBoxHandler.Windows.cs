@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(nativeView);
 
 			nativeView.Checked += OnChecked;
+			nativeView.Unchecked += OnChecked;
 		}
 
 		protected override void DisconnectHandler(CheckBox nativeView)
@@ -19,6 +20,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 
 			nativeView.Checked -= OnChecked;
+			nativeView.Unchecked -= OnChecked;
 		}
 
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
