@@ -166,7 +166,8 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeEntry = GetNativeEntry(entryHandler);
 
 			return nativeEntry.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
-				nativeEntry.AutocorrectionType == UITextAutocorrectionType.Yes;
+				nativeEntry.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				nativeEntry.SpellCheckingType == UITextSpellCheckingType.No;
 		}
 
 		double GetNativeUnscaledFontSize(EntryHandler entryHandler) =>
