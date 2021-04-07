@@ -154,6 +154,9 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || NativeView == null)
 				return false;
 
+			if (VirtualView.MaxLength < 0)
+				return true;
+
 			var addLength = replacementString?.Length ?? 0;
 			var remLength = range.Length;
 
