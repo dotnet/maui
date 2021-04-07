@@ -22,6 +22,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.NativeView?.UpdateText(searchBar);
+
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, searchBar);
 		}
 
 		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
@@ -46,6 +49,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
+		}
+
+		public static void MapFormatting(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			// Update all of the attributed text formatting properties
+			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
+
+			// Setting any of those may have removed text alignment settings,
+			// so we need to make sure those are applied, too
+			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
 		}
 
 		[MissingMapper]

@@ -48,6 +48,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
 			handler.NativeView?.UpdateText(button);
+
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, button);
 		}
 
 		public static void MapTextColor(ButtonHandler handler, IButton button)
@@ -57,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(button);
+			MapFormatting(handler, button);
 		}
 
 		public static void MapPadding(ButtonHandler handler, IButton button)
@@ -72,6 +75,12 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
 			handler.NativeView?.UpdateFont(button, fontManager);
+		}
+
+		public static void MapFormatting(ButtonHandler handler, IButton button)
+		{
+			// Update all of the attributed text formatting properties
+			handler.NativeView?.UpdateCharacterSpacing(button);
 		}
 
 		void SetControlPropertiesFromProxy()
