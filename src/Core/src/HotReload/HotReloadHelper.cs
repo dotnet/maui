@@ -65,10 +65,11 @@ namespace Microsoft.Maui.HotReload
 				TransferState(view, newView);
 				return newView;
 			}
-			catch (MissingMethodException ex)
+			catch (MissingMethodException)
 			{
 				Debug.WriteLine("You are using trying to HotReload a view that requires Parameters. Please call `HotReloadHelper.Register(this, params);` in the constructor;");
-				throw ex;
+				//TODO: Notifiy that we couldnt hot reload.
+				return view;
 			}
 
 		}
