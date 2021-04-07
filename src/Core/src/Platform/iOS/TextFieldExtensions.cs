@@ -56,6 +56,9 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLength(this UITextField textField, IEntry entry)
 		{
+			if (entry.MaxLength < 0)
+				return;
+				
 			var currentControlText = textField.Text;
 
 			if (currentControlText?.Length > entry.MaxLength)
