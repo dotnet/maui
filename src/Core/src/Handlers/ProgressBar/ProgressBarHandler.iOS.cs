@@ -8,5 +8,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			return new UIProgressView(UIProgressViewStyle.Default);
 		}
+
+		public static void MapProgress(ProgressBarHandler handler, IProgress progress)
+		{
+			handler.NativeView?.UpdateProgress(progress);
+		}
 	}
 }

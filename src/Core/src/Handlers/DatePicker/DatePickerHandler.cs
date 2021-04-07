@@ -4,12 +4,13 @@
 	{
 		public static PropertyMapper<IDatePicker, DatePickerHandler> DatePickerMapper = new PropertyMapper<IDatePicker, DatePickerHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(IDatePicker.Format)] = MapFormat,
-			[nameof(IDatePicker.Date)] = MapDate,
-			[nameof(IDatePicker.MinimumDate)] = MapMinimumDate,
-			[nameof(IDatePicker.MaximumDate)] = MapMaximumDate,
 			[nameof(IDatePicker.CharacterSpacing)] = MapCharacterSpacing,
-			[nameof(IDatePicker.Font)] = MapFont
+			[nameof(IDatePicker.Date)] = MapDate,
+			[nameof(IDatePicker.Font)] = MapFont,
+			[nameof(IDatePicker.Format)] = MapFormat,
+			[nameof(IDatePicker.MaximumDate)] = MapMaximumDate,
+			[nameof(IDatePicker.MinimumDate)] = MapMinimumDate,
+			[nameof(IDatePicker.TextColor)] = MapTextColor,
 		};
 
 		public DatePickerHandler() : base(DatePickerMapper)

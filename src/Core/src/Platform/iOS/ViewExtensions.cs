@@ -32,10 +32,14 @@ namespace Microsoft.Maui
 
 		public static void UpdateSemantics(this UIView nativeView, IView view)
 		{
-			nativeView.AccessibilityLabel = view.Semantics.Description;
-			nativeView.AccessibilityHint = view.Semantics.Hint;
+			var semantics = view.Semantics;
+			if (semantics == null)
+				return;
 
-			if (view.Semantics.IsHeading)
+			nativeView.AccessibilityLabel = semantics.Description;
+			nativeView.AccessibilityHint = semantics.Hint;
+
+			if (semantics.IsHeading)
 				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;
 			else
 				nativeView.AccessibilityTraits |= ~UIAccessibilityTrait.Header;

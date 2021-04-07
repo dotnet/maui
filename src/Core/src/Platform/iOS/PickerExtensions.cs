@@ -30,14 +30,6 @@ namespace Microsoft.Maui
 			nativePicker.SetSelectedItem(picker);
 		}
 
-		public static void UpdateCharacterSpacing(this MauiPicker nativePicker, IPicker picker)
-		{
-			var textAttr = nativePicker.AttributedText?.WithCharacterSpacing(picker.CharacterSpacing);
-
-			if (textAttr != null)
-				nativePicker.AttributedText = textAttr;
-		}
-
 		internal static void SetSelectedIndex(this MauiPicker nativePicker, IPicker picker, int selectedIndex = 0)
 		{
 			picker.SelectedIndex = selectedIndex;

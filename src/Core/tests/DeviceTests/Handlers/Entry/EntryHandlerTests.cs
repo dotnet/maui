@@ -274,6 +274,27 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, entry.Text);
 		}
 
+		[Fact(DisplayName = "Negative MaxLength Does Not Clip")]
+		public async Task NegativeMaxLengthDoesNotClip()
+		{
+			const string text = "Lorem ipsum dolor sit amet";
+
+			var entry = new EntryStub()
+			{
+				MaxLength = -1,
+			};
+
+			var nativeText = await GetValueAsync(entry, handler =>
+			{
+				entry.Text = text;
+
+				return GetNativeText(handler);
+			});
+
+			Assert.Equal(text, nativeText);
+			Assert.Equal(text, entry.Text);
+		}
+
 		[Theory(DisplayName = "MaxLength Clips Native Text Correctly")]
 		[InlineData(2)]
 		[InlineData(5)]

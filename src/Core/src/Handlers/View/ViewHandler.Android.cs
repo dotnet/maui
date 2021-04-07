@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Android.Widget;
+﻿using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using NativeView = Android.Views.View;
@@ -35,7 +32,6 @@ namespace Microsoft.Maui.Handlers
 					ViewCompat.SetAccessibilityDelegate(handler.NativeView as NativeView, viewHandler.AccessibilityDelegate);
 				}
 			}
-
 		}
 
 		public void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)

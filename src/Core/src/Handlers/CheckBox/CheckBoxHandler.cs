@@ -4,10 +4,10 @@
 	{
 		public static PropertyMapper<ICheckBox, CheckBoxHandler> CheckBoxMapper = new PropertyMapper<ICheckBox, CheckBoxHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(ICheckBox.IsChecked)] = MapIsChecked,
 #if MONOANDROID
 			[nameof(ICheckBox.BackgroundColor)] = MapBackgroundColor,
 #endif
+			[nameof(ICheckBox.IsChecked)] = MapIsChecked,
 		};
 
 		public CheckBoxHandler() : base(CheckBoxMapper)
@@ -18,11 +18,6 @@
 		public CheckBoxHandler(PropertyMapper mapper) : base(mapper ?? CheckBoxMapper)
 		{
 
-		}
-
-		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
-		{
-			handler.NativeView?.UpdateIsChecked(check);
 		}
 	}
 }

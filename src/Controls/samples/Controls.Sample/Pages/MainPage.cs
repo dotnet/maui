@@ -114,7 +114,12 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Button { Text = "CharacterSpacing" });
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 
-			verticalStack.Add(new CheckBox());
+			var checkbox = new CheckBox();
+			checkbox.CheckedChanged += (sender, e) =>
+			{
+				Debug.WriteLine($"Checked Changed to '{e.Value}'");
+			};
+			verticalStack.Add(checkbox);
 			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
 			verticalStack.Add(new CheckBox { IsChecked = true, Color = Color.Aquamarine });
 
@@ -133,7 +138,7 @@ namespace Maui.Controls.Sample.Pages
 			};
 
 			verticalStack.Add(entry);
-			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed, FontFamily = "Dokdo" });
+			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed, FontFamily = "Dokdo", MaxLength = -1 });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });

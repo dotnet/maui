@@ -49,6 +49,12 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCharacterSpacing(picker);
 		}
 
+		[MissingMapper]
+		public static void MapFont(PickerHandler handler, IPicker view) { }
+
+		[MissingMapper]
+		public static void MapTextColor(PickerHandler handler, IPicker view) { }
+
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
 		{
 			if (NativeView == null)

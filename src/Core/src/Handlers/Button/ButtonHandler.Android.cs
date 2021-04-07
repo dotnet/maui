@@ -56,11 +56,6 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		public static void MapBackgroundColor(ButtonHandler handler, IButton button)
-		{
-			handler.NativeView?.UpdateBackgroundColor(button);
-		}
-
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
 			handler.NativeView?.UpdateText(button);

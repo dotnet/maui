@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			typeof(ContentPage),
 			typeof(Page),
 			typeof(Label),
+			typeof(CheckBox),
 #if !WINDOWS
 			typeof(ActivityIndicator),
-			typeof(CheckBox),
 			typeof(DatePicker),
 			typeof(Editor),
 			typeof(Entry),

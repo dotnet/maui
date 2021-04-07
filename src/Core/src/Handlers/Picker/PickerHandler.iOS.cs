@@ -106,6 +106,12 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCharacterSpacing(picker);
 		}
 
+		[MissingMapper]
+		public static void MapFont(PickerHandler handler, IPicker view) { }
+
+		[MissingMapper]
+		public static void MapTextColor(PickerHandler handler, IPicker view) { }
+
 		void OnCollectionChanged(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || NativeView == null)

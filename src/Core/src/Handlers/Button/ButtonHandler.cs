@@ -4,12 +4,14 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static PropertyMapper<IButton, ButtonHandler> ButtonMapper = new PropertyMapper<IButton, ButtonHandler>(ViewHandler.ViewMapper)
 		{
+#if WINDOWS
 			[nameof(IButton.BackgroundColor)] = MapBackgroundColor,
-			[nameof(IButton.Text)] = MapText,
-			[nameof(IButton.TextColor)] = MapTextColor,
+#endif
 			[nameof(IButton.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IButton.Font)] = MapFont,
 			[nameof(IButton.Padding)] = MapPadding,
+			[nameof(IButton.Text)] = MapText,
+			[nameof(IButton.TextColor)] = MapTextColor,
 		};
 
 		public ButtonHandler() : base(ButtonMapper)
