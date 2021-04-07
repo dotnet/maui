@@ -34,9 +34,6 @@
     <Compile Update="Pages\SemanticsPage.xaml.cs">
       <DependentUpon>SemanticsPage.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Pages\SemanticsPage.xaml.cs">
-      <DependentUpon>SemanticsPage.xaml</DependentUpon>
-    </Compile>
   </ItemGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
