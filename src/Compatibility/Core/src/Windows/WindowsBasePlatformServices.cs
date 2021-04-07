@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public Color GetNamedColor(string name)
 		{
 			if (!Microsoft.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
-				return KnownColors.Default;
+				return KnownColor.Default;
 
 			return ((Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToFormsColor();
 		}

@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (cancelColor.IsDefault())
 			{
-				BrushHelpers.UpdateColor(KnownColors.Default, ref _defaultDeleteButtonBackgroundColorBrush,
+				BrushHelpers.UpdateColor(KnownColor.Default, ref _defaultDeleteButtonBackgroundColorBrush,
 					() => _cancelButton.BackgroundBrush, brush => _cancelButton.BackgroundBrush = brush);
 			}
 			else

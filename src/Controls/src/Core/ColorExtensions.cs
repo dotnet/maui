@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 	{
 		public static bool IsDefault(this Graphics.Color color)
 		{
-			return color == KnownColors.Default;
+			return color == KnownColor.Default;
 		}
 
 		public static bool IsNotDefault(this Graphics.Color color)
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	public static class KnownColors
+	public static class KnownColor
 	{
 		public static Color Default => null;
 

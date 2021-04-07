@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
 			var accent = (WSolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
-			KnownColors.SetAccent(accent.ToFormsColor());
+			KnownColor.SetAccent(accent.ToFormsColor());
 
 			if (!IsInitialized)
 			{
