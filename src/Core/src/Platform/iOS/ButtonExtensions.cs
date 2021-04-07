@@ -30,21 +30,14 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateCharacterSpacing(this UIButton nativeButton, IButton button)
+		public static void UpdateCharacterSpacing(this UIButton nativeButton, ITextStyle textStyle)
 		{
-			if (string.IsNullOrEmpty(button.Text))
-				return;
-
-			var textAttr = nativeButton.TitleLabel.AttributedText?.WithCharacterSpacing(button.CharacterSpacing);
-
-			if (textAttr != null)
-				nativeButton.TitleLabel.AttributedText = textAttr;
+			nativeButton.TitleLabel.UpdateCharacterSpacing(textStyle);
 		}
 
-		public static void UpdateFont(this UIButton nativeButton, IButton button, IFontManager fontManager)
+		public static void UpdateFont(this UIButton nativeButton, ITextStyle textStyle, IFontManager fontManager)
 		{
-			var uiFont = fontManager.GetFont(button.Font);
-			nativeButton.TitleLabel.Font = uiFont;
+			nativeButton.TitleLabel.UpdateFont(textStyle, fontManager);
 		}
 
 		public static void UpdatePadding(this UIButton nativeButton, IButton button)

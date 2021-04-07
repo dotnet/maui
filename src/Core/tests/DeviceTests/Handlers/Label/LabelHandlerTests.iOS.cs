@@ -275,7 +275,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>
-			(UILabel)labelHandler.View;
+			(UILabel)labelHandler.NativeView;
 
 		string GetNativeText(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Text;

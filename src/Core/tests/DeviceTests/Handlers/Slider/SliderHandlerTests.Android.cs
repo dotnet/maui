@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class SliderHandlerTests
 	{
 		SeekBar GetNativeSlider(SliderHandler sliderHandler) =>
-			(SeekBar)sliderHandler.View;
+			(SeekBar)sliderHandler.NativeView;
 
 		double GetNativeProgress(SliderHandler sliderHandler) =>
 			GetNativeSlider(sliderHandler).Progress;

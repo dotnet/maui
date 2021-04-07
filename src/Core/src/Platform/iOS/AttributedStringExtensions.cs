@@ -70,6 +70,11 @@ namespace Microsoft.Maui
 			return mutable;
 		}
 
+		public static NSAttributedString? TrimToMaxLength(this NSAttributedString? attributedString, int maxLength) =>
+			maxLength >= 0 && attributedString?.Length > maxLength
+				? attributedString.Substring(0, maxLength)
+				: attributedString;
+
 		static void UpdateDecoration(NSMutableAttributedString attributedString, NSString key,
 			NSRange range, TextDecorations decorations)
 		{

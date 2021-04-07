@@ -9,20 +9,12 @@ namespace Microsoft.Maui
 			textField.Text = entry.Text;
 		}
 
-		public static void UpdateTextColor(this UITextField textField, IEntry entry)
+		public static void UpdateTextColor(this UITextField textField, ITextStyle textStyle, UIColor? defaultTextColor = null)
 		{
-			textField.UpdateTextColor(entry, null);
-		}
+			// Default value of color documented to be black in iOS docs
 
-		public static void UpdateTextColor(this UITextField textField, IEntry entry, UIColor? defaultTextColor)
-		{
-			if (entry.TextColor == Color.Default)
-			{
-				if (defaultTextColor != null)
-					textField.TextColor = defaultTextColor;
-			}
-			else
-				textField.TextColor = entry.TextColor.ToNative();
+			var textColor = textStyle.TextColor;
+			textField.TextColor = textColor.ToNative(defaultTextColor ?? ColorExtensions.LabelColor);
 		}
 
 		public static void UpdateIsPassword(this UITextField textField, IEntry entry)
@@ -56,10 +48,9 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLength(this UITextField textField, IEntry entry)
 		{
-			var currentControlText = textField.Text;
-
-			if (currentControlText?.Length > entry.MaxLength)
-				textField.Text = currentControlText.Substring(0, entry.MaxLength);
+			var newText = textField.AttributedText.TrimToMaxLength(entry.MaxLength);
+			if (newText != null && textField.AttributedText != newText)
+				textField.AttributedText = newText;
 		}
 
 		public static void UpdatePlaceholder(this UITextField textField, IEntry entry)
@@ -72,9 +63,9 @@ namespace Microsoft.Maui
 			textField.UserInteractionEnabled = !entry.IsReadOnly;
 		}
 
-		public static void UpdateFont(this UITextField textField, IEntry entry, IFontManager fontManager)
+		public static void UpdateFont(this UITextField textField, ITextStyle textStyle, IFontManager fontManager)
 		{
-			var uiFont = fontManager.GetFont(entry.Font);
+			var uiFont = fontManager.GetFont(textStyle.Font);
 			textField.Font = uiFont;
 		}
 
@@ -83,10 +74,9 @@ namespace Microsoft.Maui
 			textField.ReturnKeyType = entry.ReturnType.ToNative();
 		}
 
-		public static void UpdateCharacterSpacing(this UITextField textField, IText textView)
+		public static void UpdateCharacterSpacing(this UITextField textField, ITextStyle textStyle)
 		{
-			var textAttr = textField.AttributedText?.WithCharacterSpacing(textView.CharacterSpacing);
-
+			var textAttr = textField.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
 			if (textAttr != null)
 				textField.AttributedText = textAttr;
 		}
@@ -97,12 +87,6 @@ namespace Microsoft.Maui
 
 			textField.ApplyKeyboard(keyboard);
 			textField.ReloadInputViews();
-		}
-
-		public static void UpdateFont(this UITextField textField, IText textView, IFontManager fontManager)
-		{
-			var uiFont = fontManager.GetFont(textView.Font);
-			textField.Font = uiFont;
 		}
 
 		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)

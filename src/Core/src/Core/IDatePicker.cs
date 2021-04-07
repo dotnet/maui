@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a View that allows the user to select a date.
 	/// </summary>
-	public interface IDatePicker : IView
+	public interface IDatePicker : IView, ITextStyle
 	{
 		/// <summary>
 		/// Gets the format of the date to display to the user. 
@@ -26,10 +26,5 @@ namespace Microsoft.Maui
 		/// Gets the maximum DateTime selectable.
 		/// </summary>
 		DateTime MaximumDate { get; }
-
-		/// <summary>
-		/// Gets the spacing between characters of the text.
-		/// </summary>
-		double CharacterSpacing { get; }
 	}
 }

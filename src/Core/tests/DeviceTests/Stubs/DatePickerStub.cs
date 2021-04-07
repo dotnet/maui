@@ -13,5 +13,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public DateTime MaximumDate { get; set; }
 
 		public double CharacterSpacing { get; set; }
+
+		public Font Font { get; set; }
+
+		public Color TextColor { get; set; }
 	}
 }

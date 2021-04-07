@@ -6,7 +6,7 @@ using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwitchHandler : AbstractViewHandler<ISwitch, ASwitch>
+	public partial class SwitchHandler : ViewHandler<ISwitch, ASwitch>
 	{
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
 		static ColorStateList? DefaultTrackColorStateList { get; set; }
@@ -54,17 +54,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsToggled(SwitchHandler handler, ISwitch view)
 		{
-			handler.TypedNativeView?.UpdateIsToggled(view);
+			handler.NativeView?.UpdateIsToggled(view);
 		}
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.TypedNativeView?.UpdateTrackColor(view, DefaultTrackColorStateList);
+			handler.NativeView?.UpdateTrackColor(view, DefaultTrackColorStateList);
 		}
 
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.TypedNativeView?.UpdateThumbColor(view, DefaultThumbColorStateList);
+			handler.NativeView?.UpdateThumbColor(view, DefaultThumbColorStateList);
 		}
 
 		void OnCheckedChanged(bool isToggled)

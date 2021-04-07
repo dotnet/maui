@@ -25,6 +25,8 @@ namespace Microsoft.Maui
 				picker.SetDate(datePicker.Date.ToNSDate(), false);
 
 			nativeDatePicker.Text = datePicker.Date.ToString(datePicker.Format);
+
+			nativeDatePicker.UpdateCharacterSpacing(datePicker);
 		}
 
 		public static void UpdateMinimumDate(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
@@ -51,14 +53,6 @@ namespace Microsoft.Maui
 			{
 				picker.MaximumDate = datePicker.MaximumDate.ToNSDate();
 			}
-		}
-
-		public static void UpdateCharacterSpacing(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
-		{
-			var textAttr = nativeDatePicker.AttributedText?.WithCharacterSpacing(datePicker.CharacterSpacing);
-
-			if (textAttr != null)
-				nativeDatePicker.AttributedText = textAttr;
 		}
 	}
 }

@@ -7,11 +7,6 @@
 			[nameof(IProgress.Progress)] = MapProgress,
 		};
 
-		public static void MapProgress(ProgressBarHandler handler, IProgress progress)
-		{
-			handler.TypedNativeView?.UpdateProgress(progress);
-		}
-
 		public ProgressBarHandler() : base(ProgressMapper)
 		{
 

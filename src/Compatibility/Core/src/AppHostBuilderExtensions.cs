@@ -12,13 +12,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 			typeof(Button),
 			typeof(ContentPage),
 			typeof(Page),
+			typeof(Label),
+			typeof(CheckBox),
 #if !WINDOWS
 			typeof(ActivityIndicator),
-			typeof(CheckBox),
 			typeof(DatePicker),
 			typeof(Editor),
 			typeof(Entry),
-			typeof(Label),
 			typeof(Picker),
 			typeof(ProgressBar),
 			typeof(SearchBar),
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 #endif
 		};
 
-		public static IAppHostBuilder UseFormsCompatibility(this IAppHostBuilder builder)
+		public static IAppHostBuilder UseFormsCompatibility(this IAppHostBuilder builder, bool registerRenderers = true)
 		{
 			// TODO: This should not be immediately run, but rather a registered delegate with values
 			//       of the Context and LaunchActivatedEventArgs passed in.
@@ -46,7 +46,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Forms.Init(options);
 
-			builder.UseCompatibilityRenderers();
+			if (registerRenderers)
+				builder.UseCompatibilityRenderers();
 
 			return builder;
 		}

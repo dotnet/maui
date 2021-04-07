@@ -1,4 +1,5 @@
-﻿using Android.Text;
+﻿using System.Diagnostics;
+using Android.Text;
 
 namespace Microsoft.Maui
 {
@@ -43,8 +44,7 @@ namespace Microsoft.Maui
 				{
 					// Due to the nature of android, TextFlagAutoCorrect includes Spellcheck
 
-					// TODO: Port Logger
-					// Log.Warning(null, "On Android, KeyboardFlags.Suggestions enables KeyboardFlags.Spellcheck as well due to a platform limitation.");
+					Debug.WriteLine("On Android, KeyboardFlags.Suggestions enables KeyboardFlags.Spellcheck as well due to a platform limitation.");
 					result = InputTypes.ClassText | InputTypes.TextFlagAutoCorrect;
 				}
 				if (!capitalizedSentenceEnabled && spellcheckEnabled && !suggestionsEnabled)
@@ -59,7 +59,7 @@ namespace Microsoft.Maui
 				if (capitalizedSentenceEnabled && !spellcheckEnabled && suggestionsEnabled)
 				{
 					// Due to the nature of android, TextFlagAutoCorrect includes Spellcheck
-					// Log.Warning(null, "On Android, KeyboardFlags.Suggestions enables KeyboardFlags.Spellcheck as well due to a platform limitation.");
+					Debug.WriteLine("On Android, KeyboardFlags.Suggestions enables KeyboardFlags.Spellcheck as well due to a platform limitation.");
 					result = InputTypes.ClassText | InputTypes.TextFlagCapSentences | InputTypes.TextFlagAutoCorrect;
 				}
 

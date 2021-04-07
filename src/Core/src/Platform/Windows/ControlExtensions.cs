@@ -18,9 +18,6 @@ namespace Microsoft.Maui
 		public static void UpdateForegroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			nativeControl.Foreground = color.IsDefault && defaultBrush != null ? defaultBrush : color.ToNative();
 
-		public static void UpdateBackgroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Background = color.IsDefault && defaultBrush != null ? defaultBrush : color.ToNative();
-
 		public static void UpdatePadding(this Control nativeControl, Thickness padding, UI.Xaml.Thickness? defaultThickness = null)
 		{
 			// TODO: have a way to reset the padding

@@ -210,6 +210,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			(Control as UITextField).UpdateTextAlignment(Element);
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateFont()
 		{
 			Control.Font = Element.ToUIFont();

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class StepperHandlerTests
 	{
 		LinearLayout GetNativeStepper(StepperHandler stepperHandler) =>
-			(LinearLayout)stepperHandler.View;
+			(LinearLayout)stepperHandler.NativeView;
 
 		double GetNativeValue(StepperHandler stepperHandler)
 		{

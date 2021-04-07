@@ -1,7 +1,7 @@
 using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.UnitTests
 {
-	public class HandlerStub : AbstractViewHandler<Maui.Controls.Button, object>
+	public class HandlerStub : ViewHandler<Maui.Controls.Button, object>
 	{
 		public bool IsDisconnected { get; private set; }
 		public int ConnectHandlerCount { get; set; } = 0;

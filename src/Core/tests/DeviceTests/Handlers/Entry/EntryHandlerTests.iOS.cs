@@ -117,7 +117,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		UITextField GetNativeEntry(EntryHandler entryHandler) =>
-			(UITextField)entryHandler.View;
+			(UITextField)entryHandler.NativeView;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;

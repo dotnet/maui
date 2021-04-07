@@ -15,5 +15,13 @@
 		public Font Font { get; set; }
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
+
+		public bool IsTextPredictionEnabled { get; set; }
+
+		public bool IsReadOnly { get; set; }
+
+		public int MaxLength { get; set; }
+
+		public Keyboard Keyboard { get; set; }
 	}
 }

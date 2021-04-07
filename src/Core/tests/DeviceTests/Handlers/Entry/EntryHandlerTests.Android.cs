@@ -93,7 +93,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
-			(AppCompatEditText)entryHandler.View;
+			(AppCompatEditText)entryHandler.NativeView;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
