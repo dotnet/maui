@@ -920,6 +920,7 @@ Task("VS")
 
 Task("VSWINDOWS")
     .Description("Builds projects necessary so solution compiles on VS Windows")
+    .IsDependentOn("BuildTasks")
     .WithCriteria(IsRunningOnWindows())
     .Does(() =>
     {
