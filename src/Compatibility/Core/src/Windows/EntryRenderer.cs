@@ -312,12 +312,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateMaxLength()
 		{
-			Control.MaxLength = Element.MaxLength;
+			var maxLength = Element.MaxLength;
+			if (maxLength == -1)
+				maxLength = int.MaxValue;
+
+			Control.MaxLength = maxLength;
 
 			var currentControlText = Control.Text;
 
-			if (currentControlText.Length > Element.MaxLength)
-				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+			if (currentControlText.Length > maxLength)
+				Control.Text = currentControlText.Substring(0, maxLength);
 		}
 
 		void UpdateDetectReadingOrderFromContent()
