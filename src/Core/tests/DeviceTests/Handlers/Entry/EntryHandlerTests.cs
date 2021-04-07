@@ -325,11 +325,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Validates Text Keyboard")]
-#if __ANDROID__
-		[InlineData(nameof(Keyboard.Chat), true)]
-#else
 		[InlineData(nameof(Keyboard.Chat), false)]
-#endif
 		[InlineData(nameof(Keyboard.Default), false)]
 		[InlineData(nameof(Keyboard.Email), false)]
 		[InlineData(nameof(Keyboard.Numeric), false)]
@@ -353,11 +349,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(nameof(Keyboard.Numeric), false)]
 		[InlineData(nameof(Keyboard.Plain), false)]
 		[InlineData(nameof(Keyboard.Telephone), false)]
-#if __ANDROID__
-		[InlineData(nameof(Keyboard.Text), true)]
-#else
 		[InlineData(nameof(Keyboard.Text), false)]
-#endif
 		[InlineData(nameof(Keyboard.Url), false)]
 		public async Task ValidateChatKeyboard(string keyboardName, bool expected)
 		{

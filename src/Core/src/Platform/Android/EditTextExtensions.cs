@@ -210,7 +210,7 @@ namespace Microsoft.Maui
 				var keyboard = entry.Keyboard;
 				var nativeInputTypeToUpdate = keyboard.ToInputType();
 
-				if (!(keyboard is CustomKeyboard))
+				if (keyboard is not CustomKeyboard)
 				{
 					// TODO: IsSpellCheckEnabled handling must be here.
 
