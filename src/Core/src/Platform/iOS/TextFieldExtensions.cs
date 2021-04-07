@@ -49,7 +49,7 @@ namespace Microsoft.Maui
 		public static void UpdateMaxLength(this UITextField textField, IEntry entry)
 		{
 			var newText = textField.AttributedText.TrimToMaxLength(entry.MaxLength);
-			if (textField.AttributedText != newText)
+			if (newText != null && textField.AttributedText != newText)
 				textField.AttributedText = newText;
 		}
 

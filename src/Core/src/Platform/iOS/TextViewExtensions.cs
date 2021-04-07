@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 		public static void UpdateMaxLength(this UITextView textView, IEditor editor)
 		{
 			var newText = textView.AttributedText.TrimToMaxLength(editor.MaxLength);
-			if (textView.AttributedText != newText)
+			if (newText != null && textView.AttributedText != newText)
 				textView.AttributedText = newText;
 		}
 
