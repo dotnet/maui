@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
 		{
-			MapFormatting(handler, button);
+			handler.NativeView?.UpdateCharacterSpacing(button);
 		}
 
 		public static void MapPadding(ButtonHandler handler, IButton button)
