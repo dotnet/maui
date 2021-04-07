@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 			// With lower Apis you use ViewCompat.SetAccessibilityHeading
 			// but there exists no ViewCompat.GetAccessibilityHeading
 			if (NativeVersion.IsAtLeast(28))
-				return ((View)viewHandler.NativeView).AccessibilityHeading 
+				return ((View)viewHandler.NativeView).AccessibilityHeading
 					? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 
 			return viewHandler.VirtualView.Semantics.HeadingLevel;

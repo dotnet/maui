@@ -4,10 +4,10 @@ namespace Microsoft.Maui.Controls
 {
 	public class SemanticProperties
 	{
-		public static readonly BindableProperty DescriptionProperty = BindableProperty.CreateAttached("Description", typeof(string), typeof(SemanticProperties), default(string), propertyChanged : OnDescriptionPropertyChanged);
+		public static readonly BindableProperty DescriptionProperty = BindableProperty.CreateAttached("Description", typeof(string), typeof(SemanticProperties), default(string), propertyChanged: OnDescriptionPropertyChanged);
 
 		public static readonly BindableProperty HintProperty = BindableProperty.CreateAttached("Hint", typeof(string), typeof(SemanticProperties), default(string), propertyChanged: OnHintPropertyChanged);
-		
+
 		public static readonly BindableProperty HeadingLevelProperty = BindableProperty.CreateAttached("HeadingLevel", typeof(SemanticHeadingLevel), typeof(SemanticProperties), SemanticHeadingLevel.None, propertyChanged: OnHeadingLevelPropertyChanged);
 
 		static void OnHeadingLevelPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue != null)
 				value = newValue.ToString();
 
-			UpdateSemanticsProperty(bindable, 
+			UpdateSemanticsProperty(bindable,
 				(semantics) => semantics.Hint = value);
 		}
 
