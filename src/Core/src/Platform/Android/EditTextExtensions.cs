@@ -100,7 +100,7 @@ namespace Microsoft.Maui
 			if (changed)
 				editText.SetFilters(currentFilters.ToArray());
 
-			var newText = TrimToMaxLength(editText.Text, maxLength);
+			var newText = editText.Text.TrimToMaxLength(maxLength);
 			if (editText.Text != newText)
 				editText.Text = newText;
 		}
@@ -211,10 +211,5 @@ namespace Microsoft.Maui
 			if (entry.IsReadOnly)
 				editText.InputType = InputTypes.Null;
 		}
-
-		internal static string? TrimToMaxLength(string? currentText, int maxLength) =>
-			maxLength >= 0 && currentText?.Length > maxLength
-				? currentText.Substring(0, maxLength)
-				: currentText;
 	}
 }

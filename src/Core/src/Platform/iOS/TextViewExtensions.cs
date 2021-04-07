@@ -25,10 +25,9 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLength(this UITextView textView, IEditor editor)
 		{
-			var currentControlText = textView.Text;
-
-			if (currentControlText?.Length > editor.MaxLength)
-				textView.Text = currentControlText.Substring(0, editor.MaxLength);
+			var newText = textView.AttributedText.TrimToMaxLength(editor.MaxLength);
+			if (textView.AttributedText != newText)
+				textView.AttributedText = newText;
 		}
 
 		public static void UpdatePredictiveText(this UITextView textView, IEditor editor)

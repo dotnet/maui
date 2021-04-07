@@ -48,10 +48,9 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLength(this UITextField textField, IEntry entry)
 		{
-			var currentControlText = textField.Text;
-
-			if (currentControlText?.Length > entry.MaxLength)
-				textField.Text = currentControlText.Substring(0, entry.MaxLength);
+			var newText = textField.AttributedText.TrimToMaxLength(entry.MaxLength);
+			if (textField.AttributedText != newText)
+				textField.AttributedText = newText;
 		}
 
 		public static void UpdatePlaceholder(this UITextField textField, IEntry entry)
