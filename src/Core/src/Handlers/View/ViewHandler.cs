@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Semantics)] = MapSemantics
 		};
 
-		internal ViewHandler() {}
+		internal ViewHandler() { }
 
 		bool _hasContainer;
 
@@ -59,10 +59,10 @@ namespace Microsoft.Maui.Handlers
 			private protected set;
 		}
 
-		public IView? VirtualView 
-		{ 
-			get; 
-			private protected set; 
+		public IView? VirtualView
+		{
+			get;
+			private protected set;
 		}
 
 		public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;

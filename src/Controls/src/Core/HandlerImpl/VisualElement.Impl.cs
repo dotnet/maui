@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls
 
 		// We don't want to initialize Semantics until someone explicitly 
 		// wants to modify some aspect of the semantics class
-		internal Semantics SetupSemantics() => 
+		internal Semantics SetupSemantics() =>
 			_semantics ??= new Maui.Semantics();
 	}
 }
