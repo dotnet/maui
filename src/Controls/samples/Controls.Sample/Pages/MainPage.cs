@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +9,6 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.LifecycleEvents;
 using Debug = System.Diagnostics.Debug;
-using System.Linq;
 
 namespace Maui.Controls.Sample.Pages
 {
