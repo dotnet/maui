@@ -203,6 +203,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateAttributedPlaceholder(placeHolder);
 		}
 
+		[PortHandler]
         protected internal virtual void UpdateFont()
 		{
 			Control.Font = Element.ToUIFont();			
