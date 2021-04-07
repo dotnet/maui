@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using WItemsControl = Microsoft.UI.Xaml.Controls.ItemsControl;

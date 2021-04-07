@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		/// <param name="setter">Delegate for setting the Control's Brush</param>
 		public static void UpdateColor(Color color, ref WBrush defaultbrush, Func<WBrush> getter, Action<WBrush> setter)
 		{
-			if (color.IsDefault)
+			if (color.IsDefault())
 			{
 				if (defaultbrush == null)
 				{

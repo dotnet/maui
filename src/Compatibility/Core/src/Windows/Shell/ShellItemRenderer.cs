@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 								FontSize = fontImageSource.Size,
 							};
 
-							if (!fontImageSource.Color.IsDefault)
+							if (!fontImageSource.Color.IsDefault())
 							{
 								icon.Foreground = fontImageSource.Color.ToBrush();
 							}
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				var a = (IShellAppearanceElement)appearance;
 				tabBarBackgroundColor = a.EffectiveTabBarBackgroundColor.ToWindowsColor();
 				tabBarForegroundColor = a.EffectiveTabBarForegroundColor.ToWindowsColor();
-				if (!appearance.TitleColor.IsDefault)
+				if (!appearance.TitleColor.IsDefault())
 					titleColor = appearance.TitleColor.ToWindowsColor();
 			}
 			_BottomBarArea.Background = _HeaderArea.Background =

@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.SearchBar;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -179,9 +180,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			BrushHelpers.UpdateColor(cancelColor, ref _defaultDeleteButtonForegroundColorBrush,
 				() => _cancelButton.ForegroundBrush, brush => _cancelButton.ForegroundBrush = brush);
 
-			if (cancelColor.IsDefault)
+			if (cancelColor.IsDefault())
 			{
-				BrushHelpers.UpdateColor(Color.Default, ref _defaultDeleteButtonBackgroundColorBrush,
+				BrushHelpers.UpdateColor(KnownColors.Default, ref _defaultDeleteButtonBackgroundColorBrush,
 					() => _cancelButton.BackgroundBrush, brush => _cancelButton.BackgroundBrush = brush);
 			}
 			else
@@ -319,7 +320,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			Color backgroundColor = Element.BackgroundColor;
 			
-			if (!backgroundColor.IsDefault)
+			if (!backgroundColor.IsDefault())
 			{
 				_queryTextBox.Background = backgroundColor.ToBrush();
 			}
@@ -341,7 +342,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else
 			{
 				Color backgroundColor = Element.BackgroundColor;
-				if (backgroundColor.IsDefault)
+				if (backgroundColor.IsDefault())
 					_queryTextBox.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
 			}
 		}

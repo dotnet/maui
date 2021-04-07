@@ -14,6 +14,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Label;
 using WRect = Windows.Foundation.Rect;
 using WThickness = Microsoft.UI.Xaml.Thickness;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var run = new Run { Text = span.Text ?? string.Empty };
 
-			if (span.TextColor != Color.Default)
+			if (span.TextColor.IsNotDefault())
 				run.Foreground = span.TextColor.ToBrush();
 
 			if (!span.IsDefault())
@@ -243,7 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			Label label = Element;
-			if (label != null && label.TextColor != Color.Default)
+			if (label != null && label.TextColor.IsNotDefault())
 			{
 				textBlock.Foreground = label.TextColor.ToBrush();
 			}

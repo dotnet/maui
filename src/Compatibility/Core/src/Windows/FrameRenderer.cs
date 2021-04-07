@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Control != null)
 			{
-				Control.Background = backgroundColor.IsDefault ? 
+				Control.Background = backgroundColor.IsDefault() ? 
 					new Microsoft.UI.Xaml.Media.SolidColorBrush((Windows.UI.Color)Resources["SystemAltHighColor"]) : backgroundColor.ToBrush();
 			}
 		}
@@ -78,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Control != null)
 			{
 				if (Brush.IsNullOrEmpty(background))
-					Control.Background = backgroundColor.IsDefault ?
+					Control.Background = backgroundColor.IsDefault() ?
 						new Microsoft.UI.Xaml.Media.SolidColorBrush((Windows.UI.Color)Resources["SystemAltHighColor"]) : backgroundColor.ToBrush();
 				else
 					Control.Background = background.ToBrush();
@@ -96,7 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateBorder()
 		{
-			if (Element.BorderColor != Color.Default)
+			if (Element.BorderColor.IsNotDefault())
 			{
 				Control.BorderBrush = Element.BorderColor.ToBrush();
 				Control.BorderThickness = WinUIHelpers.CreateThickness(1);
