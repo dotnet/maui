@@ -26,6 +26,9 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLength(this UITextView textView, IEditor editor)
 		{
+			if (editor.MaxLength < 0)
+				return;
+				
 			var currentControlText = textView.Text;
 
 			if (currentControlText?.Length > editor.MaxLength)
