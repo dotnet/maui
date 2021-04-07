@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
+using UIKit;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -36,5 +37,14 @@ namespace Microsoft.Maui.DeviceTests
 			});
 			Assert.Equal(expected, selectedIndex);
 		}
+
+		double GetNativeUnscaledFontSize(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).Font.PointSize;
+
+		bool GetNativeIsBold(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
+
+		bool GetNativeIsItalic(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
 	}
 }

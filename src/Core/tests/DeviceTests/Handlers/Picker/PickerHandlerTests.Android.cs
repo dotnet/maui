@@ -72,5 +72,17 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		double GetNativeUnscaledFontSize(PickerHandler pickerHandler)
+		{
+			var mauiPicker = GetNativePicker(pickerHandler);
+			return mauiPicker.TextSize / mauiPicker.Resources.DisplayMetrics.Density;
+		}
+
+		bool GetNativeIsBold(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).Typeface.IsBold;
+
+		bool GetNativeIsItalic(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).Typeface.IsItalic;
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.Linq;
 using Android.App;
+using Microsoft.Extensions.DependencyInjection;
 using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
@@ -49,8 +50,14 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCharacterSpacing(picker);
 		}
 
-		[MissingMapper]
-		public static void MapFont(PickerHandler handler, IPicker view) { }
+		public static void MapFont(PickerHandler handler, IPicker picker)
+		{
+			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+
+			handler.NativeView?.UpdateFont(picker, fontManager);
+		}
 
 		[MissingMapper]
 		public static void MapTextColor(PickerHandler handler, IPicker view) { }
