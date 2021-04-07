@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
@@ -11,19 +11,25 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(nativeView);
 
-			nativeView.CheckedChanged += OnCheckedChanged;
+			nativeView.Checked += OnChecked;
 		}
 
 		protected override void DisconnectHandler(CheckBox nativeView)
 		{
 			base.DisconnectHandler(nativeView);
 
-			nativeView.CheckedChanged -= OnCheckedChanged;
+			nativeView.Checked -= OnChecked;
 		}
 
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
 		{
 			handler.NativeView?.UpdateIsChecked(check);
+		}
+
+		void OnChecked(object sender, RoutedEventArgs e)
+		{
+			if (sender is CheckBox nativeView && VirtualView != null)
+				VirtualView.IsChecked = nativeView.IsChecked == true;
 		}
 	}
 }

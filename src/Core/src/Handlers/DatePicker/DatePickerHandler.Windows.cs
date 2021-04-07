@@ -24,5 +24,8 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker) { }
+
+		[MissingMapper]
+		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker) { }
 	}
 }
