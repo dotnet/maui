@@ -1,25 +1,32 @@
-﻿using CoreGraphics;
+﻿using System;
+using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : AbstractViewHandler<IEditor, UITextView>
+	public partial class EditorHandler : ViewHandler<IEditor, MauiTextView>
 	{
 		static readonly int BaseHeight = 30;
 
-		protected override UITextView CreateNativeView()
+		static readonly UIColor DefaultPlaceholderColor = ColorExtensions.PlaceholderColor;
+
+		protected override MauiTextView CreateNativeView()
 		{
-			return new UITextView(CGRect.Empty);
+			return new MauiTextView(CGRect.Empty);
 		}
 
-		protected override void ConnectHandler(UITextView nativeView)
+		protected override void ConnectHandler(MauiTextView nativeView)
 		{
+			nativeView.Changed += OnChanged;
 			nativeView.ShouldChangeText += OnShouldChangeText;
 		}
 
-		protected override void DisconnectHandler(UITextView nativeView)
+		protected override void DisconnectHandler(MauiTextView nativeView)
 		{
+			nativeView.Changed -= OnChanged;
 			nativeView.ShouldChangeText -= OnShouldChangeText;
 		}
 
@@ -28,33 +35,58 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateText(editor);
+			handler.NativeView?.UpdateText(editor);
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, editor);
 		}
 
+		public static void MapPlaceholder(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdatePlaceholder(editor);
+		}
+
+		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdatePlaceholderColor(editor, DefaultPlaceholderColor);
+		}
+
 		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
+			handler.NativeView?.UpdateCharacterSpacing(editor);
 		}
 
 		public static void MapMaxLength(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateMaxLength(editor);
+			handler.NativeView?.UpdateMaxLength(editor);
+		}
+
+		public static void MapIsReadOnly(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateIsReadOnly(editor);
 		}
 
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdatePredictiveText(editor);
+			handler.NativeView?.UpdatePredictiveText(editor);
 		}
 
 		public static void MapFormatting(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateMaxLength(editor);
+			handler.NativeView?.UpdateMaxLength(editor);
 
 			// Update all of the attributed text formatting properties
-			handler.TypedNativeView?.UpdateCharacterSpacing(editor);
+			handler.NativeView?.UpdateCharacterSpacing(editor);
+		}
+
+		void OnChanged(object? sender, System.EventArgs e) => OnTextChanged();
+
+		void OnTextChanged()
+		{
+			if (NativeView == null)
+				return;
+
+			NativeView.HidePlaceholder(!string.IsNullOrEmpty(NativeView.Text));
 		}
 
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString)
@@ -65,7 +97,7 @@ namespace Microsoft.Maui.Handlers
 			if (range.Length + range.Location > currLength)
 				return false;
 
-			if (VirtualView == null || TypedNativeView == null)
+			if (VirtualView == null || NativeView == null)
 				return false;
 
 			var addLength = replacementString?.Length ?? 0;
@@ -75,5 +107,17 @@ namespace Microsoft.Maui.Handlers
 
 			return newLength <= VirtualView.MaxLength;
 		}
+
+		public static void MapFont(EditorHandler handler, IEditor editor)
+		{
+			var services = handler.Services ??
+				throw new InvalidOperationException($"Unable to find service provider, the handler.Services was null.");
+			var fontManager = services.GetRequiredService<IFontManager>();
+
+			handler.NativeView?.UpdateFont(editor, fontManager);
+		}
+
+		[MissingMapper]
+		public static void MapTextColor(EditorHandler handler, IEditor editor) { }
 	}
 }

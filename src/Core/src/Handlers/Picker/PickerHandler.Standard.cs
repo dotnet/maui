@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : AbstractViewHandler<IPicker, object>
+	public partial class PickerHandler : ViewHandler<IPicker, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 
@@ -10,5 +10,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectedIndex(PickerHandler handler, IPicker view) { }
 		public static void MapCharacterSpacing(PickerHandler handler, IPicker view) { }
 		public static void MapFont(PickerHandler handler, IPicker view) { }
+		public static void MapTextColor(PickerHandler handler, IPicker view) { }
 	}
 }

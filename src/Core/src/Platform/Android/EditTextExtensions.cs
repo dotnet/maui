@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Text;
 using AndroidX.AppCompat.Widget;
 
@@ -27,7 +28,7 @@ namespace Microsoft.Maui
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
-		public static void UpdateTextColor(this AppCompatEditText editText, IEntry entry, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
 			var textColor = entry.TextColor;
 			if (textColor.IsDefault)
@@ -78,29 +79,57 @@ namespace Microsoft.Maui
 		public static void UpdateMaxLength(this AppCompatEditText editText, int maxLength)
 		{
 			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
+			var changed = false;
 
 			for (var i = 0; i < currentFilters.Count; i++)
 			{
 				if (currentFilters[i] is InputFilterLengthFilter)
 				{
 					currentFilters.RemoveAt(i);
+					changed = true;
 					break;
 				}
 			}
 
-			currentFilters.Add(new InputFilterLengthFilter(maxLength));
+			if (maxLength > 0)
+			{
+				currentFilters.Add(new InputFilterLengthFilter(maxLength));
+				changed = true;
+			}
 
-			editText.SetFilters(currentFilters.ToArray());
+			if (changed)
+				editText.SetFilters(currentFilters.ToArray());
 
-			editText.Text = TrimToMaxLength(editText.Text, maxLength);
+			var newText = editText.Text.TrimToMaxLength(maxLength);
+			if (editText.Text != newText)
+				editText.Text = newText;
 		}
 
-		public static void UpdatePlaceholder(this AppCompatEditText editText, IEntry entry)
+		public static void UpdatePlaceholder(this AppCompatEditText editText, IPlaceholder textInput)
 		{
-			if (editText.Hint == entry.Placeholder)
+			if (editText.Hint == textInput.Placeholder)
 				return;
 
-			editText.Hint = entry.Placeholder;
+			editText.Hint = textInput.Placeholder;
+		}
+
+		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IEditor editor, ColorStateList? defaultColor)
+		{
+			var placeholderTextColor = editor.PlaceholderColor;
+			if (placeholderTextColor.IsDefault)
+			{
+				editText.SetHintTextColor(defaultColor);
+			}
+			else
+			{
+				var androidColor = placeholderTextColor.ToNative();
+
+				if (!editText.HintTextColors.IsOneColor(ColorExtensions.States, androidColor))
+				{
+					var acolor = androidColor.ToArgb();
+					editText.SetHintTextColor(new ColorStateList(ColorExtensions.States, new[] { acolor, acolor }));
+				}
+			}
 		}
 
 		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEntry entry)
@@ -113,8 +142,52 @@ namespace Microsoft.Maui
 			editText.Focusable = isEditable;
 		}
 
-		public static void UpdateFont(this AppCompatEditText editText, IEntry entry, IFontManager fontManager) =>
-			editText.UpdateFont(entry.Font, fontManager);
+		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEditor editor)
+		{
+			bool isReadOnly = !editor.IsReadOnly;
+
+			editText.FocusableInTouchMode = isReadOnly;
+			editText.Focusable = isReadOnly;
+			editText.SetCursorVisible(isReadOnly);
+		}
+
+		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Drawable? ClearButtonDrawable)
+		{
+			// Places clear button drawable at the end or start of the EditText based on FlowDirection.
+			void ShowClearButton()
+			{
+				if (entry.FlowDirection == FlowDirection.RightToLeft)
+				{
+					editText.SetCompoundDrawablesWithIntrinsicBounds(ClearButtonDrawable, null, null, null);
+				}
+				else
+				{
+					editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, ClearButtonDrawable, null);
+				}
+			}
+
+			// Hides clear button drawable from the control.
+			void HideClearButton()
+			{
+				editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+			}
+
+			bool isFocused = editText.IsFocused;
+			bool hasText = entry.Text?.Length > 0;
+
+			bool shouldDisplayClearButton = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing
+				&& hasText
+				&& isFocused;
+
+			if (shouldDisplayClearButton)
+			{
+				ShowClearButton();
+			}
+			else
+			{
+				HideClearButton();
+			}
+		}
 
 		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
 		{
@@ -138,10 +211,5 @@ namespace Microsoft.Maui
 			if (entry.IsReadOnly)
 				editText.InputType = InputTypes.Null;
 		}
-
-		internal static string? TrimToMaxLength(string? currentText, int maxLength) =>
-			currentText?.Length > maxLength
-				? currentText.Substring(0, maxLength)
-				: currentText;
 	}
 }

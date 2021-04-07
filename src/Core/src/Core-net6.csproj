@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui</RootNamespace>
     <AssemblyName>Microsoft.Maui</AssemblyName>
     <Nullable>enable</Nullable>
@@ -10,9 +10,16 @@
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup>
+    <None Include="..\..\..\.nuspec\Microsoft.Maui.Core.targets" Visible="False" Pack="True" PackagePath="build;buildTransitive" />
+    <None Include="..\..\..\.nuspec\Microsoft.Maui.Core.props" Visible="False" Pack="True" PackagePath="build;buildTransitive" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
+    <None Include="bin\$(Configuration)\net6.0-windows10.0.19041.0\Microsoft.Maui.pri" Visible="False" Pack="True" PackagePath="runtimes\net6.0-windows10.0.19041.0\native" />
   </ItemGroup>
 </Project>
 

@@ -4,7 +4,7 @@ namespace Microsoft.Maui
 {
 	public interface IFontRegistrar
 	{
-		void Register(string filename, string alias, Assembly assembly);
+		void Register(string filename, string? alias, Assembly assembly);
 
 		void Register(string filename, string? alias);
 

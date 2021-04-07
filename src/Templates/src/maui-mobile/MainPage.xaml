@@ -1,0 +1,28 @@
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiApp1.MainPage"
+             BackgroundColor="White">
+
+    <StackLayout Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
+
+        <Label Text="Welcome to"
+               FontSize="32"
+               TextColor="Black"
+               HorizontalOptions="Center" />
+        <Label Text=".NET Multi-platform App UI"
+               FontSize="24"
+               TextColor="Black"
+               HorizontalOptions="Center" />
+
+        <Button Text="Click Me!"
+                HorizontalOptions="Center"
+                Clicked="OnButtonClicked"/>
+        <Label x:Name="CountLabel"
+               Text="Click the button above!"
+               FontSize="20"
+               TextColor="Black"
+               HorizontalOptions="Center" />
+
+    </StackLayout>
+
+</ContentPage>

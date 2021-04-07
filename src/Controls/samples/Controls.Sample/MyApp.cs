@@ -1,8 +1,8 @@
 using System;
+using System.Diagnostics;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
-using Microsoft.Maui.Controls.Compatibility;
 
 namespace Maui.Controls.Sample
 {
@@ -12,14 +12,14 @@ namespace Maui.Controls.Sample
 		{
 			Services = services;
 
-			Console.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
+			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 		}
 
 		public IServiceProvider Services { get; }
 
 		public IWindow CreateWindow(IActivationState activationState)
 		{
-			Forms.Init(activationState);
+			Microsoft.Maui.Controls.Compatibility.Forms.Init(activationState);
 
 			return Services.GetRequiredService<IWindow>();
 		}

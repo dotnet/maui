@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData(0.3, 2, "appicon.svg", "appiconfg-red-512.svg")]
 			public void BasicTest(double dpi, double fgScale, string bg, string fg)
 			{
-				var info = new SharedImageInfo();
+				var info = new ResizeImageInfo();
 				info.Filename = "images/" + bg;
 				info.ForegroundFilename = "images/" + fg;
 				info.ForegroundScale = fgScale;

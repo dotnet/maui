@@ -90,14 +90,14 @@ parameters:
         vmImage: windows-latest
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
-        artifact: nuget-windows
+        artifact: nuget
       - name: macos
         poolName: 'Azure Pipelines'
         vmImage: macos-latest
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
-        artifact: nuget
+        artifact: nuget-macos
 
 resources:
   repositories:
@@ -182,10 +182,6 @@ stages:
             clean: all
           displayName: Pack .NET 6 (${{ BuildPlatform.name }})
           timeoutInMinutes: 120
-          condition: or(
-            ${{ parameters.BuildEverything }},
-            ne(variables['Build.Reason'], 'PullRequest'),
-            eq('${{ BuildPlatform.name }}', 'macos'))
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
@@ -230,7 +226,7 @@ stages:
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
-              and(eq('${{ BuildPlatform.name }}', 'macos'), eq('${{ BuildCondition }}', 'Release')))
+              eq('${{ BuildCondition }}', 'Release'))
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}

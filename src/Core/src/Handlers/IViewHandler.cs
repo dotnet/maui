@@ -1,6 +1,3 @@
-using System;
-using Microsoft.Maui;
-
 namespace Microsoft.Maui
 {
 	public interface IViewHandler
@@ -10,6 +7,7 @@ namespace Microsoft.Maui
 		void UpdateValue(string property);
 		void DisconnectHandler();
 		object? NativeView { get; }
+		IView? VirtualView { get; }
 		bool HasContainer { get; set; }
 		Size GetDesiredSize(double widthConstraint, double heightConstraint);
 		void SetFrame(Rectangle frame);

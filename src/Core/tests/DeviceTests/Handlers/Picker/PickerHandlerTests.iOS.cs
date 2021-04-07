@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class PickerHandlerTests
 	{
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
-			(MauiPicker)pickerHandler.View;
+			(MauiPicker)pickerHandler.NativeView;
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Text;

@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class SliderHandlerTests
 	{
 		UISlider GetNativeSlider(SliderHandler sliderHandler) =>
-			(UISlider)sliderHandler.View;
+			(UISlider)sliderHandler.NativeView;
 
 		double GetNativeProgress(SliderHandler sliderHandler) =>
 			GetNativeSlider(sliderHandler).Value;

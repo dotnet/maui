@@ -193,6 +193,21 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
 		}
 
+		[Theory(DisplayName = "Validates clear button visibility.")]
+		[InlineData(ClearButtonVisibility.WhileEditing, true)]
+		[InlineData(ClearButtonVisibility.Never, false)]
+		public async Task ValidateClearButtonVisibility(ClearButtonVisibility clearButtonVisibility, bool expected)
+		{
+			var entryStub = new EntryStub()
+			{
+				ClearButtonVisibility = clearButtonVisibility,
+				Text = "Test text input.",
+				FlowDirection = FlowDirection.LeftToRight
+			};
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeClearButtonVisibility, expected);
+		}
+
 		[Theory(DisplayName = "TextChanged Events Fire Correctly")]
 		// null/empty
 		[InlineData(null, null, false)]
@@ -257,6 +272,27 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(expectedText, nativeText);
 			Assert.Equal(expectedText, entry.Text);
+		}
+
+		[Fact(DisplayName = "Negative MaxLength Does Not Clip")]
+		public async Task NegativeMaxLengthDoesNotClip()
+		{
+			const string text = "Lorem ipsum dolor sit amet";
+
+			var entry = new EntryStub()
+			{
+				MaxLength = -1,
+			};
+
+			var nativeText = await GetValueAsync(entry, handler =>
+			{
+				entry.Text = text;
+
+				return GetNativeText(handler);
+			});
+
+			Assert.Equal(text, nativeText);
+			Assert.Equal(text, entry.Text);
 		}
 
 		[Theory(DisplayName = "MaxLength Clips Native Text Correctly")]

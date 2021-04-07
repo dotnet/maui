@@ -28,20 +28,6 @@ namespace Microsoft.Maui
 			nativePicker.SetSelectedItem(picker);
 		}
 
-		public static void UpdateCharacterSpacing(this MauiPicker nativePicker, IPicker picker)
-		{
-			var textAttr = nativePicker.AttributedText?.WithCharacterSpacing(picker.CharacterSpacing);
-
-			if (textAttr != null)
-				nativePicker.AttributedText = textAttr;
-		}
-
-		public static void UpdateFont(this MauiPicker nativePicker, IPicker picker, IFontManager fontManager)
-		{
-			var uiFont = fontManager.GetFont(picker.Font);
-			nativePicker.Font = uiFont;
-		}
-
 		internal static void SetSelectedIndex(this MauiPicker nativePicker, IPicker picker, int selectedIndex = 0)
 		{
 			picker.SelectedIndex = selectedIndex;

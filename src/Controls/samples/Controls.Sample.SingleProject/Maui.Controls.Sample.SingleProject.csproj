@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net6.0-android;net6.0-maccatalyst;net6.0-ios</TargetFrameworks>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">ios-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
@@ -16,22 +16,5 @@
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
-  </ItemGroup>
-  <!--
-    The linker resolves some assembly references too eagerly, and
-    fails when it can't find them, so work around this by referencing
-    the missing assemblies.
-    See: https://github.com/mono/linker/issues/1139
-  -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-android' ">
-    <_DotNetPackageVersion>5.0.0</_DotNetPackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0-android' ">
-    <PackageReference Include="System.CodeDom"                        Version="$(_DotNetPackageVersion)" />
-    <PackageReference Include="System.Diagnostics.EventLog"           Version="$(_DotNetPackageVersion)" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="$(_DotNetPackageVersion)" />
-    <PackageReference Include="System.IO.Ports"                       Version="$(_DotNetPackageVersion)" />
-    <PackageReference Include="System.Security.Permissions"           Version="$(_DotNetPackageVersion)" />
-    <PackageReference Include="System.Threading.AccessControl"        Version="$(_DotNetPackageVersion)" />
   </ItemGroup>
 </Project>

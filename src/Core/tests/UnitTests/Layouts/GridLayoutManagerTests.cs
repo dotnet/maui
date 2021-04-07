@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
-using NSubstitute;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Layouts;
-using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
+using NSubstitute;
 using Xunit;
+using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {
 	[Category(TestCategory.Layout)]
-	public class GridLayoutManagerTests 
+	public class GridLayoutManagerTests
 	{
 		const string GridSpacing = "GridSpacing";
 		const string GridAutoSizing = "GridAutoSizing";
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			return grid;
 		}
 
-		void SubRowDefs(IGridLayout grid, IEnumerable<IGridRowDefinition> rows = null) 
+		void SubRowDefs(IGridLayout grid, IEnumerable<IGridRowDefinition> rows = null)
 		{
 			if (rows == null)
 			{
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			}
 		}
 
-		List<IGridColumnDefinition> CreateTestColumns(params string[] columnWidths) 
+		List<IGridColumnDefinition> CreateTestColumns(params string[] columnWidths)
 		{
 			var converter = new GridLengthTypeConverter();
 
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			return rowDefs;
 		}
 
-		void SetLocation(IGridLayout grid, IView view, int row = 0, int col = 0, int rowSpan = 1, int colSpan = 1) 
+		void SetLocation(IGridLayout grid, IView view, int row = 0, int col = 0, int rowSpan = 1, int colSpan = 1)
 		{
 			grid.GetRow(view).Returns(row);
 			grid.GetRowSpan(view).Returns(rowSpan);
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			grid.GetColumnSpan(view).Returns(colSpan);
 		}
 
-		Size MeasureAndArrange(IGridLayout grid, double widthConstraint = double.PositiveInfinity, double heightConstraint = double.PositiveInfinity) 
+		Size MeasureAndArrange(IGridLayout grid, double widthConstraint = double.PositiveInfinity, double heightConstraint = double.PositiveInfinity)
 		{
 			var manager = new GridLayoutManager(grid);
 			var measuredSize = manager.Measure(widthConstraint, heightConstraint);
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Category(GridAutoSizing)]
 		[Fact]
-		public void OneAutoRowOneAutoColumn() 
+		public void OneAutoRowOneAutoColumn()
 		{
 			// A one-row, one-column grid
 			var grid = CreateGridLayout();
@@ -471,7 +471,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(new Size(100, 100));
 			var view1 = CreateTestView(new Size(50, 50));
 			AddChildren(grid, view0, view1);
-			
+
 			SetLocation(grid, view0, rowSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 1);
 
@@ -557,7 +557,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Category(GridSpan)]
 		[Fact(DisplayName = "Row-spanning views smaller than the views confined to the row should not affect row size")]
-		public void SmallerSpanningViewsShouldNotAffectRowSize() 
+		public void SmallerSpanningViewsShouldNotAffectRowSize()
 		{
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto");
 			var view0 = CreateTestView(new Size(30, 30));

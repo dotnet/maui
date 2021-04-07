@@ -1,17 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.LifecycleEvents;
+using Debug = System.Diagnostics.Debug;
 
 namespace Maui.Controls.Sample.Pages
 {
-	public class MainPage : ContentPage, IPage
+	public class MainPage : BasePage
 	{
-		MainPageViewModel _viewModel;
+		readonly IServiceProvider _services;
+		readonly MainPageViewModel _viewModel;
 
-		public MainPage(MainPageViewModel viewModel)
+		public MainPage(IServiceProvider services, MainPageViewModel viewModel)
 		{
+			_services = services;
 			BindingContext = _viewModel = viewModel;
 
 			SetupMauiLayout();
@@ -32,32 +40,37 @@ namespace Maui.Controls.Sample.Pages
 			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
 
-
 			verticalStack.Add(CreateSampleGrid());
 
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
 			var label = new Label { Text = "End-aligned text", BackgroundColor = Color.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
+			SemanticProperties.SetHint(label, "Hint Text");
+			SemanticProperties.SetDescription(label, "Description Text");
+
 			verticalStack.Add(label);
-			verticalStack.Add(new Label { Text = "This should be BIG text!", FontSize = 24 });
-			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold });
+			verticalStack.Add(new Label { Text = "This should be BIG text!", FontSize = 24, HorizontalOptions = LayoutOptions.End });
+
+			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level1);
+			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Color.LightBlue });
 			verticalStack.Add(new Label { Text = loremIpsum });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
 			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
-			verticalStack.Add(new Label { Text = "This should have five times the line height!", LineHeight = 5 });
+			verticalStack.Add(new Label { Text = "This should have five times the line height! " + loremIpsum, LineHeight = 5, MaxLines = 2 });
 
-			var paddingButton = new Button
-			{
-				Padding = new Thickness(40),
-				Text = "This button has a padding!!",
-				BackgroundColor = Color.Purple,
-			};
+			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level2);
 
-			verticalStack.Add(paddingButton);
+			var visibleClearButtonEntry = new Entry() { ClearButtonVisibility = ClearButtonVisibility.WhileEditing, Placeholder = "This Entry will show clear button if has input." };
+			var hiddenClearButtonEntry = new Entry() { ClearButtonVisibility = ClearButtonVisibility.Never, Placeholder = "This Entry will not..." };
+
+			verticalStack.Add(visibleClearButtonEntry);
+			verticalStack.Add(hiddenClearButtonEntry);
+
+			verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
 
 			var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
 			verticalStack.Add(underlineLabel);
@@ -66,6 +79,15 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ActivityIndicator { Color = Color.Red, IsRunning = true });
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
+			button.Clicked += async (sender, e) =>
+			{
+				var events = _services.GetRequiredService<ILifecycleEventService>();
+				events.InvokeEvents<Action<string>>("CustomEventName", action => action("VALUE"));
+
+				var location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Lowest));
+				Debug.WriteLine($"I tracked you down to {location.Latitude}, {location.Longitude}! You can't hide!");
+			};
+
 			var button2 = new Button()
 			{
 				TextColor = Color.Green,
@@ -76,29 +98,47 @@ namespace Maui.Controls.Sample.Pages
 
 			horizontalStack.Add(button);
 			horizontalStack.Add(button2);
-			horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout" });
+
+			horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout", VerticalOptions = LayoutOptions.Center });
 
 			verticalStack.Add(horizontalStack);
 
-			verticalStack.Add(new CheckBox());
+			var paddingButton = new Button
+			{
+				Padding = new Thickness(40),
+				Text = "This button has a padding!!",
+				BackgroundColor = Color.Purple,
+			};
+
+			verticalStack.Add(paddingButton);
+			verticalStack.Add(new Button { Text = "CharacterSpacing" });
+			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
+
+			var checkbox = new CheckBox();
+			checkbox.CheckedChanged += (sender, e) =>
+			{
+				Debug.WriteLine($"Checked Changed to '{e.Value}'");
+			};
+			verticalStack.Add(checkbox);
 			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
 			verticalStack.Add(new CheckBox { IsChecked = true, Color = Color.Aquamarine });
-
-			verticalStack.Add(new DatePicker());
 
 			verticalStack.Add(new Editor());
 			verticalStack.Add(new Editor { Text = "Editor" });
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", MaxLength = 10 });
 			verticalStack.Add(new Editor { Text = "Predictive Text Off", IsTextPredictionEnabled = false });
+			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", FontSize = 10, FontFamily = "dokdo_regular" });
+			verticalStack.Add(new Editor { Text = "ReadOnly Editor", IsReadOnly = true });
+
 
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
 			{
-				System.Console.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
+				Debug.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
 			};
 
 			verticalStack.Add(entry);
-			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed, FontFamily = "Dokdo" });
+			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed, FontFamily = "Dokdo", MaxLength = -1 });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
@@ -131,7 +171,7 @@ namespace Maui.Controls.Sample.Pages
 				"Japanese Macaque"
 			};
 
-			var picker = new Picker { Title = "Select a monkey", FontSize = 14 };
+			var picker = new Picker { Title = "Select a monkey", FontFamily = "Dokdo" };
 
 			picker.ItemsSource = monkeyList;
 			verticalStack.Add(picker);
@@ -148,6 +188,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Switch() { OnColor = Color.Green, ThumbColor = Color.Yellow });
 
 			verticalStack.Add(new DatePicker());
+			verticalStack.Add(new DatePicker { CharacterSpacing = 6 });
+			verticalStack.Add(new DatePicker { FontSize = 24 });
 
 			verticalStack.Add(new TimePicker());
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
@@ -159,7 +201,7 @@ namespace Maui.Controls.Sample.Pages
 				Content = verticalStack
 			};
 		}
-	
+
 
 		void SetupCompatibilityLayout()
 		{
@@ -205,7 +247,7 @@ namespace Maui.Controls.Sample.Pages
 		}
 
 		public IView View { get => (IView)Content; set => Content = (View)value; }
-		
+
 		IView CreateSampleGrid()
 		{
 			var layout = new Microsoft.Maui.Controls.Layout2.GridLayout() { ColumnSpacing = 5, RowSpacing = 8 };

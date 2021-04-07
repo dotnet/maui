@@ -1,15 +1,16 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class TimePickerHandler : AbstractViewHandler<ITimePicker, MauiTimePicker>
+	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
 		protected override MauiTimePicker CreateNativeView()
 		{
 			return new MauiTimePicker(() =>
 			{
 				SetVirtualViewTime();
-				TypedNativeView?.ResignFirstResponder();
+				NativeView?.ResignFirstResponder();
 			});
 		}
 
@@ -31,18 +32,30 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.TypedNativeView?.UpdateFormat(timePicker);
+			handler.NativeView?.UpdateFormat(timePicker);
 		}
 
 		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.TypedNativeView?.UpdateTime(timePicker);
+			handler.NativeView?.UpdateTime(timePicker);
 		}
 
 		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(timePicker);
+			handler.NativeView?.UpdateCharacterSpacing(timePicker);
 		}
+
+		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+
+			handler.NativeView?.UpdateFont(timePicker, fontManager);
+		}
+
+		[MissingMapper]
+		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker) { }
 
 		void OnValueChanged(object? sender, EventArgs e)
 		{
@@ -51,10 +64,10 @@ namespace Microsoft.Maui.Handlers
 
 		void SetVirtualViewTime()
 		{
-			if (VirtualView == null || TypedNativeView == null)
+			if (VirtualView == null || NativeView == null)
 				return;
 
-			VirtualView.Time = TypedNativeView.Date.ToDateTime() - new DateTime(1, 1, 1);
+			VirtualView.Time = NativeView.Date.ToDateTime() - new DateTime(1, 1, 1);
 		}
 	}
 }

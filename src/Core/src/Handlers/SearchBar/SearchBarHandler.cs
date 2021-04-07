@@ -4,11 +4,15 @@
 	{
 		public static PropertyMapper<ISearchBar, SearchBarHandler> SearchBarMapper = new PropertyMapper<ISearchBar, SearchBarHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(ISearchBar.Text)] = MapText,
-			[nameof(ISearchBar.Placeholder)] = MapPlaceholder,
+			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ISearchBar.Font)] = MapFont,
 			[nameof(ISearchBar.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
-			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing
+			[nameof(ISearchBar.IsReadOnly)] = MapIsReadOnly,
+			[nameof(ISearchBar.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
+			[nameof(ISearchBar.MaxLength)] = MapMaxLength,
+			[nameof(ISearchBar.Placeholder)] = MapPlaceholder,
+			[nameof(ISearchBar.Text)] = MapText,
+			[nameof(ISearchBar.TextColor)] = MapTextColor,
 		};
 
 		public SearchBarHandler() : base(SearchBarMapper)

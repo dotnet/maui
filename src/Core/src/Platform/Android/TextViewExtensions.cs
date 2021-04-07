@@ -1,3 +1,4 @@
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
 using Android.Util;
@@ -19,46 +20,40 @@ namespace Microsoft.Maui
 				textView.Text = newText;
 		}
 
-		public static void UpdateTextColor(this TextView textView, ILabel label, Color defaultColor)
+		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Color defaultColor)
 		{
-			Color textColor = label.TextColor;
-
+			var textColor = textStyle.TextColor;
 			if (textColor.IsDefault)
-			{
 				textView.SetTextColor(defaultColor.ToNative());
-			}
 			else
-			{
 				textView.SetTextColor(textColor.ToNative());
-			}
 		}
 
-		public static void UpdateCharacterSpacing(this TextView textView, IEntry entry) =>
-			UpdateCharacterSpacing(textView, entry.CharacterSpacing);
+		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle) =>
+			textView.UpdateTextColor(textStyle, textView.TextColors);
 
-		public static void UpdateCharacterSpacing(this TextView textView, IEditor editor) =>
-			UpdateCharacterSpacing(textView, editor.CharacterSpacing);
-
-		public static void UpdateCharacterSpacing(this TextView textView, ILabel label) =>
-			UpdateCharacterSpacing(textView, label.CharacterSpacing);
-
-		public static void UpdateCharacterSpacing(this TextView textView, ISearchBar searchBar) =>
-			UpdateCharacterSpacing(textView, searchBar.CharacterSpacing);
-
-		public static void UpdateCharacterSpacing(this TextView textView, double characterSpacing) =>
-			textView.LetterSpacing = characterSpacing.ToEm();
-
-		public static void UpdateFont(this TextView textView, ILabel label, IFontManager fontManager) =>
-			UpdateFont(textView, label.Font, fontManager);
-
-		public static void UpdateFont(this TextView textView, Font font, IFontManager fontManager)
+		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, ColorStateList? defaultColor)
 		{
+			var textColor = textStyle.TextColor;
+			if (textColor.IsDefault)
+				textView.SetTextColor(defaultColor);
+			else
+				textView.SetTextColor(textColor.ToNative());
+		}
+
+		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)
+		{
+			var font = textStyle.Font;
+
 			var tf = fontManager.GetTypeface(font);
 			textView.Typeface = tf;
 
 			var sp = fontManager.GetScaledPixel(font);
 			textView.SetTextSize(ComplexUnitType.Sp, sp);
 		}
+
+		public static void UpdateCharacterSpacing(this TextView textView, ITextStyle textStyle) =>
+			textView.LetterSpacing = textStyle.CharacterSpacing.ToEm();
 
 		public static void UpdateHorizontalTextAlignment(this TextView textView, ITextAlignment text)
 		{
@@ -83,9 +78,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLines(this TextView textView, ILabel label)
 		{
-			int maxLinex = label.MaxLines;
-
-			textView.SetMaxLines(maxLinex);
+			textView.SetLineBreakMode(label);
 		}
 
 		public static void UpdatePadding(this TextView textView, ILabel label)
@@ -117,6 +110,14 @@ namespace Microsoft.Maui
 				textView.PaintFlags &= ~PaintFlags.UnderlineText;
 			else
 				textView.PaintFlags |= PaintFlags.UnderlineText;
+		}
+
+		public static void UpdateLineHeight(this TextView textView, ILabel label, float lineSpacingAddDefault, float lineSpacingMultDefault)
+		{
+			if (label.LineHeight == -1)
+				textView.SetLineSpacing(lineSpacingAddDefault, lineSpacingMultDefault);
+			else if (label.LineHeight >= 0)
+				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
 
 		internal static void SetLineBreakMode(this TextView textView, ILabel label)
@@ -159,14 +160,6 @@ namespace Microsoft.Maui
 
 			textView.SetSingleLine(singleLine);
 			textView.SetMaxLines(maxLines);
-		}
-
-		internal static void UpdateLineHeight(this TextView textView, ILabel label, float lineSpacingAddDefault, float lineSpacingMultDefault)
-		{
-			if (label.LineHeight == -1)
-				textView.SetLineSpacing(lineSpacingAddDefault, lineSpacingMultDefault);
-			else if (label.LineHeight >= 0)
-				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
 	}
 }

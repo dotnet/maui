@@ -117,7 +117,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		UITextField GetNativeEntry(EntryHandler entryHandler) =>
-			(UITextField)entryHandler.View;
+			(UITextField)entryHandler.NativeView;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
@@ -148,6 +148,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsItalic(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
+
+		bool GetNativeClearButtonVisibility(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).ClearButtonMode == UITextFieldViewMode.WhileEditing;
 
 		UITextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;

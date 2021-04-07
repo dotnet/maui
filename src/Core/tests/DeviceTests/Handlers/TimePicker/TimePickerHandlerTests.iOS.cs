@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using UIKit;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -32,8 +34,33 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
 		}
 
+		[Theory(DisplayName = "Font Family Initializes Correctly")]
+		[InlineData(null)]
+		[InlineData("Times New Roman")]
+		[InlineData("Dokdo")]
+		public async Task FontFamilyInitializesCorrectly(string family)
+		{
+			var timePicker = new TimePickerStub
+			{
+				Time = TimeSpan.FromHours(8),
+				Font = Font.OfSize(family, 10)
+			};
+
+			var (services, nativeFont) = await GetValueAsync(timePicker, handler => (handler.Services, GetNativeTimePicker(handler).Font));
+
+			var fontManager = services.GetRequiredService<IFontManager>();
+
+			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
+
+			Assert.Equal(expectedNativeFont.FamilyName, nativeFont.FamilyName);
+			if (string.IsNullOrEmpty(family))
+				Assert.Equal(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
+			else
+				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
+		}
+
 		MauiTimePicker GetNativeTimePicker(TimePickerHandler timePickerHandler) =>
-			(MauiTimePicker)timePickerHandler.View;
+			(MauiTimePicker)timePickerHandler.NativeView;
 
 		async Task ValidateTime(ITimePicker timePickerStub, Action action = null)
 		{
@@ -55,5 +82,14 @@ namespace Microsoft.Maui.DeviceTests
 			var mauiTimePicker = GetNativeTimePicker(timePickerHandler);
 			return mauiTimePicker.AttributedText.GetCharacterSpacing();
 		}
+
+		double GetNativeUnscaledFontSize(TimePickerHandler timePickerHandler) =>
+			GetNativeTimePicker(timePickerHandler).Font.PointSize;
+
+		bool GetNativeIsBold(TimePickerHandler timePickerHandler) =>
+			GetNativeTimePicker(timePickerHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
+
+		bool GetNativeIsItalic(TimePickerHandler timePickerHandler) =>
+			GetNativeTimePicker(timePickerHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
 	}
 }

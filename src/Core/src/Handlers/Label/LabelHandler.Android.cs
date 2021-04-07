@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : AbstractViewHandler<ILabel, TextView>
+	public partial class LabelHandler : ViewHandler<ILabel, TextView>
 	{
 		static Color DefaultTextColor { get; set; }
 		static float LineSpacingAddDefault { get; set; }
@@ -28,42 +28,42 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateText(label);
+			handler.NativeView?.UpdateText(label);
 		}
 
 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateTextColor(label, DefaultTextColor);
+			handler.NativeView?.UpdateTextColor(label, DefaultTextColor);
 		}
 
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateCharacterSpacing(label);
+			handler.NativeView?.UpdateCharacterSpacing(label);
 		}
 
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateHorizontalTextAlignment(label);
+			handler.NativeView?.UpdateHorizontalTextAlignment(label);
 		}
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateLineBreakMode(label);
+			handler.NativeView?.UpdateLineBreakMode(label);
 		}
 
 		public static void MapMaxLines(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateMaxLines(label);
+			handler.NativeView?.UpdateMaxLines(label);
 		}
 
 		public static void MapPadding(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdatePadding(label);
+			handler.NativeView?.UpdatePadding(label);
 		}
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateTextDecorations(label);
+			handler.NativeView?.UpdateTextDecorations(label);
 		}
 
 		public static void MapFont(LabelHandler handler, ILabel label)
@@ -72,11 +72,12 @@ namespace Microsoft.Maui.Handlers
 
 			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
-			handler.TypedNativeView?.UpdateFont(label, fontManager);
+			handler.NativeView?.UpdateFont(label, fontManager);
 		}
+
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
-			handler.TypedNativeView?.UpdateLineHeight(label, LineSpacingAddDefault, LineSpacingMultDefault);
+			handler.NativeView?.UpdateLineHeight(label, LineSpacingAddDefault, LineSpacingMultDefault);
 		}
 	}
 }
