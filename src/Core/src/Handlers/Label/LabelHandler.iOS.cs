@@ -63,10 +63,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
 			handler.NativeView?.UpdateLineHeight(label);
-
-			// Setting line height may have removed text alignment settings,
-			// so we need to make sure those are applied, again
-			handler.NativeView?.UpdateHorizontalTextAlignment(label);
 		}
 
 		public static void MapFormatting(LabelHandler handler, ILabel label)
