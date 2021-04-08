@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = entry.HorizontalTextAlignment,
-					NativeViewValue = GetNativeTextAlignment(handler)
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeClearButtonVisibility(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ClearButtonMode == UITextFieldViewMode.WhileEditing;
 
-		UITextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
+		UITextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
 		UIReturnKeyType GetNativeReturnType(EntryHandler entryHandler) =>

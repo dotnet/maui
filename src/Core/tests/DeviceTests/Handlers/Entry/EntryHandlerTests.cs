@@ -320,5 +320,117 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, nativeText);
 			Assert.Equal(expectedText, entry.Text);
 		}
+
+		[Theory(DisplayName = "Updating Font Does Not Affect CharacterSpacing")]
+		[InlineData(10, 20)]
+		[InlineData(20, 10)]
+		public async Task FontDoesNotAffectCharacterSpacing(double initialSize, double newSize)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				CharacterSpacing = 5,
+				Font = Font.SystemFontOfSize(initialSize)
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeCharacterSpacing,
+				nameof(IEntry.Font),
+				() => entry.Font = Font.SystemFontOfSize(newSize));
+		}
+
+		[Theory(DisplayName = "Updating Text Does Not Affect CharacterSpacing")]
+		[InlineData("Short", "Longer Text")]
+		[InlineData("Long thext here", "Short")]
+		public async Task TextDoesNotAffectCharacterSpacing(string initialText, string newText)
+		{
+			var entry = new EntryStub
+			{
+				Text = initialText,
+				CharacterSpacing = 5,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeCharacterSpacing,
+				nameof(IEntry.Text),
+				() => entry.Text = newText);
+		}
+
+		[Theory(DisplayName = "Updating Font Does Not Affect HorizontalTextAlignment")]
+		[InlineData(10, 20)]
+		[InlineData(20, 10)]
+		public async Task FontDoesNotAffectHorizontalTextAlignment(double initialSize, double newSize)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				HorizontalTextAlignment = TextAlignment.Center,
+				Font = Font.SystemFontOfSize(initialSize),
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeHorizontalTextAlignment,
+				nameof(IEntry.Font),
+				() => entry.Font = Font.SystemFontOfSize(newSize));
+		}
+
+		[Theory(DisplayName = "Updating Text Does Not Affect HorizontalTextAlignment")]
+		[InlineData("Short", "Longer Text")]
+		[InlineData("Long thext here", "Short")]
+		public async Task TextDoesNotAffectHorizontalTextAlignment(string initialText, string newText)
+		{
+			var entry = new EntryStub
+			{
+				Text = initialText,
+				HorizontalTextAlignment = TextAlignment.Center,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeHorizontalTextAlignment,
+				nameof(IEntry.Text),
+				() => entry.Text = newText);
+		}
+
+		[Theory(DisplayName = "Updating MaxLength Does Not Affect HorizontalTextAlignment")]
+		[InlineData(5, 20)]
+		[InlineData(20, 5)]
+		public async Task MaxLengthDoesNotAffectHorizontalTextAlignment(int initialSize, int newSize)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				HorizontalTextAlignment = TextAlignment.Center,
+				MaxLength = initialSize,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeHorizontalTextAlignment,
+				nameof(IEntry.MaxLength),
+				() => entry.MaxLength = newSize);
+		}
+
+		[Theory(DisplayName = "Updating CharacterSpacing Does Not Affect HorizontalTextAlignment")]
+		[InlineData(1, 5)]
+		[InlineData(5, 1)]
+		public async Task CharacterSpacingDoesNotAffectHorizontalTextAlignment(int initialSize, int newSize)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				HorizontalTextAlignment = TextAlignment.Center,
+				CharacterSpacing = initialSize,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeHorizontalTextAlignment,
+				nameof(IEntry.CharacterSpacing),
+				() => entry.CharacterSpacing = newSize);
+		}
 	}
 }
