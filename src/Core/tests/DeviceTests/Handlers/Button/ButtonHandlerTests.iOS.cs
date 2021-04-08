@@ -86,9 +86,20 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task ValidateDefaultAccessibilityTraits()
 		{
 			var view = new ButtonStub();
-			view.Semantics.Hint = "Test Hint";
-			var traits = await GetValueAsync((IView)view, handler => handler.NativeView.AccessibilityTraits);
-			Assert.True(traits.HasFlag(UIAccessibilityTrait.Button));
+			var trait = await GetValueAsync((IView)view,
+				handler =>
+				{
+					// Accessibility Traits don't initialize until after
+					// a UIView is added to the visual hierarchy so we are just 
+					// initializing here and then validating that the value doesn't get cleared
+
+					handler.NativeView.AccessibilityTraits = UIAccessibilityTrait.Button;
+					view.Semantics.Hint = "Test Hint";
+					view.Handler.UpdateValue("Semantics");
+					return handler.NativeView.AccessibilityTraits;
+				});
+
+			Assert.Equal(UIAccessibilityTrait.Button, trait);
 		}
 
 
