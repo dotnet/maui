@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformMeasure = VirtualView.Measure;
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 
+			this.TypedNativeView.RemoveAllViews();
 			foreach (var child in VirtualView.Children)
 			{
 				NativeView.AddView(child.ToNative(MauiContext));
