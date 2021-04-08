@@ -42,6 +42,13 @@ namespace Microsoft.Maui.Controls.XamlC
 					if (color == "lightgrey")
 						color = "lightgray";
 
+					if (color == "Default")
+					{
+						yield return Instruction.Create(OpCodes.Ldnull);
+						yield return Instruction.Create(OpCodes.Ret);
+						yield break;
+					}
+
 					var fieldReference = module.ImportFieldReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Colors"),
 																	 color,
 																	 isStatic: true,
