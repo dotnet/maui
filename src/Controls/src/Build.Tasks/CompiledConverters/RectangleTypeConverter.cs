@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			yield return Instruction.Create(OpCodes.Ldc_R8, y);
 			yield return Instruction.Create(OpCodes.Ldc_R8, w);
 			yield return Instruction.Create(OpCodes.Ldc_R8, h);
-			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui", "Microsoft.Maui", "Rectangle"), parameterTypes: new[] {
+			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Rectangle"), parameterTypes: new[] {
 				("mscorlib", "System", "Double"),
 				("mscorlib", "System", "Double"),
 				("mscorlib", "System", "Double"),
