@@ -84,7 +84,7 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = entry.HorizontalTextAlignment,
-					NativeViewValue = GetNativeTextAlignment(handler)
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Typeface.IsItalic;
 
-		Android.Views.TextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
+		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>
