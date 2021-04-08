@@ -12,6 +12,7 @@
 		public const string Layout = "Layout";
 		public const string Picker = "Picker";
 		public const string SearchBar = "SearchBar";
+		public const string ScrollView = "ScrollView";
 		public const string Slider = "Slider";
 		public const string Stepper = "Stepper";
 		public const string Switch = "Switch";

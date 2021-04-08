@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Hosting
 			{ typeof(ILayout), typeof(LayoutHandler) },
 			{ typeof(IPicker), typeof(PickerHandler) },
 			{ typeof(IProgress), typeof(ProgressBarHandler) },
+			{ typeof(IScroll), typeof(ScrollViewHandler) },
 			{ typeof(ISearchBar), typeof(SearchBarHandler) },
 			{ typeof(ISlider), typeof(SliderHandler) },
 			{ typeof(IStepper), typeof(StepperHandler) },
