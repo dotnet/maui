@@ -39,6 +39,9 @@ namespace Microsoft.Maui
 				return null;
 
 			var mutableParagraphStyle = new NSMutableParagraphStyle();
+			if (attribute != null)
+				mutableParagraphStyle.SetParagraphStyle(attribute);
+
 			mutableParagraphStyle.LineHeightMultiple = new nfloat(lineHeight >= 0 ? lineHeight : -1);
 
 			var mutableAttributedString = new NSMutableAttributedString(attributedString);
