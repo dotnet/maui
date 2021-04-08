@@ -68,9 +68,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFont(LabelHandler handler, ILabel label)
 		{
-			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
-
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.NativeView?.UpdateFont(label, fontManager);
 		}

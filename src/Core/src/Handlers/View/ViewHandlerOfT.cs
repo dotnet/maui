@@ -41,8 +41,6 @@ namespace Microsoft.Maui.Handlers
 			private set => base.NativeView = value;
 		}
 
-		public IServiceProvider? Services => MauiContext?.Services;
-
 		public override void SetVirtualView(IView view)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));

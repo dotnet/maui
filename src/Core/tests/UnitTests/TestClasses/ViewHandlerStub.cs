@@ -1,5 +1,5 @@
 using Microsoft.Maui.Handlers;
-namespace Microsoft.Maui.Tests
+namespace Microsoft.Maui.UnitTests
 {
 	class ViewHandlerStub : ViewHandler<IViewStub, NativeViewStub>
 	{

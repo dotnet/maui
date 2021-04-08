@@ -1,3 +1,4 @@
+using System;
 #if __IOS__
 using NativeView = UIKit.UIView;
 #elif __MACOS__
@@ -51,6 +52,8 @@ namespace Microsoft.Maui.Handlers
 		protected abstract void RemoveContainer();
 
 		public IMauiContext? MauiContext { get; private set; }
+
+		public IServiceProvider? Services => MauiContext?.Services;
 
 		public object? NativeView { get; private protected set; }
 
