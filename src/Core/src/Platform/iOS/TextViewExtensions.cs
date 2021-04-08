@@ -46,5 +46,24 @@ namespace Microsoft.Maui
 		{
 			textView.UserInteractionEnabled = !editor.IsReadOnly;
 		}
+
+		public static void UpdateKeyboard(this UITextView textView, IEditor editor)
+		{
+			var keyboard = editor.Keyboard;
+
+			textView.ApplyKeyboard(keyboard);
+
+			if (keyboard is not CustomKeyboard)
+			{
+				// TODO: IsSpellCheckEnabled handling must be here.
+
+				if (!editor.IsTextPredictionEnabled)
+				{
+					textView.AutocorrectionType = UITextAutocorrectionType.No;
+				}
+			}
+
+			textView.ReloadInputViews();
+		}
 	}
 }

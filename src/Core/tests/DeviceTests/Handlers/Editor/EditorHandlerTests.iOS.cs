@@ -87,5 +87,35 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
+
+		bool GetNativeIsNumericKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.DecimalPad;
+
+		bool GetNativeIsEmailKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.EmailAddress;
+
+		bool GetNativeIsTelephoneKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.PhonePad;
+
+		bool GetNativeIsUrlKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.Url;
+
+		bool GetNativeIsTextKeyboard(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				nativeEditor.SpellCheckingType == UITextSpellCheckingType.Yes;
+		}
+
+		bool GetNativeIsChatKeyboard(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				nativeEditor.SpellCheckingType == UITextSpellCheckingType.No;
+		}
 	}
 }
