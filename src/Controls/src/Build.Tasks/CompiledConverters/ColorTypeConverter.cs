@@ -23,16 +23,17 @@ namespace Microsoft.Maui.Controls.XamlC
 				if (value.StartsWith("#", StringComparison.Ordinal))
 				{
 					var color = Color.FromHex(value);
+
 					yield return Instruction.Create(OpCodes.Ldc_R4, color.Red);
 					yield return Instruction.Create(OpCodes.Ldc_R4, color.Green);
 					yield return Instruction.Create(OpCodes.Ldc_R4, color.Blue);
 					yield return Instruction.Create(OpCodes.Ldc_R4, color.Alpha);
 
 					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Color"), parameterTypes: new[] {
-						("mscorlib", "System", "Float"),
-						("mscorlib", "System", "Float"),
-						("mscorlib", "System", "Float"),
-						("mscorlib", "System", "Float")}));
+						("mscorlib", "System", "Single"),
+						("mscorlib", "System", "Single"),
+						("mscorlib", "System", "Single"),
+						("mscorlib", "System", "Single")}));
 					yield break;
 				}
 				var parts = value.Split('.');
