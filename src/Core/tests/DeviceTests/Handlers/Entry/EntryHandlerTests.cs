@@ -252,6 +252,114 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(0, eventFiredCount);
 		}
 
+		[Theory(DisplayName = "Validates Numeric Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), true)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateNumericKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsNumericKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Email Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), true)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateEmailKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsEmailKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Telephone Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), true)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateTelephoneKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsTelephoneKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Url Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), true)]
+		public async Task ValidateUrlKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsUrlKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Text Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), true)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateTextKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsTextKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Chat Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), true)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateChatKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsChatKeyboard, expected);
+		}
+
 		[Theory(DisplayName = "MaxLength Initializes Correctly")]
 		[InlineData(2)]
 		[InlineData(5)]

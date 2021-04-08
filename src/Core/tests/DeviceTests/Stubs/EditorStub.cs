@@ -26,12 +26,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public int MaxLength { get; set; } = int.MaxValue;
 
-		public bool IsTextPredictionEnabled { get; set; }
+		public bool IsTextPredictionEnabled { get; set; } = true;
+
+		public Keyboard Keyboard { get; set; }
 
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
 
 		void OnTextChanged(string oldValue, string newValue) =>
 			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
-
 	}
 }

@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -74,12 +75,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler("Partially ported")]
 		protected internal override void UpdateCharacterSpacing()
 		{
-			var textAttr = TextView.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
+			var textAttr = TextView.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if(textAttr != null)
 				TextView.AttributedText = textAttr;
 
-			var placeHolder = _placeholderLabel.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+			var placeHolder = _placeholderLabel.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if(placeHolder != null)
 				_placeholderLabel.AttributedText = placeHolder;
@@ -122,7 +123,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			);
 
 			_placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
-			_placeholderLabel.AttributedText = _placeholderLabel.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+			_placeholderLabel.AttributedText = _placeholderLabel.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			Control.AddConstraints(hConstraints);
 			Control.AddConstraints(vConstraints);

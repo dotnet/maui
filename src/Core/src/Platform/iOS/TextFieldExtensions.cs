@@ -81,6 +81,18 @@ namespace Microsoft.Maui
 				textField.AttributedText = textAttr;
 		}
 
+		public static void UpdateKeyboard(this UITextField textField, IEntry entry)
+		{
+			var keyboard = entry.Keyboard;
+
+			textField.ApplyKeyboard(keyboard);
+
+			if (keyboard is not CustomKeyboard)
+				textField.UpdateIsTextPredictionEnabled(entry);
+
+			textField.ReloadInputViews();
+		}
+
 		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)
 		{
 			textField.ClearButtonMode = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing ? UITextFieldViewMode.WhileEditing : UITextFieldViewMode.Never;

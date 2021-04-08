@@ -1,7 +1,7 @@
+﻿using System.Diagnostics;
 using Android.Text;
-using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui
 {
 	public static class KeyboardExtensions
 	{
@@ -28,9 +28,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				result = InputTypes.ClassText | InputTypes.TextFlagCapSentences;
 			else if (self == Keyboard.Url)
 				result = InputTypes.ClassText | InputTypes.TextVariationUri;
-			else if (self is CustomKeyboard)
+			else if (self is CustomKeyboard custom)
 			{
-				var custom = (CustomKeyboard)self;
 				var capitalizedSentenceEnabled = (custom.Flags & KeyboardFlags.CapitalizeSentence) == KeyboardFlags.CapitalizeSentence;
 				var capitalizedWordsEnabled = (custom.Flags & KeyboardFlags.CapitalizeWord) == KeyboardFlags.CapitalizeWord;
 				var capitalizedCharacterEnabled = (custom.Flags & KeyboardFlags.CapitalizeCharacter) == KeyboardFlags.CapitalizeCharacter;
@@ -44,10 +43,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (!capitalizedSentenceEnabled && !spellcheckEnabled && suggestionsEnabled)
 				{
 					// Due to the nature of android, TextFlagAutoCorrect includes Spellcheck
-					Log.Warning(null, "On Android, KeyboardFlags.Suggestions enables KeyboardFlags.Spellcheck as well due to a platform limitation.");
+
+					Debug.WriteLine("On Android, KeyboardFlags.Suggestions enables KeyboardFlags.Spellcheck as well due to a platform limitation.");
 					result = InputTypes.ClassText | InputTypes.TextFlagAutoCorrect;
 				}
-
 				if (!capitalizedSentenceEnabled && spellcheckEnabled && !suggestionsEnabled)
 					result = InputTypes.ClassText | InputTypes.TextFlagAutoComplete;
 
@@ -60,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (capitalizedSentenceEnabled && !spellcheckEnabled && suggestionsEnabled)
 				{
 					// Due to the nature of android, TextFlagAutoCorrect includes Spellcheck
-					Log.Warning(null, "On Android, KeyboardFlags.Suggestions enables KeyboardFlags.Spellcheck as well due to a platform limitation.");
+					Debug.WriteLine("On Android, KeyboardFlags.Suggestions enables KeyboardFlags.Spellcheck as well due to a platform limitation.");
 					result = InputTypes.ClassText | InputTypes.TextFlagCapSentences | InputTypes.TextFlagAutoCorrect;
 				}
 
@@ -75,10 +74,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (custom.Flags != KeyboardFlags.All)
 				{
 					if (capitalizedWordsEnabled)
-						result = result | InputTypes.TextFlagCapWords;
+						result |= InputTypes.TextFlagCapWords;
 
 					if (capitalizedCharacterEnabled)
-						result = result | InputTypes.TextFlagCapCharacters;
+						result |= InputTypes.TextFlagCapCharacters;
 				}
 			}
 			else
@@ -86,6 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				// Should never happens
 				result = InputTypes.TextVariationNormal;
 			}
+
 			return result;
 		}
 	}

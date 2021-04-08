@@ -42,5 +42,8 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapCharacterSpacing(IViewHandler handler, IEntry entry) { }
+
+		[MissingMapper]
+		public static void MapKeyboard(IViewHandler handler, IEntry entry) { }
 	}
 }
