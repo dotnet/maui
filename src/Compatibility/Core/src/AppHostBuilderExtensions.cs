@@ -14,11 +14,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			typeof(Page),
 			typeof(Label),
 			typeof(CheckBox),
+			typeof(Entry),
 #if !WINDOWS
 			typeof(ActivityIndicator),
 			typeof(DatePicker),
 			typeof(Editor),
-			typeof(Entry),
+			
 			typeof(Picker),
 			typeof(ProgressBar),
 			typeof(SearchBar),

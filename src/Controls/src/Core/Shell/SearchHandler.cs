@@ -147,8 +147,8 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+		public virtual string UpdateFormsText(string source, TextTransform textTransform) =>
+			source.GetTransformedText(textTransform);
 
 		public Color CancelButtonColor
 		{

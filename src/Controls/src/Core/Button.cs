@@ -346,8 +346,8 @@ namespace Microsoft.Maui.Controls
 		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
 			=> InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
-		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+		public virtual string UpdateFormsText(string source, TextTransform textTransform) =>
+			StringExtensions.GetTransformedText(source, textTransform);
 
 		[DebuggerDisplay("Image Position = {Position}, Spacing = {Spacing}")]
 		[TypeConverter(typeof(ButtonContentTypeConverter))]

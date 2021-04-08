@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> source.GetTransformedText(textTransform);
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			HandleFontChanged();

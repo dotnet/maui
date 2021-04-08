@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> source.GetTransformedText(textTransform);
 
 		public static readonly BindableProperty TextProperty
 			= BindableProperty.Create(nameof(Text), typeof(string), typeof(Span), "", defaultBindingMode: BindingMode.OneWay);

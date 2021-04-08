@@ -19,5 +19,10 @@
 		/// Gets the spacing between characters of the text.
 		/// </summary>
 		double CharacterSpacing { get; }
+
+		/// <summary>
+		/// Gets the applied text transform to the text of the control.
+		/// </summary>
+		TextTransform TextTransform { get; }
 	}
 }

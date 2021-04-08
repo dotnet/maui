@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls
 			Device.GetNamedSize(NamedSize.Default, this);
 
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> source.GetTransformedText(textTransform);
 
 		int IBorderElement.CornerRadiusDefaultValue => (int)BorderElement.CornerRadiusProperty.DefaultValue;
 
