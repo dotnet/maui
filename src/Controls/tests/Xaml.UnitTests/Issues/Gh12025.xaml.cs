@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh12025)));
 				var layout = new Gh12025(useCompiledXaml);
 				Assert.That(NavigationPage.GetIconColor(layout), Is.EqualTo(NavigationPage.IconColorProperty.DefaultValue));
-				Assert.That(Gh12025NavPage.GetIconColor(layout), Is.EqualTo(Color.HotPink));
+				Assert.That(Gh12025NavPage.GetIconColor(layout), Is.EqualTo(Colors.HotPink));
 			}
 		}
 	}

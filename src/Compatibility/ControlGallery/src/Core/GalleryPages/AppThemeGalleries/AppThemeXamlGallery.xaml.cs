@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppT
 
 	//public class CustomControl : ContentView
 	//   {
-	//       public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(CustomControl), (Color)new AppThemeColor() { Light = Color.Red, Dark = Color.Green });
+	//       public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(CustomControl), (Color)new AppThemeColor() { Light = Colors.Red, Dark = Color.Green });
 	//       public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(CustomControl));
 	//       public static readonly BindableProperty BoxColorProperty = BindableProperty.Create(nameof(BoxColor), typeof(Color), typeof(CustomControl), Color.Yellow);
 

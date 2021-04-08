@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var layout = new Gh11551(useCompiledXaml);
 				var bounds = AbsoluteLayout.GetLayoutBounds(layout.label);
-				Assert.That(bounds, Is.EqualTo(new Rect(1, .5, -1, 22)));
+				Assert.That(bounds, Is.EqualTo(new Rectangle(1, .5, -1, 22)));
 			}
 		}
 	}

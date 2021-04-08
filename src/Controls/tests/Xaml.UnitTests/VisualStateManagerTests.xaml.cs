@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -62,8 +63,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(VisualStateManager.GoToState(entry1, "Disabled"));
 
 				// And verify that the changes took
-				Assert.AreEqual(Color.Gray, entry1.TextColor);
-				Assert.AreEqual(Color.LightGray, entry1.PlaceholderColor);
+				Assert.AreEqual(Colors.Gray, entry1.TextColor);
+				Assert.AreEqual(Colors.LightGray, entry1.PlaceholderColor);
 
 				// Verify that Entry0 was unaffected
 				Assert.AreEqual(null, entry0.TextColor);
@@ -85,8 +86,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.True(VisualStateManager.GoToState(entry1, "Disabled"));
 
 				// And verify that the changes took
-				Assert.AreEqual(Color.Gray, entry1.TextColor);
-				Assert.AreEqual(Color.LightGray, entry1.PlaceholderColor);
+				Assert.AreEqual(Colors.Gray, entry1.TextColor);
+				Assert.AreEqual(Colors.LightGray, entry1.PlaceholderColor);
 
 				// Now change it to Normal
 				Assert.True(VisualStateManager.GoToState(entry1, "Normal"));
@@ -179,7 +180,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				var button = layout.Button1;
 
-				Assert.That(button.BackgroundColor, Is.EqualTo(Color.Lime));
+				Assert.That(button.BackgroundColor, Is.EqualTo(Colors.Lime));
 			}
 
 			[TestCase(false)]

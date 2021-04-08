@@ -85,10 +85,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			//SetMainPage(new Bugzilla44596SplashPage(() =>
 			//{
 			//	var newTabbedPage = new TabbedPage();
-			//	newTabbedPage.Children.Add(new ContentPage { BackgroundColor = Color.Red, Content = new Label { Text = "yay" } });
+			//	newTabbedPage.Children.Add(new ContentPage { BackgroundColor = Colors.Red, Content = new Label { Text = "yay" } });
 			//	MainPage = new FlyoutPage
 			//	{
-			//		Flyout = new ContentPage { Title = "Flyout", BackgroundColor = Color.Red },
+			//		Flyout = new ContentPage { Title = "Flyout", BackgroundColor = Colors.Red },
 			//		Detail = newTabbedPage
 			//	};
 			//}));

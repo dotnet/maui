@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Build.Tasks;
+using Microsoft.Maui.Graphics;
 using Mono.Cecil;
 using NUnit.Framework;
 
