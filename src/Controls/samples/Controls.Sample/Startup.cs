@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample
 {
 	public class Startup : IStartup
 	{
-		public readonly static bool UseSemanticsPage = true;
+		public readonly static bool UseSemanticsPage = false;
 		public readonly static bool UseXamlPage = false;
 		public readonly static bool UseXamlApp = true;
 
