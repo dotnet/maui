@@ -5,11 +5,13 @@ using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using Google.Android.Material.AppBar;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui
 {
 	public partial class MauiAppCompatActivity : AppCompatActivity
 	{
+		public IWindow? CurrentWindow { get; private set; }
 		protected override void OnCreate(Bundle? savedInstanceState)
 		{
 			base.OnCreate(savedInstanceState);
@@ -25,10 +27,10 @@ namespace Microsoft.Maui
 			var mauiContext = new MauiContext(services, this);
 
 			var state = new ActivationState(mauiContext, savedInstanceState);
-			var window = mauiApp.CreateWindow(state);
-			window.MauiContext = mauiContext;
+			CurrentWindow = mauiApp.CreateWindow(state);
+			CurrentWindow.MauiContext = mauiContext;
 
-			var content = (window.Page as IView) ?? window.Page.View;
+			var content = (CurrentWindow.Page as IView) ?? CurrentWindow.Page.View;
 
 			CoordinatorLayout parent = new CoordinatorLayout(this);
 
@@ -36,7 +38,13 @@ namespace Microsoft.Maui
 
 			//AddToolbar(parent);
 
-			parent.AddView(content.ToNative(window.MauiContext), new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent));
+			parent.AddView(content.ToNative(CurrentWindow.MauiContext), new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent));
+		}
+		public override bool DispatchTouchEvent(MotionEvent? ev)
+		{
+			if (ev != null && ev.Action == MotionEventActions.Down && CurrentWindow != null)
+				SendPointToAdornerService(ev.GetX(), ev.GetY());
+			return base.DispatchTouchEvent(ev);
 		}
 
 		void AddToolbar(ViewGroup parent)
@@ -47,6 +55,30 @@ namespace Microsoft.Maui
 			appbarLayout.AddView(toolbar, new ViewGroup.LayoutParams(AppBarLayout.LayoutParams.MatchParent, global::Android.Resource.Attribute.ActionBarSize));
 			SetSupportActionBar(toolbar);
 			parent.AddView(appbarLayout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
+		}
+
+		void SendPointToAdornerService(float x, float y)
+		{
+			var statusBarHeight = GetStatusBarHeight();
+			int GetStatusBarHeight()
+			{
+				int result = 0;
+				if (Resources == null)
+					return result;
+				int resourceId = Resources.GetIdentifier("status_bar_height", "dimen", "android");
+				if (resourceId > 0)
+				{
+					result = Resources.GetDimensionPixelSize(resourceId);
+				}
+				return result;
+			}
+			var adornerService = MauiApplication.Current.Services.GetService<IAdornerService>();
+			if (adornerService != null)
+			{
+				var point = new Point(this.FromPixels(x), this.FromPixels(y - statusBarHeight));
+				System.Diagnostics.Debug.WriteLine($"touch at point {point.X} {point.Y}");
+				(adornerService as AdornerService)?.ExecuteTouchEventDelegate(point);
+			}
 		}
 	}
 }

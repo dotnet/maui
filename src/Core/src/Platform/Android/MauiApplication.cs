@@ -37,6 +37,7 @@ namespace Microsoft.Maui
 		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
+			services.AddSingleton<IAdornerService, AdornerService>();
 		}
 	}
 
@@ -55,8 +56,12 @@ namespace Microsoft.Maui
 
 		public class ActivityLifecycleCallbacks : Java.Lang.Object, IActivityLifecycleCallbacks
 		{
-			public void OnActivityCreated(Activity activity, Bundle? savedInstanceState) =>
-				Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnCreate>(del => del(activity, savedInstanceState));
+			public void OnActivityCreated(Activity activity, Bundle? savedInstanceState) 
+				{
+					(Current.Services.GetService<IAdornerService>() as AdornerService)?.SetActivity(activity);
+					Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnCreate>(del => del(activity, savedInstanceState));
+				}
+				
 
 			public void OnActivityStarted(Activity activity) =>
 				Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnStart>(del => del(activity));
