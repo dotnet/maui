@@ -79,6 +79,19 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(20, insets.Bottom);
 		}
 
+
+
+		[Fact(DisplayName = "Default Accessibility Traits Don't Change")]
+		[InlineData()]
+		public async Task ValidateDefaultAccessibilityTraits()
+		{
+			var view = new ButtonStub();
+			view.Semantics.Hint = "Test Hint";
+			var traits = await GetValueAsync((IView)view, handler => handler.NativeView.AccessibilityTraits);
+			Assert.True(traits.HasFlag(UIAccessibilityTrait.Button));
+		}
+
+
 		UIButton GetNativeButton(ButtonHandler buttonHandler) =>
 			(UIButton)buttonHandler.NativeView;
 
