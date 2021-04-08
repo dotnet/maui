@@ -1,5 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="$(MSBuildProjectFile.EndsWith('.wapproj')) == true ">
-    <ILLinkTasksAssembly>ARBITRARY_VALUE_SO_THAT_NET6_DOESNT_CAUSE_VS_TO_FAIL_OPENING_THIS_PROJECT</ILLinkTasksAssembly>
-  </PropertyGroup>
+    <SkipImportNetSdk>true</SkipImportNetSdk>
+  </PropertyGroup>  
 </Project>
