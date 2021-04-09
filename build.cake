@@ -241,8 +241,8 @@ Task("Clean")
     .Description("Deletes all the obj/bin directories")
     .Does(() =>
 {
-    CleanDirectories("./**/obj", (fsi)=> !fsi.Path.FullPath.StartsWith("tools"));
-    CleanDirectories("./**/bin", (fsi)=> !fsi.Path.FullPath.StartsWith("tools"));
+    CleanDirectories("./**/obj", (fsi)=> !fsi.Path.FullPath.StartsWith("tools") && !fsi.Path.FullPath.StartsWith("bin"));
+    CleanDirectories("./**/bin", (fsi)=> !fsi.Path.FullPath.StartsWith("tools") && !fsi.Path.FullPath.StartsWith("bin"));
 });
 
 Task("provision-macsdk")
@@ -905,6 +905,11 @@ Task("VS-WINUI")
         StartProcess("powershell", $"./eng/dogfood.ps1 -JustCreateGlobalJSON");
         DotNetCoreBuild("./Microsoft.Maui.BuildTasks-net6.sln", new DotNetCoreBuildSettings { ToolPath = $"./bin/dotnet/dotnet{ext}" });
         
+
+        MSBuild("Microsoft.Maui.WinUI.sln",
+                GetMSBuildSettings(includePrerelease:true).
+                WithRestore());
+
         StartVisualStudioForDotNet6("./Microsoft.Maui.WinUI.sln");
     });
 
@@ -1238,13 +1243,27 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
     StartProcess("powershell", $"./eng/dogfood.ps1 -vs '{devenv}' -sln '{sln}'");
 }
 
-MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarget.MSIL, string buildConfiguration = null)
+MSBuildSettings GetMSBuildSettings(
+    PlatformTarget? platformTarget = PlatformTarget.MSIL, 
+    string buildConfiguration = null,
+    bool includePrerelease = false)
 {
     var buildSettings =  new MSBuildSettings {
         PlatformTarget = platformTarget,
         MSBuildPlatform = Cake.Common.Tools.MSBuild.MSBuildPlatform.x86,
         Configuration = buildConfiguration ?? configuration,
     };
+
+    var vsInstallation =
+        VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild", IncludePrerelease = includePrerelease })
+        ?? VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild" });
+
+    if (vsInstallation != null)
+    {
+        buildSettings.ToolPath = vsInstallation.CombineWithFilePath(@"MSBuild\Current\Bin\MSBuild.exe");
+        if (!FileExists(buildSettings.ToolPath))
+            buildSettings.ToolPath = vsInstallation.CombineWithFilePath(@"MSBuild\15.0\Bin\MSBuild.exe");
+    }
 
     buildSettings = buildSettings.WithProperty("ANDROID_RENDERERS", $"{ANDROID_RENDERERS}");
     if(!String.IsNullOrWhiteSpace(XamarinFormsVersion))
