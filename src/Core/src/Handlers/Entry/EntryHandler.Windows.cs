@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, TextBox>
 	{
-		protected override TextBox CreateNativeView() => new TextBox();
+		protected override TextBox CreateNativeView() =>  new MauiTextBox { Style = Microsoft.UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as Microsoft.UI.Xaml.Style };
 
 		[MissingMapper]
 		public static void MapText(IViewHandler handler, IEntry entry) { }

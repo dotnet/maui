@@ -900,14 +900,10 @@ Task("VS-WINUI")
     {
         DotNetCoreBuild("./src/DotNet/Dotnet.csproj");
         var ext = IsRunningOnWindows() ? ".exe" : "";
+        
+        StartProcess("powershell", $"./eng/dogfood.ps1 -JustCreateGlobalJSON");
         DotNetCoreBuild("./Microsoft.Maui.BuildTasks-net6.sln", new DotNetCoreBuildSettings { ToolPath = $"./bin/dotnet/dotnet{ext}" });
         
-        MSBuild("Microsoft.Maui.WinUI.sln", 
-            GetMSBuildSettings()
-            .WithRestore()
-            .WithProperty("MauiPlatforms", "net6.0-windows10.0.19041.0")
-            );
-
         StartVisualStudioForDotNet6("./Microsoft.Maui.WinUI.sln");
     });
 

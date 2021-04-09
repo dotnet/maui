@@ -37,7 +37,8 @@
 param(
   [string]$vs = "Enterprise",
   [string]$sln,
-  [switch]$modify
+  [switch]$modify,
+  [switch]$JustCreateGlobalJSON
 )
 
 if ($vs.Contains("\") -Or $vs.Contains("/")) {
@@ -97,8 +98,11 @@ try {
     # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
     $env:PATH=($env:DOTNET_ROOT + ";" + $env:PATH)
 
-    # Launch VS
-    & "$realVS" "$sln"
+    if(-Not $JustCreateGlobalJSON)
+    {
+        # Launch VS
+        & "$realVS" "$sln"
+    }
 } finally {
     if (-Not $modify) {
         $env:DOTNET_INSTALL_DIR = $oldDOTNET_INSTALL_DIR
