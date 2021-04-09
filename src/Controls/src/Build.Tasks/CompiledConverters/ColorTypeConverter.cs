@@ -46,7 +46,6 @@ namespace Microsoft.Maui.Controls.XamlC
 					if (color == "Default")
 					{
 						yield return Instruction.Create(OpCodes.Ldnull);
-						yield return Instruction.Create(OpCodes.Ret);
 						yield break;
 					}
 
