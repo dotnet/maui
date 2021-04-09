@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Graphics
 
 		public static Color FromUint(uint argb)
 		{
-			return FromRgba((byte)((argb & 0x00ff0000) >> 0x10), (byte)((argb & 0x0000ff00) >> 0x8), (byte)(argb & 0x000000ff), (double)(byte)((argb & 0xff000000) >> 0x18));
+			return FromRgba((byte)((argb & 0x00ff0000) >> 0x10), (byte)((argb & 0x0000ff00) >> 0x8), (byte)(argb & 0x000000ff), (byte)((argb & 0xff000000) >> 0x18));
 		}
 
 		public static Color FromRgb(byte red, byte green, byte blue)
