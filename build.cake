@@ -241,8 +241,22 @@ Task("Clean")
     .Description("Deletes all the obj/bin directories")
     .Does(() =>
 {
-    CleanDirectories("./**/obj", (fsi)=> !fsi.Path.FullPath.StartsWith("tools") && !fsi.Path.FullPath.StartsWith("bin"));
-    CleanDirectories("./**/bin", (fsi)=> !fsi.Path.FullPath.StartsWith("tools") && !fsi.Path.FullPath.StartsWith("bin"));
+    List<string> foldersToClean = new List<string>();
+
+    foreach (var item in new [] {"obj", "bin"})
+    {
+        foreach(string f in System.IO.Directory.GetDirectories(".", item, SearchOption.AllDirectories))
+        {
+            if(f.StartsWith(@".\bin") || f.StartsWith(@".\tools"))
+                continue;
+
+            // this is here as a safety check
+            if(!f.StartsWith(@".\src"))
+                continue;
+
+            CleanDirectories(f);
+        }        
+    } 
 });
 
 Task("provision-macsdk")
@@ -1254,15 +1268,19 @@ MSBuildSettings GetMSBuildSettings(
         Configuration = buildConfiguration ?? configuration,
     };
 
-    var vsInstallation =
-        VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild", IncludePrerelease = includePrerelease })
-        ?? VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild" });
 
-    if (vsInstallation != null)
+    if(IsRunningOnWindows())
     {
-        buildSettings.ToolPath = vsInstallation.CombineWithFilePath(@"MSBuild\Current\Bin\MSBuild.exe");
-        if (!FileExists(buildSettings.ToolPath))
-            buildSettings.ToolPath = vsInstallation.CombineWithFilePath(@"MSBuild\15.0\Bin\MSBuild.exe");
+        var vsInstallation =
+            VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild", IncludePrerelease = includePrerelease })
+            ?? VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild" });
+
+        if (vsInstallation != null)
+        {
+            buildSettings.ToolPath = vsInstallation.CombineWithFilePath(@"MSBuild\Current\Bin\MSBuild.exe");
+            if (!FileExists(buildSettings.ToolPath))
+                buildSettings.ToolPath = vsInstallation.CombineWithFilePath(@"MSBuild\15.0\Bin\MSBuild.exe");
+        }
     }
 
     buildSettings = buildSettings.WithProperty("ANDROID_RENDERERS", $"{ANDROID_RENDERERS}");
