@@ -27,13 +27,13 @@ namespace Maui.Controls.Sample.Droid
 
 			_adornerService.HandlePoint(point =>
 			{
-			   _parent.Clear();
-			   AddAdornerAtPoint(MainLayout, point);
+				_adornerService.ClearAdorners();
+				AddAdornerAtPoint(MainLayout, point);
 			});
 
 			Device.StartTimer(System.TimeSpan.FromSeconds(3), () =>
 			{
-				AddAdornerAtPoint(MainLayout, new Point(2, 2));
+				AddAdornerAtPoint(MainLayout, new Point(162, 2));
 				return false;
 			});
 		}
@@ -51,28 +51,29 @@ namespace Maui.Controls.Sample.Droid
 												(int)this.ToPixels(rect.Location.Y),
 												(int)this.ToPixels(rect.Size.Width),
 												(int)this.ToPixels(rect.Size.Height));
-			
+
 			_parent.Add(nativeView);
 		}
+		Android.Views.View _native;
 
 		Android.Views.View GetAdorner(int x, int y, int width, int height)
 		{
-			System.Diagnostics.Debug.WriteLine($"Add Adorner {x} {y} {width} {height}");
-
-			Android.Views.View native = new ImageView(this);
-			var shape = new Android.Graphics.Drawables.GradientDrawable();
-			shape.SetStroke(2, Color.Red.ToNative());
-			(native as ImageView).SetImageDrawable(shape);
-
+			if (_native == null)
+			{
+				_native = new ImageView(this);
+				var shape = new Android.Graphics.Drawables.GradientDrawable();
+				shape.SetStroke(2, Color.Red.ToNative());
+				(_native as ImageView).SetImageDrawable(shape);
+			}
 			//Microsoft.Maui.Controls.Shapes.Rectangle rectShape = new Microsoft.Maui.Controls.Shapes.Rectangle();
 			//rectShape.Stroke = new SolidColorBrush(Color.Red);
 			//rectShape.StrokeThickness = 2;
 			//var native = rectShape.ToNative(this.CurrentWindow.MauiContext);
 
-			native.Measure(Android.Views.View.MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly),
-			Android.Views.View.MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
-			native.Layout(x, y, width, height);
-			return native;
+			_native.Layout(x, y, x + width, y + height);
+			_native.Elevation = 100000;
+
+			return _native;
 		}
 	}
 }
