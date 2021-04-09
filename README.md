@@ -70,6 +70,10 @@ Note that `--no-restore` is a workaround until [dotnet#15485](https://github.com
 
 ## Current News
 
+[April 9, 2021 - Announcing .NET Multi-platform App UI Preview 3](https://devblogs.microsoft.com/dotnet/announcing-net-multi-platform-app-ui-preview-3/)
+
+[April 9, 2021 - Xamarin Podcast - .NET MAUI Q&A](https://www.xamarinpodcast.com/90)
+
 [March 11, 2021 - Announcing .NET 6 Preview 2](https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-2/)
 
 Watch our [March 2021 .NET Community Standup report](https://youtu.be/NEbRo0ltniM?t=1242) for the latest information about our progress on .NET MAUI and .NET 6. 
