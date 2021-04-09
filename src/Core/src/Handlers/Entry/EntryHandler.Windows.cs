@@ -10,9 +10,7 @@ namespace Microsoft.Maui.Handlers
 		protected override TextBox CreateNativeView() => new TextBox();
 
 		public static void MapText(EntryHandler handler, IEntry entry)
-		{
-			handler.NativeView?.UpdateText(entry.Text, entry.TextTransform);
-		}
+			=> handler.NativeView?.UpdateText(entry.Text, entry.TextTransform);
 
 		[MissingMapper]
 		public static void MapTextColor(EntryHandler handler, IEntry entry) { }

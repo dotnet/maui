@@ -16,11 +16,6 @@ namespace Microsoft.Maui
 			if (string.IsNullOrEmpty(text))
 				return string.Empty;
 
-			// TODO: WinUI throws layout cycle exception if the text is big enough to go out of the boundries in sample app.
-			// This must be removed after the layout measurement calls is corrected for WinUI.
-
-			text = text.TrimToMaxLength(5);
-
 			switch (textTransform)
 			{
 				case TextTransform.None:
