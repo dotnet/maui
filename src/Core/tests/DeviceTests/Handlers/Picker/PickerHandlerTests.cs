@@ -61,5 +61,42 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(picker, () => picker.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
 			await ValidatePropertyInitValue(picker, () => picker.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
 		}
+
+		[Theory(DisplayName = "Updating Font Does Not Affect HorizontalTextAlignment")]
+		[InlineData(10, 20)]
+		[InlineData(20, 10)]
+		public async Task FontDoesNotAffectHorizontalTextAlignment(double initialSize, double newSize)
+		{
+			var picker = new PickerStub
+			{
+				Title = "This is TEXT!",
+				HorizontalTextAlignment = TextAlignment.Center,
+				Font = Font.SystemFontOfSize(initialSize),
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				picker,
+				GetNativeHorizontalTextAlignment,
+				nameof(IPicker.Font),
+				() => picker.Font = Font.SystemFontOfSize(newSize));
+		}
+
+		[Theory(DisplayName = "Updating Text Does Not Affect HorizontalTextAlignment")]
+		[InlineData("Short", "Longer Text")]
+		[InlineData("Long thext here", "Short")]
+		public async Task TextDoesNotAffectHorizontalTextAlignment(string initialText, string newText)
+		{
+			var picker = new PickerStub
+			{
+				Title = initialText,
+				HorizontalTextAlignment = TextAlignment.Center,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				picker,
+				GetNativeHorizontalTextAlignment,
+				nameof(IPicker.Title),
+				() => picker.Title = newText);
+		}
 	}
 }

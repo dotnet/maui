@@ -84,5 +84,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsItalic(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Typeface.IsItalic;
+
+		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).TextAlignment;
 	}
 }

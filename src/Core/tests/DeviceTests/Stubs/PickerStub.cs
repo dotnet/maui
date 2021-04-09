@@ -20,5 +20,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Color TextColor { get; set; }
 
 		public Font Font { get; set; }
+
+		public TextAlignment HorizontalTextAlignment { get; set; }
 	}
 }
