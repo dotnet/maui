@@ -16,7 +16,7 @@
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,
 			[nameof(IEntry.ReturnType)] = MapReturnType,
 			[nameof(IEntry.Text)] = MapText,
-			[nameof(IEntry.TextColor)] = MapTextColor
+			[nameof(IEntry.TextColor)] = MapTextColor,
 		};
 
 		public EntryHandler() : base(EntryMapper)
