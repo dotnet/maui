@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 
@@ -26,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		{
 			var delimiters = new char[] { ' ' };
 			string[] words = backgroundColor.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
-			return new Color(double.Parse(words[1]), double.Parse(words[2]), double.Parse(words[3]), double.Parse(words[4]));
+			return new Color(float.Parse(words[1]), float.Parse(words[2]), float.Parse(words[3]), float.Parse(words[4]));
 		}
 
 		public static Point ParseCGPoint(object CGPoint)
