@@ -15,12 +15,6 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapTextTransform(EntryHandler handler, IEntry entry) 
-		{
-
-		}
-
-		[MissingMapper]
 		public static void MapTextColor(EntryHandler handler, IEntry entry) { }
 
 		[MissingMapper]
