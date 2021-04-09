@@ -42,7 +42,7 @@ namespace Microsoft.Maui
 			if (semantics.IsHeading)
 				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;
 			else
-				nativeView.AccessibilityTraits |= ~UIAccessibilityTrait.Header;
+				nativeView.AccessibilityTraits &= ~UIAccessibilityTrait.Header;
 		}
 
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView

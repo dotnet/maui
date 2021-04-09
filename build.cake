@@ -938,23 +938,24 @@ Task("VSMAC")
     .Does(() =>
     {
 
-        MSBuild("src/Core/src.Core.csproj",
+        MSBuild("src/Core/src/Core.csproj",
                 GetMSBuildSettings()
                     .WithRestore());
 
         MSBuild("src/Controls/samples/Controls.Sample.Droid/Controls.Sample.Droid.csproj",
                 GetMSBuildSettings()
                     .WithRestore());
+        
 
         MSBuild("src/Controls/samples/Controls.Sample.iOS/Controls.Sample.iOS.csproj",
-                GetMSBuildSettings()
-                    .WithProperty("iOSPlatform", "iPhoneSimulator")
-                    .WithRestore());
+            new MSBuildSettings().WithRestore());
 
-        MSBuild("src/Essentials/src/Essentials/Essentials.csproj",
+        MSBuild("src/Essentials/src/Essentials.csproj",
                 GetMSBuildSettings()
                     .WithRestore());
                     
+        MSBuild("src/SingleProject/Resizetizer/src/Resizetizer.csproj", GetMSBuildSettings().WithRestore());
+
         StartVisualStudio();
     });
     
