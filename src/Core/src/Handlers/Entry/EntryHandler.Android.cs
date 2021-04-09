@@ -120,6 +120,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateClearButtonVisibility(entry, ClearButtonDrawable);
 		}
 
+		public static void MapTextTransform(EntryHandler handler, IEntry entry)
+		{
+
+		}
+
 		void OnFocusedChange(bool hasFocus)
 		{
 			if (NativeView == null || VirtualView == null)

@@ -9,6 +9,7 @@ namespace Microsoft.Maui.UnitTests
 		public Color TextColor { get; set; }
 
 		public double CharacterSpacing { get; set; }
+		public TextTransform TextTransform { get; set; }
 
 		public Thickness Padding { get; set; }
 

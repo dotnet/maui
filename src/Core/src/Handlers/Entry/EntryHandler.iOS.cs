@@ -122,6 +122,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateClearButtonVisibility(entry);
 		}
 
+		public static void MapTextTransform(EntryHandler handler, IEntry entry)
+		{
+
+		}
+
 		void OnEditingChanged(object? sender, EventArgs e) => OnTextChanged();
 
 		void OnEditingEnded(object? sender, EventArgs e) => OnTextChanged();
