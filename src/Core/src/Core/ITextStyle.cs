@@ -23,6 +23,7 @@
 		/// <summary>
 		/// Gets the applied text transform to the text of the control.
 		/// </summary>
+		[MissingMapper]
 		TextTransform TextTransform { get; }
 	}
 }
