@@ -21,6 +21,11 @@ namespace Microsoft.Maui
 		bool IsReadOnly { get; }
 
 		/// <summary>
+		/// Gets the keyboard input type.
+		/// </summary>
+		Keyboard Keyboard { get; }
+
+		/// <summary>
 		/// Gets the maximum allowed length of input.
 		/// </summary>
 		int MaxLength { get; }

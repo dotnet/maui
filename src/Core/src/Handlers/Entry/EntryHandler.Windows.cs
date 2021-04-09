@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Platform.Windows;
 using Microsoft.UI.Xaml.Controls;
@@ -51,6 +51,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry) { }
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry) { }
+		public static void MapCharacterSpacing(IViewHandler handler, IEntry entry) { }
+
+		[MissingMapper]
+		public static void MapKeyboard(IViewHandler handler, IEntry entry) { } 
 	}
 }

@@ -142,6 +142,11 @@ namespace Microsoft.Maui
 			editText.Focusable = isEditable;
 		}
 
+		public static void UpdateKeyboard(this AppCompatEditText editText, IEntry entry)
+		{
+			editText.SetInputType(entry);
+		}
+
 		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEditor editor)
 		{
 			bool isReadOnly = !editor.IsReadOnly;
@@ -196,20 +201,42 @@ namespace Microsoft.Maui
 
 		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
 		{
-			editText.InputType = InputTypes.ClassText;
-			editText.InputType |= InputTypes.TextFlagMultiLine;
-
-			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassText) == InputTypes.ClassText))
-				editText.InputType |= InputTypes.TextVariationPassword;
-
-			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))
-				editText.InputType |= InputTypes.NumberVariationPassword;
-
-			if (!entry.IsTextPredictionEnabled && ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions))
-				editText.InputType |= InputTypes.TextFlagNoSuggestions;
-
 			if (entry.IsReadOnly)
+			{
 				editText.InputType = InputTypes.Null;
+			}
+			else
+			{
+				var keyboard = entry.Keyboard;
+				var nativeInputTypeToUpdate = keyboard.ToInputType();
+
+				if (keyboard is not CustomKeyboard)
+				{
+					// TODO: IsSpellCheckEnabled handling must be here.
+
+					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+					{
+						if (!entry.IsTextPredictionEnabled)
+							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+					}
+				}
+
+				if (keyboard == Keyboard.Numeric)
+				{
+					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
+				}
+
+				if (entry.IsPassword)
+				{
+					if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
+						nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
+
+					if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
+						nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
+				}
+
+				editText.InputType = nativeInputTypeToUpdate;
+			}
 		}
 	}
 }

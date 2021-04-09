@@ -9,6 +9,7 @@ using IOPath = System.IO.Path;
 using RectangleF = CoreGraphics.CGRect;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

@@ -139,12 +139,14 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(entry);
 			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed, FontFamily = "Dokdo", MaxLength = -1 });
-			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black });
+			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black, Placeholder = "Pasword Entry" });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
 			verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true });
 			verticalStack.Add(new Entry { MaxLength = 5, Placeholder = "MaxLength text" });
 			verticalStack.Add(new Entry { Text = "This should be text with character spacing", CharacterSpacing = 10 });
+			verticalStack.Add(new Entry { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" });
+			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });

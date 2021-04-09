@@ -50,5 +50,16 @@ namespace Microsoft.Maui.DeviceTests
 			var id = await GetValueAsync((IView)view, handler => GetSemanticHeading(handler));
 			Assert.Equal(view.Semantics.HeadingLevel, id);
 		}
+
+		[Fact(DisplayName = "Null Semantics Doesnt throw exception")]
+		[InlineData()]
+		public async Task NullSemanticsClass()
+		{
+			var view = new TStub();
+			view.Semantics = null;
+			view.AutomationId = "CreationFailed";
+			var id = await GetValueAsync((IView)view, handler => GetAutomationId(handler));
+			Assert.Equal(view.AutomationId, id);
+		}
 	}
 }

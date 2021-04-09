@@ -7,6 +7,7 @@ using Foundation;
 using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry;
+using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -360,7 +361,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
 			}
 
-			UpdateAttributedPlaceholder(Control.AttributedPlaceholder.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing));
+			UpdateAttributedPlaceholder(Control.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing));
 		}
 
 		protected virtual void UpdateAttributedPlaceholder(NSAttributedString nsAttributedString) =>
@@ -378,12 +379,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler ("Partially ported ...")]
 		void UpdateCharacterSpacing()
 		{
-			var textAttr = Control.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
+			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (textAttr != null)
 				Control.AttributedText = textAttr;
 
-			var placeHolder = Control.AttributedPlaceholder.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+			var placeHolder = Control.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (placeHolder != null)
 				UpdateAttributedPlaceholder(placeHolder);

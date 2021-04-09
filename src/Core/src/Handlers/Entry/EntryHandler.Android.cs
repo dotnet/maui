@@ -105,6 +105,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateIsReadOnly(entry);
 		}
 
+		public static void MapKeyboard(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateKeyboard(entry);
+		}
+		
 		public static void MapReturnType(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateReturnType(entry);

@@ -1,12 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Android.Text;
 using Android.Text.Method;
 using Java.Lang;
 using Java.Text;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui
 {
-	internal class LocalizedDigitsKeyListener : NumberKeyListener
+	public class LocalizedDigitsKeyListener : NumberKeyListener
 	{
 		readonly char _decimalSeparator;
 
@@ -14,19 +14,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		// but we'll make it easy to localize the sign in the future just in case
 		const char SignCharacter = '-';
 
-		static Dictionary<char, LocalizedDigitsKeyListener> s_unsignedCache;
-		static Dictionary<char, LocalizedDigitsKeyListener> s_signedCache;
+		static Dictionary<char, LocalizedDigitsKeyListener>? UnsignedCache;
+		static Dictionary<char, LocalizedDigitsKeyListener>? SignedCache;
 
 		static char GetDecimalSeparator()
 		{
-			var format = NumberFormat.Instance as DecimalFormat;
-			if (format == null)
-			{
+			if (!(NumberFormat.Instance is DecimalFormat format))
 				return '.';
-			}
 
-			DecimalFormatSymbols sym = format.DecimalFormatSymbols;
-			return sym.DecimalSeparator;
+
+			DecimalFormatSymbols? sym = format.DecimalFormatSymbols;
+
+			return sym == null ? '.' : sym.DecimalSeparator;
 		}
 
 		public static NumberKeyListener Create(InputTypes inputTypes)
@@ -58,12 +57,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public static LocalizedDigitsKeyListener GetInstance(InputTypes inputTypes, char decimalSeparator)
 		{
+			if (SignedCache == null)
+				SignedCache = new Dictionary<char, LocalizedDigitsKeyListener>();
+
 			if ((inputTypes & InputTypes.NumberFlagSigned) != 0)
 			{
-				return GetInstance(inputTypes, decimalSeparator, ref s_signedCache);
+				return GetInstance(inputTypes, decimalSeparator, ref SignedCache);
 			}
 
-			return GetInstance(inputTypes, decimalSeparator, ref s_unsignedCache);
+			if (UnsignedCache == null)
+				UnsignedCache = new Dictionary<char, LocalizedDigitsKeyListener>();
+
+			return GetInstance(inputTypes, decimalSeparator, ref UnsignedCache);
 		}
 
 		static LocalizedDigitsKeyListener GetInstance(InputTypes inputTypes, char decimalSeparator, ref Dictionary<char, LocalizedDigitsKeyListener> cache)
@@ -82,6 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		protected LocalizedDigitsKeyListener(InputTypes inputTypes, char decimalSeparator)
+
 		{
 			_decimalSeparator = decimalSeparator;
 			InputType = inputTypes;
@@ -89,18 +95,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public override InputTypes InputType { get; }
 
-		char[] _acceptedChars;
+		char[]? _acceptedChars;
 
 		protected override char[] GetAcceptedChars()
 		{
 			if ((InputType & InputTypes.NumberFlagSigned) == 0)
 			{
-				return _acceptedChars ??
-					   (_acceptedChars = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', _decimalSeparator });
+				return _acceptedChars ??= new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', _decimalSeparator };
 			}
 
-			return _acceptedChars ??
-				   (_acceptedChars = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', SignCharacter, _decimalSeparator });
+			return _acceptedChars ??= new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', SignCharacter, _decimalSeparator };
 		}
 
 		static bool IsSignChar(char c)
@@ -113,11 +117,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return c == _decimalSeparator;
 		}
 
-		public override ICharSequence FilterFormatted(ICharSequence source, int start, int end, ISpanned dest, int dstart,
-			int dend)
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+		public override ICharSequence? FilterFormatted(ICharSequence? source, int start, int end, ISpanned? dest, int dstart, int dend)
 		{
 			// Borrowed heavily from the Android source
-			ICharSequence filterFormatted = base.FilterFormatted(source, start, end, dest, dstart, dend);
+			ICharSequence? filterFormatted = base.FilterFormatted(source, start, end, dest, dstart, dend);
 
 			if (filterFormatted != null)
 			{
@@ -128,7 +132,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			int sign = -1;
 			int dec = -1;
+
 			int dlen = dest.Length();
+
 
 			// Find out if the existing text has a sign or decimal point characters.
 			for (var i = 0; i < dstart; i++)
@@ -162,7 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			// In addition, a sign character must be the very first character,
 			// and nothing can be inserted before an existing sign character.
 			// Go in reverse order so the offsets are stable.
-			SpannableStringBuilder stripped = null;
+			SpannableStringBuilder? stripped = null;
 			for (int i = end - 1; i >= start; i--)
 			{
 				char c = source.CharAt(i);
@@ -209,7 +215,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 			}
 
-			return stripped ?? filterFormatted;
+			return stripped ?? filterFormatted ?? new String("");
 		}
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 	}
 }
