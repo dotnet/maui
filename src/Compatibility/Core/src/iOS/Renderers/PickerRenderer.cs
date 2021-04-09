@@ -283,6 +283,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_picker.Select(Math.Max(formsIndex, 0), 0, true);
 		}
 
+		[PortHandler("Partially ported, still missing FlowDirection part.")]
 		void UpdateHorizontalTextAlignment()
 		{
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
