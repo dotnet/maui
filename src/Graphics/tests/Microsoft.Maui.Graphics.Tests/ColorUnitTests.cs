@@ -294,5 +294,28 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.Equal(Colors.Wheat, Color.FromRgb(245, 222, 179));
 			Assert.Equal(Colors.White, Color.FromRgb(255, 255, 255));
 		}
+
+        [Fact]
+        public void TestFromUint()
+        {
+            var expectedColor = new Color(1, 0.65f, 0, 1);
+
+            // Convert the expected color to a uint (argb)
+            var blue = (int)(expectedColor.Blue * 255);
+            var red = (int)(expectedColor.Red * 255);
+            var green = (int)(expectedColor.Green * 255);
+            var alpha = (int)(expectedColor.Alpha * 255);
+
+            uint argb = (uint)(blue | (green << 8) | (red << 16) | (alpha << 24));
+
+            // Create a new color from the uint
+            var fromUint = Color.FromUint(argb);
+
+            // Verify the components
+            Assert.Equal(expectedColor.Alpha, fromUint.Alpha, 2);
+            Assert.Equal(expectedColor.Red, fromUint.Red, 2);
+            Assert.Equal(expectedColor.Green, fromUint.Green, 2);
+            Assert.Equal(expectedColor.Blue, fromUint.Blue, 2);
+        }
 	}
 }
