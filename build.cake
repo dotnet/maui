@@ -896,6 +896,7 @@ Task("VS-NET6")
 
 
 Task("VS-WINUI")
+    .IsDependentOn("Clean")
     .Does(() =>
     {
         DotNetCoreBuild("./src/DotNet/Dotnet.csproj");
