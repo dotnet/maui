@@ -113,6 +113,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public string UpdateFormsText(string original, TextTransform transform) =>
-			StringExtensions.GetTransformedText(original, transform);
+			original.GetTransformedText(transform);
 	}
 }

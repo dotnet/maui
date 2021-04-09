@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls
 {
@@ -347,7 +348,7 @@ namespace Microsoft.Maui.Controls
 			=> InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		public virtual string UpdateFormsText(string source, TextTransform textTransform) =>
-			StringExtensions.GetTransformedText(source, textTransform);
+			source.GetTransformedText(textTransform);
 
 		[DebuggerDisplay("Image Position = {Position}, Spacing = {Spacing}")]
 		[TypeConverter(typeof(ButtonContentTypeConverter))]
