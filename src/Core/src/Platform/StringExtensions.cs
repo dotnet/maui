@@ -19,8 +19,7 @@ namespace Microsoft.Maui
 			// TODO: WinUI throws layout cycle exception if the text is big enough to go out of the boundries in sample app.
 			// This must be removed after the layout measurement calls is corrected for WinUI.
 
-			if (text?.Length > 5)
-				text = text.Substring(0, 5);
+			text = text.TrimToMaxLength(5);
 
 			switch (textTransform)
 			{
