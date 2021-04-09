@@ -11,6 +11,8 @@ namespace Microsoft.Maui
 	public class MauiUIApplicationDelegate<TStartup> : MauiUIApplicationDelegate
 		where TStartup : IStartup, new()
 	{
+		public IWindow? CurrentWindow { get; private set; }
+
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			var startup = new TStartup();
@@ -27,18 +29,22 @@ namespace Microsoft.Maui
 			var mauiContext = new MauiContext(Services);
 
 			var activationState = new ActivationState(mauiContext);
-			var window = Application.CreateWindow(activationState);
-			window.MauiContext = mauiContext;
+			CurrentWindow = Application.CreateWindow(activationState);
+			CurrentWindow.MauiContext = mauiContext;
 
-			var content = (window.Page as IView) ?? window.Page.View;
+			var content = (CurrentWindow.Page as IView) ?? CurrentWindow.Page.View;
 
-			Window = new UIWindow
+			var adornerService = Services.GetService<IAdornerService>() as AdornerService;
+			Window = new MauiUIWindow()
 			{
 				RootViewController = new UIViewController
 				{
-					View = content.ToNative(window.MauiContext)
+					View = content.ToNative(CurrentWindow.MauiContext)
 				}
 			};
+
+			//We set the window because we could have multiwindows, this should when active(focus) windows change
+			adornerService?.SetUIWindow(Window);
 
 			Window.MakeKeyAndVisible();
 
@@ -104,6 +110,7 @@ namespace Microsoft.Maui
 		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
+			services.AddSingleton<IAdornerService, AdornerService>();
 		}
 	}
 
@@ -121,5 +128,30 @@ namespace Microsoft.Maui
 		public IServiceProvider Services { get; protected set; } = null!;
 
 		public IApplication Application { get; protected set; } = null!;
+	}
+
+	class MauiUIWindow : UIWindow
+	{
+		AdornerService? _adornerService;
+
+		public MauiUIWindow()
+		{
+			_adornerService = MauiUIApplicationDelegate.Current.Services.GetService<IAdornerService>() as AdornerService;
+		}
+
+		public override void SendEvent(UIEvent evt)
+		{
+			if (_adornerService != null && evt.Type == UIEventType.Touches && evt.AllTouches.Count == 1)
+			{
+				UITouch touch = evt.AllTouches.ToArray<UITouch>()[0];
+				if (touch.Phase == UIKit.UITouchPhase.Ended)
+				{
+					var statusBarHeight = UIKit.UIApplication.SharedApplication.StatusBarFrame.Size.Height;
+					var nativePoint = touch.LocationInView(this);
+					_adornerService.ExecuteTouchEventDelegate(new Point(nativePoint.X, nativePoint.Y - statusBarHeight));
+				}
+			}
+			base.SendEvent(evt);
+		}
 	}
 }
