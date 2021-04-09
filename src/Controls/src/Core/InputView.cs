@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
-		public string UpdateFormsText(string original, TextTransform transform) =>
-			original.GetTransformedText(transform);
+		public string UpdateFormsText(string original, TextTransform transform) 
+			=> original.GetTransformedText(transform);
 	}
 }

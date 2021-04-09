@@ -124,8 +124,8 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		public virtual string UpdateFormsText(string source, TextTransform textTransform) =>
-			source.GetTransformedText(textTransform);
+		public virtual string UpdateFormsText(string source, TextTransform textTransform) 
+			=> source.GetTransformedText(textTransform);
 
 		public event EventHandler<DateChangedEventArgs> DateSelected;
 
