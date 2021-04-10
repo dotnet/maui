@@ -94,8 +94,8 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
-    <None Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Maui.Controls.Compatibility.pri" Visible="False" Pack="True" PackagePath="runtimes\$(TargetFramework)\native" />  
-    <None Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Maui.Controls.Compatibility\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\$(TargetFramework)\Microsoft.Maui.Controls.Compatibility;runtimes\$(TargetFramework)\native\Microsoft.Maui.Controls.Compatibility" />
+    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility.pri" Visible="False" Pack="True" PackagePath="runtimes\$(WindowsTargetFramework)\native" />  
+    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility;runtimes\$(WindowsTargetFramework)\native\Microsoft.Maui.Controls.Compatibility" />
   </ItemGroup>
 </Project>
 

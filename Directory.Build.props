@@ -4,8 +4,9 @@
     <BuildForWinUI Condition="'$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln'">true</BuildForWinUI>
     <BuildForNet6 Condition="'$(SolutionFileName)' == 'Microsoft.Maui-net6.sln' or '$(BuildForWinUI)' == 'true'">true</BuildForNet6>
     <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
-    <MauiPlatforms Condition="'$(Packing)' == 'true'">$(MauiPlatforms);net6.0-windows10.0.18362.0</MauiPlatforms>
-    <MauiPlatforms Condition="'$(BuildForWinUI)' == 'true'">net6.0-windows10.0.18362.0</MauiPlatforms>
+    <WindowsTargetFramework Condition="'$(WindowsTargetFramework)' == ''">net6.0-windows10.0.18362.0</WindowsTargetFramework>
+    <MauiPlatforms Condition="'$(Packing)' == 'true'">$(MauiPlatforms);$(WindowsTargetFramework)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(BuildForWinUI)' == 'true'">$(WindowsTargetFramework)</MauiPlatforms>
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
