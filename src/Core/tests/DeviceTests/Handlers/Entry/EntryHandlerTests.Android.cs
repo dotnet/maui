@@ -1,5 +1,5 @@
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using Android.Text;
 using Android.Text.Method;
 using Android.Views.InputMethods;
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 			var editText = GetNativeEntry(entryHandler);
 			var inputTypes = editText.InputType;
 
-			return editText.KeyListener is NumberKeyListener 
+			return editText.KeyListener is NumberKeyListener
 				&& (inputTypes.HasFlag(InputTypes.NumberFlagDecimal) && inputTypes.HasFlag(InputTypes.ClassNumber) && inputTypes.HasFlag(InputTypes.NumberFlagSigned));
 		}
 

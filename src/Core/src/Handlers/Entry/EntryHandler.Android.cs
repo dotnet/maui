@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdateKeyboard(entry);
 		}
-		
+
 		public static void MapReturnType(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateReturnType(entry);
