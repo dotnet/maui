@@ -19,8 +19,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
-    <None Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Maui.pri" Visible="False" Pack="True" PackagePath="runtimes\$(TargetFramework)\native" />
-    <None Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Maui\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\$(TargetFramework)\Microsoft.Maui;runtimes\$(TargetFramework)\native\Microsoft.Maui" />
+    <None Include="bin\$(Configuration)\net6.0-windows10.0.19041.0\Microsoft.Maui.pri" Visible="False" Pack="True" PackagePath="runtimes\net6.0-windows10.0.19041.0\native" />
+    <None Include="bin\$(Configuration)\net6.0-windows10.0.19041.0\Microsoft.Maui\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\net6.0-windows10.0.19041\Microsoft.Maui;runtimes\net6.0-windows10.0.19041.0\native\Microsoft.Maui" />
   </ItemGroup>
 </Project>
 
