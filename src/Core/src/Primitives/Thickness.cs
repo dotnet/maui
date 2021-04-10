@@ -1,3 +1,4 @@
+#nullable enable
 using System.Diagnostics;
 
 namespace Microsoft.Maui

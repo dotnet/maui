@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 #if __IOS__
 using NativeView = UIKit.UIView;

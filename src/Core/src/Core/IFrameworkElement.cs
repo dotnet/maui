@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Primitives;
+﻿#nullable enable
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui
 {
