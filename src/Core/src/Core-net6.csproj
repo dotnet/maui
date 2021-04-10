@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <None Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Maui.pri" Visible="False" Pack="True" PackagePath="runtimes\$(TargetFramework)\native" />
+    <None Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Maui\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\$(TargetFramework)\Microsoft.Maui;runtimes\$(TargetFramework)\native\Microsoft.Maui" />
   </ItemGroup>
 </Project>
 
