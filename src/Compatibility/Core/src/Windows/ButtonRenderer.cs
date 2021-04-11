@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateLineBreakMode();
 		}
 
-
+		[PortHandler("Implemented, but IButton doesn't have it right now. Will work after the implementation.")]
 		void UpdateLineBreakMode()
 		{
 			_textBlock = Control.GetTextBlock(Control.Content);
@@ -177,6 +177,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.BorderBrush = Element.BorderColor != Color.Default ? Element.BorderColor.ToBrush() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
 		}
 
+		[PortHandler]
 		void UpdateBorderRadius()
 		{
 			Control.BorderRadius = Element.CornerRadius;
@@ -187,6 +188,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.BorderThickness = Element.BorderWidth == (double)Button.BorderWidthProperty.DefaultValue ? WinUIHelpers.CreateThickness(3) : WinUIHelpers.CreateThickness(Element.BorderWidth);
 		}
 
+		[PortHandler("Implemented, but doesn't work due to WinUI3 internal bug. See https://github.com/microsoft/microsoft-ui-xaml/issues/3490")]
 		void UpdateCharacterSpacing()
 		{
 			Control.UpdateCharacterSpacing(Element.CharacterSpacing.ToEm());
