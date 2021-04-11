@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS
 			[nameof(IButton.BackgroundColor)] = MapBackgroundColor,
+			[nameof(IButton.CornerRadius)] = MapCornerRadius,
+			// [nameof(IButton.LineBreakMode)] = MapLineBreakMode,
 #endif
 			[nameof(IButton.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IButton.Font)] = MapFont,
