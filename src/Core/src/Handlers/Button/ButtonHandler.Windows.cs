@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, Button>
+	public partial class ButtonHandler : ViewHandler<IButton, MauiButton>
 	{
 		static UI.Xaml.Thickness? DefaultPadding;
 		static UI.Xaml.Media.Brush? DefaultForeground;
@@ -14,9 +14,9 @@ namespace Microsoft.Maui.Handlers
 
 		PointerEventHandler? _pointerPressedHandler;
 
-		protected override Button CreateNativeView() => new Button();
+		protected override MauiButton CreateNativeView() => new MauiButton();
 
-		protected override void SetupDefaults(Button nativeView)
+		protected override void SetupDefaults(MauiButton nativeView)
 		{
 			DefaultPadding = (UI.Xaml.Thickness)MauiWinUIApplication.Current.Resources["ButtonPadding"];
 			DefaultForeground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonForegroundThemeBrush"];
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 			base.SetupDefaults(nativeView);
 		}
 
-		protected override void ConnectHandler(Button nativeView)
+		protected override void ConnectHandler(MauiButton nativeView)
 		{
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(Button nativeView)
+		protected override void DisconnectHandler(MauiButton nativeView)
 		{
 			nativeView.Click -= OnClick;
 			nativeView.RemoveHandler(UI.Xaml.UIElement.PointerPressedEvent, _pointerPressedHandler);
@@ -51,6 +51,19 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateBackgroundColor(button, DefaultBackground);
 		}
 
+		// This is a Windows-specific mapping
+		public static void MapCornerRadius(ButtonHandler handler, IButton button)
+		{
+			handler?.NativeView?.UpdateCornerRadius(button);
+		}
+
+		// This is a Windows-specific mapping
+		[MissingMapper("Missing interface. Also missing Mapper.")]
+		public static void MapLineBreakMode(ButtonHandler handler, IButton button)
+		{
+			handler.NativeView?.UpdateLineBreakMode();
+		}
+
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
 			handler.NativeView?.UpdateText(button);
@@ -61,8 +74,12 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateTextColor(button, DefaultForeground);
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(ButtonHandler handler, IButton button) { }
+		[PortHandler("Has no effect due to internal bug in WinUI. Probably will work after it's fixed.")]
+		[PortHandler("See: https://github.com/microsoft/microsoft-ui-xaml/issues/3490")]
+		public static void MapCharacterSpacing(ButtonHandler handler, IButton button) 
+		{
+			handler.NativeView?.UpdateCharacterSpacing(button);
+		}
 
 		public static void MapFont(ButtonHandler handler, IButton button)
 		{
