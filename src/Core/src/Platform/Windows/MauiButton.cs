@@ -42,9 +42,10 @@ namespace Microsoft.Maui
 				_rootGrid = VisualTreeHelper.GetChild(this, 0) as Grid;
 
 			UpdateCharacterSpacing();
+			UpdateLineBreakMode();
 		}
 
-		// Potential fix for later on for WinUI bug.
+		// Doesn't work at the moment. Left here for future potential fixes regarding WinUI bug.
 		public void UpdateCharacterSpacing()
 		{
 			var contentTextBlock = GetTextBlock();

@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS
 			[nameof(IButton.BackgroundColor)] = MapBackgroundColor,
 			[nameof(IButton.CornerRadius)] = MapCornerRadius,
+
+			// Enable after LineBreakMode implementation in the proper interface
 			// [nameof(IButton.LineBreakMode)] = MapLineBreakMode,
 #endif
 			[nameof(IButton.CharacterSpacing)] = MapCharacterSpacing,
