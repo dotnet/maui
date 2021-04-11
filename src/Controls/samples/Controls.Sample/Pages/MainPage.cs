@@ -110,6 +110,14 @@ namespace Maui.Controls.Sample.Pages
 				BackgroundColor = Color.Purple,
 			};
 
+			var cornerRadiusButton = new Button
+			{
+				Text = "CornerRadius button for Windows",
+				BackgroundColor = Color.Red,
+				CornerRadius = 15
+			};
+
+			verticalStack.Add(cornerRadiusButton);
 			verticalStack.Add(paddingButton);
 			verticalStack.Add(new Button { Text = "CharacterSpacing" });
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
