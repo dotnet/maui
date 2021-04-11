@@ -8,7 +8,7 @@ using WCornerRadius = Microsoft.UI.Xaml.CornerRadius;
 using WGridLength = Microsoft.UI.Xaml.GridLength;
 using UwpGridUnitType = Microsoft.UI.Xaml.GridUnitType;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui
 {
 	public static class WinUIHelpers
 	{
