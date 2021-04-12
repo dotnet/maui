@@ -119,6 +119,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			catch (Exception ex)
 			{
 				Log.Warning("Image loading", $"Image load failed: {ex}");
+#if DEBUG
+				throw;
+#endif
 			}
 
 			return null;

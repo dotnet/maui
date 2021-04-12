@@ -55,7 +55,16 @@ namespace Maui.Controls.Sample.Pages
 			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level1);
 			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
-			verticalStack.Add(new Image { Source = new FontImageSource() { FontFamily = "ionicons.ttf", Glyph = '\uf2fe'.ToString() } });
+
+#if __ANDROID__
+			string fontFamily = "ionicons.ttf#";
+#elif WINDOWS
+			string fontFamily = "ionicons.ttf";
+#else
+			string fontFamily = "ionicons.ttf#";
+#endif
+
+			verticalStack.Add(new Image { Source = new FontImageSource() { FontFamily = fontFamily, Glyph = '\uf2fe'.ToString() } });
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Color.LightBlue });
 			verticalStack.Add(new Label { Text = loremIpsum });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
