@@ -1,4 +1,4 @@
-namespace Microsoft.Maui
+﻿espace Microsoft.Maui
 {
 	public static class TextBoxExtensions
 	{
@@ -26,6 +26,7 @@ namespace Microsoft.Maui
 				return;
 
 			var brush = textStyle.TextColor.ToNative();
+
 			textBox.Foreground = brush;
 			textBox.ForegroundFocusBrush = brush;
 		}
@@ -38,9 +39,9 @@ namespace Microsoft.Maui
 		public static void UpdateReturnType(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.InputScope = entry.ReturnType.ToNative();
-		}
+    	}
 
-		public static void UpdatePlaceholder(this MauiTextBox textBox, IEditor editor)
+    	public static void UpdatePlaceholder(this MauiTextBox textBox, IEditor editor)
 		{
 			textBox.PlaceholderText = editor.Placeholder ?? string.Empty;
 		}
@@ -94,6 +95,11 @@ namespace Microsoft.Maui
 
 			if (currentControlText.Length > maxLength)
 				textBox.Text = currentControlText.Substring(0, maxLength);
+		}
+
+		public static void UpdateIsPassword(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.IsPassword = entry.IsPassword;
 		}
 	}
 }
