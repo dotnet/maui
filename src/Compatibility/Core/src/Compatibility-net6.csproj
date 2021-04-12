@@ -95,7 +95,7 @@
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility.pri" Visible="False" Pack="True" PackagePath="runtimes\$(WindowsTargetFramework)\native" />
-    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility\%(RecursiveDir)\%(FileName)%(Extension);runtimes\$(WindowsTargetFramework)\native\Microsoft.Maui.Controls.Compatibility\%(RecursiveDir)\%(FileName)%(Extension)" />
+    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility\%(RecursiveDir)%(FileName)%(Extension);runtimes\$(WindowsTargetFramework)\native\Microsoft.Maui.Controls.Compatibility\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 </Project>
 
