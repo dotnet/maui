@@ -6,5 +6,10 @@ namespace Microsoft.Maui
 		{
 			textBox.Text = entry.Text;
 		}
+
+		public static void UpdateIsPassword(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.IsPassword = entry.IsPassword;
+		}
 	}
 }

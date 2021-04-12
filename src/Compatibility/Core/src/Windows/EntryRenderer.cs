@@ -273,6 +273,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.InputScope = entry.Keyboard.ToInputScope();
 		}
 
+		[PortHandler]
 		void UpdateIsPassword()
 		{
 			Control.IsPassword = Element.IsPassword;
