@@ -36,5 +36,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			return viewHandler.VirtualView.Semantics.HeadingLevel;
 		}
+
+		protected float GetOpacity(IViewHandler viewHandler) =>
+			((View)viewHandler.NativeView).Alpha;
 	}
 }

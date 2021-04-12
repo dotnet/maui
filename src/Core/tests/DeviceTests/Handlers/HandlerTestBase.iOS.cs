@@ -1,8 +1,5 @@
 using System;
-using System.Threading.Tasks;
-using Microsoft.Maui.DeviceTests.Stubs;
 using UIKit;
-using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -31,5 +28,8 @@ namespace Microsoft.Maui.DeviceTests
 		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
 				? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
+
+		protected nfloat GetOpacity(IViewHandler viewHandler) =>
+			((UIView)viewHandler.NativeView).Alpha;
 	}
 }

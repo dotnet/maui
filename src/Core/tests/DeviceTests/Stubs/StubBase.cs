@@ -11,6 +11,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Color BackgroundColor { get; set; }
 
+		public double Opacity { get; set; } = 1.0d;
+
 		public Rectangle Frame { get; set; } = new Rectangle(0, 0, 20, 20);
 
 		public IViewHandler Handler { get; set; }

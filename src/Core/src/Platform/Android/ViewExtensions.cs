@@ -21,6 +21,11 @@ namespace Microsoft.Maui
 				nativeView?.SetBackgroundColor(backgroundColor.ToNative());
 		}
 
+		public static void UpdateOpacity(this AView nativeView, IView view)
+		{
+			nativeView.Alpha = (float)view.Opacity;
+		}
+
 		public static bool GetClipToOutline(this AView view)
 		{
 			return view.ClipToOutline;

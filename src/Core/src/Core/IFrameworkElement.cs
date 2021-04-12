@@ -18,6 +18,11 @@ namespace Microsoft.Maui
 		Color BackgroundColor { get; }
 
 		/// <summary>
+		/// Gets the opacity value applied to the view when it is rendered.
+		/// </summary>
+		double Opacity { get; }
+
+		/// <summary>
 		/// Gets the bounds of the FrameworkElement.
 		/// </summary>
 		Rectangle Frame { get; }

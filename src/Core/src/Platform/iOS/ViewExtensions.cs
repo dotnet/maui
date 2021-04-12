@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateIsEnabled(this UIView nativeView, IView view)
 		{
-			if (!(nativeView is UIControl uiControl))
+			if (nativeView is not UIControl uiControl)
 				return;
 
 			uiControl.Enabled = view.IsEnabled;
@@ -25,6 +25,11 @@ namespace Microsoft.Maui
 
 			if (!color.IsDefault)
 				nativeView.BackgroundColor = color.ToNative();
+		}
+
+		public static void UpdateOpacity(this UIView nativeView, IView view)
+		{
+			nativeView.Alpha = (float)view.Opacity;
 		}
 
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
