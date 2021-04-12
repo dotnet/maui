@@ -21,5 +21,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			return viewHandler.VirtualView.Semantics.HeadingLevel;
 		}
+
+		protected bool GetIsVisible(IViewHandler viewHandler)
+		{
+			var nativeView = (View)viewHandler.NativeView;
+
+			if (nativeView.Visibility == ViewStates.Visible)
+				return true;
+
+			return false;
+		}
 	}
 }
