@@ -327,6 +327,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aView?.Invalidate();
 		}
 
+		[PortHandler]
 		void UpdateIsVisible()
 		{
 			VisualElement view = _renderer.Element;

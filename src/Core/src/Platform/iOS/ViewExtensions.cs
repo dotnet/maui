@@ -10,10 +10,15 @@ namespace Microsoft.Maui
 
 		public static void UpdateIsEnabled(this UIView nativeView, IView view)
 		{
-			if (!(nativeView is UIControl uiControl))
+			if (nativeView is not UIControl uiControl)
 				return;
 
 			uiControl.Enabled = view.IsEnabled;
+		}
+
+		public static void UpdateIsVisible(this UIView nativeView, IView view)
+		{
+			nativeView.Hidden = !view.IsVisible;
 		}
 
 		public static void UpdateBackgroundColor(this UIView nativeView, IView view)

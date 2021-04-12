@@ -13,6 +13,11 @@ namespace Microsoft.Maui
 		bool IsEnabled { get; }
 
 		/// <summary>
+		/// Gets a value that determines whether this FrameworkElement should be part of the visual tree or not.
+		/// </summary>
+		bool IsVisible { get; }
+
+		/// <summary>
 		/// Gets the color which will fill the background of a FrameworkElement.
 		/// </summary>
 		Color BackgroundColor { get; }

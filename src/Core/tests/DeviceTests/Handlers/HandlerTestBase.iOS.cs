@@ -31,5 +31,8 @@ namespace Microsoft.Maui.DeviceTests
 		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
 				? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
+
+		protected bool GetIsVisible(IViewHandler viewHandler) =>
+			!((UIView)viewHandler.NativeView).Hidden;
 	}
 }

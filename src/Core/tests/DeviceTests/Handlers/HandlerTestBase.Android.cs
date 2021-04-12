@@ -1,8 +1,5 @@
 using System;
 using Android.Views;
-using Android.Widget;
-using AndroidX.Core.View;
-using AndroidX.Core.View.Accessibility;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -35,6 +32,16 @@ namespace Microsoft.Maui.DeviceTests
 					? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 
 			return viewHandler.VirtualView.Semantics.HeadingLevel;
+		}
+
+		protected bool GetIsVisible(IViewHandler viewHandler)
+		{
+			var nativeView = (View)viewHandler.NativeView;
+
+			if (nativeView.Visibility == ViewStates.Visible)
+				return true;
+
+			return false;
 		}
 	}
 }
