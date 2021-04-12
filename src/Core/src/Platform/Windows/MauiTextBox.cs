@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 using System;
 using System.Linq;
 using System.Threading;
@@ -47,16 +47,16 @@ namespace Microsoft.Maui
 		public static readonly DependencyProperty ClearButtonVisibleProperty = DependencyProperty.Register(nameof(ClearButtonVisible),
 			typeof(bool), typeof(MauiTextBox), new PropertyMetadata(true, ClearButtonVisibleChanged));
 
-		InputScope _passwordInputScope;
-		InputScope _numericPasswordInputScope;
-		ScrollViewer _scrollViewer;
-		Microsoft.UI.Xaml.Controls.Grid _rootGrid;
-		Microsoft.UI.Xaml.VisualState _DeleteButtonVisibleState;
-		Microsoft.UI.Xaml.VisualStateGroup _DeleteButtonVisibleStateGroups;
-		InputScope _cachedInputScope;
+		InputScope? _passwordInputScope;
+		InputScope? _numericPasswordInputScope;
+		ScrollViewer? _scrollViewer;
+		Microsoft.UI.Xaml.Controls.Grid? _rootGrid;
+		Microsoft.UI.Xaml.VisualState? _DeleteButtonVisibleState;
+		Microsoft.UI.Xaml.VisualStateGroup? _DeleteButtonVisibleStateGroups;
+		InputScope? _cachedInputScope;
 		bool _cachedPredictionsSetting;
 		bool _cachedSpellCheckSetting;
-		CancellationTokenSource _cts;
+		CancellationTokenSource? _cts;
 		bool _internalChangeFlag;
 		int _cachedSelectionLength;
 
@@ -475,7 +475,7 @@ namespace Microsoft.Maui
 		 * Both of these issues were fixed by just creating a static TextBox that is not part of the layout which let me just measure
 		 * the size of the text as it would fit into the TextBox unconstrained and then just return that Size from the GetDesiredSize call.
 		 * */
-		static MauiTextBox _copyOfTextBox;
+		static MauiTextBox? _copyOfTextBox;
 		static readonly Windows.Foundation.Size _zeroSize = new Windows.Foundation.Size(0, 0);
 		public static Size GetCopyOfSize(MauiTextBox control, Windows.Foundation.Size constraint)
 		{
