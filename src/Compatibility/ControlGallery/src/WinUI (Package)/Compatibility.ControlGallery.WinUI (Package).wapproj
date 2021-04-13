@@ -44,7 +44,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
     <AppxTargetsLocation Condition="'$(AppxTargetsLocation)'==''">$(MSBuildThisFileDirectory)build\</AppxTargetsLocation>
-    <EntryPointProjectUniqueName>..\Windows\Compatibility.ControlGallery.Windows.csproj</EntryPointProjectUniqueName>
+    <EntryPointProjectUniqueName>..\WinUI\Compatibility.ControlGallery.WinUI.csproj</EntryPointProjectUniqueName>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -145,7 +145,7 @@
     <Content Include="default.css" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Windows\Compatibility.ControlGallery.Windows.csproj">
+    <ProjectReference Include="..\WinUI\Compatibility.ControlGallery.WinUI.csproj">
       <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
     </ProjectReference>
   </ItemGroup>

@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		public App()
         {
             InitializeComponent();
-            Suspending += OnSuspending;
+            //Suspending += OnSuspending;
         }
 
 		/// <summary>
@@ -49,11 +49,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 				e.Arguments.Contains("RunningAsUITests"))
 			{
 				RunningAsUITests = true;
-				Controls.App.PreloadTestCasesIssuesList = false;
+				ControlGallery.App.PreloadTestCasesIssuesList = false;
 			}
 
 			m_window = new MainPage();
-			Xamarin.Forms.Forms.Init(e, m_window as MainPage);
+			Maui.Controls.Compatibility.Forms.Init(e, m_window as MainPage);
 		}
 
         /// <summary>

@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 
 		public override Application CreateApplication()
 		{
-			_app = new Controls.App();
+			_app = new ControlGallery.App();
 			return _app;
 		}
 
@@ -235,7 +235,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			{
 				return Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
 			}
-			public static global::Windows.UI.Color ToColor(Windows.UI.Color color)
+
+			public static Color ToColor(Windows.UI.Color color)
 			{
 				return Color.FromRgba(color.R, color.G, color.B, color.A);
 			}

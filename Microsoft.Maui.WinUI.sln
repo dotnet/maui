@@ -66,6 +66,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Windows.UnitT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.WinUI", "src\Compatibility\ControlGallery\src\WinUI\Compatibility.ControlGallery.WinUI.csproj", "{6721124F-9975-4486-9FE7-263184E16061}"
 EndProject
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "Compatibility.ControlGallery.WinUI (Package)", "src\Compatibility\ControlGallery\src\WinUI (Package)\Compatibility.ControlGallery.WinUI (Package).wapproj", "{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{63ffae7f-72ce-4458-8c28-5d7733804816}*SharedItemsImports = 5
@@ -346,6 +348,26 @@ Global
 		{6721124F-9975-4486-9FE7-263184E16061}.Release|x64.Build.0 = Release|x64
 		{6721124F-9975-4486-9FE7-263184E16061}.Release|x86.ActiveCfg = Release|x86
 		{6721124F-9975-4486-9FE7-263184E16061}.Release|x86.Build.0 = Release|x86
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Debug|arm64.ActiveCfg = Debug|arm64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Debug|arm64.Build.0 = Debug|arm64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Debug|arm64.Deploy.0 = Debug|arm64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Debug|x64.ActiveCfg = Debug|x64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Debug|x64.Build.0 = Debug|x64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Debug|x64.Deploy.0 = Debug|x64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Debug|x86.ActiveCfg = Debug|x86
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Debug|x86.Build.0 = Debug|x86
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Debug|x86.Deploy.0 = Debug|x86
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Release|Any CPU.ActiveCfg = Release|x86
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Release|arm64.ActiveCfg = Release|arm64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Release|arm64.Build.0 = Release|arm64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Release|arm64.Deploy.0 = Release|arm64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Release|x64.ActiveCfg = Release|x64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Release|x64.Build.0 = Release|x64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Release|x64.Deploy.0 = Release|x64
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Release|x86.ActiveCfg = Release|x86
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Release|x86.Build.0 = Release|x86
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -375,6 +397,7 @@ Global
 		{3E56DEAA-CB3F-4905-BD59-8B3D31D04499} = {123AA89E-1638-4E0E-B828-B8F9F9F906A2}
 		{ADAA2498-16D1-4A1E-ADAA-9F46967FADDB} = {5C481AFC-E327-41A7-9FED-395519E6B4AF}
 		{6721124F-9975-4486-9FE7-263184E16061} = {802AA31E-051C-482F-9CA2-3F8FB11C251E}
+		{9784DA17-DAEF-455C-8CFB-BA4B4119C1B6} = {802AA31E-051C-482F-9CA2-3F8FB11C251E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

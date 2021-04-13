@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			base.OnElementChanged(e);
 
 			if (e.NewElement != null)
-				System.Diagnostics.Debug.WriteLine($"{e.NewElement.GetType()} is replaced by _2489CustomRenderer");
+				global::System.Diagnostics.Debug.WriteLine($"{e.NewElement.GetType()} is replaced by _2489CustomRenderer");
 		}
 	}
 }

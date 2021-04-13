@@ -69,19 +69,19 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			{
 				if (!Control.IsSpellCheckEnabled)
 				{
-					throw new System.Exception("IsSpellCheckEnabled not enabled");
+					throw new global::System.Exception("IsSpellCheckEnabled not enabled");
 				}
 			}
 			else if (flags.Value.HasFlag(KeyboardFlags.CapitalizeWord))
 			{
 				if (!Control.InputScope.Names.Select(x => x.NameValue).Contains(InputScopeNameValue.NameOrPhoneNumber))
 				{
-					throw new System.Exception("Input Scope Not Set to NameOrPhoneNumber");
+					throw new global::System.Exception("Input Scope Not Set to NameOrPhoneNumber");
 				}
 
 				if (!Control.IsSpellCheckEnabled)
 				{
-					throw new System.Exception("IsSpellCheckEnabled not enabled");
+					throw new global::System.Exception("IsSpellCheckEnabled not enabled");
 				}
 
 			}

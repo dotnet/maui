@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			}
 			catch (Exception ex)
 			{
-				await Xamarin.Forms.Application.Current.MainPage.DisplayAlert("Image Error 51173", $"The image failed to load, here's why: {ex.Message}", "OK");
+				await Maui.Controls.Application.Current.MainPage.DisplayAlert("Image Error 51173", $"The image failed to load, here's why: {ex.Message}", "OK");
 			}
 		}
 	}
