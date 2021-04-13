@@ -777,6 +777,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateRotation(view, frameworkElement);
 		}
 
+		[PortHandler]
 		static void UpdateVisibility(VisualElement view, FrameworkElement frameworkElement)
 		{
 			frameworkElement.Visibility = view.IsVisible ? Visibility.Visible : Visibility.Collapsed;
