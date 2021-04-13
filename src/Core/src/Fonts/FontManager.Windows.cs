@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using Microsoft.Graphics.Canvas.Text;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui
