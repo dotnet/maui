@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -36,12 +37,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						+ " the other layout, this test has failed."
 			};
 
-			var box1 = new BoxView { BackgroundColor = Color.Coral, TranslationX = -10, TranslationY = -10 };
-			var box2 = new BoxView { BackgroundColor = Color.LightGreen, TranslationX = -10, TranslationY = -10 };
+			var box1 = new BoxView { BackgroundColor = Colors.Coral, TranslationX = -10, TranslationY = -10 };
+			var box2 = new BoxView { BackgroundColor = Colors.LightGreen, TranslationX = -10, TranslationY = -10 };
 
 			_layout1 = new ContentView
 			{
-				BackgroundColor = Color.RosyBrown,
+				BackgroundColor = Colors.RosyBrown,
 				Margin = new Thickness(50),
 				Content = box1
 			};
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			_layout2 = new ContentView
 			{
-				BackgroundColor = Color.RosyBrown,
+				BackgroundColor = Colors.RosyBrown,
 				Margin = new Thickness(50),
 				Content = box2
 			};

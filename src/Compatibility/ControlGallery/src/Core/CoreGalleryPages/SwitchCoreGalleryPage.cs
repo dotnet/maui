@@ -1,4 +1,5 @@
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			var isToggledContainer = new ValueViewContainer<Switch>(Test.Switch.IsToggled, new Switch(), "IsToggled", value => value.ToString());
 
-			var onColoredSwitch = new Switch() { OnColor = Color.HotPink };
+			var onColoredSwitch = new Switch() { OnColor = Colors.HotPink };
 
 			var onColorContainer = new ValueViewContainer<Switch>(Test.Switch.OnColor, onColoredSwitch, "OnColor", value => value.ToString());
 			var changeOnColorButton = new Button
@@ -31,15 +32,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				Text = "Clear OnColor"
 			};
-			changeOnColorButton.Clicked += (s, a) => { onColoredSwitch.OnColor = Color.Red; };
-			clearOnColorButton.Clicked += (s, a) => { onColoredSwitch.OnColor = Color.Default; };
+			changeOnColorButton.Clicked += (s, a) => { onColoredSwitch.OnColor = Colors.Red; };
+			clearOnColorButton.Clicked += (s, a) => { onColoredSwitch.OnColor = null; };
 			onColorContainer.ContainerLayout.Children.Add(changeOnColorButton);
 			onColorContainer.ContainerLayout.Children.Add(clearOnColorButton);
 
-			var thumbColorSwitch = new Switch() { ThumbColor = Color.Yellow };
+			var thumbColorSwitch = new Switch() { ThumbColor = Colors.Yellow };
 			var thumbColorContainer = new ValueViewContainer<Switch>(Test.Switch.ThumbColor, thumbColorSwitch, nameof(Switch.ThumbColor), value => value.ToString());
-			var changeThumbColorButton = new Button { Text = "Change ThumbColor", Command = new Command(() => thumbColorSwitch.ThumbColor = Color.Lime) };
-			var clearThumbColorButton = new Button { Text = "Clear ThumbColor", Command = new Command(() => thumbColorSwitch.ThumbColor = Color.Default) };
+			var changeThumbColorButton = new Button { Text = "Change ThumbColor", Command = new Command(() => thumbColorSwitch.ThumbColor = Colors.Lime) };
+			var clearThumbColorButton = new Button { Text = "Clear ThumbColor", Command = new Command(() => thumbColorSwitch.ThumbColor = null) };
 			thumbColorContainer.ContainerLayout.Children.Add(changeThumbColorButton);
 			thumbColorContainer.ContainerLayout.Children.Add(clearThumbColorButton);
 

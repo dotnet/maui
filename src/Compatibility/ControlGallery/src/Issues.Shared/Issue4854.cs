@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		protected override void Init()
 		{
-			var gMain = new Grid { BackgroundColor = Color.LightBlue };
+			var gMain = new Grid { BackgroundColor = Colors.LightBlue };
 			gMain.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 			gMain.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
@@ -29,13 +30,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			sl.Children.Add(label);
 			gMain.Children.Add(sl);
 
-			var button = new Button { Text = "Test", BackgroundColor = Color.Gray, HorizontalOptions = LayoutOptions.Center };
-			var g = new Grid { BackgroundColor = Color.LightGray, Padding = new Thickness(20) };
+			var button = new Button { Text = "Test", BackgroundColor = Colors.Gray, HorizontalOptions = LayoutOptions.Center };
+			var g = new Grid { BackgroundColor = Colors.LightGray, Padding = new Thickness(20) };
 			g.Children.Add(button);
 			Grid.SetRow(g, 1);
 			gMain.Children.Add(g);
 
-			Content = new ScrollView { Content = gMain, BackgroundColor = Color.LightGreen };
+			Content = new ScrollView { Content = gMain, BackgroundColor = Colors.LightGreen };
 		}
 
 	}

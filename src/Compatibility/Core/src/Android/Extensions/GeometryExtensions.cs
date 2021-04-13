@@ -2,8 +2,11 @@ using System.Collections.Generic;
 using Android.Content;
 using Android.Graphics;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 using APath = Android.Graphics.Path;
-using FormsRectangle = Microsoft.Maui.Rectangle;
+using FormsRectangle = Microsoft.Maui.Graphics.Rectangle;
+using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
+using Point = Microsoft.Maui.Graphics.Point;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

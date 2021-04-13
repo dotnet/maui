@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 						Style = new Style (typeof(Label)) {
 							BaseResourceKey = Device.Styles.SubtitleStyleKey,
 							Setters = {
-								new Setter {Property = Label.TextColorProperty, Value = Color.Pink}
+								new Setter {Property = Label.TextColorProperty, Value = Colors.Pink}
 							}
 						}
 					},

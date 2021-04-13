@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -61,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else
 				{
 					Color backgroundColor = Element.BackgroundColor;
-					if (!backgroundColor.IsDefault)
+					if (!backgroundColor.IsDefault())
 					{
 						element.SetValue(_backgroundProperty, backgroundColor.ToBrush());
 					}

@@ -1,6 +1,7 @@
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.Widget;
+using Microsoft.Maui.Graphics;
 using AListView = Android.Widget.ListView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android

@@ -40,9 +40,11 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Microsoft.Maui.Controls.Shapes")]
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Microsoft.Maui.Controls")]
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Microsoft.Maui", AssemblyName = "Microsoft.Maui")]
+[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Microsoft.Maui.Graphics", AssemblyName = "Microsoft.Maui.Graphics")]
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Microsoft.Maui.Controls.Shapes")]
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Microsoft.Maui.Controls")]
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Microsoft.Maui", AssemblyName = "Microsoft.Maui")]
+[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Microsoft.Maui.Graphics", AssemblyName = "Microsoft.Maui.Graphics")]
 [assembly: XmlnsPrefix("http://xamarin.com/schemas/2014/forms", "xf")]
 [assembly: XmlnsPrefix("http://xamarin.com/schemas/2014/forms/design", "d")]
 

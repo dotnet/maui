@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -36,8 +37,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 			};
 
-			BarBackgroundColor = Color.Green;
-			BarTextColor = Color.Red;
+			BarBackgroundColor = Colors.Green;
+			BarTextColor = Colors.Red;
 
 			On<iOS>().SetPrefersLargeTitles(true);
 

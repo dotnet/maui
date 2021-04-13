@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		public Issue10438()
 		{
-			BarBackgroundColor = Color.Cornsilk;
+			BarBackgroundColor = Colors.Cornsilk;
 			On<iOS>().SetPrefersLargeTitles(true);
 
 			var page = new ContentPage

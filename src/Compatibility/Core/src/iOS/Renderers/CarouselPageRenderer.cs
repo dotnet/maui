@@ -8,6 +8,7 @@ using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -367,11 +368,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (bgImage != null)
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);
-				else if (Element.BackgroundColor.IsDefault)
+				else if (Element.BackgroundColor == null)
 					View.BackgroundColor = ColorExtensions.BackgroundColor;
 				else
 				{
-					if (Element.BackgroundColor.IsDefault)
+					if (Element.BackgroundColor == null)
 						View.BackgroundColor = UIColor.White;
 					else
 						View.BackgroundColor = Element.BackgroundColor.ToUIColor();

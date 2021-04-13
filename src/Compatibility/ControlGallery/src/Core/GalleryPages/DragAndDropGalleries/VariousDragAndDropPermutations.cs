@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DragAndDropGalleries
 {
@@ -25,13 +26,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Drag
 			stackLayout.Children.Add(CreateControls<Image>((drag, drop) =>
 			{
 				drag.HeightRequest = 50;
-				drag.BackgroundColor = Color.Green;
+				drag.BackgroundColor = Colors.Green;
 			}));
 
 			stackLayout.Children.Add(CreateControls<Image>((drag, drop) =>
 			{
 				drag.Source = "coffee.png";
-				drag.BackgroundColor = Color.Green;
+				drag.BackgroundColor = Colors.Green;
 			}));
 
 			stackLayout.Children.Add(CreateControls<Entry>(dragElementText: "Some text"));
@@ -90,7 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Drag
 
 			dragRecognizer.DragStarting += (_, args) =>
 			{
-				DraggingColor = Color.Purple;
+				DraggingColor = Colors.Purple;
 				OnPropertyChanged(nameof(DraggingColor));
 
 				if (view is StackDrag sd)
@@ -101,7 +102,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Drag
 
 			dragRecognizer.DropCompleted += (_, __) =>
 			{
-				DraggingColor = Color.Default;
+				DraggingColor = null;
 				OnPropertyChanged(nameof(DraggingColor));
 			};
 

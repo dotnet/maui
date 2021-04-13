@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (_contentPresenter != null)
 				_contentPresenter.Background = BackgroundColor;
-			Background = Color.Transparent.ToBrush();
+			Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
 		}
 
 		void UpdateBorderRadius()

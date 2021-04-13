@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -10,9 +11,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	{
 		public ClipToBoundsGallery()
 		{
-			var child1 = new BoxView { Color = Color.Red };
-			var child2 = new BoxView { Color = Color.Blue };
-			var button = new Button { Text = "Clip", BackgroundColor = Color.Green };
+			var child1 = new BoxView { Color = Colors.Red };
+			var child2 = new BoxView { Color = Colors.Blue };
+			var button = new Button { Text = "Clip", BackgroundColor = Colors.Green };
 
 			Padding = new Thickness(55);
 			var layout = new AbsoluteLayout

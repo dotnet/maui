@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Controls.VisualElement;
 
 namespace Microsoft.Maui.Controls
@@ -213,7 +214,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(PlaceholderElement.PlaceholderProperty, value);
 		}
 
-		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(SearchHandler), Color.Default);
+		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(SearchHandler), null);
 
 		public Color BackgroundColor
 		{

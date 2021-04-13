@@ -2,6 +2,7 @@ using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -54,7 +55,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				//Test TypeConverters
 				setter = style.Setters.Single(s => s.Property == BackgroundColorProperty);
 				Assert.That(setter.Value, Is.TypeOf<Color>());
-				Assert.AreEqual(Color.Pink, (Color)setter.Value);
+				Assert.AreEqual(Colors.Pink, (Color)setter.Value);
 
 				//Test implicit cast operator
 				setter = style.Setters.Single(s => s.Property == Image.SourceProperty);
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void ImplicitStyleAreApplied(bool useCompiledXaml)
 			{
 				var layout = new StyleTests(useCompiledXaml);
-				Assert.AreEqual(Color.Red, layout.label1.TextColor);
+				Assert.AreEqual(Colors.Red, layout.label1.TextColor);
 			}
 
 			[TestCase(false)]
@@ -80,7 +81,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var s1 = style2.Setters[1];
 				Assert.AreEqual(Label.TextProperty, s0.Property);
 				Assert.AreEqual(BackgroundColorProperty, s1.Property);
-				Assert.AreEqual(Color.Red, s1.Value);
+				Assert.AreEqual(Colors.Red, s1.Value);
 			}
 
 			[TestCase(false)]
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.labelWithStyleDerivedFromDynamic_StaticResource;
 
 				Assert.AreEqual(50, label.FontSize);
-				Assert.AreEqual(Color.Red, label.TextColor);
+				Assert.AreEqual(Colors.Red, label.TextColor);
 			}
 
 			[TestCase(false)]
@@ -108,7 +109,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var label = layout.labelWithStyleDerivedFromDynamic_DynamicResource;
 
 				Assert.AreEqual(50, label.FontSize);
-				Assert.AreEqual(Color.Red, label.TextColor);
+				Assert.AreEqual(Colors.Red, label.TextColor);
 			}
 		}
 	}

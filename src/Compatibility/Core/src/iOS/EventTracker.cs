@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;

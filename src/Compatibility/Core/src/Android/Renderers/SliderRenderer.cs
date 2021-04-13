@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Element != null)
 			{
-				if (Element.MinimumTrackColor == Color.Default)
+				if (Element.MinimumTrackColor == null)
 				{
 					Control.ProgressTintList = defaultprogresstintlist;
 					Control.ProgressTintMode = defaultprogresstintmode;
@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Element != null)
 			{
-				if (Element.MaximumTrackColor == Color.Default)
+				if (Element.MaximumTrackColor == null)
 				{
 					Control.ProgressBackgroundTintList = defaultprogressbackgroundtintlist;
 					Control.ProgressBackgroundTintMode = defaultprogressbackgroundtintmode;

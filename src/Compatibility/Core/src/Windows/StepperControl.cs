@@ -8,6 +8,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 using WVisualStateGroup = Microsoft.UI.Xaml.VisualStateGroup;
 using WVisualState = Microsoft.UI.Xaml.VisualState;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

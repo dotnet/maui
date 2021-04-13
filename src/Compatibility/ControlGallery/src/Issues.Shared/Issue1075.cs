@@ -2,6 +2,7 @@
 using System.Reflection;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			// Create BoxView for displaying pickedColor
 			BoxView boxView = new BoxView
 			{
-				BackgroundColor = Color.Gray,
+				BackgroundColor = Colors.Gray,
 				WidthRequest = 150,
 				HeightRequest = 150,
 				HorizontalOptions = LayoutOptions.Center,
@@ -67,14 +68,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var button = new Button
 			{
 				Text = "Change to blue",
-				Command = new Command(() => boxView.BackgroundColor = Color.Blue)
+				Command = new Command(() => boxView.BackgroundColor = Colors.Blue)
 			};
 
 			picker.SelectedIndexChanged += (sender, args) =>
 			{
 				if (picker.SelectedIndex == -1)
 				{
-					boxView.Color = Color.Default;
+					boxView.Color = null;
 				}
 				else
 				{

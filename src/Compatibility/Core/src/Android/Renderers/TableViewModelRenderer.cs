@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				bline = layout.GetChildAt(1);
 
 			if (isHeader)
-				bline.SetBackgroundColor(Color.Accent.ToAndroid());
+				bline.SetBackgroundColor(Application.AccentColor.ToAndroid());
 			else if (nextIsHeader)
 				bline.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
 			else

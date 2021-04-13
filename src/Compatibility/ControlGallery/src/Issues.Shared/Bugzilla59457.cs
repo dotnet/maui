@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -26,10 +27,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Children =
 				{
-					new Bugzilla59457Entry { Text = "Custom Entry Control", TextColor = Color.Black },
-					new Entry { Text = "Entry Control", TextColor = Color.White, BackgroundColor = Color.MediumPurple },
-					new Entry { Text = "Entry Control", TextColor = Color.Black },
-					new Entry { Text = "Entry Control - Disabled", TextColor = Color.Black, IsEnabled = false }
+					new Bugzilla59457Entry { Text = "Custom Entry Control", TextColor = Colors.Black },
+					new Entry { Text = "Entry Control", TextColor = Colors.White, BackgroundColor = Colors.MediumPurple },
+					new Entry { Text = "Entry Control", TextColor = Colors.Black },
+					new Entry { Text = "Entry Control - Disabled", TextColor = Colors.Black, IsEnabled = false }
 				}
 			};
 		}

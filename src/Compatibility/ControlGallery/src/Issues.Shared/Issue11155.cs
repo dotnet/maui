@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -59,8 +60,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				var newInstructions = new Label
 				{
 					Padding = 12,
-					BackgroundColor = Color.Black,
-					TextColor = Color.White,
+					BackgroundColor = Colors.Black,
+					TextColor = Colors.White,
 					Text = "If you can read this text, the test has passed."
 				};
 

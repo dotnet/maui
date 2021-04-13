@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.UnitTests

@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.InputView;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 

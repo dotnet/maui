@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {

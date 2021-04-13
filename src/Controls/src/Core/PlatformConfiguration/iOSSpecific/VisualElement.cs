@@ -1,7 +1,8 @@
-
+﻿
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using System;
+	using Microsoft.Maui.Graphics;
 	using FormsElement = Maui.Controls.VisualElement;
 
 	public static class VisualElement
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		public static readonly BindableProperty ShadowColorProperty =
 			BindableProperty.Create("ShadowColor", typeof(Color),
-			typeof(VisualElement), Color.Default);
+			typeof(VisualElement), null);
 
 		public static Color GetShadowColor(BindableObject element)
 		{
