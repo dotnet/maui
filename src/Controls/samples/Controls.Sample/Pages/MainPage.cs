@@ -59,7 +59,7 @@ namespace Maui.Controls.Sample.Pages
 #if __ANDROID__
 			string fontFamily = "ionicons.ttf#";
 #elif WINDOWS
-			string fontFamily = "ionicons.ttf";
+			string fontFamily = "Assets/ionicons.ttf#ionicons";
 #else
 			string fontFamily = "ionicons.ttf#";
 #endif
