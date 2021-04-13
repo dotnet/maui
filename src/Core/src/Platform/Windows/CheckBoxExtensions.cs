@@ -9,5 +9,7 @@ namespace Microsoft.Maui
 		{
 			nativeCheckBox.IsChecked = check.IsChecked;
 		}
+
+		public static void UpdateColor(this CheckBox nativeCheckBox, ICheckBox check) { }
 	}
 }
