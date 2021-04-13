@@ -30,6 +30,11 @@ namespace Microsoft.Maui
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
+		
+		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
+		{
+			nativeView.Opacity = view.Opacity;
+		}
 
 		public static void UpdateSemantics(this FrameworkElement nativeView, IView view)
 		{
