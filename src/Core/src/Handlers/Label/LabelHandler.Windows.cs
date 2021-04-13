@@ -38,8 +38,8 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label) { }
 
-		[MissingMapper]
-		public static void MapTextDecorations(LabelHandler handler, ILabel label) { }
+		public static void MapTextDecorations(LabelHandler handler, ILabel label) =>	
+			handler.TextBlock?.UpdateTextDecorations(label);
 
 		[MissingMapper]
 		public static void MapMaxLines(LabelHandler handler, ILabel label) { }

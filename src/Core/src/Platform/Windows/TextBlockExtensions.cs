@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 
 namespace Microsoft.Maui
 {
@@ -23,5 +24,34 @@ namespace Microsoft.Maui
 
 		public static void UpdatePadding(this TextBlock nativeControl, ILabel label) =>
 			nativeControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToNative());
+
+		public static void UpdateTextDecorations(this TextBlock nativeControl, ILabel label)
+		{
+			var elementTextDecorations = label.TextDecorations;
+
+			if ((elementTextDecorations & TextDecorations.Underline) == 0)
+				nativeControl.TextDecorations &= ~Windows.UI.Text.TextDecorations.Underline;
+			else
+				nativeControl.TextDecorations |= Windows.UI.Text.TextDecorations.Underline;
+
+			if ((elementTextDecorations & TextDecorations.Strikethrough) == 0)
+				nativeControl.TextDecorations &= ~Windows.UI.Text.TextDecorations.Strikethrough;
+			else
+				nativeControl.TextDecorations |= Windows.UI.Text.TextDecorations.Strikethrough;
+
+			// TextDecorations are not updated in the UI until the text changes
+			if (nativeControl.Inlines != null && nativeControl.Inlines.Count > 0)
+			{
+				for (var i = 0; i < nativeControl.Inlines.Count; i++)
+				{
+					var run = (Run)nativeControl.Inlines[i];
+					run.Text = run.Text;
+				}
+			}
+			else
+			{
+				nativeControl.Text = nativeControl.Text;
+			}
+		}
 	}
 }
