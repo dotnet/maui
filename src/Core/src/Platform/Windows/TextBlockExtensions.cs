@@ -23,5 +23,13 @@ namespace Microsoft.Maui
 
 		public static void UpdatePadding(this TextBlock nativeControl, ILabel label) =>
 			nativeControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToNative());
+
+		public static void UpdateLineHeight(this TextBlock nativeControl, ILabel label)
+		{
+			if (label.LineHeight >= 0)
+			{
+				nativeControl.LineHeight = label.LineHeight * nativeControl.FontSize;
+			}
+		}
 	}
 }

@@ -383,6 +383,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateLineHeight(TextBlock textBlock)
 		{
 			if (textBlock == null)
