@@ -7,7 +7,7 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <AndroidRoot>Android\</AndroidRoot>
     <iOSRoot>iOS\</iOSRoot>
-    <WindowsRoot>Windows\</WindowsRoot>
+    <WindowsRoot>WinUI\</WindowsRoot>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
@@ -82,6 +82,7 @@
     </Compile>
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     
   </ItemGroup>
   <ItemGroup>

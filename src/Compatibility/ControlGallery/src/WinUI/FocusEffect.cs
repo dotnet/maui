@@ -1,0 +1,36 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Windows.UI;
+using Microsoft.UI.Xaml.Media;
+using Xamarin.Forms;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.UI;
+
+[assembly: ExportEffect(typeof(FocusEffect), "FocusEffect")]
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+{
+	public class FocusEffect : PlatformEffect
+	{
+		protected override void OnAttached()
+		{
+			try
+			{
+				(Control as Microsoft.UI.Xaml.Controls.Control).Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Colors.Cyan);
+				(Control as FormsTextBox).BackgroundFocusBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Colors.White);
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine("Cannot set property on attached control. Error: ", ex.Message);
+			}
+		}
+
+		protected override void OnDetached()
+		{
+		}
+	}
+}
