@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 
 [assembly: ExportRenderer(typeof(CustomSwitch), typeof(CustomSwitchRenderer))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	// Used in Issue7253.cs
 	public class CustomSwitchRenderer : SwitchRenderer
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
 
 		protected class CustomSwitchStyle : WResourceDictionary
 		{
-			public void ToggleSwitchStrokeOn(Windows.UI.Color c) => this["ToggleSwitchStrokeOn"] = c;
+			public void ToggleSwitchStrokeOn(global::Windows.UI.Color c) => this["ToggleSwitchStrokeOn"] = c;
 			public void ToggleSwitchStrokeOff(Windows.UI.Color c) => this["ToggleSwitchStrokeOff"] = c;
 			public void ToggleSwitchKnobFillOn(Windows.UI.Color c) => this["ToggleSwitchKnobFillOn"] = c;
 			public void ToggleSwitchKnobFillOff(Windows.UI.Color c) => this["ToggleSwitchKnobFillOff"] = c;

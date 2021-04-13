@@ -1,12 +1,12 @@
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 
 [assembly: ExportRenderer(typeof(Bugzilla57114._57114View), typeof(_57114Renderer))]
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class _57114Renderer : VisualElementRenderer<Bugzilla57114._57114View, _57114NativeView>
 	{

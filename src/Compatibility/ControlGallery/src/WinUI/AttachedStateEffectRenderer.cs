@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Linq;
-using Xamarin.Forms;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Effects;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 
 [assembly: ExportEffect(typeof(AttachedStateEffectRenderer), AttachedStateEffect.EffectName)]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class AttachedStateEffectRenderer : PlatformEffect
 	{

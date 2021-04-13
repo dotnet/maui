@@ -1,18 +1,18 @@
 using System;
 using Windows.UI.Input;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 
 [assembly: ExportRenderer(typeof(Bugzilla60122._60122Image), typeof(_60122ImageRenderer))]
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class _60122ImageRenderer : ImageRenderer
 	{
 		Bugzilla60122._60122Image _customControl;
-		readonly Windows.UI.Input.GestureRecognizer _gestureRecognizer = new Windows.UI.Input.GestureRecognizer();
+		readonly global::Windows.UI.Input.GestureRecognizer _gestureRecognizer = new global::Windows.UI.Input.GestureRecognizer();
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Image> e)
 		{

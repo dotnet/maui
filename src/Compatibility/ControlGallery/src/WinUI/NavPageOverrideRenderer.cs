@@ -1,11 +1,12 @@
 ﻿using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using Xamarin.Forms.Internals;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.Internals;
 
 [assembly: ExportRenderer(typeof(NavPageOverrideUWP.CustomNavPageForOverride), typeof(NavPageOverrideRenderer))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class NavPageOverrideRenderer : NavigationPageRenderer
 	{

@@ -10,20 +10,20 @@ using Windows.Graphics.Display;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
-using Xamarin.Forms;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	/// <summary>
 	/// An empty page that can be used on its own or navigated to within a Frame.
 	/// </summary>
 	public sealed partial class MainPage
 	{
-		Controls.App _app;
+		ControlGallery.App _app;
 
 		public MainPage()
 		{
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
 			});
 		}
 		
-		private void _app_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		private void _app_PropertyChanged(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "MainPage")
 			{
@@ -231,11 +231,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
 
 				return null;
 			}
-			public static Windows.UI.Color ToWindowsColor(Color color)
+			public static global::Windows.UI.Color ToWindowsColor(Color color)
 			{
 				return Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
 			}
-			public static Color ToColor(Windows.UI.Color color)
+			public static global::Windows.UI.Color ToColor(Windows.UI.Color color)
 			{
 				return Color.FromRgba(color.R, color.G, color.B, color.A);
 			}

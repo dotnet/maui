@@ -64,6 +64,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3E56DEAA-CB3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Windows.UnitTests", "src\Compatibility\Core\tests\WinUI\Compatibility.Windows.UnitTests.csproj", "{ADAA2498-16D1-4A1E-ADAA-9F46967FADDB}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.WinUI", "src\Compatibility\ControlGallery\src\WinUI\Compatibility.ControlGallery.WinUI.csproj", "{6721124F-9975-4486-9FE7-263184E16061}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{63ffae7f-72ce-4458-8c28-5d7733804816}*SharedItemsImports = 5
@@ -198,7 +200,8 @@ Global
 		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Release|x64.Build.0 = Release|Any CPU
 		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Release|x86.ActiveCfg = Release|Any CPU
 		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Release|x86.Build.0 = Release|Any CPU
-		{B82F17CF-3D08-4D07-BF86-DF48D89E0B53}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{B82F17CF-3D08-4D07-BF86-DF48D89E0B53}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{B82F17CF-3D08-4D07-BF86-DF48D89E0B53}.Debug|Any CPU.Build.0 = Debug|x64
 		{B82F17CF-3D08-4D07-BF86-DF48D89E0B53}.Debug|arm64.ActiveCfg = Debug|arm64
 		{B82F17CF-3D08-4D07-BF86-DF48D89E0B53}.Debug|arm64.Build.0 = Debug|arm64
 		{B82F17CF-3D08-4D07-BF86-DF48D89E0B53}.Debug|x64.ActiveCfg = Debug|x64
@@ -212,7 +215,7 @@ Global
 		{B82F17CF-3D08-4D07-BF86-DF48D89E0B53}.Release|x64.Build.0 = Release|x64
 		{B82F17CF-3D08-4D07-BF86-DF48D89E0B53}.Release|x86.ActiveCfg = Release|x86
 		{B82F17CF-3D08-4D07-BF86-DF48D89E0B53}.Release|x86.Build.0 = Release|x86
-		{503B7824-7376-450B-9EF7-EA587DF2C8BE}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{503B7824-7376-450B-9EF7-EA587DF2C8BE}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{503B7824-7376-450B-9EF7-EA587DF2C8BE}.Debug|arm64.ActiveCfg = Debug|arm64
 		{503B7824-7376-450B-9EF7-EA587DF2C8BE}.Debug|arm64.Build.0 = Debug|arm64
 		{503B7824-7376-450B-9EF7-EA587DF2C8BE}.Debug|arm64.Deploy.0 = Debug|arm64
@@ -328,6 +331,21 @@ Global
 		{ADAA2498-16D1-4A1E-ADAA-9F46967FADDB}.Release|x64.Build.0 = Release|Any CPU
 		{ADAA2498-16D1-4A1E-ADAA-9F46967FADDB}.Release|x86.ActiveCfg = Release|Any CPU
 		{ADAA2498-16D1-4A1E-ADAA-9F46967FADDB}.Release|x86.Build.0 = Release|Any CPU
+		{6721124F-9975-4486-9FE7-263184E16061}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{6721124F-9975-4486-9FE7-263184E16061}.Debug|Any CPU.Build.0 = Debug|x64
+		{6721124F-9975-4486-9FE7-263184E16061}.Debug|arm64.ActiveCfg = Debug|arm64
+		{6721124F-9975-4486-9FE7-263184E16061}.Debug|arm64.Build.0 = Debug|arm64
+		{6721124F-9975-4486-9FE7-263184E16061}.Debug|x64.ActiveCfg = Debug|x64
+		{6721124F-9975-4486-9FE7-263184E16061}.Debug|x64.Build.0 = Debug|x64
+		{6721124F-9975-4486-9FE7-263184E16061}.Debug|x86.ActiveCfg = Debug|x86
+		{6721124F-9975-4486-9FE7-263184E16061}.Debug|x86.Build.0 = Debug|x86
+		{6721124F-9975-4486-9FE7-263184E16061}.Release|Any CPU.ActiveCfg = Release|x86
+		{6721124F-9975-4486-9FE7-263184E16061}.Release|arm64.ActiveCfg = Release|arm64
+		{6721124F-9975-4486-9FE7-263184E16061}.Release|arm64.Build.0 = Release|arm64
+		{6721124F-9975-4486-9FE7-263184E16061}.Release|x64.ActiveCfg = Release|x64
+		{6721124F-9975-4486-9FE7-263184E16061}.Release|x64.Build.0 = Release|x64
+		{6721124F-9975-4486-9FE7-263184E16061}.Release|x86.ActiveCfg = Release|x86
+		{6721124F-9975-4486-9FE7-263184E16061}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -356,6 +374,7 @@ Global
 		{5C481AFC-E327-41A7-9FED-395519E6B4AF} = {123AA89E-1638-4E0E-B828-B8F9F9F906A2}
 		{3E56DEAA-CB3F-4905-BD59-8B3D31D04499} = {123AA89E-1638-4E0E-B828-B8F9F9F906A2}
 		{ADAA2498-16D1-4A1E-ADAA-9F46967FADDB} = {5C481AFC-E327-41A7-9FED-395519E6B4AF}
+		{6721124F-9975-4486-9FE7-263184E16061} = {802AA31E-051C-482F-9CA2-3F8FB11C251E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

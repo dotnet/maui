@@ -10,6 +10,7 @@
     <Platforms>x86;x64;arm64</Platforms>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <NoWarn>1701;1702;CS8305;8305</NoWarn>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(OS)' != 'Windows_NT'">
@@ -30,11 +31,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps-net6.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
     <ProjectReference Include="..\..\..\..\Core\src\Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Compatibility-net6.csproj" />
-    <ProjectReference Include="..\..\..\Core\tests\Windows\Compatibility.Windows.UnitTests.csproj" />
-    <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core.csproj" />
+    <ProjectReference Include="..\..\..\Core\tests\WinUI\Compatibility.Windows.UnitTests.csproj" />
+    <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core-net6.csproj" />
   </ItemGroup>
 
 </Project>

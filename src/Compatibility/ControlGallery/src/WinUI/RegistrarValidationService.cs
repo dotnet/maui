@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class RegistrarValidationService : IRegistrarValidationService
 	{

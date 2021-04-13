@@ -1,12 +1,11 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Xamarin.Forms;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
-using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 
 [assembly: ExportEffect(typeof(BorderEffect), "BorderEffect")]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class BorderEffect : PlatformEffect
 	{

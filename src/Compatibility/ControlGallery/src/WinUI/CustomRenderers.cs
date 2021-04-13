@@ -8,15 +8,16 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 
-[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Bugzilla42602.TextBoxView), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows.TextBoxViewRenderer))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Bugzilla42602.TextBoxView), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.TextBoxViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue3273.SortableListView), typeof(SortableListViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue2172OldEntry), typeof(Issue2172OldEntryRenderer))]
 [assembly: ExportRenderer(typeof(Issue2172OldEditor), typeof(Issue2172OldEditorRenderer))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class EntryRendererKeyboardFlags : EntryRenderer
 	{
@@ -188,7 +189,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
 	public class Issue2172OldEditorRenderer : EditorRenderer
 	{
 		static FormsTextBox _copyOfTextBox;
-		static Windows.Foundation.Size _zeroSize = new Windows.Foundation.Size(0, 0);
+		static global::Windows.Foundation.Size _zeroSize = new global::Windows.Foundation.Size(0, 0);
 
 		FormsTextBox CreateTextBox()
 		{

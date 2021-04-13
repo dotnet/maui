@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	internal class BrokenNativeControl : Panel
 	{
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
 		}
 
 
-		protected override Windows.Foundation.Size  MeasureOverride (Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size  MeasureOverride (Windows.Foundation.Size availableSize)
 		{
 			_textBlock.Measure (availableSize);
 

@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using static Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue5886;
 
 [assembly: Dependency(typeof(MyInterfaceImplementation))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class MyInterfaceImplementation : IReplaceUWPRendererService
 	{

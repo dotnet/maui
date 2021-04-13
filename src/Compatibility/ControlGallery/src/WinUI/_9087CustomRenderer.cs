@@ -1,10 +1,10 @@
 ﻿using System;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using static Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue9087;
 
 [assembly: ExportRenderer(typeof(_9087Label), typeof(_9087CustomRenderer))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class _9087CustomRenderer : LabelRenderer
 	{

@@ -19,7 +19,7 @@ using Windows.ApplicationModel;
 
 // The Blank Application template is documented at http://go.microsoft.com/fwlink/?LinkId=402347&clcid=0x409
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.

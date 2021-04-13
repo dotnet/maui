@@ -5,10 +5,10 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 
 [assembly: ExportRenderer(typeof(_51173Image), typeof(_51173CustomImageRenderer))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public sealed class BrokenImageSourceHandler : IImageSourceHandler
 	{

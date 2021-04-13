@@ -6,13 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI;
 using Microsoft.UI.Xaml.Media;
-using Xamarin.Forms;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.UI;
 
 [assembly: ExportEffect(typeof(FocusEffect), "FocusEffect")]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Windows
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class FocusEffect : PlatformEffect
 	{
