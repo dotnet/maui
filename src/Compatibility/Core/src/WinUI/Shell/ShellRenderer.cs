@@ -480,9 +480,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_flyoutHeight = appearance.FlyoutHeight;
 			}
 
-			var titleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
-			titleBar.BackgroundColor = titleBar.ButtonBackgroundColor = backgroundColor;
-			titleBar.ForegroundColor = titleBar.ButtonForegroundColor = titleColor;
+			// TODO WINUI
+			//var titleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
+			//titleBar.BackgroundColor = titleBar.ButtonBackgroundColor = backgroundColor;
+			//titleBar.ForegroundColor = titleBar.ButtonForegroundColor = titleColor;
 			UpdatePaneButtonColor(TogglePaneButton, !IsPaneOpen);
 			UpdatePaneButtonColor(NavigationViewBackButton, !IsPaneOpen);
 			UpdateFlyoutBackdrop();
