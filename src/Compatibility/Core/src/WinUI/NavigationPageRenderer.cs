@@ -261,10 +261,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_parentFlyoutPage != null)
 				_parentFlyoutPage.PropertyChanged -= MultiPagePropertyChanged;
 
-			if (_navManager != null)
-			{
-				_navManager.AppViewBackButtonVisibility = AppViewBackButtonVisibility.Collapsed;
-			}
+			//if (_navManager != null)
+			//{
+			//	_navManager.AppViewBackButtonVisibility = AppViewBackButtonVisibility.Collapsed;
+			//}
 		}
 
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
@@ -402,7 +402,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element == null)
 				return;
 
-			_navManager = SystemNavigationManager.GetForCurrentView();
+			//_navManager = SystemNavigationManager.GetForCurrentView();
 			Element.SendAppearing();
 			UpdateBackButton();
 			UpdateTitleOnParents();
@@ -613,7 +613,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		}
 
-		SystemNavigationManager _navManager;
+		//SystemNavigationManager _navManager;
 
 		public void BindForegroundColor(AppBar appBar)
 		{
@@ -664,13 +664,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateBackButton()
 		{
-			if (_navManager == null || _currentPage == null)
+			if (/*_navManager == null ||*/ _currentPage == null)
 			{
 				return;
 			}
 
 			bool showBackButton = Element.InternalChildren.Count > 1 && NavigationPage.GetHasBackButton(_currentPage);
-			_navManager.AppViewBackButtonVisibility = showBackButton ? AppViewBackButtonVisibility.Visible : AppViewBackButtonVisibility.Collapsed;
+			//_navManager.AppViewBackButtonVisibility = showBackButton ? AppViewBackButtonVisibility.Visible : AppViewBackButtonVisibility.Collapsed;
 			_container.SetBackButtonTitle(Element);
 		}
 

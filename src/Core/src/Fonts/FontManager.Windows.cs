@@ -30,10 +30,10 @@ namespace Microsoft.Maui
 		}
 
 		public FontFamily DefaultFontFamily =>
-			(FontFamily)MauiWinUIApplication.Current.Resources[SystemFontFamily];
+			(FontFamily)UI.Xaml.Application.Current.Resources[SystemFontFamily];
 
 		public double DefaultFontSize =>
-			(double)MauiWinUIApplication.Current.Resources[SystemFontSize];
+			(double)UI.Xaml.Application.Current.Resources[SystemFontSize];
 
 		public FontFamily GetFontFamily(Font font)
 		{

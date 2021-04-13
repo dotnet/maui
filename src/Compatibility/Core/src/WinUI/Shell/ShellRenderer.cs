@@ -452,11 +452,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var toggleButton = GetTemplateChild(name) as Control;
 			if (toggleButton != null)
 			{
-				var titleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
-				if (overrideColor)
-					toggleButton.Foreground = new WSolidColorBrush(titleBar.ButtonForegroundColor.Value);
-				else
-					toggleButton.ClearValue(Control.ForegroundProperty);
+				// TODO WINUI
+				//var titleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
+				//if (overrideColor)
+				//	toggleButton.Foreground = new WSolidColorBrush(titleBar.ButtonForegroundColor.Value);
+				//else
+				//	toggleButton.ClearValue(Control.ForegroundProperty);
 			}
 		}
 

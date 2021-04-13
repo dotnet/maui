@@ -8,16 +8,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	internal class WindowsDeviceInfo : DeviceInfo
 	{
-		DisplayInformation _information;
+		//DisplayInformation _information;
 		bool _isDisposed;
 	//	DualScreen.IDualScreenService DualScreenService => DependencyService.Get<DualScreen.IDualScreenService>();
 
 		public WindowsDeviceInfo()
 		{
 			// TODO: Screen size and DPI can change at any time
-			_information = DisplayInformation.GetForCurrentView();
-			_information.OrientationChanged += OnOrientationChanged;
-			CurrentOrientation = GetDeviceOrientation(_information.CurrentOrientation);
+			//_information = DisplayInformation.GetForCurrentView();
+			//_information.OrientationChanged += OnOrientationChanged;
+			//CurrentOrientation = GetDeviceOrientation(_information.CurrentOrientation);
 		}
 
 		public override Size PixelScreenSize
@@ -46,7 +46,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			get
 			{
-				return ((int)_information.ResolutionScale) / 100d;
+				// TODO WINUI
+				return 1;
+				//return ((int)_information.ResolutionScale) / 100d;
 			}
 		}
 
@@ -55,11 +57,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_isDisposed)
 				return;
 
-			if (disposing)
-			{
-				_information.OrientationChanged -= OnOrientationChanged;
-				_information = null;
-			}
+			//if (disposing)
+			//{
+			//	_information.OrientationChanged -= OnOrientationChanged;
+			//	_information = null;
+			//}
 
 			_isDisposed = true;
 

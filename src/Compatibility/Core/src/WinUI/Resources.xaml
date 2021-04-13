@@ -7,7 +7,7 @@
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="FormsCommandBarStyle.xaml" />
 		<ResourceDictionary Source="PageControlStyle.xaml" />
-		<ResourceDictionary Source="FormsProgressBarStyle.xaml" />
+        <!--<ResourceDictionary Source="FormsProgressBarStyle.xaml" />-->
 		<ResourceDictionary Source="FormsTextBoxStyle.xaml" />
         <ResourceDictionary Source="FormsCheckBoxStyle.xaml" />
 		<ResourceDictionary Source="FormsAutoSuggestBoxStyle.xaml" />

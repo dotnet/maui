@@ -94,6 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.SetFlowDirection(GetFlowDirection());
 
 			Device.SetFlags(s_flags);
+			Device.Info = new WindowsDeviceInfo();
 
 			//TODO WINUI3
 			//// use field and not property to avoid exception in getter
@@ -209,10 +210,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		internal static UI.Xaml.ResourceDictionary GetTabletResources()
 		{
-			return new UI.Xaml.ResourceDictionary
+			var dict = new UI.Xaml.ResourceDictionary
 			{
-				Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf")
+				Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/WinUI/Resources.xbf")
 			};
+
+			return dict;
 		}
 	}
 }

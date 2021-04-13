@@ -34,17 +34,18 @@
   </ItemGroup>
   <PropertyGroup>
     <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
-    <PathToXAMLWinRTImplementations>Xamarin.Forms.ControlGallery.WindowsUniversal\</PathToXAMLWinRTImplementations>
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
   <PropertyGroup>
-    <ProjectGuid>9784da17-daef-455c-8cfb-ba4b4119c1b6</ProjectGuid>
     <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <AssetTargetFallback>net6.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
-    <AppxTargetsLocation Condition="'$(AppxTargetsLocation)'==''">$(MSBuildThisFileDirectory)build\</AppxTargetsLocation>
     <EntryPointProjectUniqueName>..\WinUI\Compatibility.ControlGallery.WinUI.csproj</EntryPointProjectUniqueName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ProjectGuid>9784da17-daef-455c-8cfb-ba4b4119c1b6</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -52,12 +53,24 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.0]">
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[0.5.0]">
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WinUI\Compatibility.ControlGallery.WinUI.csproj">
+      <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Assets\coverassets1.jpg" />
     <Content Include="Assets\Fonts\fa-solid-900.ttf" />
     <Content Include="Assets\Fonts\ionicons.ttf" />
     <Content Include="Assets\Fonts\Lobster-Regular.ttf" />
     <Content Include="Assets\Fonts\materialdesignicons-webfont.ttf" />
-    <Content Include="Assets\Fonts\OFL.txt" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\Logo.png" />
     <Content Include="Assets\SmallLogo.png" />
@@ -69,14 +82,6 @@
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
     <Content Include="Assets\WideLogo.scale-100.png" />
-    <None Include="Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx" />
-  </ItemGroup>
-  <ItemGroup>
-    <SDKReference Include="Microsoft.VCLibs.Desktop, Version=14.0" />
-    <!-- Needed for ucrtbased.dll when running a debug build. -->
-    <SDKReference Include="Microsoft.VCLibs, Version=14.0" Condition="'$(Configuration)' == 'Debug'" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="bank.png" />
     <Content Include="calculator.png" />
     <Content Include="cardBackground.png" />
@@ -85,6 +90,7 @@
     <Content Include="cover1small.jpg" />
     <Content Include="crimson.jpg" />
     <Content Include="crimsonsmall.jpg" />
+    <Content Include="default.css" />
     <Content Include="FlowerBuds.jpg" />
     <Content Include="Fruits.jpg" />
     <Content Include="GifOne.gif" />
@@ -142,13 +148,7 @@
     <Content Include="xamarinstore.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="default.css" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\WinUI\Compatibility.ControlGallery.WinUI.csproj">
-      <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
+    <None Include="Assets\Fonts\OFL.txt" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
-  <Import Project="$(AppxTargetsLocation)Microsoft.WinUI.AppX.targets" />
 </Project>
