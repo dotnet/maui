@@ -1,4 +1,5 @@
 #nullable enable
+using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui
 {
 	public interface IViewHandler

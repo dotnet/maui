@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.RefreshView;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -118,10 +119,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element == null || Control?.Visualizer == null)
 				return;
 
-			if (Element.BackgroundColor != Color.Default)
+			if (Element.BackgroundColor.IsNotDefault())
 				Control.Visualizer.Background = Element.BackgroundColor.ToBrush();
 			else
-				Control.Visualizer.Background = Color.White.ToBrush();
+				Control.Visualizer.Background = Colors.White.ToBrush();
 		}
 
 		void UpdateContent()
@@ -158,7 +159,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Control?.Visualizer == null)
 				return;
 
-			Control.Visualizer.Foreground = Element.RefreshColor != Color.Default
+			Control.Visualizer.Foreground = Element.RefreshColor.IsNotDefault()
 				? Element.RefreshColor.ToBrush()
 				: (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
 

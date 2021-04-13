@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
 			count++;
-			return Color.Blue;
+			return Colors.Blue;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -95,7 +96,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 			var layout = new ContentPage().LoadFromXaml(xaml);
 			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
 			var label = layout.FindByName<Label>("label");
-			Assert.AreEqual(Color.Blue, label.BackgroundColor);
+			Assert.AreEqual(Colors.Blue, label.BackgroundColor);
 			Assert.AreEqual(1, SeverityColorConverter.count);
 		}
 
@@ -124,7 +125,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 			var layout = new ContentPage().LoadFromXaml(xaml);
 			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
 			var label = layout.FindByName<Label>("label");
-			Assert.AreEqual(Color.Blue, label.BackgroundColor);
+			Assert.AreEqual(Colors.Blue, label.BackgroundColor);
 			Assert.AreEqual(1, SeverityColorConverter.count);
 		}
 

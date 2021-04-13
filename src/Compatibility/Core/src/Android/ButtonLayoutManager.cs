@@ -6,6 +6,7 @@ using Android.Text.Method;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AButton = Android.Widget.Button;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;

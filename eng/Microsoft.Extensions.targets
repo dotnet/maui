@@ -12,6 +12,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference
+        Update="Microsoft.Maui.Graphics"
+        Version="6.0.100-preview.3.34" />
+    <PackageReference
         Update="Microsoft.Extensions.Configuration"
         Version="$(_MicrosoftHostingVersion)"
     />

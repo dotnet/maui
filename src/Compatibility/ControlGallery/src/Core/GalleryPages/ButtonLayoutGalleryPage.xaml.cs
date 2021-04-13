@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 using AndroidSpecific = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using ButtonImagePosition = Microsoft.Maui.Controls.Button.ButtonContentLayout.ImagePosition;
 using iOSSpecific = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					void SetBackground(View view)
 					{
 						if (view is Button button && !button.IsSet(Button.BackgroundColorProperty))
-							view.BackgroundColor = Color.LightGray;
+							view.BackgroundColor = Colors.LightGray;
 
 						if (view is Layout layout)
 						{
@@ -173,7 +174,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					if (value != -1d)
 					{
 						button.BorderWidth = value;
-						button.BorderColor = Color.Red;
+						button.BorderColor = Colors.Red;
 					}
 					else
 					{

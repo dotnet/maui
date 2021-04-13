@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					if (_isSelected != value)
 					{
 						_isSelected = value;
-						Background = _isSelected ? Color.FromHex("101010") : Color.Transparent;
+						Background = _isSelected ? Color.FromHex("101010") : Colors.Transparent;
 						NotifyPropertyChanged("Background");
 					}
 				}

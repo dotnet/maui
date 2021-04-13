@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Android.Runtime;
 using Android.Views;
+using Microsoft.Maui.Graphics;
 using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.SingleProject
 {
@@ -10,7 +11,7 @@ namespace Maui.Controls.Sample.SingleProject
 			Content = new Label
 			{
 				Text = "Hello, .NET MAUI Single Project!",
-				BackgroundColor = Color.White
+				BackgroundColor = Colors.White
 			};
 		}
 

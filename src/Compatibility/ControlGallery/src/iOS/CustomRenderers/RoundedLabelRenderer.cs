@@ -1,8 +1,8 @@
 ﻿using System;
 using UIKit;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue6368;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 
@@ -21,8 +21,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRendere
 			if (e.NewElement != null)
 			{
 				this.Layer.CornerRadius = 10;
-				this.Layer.BorderColor = ColorExtensions.ToCGColor(ColorExtensions.ToColor(UIColor.FromRGB(3, 169, 244)));
-				this.Layer.BackgroundColor = ColorExtensions.ToCGColor(Color.GhostWhite);
+				this.Layer.BorderColor = Maui.ColorExtensions.ToCGColor(Maui.ColorExtensions.ToColor(UIColor.FromRGB(3, 169, 244)));
+				this.Layer.BackgroundColor = Maui.ColorExtensions.ToCGColor(Colors.GhostWhite);
 				this.Layer.BorderWidth = 1;
 			}
 		}

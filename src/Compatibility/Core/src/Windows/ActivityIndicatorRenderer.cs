@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Color color = Element.Color;
 
-			if (color.IsDefault)
+			if (color.IsDefault())
 			{
 				Control.RestoreForegroundCache(_foregroundDefault);
 			}

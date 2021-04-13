@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			var grdInner = new Grid { BackgroundColor = Color.Red, IsVisible = false, Padding = new Thickness(10) };
+			var grdInner = new Grid { BackgroundColor = Colors.Red, IsVisible = false, Padding = new Thickness(10) };
 			var btn = new Button { Text = "Click and verify background is red" };
 			btn.Clicked += (s, e) =>
 			{

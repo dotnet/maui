@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -85,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Children = { instructions, view() },
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill,
-				BackgroundColor = Color.YellowGreen
+				BackgroundColor = Colors.YellowGreen
 			};
 
 			var sv = new ScrollView { Content = layout };
@@ -110,7 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Children = { instructions, buttonEntry, buttonEditor, buttonSearchBar },
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
-				BackgroundColor = Color.YellowGreen
+				BackgroundColor = Colors.YellowGreen
 			};
 
 			return new ContentPage { Title = "ScrollView Tests", Content = layout };
@@ -147,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Children = { instructions, buttonEntry, buttonEditor, buttonSearchBar },
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
-				BackgroundColor = Color.YellowGreen
+				BackgroundColor = Colors.YellowGreen
 			};
 
 			return new ContentPage { Title = "Back Nav Tests", Content = layout };

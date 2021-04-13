@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var grid = new Grid
 			{
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				IsEnabled = true,
 				WidthRequest = 250,
 				HeightRequest = 50,
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var contentView = new ContentView
 			{
-				BackgroundColor = Color.Green,
+				BackgroundColor = Colors.Green,
 				IsEnabled = true,
 				WidthRequest = 250,
 				HeightRequest = 50,
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var stackLayout = new StackLayout
 			{
-				BackgroundColor = Color.Orange,
+				BackgroundColor = Colors.Orange,
 				IsEnabled = true,
 				WidthRequest = 250,
 				HeightRequest = 50,

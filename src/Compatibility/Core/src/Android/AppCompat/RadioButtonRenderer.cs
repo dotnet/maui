@@ -11,6 +11,8 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 using Microsoft.Maui.Controls.Internals;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using Microsoft.Maui.Graphics;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 		public SafeAreaPageiOS(ICommand restore, Command<Page> setRoot)
 		{
 			Title = "Safe Area";
-			BackgroundColor = Color.Azure;
+			BackgroundColor = Colors.Azure;
 			On<iOS>().SetUseSafeArea(true);
 
 			Construct(this, restore, setRoot);
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 			var safeLimitsTop = new Label
 			{
 				Text = "top",
-				BackgroundColor = Color.Pink,
+				BackgroundColor = Colors.Pink,
 				HorizontalOptions = LayoutOptions.Start,
 				VerticalOptions = LayoutOptions.Start,
 				InputTransparent = true
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 			var safeLimitsBottom = new Label
 			{
 				Text = "bottom",
-				BackgroundColor = Color.Pink,
+				BackgroundColor = Colors.Pink,
 				HorizontalOptions = LayoutOptions.End,
 				VerticalOptions = LayoutOptions.End,
 				InputTransparent = true
@@ -266,12 +267,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 					Root = new TableRoot("Table Title") {
 					new TableSection ("Section 1 Title") {
 						new ViewCell {
-							View = new Button{  BackgroundColor = Color.Red, Command = restore, Text = "Back To Gallery", HorizontalOptions = LayoutOptions.Start }
+							View = new Button{  BackgroundColor = Colors.Red, Command = restore, Text = "Back To Gallery", HorizontalOptions = LayoutOptions.Start }
 						}
 					},
 					new TableSection ("Section 1 Title") {
 						new ViewCell {
-							View = new Label { Text = "ViewCell Text with 10 margin top", Margin = new Thickness(0,10,0,0), BackgroundColor = Color.Pink },
+							View = new Label { Text = "ViewCell Text with 10 margin top", Margin = new Thickness(0,10,0,0), BackgroundColor = Colors.Pink },
 						},
 						new TextCell {
 							Text = "TextCell Text",

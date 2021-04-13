@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -60,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 														{
 															Content = new StackLayout
 															{
-																BackgroundColor = Color.White,
+																BackgroundColor = Colors.White,
 																Children =
 																{
 																	new Label

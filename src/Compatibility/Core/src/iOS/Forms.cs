@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,6 +14,7 @@ using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;
@@ -194,15 +195,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Microsoft.Maui.Controls.Internals.Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
-			//TODO: MAUI Accent Color?
-			Color.SetAccent(Color.FromRgba(50, 79, 133, 255));
+			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
 			if (!IsInitialized)
 			{
 				// Only need to do this once
 				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 			}
-
+			
 #if __MOBILE__
 			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
@@ -426,7 +426,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 				// If not iOS 13, but 11+ we can only get the named colors
 				if (!IsiOS13OrNewer && IsiOS11OrNewer)
-					return (resultColor = UIColor.FromName(name)) == null ? Color.Default : resultColor.ToColor();
+					return (resultColor = UIColor.FromName(name)) == null ? null : resultColor.ToColor();
 
 				// If iOS 13+ check all dynamic colors too
 				switch (name)
@@ -506,7 +506,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (resultColor == null)
-					return Color.Default;
+					return null;
 
 				return resultColor.ToColor();
 #elif __MACOS__
@@ -677,11 +677,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (resultColor == null)
-					return Color.Default;
+					return null;
 
 				return resultColor.ToColor(NSColorSpace.GenericRGBColorSpace);
 #else
-				return Color.Default;
+				return null;
 #endif
 			}
 

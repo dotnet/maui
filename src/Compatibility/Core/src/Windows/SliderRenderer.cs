@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					// centered if a larger HeightRequest is set.
 					if (Element.VerticalOptions.Alignment == LayoutAlignment.Center && Control.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
 					{
-						Control.VerticalAlignment = VerticalAlignment.Center;
+						Control.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center;
 
 						slider.Margin = WinUIHelpers.CreateThickness(0, 7, 0, 0);
 					}
@@ -105,7 +106,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (Control != null)
 			{
-				if (Element.MinimumTrackColor == Color.Default)
+				if (Element.MinimumTrackColor.IsDefault())
 					Control.Foreground = defaultforegroundcolor;
 				else
 					Control.Foreground = Element.MinimumTrackColor.ToBrush();
@@ -116,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (Control != null)
 			{
-				if (Element.MaximumTrackColor == Color.Default)
+				if (Element.MaximumTrackColor.IsDefault())
 					Control.Background = defaultbackgroundcolor;
 				else
 					Control.Background = Element.MaximumTrackColor.ToBrush();
@@ -189,7 +190,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Control != null)
 			{
 				Color backgroundColor = Element.BackgroundColor;
-				if (!backgroundColor.IsDefault)
+				if (!backgroundColor.IsDefault())
 				{
 					Control.Background = backgroundColor.ToBrush();
 				}
@@ -211,7 +212,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else
 				{
 					Color backgroundColor = Element.BackgroundColor;
-					if (backgroundColor.IsDefault)
+					if (backgroundColor.IsDefault())
 						Control.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
 				}
 			}

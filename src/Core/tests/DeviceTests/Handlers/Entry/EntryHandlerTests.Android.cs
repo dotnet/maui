@@ -1,5 +1,5 @@
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using Android.Text;
 using Android.Text.Method;
 using Android.Views.InputMethods;
@@ -9,6 +9,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
 using AColor = Android.Graphics.Color;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -132,7 +133,7 @@ namespace Microsoft.Maui.DeviceTests
 			var editText = GetNativeEntry(entryHandler);
 			var inputTypes = editText.InputType;
 
-			return editText.KeyListener is NumberKeyListener 
+			return editText.KeyListener is NumberKeyListener
 				&& (inputTypes.HasFlag(InputTypes.NumberFlagDecimal) && inputTypes.HasFlag(InputTypes.ClassNumber) && inputTypes.HasFlag(InputTypes.NumberFlagSigned));
 		}
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var grid = new Grid()
 			{
 				Padding = new Thickness(10),
-				BackgroundColor = Color.Aquamarine,
+				BackgroundColor = Colors.Aquamarine,
 				IsTabStop = false
 			};
 			grid.AddChild(new Button

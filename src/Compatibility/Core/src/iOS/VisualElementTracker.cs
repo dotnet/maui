@@ -1,10 +1,10 @@
 using System;
 using System.ComponentModel;
-using System.Drawing;
 using System.Threading;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;

@@ -11,6 +11,7 @@ using UwpApp = Microsoft.UI.Xaml.Application;
 using UwpDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WRect = Windows.Foundation.Rect;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -382,8 +383,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				case string text:
 					_emptyView = new TextBlock
 					{
-						HorizontalAlignment = HorizontalAlignment.Center,
-						VerticalAlignment = VerticalAlignment.Center,
+						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
 						Text = text
 					};
 					break;
@@ -434,8 +435,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				return new TextBlock
 				{
-					HorizontalAlignment = HorizontalAlignment.Center,
-					VerticalAlignment = VerticalAlignment.Center,
+					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
 					Text = bindingContext.ToString()
 				};
 			}

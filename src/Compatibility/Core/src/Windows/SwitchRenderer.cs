@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 										_originalOnHoverColor = solidColorBrush;
 								}
 
-								if (!Element.OnColor.IsDefault)
+								if (!Element.OnColor.IsDefault())
 								{
 									frame.Value = new WSolidColorBrush(Element.OnColor.ToWindowsColor())
 									{
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (_originalOnColorBrush == null)
 					_originalOnColorBrush = rect.Fill;
 
-				if (!Element.OnColor.IsDefault)
+				if (!Element.OnColor.IsDefault())
 					rect.Fill = new WSolidColorBrush(Element.OnColor.ToWindowsColor());
 				else
 					rect.Fill = _originalOnColorBrush;
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 										_originalThumbOnBrush = brush;
 								}
 
-								if (!Element.ThumbColor.IsDefault)
+								if (!Element.ThumbColor.IsDefault())
 								{
 									var brush = Element.ThumbColor.ToBrush();
 									brush.Opacity = _originalThumbOnBrush.Opacity;
@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (_originalThumbOnBrush == null)
 					_originalThumbOnBrush = thumb.Fill;
 
-				if (!Element.ThumbColor.IsDefault)
+				if (!Element.ThumbColor.IsDefault())
 					thumb.Fill = Element.ThumbColor.ToBrush();
 				else
 					thumb.Fill = _originalThumbOnBrush;

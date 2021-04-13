@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			public ModalPage()
 			{
-				BackgroundColor = Color.Orange;
+				BackgroundColor = Colors.Orange;
 
 				var tbi = new ToolbarItem("Done", null, () => Navigation.PopModalAsync())
 				{

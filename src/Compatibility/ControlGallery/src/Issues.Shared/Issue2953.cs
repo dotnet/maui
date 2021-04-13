@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			public HeaderCell()
 			{
 				Height = 44;
-				var label = new Label { BackgroundColor = Color.Pink };
+				var label = new Label { BackgroundColor = Colors.Pink };
 				label.SetBinding(Label.TextProperty, "GroupName");
 				View = label;
 			}
@@ -77,7 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			public ItemCell()
 			{
-				var label = new Label { BackgroundColor = Color.Aqua };
+				var label = new Label { BackgroundColor = Colors.Aqua };
 				label.SetBinding(Label.TextProperty, ".");
 				View = label;
 			}

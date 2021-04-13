@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -32,12 +33,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				IsClippedToBounds = true,
 				AutomationId = SecondaryFrame,
 				CornerRadius = 10,
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				Padding = 0,
 				Content = new BoxView
 				{
 					AutomationId = BoxView,
-					BackgroundColor = Color.Green,
+					BackgroundColor = Colors.Green,
 					WidthRequest = 100,
 					HeightRequest = 100
 				}
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					{
 						AutomationId = RootFrame,
 						CornerRadius = 5,
-						BackgroundColor = Color.Red,
+						BackgroundColor = Colors.Red,
 						Padding = 10,
 						Content = frameClippedToBounds
 					},

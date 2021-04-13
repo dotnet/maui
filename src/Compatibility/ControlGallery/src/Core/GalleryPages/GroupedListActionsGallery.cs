@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -107,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				var label = new Label
 				{
 					VerticalOptions = LayoutOptions.CenterAndExpand,
-					TextColor = Color.Red
+					TextColor = Colors.Red
 				};
 
 				label.SetBinding(Label.TextProperty, "Name");

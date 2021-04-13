@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 
@@ -21,9 +22,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 		const string SuccessText = "SUCCESS";
 		bool _runFailed;
 		bool _runInconclusive;
-		readonly Color _successColor = Color.Green;
-		readonly Color _failColor = Color.Red;
-		readonly Color _inconclusiveColor = Color.Goldenrod;
+		readonly Color _successColor = Colors.Green;
+		readonly Color _failColor = Colors.Red;
+		readonly Color _inconclusiveColor = Colors.Goldenrod;
 
 		int _finishedAssemblyCount = 0;
 		int _testsRunCount = 0;

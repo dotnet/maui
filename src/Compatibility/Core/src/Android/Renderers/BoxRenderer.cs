@@ -1,7 +1,8 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Views;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -84,24 +85,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				Color colorToSet = Element.Color;
 
-				if (colorToSet == Color.Default)
+				if (colorToSet == null)
 					colorToSet = Element.BackgroundColor;
 
 				if (_backgroundDrawable != null)
 				{
-					if (colorToSet != Color.Default)
+					if (colorToSet != null)
 						_backgroundDrawable.SetColor(colorToSet.ToAndroid());
 					else
-						_backgroundDrawable.SetColor(colorToSet.ToAndroid(Color.Transparent));
+						_backgroundDrawable.SetColor(colorToSet.ToAndroid(Colors.Transparent));
 
 					this.SetBackground(_backgroundDrawable);
 				}
 				else
 				{
-					if (colorToSet == Color.Default)
+					if (colorToSet == null)
 						colorToSet = Element.BackgroundColor;
 
-					SetBackgroundColor(colorToSet.ToAndroid(Color.Transparent));
+					SetBackgroundColor(colorToSet.ToAndroid(Colors.Transparent));
 				}
 			}
 		}
