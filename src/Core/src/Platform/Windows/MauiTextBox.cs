@@ -477,7 +477,7 @@ namespace Microsoft.Maui
 		 * */
 		static MauiTextBox _copyOfTextBox;
 		static readonly Windows.Foundation.Size _zeroSize = new Windows.Foundation.Size(0, 0);
-		public static Size GetCopyOfSize(MauiTextBox control, Windows.Foundation.Size constraint)
+		public static Windows.Foundation.Size GetCopyOfSize(MauiTextBox control, Windows.Foundation.Size constraint)
 		{
 			if (_copyOfTextBox == null)
 			{
@@ -510,7 +510,7 @@ namespace Microsoft.Maui
 			_copyOfTextBox.Measure(_zeroSize);
 			_copyOfTextBox.Measure(constraint);
 
-			var result = new Size
+			var result = new Windows.Foundation.Size
 			(
 				Math.Ceiling(_copyOfTextBox.DesiredSize.Width),
 				Math.Ceiling(_copyOfTextBox.DesiredSize.Height)
