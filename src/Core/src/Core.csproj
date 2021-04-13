@@ -13,6 +13,6 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-		<PackageReference Include="Microsoft.Maui.Graphics" Version="6.0.100-preview.3.29" />
+		<PackageReference Include="Microsoft.Maui.Graphics" Version="6.0.100-preview.3.34" />
 	</ItemGroup>
 </Project>
