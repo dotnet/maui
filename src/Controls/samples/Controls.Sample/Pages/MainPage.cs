@@ -61,7 +61,7 @@ namespace Maui.Controls.Sample.Pages
 #elif WINDOWS
 			string fontFamily = "Assets/ionicons.ttf#ionicons";
 #else
-			string fontFamily = "ionicons.ttf#";
+			string fontFamily = "Ionicons";
 #endif
 
 			verticalStack.Add(new Image { Source = new FontImageSource() { FontFamily = fontFamily, Glyph = '\uf2fe'.ToString() } });
