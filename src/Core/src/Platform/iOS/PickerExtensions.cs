@@ -1,4 +1,5 @@
 ﻿using System;
+using Foundation;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
@@ -8,9 +9,29 @@ namespace Microsoft.Maui
 		public static void UpdateTitle(this MauiPicker nativePicker, IPicker picker) =>
 			nativePicker.UpdatePicker(picker);
 
+		public static void UpdateTitleColor(this MauiPicker nativePicker, IPicker picker) =>
+ 			nativePicker.SetTitleColor(picker);
+
 		public static void UpdateSelectedIndex(this MauiPicker nativePicker, IPicker picker) =>
 			nativePicker.SetSelectedIndex(picker, picker.SelectedIndex);
 
+		internal static void SetTitleColor(this MauiPicker nativePicker, IPicker picker)
+		{
+			var title = picker.Title;
+
+			if (string.IsNullOrEmpty(title))
+				return;
+
+			var titleColor = picker.TitleColor;
+
+			nativePicker.UpdateAttributedPlaceholder(new NSAttributedString(title, null, titleColor.ToNative()));
+		}
+
+		internal static void UpdateAttributedPlaceholder(this MauiPicker nativePicker, NSAttributedString nsAttributedString)
+		{
+			nativePicker.AttributedPlaceholder = nsAttributedString;
+		}
+	
 		internal static void UpdatePicker(this MauiPicker nativePicker, IPicker picker)
 		{
 			var selectedIndex = picker.SelectedIndex;

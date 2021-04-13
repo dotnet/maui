@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Essentials;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;
@@ -223,6 +222,24 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				throw new XunitException("Label does not have the UnderlineStyle attribute");
 			}
+		}
+
+		public static UIColor GetForegroundColor(this NSAttributedString text)
+		{
+			if (text == null)
+				return UIColor.Clear;
+
+			var value = text.GetAttribute(UIStringAttributeKey.ForegroundColor, 0, out var range);
+
+			if (value == null)
+				return UIColor.Clear;
+
+			Assert.Equal(0, range.Location);
+			Assert.Equal(text.Length, range.Length);
+
+			var kerning = Assert.IsType<UIColor>(value);
+
+			return kerning;
 		}
 	}
 }

@@ -11,6 +11,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTitle(PickerHandler handler, IPicker view) { }
 
 		[MissingMapper]
+		public static void MapTitleColor(PickerHandler handler, IPicker view) { }
+
+		[MissingMapper]
 		public static void MapSelectedIndex(PickerHandler handler, IPicker view) { }
 
 		[MissingMapper]

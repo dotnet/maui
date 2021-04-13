@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Handlers
 		protected override object CreateNativeView() => throw new NotImplementedException();
 
 		public static void MapTitle(PickerHandler handler, IPicker view) { }
+		public static void MapTitleColor(PickerHandler handler, IPicker view) { }
 		public static void MapSelectedIndex(PickerHandler handler, IPicker view) { }
 		public static void MapCharacterSpacing(PickerHandler handler, IPicker view) { }
 		public static void MapFont(PickerHandler handler, IPicker view) { }

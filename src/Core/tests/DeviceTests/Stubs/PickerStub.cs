@@ -7,6 +7,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public string Title { get; set; }
 
+		public Color TitleColor { get; set; }
+
 		public IList<string> Items { get; set; } = new List<string>();
 
 		public IList ItemsSource { get; set; }

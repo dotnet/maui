@@ -9,6 +9,7 @@
 			[nameof(IPicker.SelectedIndex)] = MapSelectedIndex,
 			[nameof(IPicker.TextColor)] = MapTextColor,
 			[nameof(IPicker.Title)] = MapTitle,
+			[nameof(IPicker.TitleColor)] = MapTitleColor
 		};
 
 		public PickerHandler() : base(PickerMapper)

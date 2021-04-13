@@ -14,6 +14,11 @@ namespace Microsoft.Maui
 		string Title { get; }
 
 		/// <summary>
+		/// Gets the color for the Picker title.
+		/// </summary>
+		Color TitleColor { get; }
+
+		/// <summary>
 		/// Gets or sets the internal list of items to template and display.
 		/// </summary>
 		IList<string> Items { get; }
