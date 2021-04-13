@@ -23,5 +23,10 @@ namespace Microsoft.Maui
 
 		public static void UpdatePadding(this TextBlock nativeControl, ILabel label) =>
 			nativeControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToNative());
+
+		public static void UpdateCharacterSpacing(this TextBlock nativeControl, ILabel label)
+		{
+			nativeControl.CharacterSpacing = label.CharacterSpacing.ToEm();
+		}
 	}
 }

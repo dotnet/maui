@@ -283,6 +283,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			textBlock.UpdateLineBreakMode(Element.LineBreakMode);
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing(TextBlock textBlock)
 		{
 			textBlock.CharacterSpacing = Element.CharacterSpacing.ToEm();
