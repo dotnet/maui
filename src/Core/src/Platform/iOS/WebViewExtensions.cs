@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 		public static void UpdateSource(this WKWebView nativeWebView, IWebView webView, IWebViewDelegate? webViewDelegate)
 		{
 			if (webViewDelegate != null)
-				webView.Source.Load(webViewDelegate);
+				webView.Source?.Load(webViewDelegate);
 		}
 	}
 }
