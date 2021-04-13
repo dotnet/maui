@@ -487,7 +487,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					}
 				}
 
-				public Window Window => _useAppCompat ? _appcompatAlertDialog.Window : _legacyAlertDialog.Window;
+				public global::Android.Views.Window Window => _useAppCompat ? _appcompatAlertDialog.Window : _legacyAlertDialog.Window;
 
 				public void Show()
 				{

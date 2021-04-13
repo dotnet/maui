@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Android.App;
 using Android.OS;
 using Android.Runtime;
@@ -30,18 +31,21 @@ namespace Microsoft.Maui
 
 			Services = host.Services;
 			Application = Services.GetRequiredService<IApplication>();
-
+			
 			base.OnCreate();
 		}
 
 		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
+			services.AddSingleton<IList<IWindow>>(services => Windows);
 		}
 	}
 
 	public abstract class MauiApplication : Application
 	{
+		internal IList<IWindow> Windows = new List<IWindow>();
+
 		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{
 			Current = this;

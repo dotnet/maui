@@ -1,10 +1,15 @@
 using System;
+using System.Collections.Generic;
 using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using Google.Android.Material.AppBar;
+using Microsoft.Extensions.DependencyInjection;
+using Java.Util;
+using System.Linq;
+using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
@@ -26,8 +31,17 @@ namespace Microsoft.Maui
 
 			var state = new ActivationState(mauiContext, savedInstanceState);
 			var window = mauiApp.CreateWindow(state);
+
+			MauiApplication.Current.Windows.Add(window);
+
+			var events = MauiApplication.Current.Services.GetRequiredService<LifecycleEvents.ILifecycleEventService>();
+			events?.InvokeEvents<Action<IWindow>>(nameof(IApplication.CreateWindow), action => action(window));
+
 			window.MauiContext = mauiContext;
 
+
+			var content = (window.Page as IView) ?? window.Page.View;
+			var matchParent = ViewGroup.LayoutParams.MatchParent;
 			//var matchParent = ViewGroup.LayoutParams.MatchParent;
 			var wrap = ViewGroup.LayoutParams.WrapContent;
 

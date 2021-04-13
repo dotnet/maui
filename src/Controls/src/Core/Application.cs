@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
 			// Initialize this value, when the app loads
 			_lastAppTheme = RequestedTheme;
+			
 		}
 
 		public void Quit()

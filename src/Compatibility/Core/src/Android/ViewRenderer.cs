@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				if (isInViewCell)
 				{
-					Window window = Context.GetActivity().Window;
+					global::Android.Views.Window window = Context.GetActivity().Window;
 					if (hasFocus)
 					{
 						_startingInputMode = window.Attributes.SoftInputMode;

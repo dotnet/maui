@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +10,7 @@ namespace Maui.Controls.Sample
 {
 	public partial class XamlApp : Application
 	{
-		public XamlApp(IServiceProvider services, ITextService textService)
+		public XamlApp(IServiceProvider services, ITextService textService, IList<IWindow> windows)
 		{
 			InitializeComponent();
 
