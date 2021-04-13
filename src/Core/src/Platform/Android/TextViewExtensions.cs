@@ -20,13 +20,9 @@ namespace Microsoft.Maui
 				textView.Text = newText;
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Color defaultColor)
+		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)
 		{
-			var textColor = textStyle.TextColor;
-			if (textColor.IsDefault)
-				textView.SetTextColor(defaultColor.ToNative());
-			else
-				textView.SetTextColor(textColor.ToNative());
+			textView.SetTextColor(textStyle.TextColor?.ToNative() ?? defaultColor.ToNative());
 		}
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle) =>
@@ -35,7 +31,7 @@ namespace Microsoft.Maui
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, ColorStateList? defaultColor)
 		{
 			var textColor = textStyle.TextColor;
-			if (textColor.IsDefault)
+			if (textColor == null)
 				textView.SetTextColor(defaultColor);
 			else
 				textView.SetTextColor(textColor.ToNative());

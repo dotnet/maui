@@ -1,4 +1,5 @@
 #if WINDOWS_UWP
+using Microsoft.Maui.Graphics;
 using WPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP

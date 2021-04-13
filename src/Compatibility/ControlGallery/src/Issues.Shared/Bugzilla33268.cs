@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Content = new StackLayout
 			{
-				BackgroundColor = Color.Green,
+				BackgroundColor = Colors.Green,
 				VerticalOptions = LayoutOptions.Start,
 				Children = {
 					fiveItemPicker

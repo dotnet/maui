@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Color color = Element.ProgressColor;
 
-			if (color.IsDefault)
+			if (color.IsDefault())
 			{
 				Control.RestoreForegroundCache(_foregroundDefault);
 			}

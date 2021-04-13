@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 			var editor = new EditorStub()
 			{
 				Placeholder = "Test",
-				PlaceholderColor = Color.Yellow
+				PlaceholderColor = Colors.Yellow
 			};
 
 			await ValidatePropertyInitValue(editor, () => editor.PlaceholderColor, GetNativePlaceholderColor, editor.PlaceholderColor);

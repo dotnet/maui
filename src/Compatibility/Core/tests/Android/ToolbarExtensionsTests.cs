@@ -16,6 +16,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests;
+using Microsoft.Maui.Graphics;
 using AToolBar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 					new ToolbarItem() { IsEnabled = true, Text = "c" },
 				};
 
-				var settings = new ToolbarSettings(sortedItems) { TintColor = Color.Red };
+				var settings = new ToolbarSettings(sortedItems) { TintColor = Colors.Red };
 				SetupToolBar(settings, Context);
 				AToolBar aToolBar = settings.ToolBar;
 				List<IMenuItem> menuItemsCreated = settings.MenuItemsCreated;
@@ -94,11 +95,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 					global::Android.Graphics.Color androidColor;
 					if (i != 2)
 					{
-						androidColor = Color.Red.ToAndroid();
+						androidColor = Colors.Red.ToAndroid();
 					}
 					else
 					{
-						androidColor = Color.Red.MultiplyAlpha(0.302).ToAndroid();
+						androidColor = Colors.Red.MultiplyAlpha(0.302f).ToAndroid();
 					}
 
 
@@ -121,7 +122,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				new ToolbarItem() { IsEnabled = true, Text = "a", Order = ToolbarItemOrder.Secondary },
 			};
 
-			var settings = new ToolbarSettings(sortedItems) { TintColor = Color.Red };
+			var settings = new ToolbarSettings(sortedItems) { TintColor = Colors.Red };
 			SetupToolBar(settings, Context);
 			AToolBar aToolBar = settings.ToolBar;
 			IMenuItem menuItem = settings.MenuItemsCreated.First();
@@ -140,7 +141,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				{
 					Assert.AreNotEqual(
 						colorSpan.ForegroundColor,
-						(int)Color.Red.ToAndroid(),
+						(int)Colors.Red.ToAndroid(),
 						"Secondary Menu Item Incorrectly set to ForegroundColor");
 				}
 			}
@@ -197,7 +198,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			public List<ToolbarItem> ToolbarItems;
 			public List<ToolbarItem> ToolbarItemsCreated;
 			public AToolBar ToolBar;
-			public Color? TintColor;
+			public Color TintColor;
 			public List<IMenuItem> MenuItemsCreated;
 
 			public IEnumerable<ActionMenuItemView> TextViews =>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertContainsColor(expectedColor);
 		}
 
-		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Color expectedColor) =>
+		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToNative());
 
 		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor)

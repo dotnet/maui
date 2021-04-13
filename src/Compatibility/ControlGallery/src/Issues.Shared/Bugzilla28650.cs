@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					Source = ImageSource.FromFile(caret_image),
 					HeightRequest = 20,
 					Aspect = Aspect.AspectFit,
-					BackgroundColor = Color.Green
+					BackgroundColor = Colors.Green
 				};
 
 				_viewLayout = new StackLayout
@@ -103,14 +104,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						FontSize = 14,
 						Text = "1",
 						LineBreakMode = LineBreakMode.WordWrap,
-						BackgroundColor = Color.Red
+						BackgroundColor = Colors.Red
 					}, new Label
 					{
 						HorizontalOptions = LayoutOptions.FillAndExpand,
 						FontSize = 14,
 						Text = "2",
 						LineBreakMode = LineBreakMode.WordWrap,
-						BackgroundColor = Color.Blue
+						BackgroundColor = Colors.Blue
 					}
 				},
 			}, column, currentRow++);
@@ -126,14 +127,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						FontSize = 14,
 						Text = "1",
 						LineBreakMode = LineBreakMode.WordWrap,
-						BackgroundColor = Color.Red
+						BackgroundColor = Colors.Red
 					}, new Label
 					{
 						HorizontalOptions = LayoutOptions.Start,
 						FontSize = 14,
 						Text = "2",
 						LineBreakMode = LineBreakMode.WordWrap,
-						BackgroundColor = Color.Blue
+						BackgroundColor = Colors.Blue
 					}
 				},
 			}, column, currentRow++);
@@ -159,7 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Source = ImageSource.FromFile(caret_image),
 						HeightRequest = 20,
 						Aspect = Aspect.AspectFit,
-						BackgroundColor = Color.Green
+						BackgroundColor = Colors.Green
 					}
 				},
 			};

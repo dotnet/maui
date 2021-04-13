@@ -1,6 +1,7 @@
 ﻿using System;
 
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				FontFamily = GetFontFamily(),
 				Glyph = '\uf101'.ToString(),
-				Color = Color.Red
+				Color = Colors.Red
 			};
 
 			var tb2 = new ToolbarItem("tb2 font", null, () =>

@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Shapes;
 using Shape = Microsoft.Maui.Controls.Shapes.Shape;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;
@@ -499,7 +500,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #else
                     NSColor.Clear.CGColor;
 #endif
-                if (_fill is SolidColorBrush solidColorBrush && solidColorBrush.Color != Color.Default)
+                if (_fill is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
                     fillColor = solidColorBrush.Color.ToCGColor();
 
                 graphics.AddPath(_renderPath);
@@ -522,7 +523,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #else
                     NSColor.Clear.CGColor;
 #endif
-                if (_stroke is SolidColorBrush solidColorBrush && solidColorBrush.Color != Color.Default)
+                if (_stroke is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
                     strokeColor = solidColorBrush.Color.ToCGColor();
 
                 graphics.AddPath(_renderPath);
@@ -546,7 +547,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
                 for (int index = 0; index < brush.GradientStops.Count; index++)
                 {
                     Color color = brush.GradientStops[index].Color;
-                    colors[index] = new CGColor(new nfloat(color.R), new nfloat(color.G), new nfloat(color.B), new nfloat(color.A));
+                    colors[index] = new CGColor(new nfloat(color.Red), new nfloat(color.Green), new nfloat(color.Blue), new nfloat(color.Alpha));
                     locations[index] = new nfloat(brush.GradientStops[index].Offset);
                 }
 

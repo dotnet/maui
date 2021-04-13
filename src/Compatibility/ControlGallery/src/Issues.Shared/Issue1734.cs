@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -25,15 +26,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var text = "This is a very long text that hopefully spans over many many many many multiple beautiful lines!";
 
-			_label = new Label { FormattedText = text, LineBreakMode = LineBreakMode.WordWrap, BackgroundColor = Color.AliceBlue, TextColor = Color.DarkGray };
+			_label = new Label { FormattedText = text, LineBreakMode = LineBreakMode.WordWrap, BackgroundColor = Colors.AliceBlue, TextColor = Colors.DarkGray };
 			var lineHeight = new Entry();
 			lineHeight.TextChanged += LineHeightChanged;
 
 			FormattedString s = new FormattedString();
-			s.Spans.Add(new Span { Text = "0.8: This is a\nvery long text\n", LineHeight = 0.8, BackgroundColor = Color.BlueViolet });
-			s.Spans.Add(new Span { Text = "1.2: with multiple\nlines abc\n", LineHeight = 1.2, BackgroundColor = Color.Brown });
-			s.Spans.Add(new Span { Text = "0.2: def\ndef\n", LineHeight = 0.2, BackgroundColor = Color.Pink });
-			s.Spans.Add(new Span { Text = "1.5: ghi jkl\nmno\npqr stu vwx yz ", LineHeight = 1.5, BackgroundColor = Color.HotPink });
+			s.Spans.Add(new Span { Text = "0.8: This is a\nvery long text\n", LineHeight = 0.8, BackgroundColor = Colors.BlueViolet });
+			s.Spans.Add(new Span { Text = "1.2: with multiple\nlines abc\n", LineHeight = 1.2, BackgroundColor = Colors.Brown });
+			s.Spans.Add(new Span { Text = "0.2: def\ndef\n", LineHeight = 0.2, BackgroundColor = Colors.Pink });
+			s.Spans.Add(new Span { Text = "1.5: ghi jkl\nmno\npqr stu vwx yz ", LineHeight = 1.5, BackgroundColor = Colors.HotPink });
 			_spannedLabel = new Label { FormattedText = s, LineBreakMode = LineBreakMode.WordWrap };
 
 			var stackLayout = new StackLayout

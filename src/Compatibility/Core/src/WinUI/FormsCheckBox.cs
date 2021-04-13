@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WindowsCheckbox = Microsoft.UI.Xaml.Controls.CheckBox;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if(checkBox.IsChecked == false)
 			{
-				checkBox.DefaultFillBrush = Color.Transparent.ToBrush();
+				checkBox.DefaultFillBrush = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
 			}
 			else
 			{

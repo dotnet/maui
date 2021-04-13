@@ -8,6 +8,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Graphics;
 using Debug = System.Diagnostics.Debug;
 
 namespace Maui.Controls.Sample.Pages
@@ -37,13 +38,14 @@ namespace Maui.Controls.Sample.Pages
 				"Cras rutrum scelerisque elit, et porta est lobortis ac. " +
 				"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";
 
-			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
-			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Color.CornflowerBlue };
+			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Colors.AntiqueWhite };
+			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Colors.CornflowerBlue };
+
 
 			verticalStack.Add(CreateSampleGrid());
 
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
-			var label = new Label { Text = "End-aligned text", BackgroundColor = Color.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
+			var label = new Label { Text = "End-aligned text", BackgroundColor = Colors.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
 			SemanticProperties.SetHint(label, "Hint Text");
@@ -55,7 +57,7 @@ namespace Maui.Controls.Sample.Pages
 			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level1);
 			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
-			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Color.LightBlue });
+			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Colors.LightBlue });
 			verticalStack.Add(new Label { Text = loremIpsum });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
 			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
@@ -71,12 +73,20 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(hiddenClearButtonEntry);
 
 			verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
+			var paddingButton = new Button
+			{
+				Padding = new Thickness(40),
+				Text = "This button has a padding!!",
+				BackgroundColor = Colors.Purple,
+			};
+
+			verticalStack.Add(paddingButton);
 
 			var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
 			verticalStack.Add(underlineLabel);
 
 			verticalStack.Add(new ActivityIndicator());
-			verticalStack.Add(new ActivityIndicator { Color = Color.Red, IsRunning = true });
+			verticalStack.Add(new ActivityIndicator { Color = Colors.Red, IsRunning = true });
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
 			button.Clicked += async (sender, e) =>
@@ -90,9 +100,9 @@ namespace Maui.Controls.Sample.Pages
 
 			var button2 = new Button()
 			{
-				TextColor = Color.Green,
+				TextColor = Colors.Green,
 				Text = "Hello I'm a button",
-				BackgroundColor = Color.Purple,
+				BackgroundColor = Colors.Purple,
 				Margin = new Thickness(12)
 			};
 
@@ -103,14 +113,6 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 
-			var paddingButton = new Button
-			{
-				Padding = new Thickness(40),
-				Text = "This button has a padding!!",
-				BackgroundColor = Color.Purple,
-			};
-
-			verticalStack.Add(paddingButton);
 			verticalStack.Add(new Button { Text = "CharacterSpacing" });
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 
@@ -120,8 +122,8 @@ namespace Maui.Controls.Sample.Pages
 				Debug.WriteLine($"Checked Changed to '{e.Value}'");
 			};
 			verticalStack.Add(checkbox);
-			verticalStack.Add(new CheckBox { BackgroundColor = Color.LightPink });
-			verticalStack.Add(new CheckBox { IsChecked = true, Color = Color.Aquamarine });
+			verticalStack.Add(new CheckBox { BackgroundColor = Colors.LightPink });
+			verticalStack.Add(new CheckBox { IsChecked = true, Color = Colors.Aquamarine });
 
 			verticalStack.Add(new Editor());
 			verticalStack.Add(new Editor { Text = "Editor" });
@@ -138,8 +140,8 @@ namespace Maui.Controls.Sample.Pages
 			};
 
 			verticalStack.Add(entry);
-			verticalStack.Add(new Entry { Text = "Entry", TextColor = Color.DarkRed, FontFamily = "Dokdo", MaxLength = -1 });
-			verticalStack.Add(new Entry { IsPassword = true, TextColor = Color.Black, Placeholder = "Pasword Entry" });
+			verticalStack.Add(new Entry { Text = "Entry", TextColor = Colors.DarkRed, FontFamily = "Dokdo", MaxLength = -1 });
+			verticalStack.Add(new Entry { IsPassword = true, TextColor = Colors.Black, Placeholder = "Pasword Entry" });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text" });
 			verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true });
@@ -149,8 +151,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
-			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Color.LightCoral });
-			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Color.Purple });
+			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
+			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
 
 			var searchBar = new SearchBar();
 			searchBar.CharacterSpacing = 4;
@@ -181,13 +183,13 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Slider());
 
 			verticalStack.Add(new Stepper());
-			verticalStack.Add(new Stepper { BackgroundColor = Color.IndianRed });
+			verticalStack.Add(new Stepper { BackgroundColor = Colors.IndianRed });
 			verticalStack.Add(new Stepper { Minimum = 0, Maximum = 10, Value = 5 });
 
 			verticalStack.Add(new Switch());
-			verticalStack.Add(new Switch() { OnColor = Color.Green });
-			verticalStack.Add(new Switch() { ThumbColor = Color.Yellow });
-			verticalStack.Add(new Switch() { OnColor = Color.Green, ThumbColor = Color.Yellow });
+			verticalStack.Add(new Switch() { OnColor = Colors.Green });
+			verticalStack.Add(new Switch() { ThumbColor = Colors.Yellow });
+			verticalStack.Add(new Switch() { OnColor = Colors.Green, ThumbColor = Colors.Yellow });
 
 			verticalStack.Add(new DatePicker());
 			verticalStack.Add(new DatePicker { CharacterSpacing = 6 });
@@ -207,10 +209,10 @@ namespace Maui.Controls.Sample.Pages
 
 		void SetupCompatibilityLayout()
 		{
-			var verticalStack = new StackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
-			var horizontalStack = new StackLayout() { Orientation = StackOrientation.Horizontal, Spacing = 2, BackgroundColor = Color.CornflowerBlue };
+			var verticalStack = new StackLayout() { Spacing = 5, BackgroundColor = Colors.AntiqueWhite };
+			var horizontalStack = new StackLayout() { Orientation = StackOrientation.Horizontal, Spacing = 2, BackgroundColor = Colors.CornflowerBlue };
 
-			var label = new Label { Text = "This will disappear in ~5 seconds", BackgroundColor = Color.Fuchsia };
+			var label = new Label { Text = "This will disappear in ~5 seconds", BackgroundColor = Colors.Fuchsia };
 			label.Margin = new Thickness(15, 10, 20, 15);
 
 			verticalStack.Add(label);
@@ -218,9 +220,9 @@ namespace Maui.Controls.Sample.Pages
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
 			var button2 = new Button()
 			{
-				TextColor = Color.Green,
+				TextColor = Colors.Green,
 				Text = "Hello I'm a button",
-				BackgroundColor = Color.Purple,
+				BackgroundColor = Colors.Purple,
 				Margin = new Thickness(12)
 			};
 
@@ -231,9 +233,9 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(horizontalStack);
 			verticalStack.Add(new Slider());
 			verticalStack.Add(new Switch());
-			verticalStack.Add(new Switch() { OnColor = Color.Green });
-			verticalStack.Add(new Switch() { ThumbColor = Color.Yellow });
-			verticalStack.Add(new Switch() { OnColor = Color.Green, ThumbColor = Color.Yellow });
+			verticalStack.Add(new Switch() { OnColor = Colors.Green });
+			verticalStack.Add(new Switch() { ThumbColor = Colors.Yellow });
+			verticalStack.Add(new Switch() { OnColor = Colors.Green, ThumbColor = Colors.Yellow });
 			verticalStack.Add(new DatePicker());
 			verticalStack.Add(new TimePicker());
 			verticalStack.Add(new Image()
@@ -260,23 +262,23 @@ namespace Maui.Controls.Sample.Pages
 			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(100) });
 			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(100) });
 
-			var topLeft = new Label { Text = "Top Left", BackgroundColor = Color.LightBlue };
+			var topLeft = new Label { Text = "Top Left", BackgroundColor = Colors.LightBlue };
 			layout.Add(topLeft);
 
-			var bottomLeft = new Label { Text = "Bottom Left", BackgroundColor = Color.Lavender };
+			var bottomLeft = new Label { Text = "Bottom Left", BackgroundColor = Colors.Lavender };
 			layout.Add(bottomLeft);
 			layout.SetRow(bottomLeft, 1);
 
-			var topRight = new Label { Text = "Top Right", BackgroundColor = Color.Orange };
+			var topRight = new Label { Text = "Top Right", BackgroundColor = Colors.Orange };
 			layout.Add(topRight);
 			layout.SetColumn(topRight, 1);
 
-			var bottomRight = new Label { Text = "Bottom Right", BackgroundColor = Color.MediumPurple };
+			var bottomRight = new Label { Text = "Bottom Right", BackgroundColor = Colors.MediumPurple };
 			layout.Add(bottomRight);
 			layout.SetRow(bottomRight, 1);
 			layout.SetColumn(bottomRight, 1);
 
-			layout.BackgroundColor = Color.Chartreuse;
+			layout.BackgroundColor = Colors.Chartreuse;
 
 			return layout;
 		}

@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -14,11 +15,11 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var label = new LabelStub()
 			{
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				Text = "Test"
 			};
 
-			await ValidateNativeBackgroundColor(label, Color.Blue);
+			await ValidateNativeBackgroundColor(label, Colors.Blue);
 		}
 
 		[Fact(DisplayName = "Text Initializes Correctly")]
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				TextColor = Color.Red
+				TextColor = Colors.Red
 			};
 
 			await ValidatePropertyInitValue(label, () => label.TextColor, GetNativeTextColor, label.TextColor);

@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a View used to accept multi-line input.

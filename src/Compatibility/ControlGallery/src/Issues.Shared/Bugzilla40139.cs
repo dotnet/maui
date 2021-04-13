@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -18,17 +19,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				ItemsSource = new List<Color>
 				{
-					Color.Aqua,
-					Color.Black,
-					Color.Blue,
-					Color.Fuchsia,
-					Color.Gray,
-					Color.Green,
-					Color.Lime,
-					Color.Maroon,
-					Color.Navy
+					Colors.Aqua,
+					Colors.Black,
+					Colors.Blue,
+					Colors.Fuchsia,
+					Colors.Gray,
+					Colors.Green,
+					Colors.Lime,
+					Colors.Maroon,
+					Colors.Navy
 				},
-				BackgroundColor = Color.Gray,
+				BackgroundColor = Colors.Gray,
 				ItemTemplate = new DataTemplate(typeof(_40139ViewCell))
 			};
 
@@ -57,22 +58,22 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				{
 					Text = "abc",
 					VerticalOptions = LayoutOptions.Center,
-					TextColor = Color.White,
+					TextColor = Colors.White,
 					FontFamily = "Consolas",
 					FontSize = 24,
-					BackgroundColor = Color.Chartreuse
+					BackgroundColor = Colors.Chartreuse
 				};
 
 				var entry = new Entry
 				{
 					Placeholder = "Placeholder",
-					TextColor = Color.Coral
+					TextColor = Colors.Coral
 				};
 
 				var button = new Button
 				{
 					Text = "Button",
-					TextColor = Color.Coral
+					TextColor = Colors.Coral
 				};
 
 				var layout = new StackLayout();

@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -62,8 +63,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var context = new object();
 			var linearGradientBrush = new LinearGradientBrush();
 
-			var firstStop = new GradientStop { Offset = 0.1f, Color = Color.Red };
-			var secondStop = new GradientStop { Offset = 1.0f, Color = Color.Blue };
+			var firstStop = new GradientStop { Offset = 0.1f, Color = Colors.Red };
+			var secondStop = new GradientStop { Offset = 1.0f, Color = Colors.Blue };
 
 			linearGradientBrush.GradientStops.Add(firstStop);
 			linearGradientBrush.GradientStops.Add(secondStop);
@@ -86,8 +87,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var linearGradientBrush = new LinearGradientBrush();
 
-			var firstStop = new GradientStop { Offset = 0.1f, Color = Color.Red };
-			var secondStop = new GradientStop { Offset = 1.0f, Color = Color.Blue };
+			var firstStop = new GradientStop { Offset = 0.1f, Color = Colors.Red };
+			var secondStop = new GradientStop { Offset = 1.0f, Color = Colors.Blue };
 
 			linearGradientBrush.GradientStops.Add(firstStop);
 			linearGradientBrush.GradientStops.Add(secondStop);

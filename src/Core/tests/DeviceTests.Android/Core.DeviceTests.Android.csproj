@@ -9,7 +9,6 @@
     <RootNamespace>Maui.DeviceTests.Android</RootNamespace>
     <AssemblyName>Maui.DeviceTests.Android</AssemblyName>
     <TargetFrameworkVersion>v10.0</TargetFrameworkVersion>
-    <AndroidUseLatestPlatformSdk>false</AndroidUseLatestPlatformSdk>
     <AndroidApplication>True</AndroidApplication>
     <AndroidUseIntermediateDesignerFile>true</AndroidUseIntermediateDesignerFile>
     <AndroidResgenClass>Resource</AndroidResgenClass>
@@ -68,7 +67,7 @@
       <Name>TestUtils.DeviceTests</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj">
-      <Project>{29913989-0f70-48d8-8ede-b1dd266621d1}</Project>
+      <Project>{8CB95D25-8442-42BC-82BE-319D21138549}</Project>
       <Name>Essentials</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Core.csproj">

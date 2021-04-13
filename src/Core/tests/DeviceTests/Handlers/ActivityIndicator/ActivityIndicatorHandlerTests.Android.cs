@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Android.Views;
 using Android.Widget;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests
 {

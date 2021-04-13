@@ -1,5 +1,6 @@
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

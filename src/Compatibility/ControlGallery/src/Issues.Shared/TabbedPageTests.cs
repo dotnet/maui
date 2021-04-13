@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -23,10 +24,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			var popButton1 = new Button() { Text = "Pop", BackgroundColor = Color.Blue };
+			var popButton1 = new Button() { Text = "Pop", BackgroundColor = Colors.Blue };
 			popButton1.Clicked += (s, a) => Navigation.PopModalAsync();
 
-			var popButton2 = new Button() { Text = "Pop 2", BackgroundColor = Color.Blue };
+			var popButton2 = new Button() { Text = "Pop 2", BackgroundColor = Colors.Blue };
 			popButton2.Clicked += (s, a) => Navigation.PopModalAsync();
 
 			Children.Add(new ContentPage() { Title = "Page 1", Content = popButton1 });

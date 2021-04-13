@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Maui.Controls.Internals;
 using WCompositeTransform = Microsoft.UI.Xaml.Media.CompositeTransform;
 using WScaleTransform = Microsoft.UI.Xaml.Media.ScaleTransform;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

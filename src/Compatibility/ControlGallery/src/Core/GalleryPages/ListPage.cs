@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -81,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				var label = new Label() { HorizontalOptions = LayoutOptions.StartAndExpand };
 				label.SetBinding(Label.TextProperty, "Text");
 
-				var box = new BoxView { WidthRequest = 100, HeightRequest = 10, Color = Color.Red, HorizontalOptions = LayoutOptions.End };
+				var box = new BoxView { WidthRequest = 100, HeightRequest = 10, Color = Colors.Red, HorizontalOptions = LayoutOptions.End };
 
 				stackLayout.Children.Add(label);
 				stackLayout.Children.Add(box);

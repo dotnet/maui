@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -27,14 +28,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var instructions = new Label
 			{
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Swipe to the right, if can open the SwipeView the test has passed."
 			};
 
 			var swipeItem = new SwipeItem
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				IconImageSource = "calculator.png"
 			};
 
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var swipeContent = new Grid
 			{
-				BackgroundColor = Color.Gray
+				BackgroundColor = Colors.Gray
 			};
 
 			var swipeLabel = new Label

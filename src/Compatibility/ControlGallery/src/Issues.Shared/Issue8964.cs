@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			System.Diagnostics.Debug.WriteLine($"CurrentItemChanged {CarouselViewUnderTest.Position}");
 			_counter++;
-			ItemSourceUnderTest.Insert(0, new ModelIssue8964 { Name = $"Counter {_counter}", Color = Color.Red, Index = _counter });
+			ItemSourceUnderTest.Insert(0, new ModelIssue8964 { Name = $"Counter {_counter}", Color = Colors.Red, Index = _counter });
 		}
 
 		DataTemplate GetCarouselTemplate()

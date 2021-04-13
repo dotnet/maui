@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
@@ -163,7 +164,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			remote.GoTo ();
 
 			var buttonTextColor = remote.GetProperty<Color> (Button.TextColorProperty);
-			Assert.AreEqual (Color.Pink, buttonTextColor);
+			Assert.AreEqual (Colors.Pink, buttonTextColor);
 		}
 #endif
 

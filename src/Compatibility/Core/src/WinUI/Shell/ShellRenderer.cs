@@ -10,6 +10,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.UI;
 using System.Collections.Specialized;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -286,7 +287,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected virtual void UpdateFlyoutBackgroundColor()
 		{
-			if (_shell.FlyoutBackgroundColor == Color.Default)
+			if (_shell.FlyoutBackgroundColor.IsDefault())
 			{
 				object color = null;
 				if (IsPaneOpen)
@@ -469,9 +470,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Windows.UI.Color titleColor = DefaultTitleColor;
 			if (appearance != null)
 			{
-				if (!appearance.BackgroundColor.IsDefault)
+				if (!appearance.BackgroundColor.IsDefault())
 					backgroundColor = appearance.BackgroundColor.ToWindowsColor();
-				if (!appearance.TitleColor.IsDefault)
+				if (!appearance.TitleColor.IsDefault())
 					titleColor = appearance.TitleColor.ToWindowsColor();
 
 				_flyoutBackdrop = appearance.FlyoutBackdrop;

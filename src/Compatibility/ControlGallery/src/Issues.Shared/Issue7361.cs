@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -40,8 +41,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Maximum = 100,
 				Minimum = 1,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
-				MinimumTrackColor = Color.LightPink,
-				MaximumTrackColor = Color.LightPink
+				MinimumTrackColor = Colors.LightPink,
+				MaximumTrackColor = Colors.LightPink
 			};
 			controlsLayout.Children.Add(TheSlider);
 

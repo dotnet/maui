@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using Foundation;
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var uiSwitch = cell.AccessoryView as UISwitch;
 			if (uiSwitch != null)
 			{
-				if (switchCell.OnColor == Color.Default)
+				if (switchCell.OnColor == null)
 					uiSwitch.OnTintColor = _defaultOnColor;
 				else
 					uiSwitch.OnTintColor = switchCell.OnColor.ToUIColor();

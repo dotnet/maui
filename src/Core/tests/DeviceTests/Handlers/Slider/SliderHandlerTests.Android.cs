@@ -3,6 +3,7 @@ using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests
 {

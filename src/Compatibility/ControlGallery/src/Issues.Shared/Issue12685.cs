@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -34,8 +35,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 
 			var lgb = new LinearGradientBrush();
-			lgb.GradientStops.Add(new GradientStop(Color.White, 0));
-			lgb.GradientStops.Add(new GradientStop(Color.Orange, 1));
+			lgb.GradientStops.Add(new GradientStop(Colors.White, 0));
+			lgb.GradientStops.Add(new GradientStop(Colors.Orange, 1));
 
 			var pathGeometry = new PathGeometry();
 			PathFigureCollectionConverter.ParseStringToPathFigureCollection(pathGeometry.Figures, "M0,0 V300 H300 V-300 Z");

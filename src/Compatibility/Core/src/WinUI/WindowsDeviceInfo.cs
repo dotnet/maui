@@ -3,6 +3,7 @@ using Windows.Graphics.Display;
 using Microsoft.UI.Xaml;
 using Microsoft.Maui.Controls.Internals;
 using WRect = Windows.Foundation.Rect;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

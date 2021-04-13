@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -124,7 +125,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						Binding = new Binding ("."),
 						Value = "Complete",
 						Setters = {
-							new Setter { Property = BoxView.ColorProperty, Value = Color.Green },
+							new Setter { Property = BoxView.ColorProperty, Value = Colors.Green },
 							new Setter { Property = VisualElement.OpacityProperty, Value = .5 },
 						}
 					},
@@ -132,33 +133,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						Binding = new Binding ("."),
 						Value = "MissingInfo",
 						Setters = {
-							new Setter { Property = BoxView.ColorProperty, Value = Color.Yellow },
+							new Setter { Property = BoxView.ColorProperty, Value = Colors.Yellow },
 						}
 					},
 					new DataTrigger (typeof(BoxView)) {
 						Binding = new Binding ("."),
 						Value = "Error",
 						Setters = {
-							new Setter { Property = BoxView.ColorProperty, Value = Color.Red },
+							new Setter { Property = BoxView.ColorProperty, Value = Colors.Red },
 						}
 					},
 				}
 			};
 
 			boxview.BindingContext = "Complete";
-			Assert.AreEqual(Color.Green, boxview.Color);
+			Assert.AreEqual(Colors.Green, boxview.Color);
 			Assert.AreEqual(.5, boxview.Opacity);
 
 			boxview.BindingContext = "MissingInfo";
-			Assert.AreEqual(Color.Yellow, boxview.Color);
+			Assert.AreEqual(Colors.Yellow, boxview.Color);
 			Assert.AreEqual(1, boxview.Opacity);
 
 			boxview.BindingContext = "Error";
-			Assert.AreEqual(Color.Red, boxview.Color);
+			Assert.AreEqual(Colors.Red, boxview.Color);
 			Assert.AreEqual(1, boxview.Opacity);
 
 			boxview.BindingContext = "Complete";
-			Assert.AreEqual(Color.Green, boxview.Color);
+			Assert.AreEqual(Colors.Green, boxview.Color);
 			Assert.AreEqual(.5, boxview.Opacity);
 		}
 	}

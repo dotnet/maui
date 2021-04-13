@@ -15,6 +15,7 @@ using Microsoft.Maui.Controls.Internals;
 using static Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Page;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -278,7 +279,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			object defaultColor = GetDefaultColor();
 
-			if (Element.BarBackgroundColor.IsDefault && defaultColor != null)
+			if (Element.BarBackgroundColor.IsDefault() && defaultColor != null)
 				return (WBrush)defaultColor;
 			return Element.BarBackgroundColor.ToBrush();
 		}
@@ -300,7 +301,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		WBrush GetBarForegroundBrush()
 		{
 			object defaultColor = Microsoft.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
-			if (Element.BarTextColor.IsDefault)
+			if (Element.BarTextColor.IsDefault())
 				return (WBrush)defaultColor;
 			return Element.BarTextColor.ToBrush();
 		}

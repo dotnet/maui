@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs

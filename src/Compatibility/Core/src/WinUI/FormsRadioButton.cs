@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 	public class FormsRadioButton : Microsoft.UI.Xaml.Controls.RadioButton
 	{
 		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),
-	new PropertyMetadata(default(int), OnBorderRadiusChanged));
+			new PropertyMetadata(default(int), OnBorderRadiusChanged));
 
 		public static readonly DependencyProperty BackgroundColorProperty = DependencyProperty.Register(nameof(BackgroundColor), typeof(WBrush), typeof(FormsButton),
 			new PropertyMetadata(default(WBrush), OnBackgroundColorChanged));
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (_contentPresenter != null)
 				_contentPresenter.Background = BackgroundColor;
-			Background = Color.Transparent.ToBrush();
+			Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
 		}
 
 		void UpdateBorderRadius()

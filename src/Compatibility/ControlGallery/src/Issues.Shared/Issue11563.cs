@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -31,8 +32,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var instructions = new Label
 			{
 				Padding = 12,
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Tap the button, if the Polygon is updated, the test has passed."
 			};
 

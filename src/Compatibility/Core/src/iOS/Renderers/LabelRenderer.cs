@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Foundation;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 
 #if __MOBILE__
@@ -319,12 +320,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected override void SetBackgroundColor(Color color)
 		{
 #if __MOBILE__
-			if (color == Color.Default)
+			if (color == null)
 				BackgroundColor = UIColor.Clear;
 			else
 				BackgroundColor = color.ToUIColor();
 #else
-			if (color == Color.Default)
+			if (color == null)
 				Layer.BackgroundColor = NSColor.Clear.CGColor;
 			else
 				Layer.BackgroundColor = color.ToCGColor();
@@ -579,7 +580,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			var textColor = (Color)Element.GetValue(Label.TextColorProperty);
 
-			if (textColor.IsDefault && Element.TextType == TextType.Html)
+			if (textColor == null && Element.TextType == TextType.Html)
 			{
 				// If no explicit text color has been specified and we're displaying HTML, 
 				// let the HTML determine the colors

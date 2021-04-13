@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -20,12 +21,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Text = "Green on Light, Red on Dark"
 			};
 
-			label.SetAppThemeColor(Label.TextColorProperty, Color.Green, Color.Red);
-			Assert.AreEqual(Color.Green, label.TextColor);
+			label.SetAppThemeColor(Label.TextColorProperty, Colors.Green, Colors.Red);
+			Assert.AreEqual(Colors.Green, label.TextColor);
 
 			SetAppTheme(OSAppTheme.Dark);
 
-			Assert.AreEqual(Color.Red, label.TextColor);
+			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
 
 		[Test]
@@ -36,12 +37,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Text = "Green on Light, Red on Dark"
 			};
 
-			label.SetOnAppTheme(Label.TextColorProperty, Color.Green, Color.Red);
-			Assert.AreEqual(Color.Green, label.TextColor);
+			label.SetOnAppTheme(Label.TextColorProperty, Colors.Green, Colors.Red);
+			Assert.AreEqual(Colors.Green, label.TextColor);
 
 			SetAppTheme(OSAppTheme.Dark);
 
-			Assert.AreEqual(Color.Red, label.TextColor);
+			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
 
 		[Test]
@@ -52,12 +53,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Text = "Green on Light, Red on Dark"
 			};
 
-			label.SetBinding(Label.TextColorProperty, new AppThemeBinding { Light = Color.Green, Dark = Color.Red });
-			Assert.AreEqual(Color.Green, label.TextColor);
+			label.SetBinding(Label.TextColorProperty, new AppThemeBinding { Light = Colors.Green, Dark = Colors.Red });
+			Assert.AreEqual(Colors.Green, label.TextColor);
 
 			SetAppTheme(OSAppTheme.Dark);
 
-			Assert.AreEqual(Color.Red, label.TextColor);
+			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
 
 		void SetAppTheme(OSAppTheme theme)

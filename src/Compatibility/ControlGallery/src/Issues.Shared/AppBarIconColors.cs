@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -46,8 +47,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		public NavigationPageWithAppBarColors(Page root) : base(root)
 		{
-			BarBackgroundColor = Color.Purple;
-			BarTextColor = Color.White;
+			BarBackgroundColor = Colors.Purple;
+			BarTextColor = Colors.White;
 			Title = root.Title;
 			IconImageSource = root.IconImageSource;
 		}

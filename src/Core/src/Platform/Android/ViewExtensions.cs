@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		public static void UpdateBackgroundColor(this AView nativeView, IView view)
 		{
 			var backgroundColor = view.BackgroundColor;
-			if (!backgroundColor.IsDefault)
+			if (backgroundColor != null)
 				nativeView?.SetBackgroundColor(backgroundColor.ToNative());
 		}
 

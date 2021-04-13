@@ -2,6 +2,7 @@ using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {

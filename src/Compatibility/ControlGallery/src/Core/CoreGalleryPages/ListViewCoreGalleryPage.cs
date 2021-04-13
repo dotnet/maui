@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -101,15 +102,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				var title = new Label
 				{
 					HeightRequest = 30,
-					BackgroundColor = Color.Navy,
-					TextColor = Color.White
+					BackgroundColor = Colors.Navy,
+					TextColor = Colors.White
 				};
 
 				title.SetBinding(Label.TextProperty, new Binding("Key"));
 
 				View = new StackLayout
 				{
-					BackgroundColor = Color.Pink,
+					BackgroundColor = Colors.Pink,
 					Children = { title }
 				};
 			}
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 				var layout = new StackLayout
 				{
-					BackgroundColor = Color.Red,
+					BackgroundColor = Colors.Red,
 					Children = {
 						label
 					}
@@ -283,7 +284,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			var refreshControlColorContainer = new ViewContainer<ListView>(Test.ListView.RefreshControlColor, new ListView());
 			InitializeElement(refreshControlColorContainer.View);
-			refreshControlColorContainer.View.RefreshControlColor = Color.Red;
+			refreshControlColorContainer.View.RefreshControlColor = Colors.Red;
 			refreshControlColorContainer.View.IsPullToRefreshEnabled = true;
 			refreshControlColorContainer.View.Refreshing += async (object sender, EventArgs e) =>
 			{

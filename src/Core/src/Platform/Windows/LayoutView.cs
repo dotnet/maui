@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
-using Microsoft.Maui;
-using Microsoft.UI.Xaml;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
