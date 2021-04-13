@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WFontIconSource = Microsoft.UI.Xaml.Controls.FontIconSource;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 	{
 		float _minimumDpi = 300;
 
-		public Task<Microsoft.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource,
+		public async Task<Microsoft.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource,
 			CancellationToken cancelationToken = default(CancellationToken))
 		{
 			if (!(imagesource is FontImageSource fontsource))
@@ -24,9 +25,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			// https://github.com/microsoft/microsoft-ui-xaml/issues/4205#issuecomment-780204896
 			// var dpi = Math.Max(_minimumDpi, Windows.Graphics.Display.DisplayInformation.GetForCurrentView().LogicalDpi);
-			
-			var dpi = _minimumDpi;
-			
+
+			var dpi = await Task.FromResult(_minimumDpi);
+
+			// This was just to demonstrate a most not great way
+			// to get the DPI on WinUI3
+			//var source = imagesource.Parent;
+			//var renderer = Platform.GetRenderer((VisualElement)source);
+			//var nativeView = (FrameworkElement)renderer.GetNativeElement();
+			//var xamlTree = nativeView.XamlRoot;
+			//var dpi = _minimumDpi;
+
+			//if (xamlTree == null)
+			//{
+			//	var taskCompletionSource = new TaskCompletionSource();
+			//	nativeView.Loaded += OnLoaded;
+			//	await taskCompletionSource.Task;
+			//	void OnLoaded(object sender, RoutedEventArgs e)
+			//	{
+			//		xamlTree = nativeView.XamlRoot;
+			//		nativeView.Loaded -= OnLoaded;
+			//		taskCompletionSource.SetResult();
+			//	}
+			//}
+			//dpi = Math.Max(dpi, (float)xamlTree.RasterizationScale * 92);
+
 			var textFormat = new CanvasTextFormat
 			{
 				FontFamily = GetFontSource(fontsource),
@@ -52,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					ds.DrawTextLayout(layout, x, 1f, iconcolor);
 				}
 
-				return Task.FromResult((UI.Xaml.Media.ImageSource)imageSource);
+				return (UI.Xaml.Media.ImageSource)imageSource;
 			}
 		}
 
