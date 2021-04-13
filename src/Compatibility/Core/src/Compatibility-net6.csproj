@@ -37,7 +37,7 @@
     <Page Include="$(WindowsRoot)**\*.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Remove="Windows\TabbedPageStyle.xaml" />
+    <Page Remove="$(WindowsRoot)TabbedPageStyle.xaml" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
   </ItemGroup>
   
