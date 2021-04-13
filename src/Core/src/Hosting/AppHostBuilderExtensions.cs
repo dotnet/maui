@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Hosting
 
 		public static IAppHostBuilder EnableHotReload(this IAppHostBuilder builder, string? ideIp = null, int idePort = 9988)
 		{
-			builder.ConfigureHandlers((context, handlersCollection) =>
+			builder.ConfigureMauiHandlers((context, handlersCollection) =>
 			{
 				if (handlersCollection is IMauiServiceCollection mauiCollection)
 					MauiHotReloadHelper.Init(mauiCollection);

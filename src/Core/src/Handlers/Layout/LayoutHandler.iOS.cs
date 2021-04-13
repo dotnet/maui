@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 
 			//Cleanup the old view when reused
-			var oldChildren = TypedNativeView.Subviews.ToList();
+			var oldChildren = NativeView.Subviews.ToList();
 			oldChildren.ForEach(x => x.RemoveFromSuperview());
 
 			foreach (var child in VirtualView.Children)
