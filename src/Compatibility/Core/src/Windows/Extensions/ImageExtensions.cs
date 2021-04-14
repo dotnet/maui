@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			else if (source is CanvasImageSource canvas)
 			{
-				return new Size
+				return new Graphics.Size
 				{
 					Width = canvas.Size.Width,
 					Height = canvas.Size.Height
