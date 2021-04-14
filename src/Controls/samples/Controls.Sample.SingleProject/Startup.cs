@@ -9,11 +9,9 @@ namespace Maui.Controls.Sample.SingleProject
 	{
 		public void Configure(IAppHostBuilder appBuilder)
 		{
-			System.Console.WriteLine("asdasdasd-startup");
-			System.Diagnostics.Debug.WriteLine("eiloneilon-startup");
 			appBuilder
 				.UseFormsCompatibility()
-			    .RegisterBlazorMauiWebView()
+				.RegisterBlazorMauiWebView()
 				.UseMauiApp<MyApp>();
 		}
 	}
