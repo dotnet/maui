@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				var imageSource = new CanvasImageSource(device, canvasWidth, canvasHeight, dpi);
 				using (var ds = imageSource.CreateDrawingSession(Microsoft.UI.Colors.Transparent))
 				{
-					var iconcolor = (fontsource.Color != Color.Default ? fontsource.Color : Color.White).ToWindowsColor();
+					var iconcolor = (fontsource.Color != null ? fontsource.Color : Colors.White).ToWindowsColor();
 
 					// offset by 1 as we added a 1 inset
 					var x = (float)layout.DrawBounds.X * -1;
