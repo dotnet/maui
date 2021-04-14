@@ -10,6 +10,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android", "sr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12C50D-A570-4DF1-94E1-8599843FA87C}"
 	ProjectSection(SolutionItems) = preProject
+		eng\dogfood.ps1 = eng\dogfood.ps1
 		.nuspec\Microsoft.Maui.Controls.Compatibility.AppLinks.nuspec = .nuspec\Microsoft.Maui.Controls.Compatibility.AppLinks.nuspec
 		.nuspec\Microsoft.Maui.Controls.Compatibility.GTK.nuspec = .nuspec\Microsoft.Maui.Controls.Compatibility.GTK.nuspec
 		.nuspec\Microsoft.Maui.Controls.Compatibility.Maps.GTK.nuspec = .nuspec\Microsoft.Maui.Controls.Compatibility.Maps.GTK.nuspec
@@ -29,9 +30,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12
 		.nuspec\Microsoft.Maui.Controls.SingleProject.targets = .nuspec\Microsoft.Maui.Controls.SingleProject.targets
 		.nuspec\Microsoft.Maui.Controls.targets = .nuspec\Microsoft.Maui.Controls.targets
 		.nuspec\Microsoft.Maui.Resizetizer.targets = .nuspec\Microsoft.Maui.Resizetizer.targets
-		.nuspec\proguard.cfg = .nuspec\proguard.cfg
 		eng\package.ps1 = eng\package.ps1
-		eng\dogfood.ps1 = eng\dogfood.ps1
+		.nuspec\proguard.cfg = .nuspec\proguard.cfg
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core", "src\Controls\src\Core\Controls.Core.csproj", "{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}"
@@ -139,6 +139,10 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.ControlGallery.Issues.Shared", "src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.shproj", "{AE2513CB-4E5E-4E5C-8237-88954D4C9433}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Core", "src\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj", "{B5F94CCB-5868-43BD-89B5-B66C97C3A741}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorWebView", "BlazorWebView", "{1E1DA9A8-BCE5-4DD5-97EE-CFC6D3C4AFD3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebView.Maui", "src\BlazorWebView\src\core\Microsoft.AspNetCore.Components.WebView.Maui.csproj", "{B1A402F9-EA2E-4D52-AA85-89448544CCC3}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -1249,6 +1253,34 @@ Global
 		{B5F94CCB-5868-43BD-89B5-B66C97C3A741}.Release|x64.Build.0 = Release|Any CPU
 		{B5F94CCB-5868-43BD-89B5-B66C97C3A741}.Release|x86.ActiveCfg = Release|Any CPU
 		{B5F94CCB-5868-43BD-89B5-B66C97C3A741}.Release|x86.Build.0 = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|ARM.Build.0 = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|x64.Build.0 = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Debug|x86.Build.0 = Debug|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|ARM.Build.0 = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|ARM64.Build.0 = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|iPhone.Build.0 = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|x64.ActiveCfg = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|x64.Build.0 = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|x86.ActiveCfg = Release|Any CPU
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1305,6 +1337,7 @@ Global
 		{D816B818-F58F-4738-93AE-924EFAB7A07F} = {75A2CD30-BB85-4CA6-AC95-86A8A538A690}
 		{AE2513CB-4E5E-4E5C-8237-88954D4C9433} = {75A2CD30-BB85-4CA6-AC95-86A8A538A690}
 		{B5F94CCB-5868-43BD-89B5-B66C97C3A741} = {75A2CD30-BB85-4CA6-AC95-86A8A538A690}
+		{B1A402F9-EA2E-4D52-AA85-89448544CCC3} = {1E1DA9A8-BCE5-4DD5-97EE-CFC6D3C4AFD3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {650AE971-2F29-46A8-822C-FB4FCDC6A9A0}
