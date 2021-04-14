@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -10,9 +9,11 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapText(IViewHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapPlaceholder(IViewHandler handler, ISearchBar searchBar) { }
-
+		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdatePlaceholder(searchBar);
+		}
+			
 		[MissingMapper]
 		public static void MapHorizontalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
 
