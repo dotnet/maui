@@ -66,7 +66,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorWebView", "BlazorWebView", "{1614D1A4-5C3D-4D5B-8C89-426E37A564EF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebView.Maui", "src\BlazorWebView\src\Microsoft.AspNetCore.Components.WebView.Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj", "{F7F2B379-52CE-4802-9EC9-0D7967B6BFB7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core", "src\BlazorWebView\src\core\Microsoft.AspNetCore.Components.WebView.Maui.csproj", "{F7F2B379-52CE-4802-9EC9-0D7967B6BFB7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
