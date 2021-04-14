@@ -7,7 +7,5 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="MauiTextBoxStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
-
-	<uwp:TextAlignmentToHorizontalAlignmentConverter x:Key="AlignmentConverter" />
 	
 </ResourceDictionary>
