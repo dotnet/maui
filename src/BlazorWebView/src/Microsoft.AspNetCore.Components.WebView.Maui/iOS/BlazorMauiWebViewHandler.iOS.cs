@@ -7,6 +7,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Graphics;
 using System.Linq;
 using UIKit;
 using WebKit;

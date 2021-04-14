@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -23,7 +24,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void SetupMauiLayout()
 		{
-			var verticalStack = new StackLayout() { Spacing = 5, BackgroundColor = Color.AntiqueWhite };
+			var verticalStack = new StackLayout() { Spacing = 5, BackgroundColor = Colors.AntiqueWhite };
 			verticalStack.Add(new Label { Text = "This should be TOP text!", FontSize = 24, HorizontalOptions = LayoutOptions.End });
 
 			var serviceCollection = new ServiceCollection();
@@ -32,7 +33,7 @@ namespace Maui.Controls.Sample.Pages
 
 			var bwv = new BlazorWebView
 			{
-				BackgroundColor = Color.Orange,
+				BackgroundColor = Colors.Orange,
 				Services = serviceCollection.BuildServiceProvider(),
 				HeightRequest = 400,
 				MinimumHeightRequest = 400,
