@@ -10,6 +10,10 @@
   <PropertyGroup>
     <_MicrosoftProjectReunionVersion>0.5.0</_MicrosoftProjectReunionVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
+    <!-- Debugger workaround -->
+    <MtouchExtraArgs>$(MtouchExtraArgs) --setenv:MONO_THREADS_SUSPEND=preemptive</MtouchExtraArgs>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference
         Update="Microsoft.Maui.Graphics"
