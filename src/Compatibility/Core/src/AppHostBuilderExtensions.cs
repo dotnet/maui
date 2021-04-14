@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			typeof(Entry),
 			typeof(Picker),
 			typeof(ProgressBar),
+			typeof(ScrollView),
 			typeof(SearchBar),
 			typeof(Slider),
 			typeof(Stepper),
