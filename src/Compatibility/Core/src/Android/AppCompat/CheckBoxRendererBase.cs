@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected virtual ColorStateList GetColorStateList()
 		{
-			var tintColor = Element.Color == null ?  Application.AccentColor.ToAndroid() : Element.Color.ToAndroid();
+			var tintColor = Element.Color == null ? Application.AccentColor.ToAndroid() : Element.Color.ToAndroid();
 
 			var list = new ColorStateList(
 					_checkedStates,
