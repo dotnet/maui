@@ -1,3 +1,4 @@
+#nullable enable
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 
