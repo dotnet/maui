@@ -1,6 +1,7 @@
 using System;
 using Android.Content.Res;
 using Android.Widget;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			_currentTextColor = color;
 
-			if (color.IsDefault)
+			if (color == null)
 			{
 				setColor(_defaultTextColors);
 			}

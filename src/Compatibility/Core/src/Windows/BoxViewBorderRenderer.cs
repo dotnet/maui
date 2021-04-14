@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using WShape = Microsoft.UI.Xaml.Shapes.Shape;
@@ -60,12 +61,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Control == null)
 				return;
 			Color backgroundColor = Element.Color;
-			if (backgroundColor.IsDefault)
+			if (backgroundColor.IsDefault())
 			{
 				backgroundColor = Element.BackgroundColor;
 			}
 
-			Control.Background = backgroundColor.IsDefault ? null : backgroundColor.ToBrush();
+			Control.Background = backgroundColor.IsDefault() ? null : backgroundColor.ToBrush();
 		}
 
 		protected override void UpdateBackground()
@@ -79,11 +80,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				Color backgroundColor = Element.BackgroundColor;
 
-				if (!backgroundColor.IsDefault)
+				if (!backgroundColor.IsDefault())
 					Control.Background = backgroundColor.ToBrush();
 				else
 				{
-					if (Element.Color.IsDefault)
+					if (Element.Color.IsDefault())
 						Control.Background = null;
 				}
 			}
@@ -93,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void SetColor(Color color)
 		{
-			if (color.IsDefault)
+			if (color.IsDefault())
 				UpdateBackground();
 			else
 				Control.Background = color.ToBrush();

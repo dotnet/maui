@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Input;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.VisualElement;
 using WRect = Windows.Foundation.Rect;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -459,8 +460,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 			}
 
-			Control.HorizontalAlignment = HorizontalAlignment.Stretch;
-			Control.VerticalAlignment = VerticalAlignment.Stretch;
+			Control.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch;
+			Control.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
 
 			if (Element == null)
 				throw new InvalidOperationException(
@@ -496,7 +497,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (_control != null)
 			{
-				if (!backgroundColor.IsDefault)
+				if (!backgroundColor.IsDefault())
 				{
 					_control.Background = backgroundColor.ToBrush();
 				}
@@ -508,7 +509,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			else
 			{
-				if (!backgroundColor.IsDefault)
+				if (!backgroundColor.IsDefault())
 				{
 					backgroundLayer.Background = backgroundColor.ToBrush();
 				}
@@ -537,7 +538,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					_control.Background = background.ToBrush();
 				else
 				{
-					if (!backgroundColor.IsDefault)
+					if (!backgroundColor.IsDefault())
 						_control.Background = backgroundColor.ToBrush();
 					else
 					{
@@ -552,7 +553,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					backgroundLayer.Background = background.ToBrush();
 				else
 				{
-					if (!backgroundColor.IsDefault)
+					if (!backgroundColor.IsDefault())
 						backgroundLayer.Background = backgroundColor.ToBrush();
 					else
 						backgroundLayer.ClearValue(BackgroundProperty);

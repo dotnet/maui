@@ -8,6 +8,7 @@ using AndroidX.Core.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
 

@@ -1,6 +1,5 @@
 using System;
-using Android.Views;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Graphics;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Android.Views.View>;
 using VisualElementChangedEventArgs = Microsoft.Maui.Controls.Compatibility.Platform.Android.VisualElementChangedEventArgs;

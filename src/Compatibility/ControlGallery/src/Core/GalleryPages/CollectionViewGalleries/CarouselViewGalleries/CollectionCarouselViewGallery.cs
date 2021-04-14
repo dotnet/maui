@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 			var carouselView = new CarouselView
 			{
 				HeightRequest = 300,
-				BackgroundColor = Color.Pink,
+				BackgroundColor = Colors.Pink,
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
 				IsScrollAnimated = true,

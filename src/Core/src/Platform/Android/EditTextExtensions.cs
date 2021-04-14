@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 		public static void UpdateTextColor(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
 			var textColor = entry.TextColor;
-			if (textColor.IsDefault)
+			if (textColor == null)
 			{
 				editText.SetTextColor(defaultColor);
 			}
@@ -116,7 +116,7 @@ namespace Microsoft.Maui
 		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IEditor editor, ColorStateList? defaultColor)
 		{
 			var placeholderTextColor = editor.PlaceholderColor;
-			if (placeholderTextColor.IsDefault)
+			if (placeholderTextColor == null)
 			{
 				editText.SetHintTextColor(defaultColor);
 			}

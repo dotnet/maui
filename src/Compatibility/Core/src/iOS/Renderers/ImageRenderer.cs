@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
@@ -9,6 +8,7 @@ using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Internals;
 using RectangleF = CoreGraphics.CGRect;
 using PreserveAttribute = Foundation.PreserveAttribute;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -264,7 +264,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				// This will allow lookup from the Embedded Fonts
 				var font = Font.OfSize(fontsource.FontFamily, fontsource.Size).ToUIFont();
-				var iconcolor = fontsource.Color.IsDefault ? _defaultColor : fontsource.Color;
+				var iconcolor = fontsource.Color ?? _defaultColor;
 				var attString = new NSAttributedString(fontsource.Glyph, font: font, foregroundColor: iconcolor.ToUIColor());
 				var imagesize = ((NSString)fontsource.Glyph).GetSizeUsingAttributes(attString.GetUIKitAttributes(0, out _));
 				

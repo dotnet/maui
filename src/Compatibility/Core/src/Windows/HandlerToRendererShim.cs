@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.UI.Xaml;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {

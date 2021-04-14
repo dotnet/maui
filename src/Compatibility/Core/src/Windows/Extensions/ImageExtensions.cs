@@ -16,15 +16,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	internal static class ImageExtensions
 	{
-		public static Size GetImageSourceSize(this WImageSource source)
+		public static Graphics.Size GetImageSourceSize(this WImageSource source)
 		{
 			if (source is null)
 			{
-				return Size.Zero;
+				return Graphics.Size.Zero;
 			}
 			else if (source is BitmapSource bitmap)
 			{
-				return new Size
+				return new Graphics.Size
 				{
 					Width = bitmap.PixelWidth,
 					Height = bitmap.PixelHeight

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -30,13 +31,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var verticalCollectionView = new CollectionView
 			{
-				BackgroundColor = Color.LightBlue,
+				BackgroundColor = Colors.LightBlue,
 				EmptyView = "Empty Vertical List as String"
 			};
 
 			var horizontalCollectionView = new CollectionView
 			{
-				BackgroundColor = Color.LightCoral,
+				BackgroundColor = Colors.LightCoral,
 				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
 				EmptyView = "Empty Horizontal List as String"
 			};

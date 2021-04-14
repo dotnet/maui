@@ -6,9 +6,10 @@ using CoreGraphics;
 using Foundation;
 using UIKit;
 using IOPath = System.IO.Path;
-using RectangleF = CoreGraphics.CGRect;
+using CGRect = CoreGraphics.CGRect;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -382,7 +383,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_renderer.View.AddSubview(nativeView);
 				if (viewRenderer.ViewController != null)
 					_renderer.AddChildViewController(viewRenderer.ViewController);
-				viewRenderer.NativeView.Frame = new RectangleF(0, 0, _renderer.View.Bounds.Width, _renderer.View.Bounds.Height);
+				viewRenderer.NativeView.Frame = new CGRect(0, 0, _renderer.View.Bounds.Width, _renderer.View.Bounds.Height);
 				viewRenderer.SetElementSize(new Size(_renderer.View.Bounds.Width, _renderer.View.Bounds.Height));
 			}
 			else
@@ -414,11 +415,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void PresentAlert(AlertArguments arguments)
 		{
-			var window = new UIWindow { BackgroundColor = Color.Transparent.ToUIColor() };
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToUIColor() };
 
 			var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
 			var oldFrame = alert.View.Frame;
-			alert.View.Frame = new RectangleF(oldFrame.X, oldFrame.Y, oldFrame.Width, oldFrame.Height - _alertPadding * 2);
+			alert.View.Frame = new CGRect(oldFrame.X, oldFrame.Y, oldFrame.Width, oldFrame.Height - _alertPadding * 2);
 
 			if (arguments.Cancel != null)
 			{
@@ -437,7 +438,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void PresentPrompt(PromptArguments arguments)
 		{
-			var window = new UIWindow { BackgroundColor = Color.Transparent.ToUIColor() };
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToUIColor() };
 
 			var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
 			alert.AddTextField(uiTextField =>
@@ -448,7 +449,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				uiTextField.ApplyKeyboard(arguments.Keyboard);
 			});
 			var oldFrame = alert.View.Frame;
-			alert.View.Frame = new RectangleF(oldFrame.X, oldFrame.Y, oldFrame.Width, oldFrame.Height - _alertPadding * 2);
+			alert.View.Frame = new CGRect(oldFrame.X, oldFrame.Y, oldFrame.Width, oldFrame.Height - _alertPadding * 2);
 
 			alert.AddAction(CreateActionWithWindowHide(arguments.Cancel, UIAlertActionStyle.Cancel, () => arguments.SetResult(null), window));
 			alert.AddAction(CreateActionWithWindowHide(arguments.Accept, UIAlertActionStyle.Default, () => arguments.SetResult(alert.TextFields[0].Text), window));
@@ -459,7 +460,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void PresentActionSheet(ActionSheetArguments arguments)
 		{
 			var alert = UIAlertController.Create(arguments.Title, null, UIAlertControllerStyle.ActionSheet);
-			var window = new UIWindow { BackgroundColor = Color.Transparent.ToUIColor() };
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToUIColor() };
 
 			// Clicking outside of an ActionSheet is an implicit cancel on iPads. If we don't handle it, it freezes the app.
 			if (arguments.Cancel != null || UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
@@ -488,7 +489,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		static void PresentPopUp(UIWindow window, UIAlertController alert, ActionSheetArguments arguments = null)
 		{
 			window.RootViewController = new UIViewController();
-			window.RootViewController.View.BackgroundColor = Color.Transparent.ToUIColor();
+			window.RootViewController.View.BackgroundColor = Colors.Transparent.ToUIColor();
 			window.WindowLevel = UIWindowLevel.Alert + 1;
 			window.MakeKeyAndVisible();
 
@@ -512,7 +513,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (!Forms.IsiOS9OrNewer)
 			{
 				// For iOS 8, we need to explicitly set the size of the window
-				window.Frame = new RectangleF(0, 0, UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);
+				window.Frame = new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);
 			}
 
 			window.RootViewController.PresentViewController(alert, true, null);

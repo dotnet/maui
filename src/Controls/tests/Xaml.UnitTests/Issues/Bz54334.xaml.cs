@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Resources = new ResourceDictionary{
 				new Style(typeof(Label)) {
 					Setters = {
-						new Setter {Property = Label.TextColorProperty, Value=Color.Blue}
+						new Setter {Property = Label.TextColorProperty, Value=Colors.Blue}
 					}
 				}
 			};
@@ -30,13 +31,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Resources = daymode ? new ResourceDictionary{
 				new Style(typeof(Label)) {
 					Setters = {
-						new Setter {Property = Label.TextColorProperty, Value=Color.Red}
+						new Setter {Property = Label.TextColorProperty, Value=Colors.Red}
 					}
 				}
 			} : new ResourceDictionary{
 				new Style(typeof(Label)) {
 					Setters = {
-						new Setter {Property = Label.TextColorProperty, Value=Color.Blue}
+						new Setter {Property = Label.TextColorProperty, Value=Colors.Blue}
 					}
 				}
 			};
@@ -80,16 +81,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var l0 = page.label;
 				var l1 = page.themedLabel;
 
-				Assert.That(l0.TextColor, Is.EqualTo(Color.Black));
-				Assert.That(l1.TextColor, Is.EqualTo(Color.Blue));
+				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
+				Assert.That(l1.TextColor, Is.EqualTo(Colors.Blue));
 
 				MessagingCenter.Send<ContentPage>(page, "ChangeTheme");
-				Assert.That(l0.TextColor, Is.EqualTo(Color.Black));
-				Assert.That(l1.TextColor, Is.EqualTo(Color.Red));
+				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
+				Assert.That(l1.TextColor, Is.EqualTo(Colors.Red));
 
 				MessagingCenter.Send<ContentPage>(page, "ChangeTheme");
-				Assert.That(l0.TextColor, Is.EqualTo(Color.Black));
-				Assert.That(l1.TextColor, Is.EqualTo(Color.Blue));
+				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
+				Assert.That(l1.TextColor, Is.EqualTo(Colors.Blue));
 
 			}
 		}

@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -45,9 +46,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 	public class ColorMarkup : IMarkupExtension
 	{
-		public int R { get; set; }
-		public int G { get; set; }
-		public int B { get; set; }
+		public byte R { get; set; }
+		public byte G { get; set; }
+		public byte B { get; set; }
 
 		public ColorMarkup()
 		{

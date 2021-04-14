@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		const string Success = "Success";
 		const string TestButtonId = "TestButtonId";
 
-		Label _status = new Label() { Text = "Test is running...", BackgroundColor = Color.Red, TextColor = Color.White };
+		Label _status = new Label() { Text = "Test is running...", BackgroundColor = Colors.Red, TextColor = Colors.White };
 
 		ScrollView _scroll = new ScrollView();
 

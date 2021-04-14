@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -14,14 +15,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestConstructor()
 		{
 			SolidColorBrush solidColorBrush = new SolidColorBrush();
-			Assert.AreEqual("[Color: A=-1, R=-1, G=-1, B=-1, Hue=-1, Saturation=-1, Luminosity=-1]", solidColorBrush.Color.ToString(), "Color");
+			Assert.Null(solidColorBrush.Color, "Color");
 		}
 
 		[Test]
 		public void TestConstructorUsingColor()
 		{
-			SolidColorBrush solidColorBrush = new SolidColorBrush(Color.Red);
-			Assert.AreEqual("[Color: A=1, R=1, G=0, B=0, Hue=1, Saturation=1, Luminosity=0.5]", solidColorBrush.Color.ToString(), "Color");
+			SolidColorBrush solidColorBrush = new SolidColorBrush(Colors.Red);
+			Assert.That(solidColorBrush.Color, Is.EqualTo(Colors.Red));
 		}
 
 		[Test]
@@ -48,23 +49,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void TestSolidColorBrushFromColor()
-		{
-			SolidColorBrush solidColorBrush = new SolidColorBrush(Color.Red);
-			Assert.IsNotNull(solidColorBrush.Color);
-			Assert.AreEqual("#FFFF0000", solidColorBrush.Color.ToHex());
-		}
-
-		[Test]
 		public void TestDefaultBrushes()
 		{
 			SolidColorBrush black = Brush.Black;
 			Assert.IsNotNull(black.Color);
-			Assert.AreEqual("#FF000000", black.Color.ToHex());
+			Assert.That(black.Color, Is.EqualTo(Colors.Black));
 
 			SolidColorBrush white = Brush.White;
 			Assert.IsNotNull(white.Color);
-			Assert.AreEqual("#FFFFFFFF", white.Color.ToHex());
+			Assert.That(white.Color, Is.EqualTo(Colors.White));
 		}
 	}
 }

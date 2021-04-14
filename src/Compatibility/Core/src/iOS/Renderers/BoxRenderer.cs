@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
@@ -83,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var elementColor = Element.Color;
 
-			if (!elementColor.IsDefault)
+			if (elementColor != null)
 				_colorToRenderer = elementColor.ToUIColor();
 			else
 				_colorToRenderer = color.ToUIColor();

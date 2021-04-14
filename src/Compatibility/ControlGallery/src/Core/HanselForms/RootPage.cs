@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -95,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			ListViewMenu = new ListView(ListViewCachingStrategy.RecycleElement)
 			{
 				HasUnevenRows = true,
-				SeparatorColor = Color.Transparent,
+				SeparatorColor = Colors.Transparent,
 				ItemTemplate = new DataTemplate(typeof(MenuViewCell))
 			};
 			ListViewMenu.ItemsSource = menuItems = new List<HomeMenuItem>

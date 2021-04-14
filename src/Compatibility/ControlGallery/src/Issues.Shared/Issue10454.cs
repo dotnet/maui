@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				var template = new DataTemplate();
 				var content = new Grid
 				{
-					BackgroundColor = Color.LightGray
+					BackgroundColor = Colors.LightGray
 				};
 				var label = new Label();
 				label.SetBinding(Label.TextProperty, ".");

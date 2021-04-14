@@ -1,4 +1,6 @@
+#nullable enable
 using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
@@ -17,7 +19,6 @@ namespace Microsoft.Maui.Handlers
 			if (rect.Width < 0 || rect.Height < 0)
 				return;
 
-			nativeView.Measure(new Windows.Foundation.Size(rect.Size.Width, rect.Size.Height));
 			nativeView.Arrange(new Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
 		}
 
@@ -34,9 +35,9 @@ namespace Microsoft.Maui.Handlers
 			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
 
 			nativeView.Measure(constraint);
-			var result = new Size(Math.Ceiling(nativeView.DesiredSize.Width), Math.Ceiling(nativeView.DesiredSize.Height));
+			var result = new Size(nativeView.DesiredSize.Width, nativeView.DesiredSize.Height);
 
-			return new SizeRequest(result);
+			return result;
 		}
 
 		protected override void SetupContainer()

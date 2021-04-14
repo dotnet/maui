@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -121,16 +122,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			_viewContainers = new List<ViewContainer<T>> {
 				isFocusedStateViewContainer,
-				new ViewContainer<T> (Test.VisualElement.BackgroundColor, new T { BackgroundColor = Color.Blue }),
+				new ViewContainer<T> (Test.VisualElement.BackgroundColor, new T { BackgroundColor = Colors.Blue }),
 				new ViewContainer<T>(Test.VisualElement.Background, new T { Background = new LinearGradientBrush
 				{
 					StartPoint = new Point(0, 0),
 					EndPoint = new Point(1, 0),
 					GradientStops = new GradientStopCollection
 					{
-						new GradientStop(Color.Yellow, 0.0f),
-						new GradientStop(Color.Orange, 0.5f),
-						new GradientStop(Color.Red, 1.0f)
+						new GradientStop(Colors.Yellow, 0.0f),
+						new GradientStop(Colors.Orange, 0.5f),
+						new GradientStop(Colors.Red, 1.0f)
 					}
 				} }),
 				focusStateViewContainer,

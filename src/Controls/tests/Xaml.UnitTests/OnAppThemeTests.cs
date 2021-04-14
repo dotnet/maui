@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -31,11 +32,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Light;
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Color.Green, label.TextColor);
+			Assert.AreEqual(Colors.Green, label.TextColor);
 
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Dark;
 			label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Color.Red, label.TextColor);
+			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
 
 		[Test]
@@ -53,11 +54,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Light;
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Color.Green, label.TextColor);
+			Assert.AreEqual(Colors.Green, label.TextColor);
 
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Dark;
 			label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Color.Red, label.TextColor);
+			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
 
 		[Test]
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Unspecified;
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Color.Green, label.TextColor);
+			Assert.AreEqual(Colors.Green, label.TextColor);
 		}
 
 		[Test]
@@ -93,7 +94,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Light;
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Color.Green, label.TextColor);
+			Assert.AreEqual(Colors.Green, label.TextColor);
 		}
 
 		[Test]
@@ -111,11 +112,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Light;
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Color.Green, label.TextColor);
+			Assert.AreEqual(Colors.Green, label.TextColor);
 
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Dark;
 			label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Color.Red, label.TextColor);
+			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
 
 		[Test]
@@ -133,7 +134,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Unspecified;
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Color.Green, label.TextColor);
+			Assert.AreEqual(Colors.Green, label.TextColor);
 		}
 
 		[Test]
@@ -151,7 +152,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Unspecified;
 			var label = new Label().LoadFromXaml(xaml);
-			Assert.AreEqual(Color.Green, label.TextColor);
+			Assert.AreEqual(Colors.Green, label.TextColor);
 		}
 	}
 }

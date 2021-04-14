@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -56,8 +57,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var instructions = new Label
 			{
 				Padding = 12,
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Try to open the SwipeView doing swipe, if you can open it, the test has passed."
 			};
 
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					var content = new Grid
 					{
 						HeightRequest = 80,
-						BackgroundColor = Color.LightGray
+						BackgroundColor = Colors.LightGray
 					};
 
 					content.Children.Add(new Label
@@ -89,7 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 					var swipeItem = new SwipeItem
 					{
-						BackgroundColor = Color.Red,
+						BackgroundColor = Colors.Red,
 						Text = "Text"
 					};
 

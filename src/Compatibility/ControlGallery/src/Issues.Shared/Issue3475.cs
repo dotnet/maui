@@ -4,6 +4,7 @@ using System.Linq;
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -108,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		public CompressionPage(bool shouldUseLayoutCompression = false)
 		{
-			_summaryLabel = new Label { HorizontalOptions = LayoutOptions.Center, BackgroundColor = Color.Silver, AutomationId = Issue3475.ElapsedLabelId };
+			_summaryLabel = new Label { HorizontalOptions = LayoutOptions.Center, BackgroundColor = Colors.Silver, AutomationId = Issue3475.ElapsedLabelId };
 			var backButton = new Button { AutomationId = Issue3475.BackButtonId, Text = "Back", Command = new Command(() => Navigation.PopAsync()) };
 			_scrollStack = new StackLayout();
 

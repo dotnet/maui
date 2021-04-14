@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			resetBarBackgroundButton.Clicked += (sender, args) =>
 			{
-				BarBackgroundColor = Color.Default;
+				BarBackgroundColor = null;
 			};
 
 			var resetBarTextButton = new Button
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			resetBarTextButton.Clicked += (sender, args) =>
 			{
-				BarTextColor = Color.Default;
+				BarTextColor = null;
 			};
 
 			var navigateButton = new Button
