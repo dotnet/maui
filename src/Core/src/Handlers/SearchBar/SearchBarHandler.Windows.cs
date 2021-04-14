@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 			QueryIcon = new SymbolIcon(Symbol.Find)
 		};
 
-		public static void MapText(IViewHandler handler, ISearchBar searchBar)
+		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.NativeView?.UpdateText(searchBar);
 		}
