@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues" x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue9555">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues" x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue9555">
     <StackLayout VerticalOptions="Center" HorizontalOptions="Center">
         <Frame WidthRequest="200" HeightRequest="100" >
             <Frame.Effects>
