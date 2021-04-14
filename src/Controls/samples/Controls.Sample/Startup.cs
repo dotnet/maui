@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample
 	public class Startup : IStartup
 	{
 		enum PageType { Xaml, Semantics, Main, Blazor }
-		private PageType _pageType = PageType.Xaml;
+		private PageType _pageType = PageType.Blazor;
 
 		public readonly static bool UseXamlApp = true;
 
@@ -59,21 +59,16 @@ namespace Maui.Controls.Sample
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
 
-					switch (_pageType)
-					{
-						case PageType.Xaml:
-							services.AddTransient<IPage, XamlPage>();
-							break;
-						case PageType.Semantics:
-							services.AddTransient<IPage, SemanticsPage>();
-							break;
-						case PageType.Blazor:
-							services.AddTransient<IPage, BlazorPage>();
-							break;
-						case PageType.Main:
-							services.AddTransient<IPage, MainPage>();
-							break;
-					}
+					services.AddTransient(
+						serviceType: typeof(IPage),
+						implementationType: _pageType switch
+						{
+							PageType.Xaml => typeof(XamlPage),
+							PageType.Semantics => typeof(SemanticsPage),
+							PageType.Blazor => typeof(BlazorPage),
+							PageType.Main => typeof(MainPage),
+							_ => throw new Exception(),
+						});
 
 					services.AddTransient<IWindow, MainWindow>();
 				})
