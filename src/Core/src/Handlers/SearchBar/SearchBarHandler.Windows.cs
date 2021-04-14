@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -19,8 +18,10 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapFont(IViewHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar) 
+		{
+			handler.NativeView?.UpdateCharacterSpacing(searchBar);
+		}
 
 		[MissingMapper]
 		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
