@@ -1,4 +1,3 @@
-#nullable enable
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -21,14 +20,15 @@ namespace Microsoft.Maui
 				panel.UpdateBackgroundColor(view.BackgroundColor);
 		}
 
+		// TODO ezhart Do we need all three of these? 
 		public static void UpdateBackgroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Background = color.IsDefault() && defaultBrush != null ? defaultBrush : color.ToNative();
+			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
 
 		public static void UpdateBackgroundColor(this Border nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Background = color.IsDefault() && defaultBrush != null ? defaultBrush : color.ToNative();
+			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
 
 		public static void UpdateBackgroundColor(this Panel nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Background = color.IsDefault() && defaultBrush != null ? defaultBrush : color.ToNative();
+			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
