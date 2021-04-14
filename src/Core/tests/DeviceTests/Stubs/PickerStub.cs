@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui.Graphics;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {

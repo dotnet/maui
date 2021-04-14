@@ -6,11 +6,11 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
-using AView = Android.Views.View;
-using LP = Android.Views.ViewGroup.LayoutParams;
-using Color = Microsoft.Maui.Graphics.Color;
-using Size = Microsoft.Maui.Graphics.Size;
 using Microsoft.Maui.Graphics;
+using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
+using LP = Android.Views.ViewGroup.LayoutParams;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
