@@ -3,8 +3,8 @@ using Android.Content.Res;
 using AndroidX.Core.Content;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
-using AColor = Android.Graphics.Color;
 using Microsoft.Maui.Graphics.Android;
+using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui
 {
@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 		public static AColor ToNative(this Color self) => self.AsColor();
 
 		public static AColor ToNative(this Color self, int defaultColorResourceId, Context context)
-			=> self?.ToNative() ??  new AColor(ContextCompat.GetColor(context, defaultColorResourceId));
+			=> self?.ToNative() ?? new AColor(ContextCompat.GetColor(context, defaultColorResourceId));
 
 		public static AColor ToNative(this Color? self, Color defaultColor)
 			=> self?.ToNative() ?? defaultColor.ToNative();

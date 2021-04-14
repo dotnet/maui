@@ -17,18 +17,18 @@ using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.DrawerLayout.Widget;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 using static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
 using ActionBarDrawerToggle = AndroidX.AppCompat.App.ActionBarDrawerToggle;
 using APlatform = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
 using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 using Object = Java.Lang.Object;
-using Color = Microsoft.Maui.Graphics.Color;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
