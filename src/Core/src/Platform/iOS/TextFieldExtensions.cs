@@ -41,7 +41,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateVerticalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
 		{
-			textField.TextAlignment = textAlignment.VerticalTextAlignment.ToNative(true);
+			textField.VerticalAlignment = textAlignment.VerticalTextAlignment.ToNative();
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this UITextField textField, IEntry entry)

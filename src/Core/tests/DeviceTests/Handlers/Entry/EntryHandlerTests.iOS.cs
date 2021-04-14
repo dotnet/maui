@@ -72,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 				VerticalTextAlignment = xplatVerticalTextAlignment
 			};
 
-			UITextAlignment expectedValue = UITextAlignment.Right;
+			UIControlContentVerticalAlignment expectedValue = UIControlContentVerticalAlignment.Bottom;
 
 			var values = await GetValueAsync(entry, (handler) =>
 			{
@@ -212,8 +212,8 @@ namespace Microsoft.Maui.DeviceTests
 		UITextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
-		UITextAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).TextAlignment;
+		UIControlContentVerticalAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).VerticalAlignment;
 
 		UIReturnKeyType GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ReturnKeyType;
