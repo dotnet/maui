@@ -4,7 +4,7 @@
 	{
 		public static PropertyMapper<IScroll, ScrollViewHandler> ScrollViewMapper = new PropertyMapper<IScroll, ScrollViewHandler>(ViewMapper)
 		{
-			[nameof(IScroll.ContentSize)] = MapContentSize
+			[nameof(IScroll.Content)] = MapContent
 		};
 
 		public ScrollViewHandler() : base(ScrollViewMapper)

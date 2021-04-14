@@ -9,9 +9,9 @@ namespace Microsoft.Maui.Handlers
 			return new UIScrollView();
 		}
 
-		public static void MapContentSize(ScrollViewHandler handler, IScroll scrollView)
+		public static void MapContent(ScrollViewHandler handler, IScroll scrollView)
 		{
-			handler.NativeView?.UpdateContentSize(scrollView);
+			handler.NativeView?.UpdateContent(scrollView, handler.MauiContext);
 		}
 	}
 }

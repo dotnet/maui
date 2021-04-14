@@ -6,6 +6,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 
-		public static void MapContentSize(IViewHandler handler, IScroll scrollView) { }
+		public static void MapContent(IViewHandler handler, IScroll scrollView) { }
 	}
 }

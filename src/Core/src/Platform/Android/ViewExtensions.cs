@@ -1,3 +1,4 @@
+using Android.Views;
 using AndroidX.Core.View;
 using AView = Android.Views.View;
 
@@ -49,6 +50,17 @@ namespace Microsoft.Maui
 
 			nativeView.ContentDescription = semantics.Description;
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
+		}
+
+		public static void RemoveFromParent(this AView view)
+		{
+			if (view == null)
+				return;
+
+			if (view.Parent == null)
+				return;
+
+			((ViewGroup)view.Parent).RemoveView(view);
 		}
 	}
 }
