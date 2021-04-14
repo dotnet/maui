@@ -61,6 +61,32 @@ namespace Microsoft.Maui.DeviceTests
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
+		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+		public async Task VerticalTextAlignmentInitializesCorrectily()
+		{
+			var xplatVerticalTextAlignment = TextAlignment.End;
+
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				VerticalTextAlignment = xplatVerticalTextAlignment
+			};
+
+			UITextAlignment expectedValue = UITextAlignment.Right;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.VerticalTextAlignment,
+					NativeViewValue = GetNativeTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
 		[Fact(DisplayName = "ReturnType Initializes Correctly")]
 		public async Task ReturnTypeInitializesCorrectly()
 		{
