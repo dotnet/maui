@@ -104,14 +104,14 @@ namespace Microsoft.Maui.DeviceTests
 				VerticalTextAlignment = xplatVerticalTextAlignment
 			};
 
-			Android.Views.TextAlignment expectedValue = Android.Views.TextAlignment.ViewEnd;
+			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.Bottom;
 
 			var values = await GetValueAsync(entry, (handler) =>
 			{
 				return new
 				{
 					ViewValue = entry.VerticalTextAlignment,
-					NativeViewValue = GetNativeTextAlignment(handler)
+					NativeViewValue = GetNativeVerticalTextAlignment(handler)
 				};
 			});
 
@@ -217,6 +217,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
+
+		Android.Views.GravityFlags GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).Gravity;
 
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ImeOptions;
