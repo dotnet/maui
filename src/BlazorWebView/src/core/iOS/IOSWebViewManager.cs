@@ -1,29 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text.Encodings.Web;
 using Foundation;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Hosting;
-using UIKit;
 using WebKit;
-using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	public partial class IOSWebViewManager : WebViewManager
+	public class IOSWebViewManager : WebViewManager
 	{
-		internal void MessageReceivedInternal(Uri uri, string message)
-		{
-			MessageReceived(uri, message);
-		}
-
 		private const string AppOrigin = "app://0.0.0.0/";
 
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
@@ -41,7 +26,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void NavigateCore(Uri absoluteUri)
 		{
-			System.Console.WriteLine($"1111111111-NavigateCore - {absoluteUri}");
 			using var nsUrl = new NSUrl(absoluteUri.ToString());
 			using var request = new NSUrlRequest(nsUrl);
 			_webview.LoadRequest(request);
@@ -53,23 +37,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void SendMessage(string message)
 		{
-			System.Console.WriteLine($"1111111111-SendMessage {message}");
 			var messageJSStringLiteral = JavaScriptEncoder.Default.Encode(message);
 			_webview.EvaluateJavaScript(
 				javascript: $"__dispatchMessageCallback(\"{messageJSStringLiteral}\")",
 				completionHandler: (NSObject result, NSError error) => { });
 		}
 
-		private void InitializeWebView()
+		internal void MessageReceivedInternal(Uri uri, string message)
 		{
-			System.Console.WriteLine($"1111111111-InitializeWebView start");
-
-			_webview.NavigationDelegate = new WebViewNavigationDelegate(_blazorMauiWebViewHandler);
-
-			System.Console.WriteLine($"1111111111-InitializeWebView end");
+			MessageReceived(uri, message);
 		}
 
-
+		private void InitializeWebView()
+		{
+			_webview.NavigationDelegate = new WebViewNavigationDelegate(_blazorMauiWebViewHandler);
+		}
 
 		internal class WebViewNavigationDelegate : WKNavigationDelegate
 		{
@@ -127,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				if (_currentUri != null && _currentNavigation == navigation)
 				{
-					System.Console.WriteLine($"1111111111-DidCommitNavigation");
+					// TODO: Determine whether this is needed
 					//_webView.HandleNavigationStarting(_currentUri);
 				}
 			}
@@ -136,7 +118,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				if (_currentUri != null && _currentNavigation == navigation)
 				{
-					System.Console.WriteLine($"1111111111-DidFinishNavigation");
+					// TODO: Determine whether this is needed
 					//_webView.HandleNavigationFinished(_currentUri);
 					_currentUri = null;
 					_currentNavigation = null;

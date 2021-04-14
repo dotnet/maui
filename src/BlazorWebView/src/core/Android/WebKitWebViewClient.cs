@@ -7,23 +7,10 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	internal class BlazorValueCallback : Java.Lang.Object, IValueCallback
+	internal class WebKitWebViewClient : WebViewClient
 	{
-		private readonly Action _callback;
+		private const string AppOrigin = "https://0.0.0.0/";
 
-		public BlazorValueCallback(Action callback)
-		{
-			_callback = callback ?? throw new ArgumentNullException(nameof(callback));
-		}
-
-		public void OnReceiveValue(Java.Lang.Object? value)
-		{
-			_callback();
-		}
-	}
-
-	public class WebKitWebViewClient : WebViewClient
-	{
 		private readonly BlazorWebViewHandler? _webViewHandler;
 
 		public WebKitWebViewClient(BlazorWebViewHandler webViewHandler)
@@ -34,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected WebKitWebViewClient(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
 			// This constructor is called whenever the .NET proxy was disposed, and it was recreated by Java. It also
-			// happens when overriden methods are called between execution of this constructor and the one above.
+			// happens when overridden methods are called between execution of this constructor and the one above.
 			// because of these facts, we have to check
 			// all methods below for null field references and properties.
 		}
@@ -67,12 +54,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var allowFallbackOnHostPage = false;
 
 			var requestUri = request?.Url?.ToString();
-			var _appBaseUri = new Uri(AppOrigin);
+			var appBaseUri = new Uri(AppOrigin);
 			var fileUri = requestUri != null ? new Uri(requestUri) : null;
 
-			if (fileUri != null && _appBaseUri.IsBaseOf(fileUri))
+			if (fileUri != null && appBaseUri.IsBaseOf(fileUri))
 			{
-				var relativePath = _appBaseUri.MakeRelativeUri(fileUri).ToString();
+				var relativePath = appBaseUri.MakeRelativeUri(fileUri).ToString();
 				if (string.IsNullOrEmpty(relativePath))
 				{
 					// For app root, use host page (something like wwwroot/index.html)
@@ -106,8 +93,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return base.ShouldInterceptRequest(view, request);
 		}
 
-		private const string AppOrigin = "https://0.0.0.0/";
-
 		public override void OnPageFinished(AWebView? view, string? url)
 		{
 			base.OnPageFinished(view, url);
@@ -131,8 +116,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			// Set up JS ports
 			view.EvaluateJavascript(@"
-
-
 
         const channel = new MessageChannel();
         var nativeJsPortOne = channel.port1;
@@ -169,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
             window.external.__callback = callback;
         }
 
-        ", new BlazorValueCallback(() =>
+        ", new JavaScriptValueCallback(() =>
 			{
 				// Set up Server ports
 				_webViewHandler?.WebviewManager?.SetUpMessageChannel();
@@ -177,11 +160,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// Start Blazor
 				view.EvaluateJavascript(@"
                     Blazor.start();
-                ", new BlazorValueCallback(() =>
+                ", new JavaScriptValueCallback(() =>
 				{
-					// Done
+					// Done; no more action required
 				}));
-
 			}));
 		}
 
@@ -191,6 +173,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (disposing)
 			{
 				//_webViewManager = null;
+			}
+		}
+
+		private class JavaScriptValueCallback : Java.Lang.Object, IValueCallback
+		{
+			private readonly Action _callback;
+
+			public JavaScriptValueCallback(Action callback)
+			{
+				_callback = callback ?? throw new ArgumentNullException(nameof(callback));
+			}
+
+			public void OnReceiveValue(Java.Lang.Object? value)
+			{
+				_callback();
 			}
 		}
 	}

@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			HostPage != null &&
 			Services != null;
 
-		public string? HostPage { get; private set; }
-		public ObservableCollection<RootComponent>? RootComponents { get; private set; }
-		public new IServiceProvider? Services { get; private set; }
+		private string? HostPage { get; set; }
+		private ObservableCollection<RootComponent>? RootComponents { get; set; }
+		private new IServiceProvider? Services { get; set; }
 
 		private void StartWebViewCoreIfPossible()
 		{

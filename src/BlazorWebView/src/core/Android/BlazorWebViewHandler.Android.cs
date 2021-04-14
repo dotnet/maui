@@ -11,10 +11,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, AWebView>
 	{
-		public const string AssetBaseUrl = "file:///android_asset/";
-
-		WebViewClient? _webViewClient;
-		WebChromeClient? _webChromeClient;
+		private WebViewClient? _webViewClient;
+		private WebChromeClient? _webChromeClient;
 		private AndroidWebKitWebViewManager? _webviewManager;
 		internal AndroidWebKitWebViewManager? WebviewManager => _webviewManager;
 
@@ -55,9 +53,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			HostPage != null &&
 			Services != null;
 
-		public string? HostPage { get; private set; }
-		public ObservableCollection<RootComponent>? RootComponents { get; private set; }
-		public new IServiceProvider? Services { get; private set; }
+		private string? HostPage { get; set; }
+		private ObservableCollection<RootComponent>? RootComponents { get; set; }
+		private new IServiceProvider? Services { get; set; }
 
 		private void StartWebViewCoreIfPossible()
 		{
@@ -96,6 +94,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webviewManager.Navigate("/");
 		}
 
+		protected virtual WebViewClient GetWebViewClient() =>
+			new WebKitWebViewClient(this);
+
+		protected virtual WebChromeClient GetWebChromeClient() =>
+			new WebChromeClient();
+
 		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 			handler.HostPage = webView.HostPage;
@@ -113,11 +117,5 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			handler.Services = webView.Services;
 			handler.StartWebViewCoreIfPossible();
 		}
-
-		protected virtual WebViewClient GetWebViewClient() =>
-			new WebKitWebViewClient(this);
-
-		protected virtual WebChromeClient GetWebChromeClient() =>
-			new WebChromeClient();
 	}
 }
