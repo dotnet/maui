@@ -1,5 +1,7 @@
-﻿using Microsoft.Maui.Primitives;
+#nullable enable
+using Microsoft.Maui.Primitives;
 using Microsoft.Maui.Graphics;
+
 
 namespace Microsoft.Maui
 {
