@@ -134,7 +134,6 @@ namespace Microsoft.Maui.HotReload
 				Debug.WriteLine($"Error calling Init on type: {newViewType}");
 				Debug.WriteLine(ex);
 				//TODO: Notifiy that we couldnt hot reload.
-				return view;
 			}
 		}
 
