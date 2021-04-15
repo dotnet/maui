@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(EditorHandler handler, IEditor editor)
 		{
-			handler.TypedNativeView?.UpdateTextColor(editor);
+			handler.NativeView?.UpdateTextColor(editor);
 		}
 
 		public static void MapPlaceholder(EditorHandler handler, IEditor editor)
@@ -120,8 +120,5 @@ namespace Microsoft.Maui.Handlers
 
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
-
-		[MissingMapper]
-		public static void MapTextColor(EditorHandler handler, IEditor editor) { }
 	}
 }
