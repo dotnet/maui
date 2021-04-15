@@ -72,6 +72,13 @@ namespace Microsoft.Maui.HotReload
 				//TODO: Notifiy that we couldnt hot reload.
 				return view;
 			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Error Hotreloading type: {newViewType}");
+				Debug.WriteLine(ex);
+				//TODO: Notifiy that we couldnt hot reload.
+				return view;
+			}
 
 		}
 
@@ -117,9 +124,18 @@ namespace Microsoft.Maui.HotReload
 					RegisterHandler(h, newViewType);
 				}
 			}
+			try{
 			//Call static init if it exists on new classes!
-			var staticInit = newViewType.GetMethod("Init", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-			staticInit?.Invoke(null, null);
+				var staticInit = newViewType.GetMethod("Init", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+				staticInit?.Invoke(null, null);
+			}
+			catch(Exception ex){
+
+				Debug.WriteLine($"Error calling Init on type: {newViewType}");
+				Debug.WriteLine(ex);
+				//TODO: Notifiy that we couldnt hot reload.
+				return view;
+			}
 		}
 
 
