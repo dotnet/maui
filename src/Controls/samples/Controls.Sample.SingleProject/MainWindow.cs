@@ -6,7 +6,8 @@ namespace Maui.Controls.Sample.SingleProject
 	{
 		public MainWindow()
 		{
-			Page = new MainPage();
+			var useBlazor = false;
+			Page = useBlazor ? new BlazorPage() : new MainPage();
 		}
 
 		public IPage Page { get; set; }
