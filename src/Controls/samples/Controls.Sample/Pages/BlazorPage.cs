@@ -44,10 +44,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(bwv);
 			verticalStack.Add(new Label { Text = "This should be BOTTOM text!", FontSize = 24, HorizontalOptions = LayoutOptions.End });
 
-			Content = new ScrollView
-			{
-				Content = verticalStack
-			};
+			Content = verticalStack;
 		}
 	}
 }
