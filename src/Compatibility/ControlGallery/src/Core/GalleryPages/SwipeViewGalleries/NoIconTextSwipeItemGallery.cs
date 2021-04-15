@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries
 {
 	public class NoIconTextSwipeItemGallery : ContentPage
@@ -14,13 +15,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var noIconSwipeItem = new SwipeItem
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				Text = "File"
 			};
 
 			var noTextSwipeItem = new SwipeItem
 			{
-				BackgroundColor = Color.BlueViolet,
+				BackgroundColor = Colors.BlueViolet,
 				IconImageSource = "calculator.png"
 			};
 
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var swipeContent = new Grid
 			{
-				BackgroundColor = Color.Gray
+				BackgroundColor = Colors.Gray
 			};
 
 			var swipeLabel = new Label

@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -23,20 +24,20 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			var buttonBack = new Button() { Text = "<", BackgroundColor = Color.LightBlue, AutomationId = "buttonBack" };
-			var buttonNext = new Button() { Text = ">", BackgroundColor = Color.LightBlue, AutomationId = "buttonNext" };
-			var buttonClear = new Button() { Text = "--", BackgroundColor = Color.LightBlue, AutomationId = "buttonClear" };
-			var buttonState = new Button() { Text = "?", BackgroundColor = Color.LightBlue, AutomationId = "buttonState" };
-			var buttonStop = new Button() { Text = "X", BackgroundColor = Color.LightBlue, AutomationId = "buttonStop" };
+			var buttonBack = new Button() { Text = "<", BackgroundColor = Colors.LightBlue, AutomationId = "buttonBack" };
+			var buttonNext = new Button() { Text = ">", BackgroundColor = Colors.LightBlue, AutomationId = "buttonNext" };
+			var buttonClear = new Button() { Text = "--", BackgroundColor = Colors.LightBlue, AutomationId = "buttonClear" };
+			var buttonState = new Button() { Text = "?", BackgroundColor = Colors.LightBlue, AutomationId = "buttonState" };
+			var buttonStop = new Button() { Text = "X", BackgroundColor = Colors.LightBlue, AutomationId = "buttonStop" };
 
-			var buttonJsAlert = new Button() { Text = "ALERT", BackgroundColor = Color.LightBlue, AutomationId = "buttonJsAlert" };
-			var buttonJsPrompt = new Button() { Text = "PROMPT", BackgroundColor = Color.LightBlue, AutomationId = "buttonJsPrompt" };
-			var buttonJsConfirm = new Button() { Text = "CONFIRM", BackgroundColor = Color.LightBlue, AutomationId = "buttonJsConfirm" };
+			var buttonJsAlert = new Button() { Text = "ALERT", BackgroundColor = Colors.LightBlue, AutomationId = "buttonJsAlert" };
+			var buttonJsPrompt = new Button() { Text = "PROMPT", BackgroundColor = Colors.LightBlue, AutomationId = "buttonJsPrompt" };
+			var buttonJsConfirm = new Button() { Text = "CONFIRM", BackgroundColor = Colors.LightBlue, AutomationId = "buttonJsConfirm" };
 
-			var buttonA = new Button() { Text = "GO", BackgroundColor = Color.LightBlue, AutomationId = "buttonA" };
-			var buttonB = new Button() { Text = "HTML", BackgroundColor = Color.LightBlue, AutomationId = "buttonB" };
-			var buttonC = new Button() { Text = "EVAL", BackgroundColor = Color.LightBlue, AutomationId = "buttonC" };
-			var buttonD = new Button() { Text = "AEVAL", BackgroundColor = Color.LightBlue, AutomationId = "buttonD" };
+			var buttonA = new Button() { Text = "GO", BackgroundColor = Colors.LightBlue, AutomationId = "buttonA" };
+			var buttonB = new Button() { Text = "HTML", BackgroundColor = Colors.LightBlue, AutomationId = "buttonB" };
+			var buttonC = new Button() { Text = "EVAL", BackgroundColor = Colors.LightBlue, AutomationId = "buttonC" };
+			var buttonD = new Button() { Text = "AEVAL", BackgroundColor = Colors.LightBlue, AutomationId = "buttonD" };
 
 			var url = "https://www.microsoft.com/";
 			var html = $"<html><body><a href=\"{url}\">Link</a><br /><a href=\"{url}\" target=\"_blank\">Link with target=_blank</a></body></html>";
@@ -54,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			evals.Children.AddHorizontal(new[] { buttonA, buttonB, buttonC, buttonD });
 
 			var entry = new Entry() { AutomationId = "entry" };
-			entry.BackgroundColor = Color.Wheat;
+			entry.BackgroundColor = Colors.Wheat;
 
 			var jsAlerts = new Grid();
 			jsAlerts.Children.AddHorizontal(new[] { buttonJsAlert, buttonJsPrompt, buttonJsConfirm });
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			webView.Navigating += (s, e) =>
 			{
 				entry.Text = e.Url;
-				entry.BackgroundColor = Color.LightPink;
+				entry.BackgroundColor = Colors.LightPink;
 
 				if (!navigating)
 				{
@@ -151,7 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				log(text);
 
 				entry.Text = e.Url;
-				entry.BackgroundColor = Color.LightBlue;
+				entry.BackgroundColor = Colors.LightBlue;
 
 				cancel = false;
 				navigating = false;
@@ -159,7 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			// Initialize ui here instead of ctor
 			Content = grid;
-			BackgroundColor = Color.Gray;
+			BackgroundColor = Colors.Gray;
 		}
 	}
 }

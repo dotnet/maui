@@ -3,8 +3,8 @@ using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
-using Rectangle = Microsoft.Maui.Rectangle;
-using Size = Microsoft.Maui.Size;
+using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Handlers
 {

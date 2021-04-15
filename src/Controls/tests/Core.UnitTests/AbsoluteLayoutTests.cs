@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -47,22 +48,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(new Rectangle(10, 20, 30, 40), child.Bounds);
 		}
 
-		[Test]
-		public void AbsolutePositionAndSizeUsingRect()
-		{
-			var abs = new AbsoluteLayout
-			{
-				IsPlatformEnabled = true
-			};
-
-			var child = new View { IsPlatformEnabled = true };
-
-			abs.Children.Add(child, new Rect(10, 20, 30, 40));
-
-			abs.Layout(new Rect(0, 0, 100, 100));
-
-			Assert.AreEqual(new Rect(10, 20, 30, 40), child.Bounds);
-		}
 
 		[Test]
 		public void AbsolutePositionRelativeSize()

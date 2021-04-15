@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				childLabel.Text = Issue6334.Success;
 
 				var eColor = page.BackgroundColor.ToCGColor();
-				var sColor = page.BackgroundColor.AddLuminosity(0.5).ToCGColor();
+				var sColor = page.BackgroundColor.AddLuminosity(0.5f).ToCGColor();
 				layer = new CAGradientLayer
 				{
 					Frame = Container.Bounds,

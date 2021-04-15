@@ -1,4 +1,4 @@
-using Android.Graphics.Drawables;
+using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -52,6 +52,16 @@ namespace Microsoft.Maui
 			}
 
 			nativeView.SetTag(AutomationTagId, view.AutomationId);
+		}
+
+		public static void UpdateSemantics(this AView nativeView, IView view)
+		{
+			var semantics = view.Semantics;
+			if (semantics == null)
+				return;
+
+			nativeView.ContentDescription = semantics.Description;
+			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
 		}
 	}
 }

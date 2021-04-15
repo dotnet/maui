@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				Device.PlatformServices = new MockPlatformServices { RuntimePlatform = Device.iOS };
 				var layout = new Gh3862(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Color.Pink));
+				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Pink));
 				Assert.That(layout.label.IsVisible, Is.False);
 
 				Device.PlatformServices = new MockPlatformServices { RuntimePlatform = Device.Android };

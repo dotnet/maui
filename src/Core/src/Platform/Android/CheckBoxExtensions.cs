@@ -2,6 +2,7 @@
 using Microsoft.Maui.Graphics;
 using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
+using XColor = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui
 {

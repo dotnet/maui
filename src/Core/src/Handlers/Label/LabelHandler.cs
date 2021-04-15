@@ -5,18 +5,18 @@ namespace Microsoft.Maui.Handlers
 		public static PropertyMapper<ILabel, LabelHandler> LabelMapper = new PropertyMapper<ILabel, LabelHandler>(ViewHandler.ViewMapper)
 		{
 #if __IOS__ || IOS
-			[nameof(ICheckBox.Background)] = MapBackground,
+			[nameof(ILabel.Background)] = MapBackground,
 #endif
-			[nameof(ILabel.TextColor)] = MapTextColor,
-			[nameof(ILabel.Text)] = MapText,
 			[nameof(ILabel.CharacterSpacing)] = MapCharacterSpacing,
-			[nameof(ILabel.MaxLines)] = MapMaxLines,
 			[nameof(ILabel.Font)] = MapFont,
 			[nameof(ILabel.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(ILabel.LineBreakMode)] = MapLineBreakMode,
+			[nameof(ILabel.LineHeight)] = MapLineHeight,
+			[nameof(ILabel.MaxLines)] = MapMaxLines,
 			[nameof(ILabel.Padding)] = MapPadding,
+			[nameof(ILabel.Text)] = MapText,
+			[nameof(ILabel.TextColor)] = MapTextColor,
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
-			[nameof(ILabel.LineHeight)] = MapLineHeight
 		};
 
 		public LabelHandler() : base(LabelMapper)

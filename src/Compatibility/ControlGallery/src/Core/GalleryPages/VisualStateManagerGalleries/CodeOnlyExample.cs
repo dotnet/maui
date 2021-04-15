@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.VisualStateManagerGalleries
 {
@@ -35,18 +36,18 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Visu
 		{
 			var stateGroup = new VisualStateGroup { Name = "Months", TargetType = typeof(DatePicker) };
 
-			stateGroup.States.Add(CreateState(1, Color.CornflowerBlue, Color.AliceBlue));
-			stateGroup.States.Add(CreateState(2, Color.Red, Color.WhiteSmoke));
-			stateGroup.States.Add(CreateState(3, Color.GreenYellow, Color.ForestGreen));
-			stateGroup.States.Add(CreateState(4, Color.GreenYellow, Color.SaddleBrown));
-			stateGroup.States.Add(CreateState(5, Color.White, Color.Red));
-			stateGroup.States.Add(CreateState(6, Color.RoyalBlue, Color.DarkOrange));
-			stateGroup.States.Add(CreateState(7, Color.Red, Color.DeepSkyBlue));
-			stateGroup.States.Add(CreateState(8, Color.DarkRed, Color.AliceBlue));
-			stateGroup.States.Add(CreateState(9, Color.SaddleBrown, Color.AntiqueWhite));
-			stateGroup.States.Add(CreateState(10, Color.Orange, Color.Black));
-			stateGroup.States.Add(CreateState(11, Color.OrangeRed, Color.SaddleBrown));
-			stateGroup.States.Add(CreateState(12, Color.Green, Color.Red));
+			stateGroup.States.Add(CreateState(1, Colors.CornflowerBlue, Colors.AliceBlue));
+			stateGroup.States.Add(CreateState(2, Colors.Red, Colors.WhiteSmoke));
+			stateGroup.States.Add(CreateState(3, Colors.GreenYellow, Colors.ForestGreen));
+			stateGroup.States.Add(CreateState(4, Colors.GreenYellow, Colors.SaddleBrown));
+			stateGroup.States.Add(CreateState(5, Colors.White, Colors.Red));
+			stateGroup.States.Add(CreateState(6, Colors.RoyalBlue, Colors.DarkOrange));
+			stateGroup.States.Add(CreateState(7, Colors.Red, Colors.DeepSkyBlue));
+			stateGroup.States.Add(CreateState(8, Colors.DarkRed, Colors.AliceBlue));
+			stateGroup.States.Add(CreateState(9, Colors.SaddleBrown, Colors.AntiqueWhite));
+			stateGroup.States.Add(CreateState(10, Colors.Orange, Colors.Black));
+			stateGroup.States.Add(CreateState(11, Colors.OrangeRed, Colors.SaddleBrown));
+			stateGroup.States.Add(CreateState(12, Colors.Green, Colors.Red));
 
 			return stateGroup;
 		}

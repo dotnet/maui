@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-
+using Microsoft.Maui.Graphics;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
@@ -108,9 +108,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 
 			layout.Children.Add(buttonLayout);
 
-			var addPrimary = new Button { Text = "Add Primary", BackgroundColor = Color.Gray };
-			var addSecondary = new Button { Text = "Add Secondary", BackgroundColor = Color.Gray };
-			var remove = new Button { Text = "Remove", BackgroundColor = Color.Gray };
+			var addPrimary = new Button { Text = "Add Primary", BackgroundColor = Colors.Gray };
+			var addSecondary = new Button { Text = "Add Secondary", BackgroundColor = Colors.Gray };
+			var remove = new Button { Text = "Remove", BackgroundColor = Colors.Gray };
 
 			buttonLayout.Children.Add(addPrimary);
 			buttonLayout.Children.Add(addSecondary);

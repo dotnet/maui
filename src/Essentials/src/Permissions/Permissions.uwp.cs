@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Windows.ApplicationModel;
 using Windows.ApplicationModel.Contacts;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Geolocation;
@@ -15,7 +17,8 @@ namespace Microsoft.Maui.Essentials
     {
         public static bool IsCapabilityDeclared(string capabilityName)
         {
-            var doc = XDocument.Load(Platform.AppManifestFilename, LoadOptions.None);
+            var docPath = Path.Combine(Package.Current.InstalledLocation.Path, Platform.AppManifestFilename);
+            var doc = XDocument.Load(docPath, LoadOptions.None);
             var reader = doc.CreateReader();
             var namespaceManager = new XmlNamespaceManager(reader.NameTable);
             namespaceManager.AddNamespace("x", Platform.AppManifestXmlns);

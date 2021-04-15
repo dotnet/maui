@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -132,10 +129,21 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!Background.IsNullOrEmpty())
 					return Background;
-				if (!BackgroundColor.IsDefault)
+				if (BackgroundColor.IsNotDefault())
 					return new SolidColorBrush(BackgroundColor);
 				return null;
 			}
 		}
+
+		Maui.Semantics _semantics;
+		Maui.Semantics IFrameworkElement.Semantics
+		{
+			get => _semantics;
+		}
+
+		// We don't want to initialize Semantics until someone explicitly 
+		// wants to modify some aspect of the semantics class
+		internal Semantics SetupSemantics() =>
+			_semantics ??= new Maui.Semantics();
 	}
 }

@@ -12,6 +12,7 @@ using Android.Widget;
 using AndroidX.Core.Content;
 using Java.Lang;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -319,7 +320,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
 		}
 
-		[PortHandler("Partially ported")]
+		[PortHandler("IsSpellCheckEnabled is missing.")]
+		[PortHandler("No override for GetDigitsKeyListener")]
 		void UpdateInputType()
 		{
 			Entry model = Element;

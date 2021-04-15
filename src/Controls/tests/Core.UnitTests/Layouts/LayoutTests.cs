@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using NSubstitute;
 using NUnit.Framework;
 

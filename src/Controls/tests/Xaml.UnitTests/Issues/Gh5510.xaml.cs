@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -72,9 +73,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				var vm = new Gh5510VM();
 				var layout = new Gh5510(useCompiledXaml) { BindingContext = vm };
-				Assert.That(layout.entry.TextColor, Is.EqualTo(Color.Red));
+				Assert.That(layout.entry.TextColor, Is.EqualTo(Colors.Red));
 				vm.ClearErrorForPerson();
-				Assert.That(layout.entry.TextColor, Is.EqualTo(Color.Black));
+				Assert.That(layout.entry.TextColor, Is.EqualTo(Colors.Black));
 			}
 		}
 	}

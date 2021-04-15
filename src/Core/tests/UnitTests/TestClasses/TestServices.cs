@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Tests
+﻿using System.Collections.Generic;
+
+namespace Microsoft.Maui.UnitTests
 {
 	interface IFooService
 	{
@@ -68,5 +70,33 @@
 		}
 
 		public string Text { get; }
+	}
+
+	class MappingService
+	{
+		readonly List<(string Key, string Value)> _pairs = new List<(string Key, string Value)>();
+
+		public MappingService()
+		{
+		}
+
+		public MappingService(string key, string value)
+		{
+			Add(key, value);
+		}
+
+		public int Count => _pairs.Count;
+
+		public void Add(string key, string value)
+		{
+			_pairs.Add((key, value));
+		}
+
+		public IEnumerable<string> Get(string key)
+		{
+			foreach (var (Key, Value) in _pairs)
+				if (Key == key)
+					yield return Value;
+		}
 	}
 }

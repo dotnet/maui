@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		public static readonly BindableProperty UseDefaultProperty = BindableProperty.Create(nameof(UseDefault), typeof(bool), typeof(ColorPicker), false,
 			propertyChanged: OnColorChanged);
 
-		public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(ColorPicker), Color.Default,
+		public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(ColorPicker), null,
 			propertyChanged: OnColorChanged);
 
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(ColorPicker), "Pick a color:",
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				BackgroundColor = Color,
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill,
-				BorderColor = Color.Black,
+				BorderColor = Colors.Black,
 
 			};
 			grid.AddChild(_box, 2, 1, 1, 3);
@@ -93,10 +94,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		public void InitWithColor(Color color)
 		{
-			_sliders[0].Value = color.R * 255;
-			_sliders[1].Value = color.G * 255;
-			_sliders[2].Value = color.B * 255;
-			_sliders[3].Value = color.A * 255;
+			_sliders[0].Value = color.Red * 255;
+			_sliders[1].Value = color.Green * 255;
+			_sliders[2].Value = color.Blue * 255;
+			_sliders[3].Value = color.Alpha * 255;
 		}
 
 		public string Title
@@ -141,8 +142,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			if (bindable is ColorPicker picker)
 			{
-				var color = picker.UseDefault ? Color.Default : picker.Color;
-				picker._hexLabel.Text = color.IsDefault ? "<default>" : ColorToHex(color);
+				var color = picker.UseDefault ? null : picker.Color;
+				picker._hexLabel.Text = color == null ? "<default>" : ColorToHex(color);
 				picker._box.BackgroundColor = color;
 				picker.ColorPicked?.Invoke(picker, new ColorPickedEventArgs(color));
 			}
@@ -158,10 +159,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		static string ColorToHex(Color color)
 		{
-			var a = (int)(color.A * 255);
-			var r = (int)(color.R * 255);
-			var g = (int)(color.G * 255);
-			var b = (int)(color.B * 255);
+			var a = (int)(color.Alpha * 255);
+			var r = (int)(color.Red * 255);
+			var g = (int)(color.Green * 255);
+			var b = (int)(color.Blue * 255);
 
 			var value = a << 24 | r << 16 | g << 8 | b;
 

@@ -11,7 +11,7 @@ using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
 using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
-
+using Size = Microsoft.Maui.Graphics.Size;
 namespace Microsoft.Maui
 {
 	public static class ContextExtensions

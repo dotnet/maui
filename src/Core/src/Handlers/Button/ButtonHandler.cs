@@ -7,10 +7,11 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS
 			[nameof(IButton.Background)] = MapBackground,
 #endif
-			[nameof(IButton.Text)] = MapText,
-			[nameof(IButton.TextColor)] = MapTextColor,
+			[nameof(IButton.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IButton.Font)] = MapFont,
 			[nameof(IButton.Padding)] = MapPadding,
+			[nameof(IButton.Text)] = MapText,
+			[nameof(IButton.TextColor)] = MapTextColor,
 		};
 
 		public ButtonHandler() : base(ButtonMapper)

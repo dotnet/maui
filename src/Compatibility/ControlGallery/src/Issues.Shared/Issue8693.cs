@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -32,8 +33,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var instructions = new Label
 			{
 				Margin = new Thickness(6),
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Press the Button to update the ItemsSource of the CarouselView below. After updating, verify that the IndicatorView is still visible. If it is visible, the test has passed."
 			};
 
@@ -59,8 +60,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var indicatorView = new IndicatorView
 			{
-				IndicatorColor = Color.Red,
-				SelectedIndicatorColor = Color.Green,
+				IndicatorColor = Colors.Red,
+				SelectedIndicatorColor = Colors.Green,
 				IndicatorTemplate = GetIndicatorTemplate(),
 				HorizontalOptions = LayoutOptions.Center,
 				Margin = new Thickness(0, 0, 0, 24)

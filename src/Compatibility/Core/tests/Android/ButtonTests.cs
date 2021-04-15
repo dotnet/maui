@@ -8,6 +8,7 @@ using Android.Views;
 using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
@@ -23,8 +24,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		{
 			Button myButton = new Button()
 			{
-				BackgroundColor = Color.Green,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Green,
+				TextColor = Colors.White,
 				BindingContext = new object(),
 				Text = "test text",
 				IsEnabled = false
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var textColors = await GetControlProperty(myButton, (b) => b.TextColors);
 			var disabledColor = textColors.GetColorForState(new[] { -global::Android.Resource.Attribute.StateEnabled }, AColor.Green);
 
-			int compareTo = Color.White.ToAndroid();
+			int compareTo = Colors.White.ToAndroid();
 			Assert.AreNotEqual(compareTo, disabledColor);
 		}
 

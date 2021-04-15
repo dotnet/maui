@@ -14,10 +14,9 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateCharacterSpacing(this UITextView textView, IEditor editor)
+		public static void UpdateCharacterSpacing(this UITextView textView, ITextStyle textStyle)
 		{
-			var textAttr = textView.AttributedText?.WithCharacterSpacing(editor.CharacterSpacing);
-
+			var textAttr = textView.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
 			if (textAttr != null)
 				textView.AttributedText = textAttr;
 
@@ -26,10 +25,9 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLength(this UITextView textView, IEditor editor)
 		{
-			var currentControlText = textView.Text;
-
-			if (currentControlText?.Length > editor.MaxLength)
-				textView.Text = currentControlText.Substring(0, editor.MaxLength);
+			var newText = textView.AttributedText.TrimToMaxLength(editor.MaxLength);
+			if (newText != null && textView.AttributedText != newText)
+				textView.AttributedText = newText;
 		}
 
 		public static void UpdatePredictiveText(this UITextView textView, IEditor editor)
@@ -38,9 +36,9 @@ namespace Microsoft.Maui
 				? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No;
 		}
 
-		public static void UpdateFont(this UITextView textView, IEditor editor, IFontManager fontManager)
+		public static void UpdateFont(this UITextView textView, ITextStyle textStyle, IFontManager fontManager)
 		{
-			var uiFont = fontManager.GetFont(editor.Font);
+			var uiFont = fontManager.GetFont(textStyle.Font);
 			textView.Font = uiFont;
 		}
 

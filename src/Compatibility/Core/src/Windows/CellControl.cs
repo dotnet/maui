@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.Maui.Controls.Internals;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -176,7 +177,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (!(Cell is SwitchCell switchCell))
 				return;
 
-			var color = switchCell.OnColor == Color.Default
+			var color = switchCell.OnColor.IsDefault()
 				? _defaultOnColor
 				: new WSolidColorBrush(switchCell.OnColor.ToWindowsColor());
 

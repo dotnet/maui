@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Internals;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -147,7 +148,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			InitializeStatusBar();
 
 			SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
-			Microsoft.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
+
+			// TODO WINUI
+			// Microsoft.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
 		}
 
 		async void OnResumingAsync(object sender, object e)
@@ -313,7 +316,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					IsIndeterminate = true,
 					Visibility = Visibility.Collapsed,
-					VerticalAlignment = VerticalAlignment.Top
+					VerticalAlignment = UI.Xaml.VerticalAlignment.Top
 				};
 
 				Canvas.SetZIndex(_busyIndicator, 1);
@@ -362,7 +365,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					Page previousPage = _currentPage;
 
-					if (modal && !popping && !newPage.BackgroundColor.IsDefault)
+					if (modal && !popping && !newPage.BackgroundColor.IsDefault())
 						_modalBackgroundPage = previousPage;
 					else
 					{

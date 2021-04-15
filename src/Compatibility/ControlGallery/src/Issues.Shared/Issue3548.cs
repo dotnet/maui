@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Effects;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			_statusFrame = new Frame
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				Padding = 15,
 				VerticalOptions = LayoutOptions.CenterAndExpand,
 				HorizontalOptions = LayoutOptions.CenterAndExpand,
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					? SuccessMessage
 					: "EFFECT IS DEATTACHED";
 
-				_statusFrame.BackgroundColor = Color.LightGreen;
+				_statusFrame.BackgroundColor = Colors.LightGreen;
 			};
 
 			Content = new StackLayout

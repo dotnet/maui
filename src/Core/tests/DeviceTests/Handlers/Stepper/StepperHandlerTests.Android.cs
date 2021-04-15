@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Android.Widget;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using System;
 
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class StepperHandlerTests
 	{
 		LinearLayout GetNativeStepper(StepperHandler stepperHandler) =>
-			(LinearLayout)stepperHandler.View;
+			(LinearLayout)stepperHandler.NativeView;
 
 		double GetNativeValue(StepperHandler stepperHandler)
 		{

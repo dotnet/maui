@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBrush(ISolidColorBrush solidColorBrush)
 		{
-			var color = solidColorBrush.Color.IsDefault
+			var color = solidColorBrush.Color == null
 				? (AColor?)null
 				: solidColorBrush.Color.ToNative();
 
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Graphics
 			SetShaderFactory(new RadialGradientShaderFactory(shader));
 		}
 
-		protected override void OnDraw(Shape? shape, Canvas? canvas, Paint? paint)
+		protected override void OnDraw(Shape? shape, Canvas? canvas, global::Android.Graphics.Paint? paint)
 		{
 			if (paint != null && _backgroundColor != null)
 				paint.Color = _backgroundColor.Value;

@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			textFontSizeDefaultContainer.View.FontSize = Device.GetNamedSize(NamedSize.Default, textFontSizeDefaultContainer.View);
 			var textFontSizeLargeContainer = new ViewContainer<Entry>(Test.Entry.FontSize, new Entry { Text = "I have size 48 (huge) text", FontSize = 48 });
 
-			var textColorContainer = new ViewContainer<Entry>(Test.Entry.TextColor, new Entry { Text = "Hi, I should be red", TextColor = Color.Red });
+			var textColorContainer = new ViewContainer<Entry>(Test.Entry.TextColor, new Entry { Text = "Hi, I should be red", TextColor = Colors.Red });
 
 			var xAlignCenterContainer = new ViewContainer<Entry>(Test.Entry.HorizontalTextAlignmentCenter,
 				new Entry { Text = "Should be centered", HorizontalTextAlignment = TextAlignment.Center });
@@ -53,35 +54,35 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new Entry { Placeholder = "Should be aligned start", HorizontalTextAlignment = TextAlignment.Start });
 
 			var yAlignCenterContainer = new ViewContainer<Entry>(Test.Entry.VerticalTextAlignmentCenter,
-				new Entry { Text = "Should be centered!", VerticalTextAlignment = TextAlignment.Center, BackgroundColor = Color.Pink, HeightRequest = 100 });
+				new Entry { Text = "Should be centered!", VerticalTextAlignment = TextAlignment.Center, BackgroundColor = Colors.Pink, HeightRequest = 100 });
 			var yAlignEndContainer = new ViewContainer<Entry>(Test.Entry.VerticalTextAlignmentEnd,
-				new Entry { Text = "Should be aligned end!", VerticalTextAlignment = TextAlignment.End, BackgroundColor = Color.Pink, HeightRequest = 100 });
+				new Entry { Text = "Should be aligned end!", VerticalTextAlignment = TextAlignment.End, BackgroundColor = Colors.Pink, HeightRequest = 100 });
 			var yAlignStartContainer = new ViewContainer<Entry>(Test.Entry.VerticalTextAlignmentStart,
-				new Entry { Text = "Should be aligned start!", VerticalTextAlignment = TextAlignment.Start, BackgroundColor = Color.Pink, HeightRequest = 100 });
+				new Entry { Text = "Should be aligned start!", VerticalTextAlignment = TextAlignment.Start, BackgroundColor = Colors.Pink, HeightRequest = 100 });
 
 			var yAlignPlaceholderCenter = new ViewContainer<Entry>(Test.Entry.VerticalTextAlignmentPlaceholderCenter,
-				new Entry { Placeholder = "Should be centered!", VerticalTextAlignment = TextAlignment.Center, BackgroundColor = Color.Pink, HeightRequest = 100 });
+				new Entry { Placeholder = "Should be centered!", VerticalTextAlignment = TextAlignment.Center, BackgroundColor = Colors.Pink, HeightRequest = 100 });
 			var yAlignPlaceholderEnd = new ViewContainer<Entry>(Test.Entry.VerticalTextAlignmentPlaceholderEnd,
-				new Entry { Placeholder = "Should be aligned end!", VerticalTextAlignment = TextAlignment.End, BackgroundColor = Color.Pink, HeightRequest = 100 });
+				new Entry { Placeholder = "Should be aligned end!", VerticalTextAlignment = TextAlignment.End, BackgroundColor = Colors.Pink, HeightRequest = 100 });
 			var yAlignPlaceholderStart = new ViewContainer<Entry>(Test.Entry.VerticalTextAlignmentPlaceholderStart,
-				new Entry { Placeholder = "Should be aligned start!", VerticalTextAlignment = TextAlignment.Start, BackgroundColor = Color.Pink, HeightRequest = 100 });
+				new Entry { Placeholder = "Should be aligned start!", VerticalTextAlignment = TextAlignment.Start, BackgroundColor = Colors.Pink, HeightRequest = 100 });
 
 			var placeholderColorContainer = new ViewContainer<Entry>(Test.Entry.PlaceholderColor,
-				new Entry { Placeholder = "Hi, I should be red", PlaceholderColor = Color.Red });
+				new Entry { Placeholder = "Hi, I should be red", PlaceholderColor = Colors.Red });
 
 			var textColorDisabledContainer = new ViewContainer<Entry>(Test.Entry.TextDisabledColor,
-				new Entry { IsEnabled = false, Text = "I should be the default disabled color", TextColor = Color.Red });
+				new Entry { IsEnabled = false, Text = "I should be the default disabled color", TextColor = Colors.Red });
 
 			var placeholderColorDisabledContainer = new ViewContainer<Entry>(Test.Entry.PlaceholderDisabledColor,
 				new Entry
 				{
 					IsEnabled = false,
 					Placeholder = "I should be the default placeholder disabled color",
-					PlaceholderColor = Color.Red
+					PlaceholderColor = Colors.Red
 				});
 
 			var passwordColorContainer = new ViewContainer<Entry>(Test.Entry.PasswordColor,
-				new Entry { IsPassword = true, Text = "12345", TextColor = Color.Red });
+				new Entry { IsPassword = true, Text = "12345", TextColor = Colors.Red });
 
 			var maxLengthContainer = new ViewContainer<Entry>(Test.InputView.MaxLength, new Entry { MaxLength = 3 });
 

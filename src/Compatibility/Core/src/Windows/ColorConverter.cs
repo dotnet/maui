@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
-			var color = (Color)value;
+			var color = (Microsoft.Maui.Graphics.Color)value;
 			var defaultColorKey = (string)parameter;
 
 			WBrush defaultBrush = defaultColorKey != null ? (WBrush)Microsoft.UI.Xaml.Application.Current.Resources[defaultColorKey] : new WSolidColorBrush(Colors.Transparent);
 
-			return color == Color.Default ? defaultBrush : color.ToBrush();
+			return color.IsDefault() ? defaultBrush : color.ToBrush();
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)

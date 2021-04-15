@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		public Test1View()
 		{
-			BackgroundColor = Color.Red;
+			BackgroundColor = Colors.Red;
 		}
 	}
 	[Preserve(AllMembers = true)]
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		public Test2View()
 		{
-			BackgroundColor = Color.Blue;
+			BackgroundColor = Colors.Blue;
 		}
 	}
 	[Preserve(AllMembers = true)]
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		public Test3View()
 		{
-			BackgroundColor = Color.Green;
+			BackgroundColor = Colors.Green;
 		}
 	}
 

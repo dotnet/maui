@@ -14,7 +14,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public ImageRenderer() : base()
 		{
 			ImageElementManager.Init(this);
-			Microsoft.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
+			// TODO WINUI
+			//Microsoft.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
 		}
 
 		bool IImageVisualElementRenderer.IsDisposed => _disposed;
@@ -45,7 +46,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					Control.ImageOpened -= OnImageOpened;
 					Control.ImageFailed -= OnImageFailed;
-					Microsoft.UI.Xaml.Application.Current.Resuming -= OnResumingAsync;
+					// TODO WINUI
+					//Microsoft.UI.Xaml.Application.Current.Resuming -= OnResumingAsync;
 				}
 			}
 

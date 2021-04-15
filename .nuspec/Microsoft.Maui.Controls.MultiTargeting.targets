@@ -32,15 +32,13 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) != true ">
     <Compile Remove="**\*.Windows.cs" />
     <None Include="**\*.Windows.cs" />
-    <Compile Remove="**\*.xaml.cs" />
-    <None Include="**\*.xaml.cs" />
-    <Compile Remove="**\*.xaml" />
-    <None Include="**\*.xaml" />
     <Compile Remove="**\Windows\*.cs" />
     <None Include="**\Windows\*.cs" />
   </ItemGroup>
 
   <PropertyGroup>
+    <!-- Windows -->
+    <WindowsProjectFolder>Platform\Windows\</WindowsProjectFolder>
     <!-- Android -->
     <AndroidProjectFolder>Platform\Android\</AndroidProjectFolder>
     <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
@@ -79,6 +77,7 @@
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PackageReference Include="Microsoft.ProjectReunion" />

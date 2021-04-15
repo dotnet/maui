@@ -4,6 +4,6 @@
 	{
 		Font? _font;
 
-		Font ITimePicker.Font => _font ??= Font.OfSize(FontFamily, FontSize).WithAttributes(FontAttributes);
+		Font ITextStyle.Font => _font ??= Font.OfSize(FontFamily, FontSize).WithAttributes(FontAttributes);
 	}
 }

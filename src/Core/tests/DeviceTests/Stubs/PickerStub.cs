@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -16,5 +17,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public object SelectedItem { get; set; }
 
 		public double CharacterSpacing { get; set; }
+
+		public Color TextColor { get; set; }
+
+		public Font Font { get; set; }
 	}
 }

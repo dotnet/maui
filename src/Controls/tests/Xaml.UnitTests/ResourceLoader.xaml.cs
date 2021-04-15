@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					return null;
 				};
 				layout = new ResourceLoader(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Color.Pink));
+				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Pink));
 			}
 
 			[Test]
@@ -91,7 +92,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				layout = new ResourceLoader(useCompiledXaml);
 				Assert.That(instance, Is.EqualTo(layout));
-				Assert.That(layout.label.TextColor, Is.EqualTo(Color.Pink));
+				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Pink));
 			}
 
 			[Test]
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 
 				layout = new ResourceLoader(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Color.HotPink));
+				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.HotPink));
 			}
 
 			[TestCase(false), TestCase(true)]

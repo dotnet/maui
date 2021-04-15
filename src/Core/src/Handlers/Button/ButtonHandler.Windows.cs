@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : AbstractViewHandler<IButton, Button>
+	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
 		static UI.Xaml.Thickness? DefaultPadding;
 
@@ -49,13 +49,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(ButtonHandler handler, IButton button) =>
 			handler.TypedNativeView?.UpdateTextColor(button);
 
+		[MissingMapper]
+		public static void MapCharacterSpacing(ButtonHandler handler, IButton button) { }
+
 		public static void MapFont(ButtonHandler handler, IButton button)
 		{
-			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-			handler.TypedNativeView?.UpdateFont(button, fontManager);
+			handler.NativeView?.UpdateFont(button, fontManager);
 		}
 
 		public static void MapPadding(ButtonHandler handler, IButton button) =>

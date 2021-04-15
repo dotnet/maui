@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 				Children = {
 					new ContentPage {
-						BackgroundColor = Color.Green,
+						BackgroundColor = Colors.Green,
 						Content = new StackLayout {
 							Children = {
 								new Button {
@@ -46,13 +47,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						}
 					},
 					new ContentPage {
-						BackgroundColor = Color.Red
+						BackgroundColor = Colors.Red
 					},
 					new ContentPage {
-						BackgroundColor = Color.Lime,
+						BackgroundColor = Colors.Lime,
 					},
 					new ContentPage {
-						BackgroundColor = Color.Purple,
+						BackgroundColor = Colors.Purple,
 					},
 				}
 			};

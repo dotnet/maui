@@ -38,6 +38,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public LayoutAlignment VerticalLayoutAlignment { get; set; }
 
+		public Semantics Semantics { get; set; } = new Semantics();
+
 		public void Arrange(Rectangle bounds)
 		{
 			Frame = bounds;

@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.InputView;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -312,12 +313,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateMaxLength()
 		{
-			Control.MaxLength = Element.MaxLength;
+			var maxLength = Element.MaxLength;
+			if (maxLength == -1)
+				maxLength = int.MaxValue;
+
+			Control.MaxLength = maxLength;
 
 			var currentControlText = Control.Text;
 
-			if (currentControlText.Length > Element.MaxLength)
-				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+			if (currentControlText.Length > maxLength)
+				Control.Text = currentControlText.Substring(0, maxLength);
 		}
 
 		void UpdateDetectReadingOrderFromContent()

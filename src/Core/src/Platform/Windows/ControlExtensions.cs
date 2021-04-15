@@ -30,6 +30,8 @@ namespace Microsoft.Maui
 
 		public static void UpdatePadding(this Control nativeControl, Thickness padding, UI.Xaml.Thickness? defaultThickness = null)
 		{
+			// TODO: have a way to reset the padding
+			//       This is used for button, but this also means there can never be a 0 padding button
 			var newPadding = defaultThickness ?? new UI.Xaml.Thickness();
 
 			newPadding.Left += padding.Left;

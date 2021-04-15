@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -105,7 +106,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static readonly BindableProperty RefreshColorProperty =
-			BindableProperty.Create(nameof(RefreshColor), typeof(Color), typeof(RefreshView), Color.Default);
+			BindableProperty.Create(nameof(RefreshColor), typeof(Color), typeof(RefreshView), null);
 
 		public Color RefreshColor
 		{

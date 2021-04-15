@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					grd.Children.Add(new Button
 					{
 						Text = "Back",
-						BackgroundColor = Color.Red,
+						BackgroundColor = Colors.Red,
 						Command = new Command(() => Navigation.PopModalAsync())
 					});
 					cp2.Content = grd;

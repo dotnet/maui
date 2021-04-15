@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Graphics;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
 #if UITEST
@@ -46,8 +47,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		protected override void Init()
 		{
-			_LabelTappedLabel = new Label { TextColor = Color.Red };
-			_ItemTappedLabel = new Label { TextColor = Color.Purple };
+			_LabelTappedLabel = new Label { TextColor = Colors.Red };
+			_ItemTappedLabel = new Label { TextColor = Colors.Purple };
 
 			_list = new ListView
 			{

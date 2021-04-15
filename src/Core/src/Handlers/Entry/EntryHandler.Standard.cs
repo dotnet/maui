@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : AbstractViewHandler<IEntry, object>
+	public partial class EntryHandler : ViewHandler<IEntry, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 
@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapMaxLength(IViewHandler handler, IEntry entry) { }
 		public static void MapPlaceholder(IViewHandler handler, IEntry entry) { }
 		public static void MapIsReadOnly(IViewHandler handler, IEntry entry) { }
+		public static void MapKeyboard(IViewHandler handler, IEntry entry) { }
 		public static void MapFont(IViewHandler handler, IEntry entry) { }
 		public static void MapReturnType(IViewHandler handler, IEntry entry) { }
 		public static void MapClearButtonVisibility(IViewHandler handler, IEntry entry) { }
