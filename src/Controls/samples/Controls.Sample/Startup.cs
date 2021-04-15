@@ -4,7 +4,9 @@ using System.Diagnostics;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModel;
+#if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Components.WebView.Maui;
+#endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -19,7 +21,7 @@ namespace Maui.Controls.Sample
 	public class Startup : IStartup
 	{
 		enum PageType { Xaml, Semantics, Main, Blazor }
-		private PageType _pageType = PageType.Blazor;
+		private PageType _pageType = PageType.Main;
 
 		public readonly static bool UseXamlApp = true;
 
@@ -41,7 +43,9 @@ namespace Maui.Controls.Sample
 			}
 
 			appBuilder
+#if NET6_0_OR_GREATER
 				.RegisterBlazorMauiWebView()
+#endif
 				.ConfigureAppConfiguration(config =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>
@@ -65,7 +69,12 @@ namespace Maui.Controls.Sample
 						{
 							PageType.Xaml => typeof(XamlPage),
 							PageType.Semantics => typeof(SemanticsPage),
-							PageType.Blazor => typeof(BlazorPage),
+							PageType.Blazor => 
+#if NET6_0_OR_GREATER
+								typeof(BlazorPage),
+#else
+								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
+#endif
 							PageType.Main => typeof(MainPage),
 							_ => throw new Exception(),
 						});

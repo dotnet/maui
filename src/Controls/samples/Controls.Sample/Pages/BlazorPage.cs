@@ -1,3 +1,4 @@
+#if NET6_0_OR_GREATER
 using System;
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.ViewModel;
