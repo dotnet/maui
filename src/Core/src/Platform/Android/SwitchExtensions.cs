@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 {
 	public static class SwitchExtensions
 	{
-		public static void UpdateIsToggled(this ASwitch aSwitch, ISwitch view) =>
+		public static void UpdateIsOn(this ASwitch aSwitch, ISwitch view) =>
 			aSwitch.Checked = view.IsOn;
 
 		public static void UpdateTrackColor(this ASwitch aSwitch, ISwitch view, ColorStateList? defaultTrackColor)

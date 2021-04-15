@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 {
 	public static class SwitchExtensions
 	{
-		public static void UpdateIsToggled(this UISwitch uiSwitch, ISwitch view)
+		public static void UpdateIsOn(this UISwitch uiSwitch, ISwitch view)
 		{
 			uiSwitch.SetState(view.IsOn, true);
 		}

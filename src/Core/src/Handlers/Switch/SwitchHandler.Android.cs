@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsOn(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateIsToggled(view);
+			handler.NativeView?.UpdateIsOn(view);
 		}
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
