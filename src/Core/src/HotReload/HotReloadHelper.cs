@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.HotReload
 {
 	public static class MauiHotReloadHelper
 	{
-		static IMauiServiceCollection? HandlerService;
+		static IMauiServiceCollection HandlerService;
 		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
 		public static void Init(IMauiServiceCollection handlerService)
 		{
@@ -134,7 +135,7 @@ namespace Microsoft.Maui.HotReload
 
 		public static void TriggerReload()
 		{
-			List<IHotReloadableView>? roots = null;
+			List<IHotReloadableView> roots = null;
 			while (roots == null)
 			{
 				try
