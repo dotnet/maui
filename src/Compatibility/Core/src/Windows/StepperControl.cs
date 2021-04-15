@@ -225,6 +225,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateButtonBackgroundColor(Color value)
 		{
+			if (value == null)
+			{
+				return;
+			}
+
 			WBrush brush = value.ToBrush();
 			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
 			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;
@@ -236,6 +241,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateButtonBackground(Brush value)
 		{
+			if (value == null)
+			{
+				return;
+			}
+
 			var brush = value.ToBrush();
 			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
 			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;

@@ -17,6 +17,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			
 			if (brush is SolidColorBrush solidColorBrush)
 			{
+				if (solidColorBrush.Color == null)
+				{
+					return null;
+				}
+
 				return solidColorBrush.Color.ToBrush();
 			}
 

@@ -1,3 +1,4 @@
+#nullable enable
 using Microsoft.Maui.Graphics;
 using System;
 #if __IOS__

@@ -3,12 +3,14 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : ViewHandler<IEntry, TextBox>
+	public partial class EntryHandler : ViewHandler<IEntry, MauiTextBox>
 	{
-		protected override TextBox CreateNativeView() => new TextBox();
+		protected override MauiTextBox CreateNativeView() =>  new MauiTextBox { Style = Microsoft.UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as Microsoft.UI.Xaml.Style };
 
-		[MissingMapper]
-		public static void MapText(IViewHandler handler, IEntry entry) { }
+		public static void MapText(EntryHandler handler, IEntry entry) 
+		{
+			handler.NativeView?.UpdateText(entry);
+		}
 
 		[MissingMapper]
 		public static void MapTextColor(IViewHandler handler, IEntry entry) { }

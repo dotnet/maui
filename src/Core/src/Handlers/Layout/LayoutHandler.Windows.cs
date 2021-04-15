@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LayoutHandler : ViewHandler<ILayout, LayoutView>
+	public partial class LayoutHandler : ViewHandler<ILayout, LayoutPanel>
 	{
 		public void Add(IView child)
 		{
@@ -45,14 +45,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		protected override LayoutView CreateNativeView()
+		protected override LayoutPanel CreateNativeView()
 		{
 			if (VirtualView == null)
 			{
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a LayoutViewGroup");
 			}
 
-			var view = new LayoutView
+			var view = new LayoutPanel
 			{
 				CrossPlatformMeasure = VirtualView.Measure,
 				CrossPlatformArrange = VirtualView.Arrange,

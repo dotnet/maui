@@ -1,3 +1,4 @@
+#nullable enable
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 
@@ -16,8 +17,8 @@ namespace Microsoft.Maui
 		public static void UpdateIsEnabled(this Control nativeControl, bool isEnabled) =>
 			nativeControl.IsEnabled = isEnabled;
 
-		public static void UpdateForegroundColor(this Control nativeControl, Color color) =>
-			nativeControl.UpdateProperty(Control.ForegroundProperty, color);
+		public static void UpdateForegroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null)
+			=> nativeControl.Foreground = color?.ToNative() ?? defaultBrush ?? nativeControl.Foreground;
 
 		public static void UpdateBackground(this Control nativeControl, IBrush? brush) =>
 			nativeControl.UpdateProperty(Control.BackgroundProperty, brush?.ToNative());

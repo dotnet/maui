@@ -1,3 +1,4 @@
+#nullable enable
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui
