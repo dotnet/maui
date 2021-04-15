@@ -69,9 +69,9 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateThumbColor(switchStub, Colors.Red, () => switchStub.ThumbColor = Colors.Red);
 		}
 
-		[Fact(DisplayName = "Updating Native Is On property updates Virtual View",
+		[Fact(DisplayName = "Updating Native Is On property updates Virtual View"
 #if __IOS__
-			  Skip = "iOS doesn't throw ValueChanged events when changing property via code."
+			  ,Skip = "iOS doesn't throw ValueChanged events when changing property via code."
 #endif
 			)]
 		public async Task NativeIsOnPropagatesToVirtual()

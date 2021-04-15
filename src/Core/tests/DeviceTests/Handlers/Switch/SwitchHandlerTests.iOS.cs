@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 		UISwitch GetNativeSwitch(SwitchHandler switchHandler) =>
 			(UISwitch)switchHandler.NativeView;
 
-		// This will not fire a ValueChanged/Toggle on native
+		// This will not fire a ValueChanged event on native
 		void SetIsOn(SwitchHandler switchHandler, bool value) =>
 			switchHandler.NativeView.SetState(value, true);
 
