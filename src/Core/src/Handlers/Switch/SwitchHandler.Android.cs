@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 			return size;
 		}
 
-		public static void MapIsToggled(SwitchHandler handler, ISwitch view)
+		public static void MapIsOn(SwitchHandler handler, ISwitch view)
 		{
 			handler.NativeView?.UpdateIsToggled(view);
 		}

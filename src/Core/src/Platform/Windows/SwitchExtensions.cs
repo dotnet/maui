@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateIsToggled(this ToggleSwitch toggleSwitch, ISwitch view)
 		{
-			toggleSwitch.IsOn = view.IsToggled;
+			toggleSwitch.IsOn = view.IsOn;
 		}
 	}
 }
