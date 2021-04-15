@@ -1,6 +1,4 @@
 #nullable enable
-using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
@@ -42,13 +40,13 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapBackground(ButtonHandler handler, IButton button) =>
-			handler.TypedNativeView?.UpdateBackground(button);
+			handler.NativeView?.UpdateBackground(button);
 
 		public static void MapText(ButtonHandler handler, IButton button) =>
-			handler.TypedNativeView?.UpdateText(button);
+			handler.NativeView?.UpdateText(button);
 
 		public static void MapTextColor(ButtonHandler handler, IButton button) =>
-			handler.TypedNativeView?.UpdateTextColor(button);
+			handler.NativeView?.UpdateTextColor(button);
 
 		[MissingMapper]
 		public static void MapCharacterSpacing(ButtonHandler handler, IButton button) { }
@@ -61,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapPadding(ButtonHandler handler, IButton button) =>
-			handler.TypedNativeView?.UpdatePadding(button, DefaultPadding);
+			handler.NativeView?.UpdatePadding(button, DefaultPadding);
 
 		void OnClick(object sender, UI.Xaml.RoutedEventArgs e)
 		{
