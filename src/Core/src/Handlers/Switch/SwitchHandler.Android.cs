@@ -68,12 +68,12 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateThumbColor(view, DefaultThumbColorStateList);
 		}
 
-		void OnCheckedChanged(bool isToggled)
+		void OnCheckedChanged(bool isOn)
 		{
 			if (VirtualView == null)
 				return;
 
-			VirtualView.IsToggled = isToggled;
+			VirtualView.IsOn = isOn;
 		}
 
 		class CheckedChangeListener : Java.Lang.Object, CompoundButton.IOnCheckedChangeListener

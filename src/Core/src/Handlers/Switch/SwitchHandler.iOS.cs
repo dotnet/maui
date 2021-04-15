@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			if (NativeView != null)
-				VirtualView.IsToggled = NativeView.On;
+				VirtualView.IsOn = NativeView.On;
 		}
 	}
 }
