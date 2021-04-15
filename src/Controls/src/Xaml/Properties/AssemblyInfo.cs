@@ -13,6 +13,12 @@ using Microsoft.Maui.Controls.Internals;
 
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui.Controls.Xaml")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui.Controls.Xaml")]
+
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui", AssemblyName="Microsoft.Maui")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui", AssemblyName="Microsoft.Maui")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui.Graphics", AssemblyName="Microsoft.Maui.Graphics")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui.Graphics", AssemblyName="Microsoft.Maui.Graphics")]
+
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "Microsoft.Maui.Controls.Xaml")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "System", AssemblyName = "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "System", AssemblyName = "System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
