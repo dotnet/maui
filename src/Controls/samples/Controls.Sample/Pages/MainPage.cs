@@ -84,6 +84,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(hiddenClearButtonEntry);
 
 			verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
+			verticalStack.Add(new Editor { Placeholder = "Green Text Color.", TextColor = Colors.Green });
 			var paddingButton = new Button
 			{
 				Padding = new Thickness(40),
