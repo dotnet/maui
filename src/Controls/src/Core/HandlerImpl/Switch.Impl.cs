@@ -14,5 +14,11 @@ namespace Microsoft.Maui.Controls
 				return null;
 			}
 		}
+
+		bool ISwitch.IsOn
+		{
+			get => IsToggled;
+			set => IsToggled = value;
+		}
 	}
 }

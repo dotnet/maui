@@ -32,9 +32,9 @@ namespace Microsoft.Maui.Handlers
 			DefaultThumbColor = UISwitch.Appearance.ThumbTintColor;
 		}
 
-		public static void MapIsToggled(SwitchHandler handler, ISwitch view)
+		public static void MapIsOn(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateIsToggled(view);
+			handler.NativeView?.UpdateIsOn(view);
 		}
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			if (NativeView != null)
-				VirtualView.IsToggled = NativeView.On;
+				VirtualView.IsOn = NativeView.On;
 		}
 	}
 }
