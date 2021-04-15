@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 			var editor = new EditorStub()
 			{
 				Text = "Test",
-				TextColor = Color.Yellow
+				TextColor = Colors.Yellow
 			};
 
 			await ValidatePropertyInitValue(editor, () => editor.TextColor, GetNativeTextColor, editor.TextColor);
