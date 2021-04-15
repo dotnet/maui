@@ -1,5 +1,5 @@
 using System;
-//using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -30,15 +30,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					Height = bitmap.PixelHeight
 				};
 			}
-			// WINUI
-			//else if (source is CanvasImageSource canvas)
-			//{
-			//	return new Size
-			//	{
-			//		Width = canvas.Size.Width,
-			//		Height = canvas.Size.Height
-			//	};
-			//}
+			else if (source is CanvasImageSource canvas)
+			{
+				return new Graphics.Size
+				{
+					Width = canvas.Size.Width,
+					Height = canvas.Size.Height
+				};
+			}
 
 			throw new InvalidCastException($"\"{source.GetType().FullName}\" is not supported.");
 		}
@@ -120,6 +119,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			catch (Exception ex)
 			{
 				Log.Warning("Image loading", $"Image load failed: {ex}");
+#if DEBUG
+				throw;
+#endif
 			}
 
 			return null;
