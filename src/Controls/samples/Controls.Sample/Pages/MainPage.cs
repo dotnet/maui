@@ -247,6 +247,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(CreateSampleCursorSelection());
 
 			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });
+			verticalStack.Add(new Entry { Text = "This text should be alignment at bottom", VerticalTextAlignment = TextAlignment.End });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
