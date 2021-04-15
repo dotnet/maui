@@ -28,6 +28,7 @@
     <PackageReference Include="Microsoft.ProjectReunion" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
 
   <!--<Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />-->
