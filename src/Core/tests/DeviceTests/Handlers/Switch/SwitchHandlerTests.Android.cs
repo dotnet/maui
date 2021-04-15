@@ -1,14 +1,16 @@
 using System;
 using System.Threading.Tasks;
+using Android.Graphics;
 using Microsoft.Maui.Handlers;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SwitchHandlerTests
 	{
 		ASwitch GetNativeSwitch(SwitchHandler switchHandler) =>
-			(ASwitch)switchHandler.View;
+			(ASwitch)switchHandler.NativeView;
 
 		bool GetNativeIsChecked(SwitchHandler switchHandler) =>
 			GetNativeSwitch(switchHandler).Checked;

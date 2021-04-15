@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 			var entry = new EntryStub()
 			{
 				Text = "Test",
-				TextColor = Color.Yellow
+				TextColor = Colors.Yellow
 			};
 
 			await ValidatePropertyInitValue(entry, () => entry.TextColor, GetNativeTextColor, entry.TextColor);
@@ -252,6 +253,114 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(0, eventFiredCount);
 		}
 
+		[Theory(DisplayName = "Validates Numeric Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), true)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateNumericKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsNumericKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Email Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), true)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateEmailKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsEmailKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Telephone Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), true)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateTelephoneKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsTelephoneKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Url Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), true)]
+		public async Task ValidateUrlKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsUrlKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Text Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), true)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateTextKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsTextKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Chat Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), true)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateChatKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entryStub = new EntryStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsChatKeyboard, expected);
+		}
+
 		[Theory(DisplayName = "MaxLength Initializes Correctly")]
 		[InlineData(2)]
 		[InlineData(5)]
@@ -272,6 +381,27 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(expectedText, nativeText);
 			Assert.Equal(expectedText, entry.Text);
+		}
+
+		[Fact(DisplayName = "Negative MaxLength Does Not Clip")]
+		public async Task NegativeMaxLengthDoesNotClip()
+		{
+			const string text = "Lorem ipsum dolor sit amet";
+
+			var entry = new EntryStub()
+			{
+				MaxLength = -1,
+			};
+
+			var nativeText = await GetValueAsync(entry, handler =>
+			{
+				entry.Text = text;
+
+				return GetNativeText(handler);
+			});
+
+			Assert.Equal(text, nativeText);
+			Assert.Equal(text, entry.Text);
 		}
 
 		[Theory(DisplayName = "MaxLength Clips Native Text Correctly")]
@@ -298,6 +428,118 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(expectedText, nativeText);
 			Assert.Equal(expectedText, entry.Text);
+		}
+
+		[Theory(DisplayName = "Updating Font Does Not Affect CharacterSpacing")]
+		[InlineData(10, 20)]
+		[InlineData(20, 10)]
+		public async Task FontDoesNotAffectCharacterSpacing(double initialSize, double newSize)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				CharacterSpacing = 5,
+				Font = Font.SystemFontOfSize(initialSize)
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeCharacterSpacing,
+				nameof(IEntry.Font),
+				() => entry.Font = Font.SystemFontOfSize(newSize));
+		}
+
+		[Theory(DisplayName = "Updating Text Does Not Affect CharacterSpacing")]
+		[InlineData("Short", "Longer Text")]
+		[InlineData("Long thext here", "Short")]
+		public async Task TextDoesNotAffectCharacterSpacing(string initialText, string newText)
+		{
+			var entry = new EntryStub
+			{
+				Text = initialText,
+				CharacterSpacing = 5,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeCharacterSpacing,
+				nameof(IEntry.Text),
+				() => entry.Text = newText);
+		}
+
+		[Theory(DisplayName = "Updating Font Does Not Affect HorizontalTextAlignment")]
+		[InlineData(10, 20)]
+		[InlineData(20, 10)]
+		public async Task FontDoesNotAffectHorizontalTextAlignment(double initialSize, double newSize)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				HorizontalTextAlignment = TextAlignment.Center,
+				Font = Font.SystemFontOfSize(initialSize),
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeHorizontalTextAlignment,
+				nameof(IEntry.Font),
+				() => entry.Font = Font.SystemFontOfSize(newSize));
+		}
+
+		[Theory(DisplayName = "Updating Text Does Not Affect HorizontalTextAlignment")]
+		[InlineData("Short", "Longer Text")]
+		[InlineData("Long thext here", "Short")]
+		public async Task TextDoesNotAffectHorizontalTextAlignment(string initialText, string newText)
+		{
+			var entry = new EntryStub
+			{
+				Text = initialText,
+				HorizontalTextAlignment = TextAlignment.Center,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeHorizontalTextAlignment,
+				nameof(IEntry.Text),
+				() => entry.Text = newText);
+		}
+
+		[Theory(DisplayName = "Updating MaxLength Does Not Affect HorizontalTextAlignment")]
+		[InlineData(5, 20)]
+		[InlineData(20, 5)]
+		public async Task MaxLengthDoesNotAffectHorizontalTextAlignment(int initialSize, int newSize)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				HorizontalTextAlignment = TextAlignment.Center,
+				MaxLength = initialSize,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeHorizontalTextAlignment,
+				nameof(IEntry.MaxLength),
+				() => entry.MaxLength = newSize);
+		}
+
+		[Theory(DisplayName = "Updating CharacterSpacing Does Not Affect HorizontalTextAlignment")]
+		[InlineData(1, 5)]
+		[InlineData(5, 1)]
+		public async Task CharacterSpacingDoesNotAffectHorizontalTextAlignment(int initialSize, int newSize)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				HorizontalTextAlignment = TextAlignment.Center,
+				CharacterSpacing = initialSize,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeHorizontalTextAlignment,
+				nameof(IEntry.CharacterSpacing),
+				() => entry.CharacterSpacing = newSize);
 		}
 	}
 }

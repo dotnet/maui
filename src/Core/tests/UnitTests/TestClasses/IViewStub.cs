@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Tests
+namespace Microsoft.Maui.UnitTests
 {
 	interface IViewStub : IView
 	{

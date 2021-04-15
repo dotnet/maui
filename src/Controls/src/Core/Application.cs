@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -159,6 +160,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 		public OSAppTheme RequestedTheme => UserAppTheme == OSAppTheme.Unspecified ? Device.PlatformServices.RequestedTheme : UserAppTheme;
+
+		public static Color AccentColor { get; set; }
 
 		public event EventHandler<AppThemeChangedEventArgs> RequestedThemeChanged
 		{

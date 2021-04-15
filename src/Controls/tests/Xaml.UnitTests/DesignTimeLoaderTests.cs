@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -170,7 +171,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var page = (ContentPage)XamlLoader.Create(xaml, true);
 			Assert.That(page.Content, Is.TypeOf<Button>());
-			Assert.That(page.Content.BackgroundColor, Is.EqualTo(Color.Red));
+			Assert.That(page.Content.BackgroundColor, Is.EqualTo(Colors.Red));
 		}
 
 		[Test]
@@ -201,7 +202,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var myButton = (Button)page.Content;
 
-			Assert.That(myButton.BackgroundColor, Is.EqualTo(Color.Red));
+			Assert.That(myButton.BackgroundColor, Is.EqualTo(Colors.Red));
 		}
 
 		[Test]
@@ -232,7 +233,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var myButton = (Button)page.Content;
 
 			//Button Style shouldn't apply to MyCustomButton
-			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Color.Red));
+			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Colors.Red));
 		}
 
 		[Test]
@@ -264,7 +265,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var myButton = (Button)page.Content;
 
 			//MyCustomButton Style should not be applied
-			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Color.Red));
+			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Colors.Red));
 		}
 
 		[Test]
@@ -295,7 +296,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var myButton = (Button)page.Content;
 
 			//Button Style should apply to MyCustomButton
-			Assert.That(myButton.BackgroundColor, Is.EqualTo(Color.Red));
+			Assert.That(myButton.BackgroundColor, Is.EqualTo(Colors.Red));
 		}
 
 		[Test]
@@ -391,7 +392,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var page = (ContentPage)XamlLoader.Create(xaml, true);
 			Assert.That(page.Content, Is.TypeOf<Button>());
-			Assert.That(page.Content.BackgroundColor, Is.EqualTo(Color.HotPink));
+			Assert.That(page.Content.BackgroundColor, Is.EqualTo(Colors.HotPink));
 		}
 
 		[Test]
@@ -447,7 +448,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var myButton = (Button)page.Content;
 
-			Assert.That(myButton.BackgroundColor, Is.EqualTo(Color.Blue));
+			Assert.That(myButton.BackgroundColor, Is.EqualTo(Colors.Blue));
 		}
 
 		[Test]
@@ -489,8 +490,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var button = ((StackLayout)page.Content).Children[0];
 			var myButton = ((StackLayout)page.Content).Children[1];
 
-			Assert.That(button.BackgroundColor, Is.EqualTo(Color.Red));
-			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Color.Red));
+			Assert.That(button.BackgroundColor, Is.EqualTo(Colors.Red));
+			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Colors.Red));
 		}
 
 		[Test]
@@ -522,7 +523,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var myButton = (Button)page.Content;
 
-			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Color.Blue));
+			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Colors.Blue));
 		}
 
 		[Test]

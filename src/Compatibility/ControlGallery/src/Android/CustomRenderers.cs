@@ -21,6 +21,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Graphics;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 using NestedScrollView = AndroidX.Core.Widget.NestedScrollView;
 using AMenuItemCompat = AndroidX.Core.View.MenuItemCompat;

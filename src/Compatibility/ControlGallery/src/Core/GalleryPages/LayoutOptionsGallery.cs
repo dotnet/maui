@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			var mainLayout = new StackLayout
 			{
-				BackgroundColor = Color.Silver,
+				BackgroundColor = Colors.Silver,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				Children = {
 					BuildLayoutRegion (),
@@ -81,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			var result = new StackLayout
 			{
-				BackgroundColor = Color.Gray,
+				BackgroundColor = Colors.Gray,
 				Children = {
 					horizontalButton,
 					verticalButton

@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.ComponentModel;
-using System.Drawing;
+using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new UISwitch(RectangleF.Empty));
+					SetNativeControl(new UISwitch(CGRect.Empty));
 					Control.ValueChanged += OnControlValueChanged;
 				}
 
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (Element != null)
 			{
-				if (Element.OnColor == Color.Default)
+				if (Element.OnColor == null)
 					Control.OnTintColor = _defaultOnColor;
 				else
 					Control.OnTintColor = Element.OnColor.ToUIColor();
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			Color thumbColor = Element.ThumbColor;
-			Control.ThumbTintColor = thumbColor.IsDefault ? _defaultThumbColor : thumbColor.ToUIColor();
+			Control.ThumbTintColor = thumbColor?.ToUIColor() ?? _defaultThumbColor;
 		}
 
 		[PortHandler]

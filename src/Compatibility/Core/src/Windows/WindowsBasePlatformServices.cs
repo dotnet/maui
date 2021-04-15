@@ -22,6 +22,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Controls.Internals;
 using IOPath = System.IO.Path;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -138,7 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public Color GetNamedColor(string name)
 		{
 			if (!Microsoft.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
-				return Color.Default;
+				return KnownColor.Default;
 
 			return ((Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToFormsColor();
 		}

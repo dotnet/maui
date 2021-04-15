@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
@@ -55,27 +56,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeTextAlignment(handler)
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
 			values.NativeViewValue.AssertHasFlag(expectedValue);
-		}
-
-		[Fact(DisplayName = "Negative MaxLines value with wrap is correct")]
-		public async Task NegativeMaxValueWithWrapIsCorrect()
-		{
-			var label = new LabelStub()
-			{
-				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-				MaxLines = -1,
-				LineBreakMode = LineBreakMode.WordWrap,
-			};
-
-			var nativeValue = await GetValueAsync(label, GetNativeMaxLines);
-
-			Assert.Equal(0, nativeValue);
 		}
 
 		[Fact(DisplayName = "Padding Initializes Correctly")]
@@ -120,31 +106,6 @@ namespace Microsoft.Maui.DeviceTests
 			values.AttributedText.AssertHasUnderline();
 		}
 
-		[Fact(DisplayName = "LineHeight Initializes Correctly")]
-		public async Task LineHeightInitializesCorrectly()
-		{
-			var xplatLineHeight = 1.5d;
-
-			var labelHandler = new LabelStub()
-			{
-				Text = "test",
-				LineHeight = xplatLineHeight
-			};
-
-			var values = await GetValueAsync(labelHandler, (handler) =>
-			{
-				return new
-				{
-					ViewValue = labelHandler.LineHeight,
-					NativeViewValue = GetNativeLineHeight(handler)
-				};
-			});
-
-			nfloat expectedValue = new nfloat(1.5f);
-			Assert.Equal(xplatLineHeight, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
-		}
-
 		[Fact]
 		[Category(TestCategory.TextFormatting)]
 		public async Task CanSetAlignmentAndLineHeight()
@@ -166,49 +127,11 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedLineHeight = xplatLineHeight;
 
 			var handler = await CreateHandlerAsync(label);
-			var actualAlignment = await InvokeOnMainThreadAsync(() => GetNativeTextAlignment(handler));
+			var actualAlignment = await InvokeOnMainThreadAsync(() => GetNativeHorizontalTextAlignment(handler));
 			var actualLineHeight = await InvokeOnMainThreadAsync(() => GetNativeLineHeight(handler));
 
 			Assert.Equal(expectedLineHeight, actualLineHeight);
 			Assert.Equal(expectedAlignment, actualAlignment);
-		}
-
-		[Fact]
-		[Category(TestCategory.TextFormatting)]
-		public async Task LineHeightAppliedWhenTextAdded()
-		{
-			double xplatLineHeight = 2;
-			var expectedLineHeight = xplatLineHeight;
-
-			var label = new LabelStub() { LineHeight = xplatLineHeight }; // No text set
-
-			var handler = await CreateHandlerAsync(label);
-
-			label.Text = "Now we have text";
-			await InvokeOnMainThreadAsync(() => handler.UpdateValue(nameof(label.Text)));
-
-			var actualLineHeight = await InvokeOnMainThreadAsync(() => GetNativeLineHeight(handler));
-
-			Assert.Equal(expectedLineHeight, actualLineHeight);
-		}
-
-		[Fact]
-		[Category(TestCategory.TextFormatting)]
-		public async Task CharacterSpacingAppliedWhenTextAdded()
-		{
-			double xplatCharacterSpacing = 1.5;
-			var expectedCharacterSpacing = xplatCharacterSpacing;
-
-			var label = new LabelStub() { CharacterSpacing = xplatCharacterSpacing }; // No text set
-
-			var handler = await CreateHandlerAsync(label);
-
-			label.Text = "Now we have text";
-			await InvokeOnMainThreadAsync(() => handler.UpdateValue(nameof(label.Text)));
-
-			var actualCharacterSpacing = await InvokeOnMainThreadAsync(() => GetNativeCharacterSpacing(handler));
-
-			Assert.Equal(expectedCharacterSpacing, actualCharacterSpacing);
 		}
 
 		[Fact]
@@ -251,31 +174,8 @@ namespace Microsoft.Maui.DeviceTests
 			attributedText.AssertHasUnderline();
 		}
 
-		[Fact]
-		[Category(TestCategory.TextFormatting)]
-		public async Task LineHeightSurvivesCharacterSpacing()
-		{
-			double xplatCharacterSpacing = 1.5;
-			var expectedCharacterSpacing = xplatCharacterSpacing;
-			double xplatLineHeight = 2;
-			var expectedLineHeight = xplatLineHeight;
-
-			var label = new LabelStub() { Text = "test", LineHeight = xplatLineHeight };
-
-			var handler = await CreateHandlerAsync(label);
-
-			label.CharacterSpacing = xplatCharacterSpacing;
-			await InvokeOnMainThreadAsync(() => handler.UpdateValue(nameof(label.CharacterSpacing)));
-
-			var actualLineHeight = await InvokeOnMainThreadAsync(() => GetNativeLineHeight(handler));
-			var actualCharacterSpacing = await InvokeOnMainThreadAsync(() => GetNativeCharacterSpacing(handler));
-
-			Assert.Equal(expectedLineHeight, actualLineHeight);
-			Assert.Equal(expectedCharacterSpacing, actualCharacterSpacing);
-		}
-
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>
-			(UILabel)labelHandler.View;
+			(UILabel)labelHandler.NativeView;
 
 		string GetNativeText(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Text;
@@ -311,7 +211,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		UITextAlignment GetNativeTextAlignment(LabelHandler labelHandler) =>
+		UITextAlignment GetNativeHorizontalTextAlignment(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).TextAlignment;
 
 		Task ValidateNativeBackgroundColor(ILabel label, Color color)
@@ -325,7 +225,7 @@ namespace Microsoft.Maui.DeviceTests
 		UILineBreakMode GetNativeLineBreakMode(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).LineBreakMode;
 
-		nfloat GetNativeLineHeight(LabelHandler labelHandler)
+		double GetNativeLineHeight(LabelHandler labelHandler)
 		{
 			var attrText = GetNativeLabel(labelHandler).AttributedText;
 

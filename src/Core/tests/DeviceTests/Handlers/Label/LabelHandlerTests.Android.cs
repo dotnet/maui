@@ -9,6 +9,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
 using ATextAlignemnt = Android.Views.TextAlignment;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeTextAlignment(handler)
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
@@ -72,21 +73,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, textAlignment);
 		}
 
-		[Fact(DisplayName = "Negative MaxLines value with wrap is correct")]
-		public async Task NegativeMaxValueWithWrapIsCorrect()
-		{
-			var label = new LabelStub()
-			{
-				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-				MaxLines = -1,
-				LineBreakMode = LineBreakMode.WordWrap
-			};
-
-			var nativeValue = await GetValueAsync(label, GetNativeMaxLines);
-
-			Assert.Equal(int.MaxValue, nativeValue);
-		}
-
 		[Fact(DisplayName = "Padding Initializes Correctly")]
 		public async Task PaddingInitializesCorrectly()
 		{
@@ -99,7 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync(label);
 			var (left, top, right, bottom) = GetNativePadding((TextView)handler.NativeView);
 
-			var context = handler.View.Context;
+			var context = handler.NativeView.Context;
 
 			var expectedLeft = context.ToPixels(5);
 			var expectedTop = context.ToPixels(10);
@@ -112,7 +98,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedBottom, bottom);
 		}
 
-		[Fact(DisplayName = "[LabelHandler] TextDecorations Initializes Correctly")]
+		[Fact(DisplayName = "TextDecorations Initializes Correctly")]
 		public async Task TextDecorationsInitializesCorrectly()
 		{
 			var xplatTextDecorations = TextDecorations.Underline;
@@ -137,33 +123,8 @@ namespace Microsoft.Maui.DeviceTests
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
-		[Fact(DisplayName = "LineHeight Initializes Correctly")]
-		public async Task LineHeightInitializesCorrectly()
-		{
-			var xplatLineHeight = 1.5d;
-
-			var labelHandler = new LabelStub()
-			{
-				LineHeight = xplatLineHeight
-			};
-
-			var values = await GetValueAsync(labelHandler, (handler) =>
-			{
-				return new
-				{
-					ViewValue = labelHandler.LineHeight,
-					NativeViewValue = GetNativeLineHeight(handler)
-				};
-			});
-
-			float expectedValue = 1.5f;
-
-			Assert.Equal(xplatLineHeight, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
-		}
-
 		TextView GetNativeLabel(LabelHandler labelHandler) =>
-			(TextView)labelHandler.View;
+			(TextView)labelHandler.NativeView;
 
 		string GetNativeText(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Text;
@@ -183,7 +144,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Typeface.IsItalic;
 
-		(GravityFlags gravity, ATextAlignemnt alignment) GetNativeTextAlignment(LabelHandler labelHandler)
+		(GravityFlags gravity, ATextAlignemnt alignment) GetNativeHorizontalTextAlignment(LabelHandler labelHandler)
 		{
 			var textView = GetNativeLabel(labelHandler);
 			return (textView.Gravity, textView.TextAlignment);

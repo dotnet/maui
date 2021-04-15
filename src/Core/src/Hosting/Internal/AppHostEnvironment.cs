@@ -1,9 +1,10 @@
+#nullable enable
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
-	internal class AppHostEnvironment : IHostEnvironment
+	class AppHostEnvironment : IHostEnvironment
 	{
 		public AppHostEnvironment()
 		{

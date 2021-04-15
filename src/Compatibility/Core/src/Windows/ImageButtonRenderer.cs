@@ -9,6 +9,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 using WThickness = Microsoft.UI.Xaml.Thickness;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -78,8 +79,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 					_image = new Microsoft.UI.Xaml.Controls.Image()
 					{
-						VerticalAlignment = VerticalAlignment.Center,
-						HorizontalAlignment = HorizontalAlignment.Center,
+						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
+						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
 						Stretch = WStretch.Uniform,
 					};
 
@@ -92,7 +93,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					_formsButton.Loaded += ButtonOnLoaded;
 
 					SetNativeControl(_formsButton);
-
 				}
 				else
 				{
@@ -251,14 +251,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateImageButtonBackground()
 		{
 			if (Brush.IsNullOrEmpty(Element.Background))
-				Control.BackgroundColor = Element.BackgroundColor != Color.Default ? Element.BackgroundColor.ToBrush() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+				Control.BackgroundColor = Element.BackgroundColor.IsNotDefault() ? Element.BackgroundColor.ToBrush() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
 			else
 				Control.BackgroundColor = Element.Background.ToBrush();
 		}
 
 		void UpdateBorderColor()
 		{
-			Control.BorderBrush = Element.BorderColor != Color.Default ? Element.BorderColor.ToBrush() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
+			Control.BorderBrush = Element.BorderColor.IsNotDefault() ? Element.BorderColor.ToBrush() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
 		}
 
 		void UpdateBorderRadius()

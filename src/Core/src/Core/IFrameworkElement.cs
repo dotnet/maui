@@ -1,4 +1,7 @@
-﻿using Microsoft.Maui.Primitives;
+#nullable enable
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
+
 
 namespace Microsoft.Maui
 {
@@ -100,5 +103,10 @@ namespace Microsoft.Maui
 		/// Determines the vertical aspect of this element's arrangement in a container
 		/// </summary>
 		LayoutAlignment VerticalLayoutAlignment { get; }
+
+		/// <summary>
+		/// Adds semantics to every FrameworkElement for accessibility
+		/// </summary>
+		Semantics Semantics { get; }
 	}
 }

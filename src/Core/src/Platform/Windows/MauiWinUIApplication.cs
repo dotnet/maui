@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.LifecycleEvents;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
@@ -42,6 +43,8 @@ namespace Microsoft.Maui
 			MainWindow.Content = canvas;
 
 			MainWindow.Activate();
+
+			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
 
 		Canvas CreateRootContainer()

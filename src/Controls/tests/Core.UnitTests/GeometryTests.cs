@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
+using Rect = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

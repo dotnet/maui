@@ -1,4 +1,4 @@
-using CoreGraphics;
+﻿using CoreGraphics;
 using System.ComponentModel;
 using System.Drawing;
 using UIKit;
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		void UpdateColor()
 		{
-			Control.Color = Element.Color == Color.Default ? null : Element.Color.ToUIColor();
+			Control.Color = Element.Color == null ? null : Element.Color.ToUIColor();
 		}
 
 		[PortHandler]

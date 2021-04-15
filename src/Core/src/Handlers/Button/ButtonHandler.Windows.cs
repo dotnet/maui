@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
@@ -5,7 +6,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : AbstractViewHandler<IButton, Button>
+	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
 		static UI.Xaml.Thickness? DefaultPadding;
 		static UI.Xaml.Media.Brush? DefaultForeground;
@@ -44,33 +45,35 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
+		// This is a Windows-specific mapping
 		public static void MapBackgroundColor(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateBackgroundColor(button, DefaultBackground);
+			handler.NativeView?.UpdateBackgroundColor(button, DefaultBackground);
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateText(button);
+			handler.NativeView?.UpdateText(button);
 		}
 
 		public static void MapTextColor(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateTextColor(button, DefaultForeground);
+			handler.NativeView?.UpdateTextColor(button, DefaultForeground);
 		}
+
+		[MissingMapper]
+		public static void MapCharacterSpacing(ButtonHandler handler, IButton button) { }
 
 		public static void MapFont(ButtonHandler handler, IButton button)
 		{
-			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-			handler.TypedNativeView?.UpdateFont(button, fontManager);
+			handler.NativeView?.UpdateFont(button, fontManager);
 		}
 
 		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdatePadding(button, DefaultPadding);
+			handler.NativeView?.UpdatePadding(button, DefaultPadding);
 		}
 
 		void OnClick(object sender, UI.Xaml.RoutedEventArgs e)

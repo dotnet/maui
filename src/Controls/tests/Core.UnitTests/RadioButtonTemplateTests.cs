@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -13,8 +14,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				yield return new object[] { Frame.VerticalOptionsProperty, LayoutOptions.End };
 				yield return new object[] { Frame.HorizontalOptionsProperty, LayoutOptions.End };
-				yield return new object[] { Frame.BackgroundColorProperty, Color.Red };
-				yield return new object[] { Frame.BorderColorProperty, Color.Magenta };
+				yield return new object[] { Frame.BackgroundColorProperty, Colors.Red };
+				yield return new object[] { Frame.BorderColorProperty, Colors.Magenta };
 				yield return new object[] { Frame.MarginProperty, new Thickness(1, 2, 3, 4) };
 				yield return new object[] { Frame.OpacityProperty, 0.67 };
 				yield return new object[] { Frame.RotationProperty, 0.3 };
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				yield return new object[] { RadioButton.VerticalOptionsProperty, LayoutOptions.End };
 				yield return new object[] { RadioButton.HorizontalOptionsProperty, LayoutOptions.End };
-				yield return new object[] { RadioButton.BackgroundColorProperty, Color.Red };
+				yield return new object[] { RadioButton.BackgroundColorProperty, Colors.Red };
 				yield return new object[] { RadioButton.MarginProperty, new Thickness(1, 2, 3, 4) };
 				yield return new object[] { RadioButton.OpacityProperty, 0.67 };
 				yield return new object[] { RadioButton.RotationProperty, 0.3 };

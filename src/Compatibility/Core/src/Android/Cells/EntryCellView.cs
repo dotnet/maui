@@ -6,6 +6,7 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.Core.Widget;
 using Java.Lang;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

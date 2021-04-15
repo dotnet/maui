@@ -25,6 +25,8 @@ namespace Microsoft.Maui
 				picker.SetDate(datePicker.Date.ToNSDate(), false);
 
 			nativeDatePicker.Text = datePicker.Date.ToString(datePicker.Format);
+
+			nativeDatePicker.UpdateCharacterSpacing(datePicker);
 		}
 
 		public static void UpdateMinimumDate(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)

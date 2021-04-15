@@ -1,6 +1,7 @@
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Tests
+namespace Microsoft.Maui.UnitTests
 {
 	class ButtonStub : View, IButton
 	{

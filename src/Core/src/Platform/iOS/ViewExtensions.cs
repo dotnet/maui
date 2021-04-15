@@ -23,12 +23,27 @@ namespace Microsoft.Maui
 
 			var color = view.BackgroundColor;
 
-			if (!color.IsDefault)
+			if (color != null)
 				nativeView.BackgroundColor = color.ToNative();
 		}
 
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
 			nativeView.AccessibilityIdentifier = view.AutomationId;
+
+		public static void UpdateSemantics(this UIView nativeView, IView view)
+		{
+			var semantics = view.Semantics;
+			if (semantics == null)
+				return;
+
+			nativeView.AccessibilityLabel = semantics.Description;
+			nativeView.AccessibilityHint = semantics.Hint;
+
+			if (semantics.IsHeading)
+				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;
+			else
+				nativeView.AccessibilityTraits &= ~UIAccessibilityTrait.Header;
+		}
 
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView
 		{

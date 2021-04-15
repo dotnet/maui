@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
@@ -36,6 +37,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public LayoutAlignment HorizontalLayoutAlignment { get; set; }
 
 		public LayoutAlignment VerticalLayoutAlignment { get; set; }
+
+		public Semantics Semantics { get; set; } = new Semantics();
 
 		public void Arrange(Rectangle bounds)
 		{

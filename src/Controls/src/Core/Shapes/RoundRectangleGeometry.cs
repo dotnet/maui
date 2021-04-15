@@ -1,3 +1,5 @@
+using Microsoft.Maui.Graphics;
+using Rect = Microsoft.Maui.Graphics.Rectangle;
 namespace Microsoft.Maui.Controls.Shapes
 {
 	public class RoundRectangleGeometry : GeometryGroup

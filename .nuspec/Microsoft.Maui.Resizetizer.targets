@@ -68,6 +68,7 @@
         <ProcessMauiFontsDependsOnTargets>
             $(ProcessMauiFontsDependsOnTargets);
             ResizetizeCollectItems;
+            ProcessMauiAssets;
         </ProcessMauiFontsDependsOnTargets>
     </PropertyGroup>
 
@@ -148,10 +149,8 @@
         <ItemGroup>
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' == ''" />
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
-        </ItemGroup>
-
-        <ItemGroup>
-            <MauiItem Include="@(MauiFont)" ItemGroupName="MauiFont" />
+            <MauiItem Include="@(MauiFont)"  ItemGroupName="MauiFont" />
+            <MauiItem Include="@(MauiAsset)" ItemGroupName="MauiAsset" />
         </ItemGroup>
 
         <ConvertToAbsolutePath Paths="@(MauiItem)">
@@ -179,6 +178,7 @@
         <MSBuild
             Targets="GetMauiItems"
             Projects="@(ProjectReference)"
+            BuildInParallel="true"
             SkipNonexistentProjects="true"
             SkipNonexistentTargets="true">
             <Output
@@ -190,14 +190,13 @@
             <MauiImage
                 Include="@(ImportedMauiItem)"
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiImage'" />
-        </ItemGroup>
-
-        <ItemGroup>
             <MauiFont
                 Include="@(ImportedMauiItem)"
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiFont'" />
+            <MauiAsset
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiAsset'" />
         </ItemGroup>
-
 
         <!-- Write out item spec and metadata to a file we can use as an inputs for the resize target -->
         <!-- This allows us to invalidate the build based on not just input image files changing but project item metadata as well -->
@@ -213,6 +212,18 @@
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 
+    </Target>
+
+    <Target Name="ProcessMauiAssets">
+        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+            <AndroidAsset Include="@(MauiAsset)" Link="%(FileName)%(Extension)" />
+        </ItemGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
+            <Content Include="@(MauiAsset)" Link="%(FileName)%(Extension)" />
+        </ItemGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWinUIApp)' == 'True'">
+            <ContentWithTargetPath Include="@(MauiAsset)" TargetPath="Assets\%(Filename)%(Extension)" />
+        </ItemGroup>
     </Target>
 
     <Target Name="ProcessMauiFonts"

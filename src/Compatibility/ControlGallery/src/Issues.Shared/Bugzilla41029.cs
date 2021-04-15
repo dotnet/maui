@@ -2,7 +2,7 @@
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var stackLayout = new StackLayout
 			{
 				VerticalOptions = LayoutOptions.Center,
-				BackgroundColor = Color.Beige
+				BackgroundColor = Colors.Beige
 			};
 
 			var label = new Label

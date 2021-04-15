@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -46,8 +47,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			checkResult = new Button
 			{
 				Text = "Check Result",
-				BackgroundColor = Color.DarkRed,
-				TextColor = Color.White,
+				BackgroundColor = Colors.DarkRed,
+				TextColor = Colors.White,
 				Command = new Command(() =>
 				{
 					GC.Collect();
@@ -60,12 +61,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					if (wref[0].IsAlive || wref[1].IsAlive)
 					{
 						Title = result.Text = "Failed";
-						result.TextColor = Color.Red;
+						result.TextColor = Colors.Red;
 					}
 					else
 					{
 						Title = result.Text = "Success";
-						result.TextColor = Color.DarkGreen;
+						result.TextColor = Colors.DarkGreen;
 					}
 					wref.Clear();
 				})
@@ -85,17 +86,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 							result,
 							MakeButton("Empty page", () => null),
 							MakeButton(nameof(ActivityIndicator), () => new ActivityIndicator { IsRunning = true }),
-							MakeButton(nameof(BoxView), () => new BoxView { Color = Color.Azure }),
+							MakeButton(nameof(BoxView), () => new BoxView { Color = Colors.Azure }),
 							MakeButton(nameof(Button), () => new Button { Text = "Button" }),
 							MakeButton(nameof(DatePicker), () => new DatePicker ()),
 							MakeButton(nameof(Label), () => new Label { Text = "Label" }),
 							MakeButton(nameof(Entry), () => new Entry { Text = "Entry" }),
 							MakeButton(nameof(Editor), () => new Editor { Text = "Editor" }),
-							MakeButton(nameof(Image), () => new Image { BackgroundColor = Color.Azure, HeightRequest = 50 }),
-							MakeButton(nameof(ImageButton), () => new ImageButton { BackgroundColor = Color.Azure, HeightRequest = 50 }),
-							MakeButton(nameof(WebView), () => new WebView { BackgroundColor = Color.Azure, HeightRequest = 50 }),
-							MakeButton(nameof(ProgressBar), () => new ProgressBar { BackgroundColor = Color.Azure, Progress = 0.5 }),
-							MakeButton(nameof(Picker), () => new Picker { BackgroundColor = Color.Azure, HeightRequest = 50 }),
+							MakeButton(nameof(Image), () => new Image { BackgroundColor = Colors.Azure, HeightRequest = 50 }),
+							MakeButton(nameof(ImageButton), () => new ImageButton { BackgroundColor = Colors.Azure, HeightRequest = 50 }),
+							MakeButton(nameof(WebView), () => new WebView { BackgroundColor = Colors.Azure, HeightRequest = 50 }),
+							MakeButton(nameof(ProgressBar), () => new ProgressBar { BackgroundColor = Colors.Azure, Progress = 0.5 }),
+							MakeButton(nameof(Picker), () => new Picker { BackgroundColor = Colors.Azure, HeightRequest = 50 }),
 							MakeButton(nameof(OpenGLView), () => new OpenGLView ()),
 							MakeButton(nameof(SearchBar), () => new SearchBar ()),
 							MakeButton(nameof(Slider), () => new Slider ()),

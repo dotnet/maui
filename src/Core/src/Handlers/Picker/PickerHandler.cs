@@ -4,9 +4,11 @@
 	{
 		public static PropertyMapper<IPicker, PickerHandler> PickerMapper = new PropertyMapper<IPicker, PickerHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(IPicker.Title)] = MapTitle,
+			[nameof(IPicker.CharacterSpacing)] = MapCharacterSpacing,
+			[nameof(IPicker.Font)] = MapFont,
 			[nameof(IPicker.SelectedIndex)] = MapSelectedIndex,
-			[nameof(IPicker.CharacterSpacing)] = MapCharacterSpacing
+			[nameof(IPicker.TextColor)] = MapTextColor,
+			[nameof(IPicker.Title)] = MapTitle,
 		};
 
 		public PickerHandler() : base(PickerMapper)

@@ -1,13 +1,12 @@
 using System;
-using Android.Views;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-using AbstractViewHandler = Microsoft.Maui.Handlers.AbstractViewHandler<Microsoft.Maui.IView, Android.Views.View>;
+using Microsoft.Maui.Graphics;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Android.Views.View>;
 using VisualElementChangedEventArgs = Microsoft.Maui.Controls.Compatibility.Platform.Android.VisualElementChangedEventArgs;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
-	public class RendererToHandlerShim : AbstractViewHandler
+	public class RendererToHandlerShim : ViewHandler
 	{
 		internal IVisualElementRenderer VisualElementRenderer { get; private set; }
 

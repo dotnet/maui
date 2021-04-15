@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Maps
 {
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Controls.Maps
 			nameof(StrokeColor),
 			typeof(Color),
 			typeof(MapElement),
-			Color.Default);
+			null);
 
 		public static readonly BindableProperty StrokeWidthProperty = BindableProperty.Create(
 			nameof(StrokeWidth),

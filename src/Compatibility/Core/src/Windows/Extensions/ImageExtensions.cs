@@ -1,5 +1,5 @@
 using System;
-//using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -16,29 +16,28 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	internal static class ImageExtensions
 	{
-		public static Size GetImageSourceSize(this WImageSource source)
+		public static Graphics.Size GetImageSourceSize(this WImageSource source)
 		{
 			if (source is null)
 			{
-				return Size.Zero;
+				return Graphics.Size.Zero;
 			}
 			else if (source is BitmapSource bitmap)
 			{
-				return new Size
+				return new Graphics.Size
 				{
 					Width = bitmap.PixelWidth,
 					Height = bitmap.PixelHeight
 				};
 			}
-			// WINUI
-			//else if (source is CanvasImageSource canvas)
-			//{
-			//	return new Size
-			//	{
-			//		Width = canvas.Size.Width,
-			//		Height = canvas.Size.Height
-			//	};
-			//}
+			else if (source is CanvasImageSource canvas)
+			{
+				return new Graphics.Size
+				{
+					Width = canvas.Size.Width,
+					Height = canvas.Size.Height
+				};
+			}
 
 			throw new InvalidCastException($"\"{source.GetType().FullName}\" is not supported.");
 		}
@@ -120,6 +119,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			catch (Exception ex)
 			{
 				Log.Warning("Image loading", $"Image load failed: {ex}");
+#if DEBUG
+				throw;
+#endif
 			}
 
 			return null;

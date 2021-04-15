@@ -1,10 +1,11 @@
+#nullable enable
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
-	internal class ServiceFactoryAdapter<TContainerBuilder> : IServiceFactoryAdapter
+	class ServiceFactoryAdapter<TContainerBuilder> : IServiceFactoryAdapter
 	{
 #pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
 		private IServiceProviderFactory<TContainerBuilder>? _serviceProviderFactory;

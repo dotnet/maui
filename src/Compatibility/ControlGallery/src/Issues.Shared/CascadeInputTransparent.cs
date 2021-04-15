@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -137,7 +138,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				VerticalOptions = LayoutOptions.Fill,
 				InputTransparent = true,
 				CascadeInputTransparent = cascades,
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				Opacity = 0.2
 			};
 

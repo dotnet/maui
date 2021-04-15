@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsPassword { get; set; }
 
-		public bool IsTextPredictionEnabled { get; set; }
+		public bool IsTextPredictionEnabled { get; set; } = true;
 
 		public string Placeholder { get; set; }
 
@@ -37,5 +38,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		void OnTextChanged(string oldValue, string newValue) =>
 			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
+
+		public Keyboard Keyboard { get; set; } = Keyboard.Default;
 	}
 }

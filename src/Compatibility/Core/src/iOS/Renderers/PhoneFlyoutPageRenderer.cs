@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Linq;
 using UIKit;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using PointF = CoreGraphics.CGPoint;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -335,7 +336,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						View.UpdateBackground(Element.Background);
 					else
 					{
-						if (Element.BackgroundColor == Color.Default)
+						if (Element.BackgroundColor == null)
 							View.BackgroundColor = UIColor.White;
 						else
 							View.BackgroundColor = Element.BackgroundColor.ToUIColor();
@@ -374,7 +375,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
-			detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Color.Black.ToUIColor();
+			detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Graphics.Colors.Black.ToUIColor();
 
 			ToggleAccessibilityElementsHidden();
 		}

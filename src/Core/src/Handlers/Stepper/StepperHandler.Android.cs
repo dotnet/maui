@@ -6,7 +6,7 @@ using AOrientation = Android.Widget.Orientation;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : AbstractViewHandler<IStepper, LinearLayout>, IStepperHandler
+	public partial class StepperHandler : ViewHandler<IStepper, LinearLayout>, IStepperHandler
 	{
 		AButton? _downButton;
 		AButton? _upButton;
@@ -39,22 +39,22 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(StepperHandler handler, IStepper stepper)
 		{
-			handler.TypedNativeView?.UpdateMinimum(stepper);
+			handler.NativeView?.UpdateMinimum(stepper);
 		}
 
 		public static void MapMaximum(StepperHandler handler, IStepper stepper)
 		{
-			handler.TypedNativeView?.UpdateMaximum(stepper);
+			handler.NativeView?.UpdateMaximum(stepper);
 		}
 
 		public static void MapIncrement(StepperHandler handler, IStepper stepper)
 		{
-			handler.TypedNativeView?.UpdateIncrement(stepper);
+			handler.NativeView?.UpdateIncrement(stepper);
 		}
 
 		public static void MapValue(StepperHandler handler, IStepper stepper)
 		{
-			handler.TypedNativeView?.UpdateValue(stepper);
+			handler.NativeView?.UpdateValue(stepper);
 		}
 
 		AButton IStepperHandler.CreateButton()

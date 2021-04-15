@@ -1,8 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+//using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
+using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
+using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui.Controls
 {
@@ -197,7 +201,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create("Opacity", typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
 
-		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create("BackgroundColor", typeof(Color), typeof(VisualElement), Color.Default);
+		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create("BackgroundColor", typeof(Color), typeof(VisualElement), null);
 
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
 			propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -888,6 +892,7 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(trigger);
 		}
 
+		bool _stopTheRecursion;
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_measureCache.Clear();
@@ -897,8 +902,13 @@ namespace Microsoft.Maui.Controls
 			// This is a bit awkward because we could have invalidations coming from old bits
 			// to here first and new bits going to IFrameworkElement.InvalidateMeasure
 			// first and each one needs to call the other so this short circuits the ping pong
-			if (IsMeasureValid)
+
+			if (IsMeasureValid && !_stopTheRecursion)
+			{
+				_stopTheRecursion = true;
 				((IFrameworkElement)this).InvalidateMeasure();
+				_stopTheRecursion = false;
+			}
 		}
 
 		void IVisualElementController.InvalidateMeasure(InvalidationTrigger trigger) => InvalidateMeasureInternal(trigger);

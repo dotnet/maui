@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -28,15 +29,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var instructions = new Label
 			{
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "If the buttons below have the same size, the test has passed."
 			};
 			layout.Children.Add(instructions, 0, 0);
 
 			var button = new Button
 			{
-				BackgroundColor = Color.Gray,
+				BackgroundColor = Colors.Gray,
 				HorizontalOptions = LayoutOptions.Center,
 				ImageSource = "calculator.png",
 				Text = "Text"
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var accesibilityButton = new Button
 			{
-				BackgroundColor = Color.Gray,
+				BackgroundColor = Colors.Gray,
 				HorizontalOptions = LayoutOptions.Center,
 				ImageSource = "calculator.png",
 				Text = "Text"

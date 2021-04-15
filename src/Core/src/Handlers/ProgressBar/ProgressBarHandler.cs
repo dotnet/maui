@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿#nullable enable
+namespace Microsoft.Maui.Handlers
 {
 	public partial class ProgressBarHandler
 	{
@@ -6,11 +7,6 @@
 		{
 			[nameof(IProgress.Progress)] = MapProgress,
 		};
-
-		public static void MapProgress(ProgressBarHandler handler, IProgress progress)
-		{
-			handler.TypedNativeView?.UpdateProgress(progress);
-		}
 
 		public ProgressBarHandler() : base(ProgressMapper)
 		{

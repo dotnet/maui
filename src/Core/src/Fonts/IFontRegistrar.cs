@@ -1,10 +1,11 @@
-﻿using System.Reflection;
+﻿#nullable enable
+using System.Reflection;
 
 namespace Microsoft.Maui
 {
 	public interface IFontRegistrar
 	{
-		void Register(string filename, string alias, Assembly assembly);
+		void Register(string filename, string? alias, Assembly assembly);
 
 		void Register(string filename, string? alias);
 

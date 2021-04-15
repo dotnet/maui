@@ -1,4 +1,8 @@
+#if WINDOWS_UWP
 using Windows.ApplicationModel.Activation;
+#elif WINDOWS
+using Microsoft.UI.Xaml;
+#endif
 
 namespace Microsoft.Maui.Essentials
 {

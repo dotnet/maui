@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var groupLabel = new Label { FontSize = 18, TextColor = Color.FromHex("#1f1f1f"), HorizontalOptions = LayoutOptions.Start, HorizontalTextAlignment = TextAlignment.Start };
 			groupLabel.SetBinding(Label.TextProperty, new Binding("Key", stringFormat: "{0} Music"));
 
-			var itemLabel = new Label { TextColor = Color.Black };
+			var itemLabel = new Label { TextColor = Colors.Black };
 			itemLabel.SetBinding(Label.TextProperty, new Binding("Info"));
 
 			ListView TestingList = new ListView()
@@ -66,9 +67,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					{
 						Spacing = 0,
 						Padding = 10,
-						BackgroundColor = Color.Blue,
+						BackgroundColor = Colors.Blue,
 						Children = {
-							new StackLayout{ Padding=5, BackgroundColor=Color.White, HeightRequest=30,  Children = { groupLabel } }
+							new StackLayout{ Padding=5, BackgroundColor=Colors.White, HeightRequest=30,  Children = { groupLabel } }
 						}
 					}
 				}),

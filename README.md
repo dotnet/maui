@@ -59,16 +59,18 @@ To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotne
 .\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.iOS\Maui.Controls.Sample.iOS-net6.csproj -t:Run
 ```
 
-Try try out a "single project", you will need the `-f` switch to choose the platform:
+Try out a "single project", you will need the `-f` switch to choose the platform:
 
 ```dotnetcli
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj t:Run -f net6.0-android --no-restore
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj t:Run -f net6.0-ios --no-restore
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-android
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-ios
 ```
 
-Note that `--no-restore` is a workaround until [dotnet#15485](https://github.com/dotnet/sdk/issues/15485) is fixed in a future preview.
-
 ## Current News
+
+[April 9, 2021 - Announcing .NET Multi-platform App UI Preview 3](https://devblogs.microsoft.com/dotnet/announcing-net-multi-platform-app-ui-preview-3/)
+
+[April 9, 2021 - Xamarin Podcast - .NET MAUI Q&A](https://www.xamarinpodcast.com/90)
 
 [March 11, 2021 - Announcing .NET 6 Preview 2](https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-2/)
 

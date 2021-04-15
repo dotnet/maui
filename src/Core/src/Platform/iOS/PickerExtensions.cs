@@ -1,7 +1,5 @@
 ﻿using System;
-using Foundation;
 using Microsoft.Maui.Handlers;
-using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -30,14 +28,6 @@ namespace Microsoft.Maui
 			nativePicker.SetSelectedItem(picker);
 		}
 
-		public static void UpdateCharacterSpacing(this MauiPicker nativePicker, IPicker picker)
-		{
-			var textAttr = nativePicker.AttributedText?.WithCharacterSpacing(picker.CharacterSpacing);
-
-			if (textAttr != null)
-				nativePicker.AttributedText = textAttr;
-		}
-
 		internal static void SetSelectedIndex(this MauiPicker nativePicker, IPicker picker, int selectedIndex = 0)
 		{
 			picker.SelectedIndex = selectedIndex;
@@ -47,7 +37,7 @@ namespace Microsoft.Maui
 			if (pickerView?.Model is PickerSource source)
 			{
 				source.SelectedIndex = selectedIndex;
-				source.SelectedItem = selectedIndex >= 0 ? picker.Items[selectedIndex] : null;
+				source.SelectedItem = (selectedIndex >= 0 && picker.Items.Count > selectedIndex) ? picker.Items[selectedIndex] : null;
 			}
 
 			pickerView?.Select(Math.Max(selectedIndex, 0), 0, true);

@@ -8,6 +8,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 using WVisualStateGroup = Microsoft.UI.Xaml.VisualStateGroup;
 using WVisualState = Microsoft.UI.Xaml.VisualState;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -224,6 +225,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateButtonBackgroundColor(Color value)
 		{
+			if (value == null)
+			{
+				return;
+			}
+
 			WBrush brush = value.ToBrush();
 			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
 			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;
@@ -235,6 +241,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateButtonBackground(Brush value)
 		{
+			if (value == null)
+			{
+				return;
+			}
+
 			var brush = value.ToBrush();
 			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
 			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;

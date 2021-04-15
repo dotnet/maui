@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -125,5 +126,16 @@ namespace Microsoft.Maui.Controls
 		Maui.FlowDirection IFrameworkElement.FlowDirection => FlowDirection.ToPlatformFlowDirection();
 		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => default;
+
+		Maui.Semantics _semantics;
+		Maui.Semantics IFrameworkElement.Semantics
+		{
+			get => _semantics;
+		}
+
+		// We don't want to initialize Semantics until someone explicitly 
+		// wants to modify some aspect of the semantics class
+		internal Semantics SetupSemantics() =>
+			_semantics ??= new Maui.Semantics();
 	}
 }

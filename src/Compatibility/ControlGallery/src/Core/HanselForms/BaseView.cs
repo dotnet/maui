@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	public class BaseView : ContentPage
 	{
@@ -25,7 +27,7 @@
 		{
 
 			BarBackgroundColor = Color.FromHex("#03A9F4");
-			BarTextColor = Color.White;
+			BarTextColor = Colors.White;
 		}
 	}
 

@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 			if (aSwitch.Context == null)
 				return;
 
-			if (trackColor.IsDefault)
+			if (trackColor == null)
 			{
 				aSwitch.TrackTintMode = APorterDuff.Mode.SrcAtop;
 				aSwitch.TrackTintList = defaultTrackColor;
@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 		public static void UpdateThumbColor(this ASwitch aSwitch, ISwitch view, ColorStateList? defaultColorStateList)
 		{
 			var thumbColor = view.ThumbColor;
-			if (!thumbColor.IsDefault)
+			if (thumbColor != null)
 			{
 				aSwitch.ThumbTintMode = APorterDuff.Mode.SrcAtop;
 				aSwitch.ThumbTintList = thumbColor.ToDefaultColorStateList();
