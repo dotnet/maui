@@ -8,9 +8,13 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub>
 	{
-		protected THandler CreateHandler(IView view)
+		protected THandler CreateHandler(IView view) =>
+			CreateHandler<THandler>(view);
+
+		protected TCustomHandler CreateHandler<TCustomHandler>(IView view)
+			where TCustomHandler : THandler
 		{
-			var handler = Activator.CreateInstance<THandler>();
+			var handler = Activator.CreateInstance<TCustomHandler>();
 			handler.SetMauiContext(MauiContext);
 
 			handler.SetVirtualView(view);

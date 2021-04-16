@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <MauiFont Include="Fonts\*" />
+    <MauiImage Include="Images\*" />
   </ItemGroup>
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
 </Project>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Android.Graphics;
@@ -78,16 +79,24 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Bitmap AssertColorAtPoint(this Bitmap bitmap, AColor expectedColor, int x, int y)
+		public static Bitmap AssertColorAtPoint(this Bitmap bitmap, AColor expectedColor, int x, int y, int precision = 0)
 		{
-			Assert.Equal(bitmap.ColorAtPoint(x, y), expectedColor);
+			var actualColor = bitmap.ColorAtPoint(x, y);
+
+			var red = actualColor.R <= expectedColor.R + precision && actualColor.R >= expectedColor.R - precision;
+			var green = actualColor.G <= expectedColor.G + precision && actualColor.G >= expectedColor.G - precision;
+			var blue = actualColor.B <= expectedColor.B + precision && actualColor.B >= expectedColor.B - precision;
+			var alpha = actualColor.A <= expectedColor.A + precision && actualColor.A >= expectedColor.A - precision;
+
+			if (!red || !green || !blue || !alpha)
+				Assert.Equal(expectedColor, actualColor);
 
 			return bitmap;
 		}
 
-		public static Bitmap AssertColorAtCenter(this Bitmap bitmap, AColor expectedColor)
+		public static Bitmap AssertColorAtCenter(this Bitmap bitmap, AColor expectedColor, int precision = 0)
 		{
-			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width / 2, bitmap.Height / 2);
+			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width / 2, bitmap.Height / 2, precision);
 		}
 
 		public static Bitmap AssertColorAtBottomLeft(this Bitmap bitmap, AColor expectedColor)

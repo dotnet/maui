@@ -4,7 +4,8 @@
 		<RootNamespace>Microsoft.Maui</RootNamespace>
 		<AssemblyName>Microsoft.Maui</AssemblyName>
 		<Nullable>enable</Nullable>
-	</PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
 	<PropertyGroup>
 		<PackageId>Microsoft.Maui</PackageId>
 	</PropertyGroup>

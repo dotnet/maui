@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Hosting
 			builder.ConfigureImageSourceServices(services =>
 			{
 				services.AddService<IFileImageSource, FileImageSourceService>();
+				services.AddService<IStreamImageSource, StreamImageSourceService>();
 				services.AddService<IUriImageSource, UriImageSourceService>();
 			});
 			return builder;

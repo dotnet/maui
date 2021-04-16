@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 
@@ -20,7 +21,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateIsAnimationPlaying(image);
 		}
 
-		public static async void MapSource(ImageHandler handler, IImage image)
+		public static async void MapSource(ImageHandler handler, IImage image) =>
+			await MapSourceAsync(handler, image);
+
+		public static async Task MapSourceAsync(ImageHandler handler, IImage image)
 		{
 			if (handler.NativeView == null)
 				return;
