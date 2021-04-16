@@ -1,11 +1,12 @@
 ﻿using System;
 using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : ViewHandler<IEditor, TextBox>
+	public partial class EditorHandler : ViewHandler<IEditor, MauiTextBox>
 	{
-		protected override TextBox CreateNativeView() => new TextBox();
+		protected override MauiTextBox CreateNativeView() => new MauiTextBox();
 
 		[MissingMapper]
 		public static void MapText(IViewHandler handler, IEditor editor) { }
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, IEditor editor) { }
 
-		[MissingMapper]
-		public static void MapTextColor(EditorHandler handler, IEditor editor) { }
+		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
+			handler.NativeView?.UpdateTextColor(editor);
 	}
 }

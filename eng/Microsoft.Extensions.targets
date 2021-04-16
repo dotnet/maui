@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' == 'true'">
-    <_MicrosoftHostingVersion>6.0.0-preview.2.21110.7</_MicrosoftHostingVersion>
+    <_MicrosoftHostingVersion>6.0.0-preview.3.21174.7</_MicrosoftHostingVersion>
     <_MicrosoftDependencyInjectionVersion>$(_MicrosoftHostingVersion)</_MicrosoftDependencyInjectionVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' != 'true'">

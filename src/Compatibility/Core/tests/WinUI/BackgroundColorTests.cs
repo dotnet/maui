@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using WColor = Windows.UI.Color;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 					.Where(v => !(v is SearchBar))
 					.Where(v => !(v is Frame)))
 				{
-					element.BackgroundColor = Color.AliceBlue;
+					element.BackgroundColor = Colors.AliceBlue;
 					yield return CreateTestCase(element);
 				}
 			}
@@ -89,7 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 		[Description("Frame background color should match renderer background color")]
 		public async Task FrameBackgroundColorConsistent()
 		{
-			var frame = new Frame() { BackgroundColor = Color.Orange };
+			var frame = new Frame() { BackgroundColor = Colors.Orange };
 			var expectedColor = frame.BackgroundColor.ToWindowsColor();
 
 			var actualColor = await Device.InvokeOnMainThreadAsync(() =>
