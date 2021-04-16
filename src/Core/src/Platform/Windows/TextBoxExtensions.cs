@@ -7,12 +7,12 @@ namespace Microsoft.Maui
 			textBox.Text = entry.Text;
 		}
 
-		public static void UpdateTextColor(this MauiTextBox textView, ITextStyle textStyle)
+		public static void UpdateForeground(this MauiTextBox textView, ITextStyle textStyle)
 		{
-			if (textStyle.TextColor == null)
+			if (textStyle.Foreground == null)
 				return;
 
-			var brush = textStyle.TextColor.ToNative();
+			var brush = textStyle.Foreground.ToNative();
 			textView.Foreground = brush;
 			textView.ForegroundFocusBrush = brush;
 		}

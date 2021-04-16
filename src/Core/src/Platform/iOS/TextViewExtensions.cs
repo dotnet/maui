@@ -14,14 +14,11 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateTextColor(this UITextView textView, IEditor editor)
+		public static void UpdateForeground(this UITextView textView, IEditor editor)
 		{
-			var textColor = editor.TextColor;
+			var foreground = editor.Foreground;
 
-			if (textColor == null)
-				textView.TextColor = ColorExtensions.LabelColor;
-			else
-				textView.TextColor = textColor.ToNative();
+			textView.SetForeground(foreground, ColorExtensions.LabelColor);
 		}
 
 		public static void UpdateCharacterSpacing(this UITextView textView, ITextStyle textStyle)

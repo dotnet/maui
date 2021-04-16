@@ -25,6 +25,7 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = _viewModel = viewModel;
 
 			SetupMauiLayout();
+			//SetupCompatibilityLayout();
 		}
 
 		void SetupMauiLayout()
@@ -73,7 +74,24 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
 			verticalStack.Add(new Label { Text = "This should have five times the line height! " + loremIpsum, LineHeight = 5, MaxLines = 2 });
-			verticalStack.Add(new Label { Text = "Gradient Text",
+			verticalStack.Add(new Label
+			{
+				Text = "RadialGradient",
+				Padding = new Thickness(30),
+				Background = new RadialGradientBrush(
+				new GradientStopCollection
+				{
+						new GradientStop(Colors.DarkBlue, 0),
+						new GradientStop(Colors.Yellow, 0.6f),
+						new GradientStop(Colors.LightPink, 1)
+				},
+				new Point(0.5, 0.5),
+				0.3f)
+			});
+			verticalStack.Add(new Label
+			{
+				FontSize = 24,
+				Text = "LinearGradient Text",
 				Foreground = new LinearGradientBrush(
 					new GradientStopCollection
 					{
@@ -82,6 +100,12 @@ namespace Maui.Controls.Sample.Pages
 					},
 					new Point(0, 0),
 					new Point(1, 0))
+			});
+			verticalStack.Add(new Label
+			{
+				Text = "This should be translucent red",
+				Padding = new Thickness(30),
+				Background = new TranslucentRedBrush()
 			});
 
 			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level2);
@@ -99,7 +123,8 @@ namespace Maui.Controls.Sample.Pages
 				Padding = new Thickness(40),
 				Text = "This button has a padding!!",
 				BackgroundColor = Colors.Purple,
-			});
+			};
+			verticalStack.Add(paddingButton);
 
 			verticalStack.Add(new Button
 			{
@@ -119,28 +144,6 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(underlineLabel);
 
 			verticalStack.Add(new ActivityIndicator());
-			verticalStack.Add(new ActivityIndicator { Color = Colors.Red, IsRunning = true });
-			verticalStack.Add(new Label
-			{
-				Padding = new Thickness(30),
-				Background = new RadialGradientBrush(
-					new GradientStopCollection
-					{
-						new GradientStop(Colors.DarkBlue, 0),
-						new GradientStop(Colors.Yellow, 0.6f),
-						new GradientStop(Colors.LightPink, 1)
-					},
-					new Point(0.5, 0.5),
-					0.3f)
-			});
-
-			verticalStack.Add(new Label
-			{
-				Text = "This should be translucent red",
-				Padding = new Thickness(30),
-				Background = new TranslucentRedBrush()
-			});
-
 			verticalStack.Add(new ActivityIndicator { Color = Colors.Red, IsRunning = true });
 
 			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
@@ -187,7 +190,6 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", FontSize = 10, FontFamily = "dokdo_regular" });
 			verticalStack.Add(new Editor { Text = "ReadOnly Editor", IsReadOnly = true });
 
-
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
 			{
@@ -217,6 +219,7 @@ namespace Maui.Controls.Sample.Pages
 			var placeholderSearchBar = new SearchBar();
 			placeholderSearchBar.Placeholder = "Placeholder";
 			verticalStack.Add(placeholderSearchBar);
+
 
 			var monkeyList = new List<string>
 			{
@@ -335,11 +338,10 @@ namespace Maui.Controls.Sample.Pages
 
 			return layout;
 		}
-	}
 
-	partial class TranslucentRedBrush : Brush
-	{
-		public override bool IsEmpty => false;
+		partial class TranslucentRedBrush : Brush
+		{
+			public override bool IsEmpty => false;
 
 #if IOS || __IOS__
 		public override CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default) =>
@@ -360,5 +362,6 @@ namespace Maui.Controls.Sample.Pages
 		public override Microsoft.UI.Xaml.Media.Brush ToNative() =>
 			new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(127, 255, 0, 0));
 #endif
+		}
 	}
 }

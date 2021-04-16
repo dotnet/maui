@@ -58,6 +58,32 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void SetForeground(this UITextView nativeView, IBrush? brush, UIColor? defaultTextColor = null)
+		{
+			if (brush.IsNullOrEmpty())
+				return;
+
+			if (brush is ISolidColorBrush solidColorBrush)
+			{
+				if (defaultTextColor != null)
+					nativeView.TextColor = solidColorBrush.Color.ToNative(defaultTextColor);
+				else
+					nativeView.TextColor = solidColorBrush.Color.ToNative();
+			}
+
+			if (brush is IGradientBrush gradientBrush)
+			{
+				nativeView.SizeToFit();
+				CGRect frame = nativeView.Frame;
+
+				if (frame.IsEmpty)
+					return;
+
+				var gradientImage = nativeView.GetBackgroundImage(gradientBrush, frame);
+				nativeView.TextColor = gradientImage != null ? UIColor.FromPatternImage(gradientImage) : UIColor.Clear;
+			}
+		}
+
 		public static void SetForeground(this UIButton nativeView, IBrush? brush, UIColor? buttonTextColorDefaultNormal, UIColor? buttonTextColorDefaultHighlighted, UIColor? buttonTextColorDefaultDisabled)
 		{
 			if (brush.IsNullOrEmpty())
