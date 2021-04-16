@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
+using Microsoft.Maui.Graphics;
 
 [assembly: ExportRenderer(typeof(CustomSwitch), typeof(CustomSwitchRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
@@ -65,6 +66,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 	public static class ColorHelper
 	{
 		public static Windows.UI.Color ToUwpColor(this Color xColor) =>
-			Windows.UI.Color.FromArgb((byte)(xColor.A * 255), (byte)(xColor.R * 255), (byte)(xColor.G * 255), (byte)(xColor.B * 255));
+			Windows.UI.Color.FromArgb((byte)(xColor.Alpha * 255), (byte)(xColor.Red * 255), (byte)(xColor.Green * 255), (byte)(xColor.Blue * 255));
 	}
 }

@@ -14,7 +14,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
-
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			}
 			public static global::Windows.UI.Color ToWindowsColor(Color color)
 			{
-				return Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
+				return Windows.UI.Color.FromArgb((byte)(color.Alpha * 255), (byte)(color.Red * 255), (byte)(color.Green * 255), (byte)(color.Blue * 255));
 			}
 
 			public static Color ToColor(Windows.UI.Color color)
