@@ -6,6 +6,6 @@ namespace Microsoft.Maui
 {
 	public interface IApplyImageSourceService
 	{
-		Task ApplyDrawableAsync(IImageSource imageSource, ImageView imageView, CancellationToken cancellationToken = default);
+		Task ApplyDrawableAsync(IImageSource imageSource, IImageSourcePart image, ImageView imageView, CancellationToken cancellationToken = default);
 	}
 }

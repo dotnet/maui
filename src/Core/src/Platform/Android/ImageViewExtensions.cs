@@ -63,7 +63,7 @@ namespace Microsoft.Maui
 				{
 					// use the faster/better way
 
-					// TODO
+					await applyService.ApplyDrawableAsync(imageSource, image, imageView, cancellationToken);
 				}
 				else
 				{
