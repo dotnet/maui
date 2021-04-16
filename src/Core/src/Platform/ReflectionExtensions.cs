@@ -30,11 +30,11 @@ namespace Microsoft.Maui
 
 		public static PropertyInfo? GetProperty(this Type type, string name)
 		{
-			Type t = type;
+			Type? t = type;
 			while (t != null)
 			{
 				TypeInfo ti = t.GetTypeInfo();
-				PropertyInfo property = ti.GetDeclaredProperty(name);
+				PropertyInfo? property = ti.GetDeclaredProperty(name);
 
 				if (property != null)
 					return property;
@@ -81,7 +81,7 @@ namespace Microsoft.Maui
 
 		static IEnumerable<T> GetParts<T>(Type type, Func<TypeInfo, IEnumerable<T>> selector)
 		{
-			Type t = type;
+			Type? t = type;
 			while (t != null)
 			{
 				TypeInfo ti = t.GetTypeInfo();
