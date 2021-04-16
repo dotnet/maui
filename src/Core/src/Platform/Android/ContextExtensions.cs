@@ -1,6 +1,8 @@
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using Android.Content;
+using Android.Content.Res;
 using Android.OS;
 using Android.Util;
 using Android.Views.InputMethods;
@@ -12,6 +14,7 @@ using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
 using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
 using Size = Microsoft.Maui.Graphics.Size;
+
 namespace Microsoft.Maui
 {
 	public static class ContextExtensions
@@ -104,7 +107,6 @@ namespace Microsoft.Maui
 			}
 		}
 
-
 		internal static int GetThemeAttrColor(this Context context, int attr)
 		{
 			using (TypedValue mTypedValue = new TypedValue())
@@ -190,6 +192,26 @@ namespace Microsoft.Maui
 				return fa.SupportFragmentManager;
 
 			return null;
+		}
+
+		public static int GetDrawableId(this Context context, string name)
+		{
+			if (context.Resources == null || context.PackageName == null)
+				return 0;
+
+			return context.Resources.GetDrawableId(context.PackageName, name);
+		}
+
+		public static int GetDrawableId(this Resources resources, string packageName, string name)
+		{
+			if (string.IsNullOrWhiteSpace(name))
+				return 0;
+
+			var title = Path.GetFileNameWithoutExtension(name);
+
+			title = title.ToLowerInvariant();
+
+			return resources.GetIdentifier(title, "drawable", packageName);
 		}
 	}
 }

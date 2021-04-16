@@ -1,4 +1,4 @@
-<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
     <TargetFrameworks>MonoAndroid10.0;Xamarin.iOS10</TargetFrameworks>
@@ -26,14 +26,9 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
+    <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <MauiFont Include="Resources\Fonts\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Pages\SemanticsPage.xaml.cs">
-      <DependentUpon>SemanticsPage.xaml</DependentUpon>
-    </Compile>
   </ItemGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />

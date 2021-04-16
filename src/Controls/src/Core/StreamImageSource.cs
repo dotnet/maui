@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls
 {
-	public class StreamImageSource : ImageSource, IStreamImageSource
+	public partial class StreamImageSource : ImageSource, IStreamImageSource
 	{
 		public static readonly BindableProperty StreamProperty = BindableProperty.Create("Stream", typeof(Func<CancellationToken, Task<Stream>>), typeof(StreamImageSource),
 			default(Func<CancellationToken, Task<Stream>>));
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 
 		async Task<Stream> IStreamImageSource.GetStreamAsync(CancellationToken userToken)
 		{
-			if (Stream == null)
+			if (IsEmpty)
 				return null;
 
 			OnLoadingStarted();

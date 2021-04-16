@@ -1,4 +1,4 @@
-<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="MSBuild.Sdk.Extras">
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0</TargetFrameworks>
 		<RootNamespace>Microsoft.Maui</RootNamespace>
@@ -14,5 +14,8 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
 		<PackageReference Include="Microsoft.Maui.Graphics" />
+	</ItemGroup>
+	<ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
+		<PackageReference Include="Xamarin.Android.Glide" Version="4.11.0" />
 	</ItemGroup>
 </Project>

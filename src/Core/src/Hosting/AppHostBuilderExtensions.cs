@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Hosting
 			{ typeof(IDatePicker), typeof(DatePickerHandler) },
 			{ typeof(IEditor), typeof(EditorHandler) },
 			{ typeof(IEntry), typeof(EntryHandler) },
+			{ typeof(IImage), typeof(ImageHandler) },
 			{ typeof(ILabel), typeof(LabelHandler) },
 			{ typeof(ILayout), typeof(LayoutHandler) },
 			{ typeof(IPicker), typeof(PickerHandler) },

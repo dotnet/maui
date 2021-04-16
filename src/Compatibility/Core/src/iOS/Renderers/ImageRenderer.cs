@@ -214,19 +214,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public async Task<UIImage> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1f)
 		{
 			UIImage image = null;
-			var imageLoader = imagesource as UriImageSource;
-			if (imageLoader?.Uri != null)
-			{
-				using (var streamImage = await imageLoader.GetStreamAsync(cancelationToken).ConfigureAwait(false))
-				{
-					if (streamImage != null)
-						image = UIImage.LoadFromData(NSData.FromStream(streamImage), scale);
-				}
-			}
 
-			if (image == null)
+			if (imagesource is IStreamImageSource imageLoader)
 			{
-				Controls.Internals.Log.Warning(nameof(ImageLoaderSourceHandler), "Could not load image: {0}", imageLoader);
+				using var streamImage = await imageLoader.GetStreamAsync(cancelationToken).ConfigureAwait(false);
+				if (streamImage != null)
+				{
+					image = UIImage.LoadFromData(NSData.FromStream(streamImage), scale);
+
+					if (image == null)
+					{
+						Controls.Internals.Log.Warning(nameof(ImageLoaderSourceHandler), "Could not load image: {0}", imageLoader);
+					}
+				}
 			}
 
 			return image;

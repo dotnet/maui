@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				{
 					PlatformType = type,
 					IntermediateOutputPath = DestinationDirectory,
-					InputsFile = "resizetizer.inputs",
+					InputsFile = "mauiimage.inputs",
 					Images = items,
 					BuildEngine = this,
 				};
