@@ -21,7 +21,7 @@ task createJar(type: Copy){
     tasks.getByPath(':FormsViewGroup:bundleRelease').mustRunAfter(tasks.getByPath(':FormsViewGroup:clean'))
 
     from('FormsViewGroup/build/intermediates/bundles/release/')
-    into('../Xamarin.Forms.Platform.Android.FormsViewGroup/Jars/')
+    into('../../src/Android.FormsViewGroup/Jars/')
     include('classes.jar')
     rename('classes.jar', 'formsviewgroup.jar')
 }
