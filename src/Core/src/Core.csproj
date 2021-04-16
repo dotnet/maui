@@ -4,8 +4,8 @@
 		<RootNamespace>Microsoft.Maui</RootNamespace>
 		<AssemblyName>Microsoft.Maui</AssemblyName>
 		<Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 	<PropertyGroup>
 		<PackageId>Microsoft.Maui</PackageId>
 	</PropertyGroup>
@@ -17,6 +17,6 @@
 		<PackageReference Include="Microsoft.Maui.Graphics" />
 	</ItemGroup>
 	<ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
-		<PackageReference Include="Xamarin.Android.Glide" Version="4.11.0" />
+		<PackageReference Include="Xamarin.Android.Glide" />
 	</ItemGroup>
 </Project>

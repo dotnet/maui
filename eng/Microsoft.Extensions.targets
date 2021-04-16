@@ -10,6 +10,7 @@
   <PropertyGroup>
     <_MicrosoftProjectReunionVersion>0.5.0</_MicrosoftProjectReunionVersion>
     <_MicrosoftGraphicsWin2DVersion>0.5.0.13</_MicrosoftGraphicsWin2DVersion>
+    <_XamarinAndroidGlideVersion>4.11.0</_XamarinAndroidGlideVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
     <!-- Debugger workaround -->
@@ -54,6 +55,10 @@
     <PackageReference
         Update="Microsoft.Graphics.Win2D"
         Version="$(_MicrosoftGraphicsWin2DVersion)"
+    />
+    <PackageReference
+        Update="Xamarin.Android.Glide"
+        Version="$(_XamarinAndroidGlideVersion)"
     />
   </ItemGroup>
 </Project>
