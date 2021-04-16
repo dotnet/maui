@@ -10,7 +10,7 @@
 			[nameof(IDatePicker.Format)] = MapFormat,
 			[nameof(IDatePicker.MaximumDate)] = MapMaximumDate,
 			[nameof(IDatePicker.MinimumDate)] = MapMinimumDate,
-			[nameof(IDatePicker.TextColor)] = MapTextColor,
+			[nameof(IDatePicker.Foreground)] = MapForeground,
 		};
 
 		public DatePickerHandler() : base(DatePickerMapper)

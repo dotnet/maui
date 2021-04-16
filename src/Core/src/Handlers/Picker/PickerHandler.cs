@@ -7,7 +7,7 @@
 			[nameof(IPicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IPicker.Font)] = MapFont,
 			[nameof(IPicker.SelectedIndex)] = MapSelectedIndex,
-			[nameof(IPicker.TextColor)] = MapTextColor,
+			[nameof(IPicker.Foreground)] = MapForeground,
 			[nameof(IPicker.Title)] = MapTitle,
 		};
 

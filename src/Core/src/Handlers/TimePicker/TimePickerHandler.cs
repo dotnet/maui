@@ -7,7 +7,7 @@
 			[nameof(ITimePicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITimePicker.Font)] = MapFont,
 			[nameof(ITimePicker.Format)] = MapFormat,
-			[nameof(ITimePicker.TextColor)] = MapTextColor,
+			[nameof(ITimePicker.Foreground)] = MapForeground,
 			[nameof(ITimePicker.Time)] = MapTime,
 		};
 

@@ -20,21 +20,21 @@ namespace Microsoft.Maui
 				textView.Text = newText;
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)
+		public static void UpdateForeground(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)
 		{
-			textView.SetTextColor(textStyle.TextColor?.ToNative() ?? defaultColor.ToNative());
+			var foreground = textStyle.Foreground;
+
+			textView.SetForeground(foreground, defaultColor);
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle) =>
-			textView.UpdateTextColor(textStyle, textView.TextColors);
+		public static void UpdateForeground(this TextView textView, ITextStyle textStyle) =>
+			textView.UpdateForeground(textStyle, textView.TextColors);
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, ColorStateList? defaultColor)
+		public static void UpdateForeground(this TextView textView, ITextStyle textStyle, ColorStateList? defaultColor)
 		{
-			var textColor = textStyle.TextColor;
-			if (textColor == null)
-				textView.SetTextColor(defaultColor);
-			else
-				textView.SetTextColor(textColor.ToNative());
+			var foreground = textStyle.Foreground;
+
+			textView.SetForeground(foreground, defaultColor);
 		}
 
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)

@@ -61,9 +61,9 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateText(button);
 		}
 
-		public static void MapTextColor(ButtonHandler handler, IButton button)
+		public static void MapForeground(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateTextColor(button);
+			handler.NativeView?.UpdateForeground(button);
 		}
 
 		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)

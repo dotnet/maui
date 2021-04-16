@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -188,5 +189,15 @@ namespace Microsoft.Maui.DeviceTests
 
 		UIReturnKeyType GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ReturnKeyType;
+
+		Task ValidateHasColor(IEntry entry, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeEntry = GetNativeEntry(CreateHandler(entry));
+				action?.Invoke();
+				nativeEntry.AssertContainsColor(color);
+			});
+		}
 	}
 }

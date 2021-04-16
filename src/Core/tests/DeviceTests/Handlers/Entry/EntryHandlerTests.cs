@@ -20,16 +20,18 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.Text, GetNativeText, entry.Text);
 		}
 
-		[Fact(DisplayName = "TextColor Initializes Correctly")]
-		public async Task TextColorInitializesCorrectly()
+		[Fact(DisplayName = "Foreground Initializes Correctly")]
+		public async Task ForegroundInitializesCorrectly()
 		{
+			var foreground = new BrushStub(Colors.Yellow);
+
 			var entry = new EntryStub()
 			{
 				Text = "Test",
-				TextColor = Colors.Yellow
+				Foreground = foreground
 			};
 
-			await ValidatePropertyInitValue(entry, () => entry.TextColor, GetNativeTextColor, entry.TextColor);
+			await ValidateHasColor(entry, Colors.Yellow, () => entry.Foreground = foreground);
 		}
 
 		[Theory(DisplayName = "IsPassword Initializes Correctly")]
@@ -84,24 +86,6 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeIsPassword,
 				setValue,
 				unsetValue);
-		}
-
-		[Theory(DisplayName = "TextColor Updates Correctly")]
-		[InlineData(0xFF0000, 0x0000FF)]
-		[InlineData(0x0000FF, 0xFF0000)]
-		public async Task TextColorUpdatesCorrectly(uint setValue, uint unsetValue)
-		{
-			var entry = new EntryStub();
-
-			var setColor = Color.FromUint(setValue);
-			var unsetColor = Color.FromUint(unsetValue);
-
-			await ValidatePropertyUpdatesValue(
-				entry,
-				nameof(IEntry.TextColor),
-				GetNativeTextColor,
-				setColor,
-				unsetColor);
 		}
 
 		[Theory(DisplayName = "Text Updates Correctly")]

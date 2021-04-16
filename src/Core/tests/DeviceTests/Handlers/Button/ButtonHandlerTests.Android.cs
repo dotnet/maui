@@ -1,11 +1,11 @@
+using System;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Graphics;
 using Xunit;
-using AColor = global::Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -91,18 +91,10 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
-			(AppCompatButton)buttonHandler.NativeView;
+			buttonHandler.NativeView;
 
 		string GetNativeText(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).Text;
-
-		Color GetNativeTextColor(ButtonHandler buttonHandler)
-		{
-			int currentTextColorInt = GetNativeButton(buttonHandler).CurrentTextColor;
-			AColor currentTextColor = new AColor(currentTextColorInt);
-
-			return currentTextColor.ToColor();
-		}
 
 		Thickness GetNativePadding(ButtonHandler buttonHandler)
 		{
@@ -149,6 +141,16 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return -1;
+		}
+
+		Task ValidateHasColor(IButton button, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeButton = GetNativeButton(CreateHandler(button));
+				action?.Invoke();
+				nativeButton.AssertContainsColor(color);
+			});
 		}
 	}
 }

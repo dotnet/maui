@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,
 			[nameof(IEntry.ReturnType)] = MapReturnType,
 			[nameof(IEntry.Text)] = MapText,
-			[nameof(IEntry.TextColor)] = MapTextColor,
+			[nameof(IEntry.Foreground)] = MapForeground,
 		};
 
 		public EntryHandler() : base(EntryMapper)

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapTextColor(IViewHandler handler, IEntry entry) { }
+		public static void MapForeground(IViewHandler handler, IEntry entry) { }
 
 		[MissingMapper]
 		public static void MapIsPassword(IViewHandler handler, IEntry entry) { }

@@ -28,6 +28,7 @@ namespace Microsoft.Maui
 			}
 
 			var brush = view.Background;
+
 			if (brush.IsNullOrEmpty())
 				return;
 

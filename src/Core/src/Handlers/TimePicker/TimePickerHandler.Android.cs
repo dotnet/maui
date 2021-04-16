@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker) { }
+		public static void MapForeground(TimePickerHandler handler, ITimePicker timePicker) { }
 
 		void ShowPickerDialog()
 		{

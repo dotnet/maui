@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 		public static void UpdateText(this Button nativeButton, IButton button) =>
 			nativeButton.Content = button.Text;
 
-		public static void UpdateTextColor(this Button nativeButton, IButton button) =>
+		public static void UpdateForeground(this Button nativeButton, IButton button) =>
 			nativeButton.UpdateForegroundColor(button.TextColor);
 
 		public static void UpdatePadding(this Button nativeButton, IButton button, UI.Xaml.Thickness? defaultThickness = null) =>

@@ -117,6 +117,6 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapTextColor(EditorHandler handler, IEditor editor) { }
+		public static void MapForeground(EditorHandler handler, IEditor editor) { }
 	}
 }

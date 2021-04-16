@@ -54,9 +54,9 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, entry);
 		}
 
-		public static void MapTextColor(EntryHandler handler, IEntry entry)
+		public static void MapForeground(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateTextColor(entry, DefaultTextColor);
+			handler.NativeView?.UpdateForeground(entry, DefaultTextColor);
 		}
 
 		public static void MapIsPassword(EntryHandler handler, IEntry entry)

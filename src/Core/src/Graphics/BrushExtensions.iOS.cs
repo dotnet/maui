@@ -20,6 +20,17 @@ namespace Microsoft.Maui.Graphics
 			return solidColorLayer;
 		}
 
+		public static CALayer? CreateCALayer(this IGradientBrush gradientBrush, CGRect frame = default)
+		{
+			if (gradientBrush is ILinearGradientBrush linearGradientBrush)
+				return linearGradientBrush.CreateCALayer(frame);
+
+			if (gradientBrush is IRadialGradientBrush radialGradientBrush)
+				return radialGradientBrush.CreateCALayer(frame);
+
+			return null;
+		}
+
 		public static CALayer? CreateCALayer(this ILinearGradientBrush linearGradientBrush, CGRect frame = default)
 		{
 			var p1 = linearGradientBrush.StartPoint;

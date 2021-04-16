@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 		protected override object CreateNativeView() => throw new NotImplementedException();
 
 		public static void MapText(IViewHandler handler, ILabel label) { }
-		public static void MapTextColor(IViewHandler handler, ILabel label) { }
+		public static void MapForeground(IViewHandler handler, ILabel label) { }
 		public static void MapCharacterSpacing(IViewHandler handler, ILabel label) { }
 		public static void MapFont(LabelHandler handler, ILabel label) { }
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) { }

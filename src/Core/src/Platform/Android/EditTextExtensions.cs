@@ -28,23 +28,11 @@ namespace Microsoft.Maui
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
-		public static void UpdateTextColor(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
+		public static void UpdateForeground(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
-			var textColor = entry.TextColor;
-			if (textColor == null)
-			{
-				editText.SetTextColor(defaultColor);
-			}
-			else
-			{
-				var androidColor = textColor.ToNative();
+			var foreground = entry.Foreground;
 
-				if (!editText.TextColors.IsOneColor(ColorStates, androidColor))
-				{
-					var acolor = androidColor.ToArgb();
-					editText.SetTextColor(new ColorStateList(ColorStates, new[] { acolor, acolor }));
-				}
-			}
+			editText.SetForeground(foreground, defaultColor);
 		}
 
 		public static void UpdateIsPassword(this AppCompatEditText editText, IEntry entry)

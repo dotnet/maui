@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			set => SetProperty(ref _text, value, onChanged: OnTextChanged);
 		}
 
-		public Color TextColor { get; set; }
+		public IBrush Foreground { get; set; }
 
 		public Font Font { get; set; }
 

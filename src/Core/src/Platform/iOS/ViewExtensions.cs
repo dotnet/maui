@@ -29,10 +29,12 @@ namespace Microsoft.Maui
 			nativeView.RemoveBackgroundLayer();
 
 			var brush = view.Background;
+
 			if (brush.IsNullOrEmpty())
 				return;
 
 			var backgroundLayer = brush?.ToCALayer(nativeView.Bounds);
+
 			if (backgroundLayer != null)
 			{
 				backgroundLayer.Name = BackgroundLayerName;

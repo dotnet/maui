@@ -35,16 +35,17 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(label, () => label.Text, GetNativeText, label.Text);
 		}
 
-		[Fact(DisplayName = "Text Color Initializes Correctly")]
-		public async Task TextColorInitializesCorrectly()
+		[Fact(DisplayName = "Foreground Initializes Correctly")]
+		public async Task ForegroundInitializesCorrectly()
 		{
+			var foreground = new BrushStub(Colors.Red);
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				TextColor = Colors.Red
+				Foreground = foreground
 			};
 
-			await ValidatePropertyInitValue(label, () => label.TextColor, GetNativeTextColor, label.TextColor);
+			await ValidateHasColor(label, Colors.Red, () => label.Foreground = foreground);
 		}
 
 		[Theory(DisplayName = "Font Size Initializes Correctly")]

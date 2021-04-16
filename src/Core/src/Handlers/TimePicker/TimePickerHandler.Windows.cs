@@ -19,6 +19,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFont(TimePickerHandler handler, ITimePicker view) { }
 
 		[MissingMapper]
-		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker) { }
+		public static void MapForeground(TimePickerHandler handler, ITimePicker timePicker) { }
 	}
 }

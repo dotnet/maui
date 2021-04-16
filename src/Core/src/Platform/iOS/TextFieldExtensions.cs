@@ -9,12 +9,12 @@ namespace Microsoft.Maui
 			textField.Text = entry.Text;
 		}
 
-		public static void UpdateTextColor(this UITextField textField, ITextStyle textStyle, UIColor? defaultTextColor = null)
+		public static void UpdateForeground(this UITextField textField, ITextStyle textStyle, UIColor? defaultTextColor = null)
 		{
 			// Default value of color documented to be black in iOS docs
 
-			var textColor = textStyle.TextColor;
-			textField.TextColor = textColor.ToNative(defaultTextColor ?? ColorExtensions.LabelColor);
+			var foreground = textStyle.Foreground;
+			textField.SetForeground(foreground, defaultTextColor ?? ColorExtensions.LabelColor);
 		}
 
 		public static void UpdateIsPassword(this UITextField textField, IEntry entry)

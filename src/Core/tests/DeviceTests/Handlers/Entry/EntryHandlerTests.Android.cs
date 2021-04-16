@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Text;
@@ -249,6 +250,16 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return -1;
+		}
+
+		Task ValidateHasColor(IEntry entry, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeEntry = GetNativeEntry(CreateHandler(entry));
+				action?.Invoke();
+				nativeEntry.AssertContainsColor(color);
+			});
 		}
 	}
 }

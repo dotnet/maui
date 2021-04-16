@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.Placeholder)] = MapPlaceholder,
 			[nameof(IEditor.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(IEditor.Text)] = MapText,
-			[nameof(IEditor.TextColor)] = MapTextColor,
+			[nameof(IEditor.Foreground)] = MapForeground,
 		};
 
 		public EditorHandler() : base(EditorMapper)

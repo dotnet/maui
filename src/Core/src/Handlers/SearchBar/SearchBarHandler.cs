@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.MaxLength)] = MapMaxLength,
 			[nameof(ISearchBar.Placeholder)] = MapPlaceholder,
 			[nameof(ISearchBar.Text)] = MapText,
-			[nameof(ISearchBar.TextColor)] = MapTextColor,
+			[nameof(ISearchBar.Foreground)] = MapForeground,
 		};
 
 		public SearchBarHandler() : base(SearchBarMapper)

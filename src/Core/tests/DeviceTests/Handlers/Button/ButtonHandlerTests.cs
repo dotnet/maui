@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -21,16 +20,18 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(button, () => button.Text, GetNativeText, button.Text);
 		}
 
-		[Fact(DisplayName = "Text Color Initializes Correctly")]
-		public async Task TextColorInitializesCorrectly()
+		[Fact(DisplayName = "Foreground Initializes Correctly")]
+		public async Task ForegroundInitializesCorrectly()
 		{
+			var foreground = new BrushStub(Colors.Orange);
+
 			var button = new ButtonStub()
 			{
 				Text = "Test",
-				TextColor = Colors.Orange
+				Foreground = foreground
 			};
 
-			await ValidatePropertyInitValue(button, () => button.TextColor, GetNativeTextColor, button.TextColor);
+			await ValidateHasColor(button, Colors.Orange, () => button.Background = foreground);
 		}
 
 		[Fact(DisplayName = "Click event fires Correctly")]
