@@ -61,12 +61,8 @@
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
     <PackageReference Include="Xamarin.Forms.Visual.Material" Version="4.8.0.1821" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="Xamarin.Google.Android.Material">
-      <Version>1.3.0.1-$(_AndroidXVersion)</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.AndroidX.AppCompat.AppCompatResources">
-      <Version>1.2.0.7-$(_AndroidXVersion)</Version>
-    </PackageReference>
+    <PackageReference Include="Xamarin.Google.Android.Material" />
+    <PackageReference Include="Xamarin.AndroidX.AppCompat.AppCompatResources" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Essentials.csproj">

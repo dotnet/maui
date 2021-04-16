@@ -59,15 +59,9 @@
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
     <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21124.1" />
-   <PackageReference Include="Xamarin.AndroidX.MediaRouter">
-     <Version>1.2.2.1-$(_AndroidXVersion)</Version>
-   </PackageReference>
-    <PackageReference Include="Xamarin.AndroidX.Palette">
-      <Version>1.0.0.7-$(_AndroidXVersion)</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.AndroidX.RecyclerView">
-      <Version>1.1.0.8-net6preview01</Version>
-    </PackageReference>
+   <PackageReference Include="Xamarin.AndroidX.MediaRouter" />
+    <PackageReference Include="Xamarin.AndroidX.Palette" />
+    <PackageReference Include="Xamarin.AndroidX.RecyclerView" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj">
