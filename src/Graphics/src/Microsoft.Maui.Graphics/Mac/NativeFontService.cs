@@ -4,7 +4,7 @@ using AppKit;
 using CoreGraphics;
 using CoreText;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeFontService : AbstractFontService
     {

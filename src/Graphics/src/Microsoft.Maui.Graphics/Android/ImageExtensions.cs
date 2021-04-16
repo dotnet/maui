@@ -1,6 +1,6 @@
 using Android.Graphics;
 
-namespace Microsoft.Maui.Graphics.Android
+namespace Microsoft.Maui.Graphics.Native
 {
     public static class ImageExtensions
     {

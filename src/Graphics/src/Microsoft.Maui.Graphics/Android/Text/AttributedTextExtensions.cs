@@ -3,7 +3,7 @@ using Android.Graphics;
 using Android.Text;
 using Android.Text.Style;
 
-namespace Microsoft.Maui.Graphics.Android.Text
+namespace Microsoft.Maui.Graphics.Native.Text
 {
     public static class AttributedTextExtensions
     {

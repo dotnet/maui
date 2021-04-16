@@ -2,9 +2,10 @@
 using System.Drawing;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics.CoreGraphics;
 using UIKit;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     [Register("NativeGraphicsView")]
     public class NativeGraphicsView : UIView

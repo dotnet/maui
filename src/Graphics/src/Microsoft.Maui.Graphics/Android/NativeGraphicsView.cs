@@ -3,7 +3,7 @@ using Android.Graphics;
 using Android.Util;
 using Android.Views;
 
-namespace Microsoft.Maui.Graphics.Android
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeGraphicsView : View
     {

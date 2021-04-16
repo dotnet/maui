@@ -2,7 +2,7 @@ using System.IO;
 using Android.Graphics;
 using Android.Text;
 
-namespace Microsoft.Maui.Graphics.Android
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeGraphicsService : IGraphicsService
     {

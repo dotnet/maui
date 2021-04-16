@@ -1,7 +1,7 @@
 ﻿using System;
 using UIKit;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     public static class UIColorExtensions
     {

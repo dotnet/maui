@@ -1,7 +1,7 @@
 using System.IO;
 using Android.Graphics;
 
-namespace Microsoft.Maui.Graphics.Android
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeBitmapExportContext : BitmapExportContext
     {

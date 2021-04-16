@@ -1,6 +1,7 @@
 using System;
 using AppKit;
 using CoreGraphics;
+using Microsoft.Maui.Graphics.Native;
 
 namespace Microsoft.Maui.Graphics.CoreGraphics
 {

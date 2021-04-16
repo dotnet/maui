@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using CoreText;
 using UIKit;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeFontFamily : IFontFamily, IComparable<IFontFamily>, IComparable
     {

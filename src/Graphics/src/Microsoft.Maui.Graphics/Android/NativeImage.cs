@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics;
 
-namespace Microsoft.Maui.Graphics.Android
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeImage : IImage
     {

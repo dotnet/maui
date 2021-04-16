@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics.Text;
 using CoreText;
 using Foundation;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     public static class AttributedTextExtensions
     {

@@ -2,8 +2,9 @@ using System;
 using System.IO;
 using AppKit;
 using CoreGraphics;
+using Microsoft.Maui.Graphics.CoreGraphics;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeBitmapExportContext : BitmapExportContext
     {

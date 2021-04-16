@@ -11,7 +11,7 @@ using Microsoft.Maui.Graphics.Text.Immutable;
 using System.IO;
 using Foundation;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     public static class NSAttributedStringExtension
     {

@@ -2,7 +2,7 @@ using Android.Graphics;
 using Android.Text;
 using Color = Android.Graphics.Color;
 
-namespace Microsoft.Maui.Graphics.Android
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeCanvasState : CanvasState, IBlurrableCanvas
     {

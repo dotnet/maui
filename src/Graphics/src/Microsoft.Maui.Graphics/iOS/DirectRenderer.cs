@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using CoreGraphics;
+using Microsoft.Maui.Graphics.Native;
 
 namespace Microsoft.Maui.Graphics.CoreGraphics
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeFontStyle : IFontStyle
     {
