@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using OpenQA.Selenium.Appium.Windows;
 using Xamarin.UITest;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	internal class WindowsTestServer : ITestServer
 	{

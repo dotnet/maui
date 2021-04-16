@@ -9,7 +9,6 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.UITests;
 
 #if __IOS__
 using Xamarin.UITest.iOS;

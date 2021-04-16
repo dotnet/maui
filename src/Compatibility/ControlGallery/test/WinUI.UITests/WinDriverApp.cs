@@ -21,7 +21,7 @@ using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using Xamarin.UITest.Queries.Tokens;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	public class WinDriverApp : IApp
 	{

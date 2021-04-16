@@ -9,7 +9,7 @@ using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Remote;
 using Xamarin.UITest;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.UITests
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	public class WindowsTestBase
 	{
