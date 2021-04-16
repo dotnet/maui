@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
-using Xamarin.Forms.Controls.Issues;
 using Xamarin.UITest;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.UITests
 {
 	public class WindowsTestBase
 	{

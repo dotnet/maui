@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.UITests;
 
 namespace Microsoft.Maui.Controls.Compatibility.UITests
 {

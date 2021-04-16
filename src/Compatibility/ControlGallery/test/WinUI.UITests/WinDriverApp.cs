@@ -10,22 +10,22 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Remote;
-using Xamarin.Forms.Controls.Issues;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using Xamarin.UITest.Queries.Tokens;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.UITests
 {
 	public class WinDriverApp : IApp
 	{
-		public const string AppName = "Xamarin.Forms.ControlGallery.WindowsUniversal";
+		public const string AppName = "Compatibility.ControlGallery.WinUI";
 		public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
 		readonly Dictionary<string, string> _controlNameToTag = new Dictionary<string, string>

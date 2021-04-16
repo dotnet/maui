@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.UITests
 {
 	internal class WinQuery
 	{

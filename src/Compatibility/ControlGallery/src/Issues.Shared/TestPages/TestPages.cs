@@ -5,11 +5,13 @@ using System.Reflection;
 using Microsoft.Maui.Controls.CustomAttributes;
 using NUnit.Framework.Interfaces;
 using IOPath = System.IO.Path;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.UITests;
 
 // Apply the default category of "Issues" to all of the tests in this assembly
 // We use this as a catch-all for tests which haven't been individually categorized

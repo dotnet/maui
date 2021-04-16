@@ -1,9 +1,9 @@
 ﻿using System;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using OpenQA.Selenium.Appium.Windows;
-using Xamarin.Forms.Controls.Issues;
 using Xamarin.UITest;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.UITests
 {
 	internal class WindowsTestServer : ITestServer
 	{
