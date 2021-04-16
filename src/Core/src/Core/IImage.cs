@@ -7,7 +7,7 @@
 		bool IsOpaque { get; }
 	}
 
-	public interface IImageSourcePart : IView
+	public interface IImageSourcePart
 	{
 		IImageSource? Source { get; }
 
