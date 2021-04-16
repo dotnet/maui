@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateColor();
 		}
 
+		[PortHandler]
 		void UpdateColor()
 		{
 			Color color = Element.Color;
@@ -56,6 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateIsRunning()
 		{
 			Control.ElementOpacity = Element.IsRunning ? Element.Opacity : 0;

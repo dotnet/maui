@@ -1,16 +1,30 @@
-﻿using System;
-using Microsoft.UI.Xaml.Controls;
-
-namespace Microsoft.Maui.Handlers
+﻿namespace Microsoft.Maui.Handlers
 {
-	public partial class ActivityIndicatorHandler : ViewHandler<IActivityIndicator, ProgressBar>
+	public partial class ActivityIndicatorHandler : ViewHandler<IActivityIndicator, MauiActivityIndicator>
 	{
-		protected override ProgressBar CreateNativeView() => new ProgressBar();
+		object? _foregroundDefault;
 
-		[MissingMapper]
-		public static void MapIsRunning(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator) { }
+		protected override MauiActivityIndicator CreateNativeView() => new MauiActivityIndicator
+		{
+			IsIndeterminate = true,
+			Style = UI.Xaml.Application.Current.Resources["MauiActivityIndicatorStyle"] as UI.Xaml.Style
+		};
 
-		[MissingMapper]
-		public static void MapColor(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator) { }
+		protected override void SetupDefaults(MauiActivityIndicator nativeView)
+		{
+			_foregroundDefault = nativeView.GetForegroundCache();
+
+			base.SetupDefaults(nativeView);
+		}
+
+		public static void MapIsRunning(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		{
+			handler.NativeView?.UpdateIsRunning(activityIndicator);
+		}
+
+		public static void MapColor(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		{
+			handler.NativeView?.UpdateColor(activityIndicator, handler._foregroundDefault);
+		}
 	}
 }

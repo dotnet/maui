@@ -1,20 +1,18 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Reflection;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+using System.Collections.Concurrent;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Maui.Controls.Internals;
+using System.Collections.Generic;
+using System.Reflection;
+using Microsoft.UI.Xaml.Controls;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui
 {
-	[PortHandler]
-	internal static class FrameworkElementExtensions
+	public static class FrameworkElementExtensions
 	{
 		static readonly Lazy<ConcurrentDictionary<Type, DependencyProperty>> ForegroundProperties =
 			new Lazy<ConcurrentDictionary<Type, DependencyProperty>>(() => new ConcurrentDictionary<Type, DependencyProperty>());
@@ -22,14 +20,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static WBrush GetForeground(this FrameworkElement element)
 		{
 			if (element == null)
-				throw new ArgumentNullException("element");
+				throw new ArgumentNullException(nameof(element));
 
 			return (WBrush)element.GetValue(GetForegroundProperty(element));
 		}
 
-		public static WBinding GetForegroundBinding(this FrameworkElement element)
+		public static WBinding? GetForegroundBinding(this FrameworkElement element)
 		{
 			WBindingExpression expr = element.GetBindingExpression(GetForegroundProperty(element));
+
 			if (expr == null)
 				return null;
 
@@ -38,7 +37,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public static object GetForegroundCache(this FrameworkElement element)
 		{
-			WBinding binding = GetForegroundBinding(element);
+			WBinding? binding = GetForegroundBinding(element);
+
 			if (binding != null)
 				return binding;
 
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			element.SetBinding(GetForegroundProperty(element), binding);
 		}
 
-		internal static IEnumerable<T> GetDescendantsByName<T>(this DependencyObject parent, string elementName) where T : DependencyObject
+		internal static IEnumerable<T?> GetDescendantsByName<T>(this DependencyObject parent, string elementName) where T : DependencyObject
 		{
 			int myChildrenCount = VisualTreeHelper.GetChildrenCount(parent);
 			for (int i = 0; i < myChildrenCount; i++)
@@ -87,14 +87,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		internal static T GetFirstDescendant<T>(this DependencyObject element) where T : FrameworkElement
+		internal static T? GetFirstDescendant<T>(this DependencyObject element) where T : FrameworkElement
 		{
 			int count = VisualTreeHelper.GetChildrenCount(element);
 			for (var i = 0; i < count; i++)
 			{
 				DependencyObject child = VisualTreeHelper.GetChild(element, i);
 
-				T target = child as T ?? GetFirstDescendant<T>(child);
+				T? target = child as T ?? GetFirstDescendant<T>(child);
+
 				if (target != null)
 					return target;
 			}
@@ -102,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return null;
 		}
 
-		static DependencyProperty GetForegroundProperty(FrameworkElement element)
+		static DependencyProperty? GetForegroundProperty(FrameworkElement element)
 		{
 			if (element is Control)
 				return Control.ForegroundProperty;
@@ -111,15 +112,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			Type type = element.GetType();
 
-			DependencyProperty foregroundProperty;
+			DependencyProperty? foregroundProperty;
 			if (!ForegroundProperties.Value.TryGetValue(type, out foregroundProperty))
 			{
-				FieldInfo field = ReflectionExtensions.GetFields(type).FirstOrDefault(f => f.Name == "ForegroundProperty");
+				FieldInfo? field = ReflectionExtensions.GetFields(type).FirstOrDefault(f => f.Name == "ForegroundProperty");
+
 				if (field == null)
 					throw new ArgumentException("type is not a Foregroundable type");
 
-				var property = (DependencyProperty)field.GetValue(null);
-				ForegroundProperties.Value.TryAdd(type, property);
+				var property = field.GetValue(null) as DependencyProperty;
+
+				if (property != null)
+					ForegroundProperties.Value.TryAdd(type, property);
 
 				return property;
 			}
@@ -127,7 +131,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return foregroundProperty;
 		}
 
-		internal static IEnumerable<T> GetChildren<T>(this DependencyObject parent) where T : DependencyObject
+		internal static IEnumerable<T?> GetChildren<T>(this DependencyObject parent) where T : DependencyObject
 		{
 			int myChildrenCount = VisualTreeHelper.GetChildrenCount(parent);
 			for (int i = 0; i < myChildrenCount; i++)
