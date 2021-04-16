@@ -57,6 +57,17 @@ namespace Maui.Controls.Sample.Pages
 			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level1);
 			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
+
+
+#if __ANDROID__
+			string fontFamily = "ionicons.ttf#";
+#elif WINDOWS
+			string fontFamily = "Assets/ionicons.ttf#ionicons";
+#else
+			string fontFamily = "Ionicons";
+#endif
+
+			verticalStack.Add(new Image { Source = new FontImageSource() { FontFamily = fontFamily, Glyph = '\uf2fe'.ToString() } });
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Colors.LightBlue });
 			verticalStack.Add(new Label { Text = loremIpsum });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
@@ -73,6 +84,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(hiddenClearButtonEntry);
 
 			verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
+			verticalStack.Add(new Editor { Placeholder = "Green Text Color.", TextColor = Colors.Green });
 			var paddingButton = new Button
 			{
 				Padding = new Thickness(40),
