@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using System.Collections.Concurrent;
