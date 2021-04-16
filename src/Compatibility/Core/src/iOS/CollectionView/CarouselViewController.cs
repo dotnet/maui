@@ -103,10 +103,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 #if MACCATALYST
 		[Foundation.Export("scrollViewWillBeginDragging:")]
-		public virtual void DraggingStarted(UIScrollView scrollView)
-#else
-		public override void DraggingStarted(UIScrollView scrollView)
 #endif
+		public override void DraggingStarted(UIScrollView scrollView)
 		{
 			_isDragging = true;
 			Carousel.SetIsDragging(true);
@@ -114,10 +112,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 #if MACCATALYST
 		[Foundation.Export("scrollViewDidEndDragging:willDecelerate:")]
-		public virtual void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
-#else
-		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
 #endif
+		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
 		{
 			Carousel.SetIsDragging(false);
 			_isDragging = false;
