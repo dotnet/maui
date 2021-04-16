@@ -7,19 +7,19 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class FontImageSourceServiceTests
 	{
-		[Theory]
-		[InlineData(typeof(FileImageSourceStub))]
-		[InlineData(typeof(StreamImageSourceStub))]
-		[InlineData(typeof(UriImageSourceStub))]
-		public async Task GetDrawableAsyncReturnsNullForIncorrectTypes(Type type)
-		{
-			var service = new FileImageSourceService();
+		//[Theory]
+		//[InlineData(typeof(FileImageSourceStub))]
+		//[InlineData(typeof(StreamImageSourceStub))]
+		//[InlineData(typeof(UriImageSourceStub))]
+		//public async Task GetDrawableAsyncReturnsNullForIncorrectTypes(Type type)
+		//{
+		//	var service = new FontImageSourceService();
 
-			var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
+		//	var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
 
-			var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+		//	var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
 
-			Assert.Null(drawable);
-		}
+		//	Assert.Null(drawable);
+		//}
 	}
 }

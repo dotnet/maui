@@ -15,7 +15,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(typeof(UriImageSourceStub))]
 		public async Task GetDrawableAsyncReturnsNullForIncorrectTypes(Type type)
 		{
-			var service = new FileImageSourceService();
+			var service = new StreamImageSourceService();
 
 			var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
 

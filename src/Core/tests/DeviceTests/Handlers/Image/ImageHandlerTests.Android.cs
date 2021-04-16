@@ -16,6 +16,8 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageHandlerTests
 	{
+		private const int ColorPrecision = 1;
+
 		[Theory]
 		[InlineData("red.png", "#FF0000")]
 		[InlineData("green.png", "#00FF00")]
@@ -36,7 +38,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var expectedColor = Color.FromHex(colorHex);
 
-				await handler.NativeView.AssertContainsColor(expectedColor);
+				await handler.NativeView.AssertContainsColor(expectedColor, ColorPrecision);
 			});
 		}
 
@@ -100,7 +102,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Red);
+				await handler.NativeView.AssertContainsColor(Colors.Red, ColorPrecision);
 
 				handler.ImageEvents.Clear();
 
@@ -109,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Blue);
+				await handler.NativeView.AssertContainsColor(Colors.Blue, ColorPrecision);
 
 				Assert.Equal(2, handler.ImageEvents.Count);
 				Assert.Equal("SetImageResource", handler.ImageEvents[0].Member);
