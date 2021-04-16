@@ -69,9 +69,9 @@ namespace Microsoft.Maui.Graphics
 
         protected float AssignedStrokeLimit => _strokeLimit;
 
-        public virtual float DisplayScale { get; set; }
-        
-        public float RetinaScale { get; set; }
+        public virtual float DisplayScale { get; set; } = 1;
+
+        public float RetinaScale { get; set; } = 1;
 
         public float StrokeSize
         {
