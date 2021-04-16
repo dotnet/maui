@@ -2,8 +2,9 @@ using System;
 using AppKit;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics.CoreGraphics;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     [Register("NativeGraphicsView")]
     public class NativeGraphicsView : NSView

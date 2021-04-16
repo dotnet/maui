@@ -1,7 +1,7 @@
 using System;
 using CoreGraphics;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     public interface IGraphicsRenderer : IDisposable
     {

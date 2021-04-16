@@ -2,7 +2,7 @@ using Android.Graphics;
 using Android.Text;
 using System;
     
-namespace Microsoft.Maui.Graphics.Android
+namespace Microsoft.Maui.Graphics.Native
 {
     public static class GraphicsExtensions
     {

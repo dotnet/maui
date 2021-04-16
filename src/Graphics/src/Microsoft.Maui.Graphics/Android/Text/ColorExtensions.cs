@@ -1,6 +1,6 @@
 ﻿using Android.Graphics;
 
-namespace Microsoft.Maui.Graphics.Android.Text
+namespace Microsoft.Maui.Graphics.Native.Text
 {
     public static class ColorExtensions
     {

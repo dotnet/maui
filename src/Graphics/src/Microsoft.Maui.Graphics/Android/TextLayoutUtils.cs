@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Android.Text;
 
-namespace Microsoft.Maui.Graphics.Android
+namespace Microsoft.Maui.Graphics.Native
 {
     public static class TextLayoutUtils
     {

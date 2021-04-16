@@ -1,6 +1,6 @@
 using AppKit;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     public static class NativeImageExtensions
     {

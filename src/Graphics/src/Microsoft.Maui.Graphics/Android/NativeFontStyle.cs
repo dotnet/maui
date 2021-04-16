@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Microsoft.Maui.Graphics.Android
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeFontStyle : IFontStyle, IComparable
     {

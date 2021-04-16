@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics.CoreGraphics;
 using Microsoft.Maui.Graphics.Skia.Views;
 using AppKit;
 using CoreGraphics;
+using Microsoft.Maui.Graphics.Native;
 
 namespace GraphicsTester.Skia {
 

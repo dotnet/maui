@@ -9,7 +9,7 @@ using CoreText;
 using Foundation;
 using System;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeCanvas : AbstractCanvas<NativeCanvasState>
     {

@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Views;
 using Android.Widget;
 using GraphicsTester.Scenarios;
+using Microsoft.Maui.Graphics.Native;
 
 namespace GraphicsTester.Android
 {

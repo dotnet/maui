@@ -2,6 +2,7 @@
 using Microsoft.Maui.Graphics.CoreGraphics;
 using AppKit;
 using CoreGraphics;
+using Microsoft.Maui.Graphics.Native;
 
 namespace GraphicsTester.Mac
 {

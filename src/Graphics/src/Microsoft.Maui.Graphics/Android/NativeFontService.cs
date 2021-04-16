@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using Android.App;
 using Android.Graphics;
+using Microsoft.Maui.Graphics.Android;
 
-namespace Microsoft.Maui.Graphics.Android
+namespace Microsoft.Maui.Graphics.Native
 {
     public class NativeFontService : AbstractFontService
     {

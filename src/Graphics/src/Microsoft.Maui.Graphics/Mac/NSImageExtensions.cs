@@ -3,7 +3,7 @@ using AppKit;
 using CoreGraphics;
 using Foundation;
 
-namespace Microsoft.Maui.Graphics.CoreGraphics
+namespace Microsoft.Maui.Graphics.Native
 {
     public static class NSImageExtensions
     {
