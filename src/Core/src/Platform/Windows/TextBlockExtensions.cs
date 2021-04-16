@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 			nativeControl.Text = text.Text;
 
 		public static void UpdateForeground(this TextBlock nativeControl, IText text) =>
-			nativeControl.UpdateProperty(TextBlock.ForegroundProperty, text.TextColor);
+			nativeControl.UpdateProperty(TextBlock.ForegroundProperty, text.Foreground?.ToNative());
 
 		public static void UpdatePadding(this TextBlock nativeControl, ILabel label) =>
 			nativeControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToNative());

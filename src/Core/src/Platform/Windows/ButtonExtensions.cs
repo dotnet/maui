@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 			nativeButton.Content = button.Text;
 
 		public static void UpdateForeground(this Button nativeButton, IButton button) =>
-			nativeButton.UpdateForegroundColor(button.TextColor);
+			nativeButton.UpdateForeground(button.Foreground);
 
 		public static void UpdatePadding(this Button nativeButton, IButton button, UI.Xaml.Thickness? defaultThickness = null) =>
 			nativeButton.UpdatePadding(button.Padding, defaultThickness);
