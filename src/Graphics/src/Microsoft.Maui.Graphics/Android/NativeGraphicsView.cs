@@ -66,6 +66,9 @@ namespace Microsoft.Maui.Graphics.Native
 
             _scalingCanvas.ResetState();
             _scalingCanvas.Scale(_scale, _scale);
+            //Since we are using a scaling canvas, we need to scale the rectangle
+            dirtyRect.Height /= _scale;
+            dirtyRect.Width /= _scale;
             _drawable.Draw(_scalingCanvas, dirtyRect);
             _canvas.Canvas = null;
         }
