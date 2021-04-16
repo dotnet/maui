@@ -46,6 +46,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (!fireNavigatingCanceled || !SendNavigatingCanceled(url))
 			{
 				_eventState = WebNavigationEvent.NewPage;
+				if (url != null && !url.StartsWith('/') && !Uri.IsWellFormedUriString(url, UriKind.Absolute))
+				{
+					// URLs like "index.html" can't possibly load, so try "file:///android_asset/index.html"
+					url = AssetBaseUrl + url;
+				}
 				Control.LoadUrl(url);
 			}
 		}
