@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics.Android;
 using Android.App;
 using Android.Widget;
 using Android.OS;
+using Microsoft.Maui.Graphics.Native;
 
 namespace GraphicsTester.Android
 {
