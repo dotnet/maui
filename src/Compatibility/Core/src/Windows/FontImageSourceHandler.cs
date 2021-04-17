@@ -1,9 +1,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-//using Microsoft.Graphics.Canvas;
-//using Microsoft.Graphics.Canvas.Text;
-//using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Text;
+using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WFontIconSource = Microsoft.UI.Xaml.Controls.FontIconSource;
@@ -12,45 +14,48 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	public sealed class FontImageSourceHandler : IImageSourceHandler, IIconElementHandler
 	{
-		//float _minimumDpi = 300;
+		float _minimumDpi = 300;
 
 		public Task<Microsoft.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource,
 			CancellationToken cancelationToken = default(CancellationToken))
 		{
-			throw new Win2DNotImplementedException();
-			//if (!(imagesource is FontImageSource fontsource))
-			//	return null;
+			if (!(imagesource is FontImageSource fontsource))
+				return null;
 
-			//var device = CanvasDevice.GetSharedDevice();
-			//var dpi = Math.Max(_minimumDpi, Windows.Graphics.Display.DisplayInformation.GetForCurrentView().LogicalDpi);
+			var device = CanvasDevice.GetSharedDevice();
 
-			//var textFormat = new CanvasTextFormat
-			//{
-			//	FontFamily = GetFontSource(fontsource),
-			//	FontSize = (float)fontsource.Size,
-			//	HorizontalAlignment = CanvasHorizontalAlignment.Center,
-			//	VerticalAlignment = CanvasVerticalAlignment.Center,
-			//	Options = CanvasDrawTextOptions.Default
-			//};
+			// https://github.com/microsoft/microsoft-ui-xaml/issues/4205#issuecomment-780204896
+			// var dpi = Math.Max(_minimumDpi, Windows.Graphics.Display.DisplayInformation.GetForCurrentView().LogicalDpi);
 
-			//using (var layout = new CanvasTextLayout(device, fontsource.Glyph, textFormat, (float)fontsource.Size, (float)fontsource.Size))
-			//{
-			//	var canvasWidth = (float)layout.LayoutBounds.Width + 2;
-			//	var canvasHeight = (float)layout.LayoutBounds.Height + 2;
+			var dpi = _minimumDpi;
 
-			//	var imageSource = new CanvasImageSource(device, canvasWidth, canvasHeight, dpi);
-			//	using (var ds = imageSource.CreateDrawingSession(Windows.UI.Colors.Transparent))
-			//	{
-			//		var iconcolor = (fontsource.Color != Color.Default ? fontsource.Color : Color.White).ToWindowsColor();
+			var textFormat = new CanvasTextFormat
+			{
+				FontFamily = GetFontSource(fontsource),
+				FontSize = (float)fontsource.Size,
+				HorizontalAlignment = CanvasHorizontalAlignment.Center,
+				VerticalAlignment = CanvasVerticalAlignment.Center,
+				Options = CanvasDrawTextOptions.Default
+			};
 
-			//		// offset by 1 as we added a 1 inset
-			//		var x = (float)layout.DrawBounds.X * -1;
-					
-			//		ds.DrawTextLayout(layout, x, 1f, iconcolor);
-			//	}
+			using (var layout = new CanvasTextLayout(device, fontsource.Glyph, textFormat, (float)fontsource.Size, (float)fontsource.Size))
+			{
+				var canvasWidth = (float)layout.LayoutBounds.Width + 2;
+				var canvasHeight = (float)layout.LayoutBounds.Height + 2;
 
-			//	return Task.FromResult((Windows.UI.Xaml.Media.ImageSource)imageSource);
-			//}
+				var imageSource = new CanvasImageSource(device, canvasWidth, canvasHeight, dpi);
+				using (var ds = imageSource.CreateDrawingSession(Microsoft.UI.Colors.Transparent))
+				{
+					var iconcolor = (fontsource.Color != null ? fontsource.Color : Colors.White).ToWindowsColor();
+
+					// offset by 1 as we added a 1 inset
+					var x = (float)layout.DrawBounds.X * -1;
+
+					ds.DrawTextLayout(layout, x, 1f, iconcolor);
+				}
+
+				return Task.FromResult((UI.Xaml.Media.ImageSource)imageSource);
+			}
 		}
 
 		public Task<Microsoft.UI.Xaml.Controls.IconSource> LoadIconSourceAsync(ImageSource imagesource, CancellationToken cancellationToken = default(CancellationToken))
