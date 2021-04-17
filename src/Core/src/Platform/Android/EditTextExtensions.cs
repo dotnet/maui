@@ -200,6 +200,61 @@ namespace Microsoft.Maui
 			editText.ImeOptions = entry.ReturnType.ToNative();
 		}
 
+		[PortHandler]
+		public static void UpdateCursorPosition(this AppCompatEditText editText, IEntry entry)
+			=> UpdateCursorSelection(editText, entry);
+
+		[PortHandler]
+		public static void UpdateSelectionLength(this AppCompatEditText editText, IEntry entry)
+			=> UpdateCursorSelection(editText, entry);
+		
+
+		static void UpdateCursorSelection(AppCompatEditText editText, IEntry entry)
+		{
+			if (editText == null)
+				return;
+
+			if (!entry.IsReadOnly && editText.RequestFocus())
+			{
+				int start = GetSelectionStart(editText, entry);
+				int end = GetSelectionEnd(editText, entry, start);
+
+				editText.SetSelection(start, end);
+			}
+		}
+
+		static int GetSelectionStart(AppCompatEditText editText, IEntry entry)
+		{
+			int start = editText.Length();
+			int cursorPosition = entry.CursorPosition;
+
+			if (editText.Text != null)
+			{
+				// Capping cursorPosition to the end of the text if needed
+				start = System.Math.Min(editText.Text.Length, cursorPosition);
+			}
+
+			if (start != cursorPosition)
+			{
+				// Update the interface if start was capped
+				entry.CursorPosition = start;
+			}
+
+			return start;
+		}
+
+		static int GetSelectionEnd(AppCompatEditText editText, IEntry entry, int start)
+		{
+			int end = start;
+			int selectionLength = entry.SelectionLength;
+			end = System.Math.Max(start, System.Math.Min(editText.Length(), start + selectionLength));
+			int newSelectionLength = System.Math.Max(0, end - start);
+			// Updating this property results in UpdateSelectionLength being called again messing things up
+			if (newSelectionLength != selectionLength)
+				entry.SelectionLength = newSelectionLength;
+			return end;
+		}
+
 		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
 		{
 			if (entry.IsReadOnly)

@@ -82,5 +82,11 @@ using Windows.System;
 
 			VirtualView?.Completed();
 		}
+
+		[MissingMapper]
+		public static void MapCursorPosition(IViewHandler handler, IEntry entry) { }
+
+		[MissingMapper]
+		public static void MapSelectionLength(IViewHandler handler, IEntry entry) { }
 	}
 }

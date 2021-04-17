@@ -178,6 +178,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
 
+			verticalStack.Add(CreateSampleCursorSelection());
+
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
@@ -417,6 +419,54 @@ namespace Maui.Controls.Sample.Pages
 			layout.SetColumn(bottomRight, 1);
 
 			layout.BackgroundColor = Colors.Chartreuse;
+
+			return layout;
+		}
+
+		IView CreateSampleCursorSelection()
+		{
+			var layout = new Microsoft.Maui.Controls.Layout2.GridLayout() { ColumnSpacing = 5, RowSpacing = 8, BackgroundColor = Colors.LightGreen };
+
+			layout.AddRowDefinition(new RowDefinition() { Height = new GridLength(50) });
+
+			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(150) });
+			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(80) });
+			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(80) });
+
+
+			Entry targetEntry = new()
+			{
+				Placeholder = "Selectable Text",
+			};
+
+			Entry forPosition = new()
+			{
+				Placeholder = "CursorPos"
+			};
+			forPosition.TextChanged += (sender, args) =>
+			{
+				if (!int.TryParse(args.NewTextValue, out int newPos))
+					return;
+				targetEntry.CursorPosition = newPos;
+			};
+
+			Entry forSelectionLen = new()
+			{
+				Placeholder = "SelectionLen"
+			};
+			forSelectionLen.TextChanged += (sender, args) =>
+			{
+				if (!int.TryParse(args.NewTextValue, out int newSelectionLen))
+					return;
+				targetEntry.SelectionLength = newSelectionLen;
+			};
+
+
+			layout.Add(targetEntry);
+			layout.Add(forPosition);
+			layout.SetColumn(forPosition, 1);
+			layout.Add(forSelectionLen);
+			layout.SetColumn(forSelectionLen, 2);
 
 			return layout;
 		}

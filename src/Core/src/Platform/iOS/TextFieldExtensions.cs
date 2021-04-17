@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using System;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -92,6 +93,57 @@ namespace Microsoft.Maui
 
 			textField.ReloadInputViews();
 		}
+
+		[PortHandler]
+		public static void UpdateCursorPosition(this UITextField textField, IEntry entry)		
+			=> UpdateCursorSelection(textField, entry);
+
+		[PortHandler]
+		public static void UpdateSelectionLength(this UITextField textField, IEntry entry)
+			=> UpdateCursorSelection(textField, entry);
+
+		static void UpdateCursorSelection(this UITextField textField, IEntry entry)
+		{
+			if (textField == null)
+				return;
+
+			if (!entry.IsReadOnly)
+			{
+				textField.BecomeFirstResponder();
+				UITextPosition start = GetSelectionStart(textField, entry, out int startOffset);
+				UITextPosition end = GetSelectionEnd(textField, entry, start, startOffset);
+
+				textField.SelectedTextRange = textField.GetTextRange(start, end);
+			}
+		}
+
+		static UITextPosition GetSelectionStart(UITextField textField, IEntry entry, out int startOffset)
+		{
+			int cursorPosition = entry.CursorPosition;
+
+			UITextPosition start = textField.GetPosition(textField.BeginningOfDocument, cursorPosition) ?? textField.EndOfDocument;
+			startOffset = Math.Max(0, (int)textField.GetOffsetFromPosition(textField.BeginningOfDocument, start));
+
+			if (startOffset != cursorPosition)
+				entry.CursorPosition = startOffset;
+
+			return start;
+		}
+
+		static UITextPosition GetSelectionEnd(UITextField textField, IEntry entry, UITextPosition start, int startOffset)
+		{
+			int selectionLength = entry.SelectionLength;
+			int textFieldLength = textField.Text == null ? 0 : textField.Text.Length;
+			// Get the desired range in respect to the actual length of the text we are working with
+			UITextPosition end = textField.GetPosition(start, Math.Min(textFieldLength - entry.CursorPosition, selectionLength)) ?? start;
+			int endOffset = Math.Max(startOffset, (int)textField.GetOffsetFromPosition(textField.BeginningOfDocument, end));
+
+			int newSelectionLength = Math.Max(0, endOffset - startOffset);
+			if (newSelectionLength != selectionLength)
+				entry.SelectionLength = newSelectionLength;
+
+			return end;
+		}		
 
 		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)
 		{

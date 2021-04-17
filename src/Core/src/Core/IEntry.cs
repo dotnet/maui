@@ -20,6 +20,10 @@
 		/// </summary>
 		ClearButtonVisibility ClearButtonVisibility { get; }
 
+		int CursorPosition { get; set; }
+
+		int SelectionLength { get; set; }
+
 		/// <summary>
 		/// Occurs when the user finalizes the text in an entry with the return key.
 		/// </summary>
