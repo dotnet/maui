@@ -6,12 +6,12 @@ namespace Microsoft.Maui.DeviceTests
 {
 	internal class ColorComparison : IEqualityComparer<UIColor>
 	{
-		public static bool ARGBEquivalent(UIColor color1, UIColor color2)
+		public const double Tolerance = 0.000001;
+
+		public static bool ARGBEquivalent(UIColor color1, UIColor color2, double tolerance = Tolerance)
 		{
 			color1.GetRGBA(out nfloat red1, out nfloat green1, out nfloat blue1, out nfloat alpha1);
 			color2.GetRGBA(out nfloat red2, out nfloat green2, out nfloat blue2, out nfloat alpha2);
-
-			const double tolerance = 0.000001;
 
 			return Equal(red1, red2, tolerance)
 				&& Equal(green1, green2, tolerance)

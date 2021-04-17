@@ -1,23 +1,14 @@
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Android.Content;
-using Android.Graphics;
 using Android.Graphics.Drawables;
-using Android.Net;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Xunit;
-using AImageView = Android.Widget.ImageView;
 using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageHandlerTests
 	{
-		private const int ColorPrecision = 1;
-
 		[Theory]
 		[InlineData("red.png", "#FF0000")]
 		[InlineData("green.png", "#00FF00")]
@@ -38,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var expectedColor = Color.FromHex(colorHex);
 
-				await handler.NativeView.AssertContainsColor(expectedColor, ColorPrecision);
+				await handler.NativeView.AssertContainsColor(expectedColor);
 			});
 		}
 
@@ -102,7 +93,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Red, ColorPrecision);
+				await handler.NativeView.AssertContainsColor(Colors.Red);
 
 				handler.ImageEvents.Clear();
 
@@ -111,7 +102,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Blue, ColorPrecision);
+				await handler.NativeView.AssertContainsColor(Colors.Blue);
 
 				Assert.Equal(2, handler.ImageEvents.Count);
 				Assert.Equal("SetImageResource", handler.ImageEvents[0].Member);
@@ -121,56 +112,32 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		class CountedImageHandler : ImageHandler
+		[Fact]
+		public async Task CountedImageSourceServiceStubWorksWithChecks()
 		{
-			protected override AImageView CreateNativeView() => new CountedImageView(Context);
+			var events = await CountedImageSourceServiceStubWorks();
 
-			public List<(string Member, object Value)> ImageEvents => ((CountedImageView)NativeView).ImageEvents;
+			Assert.Equal(2, events.Count);
+			Assert.Equal("SetImageResource", events[0].Member);
+			Assert.Equal(Android.Resource.Color.Transparent, events[0].Value);
+			Assert.Equal("SetImageDrawable", events[1].Member);
+			var drawable = Assert.IsType<ColorDrawable>(events[1].Value);
+			drawable.Color.IsEquivalent(Colors.Blue.ToNative());
 		}
 
-		class CountedImageView : AImageView
+		[Fact]
+		public async Task InterruptingLoadCancelsAndStartsOverWithChecks()
 		{
-			public CountedImageView(Context context)
-				: base(context)
-			{
-			}
+			var events = await InterruptingLoadCancelsAndStartsOver();
 
-			public List<(string, object)> ImageEvents { get; } = new List<(string, object)>();
-
-			public override void SetImageBitmap(Bitmap bm)
-			{
-				base.SetImageBitmap(bm);
-				Log(bm);
-			}
-
-			public override void SetImageDrawable(Drawable drawable)
-			{
-				base.SetImageDrawable(drawable);
-				Log(drawable);
-			}
-
-			public override void SetImageIcon(Icon icon)
-			{
-				base.SetImageIcon(icon);
-				Log(icon);
-			}
-
-			public override void SetImageResource(int resId)
-			{
-				base.SetImageResource(resId);
-				Log(resId);
-			}
-
-			public override void SetImageURI(Uri uri)
-			{
-				base.SetImageURI(uri);
-				Log(uri);
-			}
-
-			private void Log(object value, [CallerMemberName] string member = null)
-			{
-				ImageEvents.Add((member, value));
-			}
+			Assert.Equal(3, events.Count);
+			Assert.Equal("SetImageResource", events[0].Member);
+			Assert.Equal(Android.Resource.Color.Transparent, events[0].Value);
+			Assert.Equal("SetImageResource", events[1].Member);
+			Assert.Equal(Android.Resource.Color.Transparent, events[1].Value);
+			Assert.Equal("SetImageDrawable", events[2].Member);
+			var drawable = Assert.IsType<ColorDrawable>(events[2].Value);
+			drawable.Color.IsEquivalent(Colors.Red.ToNative());
 		}
 	}
 }

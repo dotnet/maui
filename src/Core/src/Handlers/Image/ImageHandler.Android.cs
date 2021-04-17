@@ -32,7 +32,8 @@ namespace Microsoft.Maui.Handlers
 			handler._sourceCancellation?.Cancel();
 			handler._sourceCancellation = new CancellationTokenSource();
 
-			await handler.NativeView.UpdateSourceAsync(image, handler.GetRequiredService<IImageSourceServiceProvider>(), handler._sourceCancellation.Token);
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+			await handler.NativeView.UpdateSourceAsync(image, provider, handler._sourceCancellation.Token);
 
 			handler._sourceCancellation = null;
 		}

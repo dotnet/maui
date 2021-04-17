@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Essentials;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;

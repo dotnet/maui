@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 		}
 
-		public Graphics.Color Color { get; set; }
+		public Color Color { get; set; }
 
 		public string FontFamily { get; set; }
 
@@ -79,5 +80,29 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 	public partial class InvalidImageSourceStub : ImageSourceStub
 	{
+	}
+
+	public interface ICountedImageSourceStub : IImageSource
+	{
+		bool Wait { get; }
+
+		Color Color { get; }
+	}
+
+	public partial class CountedImageSourceStub : ImageSourceStub, ICountedImageSourceStub
+	{
+		public CountedImageSourceStub()
+		{
+		}
+
+		public CountedImageSourceStub(Color color, bool wait = true)
+		{
+			Color = color;
+			Wait = wait;
+		}
+
+		public bool Wait { get; set; } = true;
+
+		public Color Color { get; set; }
 	}
 }

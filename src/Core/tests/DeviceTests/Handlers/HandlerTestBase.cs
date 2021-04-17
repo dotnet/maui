@@ -19,6 +19,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var appBuilder = AppHostBuilder
 				.CreateDefaultAppBuilder()
+				.ConfigureImageSourceServices((ctx, services) =>
+				{
+					services.AddService<ICountedImageSourceStub, CountedImageSourceServiceStub>();
+				})
 				.ConfigureFonts((ctx, fonts) =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
@@ -42,6 +46,21 @@ namespace Microsoft.Maui.DeviceTests
 		public IApplication App => _app;
 
 		public IMauiContext MauiContext => _context;
+
+		protected THandler CreateHandler(IView view) =>
+			CreateHandler<THandler>(view);
+
+		protected TCustomHandler CreateHandler<TCustomHandler>(IView view)
+			where TCustomHandler : THandler
+		{
+			var handler = Activator.CreateInstance<TCustomHandler>();
+			handler.SetMauiContext(MauiContext);
+
+			handler.SetVirtualView(view);
+			view.Handler = handler;
+
+			return handler;
+		}
 
 		public Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			MainThread.InvokeOnMainThreadAsync(func);

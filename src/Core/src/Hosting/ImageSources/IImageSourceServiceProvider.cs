@@ -4,8 +4,10 @@ namespace Microsoft.Maui
 {
 	public interface IImageSourceServiceProvider : IServiceProvider
 	{
-		IImageSourceService? GetImageSourceService(IImageSource imageSource);
+		IImageSourceService? GetImageSourceService(Type imageSource);
 
-		Type GetImageSourceType(IImageSource imageSource);
+		Type GetImageSourceServiceType(Type imageSource);
+
+		Type GetImageSourceType(Type imageSource);
 	}
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Android.Graphics;
@@ -80,29 +79,19 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static bool IsEquivalent(this AColor actualColor, AColor expectedColor, int precision = 0)
-		{
-			var red = actualColor.R <= expectedColor.R + precision && actualColor.R >= expectedColor.R - precision;
-			var green = actualColor.G <= expectedColor.G + precision && actualColor.G >= expectedColor.G - precision;
-			var blue = actualColor.B <= expectedColor.B + precision && actualColor.B >= expectedColor.B - precision;
-			var alpha = actualColor.A <= expectedColor.A + precision && actualColor.A >= expectedColor.A - precision;
-
-			return red && green && blue && alpha;
-		}
-
-		public static Bitmap AssertColorAtPoint(this Bitmap bitmap, AColor expectedColor, int x, int y, int precision = 0)
+		public static Bitmap AssertColorAtPoint(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
 			var actualColor = bitmap.ColorAtPoint(x, y);
 
-			if (!actualColor.IsEquivalent(expectedColor, precision))
+			if (!actualColor.IsEquivalent(expectedColor))
 				Assert.Equal(expectedColor, actualColor);
 
 			return bitmap;
 		}
 
-		public static Bitmap AssertColorAtCenter(this Bitmap bitmap, AColor expectedColor, int precision = 0)
+		public static Bitmap AssertColorAtCenter(this Bitmap bitmap, AColor expectedColor)
 		{
-			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width / 2, bitmap.Height / 2, precision);
+			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width / 2, bitmap.Height / 2);
 		}
 
 		public static Bitmap AssertColorAtBottomLeft(this Bitmap bitmap, AColor expectedColor)
@@ -125,10 +114,10 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this AView view, Maui.Graphics.Color expectedColor, int precision = 0) =>
-			AssertContainsColor(view, expectedColor.ToNative(), precision);
+		public static Task<Bitmap> AssertContainsColor(this AView view, Maui.Graphics.Color expectedColor) =>
+			AssertContainsColor(view, expectedColor.ToNative());
 
-		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor, int precision = 0)
+		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)
 		{
 			var bitmap = await view.ToBitmap();
 
@@ -136,7 +125,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				for (int y = 0; y < view.Height; y++)
 				{
-					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(expectedColor, precision))
+					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(expectedColor))
 					{
 						return bitmap;
 					}
@@ -147,10 +136,10 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static async Task<Bitmap> AssertColorAtPoint(this AView view, AColor expectedColor, int x, int y, int precision = 0)
+		public static async Task<Bitmap> AssertColorAtPoint(this AView view, AColor expectedColor, int x, int y)
 		{
 			var bitmap = await view.ToBitmap();
-			return bitmap.AssertColorAtPoint(expectedColor, x, y, precision);
+			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
 		public static async Task<Bitmap> AssertColorAtCenter(this AView view, AColor expectedColor)

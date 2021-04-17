@@ -17,17 +17,14 @@ namespace Microsoft.Maui.Hosting
 		{
 		}
 
-		public IImageSourceService? GetImageSourceService(IImageSource imageSource) =>
+		public IImageSourceService? GetImageSourceService(Type imageSource) =>
 			(IImageSourceService?)GetService(GetImageSourceServiceType(imageSource));
 
-		public Type GetImageSourceType(IImageSource imageSource) =>
-			GetImageSourceType(imageSource.GetType());
+		public Type GetImageSourceServiceType(Type imageSource) =>
+			_serviceCache.GetOrAdd(imageSource, type => ImageSourceServiceType.MakeGenericType(GetImageSourceType(type)));
 
-		Type GetImageSourceServiceType(IImageSource imageSource) =>
-			_serviceCache.GetOrAdd(imageSource.GetType(), type => ImageSourceServiceType.MakeGenericType(GetImageSourceType(type)));
-
-		Type GetImageSourceType(Type imageSourceType) =>
-			_imageSourceCache.GetOrAdd(imageSourceType, CreateImageSourceTypeCacheEntry);
+		public Type GetImageSourceType(Type imageSource) =>
+			_imageSourceCache.GetOrAdd(imageSource, CreateImageSourceTypeCacheEntry);
 
 		Type CreateImageSourceTypeCacheEntry(Type type)
 		{

@@ -41,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 			var bitmap = bitmapDrawable.Bitmap;
 
 			var expectedColor = Color.FromHex(colorHex);
-			bitmap.AssertColorAtCenter(expectedColor.ToNative(), 1);
+			bitmap.AssertColorAtCenter(expectedColor.ToNative());
 		}
 	}
 }
