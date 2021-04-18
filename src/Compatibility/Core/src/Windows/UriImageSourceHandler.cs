@@ -37,11 +37,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public async Task<Microsoft.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = new CancellationToken())
 		{
-			if (imagesource?.IsEmpty != false)
+			var imageLoader = imagesource as UriImageSource;
+
+			if (imageLoader?.Uri == null)
 				return null;
 
-			var imageLoader = imagesource as IStreamImageSource;
-			Stream streamImage = await imageLoader.GetStreamAsync(cancellationToken);
+			Stream streamImage = await ((IStreamImageSource)imageLoader).GetStreamAsync(cancellationToken);
 
 			if (streamImage == null || !streamImage.CanRead)
 			{
