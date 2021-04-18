@@ -6,6 +6,8 @@ using NativeView = UIKit.UIView;
 using NativeView = AppKit.NSView;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
+#elif LINUX
+using NativeView = Gtk.Widget;
 #elif WINDOWS
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD
