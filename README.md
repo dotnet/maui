@@ -17,7 +17,7 @@ This project is a **community** project. Any kind of collaboration is more than 
 
 ## Status
 
-Currently, the GTK Backend allows to develop applications, but it is still in development. If you want to know in detail the status, navigate to the [Status](https://github.com/jsuarezruiz/maui-linux/wiki/Status) section.
+Currently, the **GtkSharp** Backend allows to develop applications, but it is still in development. If you want to know in detail the status, navigate to the [Status](https://github.com/jsuarezruiz/maui-linux/wiki/Status) section.
 
 ## Faq
 
