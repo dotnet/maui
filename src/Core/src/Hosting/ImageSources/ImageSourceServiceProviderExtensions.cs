@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 
 namespace Microsoft.Maui
 {
@@ -18,7 +20,7 @@ namespace Microsoft.Maui
 			where T : IImageSource =>
 			provider.GetRequiredImageSourceService(typeof(T));
 
-		static IImageSourceService GetRequiredImageSourceService(this IImageSourceServiceProvider provider, Type imageSourceType)
+		public static IImageSourceService GetRequiredImageSourceService(this IImageSourceServiceProvider provider, Type imageSourceType)
 		{
 			var service = provider.GetImageSourceService(imageSourceType);
 			if (service != null)

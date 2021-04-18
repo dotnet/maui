@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Concurrent;
 using Microsoft.Maui.Hosting.Internal;
 
@@ -6,7 +8,7 @@ namespace Microsoft.Maui.Hosting
 {
 	class ImageSourceServiceProvider : MauiServiceProvider, IImageSourceServiceProvider
 	{
-		static readonly string ImageSourceInterface = typeof(IImageSource).FullName;
+		static readonly string ImageSourceInterface = typeof(IImageSource).FullName!;
 		static readonly Type ImageSourceServiceType = typeof(IImageSourceService<>);
 
 		readonly ConcurrentDictionary<Type, Type> _imageSourceCache = new ConcurrentDictionary<Type, Type>();
@@ -31,10 +33,18 @@ namespace Microsoft.Maui.Hosting
 
 		Type CreateImageSourceTypeCacheEntry(Type type)
 		{
-			foreach (var directInterface in type.GetInterfaces())
+			if (type.IsInterface)
 			{
-				if (directInterface.GetInterface(ImageSourceInterface) != null)
-					return directInterface;
+				if (type.GetInterface(ImageSourceInterface) != null)
+					return type;
+			}
+			else
+			{
+				foreach (var directInterface in type.GetInterfaces())
+				{
+					if (directInterface.GetInterface(ImageSourceInterface) != null)
+						return directInterface;
+				}
 			}
 
 			throw new InvalidOperationException($"Unable to find the image source type because none of the interfaces on {type.Name} were derived from {nameof(IImageSource)}.");
