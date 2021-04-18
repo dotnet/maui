@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -9,6 +10,14 @@ namespace Microsoft.Maui.Hosting
 			where TImageSourceService : class, IImageSourceService<TImageSource>
 		{
 			services.AddSingleton<IImageSourceService<TImageSource>, TImageSourceService>();
+
+			return services;
+		}
+
+		public static IImageSourceServiceCollection AddService<TImageSource>(this IImageSourceServiceCollection services, Func<IServiceProvider, IImageSourceService<TImageSource>> implementationFactory)
+			where TImageSource : IImageSource
+		{
+			services.AddSingleton(provider => implementationFactory(((IImageSourceServiceProvider)provider).HostServiceProvider));
 
 			return services;
 		}

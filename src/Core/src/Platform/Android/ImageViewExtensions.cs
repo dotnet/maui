@@ -54,6 +54,9 @@ namespace Microsoft.Maui
 			if (imageSource == null)
 				return;
 
+			var events = image as IImageSourcePartEvents;
+
+			events?.LoadingStarted();
 			image.UpdateIsLoading(true);
 
 			try
@@ -63,7 +66,9 @@ namespace Microsoft.Maui
 				{
 					// use the faster/better way
 
-					await applyService.ApplyDrawableAsync(imageSource, image, imageView, cancellationToken);
+					var applied = await applyService.ApplyDrawableAsync(imageSource, image, imageView, cancellationToken);
+
+					events?.LoadingCompleted(applied);
 				}
 				else
 				{
@@ -71,19 +76,28 @@ namespace Microsoft.Maui
 
 					var drawable = await service.GetDrawableAsync(imageSource, context, cancellationToken);
 
+					var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;
+
 					// only set the image if we are still on the same one
-					if (!cancellationToken.IsCancellationRequested && imageSource == image.Source)
+					if (applied)
 					{
 						imageView.SetImageDrawable(drawable);
 
 						if (drawable is IAnimatable animatable && image.IsAnimationPlaying)
 							animatable.Start();
 					}
+
+					events?.LoadingCompleted(applied);
 				}
 			}
 			catch (OperationCanceledException)
 			{
 				// no-op
+				events?.LoadingCompleted(false);
+			}
+			catch (Exception ex)
+			{
+				events?.LoadingFailed(ex);
 			}
 			finally
 			{

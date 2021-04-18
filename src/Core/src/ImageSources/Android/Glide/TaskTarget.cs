@@ -4,9 +4,9 @@ using Android.Graphics.Drawables;
 using Bumptech.Glide.Request.Target;
 using Bumptech.Glide.Request.Transition;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.BumptechGlide
 {
-	class TaskTarget : CustomTarget
+	public class TaskTarget : CustomTarget
 	{
 		public TaskTarget(TaskCompletionSource<Drawable> tcs)
 		{

@@ -6,10 +6,8 @@ namespace Microsoft.Maui
 	{
 		Color Color { get; }
 
-		string FontFamily { get; }
+		Font Font { get; }
 
 		string Glyph { get; }
-
-		double Size { get; }
 	}
 }

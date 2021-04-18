@@ -1,7 +1,7 @@
 ﻿using Android.Content;
 using Bumptech.Glide;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.BumptechGlide
 {
 	public static class RequestManagerExtensions
 	{

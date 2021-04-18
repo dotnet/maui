@@ -2,38 +2,38 @@
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">
     <Compile Remove="**\*.iOS.cs" />
     <None Include="**\*.iOS.cs" />
-    <Compile Remove="**\iOS\*.cs" />
-    <None Include="**\iOS\*.cs" />
+    <Compile Remove="**\iOS\**\*.cs" />
+    <None Include="**\iOS\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true ">
     <Compile Remove="**\*.Mac.cs" />
     <None Include="**\*.Mac.cs" />
-    <Compile Remove="**\Mac\*.cs" />
-    <None Include="**\Mac\*.cs" />
+    <Compile Remove="**\Mac\**\*.cs" />
+    <None Include="**\Mac\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true AND $(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true">
     <Compile Remove="**\*.MaciOS.cs" />
     <None Include="**\*.MaciOS.cs" />
-    <Compile Remove="**\MaciOS\*.cs" />
-    <None Include="**\MaciOS\*.cs" />
+    <Compile Remove="**\MaciOS\**\*.cs" />
+    <None Include="**\MaciOS\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) != true AND $(TargetFramework.StartsWith('net6.0-android')) != true ">
     <Compile Remove="**\*.Android.cs" />
     <None Include="**\*.Android.cs" />
-    <Compile Remove="**\Android\*.cs" />
-    <None Include="**\Android\*.cs" />
+    <Compile Remove="**\Android\**\*.cs" />
+    <None Include="**\Android\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true ">
     <Compile Remove="**\*.Standard.cs" />
     <None Include="**\*.Standard.cs" />
-    <Compile Remove="**\Standard\*.cs" />
-    <None Include="**\Standard\*.cs" />
+    <Compile Remove="**\Standard\**\*.cs" />
+    <None Include="**\Standard\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) != true ">
     <Compile Remove="**\*.Windows.cs" />
     <None Include="**\*.Windows.cs" />
-    <Compile Remove="**\Windows\*.cs" />
-    <None Include="**\Windows\*.cs" />
+    <Compile Remove="**\Windows\**\*.cs" />
+    <None Include="**\Windows\**\*.cs" />
   </ItemGroup>
 
   <PropertyGroup>

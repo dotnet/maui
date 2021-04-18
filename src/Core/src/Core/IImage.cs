@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using System;
+
+namespace Microsoft.Maui
 {
 	public interface IImage : IView, IImageSourcePart
 	{
@@ -14,5 +16,14 @@
 		bool IsAnimationPlaying { get; }
 
 		void UpdateIsLoading(bool isLoading);
+	}
+
+	public interface IImageSourcePartEvents
+	{
+		void LoadingStarted();
+
+		void LoadingCompleted(bool successful);
+
+		void LoadingFailed(Exception exception);
 	}
 }

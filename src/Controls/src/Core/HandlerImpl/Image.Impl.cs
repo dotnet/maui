@@ -26,5 +26,6 @@ namespace Microsoft.Maui.Controls
 
 	public partial class FontImageSource : Maui.IFontImageSource
 	{
+		Font IFontImageSource.Font => Font.OfSize(FontFamily, Size);
 	}
 }

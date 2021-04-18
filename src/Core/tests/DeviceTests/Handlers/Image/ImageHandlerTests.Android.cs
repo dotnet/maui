@@ -3,42 +3,22 @@ using Android.Graphics.Drawables;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Xunit;
-using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageHandlerTests
 	{
 		[Theory]
-		[InlineData("red.png", "#FF0000")]
-		[InlineData("green.png", "#00FF00")]
-		[InlineData("black.png", "#000000")]
-		public async Task SourceInitializesCorrectly(string filename, string colorHex)
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#000000")]
+		public async Task InitializingNullSourceOnlyUpdatesTransparent(string colorHex)
 		{
+			var expectedColor = Color.FromHex(colorHex);
+
 			var image = new ImageStub
 			{
-				BackgroundColor = Colors.Black,
-				Source = new FileImageSourceStub(filename),
-			};
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var handler = CreateHandler(image);
-
-				await image.Wait();
-
-				var expectedColor = Color.FromHex(colorHex);
-
-				await handler.NativeView.AssertContainsColor(expectedColor);
-			});
-		}
-
-		[Fact]
-		public async Task InitializingNullSourceOnlyUpdatesTransparent()
-		{
-			var image = new ImageStub
-			{
-				BackgroundColor = Colors.Black,
+				BackgroundColor = expectedColor,
 			};
 
 			await InvokeOnMainThreadAsync(async () =>
@@ -51,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("SetImageResource", handler.ImageEvents[0].Member);
 				Assert.Equal(Android.Resource.Color.Transparent, handler.ImageEvents[0].Value);
 
-				await handler.NativeView.AssertContainsColor(Colors.Black);
+				await handler.NativeView.AssertContainsColor(expectedColor);
 			});
 		}
 
@@ -69,6 +49,8 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler<CountedImageHandler>(image);
 
 				await image.Wait();
+
+				await handler.NativeView.AssertContainsColor(Colors.Red);
 
 				Assert.Equal(2, handler.ImageEvents.Count);
 				Assert.Equal("SetImageResource", handler.ImageEvents[0].Member);

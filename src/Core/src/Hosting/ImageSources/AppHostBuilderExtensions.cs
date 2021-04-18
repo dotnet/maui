@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Hosting
 			builder.ConfigureImageSourceServices(services =>
 			{
 				services.AddService<IFileImageSource, FileImageSourceService>();
+				services.AddService<IFontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>()));
 				services.AddService<IStreamImageSource, StreamImageSourceService>();
 				services.AddService<IUriImageSource, UriImageSourceService>();
 			});
@@ -34,9 +35,7 @@ namespace Microsoft.Maui.Hosting
 		{
 			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
 			{
-				var provider = new ImageSourceServiceProvider(this);
-
-				services.AddSingleton<IImageSourceServiceProvider>(provider);
+				services.AddSingleton<IImageSourceServiceProvider>(svcs => new ImageSourceServiceProvider(this, svcs));
 			}
 
 			public void Configure(HostBuilderContext context, IServiceProvider services)

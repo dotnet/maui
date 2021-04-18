@@ -33,11 +33,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Color Color { get; set; }
 
-		public string FontFamily { get; set; }
-
 		public string Glyph { get; set; }
 
-		public double Size { get; set; }
+		public Font Font { get; set; }
 	}
 
 	public partial class StreamImageSourceStub : ImageSourceStub, IStreamImageSource
@@ -76,6 +74,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public Uri Uri { get; set; }
+
+		public TimeSpan CacheValidity { get; set; } = TimeSpan.FromDays(1);
+
+		public bool CachingEnabled { get; set; } = true;
 	}
 
 	public partial class InvalidImageSourceStub : ImageSourceStub

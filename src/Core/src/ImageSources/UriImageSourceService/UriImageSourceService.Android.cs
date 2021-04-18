@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Bumptech.Glide;
+using Bumptech.Glide.Load.Engine;
 
 namespace Microsoft.Maui
 {
@@ -23,9 +24,18 @@ namespace Microsoft.Maui
 
 			var uri = imageSource.Uri;
 
-			var target = Glide
+			var builder = Glide
 				.With(context)
-				.Load(uri.OriginalString)
+				.Load(uri.OriginalString);
+
+			if (!imageSource.CachingEnabled)
+			{
+				builder = builder
+					.SetDiskCacheStrategy(DiskCacheStrategy.None)
+					.SkipMemoryCache(true);
+			}
+
+			var target = builder
 				.Submit();
 
 			var drawable = await target.AsTask<Drawable>(cancellationToken);

@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public partial class ImageStub : StubBase, IImage
+	public partial class ImageStub : StubBase, IImage, IImageSourcePartEvents
 	{
 		public Aspect Aspect { get; set; }
 
@@ -14,10 +15,21 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsLoading { get; private set; }
 
-		public void UpdateIsLoading(bool isLoading)
-		{
+		public event Action LoadingStarted;
+		public event Action<bool> LoadingCompleted;
+		public event Action<Exception> LoadingFailed;
+
+		public void UpdateIsLoading(bool isLoading) =>
 			IsLoading = isLoading;
-		}
+
+		void IImageSourcePartEvents.LoadingCompleted(bool successful) =>
+			LoadingCompleted?.Invoke(successful);
+
+		void IImageSourcePartEvents.LoadingFailed(Exception exception) =>
+			LoadingFailed?.Invoke(exception);
+
+		void IImageSourcePartEvents.LoadingStarted() =>
+			LoadingStarted?.Invoke();
 	}
 
 	public static class ImageStubExtensions

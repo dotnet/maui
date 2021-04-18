@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Bumptech.Glide;
+using Microsoft.Maui.BumptechGlide;
 
 namespace Microsoft.Maui
 {
