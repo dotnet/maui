@@ -143,19 +143,19 @@ namespace Microsoft.Maui.Graphics
         public static readonly Color Ivory = new Color("#FFFFF0");
         public static readonly Color White = new Color("#FFFFFF");
         public static readonly Color Transparent = new Color("#00000000");
-        public static readonly Color DarkGoldenrod = new Color (184, 134, 11);
-        public static readonly Color DarkGray = new Color (169, 169, 169);
-        public static readonly Color DarkSlateGray = new Color (47, 79, 79);
-        public static readonly Color DimGray = new Color (105, 105, 105);
-        public static readonly Color Firebrick = new Color (178, 34, 34);
-        public static readonly Color Goldenrod = new Color (218, 165, 32);
-        public static readonly Color Gray = new Color (128, 128, 128);
-        public static readonly Color Honeydew = new Color (240, 255, 240);
-        public static readonly Color LightGoldenrodYellow = new Color (250, 250, 210);
-        public static readonly Color LightGray = new Color (211, 211, 211);
-		public static readonly Color LightSlateGray = new Color(119, 136, 153);
-        public static readonly Color MediumAquamarine = new Color (102, 205, 170);
-        public static readonly Color PaleGoldenrod = new Color (238, 232, 170);
-        public static readonly Color SlateGray = new Color (112, 128, 144);
+        public static readonly Color DarkGoldenrod = Color.FromRgb(184, 134, 11);
+        public static readonly Color DarkGray = Color.FromRgb(169, 169, 169);
+        public static readonly Color DarkSlateGray = Color.FromRgb(47, 79, 79);
+        public static readonly Color DimGray = Color.FromRgb(105, 105, 105);
+        public static readonly Color Firebrick = Color.FromRgb(178, 34, 34);
+        public static readonly Color Goldenrod = Color.FromRgb(218, 165, 32);
+        public static readonly Color Gray = Color.FromRgb(128, 128, 128);
+        public static readonly Color Honeydew = Color.FromRgb(240, 255, 240);
+        public static readonly Color LightGoldenrodYellow = Color.FromRgb(250, 250, 210);
+        public static readonly Color LightGray = Color.FromRgb(211, 211, 211);
+        public static readonly Color LightSlateGray = Color.FromRgb(119, 136, 153);
+        public static readonly Color MediumAquamarine = Color.FromRgb(102, 205, 170);
+        public static readonly Color PaleGoldenrod = Color.FromRgb(238, 232, 170);
+        public static readonly Color SlateGray = Color.FromRgb(112, 128, 144);
     }
 }
