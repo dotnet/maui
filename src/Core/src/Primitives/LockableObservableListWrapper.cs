@@ -1,26 +1,25 @@
+﻿#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Internals
+namespace Microsoft.Maui
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class LockableObservableListWrapper : IList<string>, ICollection<string>, INotifyCollectionChanged, INotifyPropertyChanged, IReadOnlyList<string>, IReadOnlyCollection<string>, IEnumerable<string>, IEnumerable
 	{
 		public readonly ObservableCollection<string> _list = new ObservableCollection<string>();
 
-		event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
+		event NotifyCollectionChangedEventHandler? INotifyCollectionChanged.CollectionChanged
 		{
 			add { ((INotifyCollectionChanged)_list).CollectionChanged += value; }
 			remove { ((INotifyCollectionChanged)_list).CollectionChanged -= value; }
 		}
 
-		event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+		event PropertyChangedEventHandler? INotifyPropertyChanged.PropertyChanged
 		{
 			add { ((INotifyPropertyChanged)_list).PropertyChanged += value; }
 			remove { ((INotifyPropertyChanged)_list).PropertyChanged -= value; }
