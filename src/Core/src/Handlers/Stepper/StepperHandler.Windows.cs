@@ -1,22 +1,28 @@
-﻿using System;
-using Microsoft.UI.Xaml.Controls;
-
+﻿#nullable disable
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : ViewHandler<IStepper, Button>
+	public partial class StepperHandler : ViewHandler<IStepper, MauiStepper>
 	{
-		protected override Button CreateNativeView() => new Button();
+		protected override MauiStepper CreateNativeView() => new MauiStepper();
 
-		[MissingMapper]
-		public static void MapMinimum(IViewHandler handler, IStepper stepper) { }
+		public static void MapMinimum(StepperHandler handler, IStepper stepper) 
+		{ 
+			handler.NativeView?.UpdateMinimum(stepper); 
+		}
 
-		[MissingMapper]
-		public static void MapMaximum(IViewHandler handler, IStepper stepper) { }
+		public static void MapMaximum(StepperHandler handler, IStepper stepper) 
+		{ 
+			handler.NativeView?.UpdateMaximum(stepper); 
+		}
 
-		[MissingMapper]
-		public static void MapIncrement(IViewHandler handler, IStepper stepper) { }
+		public static void MapIncrement(StepperHandler handler, IStepper stepper) 
+		{ 
+			handler.NativeView?.UpdateInterval(stepper); 
+		}
 
-		[MissingMapper]
-		public static void MapValue(IViewHandler handler, IStepper stepper) { }
+		public static void MapValue(StepperHandler handler, IStepper stepper) 
+		{ 
+			handler.NativeView?.UpdateValue(stepper); 
+		}
 	}
 }
