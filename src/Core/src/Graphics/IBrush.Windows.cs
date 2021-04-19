@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Media;
+﻿#nullable enable
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Graphics
 {

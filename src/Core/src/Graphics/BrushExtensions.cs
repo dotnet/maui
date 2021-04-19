@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Graphics
+﻿#nullable enable
+namespace Microsoft.Maui.Graphics
 {
 	public static partial class BrushExtensions
 	{
