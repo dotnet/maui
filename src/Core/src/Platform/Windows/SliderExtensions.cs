@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateMinimumTrackColor(this Slider nativeSlider, ISlider slider, Brush? defaultForegroundColor)
 		{
-			if (slider.MinimumTrackColor == Color.Default)
+			if (slider.MinimumTrackColor.IsDefault())
 				nativeSlider.Foreground = defaultForegroundColor;
 			else
 				nativeSlider.Foreground = slider.MinimumTrackColor.ToNative();
@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaximumTrackColor(this Slider nativeSlider, ISlider slider, Brush? defaultBackgroundColor)
 		{
-			if (slider.MaximumTrackColor == Color.Default)
+			if (slider.MaximumTrackColor.IsDefault())
 				nativeSlider.Background = defaultBackgroundColor;
 			else
 				nativeSlider.Background = slider.MaximumTrackColor.ToNative();
