@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 				Foreground = foreground
 			};
 
-			await ValidateHasColor(button, Colors.Orange, () => button.Background = foreground);
+			await ValidateHasColor(button, Colors.Orange, () => button.Foreground = foreground);
 		}
 
 		[Fact(DisplayName = "Click event fires Correctly")]

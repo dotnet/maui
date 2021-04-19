@@ -43,16 +43,18 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
-		[Fact(DisplayName = "TextColor Initializes Correctly")]
-		public async Task TextColorInitializesCorrectly()
+		[Fact(DisplayName = "Foreground Initializes Correctly")]
+		public async Task ForegroundInitializesCorrectly()
 		{
+			var foreground = new BrushStub(Colors.Orange);
+
 			var editor = new EditorStub()
 			{
 				Text = "Test",
-				TextColor = Colors.Yellow
+				Foreground = foreground
 			};
 
-			await ValidatePropertyInitValue(editor, () => editor.TextColor, GetNativeTextColor, editor.TextColor);
+			await ValidateHasColor(editor, Colors.Orange, () => editor.Foreground = foreground);
 		}
 
 		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]

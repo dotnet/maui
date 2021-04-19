@@ -40,7 +40,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var mapper2 = new PropertyMapper<IButton>(mapper1)
 			{
-				[nameof(IButton.TextColor)] = (r, v) => wasMapper2Called = true
+				[nameof(IButton.Foreground)] = (r, v) => wasMapper2Called = true
 			};
 
 			mapper2.UpdateProperties(null, new Button());
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var mapper2 = new PropertyMapper<IButton>(mapper1)
 			{
-				[nameof(IButton.TextColor)] = (r, v) => wasMapper2Called = true
+				[nameof(IButton.Foreground)] = (r, v) => wasMapper2Called = true
 			};
 
 			mapper1[nameof(IView.Background)] = (r, v) => wasMapper3Called = true;
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var mapper2 = new PropertyMapper<IButton, ButtonHandler>(mapper1)
 			{
-				[nameof(IButton.TextColor)] = (r, v) => wasMapper2Called = true
+				[nameof(IButton.Foreground)] = (r, v) => wasMapper2Called = true
 			};
 
 			mapper2.UpdateProperties(null, new Button());
