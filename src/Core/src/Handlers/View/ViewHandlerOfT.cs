@@ -46,13 +46,19 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
-			if(VirtualView != null && VirtualView.Handler != this)
-				VirtualView.Handler = this;
+			if(VirtualView == view)
+				return;
+
+			if (VirtualView?.Handler != null)
+				VirtualView.Handler = null;
 
 			bool setupNativeView = VirtualView == null;
 
 			VirtualView = (TVirtualView)view;
 			NativeView ??= CreateNativeView();
+
+			if(VirtualView != null && VirtualView.Handler != this)
+				VirtualView.Handler = this;
 
 			if (setupNativeView && NativeView != null)
 			{
