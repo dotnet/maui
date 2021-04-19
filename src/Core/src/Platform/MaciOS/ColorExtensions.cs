@@ -173,7 +173,7 @@ namespace Microsoft.Maui
 			nfloat green;
 			nfloat blue;
 			nfloat alpha;
-			
+
 			if (color == null)
 				return null;
 #if __IOS__

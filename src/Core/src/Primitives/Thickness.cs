@@ -1,3 +1,4 @@
+#nullable enable
 using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 

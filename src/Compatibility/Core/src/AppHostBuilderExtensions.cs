@@ -14,20 +14,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 			typeof(Page),
 			typeof(Label),
 			typeof(CheckBox),
-#if !WINDOWS
+			typeof(Entry),
+			typeof(Switch),
+			typeof(Editor),
 			typeof(ActivityIndicator),
 			typeof(DatePicker),
-			typeof(Editor),
-			typeof(Entry),
 			typeof(Picker),
 			typeof(ProgressBar),
 			typeof(ScrollView),
 			typeof(SearchBar),
 			typeof(Slider),
 			typeof(Stepper),
-			typeof(Switch),
 			typeof(TimePicker),
-#endif
 		};
 
 		public static IAppHostBuilder UseFormsCompatibility(this IAppHostBuilder builder, bool registerRenderers = true)

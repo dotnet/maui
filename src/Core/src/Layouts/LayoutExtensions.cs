@@ -1,6 +1,6 @@
 ﻿using System;
-using Microsoft.Maui.Primitives;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Layouts
 {

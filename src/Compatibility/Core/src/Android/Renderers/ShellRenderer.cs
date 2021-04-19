@@ -8,14 +8,14 @@ using Android.Widget;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
-using LP = Android.Views.ViewGroup.LayoutParams;
-using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 using Color = Microsoft.Maui.Graphics.Color;
-using Microsoft.Maui.Graphics;
+using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
+using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
