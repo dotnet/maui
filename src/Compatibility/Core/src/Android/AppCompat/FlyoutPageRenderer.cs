@@ -415,7 +415,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateBackgroundColor(Page view)
 		{
 			Color backgroundColor = view.BackgroundColor;
-			if (backgroundColor == null)
+			if (backgroundColor != null)
 				SetBackgroundColor(backgroundColor.ToAndroid());
 		}
 
