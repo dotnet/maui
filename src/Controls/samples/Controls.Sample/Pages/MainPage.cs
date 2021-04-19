@@ -253,11 +253,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new TimePicker());
 			verticalStack.Add(new Image()
 			{
-				Source =
-				new UriImageSource()
-				{
-					Uri = new System.Uri("dotnet_bot.png")
-				}
+				Source = "dotnet_bot.png"
 			});
 
 			Content = verticalStack;
