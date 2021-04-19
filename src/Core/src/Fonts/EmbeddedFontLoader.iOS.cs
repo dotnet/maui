@@ -9,6 +9,12 @@ namespace Microsoft.Maui
 {
 	public class EmbeddedFontLoader : IEmbeddedFontLoader
 	{
+		[Preserve]
+		public EmbeddedFontLoader()
+		{
+
+		}
+
 		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
 		{
 			try
