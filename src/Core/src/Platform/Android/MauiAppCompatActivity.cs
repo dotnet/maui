@@ -12,6 +12,12 @@ namespace Microsoft.Maui
 	{
 		protected override void OnCreate(Bundle? savedInstanceState)
 		{
+			// If the theme has the maui_splash attribute, change the theme
+			if (Theme != null && Theme.ResolveAttribute(Resource.Attribute.maui_splash, new Android.Util.TypedValue(), resolveRefs: true))
+			{
+				SetTheme(Resource.Style.Maui_MainTheme);
+			}
+
 			base.OnCreate(savedInstanceState);
 
 			var mauiApp = MauiApplication.Current.Application;
