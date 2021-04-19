@@ -1,6 +1,4 @@
-﻿using Microsoft.UI.Xaml.Controls;
-
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	public static class TextBoxExtensions
 	{
@@ -14,7 +12,7 @@ namespace Microsoft.Maui
 			textView.ForegroundFocusBrush = brush;
 		}
 		
-		public static void UpdateText(this TextBox nativeControl, IEditor editor)
+		public static void UpdateText(this MauiTextBox nativeControl, IEditor editor)
 		{
 			string newText = editor.Text;
 
@@ -25,14 +23,20 @@ namespace Microsoft.Maui
 			nativeControl.SelectionStart = nativeControl.Text.Length;
 		}
 
-		public static void UpdatePlaceholder(this TextBox nativeControl, IEditor editor)
+		public static void UpdateText(this MauiTextBox nativeControl, IEntry entry)
+		{
+			nativeControl.Text = entry.Text;
+		}
+
+		public static void UpdatePlaceholder(this MauiTextBox nativeControl, IEditor editor)
 		{
 			nativeControl.PlaceholderText = editor.Placeholder ?? string.Empty;
 		}
-		public static void UpdateFont(this TextBox nativeControl, IText text, IFontManager fontManager) =>
+
+		public static void UpdateFont(this MauiTextBox nativeControl, IText text, IFontManager fontManager) =>
 			nativeControl.UpdateFont(text.Font, fontManager);
 
-		public static void UpdateFont(this TextBox nativeControl, Font font, IFontManager fontManager)
+		public static void UpdateFont(this MauiTextBox nativeControl, Font font, IFontManager fontManager)
 		{
 			nativeControl.FontSize = fontManager.GetFontSize(font);
 			nativeControl.FontFamily = fontManager.GetFontFamily(font);
@@ -40,7 +44,7 @@ namespace Microsoft.Maui
 			nativeControl.FontWeight = font.FontAttributes.ToFontWeight();
 		}
 
-		public static void UpdateMaxLength(this TextBox nativeControl, IEditor editor)
+		public static void UpdateMaxLength(this MauiTextBox nativeControl, IEditor editor)
 		{
 			nativeControl.MaxLength = editor.MaxLength;
 
@@ -50,7 +54,7 @@ namespace Microsoft.Maui
 				nativeControl.Text = currentControlText.Substring(0, editor.MaxLength);
 		}
 
-		public static void UpdateIsReadOnly(this TextBox nativeControl, IEditor editor)
+		public static void UpdateIsReadOnly(this MauiTextBox nativeControl, IEditor editor)
 		{
 			nativeControl.IsReadOnly = editor.IsReadOnly;
 		}
