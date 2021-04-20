@@ -362,7 +362,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<Label xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" Text=""{StaticResource foo}""/>";
 			var label = new Label();
-			Assert.Throws(new XamlParseExceptionConstraint(1, 54), () => label.LoadFromXaml(xaml));
+			Assert.Throws(new XamlParseExceptionConstraint(1, 62), () => label.LoadFromXaml(xaml));
 		}
 
 		public class CustView : Button
