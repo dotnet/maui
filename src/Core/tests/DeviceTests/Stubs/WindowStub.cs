@@ -4,5 +4,6 @@
 	{
 		public IMauiContext MauiContext { get; set; }
 		public IPage Page { get; set; }
+		public string Title { get; set; }
 	}
 }
