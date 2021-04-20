@@ -1,11 +1,11 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
 {
-	public class LayoutPanel : Panel
+	public class PagePanel : Panel
 	{
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
@@ -20,10 +20,17 @@ namespace Microsoft.Maui
 			var width = availableSize.Width;
 			var height = availableSize.Height;
 
-			var crossPlatformSize = CrossPlatformMeasure(width, height);
+			if (double.IsInfinity(width))
+			{
+				width = XamlRoot.Size.Width;
+			}
 
-			width = crossPlatformSize.Width;
-			height = crossPlatformSize.Height;
+			if (double.IsInfinity(height))
+			{
+				height = XamlRoot.Size.Height;
+			}
+
+			CrossPlatformMeasure(width, height);
 
 			return new Windows.Foundation.Size(width, height);
 		}

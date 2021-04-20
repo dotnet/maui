@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			Platform.UWP.Platform.SetRenderer(
 				VisualElementRenderer.Element,
-				VisualElementRenderer);
+				null);
 
 			VisualElementRenderer.SetElement(null);
 
@@ -107,7 +107,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				VisualElementRenderer);
 		}
 
-
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (widthConstraint < 0 || heightConstraint < 0)
@@ -116,13 +115,5 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return VisualElementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
-		public override void UpdateValue(string property)
-		{
-			base.UpdateValue(property);
-			if (property == "Frame")
-			{
-				SetFrame(VisualElementRenderer.Element.Bounds);
-			}
-		}
 	}
 }

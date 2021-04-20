@@ -16,6 +16,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var element = Substitute.For<IView>();
 			var margin = new Thickness(20);
 			element.Margin.Returns(margin);
+			element.Width.Returns(-1);
+			element.Height.Returns(-1);
 
 			var bounds = new Rectangle(0, 0, 100, 100);
 			var frame = element.ComputeFrame(bounds);
@@ -94,7 +96,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			yield return new object[] { LayoutAlignment.End, margin, 190, 100 };
 			yield return new object[] { LayoutAlignment.Fill, margin, 10, 280 };
 
-			// Lopsided margin
+			//// Lopsided margin
 			margin = new Thickness(5, 5, 10, 10);
 			yield return new object[] { LayoutAlignment.Start, margin, 5, 100 };
 			yield return new object[] { LayoutAlignment.Center, margin, 97.5, 100 };
@@ -116,6 +118,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.Margin.Returns(margin);
 			element.DesiredSize.Returns(viewSize);
 			element.HorizontalLayoutAlignment.Returns(layoutAlignment);
+			element.Width.Returns(-1);
+			element.Height.Returns(-1);
 
 			var frame = element.ComputeFrame(new Rectangle(0, 0, widthConstraint, heightConstraint));
 
@@ -137,6 +141,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.Margin.Returns(margin);
 			element.DesiredSize.Returns(viewSize);
 			element.VerticalLayoutAlignment.Returns(layoutAlignment);
+			element.Width.Returns(-1);
+			element.Height.Returns(-1);
 
 			var frame = element.ComputeFrame(new Rectangle(0, 0, widthConstraint, heightConstraint));
 
@@ -184,6 +190,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.DesiredSize.Returns(viewSize);
 			element.FlowDirection.Returns(FlowDirection.RightToLeft);
 			element.HorizontalLayoutAlignment.Returns(layoutAlignment);
+			element.Width.Returns(-1);
+			element.Height.Returns(-1);
 
 			var frame = element.ComputeFrame(new Rectangle(0, 0, widthConstraint, heightConstraint));
 

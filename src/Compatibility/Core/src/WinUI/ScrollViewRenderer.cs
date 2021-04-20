@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
 		{
-			if (Element == null)
+			if (Element == null || Control == null)
 				return finalSize;
 
 			Element.IsInNativeLayout = true;
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var result = new Windows.Foundation.Size(width, height);
 
 			Control?.Measure(result);
-
+			
 			return result;
 		}
 
