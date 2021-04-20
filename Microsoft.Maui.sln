@@ -135,6 +135,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Core", "src\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj", "{B5F94CCB-5868-43BD-89B5-B66C97C3A741}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{ae2513cb-4e5e-4e5c-8237-88954d4c9433}*SharedItemsImports = 13
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{b5f94ccb-5868-43bd-89b5-b66c97c3a741}*SharedItemsImports = 5
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM

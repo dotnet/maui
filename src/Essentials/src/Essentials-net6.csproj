@@ -3,13 +3,15 @@
     <TargetFrameworks>netstandard2.1;netstandard2.0;net6.0;$(MauiPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
     <RootNamespace>Microsoft.Maui.Essentials</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Essentials</PackageId>
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
-  <ItemGroup>
-    <Compile Remove="**\*.cs" />
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <!-- remove other AndroidX packages from the MultiTargeting -->
+    <PackageReference Remove="*" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
@@ -33,7 +35,6 @@
     <Compile Include="**\*.android.cs" />
     <Compile Include="**\*.android.*.cs" />
     <AndroidResource Include="Resources\xml\*.xml" />
-    <PackageReference Remove="*" />
     <PackageReference Include="Xamarin.AndroidX.Browser" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
