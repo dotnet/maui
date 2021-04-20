@@ -14,11 +14,7 @@ namespace Microsoft.Maui
 				return;
 
 			nativeView.AddSubview(content.ToNative(mauiContext));
-		}
-
-		public static void UpdateBackgroundColor(this MauiFrame nativeView, IFrame frame)
-		{
-			nativeView.UpdateBackgroundColor(frame, null);
+			nativeView.SetNeedsLayout();
 		}
 
 		public static void UpdateBackgroundColor(this MauiFrame nativeView, IFrame frame, MauiFrameContent? nativeFrame)
@@ -26,29 +22,14 @@ namespace Microsoft.Maui
 			nativeView.SetupLayer(frame, nativeFrame);
 		}
 
-		public static void UpdateBorderColor(this MauiFrame nativeView, IFrame frame)
-		{
-			nativeView.UpdateBorderColor(frame, null);
-		}
-
 		public static void UpdateBorderColor(this MauiFrame nativeView, IFrame frame, MauiFrameContent? nativeFrame)
 		{
 			nativeView.SetupLayer(frame, nativeFrame);
 		}
 
-		public static void UpdateHasShadow(this MauiFrame nativeView, IFrame frame)
-		{
-			nativeView.UpdateHasShadow(frame, null);
-		}
-
 		public static void UpdateHasShadow(this MauiFrame nativeView, IFrame frame, MauiFrameContent? nativeFrame)
 		{
 			nativeView.SetupLayer(frame, nativeFrame);
-		}
-
-		public static void UpdateCornerRadius(this MauiFrame nativeView, IFrame frame)
-		{
-			nativeView.UpdateCornerRadius(frame, null);
 		}
 
 		public static void UpdateCornerRadius(this MauiFrame nativeView, IFrame frame, MauiFrameContent? nativeFrame)

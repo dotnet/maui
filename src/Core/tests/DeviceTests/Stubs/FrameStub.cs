@@ -10,6 +10,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Color BorderColor { get; set; }
 
-		public float CornerRadius { get; set; }
+		public float CornerRadius { get; set; } = -1.0f;
 	}
 }

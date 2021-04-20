@@ -9,6 +9,20 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Frame)]
 	public partial class FrameHandlerTests : HandlerTestBase<FrameHandler, FrameStub>
 	{
+		[Fact(DisplayName = "Content Initializes Correctly")]
+		public async Task ContentInitializesCorrectly()
+		{
+			var frame = new FrameStub()
+			{
+				Content = new LabelStub { Text = "Test" }
+			};
+
+			var handler = await CreateHandlerAsync(frame);
+			var content = GetNativeContent(handler);
+
+			Assert.NotNull(content);
+		}
+
 		[Fact(DisplayName = "BackgroundColor Initializes Correctly")]
 		public async Task BackgroundColorInitializesCorrectly()
 		{

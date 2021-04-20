@@ -10,6 +10,16 @@ namespace Microsoft.Maui.DeviceTests
 		MauiFrame GetNativeFrame(FrameHandler frameHandler) =>
 			frameHandler.NativeView;
 
+		object GetNativeContent(FrameHandler frameHandler)
+		{
+			var nativeFrame = GetNativeFrame(frameHandler);
+
+			if (nativeFrame.Subviews.Length > 1)
+				return nativeFrame.Subviews[1];
+
+			return null;
+		}
+
 		Task ValidateBackgroundColor(IFrame frame, Color color, Action action = null) =>
 			ValidateHasColor(frame, color, action);
 

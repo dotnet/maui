@@ -11,6 +11,17 @@ namespace Microsoft.Maui.DeviceTests
 		CardView GetNativeFrame(FrameHandler frameHandler) =>
 			frameHandler.NativeView;
 
+		object GetNativeContent(FrameHandler frameHandler)
+		{
+			var nativeFrame = GetNativeFrame(frameHandler);
+			var childCount = nativeFrame.ChildCount;
+
+			if (childCount > 0)
+				return nativeFrame.GetChildAt(0);
+
+			return null;
+		}
+
 		Task ValidateBackgroundColor(IFrame frame, Color color, Action action = null) =>
 			ValidateHasColor(frame, color, action);
 
