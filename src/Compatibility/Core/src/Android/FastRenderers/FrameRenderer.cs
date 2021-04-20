@@ -272,6 +272,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			this.SetClipToOutline(shouldClip);
 		}
 
+		[PortHandler]
 		void UpdateBackgroundColor()
 		{
 			if (_disposed)
@@ -311,6 +312,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 		}
 
+		[PortHandler]
 		void UpdateBorderColor()
 		{
 			if (_disposed)
@@ -324,6 +326,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				_backgroundDrawable.SetStroke(3, borderColor.ToAndroid());
 		}
 
+		[PortHandler]
 		void UpdateShadow()
 		{
 			if (_disposed)
@@ -340,6 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				CardElevation = 0f;
 		}
 
+		[PortHandler("Pending to port IsClippedToBounds Property")]
 		void UpdateCornerRadius()
 		{
 			if (_disposed)

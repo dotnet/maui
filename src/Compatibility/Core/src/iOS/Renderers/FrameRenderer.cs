@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				SetupLayer();
 		}
 
+		[PortHandler]
 		public virtual void SetupLayer()
 		{			
 			if (_actualView == null)
@@ -126,6 +127,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_actualView.Layer.MasksToBounds = Element.IsClippedToBounds;
 		}
 
+		[PortHandler]
 		public override void LayoutSubviews()
 		{
 			if (_previousSize != Bounds.Size)
@@ -134,6 +136,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.LayoutSubviews();
 		}
 
+		[PortHandler]
 		public override void Draw(CGRect rect)
 		{
 			if (_actualView != null)
@@ -170,6 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		class FrameView : UIView
 		{
