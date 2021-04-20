@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.App;
@@ -7,8 +6,6 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Extensions.DependencyInjection;
-using Java.Util;
-using System.Linq;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui

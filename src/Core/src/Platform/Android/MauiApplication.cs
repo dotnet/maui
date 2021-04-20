@@ -31,7 +31,6 @@ namespace Microsoft.Maui
 
 			Services = host.Services;
 			Application = Services.GetRequiredService<IApplication>();
-			
 			base.OnCreate();
 		}
 

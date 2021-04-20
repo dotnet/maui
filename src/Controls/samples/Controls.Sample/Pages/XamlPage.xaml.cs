@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using Maui.Controls.Sample.Controls;
-using Microsoft.Maui;
+﻿using Maui.Controls.Sample.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Pages
@@ -11,12 +9,6 @@ namespace Maui.Controls.Sample.Pages
 		public XamlPage()
 		{
 			InitializeComponent();
-		}
-
-		protected override void OnAppearing()
-		{
-		
-			base.OnAppearing();
 		}
 	}
 }
