@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+
 namespace Microsoft.Maui.Controls
 {
 	public partial class Application : IApplication
 	{
-		public List<IWindow> InternalWindows = new List<IWindow>();
+		internal List<IWindow> _internalWindows = new();
 
-		public IReadOnlyList<IWindow> Windows => null;
+		public IReadOnlyList<IWindow> Windows => _internalWindows;
 
 		public virtual IWindow CreateWindow(IActivationState activationState)
 		{

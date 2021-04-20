@@ -38,13 +38,13 @@ namespace Microsoft.Maui
 		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-			services.AddSingleton<IList<IWindow>>(services => Windows);
+			services.AddSingleton(services => _windows);
 		}
 	}
 
 	public abstract class MauiApplication : Application
 	{
-		internal IList<IWindow> Windows = new List<IWindow>();
+		internal IList<IWindow> _windows = new List<IWindow>();
 
 		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{

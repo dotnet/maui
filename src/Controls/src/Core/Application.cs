@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
 			// Initialize this value, when the app loads
 			_lastAppTheme = RequestedTheme;
-			
+			MessagingCenter.Subscribe<IAppHostBuilder, IWindow>(this, nameof(IApplication.CreateWindow), (app, window) => _internalWindows.Add(window));
 		}
 
 		public void Quit()

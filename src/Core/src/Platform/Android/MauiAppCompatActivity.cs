@@ -32,13 +32,12 @@ namespace Microsoft.Maui
 			var state = new ActivationState(mauiContext, savedInstanceState);
 			var window = mauiApp.CreateWindow(state);
 
-			MauiApplication.Current.Windows.Add(window);
+			MauiApplication.Current._windows.Add(window);
 
-			var events = MauiApplication.Current.Services.GetRequiredService<LifecycleEvents.ILifecycleEventService>();
+			var events = MauiApplication.Current.Services.GetRequiredService<ILifecycleEventService>();
 			events?.InvokeEvents<Action<IWindow>>(nameof(IApplication.CreateWindow), action => action(window));
 
 			window.MauiContext = mauiContext;
-
 
 			var content = (window.Page as IView) ?? window.Page.View;
 			var matchParent = ViewGroup.LayoutParams.MatchParent;

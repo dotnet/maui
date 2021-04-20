@@ -8,5 +8,6 @@ namespace Microsoft.Maui.Controls
 	{
 		public IMauiContext MauiContext { get; set; }
 		public IPage Page { get; set; }
+		public string Title { get; set; }
 	}
 }

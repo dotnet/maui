@@ -11,7 +11,6 @@ namespace Maui.Controls.Sample.Pages
 		public XamlPage()
 		{
 			InitializeComponent();
-			var window = Microsoft.Maui.Controls.Application.Current.Windows.FirstOrDefault();
 		}
 
 		protected override void OnAppearing()

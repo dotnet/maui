@@ -7,6 +7,7 @@ namespace Maui.Controls.Sample
 	{
 		public MainWindow(IPage page)
 		{
+			Title = nameof(MainWindow);
 			Page = page;
 		}
 	}

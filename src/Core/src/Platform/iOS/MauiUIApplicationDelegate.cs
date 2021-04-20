@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -30,7 +31,12 @@ namespace Microsoft.Maui
 			var window = Application.CreateWindow(activationState);
 			window.MauiContext = mauiContext;
 
-			var page = window.Page;
+			Current._windows.Add(window);
+
+			var events = Current.Services.GetRequiredService<ILifecycleEventService>();
+			events?.InvokeEvents<Action<IWindow>>(nameof(IApplication.CreateWindow), action => action(window));
+
+			var content = (window.Page as IView) ?? window.Page.View;
 
 			Window = new UIWindow
 			{
@@ -101,11 +107,14 @@ namespace Microsoft.Maui
 		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
+			services.AddSingleton(services => _windows);
 		}
 	}
 
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
+		internal IList<IWindow> _windows = new List<IWindow>();
+
 		protected MauiUIApplicationDelegate()
 		{
 			Current = this;

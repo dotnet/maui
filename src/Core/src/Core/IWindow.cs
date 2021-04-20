@@ -5,6 +5,7 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface IWindow
 	{
+		public string Title { get; }
 		/// <summary>
 		/// Gets or sets the .NET MAUI Context.
 		/// </summary>

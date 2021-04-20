@@ -28,15 +28,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			typeof(TimePicker),
 		};
 
-		internal static List<IWindow> _internalWindows = new();
-		public static IAppHostBuilder RegisterWindows(this IAppHostBuilder builder)
+		public static IAppHostBuilder UseWindows(this IAppHostBuilder builder)
 		{
 			builder.ConfigureLifecycleEvents(events =>
 			{
 				events.AddEvent<Action<IWindow>>(nameof(IApplication.CreateWindow), window =>
-				{
-					_internalWindows.Add(window);
-				});
+					MessagingCenter.Send(builder, nameof(IApplication.CreateWindow), window));
 			});
 			return builder;
 		}
@@ -55,6 +52,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 #endif
 
 			options.Flags |= InitializationFlags.SkipRenderers;
+
+			builder.UseWindows();
 
 			Forms.Init(options);
 
