@@ -38,7 +38,6 @@
     <WarningLevel>4</WarningLevel>
     <MtouchLink>Full</MtouchLink>
     <MtouchArch>x86_64</MtouchArch>
-    <MtouchExtraArgs>--linkskip=Xamarin.Forms.Platform.iOS --linkskip=Xamarin.Forms.Platform --linkskip=Xamarin.Forms.Core --linkskip=Xamarin.Forms.Xaml --linkskip=Samples</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
     <DebugSymbols>true</DebugSymbols>
@@ -64,7 +63,6 @@
     <MtouchArch>ARM64</MtouchArch>
     <CodesignKey>iPhone Developer</CodesignKey>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
-    <MtouchExtraArgs>--linkskip=Xamarin.Forms.Platform.iOS --linkskip=Xamarin.Forms.Platform --linkskip=Xamarin.Forms.Core --linkskip=Xamarin.Forms.Xaml --linkskip=Samples --optimize=force-rejected-types-removal --warn-on-type-ref=UIKit.UIWebView</MtouchExtraArgs>
     <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
@@ -83,18 +81,34 @@
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.0.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.0.0" />
     <PackageReference Include="Microsoft.AppCenter.Distribute" Version="3.0.0" />
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
-    <PackageReference Include="Xamarin.Forms.Visual.Material" Version="4.8.0.1821" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\iOS\Compatibility.iOS.csproj">
+      <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>
+      <Name>Compatibility.iOS</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj">
+      <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
+      <Name>Controls.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj">
+      <Project>{bb98a559-62c4-4c98-90a0-9e4d8df1ca27}</Project>
+      <Name>Controls.Xaml</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Essentials.csproj">
       <Project>{8CB95D25-8442-42BC-82BE-319D21138549}</Project>
       <Name>Essentials</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Samples\Samples.csproj">
-      <Project>{B4227123-2EEB-494A-A221-C061B5659AED}</Project>
-      <Name>Samples</Name>
+    <ProjectReference Include="..\Samples\Essentials.Samples.csproj">
+      <Project>{2C69EB76-02C4-4921-96A1-4D70CB7CE744}</Project>
+      <Name>Essentials.Samples</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -117,9 +131,4 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
-  <ProjectExtensions>
-    <VisualStudio>
-      <UserProperties TriggeredFromHotReload="False" />
-    </VisualStudio>
-  </ProjectExtensions>
 </Project>

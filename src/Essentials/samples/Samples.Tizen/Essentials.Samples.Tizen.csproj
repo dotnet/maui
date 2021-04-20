@@ -1,4 +1,4 @@
-<Project Sdk="Tizen.NET.Sdk/1.0.8">
+﻿<Project Sdk="Tizen.NET.Sdk/1.0.8">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Essentials.csproj" />
-    <ProjectReference Include="..\Samples\Samples.csproj" />
+    <ProjectReference Include="..\Samples\Essentials.Samples.csproj" />
   </ItemGroup>
 
   <ItemGroup>
