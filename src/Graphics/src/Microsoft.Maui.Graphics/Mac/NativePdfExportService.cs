@@ -1,16 +1,16 @@
-﻿namespace Microsoft.Maui.Graphics.Native
+namespace Microsoft.Maui.Graphics.Native
 {
-    public class NativePdfExportService : IPdfExportService
-    {
-        public static NativePdfExportService Instance = new NativePdfExportService();
+	public class NativePdfExportService : IPdfExportService
+	{
+		public static NativePdfExportService Instance = new NativePdfExportService();
 
-        private NativePdfExportService()
-        {
-        }
+		private NativePdfExportService()
+		{
+		}
 
-        public PdfExportContext CreateContext(float width = -1, float height = -1)
-        {
-            return new NativePdfExportContext(width, height);
-        }
-    }
+		public PdfExportContext CreateContext(float width = -1, float height = -1)
+		{
+			return new NativePdfExportContext(width, height);
+		}
+	}
 }

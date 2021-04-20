@@ -1,31 +1,31 @@
-﻿using System;
+using System;
 
 namespace Microsoft.Maui.Graphics.SharpDX.WindowsForms
 {
-    public interface IGraphicsRenderer : IDisposable
-    {
-        WFGraphicsView GraphicsView { set; }
+	public interface IGraphicsRenderer : IDisposable
+	{
+		WFGraphicsView GraphicsView { set; }
 
-        ICanvas Canvas { get; }
+		ICanvas Canvas { get; }
 
-        Color BackgroundColor { get; set; }
+		Color BackgroundColor { get; set; }
 
-        IDrawable Drawable { get; set; }
+		IDrawable Drawable { get; set; }
 
-        void Draw(RectangleF dirtyRect);
+		void Draw(RectangleF dirtyRect);
 
-        void SizeChanged(int width, int height);
+		void SizeChanged(int width, int height);
 
-        void Detached();
+		void Detached();
 
-        bool Dirty { get; set; }
+		bool Dirty { get; set; }
 
-        void Invalidate();
+		void Invalidate();
 
-        void Invalidate(float x, float y, float w, float h);
+		void Invalidate(float x, float y, float w, float h);
 
-        void StartServiceContext();
+		void StartServiceContext();
 
-        void EndServiceContext();
-    }
+		void EndServiceContext();
+	}
 }

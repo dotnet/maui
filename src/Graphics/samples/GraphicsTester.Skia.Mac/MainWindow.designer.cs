@@ -1,7 +1,7 @@
-﻿namespace GraphicsTester.Skia
+namespace GraphicsTester.Skia
 {
-    [global::Foundation.Register ("MainWindow")]
-    public partial class MainWindow
-    {
-    }
+	[global::Foundation.Register ("MainWindow")]
+	public partial class MainWindow
+	{
+	}
 }

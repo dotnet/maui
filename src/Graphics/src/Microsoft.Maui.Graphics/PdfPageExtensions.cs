@@ -4,51 +4,51 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Graphics
 {
-    public static class PdfPageExtensions
-    {
-        public static byte[] AsBytes(this IPdfPage target)
-        {
-            if (target == null)
-                return null;
+	public static class PdfPageExtensions
+	{
+		public static byte[] AsBytes(this IPdfPage target)
+		{
+			if (target == null)
+				return null;
 
-            using (var stream = new MemoryStream())
-            {
-                target.Save(stream);
-                return stream.ToArray();
-            }
-        }
+			using (var stream = new MemoryStream())
+			{
+				target.Save(stream);
+				return stream.ToArray();
+			}
+		}
 
-        public static Stream AsStream(this IPdfPage target)
-        {
-            if (target == null)
-                return null;
+		public static Stream AsStream(this IPdfPage target)
+		{
+			if (target == null)
+				return null;
 
-            var stream = new MemoryStream();
-            target.Save(stream);
-            stream.Position = 0;
+			var stream = new MemoryStream();
+			target.Save(stream);
+			stream.Position = 0;
 
-            return stream;
-        }
+			return stream;
+		}
 
-        public static async Task<byte[]> AsBytesAsync(this IPdfPage target)
-        {
-            if (target == null)
-                return null;
+		public static async Task<byte[]> AsBytesAsync(this IPdfPage target)
+		{
+			if (target == null)
+				return null;
 
-            using (var stream = new MemoryStream())
-            {
-                await target.SaveAsync(stream);
-                return stream.ToArray();
-            }
-        }
-        
-        public static string AsBase64(this IPdfPage target)
-        {
-            if (target == null)
-                return null;
+			using (var stream = new MemoryStream())
+			{
+				await target.SaveAsync(stream);
+				return stream.ToArray();
+			}
+		}
 
-            var bytes = target.AsBytes();
-            return Convert.ToBase64String(bytes);
-        }
-    }
+		public static string AsBase64(this IPdfPage target)
+		{
+			if (target == null)
+				return null;
+
+			var bytes = target.AsBytes();
+			return Convert.ToBase64String(bytes);
+		}
+	}
 }

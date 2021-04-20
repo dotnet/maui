@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Maui.Graphics;
 using Foundation;
 using GraphicsTester.Scenarios;
@@ -6,44 +6,44 @@ using UIKit;
 
 namespace GraphicsTester.iOS
 {
-    public class TesterTableViewSource : UITableViewSource
-    {
-        public event Action<IDrawable> ScenarioSelected;
+	public class TesterTableViewSource : UITableViewSource
+	{
+		public event Action<IDrawable> ScenarioSelected;
 
-        public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
-        {
-            UITableViewCell cell = tableView.DequeueReusableCell("cell");
+		public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
+		{
+			UITableViewCell cell = tableView.DequeueReusableCell("cell");
 
-            if (cell == null)
-            {
-                cell = new UITableViewCell(UITableViewCellStyle.Default, "cell");
-            }
+			if (cell == null)
+			{
+				cell = new UITableViewCell(UITableViewCellStyle.Default, "cell");
+			}
 
-            cell.TextLabel.Text = ScenarioList.Scenarios[indexPath.Row].ToString();
+			cell.TextLabel.Text = ScenarioList.Scenarios[indexPath.Row].ToString();
 
-            return cell;
-        }
+			return cell;
+		}
 
-        public override nint RowsInSection(UITableView tableview, nint section)
-        {
-            return ScenarioList.Scenarios.Count;
-        }
+		public override nint RowsInSection(UITableView tableview, nint section)
+		{
+			return ScenarioList.Scenarios.Count;
+		}
 
-        public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
-        {
-            if (ScenarioSelected != null)
-            {
-                if (tableView != null)
-                {
-                    var row = indexPath.Row;
+		public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
+		{
+			if (ScenarioSelected != null)
+			{
+				if (tableView != null)
+				{
+					var row = indexPath.Row;
 
-                    if (row >= 0)
-                    {
-                        var scenario = ScenarioList.Scenarios[row];
-                        ScenarioSelected(scenario);
-                    }
-                }
-            }
-        }
-    }
+					if (row >= 0)
+					{
+						var scenario = ScenarioList.Scenarios[row];
+						ScenarioSelected(scenario);
+					}
+				}
+			}
+		}
+	}
 }

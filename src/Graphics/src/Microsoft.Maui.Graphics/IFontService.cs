@@ -1,9 +1,9 @@
-﻿namespace Microsoft.Maui.Graphics
+namespace Microsoft.Maui.Graphics
 {
-    public interface IFontService
-    {
-        IFontFamily[] GetFontFamilies();
-        IFontStyle GetFontStyleById(string id);
-        IFontStyle GetDefaultFontStyle();
-    }
+	public interface IFontService
+	{
+		IFontFamily[] GetFontFamilies();
+		IFontStyle GetFontStyleById(string id);
+		IFontStyle GetDefaultFontStyle();
+	}
 }

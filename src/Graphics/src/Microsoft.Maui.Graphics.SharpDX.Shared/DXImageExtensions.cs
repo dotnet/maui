@@ -3,31 +3,31 @@ using SharpDX.Direct2D1;
 
 namespace Microsoft.Maui.Graphics.SharpDX
 {
-    public static class DXImageExtensions
-    {
-        public static Bitmap AsBitmap(this IImage image)
-        {
-            if (image is DXImage dxImage)
-            {
-                return dxImage.NativeImage;
-            }
+	public static class DXImageExtensions
+	{
+		public static Bitmap AsBitmap(this IImage image)
+		{
+			if (image is DXImage dxImage)
+			{
+				return dxImage.NativeImage;
+			}
 
-            if (image is VirtualImage virtualImage)
-            {
-                using (var stream = new MemoryStream(virtualImage.Bytes))
-                {
-                    return DXGraphicsService.CurrentTarget.Value.LoadBitmap(stream);
-                }
-            }
+			if (image is VirtualImage virtualImage)
+			{
+				using (var stream = new MemoryStream(virtualImage.Bytes))
+				{
+					return DXGraphicsService.CurrentTarget.Value.LoadBitmap(stream);
+				}
+			}
 
-            if (image != null)
-            {
-                Logger.Warn(
-                    "DXImageExtensions.AsBitmap: Unable to get Bitmap from Image. Expected an image of type DXImage however an image of type {0} was received.",
-                    image.GetType());
-            }
+			if (image != null)
+			{
+				Logger.Warn(
+					"DXImageExtensions.AsBitmap: Unable to get Bitmap from Image. Expected an image of type DXImage however an image of type {0} was received.",
+					image.GetType());
+			}
 
-            return null;
-        }
-    }
+			return null;
+		}
+	}
 }

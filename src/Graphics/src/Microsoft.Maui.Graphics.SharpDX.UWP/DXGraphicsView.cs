@@ -1,4 +1,4 @@
-﻿using Windows.Graphics.Display;
+using Windows.Graphics.Display;
 using SharpDX.Direct2D1;
 #if WINDOWS_UWP
 
@@ -6,63 +6,63 @@ using SharpDX.Direct2D1;
 
 namespace Microsoft.Maui.Graphics.SharpDX
 {
-    public class DXGraphicsView : DirectXPanelBase
-    {
-        private readonly DXCanvas canvas;
-        private IDrawable drawable;
-        private Color backgroundColor;
+	public class DXGraphicsView : DirectXPanelBase
+	{
+		private readonly DXCanvas canvas;
+		private IDrawable drawable;
+		private Color backgroundColor;
 
-        public DXGraphicsView()
-        {
-            canvas = new DXCanvas();
+		public DXGraphicsView()
+		{
+			canvas = new DXCanvas();
 
 #if WINDOWS_UWP
-            var displayInformation = DisplayInformation.GetForCurrentView();
-            canvas.Dpi = displayInformation.LogicalDpi;
+			var displayInformation = DisplayInformation.GetForCurrentView();
+			canvas.Dpi = displayInformation.LogicalDpi;
 #endif
 
-            BackgroundColor = Colors.Green;
-        }
+			BackgroundColor = Colors.Green;
+		}
 
-        public IDrawable Drawable
-        {
-            get => drawable;
-            set
-            {
-                drawable = value;
-                Invalidate();
-            }
-        }
+		public IDrawable Drawable
+		{
+			get => drawable;
+			set
+			{
+				drawable = value;
+				Invalidate();
+			}
+		}
 
-        public DXCanvas Canvas => canvas;
+		public DXCanvas Canvas => canvas;
 
-        public Color BackgroundColor
-        {
-            get => backgroundColor;
-            set => backgroundColor = value;
-        }
+		public Color BackgroundColor
+		{
+			get => backgroundColor;
+			set => backgroundColor = value;
+		}
 
-        protected override void Draw(DeviceContext context)
-        {
-            DXGraphicsService.CurrentFactory.Value = context.Factory;
-            DXGraphicsService.CurrentTarget.Value = context;
+		protected override void Draw(DeviceContext context)
+		{
+			DXGraphicsService.CurrentFactory.Value = context.Factory;
+			DXGraphicsService.CurrentTarget.Value = context;
 
-            RenderTransform = null;
-            canvas.RenderTarget = context;
-            var scale = canvas.DisplayScale;
-            var bounds = new RectangleF(0, 0, (float) ActualWidth * scale, (float) ActualHeight * scale);
+			RenderTransform = null;
+			canvas.RenderTarget = context;
+			var scale = canvas.DisplayScale;
+			var bounds = new RectangleF(0, 0, (float) ActualWidth * scale, (float) ActualHeight * scale);
 
-            if (backgroundColor != null)
-            {
-                canvas.FillColor = backgroundColor;
-                canvas.FillRectangle(bounds);
-                canvas.FillColor = Colors.White;
-            }
+			if (backgroundColor != null)
+			{
+				canvas.FillColor = backgroundColor;
+				canvas.FillRectangle(bounds);
+				canvas.FillColor = Colors.White;
+			}
 
-            drawable.Draw(canvas, bounds);
+			drawable.Draw(canvas, bounds);
 
-            DXGraphicsService.CurrentTarget.Value = null;
-            DXGraphicsService.CurrentFactory.Value = null;
-        }
-    }
+			DXGraphicsService.CurrentTarget.Value = null;
+			DXGraphicsService.CurrentFactory.Value = null;
+		}
+	}
 }

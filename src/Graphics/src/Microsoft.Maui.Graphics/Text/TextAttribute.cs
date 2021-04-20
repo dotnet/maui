@@ -1,18 +1,18 @@
-﻿namespace Microsoft.Maui.Graphics.Text
+namespace Microsoft.Maui.Graphics.Text
 {
-    public enum TextAttribute
-    {
-        FontName,
-        FontSize,
-        Bold,
-        Italic,
-        Underline,
-        Strikethrough,
-        Subscript,
-        Superscript,
-        Color,
-        Background,
-        UnorderedList,
-        Marker,
-    }
+	public enum TextAttribute
+	{
+		FontName,
+		FontSize,
+		Bold,
+		Italic,
+		Underline,
+		Strikethrough,
+		Subscript,
+		Superscript,
+		Color,
+		Background,
+		UnorderedList,
+		Marker,
+	}
 }

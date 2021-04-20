@@ -1,15 +1,15 @@
 namespace Microsoft.Maui.Graphics
 {
-    public interface IPicture
-    {
-        void Draw(ICanvas canvas);
+	public interface IPicture
+	{
+		void Draw(ICanvas canvas);
 
-        float X { get; }
+		float X { get; }
 
-        float Y { get; }
+		float Y { get; }
 
-        float Width { get; }
+		float Width { get; }
 
-        float Height { get; }
-    }
+		float Height { get; }
+	}
 }

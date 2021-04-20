@@ -1,8 +1,8 @@
-﻿namespace Microsoft.Maui.Graphics
+namespace Microsoft.Maui.Graphics
 {
-    public enum WindingMode
-    {
-        NonZero = 0,
-        EvenOdd = 1
-    }
+	public enum WindingMode
+	{
+		NonZero = 0,
+		EvenOdd = 1
+	}
 }
