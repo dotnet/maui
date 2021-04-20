@@ -72,6 +72,11 @@ namespace Microsoft.Maui.Graphics.Native
             return new RectangleF(target.Left, target.Top, Math.Abs(target.Width()), Math.Abs(target.Height()));
         }
 
+        public static Rectangle AsRectangle(this RectF target)
+        {
+            return new Rectangle(target.Left, target.Top, Math.Abs(target.Width()), Math.Abs(target.Height()));
+        }
+
         public static RectF AsRectF(this Rect target)
         {
             return new RectF(target);
@@ -337,6 +342,21 @@ namespace Microsoft.Maui.Graphics.Native
         public static PointF AsPointF(this global::Android.Graphics.PointF target)
         {
             return new PointF(target.X, target.Y);
+        }
+
+        public static Point AsPoint(this global::Android.Graphics.PointF target)
+        {
+            return new Point(target.X, target.Y);
+        }
+
+        public static SizeF AsSizeF(this global::Android.Util.SizeF target)
+        {
+            return new SizeF(target.Width, target.Height);
+        }
+
+        public static Size AsSize(this global::Android.Util.SizeF target)
+        {
+            return new Size(target.Width, target.Height);
         }
 
         public static Bitmap GetPatternBitmap(this Paint paint, float scale = 1)
