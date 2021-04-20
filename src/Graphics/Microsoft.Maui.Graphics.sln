@@ -61,6 +61,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Graphics.For
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphicsTester.Skia.Tizen", "samples\GraphicsTester.Skia.Tizen\GraphicsTester.Skia.Tizen.csproj", "{2CC7E5DC-FE0C-4139-8E76-69AF0D08A3FE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Maui.Graphics.Skia.GtkSharp", "src\Microsoft.Maui.Graphics.Skia.GtkSharp\Microsoft.Maui.Graphics.Skia.GtkSharp.csproj", "{2FFF012B-3B49-4613-863B-4F090006897C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphicsTester.Gtk", "samples\GraphicsTester.Gtk\GraphicsTester.Gtk.csproj", "{7F259E67-DFB9-4A3A-9187-5471EED2CDB1}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Microsoft.Maui.Graphics.SharpDX.Shared\Microsoft.Maui.Graphics.SharpDX.Shared.projitems*{5163bcb2-4d70-42da-975a-af55d6b6a0b3}*SharedItemsImports = 13
@@ -168,6 +172,14 @@ Global
 		{2CC7E5DC-FE0C-4139-8E76-69AF0D08A3FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CC7E5DC-FE0C-4139-8E76-69AF0D08A3FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CC7E5DC-FE0C-4139-8E76-69AF0D08A3FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FFF012B-3B49-4613-863B-4F090006897C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FFF012B-3B49-4613-863B-4F090006897C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FFF012B-3B49-4613-863B-4F090006897C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FFF012B-3B49-4613-863B-4F090006897C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F259E67-DFB9-4A3A-9187-5471EED2CDB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F259E67-DFB9-4A3A-9187-5471EED2CDB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F259E67-DFB9-4A3A-9187-5471EED2CDB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F259E67-DFB9-4A3A-9187-5471EED2CDB1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -198,6 +210,8 @@ Global
 		{5163BCB2-4D70-42DA-975A-AF55D6B6A0B3} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 		{7A1C8AB5-46EA-4B30-88A1-1564F32702BA} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 		{2CC7E5DC-FE0C-4139-8E76-69AF0D08A3FE} = {CE764F51-0699-4446-BEE2-17FBBDC99C5C}
+		{2FFF012B-3B49-4613-863B-4F090006897C} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
+		{7F259E67-DFB9-4A3A-9187-5471EED2CDB1} = {CE764F51-0699-4446-BEE2-17FBBDC99C5C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B07E734-6AE2-4A12-AD60-C072F3695854}
