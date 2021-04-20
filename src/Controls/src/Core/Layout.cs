@@ -521,12 +521,5 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
-
-		protected override Size ArrangeOverride(Rectangle bounds)
-		{
-			//return base.ArrangeOverride(bounds);
-			IsArrangeValid = true;
-			return bounds.Size;
-		}
 	}
 }
