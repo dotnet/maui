@@ -22,28 +22,6 @@ namespace Microsoft.Maui.Graphics.Native
             return color;
         }
 
-        public static int ToArgb(this Color target)
-        {
-            var a = (int) (target.Alpha * 255f);
-            var r = (int) (target.Red * 255f);
-            var g = (int) (target.Green * 255f);
-            var b = (int) (target.Blue * 255f);
-
-            int argb = a << 24 | r << 16 | g << 8 | b;
-            return argb;
-        }
-
-        public static int ToArgb(this Color target, float alpha)
-        {
-            var a = (int) (target.Alpha * 255f * alpha);
-            var r = (int) (target.Red * 255f);
-            var g = (int) (target.Green * 255f);
-            var b = (int) (target.Blue * 255f);
-
-            int argb = a << 24 | r << 16 | g << 8 | b;
-            return argb;
-        }
-
         public static global::Android.Graphics.Color AsColor(this Color target)
         {
             var r = (int) (target.Red * 255f);
@@ -70,6 +48,11 @@ namespace Microsoft.Maui.Graphics.Native
         public static RectangleF AsRectangleF(this RectF target)
         {
             return new RectangleF(target.Left, target.Top, Math.Abs(target.Width()), Math.Abs(target.Height()));
+        }
+
+        public static Rectangle AsRectangle(this RectF target)
+        {
+            return new Rectangle(target.Left, target.Top, Math.Abs(target.Width()), Math.Abs(target.Height()));
         }
 
         public static RectF AsRectF(this Rect target)
@@ -337,6 +320,21 @@ namespace Microsoft.Maui.Graphics.Native
         public static PointF AsPointF(this global::Android.Graphics.PointF target)
         {
             return new PointF(target.X, target.Y);
+        }
+
+        public static Point AsPoint(this global::Android.Graphics.PointF target)
+        {
+            return new Point(target.X, target.Y);
+        }
+
+        public static SizeF AsSizeF(this global::Android.Util.SizeF target)
+        {
+            return new SizeF(target.Width, target.Height);
+        }
+
+        public static Size AsSize(this global::Android.Util.SizeF target)
+        {
+            return new Size(target.Width, target.Height);
         }
 
         public static Bitmap GetPatternBitmap(this Paint paint, float scale = 1)

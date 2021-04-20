@@ -10,6 +10,11 @@ namespace Microsoft.Maui.Graphics.Native
             return new CGRect(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
         }
 
+        public static CGRect AsCGRect(this Rectangle target)
+        {
+            return new CGRect(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
+        }
+
         public static RectangleF AsRectangleF(this CGRect target)
         {
             return new RectangleF(
@@ -19,6 +24,15 @@ namespace Microsoft.Maui.Graphics.Native
                 (float) Math.Abs(target.Height));
         }
 
+        public static Rectangle AsRectangle(this CGRect target)
+        {
+            return new Rectangle(
+                target.Left,
+                target.Top,
+                Math.Abs(target.Width),
+                Math.Abs(target.Height));
+        }
+
         public static SizeF AsSizeF(this CGSize target)
         {
             return new SizeF(
@@ -26,7 +40,19 @@ namespace Microsoft.Maui.Graphics.Native
                 (float) target.Height);
         }
 
+        public static Size AsSize(this CGSize target)
+        {
+            return new Size(
+                target.Width,
+                target.Height);
+        }
+
         public static CGPoint AsCGPoint(this PointF target)
+        {
+            return new CGPoint(target.X, target.Y);
+        }
+
+        public static CGPoint AsCGPoint(this Point target)
         {
             return new CGPoint(target.X, target.Y);
         }
@@ -306,7 +332,12 @@ namespace Microsoft.Maui.Graphics.Native
             return path;
         }
 
-        public static CGSize AsSizeF(this SizeF target)
+        public static CGSize AsCGSize(this SizeF target)
+        {
+            return new CGSize(target.Width, target.Height);
+        }
+
+        public static CGSize AsCGSize(this Size target)
         {
             return new CGSize(target.Width, target.Height);
         }
@@ -314,6 +345,11 @@ namespace Microsoft.Maui.Graphics.Native
         public static PointF AsPointF(this CGPoint target)
         {
             return new PointF((float) target.X, (float) target.Y);
+        }
+
+        public static Point AsPoint(this CGPoint target)
+        {
+            return new Point(target.X, target.Y);
         }
 
         public class PathConverter

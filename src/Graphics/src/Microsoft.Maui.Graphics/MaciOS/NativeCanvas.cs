@@ -1308,7 +1308,7 @@ namespace Microsoft.Maui.Graphics.Native
         public override void SetShadow(SizeF offset, float blur, Color color)
         {
             var actualOffset = offset ;
-            var sizeF = actualOffset.AsSizeF();
+            var sizeF = actualOffset.AsCGSize();
 
 #if MONOMAC
 			sizeF.Height *= -1;
