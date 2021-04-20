@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 				return base.IsArrangeValid && Content.IsArrangeValid; 
 			} 
 
-			protected set => base.IsArrangeValid = value; 
+			internal protected set => base.IsArrangeValid = value; 
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)

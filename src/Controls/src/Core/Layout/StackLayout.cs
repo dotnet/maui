@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Layout2
 				return true;
 			}
 
-			protected set
+			internal protected set
 			{
 				_isArrangeValid = value;
 			}
