@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Essentials;
 using Samples.Model;
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Samples.View
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class PermissionsPage : BasePage
 	{
 		public PermissionsPage()

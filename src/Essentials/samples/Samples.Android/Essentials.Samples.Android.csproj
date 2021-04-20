@@ -42,7 +42,6 @@
     <AndroidSupportedAbis>armeabi-v7a;x86</AndroidSupportedAbis>
     <AndroidLinkTool>r8</AndroidLinkTool>
     <AndroidLinkMode>Full</AndroidLinkMode>
-    <AndroidLinkSkip>Xamarin.Forms.Platform.Android;Xamarin.Forms.Platform;Xamarin.Forms.Core;Xamarin.Forms.Xaml;Samples;FormsViewGroup;</AndroidLinkSkip>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
@@ -58,20 +57,32 @@
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.0.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.0.0" />
     <PackageReference Include="Microsoft.AppCenter.Distribute" Version="3.0.0" />
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
-    <PackageReference Include="Xamarin.Forms.Visual.Material" Version="4.8.0.1821" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="Xamarin.Google.Android.Material" />
-    <PackageReference Include="Xamarin.AndroidX.AppCompat.AppCompatResources" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Android\Compatibility.Android.csproj">
+      <Project>{0E16E70A-D6DD-4323-AD5D-363ABFF42D6A}</Project>
+      <Name>Compatibility.Android</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj">
+      <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
+      <Name>Controls.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj">
+      <Project>{bb98a559-62c4-4c98-90a0-9e4d8df1ca27}</Project>
+      <Name>Controls.Xaml</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Essentials.csproj">
       <Project>{8CB95D25-8442-42BC-82BE-319D21138549}</Project>
       <Name>Essentials</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Samples\Samples.csproj">
+    <ProjectReference Include="..\Samples\Essentials.Samples.csproj">
       <Project>{2C69EB76-02C4-4921-96A1-4D70CB7CE744}</Project>
-      <Name>Samples</Name>
+      <Name>Essentials.Samples</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -122,9 +133,4 @@
     <AndroidAsset Include="Assets\FileSystemTemplate.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <ProjectExtensions>
-    <VisualStudio>
-      <UserProperties TriggeredFromHotReload="False" />
-    </VisualStudio>
-  </ProjectExtensions>
 </Project>

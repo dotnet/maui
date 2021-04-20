@@ -76,9 +76,9 @@
       <Project>{8CB95D25-8442-42BC-82BE-319D21138549}</Project>
       <Name>Essentials</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Samples\Samples.csproj">
-      <Project>{B4227123-2EEB-494A-A221-C061B5659AED}</Project>
-      <Name>Samples</Name>
+    <ProjectReference Include="..\Samples\Essentials.Samples.csproj">
+      <Project>{2C69EB76-02C4-4921-96A1-4D70CB7CE744}</Project>
+      <Name>Essentials.Samples</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
