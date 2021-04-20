@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		protected override void UpdateBackgroundColor()
 		{
 			// Background color change must be handled separately
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Control != null)
 			{
-				Control.Background = backgroundColor.IsDefault() ? 
+				Control.Background = backgroundColor.IsDefault() ?
 					new Microsoft.UI.Xaml.Media.SolidColorBrush((Windows.UI.Color)Resources["SystemAltHighColor"]) : backgroundColor.ToBrush();
 			}
 		}
@@ -86,6 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void PackChild()
 		{
 			if (Element.Content == null)
@@ -95,6 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.Child = renderer.ContainerElement;
 		}
 
+		[PortHandler]
 		void UpdateBorder()
 		{
 			if (Element.BorderColor.IsNotDefault())
@@ -108,6 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateCornerRadius()
 		{
 			float cornerRadius = Element.CornerRadius;
