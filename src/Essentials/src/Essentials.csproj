@@ -49,12 +49,14 @@
     <Compile Include="**\*.tvos.cs" />
     <Compile Include="**\*.tvos.*.cs" />
     <Reference Include="System.Numerics" />
+    <Reference Include="netstandard" />
     <Reference Include="OpenTK-1.0" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.WatchOS')) ">
     <Compile Include="**\*.watchos.cs" />
     <Compile Include="**\*.watchos.*.cs" />
     <Reference Include="System.Numerics" />
+    <Reference Include="netstandard" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('tizen')) ">
     <PackageReference Include="Tizen.NET" Version="4.0.0" PrivateAssets="All" />
