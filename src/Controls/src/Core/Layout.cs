@@ -320,6 +320,7 @@ namespace Microsoft.Maui.Controls
 			region.Y += margin.Top;
 			region.Height -= margin.VerticalThickness;
 
+			child.IsArrangeValid = true;
 			child.Layout(region);
 		}
 
@@ -519,6 +520,13 @@ namespace Microsoft.Maui.Controls
 					fe.InvalidateMeasure();
 				}
 			}
+		}
+
+		protected override Size ArrangeOverride(Rectangle bounds)
+		{
+			//return base.ArrangeOverride(bounds);
+			IsArrangeValid = true;
+			return bounds.Size;
 		}
 	}
 }

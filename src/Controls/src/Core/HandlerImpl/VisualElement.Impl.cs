@@ -36,7 +36,8 @@ namespace Microsoft.Maui.Controls
 
 		public virtual bool IsMeasureValid { get; protected set; }
 
-		public virtual bool IsArrangeValid { get; protected set; }
+		// The set is `internal protected` here to allow the legacy Layouts to set IsArrangeValid on their children
+		public virtual bool IsArrangeValid { get; internal protected set; }
 
 		public void Arrange(Rectangle bounds)
 		{
