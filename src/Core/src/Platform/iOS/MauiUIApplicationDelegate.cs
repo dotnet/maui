@@ -36,7 +36,7 @@ namespace Microsoft.Maui
 			var events = Current.Services.GetRequiredService<ILifecycleEventService>();
 			events?.InvokeEvents<Action<IWindow>>(nameof(IApplication.CreateWindow), action => action(window));
 
-			var content = (window.Page as IView) ?? window.Page.View;
+			var page = window.Page;
 
 			Window = new UIWindow
 			{

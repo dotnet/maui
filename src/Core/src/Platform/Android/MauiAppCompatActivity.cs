@@ -39,7 +39,6 @@ namespace Microsoft.Maui
 
 			window.MauiContext = mauiContext;
 
-			var content = (window.Page as IView) ?? window.Page.View;
 			var matchParent = ViewGroup.LayoutParams.MatchParent;
 			//var matchParent = ViewGroup.LayoutParams.MatchParent;
 			var wrap = ViewGroup.LayoutParams.WrapContent;
