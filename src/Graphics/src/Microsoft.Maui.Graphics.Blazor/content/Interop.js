@@ -1,4 +1,4 @@
-﻿window.SystemDrawingInterop = {
+window.SystemDrawingInterop = {
     SetupCanvas: function (id)
     {
         var canvas = document.getElementById(id);
@@ -29,7 +29,7 @@
             var path2d = new Path2D(path);
             return canvas.isPointInPath(path, x, y);
         }
-        
+
         return false;
     }
 };

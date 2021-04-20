@@ -6,7 +6,6 @@ using Microsoft.Maui.Graphics.Native;
 
 namespace GraphicsTester.Mac
 {
-
 	public class TesterViewController : NSViewController
 	{
 		public override void LoadView()

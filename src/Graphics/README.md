@@ -19,7 +19,7 @@ There is no official support. Use at your own Risk.
 # Supported Platforms
 Platform               | Supported Abstractions |
 -----------------------|-------------------------------------------|
-Xamarin.iOS            | CoreGraphics & SkiaSharp | 
+Xamarin.iOS            | CoreGraphics & SkiaSharp |
 Xamarin.Android        | Android.Graphics & SkiaSharp |
 Xamarin.Mac            | CoreGraphics & SkiaSharp |
 WPF                    | SharpDX, SkiaSharp, Xaml & GDI |
@@ -35,7 +35,7 @@ Xamarin.Forms          | Dependent on native platform support (noted above) |
     * Shapes (Rectangles, Rounded Rectangles, Ellipses, Arcs)
     * Paths
     * Images
-    * Fonts 
+    * Fonts
     * Shadows
     * Image and pattern fills
     * Clipping

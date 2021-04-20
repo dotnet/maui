@@ -3,7 +3,6 @@ using Android.Graphics;
 
 namespace Microsoft.Maui.Graphics
 {
-
 	public partial struct RectangleF
 	{
 		public static implicit operator Rect(RectangleF rect) => new Rect((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);

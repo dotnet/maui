@@ -4,8 +4,6 @@ using ObjCRuntime;
 
 namespace Microsoft.Maui.Graphics.CoreGraphics
 {
-
-
 	public static class AppKitConstants
 	{
 		static readonly IntPtr AppKitLibraryHandle = Dlfcn.dlopen(Constants.AppKitLibrary, 0);

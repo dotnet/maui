@@ -1,4 +1,4 @@
-﻿<Window x:Class="GraphicsTester.WPF.SharpDX.MainWindow"
+<Window x:Class="GraphicsTester.WPF.SharpDX.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wpf="clr-namespace:Microsoft.Maui.Graphics.SharpDX.WPF;assembly=Microsoft.Maui.Graphics.SharpDX.WPF"

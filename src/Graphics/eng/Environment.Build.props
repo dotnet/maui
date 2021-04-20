@@ -7,7 +7,7 @@
     <CI>false</CI>
     <CI Condition="'$(TF_BUILD)' == 'true'">true</CI>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>

@@ -12,24 +12,24 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
-              
+
     - name: Install NuGet
       uses: nuget/setup-nuget@v1
       with:
         nuget-version: '5.x'
-              
+
     - name: Update project version
       uses: roryprimrose/set-vs-sdk-project-version@v1
       with:
         projectFilter: 'src/*/*.csproj'
-        version: '0.1.${{ github.run_number }}'              
-              
+        version: '0.1.${{ github.run_number }}'
+
     - name: NuGet Restore
       run: nuget restore build/Build.Microsoft.Maui.Graphics.Mac.sln
-    
+
     - name: Build
       run: msbuild build/Build.Microsoft.Maui.Graphics.Mac.sln /verbosity:normal /t:Rebuild /p:Configuration=Release
-    
+
     - name: NuGet Pack
       run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
 
@@ -44,8 +44,8 @@ jobs:
 
     - name: NuGet Pack
       run: nuget pack build/JonLipsky.Microsoft.Maui.Graphics.Text.Markdig.nuspec -Version 0.1.${{ github.run_number }} -OutputDirectory . -BasePath .
- 
+
     - name: Publish package to NuGet
       run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate --source https://api.nuget.org/v3/index.json
-      working-directory: . 
+      working-directory: .
 
