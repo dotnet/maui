@@ -202,11 +202,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void TestFromHex()
 		{
 			var color = Color.FromRgb(138, 43, 226);
-			Assert.Equal(color, new Color("8a2be2"));
+			Assert.Equal(color, Color.FromHex("8a2be2"));
 
-            Assert.Equal(Color.FromRgba(138, 43, 226, 128), new Color("#8a2be280"));
-			Assert.Equal(Color.FromHex("#aabbcc"), new Color("#abc"));
-			Assert.Equal(Color.FromHex("#aabbccdd"), new Color("#abcd"));
+			Assert.Equal(Color.FromRgba(138, 43, 226, 128), Color.FromHex("#808a2be2"));
+			Assert.Equal(Color.FromHex("#aabbcc"), Color.FromHex("#abc"));
+			Assert.Equal(Color.FromHex("#aabbccdd"), Color.FromHex("#abcd"));
 		}
 
 		[Fact]
@@ -219,7 +219,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var colorHsl = Color.FromHsla(240, 1, 1);
 			Assert.Equal(Color.FromHex(colorHsl.ToHex()), colorHsl);
 			var colorHsla = Color.FromHsla(240, 1, 1, .1f);
-			var hexFromHsla = new Color(colorHsla.ToHex());
+			var hexFromHsla = Color.FromHex(colorHsla.ToHex());
 			Assert.Equal(hexFromHsla.Alpha, colorHsla.Alpha,2);
 			Assert.Equal(hexFromHsla.Red, colorHsla.Red,3);
 			Assert.Equal(hexFromHsla.Green, colorHsla.Green,3);
@@ -295,27 +295,53 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.Equal(Colors.White, Color.FromRgb(255, 255, 255));
 		}
 
-        [Fact]
-        public void TestFromUint()
-        {
-            var expectedColor = new Color(1, 0.65f, 0, 1);
+		[Fact]
+		public void TestFromUint()
+		{
+			var expectedColor = new Color(1, 0.65f, 0, 1);
 
-            // Convert the expected color to a uint (argb)
-            var blue = (int)(expectedColor.Blue * 255);
-            var red = (int)(expectedColor.Red * 255);
-            var green = (int)(expectedColor.Green * 255);
-            var alpha = (int)(expectedColor.Alpha * 255);
+			// Convert the expected color to a uint (argb)
+			var blue = (int)(expectedColor.Blue * 255);
+			var red = (int)(expectedColor.Red * 255);
+			var green = (int)(expectedColor.Green * 255);
+			var alpha = (int)(expectedColor.Alpha * 255);
 
-            uint argb = (uint)(blue | (green << 8) | (red << 16) | (alpha << 24));
+			uint argb = (uint)(blue | (green << 8) | (red << 16) | (alpha << 24));
 
-            // Create a new color from the uint
-            var fromUint = Color.FromUint(argb);
+			// Create a new color from the uint
+			var fromUint = Color.FromUint(argb);
 
-            // Verify the components
-            Assert.Equal(expectedColor.Alpha, fromUint.Alpha, 2);
-            Assert.Equal(expectedColor.Red, fromUint.Red, 2);
-            Assert.Equal(expectedColor.Green, fromUint.Green, 2);
-            Assert.Equal(expectedColor.Blue, fromUint.Blue, 2);
-        }
+			// Verify the components
+			Assert.Equal(expectedColor.Alpha, fromUint.Alpha, 2);
+			Assert.Equal(expectedColor.Red, fromUint.Red, 2);
+			Assert.Equal(expectedColor.Green, fromUint.Green, 2);
+			Assert.Equal(expectedColor.Blue, fromUint.Blue, 2);
+		}
+
+		[Fact]
+		public void ToUInt()
+		{
+			var color = Color.FromRgba(255, 122, 15, 255);
+			var i = color.ToUint();
+			Assert.Equal(4294933007U, i);
+		}
+
+		[Theory]
+		[InlineData("#FF0000", "#00FFFF")] // Red & Cyan
+		[InlineData("#00FF00", "#FF00FF")] // Green & Fuchsia
+		[InlineData("#0000FF", "#FFFF00")] // Blue & Yellow
+		[InlineData("#0AF56C", "#F50A93")] // Lime green & bright purple (but with no limit values)
+		public void GetComplementary(string original, string expected)
+		{
+			var orig = Color.FromHex(original);
+			var expectedComplement = Color.FromHex(expected);
+
+			var comp = orig.GetComplementary();
+
+			Assert.Equal(expectedComplement.Alpha, comp.Alpha, 3);
+			Assert.Equal(expectedComplement.Red, comp.Red, 3);
+			Assert.Equal(expectedComplement.Green, comp.Green, 3);
+			Assert.Equal(expectedComplement.Blue, comp.Blue, 3);
+		}
 	}
 }

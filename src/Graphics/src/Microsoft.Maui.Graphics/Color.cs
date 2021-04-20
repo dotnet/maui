@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Graphics
 
 		public Color(float gray)
 		{
-			Red = Green = Blue = gray.Clamp(0,1);
+			Red = Green = Blue = gray.Clamp(0, 1);
 		}
 
 		public Color(float red, float green, float blue)
@@ -26,13 +26,230 @@ namespace Microsoft.Maui.Graphics
 
 		public Color(float red, float green, float blue, float alpha)
 		{
-			Red = red.Clamp(0,1);
-			Green = green.Clamp(0,1);
-			Blue = blue.Clamp(0,1);
-			Alpha = alpha.Clamp(0,1);
+			Red = red.Clamp(0, 1);
+			Green = green.Clamp(0, 1);
+			Blue = blue.Clamp(0, 1);
+			Alpha = alpha.Clamp(0, 1);
 		}
 
-		public Color(string colorAsHex)
+		public override string ToString()
+		{
+			return $"[Color: Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}]";
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				int hashcode = Red.GetHashCode();
+				hashcode = (hashcode * 397) ^ Green.GetHashCode();
+				hashcode = (hashcode * 397) ^ Blue.GetHashCode();
+				hashcode = (hashcode * 397) ^ Alpha.GetHashCode();
+				return hashcode;
+			}
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj is Color other)
+				return Red == other.Red && Green == other.Green && Blue == other.Blue && Alpha == other.Alpha;
+
+			return base.Equals(obj);
+		}
+
+		public string ToHex(bool includeAlpha = false)
+		{
+			if (includeAlpha || Alpha < 1)
+				return "#" + ToHex(Alpha) + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+
+			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+		}
+
+		public static Color FromHex(string colorAsHex) => FromArgb(colorAsHex);
+
+		public Paint AsPaint()
+		{
+			return new Paint()
+			{
+				PaintType = PaintType.Solid,
+				StartColor = this
+			};
+		}
+
+		public Color WithAlpha(float alpha)
+		{
+			if (Math.Abs(alpha - Alpha) < Geometry.Epsilon)
+				return this;
+
+			return new Color(Red, Green, Blue, alpha);
+		}
+
+		public Color MultiplyAlpha(float multiplyBy)
+		{
+			return new Color(Red, Green, Blue, Alpha * multiplyBy);
+		}
+
+		private static string ToHex(float value)
+		{
+			var intValue = (int)(255f * value);
+			var stringValue = intValue.ToString("X");
+			if (stringValue.Length == 1)
+				return "0" + stringValue;
+
+			return stringValue;
+		}
+
+		public int ToInt()
+		{
+			ToRgba(out var r, out var g, out var b, out var a);
+			int argb = a << 24 | r << 16 | g << 8 | b;
+			return argb;
+		}
+
+		public uint ToUint() =>(uint) ToInt();
+
+		public void ToRgb(out byte r, out byte g, out byte b) =>
+			ToRgba(out r, out g, out b, out _);
+
+		public void ToRgba(out byte r, out byte g, out byte b, out byte a)
+		{
+			a = (byte)(Alpha * 255f);
+			r = (byte)(Red * 255f);
+			g = (byte)(Green * 255f);
+			b = (byte)(Blue * 255f);
+		}
+
+		public float GetLuminosity()
+		{
+			float v = Math.Max(Red, Green);
+			v = Math.Max(v, Blue);
+			float m = Math.Min(Red, Green);
+			m = Math.Min(m, Blue);
+			var l = (m + v) / 2.0f;
+			if (l <= 0.0)
+				return 0;
+			return l;
+		}
+
+		public Color AddLuminosity(float delta)
+		{
+			ToHsl(out var h, out var s, out var l);
+			l += delta;
+			l = l.Clamp(0, 1);
+			return FromHsla(h, s, l, Alpha);
+		}
+
+		public Color WithLuminosity(float luminosity)
+		{
+			ToHsl(out var h, out var s, out var l);
+			return FromHsla(h, s, luminosity, Alpha);
+		}
+
+		public float GetSaturation()
+		{
+			ToHsl(out var h, out var s, out var l);
+			return s;
+		}
+
+		public Color WithSaturation(float saturation)
+		{
+			ToHsl(out var h, out var s, out var l);
+			return FromHsla(h, saturation, l, Alpha);
+		}
+
+		public float GetHue()
+		{
+			ToHsl(out var h, out var s, out var l);
+			return h;
+		}
+
+		public Color WithHue(float hue)
+		{
+			ToHsl(out var h, out var s, out var l);
+			return FromHsla(hue, s, l, Alpha);
+		}
+
+		public Color GetComplementary()
+		{
+			ToHsl(out var h, out var s, out var l);
+
+			// Add 180 (degrees) to get to the other side of the circle.
+			h += 0.5f;
+
+			// Ensure still within the bounds of a circle.
+			h %= 1.0f;
+
+			return Color.FromHsla(h, s, l);
+		}
+
+		public static Color FromHsva(float h, float s, float v, float a)
+		{
+			h = h.Clamp(0, 1);
+			s = s.Clamp(0, 1);
+			v = v.Clamp(0, 1);
+			var range = (int)(Math.Floor(h * 6)) % 6;
+			var f = h * 6 - Math.Floor(h * 6);
+			var p = v * (1 - s);
+			var q = v * (1 - f * s);
+			var t = v * (1 - (1 - f) * s);
+
+			switch (range)
+			{
+				case 0:
+					return FromRgba(v, t, p, a);
+				case 1:
+					return FromRgba(q, v, p, a);
+				case 2:
+					return FromRgba(p, v, t, a);
+				case 3:
+					return FromRgba(p, q, v, a);
+				case 4:
+					return FromRgba(t, p, v, a);
+			}
+			return FromRgba(v, p, q, a);
+		}
+
+		public static Color FromUint(uint argb)
+		{
+			return FromRgba((byte)((argb & 0x00ff0000) >> 0x10), (byte)((argb & 0x0000ff00) >> 0x8), (byte)(argb & 0x000000ff), (byte)((argb & 0xff000000) >> 0x18));
+		}
+
+		public static Color FromInt(int argb)
+		{
+			return FromRgba((byte)((argb & 0x00ff0000) >> 0x10), (byte)((argb & 0x0000ff00) >> 0x8), (byte)(argb & 0x000000ff), (byte)((argb & 0xff000000) >> 0x18));
+		}
+
+		public static Color FromRgb(byte red, byte green, byte blue)
+		{
+			return Color.FromRgba(red, green, blue, 255);
+		}
+
+		public static Color FromRgba(byte red, byte green, byte blue, byte alpha)
+		{
+			return new Color(red / 255f, green / 255f, blue / 255f, alpha / 255f);
+		}
+
+		public static Color FromRgb(float red, float green, float blue)
+		{
+			return Color.FromRgba(red, green, blue, 1);
+		}
+
+		public static Color FromRgb(double red, double green, double blue)
+		{
+			return Color.FromRgba(red, green, blue, 1);
+		}
+
+		public static Color FromRgba(float r, float g, float b, float a)
+		{
+			return new Color(r, g, b, a);
+		}
+
+		public static Color FromRgba(double r, double g, double b, double a)
+		{
+			return new Color((float)r, (float)g, (float)b, (float)a);
+		}
+
+		public static Color FromRgba(string colorAsHex)
 		{
 			//Remove # if present
 			if (colorAsHex.IndexOf('#') != -1)
@@ -74,197 +291,7 @@ namespace Microsoft.Maui.Graphics
 				alpha = int.Parse(colorAsHex.Substring(6, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
 			}
 
-			Red = red / 255f;
-			Green = green / 255f;
-			Blue = blue / 255f;
-			Alpha = alpha / 255f;
-		}
-
-		public override string ToString()
-		{
-			return $"[Color: Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}]";
-		}
-
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-				int hashcode = Red.GetHashCode();
-				hashcode = (hashcode * 397) ^ Green.GetHashCode();
-				hashcode = (hashcode * 397) ^ Blue.GetHashCode();
-				hashcode = (hashcode * 397) ^ Alpha.GetHashCode();
-				return hashcode;
-			}
-		}
-
-		public override bool Equals(object obj)
-		{
-			if (obj is Color other)
-				return Red == other.Red && Green == other.Green && Blue == other.Blue && Alpha == other.Alpha;
-
-			return base.Equals(obj);
-		}
-
-		public string ToHex(bool includeAlpha = false)
-		{
-			if (includeAlpha || Alpha < 1)
-				return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue) + ToHex(Alpha);
-
-			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
-		}
-
-		public Paint AsPaint()
-		{
-			return new Paint()
-			{
-				PaintType = PaintType.Solid,
-				StartColor = this
-			};
-		}
-		
-		public Color WithAlpha(float alpha)
-		{
-			if (Math.Abs(alpha - Alpha) < Geometry.Epsilon)
-				return this;
-			
-			return new Color(Red,Green,Blue, alpha);
-		}
-
-		public Color MultiplyAlpha(float multiplyBy)
-		{
-			return new Color(Red,Green,Blue, Alpha * multiplyBy);
-		}
-
-		public static string ToHex(float r, float g, float b)
-		{
-			return "#" + ToHex(r) + ToHex(g) + ToHex(b);
-		}
-
-		private static string ToHex(float value)
-		{
-			var intValue = (int)(255f * value);
-			var stringValue = intValue.ToString("X");
-			if (stringValue.Length == 1)
-				return "0" + stringValue;
-
-			return stringValue;
-		}
-
-		public float GetLuminosity()
-        {
-            float v = Math.Max(Red, Green);
-            v = Math.Max(v, Blue);
-            float m = Math.Min(Red, Green);
-            m = Math.Min(m, Blue);
-            var l = (m + v) / 2.0f;
-            if (l <= 0.0)
-                return 0;
-            return l;
-        }
-
-		public Color AddLuminosity(float delta)
-		{
-			ConvertToHsl(Red,Green,Blue, out var h, out var s, out var l);
-			l+= delta;
-			l = l.Clamp(0, 1);
-			return FromHsla(h,s,l,Alpha);
-		}
-
-		public Color WithLuminosity(float luminosity)
-		{
-			ConvertToHsl(Red, Green, Blue, out var h, out var s, out var l);
-			return FromHsla(h, s, luminosity, Alpha);
-		}
-
-		public float GetSaturation()
-        {
-			ConvertToHsl(Red, Green, Blue, out var h, out var s, out var l);
-			return s;
-		}
-
-		public Color WithSaturation(float saturation)
-		{
-			ConvertToHsl(Red, Green, Blue, out var h, out var s, out var l);
-			return FromHsla(h, saturation, l, Alpha);
-		}
-
-		public float GetHue()
-		{
-			ConvertToHsl(Red, Green, Blue, out var h, out var s, out var l);
-			return h;
-		}
-
-		public Color WithHue(float hue)
-		{
-			ConvertToHsl(Red, Green, Blue, out var h, out var s, out var l);
-			return FromHsla(hue, s, l, Alpha);
-		}
-
-		public static Color FromHex(string hex)
-        {
-			return new Color(hex);
-        }
-
-		public static Color FromHsva(float h, float s, float v, float a)
-		{
-			h = h.Clamp(0, 1);
-			s = s.Clamp(0, 1);
-			v = v.Clamp(0, 1);
-			var range = (int)(Math.Floor(h * 6)) % 6;
-			var f = h * 6 - Math.Floor(h * 6);
-			var p = v * (1 - s);
-			var q = v * (1 - f * s);
-			var t = v * (1 - (1 - f) * s);
-
-			switch (range)
-			{
-				case 0:
-					return FromRgba(v, t, p, a);
-				case 1:
-					return FromRgba(q, v, p, a);
-				case 2:
-					return FromRgba(p, v, t, a);
-				case 3:
-					return FromRgba(p, q, v, a);
-				case 4:
-					return FromRgba(t, p, v, a);
-			}
-			return FromRgba(v, p, q, a);
-		}
-
-		public static Color FromUint(uint argb)
-		{
-			return FromRgba((byte)((argb & 0x00ff0000) >> 0x10), (byte)((argb & 0x0000ff00) >> 0x8), (byte)(argb & 0x000000ff), (byte)((argb & 0xff000000) >> 0x18));
-		}
-
-		public static Color FromRgb(byte red, byte green, byte blue)
-		{
-			return Color.FromRgba(red, green, blue, 255);
-		}
-
-		public static Color FromRgba(byte red, byte green, byte blue, byte alpha)
-		{ 
-			return new Color(red / 255f, green / 255f, blue / 255f, alpha / 255f);
-		}
-
-		public static Color FromRgb(float red, float green, float blue)
-		{
-			return Color.FromRgba(red, green, blue, 1);
-		}
-
-		public static Color FromRgb(double red, double green, double blue)
-		{
-			return Color.FromRgba(red, green, blue, 1);
-		}
-
-		public static Color FromRgba(float r, float g, float b, float a)
-		{
-			return new Color(r, g, b, a);
-		}
-
-		public static Color FromRgba(double r, double g, double b, double a)
-		{
-			return new Color((float)r, (float)g, (float)b, (float)a);
+			return FromRgba(red / 255f, green / 255f, blue / 255f, alpha / 255f);
 		}
 
 		public static Color FromArgb(string colorAsHex)
@@ -295,10 +322,10 @@ namespace Microsoft.Maui.Graphics
 			else if (colorAsHex.Length == 4)
 			{
 				//#ARGB
-				alpha = int.Parse($"{colorAsHex[3]}{colorAsHex[0]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				red = int.Parse($"{colorAsHex[0]}{colorAsHex[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				green = int.Parse($"{colorAsHex[1]}{colorAsHex[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				blue = int.Parse($"{colorAsHex[2]}{colorAsHex[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse($"{colorAsHex[0]}{colorAsHex[0]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				red = int.Parse($"{colorAsHex[1]}{colorAsHex[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{colorAsHex[2]}{colorAsHex[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{colorAsHex[3]}{colorAsHex[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
 			}
 			else if (colorAsHex.Length == 8)
 			{
@@ -309,7 +336,7 @@ namespace Microsoft.Maui.Graphics
 				blue = int.Parse(colorAsHex.Substring(6, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
 			}
 
-			return FromRgba(red, green, blue, alpha);
+			return FromRgba(red / 255f, green / 255f, blue / 255f, alpha / 255f);
 		}
 
 		public static Color FromHsla(float h, float s, float l, float a = 1)
@@ -380,8 +407,12 @@ namespace Microsoft.Maui.Graphics
 			b = clr[2];
 		}
 
-		private static void ConvertToHsl(float r, float g, float b, out float h, out float s, out float l)
+		public void ToHsl(out float h, out float s, out float l)
 		{
+			var r = Red;
+			var g = Green;
+			var b = Blue;
+
 			float v = Math.Max(r, g);
 			v = Math.Max(v, b);
 

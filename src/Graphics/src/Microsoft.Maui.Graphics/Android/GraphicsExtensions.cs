@@ -22,28 +22,6 @@ namespace Microsoft.Maui.Graphics.Native
             return color;
         }
 
-        public static int ToArgb(this Color target)
-        {
-            var a = (int) (target.Alpha * 255f);
-            var r = (int) (target.Red * 255f);
-            var g = (int) (target.Green * 255f);
-            var b = (int) (target.Blue * 255f);
-
-            int argb = a << 24 | r << 16 | g << 8 | b;
-            return argb;
-        }
-
-        public static int ToArgb(this Color target, float alpha)
-        {
-            var a = (int) (target.Alpha * 255f * alpha);
-            var r = (int) (target.Red * 255f);
-            var g = (int) (target.Green * 255f);
-            var b = (int) (target.Blue * 255f);
-
-            int argb = a << 24 | r << 16 | g << 8 | b;
-            return argb;
-        }
-
         public static global::Android.Graphics.Color AsColor(this Color target)
         {
             var r = (int) (target.Red * 255f);

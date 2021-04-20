@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Graphics.Native
 
                 for (int i = 0; i < vStops.Length; i++)
                 {
-                    colors[i] = vStops[i].Color.ToArgb(CurrentState.Alpha);
+                    colors[i] = vStops[i].Color.MultiplyAlpha(CurrentState.Alpha).ToInt();
                     stops[i] = vStops[i].Offset;
                 }
 
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Graphics.Native
 
                 for (int i = 0; i < vStops.Length; i++)
                 {
-                    colors[i] = vStops[i].Color.ToArgb(CurrentState.Alpha);
+                    colors[i] = vStops[i].Color.MultiplyAlpha(CurrentState.Alpha).ToInt();
                     stops[i] = vStops[i].Offset;
                 }
 
