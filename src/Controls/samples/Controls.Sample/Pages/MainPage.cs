@@ -164,6 +164,16 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
 
+			Frame frame = new Frame
+			{
+				BackgroundColor = Colors.Red,
+				BorderColor = Colors.Blue,
+				CornerRadius = 12,
+				HasShadow = true,
+				Content = new Label { Text = "Frame" }
+			};
+			verticalStack.Add(frame);
+
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
@@ -218,7 +228,6 @@ namespace Maui.Controls.Sample.Pages
 				Content = verticalStack
 			};
 		}
-
 
 		void SetupCompatibilityLayout()
 		{

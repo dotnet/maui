@@ -12,6 +12,11 @@ namespace Microsoft.Maui
 	{
 		public static readonly int[][] States = { new[] { global::Android.Resource.Attribute.StateEnabled }, new[] { -global::Android.Resource.Attribute.StateEnabled } };
 
+		public static bool IsDefault(this Color? color)
+		{
+			return color == null;
+		}
+
 		public static AColor ToNative(this Color self) => self.AsColor();
 
 		public static AColor ToNative(this Color self, int defaultColorResourceId, Context context)

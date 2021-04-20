@@ -151,6 +151,11 @@ namespace Microsoft.Maui
 		internal static readonly UIColor AccentColor = Color.FromRgba(50, 79, 133, 255).ToNative();
 #endif
 
+		public static bool IsDefault(this Color? color)
+		{
+			return color == null;
+		}
+
 		public static CGColor ToCGColor(this Color color)
 		{
 			return color.ToNative().CGColor;
