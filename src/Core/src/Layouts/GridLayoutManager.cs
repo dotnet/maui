@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Layouts
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
 			var structure = new GridStructure(Grid, widthConstraint, heightConstraint);
-
+			
 			return new Size(structure.GridWidth(), structure.GridHeight());
 		}
 

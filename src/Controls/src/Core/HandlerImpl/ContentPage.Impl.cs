@@ -1,33 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Controls.Internals;
+﻿using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	// TODO: We don't currently have any concept of a page in Maui
-	// so this just treats it as a layout for now
-	public partial class ContentPage : Microsoft.Maui.ILayout
+	public partial class ContentPage : IPage
 	{
-		IReadOnlyList<Microsoft.Maui.IView> Microsoft.Maui.ILayout.Children =>
-			new List<IView>() { Content };
-
-		ILayoutHandler Maui.ILayout.LayoutHandler => Handler as ILayoutHandler;
-
-		Thickness Maui.IView.Margin => new Thickness();
-
+		// TODO ezhart That there's a layout alignment here tells us this hierarchy needs work :) 
 		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
 
-		void Maui.ILayout.Add(IView child)
-		{
-			Content = (View)child;
-		}
+		// TODO ezhart super sus
+		public Thickness Margin => Thickness.Zero;
 
-		void Maui.ILayout.Remove(IView child)
-		{
-			Content = null;
-		}
+		IView IPage.Content => Content;
 
 		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
@@ -35,51 +19,65 @@ namespace Microsoft.Maui.Controls
 			base.InvalidateMeasureInternal(trigger);
 		}
 
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		public override bool IsMeasureValid 
 		{
-			var width = widthConstraint;
-			var height = heightConstraint;
-
-#if WINDOWS
-			if (double.IsInfinity(width))
-			{
-				width = 800;
+			get 
+			{ 
+				return base.IsMeasureValid && Content.IsMeasureValid; 
 			}
 
-			if (double.IsInfinity(height))
-			{
-				height = 800;
-			}
-#endif
-
-			IsMeasureValid = true;
-			return new Size(width, height);
+			protected set => base.IsMeasureValid = value; 
 		}
 
-		protected override void ArrangeOverride(Rectangle bounds)
+		public override bool IsArrangeValid 
+		{ 
+			get 
+			{
+				return base.IsArrangeValid && Content.IsArrangeValid; 
+			} 
+
+			protected set => base.IsArrangeValid = value; 
+		}
+
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			if (Content is IFrameworkElement frameworkElement)
+			{
+				frameworkElement.Measure(widthConstraint, heightConstraint);
+			}
+
+			IsMeasureValid = true;
+			return new Size(widthConstraint, heightConstraint);
+		}
+
+		protected override Size ArrangeOverride(Rectangle bounds)
 		{
 			if (IsArrangeValid)
 			{
-				return;
+				return bounds.Size;
 			}
 
 			IsArrangeValid = true;
-			IsMeasureValid = true;
-			Arrange(bounds);
-			Handler?.SetFrame(Frame);
 
-			if (Content is IFrameworkElement fe)
+			// Update the Bounds (Frame) for this page
+			Layout(bounds);
+
+			if (Content is IFrameworkElement element)
 			{
-				fe.InvalidateArrange();
-				fe.Measure(Frame.Width, Frame.Height);
-				fe.Arrange(Frame);
+				element.Arrange(bounds);
+				element.Handler?.SetFrame(element.Frame);
 			}
 
-			if (Content is Layout layout)
-				layout.ResolveLayoutChanges();
-
+			return Frame.Size;
 		}
 
-
+		protected override void InvalidateMeasureOverride()
+		{
+			base.InvalidateMeasureOverride();
+			if (Content is IFrameworkElement frameworkElement)
+			{
+				frameworkElement.InvalidateMeasure();
+			}
+		}
 	}
 }

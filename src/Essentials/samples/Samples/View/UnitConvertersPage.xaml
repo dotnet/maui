@@ -21,7 +21,7 @@
                         <ColumnDefinition Width=".25*"/>
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Text="{Binding Fahrenheit, StringFormat='{0:N}F'}" HorizontalOptions="Center"/>
-                    <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding Fahrenheit}" HorizontalOptions="FillAndExpand" MaximumTrackColor="Blue" MinimumTrackColor="Blue" ThumbColor="Accent"/>
+                    <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding Fahrenheit}" HorizontalOptions="FillAndExpand" MaximumTrackColor="Blue" MinimumTrackColor="Blue" ThumbColor="Black"/>
                     <Label Grid.Column="2" Text="{Binding Celsius, StringFormat='{0:N}C'}" HorizontalOptions="Center"/>
                 </Grid>
 
@@ -33,7 +33,7 @@
                         <ColumnDefinition Width=".25*"/>
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Text="{Binding Miles, StringFormat='{0:N} mi'}" HorizontalOptions="Center"/>
-                    <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding Miles}" HorizontalOptions="FillAndExpand" MaximumTrackColor="Blue" MinimumTrackColor="Blue" ThumbColor="Accent"/>
+                    <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding Miles}" HorizontalOptions="FillAndExpand" MaximumTrackColor="Blue" MinimumTrackColor="Blue" ThumbColor="Black"/>
                     <Label Grid.Column="2" Text="{Binding Kilometers, StringFormat='{0:N} km'}" HorizontalOptions="Center"/>
                 </Grid>
 

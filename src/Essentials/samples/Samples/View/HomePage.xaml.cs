@@ -1,6 +1,7 @@
 using System;
 using Samples.Model;
-using Xamarin.Forms;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 
 namespace Samples.View
 {
