@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 {
 	public static class FrameExtensions
 	{
-		public static void UpdateContent(this UIView nativeView, IFrame frame, IMauiContext? mauiContext)
+		public static void UpdateContent(this MauiFrame nativeView, IFrame frame, IMauiContext? mauiContext)
 		{
 			var content = frame.Content;
 
@@ -16,47 +16,47 @@ namespace Microsoft.Maui
 			nativeView.AddSubview(content.ToNative(mauiContext));
 		}
 
-		public static void UpdateBackgroundColor(this UIView nativeView, IFrame frame)
+		public static void UpdateBackgroundColor(this MauiFrame nativeView, IFrame frame)
 		{
 			nativeView.UpdateBackgroundColor(frame, null);
 		}
 
-		public static void UpdateBackgroundColor(this UIView nativeView, IFrame frame, MauiFrame? nativeFrame)
+		public static void UpdateBackgroundColor(this MauiFrame nativeView, IFrame frame, MauiFrameContent? nativeFrame)
 		{
 			nativeView.SetupLayer(frame, nativeFrame);
 		}
 
-		public static void UpdateBorderColor(this UIView nativeView, IFrame frame)
+		public static void UpdateBorderColor(this MauiFrame nativeView, IFrame frame)
 		{
 			nativeView.UpdateBorderColor(frame, null);
 		}
 
-		public static void UpdateBorderColor(this UIView nativeView, IFrame frame, MauiFrame? nativeFrame)
+		public static void UpdateBorderColor(this MauiFrame nativeView, IFrame frame, MauiFrameContent? nativeFrame)
 		{
 			nativeView.SetupLayer(frame, nativeFrame);
 		}
 
-		public static void UpdateHasShadow(this UIView nativeView, IFrame frame)
+		public static void UpdateHasShadow(this MauiFrame nativeView, IFrame frame)
 		{
 			nativeView.UpdateHasShadow(frame, null);
 		}
 
-		public static void UpdateHasShadow(this UIView nativeView, IFrame frame, MauiFrame? nativeFrame)
+		public static void UpdateHasShadow(this MauiFrame nativeView, IFrame frame, MauiFrameContent? nativeFrame)
 		{
 			nativeView.SetupLayer(frame, nativeFrame);
 		}
 
-		public static void UpdateCornerRadius(this UIView nativeView, IFrame frame)
+		public static void UpdateCornerRadius(this MauiFrame nativeView, IFrame frame)
 		{
 			nativeView.UpdateCornerRadius(frame, null);
 		}
 
-		public static void UpdateCornerRadius(this UIView nativeView, IFrame frame, MauiFrame? nativeFrame)
+		public static void UpdateCornerRadius(this MauiFrame nativeView, IFrame frame, MauiFrameContent? nativeFrame)
 		{
 			nativeView.SetupLayer(frame, nativeFrame);
 		}
 
-		internal static void SetupLayer(this UIView nativeView, IFrame frame, MauiFrame? nativeFrame)
+		internal static void SetupLayer(this MauiFrame nativeView, IFrame frame, MauiFrameContent? nativeFrame)
 		{
 			if (nativeView == null || nativeFrame == null)
 				return;

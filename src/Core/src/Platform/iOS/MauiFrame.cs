@@ -26,7 +26,10 @@ namespace Microsoft.Maui
 
 			_previousSize = Bounds.Size;
 		}
+	}
 
+	public class MauiFrameContent : UIView
+	{
 		public override void RemoveFromSuperview()
 		{
 			for (var i = Subviews.Length - 1; i >= 0; i--)

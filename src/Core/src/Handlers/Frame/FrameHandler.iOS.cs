@@ -2,28 +2,28 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class FrameHandler : ViewHandler<IFrame, UIView>
+	public partial class FrameHandler : ViewHandler<IFrame, MauiFrame>
 	{
-		static MauiFrame? ActualView;
+		static MauiFrameContent? Content;
 
-		protected override UIView CreateNativeView()
+		protected override MauiFrame CreateNativeView()
 		{
-			return new UIView();
+			return new MauiFrame();
 		}
 
-		protected override void ConnectHandler(UIView nativeView)
+		protected override void ConnectHandler(MauiFrame nativeView)
 		{
-			ActualView = new MauiFrame();
-			nativeView.AddSubview(ActualView);
+			Content = new MauiFrameContent();
+			nativeView.AddSubview(Content);
 		}
 
-		protected override void DisconnectHandler(UIView nativeView)
+		protected override void DisconnectHandler(MauiFrame nativeView)
 		{
-			if (ActualView != null)
+			if (Content != null)
 			{
-				ActualView.RemoveFromSuperview();
-				ActualView.Dispose();
-				ActualView = null;
+				Content.RemoveFromSuperview();
+				Content.Dispose();
+				Content = null;
 			}
 		}
 
@@ -34,22 +34,22 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackgroundColor(FrameHandler handler, IFrame frame)
 		{
-			handler.NativeView?.UpdateBackgroundColor(frame, ActualView);
+			handler.NativeView?.UpdateBackgroundColor(frame, Content);
 		}
 
 		public static void MapBorderColor(FrameHandler handler, IFrame frame)
 		{
-			handler.NativeView?.UpdateBorderColor(frame, ActualView);
+			handler.NativeView?.UpdateBorderColor(frame, Content);
 		}
 
 		public static void MapHasShadow(FrameHandler handler, IFrame frame)
 		{
-			handler.NativeView?.UpdateHasShadow(frame, ActualView);
+			handler.NativeView?.UpdateHasShadow(frame, Content);
 		}
 
 		public static void MapCornerRadius(FrameHandler handler, IFrame frame)
 		{
-			handler.NativeView?.UpdateCornerRadius(frame, ActualView);
+			handler.NativeView?.UpdateCornerRadius(frame, Content);
 		}
 	}
 }
