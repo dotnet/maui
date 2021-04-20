@@ -507,5 +507,18 @@ namespace Microsoft.Maui.Controls
 			}
 			return true;
 		}
+
+		protected override void InvalidateMeasureOverride()
+		{
+			base.InvalidateMeasureOverride();
+
+			foreach (var child in LogicalChildren)
+			{
+				if (child is IFrameworkElement fe)
+				{
+					fe.InvalidateMeasure();
+				}
+			}
+		}
 	}
 }

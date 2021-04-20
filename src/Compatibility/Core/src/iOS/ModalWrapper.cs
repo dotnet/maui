@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					Color modalBkgndColor = ((Page)_modal.Element).BackgroundColor;
 
-					if (modalBkgndColor.Alpha > 0)
+					if (modalBkgndColor?.Alpha > 0)
 						result = UIKit.UIModalPresentationStyle.OverFullScreen;
 				}
 

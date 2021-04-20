@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-// This is a temporary namespace until we rename everything and move the legacy layouts
+﻿// This is a temporary namespace until we rename everything and move the legacy layouts
 namespace Microsoft.Maui.Controls.Layout2
 {
 	public abstract class StackLayout : Layout, IStackLayout
@@ -8,17 +6,58 @@ namespace Microsoft.Maui.Controls.Layout2
 		public int Spacing { get; set; }
 
 		bool _isMeasureValid;
+		bool _isArrangeValid;
+
 		public override bool IsMeasureValid
 		{
 			get
 			{
-				return _isMeasureValid
-					&& Children.All(child => child.IsMeasureValid);
+				if (!_isMeasureValid)
+				{
+					return false;
+				}
+
+				// Children.All() would be more succinct, but the for loop is just a tad faster
+				for (int n = 0; n < Children.Count; n++)
+				{
+					if (!Children[n].IsMeasureValid)
+					{
+						return false;
+					}
+				}
+
+				return true;
 			}
 
 			protected set
 			{
 				_isMeasureValid = value;
+			}
+		}
+
+		public override bool IsArrangeValid 
+		{
+			get
+			{
+				if (!_isArrangeValid)
+				{
+					return false;
+				}
+
+				for (int n = 0; n < Children.Count; n++)
+				{
+					if (!Children[n].IsArrangeValid)
+					{
+						return false;
+					}
+				}
+
+				return true;
+			}
+
+			protected set
+			{
+				_isArrangeValid = value;
 			}
 		}
 	}

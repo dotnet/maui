@@ -35,6 +35,8 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.CarouselView")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen.UnitTests")]
+[assembly: InternalsVisibleTo("WinUI.UITests")]
+
 [assembly: Preserve]
 
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui.Controls.Shapes")]

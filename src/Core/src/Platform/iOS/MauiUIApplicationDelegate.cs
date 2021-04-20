@@ -30,13 +30,13 @@ namespace Microsoft.Maui
 			var window = Application.CreateWindow(activationState);
 			window.MauiContext = mauiContext;
 
-			var content = (window.Page as IView) ?? window.Page.View;
+			var page = window.Page;
 
 			Window = new UIWindow
 			{
 				RootViewController = new UIViewController
 				{
-					View = content.ToNative(window.MauiContext)
+					View = page.ToNative(window.MauiContext)
 				}
 			};
 
