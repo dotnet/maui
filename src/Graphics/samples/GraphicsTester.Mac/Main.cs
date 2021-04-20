@@ -6,13 +6,12 @@ using ObjCRuntime;
 
 namespace GraphicsTester.Mac
 {
-    class MainClass
-    {
-        static void Main (string[] args)
-        {
-            NSApplication.Init ();
-            NSApplication.Main (args);
-        }
-    }
+	class MainClass
+	{
+		static void Main (string[] args)
+		{
+			NSApplication.Init ();
+			NSApplication.Main (args);
+		}
+	}
 }
-

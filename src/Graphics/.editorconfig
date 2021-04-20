@@ -10,5 +10,5 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 
 [*.cs]
-indent_style = space
+indent_style = tab
 indent_size = 4

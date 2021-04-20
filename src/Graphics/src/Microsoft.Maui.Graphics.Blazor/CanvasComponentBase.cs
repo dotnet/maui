@@ -4,58 +4,58 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.Maui.Graphics.Blazor
 {
-    public class CanvasComponentBase : ComponentBase
-    {
-        private BlazorCanvas _blazorCanvas;
+	public class CanvasComponentBase : ComponentBase
+	{
+		private BlazorCanvas _blazorCanvas;
 
-        [Parameter]
+		[Parameter]
 #pragma warning disable BL0004 // Component parameter should be public.
-        protected long width { get; set; }
+		protected long width { get; set; }
 #pragma warning restore BL0004 // Component parameter should be public.
 
-        [Parameter]
+		[Parameter]
 #pragma warning disable BL0004 // Component parameter should be public.
-        protected long height { get; set; }
+		protected long height { get; set; }
 #pragma warning restore BL0004 // Component parameter should be public.
 
-        [Inject] 
-        public IJSRuntime JSRuntime { get; set; }
-        
-        protected readonly string id = Guid.NewGuid().ToString();
+		[Inject]
+		public IJSRuntime JSRuntime { get; set; }
 
-        protected ElementReference canvas;
+		protected readonly string id = Guid.NewGuid().ToString();
 
-        internal ElementReference CanvasReference => canvas;
+		protected ElementReference canvas;
 
-        public string Id => id;
+		internal ElementReference CanvasReference => canvas;
 
-        private bool _initialized;
-        private float _displayScale = 1;
-        
-        public BlazorCanvas BlazorCanvas
-        {
-            get
-            {
-                if (_blazorCanvas == null)
-                {
-                    _blazorCanvas = new BlazorCanvas
-                    {
-                        Context = new Canvas2D.CanvasRenderingContext2D(this),
-                        DisplayScale = _displayScale
-                    };
-                }
+		public string Id => id;
 
-                return _blazorCanvas;
-            }
-        }
+		private bool _initialized;
+		private float _displayScale = 1;
 
-        protected override async void OnAfterRender(bool firstRender)
-        {
-            if (!_initialized)
-            {
-                _initialized = true;
-                _displayScale = await JSRuntime.SetupCanvas(Id);
-            }
-        }
-    }
+		public BlazorCanvas BlazorCanvas
+		{
+			get
+			{
+				if (_blazorCanvas == null)
+				{
+					_blazorCanvas = new BlazorCanvas
+					{
+						Context = new Canvas2D.CanvasRenderingContext2D(this),
+						DisplayScale = _displayScale
+					};
+				}
+
+				return _blazorCanvas;
+			}
+		}
+
+		protected override async void OnAfterRender(bool firstRender)
+		{
+			if (!_initialized)
+			{
+				_initialized = true;
+				_displayScale = await JSRuntime.SetupCanvas(Id);
+			}
+		}
+	}
 }

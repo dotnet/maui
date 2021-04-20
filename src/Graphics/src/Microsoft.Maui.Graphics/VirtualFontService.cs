@@ -1,12 +1,12 @@
 namespace Microsoft.Maui.Graphics
 {
-    public class VirtualFontService : AbstractFontService
-    {
-        private static readonly IFontFamily[] EmptyArray = { };
+	public class VirtualFontService : AbstractFontService
+	{
+		private static readonly IFontFamily[] EmptyArray = { };
 
-        public override IFontFamily[] GetFontFamilies()
-        {
-            return EmptyArray;
-        }
-    }
+		public override IFontFamily[] GetFontFamilies()
+		{
+			return EmptyArray;
+		}
+	}
 }

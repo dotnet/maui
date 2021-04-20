@@ -7,361 +7,361 @@ using Microsoft.Maui.Graphics.Android;
 
 namespace Microsoft.Maui.Graphics.Native
 {
-    public class NativeFontService : AbstractFontService
-    {
-        public static Boolean FontAliasingEnabled { get; set; } = true;
-        
-        public const string SystemFont = "System";
-        public const string SystemBoldFont = "System-Bold";
+	public class NativeFontService : AbstractFontService
+	{
+		public static Boolean FontAliasingEnabled { get; set; } = true;
 
-        public static NativeFontService Instance = new NativeFontService();
+		public const string SystemFont = "System";
+		public const string SystemBoldFont = "System-Bold";
 
-        private IFontFamily[] _fontFamilies;
-        private readonly Dictionary<string, Typeface> _typeFaces = new Dictionary<string, Typeface>();
+		public static NativeFontService Instance = new NativeFontService();
 
-        public NativeFontService() : base("Droid Sans", "Roboto", "Aramo")
-        {
-        }
+		private IFontFamily[] _fontFamilies;
+		private readonly Dictionary<string, Typeface> _typeFaces = new Dictionary<string, Typeface>();
 
-        private static readonly List<string> ExcludeList = new List<string>
-        {
-            "AndroidClock",
-            "AndroidClock-Large",
-            "Clockopia",
-            "Droid Sans Fallback",
-            "Lohit Bengali",
-            "Lohit Devanagari",
-            "Lohit Tamil",
-            "Roboto Test1",
-            "GS_Thai",
-            "GS45_Arab(AndroidOS)",
-            "Symbol Std"
-        };
+		public NativeFontService() : base("Droid Sans", "Roboto", "Aramo")
+		{
+		}
 
-        public override IFontFamily[] GetFontFamilies()
-        {
-            return _fontFamilies ?? (_fontFamilies = InitializeFonts());
-        }
+		private static readonly List<string> ExcludeList = new List<string>
+		{
+			"AndroidClock",
+			"AndroidClock-Large",
+			"Clockopia",
+			"Droid Sans Fallback",
+			"Lohit Bengali",
+			"Lohit Devanagari",
+			"Lohit Tamil",
+			"Roboto Test1",
+			"GS_Thai",
+			"GS45_Arab(AndroidOS)",
+			"Symbol Std"
+		};
 
-        public IFontFamily[] InitializeFonts()
-        {
-            var families = new Dictionary<string, NativeFontFamily>();
-            var familyList = new List<IFontFamily>();
-            var analyzer = new FontAnalyzer();
+		public override IFontFamily[] GetFontFamilies()
+		{
+			return _fontFamilies ?? (_fontFamilies = InitializeFonts());
+		}
 
-            var assembly = typeof(NativeFontService).Assembly;
-            var resources = assembly.GetManifestResourceNames();
-            foreach (var resource in resources)
-            {
-                if (resource.EndsWith("tf", StringComparison.OrdinalIgnoreCase))
-                {
-                    var path = resource.Split('.');
-                    var id = path[path.Length - 2];
-                    var parts = id.Split('-');
-                    var familyName = parts[0];
-                    var type = parts[1];
+		public IFontFamily[] InitializeFonts()
+		{
+			var families = new Dictionary<string, NativeFontFamily>();
+			var familyList = new List<IFontFamily>();
+			var analyzer = new FontAnalyzer();
 
-                    if (familyName.StartsWith("TeXGyre", StringComparison.InvariantCulture))
-                        familyName = "TeX Gyre " + familyName.Substring(7);
+			var assembly = typeof(NativeFontService).Assembly;
+			var resources = assembly.GetManifestResourceNames();
+			foreach (var resource in resources)
+			{
+				if (resource.EndsWith("tf", StringComparison.OrdinalIgnoreCase))
+				{
+					var path = resource.Split('.');
+					var id = path[path.Length - 2];
+					var parts = id.Split('-');
+					var familyName = parts[0];
+					var type = parts[1];
 
-                    if (!families.TryGetValue(familyName, out var family))
-                    {
-                        family = new NativeFontFamily(familyName);
-                        families[familyName] = family;
-                        familyList.Add(family);
-                    }
+					if (familyName.StartsWith("TeXGyre", StringComparison.InvariantCulture))
+						familyName = "TeX Gyre " + familyName.Substring(7);
 
-                    var weight = FontUtils.Regular;
-                    if (type.Contains("Bold"))
-                        weight = FontUtils.Bold;
+					if (!families.TryGetValue(familyName, out var family))
+					{
+						family = new NativeFontFamily(familyName);
+						families[familyName] = family;
+						familyList.Add(family);
+					}
 
-                    var styleType = FontStyleType.Normal;
-                    if (type.Contains("Italic"))
-                        styleType = FontStyleType.Italic;
+					var weight = FontUtils.Regular;
+					if (type.Contains("Bold"))
+						weight = FontUtils.Bold;
 
-                    var fullName = $"{familyName} {type}";
-                    if ("Regular".Equals(type))
-                        fullName = familyName;
+					var styleType = FontStyleType.Normal;
+					if (type.Contains("Italic"))
+						styleType = FontStyleType.Italic;
 
-                    var style = new NativeFontStyle(family, id, type, fullName, weight, styleType, resource, true);
-                    family.AddStyle(style);
+					var fullName = $"{familyName} {type}";
+					if ("Regular".Equals(type))
+						fullName = familyName;
 
-                    if (FontAliasingEnabled)
-                    {
-                        var suffix = string.Empty;
-                        var italic = "Italic";
-                        if ("Arimo".Equals(familyName))
-                        {
-                            familyName = "Arial";
-                            id = "Arial";
-                            suffix = "MT";
-                        }
-                        else if ("Tinos".Equals(familyName))
-                        {
-                            familyName = "Times New Roman";
-                            id = "TimesNewRomanPS";
-                            suffix = "MT";
-                        }
-                        else if ("Cousine".Equals(familyName))
-                        {
-                            familyName = "Courier New";
-                            id = "CourierNewPS";
-                            suffix = "MT";
-                        }
-                        else if ("TeX Gyre Termes".Equals(familyName))
-                        {
-                            familyName = "Times";
-                            id = "Times";
-                            suffix = "";
-                        }
-                        else if ("TeX Gyre Heros".Equals(familyName))
-                        {
-                            familyName = "Helvetica";
-                            id = "Helvetica";
-                            italic = "Oblique";
-                            suffix = "";
-                        }
-                        else if ("TeX Gyre Cursor".Equals(familyName))
-                        {
-                            familyName = "Courier";
-                            id = "Courier";
-                            italic = "Oblique";
-                            suffix = "";
-                        }
+					var style = new NativeFontStyle(family, id, type, fullName, weight, styleType, resource, true);
+					family.AddStyle(style);
 
-                        if (!families.TryGetValue(familyName, out family))
-                        {
-                            family = new NativeFontFamily(familyName);
-                            families[familyName] = family;
-                            familyList.Add(family);
-                        }
+					if (FontAliasingEnabled)
+					{
+						var suffix = string.Empty;
+						var italic = "Italic";
+						if ("Arimo".Equals(familyName))
+						{
+							familyName = "Arial";
+							id = "Arial";
+							suffix = "MT";
+						}
+						else if ("Tinos".Equals(familyName))
+						{
+							familyName = "Times New Roman";
+							id = "TimesNewRomanPS";
+							suffix = "MT";
+						}
+						else if ("Cousine".Equals(familyName))
+						{
+							familyName = "Courier New";
+							id = "CourierNewPS";
+							suffix = "MT";
+						}
+						else if ("TeX Gyre Termes".Equals(familyName))
+						{
+							familyName = "Times";
+							id = "Times";
+							suffix = "";
+						}
+						else if ("TeX Gyre Heros".Equals(familyName))
+						{
+							familyName = "Helvetica";
+							id = "Helvetica";
+							italic = "Oblique";
+							suffix = "";
+						}
+						else if ("TeX Gyre Cursor".Equals(familyName))
+						{
+							familyName = "Courier";
+							id = "Courier";
+							italic = "Oblique";
+							suffix = "";
+						}
 
-                        fullName = $"{familyName} {type}";
-                        if ("Regular".Equals(type))
-                            fullName = familyName;
+						if (!families.TryGetValue(familyName, out family))
+						{
+							family = new NativeFontFamily(familyName);
+							families[familyName] = family;
+							familyList.Add(family);
+						}
 
-                        if (styleType == FontStyleType.Italic)
-                        {
-                            if (weight == FontUtils.Bold)
-                                id = id + "-" + "Bold" + italic + suffix;
-                            else
-                                id = id + "-" + italic + suffix;
+						fullName = $"{familyName} {type}";
+						if ("Regular".Equals(type))
+							fullName = familyName;
 
-                            if ("Oblique".Equals(italic))
-                                styleType = FontStyleType.Oblique;
-                        }
-                        else if (weight == FontUtils.Bold)
-                        {
-                            id = id + "-" + "Bold" + suffix;
-                        }
+						if (styleType == FontStyleType.Italic)
+						{
+							if (weight == FontUtils.Bold)
+								id = id + "-" + "Bold" + italic + suffix;
+							else
+								id = id + "-" + italic + suffix;
 
-                        style = new NativeFontStyle(family, id, type, fullName, weight, styleType, resource, true);
-                        family.AddStyle(style);
-                    }
-                }
-            }
+							if ("Oblique".Equals(italic))
+								styleType = FontStyleType.Oblique;
+						}
+						else if (weight == FontUtils.Bold)
+						{
+							id = id + "-" + "Bold" + suffix;
+						}
 
-            foreach (string searchPath in FontSearchPaths)
-            {
-                if (searchPath != null)
-                {
-                    var searchDirectory = new DirectoryInfo(searchPath);
+						style = new NativeFontStyle(family, id, type, fullName, weight, styleType, resource, true);
+						family.AddStyle(style);
+					}
+				}
+			}
 
-                    if (searchDirectory.Exists)
-                    {
-                        var files = searchDirectory.GetFiles();
-                        foreach (var file in files)
-                        {
-                            try
-                            {
-                                var fontInfo = analyzer.GetFontInfo(file.FullName);
+			foreach (string searchPath in FontSearchPaths)
+			{
+				if (searchPath != null)
+				{
+					var searchDirectory = new DirectoryInfo(searchPath);
 
-                                if (fontInfo != null)
-                                {
-                                    if (IsValidFont(fontInfo))
-                                    {
-                                        if (!families.TryGetValue(fontInfo.Family, out var family))
-                                        {
-                                            family = new NativeFontFamily(fontInfo.Family);
-                                            families[fontInfo.Family] = family;
-                                            familyList.Add(family);
-                                        }
+					if (searchDirectory.Exists)
+					{
+						var files = searchDirectory.GetFiles();
+						foreach (var file in files)
+						{
+							try
+							{
+								var fontInfo = analyzer.GetFontInfo(file.FullName);
 
-                                        if (!family.HasStyle(fontInfo.Style))
-                                        {
-                                            var id = fontInfo.FullName;
-                                            var name = fontInfo.Style;
-                                            var weight = FontUtils.GetFontWeight(name);
-                                            var styleType = FontUtils.GetStyleType(name);
+								if (fontInfo != null)
+								{
+									if (IsValidFont(fontInfo))
+									{
+										if (!families.TryGetValue(fontInfo.Family, out var family))
+										{
+											family = new NativeFontFamily(fontInfo.Family);
+											families[fontInfo.Family] = family;
+											familyList.Add(family);
+										}
 
-                                            string fullName = fontInfo.Family;
-                                            if (!"Regular".Equals(fontInfo.Style))
-                                                fullName = $"{fontInfo.Family} {name}";
+										if (!family.HasStyle(fontInfo.Style))
+										{
+											var id = fontInfo.FullName;
+											var name = fontInfo.Style;
+											var weight = FontUtils.GetFontWeight(name);
+											var styleType = FontUtils.GetStyleType(name);
 
-                                            var style = new NativeFontStyle(family, id, name, fullName, weight, styleType, fontInfo.Path);
-                                            family.AddStyle(style);
-                                        }
-                                        else
-                                        {
-                                            Logger.Info("Duplicate style found for font: {0} {1}", fontInfo.Family, fontInfo.Style);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    Logger.Info("Unable to load the font info for the font file: " + file.FullName);
-                                }
-                            }
-                            catch (Exception exc)
-                            {
-                                Logger.Info("Unable to handle the font file: " + file.FullName, exc);
-                            }
-                        }
-                    }
-                }
-            }
+											string fullName = fontInfo.Family;
+											if (!"Regular".Equals(fontInfo.Style))
+												fullName = $"{fontInfo.Family} {name}";
 
-            familyList.Sort();
-            return familyList.ToArray();
-        }
+											var style = new NativeFontStyle(family, id, name, fullName, weight, styleType, fontInfo.Path);
+											family.AddStyle(style);
+										}
+										else
+										{
+											Logger.Info("Duplicate style found for font: {0} {1}", fontInfo.Family, fontInfo.Style);
+										}
+									}
+								}
+								else
+								{
+									Logger.Info("Unable to load the font info for the font file: " + file.FullName);
+								}
+							}
+							catch (Exception exc)
+							{
+								Logger.Info("Unable to handle the font file: " + file.FullName, exc);
+							}
+						}
+					}
+				}
+			}
 
-        protected bool IsValidFont(FontInfo fontInfo)
-        {
-            if (fontInfo.Family == null)
-                return false;
+			familyList.Sort();
+			return familyList.ToArray();
+		}
 
-            if (ExcludeList.Contains(fontInfo.Family))
-                return false;
+		protected bool IsValidFont(FontInfo fontInfo)
+		{
+			if (fontInfo.Family == null)
+				return false;
 
-            if (fontInfo.Family.StartsWith("Samsung"))
-                return false;
+			if (ExcludeList.Contains(fontInfo.Family))
+				return false;
 
-            return true;
-        }
+			if (fontInfo.Family.StartsWith("Samsung"))
+				return false;
 
-        /// <summary>
-        /// Returns the list of paths that the font service should search for font files.
-        /// </summary>
-        /// <value>The font search paths.</value>
-        protected string[] FontSearchPaths => new[] {"/system/fonts", "/system/font", "/data/fonts", UserFontsPath};
+			return true;
+		}
 
-        /// <summary>
-        /// The path where application user added fonts are (or should be) installed.
-        /// </summary>
-        /// <value>The application fonts path.</value>
-        protected string UserFontsPath
-        {
-            get
-            {
-                string fontsPath = null;
+		/// <summary>
+		/// Returns the list of paths that the font service should search for font files.
+		/// </summary>
+		/// <value>The font search paths.</value>
+		protected string[] FontSearchPaths => new[] {"/system/fonts", "/system/font", "/data/fonts", UserFontsPath};
 
-                try
-                {
-                    var externalFilesFir = Application.Context.GetExternalFilesDir(null);
-                    var absolutePath = externalFilesFir.AbsolutePath;
-                    fontsPath = System.IO.Path.Combine(absolutePath, "Fonts");
-                }
-                catch (Exception exc)
-                {
-                    Logger.Debug(exc);
-                }
+		/// <summary>
+		/// The path where application user added fonts are (or should be) installed.
+		/// </summary>
+		/// <value>The application fonts path.</value>
+		protected string UserFontsPath
+		{
+			get
+			{
+				string fontsPath = null;
 
-                return fontsPath;
-            }
-        }
+				try
+				{
+					var externalFilesFir = Application.Context.GetExternalFilesDir(null);
+					var absolutePath = externalFilesFir.AbsolutePath;
+					fontsPath = System.IO.Path.Combine(absolutePath, "Fonts");
+				}
+				catch (Exception exc)
+				{
+					Logger.Debug(exc);
+				}
 
-        public Typeface GetTypeface(string name)
-        {
-            if (name == null || SystemFont.Equals(name))
-                return Typeface.Default;
+				return fontsPath;
+			}
+		}
 
-            if (SystemBoldFont.Equals(name))
-                return Typeface.DefaultBold;
+		public Typeface GetTypeface(string name)
+		{
+			if (name == null || SystemFont.Equals(name))
+				return Typeface.Default;
 
-            if (GetFontStyleById(name) is NativeFontStyle fontStyle)
-            {
-                if (!_typeFaces.TryGetValue(name, out var typeface))
-                {
-                    string path;
+			if (SystemBoldFont.Equals(name))
+				return Typeface.DefaultBold;
 
-                    if (fontStyle.Resource)
-                    {
-                        var resource = fontStyle.Path;
-                        var resourceParts = resource.Split('.');
-                        var fileName = $"{resourceParts[resourceParts.Length - 2]}.{resourceParts[resourceParts.Length - 1]}";
+			if (GetFontStyleById(name) is NativeFontStyle fontStyle)
+			{
+				if (!_typeFaces.TryGetValue(name, out var typeface))
+				{
+					string path;
 
-                        path = System.IO.Path.Combine(UserFontsPath, fileName);
-                        if (!File.Exists(path))
-                        {
-                            if (!Directory.Exists(UserFontsPath))
-                                Directory.CreateDirectory(UserFontsPath);
+					if (fontStyle.Resource)
+					{
+						var resource = fontStyle.Path;
+						var resourceParts = resource.Split('.');
+						var fileName = $"{resourceParts[resourceParts.Length - 2]}.{resourceParts[resourceParts.Length - 1]}";
 
-                            var assembly = typeof(NativeFontService).Assembly;
-                            using (var stream = assembly.GetManifestResourceStream(resource))
-                            {
-                                using (var outputStream = new FileStream(path, FileMode.Create, FileAccess.Write))
-                                {
-                                    stream?.CopyTo(outputStream);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        path = fontStyle.Path;
-                    }
+						path = System.IO.Path.Combine(UserFontsPath, fileName);
+						if (!File.Exists(path))
+						{
+							if (!Directory.Exists(UserFontsPath))
+								Directory.CreateDirectory(UserFontsPath);
 
-                    try
-                    {
-                        typeface = Typeface.CreateFromFile(path);
-                        if (typeface != null)
-                            _typeFaces[name] = typeface;
-                    }
-                    catch (Java.Lang.RuntimeException exc)
-                    {
-                        Logger.Info("Unable to load font from the file: " + fontStyle.Path, exc);
-                    }
-                    catch (Exception exc)
-                    {
-                        Logger.Info("Unable to load font from the file: " + fontStyle.Path, exc);
-                    }
-                }
+							var assembly = typeof(NativeFontService).Assembly;
+							using (var stream = assembly.GetManifestResourceStream(resource))
+							{
+								using (var outputStream = new FileStream(path, FileMode.Create, FileAccess.Write))
+								{
+									stream?.CopyTo(outputStream);
+								}
+							}
+						}
+					}
+					else
+					{
+						path = fontStyle.Path;
+					}
 
-                if (typeface != null)
-                    return typeface;
-            }
+					try
+					{
+						typeface = Typeface.CreateFromFile(path);
+						if (typeface != null)
+							_typeFaces[name] = typeface;
+					}
+					catch (Java.Lang.RuntimeException exc)
+					{
+						Logger.Info("Unable to load font from the file: " + fontStyle.Path, exc);
+					}
+					catch (Exception exc)
+					{
+						Logger.Info("Unable to load font from the file: " + fontStyle.Path, exc);
+					}
+				}
 
-            return Typeface.Default;
-        }
+				if (typeface != null)
+					return typeface;
+			}
 
-        public string GetFontPath(string name)
-        {
-            if (name != null)
-            {
-                if (GetFontStyleById(name) is NativeFontStyle fontStyle)
-                    return fontStyle.Path;
-            }
+			return Typeface.Default;
+		}
 
-            return null;
-        }
+		public string GetFontPath(string name)
+		{
+			if (name != null)
+			{
+				if (GetFontStyleById(name) is NativeFontStyle fontStyle)
+					return fontStyle.Path;
+			}
 
-        public void ClearFontCache()
-        {
-            _fontFamilies = null;
+			return null;
+		}
 
-            foreach (var entry in _typeFaces)
-            {
-                try
-                {
-                    entry.Value.Dispose();
-                }
-                catch (Exception exc)
-                {
-                    Logger.Info("Unable to dispose of a typeface", exc);
-                }
-            }
+		public void ClearFontCache()
+		{
+			_fontFamilies = null;
 
-            _typeFaces.Clear();
-        }
-    }
+			foreach (var entry in _typeFaces)
+			{
+				try
+				{
+					entry.Value.Dispose();
+				}
+				catch (Exception exc)
+				{
+					Logger.Info("Unable to dispose of a typeface", exc);
+				}
+			}
+
+			_typeFaces.Clear();
+		}
+	}
 }

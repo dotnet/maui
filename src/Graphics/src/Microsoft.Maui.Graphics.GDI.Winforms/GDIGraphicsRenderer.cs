@@ -2,26 +2,26 @@ using System;
 
 namespace Microsoft.Maui.Graphics.GDI
 {
-    public interface GDIGraphicsRenderer : IDisposable
-    {
-        GDIGraphicsView GraphicsView { set; }
+	public interface GDIGraphicsRenderer : IDisposable
+	{
+		GDIGraphicsView GraphicsView { set; }
 
-        ICanvas Canvas { get; }
+		ICanvas Canvas { get; }
 
-        Color BackgroundColor { get; set; }
+		Color BackgroundColor { get; set; }
 
-        IDrawable Drawable { get; set; }
+		IDrawable Drawable { get; set; }
 
-        void Draw(System.Drawing.Graphics graphics, RectangleF dirtyRect);
+		void Draw(System.Drawing.Graphics graphics, RectangleF dirtyRect);
 
-        void SizeChanged(int width, int height);
+		void SizeChanged(int width, int height);
 
-        void Detached();
+		void Detached();
 
-        bool Dirty { get; set; }
+		bool Dirty { get; set; }
 
-        void Invalidate();
+		void Invalidate();
 
-        void Invalidate(float x, float y, float w, float h);
-    }
+		void Invalidate(float x, float y, float w, float h);
+	}
 }

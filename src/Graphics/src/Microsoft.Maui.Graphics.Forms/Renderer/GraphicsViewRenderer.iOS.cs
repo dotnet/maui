@@ -9,38 +9,38 @@ using Xamarin.Forms.Platform.iOS;
 [assembly: ExportRenderer(typeof(GraphicsView), typeof(GraphicsViewRenderer))]
 namespace Microsoft.Maui.Graphics.Forms.iOS
 {
-    [Preserve]
-    public class GraphicsViewRenderer : ViewRenderer<GraphicsView, NativeGraphicsView>
-    {
-        protected override void OnElementChanged(ElementChangedEventArgs<GraphicsView> e)
-        {
-            base.OnElementChanged(e);
+	[Preserve]
+	public class GraphicsViewRenderer : ViewRenderer<GraphicsView, NativeGraphicsView>
+	{
+		protected override void OnElementChanged(ElementChangedEventArgs<GraphicsView> e)
+		{
+			base.OnElementChanged(e);
 
-            if (e.OldElement != null)
-            {
-                // Unsubscribe from event handlers and cleanup any resources
-                SetNativeControl(null);
-            }
+			if (e.OldElement != null)
+			{
+				// Unsubscribe from event handlers and cleanup any resources
+				SetNativeControl(null);
+			}
 
-            if (e.NewElement != null)
-            {
-                SetNativeControl(new NativeGraphicsView());
-            }
-        }
+			if (e.NewElement != null)
+			{
+				SetNativeControl(new NativeGraphicsView());
+			}
+		}
 
-        protected override void OnElementPropertyChanged(
-            object sender,
-            PropertyChangedEventArgs e)
-        {
-            base.OnElementPropertyChanged(sender, e);
+		protected override void OnElementPropertyChanged(
+			object sender,
+			PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
 
-            if (e.PropertyName == nameof(GraphicsView.Drawable))
-                UpdateDrawable();
-        }
+			if (e.PropertyName == nameof(GraphicsView.Drawable))
+				UpdateDrawable();
+		}
 
-        private void UpdateDrawable()
-        {
-            Control.Drawable = Element.Drawable;
-        }
-    }
+		private void UpdateDrawable()
+		{
+			Control.Drawable = Element.Drawable;
+		}
+	}
 }

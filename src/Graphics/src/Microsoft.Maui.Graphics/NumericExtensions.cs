@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Graphics
 {
-    [EditorBrowsable(EditorBrowsableState.Never)]
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class NumericExtensions
 	{
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static float Clamp(this float self, float min, float max)
 		{
 			if (max < min)

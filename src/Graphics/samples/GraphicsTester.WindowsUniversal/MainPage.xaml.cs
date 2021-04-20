@@ -10,47 +10,47 @@ using Colors = Windows.UI.Colors;
 
 namespace GraphicsTester.WindowsUniversal
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class MainPage : Page
-    {
-        public MainPage()
-        {
-            this.InitializeComponent();
-            Initialize();
-        }
+	/// <summary>
+	/// An empty page that can be used on its own or navigated to within a Frame.
+	/// </summary>
+	public sealed partial class MainPage : Page
+	{
+		public MainPage()
+		{
+			this.InitializeComponent();
+			Initialize();
+		}
 
-        public void Initialize()
-        {
-            GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
-            Fonts.Register(W2DFontService.Instance);
+		public void Initialize()
+		{
+			GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
+			Fonts.Register(W2DFontService.Instance);
 
-            GraphicsView.Background = new SolidColorBrush(Colors.White);
+			GraphicsView.Background = new SolidColorBrush(Colors.White);
 
-            foreach (var scenario in ScenarioList.Scenarios)
-            {
-                List.Items.Add(scenario);
-            }
-            List.SelectionChanged += (source, args) => Drawable = List.SelectedItem as IDrawable;
+			foreach (var scenario in ScenarioList.Scenarios)
+			{
+				List.Items.Add(scenario);
+			}
+			List.SelectionChanged += (source, args) => Drawable = List.SelectedItem as IDrawable;
 
-            List.SelectedIndex = 0;
+			List.SelectedIndex = 0;
 
-            this.SizeChanged += (source, args) => Draw();
-        }
+			this.SizeChanged += (source, args) => Draw();
+		}
 
-        public IDrawable Drawable
-        {
-            set
-            {
-                GraphicsView.Drawable = value;
-                Draw();
-            }
-        }
+		public IDrawable Drawable
+		{
+			set
+			{
+				GraphicsView.Drawable = value;
+				Draw();
+			}
+		}
 
-        private void Draw()
-        {
-            GraphicsView.Invalidate();
-        }
-    }
+		private void Draw()
+		{
+			GraphicsView.Invalidate();
+		}
+	}
 }

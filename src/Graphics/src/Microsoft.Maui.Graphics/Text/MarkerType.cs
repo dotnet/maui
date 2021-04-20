@@ -1,9 +1,9 @@
 namespace Microsoft.Maui.Graphics.Text
 {
-    public enum MarkerType
-    {
-        ClosedCircle,
-        OpenCircle,
-        Hyphen
-    }
+	public enum MarkerType
+	{
+		ClosedCircle,
+		OpenCircle,
+		Hyphen
+	}
 }

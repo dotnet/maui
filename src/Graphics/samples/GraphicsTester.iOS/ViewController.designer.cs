@@ -11,8 +11,8 @@ using UIKit;
 
 namespace GraphicsTester.iOS
 {
-    [Register("ViewController")]
-    partial class ViewController
-    {
-    }
+	[Register("ViewController")]
+	partial class ViewController
+	{
+	}
 }
