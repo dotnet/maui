@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics;
 using System.Threading.Tasks;
 using Foundation;
 using UIKit;
+using Microsoft.Maui.Graphics.Native;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Essentials
 				activityController.PopoverPresentationController.SourceView = vc.View;
 
 				if (request.PresentationSourceBounds != Rectangle.Zero || Platform.HasOSVersion(13, 0))
-					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.ToPlatformRectangle();
+					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.AsCGRect();
 			}
 
 			return vc.PresentViewControllerAsync(activityController, true);
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Essentials
 				activityController.PopoverPresentationController.SourceView = vc.View;
 
 				if (request.PresentationSourceBounds != Rectangle.Zero)
-					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.ToPlatformRectangle();
+					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.AsCGRect();
 			}
 
 			return vc.PresentViewControllerAsync(activityController, true);

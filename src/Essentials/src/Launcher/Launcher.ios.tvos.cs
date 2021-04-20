@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Native;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Essentials
 
 			if (request.PresentationSourceBounds != Rectangle.Zero)
 			{
-				rect = request.PresentationSourceBounds.ToPlatformRectangle();
+				rect = request.PresentationSourceBounds.AsCGRect();
 			}
 			else
 			{
