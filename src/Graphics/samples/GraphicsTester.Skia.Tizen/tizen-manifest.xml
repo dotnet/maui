@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns="http://tizen.org/ns/packages" api-version="4" package="org.tizen.example.GraphicsTester.Skia.Tizen" version="1.0.0">
 	<profile name="common" />
 	<ui-application appid="org.tizen.example.GraphicsTester.Skia.Tizen"

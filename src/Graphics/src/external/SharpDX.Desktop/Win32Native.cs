@@ -31,7 +31,6 @@ namespace SharpDX.Desktop
 	/// </summary>
 	partial class Win32Native
 	{
-
 		[DllImport("kernel32.dll", EntryPoint = "CreateFile", SetLastError = true, CharSet = CharSet.Unicode)]
 		internal static extern IntPtr Create(
 			string fileName,

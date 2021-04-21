@@ -6,7 +6,6 @@ using CoreGraphics;
 using Microsoft.Maui.Graphics.Native;
 
 namespace GraphicsTester.Skia {
-
 	public class TesterViewController : NSViewController {
 		public override void LoadView ()
 		{
