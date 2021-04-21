@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 
@@ -112,7 +113,7 @@ namespace Microsoft.Maui.HotReload
 				}
 
 				_ = HandlerService ?? throw new ArgumentNullException(nameof(HandlerService));
-				var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+				var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 				var t = assemblies.Select(x => x.GetType(oldViewType)).FirstOrDefault(x => x != null);
 
 				var views = HandlerService!.Where(x => x.ImplementationType == t).Select(x => new KeyValuePair<Type,Type>(x.ServiceType, x.ImplementationType!)).ToList();
@@ -126,7 +127,7 @@ namespace Microsoft.Maui.HotReload
 			}
 			try{
 			//Call static init if it exists on new classes!
-				var staticInit = newViewType.GetMethod("Init", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+				var staticInit = newViewType.GetMethod("Init", BindingFlags.Static | BindingFlags.Public);
 				staticInit?.Invoke(null, null);
 			}
 			catch(Exception ex){
