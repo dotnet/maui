@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Microsoft.Maui.Graphics;
 using System.Threading.Tasks;
 using Foundation;
-using UIKit;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native;
+using UIKit;
 
 namespace Microsoft.Maui.Essentials
 {

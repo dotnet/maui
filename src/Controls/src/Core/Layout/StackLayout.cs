@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			}
 		}
 
-		public override bool IsArrangeValid 
+		public override bool IsArrangeValid
 		{
 			get
 			{

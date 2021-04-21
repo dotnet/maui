@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Layouts
 
 			// But, if the element is set to fill vertically and it doesn't have an explicitly set height,
 			// the frame height will be large enough to fill the space
-			if (frameworkElement.VerticalLayoutAlignment == LayoutAlignment.Fill && frameworkElement.Height == -1)				
+			if (frameworkElement.VerticalLayoutAlignment == LayoutAlignment.Fill && frameworkElement.Height == -1)
 			{
 				frameHeight = Math.Max(0, bounds.Height - margin.VerticalThickness);
 			}
