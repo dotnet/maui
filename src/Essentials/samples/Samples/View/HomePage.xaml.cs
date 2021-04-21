@@ -1,7 +1,7 @@
 using System;
-using Samples.Model;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Samples.Model;
 
 namespace Samples.View
 {

@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Pages
 				"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";
 
 		void SetupMauiLayout()
-		{ 
+		{
 			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Colors.AntiqueWhite };
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Colors.CornflowerBlue };
 
@@ -298,7 +298,8 @@ namespace Maui.Controls.Sample.Pages
 			var explicitWidthTestLabel = new Label { Text = "Short Text", BackgroundColor = Colors.LightGreen, WidthRequest = 200 };
 			var widthAndHeightTestLabel = new Label { Text = "Short Text", BackgroundColor = Colors.MediumSeaGreen, WidthRequest = 150, HeightRequest = 40 };
 
-			resizeTestButton.Clicked += (sender, args) => {
+			resizeTestButton.Clicked += (sender, args) =>
+			{
 				if (resizeTestLabel.Text == "Short Text")
 				{
 					resizeTestLabel.Text = loremIpsum;
