@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapAspect(ImageHandler handler, IImage image)
 		{
-			// TODO NATIVE IMPLEMENTATION
+			handler.NativeView?.UpdateAspect(image);
 		}
 	}
 }
