@@ -1,10 +1,10 @@
-﻿using System.Drawing;
+﻿using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
 {
 	internal class DpiPath
 	{
-		public DpiPath(string path, decimal scale, string suffix = null, SizeF? size = null, string[] idioms = null)
+		public DpiPath(string path, decimal scale, string suffix = null, SKSize? size = null, string[] idioms = null)
 		{
 			Path = path;
 			Scale = scale;
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string FileSuffix { get; set; }
 
-		public SizeF? Size { get; set; }
+		public SKSize? Size { get; set; }
 
 		public bool Optimize { get; set; } = true;
 
@@ -39,11 +39,11 @@ namespace Microsoft.Maui.Resizetizer
 		public static DpiPath[] AndroidAppIcon
 			=> new[]
 			{
-				new DpiPath("mipmap-mdpi", 1.0m, size: new SizeF(48, 48)),
-				new DpiPath("mipmap-hdpi", 1.5m, size: new SizeF(48, 48)),
-				new DpiPath("mipmap-xhdpi", 2.0m, size: new SizeF(48, 48)),
-				new DpiPath("mipmap-xxhdpi", 3.0m, size: new SizeF(48, 48)),
-				new DpiPath("mipmap-xxxhdpi", 4.0m, size: new SizeF(48, 48)),
+				new DpiPath("mipmap-mdpi", 1.0m, size: new SKSize(48, 48)),
+				new DpiPath("mipmap-hdpi", 1.5m, size: new SKSize(48, 48)),
+				new DpiPath("mipmap-xhdpi", 2.0m, size: new SKSize(48, 48)),
+				new DpiPath("mipmap-xxhdpi", 3.0m, size: new SKSize(48, 48)),
+				new DpiPath("mipmap-xxxhdpi", 4.0m, size: new SKSize(48, 48)),
 			};
 
 		static DpiPath AndroidOriginal => new DpiPath("drawable", 1.0m);
@@ -63,27 +63,27 @@ namespace Microsoft.Maui.Resizetizer
 			=> new[]
 			{
 				// Notification
-				new DpiPath(IosAppIconPath, 2.0m, "20x20@2x", new SizeF(20, 20), new [] { "iphone", "ipad" }),
-				new DpiPath(IosAppIconPath, 3.0m, "20x20@3x", new SizeF(20, 20), new [] { "iphone" }),
+				new DpiPath(IosAppIconPath, 2.0m, "20x20@2x", new SKSize(20, 20), new [] { "iphone", "ipad" }),
+				new DpiPath(IosAppIconPath, 3.0m, "20x20@3x", new SKSize(20, 20), new [] { "iphone" }),
 
 				// Settings
-				new DpiPath(IosAppIconPath, 2.0m, "29x29@2x", new SizeF(29, 29), new [] { "iphone", "ipad" }),
-				new DpiPath(IosAppIconPath, 3.0m, "29x29@3x", new SizeF(29, 29), new [] { "iphone" }),
+				new DpiPath(IosAppIconPath, 2.0m, "29x29@2x", new SKSize(29, 29), new [] { "iphone", "ipad" }),
+				new DpiPath(IosAppIconPath, 3.0m, "29x29@3x", new SKSize(29, 29), new [] { "iphone" }),
 
 				// Spotlight
-				new DpiPath(IosAppIconPath, 2.0m, "40x40@2x", new SizeF(40, 40), new [] { "iphone", "ipad" }),
-				new DpiPath(IosAppIconPath, 3.0m, "40x40@3x", new SizeF(40, 40), new [] { "iphone" }),
+				new DpiPath(IosAppIconPath, 2.0m, "40x40@2x", new SKSize(40, 40), new [] { "iphone", "ipad" }),
+				new DpiPath(IosAppIconPath, 3.0m, "40x40@3x", new SKSize(40, 40), new [] { "iphone" }),
 
 				// App Icon - iPhone
-				new DpiPath(IosAppIconPath, 2.0m, "60x60@2x", new SizeF(60, 60), new [] { "iphone" }),
-				new DpiPath(IosAppIconPath, 3.0m, "60x60@3x", new SizeF(60, 60), new [] { "iphone" }),
+				new DpiPath(IosAppIconPath, 2.0m, "60x60@2x", new SKSize(60, 60), new [] { "iphone" }),
+				new DpiPath(IosAppIconPath, 3.0m, "60x60@3x", new SKSize(60, 60), new [] { "iphone" }),
 
 				// App Icon - ipad
-				new DpiPath(IosAppIconPath, 2.0m, "76x76@2x", new SizeF(76, 76), new [] { "ipad" }),
-				new DpiPath(IosAppIconPath, 2.0m, "83.5x83.5@2x", new SizeF(83.5f, 83.5f), new [] { "ipad" }),
+				new DpiPath(IosAppIconPath, 2.0m, "76x76@2x", new SKSize(76, 76), new [] { "ipad" }),
+				new DpiPath(IosAppIconPath, 2.0m, "83.5x83.5@2x", new SKSize(83.5f, 83.5f), new [] { "ipad" }),
 				
 				// App Store
-				new DpiPath(IosAppIconPath, 1.0m, "ItunesArtwork", new SizeF(1024, 1024), new [] { "ios-marketing" }),
+				new DpiPath(IosAppIconPath, 1.0m, "ItunesArtwork", new SKSize(1024, 1024), new [] { "ios-marketing" }),
 			};
 
 		static DpiPath IosOriginal => new DpiPath("Resources", 1.0m);
