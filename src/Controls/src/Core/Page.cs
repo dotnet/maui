@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnParentSet()
 		{
-			if (!Application.IsApplicationOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem))
+			if (!Application.IsApplicationOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem) && !(RealParent is IWindow))
 				throw new InvalidOperationException("Parent of a Page must also be a Page");
 			base.OnParentSet();
 		}
