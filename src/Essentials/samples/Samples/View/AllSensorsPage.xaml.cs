@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using Samples.ViewModel;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Samples.ViewModel;
 
 namespace Samples.View
 {

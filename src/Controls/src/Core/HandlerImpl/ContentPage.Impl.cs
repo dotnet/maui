@@ -19,24 +19,24 @@ namespace Microsoft.Maui.Controls
 			base.InvalidateMeasureInternal(trigger);
 		}
 
-		public override bool IsMeasureValid 
+		public override bool IsMeasureValid
 		{
-			get 
-			{ 
-				return base.IsMeasureValid && Content.IsMeasureValid; 
+			get
+			{
+				return base.IsMeasureValid && Content.IsMeasureValid;
 			}
 
-			protected set => base.IsMeasureValid = value; 
+			protected set => base.IsMeasureValid = value;
 		}
 
-		public override bool IsArrangeValid 
-		{ 
-			get 
+		public override bool IsArrangeValid
+		{
+			get
 			{
-				return base.IsArrangeValid && Content.IsArrangeValid; 
-			} 
+				return base.IsArrangeValid && Content.IsArrangeValid;
+			}
 
-			protected set => base.IsArrangeValid = value; 
+			internal protected set => base.IsArrangeValid = value;
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)

@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-			
+
 			if (CrossPlatformMeasure == null)
 			{
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);

@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			}
 		}
 
-		public override bool IsArrangeValid 
+		public override bool IsArrangeValid
 		{
 			get
 			{
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Layout2
 				return true;
 			}
 
-			protected set
+			internal protected set
 			{
 				_isArrangeValid = value;
 			}

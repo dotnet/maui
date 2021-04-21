@@ -320,6 +320,7 @@ namespace Microsoft.Maui.Controls
 			region.Y += margin.Top;
 			region.Height -= margin.VerticalThickness;
 
+			child.IsArrangeValid = true;
 			child.Layout(region);
 		}
 

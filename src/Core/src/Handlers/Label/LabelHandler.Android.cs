@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Graphics;
 using Android.Content;
 using Android.Runtime;
 using Android.Util;
@@ -7,6 +6,7 @@ using Android.Views;
 using Android.Widget;
 using Java.Lang;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {

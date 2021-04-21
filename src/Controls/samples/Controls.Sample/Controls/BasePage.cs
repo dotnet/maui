@@ -5,6 +5,6 @@ namespace Maui.Controls.Sample.Controls
 {
 	public class BasePage : ContentPage, IPage
 	{
-		
+
 	}
 }
