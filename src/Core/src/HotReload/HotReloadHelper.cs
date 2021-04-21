@@ -1,5 +1,4 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,7 +10,7 @@ namespace Microsoft.Maui.HotReload
 {
 	public static class MauiHotReloadHelper
 	{
-		static IMauiServiceCollection HandlerService;
+		static IMauiServiceCollection? HandlerService;
 		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
 		public static void Init(IMauiServiceCollection handlerService)
 		{
@@ -46,7 +45,7 @@ namespace Microsoft.Maui.HotReload
 			if (view == null || newView == null)
 				return false;
 
-			if (!replacedViews.TryGetValue(view.GetType().FullName, out var newViewType))
+			if (!replacedViews.TryGetValue(view.GetType().FullName!, out var newViewType))
 				return false;
 			return newView.GetType() == newViewType;
 		}
@@ -54,16 +53,16 @@ namespace Microsoft.Maui.HotReload
 		{
 			if (!IsEnabled)
 				return view;
-				
+
 			var viewType = view.GetType();
-			if (!replacedViews.TryGetValue(viewType.FullName, out var newViewType) || viewType == newViewType)
+			if (!replacedViews.TryGetValue(viewType.FullName!, out var newViewType) || viewType == newViewType)
 				return view;
 
 			currentViews.TryGetValue(view, out var parameters);
 			try
 			{
 				//TODO: Add in a way to use IoC and DI
-				var newView = (IView)(parameters?.Length > 0 ? Activator.CreateInstance(newViewType, args: parameters) : Activator.CreateInstance(newViewType));
+				var newView = (IView)(parameters?.Length > 0 ? Activator.CreateInstance(newViewType, args: parameters) : Activator.CreateInstance(newViewType))!;
 				TransferState(view, newView);
 				return newView;
 			}
@@ -151,12 +150,12 @@ namespace Microsoft.Maui.HotReload
 
 		public static void TriggerReload()
 		{
-			List<IHotReloadableView> roots = null;
+			List<IHotReloadableView?>? roots = null;
 			while (roots == null)
 			{
 				try
 				{
-					roots = ActiveViews.Where(x => x.Parent == null).ToList();
+					roots = ActiveViews.Where(x => x != null && x.Parent == null).ToList();
 				}
 				catch
 				{
@@ -166,7 +165,7 @@ namespace Microsoft.Maui.HotReload
 
 			foreach (var view in roots)
 			{
-				view.Reload();
+				view!.Reload();
 			}
 		}
 	}
