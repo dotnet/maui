@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Hosting
 			{ typeof(ISwitch), typeof(SwitchHandler) },
 			{ typeof(ITimePicker), typeof(TimePickerHandler) },
 			{ typeof(IPage), typeof(PageHandler) },
+			{ typeof(IWindow), typeof(WindowHandler) },
 		};
 
 		public static IAppHostBuilder ConfigureMauiHandlers(this IAppHostBuilder builder, Action<IMauiHandlersCollection> configureDelegate)

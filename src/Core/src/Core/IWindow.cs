@@ -3,7 +3,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Provides the ability to create, configure, show, and manage Windows.
 	/// </summary>
-	public interface IWindow
+	public interface IWindow : IView
 	{
 		public string Title { get; }
 		/// <summary>
@@ -14,6 +14,6 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets or sets the current Page displayed in the Window.
 		/// </summary>
-		IPage Page { get; set; }
+		IPage Page { get; }
 	}
 }
