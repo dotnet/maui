@@ -203,6 +203,8 @@ stages:
                 Contents: |
                   **/Microsoft.Maui.*.nupkg
                   **/Microsoft.Maui.*.snupkg
+                  **/Microsoft.AspNetCore.Components.WebView.Maui.*.nupkg
+                  **/Microsoft.AspNetCore.Components.WebView.Maui.*.snupkg
                   **/SignList.xml
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
