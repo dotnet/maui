@@ -56,7 +56,6 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(picker, fontManager);
 		}
 
-
 		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
 		{
 			var nativePicker = handler.NativeView;

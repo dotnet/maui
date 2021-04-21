@@ -82,8 +82,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Updating Text Does Not Affect HorizontalTextAlignment")]
-		[InlineData("Short", "Longer Text")]
-		[InlineData("Long thext here", "Short")]
+		[InlineData("Short", "Long text here")]
+		[InlineData("Long text here", "Short")]
 		public async Task TextDoesNotAffectHorizontalTextAlignment(string initialText, string newText)
 		{
 			var picker = new PickerStub
