@@ -76,6 +76,9 @@ namespace Microsoft.Maui
 
 					var drawable = await service.GetDrawableAsync(imageSource, context, cancellationToken);
 
+					if (drawable != null)
+						ImageSourceManager.Add(imageSource, drawable);
+
 					var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;
 
 					// only set the image if we are still on the same one

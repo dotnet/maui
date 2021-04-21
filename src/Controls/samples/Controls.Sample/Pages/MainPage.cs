@@ -23,11 +23,43 @@ namespace Maui.Controls.Sample.Pages
 			_services = services;
 			BindingContext = _viewModel = viewModel;
 
-			SetupMauiLayout();
+			//SetupMauiLayout();
+			SimpleImageLayout();
 			//SetupCompatibilityLayout();
 		}
 
-		const string loremIpsum =
+		void SimpleImageLayout()
+		{
+			var verticalStack = new VerticalStackLayout
+			{
+				new Image() { Source = "dotnet_bot.png", Aspect = Aspect.AspectFill, HeightRequest = 60 },
+				new Image() { Source = "dotnet_bot.png", Aspect = Aspect.AspectFill, HeightRequest = 60 },
+				new Image() { Source = "dotnet_bot.png", Aspect = Aspect.AspectFill, HeightRequest = 60 },
+				new Image() { Source = "dotnet_bot.png", Aspect = Aspect.AspectFill, HeightRequest = 60 },
+				new Image() { Source = "dotnet_bot.png", Aspect = Aspect.AspectFill, HeightRequest = 60 },
+				new Image() { Source = "dotnet_bot.png", Aspect = Aspect.AspectFill, HeightRequest = 60 }
+			};
+
+			var btn = new Button
+			{
+				Text = "Clear img"
+			};
+
+			btn.Clicked += (_, __) =>
+			{
+				var img = verticalStack.Children.FirstOrDefault(x => x is Image);
+				verticalStack.Remove(img);
+			};
+
+			verticalStack.Add(btn);
+
+
+			Content = verticalStack;
+		}
+
+		void SetupMauiLayout()
+		{
+			const string loremIpsum =
 				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
 				"Quisque ut dolor metus. Duis vel iaculis mauris, sit amet finibus mi. " +
 				"Etiam congue ornare risus, in facilisis libero tempor eget. " +
@@ -211,7 +243,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new TimePicker());
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
-			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
+			verticalStack.Add(new Image() { Source = "dotnet_bot.png", Aspect = Aspect.AspectFill, HeightRequest = 50 });
 
 			Content = new ScrollView
 			{
