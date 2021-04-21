@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public static class ImageExtensions
 	{
+		[PortHandler]
 		public static UIViewContentMode ToUIViewContentMode(this Aspect aspect)
 		{
 			switch (aspect)

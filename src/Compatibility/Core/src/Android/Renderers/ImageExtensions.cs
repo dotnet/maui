@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		static ImageView.ScaleType s_aspectFill;
 		static ImageView.ScaleType s_aspectFit;
 
+		[PortHandler]
 		public static ImageView.ScaleType ToScaleType(this Aspect aspect)
 		{
 			switch (aspect)

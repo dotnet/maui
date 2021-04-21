@@ -82,6 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Log.Warning(nameof(ImageRenderer), "Animations do not work with Legacy Renderers. Please remove the \"UseLegacyRenderers\" flag or change your renderer to inherit from the fast image renderer.");
 		}
 
+		[PortHandler]
 		void UpdateAspect()
 		{
 			if (Element == null || Control == null || Control.IsDisposed())

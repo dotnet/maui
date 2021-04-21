@@ -167,6 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				image.SetValueFromRenderer(Image.IsAnimationPlayingProperty, false);
 		}
 
+		[PortHandler]
 		static void UpdateAspect(IImageRendererController rendererController, ImageView Control, IImageElement newImage, IImageElement previous = null)
 		{
 			if (newImage == null || rendererController.IsDisposed)

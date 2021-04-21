@@ -106,6 +106,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 
 
+		[PortHandler("Only the __MOBILE__ reference was ported.")]
 		public static void SetAspect(IImageVisualElementRenderer renderer, IImageElement imageElement)
 		{
 			var Element = renderer.Element;
