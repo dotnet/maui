@@ -219,7 +219,6 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-
 		void SetupCompatibilityLayout()
 		{
 			var verticalStack = new StackLayout() { Spacing = 5, BackgroundColor = Colors.AntiqueWhite };
