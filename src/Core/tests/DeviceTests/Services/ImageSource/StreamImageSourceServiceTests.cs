@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.ImageSource)]
-	public partial class StreamImageSourceServiceTests : ImageSourceServiceTests
+	public partial class StreamImageSourceServiceTests : BaseImageSourceServiceTests
 	{
 	}
 }

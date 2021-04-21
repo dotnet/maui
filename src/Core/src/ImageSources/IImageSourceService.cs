@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui
@@ -6,7 +7,7 @@ namespace Microsoft.Maui
 	public interface IImageSourceService
 	{
 #if __ANDROID__
-		Task<Android.Graphics.Drawables.Drawable?> GetDrawableAsync(
+		Task<IImageSourceServiceResult<Android.Graphics.Drawables.Drawable>?> GetDrawableAsync(
 			IImageSource imageSource,
 			Android.Content.Context context,
 			CancellationToken cancellationToken = default);
@@ -16,5 +17,10 @@ namespace Microsoft.Maui
 	public interface IImageSourceService<T> : IImageSourceService
 		where T : IImageSource
 	{
+	}
+
+	public interface IImageSourceServiceResult<T> : IDisposable
+	{
+		T Value { get; }
 	}
 }

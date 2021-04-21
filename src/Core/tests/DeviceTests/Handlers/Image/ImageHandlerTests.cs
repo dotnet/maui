@@ -119,7 +119,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 
 				// set & apply the image source
-				image.Source = new CountedImageSourceStub(Colors.Blue);
+				image.Source = new CountedImageSourceStub(Colors.Blue, true);
 				handler.UpdateValue(nameof(IImage.Source));
 
 				// wait until everything is complete
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.DeviceTests
 					// set & apply the SECOND image source
 					await InvokeOnMainThreadAsync(async () =>
 					{
-						image.Source = new CountedImageSourceStub(Colors.Red, false);
+						image.Source = new CountedImageSourceStub(Colors.Red);
 						handler.UpdateValue(nameof(IImage.Source));
 						await image.Wait();
 					});
@@ -180,7 +180,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 
 				// set & apply the FIRST image source
-				image.Source = new CountedImageSourceStub(Colors.Blue);
+				image.Source = new CountedImageSourceStub(Colors.Blue, true);
 				handler.UpdateValue(nameof(IImage.Source));
 				await image.Wait();
 				await startingTask;

@@ -97,13 +97,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 		}
 
-		public CountedImageSourceStub(Color color, bool wait = true)
+		public CountedImageSourceStub(Color color, bool wait = false)
 		{
 			Color = color;
 			Wait = wait;
 		}
 
-		public bool Wait { get; set; } = true;
+		public bool Wait { get; set; } = false;
 
 		public Color Color { get; set; }
 	}

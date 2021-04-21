@@ -12,15 +12,15 @@ namespace Microsoft.Maui
 {
 	public partial class FontImageSourceService
 	{
-		public Task<Drawable?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IFontImageSource fontImageSource)
 				return GetDrawableAsync(fontImageSource, context, cancellationToken);
 
-			return Task.FromResult<Drawable?>(null);
+			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
 		}
 
-		public async Task<Drawable?> GetDrawableAsync(IFontImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IFontImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
 				return null;
@@ -30,14 +30,16 @@ namespace Microsoft.Maui
 			var typeface = FontManager.GetTypeface(imageSource.Font);
 			var color = (imageSource.Color ?? Graphics.Colors.White).ToNative();
 
-			var target = Glide
-				.With(context)
+			var manager = Glide
+				.With(context);
+
+			var target = manager
 				.Load(new FontImageSourceModel(glyph, textSize, typeface, color))
 				.Submit();
 
-			var drawable = await target.AsTask<Drawable>(cancellationToken);
+			var result = await GlideImageSourceServiceResult.CreateAsync(target, manager, cancellationToken);
 
-			return drawable;
+			return result;
 		}
 
 		internal static Bitmap RenderBitmap(IModel model, Func<int, int, Bitmap.Config, Bitmap> newBitmap)

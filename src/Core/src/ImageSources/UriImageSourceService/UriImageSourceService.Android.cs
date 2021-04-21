@@ -9,23 +9,25 @@ namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		public Task<Drawable?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IUriImageSource uriImageSource)
 				return GetDrawableAsync(uriImageSource, context, cancellationToken);
 
-			return Task.FromResult<Drawable?>(null);
+			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
 		}
 
-		public async Task<Drawable?> GetDrawableAsync(IUriImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IUriImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
 				return null;
 
 			var uri = imageSource.Uri;
 
-			var builder = Glide
-				.With(context)
+			var manager = Glide
+				.With(context);
+
+			var builder = manager
 				.Load(uri.OriginalString);
 
 			if (!imageSource.CachingEnabled)
@@ -38,9 +40,9 @@ namespace Microsoft.Maui
 			var target = builder
 				.Submit();
 
-			var drawable = await target.AsTask<Drawable>(cancellationToken);
+			var result = await GlideImageSourceServiceResult.CreateAsync(target, manager, cancellationToken);
 
-			return drawable;
+			return result;
 		}
 	}
 }

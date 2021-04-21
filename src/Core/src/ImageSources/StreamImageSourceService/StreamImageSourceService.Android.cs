@@ -10,15 +10,15 @@ namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService
 	{
-		public Task<Drawable?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IStreamImageSource streamImageSource)
 				return GetDrawableAsync(streamImageSource, context, cancellationToken);
 
-			return Task.FromResult<Drawable?>(null);
+			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
 		}
 
-		public async Task<Drawable?> GetDrawableAsync(IStreamImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IStreamImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
 				return null;
@@ -31,15 +31,17 @@ namespace Microsoft.Maui
 			//  - Copy the stream into a byte array and that is double memory usage - especially for large streams.
 			var inputStream = new InputStreamAdapter(stream);
 
-			var target = Glide
-				.With(context)
+			var manager = Glide
+				.With(context);
+
+			var target = manager
 				.Load(inputStream)
 				.SetDiskCacheStrategy(DiskCacheStrategy.None)
 				.Submit();
 
-			var drawable = await target.AsTask<Drawable>(cancellationToken);
+			var result = await GlideImageSourceServiceResult.CreateAsync(target, manager, cancellationToken);
 
-			return drawable;
+			return result;
 		}
 	}
 }

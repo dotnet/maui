@@ -7,15 +7,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class CountedImageSourceServiceStub
 	{
-		public Task<Drawable> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is ICountedImageSourceStub counted)
 				return GetDrawableAsync(counted, context, cancellationToken);
 
-			return Task.FromResult<Drawable>(null);
+			return Task.FromResult<IImageSourceServiceResult<Drawable>>(null);
 		}
 
-		public async Task<Drawable> GetDrawableAsync(ICountedImageSourceStub imageSource, Context context, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(ICountedImageSourceStub imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			try
 			{
@@ -32,11 +32,26 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					return new ColorDrawable(color);
 				}).ConfigureAwait(false);
 
-				return drawable;
+				return new Result(drawable);
 			}
 			finally
 			{
 				Finishing.Set();
+			}
+		}
+
+		class Result : IImageSourceServiceResult<Drawable>
+		{
+			public Result(ColorDrawable drawable)
+			{
+				Value = drawable;
+			}
+
+			public Drawable Value { get; }
+
+			public void Dispose()
+			{
+				Value.Dispose();
 			}
 		}
 	}

@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static async Task UpdateSourceAsync(this ImageView imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
+		public static async Task<IDisposable?> UpdateSourceAsync(this ImageView imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
 		{
 			imageView.Clear();
 
@@ -48,11 +48,11 @@ namespace Microsoft.Maui
 
 			var context = imageView.Context;
 			if (context == null)
-				return;
+				return null;
 
 			var imageSource = image.Source;
 			if (imageSource == null)
-				return;
+				return null;
 
 			var events = image as IImageSourcePartEvents;
 
@@ -74,7 +74,8 @@ namespace Microsoft.Maui
 				{
 					// fall back to setting it manually
 
-					var drawable = await service.GetDrawableAsync(imageSource, context, cancellationToken);
+					var result = await service.GetDrawableAsync(imageSource, context, cancellationToken);
+					var drawable = result?.Value;
 
 					var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;
 
@@ -88,6 +89,8 @@ namespace Microsoft.Maui
 					}
 
 					events?.LoadingCompleted(applied);
+
+					return result;
 				}
 			}
 			catch (OperationCanceledException)
@@ -107,6 +110,8 @@ namespace Microsoft.Maui
 					image.UpdateIsLoading(false);
 				}
 			}
+
+			return null;
 		}
 	}
 }

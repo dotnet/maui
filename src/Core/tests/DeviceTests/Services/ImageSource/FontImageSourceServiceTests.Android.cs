@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 

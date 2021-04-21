@@ -9,29 +9,31 @@ namespace Microsoft.Maui
 {
 	public partial class FileImageSourceService
 	{
-		public Task<Drawable?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IFileImageSource fileImageSource)
 				return GetDrawableAsync(fileImageSource, context, cancellationToken);
 
-			return Task.FromResult<Drawable?>(null);
+			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
 		}
 
-		public async Task<Drawable?> GetDrawableAsync(IFileImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IFileImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
 				return null;
 
 			var filename = imageSource.File;
 
-			var target = Glide
-				.With(context)
+			var manager = Glide
+				.With(context);
+
+			var target = manager
 				.Load(filename, context)
 				.Submit();
 
-			var drawable = await target.AsTask<Drawable>(cancellationToken);
+			var result = await GlideImageSourceServiceResult.CreateAsync(target, manager, cancellationToken);
 
-			return drawable;
+			return result;
 		}
 	}
 }
