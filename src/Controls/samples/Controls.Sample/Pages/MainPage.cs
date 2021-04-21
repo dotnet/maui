@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.LifecycleEvents;
+using Aspect = Microsoft.Maui.Aspect;
 using Debug = System.Diagnostics.Debug;
 
 namespace Maui.Controls.Sample.Pages
@@ -212,6 +213,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
 			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
+			verticalStack.Add(new Image() { Source = "dotnet_bot.png", Aspect = Aspect.AspectFill });
 
 			Content = new ScrollView
 			{
