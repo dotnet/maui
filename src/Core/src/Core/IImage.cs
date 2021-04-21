@@ -1,6 +1,6 @@
 namespace Microsoft.Maui
 {
-	public interface IImage : IAspect
+	public interface IImage : IView, IAspect
 	{
 	}
 }
