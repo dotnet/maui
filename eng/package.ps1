@@ -3,30 +3,6 @@ param(
   [string] $msbuild
 )
 
-if (-not $msbuild)
-{
-    # If MSBuild path isn't specified, try various locations
-    $vseditions = @('Enterprise', 'Preview', 'Internal', 'Community')
-
-    for ($i=0; $i -lt $vseditions.Length; $i++)
-    {
-        $vsedition = $vseditions[$i]
-        $possiblemsbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\${vsedition}\MSBuild\Current\Bin\MSBuild.exe"
-
-        if (Test-Path $possiblemsbuild)
-        {
-            # Found MSBuild!
-            $msbuild = $possiblemsbuild
-            break
-        }
-    }
-    if (-not $msbuild)
-    {
-        throw 'Could not locate MSBuild automatically. Set the $msbuild parameter of this script to provide a location.'
-    }
-    Write-Host "Found MSBuild at ${msbuild}"
-}
-
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
 
@@ -36,6 +12,30 @@ $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
 
 if ($IsWindows)
 {
+    if (-not $msbuild)
+    {
+        # If MSBuild path isn't specified, try various locations
+        $vseditions = @('Enterprise', 'Preview', 'Internal', 'Community')
+    
+        for ($i=0; $i -lt $vseditions.Length; $i++)
+        {
+            $vsedition = $vseditions[$i]
+            $possiblemsbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\${vsedition}\MSBuild\Current\Bin\MSBuild.exe"
+    
+            if (Test-Path $possiblemsbuild)
+            {
+                # Found MSBuild!
+                $msbuild = $possiblemsbuild
+                break
+            }
+        }
+        if (-not $msbuild)
+        {
+            throw 'Could not locate MSBuild automatically. Set the $msbuild parameter of this script to provide a location.'
+        }
+        Write-Host "Found MSBuild at ${msbuild}"
+    }
+    
     # Modify global.json, so the IDE can load
     $globaljson = Join-Path $PSScriptRoot ../global.json
     [xml] $xml = Get-Content (Join-Path $PSScriptRoot Versions.props)
