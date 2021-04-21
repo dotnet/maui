@@ -1,7 +1,31 @@
 param(
   [string] $configuration = 'Debug',
-  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+  [string] $msbuild
 )
+
+if (-not $msbuild)
+{
+    # If MSBuild path isn't specified, try various locations
+    $vseditions = @('Enterprise', 'Preview', 'Internal', 'Community')
+
+    for ($i=0; $i -lt $vseditions.Length; $i++)
+    {
+        $vsedition = $vseditions[$i]
+        $possiblemsbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\${vsedition}\MSBuild\Current\Bin\MSBuild.exe"
+
+        if (Test-Path $possiblemsbuild)
+        {
+            # Found MSBuild!
+            $msbuild = $possiblemsbuild
+            break
+        }
+    }
+    if (-not $msbuild)
+    {
+        throw 'Could not locate MSBuild automatically. Set the $msbuild parameter of this script to provide a location.'
+    }
+    Write-Host "Found MSBuild at ${msbuild}"
+}
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
