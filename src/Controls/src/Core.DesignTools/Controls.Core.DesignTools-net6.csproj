@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+		<AssemblyName>Microsoft.Maui.Controls.Core.DesignTools</AssemblyName>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackageId>Microsoft.Maui.Controls.Core.DesignTools</PackageId>
+	</PropertyGroup>
+	<!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->
+	<!-- load the toolbox metadata from.                                                           -->
+	<ItemGroup>
+		<EmbeddedResource Include="toolbox\Microsoft.Maui.toolbox.xml">
+			<LogicalName>Microsoft.Maui.toolbox.xml</LogicalName>
+		</EmbeddedResource>
+	</ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="16.9.31025.104" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Xaml" />
+  </ItemGroup>
+
+	<!-- Ensure that all images in the 'mac' and 'win' subdirectories are included as embedded resources -->
+	<!-- using a defined format. That format is "{platform}.{imagename}". We will look up images using   -->
+	<!-- exact-match logic so there's no guessework to figure out which image we need to load.           -->
+	<PropertyGroup>
+		<AssignTargetPathsDependsOn>
+			$(AssignTargetPathsDependsOn);
+			IncludeToolboxImages
+		</AssignTargetPathsDependsOn>
+	</PropertyGroup>
+	<Target Name="IncludeToolboxImages">
+		<!-- Be explicit about the prefix rather than relying on the directory name being exactly what we need -->
+		<ItemGroup>
+			<Images Include="toolbox\icons\mac\*.png">
+				<Prefix>mac</Prefix>
+			</Images>
+			<Images Include="toolbox\icons\win\*.png">
+				<Prefix>win</Prefix>
+			</Images>
+		</ItemGroup>
+		<CreateItem Include="@(Images)" AdditionalMetadata="LogicalName=%(Prefix).%(Filename)%(Extension)">
+			<Output TaskParameter="Include" ItemName="EmbeddedResource" />
+		</CreateItem>
+	</Target>
+</Project>

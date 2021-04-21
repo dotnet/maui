@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+		<AssemblyName>Microsoft.Maui.Controls.Xaml.DesignTools</AssemblyName>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackageId>Microsoft.Maui.Controls.Xaml.DesignTools</PackageId>
+		<Description>Provides the design-time metadata for the XAML language service.</Description>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="16.9.31025.104" />
+	</ItemGroup>
+	<ItemGroup>
+		    <ProjectReference Include="..\Core.DesignTools\Controls.Core.DesignTools-net6.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Reference Include="System.Xaml" />
+	</ItemGroup>
+</Project>
