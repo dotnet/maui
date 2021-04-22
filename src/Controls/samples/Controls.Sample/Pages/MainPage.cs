@@ -82,9 +82,9 @@ namespace Maui.Controls.Sample.Pages
 				Background = new RadialGradientBrush(
 				new GradientStopCollection
 				{
-						new GradientStop(Colors.DarkBlue, 0),
-						new GradientStop(Colors.Yellow, 0.6f),
-						new GradientStop(Colors.LightPink, 1)
+					new GradientStop(Colors.DarkBlue, 0),
+					new GradientStop(Colors.Yellow, 0.6f),
+					new GradientStop(Colors.LightPink, 1)
 				},
 				new Point(0.5, 0.5),
 				0.3f)
@@ -209,6 +209,18 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Text = "This should be text with character spacing", CharacterSpacing = 10 });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
+			verticalStack.Add(new Entry
+			{
+				Placeholder = "Foreground",
+				Foreground = new LinearGradientBrush(
+					new GradientStopCollection
+					{
+						new GradientStop(Colors.Green, 0),
+						new GradientStop(Colors.Blue, 1)
+					},
+					new Point(0, 0),
+					new Point(1, 0))
+			});
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });

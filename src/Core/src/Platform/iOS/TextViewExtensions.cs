@@ -11,6 +11,7 @@ namespace Microsoft.Maui
 			if (textView.Text != text)
 			{
 				textView.Text = text;
+				textView.SetForeground(editor.Foreground, ColorExtensions.LabelColor);
 			}
 		}
 

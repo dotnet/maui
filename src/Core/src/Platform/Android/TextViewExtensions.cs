@@ -3,21 +3,25 @@ using Android.Graphics;
 using Android.Text;
 using Android.Util;
 using Android.Widget;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
 	public static class TextViewExtensions
 	{
 		public static void UpdateText(this TextView textView, ILabel label) =>
-			UpdateText(textView, label.Text);
+			UpdateText(textView, label.Text, label.Foreground);
 
-		public static void UpdateText(this TextView textView, string newText)
+		public static void UpdateText(this TextView textView, string newText, IBrush? foreground = null)
 		{
 			newText ??= string.Empty;
 			var oldText = textView.Text ?? string.Empty;
 
 			if (oldText != newText)
 				textView.Text = newText;
+						
+			if (foreground != null)
+				textView.SetForeground(foreground);
 		}
 
 		public static void UpdateForeground(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)

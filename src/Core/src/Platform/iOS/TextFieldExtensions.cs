@@ -7,6 +7,7 @@ namespace Microsoft.Maui
 		public static void UpdateText(this UITextField textField, IEntry entry)
 		{
 			textField.Text = entry.Text;
+			textField.SetForeground(entry.Foreground);
 		}
 
 		public static void UpdateForeground(this UITextField textField, ITextStyle textStyle, UIColor? defaultTextColor = null)

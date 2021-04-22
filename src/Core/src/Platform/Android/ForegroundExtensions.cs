@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public static class ForegroundExtensions
 	{
-		public static void SetForeground(this TextView nativeView, IBrush? brush, Graphics.Color defaultTextColor)
+		public static void SetForeground(this TextView nativeView, IBrush? brush, Graphics.Color? defaultTextColor = null)
 		{
 			if (brush.IsNullOrEmpty())
 				return;
@@ -18,7 +18,10 @@ namespace Microsoft.Maui
 				var textColor = solidColorBrush.Color;
 
 				if (textColor == null)
-					nativeView.SetTextColor(defaultTextColor.ToNative());
+				{
+					if (defaultTextColor != null)
+						nativeView.SetTextColor(defaultTextColor.ToNative());
+				}
 				else
 					nativeView.SetTextColor(textColor.ToNative());
 			}

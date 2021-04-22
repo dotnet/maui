@@ -8,23 +8,16 @@ namespace Microsoft.Maui
 {
 	public static class EditTextExtensions
 	{
-		static readonly int[][] ColorStates =
-		{
-			new[] { Android.Resource.Attribute.StateEnabled },
-			new[] { -Android.Resource.Attribute.StateEnabled }
-		};
-
 		public static void UpdateText(this AppCompatEditText editText, IEntry entry)
 		{
-			editText.UpdateText(entry.Text);
+			editText.UpdateText(entry.Text, entry.Foreground);
 
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
 		}
 
 		public static void UpdateText(this AppCompatEditText editText, IEditor editor)
 		{
-			editText.UpdateText(editor.Text);
-
+			editText.UpdateText(editor.Text, editor.Foreground);
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 

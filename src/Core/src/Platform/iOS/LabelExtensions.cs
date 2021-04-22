@@ -13,6 +13,7 @@ namespace Microsoft.Maui
 		public static void UpdateText(this UILabel nativeLabel, ILabel label)
 		{
 			nativeLabel.Text = label.Text;
+			nativeLabel.SetForeground(label.Foreground);
 		}
 
 		public static void UpdateForeground(this UILabel nativeLabel, ITextStyle textStyle, UIColor? defaultColor = null)
