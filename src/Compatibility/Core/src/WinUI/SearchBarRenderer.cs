@@ -247,6 +247,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				() => _queryTextBox.PlaceholderForegroundFocusBrush, brush => _queryTextBox.PlaceholderForegroundFocusBrush = brush);
 		}
 
+		[PortHandler]
 		void UpdateText()
 		{
 			Control.Text = Element.UpdateFormsText(Element.Text, Element.TextTransform);

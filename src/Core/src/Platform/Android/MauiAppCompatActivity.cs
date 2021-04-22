@@ -28,11 +28,13 @@ namespace Microsoft.Maui
 			var window = mauiApp.CreateWindow(state);
 			window.MauiContext = mauiContext;
 
-			var matchParent = ViewGroup.LayoutParams.MatchParent;
+			//var matchParent = ViewGroup.LayoutParams.MatchParent;
+			var wrap = ViewGroup.LayoutParams.WrapContent;
 
 			// Create the root native layout and set the Activity's content to it
-			CoordinatorLayout nativeRootLayout = new CoordinatorLayout(this);
-			SetContentView(nativeRootLayout, new ViewGroup.LayoutParams(matchParent, matchParent));
+			//var nativeRootLayout = new CoordinatorLayout(this);
+			var nativeRootLayout = new LinearLayoutCompat(this);
+			SetContentView(nativeRootLayout, new ViewGroup.LayoutParams(wrap, wrap));
 
 			//AddToolbar(parent);
 
@@ -48,7 +50,8 @@ namespace Microsoft.Maui
 			var nativePage = page.ToContainerView(window.MauiContext);
 
 			// Add the IPage to the root layout; use match parent so the page automatically has the dimensions of the activity
-			nativeRootLayout.AddView(nativePage, new CoordinatorLayout.LayoutParams(matchParent, matchParent));
+			// nativeRootLayout.AddView(nativePage, new CoordinatorLayout.LayoutParams(wrap, wrap));
+			nativeRootLayout.AddView(nativePage, new LinearLayoutCompat.LayoutParams(wrap, wrap));
 		}
 
 		void AddToolbar(ViewGroup parent)
