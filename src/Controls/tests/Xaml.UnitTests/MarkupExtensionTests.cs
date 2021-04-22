@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Label 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
 				Text=""{local:AppendMarkupExtension Value0=Foo, Value1=Bar}""
@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			<forms:Label 
 				xmlns=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:forms=""http://xamarin.com/schemas/2014/forms""
+				xmlns:forms=""http://schemas.microsoft.com/dotnet/2021/maui""
 				Text=""{AppendMarkupExtension Value0=Foo, Value1=Bar}""
 			/>";
 
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Label
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
 				TextColor=""{local:ColorMarkup R=100, G=80, B=60}""/>";
