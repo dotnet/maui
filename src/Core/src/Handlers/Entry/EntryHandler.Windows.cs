@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Input;
+﻿#nullable enable
+using Microsoft.UI.Xaml.Input;
 using Windows.System;
 
 namespace Microsoft.Maui.Handlers
