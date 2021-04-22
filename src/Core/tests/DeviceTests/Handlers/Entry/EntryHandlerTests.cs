@@ -572,7 +572,8 @@ namespace Microsoft.Maui.DeviceTests
 				nameof(IEntry.CursorPosition),
 				GetNativeCursorPosition,
 				setValue,
-				unsetValue);
+				unsetValue
+			);
 		}
 
 		[Theory(DisplayName = "CursorPosition is Capped to Text's Length")]
