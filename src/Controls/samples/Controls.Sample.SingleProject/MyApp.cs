@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Maui.Controls.Sample.SingleProject
 {
@@ -11,9 +12,9 @@ namespace Maui.Controls.Sample.SingleProject
 		public IWindow CreateWindow(IActivationState activationState)
 		{
 			Microsoft.Maui.Controls.Compatibility.Forms.Init(activationState);
-			var window =  Services.GetRequiredService<IWindow>();
-			_windows.Add(window);
-			return new MainWindow();
+			var window = new MainWindow();
+			_windows.Add(window);			
+			return window;
 		}
 	}
 }
