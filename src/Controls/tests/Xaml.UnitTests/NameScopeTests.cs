@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<View 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" />";
 
 			var view = new CustomView().LoadFromXaml(xaml);
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<StackLayout 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" >
 					<Label />
 					<Label />
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<ListView
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				x:Name=""listview"">
 					<ListView.ItemTemplate>
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<ListView
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				x:Name=""listview"">
 					<ListView.ItemTemplate>

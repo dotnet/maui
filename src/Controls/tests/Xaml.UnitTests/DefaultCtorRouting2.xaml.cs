@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 #pragma warning restore 0618
 					if (t == typeof(DefaultCtorRouting2))
 						return @"<?xml version=""1.0"" encoding=""UTF-8""?>
-<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 	x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.DefaultCtorRouting2""
 	IsCompiled=""IsCompiled?"">
