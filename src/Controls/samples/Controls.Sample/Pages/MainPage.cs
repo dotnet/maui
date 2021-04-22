@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Pages
 			//SetupCompatibilityLayout();
 		}
 
-		const string loremIpsum =
+		const string LoremIpsum =
 				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
 				"Quisque ut dolor metus. Duis vel iaculis mauris, sit amet finibus mi. " +
 				"Etiam congue ornare risus, in facilisis libero tempor eget. " +
@@ -70,11 +70,11 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new Image { Source = new FontImageSource() { FontFamily = fontFamily, Glyph = '\uf2fe'.ToString() } });
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Colors.LightBlue });
-			verticalStack.Add(new Label { Text = loremIpsum });
-			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
-			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
-			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
-			verticalStack.Add(new Label { Text = "This should have five times the line height! " + loremIpsum, LineHeight = 5, MaxLines = 2 });
+			verticalStack.Add(new Label { Text = LoremIpsum });
+			verticalStack.Add(new Label { Text = LoremIpsum, MaxLines = 2 });
+			verticalStack.Add(new Label { Text = LoremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
+			verticalStack.Add(new Label { Text = LoremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
+			verticalStack.Add(new Label { Text = "This should have five times the line height! " + LoremIpsum, LineHeight = 5, MaxLines = 2 });
 			verticalStack.Add(new Label
 			{
 				Text = "RadialGradient",
@@ -214,13 +214,17 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
 
-			var searchBar = new SearchBar();
-			searchBar.CharacterSpacing = 4;
-			searchBar.Text = "A search query";
+			var searchBar = new SearchBar
+			{
+				CharacterSpacing = 4,
+				Text = "A search query"
+			};
 			verticalStack.Add(searchBar);
 
-			var placeholderSearchBar = new SearchBar();
-			placeholderSearchBar.Placeholder = "Placeholder";
+			var placeholderSearchBar = new SearchBar
+			{
+				Placeholder = "Placeholder"
+			};
 			verticalStack.Add(placeholderSearchBar);
 
 			var monkeyList = new List<string>
@@ -335,6 +339,35 @@ namespace Maui.Controls.Sample.Pages
 			return layout;
 		}
 
+		void AddTextResizeDemo(Microsoft.Maui.ILayout layout)
+		{
+			var resizeTestButton = new Button { Text = "Resize Test" };
+
+			var resizeTestLabel = new Label { Text = "Short Text", BackgroundColor = Colors.LightBlue, HorizontalOptions = LayoutOptions.Start };
+			var explicitWidthTestLabel = new Label { Text = "Short Text", BackgroundColor = Colors.LightGreen, WidthRequest = 200 };
+			var widthAndHeightTestLabel = new Label { Text = "Short Text", BackgroundColor = Colors.MediumSeaGreen, WidthRequest = 150, HeightRequest = 40 };
+
+			resizeTestButton.Clicked += (sender, args) =>
+			{
+				if (resizeTestLabel.Text == "Short Text")
+				{
+					resizeTestLabel.Text = LoremIpsum;
+					explicitWidthTestLabel.Text = LoremIpsum;
+					widthAndHeightTestLabel.Text = LoremIpsum;
+				}
+				else
+				{
+					resizeTestLabel.Text = "Short Text";
+					explicitWidthTestLabel.Text = "Short Text";
+					widthAndHeightTestLabel.Text = "Short Text";
+				}
+			};
+
+			layout.Add(resizeTestButton);
+			layout.Add(resizeTestLabel);
+			layout.Add(widthAndHeightTestLabel);
+			layout.Add(explicitWidthTestLabel);
+		}
 
 		partial class TranslucentRedBrush : Brush
 		{
@@ -349,45 +382,17 @@ namespace Maui.Controls.Sample.Pages
 				Frame = frame,
 			};
 #elif MONOANDROID || __ANDROID__
-		public override Android.Graphics.Drawables.Drawable ToDrawable()
-		{
-			var drawable = new Microsoft.Maui.Graphics.MauiDrawable();
-			drawable.SetColor(Android.Graphics.Color.Argb(127, 255, 0, 0));
-			return drawable;
-		}
+			public override Android.Graphics.Drawables.Drawable ToDrawable()
+			{
+				var drawable = new Microsoft.Maui.Graphics.MauiDrawable();
+				drawable.SetColor(Android.Graphics.Color.Argb(127, 255, 0, 0));
+				return drawable;
+			}
 #elif WINDOWS
 		public override Microsoft.UI.Xaml.Media.Brush ToNative() =>
 			new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(127, 255, 0, 0));
 #endif
 
-		void AddTextResizeDemo(Microsoft.Maui.ILayout layout)
-		{
-			var resizeTestButton = new Button { Text = "Resize Test" };
-
-			var resizeTestLabel = new Label { Text = "Short Text", BackgroundColor = Colors.LightBlue, HorizontalOptions = LayoutOptions.Start };
-			var explicitWidthTestLabel = new Label { Text = "Short Text", BackgroundColor = Colors.LightGreen, WidthRequest = 200 };
-			var widthAndHeightTestLabel = new Label { Text = "Short Text", BackgroundColor = Colors.MediumSeaGreen, WidthRequest = 150, HeightRequest = 40 };
-
-			resizeTestButton.Clicked += (sender, args) =>
-			{
-				if (resizeTestLabel.Text == "Short Text")
-				{
-					resizeTestLabel.Text = loremIpsum;
-					explicitWidthTestLabel.Text = loremIpsum;
-					widthAndHeightTestLabel.Text = loremIpsum;
-				}
-				else
-				{
-					resizeTestLabel.Text = "Short Text";
-					explicitWidthTestLabel.Text = "Short Text";
-					widthAndHeightTestLabel.Text = "Short Text";
-				}
-			};
-
-			layout.Add(resizeTestButton);
-			layout.Add(resizeTestLabel);
-			layout.Add(widthAndHeightTestLabel);
-			layout.Add(explicitWidthTestLabel);
 		}
 	}
 }
