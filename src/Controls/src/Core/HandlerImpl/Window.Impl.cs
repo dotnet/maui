@@ -18,28 +18,7 @@ namespace Microsoft.Maui.Controls
 
         internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
         {
-            IsArrangeValid = false;
             base.InvalidateMeasureInternal(trigger);
-        }
-
-        public override bool IsMeasureValid
-        {
-            get
-            {
-                return base.IsMeasureValid && Page.IsMeasureValid;
-            }
-
-            protected set => base.IsMeasureValid = value;
-        }
-
-        public override bool IsArrangeValid
-        {
-            get
-            {
-                return base.IsArrangeValid && Page.IsArrangeValid;
-            }
-
-            protected set => base.IsArrangeValid = value;
         }
 
         protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
@@ -49,19 +28,11 @@ namespace Microsoft.Maui.Controls
                 frameworkElement.Measure(widthConstraint, heightConstraint);
             }
 
-            IsMeasureValid = true;
             return new Size(widthConstraint, heightConstraint);
         }
 
         protected override Size ArrangeOverride(Rectangle bounds)
         {
-            if (IsArrangeValid)
-            {
-                return bounds.Size;
-            }
-
-            IsArrangeValid = true;
-
             // Update the Bounds (Frame) for this page
             Layout(bounds);
 
