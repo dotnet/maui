@@ -1,6 +1,8 @@
 parameters:
   androidVmPool: '$(androidTestsVmPool)'
   androidVmImage: '$(androidTestsVmImage)'
+  iosVmPool: '$(iosTestsVmPool)'
+  iosVmImage: '$(iosTestsVmImage)'
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   projects:
@@ -46,10 +48,8 @@ stages:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
               pool:
-                name:  $(macOSXNet6VmPool)
-                vmImage: $(macOSXNet6VmImage)
-                demands:
-                - agent.osversion -equals 11.0
+                name: ${{ parameters.iosVmPool }}
+                vmImage: ${{ parameters.iosVmImage }}
               steps:
                 - template: device-tests-steps.yml
                   parameters:
