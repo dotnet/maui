@@ -41,7 +41,9 @@ namespace Maui.Controls.Sample
 					.UseCompatibilityRenderers()
 					.UseMauiApp<MyApp>();
 			}
-
+#if DEBUG
+			appBuilder.EnableHotReload();
+#endif
 			appBuilder
 #if NET6_0_OR_GREATER
 				.RegisterBlazorMauiWebView()

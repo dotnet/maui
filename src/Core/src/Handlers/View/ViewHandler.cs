@@ -71,6 +71,7 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
+		// TODO ezhart This should maybe be called NativeArrange or something
 		public abstract void SetFrame(Rectangle frame);
 
 		private protected void ConnectHandler(NativeView? nativeView)

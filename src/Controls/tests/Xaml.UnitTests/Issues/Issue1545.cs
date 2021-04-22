@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void BindingCanNotBeReused()
 		{
-			string xaml = @"<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+			string xaml = @"<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 						 x:Class=""Microsoft.Maui.Controls.ControlGallery.Issue1545"">
 						<ListView x:Name=""List"" ItemsSource=""{Binding}"">
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void ElementsCanNotBeReused()
 		{
-			string xaml = @"<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+			string xaml = @"<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 						 x:Class=""Microsoft.Maui.Controls.ControlGallery.Issue1545"">
 							<ContentPage.Resources>
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void ElementsFromCollectionsAreNotReused()
 		{
 			var xaml = @"<ListView 
-						xmlns=""http://xamarin.com/schemas/2014/forms""
+						xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 						xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
 						ItemsSource=""{Binding}"">
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void ResourcesDeclaredInDataTemplatesAreNotShared()
 		{
 			var xaml = @"<ListView 
-						xmlns=""http://xamarin.com/schemas/2014/forms""
+						xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 						xmlns:sys=""clr-namespace:System;assembly=mscorlib""
 						ItemsSource=""{Binding}"">

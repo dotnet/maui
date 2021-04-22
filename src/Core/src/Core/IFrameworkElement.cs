@@ -49,18 +49,19 @@ namespace Microsoft.Maui
 		/// Positions child elements and determines a size for an Element.
 		/// </summary>
 		/// <param name="bounds">The size that the parent computes for the child element.</param>
-		void Arrange(Rectangle bounds);
+		/// <returns>Return the actual arranged Size for this element.</returns>
+		Size Arrange(Rectangle bounds);
 
 		/// <summary>
 		/// Updates the size of an FrameworkElement.
 		/// </summary>
 		/// <param name="widthConstraint">The width that a parent element can allocate a child element.</param>
 		/// <param name="heightConstraint">The height that a parent element can allocate a child element.</param>
-		/// <returns>Return the rendered Size for this element.</returns>
+		/// <returns>Return the desired Size for this element.</returns>
 		Size Measure(double widthConstraint, double heightConstraint);
 
 		/// <summary>
-		/// Gets the current rendered Size of this FrameworkElement. 
+		/// Gets the current desired Size of this FrameworkElement. 
 		/// </summary>
 		Size DesiredSize { get; }
 
@@ -75,7 +76,7 @@ namespace Microsoft.Maui
 		bool IsArrangeValid { get; }
 
 		/// <summary>
-		/// Gets a value indicating whether the computed size and position of child elements in this element's layout are valid.
+		/// Signals that the current measure value of this FrameworkElement is no longer valid and must be recomputed during the next measure pass.
 		/// </summary>
 		void InvalidateMeasure();
 

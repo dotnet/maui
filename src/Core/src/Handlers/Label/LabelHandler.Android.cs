@@ -21,8 +21,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				DefaultTextColor = Color.FromUint((uint)nativeView.TextColors.DefaultColor);
 			}
+
 			LineSpacingAddDefault = nativeView.LineSpacingExtra;
 			LineSpacingMultDefault = nativeView.LineSpacingMultiplier;
+			nativeView.LayoutParameters = new ViewGroup.LayoutParams(
+				ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
 		}
 
 		public static void MapText(LabelHandler handler, ILabel label)

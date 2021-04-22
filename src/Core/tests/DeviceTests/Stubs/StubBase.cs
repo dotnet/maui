@@ -40,10 +40,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Semantics Semantics { get; set; } = new Semantics();
 
-		public void Arrange(Rectangle bounds)
+		public Size Arrange(Rectangle bounds)
 		{
 			Frame = bounds;
 			DesiredSize = bounds.Size;
+			return DesiredSize;
 		}
 
 		protected bool SetProperty<T>(ref T backingStore, T value,

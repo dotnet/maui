@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void LoadXaml2006()
 		{
 			var xaml = @"<View
-					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustomView"" >
 						<Label x:Name=""label0""/>
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void LoadXaml2009()
 		{
 			var xaml = @"<View
-					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustomView"" >
 						<Label x:Name=""label0""/>
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void xNameInCustomTypes()
 		{
 			var xaml = @"<ContentPage
-    xmlns=""http://xamarin.com/schemas/2014/forms""
+    xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
     xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
     xmlns:local=""clr-namespace:CustomListViewSample;assembly=CustomListViewSample""
     xmlns:localusing=""using:CustomListViewSample""
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void xNameInDataTemplates()
 		{
 			var xaml = @"<StackLayout 
-						    xmlns=""http://xamarin.com/schemas/2014/forms""
+						    xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" >
 							<ListView>
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void xNameInStyles()
 		{
 			var xaml = @"<StackLayout 
-						    xmlns=""http://xamarin.com/schemas/2014/forms""
+						    xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" >
 							<StackLayout.Resources>
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void xTypeArgumentsOnRootElement()
 		{
 			var xaml = @"<Layout 
-						    xmlns=""http://xamarin.com/schemas/2014/forms""
+						    xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
 							x:TypeArguments=""x:String""
@@ -232,7 +232,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void MulipleXTypeArgumentsOnRootElement()
 		{
 			var xaml = @"<ObservableWrapper 
-						    xmlns=""http://xamarin.com/schemas/2014/forms""
+						    xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
 							x:TypeArguments=""x:String,x:Int32""
@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void MulipleXTypeArgumentsOnRootElementWithWhitespace()
 		{
 			var xaml = @"<ObservableWrapper 
-						    xmlns=""http://xamarin.com/schemas/2014/forms""
+						    xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
 							x:TypeArguments=""x:String, x:Int32""
@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void MulipleXTypeArgumentsMulitpleNamespacesOnRootElement()
 		{
 			var xaml = @"<ObservableWrapper 
-						    xmlns=""http://xamarin.com/schemas/2014/forms""
+						    xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
 							x:TypeArguments=""nsone:IDummyInterface,nstwo:IDummyInterfaceTwo""
@@ -325,7 +325,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void MulipleXTypeArgumentsMulitpleNamespacesOnRootElementWithWhitespace()
 		{
 			var xaml = @"<ObservableWrapper 
-						    xmlns=""http://xamarin.com/schemas/2014/forms""
+						    xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
 							x:TypeArguments=""nsone:IDummyInterface, nstwo:IDummyInterfaceTwo""
@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			var xaml = @"
 			<ContentPage
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 				x:Class=""FooBar"" >
 				<Label x:Name=""label0""/>
@@ -388,7 +388,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void FieldModifier()
 		{
 			var xaml = @"
-			<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+			<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			             xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 			             xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests""
 			             x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.FieldModifier"">
@@ -424,7 +424,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void xNameOnRoot()
 		{
 			var xaml = @"<ContentPage
-		xmlns=""http://xamarin.com/schemas/2014/forms""
+		xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 		xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 		x:Class=""Foo""
 		x:Name=""bar"">

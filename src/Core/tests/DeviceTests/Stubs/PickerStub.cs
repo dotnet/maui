@@ -21,5 +21,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public IBrush Foreground { get; set; }
 
 		public Font Font { get; set; }
+
+		public TextAlignment HorizontalTextAlignment { get; set; }
 	}
 }

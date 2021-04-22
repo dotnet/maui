@@ -7,7 +7,7 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <AndroidRoot>Android\</AndroidRoot>
     <iOSRoot>iOS\</iOSRoot>
-    <WindowsRoot>Windows\</WindowsRoot>
+    <WindowsRoot>WinUI\</WindowsRoot>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
@@ -38,7 +38,7 @@
     <Page Include="$(WindowsRoot)**\*.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Remove="Windows\TabbedPageStyle.xaml" />
+    <Page Remove="$(WindowsRoot)TabbedPageStyle.xaml" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
   </ItemGroup>
 
@@ -83,7 +83,8 @@
     </Compile>
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
-
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />

@@ -9,6 +9,7 @@
 			[nameof(IPicker.SelectedIndex)] = MapSelectedIndex,
 			[nameof(IPicker.Foreground)] = MapForeground,
 			[nameof(IPicker.Title)] = MapTitle,
+			[nameof(IPicker.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 		};
 
 		public PickerHandler() : base(PickerMapper)
