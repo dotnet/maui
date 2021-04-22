@@ -131,6 +131,9 @@ namespace Microsoft.Maui.Handlers
 		protected virtual bool OnShouldReturn(UITextField view)
 		{
 			view.ResignFirstResponder();
+
+			// TODO: Focus next View
+
 			VirtualView?.Completed();
 
 			return false;
