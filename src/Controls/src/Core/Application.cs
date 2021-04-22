@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Controls
 
 		IAppIndexingProvider _appIndexProvider;
 		ReadOnlyCollection<Element> _logicalChildren;
-		Page _mainPage;
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
@@ -68,7 +67,36 @@ namespace Microsoft.Maui.Controls
 			}
 			set
 			{
-				throw new NotImplementedException();
+				if (value == null)
+					throw new ArgumentNullException("value");
+
+				if (MainPage == value)
+					return;
+
+				if (Windows.Count == 0)
+				{
+					OnPropertyChanging();
+					AddWindow(new Window(value));
+					OnPropertyChanged();
+				}
+				else
+				{
+					var mainPage = MainPage;
+
+					if (mainPage == value)
+						return;
+
+					OnPropertyChanging();
+					if (mainPage != null)
+						mainPage.Parent = null;
+
+					Windows[0].View = (IView)value;
+
+					if (mainPage != null)
+						mainPage.NavigationProxy.Inner = NavigationProxy;
+
+					OnPropertyChanged();
+				}
 			}
 		}
 
@@ -417,12 +445,13 @@ namespace Microsoft.Maui.Controls
 			// Unhook everything that's referencing the main page so it can be collected
 			// This only comes up if we're disposing of an embedded Forms app, and will
 			// eventually go away when we fully support multiple windows
-			if (_mainPage != null)
-			{
-				InternalChildren.Remove(_mainPage);
-				_mainPage.Parent = null;
-				_mainPage = null;
-			}
+			// TODO MAUI
+			//if (_mainPage != null)
+			//{
+			//	InternalChildren.Remove(_mainPage);
+			//	_mainPage.Parent = null;
+			//	_mainPage = null;
+			//}
 
 			NavigationProxy = null;
 		}
