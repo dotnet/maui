@@ -4,10 +4,16 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
 	{
-		protected override AutoSuggestBox CreateNativeView() => new AutoSuggestBox();
+		protected override AutoSuggestBox CreateNativeView() => new AutoSuggestBox
+		{
+			AutoMaximizeSuggestionArea = false,
+			QueryIcon = new SymbolIcon(Symbol.Find)
+		};
 
-		[MissingMapper]
-		public static void MapText(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateText(searchBar);
+		}
 
 		[MissingMapper]
 		public static void MapPlaceholder(IViewHandler handler, ISearchBar searchBar) { }

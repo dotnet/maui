@@ -8,5 +8,10 @@ namespace Microsoft.Maui
 		{
 			nativeControl.CharacterSpacing = searchBar.CharacterSpacing.ToEm();
 		}
+
+		public static void UpdateText(this AutoSuggestBox nativeControl, ISearchBar searchBar)
+		{
+			nativeControl.Text = searchBar.Text;
+		}
 	}
 }
