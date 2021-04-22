@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 #if __IOS__ || IOS || MACCATALYST
 using NativeView = UIKit.UIView;
@@ -36,6 +37,10 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.CrossPlatformMeasure = VirtualView.Measure;
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
+
+			//Cleanup the old view when reused
+			var oldChildren = NativeView.Subviews.ToList();
+			oldChildren.ForEach(x => x.RemoveFromSuperview());
 
 			foreach (var child in VirtualView.Children)
 			{

@@ -106,8 +106,5 @@
       <Name>Controls.Sample</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-		<PackageReference Include="Microsoft.Maui.Graphics" />
-  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
