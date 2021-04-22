@@ -21,5 +21,8 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapTextColor(PickerHandler handler, IPicker view) { }
+
+		[MissingMapper]
+		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry) { }
 	}
 }
