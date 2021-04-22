@@ -50,20 +50,16 @@ namespace Microsoft.Maui.Controls
 			get => _page;
 			set
 			{
-				var page = (Page)value;
-
-				if (Page != null)
-					InternalChildren.Remove(Page);
+				if (_page != null)
+					InternalChildren.Remove(_page);
 
 				_page = (Page)value;
 
 				if (value != null)
-					InternalChildren.Add(page);
+					InternalChildren.Add(_page);
 
 				if (value is NavigableElement ne)
 					ne.NavigationProxy.Inner = NavigationProxy;
-
-				_page = (Page)value;
 			}
 		}
 	}
