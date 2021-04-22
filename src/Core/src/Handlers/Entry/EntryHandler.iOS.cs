@@ -1,6 +1,5 @@
 ﻿using System;
 using Foundation;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
@@ -24,6 +23,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiTextField nativeView)
 		{
+			nativeView.ShouldReturn = OnShouldReturn;
 			nativeView.EditingChanged += OnEditingChanged;
 			nativeView.EditingDidEnd += OnEditingEnded;
 			nativeView.TextPropertySet += OnTextPropertySet;
@@ -126,6 +126,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateClearButtonVisibility(entry);
+		}
+
+		protected virtual bool OnShouldReturn(UITextField view)
+		{
+			view.ResignFirstResponder();
+			VirtualView?.Completed();
+
+			return false;
 		}
 
 		void OnEditingChanged(object? sender, EventArgs e) => OnTextChanged();

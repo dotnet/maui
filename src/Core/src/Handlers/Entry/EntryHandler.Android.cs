@@ -1,12 +1,14 @@
-﻿using System;
-using Android.Content.Res;
+﻿using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Android.Runtime;
 using Android.Text;
 using Android.Views;
+using Android.Views.InputMethods;
+using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
-using Microsoft.Extensions.DependencyInjection;
 using static Android.Views.View;
+using static Android.Widget.TextView;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -15,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 		TextWatcher Watcher { get; } = new TextWatcher();
 		EntryTouchListener TouchListener { get; } = new EntryTouchListener();
 		EntryFocusChangeListener FocusChangeListener { get; } = new EntryFocusChangeListener();
+		EditorActionListener ActionListener { get; } = new EditorActionListener();
 
 		static ColorStateList? DefaultTextColors { get; set; }
 		static Drawable? ClearButtonDrawable { get; set; }
@@ -33,10 +36,12 @@ namespace Microsoft.Maui.Handlers
 			Watcher.Handler = this;
 			TouchListener.Handler = this;
 			FocusChangeListener.Handler = this;
+			ActionListener.Handler = this;
 
 			nativeView.OnFocusChangeListener = FocusChangeListener;
 			nativeView.AddTextChangedListener(Watcher);
 			nativeView.SetOnTouchListener(TouchListener);
+			nativeView.SetOnEditorActionListener(ActionListener);
 		}
 
 		protected override void DisconnectHandler(AppCompatEditText nativeView)
@@ -44,10 +49,12 @@ namespace Microsoft.Maui.Handlers
 			nativeView.RemoveTextChangedListener(Watcher);
 			nativeView.SetOnTouchListener(null);
 			nativeView.OnFocusChangeListener = null;
+			nativeView.SetOnEditorActionListener(null);
 
 			FocusChangeListener.Handler = null;
 			Watcher.Handler = null;
 			TouchListener.Handler = null;
+			ActionListener.Handler = null;
 		}
 
 		protected override void SetupDefaults(AppCompatEditText nativeView)
@@ -212,7 +219,7 @@ namespace Microsoft.Maui.Handlers
 
 			void ITextWatcher.OnTextChanged(Java.Lang.ICharSequence? s, int start, int before, int count)
 			{
-				// we are replacing 0 characters with 0 characters, so skip
+				// We are replacing 0 characters with 0 characters, so skip
 				if (before == 0 && count == 0)
 					return;
 
@@ -238,6 +245,23 @@ namespace Microsoft.Maui.Handlers
 			public void OnFocusChange(View? v, bool hasFocus)
 			{
 				Handler?.OnFocusedChange(hasFocus);
+			}
+		}
+
+		class EditorActionListener : Java.Lang.Object, IOnEditorActionListener
+		{
+			public EntryHandler? Handler { get; set; }
+
+			public bool OnEditorAction(TextView? v, [GeneratedEnum] ImeAction actionId, KeyEvent? e)
+			{
+				if (actionId == ImeAction.Done || (actionId == ImeAction.ImeNull && e?.KeyCode == Keycode.Enter && e?.Action == KeyEventActions.Up))
+				{
+					// TODO: Dismiss keyboard for hardware / physical keyboards
+
+					Handler?.VirtualView?.Completed();
+				}
+
+				return true;
 			}
 		}
 	}
