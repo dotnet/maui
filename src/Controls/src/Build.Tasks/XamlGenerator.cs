@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var hasXamlCompilationProcessingInstruction = GetXamlCompilationProcessingInstruction(xmlDoc);
 
 			var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
-			nsmgr.AddNamespace("__f__", XamlParser.XFUri);
+			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 
 			var root = xmlDoc.SelectSingleNode("/*", nsmgr);
 			if (root == null)

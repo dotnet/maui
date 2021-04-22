@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (Element != null)
 			{
-				SetBackgroundColor(Element.BackgroundColor);
+				SetBackground(Element.Background);
 				SetCornerRadius();
 			}
 		}
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 			if (e.PropertyName == BoxView.ColorProperty.PropertyName)
-				SetBackgroundColor(Element.BackgroundColor);
+				SetBackground(Element.Background);
 			else if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
 				SetCornerRadius();
 			else if (e.PropertyName == VisualElement.IsVisibleProperty.PropertyName && Element.IsVisible)
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (elementColor != null)
 				_colorToRenderer = elementColor.ToUIColor();
-			else
+			else if (color != null)
 				_colorToRenderer = color.ToUIColor();
 
 			SetNeedsDisplay();
@@ -98,7 +98,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			if (Brush.IsNullOrEmpty(brush))
+				brush = Element.Background;
+
+			if (Brush.IsNullOrEmpty(brush))
+			{
 				SetBackgroundColor(Element.BackgroundColor);
+			}
 			else
 			{
 				if (brush is SolidColorBrush solidColorBrush)

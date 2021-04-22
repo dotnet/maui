@@ -1,4 +1,4 @@
-﻿<controls:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+﻿<controls:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                    xmlns:controls="clr-namespace:Maui.Controls.Sample.Controls"
                    x:Class="Maui.Controls.Sample.Pages.XamlPage">
