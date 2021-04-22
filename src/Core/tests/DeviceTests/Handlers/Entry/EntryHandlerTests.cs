@@ -593,7 +593,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(text.Length, actualPosition);
 		}
 
-		[Theory(DisplayName = "CursorPosition Initializes Correctly")]
+		[Theory(DisplayName = "SelectionLength Initializes Correctly")]
 		[InlineData(0)]
 		public async Task SelectionLengthInitializesCorrectly(int initialLength)
 		{
