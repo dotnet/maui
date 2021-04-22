@@ -756,7 +756,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var barTextColor = NavPage.BarTextColor;
 			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
 
-			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor.GetLuminosity() <= 0.5)
+			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
 			{
 				// Use dark text color for status bar
 				if (Forms.IsiOS13OrNewer)

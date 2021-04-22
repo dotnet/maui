@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Xaml.Design
 		public AttributeTableBuilder()
 		{
 			AddCustomAttributes(typeof(ArrayExtension).Assembly,
-				new XmlnsSupportsValidationAttribute("http://xamarin.com/schemas/2014/forms", false));
+				new XmlnsSupportsValidationAttribute("http://schemas.microsoft.com/dotnet/2021/maui", false));
 
 			AddCallback(typeof(OnPlatformExtension), builder => builder.AddCustomAttributes(new Attribute[] {
 				new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),

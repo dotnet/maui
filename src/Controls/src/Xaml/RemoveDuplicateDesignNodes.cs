@@ -27,12 +27,12 @@ namespace Microsoft.Maui.Controls.Xaml
 			for (var i = 0; i < props.Count; i++)
 			{
 				var key = props[i].Key;
-				if (key.NamespaceURI != XamlParser.XFDesignUri)
+				if (key.NamespaceURI != XamlParser.MauiDesignUri)
 					continue;
-				var k = new XmlName(XamlParser.XFUri, key.LocalName);
+				var k = new XmlName(XamlParser.MauiUri, key.LocalName);
 				if (node.Properties.Remove(k))
 					continue;
-				if (node.NamespaceResolver.LookupPrefix(XamlParser.XFUri) == "")
+				if (node.NamespaceResolver.LookupPrefix(XamlParser.MauiUri) == "")
 					node.Properties.Remove(new XmlName("", k.LocalName));
 			}
 		}

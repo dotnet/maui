@@ -6,12 +6,8 @@ namespace Microsoft.Maui
 	/// Provides the base properties and methods for all Layout elements.
 	/// Use Layout elements to position and size child elements in .NET MAUI applications.
 	/// </summary>
-	public interface ILayout : IView
+	public interface ILayout : IView, IContainer
 	{
-		/// <summary>
-		/// Gets the collection of children that the Layout contains.
-		/// </summary>
-		IReadOnlyList<IView> Children { get; }
 
 		/// <summary>
 		/// Gets the Layout Handler.

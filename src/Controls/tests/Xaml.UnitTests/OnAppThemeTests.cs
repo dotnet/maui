@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Label 
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" TextColor=""{AppThemeBinding Light = Green, Dark = Red}
 			"">This text is green or red depending on Light (or default) or Dark</Label>";
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Label
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 			Text=""This text is green or red depending on Light(or default) or Dark"">
                 <Label.TextColor>
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Label
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 			Text=""This text is green or red depending on Light(or default) or Dark"">
                 <Label.TextColor>
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Label
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 			Text=""This text is green or red depending on Light(or default) or Dark"">
                 <Label.TextColor>
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Label
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 			Text=""This text is green or red depending on Light(or default) or Dark"">
                 <Label.TextColor>
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Label
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 			Text=""This text is green or red depending on Light(or default) or Dark"">
                 <Label.TextColor>
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Label
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 			Text=""This text is green or red depending on Light(or default) or Dark"">
                 <Label.TextColor>

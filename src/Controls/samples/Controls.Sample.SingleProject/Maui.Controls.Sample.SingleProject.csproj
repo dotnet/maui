@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <TargetFrameworks>net6.0-android;net6.0-maccatalyst;net6.0-ios</TargetFrameworks>
     <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
@@ -10,11 +10,36 @@
     <ApplicationVersion>1.0</ApplicationVersion>
     <AndroidVersionCode>1</AndroidVersionCode>
     <IsPackable>false</IsPackable>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="**\*.razor" />
+  </ItemGroup>
+  <ItemGroup>
+    <RazorComponent Include="**\*.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\css\app.css" />
+    <Content Remove="wwwroot\index.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\index.html" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.0-preview.3.21175.8" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml-net6.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\BlazorWebView\src\core\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
+    <MauiAsset Include="Resources\Raw\*" />
   </ItemGroup>
 </Project>

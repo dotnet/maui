@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			base.Setup();
 			var nsManager = new XmlNamespaceManager(new NameTable());
-			nsManager.AddNamespace("", "http://xamarin.com/schemas/2014/forms");
+			nsManager.AddNamespace("", "http://schemas.microsoft.com/dotnet/2021/maui");
 			nsManager.AddNamespace("local", "clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests");
 			nsManager.AddNamespace("sys", "clr-namespace:System;assembly=mscorlib");
 			nsManager.AddNamespace("x", "http://schemas.microsoft.com/winfx/2006/xaml");

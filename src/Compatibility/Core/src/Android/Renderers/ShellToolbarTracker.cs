@@ -14,17 +14,17 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ActionBarDrawerToggle = AndroidX.AppCompat.App.ActionBarDrawerToggle;
 using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using ATextView = global::Android.Widget.TextView;
 using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
 using LP = Android.Views.ViewGroup.LayoutParams;
+using Paint = Android.Graphics.Paint;
 using R = Android.Resource;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
-using Color = Microsoft.Maui.Graphics.Color;
-using Microsoft.Maui.Graphics;
-using Paint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

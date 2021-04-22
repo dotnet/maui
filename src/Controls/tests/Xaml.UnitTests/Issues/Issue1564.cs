@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 				<ViewCell 
-					xmlns=""http://xamarin.com/schemas/2014/forms"" 
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
 					x:Class=""m.transport.VehicleCell"">
 				    <ViewCell.View>
