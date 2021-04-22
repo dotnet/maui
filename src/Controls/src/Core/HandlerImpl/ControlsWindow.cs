@@ -2,11 +2,11 @@ using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls
 {
-	public class ControlsWindow : VisualElement, IWindow
+	public class Window : VisualElement, IWindow
 	{
 		private Page _page;
 
-		public ControlsWindow(IPage page)
+		public Window(IPage page)
 		{
 			Page = (Page)page;
 		}
