@@ -39,6 +39,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			// make sure it was NOT collected and wegot the same image
 			Assert.Equal(bitmap1, bitmap2);
+
+			drawable1.Dispose();
+			drawable2.Dispose();
 		}
 
 		[Fact]
@@ -68,6 +71,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			// make sure it WAS collected and we got a new image
 			Assert.NotEqual(bitmap1, bitmap2);
+
+			drawable2.Dispose();
 		}
 
 		static async Task<bool> TryCollectFile(string bitmapFile)

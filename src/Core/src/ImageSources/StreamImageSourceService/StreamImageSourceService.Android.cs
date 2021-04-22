@@ -5,6 +5,7 @@ using Android.Graphics.Drawables;
 using Android.Runtime;
 using Bumptech.Glide;
 using Bumptech.Glide.Load.Engine;
+using Microsoft.Maui.BumptechGlide;
 
 namespace Microsoft.Maui
 {
@@ -31,15 +32,11 @@ namespace Microsoft.Maui
 			//  - Copy the stream into a byte array and that is double memory usage - especially for large streams.
 			var inputStream = new InputStreamAdapter(stream);
 
-			var manager = Glide
-				.With(context);
-
-			var target = manager
+			var result = await Glide
+				.With(context)
 				.Load(inputStream)
 				.SetDiskCacheStrategy(DiskCacheStrategy.None)
-				.Submit();
-
-			var result = await GlideImageSourceServiceResult.CreateAsync(target, manager, cancellationToken);
+				.SubmitAsync(context, cancellationToken);
 
 			return result;
 		}

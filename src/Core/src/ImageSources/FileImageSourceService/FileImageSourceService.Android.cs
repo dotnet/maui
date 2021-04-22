@@ -24,14 +24,10 @@ namespace Microsoft.Maui
 
 			var filename = imageSource.File;
 
-			var manager = Glide
-				.With(context);
-
-			var target = manager
+			var result = await Glide
+				.With(context)
 				.Load(filename, context)
-				.Submit();
-
-			var result = await GlideImageSourceServiceResult.CreateAsync(target, manager, cancellationToken);
+				.SubmitAsync(context, cancellationToken);
 
 			return result;
 		}

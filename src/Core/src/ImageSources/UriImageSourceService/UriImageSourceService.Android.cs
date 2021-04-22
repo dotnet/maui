@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Graphics.Drawables;
 using Bumptech.Glide;
 using Bumptech.Glide.Load.Engine;
+using Microsoft.Maui.BumptechGlide;
 
 namespace Microsoft.Maui
 {
@@ -24,10 +25,8 @@ namespace Microsoft.Maui
 
 			var uri = imageSource.Uri;
 
-			var manager = Glide
-				.With(context);
-
-			var builder = manager
+			var builder = Glide
+				.With(context)
 				.Load(uri.OriginalString);
 
 			if (!imageSource.CachingEnabled)
@@ -37,10 +36,8 @@ namespace Microsoft.Maui
 					.SkipMemoryCache(true);
 			}
 
-			var target = builder
-				.Submit();
-
-			var result = await GlideImageSourceServiceResult.CreateAsync(target, manager, cancellationToken);
+			var result = await builder
+				.SubmitAsync(context, cancellationToken);
 
 			return result;
 		}

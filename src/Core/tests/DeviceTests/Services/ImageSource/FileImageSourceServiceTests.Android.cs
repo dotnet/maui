@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
 
-			var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
 
 			Assert.Null(drawable);
 		}
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = new FileImageSourceStub(filename);
 
-			var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
 
 			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
 

@@ -30,14 +30,10 @@ namespace Microsoft.Maui
 			var typeface = FontManager.GetTypeface(imageSource.Font);
 			var color = (imageSource.Color ?? Graphics.Colors.White).ToNative();
 
-			var manager = Glide
-				.With(context);
-
-			var target = manager
+			var result = await Glide
+				.With(context)
 				.Load(new FontImageSourceModel(glyph, textSize, typeface, color))
-				.Submit();
-
-			var result = await GlideImageSourceServiceResult.CreateAsync(target, manager, cancellationToken);
+				.SubmitAsync(context, cancellationToken);
 
 			return result;
 		}

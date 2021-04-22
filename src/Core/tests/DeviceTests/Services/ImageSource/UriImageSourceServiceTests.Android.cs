@@ -17,7 +17,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
 
-			var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
 
 			Assert.Null(drawable);
 		}
