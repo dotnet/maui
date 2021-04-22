@@ -622,7 +622,8 @@ namespace Microsoft.Maui.DeviceTests
 				nameof(IEntry.SelectionLength),
 				GetNativeSelectionLength,
 				setValue,
-				unsetValue);
+				unsetValue
+			);
 		}
 
 		[Theory(DisplayName = "SelectionLength is Capped to Text Length")]
