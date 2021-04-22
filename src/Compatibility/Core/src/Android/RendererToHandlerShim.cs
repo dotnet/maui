@@ -106,15 +106,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				VisualElementRenderer);
 		}
 
-		public override void UpdateValue(string property)
-		{
-			base.UpdateValue(property);
-			if (property == "Frame")
-			{
-				SetFrame(VisualElementRenderer.Element.Bounds);
-			}
-		}
-
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			return Platform.Android.AppCompat.Platform.GetNativeSize(

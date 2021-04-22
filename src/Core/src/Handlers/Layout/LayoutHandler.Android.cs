@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Android.Views;
 
 namespace Microsoft.Maui.Handlers
@@ -34,6 +32,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformMeasure = VirtualView.Measure;
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 
+			this.NativeView.RemoveAllViews();
 			foreach (var child in VirtualView.Children)
 			{
 				NativeView.AddView(child.ToNative(MauiContext));

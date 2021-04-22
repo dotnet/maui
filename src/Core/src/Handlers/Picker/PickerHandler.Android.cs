@@ -2,7 +2,6 @@
 using System.Collections.Specialized;
 using System.Linq;
 using Android.App;
-using Microsoft.Extensions.DependencyInjection;
 using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
@@ -55,6 +54,13 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.NativeView?.UpdateFont(picker, fontManager);
+		}
+
+		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
+		{
+			var nativePicker = handler.NativeView;
+			var hasRtlSupport = nativePicker?.Context!.HasRtlSupport() ?? false;
+			nativePicker?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment, hasRtlSupport);
 		}
 
 		[MissingMapper]
