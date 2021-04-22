@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls
 				if (Page != null)
 					InternalChildren.Remove(Page);
 
-				_page = value;
+				_page = (Page)value;
 
 				if (value != null)
 					InternalChildren.Add(page);
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls
 				if (value is NavigableElement ne)
 					ne.NavigationProxy.Inner = NavigationProxy;
 
-				_page = value;
+				_page = (Page)value;
 			}
 		}
 	}
