@@ -1,10 +1,13 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting.Internal;
+using Microsoft.Maui.HotReload;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -90,6 +93,37 @@ namespace Microsoft.Maui.Hosting
 		public static IAppHostBuilder UseMauiServiceProviderFactory(this IAppHostBuilder builder, bool constructorInjection)
 		{
 			builder.UseServiceProviderFactory(new MauiServiceProviderFactory(constructorInjection));
+			return builder;
+		}
+
+		public static IAppHostBuilder EnableHotReload(this IAppHostBuilder builder, string? ideIp = null, int idePort = 9988)
+		{
+			builder.ConfigureMauiHandlers((context, handlersCollection) =>
+			{
+				if (handlersCollection is IMauiServiceCollection mauiCollection)
+					MauiHotReloadHelper.Init(mauiCollection);
+				else
+					throw new NotSupportedException("Hot Reload only works with a IMauiServiceCollection");
+			});
+			Reloadify.Reload.Instance.ReplaceType = (d) => {
+				MauiHotReloadHelper.RegisterReplacedView(d.ClassName, d.Type);
+			};
+
+			Reloadify.Reload.Instance.FinishedReload = () => {
+				MauiHotReloadHelper.TriggerReload();
+			};
+			Task.Run(async () =>
+			{
+				try
+				{
+					var success = await Reloadify.Reload.Init(ideIp, idePort);
+					Console.WriteLine($"HotReload Initialize: {success}");
+				}
+				catch(Exception ex)
+				{
+					Console.WriteLine(ex);
+				}
+			});
 			return builder;
 		}
 
