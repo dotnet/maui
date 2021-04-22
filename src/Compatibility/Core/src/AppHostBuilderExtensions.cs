@@ -33,7 +33,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 			builder.ConfigureLifecycleEvents(events =>
 			{
 				events.AddEvent<Action<IWindow>>(nameof(IApplication.CreateWindow), window =>
-					MessagingCenter.Send(builder, nameof(IApplication.CreateWindow), window));
+				{
+#if __ANDROID__
+
+#elif __IOS__
+					(window as Window)?.Layout(UIKit.UIScreen.MainScreen.Bounds.ToRectangle());
+#elif WINDOWS
+#endif
+					MessagingCenter.Send(builder, nameof(IApplication.CreateWindow), window);
+				});
 			});
 			return builder;
 		}

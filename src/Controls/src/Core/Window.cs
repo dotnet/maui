@@ -63,6 +63,5 @@ namespace Microsoft.Maui.Controls
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
 		}
-
 	}
 }

@@ -36,6 +36,8 @@ namespace Microsoft.Maui
 
 			window.MauiContext = mauiContext;
 
+			// Create the root native layout and set the Activity's content to it
+			var handler = window.ToNative(window.MauiContext);
 			var matchParent = ViewGroup.LayoutParams.MatchParent;
 			//var matchParent = ViewGroup.LayoutParams.MatchParent;
 			var wrap = ViewGroup.LayoutParams.WrapContent;
@@ -47,15 +49,11 @@ namespace Microsoft.Maui
 
 			//AddToolbar(parent);
 
-			var page = window.Page;
+			var matchParent = ViewGroup.LayoutParams.MatchParent;
 
-			// This currently relies on IPage : IView, which may not exactly be right
-			// we may have to add another handler extension that works for Page
-			// Also, AbstractViewHandler is set to work for IView (obviously); if IPage is not IView,
-			// then we'll need to change it to AbstractFrameworkElementHandler or create a separate
-			// abstract handler for IPage
-			// TODO ezhart Think about all this stuff ^^
+			SetContentView(handler, new ViewGroup.LayoutParams(matchParent, matchParent));
 
+			//AddToolbar(parent);
 			var nativePage = page.ToContainerView(window.MauiContext);
 
 			// Add the IPage to the root layout; use match parent so the page automatically has the dimensions of the activity

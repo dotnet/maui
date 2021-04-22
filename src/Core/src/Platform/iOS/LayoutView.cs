@@ -57,4 +57,26 @@ namespace Microsoft.Maui
 
 		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
 	}
+
+	public class WindowView : UIWindow
+	{
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			return size;
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			var bounds = Bounds;
+			var width = Frame.Width;
+			var height = Frame.Height;
+
+			CrossPlatformArrange?.Invoke(Frame.ToRectangle());
+		}
+		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
+
+		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
+	}
 }

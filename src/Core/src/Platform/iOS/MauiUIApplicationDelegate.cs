@@ -12,6 +12,7 @@ namespace Microsoft.Maui
 	public class MauiUIApplicationDelegate<TStartup> : MauiUIApplicationDelegate
 		where TStartup : IStartup, new()
 	{
+	
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			var startup = new TStartup();
