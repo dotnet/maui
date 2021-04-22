@@ -8,5 +8,10 @@ namespace Microsoft.Maui
 		{
 			nativeControl.PlaceholderText = searchBar.Placeholder ?? string.Empty;
 		}
+  
+		public static void UpdateText(this AutoSuggestBox nativeControl, ISearchBar searchBar)
+		{
+			nativeControl.Text = searchBar.Text;
+		}
 	}
 }
