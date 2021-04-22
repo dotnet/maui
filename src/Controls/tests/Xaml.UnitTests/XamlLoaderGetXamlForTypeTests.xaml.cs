@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 #pragma warning restore 0618
 					if (t == typeof(XamlLoaderGetXamlForTypeTests))
 						return @"
-	<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+	<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 		xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 		x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.XamlLoaderGetXamlForTypeTests"">
 		<Label x:Name=""Label""/>

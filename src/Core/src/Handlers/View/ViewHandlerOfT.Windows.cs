@@ -24,20 +24,43 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = NativeView;
-
-			if (nativeView == null)
+			if (NativeView == null || VirtualView == null)
 				return Size.Zero;
 
 			if (widthConstraint < 0 || heightConstraint < 0)
 				return Size.Zero;
 
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var explicitWidth = VirtualView.Width;
+			var explicitHeight = VirtualView.Height;
+			var useExplicitWidth = explicitWidth >= 0;
+			var useExplicitHeight = explicitHeight >= 0;
 
-			nativeView.Measure(constraint);
-			var result = new Size(nativeView.DesiredSize.Width, nativeView.DesiredSize.Height);
+			if (useExplicitWidth)
+			{
+				widthConstraint = Math.Min(VirtualView.Width, widthConstraint);
+			}
 
-			return result;
+			if (useExplicitHeight)
+			{
+				heightConstraint = Math.Min(VirtualView.Height, heightConstraint);
+			}
+
+			var measureConstraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+
+			NativeView.Measure(measureConstraint);
+
+			var desiredWidth = NativeView.DesiredSize.Width;
+			var desiredHeight = NativeView.DesiredSize.Height;
+
+			var resultWidth = useExplicitWidth 
+				? Math.Max(desiredWidth, explicitWidth) 
+				: desiredWidth;
+
+			var resultHeight = useExplicitHeight
+				? Math.Max(desiredHeight, explicitHeight)
+				: desiredHeight;
+
+			return new Size(resultWidth, resultHeight);
 		}
 
 		protected override void SetupContainer()

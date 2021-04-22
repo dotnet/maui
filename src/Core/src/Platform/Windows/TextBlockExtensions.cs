@@ -31,5 +31,17 @@ namespace Microsoft.Maui
 				nativeControl.LineHeight = label.LineHeight * nativeControl.FontSize;
 			}
 		}
+
+		public static void UpdateMaxLines(this TextBlock nativeControl, ILabel label)
+		{
+			if (label.MaxLines >= 0)
+			{
+				nativeControl.MaxLines = label.MaxLines;
+			}
+			else
+			{
+				nativeControl.MaxLines = 0;
+			}
+		}
 	}
 }
