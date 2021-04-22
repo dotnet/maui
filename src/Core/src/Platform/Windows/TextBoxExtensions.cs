@@ -16,5 +16,10 @@ namespace Microsoft.Maui
 			textView.Foreground = brush;
 			textView.ForegroundFocusBrush = brush;
 		}
+
+		public static void UpdateIsReadOnly(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.IsReadOnly = entry.IsReadOnly;
+		}
 	}
 }
