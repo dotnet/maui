@@ -41,8 +41,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextDecorations(LabelHandler handler, ILabel label) =>	
 			handler.TextBlock?.UpdateTextDecorations(label);
 
-		[MissingMapper]
-		public static void MapMaxLines(LabelHandler handler, ILabel label) { }
+		public static void MapMaxLines(LabelHandler handler, ILabel label) =>
+			handler.TextBlock?.UpdateMaxLines(label);
 
 		public static void MapPadding(LabelHandler handler, ILabel label) =>
 			handler.TextBlock?.UpdatePadding(label);

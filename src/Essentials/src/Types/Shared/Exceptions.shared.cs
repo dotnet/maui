@@ -4,12 +4,12 @@ namespace Microsoft.Maui.Essentials
 {
 	static class ExceptionUtils
 	{
-#if NETSTANDARD1_0 || NETSTANDARD2_0 || NET6_0
+#if NETSTANDARD || NET6_0
 		internal static NotImplementedInReferenceAssemblyException NotSupportedOrImplementedException =>
 			new NotImplementedInReferenceAssemblyException();
 #else
-        internal static FeatureNotSupportedException NotSupportedOrImplementedException =>
-            new FeatureNotSupportedException($"This API is not supported on {DeviceInfo.Platform}");
+		internal static FeatureNotSupportedException NotSupportedOrImplementedException =>
+			new FeatureNotSupportedException($"This API is not supported on {DeviceInfo.Platform}");
 #endif
 
 	}
