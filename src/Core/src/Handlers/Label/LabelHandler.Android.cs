@@ -1,3 +1,4 @@
+using Android.Views;
 using Android.Widget;
 using Microsoft.Maui.Graphics;
 
@@ -24,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 			LineSpacingAddDefault = nativeView.LineSpacingExtra;
 			LineSpacingMultDefault = nativeView.LineSpacingMultiplier;
+
 			nativeView.LayoutParameters = new ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
 		}
