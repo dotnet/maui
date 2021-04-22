@@ -556,7 +556,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.CursorPosition, GetNativeCursorPosition, initialPosition);
 		}
 
-		[Theory(DisplayName = "SelectionLength Updates Correctly")]
+		[Theory(DisplayName = "CursorPosition Updates Correctly")]
 		[InlineData(2, 5)]
 		public async Task CursorPositionUpdatesCorrectly(int setValue, int unsetValue)
 		{
