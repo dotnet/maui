@@ -605,7 +605,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.SelectionLength, GetNativeSelectionLength, initialLength);
 		}
 
-		[Theory(DisplayName = "SelectionLength is Updates Correctly")]
+		[Theory(DisplayName = "SelectionLength Updates Correctly")]
 		[InlineData(2, 5)]
 		public async Task SelectionLengthUpdatesCorrectly(int setValue, int unsetValue)
 		{
