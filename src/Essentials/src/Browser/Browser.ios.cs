@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Maui.Graphics.Native;
 using SafariServices;
 using UIKit;
 
@@ -17,11 +18,11 @@ namespace Microsoft.Maui.Essentials
 					var sfViewController = new SFSafariViewController(nativeUrl, false);
 					var vc = Platform.GetCurrentViewController();
 
-					if (options.PreferredToolbarColor.HasValue)
-						sfViewController.PreferredBarTintColor = options.PreferredToolbarColor.Value.ToPlatformColor();
+					if (options.PreferredToolbarColor != null)
+						sfViewController.PreferredBarTintColor = options.PreferredToolbarColor.AsUIColor();
 
-					if (options.PreferredControlColor.HasValue)
-						sfViewController.PreferredControlTintColor = options.PreferredControlColor.Value.ToPlatformColor();
+					if (options.PreferredControlColor != null)
+						sfViewController.PreferredControlTintColor = options.PreferredControlColor.AsUIColor();
 
 					if (sfViewController.PopoverPresentationController != null)
 						sfViewController.PopoverPresentationController.SourceView = vc.View;

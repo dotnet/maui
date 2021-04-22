@@ -1,4 +1,4 @@
-<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:Samples.View"
              xmlns:viewmodels="clr-namespace:Samples.ViewModel"
@@ -11,11 +11,7 @@
     <StackLayout>
         <Label Text="Monitor compass for changes." FontAttributes="Bold" Margin="12" />
 
-        <Switch IsToggled="{Binding ApplyLowPassFilter}" >
-            <Switch.IsVisible>
-                <OnPlatform x:TypeArguments="x:Boolean" Android="True" Default="False"/>
-            </Switch.IsVisible>
-        </Switch>
+        <Switch IsToggled="{Binding ApplyLowPassFilter}" IsVisible="{OnPlatform Default=False, Android=True}" />
 
         <ScrollView>
             <Grid Padding="12,0,12,12">

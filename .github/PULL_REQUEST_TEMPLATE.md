@@ -51,10 +51,10 @@ Implements #
 - [ ] Adds the property to the stub class
 - [ ] Implements basic property tests in DeviceTests
 
-#### Does this PR touch anything that might effect accessibility?
+#### Does this PR touch anything that might affect accessibility?
 - [ ] APIs that modify focusability?
 - [ ] APIs that modify any text property on a control?
-- [ ] Does this PR modify view nesting or view arragement in anyway?
+- [ ] Does this PR modify view nesting or view arrangement in anyway?
 - [ ] Is there the smallest possibility that your PR will change accessibility? 
 - [ ] I'm not sure, please help me
 
