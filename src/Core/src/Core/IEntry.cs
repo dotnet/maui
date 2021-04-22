@@ -19,5 +19,10 @@
 		/// Gets an enumeration value that shows/hides clear button on the Entry.
 		/// </summary>
 		ClearButtonVisibility ClearButtonVisibility { get; }
+
+		/// <summary>
+		/// Occurs when the user finalizes the text in an entry with the return key.
+		/// </summary>
+		void Completed();
 	}
 }

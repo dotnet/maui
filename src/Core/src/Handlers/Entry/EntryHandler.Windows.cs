@@ -1,11 +1,22 @@
-﻿using System;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Input;
+using Windows.System;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextBox>
 	{
-		protected override MauiTextBox CreateNativeView() =>  new MauiTextBox { Style = Microsoft.UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as Microsoft.UI.Xaml.Style };
+		protected override MauiTextBox CreateNativeView() =>  
+			new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };
+
+		protected override void ConnectHandler(MauiTextBox nativeView)
+		{
+			nativeView.KeyUp += OnNativeKeyUp;
+		}
+
+		protected override void DisconnectHandler(MauiTextBox nativeView)
+		{
+			nativeView.KeyUp -= OnNativeKeyUp;
+		}
 
 		public static void MapText(EntryHandler handler, IEntry entry) 
 		{
@@ -47,5 +58,23 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapKeyboard(IViewHandler handler, IEntry entry) { }
+
+		void OnNativeKeyUp(object? sender, KeyRoutedEventArgs args)
+		{
+			if (args?.Key != VirtualKey.Enter)
+				return;
+
+			if (VirtualView?.ReturnType == ReturnType.Next)
+			{
+				FocusManager.TryMoveFocus(FocusNavigationDirection.Next);
+			}
+			else
+			{
+				// Hide the soft keyboard; this matches the behavior of Forms on Android/iOS
+				Windows.UI.ViewManagement.InputPane.GetForCurrentView().TryHide();
+			}
+
+			VirtualView?.Completed();
+		}
 	}
 }
