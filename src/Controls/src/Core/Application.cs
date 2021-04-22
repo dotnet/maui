@@ -61,7 +61,10 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				return (Page)Windows[0];
+				if (Windows.Count == 0)
+					return null;
+
+				return Windows[0].View as Page;
 			}
 			set
 			{
