@@ -37,8 +37,8 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	static class XamlParser
 	{
-		public const string XFUri = "http://xamarin.com/schemas/2014/forms";
-		public const string XFDesignUri = "http://xamarin.com/schemas/2014/forms/design";
+		public const string MauiUri = "http://schemas.microsoft.com/dotnet/2021/maui";
+		public const string MauiDesignUri = "http://schemas.microsoft.com/dotnet/2021/maui/design";
 		public const string X2006Uri = "http://schemas.microsoft.com/winfx/2006/xaml";
 		public const string X2009Uri = "http://schemas.microsoft.com/winfx/2009/xaml";
 		public const string McUri = "http://schemas.openxmlformats.org/markup-compatibility/2006";
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Xaml
 								node.Properties.Add(XmlName.xArguments, prop);
 						}
 						// 3. DataTemplate (should be handled by 4.)
-						else if (node.XmlType.NamespaceUri == XFUri &&
+						else if (node.XmlType.NamespaceUri == MauiUri &&
 								 (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate"))
 						{
 							if (node.Properties.ContainsKey(XmlName._CreateContent))

@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.Maui.Resizetizer
 {
-	public class CreatePartialInfoPlistTask : AsyncTask
+	public class CreatePartialInfoPlistTask : Task
 	{
 		public ITaskItem[] CustomFonts { get; set; }
 
@@ -33,43 +28,36 @@ namespace Microsoft.Maui.Resizetizer
 
 		public override bool Execute()
 		{
-			System.Threading.Tasks.Task.Run(() =>
+			try
 			{
-				try
+				var plistFilename = Path.Combine(IntermediateOutputPath, PlistName ?? "PartialInfo.plist");
+
+				using (var f = File.CreateText(plistFilename))
 				{
-					var plistFilename = Path.Combine(IntermediateOutputPath, PlistName ?? "PartialInfo.plist");
+					f.WriteLine(plistHeader);
 
-					using (var f = File.CreateText(plistFilename))
+					f.WriteLine("  <key>UIAppFonts</key>");
+					f.WriteLine("  <array>");
+
+					foreach (var font in CustomFonts)
 					{
-						f.WriteLine(plistHeader);
+						var fontFile = new FileInfo(font.ItemSpec);
 
-						f.WriteLine("  <key>UIAppFonts</key>");
-						f.WriteLine("  <array>");
-
-						foreach (var font in CustomFonts)
-						{
-							var fontFile = new FileInfo(font.ItemSpec);
-
-							f.WriteLine("	<string>" + fontFile.Name + "</string>");
-						}
-
-						f.WriteLine("  </array>");
-						f.WriteLine(plistFooter);
+						f.WriteLine("	<string>" + fontFile.Name + "</string>");
 					}
 
-					PlistFiles = new[] { new TaskItem(plistFilename) };
+					f.WriteLine("  </array>");
+					f.WriteLine(plistFooter);
 				}
-				catch (Exception ex)
-				{
-					Log.LogErrorFromException(ex);
-				}
-				finally
-				{
-					Complete();
-				}
-			});
 
-			return base.Execute();
+				PlistFiles = new[] { new TaskItem(plistFilename) };
+			}
+			catch (Exception ex)
+			{
+				Log.LogErrorFromException(ex);
+			}
+
+			return !Log.HasLoggedErrors;
 		}
 	}
 }

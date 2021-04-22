@@ -39,16 +39,25 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 [assembly: Preserve]
 
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Microsoft.Maui.Controls.Shapes")]
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Microsoft.Maui.Controls")]
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Microsoft.Maui", AssemblyName = "Microsoft.Maui")]
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Microsoft.Maui.Graphics", AssemblyName = "Microsoft.Maui.Graphics")]
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Microsoft.Maui.Controls.Shapes")]
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Microsoft.Maui.Controls")]
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Microsoft.Maui", AssemblyName = "Microsoft.Maui")]
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Microsoft.Maui.Graphics", AssemblyName = "Microsoft.Maui.Graphics")]
-[assembly: XmlnsPrefix("http://xamarin.com/schemas/2014/forms", "xf")]
-[assembly: XmlnsPrefix("http://xamarin.com/schemas/2014/forms/design", "d")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui.Controls.Shapes")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui.Controls")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui", AssemblyName = "Microsoft.Maui")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui.Graphics", AssemblyName = "Microsoft.Maui.Graphics")]
+
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui.Controls.Shapes")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui.Controls")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui", AssemblyName = "Microsoft.Maui")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui/design", "Microsoft.Maui.Graphics", AssemblyName = "Microsoft.Maui.Graphics")]
+
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "Microsoft.Maui.Controls.Xaml", AssemblyName = "Microsoft.Maui.Controls.Xaml")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "System", AssemblyName = "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "System", AssemblyName = "System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2009/xaml", "Microsoft.Maui.Controls.Xaml", AssemblyName = "Microsoft.Maui.Controls.Xaml")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2009/xaml", "System", AssemblyName = "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2009/xaml", "System", AssemblyName = "System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
+
+[assembly: XmlnsPrefix("http://schemas.microsoft.com/dotnet/2021/maui", "maui")]
+[assembly: XmlnsPrefix("http://schemas.microsoft.com/dotnet/2021/maui/design", "d")]
 
 [assembly: StyleProperty("background-color", typeof(VisualElement), nameof(VisualElement.BackgroundColorProperty))]
 [assembly: StyleProperty("background", typeof(VisualElement), nameof(VisualElement.BackgroundProperty))]
