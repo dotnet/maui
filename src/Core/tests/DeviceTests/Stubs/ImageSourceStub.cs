@@ -83,28 +83,4 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	public partial class InvalidImageSourceStub : ImageSourceStub
 	{
 	}
-
-	public interface ICountedImageSourceStub : IImageSource
-	{
-		bool Wait { get; }
-
-		Color Color { get; }
-	}
-
-	public partial class CountedImageSourceStub : ImageSourceStub, ICountedImageSourceStub
-	{
-		public CountedImageSourceStub()
-		{
-		}
-
-		public CountedImageSourceStub(Color color, bool wait = false)
-		{
-			Color = color;
-			Wait = wait;
-		}
-
-		public bool Wait { get; set; } = false;
-
-		public Color Color { get; set; }
-	}
 }
