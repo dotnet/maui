@@ -11,12 +11,12 @@ namespace Microsoft.Maui.Controls
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
 			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
 
-		IView _view;
+		Page _page;
 
-		public Window(IPage page)
+		public Window(Page page)
 		{
 			InternalChildren.CollectionChanged += OnCollectionChanged;
-			Page = (Page)page;
+			Page = page;
 		}
 
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 
 		IView IWindow.View
 		{
-			get => _view;
+			get => _page;
 			set
 			{
 				var page = (Page)value;
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls
 				if (Page != null)
 					InternalChildren.Remove(Page);
 
-				_view = value;
+				_page = value;
 
 				if (value != null)
 					InternalChildren.Add(page);
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls
 				if (value is NavigableElement ne)
 					ne.NavigationProxy.Inner = NavigationProxy;
 
-				_view = value;
+				_page = value;
 			}
 		}
 	}
