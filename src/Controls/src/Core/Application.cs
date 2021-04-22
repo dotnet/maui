@@ -56,36 +56,49 @@ namespace Microsoft.Maui.Controls
 
 		public static Application Current { get; set; }
 
+		// TODO MAUI. What should this be?
 		public Page MainPage
 		{
-			get { return _mainPage; }
+			get
+			{
+				return (Page)Windows[0];
+			}
 			set
 			{
-				if (value == null)
-					throw new ArgumentNullException("value");
-
-				if (_mainPage == value)
-					return;
-
-				OnPropertyChanging();
-				if (_mainPage != null)
-				{
-					InternalChildren.Remove(_mainPage);
-
-					_mainPage.Parent = null;
-				}
-
-				_mainPage = value;
-
-				if (_mainPage != null)
-				{
-					_mainPage.Parent = this;
-					_mainPage.NavigationProxy.Inner = NavigationProxy;
-					InternalChildren.Add(_mainPage);
-				}
-				OnPropertyChanged();
+				throw new NotImplementedException();
 			}
 		}
+
+		//public Page MainPage
+		//{
+		//	get { return _mainPage; }
+		//	set
+		//	{
+		//		if (value == null)
+		//			throw new ArgumentNullException("value");
+
+		//		if (_mainPage == value)
+		//			return;
+
+		//		OnPropertyChanging();
+		//		if (_mainPage != null)
+		//		{
+		//			InternalChildren.Remove(_mainPage);
+		//			_mainPage.Parent = null;
+		//		}
+
+		//		_mainPage = value;
+
+		//		if (_mainPage != null)
+		//		{
+		//			_mainPage.Parent = this;
+		//			_mainPage.NavigationProxy.Inner = NavigationProxy;
+		//			InternalChildren.Add(_mainPage);
+		//		}
+
+		//		OnPropertyChanged();
+		//	}
+		//}
 
 		public IDictionary<string, object> Properties
 		{
