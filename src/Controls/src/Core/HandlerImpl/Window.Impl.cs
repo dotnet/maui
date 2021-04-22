@@ -13,10 +13,10 @@ namespace Microsoft.Maui.Controls
 
 		IView _view;
 
-		public Window(Page page)
+		public Window(IPage page)
 		{
 			InternalChildren.CollectionChanged += OnCollectionChanged;
-			Page = page;
+			Page = (Page)page;
 		}
 
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
