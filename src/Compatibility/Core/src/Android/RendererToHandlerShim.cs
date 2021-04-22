@@ -1,7 +1,7 @@
 using System;
+using Microsoft.Maui.Graphics;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Android.Views.View>;
-using Microsoft.Maui.Graphics;
 using VisualElementChangedEventArgs = Microsoft.Maui.Controls.Compatibility.Platform.Android.VisualElementChangedEventArgs;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -104,15 +104,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Platform.Android.AppCompat.Platform.SetRenderer(
 				VisualElementRenderer.Element,
 				VisualElementRenderer);
-		}
-
-		public override void UpdateValue(string property)
-		{
-			base.UpdateValue(property);
-			if (property == "Frame")
-			{
-				SetFrame(VisualElementRenderer.Element.Bounds);
-			}
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)

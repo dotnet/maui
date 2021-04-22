@@ -933,6 +933,12 @@ Task("VS")
     .IsDependentOn("VSMAC")
     .IsDependentOn("VSWINDOWS");
 
+Task("VS-CG")
+    .Description("Builds projects necessary so solution compiles on VS")
+    .IsDependentOn("Clean")
+    .IsDependentOn("VSMAC")
+    .IsDependentOn("VSWINDOWS");
+
 
 Task("VSWINDOWS")
     .Description("Builds projects necessary so solution compiles on VS Windows")
@@ -940,11 +946,15 @@ Task("VSWINDOWS")
     .WithCriteria(IsRunningOnWindows())
     .Does(() =>
     {
-        MSBuild("Microsoft.Maui.sln",
+        string sln = "Microsoft.Maui.sln";
+        if (target == "VS-CG")
+            sln = "Compatibility.ControlGallery.sln";
+
+        MSBuild(sln,
                 GetMSBuildSettings()
                     .WithRestore());
 
-        StartVisualStudio();
+        StartVisualStudio(sln);
     });
 
 Task("VSMAC")
@@ -953,6 +963,10 @@ Task("VSMAC")
     .IsDependentOn("BuildTasks")
     .Does(() =>
     {
+        
+        string sln = "Microsoft.Maui.sln";
+        if (target == "VS-CG")
+            sln = "Compatibility.ControlGallery.sln";
 
         MSBuild("src/Core/src/Core.csproj",
                 GetMSBuildSettings()
@@ -972,7 +986,7 @@ Task("VSMAC")
                     
         MSBuild("src/SingleProject/Resizetizer/src/Resizetizer.csproj", GetMSBuildSettings().WithRestore());
 
-        StartVisualStudio();
+        StartVisualStudio(sln);
     });
     
 Task("cg-android")

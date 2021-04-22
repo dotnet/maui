@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 <ContentPage 							
-xmlns=""http://xamarin.com/schemas/2014/forms"" 
+xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
 
@@ -105,7 +105,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 		{
 			var xaml = @"
 <ContentPage 							
-xmlns=""http://xamarin.com/schemas/2014/forms"" 
+xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
 
@@ -133,7 +133,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 		public void ResourcesInNonXFBaseClassesAreFound()
 		{
 			var xaml = @"<local:BaseView 
-	xmlns=""http://xamarin.com/schemas/2014/forms"" 
+	xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
   	xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
 	Padding=""0,40,0,0"">

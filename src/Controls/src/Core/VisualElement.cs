@@ -892,23 +892,10 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(trigger);
 		}
 
-		bool _stopTheRecursion;
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_measureCache.Clear();
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
-
-			// Framework Element parts are already invalid
-			// This is a bit awkward because we could have invalidations coming from old bits
-			// to here first and new bits going to IFrameworkElement.InvalidateMeasure
-			// first and each one needs to call the other so this short circuits the ping pong
-
-			if (IsMeasureValid && !_stopTheRecursion)
-			{
-				_stopTheRecursion = true;
-				((IFrameworkElement)this).InvalidateMeasure();
-				_stopTheRecursion = false;
-			}
 		}
 
 		void IVisualElementController.InvalidateMeasure(InvalidationTrigger trigger) => InvalidateMeasureInternal(trigger);

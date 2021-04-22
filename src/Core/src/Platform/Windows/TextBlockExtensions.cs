@@ -23,5 +23,17 @@ namespace Microsoft.Maui
 
 		public static void UpdatePadding(this TextBlock nativeControl, ILabel label) =>
 			nativeControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToNative());
+
+		public static void UpdateMaxLines(this TextBlock nativeControl, ILabel label)
+		{
+			if (label.MaxLines >= 0)
+			{
+				nativeControl.MaxLines = label.MaxLines;
+			}
+			else
+			{
+				nativeControl.MaxLines = 0;
+			}
+		}
 	}
 }

@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
 using Android.Util;
-using Color = Microsoft.Maui.Graphics.Color;
 using Microsoft.Maui.Graphics;
+using Color = Microsoft.Maui.Graphics.Color;
 using Paint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android

@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(new Rectangle(10, 20, 30, 40), child.Bounds);
 		}
 
-		
+
 		[Test]
 		public void AbsolutePositionRelativeSize()
 		{

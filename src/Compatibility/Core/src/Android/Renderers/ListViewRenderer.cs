@@ -457,7 +457,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateSpinnerColor()
 		{
-			if (_refresh != null)
+			if (_refresh != null && Element.RefreshControlColor != null)
 				_refresh.SetColorSchemeColors(Element.RefreshControlColor.ToAndroid());
 		}
 

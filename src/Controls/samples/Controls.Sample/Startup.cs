@@ -4,6 +4,9 @@ using System.Diagnostics;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModel;
+#if NET6_0_OR_GREATER
+using Microsoft.AspNetCore.Components.WebView.Maui;
+#endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -17,8 +20,9 @@ namespace Maui.Controls.Sample
 {
 	public class Startup : IStartup
 	{
-		public readonly static bool UseSemanticsPage = false;
-		public readonly static bool UseXamlPage = false;
+		enum PageType { Xaml, Semantics, Main, Blazor }
+		private PageType _pageType = PageType.Main;
+
 		public readonly static bool UseXamlApp = true;
 
 		public void Configure(IAppHostBuilder appBuilder)
@@ -37,8 +41,13 @@ namespace Maui.Controls.Sample
 					.UseCompatibilityRenderers()
 					.UseMauiApp<MyApp>();
 			}
-
+#if DEBUG
+			appBuilder.EnableHotReload();
+#endif
 			appBuilder
+#if NET6_0_OR_GREATER
+				.RegisterBlazorMauiWebView()
+#endif
 				.ConfigureAppConfiguration(config =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>
@@ -56,12 +65,21 @@ namespace Maui.Controls.Sample
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
 
-					if (UseXamlPage)
-						services.AddTransient<IPage, XamlPage>();
-					else if (UseSemanticsPage)
-						services.AddTransient<IPage, SemanticsPage>();
-					else
-						services.AddTransient<IPage, MainPage>();
+					services.AddTransient(
+						serviceType: typeof(IPage),
+						implementationType: _pageType switch
+						{
+							PageType.Xaml => typeof(XamlPage),
+							PageType.Semantics => typeof(SemanticsPage),
+							PageType.Blazor =>
+#if NET6_0_OR_GREATER
+								typeof(BlazorPage),
+#else
+								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
+#endif
+							PageType.Main => typeof(MainPage),
+							_ => throw new Exception(),
+						});
 
 					services.AddTransient<IWindow, MainWindow>();
 				})

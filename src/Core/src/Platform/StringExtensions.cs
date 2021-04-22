@@ -1,3 +1,4 @@
+#nullable enable
 namespace Microsoft.Maui
 {
 	internal static class StringExtensions
