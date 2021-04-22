@@ -16,5 +16,10 @@ namespace Microsoft.Maui
 			textView.Foreground = brush;
 			textView.ForegroundFocusBrush = brush;
 		}
+
+		public static void UpdatePlaceholder(this MauiTextBox textView, IEntry entry)
+		{
+			textView.PlaceholderText = entry.Placeholder ?? string.Empty;
+		}
 	}
 }
