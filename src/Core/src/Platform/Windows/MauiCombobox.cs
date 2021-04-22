@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿#nullable enable
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
 {
