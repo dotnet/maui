@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Resizetizer
 				return color;
 			}
 
-			if (ColorTable.TryGetNamedColor (tint, out color))
+			if (ColorTable.TryGetNamedColor(tint, out color))
 			{
 				return color;
 			}
