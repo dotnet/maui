@@ -58,7 +58,16 @@ variables:
     value: '--v'
   - name: DotNet.Path
     value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
-
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - name: macOSXNet6VmPool
+      value: XamarinFormsOSX
+    - name: macOSXNet6VmImage
+      value: XamarinFormsOSX
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - name: macOSXNet6VmPool
+      value: TBD
+    - name: macOSXNet6VmImage
+      value: TBD
 parameters:
   - name: BuildEverything
     type: boolean
@@ -141,15 +150,12 @@ stages:
         displayName: Build ControlGallery iOS
         timeoutInMinutes: 120
         pool:
-          name:  $(macOSXVmPool)
-          vmImage: $(macOSXVmImage)
+          name: $(macOSXNet6VmPool)
+          vmImage: $(macOSXNet6VmImage)
           demands:
             - sh
             - Xamarin.iOS
-        variables:
-          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-          provisionator.extraArguments : '--v'
+            - agent.osversion -equals 11.0
         steps:
           - template: common/controlgallery-ios.yml
 
@@ -163,14 +169,11 @@ stages:
         displayName: Build ControlGallery Android
         timeoutInMinutes: 120
         pool:
-          name:  $(macOSXVmPool)
-          vmImage: $(macOSXVmImage)
+          name: $(macOSXNet6VmPool)
+          vmImage: $(macOSXNet6VmImage)
         variables:
           renderers: 'FAST'
           outputfolder: 'newRenderers'
-          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-          provisionator.extraArguments : '--v'
         steps:
           - template: common/controlgallery-android.yml
 
