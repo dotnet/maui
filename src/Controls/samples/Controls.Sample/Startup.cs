@@ -81,24 +81,24 @@ namespace Maui.Controls.Sample
 							_ => throw new Exception(),
 						});
 
-					services.AddTransient<IWindow, MainWindow>();
+					services.AddTransient<IWindow, Microsoft.Maui.Controls.Window>();
 				})
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
 				})
-				.ConfigureEssentials(essentials =>
-				{
-					essentials
-						.UseVersionTracking()
-						.UseMapServiceToken("YOUR-KEY-HERE")
-						.AddAppAction("test_action", "Test App Action")
-						.AddAppAction("second_action", "Second App Action")
-						.OnAppAction(appAction =>
-						{
-							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
-						});
-				})
+				//.ConfigureEssentials(essentials =>
+				//{
+				//	essentials
+				//		.UseVersionTracking()
+				//		.UseMapServiceToken("YOUR-KEY-HERE")
+				//		.AddAppAction("test_action", "Test App Action")
+				//		.AddAppAction("second_action", "Second App Action")
+				//		.OnAppAction(appAction =>
+				//		{
+				//			Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
+				//		});
+				//})
 				.ConfigureLifecycleEvents(events =>
 				{
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));

@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			{
 				if (_collection.TryGetService(type, out var descriptor))
 				{
-					
+
 					return descriptor;
 				}
 			}
@@ -59,11 +59,11 @@ namespace Microsoft.Maui.Hosting.Internal
 		public object? GetService(Type serviceType)
 		{
 			var descriptor = GetServiceType(serviceType);
-			if(descriptor == null)
+			if (descriptor == null)
 				return default!;
 
 			if (descriptor!.Lifetime == ServiceLifetime.Singleton)
-			{ 
+			{
 				if (_singletons.TryGetValue(descriptor, out var singletonInstance))
 					return singletonInstance;
 			}
