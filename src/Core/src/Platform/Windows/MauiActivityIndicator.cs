@@ -10,8 +10,8 @@ namespace Microsoft.Maui
 
 		public double ElementOpacity
 		{
-			get { return (double)GetValue(ElementOpacityProperty); }
-			set { SetValue(ElementOpacityProperty, value); }
+			get => (double)GetValue(ElementOpacityProperty);
+			set => SetValue(ElementOpacityProperty, value);
 		}
 
 		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
