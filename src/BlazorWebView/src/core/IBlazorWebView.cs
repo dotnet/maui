@@ -8,6 +8,5 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	{
 		string? HostPage { get; set; }
 		ObservableCollection<RootComponent> RootComponents { get; }
-		IServiceProvider? Services { get; set; }
 	}
 }
