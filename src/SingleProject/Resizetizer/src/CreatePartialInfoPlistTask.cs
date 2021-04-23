@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string PlistName { get; set; }
 
+		public string Storyboard { get; set; }
+
 		[Output]
 		public ITaskItem[] PlistFiles { get; set; }
 
@@ -36,17 +38,27 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					f.WriteLine(plistHeader);
 
-					f.WriteLine("  <key>UIAppFonts</key>");
-					f.WriteLine("  <array>");
-
-					foreach (var font in CustomFonts)
+					if (CustomFonts != null && CustomFonts.Length > 0)
 					{
-						var fontFile = new FileInfo(font.ItemSpec);
+						f.WriteLine("  <key>UIAppFonts</key>");
+						f.WriteLine("  <array>");
 
-						f.WriteLine("	<string>" + fontFile.Name + "</string>");
+						foreach (var font in CustomFonts)
+						{
+							var fontFile = new FileInfo(font.ItemSpec);
+
+							f.WriteLine("	<string>" + fontFile.Name + "</string>");
+						}
+
+						f.WriteLine("  </array>");
 					}
 
-					f.WriteLine("  </array>");
+					if (!string.IsNullOrEmpty(Storyboard))
+					{
+						f.WriteLine("  <key>UILaunchStoryboardName</key>");
+						f.WriteLine($"  <string>{Path.GetFileNameWithoutExtension(Storyboard)}</string>");
+					}
+
 					f.WriteLine(plistFooter);
 				}
 
