@@ -15,17 +15,21 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateText(searchBar);
 		}
 
-		[MissingMapper]
-		public static void MapPlaceholder(IViewHandler handler, ISearchBar searchBar) { }
-
+		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdatePlaceholder(searchBar);
+		}
+			
 		[MissingMapper]
 		public static void MapHorizontalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
 		public static void MapFont(IViewHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar) 
+		{
+			handler.NativeView?.UpdateCharacterSpacing(searchBar);
+		}
 
 		[MissingMapper]
 		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }

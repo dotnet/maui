@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 
 		IView IPage.Content => Content;
 
-		
+
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{

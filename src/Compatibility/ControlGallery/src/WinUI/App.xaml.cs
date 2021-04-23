@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
     /// </summary>
     sealed partial class App : Microsoft.UI.Xaml.Application
 	{
-		private Window m_window;
+		private UI.Xaml.Window m_window;
 		public static bool RunningAsUITests { get; private set; }
 		/// <summary>
 		/// Initializes the singleton application object.  This is the first line of authored code
