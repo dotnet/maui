@@ -212,6 +212,6 @@ namespace Microsoft.Maui.Controls
 				//TODO: if reload handler is null, Do a manual reload?
 			});
 		}
-#endregion
+		#endregion
 	}
 }

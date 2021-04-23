@@ -1,8 +1,8 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Handlers;
@@ -106,11 +106,13 @@ namespace Microsoft.Maui.Hosting
 				else
 					throw new NotSupportedException("Hot Reload only works with a IMauiServiceCollection");
 			});
-			Reloadify.Reload.Instance.ReplaceType = (d) => {
+			Reloadify.Reload.Instance.ReplaceType = (d) =>
+			{
 				MauiHotReloadHelper.RegisterReplacedView(d.ClassName, d.Type);
 			};
 
-			Reloadify.Reload.Instance.FinishedReload = () => {
+			Reloadify.Reload.Instance.FinishedReload = () =>
+			{
 				MauiHotReloadHelper.TriggerReload();
 			};
 			Task.Run(async () =>
@@ -120,7 +122,7 @@ namespace Microsoft.Maui.Hosting
 					var success = await Reloadify.Reload.Init(ideIp, idePort);
 					Console.WriteLine($"HotReload Initialize: {success}");
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					Console.WriteLine(ex);
 				}

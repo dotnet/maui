@@ -81,7 +81,7 @@ namespace Maui.Controls.Sample
 							_ => throw new Exception(),
 						});
 
-					services.AddTransient<IWindow, MainWindow>();
+					services.AddTransient<IWindow, Microsoft.Maui.Controls.Window>();
 				})
 				.ConfigureFonts(fonts =>
 				{
