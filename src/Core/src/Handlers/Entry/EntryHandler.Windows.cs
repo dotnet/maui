@@ -2,7 +2,7 @@
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextBox>
 	{
-		protected override MauiTextBox CreateNativeView() => 
+		protected override MauiTextBox CreateNativeView() =>  
 			new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };
 
 		public static void MapText(EntryHandler handler, IEntry entry) 
@@ -22,8 +22,10 @@
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, IEntry entry) { }
 
-		[MissingMapper]
-		public static void MapMaxLength(IViewHandler handler, IEntry entry) { }
+		public static void MapMaxLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateMaxLength(entry);
+		}
 
 		[MissingMapper]
 		public static void MapPlaceholder(IViewHandler handler, IEntry entry) { }

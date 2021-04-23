@@ -311,6 +311,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				() => Control.ForegroundFocusBrush, brush => Control.ForegroundFocusBrush = brush);
 		}
 
+		[PortHandler]
 		void UpdateMaxLength()
 		{
 			var maxLength = Element.MaxLength;
