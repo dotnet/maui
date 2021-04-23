@@ -76,15 +76,14 @@ Try out a "single project", you will need the `-f` switch to choose the platform
 
 [April 9, 2021 - Xamarin Podcast - .NET MAUI Q&A](https://www.xamarinpodcast.com/90)
 
-[March 11, 2021 - Announcing .NET 6 Preview 2](https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-2/)
+[April 6, 2021 - On .NET with guest Maddy Leger - A Journey to .NET MAUI](https://www.youtube.com/watch?v=hoC5FIblKz8)
 
-Watch our [March 2021 .NET Community Standup report](https://youtu.be/NEbRo0ltniM?t=1242) for the latest information about our progress on .NET MAUI and .NET 6. 
-
-[![](https://user-images.githubusercontent.com/41873/110172514-e1c76280-7dc2-11eb-8407-50760881d1ec.png
-)](https://www.youtube.com/watch?v=5bK2ICHtMxo)
+[April 1, 2021 - Xamarin Community Standup with Guest Jonathan Peppers discussing .NET 6 Project System updates](https://www.youtube.com/watch?v=su3ntRjEN1I)
 
 Additional live streams and presentations:
 
+* March 11, 2021 - [Announcing .NET 6 Preview 2](https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-2/)
+* March 2021 - [.NET Community Standup report](https://youtu.be/NEbRo0ltniM?t=1242) 
 * February 25, 2021 - David Ortinau and Maddy Leger at .NET Conf: Focus on Windows: [The Future of Client App Development in .NET 6](https://www.youtube.com/watch?v=fPEdgXeqhE4)
 * January 28, 2021 - David Ortinau at .NET Frontend Day: [A .NET MAUI Progress Report](https://youtu.be/RnyZZKjdUxk)
 * September 19, 2020 - Shane Neuville at ReactiveUI Virtual Conference: [Dual Screen, .NET MAUI, and RxUI](https://www.youtube.com/watch?v=Rkz6Dkk1uWU)
