@@ -352,9 +352,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			return new PointF(target.X, target.Y);
 		}
 
-		public static SKBitmap GetPatternBitmap(this Paint paint, float scale = 1)
+		public static SKBitmap GetPatternBitmap(this PatternPaint patternPaint, float scale = 1)
 		{
-			var pattern = paint?.Pattern;
+			var pattern = patternPaint?.Pattern;
 			if (pattern == null)
 				return null;
 
@@ -369,9 +369,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
-		public static SKBitmap GetPatternBitmap(this Paint paint, float scaleX, float scaleY, object currentFigure)
+		public static SKBitmap GetPatternBitmap(this PatternPaint patternPaint, float scaleX, float scaleY, object currentFigure)
 		{
-			var pattern = paint?.Pattern;
+			var pattern = patternPaint?.Pattern;
 			if (pattern == null)
 				return null;
 

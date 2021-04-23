@@ -297,12 +297,12 @@ namespace Microsoft.Maui.Graphics.Skia
 				_shader = null;
 			}
 
-			if (paint.PaintType == PaintType.LinearGradient)
+			if (paint is LinearGradientPaint linearGradientPaint)
 			{
-				var colors = new SKColor[paint.Stops.Length];
+				var colors = new SKColor[linearGradientPaint.GradientStops.Length];
 				var stops = new float[colors.Length];
 
-				var vStops = paint.GetSortedStops();
+				var vStops = linearGradientPaint.GetSortedStops();
 
 				for (var i = 0; i < vStops.Length; i++)
 				{
@@ -324,15 +324,15 @@ namespace Microsoft.Maui.Graphics.Skia
 				catch (Exception exc)
 				{
 					Logger.Debug(exc);
-					FillColor = paint.BlendStartAndEndColors();
+					FillColor = linearGradientPaint.BlendStartAndEndColors();
 				}
 			}
-			else if (paint.PaintType == PaintType.RadialGradient)
+			else if (paint is RadialGradientPaint radialGradientPaint)
 			{
-				var colors = new SKColor[paint.Stops.Length];
+				var colors = new SKColor[radialGradientPaint.GradientStops.Length];
 				var stops = new float[colors.Length];
 
-				var vStops = paint.GetSortedStops();
+				var vStops = radialGradientPaint.GetSortedStops();
 
 				for (var i = 0; i < vStops.Length; i++)
 				{
@@ -355,12 +355,12 @@ namespace Microsoft.Maui.Graphics.Skia
 				catch (Exception exc)
 				{
 					Logger.Debug(exc);
-					FillColor = paint.BlendStartAndEndColors();
+					FillColor = radialGradientPaint.BlendStartAndEndColors();
 				}
 			}
-			else if (paint.PaintType == PaintType.Pattern)
+			else if (paint is PatternPaint patternPaint)
 			{
-				SKBitmap bitmap = paint.GetPatternBitmap(DisplayScale);
+				SKBitmap bitmap = patternPaint.GetPatternBitmap(DisplayScale);
 
 				if (bitmap != null)
 				{
@@ -388,9 +388,9 @@ namespace Microsoft.Maui.Graphics.Skia
 					FillColor = paint.BackgroundColor;
 				}
 			}
-			else if (paint.PaintType == PaintType.Image)
+			else if (paint is ImagePaint imagePaint)
 			{
-				var image = paint.Image as SkiaImage;
+				var image = imagePaint.Image as SkiaImage;
 				if (image != null)
 				{
 					SKBitmap bitmap = image.NativeImage;
@@ -427,7 +427,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 			else
 			{
-				FillColor = paint.StartColor;
+				FillColor = paint.BackgroundColor;
 			}
 		}
 

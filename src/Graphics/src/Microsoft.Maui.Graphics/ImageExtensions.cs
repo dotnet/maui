@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Graphics
 			if (target == null)
 				return null;
 
-			return new Paint {Image = target};
+			return new ImagePaint {Image = target};
 		}
 
 		public static void SetFillImage(this ICanvas canvas, IImage image)

@@ -69,10 +69,9 @@ namespace Microsoft.Maui.Graphics
 
 		public Paint AsPaint()
 		{
-			return new Paint()
+			return new SolidPaint()
 			{
-				PaintType = PaintType.Solid,
-				StartColor = this
+				Color = this
 			};
 		}
 

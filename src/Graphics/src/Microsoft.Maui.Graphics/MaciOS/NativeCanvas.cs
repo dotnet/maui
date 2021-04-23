@@ -379,20 +379,20 @@ namespace Microsoft.Maui.Graphics.Native
 			_fillImage = null;
 			_paint = null;
 
-			if (paint.PaintType == PaintType.Solid)
+			if (paint is SolidPaint solidPaint)
 			{
-				FillColor = paint.StartColor;
+				FillColor = solidPaint.Color;
 			}
-			else if (paint.PaintType == PaintType.LinearGradient)
+			else if (paint is LinearGradientPaint linearGradientPaint)
 			{
-				var gradientColors = new nfloat[paint.Stops.Length * 4];
-				var offsets = new nfloat[paint.Stops.Length];
+				var gradientColors = new nfloat[linearGradientPaint.GradientStops.Length * 4];
+				var offsets = new nfloat[linearGradientPaint.GradientStops.Length];
 
 				int g = 0;
-				for (int i = 0; i < paint.Stops.Length; i++)
+				for (int i = 0; i < linearGradientPaint.GradientStops.Length; i++)
 				{
-					Color vColor = paint.Stops[i].Color;
-					offsets[i] = paint.Stops[i].Offset;
+					Color vColor = linearGradientPaint.GradientStops[i].Color;
+					offsets[i] = linearGradientPaint.GradientStops[i].Offset;
 
 					if (vColor == null) vColor = Colors.White;
 
@@ -406,16 +406,16 @@ namespace Microsoft.Maui.Graphics.Native
 				_gradient = new CGGradient(colorspace, gradientColors, offsets);
 				_paint = paint;
 			}
-			else if (paint.PaintType == PaintType.RadialGradient)
+			else if (paint is RadialGradientPaint radialGradientPaint)
 			{
-				var gradientColors = new nfloat[paint.Stops.Length * 4];
-				var offsets = new nfloat[paint.Stops.Length];
+				var gradientColors = new nfloat[radialGradientPaint.GradientStops.Length * 4];
+				var offsets = new nfloat[radialGradientPaint.GradientStops.Length];
 
 				int g = 0;
-				for (int i = 0; i < paint.Stops.Length; i++)
+				for (int i = 0; i < radialGradientPaint.GradientStops.Length; i++)
 				{
-					Color vColor = paint.Stops[i].Color;
-					offsets[i] = paint.Stops[i].Offset;
+					Color vColor = radialGradientPaint.GradientStops[i].Color;
+					offsets[i] = radialGradientPaint.GradientStops[i].Offset;
 
 					if (vColor == null) vColor = Colors.White;
 
@@ -429,17 +429,17 @@ namespace Microsoft.Maui.Graphics.Native
 				_gradient = new CGGradient(colorspace, gradientColors, offsets);
 				_paint = paint;
 			}
-			else if (paint.PaintType == PaintType.Pattern)
+			else if (paint is PatternPaint patternPaint)
 			{
-				_fillPattern = paint.Pattern;
+				_fillPattern = patternPaint.Pattern;
 			}
-			else if (paint.PaintType == PaintType.Image)
+			else if (paint is ImagePaint imagePaint)
 			{
-				_fillImage = paint.Image;
+				_fillImage = imagePaint.Image;
 			}
 			else
 			{
-				FillColor = paint.StartColor;
+				FillColor = paint.BackgroundColor;
 			}
 
 			//Logger.Debug("Gradient Set To: "+aPaint.PaintType);
@@ -598,9 +598,9 @@ namespace Microsoft.Maui.Graphics.Native
 			// If we are doing a fill, then we need to fill the shape with a solid color
 			// to get the shadow because the gradient fills are done withing a clipped
 			// area.
-			if (CurrentState.Shadowed)
+			if (CurrentState.Shadowed && _paint is GradientPaint gradientPaint)
 			{
-				float minimumTransparent = Math.Min(_paint.StartColor.Alpha, _paint.EndColor.Alpha);
+				float minimumTransparent = Math.Min(gradientPaint.StartColor.Alpha, gradientPaint.EndColor.Alpha);
 				var color = Colors.White.WithAlpha(minimumTransparent);
 				_context.SetFillColor(color.Red, color.Green, color.Blue, color.Alpha);
 				action();
@@ -631,11 +631,11 @@ namespace Microsoft.Maui.Graphics.Native
 
 		private void DrawGradient()
 		{
-			if (_paint.PaintType == PaintType.LinearGradient)
+			if (_paint is LinearGradientPaint)
 			{
 				_context.DrawLinearGradient(_gradient, _gradientStart, _gradientEnd, CGGradientDrawingOptions.DrawsAfterEndLocation | CGGradientDrawingOptions.DrawsBeforeStartLocation);
 			}
-			else if (_paint.PaintType == PaintType.RadialGradient)
+			else if (_paint is RadialGradientPaint)
 			{
 				float vDistance = GetDistance(_gradientStart, _gradientEnd);
 				_context.DrawRadialGradient(_gradient, _radialFocalPoint, 0, _gradientStart, vDistance,

@@ -269,12 +269,12 @@ namespace Microsoft.Maui.Graphics.Native
 				_shader = null;
 			}
 
-			if (paint.PaintType == PaintType.LinearGradient)
+			if (paint is LinearGradientPaint linearGradientPaint)
 			{
-				var colors = new int[paint.Stops.Length];
+				var colors = new int[linearGradientPaint.GradientStops.Length];
 				var stops = new float[colors.Length];
 
-				GradientStop[] vStops = paint.GetSortedStops();
+				GradientStop[] vStops = linearGradientPaint.GetSortedStops();
 
 				for (int i = 0; i < vStops.Length; i++)
 				{
@@ -291,15 +291,15 @@ namespace Microsoft.Maui.Graphics.Native
 				catch (Exception exc)
 				{
 					Logger.Debug(exc);
-					FillColor = paint.BlendStartAndEndColors();
+					FillColor = linearGradientPaint.BlendStartAndEndColors();
 				}
 			}
-			else if (paint.PaintType == PaintType.RadialGradient)
+			else if (paint is RadialGradientPaint radialGradientPaint)
 			{
-				var colors = new int[paint.Stops.Length];
+				var colors = new int[radialGradientPaint.GradientStops.Length];
 				var stops = new float[colors.Length];
 
-				GradientStop[] vStops = paint.GetSortedStops();
+				GradientStop[] vStops = radialGradientPaint.GetSortedStops();
 
 				for (int i = 0; i < vStops.Length; i++)
 				{
@@ -317,12 +317,12 @@ namespace Microsoft.Maui.Graphics.Native
 				catch (Exception exc)
 				{
 					Logger.Debug(exc);
-					FillColor = paint.BlendStartAndEndColors();
+					FillColor = radialGradientPaint.BlendStartAndEndColors();
 				}
 			}
-			else if (paint.PaintType == PaintType.Pattern)
+			else if (paint is PatternPaint patternPaint)
 			{
-				var bitmap = paint.GetPatternBitmap(DisplayScale);
+				var bitmap = patternPaint.GetPatternBitmap(DisplayScale);
 
 				if (bitmap != null)
 				{
@@ -341,17 +341,17 @@ namespace Microsoft.Maui.Graphics.Native
 					catch (Exception exc)
 					{
 						Logger.Debug(exc);
-						FillColor = paint.BackgroundColor;
+						FillColor = patternPaint.BackgroundColor;
 					}
 				}
 				else
 				{
-					FillColor = paint.BackgroundColor;
+					FillColor = patternPaint.BackgroundColor;
 				}
 			}
-			else if (paint.PaintType == PaintType.Image)
+			else if (paint is ImagePaint imagePaint)
 			{
-				if (paint.Image is NativeImage image)
+				if (imagePaint.Image is NativeImage image)
 				{
 					var bitmap = image.NativeRepresentation;
 
@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Graphics.Native
 				}
 			}
 			else
-				FillColor = paint.StartColor;
+				FillColor = paint.BackgroundColor;
 
 			//Logger.Debug("Gradient Set To: "+aPaint.PaintType);
 		}

@@ -158,21 +158,20 @@ namespace GraphicsTester.Scenarios
 			// Linear Gradient Fill
 			//
 
-			var vPaint = new Paint
+			var linearGradientPaint = new LinearGradientPaint
 			{
-				PaintType = PaintType.LinearGradient,
 				StartColor = Colors.White,
 				EndColor = Colors.Black
 			};
 
-			canvas.SetFillPaint(vPaint, 50, 700, 150, 750);
+			canvas.SetFillPaint(linearGradientPaint, 50, 700, 150, 750);
 			canvas.FillRectangle(50, 700, 100, 50);
 
-			canvas.SetFillPaint(vPaint, 200, 700, 300, 700);
+			canvas.SetFillPaint(linearGradientPaint, 200, 700, 300, 700);
 			canvas.FillEllipse(200, 700, 100, 50);
 
-			vPaint.AddOffset(.5f, Colors.IndianRed);
-			canvas.SetFillPaint(vPaint, 350, 700, 450, 700);
+			linearGradientPaint.AddOffset(.5f, Colors.IndianRed);
+			canvas.SetFillPaint(linearGradientPaint, 350, 700, 450, 700);
 			canvas.FillRoundedRectangle(350, 700, 100, 50, 25);
 
 			path = new PathF();
@@ -181,28 +180,27 @@ namespace GraphicsTester.Scenarios
 			path.LineTo(600, 750);
 			path.Close();
 
-			canvas.SetFillPaint(vPaint, 500, 700, 600, 700);
+			canvas.SetFillPaint(linearGradientPaint, 500, 700, 600, 700);
 			canvas.FillPath(path);
 
 			//
 			// Radial Gradient Fill
 			//
 
-			vPaint = new Paint
+			var radialGradientPaint = new RadialGradientPaint
 			{
-				PaintType = PaintType.RadialGradient,
 				StartColor = Colors.White,
 				EndColor = Colors.Black
 			};
 
-			canvas.SetFillPaint(vPaint, 100, 825, 150, 850);
+			canvas.SetFillPaint(radialGradientPaint, 100, 825, 150, 850);
 			canvas.FillRectangle(50, 800, 100, 50);
 
-			canvas.SetFillPaint(vPaint, 250, 825, 300, 800);
+			canvas.SetFillPaint(radialGradientPaint, 250, 825, 300, 800);
 			canvas.FillEllipse(200, 800, 100, 50);
 
-			vPaint.AddOffset(.5f, Colors.IndianRed);
-			canvas.SetFillPaint(vPaint, 400, 825, 450, 800);
+			radialGradientPaint.AddOffset(.5f, Colors.IndianRed);
+			canvas.SetFillPaint(radialGradientPaint, 400, 825, 450, 800);
 			canvas.FillRoundedRectangle(350, 800, 100, 50, 25);
 
 			path = new PathF();
@@ -211,7 +209,7 @@ namespace GraphicsTester.Scenarios
 			path.LineTo(600, 850);
 			path.Close();
 
-			canvas.SetFillPaint(vPaint, 550, 825, 600, 800);
+			canvas.SetFillPaint(radialGradientPaint, 550, 825, 600, 800);
 			canvas.FillPath(path);
 
 			//

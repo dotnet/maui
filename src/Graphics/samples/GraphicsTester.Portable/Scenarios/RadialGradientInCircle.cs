@@ -12,9 +12,8 @@ namespace GraphicsTester.Scenarios
 		{
 			canvas.SaveState();
 
-			var paint = new Paint
+			var paint = new RadialGradientPaint
 			{
-				PaintType = PaintType.RadialGradient,
 				StartColor = Colors.White,
 				EndColor = Colors.Black
 			};

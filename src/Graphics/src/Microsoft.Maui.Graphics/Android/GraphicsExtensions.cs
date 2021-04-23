@@ -337,9 +337,9 @@ namespace Microsoft.Maui.Graphics.Native
 			return new Size(target.Width, target.Height);
 		}
 
-		public static Bitmap GetPatternBitmap(this Paint paint, float scale = 1)
+		public static Bitmap GetPatternBitmap(this PatternPaint patternPaint, float scale = 1)
 		{
-			var pattern = paint?.Pattern;
+			var pattern = patternPaint?.Pattern;
 			if (pattern == null)
 				return null;
 
@@ -353,11 +353,11 @@ namespace Microsoft.Maui.Graphics.Native
 		}
 
 		public static Bitmap GetPatternBitmap(
-			this Paint paint,
+			this PatternPaint patternPaint,
 			float scaleX,
 			float scaleY)
 		{
-			var pattern = paint?.Pattern;
+			var pattern = patternPaint?.Pattern;
 			if (pattern == null)
 				return null;
 

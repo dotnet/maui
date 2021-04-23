@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (target != null)
 			{
-				var paint = new Paint
+				var paint = new PatternPaint
 				{
 					Pattern = target,
 					ForegroundColor = foregroundColor,
