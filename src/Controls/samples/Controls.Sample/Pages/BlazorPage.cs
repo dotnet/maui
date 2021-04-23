@@ -25,24 +25,24 @@ namespace Maui.Controls.Sample.Pages
 
 		void SetupMauiLayout()
 		{
-			var verticalStack = new StackLayout() { Spacing = 5, BackgroundColor = Colors.AntiqueWhite };
-			verticalStack.Add(new Label { Text = "This should be TOP text!", FontSize = 24, HorizontalOptions = LayoutOptions.End });
-
-			var serviceCollection = new ServiceCollection();
-			serviceCollection.AddBlazorWebView();
-			//serviceCollection.AddSingleton<AppState>(_appState);
+			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Colors.Purple, };
+			verticalStack.Add(new Label { Text = "The content below is brought to you by Blazor!", FontSize = 24, TextColor = Colors.BlanchedAlmond, HorizontalOptions = LayoutOptions.Center });
 
 			var bwv = new BlazorWebView
 			{
+				// General properties
 				BackgroundColor = Colors.Orange,
-				Services = serviceCollection.BuildServiceProvider(),
 				HeightRequest = 400,
 				MinimumHeightRequest = 400,
+				VerticalOptions=LayoutOptions.FillAndExpand,
+
+				// BlazorWebView properties
 				HostPage = @"wwwroot/index.html",
 			};
 			bwv.RootComponents.Add(new RootComponent { Selector = "#app", ComponentType = typeof(Main) });
 			verticalStack.Add(bwv);
-			verticalStack.Add(new Label { Text = "This should be BOTTOM text!", FontSize = 24, HorizontalOptions = LayoutOptions.End });
+
+			verticalStack.Add(new Label { Text = "Thank you for using Blazor and .NET MAUI!", FontSize = 24, TextColor = Colors.BlanchedAlmond, HorizontalOptions = LayoutOptions.Center });
 
 			Content = verticalStack;
 		}
