@@ -53,10 +53,25 @@
 			if (currentControlText.Length > editor.MaxLength)
 				nativeControl.Text = currentControlText.Substring(0, editor.MaxLength);
 		}
+    
+		public static void UpdateMaxLength(this MauiTextBox textBox, IEntry entry)
+		{
+			var maxLength = entry.MaxLength;
 
+			if (maxLength == -1)
+				maxLength = int.MaxValue;
+
+			textBox.MaxLength = maxLength;
+
+			var currentControlText = textBox.Text;
+
+			if (currentControlText.Length > maxLength)
+				textBox.Text = currentControlText.Substring(0, maxLength);
+		}
+    
 		public static void UpdateIsReadOnly(this MauiTextBox nativeControl, IEditor editor)
 		{
 			nativeControl.IsReadOnly = editor.IsReadOnly;
-		}
+    }
 	}
 }
