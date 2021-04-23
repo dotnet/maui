@@ -22,8 +22,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(LabelHandler handler, ILabel label) =>
 			handler.TextBlock?.UpdateTextColor(label);
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(LabelHandler handler, ILabel label) { }
+		public static void MapCharacterSpacing(LabelHandler handler, ILabel label) =>	
+			handler.TextBlock?.UpdateCharacterSpacing(label);
 
 		public static void MapFont(LabelHandler handler, ILabel label)
 		{
