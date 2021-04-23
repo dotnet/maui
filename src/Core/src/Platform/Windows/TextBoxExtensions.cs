@@ -17,6 +17,11 @@ namespace Microsoft.Maui
 			textView.ForegroundFocusBrush = brush;
 		}
 
+		public static void UpdateIsReadOnly(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.IsReadOnly = entry.IsReadOnly;
+    }
+    
 		public static void UpdateMaxLength(this MauiTextBox textBox, IEntry entry)
 		{
 			var maxLength = entry.MaxLength;
