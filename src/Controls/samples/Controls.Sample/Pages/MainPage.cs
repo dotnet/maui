@@ -255,18 +255,18 @@ namespace Maui.Controls.Sample.Pages
 			var layout = new Microsoft.Maui.Controls.Layout2.GridLayout { ColumnSpacing = 10, RowSpacing = 10, Margin = 10 };
 
 			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
-			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(100) });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
 			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
-			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(100) });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
 			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
-			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(100) });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
 			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
-			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(100) });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
 			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
-			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(100) });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
 
-			layout.AddColumnDefinition(new ColumnDefinition { Width = new GridLength(100) });
-			layout.AddColumnDefinition(new ColumnDefinition { Width = new GridLength(100) });
+			layout.AddColumnDefinition(new ColumnDefinition { Width = new GridLength(120) });
+			layout.AddColumnDefinition(new ColumnDefinition { Width = new GridLength(120) });
 
 			var row = -1;
 
@@ -315,7 +315,9 @@ namespace Maui.Controls.Sample.Pages
 			Stream GetEmbedded(string embeddedPath)
 			{
 				var assembly = GetType().Assembly;
-				var name = assembly.GetManifestResourceNames().First(n => n.EndsWith(embeddedPath, StringComparison.InvariantCultureIgnoreCase));
+				var name = assembly
+					.GetManifestResourceNames()
+					.First(n => n.EndsWith(embeddedPath, StringComparison.InvariantCultureIgnoreCase));
 				return assembly.GetManifestResourceStream(name);
 			}
 		}
