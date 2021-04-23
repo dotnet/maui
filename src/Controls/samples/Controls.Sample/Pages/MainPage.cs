@@ -56,6 +56,7 @@ namespace Maui.Controls.Sample.Pages
 
 			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level1);
 			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
+			verticalStack.Add(new Label { Text = "This should have character spacing!", CharacterSpacing = 3 });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
 
 
@@ -218,7 +219,6 @@ namespace Maui.Controls.Sample.Pages
 				Content = verticalStack
 			};
 		}
-
 
 		void SetupCompatibilityLayout()
 		{

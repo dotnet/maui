@@ -34,11 +34,6 @@ namespace Microsoft.Maui.Controls
 
 		public Size DesiredSize { get; protected set; }
 
-		public virtual bool IsMeasureValid { get; protected set; }
-
-		// The set is `internal protected` here to allow the legacy Layouts to set IsArrangeValid on their children
-		public virtual bool IsArrangeValid { get; internal protected set; }
-
 		public void Arrange(Rectangle bounds)
 		{
 			Layout(bounds);
@@ -53,13 +48,6 @@ namespace Microsoft.Maui.Controls
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
-			if (IsArrangeValid)
-			{
-				return bounds.Size;
-			}
-
-			IsArrangeValid = true;
-
 			// Setting Bounds here is equivalent to setting the Frame
 			Bounds = this.ComputeFrame(bounds);
 
@@ -80,17 +68,10 @@ namespace Microsoft.Maui.Controls
 		// the interface has to be explicitly implemented to avoid conflict with the VisualElement.InvalidateMeasure method
 		protected virtual void InvalidateMeasureOverride()
 		{
-			if (!IsMeasureValid && !IsArrangeValid)
-				return;
-
-			IsMeasureValid = false;
-			IsArrangeValid = false;
-			InvalidateMeasure();
 		}
 
 		void IFrameworkElement.InvalidateArrange()
 		{
-			IsArrangeValid = false;
 		}
 
 		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
@@ -102,12 +83,7 @@ namespace Microsoft.Maui.Controls
 		// the interface has to be explicitly implemented to avoid conflict with the old Measure method
 		protected virtual Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (!IsMeasureValid)
-			{
-				DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
-			}
-
-			IsMeasureValid = true;
+			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
 			return DesiredSize;
 		}
 
@@ -126,7 +102,7 @@ namespace Microsoft.Maui.Controls
 		internal Semantics SetupSemantics() =>
 			_semantics ??= new Maui.Semantics();
 
-		double IFrameworkElement.Width { get => WidthRequest; }
-		double IFrameworkElement.Height { get => HeightRequest; }
+		double IFrameworkElement.Width => WidthRequest;
+		double IFrameworkElement.Height => HeightRequest; 
 	}
 }
