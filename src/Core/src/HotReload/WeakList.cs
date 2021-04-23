@@ -14,7 +14,8 @@ namespace Microsoft.Maui.HotReload
 
 		public bool IsReadOnly => false;
 
-		public void Add(T? item) {
+		public void Add(T? item)
+		{
 			if (item == null)
 				return;
 			if (Contains(item))

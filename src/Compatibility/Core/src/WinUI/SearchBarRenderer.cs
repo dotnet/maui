@@ -229,6 +229,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
+		[PortHandler]
 		void UpdatePlaceholder()
 		{
 			Control.PlaceholderText = Element.Placeholder ?? string.Empty;
