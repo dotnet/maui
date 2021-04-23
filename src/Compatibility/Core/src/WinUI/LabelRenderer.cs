@@ -15,6 +15,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.
 using WRect = Windows.Foundation.Rect;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

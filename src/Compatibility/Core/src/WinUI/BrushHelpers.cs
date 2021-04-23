@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 

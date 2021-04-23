@@ -6,7 +6,7 @@ using WLinearGradientBrush = Microsoft.UI.Xaml.Media.LinearGradientBrush;
 using WPoint = Windows.Foundation.Point;
 using WRadialGradientBrush = Microsoft.UI.Xaml.Media.RadialGradientBrush;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	public static class BrushExtensions
 	{
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					return null;
 				}
 
-				return solidColorBrush.Color.ToBrush();
+				return solidColorBrush.Color.ToNative();
 			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)
@@ -43,7 +43,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				};
 			}
 
-#if UWP_18362
 			if (brush is RadialGradientBrush radialGradientBrush)
 			{
 				var wRadialGradientBrush = new WRadialGradientBrush()
@@ -61,7 +60,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				return wRadialGradientBrush;
 			}
-#endif
 
 			return null;
 		}

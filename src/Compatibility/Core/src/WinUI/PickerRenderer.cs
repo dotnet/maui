@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

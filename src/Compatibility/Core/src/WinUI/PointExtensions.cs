@@ -1,4 +1,4 @@
-#if WINDOWS_UWP
+#if WINDOWS
 using Microsoft.Maui.Graphics;
 using WPoint = Windows.Foundation.Point;
 

@@ -9,6 +9,7 @@ using WSwipeItems = Microsoft.UI.Xaml.Controls.SwipeItems;
 using WSwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
 using WSwipeMode = Microsoft.UI.Xaml.Controls.SwipeMode;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

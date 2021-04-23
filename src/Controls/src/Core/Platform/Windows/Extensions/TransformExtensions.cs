@@ -1,16 +1,9 @@
 using Microsoft.Maui.Controls.Shapes;
 
-#if WINDOWS_UWP
 using WMatrix = Microsoft.UI.Xaml.Media.Matrix;
 using WMatrixTransform = Microsoft.UI.Xaml.Media.MatrixTransform;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
-#else
-using WMatrix = System.Windows.Media.Matrix;
-using WMatrixTransform = System.Windows.Media.MatrixTransform;
-
-namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
-#endif
+namespace Microsoft.Maui.Controls.Platform
 {
 	public static class TransformExtensions
 	{

@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

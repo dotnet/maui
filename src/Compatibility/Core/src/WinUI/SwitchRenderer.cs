@@ -11,6 +11,7 @@ using WEllipse = Microsoft.UI.Xaml.Shapes.Ellipse;
 using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

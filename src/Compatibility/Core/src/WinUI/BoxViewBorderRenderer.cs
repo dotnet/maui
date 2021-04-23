@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using WShape = Microsoft.UI.Xaml.Shapes.Shape;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

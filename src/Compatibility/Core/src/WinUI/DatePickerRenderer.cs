@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Controls.Internals;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

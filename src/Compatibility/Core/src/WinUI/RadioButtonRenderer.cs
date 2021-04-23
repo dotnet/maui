@@ -5,6 +5,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using static Microsoft.Maui.Controls.Compatibility.Platform.UWP.ViewToRendererConverter;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

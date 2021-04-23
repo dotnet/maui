@@ -10,6 +10,7 @@ using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

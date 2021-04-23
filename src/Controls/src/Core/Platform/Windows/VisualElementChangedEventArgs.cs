@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	public class VisualElementChangedEventArgs : ElementChangedEventArgs<VisualElement>
 	{

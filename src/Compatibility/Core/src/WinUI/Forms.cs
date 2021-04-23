@@ -70,11 +70,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (!IsInitialized)
 			{
-#if !UWP_16299
 				Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
-#else
-				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
-#endif
+
 			}
 
 			if (!UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))

@@ -17,6 +17,7 @@ using UwpStyle = Microsoft.UI.Xaml.Style;
 using Microsoft.UI.Xaml.Media;
 using UwpApplication = Microsoft.UI.Xaml.Application;
 using UwpSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

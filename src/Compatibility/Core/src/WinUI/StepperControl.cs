@@ -9,6 +9,7 @@ using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 using WVisualStateGroup = Microsoft.UI.Xaml.VisualStateGroup;
 using WVisualState = Microsoft.UI.Xaml.VisualState;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

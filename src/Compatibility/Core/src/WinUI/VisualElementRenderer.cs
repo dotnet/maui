@@ -11,6 +11,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.
 using WRect = Windows.Foundation.Rect;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -434,7 +435,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Control == null)
 				return;
 
-			_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, _defaultAutomationPropertiesLabeledBy);
+			// TODO MAUI
+			_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, null, _defaultAutomationPropertiesLabeledBy);
 		}
 
 		protected void SetNativeControl(TNativeElement control)
