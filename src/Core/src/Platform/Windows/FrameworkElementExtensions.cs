@@ -58,7 +58,7 @@ namespace Microsoft.Maui
 		public static void SetForeground(this FrameworkElement element, WBrush foregroundBrush)
 		{
 			if (element == null)
-				throw new ArgumentNullException("element");
+				throw new ArgumentNullException(nameof(element));
 
 			element.SetValue(GetForegroundProperty(element), foregroundBrush);
 		}
@@ -66,7 +66,7 @@ namespace Microsoft.Maui
 		public static void SetForeground(this FrameworkElement element, WBinding binding)
 		{
 			if (element == null)
-				throw new ArgumentNullException("element");
+				throw new ArgumentNullException(nameof(element));
 
 			element.SetBinding(GetForegroundProperty(element), binding);
 		}
@@ -78,8 +78,8 @@ namespace Microsoft.Maui
 			{
 				var child = VisualTreeHelper.GetChild(parent, i);
 				var controlName = child.GetValue(FrameworkElement.NameProperty) as string;
-				if (controlName == elementName && child is T)
-					yield return child as T;
+				if (controlName == elementName && child is T t)
+					yield return t;
 				else
 				{
 					foreach (var subChild in child.GetDescendantsByName<T>(elementName))
@@ -95,9 +95,7 @@ namespace Microsoft.Maui
 			{
 				DependencyObject child = VisualTreeHelper.GetChild(element, i);
 
-				T? target = child as T ?? GetFirstDescendant<T>(child);
-
-				if (target != null)
+				if((child as T ?? GetFirstDescendant<T>(child)) is T target)
 					return target;
 			}
 
@@ -113,17 +111,12 @@ namespace Microsoft.Maui
 
 			Type type = element.GetType();
 
-			DependencyProperty? foregroundProperty;
-			if (!ForegroundProperties.Value.TryGetValue(type, out foregroundProperty))
+			if (!ForegroundProperties.Value.TryGetValue(type, out var foregroundProperty))
 			{
-				FieldInfo? field = ReflectionExtensions.GetFields(type).FirstOrDefault(f => f.Name == "ForegroundProperty");
-
-				if (field == null)
+			 if (ReflectionExtensions.GetFields(type).FirstOrDefault(f => f.Name == "ForegroundProperty") is not FieldInfo field)
 					throw new ArgumentException("type is not a Foregroundable type");
 
-				var property = field.GetValue(null) as DependencyProperty;
-
-				if (property != null)
+				if (field.GetValue(null) is DependencyProperty property)
 					ForegroundProperties.Value.TryAdd(type, property);
 
 				return property;
@@ -138,8 +131,8 @@ namespace Microsoft.Maui
 			for (int i = 0; i < myChildrenCount; i++)
 			{
 				var child = VisualTreeHelper.GetChild(parent, i);
-				if (child is T)
-					yield return child as T;
+				if (child is T t)
+					yield return t;
 				else
 				{
 					foreach (var subChild in child.GetChildren<T>())
