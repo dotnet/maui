@@ -1,6 +1,5 @@
 using System;
 using Android.Content;
-using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
