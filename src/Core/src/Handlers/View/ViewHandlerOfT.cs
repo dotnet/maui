@@ -28,6 +28,12 @@ namespace Microsoft.Maui.Handlers
 		protected PropertyMapper _mapper;
 		static bool HasSetDefaults;
 
+		[HotReload.OnHotReload]
+		static void OnHotReload()
+		{
+			HasSetDefaults = false;
+		}
+
 		protected ViewHandler(PropertyMapper mapper)
 		{
 			_ = mapper ?? throw new ArgumentNullException(nameof(mapper));
