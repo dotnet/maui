@@ -184,7 +184,7 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		public static AFragmentManager? GetFragmentManager(this Context context)
+		public static FragmentManager? GetFragmentManager(this Context context)
 		{
 			if (context == null)
 				return null;
