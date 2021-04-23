@@ -12,6 +12,12 @@ namespace Microsoft.Maui
 	{
 		protected override void OnCreate(Bundle? savedInstanceState)
 		{
+			// If the theme has the maui_splash attribute, change the theme
+			if (Theme != null && Theme.ResolveAttribute(Resource.Attribute.maui_splash, new Android.Util.TypedValue(), resolveRefs: true))
+			{
+				SetTheme(Resource.Style.Maui_MainTheme);
+			}
+
 			base.OnCreate(savedInstanceState);
 
 			var mauiApp = MauiApplication.Current.Application;
@@ -26,17 +32,18 @@ namespace Microsoft.Maui
 
 			var state = new ActivationState(mauiContext, savedInstanceState);
 			var window = mauiApp.CreateWindow(state);
-			window.MauiContext = mauiContext;
 
-			var matchParent = ViewGroup.LayoutParams.MatchParent;
+			//var matchParent = ViewGroup.LayoutParams.MatchParent;
+			var wrap = ViewGroup.LayoutParams.WrapContent;
 
 			// Create the root native layout and set the Activity's content to it
-			CoordinatorLayout nativeRootLayout = new CoordinatorLayout(this);
-			SetContentView(nativeRootLayout, new ViewGroup.LayoutParams(matchParent, matchParent));
+			//var nativeRootLayout = new CoordinatorLayout(this);
+			var nativeRootLayout = new LinearLayoutCompat(this);
+			SetContentView(nativeRootLayout, new ViewGroup.LayoutParams(wrap, wrap));
 
 			//AddToolbar(parent);
 
-			var page = window.Page;
+			var page = window.View;
 
 			// This currently relies on IPage : IView, which may not exactly be right
 			// we may have to add another handler extension that works for Page
@@ -45,10 +52,11 @@ namespace Microsoft.Maui
 			// abstract handler for IPage
 			// TODO ezhart Think about all this stuff ^^
 
-			var nativePage = page.ToContainerView(window.MauiContext);
+			var nativePage = page.ToNative(mauiContext);
 
 			// Add the IPage to the root layout; use match parent so the page automatically has the dimensions of the activity
-			nativeRootLayout.AddView(nativePage, new CoordinatorLayout.LayoutParams(matchParent, matchParent));
+			// nativeRootLayout.AddView(nativePage, new CoordinatorLayout.LayoutParams(wrap, wrap));
+			nativeRootLayout.AddView(nativePage, new LinearLayoutCompat.LayoutParams(wrap, wrap));
 		}
 
 		void AddToolbar(ViewGroup parent)

@@ -19,6 +19,11 @@ namespace Microsoft.Maui.HotReload
 			//}
 			view.Handler = null;
 
+			if (view is IPage p)
+			{
+				CheckHandlers(p.Content);
+			}
+
 			if (view is IContainer layout)
 			{
 				foreach (var v in layout.Children)
