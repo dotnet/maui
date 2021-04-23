@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else if (aview is LayoutViewGroup && width == 0 && height == 0)
 			{
 				// Nothing to do here; just chill.
-			}	
+			}
 			else
 			{
 				Performance.Start(reference, "Measure");

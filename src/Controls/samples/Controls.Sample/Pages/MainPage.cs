@@ -188,7 +188,7 @@ namespace Maui.Controls.Sample.Pages
 				"Japanese Macaque"
 			};
 
-			var picker = new Picker { Title = "Select a monkey", FontFamily = "Dokdo",  HorizontalTextAlignment = TextAlignment.Center};
+			var picker = new Picker { Title = "Select a monkey", FontFamily = "Dokdo", HorizontalTextAlignment = TextAlignment.Center };
 
 			picker.ItemsSource = monkeyList;
 			verticalStack.Add(picker);
