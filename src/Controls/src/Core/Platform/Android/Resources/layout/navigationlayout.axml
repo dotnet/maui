@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<micosoft.maui.controls.platform.NavigationLayout
+<microsoft.maui.controls.platform.NavigationLayout
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns:app="http://schemas.android.com/apk/res-auto"
 		android:layout_width="match_parent"
@@ -28,9 +28,5 @@
 		
 	</com.google.android.material.appbar.AppBarLayout>
 
-	<microsoft.maui.controls.compatibility.platform.android.appcompat.FormsViewPager
-		android:id="@+id/main.viewpager"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-</micosoft.maui.controls.platform.NavigationLayout>
+
+</microsoft.maui.controls.platform.NavigationLayout>
