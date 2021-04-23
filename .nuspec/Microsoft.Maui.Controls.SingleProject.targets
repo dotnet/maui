@@ -7,6 +7,7 @@
     <AndroidManifest>$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
     <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
     <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
+    
     <!-- iOS -->
     <EnableDefaultiOSItems>false</EnableDefaultiOSItems>
     <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' ">iOS\</iOSProjectFolder>
@@ -18,6 +19,14 @@
     <MacCatalystProjectFolder Condition=" '$(MacCatalystProjectFolder)' == '' ">MacCatalyst\</MacCatalystProjectFolder>
     <IPhoneResourcePrefix Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst' ">$(MacCatalystProjectFolder)Resources</IPhoneResourcePrefix>
     <_SingleProjectMacCatalystExcludes>$(MacCatalystProjectFolder)/**/.*/**</_SingleProjectMacCatalystExcludes>
+
+    <!-- WinUI3 -->
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <WindowsProjectFolder Condition=" '$(WindowsProjectFolder)' == '' ">Windows\</WindowsProjectFolder>
+    <_SingleProjectWindowsExcludes>$(WindowsProjectFolder)/**/.*/**</_SingleProjectWindowsExcludes>
+    <OutputType Condition="'$(OutputType)' == 'Exe' And '$(MSBuildRuntime)' == 'Full' And $([MSBuild]::IsOSPlatform('windows'))">WinExe</OutputType>
   </PropertyGroup>
 
   <!-- Removals -->
@@ -34,6 +43,11 @@
         Condition=" '$(TargetPlatformIdentifier)' != 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' "
         Remove="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)"
     />
+
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' != 'windows' and '$(WindowsProjectFolder)' != '' "
+        Remove="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)"
+    />
   </ItemGroup>
 
   <!-- IDE capabilities -->
@@ -41,4 +55,5 @@
     <ProjectCapability Include="MauiSingleProject" />
     <ProjectCapability Include="LaunchProfiles" />
   </ItemGroup>
+
 </Project>

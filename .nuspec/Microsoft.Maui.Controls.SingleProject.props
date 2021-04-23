@@ -63,4 +63,24 @@
     />
   </ItemGroup>
 
+   <!-- iOS -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' ">
+    <None Include="$(iOSProjectFolder)Info.plist" LogicalName="Info.plist" />
+  </ItemGroup>
+
+  <!-- WinUI -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' ">
+
+    <ApplicationManifest
+      Include="$(WindowsProjectFolder)app.manifest"
+      Link="%(FileName)%(Extension)"
+      Visible="true" />
+
+    <Page
+        Include="$(WindowsProjectFolder)**/*.xaml"
+        Exclude="$(_SingleProjectWindowsExcludes)"
+        Link="%(RecursiveDir)%(FileName)%(Extension)"
+        Visible="true" />
+
+  </ItemGroup>
 </Project>

@@ -1,4 +1,6 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.WinUI.targets" Condition="$(TargetFramework.Contains('-windows')) And '$(MSBuildRuntimeType)' == 'Full'" />
+
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">
     <Compile Remove="**\*.iOS.cs" />
     <None Include="**\*.iOS.cs" />
@@ -74,20 +76,10 @@
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
   </ItemGroup>
-  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-    <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PackageReference Include="Microsoft.ProjectReunion" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
-  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-    </PropertyGroup>
-  </Target>
 </Project>

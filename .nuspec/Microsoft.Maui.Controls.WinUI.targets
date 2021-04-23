@@ -1,0 +1,15 @@
+<Project>
+  <!-- This is only imported for WinUI Projects -->
+  <!-- Imported by Microsoft.Maui.Controls.MultiTargeting.targets and Microsoft.Maui.Controls.targets -->
+  <PropertyGroup>
+    <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">10.0.17763.0</TargetPlatformMinVersion>
+    <Platforms Condition="'$(Platforms)' == ''">x86;x64;arm64</Platforms>
+    <RuntimeIdentifiers Condition="'$(RuntimeIdentifiers)' == ''">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <Target Name="_MauiWinUITargetPlatformIdentifierFix" BeforeTargets="_GetSdkToolsPathsFromSdk">
+    <PropertyGroup>
+      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
+    </PropertyGroup>
+  </Target>
+</Project>
