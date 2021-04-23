@@ -43,6 +43,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
     <EntryPointProjectUniqueName>..\WinUI\Compatibility.ControlGallery.WinUI.csproj</EntryPointProjectUniqueName>
+    <AssetTargetFallback>net6.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ProjectGuid>9784da17-daef-455c-8cfb-ba4b4119c1b6</ProjectGuid>

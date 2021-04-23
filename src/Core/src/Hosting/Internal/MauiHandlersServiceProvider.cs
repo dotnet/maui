@@ -5,9 +5,12 @@ namespace Microsoft.Maui.Hosting.Internal
 {
 	class MauiHandlersServiceProvider : MauiServiceProvider, IMauiHandlersServiceProvider
 	{
-		public MauiHandlersServiceProvider(IMauiServiceCollection collection)
+		readonly IMauiHandlersCollection _collection;
+
+		public MauiHandlersServiceProvider(IMauiHandlersCollection collection)
 			: base(collection, false)
 		{
+			_collection = collection;
 		}
 
 		public IViewHandler? GetHandler(Type type)
@@ -17,5 +20,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			=> GetHandler(typeof(T));
 
 		public Type? GetHandlerType(Type iview) => GetServiceType(iview)?.ImplementationType;
+
+		public IMauiHandlersCollection GetCollection() => _collection;
 	}
 }
