@@ -1,6 +1,6 @@
 ﻿using System;
-using UIKit;
 using Microsoft.Maui.HotReload;
+using UIKit;
 namespace Microsoft.Maui
 {
 	public class ContainerViewController : UIViewController, IReloadHandler
