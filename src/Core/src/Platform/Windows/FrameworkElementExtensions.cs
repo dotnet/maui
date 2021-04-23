@@ -95,7 +95,7 @@ namespace Microsoft.Maui
 			{
 				DependencyObject child = VisualTreeHelper.GetChild(element, i);
 
-				if((child as T ?? GetFirstDescendant<T>(child)) is T target)
+				if ((child as T ?? GetFirstDescendant<T>(child)) is T target)
 					return target;
 			}
 
@@ -113,13 +113,13 @@ namespace Microsoft.Maui
 
 			if (!ForegroundProperties.Value.TryGetValue(type, out var foregroundProperty))
 			{
-			 if (ReflectionExtensions.GetFields(type).FirstOrDefault(f => f.Name == "ForegroundProperty") is not FieldInfo field)
+				if (ReflectionExtensions.GetFields(type).FirstOrDefault(f => f.Name == "ForegroundProperty") is not FieldInfo field)
 					throw new ArgumentException("type is not a Foregroundable type");
 
 				if (field.GetValue(null) is DependencyProperty property)
 					ForegroundProperties.Value.TryAdd(type, property);
 
-				return property;
+				return null;
 			}
 
 			return foregroundProperty;
