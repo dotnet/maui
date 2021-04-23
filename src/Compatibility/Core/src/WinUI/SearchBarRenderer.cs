@@ -223,11 +223,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_fontApplied = true;
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
+		[PortHandler]
 		void UpdatePlaceholder()
 		{
 			Control.PlaceholderText = Element.Placeholder ?? string.Empty;
@@ -247,6 +249,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				() => _queryTextBox.PlaceholderForegroundFocusBrush, brush => _queryTextBox.PlaceholderForegroundFocusBrush = brush);
 		}
 
+		[PortHandler]
 		void UpdateText()
 		{
 			Control.Text = Element.UpdateFormsText(Element.Text, Element.TextTransform);

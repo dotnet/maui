@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 
 namespace Microsoft.Maui
 {
@@ -30,6 +31,11 @@ namespace Microsoft.Maui
 			{
 				nativeControl.LineHeight = label.LineHeight * nativeControl.FontSize;
 			}
+    }
+    
+		public static void UpdateCharacterSpacing(this TextBlock nativeControl, ILabel label)
+		{
+			nativeControl.CharacterSpacing = label.CharacterSpacing.ToEm();
 		}
 
 		public static void UpdateMaxLines(this TextBlock nativeControl, ILabel label)
@@ -41,6 +47,35 @@ namespace Microsoft.Maui
 			else
 			{
 				nativeControl.MaxLines = 0;
+			}
+		}
+
+		public static void UpdateTextDecorations(this TextBlock nativeControl, ILabel label)
+		{
+			var elementTextDecorations = label.TextDecorations;
+
+			if ((elementTextDecorations & TextDecorations.Underline) == 0)
+				nativeControl.TextDecorations &= ~Windows.UI.Text.TextDecorations.Underline;
+			else
+				nativeControl.TextDecorations |= Windows.UI.Text.TextDecorations.Underline;
+
+			if ((elementTextDecorations & TextDecorations.Strikethrough) == 0)
+				nativeControl.TextDecorations &= ~Windows.UI.Text.TextDecorations.Strikethrough;
+			else
+				nativeControl.TextDecorations |= Windows.UI.Text.TextDecorations.Strikethrough;
+
+			// TextDecorations are not updated in the UI until the text changes
+			if (nativeControl.Inlines != null && nativeControl.Inlines.Count > 0)
+			{
+				for (var i = 0; i < nativeControl.Inlines.Count; i++)
+				{
+					var run = (Run)nativeControl.Inlines[i];
+					run.Text = run.Text;
+				}
+			}
+			else
+			{
+				nativeControl.Text = nativeControl.Text;
 			}
 		}
 	}

@@ -40,6 +40,7 @@
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <MauiFont Include="Resources\Fonts\*" />
+    <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
   </ItemGroup>
 
   <ItemGroup>

@@ -190,6 +190,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 		}
 
+		[PortHandler]
 		void UpdateTextDecorations(TextBlock textBlock)
 		{
 			if (!Element.IsSet(Label.TextDecorationsProperty))
@@ -283,6 +284,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			textBlock.UpdateLineBreakMode(Element.LineBreakMode);
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing(TextBlock textBlock)
 		{
 			textBlock.CharacterSpacing = Element.CharacterSpacing.ToEm();
