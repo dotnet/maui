@@ -14,6 +14,7 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
 		<PackageReference Include="Microsoft.Maui.Graphics" />
+    	<PackageReference Include="Reloadify3000" Version="1.0.6" />
 	</ItemGroup>
 	<ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
 		<PackageReference Include="Xamarin.Android.Glide" />

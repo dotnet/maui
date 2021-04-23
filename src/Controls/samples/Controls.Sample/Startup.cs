@@ -41,7 +41,9 @@ namespace Maui.Controls.Sample
 					.UseCompatibilityRenderers()
 					.UseMauiApp<MyApp>();
 			}
-
+#if DEBUG
+			appBuilder.EnableHotReload();
+#endif
 			appBuilder
 #if NET6_0_OR_GREATER
 				.RegisterBlazorMauiWebView()
@@ -85,18 +87,18 @@ namespace Maui.Controls.Sample
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
 				})
-				.ConfigureEssentials(essentials =>
-				{
-					essentials
-						.UseVersionTracking()
-						.UseMapServiceToken("YOUR-KEY-HERE")
-						.AddAppAction("test_action", "Test App Action")
-						.AddAppAction("second_action", "Second App Action")
-						.OnAppAction(appAction =>
-						{
-							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
-						});
-				})
+				//.ConfigureEssentials(essentials =>
+				//{
+				//	essentials
+				//		.UseVersionTracking()
+				//		.UseMapServiceToken("YOUR-KEY-HERE")
+				//		.AddAppAction("test_action", "Test App Action")
+				//		.AddAppAction("second_action", "Second App Action")
+				//		.OnAppAction(appAction =>
+				//		{
+				//			Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
+				//		});
+				//})
 				.ConfigureLifecycleEvents(events =>
 				{
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));

@@ -2,8 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <ItemGroup>
+        <AvailableItemName Include="MauiAsset" />
         <AvailableItemName Include="MauiImage" />
         <AvailableItemName Include="MauiFont" />
+        <AvailableItemName Include="MauiSplashScreen" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -22,6 +24,14 @@
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.CreatePartialInfoPlistTask" />
 
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateSplashAndroidResources" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateSplashStoryboard" />
+
     <PropertyGroup>
         <CleanDependsOn>
             $(CleanDependsOn);
@@ -32,6 +42,11 @@
         <_ResizetizerStampFile>$(IntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
         <_MauiFontInputsFile>$(IntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
         <_MauiFontStampFile>$(IntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
+        <_MauiSplashInputsFile>$(IntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
+        <_MauiSplashStampFile>$(IntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
+        <_MauiIntermediateColors>$(IntermediateOutputPath)sp\maui_colors.xml</_MauiIntermediateColors>
+        <_MauiIntermediateDrawable>$(IntermediateOutputPath)sp\maui_splash_image.xml</_MauiIntermediateDrawable>
+        <_MauiIntermediateStoryboard>$(IntermediateOutputPath)sp\MauiSplash.storyboard</_MauiIntermediateStoryboard>
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
@@ -69,6 +84,7 @@
             $(ProcessMauiFontsDependsOnTargets);
             ResizetizeCollectItems;
             ProcessMauiAssets;
+            ProcessMauiSplashScreens;
         </ProcessMauiFontsDependsOnTargets>
     </PropertyGroup>
 
@@ -86,10 +102,10 @@
             ResizetizeCollectItems;
         </ResizetizeAfterTargets>
 
-        <ProcessMauiFontsAfterTargets>
-            $(ProcessMauiFontsAfterTargets);
-            _CompileCoreMLModels;
-        </ProcessMauiFontsAfterTargets>
+        <ProcessMauiFontsBeforeTargets>
+            $(ProcessMauiFontsBeforeTargets);
+            _BeforeCoreCompileImageAssets;
+        </ProcessMauiFontsBeforeTargets>
     </PropertyGroup>
 
     <!-- Android -->
@@ -151,6 +167,7 @@
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
             <MauiItem Include="@(MauiFont)"  ItemGroupName="MauiFont" />
             <MauiItem Include="@(MauiAsset)" ItemGroupName="MauiAsset" />
+            <MauiItem Include="@(MauiSplashScreen)" ItemGroupName="MauiSplashScreen" />
         </ItemGroup>
 
         <ConvertToAbsolutePath Paths="@(MauiItem)">
@@ -196,6 +213,9 @@
             <MauiAsset
                 Include="@(ImportedMauiItem)"
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiAsset'" />
+            <MauiSplashScreen
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiSplashScreen'" />
         </ItemGroup>
 
         <!-- Write out item spec and metadata to a file we can use as an inputs for the resize target -->
@@ -212,6 +232,17 @@
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 
+        <WriteLinesToFile
+            File="$(_MauiSplashInputsFile)"
+            Lines="@(MauiSplashScreen->'File=%(Identity);Color=%(Color)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true" />
+
+        <ItemGroup>
+            <FileWrites Include="$(_ResizetizerInputsFile)" />
+            <FileWrites Include="$(_MauiFontInputsFile)" />
+            <FileWrites Include="$(_MauiSplashInputsFile)" />
+        </ItemGroup>
     </Target>
 
     <Target Name="ProcessMauiAssets">
@@ -226,8 +257,54 @@
         </ItemGroup>
     </Target>
 
+    <Target Name="ProcessMauiSplashScreens"
+        Condition="'@(MauiSplashScreen)' != ''"
+        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
+        Outputs="$(_MauiSplashStampFile)">
+
+        <Warning
+            Condition="'@(MauiSplashScreen->Count())' &gt; '1'"
+            Text="More than one 'MauiSplashScreen' is defined; only the first will be used."
+        />
+
+        <!-- Android -->
+        <GenerateSplashAndroidResources
+            Condition="'$(_ResizetizerIsAndroidApp)' == 'True'"
+            ColorsFile="$(_MauiIntermediateColors)"
+            DrawableFile="$(_MauiIntermediateDrawable)"
+            MauiSplashScreen="@(MauiSplashScreen)"
+        />
+        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+            <MauiImage Include="@(MauiSplashScreen)" />
+            <AndroidResource Include="$(_MauiIntermediateDrawable)" Link="Resources\drawable\$([System.IO.Path]::GetFileName($(_MauiIntermediateDrawable)))" />
+            <AndroidResource Include="$(_MauiIntermediateColors)"   Link="Resources\values\$([System.IO.Path]::GetFileName($(_MauiIntermediateColors)))" />
+            <FileWrites Include="$(_MauiIntermediateColors);$(_MauiIntermediateDrawable)" />
+        </ItemGroup>
+
+        <!-- iOS, but not Catalyst -->
+        <GenerateSplashStoryboard
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(TargetPlatformIdentifier)' != 'maccatalyst'"
+            OutputFile="$(_MauiIntermediateStoryboard)"
+            MauiSplashScreen="@(MauiSplashScreen)"
+        />
+        <PropertyGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(TargetPlatformIdentifier)' != 'maccatalyst'">
+            <_MauiStoryboardForPList>$(_MauiIntermediateStoryboard)</_MauiStoryboardForPList>
+        </PropertyGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(TargetPlatformIdentifier)' != 'maccatalyst'">
+            <MauiImage Include="@(MauiSplashScreen)" />
+            <InterfaceDefinition Include="$(_MauiIntermediateStoryboard)" Link="$([System.IO.Path]::GetFileName($(_MauiIntermediateStoryboard)))" />
+            <FileWrites Include="$(_MauiIntermediateStoryboard)" />
+        </ItemGroup>
+
+        <!-- Stamp file for Outputs -->
+        <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
+        <ItemGroup>
+            <FileWrites Include="$(_MauiSplashStampFile)" />
+        </ItemGroup>
+    </Target>
+
     <Target Name="ProcessMauiFonts"
-        Inputs="@(MauiFont);$(_MauiFontInputsFile)"
+        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiFontInputsFile);@(MauiFont)"
         Outputs="$(_MauiFontStampFile)"
         AfterTargets="$(ProcessMauiFontsAfterTargets)"
         BeforeTargets="$(ProcessMauiFontsBeforeTargets)"
@@ -257,9 +334,10 @@
 
         <!-- Create a partial info.plist for iOS -->
         <CreatePartialInfoPlistTask
-            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopied)' != ''"
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And ('@(_MauiFontCopied)' != '' Or '$(_MauiStoryboardForPList)' != '')"
             IntermediateOutputPath="$(IntermediateOutputPath)sp\"
-            PlistName="FontInfo.plist"
+            PlistName="MauiInfo.plist"
+            Storyboard="$(_MauiStoryboardForPList)"
             CustomFonts="@(_MauiFontCopied)">
             <Output
                 TaskParameter="PListFiles"
@@ -324,14 +402,14 @@
     </Target>
 
     <Target Name="ResizetizeImages"
-        Inputs="@(MauiImage);$(_ResizetizerInputsFile)"
+        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);@(MauiImage)"
         Outputs="$(_ResizetizerStampFile)"
         AfterTargets="$(ResizetizeAfterTargets)"
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
 
         <DetectInvalidResourceOutputFilenamesTask
-            Items="@(MauiImage)"
+            Items="@(MauiImage->Distinct())"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
         </DetectInvalidResourceOutputFilenamesTask>
 
@@ -345,7 +423,7 @@
             PlatformType="$(ResizetizerPlatformType)"
             IntermediateOutputPath="$(ResizetizerIntermediateOutputPath)"
             InputsFile="$(_ResizetizerInputsFile)"
-            Images="@(MauiImage)">
+            Images="@(MauiImage->Distinct())">
         </ResizetizeImages>
 
         <ItemGroup>
