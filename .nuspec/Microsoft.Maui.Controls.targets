@@ -15,7 +15,7 @@
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'=='false'"></SkipMicrosoftUIXamlCheckTargetPlatformVersion>
 	</PropertyGroup>
 
-	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.WinUI.targets" Condition="'$(TargetFramework.Contains('-windows'))' == 'true' And '$(MSBuildRuntimeType)' == 'Full'" />
+	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.WinUI.targets" Condition="$(TargetFramework.Contains('-windows')) And '$(MSBuildRuntimeType)' == 'Full'" />
 	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
 
 	<ItemGroup>

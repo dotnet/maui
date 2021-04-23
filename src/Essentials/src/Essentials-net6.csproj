@@ -63,9 +63,4 @@
     <Compile Include="**\*.macos.cs" />
     <Compile Include="**\*.macos.*.cs" />
   </ItemGroup> -->
-  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-    </PropertyGroup>
-  </Target>
 </Project>
