@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			get
 			{
-				var frame = Window.Current?.Content as Microsoft.UI.Xaml.Controls.Frame;
+				var frame = UI.Xaml.Window.Current?.Content as Microsoft.UI.Xaml.Controls.Frame;
 				var wbp = frame?.Content as WindowsBasePage;
 				return wbp?.Platform;
 			}

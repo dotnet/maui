@@ -20,10 +20,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Size DesiredSize { get; set; } = new Size(20, 20);
 
-		public bool IsMeasureValid { get; set; }
-
-		public bool IsArrangeValid { get; set; }
-
 		public double Width { get; set; }
 
 		public double Height { get; set; }
