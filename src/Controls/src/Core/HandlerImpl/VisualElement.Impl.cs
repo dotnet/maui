@@ -103,6 +103,6 @@ namespace Microsoft.Maui.Controls
 			_semantics ??= new Maui.Semantics();
 
 		double IFrameworkElement.Width => WidthRequest;
-		double IFrameworkElement.Height => HeightRequest; 
+		double IFrameworkElement.Height => HeightRequest;
 	}
 }

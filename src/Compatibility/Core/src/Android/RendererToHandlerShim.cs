@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			// This is a hack to force the shimmed control to actually do layout; without this, some controls won't actually
 			// call OnLayout after SetFrame if their sizes haven't changed (e.g., ScrollView)
 			// Luckily, measuring with MeasureSpecMode.Exactly is pretty fast, since it just returns the value you give it.
-			NativeView.Measure(MeasureSpecMode.Exactly.MakeMeasureSpec((int)frame.Width), 
+			NativeView.Measure(MeasureSpecMode.Exactly.MakeMeasureSpec((int)frame.Width),
 				MeasureSpecMode.Exactly.MakeMeasureSpec((int)frame.Height));
 
 			base.SetFrame(frame);
