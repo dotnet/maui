@@ -37,6 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\Embedded\*" />
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
