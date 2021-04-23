@@ -8,14 +8,19 @@ namespace Microsoft.Maui.Controls.Handlers
 	public partial class NavigationPageHandler :
 		ViewHandler<NavigationPage, object>
 	{
-		public NavigationPageHandler() : base(ViewHandler.ViewMapper)
-		{
-
-		}
-
 		protected override object CreateNativeView()
 		{
 			throw new NotImplementedException();
 		}
+
+		public static void MapPadding(NavigationPageHandler handler, NavigationPage view) { }
+
+		public static void MapTitleColor(NavigationPageHandler handler, NavigationPage view) { }
+
+		public static void MapNavigationBarBackground(NavigationPageHandler handler, NavigationPage view) { }
+
+		public static void MapTitleIcon(NavigationPageHandler handler, NavigationPage view) { }
+
+		public static void MapTitleView(NavigationPageHandler handler, NavigationPage view) { }
 	}
 }

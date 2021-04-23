@@ -104,6 +104,11 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static bool TryResolveAttribute(this Context context, int id)
+		{
+			return context.Theme.TryResolveAttribute(id);
+		}
+
 
 		internal static int GetThemeAttrColor(this Context context, int attr)
 		{

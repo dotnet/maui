@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using AndroidX.CoordinatorLayout.Widget;
 
-namespace Microsoft.Maui.Controls.Platform
+namespace Microsoft.Maui
 {
 	public class NavigationLayout : CoordinatorLayout
 	{
