@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService
 	{
-		public Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IStreamImageSource streamImageSource)
 				return GetDrawableAsync(streamImageSource, context, cancellationToken);
@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 			if (imageSource.IsEmpty)
 				return null;
 
-			var stream = await imageSource.Stream.Invoke(cancellationToken);
+			var stream = await imageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 
 			// We can use the .NET stream directly because we register the InputStreamModelLoader.
 			// There are 2 alternatives:
@@ -36,7 +36,8 @@ namespace Microsoft.Maui
 				.With(context)
 				.Load(inputStream)
 				.SetDiskCacheStrategy(DiskCacheStrategy.None)
-				.SubmitAsync(context, cancellationToken);
+				.SubmitAsync(context, cancellationToken)
+				.ConfigureAwait(false);
 
 			return result;
 		}

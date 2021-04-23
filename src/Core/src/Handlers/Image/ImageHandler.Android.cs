@@ -8,8 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
-		readonly SourceManager _sourceManager = new SourceManager();
-
 		protected override ImageView CreateNativeView() => new AppCompatImageView(Context);
 
 		public static void MapAspect(ImageHandler handler, IImage image)
@@ -36,32 +34,6 @@ namespace Microsoft.Maui.Handlers
 			var result = await handler.NativeView.UpdateSourceAsync(image, provider, token);
 
 			handler._sourceManager.CompleteLoad(result);
-		}
-
-		class SourceManager
-		{
-			CancellationTokenSource? _sourceCancellation;
-			IDisposable? _sourceResult;
-
-			public CancellationToken BeginLoad()
-			{
-				_sourceResult?.Dispose();
-
-				_sourceCancellation?.Cancel();
-				_sourceCancellation = new CancellationTokenSource();
-
-				return Token;
-			}
-
-			public CancellationToken Token =>
-				_sourceCancellation?.Token ?? default;
-
-			public void CompleteLoad(IDisposable? result)
-			{
-				_sourceResult = result;
-				_sourceCancellation?.Dispose();
-				_sourceCancellation = null;
-			}
 		}
 	}
 }

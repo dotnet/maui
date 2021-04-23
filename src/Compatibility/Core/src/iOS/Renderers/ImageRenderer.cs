@@ -12,23 +12,6 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
-	public static class ImageExtensions
-	{
-		public static UIViewContentMode ToUIViewContentMode(this Aspect aspect)
-		{
-			switch (aspect)
-			{
-				case Aspect.AspectFill:
-					return UIViewContentMode.ScaleAspectFill;
-				case Aspect.Fill:
-					return UIViewContentMode.ScaleToFill;
-				case Aspect.AspectFit:
-				default:
-					return UIViewContentMode.ScaleAspectFit;
-			}
-		}
-	}
-
 	public class ImageRenderer : ViewRenderer<Image, FormsUIImageView>, IImageVisualElementRenderer
 	{
 		bool _isDisposed;

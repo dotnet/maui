@@ -1,6 +1,12 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Extensions.Logging;
+
+namespace Microsoft.Maui
 {
-	public partial class UriImageSourceService : IImageSourceService<IUriImageSource>
+	public partial class UriImageSourceService : ImageSourceService, IImageSourceService<IUriImageSource>
 	{
+		public UriImageSourceService(ILogger? logger = null)
+			: base(logger)
+		{
+		}
 	}
 }

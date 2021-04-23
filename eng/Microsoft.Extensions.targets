@@ -42,6 +42,10 @@
         Version="$(_MicrosoftHostingVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Logging.Console"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
         Update="Microsoft.ProjectReunion"
         Version="$(_MicrosoftProjectReunionVersion)"
     />

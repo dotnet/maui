@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Hosting.Internal;
 
 namespace Microsoft.Maui.Hosting
@@ -11,10 +12,10 @@ namespace Microsoft.Maui.Hosting
 		{
 			builder.ConfigureImageSourceServices(services =>
 			{
-				services.AddService<IFileImageSource, FileImageSourceService>();
-				services.AddService<IFontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>()));
-				services.AddService<IStreamImageSource, StreamImageSourceService>();
-				services.AddService<IUriImageSource, UriImageSourceService>();
+				services.AddService<IFileImageSource>(svcs => new FileImageSourceService(svcs.GetService<ILogger<FileImageSourceService>>()));
+				services.AddService<IFontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.GetService<ILogger<FontImageSourceService>>()));
+				services.AddService<IStreamImageSource>(svcs => new StreamImageSourceService(svcs.GetService<ILogger<StreamImageSourceService>>()));
+				services.AddService<IUriImageSource>(svcs => new UriImageSourceService(svcs.GetService<ILogger<UriImageSourceService>>()));
 			});
 			return builder;
 		}

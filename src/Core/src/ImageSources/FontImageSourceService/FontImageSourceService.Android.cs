@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 {
 	public partial class FontImageSourceService
 	{
-		public Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IFontImageSource fontImageSource)
 				return GetDrawableAsync(fontImageSource, context, cancellationToken);
@@ -33,7 +33,8 @@ namespace Microsoft.Maui
 			var result = await Glide
 				.With(context)
 				.Load(new FontImageSourceModel(glyph, textSize, typeface, color))
-				.SubmitAsync(context, cancellationToken);
+				.SubmitAsync(context, cancellationToken)
+				.ConfigureAwait(false);
 
 			return result;
 		}

@@ -1,6 +1,63 @@
-﻿namespace Microsoft.Maui
+﻿using System.Threading;
+using System.Threading.Tasks;
+using CoreGraphics;
+using Foundation;
+using Microsoft.Maui.Graphics;
+using UIKit;
+
+namespace Microsoft.Maui
 {
 	public partial class FontImageSourceService
 	{
+		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
+		{
+			if (imageSource is IFontImageSource fileImageSource)
+				return GetImageAsync(fileImageSource, scale, cancellationToken);
+
+			return Task.FromResult<IImageSourceServiceResult<UIImage>?>(null);
+		}
+
+		public Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IFontImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
+		{
+			if (imageSource.IsEmpty)
+				return FromResult(null);
+
+			// TODO: use a cached way
+			var image = RenderImage(imageSource, scale);
+			if (image == null)
+				return FromResult(null);
+
+			var result = new ImageSourceServiceResult(image, () => image.Dispose());
+
+			return FromResult(result);
+		}
+
+		static Task<IImageSourceServiceResult<UIImage>?> FromResult(IImageSourceServiceResult<UIImage>? result) =>
+			Task.FromResult(result);
+
+		internal UIImage RenderImage(IFontImageSource imageSource, float scale)
+		{
+			var font = FontManager.GetFont(imageSource.Font);
+			var color = (imageSource.Color ?? Colors.White).ToNative();
+			var glyph = (NSString)imageSource.Glyph;
+
+			var attString = new NSAttributedString(glyph, font, color);
+			var imagesize = glyph.GetSizeUsingAttributes(attString.GetUIKitAttributes(0, out _));
+
+			UIGraphics.BeginImageContextWithOptions(imagesize, false, scale);
+			var ctx = new NSStringDrawingContext();
+
+			var boundingRect = attString.GetBoundingRect(imagesize, 0, ctx);
+			attString.DrawString(new CGRect(
+				imagesize.Width / 2 - boundingRect.Size.Width / 2,
+				imagesize.Height / 2 - boundingRect.Size.Height / 2,
+				imagesize.Width,
+				imagesize.Height));
+
+			var image = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+		}
 	}
 }

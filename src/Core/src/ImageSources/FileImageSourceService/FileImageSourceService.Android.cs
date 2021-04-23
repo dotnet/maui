@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 {
 	public partial class FileImageSourceService
 	{
-		public Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IFileImageSource fileImageSource)
 				return GetDrawableAsync(fileImageSource, context, cancellationToken);
@@ -27,7 +27,8 @@ namespace Microsoft.Maui
 			var result = await Glide
 				.With(context)
 				.Load(filename, context)
-				.SubmitAsync(context, cancellationToken);
+				.SubmitAsync(context, cancellationToken)
+				.ConfigureAwait(false);
 
 			return result;
 		}

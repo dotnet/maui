@@ -11,6 +11,11 @@ namespace Microsoft.Maui
 			IImageSource imageSource,
 			Android.Content.Context context,
 			CancellationToken cancellationToken = default);
+#elif __IOS__
+		Task<IImageSourceServiceResult<UIKit.UIImage>?> GetImageAsync(
+			IImageSource imageSource,
+			float scale = 1,
+			CancellationToken cancellationToken = default);
 #endif
 	}
 

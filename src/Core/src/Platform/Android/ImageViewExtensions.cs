@@ -84,8 +84,7 @@ namespace Microsoft.Maui
 					{
 						imageView.SetImageDrawable(drawable);
 
-						if (drawable is IAnimatable animatable && image.IsAnimationPlaying)
-							animatable.Start();
+						imageView.UpdateIsAnimationPlaying(image);
 					}
 
 					events?.LoadingCompleted(applied);

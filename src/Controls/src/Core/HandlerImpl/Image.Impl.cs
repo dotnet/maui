@@ -8,23 +8,23 @@ namespace Microsoft.Maui.Controls
 			IsLoading = isLoading;
 	}
 
-	public partial class ImageSource : Maui.IImageSource
+	public partial class ImageSource : IImageSource
 	{
 	}
 
-	public partial class FileImageSource : Maui.IFileImageSource
+	public partial class FileImageSource : IFileImageSource
 	{
 	}
 
-	public partial class StreamImageSource : Maui.IStreamImageSource
+	public partial class StreamImageSource : IStreamImageSource
 	{
 	}
 
-	public partial class UriImageSource : Maui.IUriImageSource
+	public partial class UriImageSource : IUriImageSource, IStreamImageSource
 	{
 	}
 
-	public partial class FontImageSource : Maui.IFontImageSource
+	public partial class FontImageSource : IFontImageSource
 	{
 		Font IFontImageSource.Font => Font.OfSize(FontFamily, Size);
 	}

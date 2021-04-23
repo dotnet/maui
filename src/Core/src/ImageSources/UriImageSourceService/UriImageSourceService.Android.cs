@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		public Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IUriImageSource uriImageSource)
 				return GetDrawableAsync(uriImageSource, context, cancellationToken);
@@ -37,7 +37,8 @@ namespace Microsoft.Maui
 			}
 
 			var result = await builder
-				.SubmitAsync(context, cancellationToken);
+				.SubmitAsync(context, cancellationToken)
+				.ConfigureAwait(false);
 
 			return result;
 		}
