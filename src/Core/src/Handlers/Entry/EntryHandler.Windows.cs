@@ -22,8 +22,10 @@
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, IEntry entry) { }
 
-		[MissingMapper]
-		public static void MapMaxLength(IViewHandler handler, IEntry entry) { }
+		public static void MapMaxLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateMaxLength(entry);
+		}
 
 		[MissingMapper]
 		public static void MapPlaceholder(IViewHandler handler, IEntry entry) { }
