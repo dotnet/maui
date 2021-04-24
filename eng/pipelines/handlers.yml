@@ -2,6 +2,7 @@ trigger:
   branches:
     include:
     - main
+    - release/*
   tags:
     include:
     - '*'
@@ -23,6 +24,7 @@ pr:
   branches:
     include:
     - main
+    - release/*
   paths:
     include:
     - '*'
@@ -194,6 +196,9 @@ stages:
                   /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
                   cat ~/Library/Preferences/Xamarin/Settings.plist || true
                 displayName: configure vsmac xcode
+            - ${{ if eq(BuildPlatform.name, 'macos') }}:
+              - script: echo '##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)'
+                displayName: set JI_JAVA_HOME
             - pwsh: ./eng/package.ps1 -configuration Release
               displayName: pack nugets
               errorActionPreference: stop
@@ -241,6 +246,9 @@ stages:
                     /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
                     cat ~/Library/Preferences/Xamarin/Settings.plist || true
                   displayName: configure vsmac xcode
+              - ${{ if eq(BuildPlatform.name, 'macos') }}:
+                - script: echo '##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)'
+                  displayName: set JI_JAVA_HOME
               - pwsh: |
                   & dotnet build src/DotNet/DotNet.csproj -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
                   & $(DotNet.Path) build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog

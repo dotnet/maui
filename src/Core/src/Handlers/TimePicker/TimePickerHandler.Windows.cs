@@ -1,16 +1,18 @@
-﻿using System;
+﻿using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class TimePickerHandler : ViewHandler<ITimePicker, Microsoft.UI.Xaml.Controls.TimePicker>
+	public partial class TimePickerHandler : ViewHandler<ITimePicker, TimePicker>
 	{
-		protected override Microsoft.UI.Xaml.Controls.TimePicker CreateNativeView() => new Microsoft.UI.Xaml.Controls.TimePicker();
+		protected override TimePicker CreateNativeView() => new TimePicker();
 
 		[MissingMapper]
 		public static void MapFormat(TimePickerHandler handler, ITimePicker view) { }
 
-		[MissingMapper]
-		public static void MapTime(TimePickerHandler handler, ITimePicker view) { }
+		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.NativeView?.UpdateTime(timePicker);
+		}
 
 		[MissingMapper]
 		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker view) { }
