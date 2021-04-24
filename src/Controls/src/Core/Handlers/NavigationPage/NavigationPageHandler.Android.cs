@@ -70,6 +70,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			var navController = (INavigationPageController)VirtualView;
 			navController.PushRequested += OnPushed;
+			navController.PopRequested += OnPopped;
 
 			var inflater = NavHost.NavController.NavInflater;
 			var graph = inflater.Inflate(Resource.Navigation.navigation_graph);
@@ -86,6 +87,14 @@ namespace Microsoft.Maui.Controls.Handlers
 			NavHost.NavController.SetGraph(graph, null);
 		}
 
+		protected override void DisconnectHandler(AView nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+			var navController = (INavigationPageController)VirtualView;
+			navController.PushRequested -= OnPushed;
+			navController.PopRequested -= OnPopped;
+		}
+
 		void OnPushed(object sender, NavigationRequestedEventArgs e)
 		{
 			var destination =
@@ -99,6 +108,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			NavHost.NavController.NavigateUp();
 		}
 
+
+		private void OnPopped(object sender, NavigationRequestedEventArgs e)
+		{
+			OnPop();
+		}
 
 
 
