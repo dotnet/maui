@@ -120,5 +120,13 @@ namespace Microsoft.Maui.Handlers
 
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
+
+		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			if (handler.NativeView == null)
+				return;
+
+			handler.NativeView.UpdateHorizontalTextAlignment(editor);
+		}
 	}
 }

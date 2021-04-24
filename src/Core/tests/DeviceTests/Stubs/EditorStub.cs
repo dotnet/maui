@@ -31,6 +31,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Keyboard Keyboard { get; set; }
 
+		public TextAlignment HorizontalTextAlignment { get; set; }
+
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
 
 		void OnTextChanged(string oldValue, string newValue) =>

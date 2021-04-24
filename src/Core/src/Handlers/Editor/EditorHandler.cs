@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(IEditor.Text)] = MapText,
 			[nameof(IEditor.TextColor)] = MapTextColor,
+			[nameof(IEditor.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 		};
 
 		public EditorHandler() : base(EditorMapper)

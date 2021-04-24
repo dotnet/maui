@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Android.Text;
+using Android.Views;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -7,6 +8,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 using AColor = Android.Graphics.Color;
+using ATextAlignemnt = Android.Views.TextAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -65,6 +67,37 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultTypeface, nativeEditor.Typeface);
 		}
 
+		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
+		{
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var editorStub = new EditorStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
+			};
+
+			var values = await GetValueAsync(editorStub, (handler) =>
+			{
+				return new
+				{
+					ViewValue = editorStub.HorizontalTextAlignment,
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+
+			(var gravity, var textAlignment) = values.NativeViewValue;
+
+			// Device Tests runner has RTL support enabled, so we expect TextAlignment values
+			// (If it didn't, we'd have to fall back to gravity)
+			var expectedValue = ATextAlignemnt.ViewEnd;
+
+			Assert.Equal(expectedValue, textAlignment);
+		}
+
 		AppCompatEditText GetNativeEditor(EditorHandler editorHandler) =>
 			(AppCompatEditText)editorHandler.NativeView;
 
@@ -107,6 +140,12 @@ namespace Microsoft.Maui.DeviceTests
 			int currentTextColorInt = GetNativeEditor(editorHandler).CurrentTextColor;
 			AColor currentTextColor = new AColor(currentTextColorInt);
 			return currentTextColor.ToColor();
+		}
+
+		(GravityFlags gravity, ATextAlignemnt alignment) GetNativeHorizontalTextAlignment(EditorHandler editorHandler)
+		{
+			var textView = GetNativeEditor(editorHandler);
+			return (textView.Gravity, textView.TextAlignment);
 		}
 	}
 }
