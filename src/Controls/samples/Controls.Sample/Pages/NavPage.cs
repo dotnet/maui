@@ -13,7 +13,6 @@ namespace Maui.Controls.Sample.Pages
 		public NavPage(IServiceProvider services, MainPageViewModel viewModel) :
 			base(new MainPage(services, viewModel))
 		{
-			Navigation.PushAsync(new SemanticsPage());
 			ToolbarItems.Add(new ToolbarItem()
 			{
 				Text = "Nav Page"
