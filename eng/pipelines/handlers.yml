@@ -49,11 +49,11 @@ variables:
   - template: /eng/pipelines/common/variables.yml
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)/logs
-  - name: ProvisionatorXcode
+  - name: provisionator.xcode
     value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-  - name: ProvisionatorPath
+  - name: provisionator.path
     value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-  - name: ProvisionatorExtraArguments
+  - name: provisionator.extraArguments
     value: '--v'
   - name: DotNet.Path
     value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
@@ -145,10 +145,6 @@ stages:
           demands:
             - sh
             - Xamarin.iOS
-        variables:
-          provisionator.xcode : $(ProvisionatorXcode)
-          provisionator.path : $(ProvisionatorPath)
-          provisionator.extraArguments : $(ProvisionatorExtraArguments)
         steps:
           - template: common/controlgallery-ios.yml
 
@@ -167,9 +163,6 @@ stages:
         variables:
           renderers: 'FAST'
           outputfolder: 'newRenderers'
-          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-          provisionator.extraArguments : '--v'
         steps:
           - template: common/controlgallery-android.yml
 
@@ -192,14 +185,14 @@ stages:
                 displayName: 'Provision Xcode'
                 condition: ne(variables['REQUIRED_XCODE'], '')
                 inputs:
-                  provisioning_script: $(ProvisionatorXcode)
+                  provisioning_script: $(provisionator.xcode)
 
               - task: xamops.azdevex.provisionator-task.provisionator@1
                 displayName: 'Provisionator'
                 condition: eq(variables['provisioning'], 'true')
                 inputs:
-                  provisioning_script: $(ProvisionatorXcode)
-                  provisioning_extra_args: $(ProvisionatorExtraArguments)
+                  provisioning_script: $(provisionator.xcode)
+                  provisioning_extra_args: $(provisionator.extraArguments)
 
               - script: |
                   echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
@@ -258,14 +251,14 @@ stages:
                   displayName: 'Provision Xcode'
                   condition: ne(variables['REQUIRED_XCODE'], '')
                   inputs:
-                    provisioning_script: $(ProvisionatorXcode)
+                    provisioning_script: $(provisionator.xcode)
 
                 - task: xamops.azdevex.provisionator-task.provisionator@1
                   displayName: 'Provisionator'
                   condition: eq(variables['provisioning'], 'true')
                   inputs:
-                    provisioning_script: $(Provisionator.Xcode)
-                    provisioning_extra_args: $(ProvisionatorExtraArguments)
+                    provisioning_script: $(provisionator.xcode)
+                    provisioning_extra_args: $(provisionator.extraArguments)
 
                 - script: |
                     echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
@@ -293,10 +286,6 @@ stages:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
   - template: common/device-tests.yml
-    variables:
-      provisionator.xcode : $(ProvisionatorXcode)
-      provisionator.path : $(ProvisionatorPath)
-      provisionator.extraArguments : $(ProvisionatorExtraArguments)
     parameters:
       ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
         androidApiLevels: [ 30, 29, 21 ]
