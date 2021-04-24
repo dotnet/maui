@@ -162,6 +162,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_fontApplied = true;
 		}
 
+		[PortHandler]
 		void UpdateTime()
 		{
 			Control.Time = Element.Time;
