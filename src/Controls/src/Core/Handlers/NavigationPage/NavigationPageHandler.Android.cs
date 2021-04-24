@@ -75,16 +75,29 @@ namespace Microsoft.Maui.Controls.Handlers
 			var inflater = NavHost.NavController.NavInflater;
 			var graph = inflater.Inflate(Resource.Navigation.navigation_graph);
 
-			var destination =
-				MauiFragmentNavDestination.
-					AddDestination(
-						VirtualView.Navigation.NavigationStack[0],
-						this,
-						graph,
-						FragmentNavigator);
+			NavDestination navDestination = null;
+			List<int> destinations = new List<int>();
+			foreach(var page in VirtualView.Navigation.NavigationStack)
+			{
+				navDestination =
+					MauiFragmentNavDestination.
+						AddDestination(
+							page,
+							this,
+							graph,
+							FragmentNavigator);
 
-			graph.StartDestination = destination.Id;
+				destinations.Add(navDestination.Id);
+			}
+
+			graph.StartDestination = destinations[0];
 			NavHost.NavController.SetGraph(graph, null);
+
+			for (var i = 1; i < destinations.Count; i++)
+			{
+				var dest = destinations[i];
+				NavHost.NavController.Navigate(dest);
+			}
 		}
 
 		protected override void DisconnectHandler(AView nativeView)
