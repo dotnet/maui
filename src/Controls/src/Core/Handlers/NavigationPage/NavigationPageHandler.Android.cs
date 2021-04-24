@@ -39,56 +39,12 @@ using AndroidX.Lifecycle;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public class PageFragment : Fragment
-	{
-		NavHostFragment NavHost =>
-			   (NavHostFragment)
-				   Context
-					   .GetFragmentManager()
-					   .FindFragmentById(Resource.Id.nav_host);
-
-		NavigationPageHandler.MauiFragmentDestination MyPage { get; set; }
-
-		public PageFragment()
-		{
-		}
-
-		public PageFragment(int contentLayoutId) : base(contentLayoutId)
-		{
-		}
-
-		protected PageFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
-		{
-		}
-
-		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-		{
-			if (MyPage == null)
-			{
-				var bundle = Arguments 
-					?? savedInstanceState 
-					?? throw new ArgumentNullException(nameof(Arguments));
-
-				var destId = bundle.GetInt("DestinationId");
-				MyPage =
-					(NavigationPageHandler.MauiFragmentDestination)NavHost.NavController.Graph.FindNode(destId);
-
-			}
-
-			_ = MyPage ?? throw new ArgumentNullException(nameof(MyPage));
-
-			return MyPage.Page.ToNative(MyPage.MauiContext);
-		}
-	}
-
 	public partial class NavigationPageHandler :
 		ViewHandler<NavigationPage, AView>//, IManageFragments, IOnClickListener, ILifeCycleState
 	{
-		NavHostFragment NavHost =>
-			(NavHostFragment)
-				Context
-					.GetFragmentManager()
-					.FindFragmentById(Resource.Id.nav_host);
+		NavHostFragment NavHost { get; set; }
+
+		FragmentNavigator FragmentNavigator { get; set; }
 
 		protected override AView CreateNativeView()
 		{
@@ -99,6 +55,17 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override void ConnectHandler(AView nativeView)
 		{
+			NavHost = (NavHostFragment)
+				Context
+					.GetFragmentManager()
+					.FindFragmentById(Resource.Id.nav_host);
+
+			FragmentNavigator = 
+				(FragmentNavigator)NavHost
+					.NavController
+					.NavigatorProvider
+					.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
+
 			base.ConnectHandler(nativeView);
 
 			var navController = (INavigationPageController)VirtualView;
@@ -106,74 +73,34 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			var inflater = NavHost.NavController.NavInflater;
 			var graph = inflater.Inflate(Resource.Navigation.navigation_graph);
-			var navigator =
-				(FragmentNavigator)
-					NavHost
-						.NavController
-						.NavigatorProvider
-						.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
 
 			var destination =
-				AddDestination(
-					VirtualView.Navigation.NavigationStack.Last(),
-					graph);
+				MauiFragmentNavDestination.
+					AddDestination(
+						VirtualView.Navigation.NavigationStack[0],
+						this,
+						graph,
+						FragmentNavigator);
 
 			graph.StartDestination = destination.Id;
-			Bundle bundle = new Bundle();
-			bundle.PutInt("DestinationId", destination.Id);
-			NavHost.NavController.SetGraph(graph, bundle);
-
-			// this ties the backbutton to this navhost
-			Context
-				.GetFragmentManager()
-				.BeginTransaction()
-				.SetPrimaryNavigationFragment(NavHost)
-				.Commit();
+			NavHost.NavController.SetGraph(graph, null);
 		}
 
 		void OnPushed(object sender, NavigationRequestedEventArgs e)
 		{
 			var destination =
-				AddDestination(e.Page, NavHost.NavController.Graph);
+				MauiFragmentNavDestination.AddDestination(e.Page, this, NavHost.NavController.Graph, FragmentNavigator);
 
-			Bundle bundle = new Bundle();
-			bundle.PutInt("DestinationId", destination.Id);
-
-			NavHost.NavController.Navigate(destination.Id, bundle);
+			NavHost.NavController.Navigate(destination.Id, null);
 		}
 
-		internal MauiFragmentDestination AddDestination(IPage page, NavGraph navGraph)
+		internal void OnPop()
 		{
-			var navigator =
-				(FragmentNavigator)
-					NavHost
-						.NavController
-						.NavigatorProvider
-						.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
-
-			var destination = new MauiFragmentDestination(navigator, page, MauiContext);
-
-			navGraph.AddDestination(destination);
-			return destination;
+			NavHost.NavController.NavigateUp();
 		}
 
 
-		internal class MauiFragmentDestination : FragmentNavigator.Destination
-		{
-			public IPage Page { get; }
-			public IMauiContext MauiContext { get; }
 
-			public MauiFragmentDestination(Navigator fragmentNavigator, IPage page, IMauiContext mauiContext) : base(fragmentNavigator)
-			{
-				_ = page ?? throw new ArgumentNullException(nameof(page));
-				_ = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
-
-				SetClassName(Java.Lang.Class.FromType(typeof(PageFragment)).CanonicalName);
-				Id = global::Android.Views.View.GenerateViewId();
-				this.Page = page;
-				this.MauiContext = mauiContext;
-			}
-		}
 
 		//		public Task<bool> PopToRootAsync(Page page, bool animated = true)
 		//		{
@@ -249,7 +176,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		//			RemovePage(e.Page);
 		//		}
 
-		//		Fragment GetPageFragment(Page page)
+		//		Fragment GetNavHostPageFragment(Page page)
 		//		{
 		//			for (int n = 0; n < _fragmentStack.Count; n++)
 		//			{
@@ -267,7 +194,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		//			if (!_isAttachedToWindow)
 		//				PushCurrentPages();
 
-		//			Fragment fragment = GetPageFragment(page);
+		//			Fragment fragment = GetNavHostPageFragment(page);
 
 		//			if (fragment == null)
 		//			{
