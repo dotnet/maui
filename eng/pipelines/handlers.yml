@@ -293,6 +293,10 @@ stages:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
   - template: common/device-tests.yml
+    variables:
+      provisionator.xcode : $(ProvisionatorXcode)
+      provisionator.path : $(ProvisionatorPath)
+      provisionator.extraArguments : $(ProvisionatorExtraArguments)
     parameters:
       ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
         androidApiLevels: [ 30, 29, 21 ]
