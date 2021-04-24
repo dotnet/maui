@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		//TODO WINUI3 This is set by main page currently because
 		// it's only a single window
-		public static Window MainWindow { get; set; }
+		public static UI.Xaml.Window MainWindow { get; set; }
 
 		internal static IFontManager FontManager =>
 			s_fontManager ??= new FontManager(Registrar.FontRegistrar);

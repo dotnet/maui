@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
-using System.Text.RegularExpressions;
+using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -21,11 +20,11 @@ namespace Microsoft.Maui.Resizetizer
 				? Path.GetExtension(Filename)
 				: Path.GetExtension(Alias);
 
-		public Size? BaseSize { get; set; }
+		public SKSize? BaseSize { get; set; }
 
 		public bool Resize { get; set; } = true;
 
-		public Color? TintColor { get; set; }
+		public SKColor? TintColor { get; set; }
 
 		public bool IsVector => IsVectorFilename(Filename);
 
