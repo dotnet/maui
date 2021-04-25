@@ -106,9 +106,9 @@ namespace Microsoft.Maui
 					if (result != null)
 						return result;
 				}
-				catch
+				catch (Exception ex)
 				{
-					Debug.WriteLine("Could not load font named: {0}", family);
+					_logger?.LogWarning(ex, "Unable to load font '{Font}'.", family);
 				}
 			}
 

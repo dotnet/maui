@@ -122,7 +122,7 @@ namespace Microsoft.Maui
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex);
+				_logger?.LogWarning(ex, "Unable to load font '{Font}' from assets.", fontfamily);
 				return (false, null);
 			}
 		}
