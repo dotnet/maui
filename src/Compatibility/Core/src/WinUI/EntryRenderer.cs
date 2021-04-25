@@ -279,6 +279,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.IsPassword = Element.IsPassword;
 		}
 
+		[PortHandler]
 		void UpdatePlaceholder()
 		{
 			Control.PlaceholderText = Element.Placeholder ?? "";
@@ -473,6 +474,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateIsReadOnly()
 		{
 			Control.IsReadOnly = Element.IsReadOnly;
