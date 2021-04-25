@@ -43,14 +43,6 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		internal static IEnumerable<T> Append<T>(this IEnumerable<T> enumerable, T item)
-		{
-			foreach (T x in enumerable)
-				yield return x;
-
-			yield return item;
-		}
-
 		public static void ForEach<T>(this IEnumerable<T> enumeration, Action<T> action)
 		{
 			foreach (T item in enumeration)
@@ -102,14 +94,6 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 
 			return -1;
-		}
-
-		public static IEnumerable<T> Prepend<T>(this IEnumerable<T> enumerable, T item)
-		{
-			yield return item;
-
-			foreach (T x in enumerable)
-				yield return x;
 		}
 	}
 }

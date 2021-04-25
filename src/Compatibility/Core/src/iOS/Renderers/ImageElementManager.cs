@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 using CoreAnimation;
 
 #if __MOBILE__

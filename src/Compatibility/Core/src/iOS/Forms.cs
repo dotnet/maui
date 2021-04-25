@@ -39,11 +39,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static bool IsInitialized { get; private set; }
 
-		static IFontManager s_fontManager;
-
-		internal static IFontManager FontManager =>
-			s_fontManager ??= new FontManager(Microsoft.Maui.Controls.Internals.Registrar.FontRegistrar);
-
 #if __MOBILE__
 		static bool? s_isiOS9OrNewer;
 		static bool? s_isiOS10OrNewer;

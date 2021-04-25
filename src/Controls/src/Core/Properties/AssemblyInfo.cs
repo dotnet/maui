@@ -6,6 +6,8 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.iOS")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.Design")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UnitTests")]

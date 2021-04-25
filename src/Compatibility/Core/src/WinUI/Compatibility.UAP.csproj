@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework Condition=" '$(OS)' == 'Windows_NT' ">net5.0-windows10.0.18362.0</TargetFramework>
     <TargetFramework Condition=" '$(OS)' != 'Windows_NT' ">netstandard2.0</TargetFramework>
@@ -8,7 +9,7 @@
     <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP;UWP_16299;UWP_18362;UWP_17134</DefineConstants>
     <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition=" '$(OS)' != 'Windows_NT'">
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
@@ -17,11 +18,7 @@
   <ItemGroup Condition=" '$(OS)' == 'Windows_NT'">
     <PackageReference Include="Microsoft.WinUI" Version="3.0.0-preview3.201113.0" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Compile Include="..\..\..\..\Controls\src\Core\Crc64.cs" Link="Crc64.cs" />
-    <Compile Include="..\..\..\..\Controls\src\Core\StreamWrapper.cs" Link="StreamWrapper.cs" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj">
     </ProjectReference>

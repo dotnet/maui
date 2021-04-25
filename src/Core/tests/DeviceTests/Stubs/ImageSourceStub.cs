@@ -54,7 +54,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			Stream = stream;
 		}
 
+		public StreamImageSourceStub(Func<Stream> stream)
+		{
+			Stream = token => Task.FromResult(stream());
+		}
+
 		public Func<CancellationToken, Task<Stream>> Stream { get; set; }
+
+		public Task<Stream> GetStreamAsync(CancellationToken cancellationToken = default) =>
+			Stream?.Invoke(cancellationToken);
 	}
 
 	public partial class UriImageSourceStub : ImageSourceStub, IUriImageSource

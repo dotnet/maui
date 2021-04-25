@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using UIKit;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 using RectangleF = CoreGraphics.CGRect;
 using PreserveAttribute = Foundation.PreserveAttribute;
 using Microsoft.Maui.Graphics;
