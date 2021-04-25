@@ -6,6 +6,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Bumptech.Glide;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.BumptechGlide;
 
 namespace Microsoft.Maui
@@ -30,13 +31,21 @@ namespace Microsoft.Maui
 			var typeface = FontManager.GetTypeface(imageSource.Font);
 			var color = (imageSource.Color ?? Graphics.Colors.White).ToNative();
 
-			var result = await Glide
-				.With(context)
-				.Load(new FontImageSourceModel(glyph, textSize, typeface, color))
-				.SubmitAsync(context, cancellationToken)
-				.ConfigureAwait(false);
+			try
+			{
+				var result = await Glide
+					.With(context)
+					.Load(new FontImageSourceModel(glyph, textSize, typeface, color))
+					.SubmitAsync(context, cancellationToken)
+					.ConfigureAwait(false);
 
-			return result;
+				return result;
+			}
+			catch (Exception ex)
+			{
+				Logger?.LogWarning(ex, "Unable to generate font image '{Glyph}'.", glyph);
+				return null;
+			}
 		}
 
 		internal static Bitmap RenderBitmap(IModel model, Func<int, int, Bitmap.Config, Bitmap> newBitmap)

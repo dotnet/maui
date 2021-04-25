@@ -4,9 +4,12 @@ namespace Microsoft.Maui
 {
 	public partial class FileImageSourceService : ImageSourceService, IImageSourceService<IFileImageSource>
 	{
-		public FileImageSourceService(ILogger? logger = null)
+		public FileImageSourceService(IImageSourceServiceConfiguration? configuration = null, ILogger<FileImageSourceService>? logger = null)
 			: base(logger)
 		{
+			Configuration = configuration;
 		}
+
+		public IImageSourceServiceConfiguration? Configuration { get; }
 	}
 }

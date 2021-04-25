@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public class FontManager : IFontManager
 	{
-		readonly ConcurrentDictionary<(string family, float size, FontAttributes attributes), UIFont> _fonts =
-			new ConcurrentDictionary<(string family, float size, FontAttributes attributes), UIFont>();
-
+		readonly ConcurrentDictionary<(string family, float size, FontAttributes attributes), UIFont> _fonts = new();
 		readonly IFontRegistrar _fontRegistrar;
+		readonly ILogger<FontManager>? _logger;
 
 		UIFont? _defaultFont;
 
-		public FontManager(IFontRegistrar fontRegistrar)
+		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
 		{
 			_fontRegistrar = fontRegistrar;
+			_logger = logger;
 		}
 
 		public UIFont DefaultFont =>

@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-   <PropertyGroup>
+  <PropertyGroup>
     <TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
@@ -8,18 +8,18 @@
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Controls</PackageId>
   </PropertyGroup>
-	<ItemGroup>
-		<Compile Remove="Internals\Legacy\**" />
-		<EmbeddedResource Remove="Internals\Legacy\**" />
-		<None Remove="Internals\Legacy\**" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Xaml\Diagnostics\" />
-	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
-	</ItemGroup>
-	<PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Internals\Legacy\**" />
+    <EmbeddedResource Remove="Internals\Legacy\**" />
+    <None Remove="Internals\Legacy\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Xaml\Diagnostics\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
     <GitInfoReportImportance>high</GitInfoReportImportance>
   </PropertyGroup>
   <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">

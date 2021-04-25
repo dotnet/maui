@@ -73,5 +73,14 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public bool TryGetService(Type serviceType, out ServiceDescriptor? descriptor) =>
 			_descriptorDictionary.TryGetValue(serviceType, out descriptor);
+
+		public IEnumerable<ServiceDescriptor> GetServices(Type serviceType)
+		{
+			foreach (var descriptor in _descriptors)
+			{
+				if (descriptor.ServiceType == serviceType)
+					yield return descriptor;
+			}
+		}
 	}
 }

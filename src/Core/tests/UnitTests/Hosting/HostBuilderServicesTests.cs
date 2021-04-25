@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
@@ -30,16 +32,51 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void GetServiceThrowsOnMultipleConstructors()
+		public void GetServiceThrowsWhenNoPublicConstructors()
 		{
 			var host = new AppHostBuilder()
 				.UseMauiServiceProviderFactory(true)
-				.ConfigureServices((ctx, services) => services.AddTransient<IFooBarService, FooDualConstructor>())
+				.ConfigureServices((ctx, services) => services.AddTransient<IFooService, BadFooService>())
 				.Build();
 
-			var ex = Assert.Throws<InvalidOperationException>(() => host.Services.GetService<IFooBarService>());
+			var ex = Assert.Throws<InvalidOperationException>(() => host.Services.GetService<IFooService>());
+			Assert.Contains("public or internal constructors", ex.Message);
+		}
 
-			Assert.Contains("IFooService", ex.Message);
+		[Fact]
+		public void GetServiceHandlesFirstOfMultipleConstructors()
+		{
+			var host = new AppHostBuilder()
+				.UseMauiServiceProviderFactory(true)
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddTransient<IFooService, FooService>();
+					services.AddTransient<IFooBarService, FooDualConstructor>();
+				})
+				.Build();
+
+			var service = host.Services.GetService<IFooBarService>();
+
+			var foobar = Assert.IsType<FooDualConstructor>(service);
+			Assert.IsType<FooService>(foobar.Foo);
+		}
+
+		[Fact]
+		public void GetServiceHandlesSecondOfMultipleConstructors()
+		{
+			var host = new AppHostBuilder()
+				.UseMauiServiceProviderFactory(true)
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddTransient<IBarService, BarService>();
+					services.AddTransient<IFooBarService, FooDualConstructor>();
+				})
+				.Build();
+
+			var service = host.Services.GetService<IFooBarService>();
+
+			var foobar = Assert.IsType<FooDualConstructor>(service);
+			Assert.IsType<BarService>(foobar.Bar);
 		}
 
 		[Fact]
@@ -55,10 +92,11 @@ namespace Microsoft.Maui.UnitTests
 				})
 				.Build();
 
-			var foobar = host.Services.GetService<IFooBarService>();
+			var service = host.Services.GetService<IFooBarService>();
 
-			Assert.NotNull(foobar);
-			Assert.IsType<FooBarService>(foobar);
+			var foobar = Assert.IsType<FooBarService>(service);
+			Assert.IsType<FooService>(foobar.Foo);
+			Assert.IsType<BarService>(foobar.Bar);
 		}
 
 		[Fact]
@@ -124,6 +162,29 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void GetServiceCanReturnEnumerableParams()
+		{
+			var host = new AppHostBuilder()
+				.UseMauiServiceProviderFactory(true)
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddTransient<IFooService, FooService>();
+					services.AddTransient<IFooService, FooService2>();
+					services.AddTransient<IFooBarService, FooEnumerableService>();
+				})
+				.Build();
+
+			var service = host.Services.GetService<IFooBarService>();
+			var foobar = Assert.IsType<FooEnumerableService>(service);
+
+			var serviceTypes = foobar.Foos
+				.Select(s => s.GetType().FullName)
+				.ToArray();
+			Assert.Contains(typeof(FooService).FullName, serviceTypes);
+			Assert.Contains(typeof(FooService2).FullName, serviceTypes);
+		}
+
+		[Fact]
 		public void WillRetrieveDifferentTransientServices()
 		{
 			var host = new AppHostBuilder()
@@ -156,6 +217,49 @@ namespace Microsoft.Maui.UnitTests
 
 			AssertSingleton<IFooService, FooService>(host.Services);
 			AssertTransient<IBarService, BarService>(host.Services);
+		}
+
+		[Fact]
+		public void WillRetrieveEnumerables()
+		{
+			var host = new AppHostBuilder()
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddTransient<IFooService, FooService>();
+					services.AddTransient<IFooService, FooService2>();
+				})
+				.Build();
+
+			var services = host.Services
+				.GetServices<IFooService>()
+				.ToArray();
+			Assert.Equal(2, services.Length);
+
+			var serviceTypes = services
+				.Select(s => s.GetType().FullName)
+				.ToArray();
+			Assert.Contains(typeof(FooService).FullName, serviceTypes);
+			Assert.Contains(typeof(FooService2).FullName, serviceTypes);
+		}
+
+		[Theory]
+		//[InlineData(true)] // TODO: The MAUI provider does not support generic args
+		[InlineData(false)]
+		public void CanCreateLogger(bool ctorInjection)
+		{
+			var host = new AppHostBuilder()
+				.UseMauiServiceProviderFactory(ctorInjection)
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddLogging(logging => logging.AddConsole());
+				})
+				.Build();
+
+			var factory = host.Services.GetRequiredService<ILoggerFactory>();
+
+			var logger = factory.CreateLogger<HostBuilderServicesTests>();
+
+			Assert.NotNull(logger);
 		}
 
 		static void AssertTransient<TInterface, TConcrete>(IServiceProvider services)

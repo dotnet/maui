@@ -75,12 +75,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Controls\src\Core\Crc64.cs">
-      <Link>Crc64.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\Controls\src\Core\StreamWrapper.cs">
-      <Link>StreamWrapper.cs</Link>
-    </Compile>
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

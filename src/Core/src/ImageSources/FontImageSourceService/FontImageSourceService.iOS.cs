@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -11,8 +12,8 @@ namespace Microsoft.Maui
 	{
 		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
-			if (imageSource is IFontImageSource fileImageSource)
-				return GetImageAsync(fileImageSource, scale, cancellationToken);
+			if (imageSource is IFontImageSource fontImageSource)
+				return GetImageAsync(fontImageSource, scale, cancellationToken);
 
 			return Task.FromResult<IImageSourceServiceResult<UIImage>?>(null);
 		}
@@ -22,14 +23,22 @@ namespace Microsoft.Maui
 			if (imageSource.IsEmpty)
 				return FromResult(null);
 
-			// TODO: use a cached way
-			var image = RenderImage(imageSource, scale);
-			if (image == null)
+			try
+			{
+				// TODO: use a cached way
+				var image = RenderImage(imageSource, scale);
+				if (image == null)
+					return FromResult(null);
+
+				var result = new ImageSourceServiceResult(image, () => image.Dispose());
+
+				return FromResult(result);
+			}
+			catch (Exception ex)
+			{
+				Logger?.LogWarning(ex, "Unable to generate font image '{Glyph}'.", imageSource.Glyph);
 				return FromResult(null);
-
-			var result = new ImageSourceServiceResult(image, () => image.Dispose());
-
-			return FromResult(result);
+			}
 		}
 
 		static Task<IImageSourceServiceResult<UIImage>?> FromResult(IImageSourceServiceResult<UIImage>? result) =>

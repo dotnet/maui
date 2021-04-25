@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Bumptech.Glide;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.BumptechGlide;
 
 namespace Microsoft.Maui
@@ -24,13 +25,21 @@ namespace Microsoft.Maui
 
 			var filename = imageSource.File;
 
-			var result = await Glide
-				.With(context)
-				.Load(filename, context)
-				.SubmitAsync(context, cancellationToken)
-				.ConfigureAwait(false);
+			try
+			{
+				var result = await Glide
+					.With(context)
+					.Load(filename, context)
+					.SubmitAsync(context, cancellationToken)
+					.ConfigureAwait(false);
 
-			return result;
+				return result;
+			}
+			catch (Exception ex)
+			{
+				Logger?.LogWarning(ex, "Unable to load image file '{File}'.", filename);
+				return null;
+			}
 		}
 	}
 }

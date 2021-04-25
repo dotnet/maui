@@ -4,7 +4,7 @@ namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService : ImageSourceService, IImageSourceService<IStreamImageSource>
 	{
-		public StreamImageSourceService(ILogger? logger = null)
+		public StreamImageSourceService(ILogger<StreamImageSourceService>? logger = null)
 			: base(logger)
 		{
 		}

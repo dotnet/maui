@@ -1,7 +1,7 @@
 #nullable enable
 using System;
-using System.Diagnostics;
 using System.IO;
+using Microsoft.Extensions.Logging;
 using Windows.Storage;
 
 namespace Microsoft.Maui
@@ -9,6 +9,13 @@ namespace Microsoft.Maui
 	public class EmbeddedFontLoader : IEmbeddedFontLoader
 	{
 		const string FontCacheFolderName = "fonts";
+
+		readonly ILogger<EmbeddedFontLoader>? _logger;
+
+		public EmbeddedFontLoader(ILogger<EmbeddedFontLoader>? logger = null)
+		{
+			_logger = logger;
+		}
 
 		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
 		{
@@ -34,7 +41,7 @@ namespace Microsoft.Maui
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex);
+				_logger?.LogWarning(ex, "Unable copy font {Font} to local file system.", font.FontName);
 
 				if (newFile != null)
 					newFile.DeleteAsync().AsTask().Wait();

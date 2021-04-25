@@ -1,29 +1,26 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
 {
 	public class FontRegistrar : IFontRegistrar
 	{
-		readonly Dictionary<string, (string Filename, string? Alias, Assembly Assembly)> _embeddedFonts =
-			new Dictionary<string, (string Filename, string? Alias, Assembly Assembly)>();
-
-		readonly Dictionary<string, (string Filename, string? Alias)> _nativeFonts =
-			new Dictionary<string, (string Filename, string? Alias)>();
-
-		readonly Dictionary<string, (bool Success, string? Path)> _fontLookupCache =
-			new Dictionary<string, (bool Success, string? Path)>();
+		readonly Dictionary<string, (string Filename, string? Alias, Assembly Assembly)> _embeddedFonts = new();
+		readonly Dictionary<string, (string Filename, string? Alias)> _nativeFonts = new();
+		readonly Dictionary<string, (bool Success, string? Path)> _fontLookupCache = new();
+		readonly ILogger<FontRegistrar>? _logger;
 
 		IEmbeddedFontLoader? _fontLoader;
 
-		public FontRegistrar(IEmbeddedFontLoader? fontLoader = null)
+		public FontRegistrar(IEmbeddedFontLoader? fontLoader = null, ILogger<FontRegistrar>? logger = null)
 		{
 			_fontLoader = fontLoader;
+			_logger = logger;
 		}
 
 		public void SetFontLoader(IEmbeddedFontLoader? fontLoader)
@@ -78,7 +75,7 @@ namespace Microsoft.Maui
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex);
+				_logger?.LogWarning(ex, "Unable to load font '{Font}'.", font);
 			}
 
 			return _fontLookupCache[font] = (false, null);

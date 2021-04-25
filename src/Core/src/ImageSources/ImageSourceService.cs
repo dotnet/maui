@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 {
 	public abstract class ImageSourceService : IImageSourceService
 	{
-		public ImageSourceService(ILogger? logger)
+		public ImageSourceService(ILogger? logger = null)
 		{
 			Logger = logger;
 		}
@@ -22,6 +22,10 @@ namespace Microsoft.Maui
 		public abstract Task<IImageSourceServiceResult<UIKit.UIImage>?> GetImageAsync(
 			IImageSource imageSource,
 			float scale = 1,
+			CancellationToken cancellationToken = default);
+#elif WINDOWS
+		public abstract Task<IImageSourceServiceResult<UI.Xaml.Media.ImageSource>?> GetImageSourceAsync(
+			IImageSource imageSource,
 			CancellationToken cancellationToken = default);
 #endif
 	}

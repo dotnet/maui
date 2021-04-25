@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -22,16 +23,24 @@ namespace Microsoft.Maui
 
 			var filename = imageSource.File;
 
-			var image = File.Exists(filename)
-				? UIImage.FromFile(filename)
-				: UIImage.FromBundle(filename);
+			try
+			{
+				var image = File.Exists(filename)
+					? UIImage.FromFile(filename)
+					: UIImage.FromBundle(filename);
 
-			if (image == null)
+				if (image == null)
+					return FromResult(null);
+
+				var result = new ImageSourceServiceResult(image, () => image.Dispose());
+
+				return FromResult(result);
+			}
+			catch (Exception ex)
+			{
+				Logger?.LogWarning(ex, "Unable to load image file '{File}'.", filename);
 				return FromResult(null);
-
-			var result = new ImageSourceServiceResult(image, () => image.Dispose());
-
-			return FromResult(result);
+			}
 		}
 
 		static Task<IImageSourceServiceResult<UIImage>?> FromResult(IImageSourceServiceResult<UIImage>? result) =>

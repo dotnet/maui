@@ -12,10 +12,10 @@ namespace Microsoft.Maui.Hosting
 		{
 			builder.ConfigureImageSourceServices(services =>
 			{
-				services.AddService<IFileImageSource>(svcs => new FileImageSourceService(svcs.GetService<ILogger<FileImageSourceService>>()));
-				services.AddService<IFontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.GetService<ILogger<FontImageSourceService>>()));
-				services.AddService<IStreamImageSource>(svcs => new StreamImageSourceService(svcs.GetService<ILogger<StreamImageSourceService>>()));
-				services.AddService<IUriImageSource>(svcs => new UriImageSourceService(svcs.GetService<ILogger<UriImageSourceService>>()));
+				services.AddService<IFileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
+				services.AddService<IFontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
+				services.AddService<IStreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
+				services.AddService<IUriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
 			});
 			return builder;
 		}
@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Hosting
 		{
 			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
 			{
+				services.AddSingleton<IImageSourceServiceConfiguration, ImageSourceServiceConfiguration>();
 				services.AddSingleton<IImageSourceServiceProvider>(svcs => new ImageSourceServiceProvider(this, svcs));
 			}
 

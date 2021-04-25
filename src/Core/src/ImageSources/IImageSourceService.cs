@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui
@@ -16,16 +15,15 @@ namespace Microsoft.Maui
 			IImageSource imageSource,
 			float scale = 1,
 			CancellationToken cancellationToken = default);
+#elif WINDOWS
+		Task<IImageSourceServiceResult<UI.Xaml.Media.ImageSource>?> GetImageSourceAsync(
+			IImageSource imageSource,
+			CancellationToken cancellationToken = default);
 #endif
 	}
 
 	public interface IImageSourceService<T> : IImageSourceService
 		where T : IImageSource
 	{
-	}
-
-	public interface IImageSourceServiceResult<T> : IDisposable
-	{
-		T Value { get; }
 	}
 }

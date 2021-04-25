@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Android.Graphics;
+using Microsoft.Extensions.Logging;
 using AApplication = Android.App.Application;
 
 namespace Microsoft.Maui
 {
 	public class FontManager : IFontManager
 	{
-		readonly ConcurrentDictionary<(string fontFamily, FontAttributes fontAttributes), Typeface?> _typefaces =
-			new ConcurrentDictionary<(string fontFamily, FontAttributes fontAttributes), Typeface?>();
-
+		readonly ConcurrentDictionary<(string fontFamily, FontAttributes fontAttributes), Typeface?> _typefaces = new();
 		readonly IFontRegistrar _fontRegistrar;
+		readonly ILogger<FontManager>? _logger;
 
 		Typeface? _defaultTypeface;
 
-		public FontManager(IFontRegistrar fontRegistrar)
+		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
 		{
 			_fontRegistrar = fontRegistrar;
+			_logger = logger;
 		}
 
 		public Typeface DefaultTypeface => _defaultTypeface ??= Typeface.Default!;

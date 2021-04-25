@@ -18,8 +18,29 @@ namespace Microsoft.Maui.UnitTests
 	{
 	}
 
+	class BadFooService : IFooService
+	{
+		private BadFooService()
+		{
+		}
+	}
+
+	class FooService2 : IFooService
+	{
+	}
+
 	class BarService : IBarService
 	{
+	}
+
+	class FooEnumerableService : IFooBarService
+	{
+		public FooEnumerableService(IEnumerable<IFooService> foos)
+		{
+			Foos = foos;
+		}
+
+		public IEnumerable<IFooService> Foos { get; }
 	}
 
 	class FooBarService : IFooBarService
