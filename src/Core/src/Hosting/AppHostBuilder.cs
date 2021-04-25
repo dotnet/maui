@@ -69,8 +69,8 @@ namespace Microsoft.Maui.Hosting
 			if (_services == null)
 				throw new InvalidOperationException("The ServiceCollection cannot be null");
 
-			BuildServices(_services);
 			BuildServiceCollections(_services);
+			BuildServices(_services);
 
 			_services.TryAddSingleton<ILoggerFactory, FallbackLoggerFactory>();
 
