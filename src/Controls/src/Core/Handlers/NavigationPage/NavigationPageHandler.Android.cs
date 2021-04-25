@@ -66,6 +66,13 @@ namespace Microsoft.Maui.Controls.Handlers
 					.NavigatorProvider
 					.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
 
+
+			var navGraphNavigator =
+				(NavGraphNavigator)NavHost
+					.NavController
+					.NavigatorProvider
+					.GetNavigator(Java.Lang.Class.FromType(typeof(NavGraphNavigator)));
+
 			base.ConnectHandler(nativeView);
 
 			var navController = (INavigationPageController)VirtualView;
@@ -73,8 +80,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			navController.PopRequested += OnPopped;
 
 			var inflater = NavHost.NavController.NavInflater;
-			var graph = inflater.Inflate(Resource.Navigation.navigation_graph);
-
+			NavGraph graph = new NavGraph(navGraphNavigator);
+			System.Diagnostics.Debug.WriteLine($"RABBIT {graph.NavigatorName}");
+			
 			NavDestination navDestination = null;
 			List<int> destinations = new List<int>();
 			foreach(var page in VirtualView.Navigation.NavigationStack)
