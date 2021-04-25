@@ -77,9 +77,7 @@ using Rectangle = Microsoft.Maui.Controls.Shapes.Rectangle;
 // WINUI3
 //[assembly: ExportRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer))]
 
-//Fonts
-// WINUI3
-//[assembly: ExportRenderer(typeof(EmbeddedFont), typeof(EmbeddedFontLoader))]
+[assembly: ExportRenderer(typeof(EmbeddedFont), typeof(EmbeddedFontLoader))]
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests")]

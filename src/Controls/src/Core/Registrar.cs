@@ -424,7 +424,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 			var type = Registered.GetHandlerType(typeof(EmbeddedFont));
 			if (type != null)
-				CompatServiceProvider.SetFontLoader((IEmbeddedFontLoader)Activator.CreateInstance(type));
+				CompatServiceProvider.SetFontLoader(type);
 
 			RegisterStylesheets(flags);
 			Profile.FramePartition("DependencyService.Initialize");

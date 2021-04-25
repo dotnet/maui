@@ -8,15 +8,8 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class EmbeddedFontLoader : IEmbeddedFontLoader
+	public partial class EmbeddedFontLoader
 	{
-		readonly ILogger<EmbeddedFontLoader>? _logger;
-
-		public EmbeddedFontLoader(ILogger<EmbeddedFontLoader>? logger = null)
-		{
-			_logger = logger;
-		}
-
 		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
 		{
 			try

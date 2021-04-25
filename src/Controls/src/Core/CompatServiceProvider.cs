@@ -22,11 +22,14 @@ namespace Microsoft.Maui.Controls
 
 		public static ILoggerFactory LoggerFactory => _loggerFactory ??= new FallbackLoggerFactory();
 
-		public static void SetFontLoader(IEmbeddedFontLoader embeddedFontLoader)
+		public static void SetFontLoader(Type loaderType)
 		{
-			_embeddedFontLoader = embeddedFontLoader;
-			if (FontRegistrar is FontRegistrar fr)
-				fr.SetFontLoader(embeddedFontLoader);
+			if (_embeddedFontLoader != null)
+				return;
+
+			_embeddedFontLoader = (IEmbeddedFontLoader)Activator.CreateInstance(loaderType);
+			if (_fontRegistrar is FontRegistrar fr)
+				fr.SetFontLoader(_embeddedFontLoader);
 		}
 
 		public static void SetServiceProvider(IServiceProvider services)
