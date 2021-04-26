@@ -63,9 +63,10 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			foreach (var type in types)
 			{
-				foreach (var descriptor in _collection.GetServices(type))
+				foreach (var descriptor in _collection)
 				{
-					yield return descriptor;
+					if (descriptor.ServiceType == serviceType)
+						yield return descriptor;
 				}
 			}
 		}

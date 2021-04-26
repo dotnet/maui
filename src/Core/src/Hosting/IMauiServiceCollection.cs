@@ -8,7 +8,5 @@ namespace Microsoft.Maui.Hosting
 	public interface IMauiServiceCollection : IServiceCollection
 	{
 		bool TryGetService(Type serviceType, out ServiceDescriptor? descriptor);
-
-		IEnumerable<ServiceDescriptor> GetServices(Type serviceType);
 	}
 }

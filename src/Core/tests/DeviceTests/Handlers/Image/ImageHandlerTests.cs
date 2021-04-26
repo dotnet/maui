@@ -79,7 +79,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task<List<(string Member, object Value)>> CountedImageSourceServiceStubWorks()
+		public async Task<List<(string Member, object Value)>> ImageLoadSequenceIsCorrect()
 		{
 			var image = new ImageStub
 			{

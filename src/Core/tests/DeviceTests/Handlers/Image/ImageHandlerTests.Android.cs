@@ -95,9 +95,9 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task CountedImageSourceServiceStubWorksWithChecks()
+		public async Task ImageLoadSequenceIsCorrectWithChecks()
 		{
-			var events = await CountedImageSourceServiceStubWorks();
+			var events = await ImageLoadSequenceIsCorrect();
 
 			Assert.Equal(2, events.Count);
 			Assert.Equal("SetImageResource", events[0].Member);
