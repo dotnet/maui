@@ -77,11 +77,11 @@ namespace Microsoft.Maui
 		{
 			base.OnApplyTemplate();
 
-			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;
+			_plus = GetTemplateChild("Plus") as Button;
 			if (_plus != null)
 				_plus.Click += OnPlusClicked;
 
-			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
+			_minus = GetTemplateChild("Minus") as Button;
 			if (_minus != null)
 				_minus.Click += OnMinusClicked;
 
