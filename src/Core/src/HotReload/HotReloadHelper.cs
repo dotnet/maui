@@ -11,9 +11,9 @@ namespace Microsoft.Maui.HotReload
 {
 	public static class MauiHotReloadHelper
 	{
-		static IMauiServiceCollection? HandlerService;
+		static IMauiHandlersCollection? HandlerService;
 		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
-		public static void Init(IMauiServiceCollection handlerService)
+		public static void Init(IMauiHandlersCollection handlerService)
 		{
 			HandlerService = handlerService;
 			//HandlerServiceProvider = new MauiHandlersServiceProvider(handlerService);
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.HotReload
 			var newType = newHandler;
 			if (pair.Value.IsGenericType)
 				newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
-			HandlerService.AddTransient(view, newType);
+			HandlerService.AddHandler(view, newType);
 		}
 
 		public static void TriggerReload()
