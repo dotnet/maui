@@ -6,7 +6,7 @@ using Windows.System;
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextBox>
 	{
-		protected override MauiTextBox CreateNativeView() =>  
+		protected override MauiTextBox CreateNativeView() =>
 			new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };
 
 		protected override void ConnectHandler(MauiTextBox nativeView)
@@ -77,8 +77,7 @@ using Windows.System;
 			}
 			else
 			{
-				// Hide the soft keyboard; this matches the behavior of Forms on Android/iOS
-				Windows.UI.ViewManagement.InputPane.GetForCurrentView().TryHide();
+				// TODO: Hide the soft keyboard; this matches the behavior of .NET MAUI on Android/iOS
 			}
 
 			VirtualView?.Completed();
