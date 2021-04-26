@@ -1,4 +1,3 @@
-using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
@@ -16,7 +15,7 @@ namespace Microsoft.Maui.UnitTests
 
 		public IViewHandler Handler { get; set; }
 
-		public IFrameworkElement Parent => throw new NotImplementedException();
+		public IFrameworkElement Parent { get; set; }
 
 		public Size DesiredSize { get; set; }
 
@@ -40,11 +39,12 @@ namespace Microsoft.Maui.UnitTests
 
 		public Semantics Semantics { get; set; } = new Semantics();
 
-		public void Arrange(Rectangle bounds) { }
-
 		public void InvalidateArrange() { }
 
 		public void InvalidateMeasure() { }
+
+		public Size Arrange(Rectangle bounds) =>
+			Size.Zero;
 
 		public Size Measure(double widthConstraint, double heightConstraint) =>
 			Size.Zero;
