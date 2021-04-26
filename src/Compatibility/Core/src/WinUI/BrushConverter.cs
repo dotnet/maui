@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var brush = value as Brush;
 			var color = (Color)parameter;
 
-			return Brush.IsNullOrEmpty(brush) ? Controls.Platform.ColorExtensions.ToNative(color) : brush.ToBrush();
+			return Brush.IsNullOrEmpty(brush) ? Maui.ColorExtensions.ToNative(color) : brush.ToBrush();
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)

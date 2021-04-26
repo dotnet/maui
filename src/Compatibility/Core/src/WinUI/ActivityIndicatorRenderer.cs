@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			else
 			{
-				Control.Foreground = Controls.Platform.ColorExtensions.ToNative(color);
+				Control.Foreground = Maui.ColorExtensions.ToNative(color);
 			}
 		}
 

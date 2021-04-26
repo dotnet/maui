@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateTextColor()
 		{
 			Color color = Element.TextColor;
-			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? Controls.Platform.ColorExtensions.ToNative(color)) : Controls.Platform.ColorExtensions.ToNative(color);
+			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? Maui.ColorExtensions.ToNative(color)) : Maui.ColorExtensions.ToNative(color);
 		}
 
 		void UpdateTitle()

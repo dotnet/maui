@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Control != null)
 			{
-				Control.Background = backgroundColor.IsDefault() ? null : Controls.Platform.ColorExtensions.ToNative(backgroundColor);
+				Control.Background = backgroundColor.IsDefault() ? null : Maui.ColorExtensions.ToNative(backgroundColor);
 			}
 
 			base.UpdateBackgroundColor();
@@ -257,10 +257,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				windowsSwipeItem.Text = formsSwipeItem.Text;
 				windowsSwipeItem.IconSource = formsSwipeItem.IconImageSource.ToWindowsIconSource();
-				windowsSwipeItem.Background = Controls.Platform.ColorExtensions.ToNative(formsSwipeItem.BackgroundColor);
+				windowsSwipeItem.Background = Maui.ColorExtensions.ToNative(formsSwipeItem.BackgroundColor);
 
 				var textColor = GetSwipeItemColor(formsSwipeItem.BackgroundColor);
-				windowsSwipeItem.Foreground = Controls.Platform.ColorExtensions.ToNative(textColor);
+				windowsSwipeItem.Foreground = Maui.ColorExtensions.ToNative(textColor);
 			}
 		}
 
@@ -327,8 +327,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 					var windowsSwipeItem = new WSwipeItem
 					{
-						Background = formsSwipeItem.BackgroundColor.IsDefault() ? null : Controls.Platform.ColorExtensions.ToNative(formsSwipeItem.BackgroundColor),
-						Foreground = Controls.Platform.ColorExtensions.ToNative(textColor),
+						Background = formsSwipeItem.BackgroundColor.IsDefault() ? null : Maui.ColorExtensions.ToNative(formsSwipeItem.BackgroundColor),
+						Foreground = Maui.ColorExtensions.ToNative(textColor),
 						IconSource = formsSwipeItem.IconImageSource.ToWindowsIconSource(),
 						Text = !string.IsNullOrEmpty(formsSwipeItem.Text) ? formsSwipeItem.Text : string.Empty,
 						BehaviorOnInvoked = GetSwipeBehaviorOnInvoked(items.SwipeBehaviorOnInvoked)

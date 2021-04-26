@@ -121,9 +121,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			if (Element.BackgroundColor.IsNotDefault())
-				Control.Visualizer.Background = Controls.Platform.ColorExtensions.ToNative(Element.BackgroundColor);
+				Control.Visualizer.Background = Maui.ColorExtensions.ToNative(Element.BackgroundColor);
 			else
-				Control.Visualizer.Background = Controls.Platform.ColorExtensions.ToNative(Colors.White);
+				Control.Visualizer.Background = Maui.ColorExtensions.ToNative(Colors.White);
 		}
 
 		void UpdateContent()
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			Control.Visualizer.Foreground = Element.RefreshColor.IsNotDefault()
-				? Controls.Platform.ColorExtensions.ToNative(Element.RefreshColor)
+				? Maui.ColorExtensions.ToNative(Element.RefreshColor)
 				: (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
 
 			UpdateBackgroundColor();
