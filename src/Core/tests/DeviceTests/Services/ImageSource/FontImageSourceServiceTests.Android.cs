@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task GetDrawableAsyncWithFont()
+		public async Task GetDrawableAsyncWithCustomFont()
 		{
 			var host = new AppHostBuilder()
 				.ConfigureFonts(fonts =>
