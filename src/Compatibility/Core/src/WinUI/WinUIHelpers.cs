@@ -10,7 +10,7 @@ using UwpGridUnitType = Microsoft.UI.Xaml.GridUnitType;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public static class WinUIHelpers
+	static class WinUIHelpers
 	{
 		public static WThickness CreateThickness(double left, double top, double right, double bottom)
 		{
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			};
 		}
 
-		internal static WGridLength CreateGridLength(int v, UwpGridUnitType auto)
+		public static WGridLength CreateGridLength(int v, UwpGridUnitType auto)
 		{
 			return new WGridLength(v, auto);
 		}

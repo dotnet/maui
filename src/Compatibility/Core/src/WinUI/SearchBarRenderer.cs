@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.SearchBar;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -188,7 +189,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else
 			{
 				// Determine whether the background should be black or white (in order to make the foreground color visible) 
-				var bcolor = cancelColor.ToWindowsColor().GetContrastingColor().ToFormsColor();
+				var bcolor = cancelColor.ToWindowsColor().GetContrastingColor().ToColor();
 				BrushHelpers.UpdateColor(bcolor, ref _defaultDeleteButtonBackgroundColorBrush,
 					() => _cancelButton.BackgroundBrush, brush => _cancelButton.BackgroundBrush = brush);
 			}
@@ -325,7 +326,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			
 			if (!backgroundColor.IsDefault())
 			{
-				_queryTextBox.Background = backgroundColor.ToBrush();
+				_queryTextBox.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 			}
 			else
 			{

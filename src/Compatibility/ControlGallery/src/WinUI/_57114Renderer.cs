@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(Bugzilla57114._57114View), typeof(_57114Renderer))]
 

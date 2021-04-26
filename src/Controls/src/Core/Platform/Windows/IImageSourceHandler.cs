@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	public interface IImageSourceHandler : IRegisterable
 	{

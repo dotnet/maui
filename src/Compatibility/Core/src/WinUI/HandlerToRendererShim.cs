@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.UI.Xaml;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {

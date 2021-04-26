@@ -9,6 +9,7 @@ using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 using WVisualStateGroup = Microsoft.UI.Xaml.VisualStateGroup;
 using WVisualState = Microsoft.UI.Xaml.VisualState;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -230,7 +231,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 			}
 
-			WBrush brush = value.ToBrush();
+			WBrush brush = Maui.ColorExtensions.ToNative(value);
 			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
 			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;
 			if (_minus != null)

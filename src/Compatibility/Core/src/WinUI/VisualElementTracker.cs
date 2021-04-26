@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 
 				var renderer = sender as IVisualElementRenderer;
-				var args = rec.SendDragStarting(renderer?.Element);
+				var args = rec.SendDragStarting(renderer?.Element as IView);
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
 
 				if (!args.Handled && renderer != null)

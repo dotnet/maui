@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Media;
 using WRect = Windows.Foundation.Rect;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.UI;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

@@ -28,12 +28,12 @@ namespace Microsoft.Maui.Essentials
 		{
 			var args = e?.Arguments;
 #if !WINDOWS_UWP
-            if (string.IsNullOrEmpty(args))
-            {
-                var cliArgs = Environment.GetCommandLineArgs();
-                if (cliArgs?.Length > 1)
-                    args = cliArgs[1];
-            }
+			if (string.IsNullOrEmpty(args))
+			{
+				var cliArgs = Environment.GetCommandLineArgs();
+				if (cliArgs?.Length > 1)
+					args = cliArgs[1];
+			}
 #endif
 
 			if (args?.StartsWith(appActionPrefix) ?? false)

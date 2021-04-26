@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class NavigationPage : Page, IPageContainer<Page>, IBarElement, INavigationPageController, IElementConfiguration<NavigationPage>
+	public partial class NavigationPage : Page, IPageContainer<Page>, IBarElement, INavigationPageController, IElementConfiguration<NavigationPage>
 	{
 		public static readonly BindableProperty BackButtonTitleProperty = BindableProperty.CreateAttached("BackButtonTitle", typeof(string), typeof(Page), null);
 
