@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -21,8 +22,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(LabelHandler handler, ILabel label) =>
 			handler.TextBlock?.UpdateTextColor(label);
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(LabelHandler handler, ILabel label) { }
+		public static void MapCharacterSpacing(LabelHandler handler, ILabel label) =>	
+			handler.TextBlock?.UpdateCharacterSpacing(label);
 
 		public static void MapFont(LabelHandler handler, ILabel label)
 		{
@@ -37,11 +38,11 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label) { }
 
-		[MissingMapper]
-		public static void MapTextDecorations(LabelHandler handler, ILabel label) { }
+		public static void MapTextDecorations(LabelHandler handler, ILabel label) =>	
+			handler.TextBlock?.UpdateTextDecorations(label);
 
-		[MissingMapper]
-		public static void MapMaxLines(LabelHandler handler, ILabel label) { }
+		public static void MapMaxLines(LabelHandler handler, ILabel label) =>
+			handler.TextBlock?.UpdateMaxLines(label);
 
 		public static void MapPadding(LabelHandler handler, ILabel label) =>
 			handler.TextBlock?.UpdatePadding(label);

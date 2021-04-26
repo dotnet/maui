@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-#if !NETSTANDARD1_0
-using System.Drawing;
-#endif
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -60,9 +58,7 @@ namespace Microsoft.Maui.Essentials
 	{
 		public string Title { get; set; }
 
-#if !NETSTANDARD1_0
-        public Rectangle PresentationSourceBounds { get; set; } = Rectangle.Empty;
-#endif
+		public Rectangle PresentationSourceBounds { get; set; } = Rectangle.Zero;
 	}
 
 	public class ShareTextRequest : ShareRequestBase
@@ -137,9 +133,7 @@ namespace Microsoft.Maui.Essentials
 		public static explicit operator ShareMultipleFilesRequest(ShareFileRequest request)
 		{
 			var requestFiles = new ShareMultipleFilesRequest(request.Title, new ShareFile[] { request.File });
-#if !NETSTANDARD1_0
-            requestFiles.PresentationSourceBounds = request.PresentationSourceBounds;
-#endif
+			requestFiles.PresentationSourceBounds = request.PresentationSourceBounds;
 			return requestFiles;
 		}
 

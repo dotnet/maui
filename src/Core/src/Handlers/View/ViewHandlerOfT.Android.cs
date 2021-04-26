@@ -2,6 +2,7 @@ using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (frame.Width < 0 || frame.Height < 0)
 			{
-				// This is just some initial Forms value nonsense, nothing is actually laying out yet
+				// This is a legacy layout value from Controls, nothing is actually laying out yet so we just ignore it
 				return;
 			}
 
@@ -30,18 +31,6 @@ namespace Microsoft.Maui.Handlers
 			var top = Context.ToPixels(frame.Top);
 			var bottom = Context.ToPixels(frame.Bottom);
 			var right = Context.ToPixels(frame.Right);
-			var width = Context.ToPixels(frame.Width);
-			var height = Context.ToPixels(frame.Height);
-
-			if (nativeView.LayoutParameters == null)
-			{
-				nativeView.LayoutParameters = new ViewGroup.LayoutParams((int)width, (int)height);
-			}
-			else
-			{
-				nativeView.LayoutParameters.Width = (int)width;
-				nativeView.LayoutParameters.Height = (int)height;
-			}
 
 			nativeView.Layout((int)left, (int)top, (int)right, (int)bottom);
 		}
@@ -93,7 +82,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void RemoveContainer()
 		{
-
 
 		}
 	}

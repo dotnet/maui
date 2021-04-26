@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			layout.Children.Add(label);
 			layout.Children.Add(button);
 
-			BackgroundColor = Color.YellowGreen;
+			BackgroundColor = Colors.YellowGreen;
 			Content = layout;
 		}
 
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				layout.Children.Add(label);
 				layout.Children.Add(button);
 
-				BackgroundColor = Color.Yellow;
+				BackgroundColor = Colors.Yellow;
 
 				Content = layout;
 			}

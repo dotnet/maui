@@ -1,10 +1,11 @@
+#nullable enable
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler
 	{
 		public static PropertyMapper<ISwitch, SwitchHandler> SwitchMapper = new PropertyMapper<ISwitch, SwitchHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(ISwitch.IsToggled)] = MapIsToggled,
+			[nameof(ISwitch.IsOn)] = MapIsOn,
 			[nameof(ISwitch.ThumbColor)] = MapThumbColor,
 			[nameof(ISwitch.TrackColor)] = MapTrackColor,
 		};

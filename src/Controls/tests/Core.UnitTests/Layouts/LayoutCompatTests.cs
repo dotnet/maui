@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -24,6 +25,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			layout.Add(button);
 			page.Content = layout;
+			(page as IFrameworkElement).Measure(100, 100);
 			(page as IFrameworkElement).Arrange(new Rectangle(0, 0, 100, 100));
 
 			Assert.AreEqual(expectedSize, button.Bounds.Size);

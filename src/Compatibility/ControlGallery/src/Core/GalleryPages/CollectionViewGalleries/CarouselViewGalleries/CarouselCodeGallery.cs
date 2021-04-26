@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
 				Margin = new Thickness(0, 10, 0, 10),
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				AutomationId = "TheCarouselView",
 				//Loop = false
 			};
@@ -77,7 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 				Minimum = 0,
 				Value = 30,
 				WidthRequest = 100,
-				BackgroundColor = Color.Pink
+				BackgroundColor = Colors.Pink
 			};
 
 			padi.ValueChanged += (s, e) =>
@@ -173,7 +174,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 			var horizontalLine = new Grid
 			{
 				HeightRequest = 1,
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				VerticalOptions = LayoutOptions.Center
 			};
 
@@ -182,7 +183,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 			var verticalLine = new Grid
 			{
 				WidthRequest = 1,
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				HorizontalOptions = LayoutOptions.Center
 			};
 

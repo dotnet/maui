@@ -110,7 +110,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this AView view, Maui.Color expectedColor) =>
+		public static Task<Bitmap> AssertContainsColor(this AView view, Maui.Graphics.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToNative());
 
 		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)

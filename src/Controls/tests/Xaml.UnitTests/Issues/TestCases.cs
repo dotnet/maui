@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 			<ContentPage
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 			xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
 			Title=""Home"">
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
             <local:BasePage
-                xmlns=""http://xamarin.com/schemas/2014/forms""
+                xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 			    xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
                 x:Class=""Tramchester.App.Views.HomeView"">
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 				<ContentPage
-					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 					Title=""People"">
 
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 				<ContentPage
-					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 					<ContentPage.Content>
 					    <ScrollView Orientation=""Horizontal"">
@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 						<ContentPage 
-							xmlns=""http://xamarin.com/schemas/2014/forms"" 
+							xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
 							<Label x:Name=""label"" Text=""{Binding Converter={x:Static local:ReverseConverter.Instance}, Mode=TwoWay}""/>
@@ -205,7 +205,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 						<View 
-							xmlns=""http://xamarin.com/schemas/2014/forms"" 
+							xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							RelativeLayout.HeightConstraint=""{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.25}""
 							RelativeLayout.WidthConstraint=""{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.6}""/>";

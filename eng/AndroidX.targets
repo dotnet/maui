@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <_AndroidXVersion>net6preview01</_AndroidXVersion>
+    <_AndroidXVersion>net6preview03.4680155</_AndroidXVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference
@@ -17,7 +17,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.Lifecycle.LiveData"
-        Version="2.3.0.1-$(_AndroidXVersion)"
+        Version="2.3.1-$(_AndroidXVersion)"
     />
     <PackageReference
         Update="Xamarin.AndroidX.MediaRouter"
@@ -29,7 +29,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.RecyclerView"
-        Version="1.1.0.8-net6preview01"
+        Version="1.2.0-$(_AndroidXVersion)"
     />
     <PackageReference
         Update="Xamarin.Build.Download"

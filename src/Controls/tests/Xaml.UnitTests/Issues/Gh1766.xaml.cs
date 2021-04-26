@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void CSSPropertiesNotInerited(bool useCompiledXaml)
 			{
 				var layout = new Gh1766(useCompiledXaml);
-				Assert.That(layout.stack.BackgroundColor, Is.EqualTo(Color.Pink));
+				Assert.That(layout.stack.BackgroundColor, Is.EqualTo(Colors.Pink));
 				Assert.That(layout.entry.BackgroundColor, Is.EqualTo(VisualElement.BackgroundColorProperty.DefaultValue));
 			}
 		}

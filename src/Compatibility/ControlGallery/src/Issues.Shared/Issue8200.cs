@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			_collectionView = new CollectionView
 			{
-				BackgroundColor = Color.LightGreen,
+				BackgroundColor = Colors.LightGreen,
 				ItemTemplate = CreateDataGridTemplate(),
 				SelectionMode = SelectionMode.None
 			};
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				var cell = new Label();
 				cell.SetBinding(Label.TextProperty, "Text");
 				cell.FontSize = 20;
-				cell.BackgroundColor = Color.LightBlue;
+				cell.BackgroundColor = Colors.LightBlue;
 				grid.Children.Add(cell);
 
 				return grid;

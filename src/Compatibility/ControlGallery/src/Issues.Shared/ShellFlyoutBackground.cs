@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 
 #if UITEST
@@ -64,10 +65,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Command = new Command(() =>
 						{
 							FlyoutBackground = null;
-							if(FlyoutBackgroundColor == Color.Default)
-								FlyoutBackgroundColor = Color.Red;
+							if(FlyoutBackgroundColor == null)
+								FlyoutBackgroundColor = Colors.Red;
 							else
-								FlyoutBackgroundColor = Color.Default;
+								FlyoutBackgroundColor = null;
 						})
 					},
 					new Button()
@@ -77,10 +78,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Command = new Command(() =>
 						{
 							FlyoutBackground = null;
-							if(FlyoutBackgroundColor == Color.Default)
-								FlyoutBackgroundColor = Color.Red.MultiplyAlpha(0.7);
+							if(FlyoutBackgroundColor == null)
+								FlyoutBackgroundColor = Colors.Red.MultiplyAlpha(0.7f);
 							else
-								FlyoutBackgroundColor = Color.Default;
+								FlyoutBackgroundColor = null;
 						})
 					},
 					new Button()
@@ -91,11 +92,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							RadialGradientBrush radialGradientBrush = new RadialGradientBrush(
 								new GradientStopCollection()
 								{
-									new GradientStop(Color.Red, 0.1f),
-									new GradientStop(Color.DarkBlue, 1.0f),
+									new GradientStop(Colors.Red, 0.1f),
+									new GradientStop(Colors.DarkBlue, 1.0f),
 								});
 
-							FlyoutBackgroundColor = Color.Default;
+							FlyoutBackgroundColor = null;
 							if(FlyoutBackground != null)
 								FlyoutBackground = null;
 							else
@@ -134,14 +135,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 								FlyoutFooter =
 									new BoxView()
 									{
-										BackgroundColor = Color.Purple,
+										BackgroundColor = Colors.Purple,
 										HeightRequest = 50
 									};
 
 								FlyoutHeader =
 									new BoxView()
 									{
-										BackgroundColor = Color.Blue,
+										BackgroundColor = Colors.Blue,
 										HeightRequest = 50
 									};
 							}
@@ -163,7 +164,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 									new Label()
 									{
 										Text = "The FOOTER",
-										TextColor = Color.Blue,
+										TextColor = Colors.Blue,
 										HeightRequest = 50
 									};
 
@@ -179,13 +180,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 											FontSize = 25,
 											FontAttributes = FontAttributes.Bold,
 											VerticalTextAlignment = TextAlignment.Center,
-											TextColor = Color.Blue,
+											TextColor = Colors.Blue,
 										},
 										new Button()
 										{
 											Text = "OK",
 											FontSize = 25,
-											TextColor = Color.Green,
+											TextColor = Colors.Green,
 											Command = new Command(() => DisplayAlert("Button", "ThisButtonWorks", "OK"))
 										}
 									}

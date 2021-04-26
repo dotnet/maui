@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	public class LabelGallery : ContentPage
 	{
@@ -47,12 +49,12 @@
 				FormattedText = new FormattedString
 				{
 					Spans = {
-						new Span {Text="FormattedStrings ", TextColor=Color.Blue, BackgroundColor = Color.Yellow, FontAttributes = FontAttributes.Bold, FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label))},
+						new Span {Text="FormattedStrings ", TextColor=Colors.Blue, BackgroundColor = Colors.Yellow, FontAttributes = FontAttributes.Bold, FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label))},
 					}
 				}
 			};
-			var underlineSpan = new Span { Text = "are ", TextColor = Color.Red, BackgroundColor = Color.Gray, TextDecorations = TextDecorations.Underline };
-			var strikeSpan = new Span { Text = "not pretty!", TextColor = Color.Green, TextDecorations = TextDecorations.Strikethrough };
+			var underlineSpan = new Span { Text = "are ", TextColor = Colors.Red, BackgroundColor = Colors.Gray, TextDecorations = TextDecorations.Underline };
+			var strikeSpan = new Span { Text = "not pretty!", TextColor = Colors.Green, TextDecorations = TextDecorations.Strikethrough };
 			formatted.FormattedText.Spans.Add(underlineSpan);
 			formatted.FormattedText.Spans.Add(strikeSpan);
 

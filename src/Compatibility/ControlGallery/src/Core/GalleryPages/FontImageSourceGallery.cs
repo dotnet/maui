@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				HeightRequest = 1696,
 				WidthRequest = 320,
-				BackgroundColor = Color.Black
+				BackgroundColor = Colors.Black
 			};
 			grid.AddRowDef(count: 53);
 			grid.AddColumnDef(count: 10);
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 						FontFamily = fontFamily,
 						Size = 20
 					},
-					BackgroundColor = Color.Black,
+					BackgroundColor = Colors.Black,
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalOptions = LayoutOptions.Center,
 				}, i % 10, i / 10);
@@ -85,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				{
 					FontFamily = fontFamily,
 					Glyph = '\uf101'.ToString(),
-					Color = Color.Red
+					Color = Colors.Red
 				},
 			};
 			var tb3 = new ToolbarItem
@@ -95,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				{
 					FontFamily = fontFamily,
 					Glyph = '\uf2c7'.ToString(),
-					Color = Color.Yellow
+					Color = Colors.Yellow
 				},
 			};
 			ToolbarItems.Add(tb1);

@@ -1,6 +1,7 @@
 using Foundation;
 using System;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 #if __MOBILE__
 using UIKit;
 
@@ -20,9 +21,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				return null;
 
 			var fgcolor = span.TextColor;
-			if (fgcolor.IsDefault)
+			if (fgcolor == null)
 				fgcolor = defaultForegroundColor;
-			if (fgcolor.IsDefault)
+			if (fgcolor == null)
 				fgcolor = ColorExtensions.LabelColor.ToColor();
 
 #if __MOBILE__
@@ -100,19 +101,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 			var fgcolor = span.TextColor;
 
-			if (fgcolor.IsDefault)
+			if (fgcolor == null)
 				fgcolor = defaultForegroundColor;
 
-			if (owner is Entry && !fgcolor.IsDefault)
+			if (owner is Entry && fgcolor != null)
 				fgcolor = defaultForegroundColor;
 
 #if __MOBILE__
-			if (fgcolor.IsDefault)
+			if (fgcolor == null)
 				fgcolor = ColorExtensions.LabelColor.ToColor();
 			UIColor spanFgColor;
-			UIColor spanBgColor;
+			UIColor spanBgColor = null;
 			spanFgColor = fgcolor.ToUIColor();
-			spanBgColor = span.BackgroundColor.ToUIColor();
+
+			spanBgColor = span.BackgroundColor?.ToUIColor();
 #else
 
 			if (fgcolor.IsDefault)

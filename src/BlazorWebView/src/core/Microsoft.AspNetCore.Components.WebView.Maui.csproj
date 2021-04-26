@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <Description>Build .NET MAUI applications with Blazor web UI in the BlazorWebView control.</Description>
+  </PropertyGroup>
+
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.0-preview.3.21173.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="6.0.0-preview.3.21173.10" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.0-preview.3.21173.10" />
+    <PackageReference Include="Microsoft.JSInterop" Version="6.0.0-preview.3.21173.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+  </ItemGroup>
+</Project>

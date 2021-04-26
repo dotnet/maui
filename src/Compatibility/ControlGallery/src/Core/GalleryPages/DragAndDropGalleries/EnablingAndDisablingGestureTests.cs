@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DragAndDropGalleries
 {
@@ -23,12 +24,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Drag
 			Image imageSource = new Image()
 			{
 				Source = "coffee.png",
-				BackgroundColor = Color.Green
+				BackgroundColor = Colors.Green
 			};
 
 			Image imageDestination = new Image()
 			{
-				BackgroundColor = Color.Purple,
+				BackgroundColor = Colors.Purple,
 				HeightRequest = 50,
 				WidthRequest = 50
 			};

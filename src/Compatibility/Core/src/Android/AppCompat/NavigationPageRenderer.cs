@@ -17,12 +17,14 @@ using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.DrawerLayout.Widget;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 using static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
 using ActionBarDrawerToggle = AndroidX.AppCompat.App.ActionBarDrawerToggle;
 using APlatform = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
 using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
@@ -985,7 +987,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			if (Forms.IsLollipopOrNewer)
 			{
-				if (tintColor.IsDefault)
+				if (tintColor == null)
 					bar.BackgroundTintMode = null;
 				else
 				{
@@ -995,9 +997,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			}
 			else
 			{
-				if (tintColor.IsDefault && _backgroundDrawable != null)
+				if (tintColor == null && _backgroundDrawable != null)
 					bar.SetBackground(_backgroundDrawable);
-				else if (!tintColor.IsDefault)
+				else if (tintColor != null)
 				{
 					if (_backgroundDrawable == null)
 						_backgroundDrawable = bar.Background;
@@ -1009,16 +1011,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			bar.UpdateBackground(barBackground);
 
 			Color textColor = Element.BarTextColor;
-			if (!textColor.IsDefault)
+			if (textColor != null)
 				bar.SetTitleTextColor(textColor.ToAndroid().ToArgb());
 
 			Color navIconColor = NavigationPage.GetIconColor(Current);
-			if (!navIconColor.IsDefault && bar.NavigationIcon != null)
+			if (navIconColor != null && bar.NavigationIcon != null)
 				DrawableExtensions.SetColorFilter(bar.NavigationIcon, navIconColor, FilterMode.SrcAtop);
 
 			bar.Title = currentPage?.Title ?? string.Empty;
 
-			if (_toolbar.NavigationIcon != null && !textColor.IsDefault)
+			if (_toolbar.NavigationIcon != null && textColor != null)
 			{
 				var icon = _toolbar.NavigationIcon as DrawerArrowDrawable;
 				if (icon != null)

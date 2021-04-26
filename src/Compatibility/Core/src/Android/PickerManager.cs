@@ -1,9 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Android.Text;
 using Android.Text.Style;
 using Android.Views;
 using Android.Widget;
 using Java.Lang;
+using Microsoft.Maui.Graphics;
 using AView = global::Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public static ICharSequence GetTitle(Color titleColor, string title)
 		{
-			if (titleColor == Color.Default)
+			if (titleColor == null)
 				return new Java.Lang.String(title);
 
 			var spannableTitle = new SpannableString(title ?? "");

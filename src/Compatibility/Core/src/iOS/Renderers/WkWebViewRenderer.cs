@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -16,6 +15,7 @@ using WebKit;
 using Microsoft.Maui.Controls.Internals;
 using PreserveAttribute = Foundation.PreserveAttribute;
 using Uri = System.Uri;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 
 		[Preserve(Conditional = true)]
-		public WkWebViewRenderer(WKWebViewConfiguration config) : base(RectangleF.Empty, config)
+		public WkWebViewRenderer(WKWebViewConfiguration config) : base(CoreGraphics.CGRect.Empty, config)
 		{
 		
 		}

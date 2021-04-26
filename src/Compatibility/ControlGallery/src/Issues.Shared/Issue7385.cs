@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				HeightRequest = 50,
 				HorizontalOptions = LayoutOptions.Start,
 				VerticalOptions = LayoutOptions.Start,
-				BackgroundColor = Color.Red
+				BackgroundColor = Colors.Red
 			};
 
 			var button1 = new Button { Text = "Set TranslationX/Y to 30,20", Command = new Command(() => MoveBox(30, 20)) };

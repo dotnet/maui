@@ -8,10 +8,13 @@ using Android.Widget;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
 using LP = Android.Views.ViewGroup.LayoutParams;
+using Paint = Android.Graphics.Paint;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -137,8 +140,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		#endregion IAppearanceObserver
 
 		public static readonly Color DefaultBackgroundColor = Color.FromRgb(33, 150, 243);
-		public static readonly Color DefaultForegroundColor = Color.White;
-		public static readonly Color DefaultTitleColor = Color.White;
+		public static readonly Color DefaultForegroundColor = Colors.White;
+		public static readonly Color DefaultTitleColor = Colors.White;
 		public static readonly Color DefaultUnselectedColor = Color.FromRgba(255, 255, 255, 180);
 
 		bool _disposed;

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		public ModuleMediaListHeaderTemplate()
 		{
-			var title = new Label { TextColor = Color.White, VerticalTextAlignment = TextAlignment.Center };
+			var title = new Label { TextColor = Colors.White, VerticalTextAlignment = TextAlignment.Center };
 			title.SetBinding(Label.TextProperty, new Binding("SectionName", BindingMode.OneWay));
 
 			View = new StackLayout

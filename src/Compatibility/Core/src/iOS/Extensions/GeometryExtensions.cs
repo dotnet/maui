@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
+using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
 
 #if __MOBILE__
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -33,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
             }
             else if (geometry is RectangleGeometry)
             {
-                Rect rect = (geometry as RectangleGeometry).Rect;
+                var rect = (geometry as RectangleGeometry).Rect;
                 pathData.Data.AddRect(transform, new CGRect(rect.X, rect.Y, rect.Width, rect.Height));
             }
             else if (geometry is EllipseGeometry)

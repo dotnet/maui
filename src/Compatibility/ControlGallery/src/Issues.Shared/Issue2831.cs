@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						HorizontalOptions = LayoutOptions.CenterAndExpand,
 						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "MUST BE BOLD",
-						TextColor = Color.Black,
+						TextColor = Colors.Black,
 						FontSize = 50,
 						FontAttributes = FontAttributes.Bold,
 						Style = Device.Styles.ListItemDetailTextStyle,

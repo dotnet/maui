@@ -1,18 +1,13 @@
-#if !NETSTANDARD1_0
-using System.Drawing;
-#endif
-
 using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Essentials
 {
 	public class BrowserLaunchOptions
 	{
-#if !NETSTANDARD1_0
-        public Color? PreferredToolbarColor { get; set; }
+		public Color PreferredToolbarColor { get; set; }
 
-        public Color? PreferredControlColor { get; set; }
-#endif
+		public Color PreferredControlColor { get; set; }
 
 		public BrowserLaunchMode LaunchMode { get; set; } = BrowserLaunchMode.SystemPreferred;
 

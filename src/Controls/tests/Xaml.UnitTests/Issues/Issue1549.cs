@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
 			count++;
-			return Color.Blue;
+			return Colors.Blue;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 <ContentPage 							
-xmlns=""http://xamarin.com/schemas/2014/forms"" 
+xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
 
@@ -95,7 +96,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 			var layout = new ContentPage().LoadFromXaml(xaml);
 			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
 			var label = layout.FindByName<Label>("label");
-			Assert.AreEqual(Color.Blue, label.BackgroundColor);
+			Assert.AreEqual(Colors.Blue, label.BackgroundColor);
 			Assert.AreEqual(1, SeverityColorConverter.count);
 		}
 
@@ -104,7 +105,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 		{
 			var xaml = @"
 <ContentPage 							
-xmlns=""http://xamarin.com/schemas/2014/forms"" 
+xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
 
@@ -124,7 +125,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 			var layout = new ContentPage().LoadFromXaml(xaml);
 			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
 			var label = layout.FindByName<Label>("label");
-			Assert.AreEqual(Color.Blue, label.BackgroundColor);
+			Assert.AreEqual(Colors.Blue, label.BackgroundColor);
 			Assert.AreEqual(1, SeverityColorConverter.count);
 		}
 
@@ -132,7 +133,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 		public void ResourcesInNonXFBaseClassesAreFound()
 		{
 			var xaml = @"<local:BaseView 
-	xmlns=""http://xamarin.com/schemas/2014/forms"" 
+	xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
   	xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
 	Padding=""0,40,0,0"">

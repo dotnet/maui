@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		public FlowDirectionGalleryMDP(FlowDirection direction)
 		{
 			FlowDirection = direction;
-			Flyout = new FlowDirectionGalleryCP(direction) { Title = "Flyout", BackgroundColor = Color.Red };
+			Flyout = new FlowDirectionGalleryCP(direction) { Title = "Flyout", BackgroundColor = Colors.Red };
 			Detail = new NavigationPage(new FlowDirectionGalleryCP(direction) { Title = "Detail" });
 			IsPresented = true;
 		}
@@ -96,9 +97,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		public FlowDirectionGalleryTP(FlowDirection direction)
 		{
 			FlowDirection = direction;
-			Children.Add(new FlowDirectionGalleryCP(direction) { Title = "1", BackgroundColor = Color.Red });
-			Children.Add(new FlowDirectionGalleryCP(direction) { Title = "2", BackgroundColor = Color.Orange });
-			Children.Add(new FlowDirectionGalleryCP(direction) { Title = "3", BackgroundColor = Color.Yellow });
+			Children.Add(new FlowDirectionGalleryCP(direction) { Title = "1", BackgroundColor = Colors.Red });
+			Children.Add(new FlowDirectionGalleryCP(direction) { Title = "2", BackgroundColor = Colors.Orange });
+			Children.Add(new FlowDirectionGalleryCP(direction) { Title = "3", BackgroundColor = Colors.Yellow });
 		}
 	}
 
@@ -251,7 +252,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			var box = AddView<BoxView>(grid, ref col, ref row);
 			box.WidthRequest = box.HeightRequest = 20;
-			box.BackgroundColor = Color.Purple;
+			box.BackgroundColor = Colors.Purple;
 
 			var btn = AddView<Button>(grid, ref col, ref row);
 			btn.Text = "Some text";
@@ -314,7 +315,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			var prog = AddView<ProgressBar>(grid, ref col, ref row, 2);
 			prog.WidthRequest = 200;
-			prog.BackgroundColor = Color.DarkGray;
+			prog.BackgroundColor = Colors.DarkGray;
 			Device.StartTimer(TimeSpan.FromSeconds(1), () =>
 			{
 				prog.Progress += .1;
@@ -363,17 +364,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 									new Label { Text = $"Device Direction: {DeviceDirection}" },
 									horStack,
 									grid,
-									new Label { Text = "TableView", FontSize = 10, TextColor = Color.DarkGray },
+									new Label { Text = "TableView", FontSize = 10, TextColor = Colors.DarkGray },
 									tbl,
-									new Label { Text = "ListView w/ TextCell", FontSize = 10, TextColor = Color.DarkGray },
+									new Label { Text = "ListView w/ TextCell", FontSize = 10, TextColor = Colors.DarkGray },
 									new ListView { HorizontalOptions = hOptions, ItemsSource = Enumerable.Range(0, 3).Select(c => "Text Cell!"), ItemTemplate = textCell },
-									new Label { Text = "ListView w/ SwitchCell", FontSize = 10, TextColor = Color.DarkGray },
+									new Label { Text = "ListView w/ SwitchCell", FontSize = 10, TextColor = Colors.DarkGray },
 									new ListView { HorizontalOptions = hOptions, ItemsSource = Enumerable.Range(0, 3).Select(c => true), ItemTemplate = switchCell },
-									new Label { Text = "ListView w/ EntryCell", FontSize = 10, TextColor = Color.DarkGray },
+									new Label { Text = "ListView w/ EntryCell", FontSize = 10, TextColor = Colors.DarkGray },
 									new ListView { HorizontalOptions = hOptions, ItemsSource = Enumerable.Range(0, 3).Select(c => "Entry Cell!"), ItemTemplate = entryCell },
-									new Label { Text = "ListView w/ ImageCell", FontSize = 10, TextColor = Color.DarkGray },
+									new Label { Text = "ListView w/ ImageCell", FontSize = 10, TextColor = Colors.DarkGray },
 									new ListView { HorizontalOptions = hOptions, ItemsSource = Enumerable.Range(0, 3).Select(c => "coffee.png"), ItemTemplate = imageCell },
-									new Label { Text = "ListView w/ ViewCell", FontSize = 10, TextColor = Color.DarkGray },
+									new Label { Text = "ListView w/ ViewCell", FontSize = 10, TextColor = Colors.DarkGray },
 									new ListView { HorizontalOptions = hOptions, ItemsSource = Enumerable.Range(0, 3), ItemTemplate = viewCell },
 								 },
 
@@ -391,7 +392,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var hOptions = LayoutOptions.Start;
 			var vOptions = LayoutOptions.End;
 			var margin = new Thickness(0, 10);
-			var bgColor = Color.LightGray;
+			var bgColor = Colors.LightGray;
 
 			T view = (T)Activator.CreateInstance(typeof(T));
 
@@ -400,7 +401,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			view.Margin = margin;
 			view.BackgroundColor = bgColor;
 
-			var label = new Label { Text = $"({col},{row}) {typeof(T).ToString()}", FontSize = 10, TextColor = Color.DarkGray };
+			var label = new Label { Text = $"({col},{row}) {typeof(T).ToString()}", FontSize = 10, TextColor = Colors.DarkGray };
 
 			if (colSpan > 1 && col > 0)
 				NextCell(ref col, ref row, colSpan);
