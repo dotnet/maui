@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using WSize = Windows.Foundation.Size;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

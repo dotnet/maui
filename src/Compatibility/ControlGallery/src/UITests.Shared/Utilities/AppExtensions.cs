@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 	using IApp = global::Xamarin.UITest.IApp;
 	internal static class AppExtensions
 	{
-#if __WINDOWS__
+#if WINDOWS
 		public static void Restart(this IApp app)
 		{
 			((ScreenshotConditionalApp)app).Restart();
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 #endif
 		public static bool RestartIfAppIsClosed(this IApp app)
 		{
-#if __WINDOWS__
+#if WINDOWS
 			return ((ScreenshotConditionalApp)app).RestartIfAppIsClosed();
 #else
 			return false;
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 		public static string ReadDatePicker(this IApp app, string marked)
 		{
-#if __WINDOWS__
+#if WINDOWS
 			return ((ScreenshotConditionalApp)app).ReadDatePicker(marked).ToString();
 #else
 			return app.WaitForElement(marked)[0].ReadText();
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 		public static string ReadTimePicker(this IApp app, string marked)
 		{
-#if __WINDOWS__
+#if WINDOWS
 			return ((ScreenshotConditionalApp)app).ReadTimePicker(marked).ToString();
 #else
 			return app.WaitForElement(marked)[0].ReadText();
