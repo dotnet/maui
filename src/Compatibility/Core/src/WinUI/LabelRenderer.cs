@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var run = new Run { Text = span.Text ?? string.Empty };
 
 			if (span.TextColor.IsNotDefault())
-				run.Foreground = span.TextColor.ToBrush();
+				run.Foreground = Controls.Platform.ColorExtensions.ToNative(span.TextColor);
 
 			if (!span.IsDefault())
 				run.ApplyFont(span);
@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Label label = Element;
 			if (label != null && label.TextColor.IsNotDefault())
 			{
-				textBlock.Foreground = label.TextColor.ToBrush();
+				textBlock.Foreground = Controls.Platform.ColorExtensions.ToNative(label.TextColor);
 			}
 			else
 			{

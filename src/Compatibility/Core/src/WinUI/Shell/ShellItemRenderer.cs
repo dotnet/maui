@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 							if (!fontImageSource.Color.IsDefault())
 							{
-								icon.Foreground = fontImageSource.Color.ToBrush();
+								icon.Foreground = Controls.Platform.ColorExtensions.ToNative(fontImageSource.Color);
 							}
 
 							btn.Icon = icon;

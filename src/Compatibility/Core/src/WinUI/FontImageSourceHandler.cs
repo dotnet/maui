@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					Glyph = fontImageSource.Glyph,
 					FontSize = fontImageSource.Size,
-					Foreground = fontImageSource.Color.ToBrush()
+					Foreground = Controls.Platform.ColorExtensions.ToNative(fontImageSource.Color)
 				};
 
 				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily();
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					Glyph = fontImageSource.Glyph,
 					FontSize = fontImageSource.Size,
-					Foreground = fontImageSource.Color.ToBrush()
+					Foreground = Controls.Platform.ColorExtensions.ToNative(fontImageSource.Color)
 				};
 
 				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily();

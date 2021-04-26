@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					new WSolidColorBrush(uiColor);
 			}
 			else
-				FlyoutBackgroundColor = _shell.FlyoutBackgroundColor.ToBrush();
+				FlyoutBackgroundColor = Controls.Platform.ColorExtensions.ToNative(_shell.FlyoutBackgroundColor);
 		}
 
 		protected virtual void OnElementSet(Shell shell)

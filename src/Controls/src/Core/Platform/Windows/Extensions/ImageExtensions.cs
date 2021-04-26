@@ -47,28 +47,25 @@ namespace Microsoft.Maui.Controls.Platform
 			return source.ToWindowsIconSourceAsync().GetAwaiter().GetResult();
 		}
 
-		public static Task<Microsoft.UI.Xaml.Controls.IconSource> ToWindowsIconSourceAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
+		public static async Task<Microsoft.UI.Xaml.Controls.IconSource> ToWindowsIconSourceAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			return Task.FromResult<IconSource>(null);
-			// TODO MAUI
+			if (source == null || source.IsEmpty)
+				return null;
 
-			//if (source == null || source.IsEmpty)
-			//	Task.FromResult<WImageSource>(null);
+			var handler = Registrar.Registered.GetHandlerForObject<IIconElementHandler>(source);
+			if (handler == null)
+				return null;
 
-			//var handler = Registrar.Registered.GetHandlerForObject<IIconElementHandler>(source);
-			//if (handler == null)
-			//	Task.FromResult<WImageSource>(null);
+			try
+			{
+				return await handler.LoadIconSourceAsync(source, cancellationToken);
+			}
+			catch (OperationCanceledException)
+			{
+				// no-op
+			}
 
-			//try
-			//{
-			//	return await handler.LoadIconSourceAsync(source, cancellationToken);
-			//}
-			//catch (OperationCanceledException)
-			//{
-			//	// no-op
-			//}
-
-			//Task.FromResult<WImageSource>(null);
+			return null;
 		}
 
 		public static IconElement ToWindowsIconElement(this ImageSource source)
@@ -76,28 +73,25 @@ namespace Microsoft.Maui.Controls.Platform
 			return source.ToWindowsIconElementAsync().GetAwaiter().GetResult();
 		}
 
-		public static Task<IconElement> ToWindowsIconElementAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
+		public static async Task<IconElement> ToWindowsIconElementAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			//TODO MAUI
-			return Task.FromResult<IconElement>(null);
+			if (source == null || source.IsEmpty)
+				return null;
 
-			//if (source == null || source.IsEmpty)
-			//	Task.FromResult<WImageSource>(null);
+			var handler = Registrar.Registered.GetHandlerForObject<IIconElementHandler>(source);
+			if (handler == null)
+				return null;
 
-			//var handler = Registrar.Registered.GetHandlerForObject<IIconElementHandler>(source);
-			//if (handler == null)
-			//	Task.FromResult<WImageSource>(null);
+			try
+			{
+				return await handler.LoadIconElementAsync(source, cancellationToken);
+			}
+			catch (OperationCanceledException)
+			{
+				// no-op
+			}
 
-			//try
-			//{
-			//	return await handler.LoadIconElementAsync(source, cancellationToken);
-			//}
-			//catch (OperationCanceledException)
-			//{
-			//	// no-op
-			//}
-
-			//Task.FromResult<WImageSource>(null);
+			return null;
 		}
 
 		public static WImageSource ToWindowsImageSource(this ImageSource source)
@@ -105,35 +99,32 @@ namespace Microsoft.Maui.Controls.Platform
 			return source.ToWindowsImageSourceAsync().GetAwaiter().GetResult();
 		}
 
-		public static Task<WImageSource> ToWindowsImageSourceAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
+		public static async Task<WImageSource> ToWindowsImageSourceAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			// TODO MAUI
-			return Task.FromResult<WImageSource>(null);
+			if (source == null || source.IsEmpty)
+				return null;
 
-//			if (source == null || source.IsEmpty)
-//				Task.FromResult<WImageSource>(null);
+			var handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source);
+			if (handler == null)
+				return null;
 
-//			var handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source);
-//			if (handler == null)
-//				Task.FromResult<WImageSource>(null);
+			try
+			{
+				return await handler.LoadImageAsync(source, cancellationToken);
+			}
+			catch (OperationCanceledException)
+			{
+				Log.Warning("Image loading", "Image load cancelled");
+			}
+			catch (Exception ex)
+			{
+				Log.Warning("Image loading", $"Image load failed: {ex}");
+#if DEBUG
+				throw;
+#endif
+			}
 
-//			try
-//			{
-//				return await handler.LoadImageAsync(source, cancellationToken);
-//			}
-//			catch (OperationCanceledException)
-//			{
-//				Log.Warning("Image loading", "Image load cancelled");
-//			}
-//			catch (Exception ex)
-//			{
-//				Log.Warning("Image loading", $"Image load failed: {ex}");
-//#if DEBUG
-//				throw;
-//#endif
-//			}
-
-//			Task.FromResult<WImageSource>(null);
+			return null;
 		}
 	}
 }

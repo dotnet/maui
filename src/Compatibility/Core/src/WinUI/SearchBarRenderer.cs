@@ -325,7 +325,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			
 			if (!backgroundColor.IsDefault())
 			{
-				_queryTextBox.Background = backgroundColor.ToBrush();
+				_queryTextBox.Background = Controls.Platform.ColorExtensions.ToNative(backgroundColor);
 			}
 			else
 			{

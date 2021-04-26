@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				_defaultAutomationPropertiesName = Control.SetAutomationPropertiesName(Element, _defaultAutomationPropertiesName);
 				_defaultAutomationPropertiesHelpText = Control.SetAutomationPropertiesHelpText(Element, _defaultAutomationPropertiesHelpText);
-				_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, Element.Handler?.MauiContext,  _defaultAutomationPropertiesLabeledBy);
+				_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, Element.Handler?.MauiContext ?? Forms.MauiContext,  _defaultAutomationPropertiesLabeledBy);
 				_defaultAutomationPropertiesAccessibilityView = Control.SetAutomationPropertiesAccessibilityView(Element, _defaultAutomationPropertiesAccessibilityView);
 			}
 		}

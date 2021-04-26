@@ -297,7 +297,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (VirtualView.BarBackgroundColor.IsDefault() && defaultColor != null)
 				return (WBrush)defaultColor;
-			return VirtualView.BarBackgroundColor.ToBrush();
+			return Maui.ColorExtensions.ToNative(VirtualView.BarBackgroundColor);
 		}
 
 		static WBrush GetBarBackgroundBrush(NavigationPage navigationPage)
@@ -319,7 +319,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			object defaultColor = Microsoft.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
 			if (navigationPage.BarTextColor.IsDefault())
 				return (WBrush)defaultColor;
-			return navigationPage.BarTextColor.ToBrush();
+			return Maui.ColorExtensions.ToNative(navigationPage.BarTextColor);
 		}
 
 		bool GetIsNavBarPossible()

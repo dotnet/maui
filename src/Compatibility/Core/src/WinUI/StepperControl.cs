@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 			}
 
-			WBrush brush = value.ToBrush();
+			WBrush brush = Controls.Platform.ColorExtensions.ToNative(value);
 			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
 			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;
 			if (_minus != null)
