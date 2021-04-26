@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void Clip(this FrameworkElement frameworkElement, Geometry geometry)
 		{
-			var wGeometry = geometry.ToWindows();
+			var wGeometry = geometry.ToNative();
 
 			if (wGeometry is WRectangleGeometry wRectangleGeometry && frameworkElement.Clip != wRectangleGeometry)
 				frameworkElement.Clip = wRectangleGeometry;

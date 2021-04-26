@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Controls.Shapes;
 using WFoundation = Windows.Foundation;
 using WMedia = Microsoft.UI.Xaml.Media;
@@ -6,7 +7,11 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class GeometryExtensions
 	{
-		public static WMedia.Geometry ToWindows(this Geometry geometry)
+		[Obsolete("ToWindows is obsolete. Please use ToNative instead")]
+		public static WMedia.Geometry ToWindows(this Geometry geometry) =>
+			geometry.ToNative();
+
+		public static WMedia.Geometry ToNative(this Geometry geometry)
 		{
 			WMedia.Geometry wGeometry = null;
 
@@ -15,8 +20,8 @@ namespace Microsoft.Maui.Controls.Platform
 				LineGeometry lineGeometry = geometry as LineGeometry;
 				wGeometry = new WMedia.LineGeometry
 				{
-					StartPoint = lineGeometry.StartPoint.ToWindows(),
-					EndPoint = lineGeometry.EndPoint.ToWindows()
+					StartPoint = lineGeometry.StartPoint.ToNative(),
+					EndPoint = lineGeometry.EndPoint.ToNative()
 				};
 			}
 			else if (geometry is RectangleGeometry)
@@ -32,7 +37,7 @@ namespace Microsoft.Maui.Controls.Platform
 				EllipseGeometry ellipseGeometry = geometry as EllipseGeometry;
 				wGeometry = new WMedia.EllipseGeometry
 				{
-					Center = ellipseGeometry.Center.ToWindows(),
+					Center = ellipseGeometry.Center.ToNative(),
 					RadiusX = ellipseGeometry.RadiusX,
 					RadiusY = ellipseGeometry.RadiusY
 				};
@@ -47,7 +52,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				foreach (Geometry children in geometryGroup.Children)
 				{
-					WMedia.Geometry winChild = children.ToWindows();
+					WMedia.Geometry winChild = children.ToNative();
 					(wGeometry as WMedia.GeometryGroup).Children.Add(winChild);
 				}
 			}
@@ -64,7 +69,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					WMedia.PathFigure wPathFigure = new WMedia.PathFigure
 					{
-						StartPoint = xamPathFigure.StartPoint.ToWindows(),
+						StartPoint = xamPathFigure.StartPoint.ToNative(),
 						IsFilled = xamPathFigure.IsFilled,
 						IsClosed = xamPathFigure.IsClosed
 					};
@@ -79,7 +84,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 							WMedia.LineSegment winSegment = new WMedia.LineSegment
 							{
-								Point = lineSegment.Point.ToWindows()
+								Point = lineSegment.Point.ToNative()
 							};
 
 							wPathFigure.Segments.Add(winSegment);
@@ -93,7 +98,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 							foreach (var point in polyLineSegment.Points)
 							{
-								wSegment.Points.Add(point.ToWindows());
+								wSegment.Points.Add(point.ToNative());
 							}
 
 							wPathFigure.Segments.Add(wSegment);
@@ -106,9 +111,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 							WMedia.BezierSegment wSegment = new WMedia.BezierSegment
 							{
-								Point1 = bezierSegment.Point1.ToWindows(),
-								Point2 = bezierSegment.Point2.ToWindows(),
-								Point3 = bezierSegment.Point3.ToWindows()
+								Point1 = bezierSegment.Point1.ToNative(),
+								Point2 = bezierSegment.Point2.ToNative(),
+								Point3 = bezierSegment.Point3.ToNative()
 							};
 
 							wPathFigure.Segments.Add(wSegment);
@@ -121,7 +126,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 							foreach (var point in polyBezierSegment.Points)
 							{
-								wSegment.Points.Add(point.ToWindows());
+								wSegment.Points.Add(point.ToNative());
 							}
 
 							wPathFigure.Segments.Add(wSegment);
@@ -134,8 +139,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 							WMedia.QuadraticBezierSegment wSegment = new WMedia.QuadraticBezierSegment
 							{
-								Point1 = quadraticBezierSegment.Point1.ToWindows(),
-								Point2 = quadraticBezierSegment.Point2.ToWindows()
+								Point1 = quadraticBezierSegment.Point1.ToNative(),
+								Point2 = quadraticBezierSegment.Point2.ToNative()
 							};
 
 							wPathFigure.Segments.Add(wSegment);
@@ -148,7 +153,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 							foreach (var point in polyQuadraticBezierSegment.Points)
 							{
-								wSegment.Points.Add(point.ToWindows());
+								wSegment.Points.Add(point.ToNative());
 							}
 
 							wPathFigure.Segments.Add(wSegment);
@@ -164,7 +169,7 @@ namespace Microsoft.Maui.Controls.Platform
 								RotationAngle = arcSegment.RotationAngle,
 								IsLargeArc = arcSegment.IsLargeArc,
 								SweepDirection = arcSegment.SweepDirection == SweepDirection.Clockwise ? WMedia.SweepDirection.Clockwise : WMedia.SweepDirection.Counterclockwise,
-								Point = arcSegment.Point.ToWindows()
+								Point = arcSegment.Point.ToNative()
 							};
 
 							wPathFigure.Segments.Add(wSegment);

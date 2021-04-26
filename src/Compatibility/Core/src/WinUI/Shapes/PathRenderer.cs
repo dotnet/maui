@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 
 		void UpdateData()
 		{
-			Control.Data = Element.Data.ToWindows();
+			Control.Data = Element.Data.ToNative();
 		}
 
 		void UpdateRenderTransform()
