@@ -63,7 +63,7 @@ namespace Microsoft.Maui
 			{
 				// But if RTL support is not available for some reason, we have to resort
 				// to gravity, because Android will simply ignore text alignment
-				textView.Gravity = text.HorizontalTextAlignment.ToHorizontalGravityFlags();
+				textView.Gravity = Android.Views.GravityFlags.Top | text.HorizontalTextAlignment.ToHorizontalGravityFlags();
 			}
 		}
 

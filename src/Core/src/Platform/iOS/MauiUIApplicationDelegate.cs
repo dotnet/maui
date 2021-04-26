@@ -28,15 +28,14 @@ namespace Microsoft.Maui
 
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
-			window.MauiContext = mauiContext;
 
-			var content = (window.Page as IView) ?? window.Page.View;
+			var page = window.View;
 
 			Window = new UIWindow
 			{
 				RootViewController = new UIViewController
 				{
-					View = content.ToNative(window.MauiContext)
+					View = page.ToNative(mauiContext)
 				}
 			};
 

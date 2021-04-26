@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
@@ -56,20 +54,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				CrossPlatformMeasure = VirtualView.Measure,
 				CrossPlatformArrange = VirtualView.Arrange,
-				CrossPlatformArrangeChildren = () =>
-				{
-					foreach (var element in VirtualView.Children)
-					{
-						element.Handler?.SetFrame(element.Frame);
-					}
-				},
-				CrossPlatformInvalidateChildrenMeasure = () =>
-				{
-					foreach (var element in VirtualView.Children)
-					{
-						element.InvalidateMeasure();
-					}
-				}
 			};
 
 			return view;

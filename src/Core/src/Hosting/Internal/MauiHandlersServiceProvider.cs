@@ -15,5 +15,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public IViewHandler? GetHandler<T>() where T : IView
 			=> GetHandler(typeof(T));
+
+		public Type? GetHandlerType(Type iview) => GetServiceType(iview)?.ImplementationType;
 	}
 }

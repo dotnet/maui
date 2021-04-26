@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
@@ -33,45 +34,34 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (IsMeasureValid)
-			{
-				return DesiredSize;
-			}
-
 			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
 			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
 				sizeWithoutMargins.Height + Margin.VerticalThickness);
 
-			IsMeasureValid = true;
 			return DesiredSize;
 		}
 
-		protected override void ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			if (!IsMeasureValid)
-			{
-				return;
-			}
-
-			if (IsArrangeValid)
-			{
-				return;
-			}
-
-			Arrange(bounds);
+			base.ArrangeOverride(bounds);
 
 			LayoutManager.ArrangeChildren(Frame);
-			IsArrangeValid = true;
-			Handler?.SetFrame(Frame);
+
+			foreach (var child in Children)
+			{
+				child.Handler?.SetFrame(child.Frame);
+			}
+
+			return Frame.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()
 		{
-			base.InvalidateMeasure();
+			base.InvalidateMeasureOverride();
 
 			foreach (var child in Children)
 			{
-				child.InvalidateArrange();
+				child.InvalidateMeasure();
 			}
 		}
 
@@ -82,9 +72,8 @@ namespace Microsoft.Maui.Controls.Layout2
 
 			_children.Add(child);
 
-			// TODO MAUI
-			if (child is Element ve)
-				ve.Parent = this;
+			if (child is Element element)
+				element.Parent = this;
 
 			InvalidateMeasure();
 
@@ -98,9 +87,8 @@ namespace Microsoft.Maui.Controls.Layout2
 
 			_children.Remove(child);
 
-			// TODO MAUI
-			if (child is Element ve)
-				ve.Parent = null;
+			if (child is Element element)
+				element.Parent = null;
 
 			InvalidateMeasure();
 
