@@ -56,6 +56,12 @@ namespace Microsoft.Maui.Handlers
 				_sourceCancellation = null;
 				IsResolutionDependent = false;
 			}
+
+			public void Reset()
+			{
+				BeginLoad();
+				CompleteLoad(null);
+			}
 		}
 	}
 }

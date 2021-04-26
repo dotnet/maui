@@ -72,7 +72,8 @@ namespace Microsoft.Maui
 			{
 				var service = services.GetRequiredImageSourceService(imageSource);
 
-				var result = await service.GetImageSourceAsync(imageSource, cancellationToken);
+				var scale = imageView.XamlRoot?.RasterizationScale ?? 1;
+				var result = await service.GetImageSourceAsync(imageSource, (float)scale, cancellationToken);
 				var uiImage = result?.Value;
 
 				var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;

@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 			if (imageSource is IFontImageSource fontImageSource)
 				return GetImageAsync(fontImageSource, scale, cancellationToken);
 
-			return Task.FromResult<IImageSourceServiceResult<UIImage>?>(null);
+			return FromResult(null);
 		}
 
 		public Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IFontImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)

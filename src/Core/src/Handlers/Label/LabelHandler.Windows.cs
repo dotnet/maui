@@ -8,28 +8,28 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, FrameworkElement>
 	{
-		protected TextBlock? TextBlock { get; set; }
+		protected TextBlock? RealNativeView { get; set; }
 
 		protected override FrameworkElement CreateNativeView()
 		{
-			TextBlock = new TextBlock();
-			return new Border { Child = TextBlock };
+			RealNativeView = new TextBlock();
+			return new Border { Child = RealNativeView };
 		}
 
 		public static void MapText(LabelHandler handler, ILabel label) =>
-			handler.TextBlock?.UpdateText(label);
+			handler.RealNativeView?.UpdateText(label);
 
 		public static void MapTextColor(LabelHandler handler, ILabel label) =>
-			handler.TextBlock?.UpdateTextColor(label);
+			handler.RealNativeView?.UpdateTextColor(label);
 
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label) =>	
-			handler.TextBlock?.UpdateCharacterSpacing(label);
+			handler.RealNativeView?.UpdateCharacterSpacing(label);
 
 		public static void MapFont(LabelHandler handler, ILabel label)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.TextBlock?.UpdateFont(label, fontManager);
+			handler.RealNativeView?.UpdateFont(label, fontManager);
 		}
 
 		[MissingMapper]
@@ -39,13 +39,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label) { }
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label) =>	
-			handler.TextBlock?.UpdateTextDecorations(label);
+			handler.RealNativeView?.UpdateTextDecorations(label);
 
 		public static void MapMaxLines(LabelHandler handler, ILabel label) =>
-			handler.TextBlock?.UpdateMaxLines(label);
+			handler.RealNativeView?.UpdateMaxLines(label);
 
 		public static void MapPadding(LabelHandler handler, ILabel label) =>
-			handler.TextBlock?.UpdatePadding(label);
+			handler.RealNativeView?.UpdatePadding(label);
 
 		[MissingMapper]
 		public static void MapLineHeight(LabelHandler handler, ILabel label) { }

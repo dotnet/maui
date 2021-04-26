@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(nativeView);
 
-			_sourceManager.CompleteLoad(null);
+			_sourceManager.Reset();
 		}
 
 		public static void MapAspect(ImageHandler handler, IImage image)

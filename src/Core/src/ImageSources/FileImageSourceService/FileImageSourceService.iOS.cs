@@ -14,7 +14,7 @@ namespace Microsoft.Maui
 			if (imageSource is IFileImageSource fileImageSource)
 				return GetImageAsync(fileImageSource, scale, cancellationToken);
 
-			return Task.FromResult<IImageSourceServiceResult<UIImage>?>(null);
+			return FromResult(null);
 		}
 
 		public Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IFileImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)

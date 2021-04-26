@@ -10,15 +10,15 @@ namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IImageSource imageSource, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IUriImageSource uriImageSource)
-				return GetImageSourceAsync(uriImageSource, cancellationToken);
+				return GetImageSourceAsync(uriImageSource, scale, cancellationToken);
 
 			return Task.FromResult<IImageSourceServiceResult<WImageSource>?>(null);
 		}
 
-		public async Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IUriImageSource imageSource, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IUriImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
 				return null;

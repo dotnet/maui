@@ -26,6 +26,7 @@ namespace Microsoft.Maui
 #elif WINDOWS
 		public abstract Task<IImageSourceServiceResult<UI.Xaml.Media.ImageSource>?> GetImageSourceAsync(
 			IImageSource imageSource,
+			float scale = 1,
 			CancellationToken cancellationToken = default);
 #endif
 	}
