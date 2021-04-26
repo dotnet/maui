@@ -57,4 +57,29 @@ namespace Microsoft.Maui
 
 		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
 	}
+
+	public class PageViewController : UIViewController
+	{
+		readonly IPage _page;
+		PageView? _pageView;
+
+		public PageViewController(IPage page)
+		{
+			_page = page;
+		}
+
+		public override void LoadView()
+		{
+			if (_pageView == null)
+			{
+				_pageView = new PageView
+				{
+					CrossPlatformArrange = _page.Arrange,
+				};
+			}
+
+			View = _pageView;
+		}
+	}
+
 }

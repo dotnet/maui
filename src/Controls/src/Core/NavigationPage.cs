@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls
 				else
 					CurrentNavigationTask = tcs.Task;
 
-				var result = await PopAsyncInner(animated, false);
+				var result = await (this as INavigationPageController).PopAsyncInner(animated, false);
 				tcs.SetResult(true);
 				return result;
 			}
@@ -291,8 +291,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<NavigationRequestedEventArgs> InsertPageBeforeRequested;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public async Task<Page> PopAsyncInner(bool animated, bool fast)
+		async Task<Page> INavigationPageController.PopAsyncInner(bool animated, bool fast)
 		{
 			if (StackDepth == 1)
 			{

@@ -3,14 +3,18 @@ using System.Linq;
 
 #if __IOS__ || IOS || MACCATALYST
 using NativeView = UIKit.UIView;
+using UIKit;
 #else
 using NativeView = AppKit.NSView;
 #endif
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PageView>
+	public partial class PageHandler : ViewHandler<IPage, PageView>, INativeViewHandler
 	{
+		PageViewController? _pageViewController;
+		UIViewController? INativeViewHandler.ViewController => _pageViewController;
+
 		protected override PageView CreateNativeView()
 		{
 			if (VirtualView == null)
@@ -18,12 +22,12 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a LayoutView");
 			}
 
-			var view = new PageView
-			{
-				CrossPlatformArrange = VirtualView.Arrange,
-			};
+			_pageViewController = new PageViewController(VirtualView);
 
-			return view;
+			if (_pageViewController.View is PageView pv)
+				return pv;
+
+			throw new InvalidOperationException($"PageViewController.View must be a PageView");
 		}
 
 		public override void SetVirtualView(IView view)
@@ -40,6 +44,12 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 			NativeView.AddSubview(VirtualView.Content.ToNative(MauiContext));
+		}
+
+		public static void MapTitle(PageHandler handler, IPage page)
+		{
+			if(handler._pageViewController != null)
+				handler._pageViewController.Title = page.Title;
 		}
 	}
 }
