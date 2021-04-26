@@ -923,7 +923,7 @@ Task("VS-WINUI")
                 GetMSBuildSettings(includePrerelease:true).
                 WithRestore());
 
-        StartVisualStudioForDotNet6("./Microsoft.Maui.WinUI.sln");
+        StartVisualStudio("./Microsoft.Maui.WinUI.sln", true);
     });
 
 Task("VS")
@@ -1235,20 +1235,37 @@ T GetBuildVariable<T>(string key, T defaultValue)
     return Argument(key, EnvironmentVariable(key, upperCaseReturnValue));
 }
 
-void StartVisualStudio(string sln = "./Microsoft.Maui.sln")
+void StartVisualStudio(string sln = "./Microsoft.Maui.sln", bool usePreviewVs = false)
 {
     if(isCIBuild)
         return;
 
     if(IsRunningOnWindows())
     {
-        StartProcess("powershell",
-            new ProcessSettings
-            {
-                Arguments = new ProcessArgumentBuilder()
-                    .Append("start")
-                    .Append(sln)
-            });
+        if(usePreviewVs)
+        {
+            var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, });
+            if (vsLatest == null)
+                throw new Exception("Unable to find Visual Studio!");
+            var devenv = vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe");
+
+            StartProcess(devenv,
+                new ProcessSettings
+                {
+                    Arguments = new ProcessArgumentBuilder()
+                        .Append(sln)
+                });
+        }
+        else
+        {
+            StartProcess("powershell",
+                new ProcessSettings
+                {
+                    Arguments = new ProcessArgumentBuilder()
+                        .Append("start")
+                        .Append(sln)
+                });
+        }
     }
     else
          StartProcess("open", new ProcessSettings{ Arguments = sln });
