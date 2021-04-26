@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation.Metadata;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui
 {
@@ -52,7 +53,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static async Task<IDisposable?> UpdateSourceAsync(this WImage imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
+		public static async Task<IImageSourceServiceResult<WImageSource>?> UpdateSourceAsync(this WImage imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
 		{
 			imageView.Clear();
 

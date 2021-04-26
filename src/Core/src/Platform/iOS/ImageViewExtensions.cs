@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static async Task<IDisposable?> UpdateSourceAsync(this UIImageView imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
+		public static async Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(this UIImageView imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
 		{
 			imageView.Clear();
 
@@ -50,7 +50,8 @@ namespace Microsoft.Maui
 			{
 				var service = services.GetRequiredImageSourceService(imageSource);
 
-				var result = await service.GetImageAsync(imageSource, (float)imageView.ContentScaleFactor, cancellationToken);
+				var scale = imageView.Window?.Screen?.Scale ?? 1;
+				var result = await service.GetImageAsync(imageSource, (float)scale, cancellationToken);
 				var uiImage = result?.Value;
 
 				var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;

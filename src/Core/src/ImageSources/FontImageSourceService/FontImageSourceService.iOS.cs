@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 				if (image == null)
 					return FromResult(null);
 
-				var result = new ImageSourceServiceResult(image, () => image.Dispose());
+				var result = new ImageSourceServiceResult(image, true, () => image.Dispose());
 
 				return FromResult(result);
 			}

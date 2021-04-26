@@ -1,11 +1,29 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, UIImageView>
 	{
-		protected override UIImageView CreateNativeView() => new UIImageView();
+		protected override UIImageView CreateNativeView() => new MauiImageView();
+
+		protected override void ConnectHandler(UIImageView nativeView)
+		{
+			base.ConnectHandler(nativeView);
+
+			if (NativeView is MauiImageView imageView)
+				imageView.WindowChanged += OnWindowChanged;
+		}
+
+		protected override void DisconnectHandler(UIImageView nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+
+			if (NativeView is MauiImageView imageView)
+				imageView.WindowChanged -= OnWindowChanged;
+		}
 
 		public static void MapAspect(ImageHandler handler, IImage image)
 		{
@@ -31,6 +49,12 @@ namespace Microsoft.Maui.Handlers
 			var result = await handler.NativeView.UpdateSourceAsync(image, provider, token);
 
 			handler._sourceManager.CompleteLoad(result);
+		}
+
+		void OnWindowChanged(object? sender, EventArgs e)
+		{
+			if (_sourceManager.IsResolutionDependent)
+				UpdateValue(nameof(IImage.Source));
 		}
 	}
 }

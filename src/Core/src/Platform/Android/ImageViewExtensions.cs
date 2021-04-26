@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static async Task<IDisposable?> UpdateSourceAsync(this ImageView imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
+		public static async Task<IImageSourceServiceResult<Drawable>?> UpdateSourceAsync(this ImageView imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
 		{
 			imageView.Clear();
 

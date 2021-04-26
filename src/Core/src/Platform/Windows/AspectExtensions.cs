@@ -7,8 +7,10 @@ namespace Microsoft.Maui
 		public static WStretch ToStretch(this Aspect aspect) =>
 			aspect switch
 			{
-				Aspect.Fill => WStretch.Fill,
+				Aspect.AspectFit => WStretch.Uniform,
 				Aspect.AspectFill => WStretch.UniformToFill,
+				Aspect.Fill => WStretch.Fill,
+				Aspect.Center => WStretch.None,
 				_ => WStretch.Uniform,
 			};
 	}

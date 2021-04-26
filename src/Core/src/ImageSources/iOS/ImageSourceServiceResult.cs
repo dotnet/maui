@@ -8,12 +8,20 @@ namespace Microsoft.Maui
 		Action? _dispose;
 
 		public ImageSourceServiceResult(UIImage image, Action? dispose = null)
+			: this(image, false, dispose)
+		{
+		}
+
+		public ImageSourceServiceResult(UIImage image, bool resolutionDependent, Action? dispose = null)
 		{
 			Value = image;
+			IsResolutionDependent = resolutionDependent;
 			_dispose = dispose;
 		}
 
 		public UIImage Value { get; }
+
+		public bool IsResolutionDependent { get; }
 
 		public void Dispose()
 		{

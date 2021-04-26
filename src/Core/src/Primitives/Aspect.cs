@@ -4,6 +4,7 @@ namespace Microsoft.Maui
 	{
 		AspectFit,
 		AspectFill,
-		Fill
+		Fill,
+		Center
 	}
 }

@@ -15,10 +15,10 @@ namespace Microsoft.Maui.BumptechGlide
 			return await target.AsTask<Drawable>(cancellationToken);
 		}
 
-		public static Task<GlideImageSourceServiceResult?> SubmitAsync(this RequestBuilder requestBuilder, Context context, CancellationToken cancellationToken = default) =>
+		public static Task<ImageSourceServiceResult?> SubmitAsync(this RequestBuilder requestBuilder, Context context, CancellationToken cancellationToken = default) =>
 			requestBuilder.SubmitAsync(Glide.With(context), cancellationToken);
 
-		public static async Task<GlideImageSourceServiceResult?> SubmitAsync(this RequestBuilder requestBuilder, RequestManager requestManager, CancellationToken cancellationToken = default)
+		public static async Task<ImageSourceServiceResult?> SubmitAsync(this RequestBuilder requestBuilder, RequestManager requestManager, CancellationToken cancellationToken = default)
 		{
 			var target = requestBuilder.Submit();
 
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.BumptechGlide
 			if (drawable == null)
 				return null;
 
-			return new GlideImageSourceServiceResult(drawable, () => requestManager.Clear(target));
+			return new ImageSourceServiceResult(drawable, () => requestManager.Clear(target));
 		}
 	}
 }
