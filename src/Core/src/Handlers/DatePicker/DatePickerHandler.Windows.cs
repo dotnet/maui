@@ -10,8 +10,10 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker) { }
 
-		[MissingMapper]
-		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.NativeView?.UpdateDate(datePicker);
+		}
 
 		[MissingMapper]
 		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker) { }

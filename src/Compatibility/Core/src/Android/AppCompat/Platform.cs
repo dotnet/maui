@@ -8,6 +8,7 @@ using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
@@ -671,7 +672,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			void UpdateBackgroundColor()
 			{
 				Color modalBkgndColor = _modal.BackgroundColor;
-				if (modalBkgndColor.IsDefault)
+				if (modalBkgndColor == null)
 					_backgroundView.SetWindowBackground();
 				else
 					_backgroundView.SetBackgroundColor(modalBkgndColor.ToAndroid());

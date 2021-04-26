@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -9,6 +9,7 @@ using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
 using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 using TabbedPageConfiguration = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TabbedPage;
 using TranslucencyMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TranslucencyMode;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -354,7 +355,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			var barBackgroundColor = Tabbed.BarBackgroundColor;
-			var isDefaultColor = barBackgroundColor.IsDefault;
+			var isDefaultColor = barBackgroundColor == null;
 
 			if (isDefaultColor && !_barBackgroundColorWasSet)
 				return;
@@ -388,7 +389,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			var barTextColor = Tabbed.BarTextColor;
-			var isDefaultColor = barTextColor.IsDefault;
+			var isDefaultColor = barTextColor == null;
 
 			if (isDefaultColor && !_barTextColorWasSet)
 				return;
@@ -408,13 +409,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else
 				tabBarTextColor = barTextColor.ToUIColor();
 
-#if MACCATALYST
-			var attributes = new UIStringAttributes();
-			attributes.ForegroundColor = tabBarTextColor;
-#else
 			var attributes = new UITextAttributes();
 			attributes.TextColor = tabBarTextColor;
-#endif
 
 			foreach (UITabBarItem item in TabBar.Items)
 			{
@@ -492,7 +488,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Tabbed == null || TabBar == null || TabBar.Items == null)
 				return;
 
-			if (Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && Tabbed.SelectedTabColor != Color.Default)
+			if (Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && Tabbed.SelectedTabColor != null)
 			{
 				if (Forms.IsiOS10OrNewer)
 					TabBar.TintColor = Tabbed.SelectedTabColor.ToUIColor();
@@ -511,7 +507,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (!Forms.IsiOS10OrNewer)
 				return;
 
-			if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != Color.Default)
+			if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != null)
 				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToUIColor();
 			else
 				TabBar.UnselectedItemTintColor = UITabBar.Appearance.TintColor;

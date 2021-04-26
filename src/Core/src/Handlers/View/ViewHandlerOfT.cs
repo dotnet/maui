@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 #if __IOS__
 using NativeView = UIKit.UIView;
@@ -45,6 +46,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
+			if (VirtualView == view)
+				return;
+
 			if (VirtualView?.Handler != null)
 				VirtualView.Handler = null;
 
@@ -52,6 +56,9 @@ namespace Microsoft.Maui.Handlers
 
 			VirtualView = (TVirtualView)view;
 			NativeView ??= CreateNativeView();
+
+			if (VirtualView != null && VirtualView.Handler != this)
+				VirtualView.Handler = this;
 
 			if (setupNativeView && NativeView != null)
 			{
@@ -118,5 +125,4 @@ namespace Microsoft.Maui.Handlers
 			private protected set => base.VirtualView = value;
 		}
 	}
-
 }

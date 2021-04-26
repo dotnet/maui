@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			_label = new Label
 			{
 				HeightRequest = 400,
-				BackgroundColor = Color.Gold,
+				BackgroundColor = Colors.Gold,
 				Text = "I should be centered in the gold area",
 				VerticalTextAlignment = TextAlignment.Center,
 				HorizontalTextAlignment = TextAlignment.Center

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
-	xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mg="clr-namespace:Microsoft.Maui.Graphics;assembly=Microsoft.Maui.Graphics"
 	x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Gh11551">
     <ContentPage.Resources>
-		<Rect x:Key="rect" Height="22" Width="{x:Static AbsoluteLayout.AutoSize}" X="1" Y="0.5"/>
+		<mg:Rectangle x:Key="rect" Height="22" Width="{x:Static AbsoluteLayout.AutoSize}" X="1" Y="0.5"/>
     </ContentPage.Resources>
     <Label x:Name="label">
 		<Label.Style>

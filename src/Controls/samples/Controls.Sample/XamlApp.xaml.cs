@@ -21,10 +21,9 @@ namespace Maui.Controls.Sample
 
 		public IServiceProvider Services { get; }
 
-		public override IWindow CreateWindow(IActivationState activationState)
+		protected override IWindow CreateWindow(IActivationState activationState)
 		{
 			Microsoft.Maui.Controls.Compatibility.Forms.Init(activationState);
-
 			return Services.GetRequiredService<IWindow>();
 		}
 	}

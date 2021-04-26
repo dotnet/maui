@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -14,13 +15,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				items.Add(new MyItem1 { Reference = "Hello this is a big text " + i.ToString(), ShowButton = i % 2 == 0, Image = "bank.png" });
 			}
 
-			var header = new Label { Text = "HELLO HEADER ", FontSize = 40, BackgroundColor = Color.Pink };
-			var lst4 = new ListView { Header = header, ItemTemplate = new DataTemplate(typeof(DemoViewCell)), BackgroundColor = Color.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
+			var header = new Label { Text = "HELLO HEADER ", FontSize = 40, BackgroundColor = Colors.Pink };
+			var lst4 = new ListView { Header = header, ItemTemplate = new DataTemplate(typeof(DemoViewCell)), BackgroundColor = Colors.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
 
-			var lst = new ListView { ItemTemplate = new DataTemplate(typeof(DemoEntryCell)), BackgroundColor = Color.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
-			var lst1 = new ListView { ItemTemplate = new DataTemplate(typeof(DemoTextCell)), BackgroundColor = Color.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
-			var lst2 = new ListView { ItemTemplate = new DataTemplate(typeof(DemoSwitchCell)), BackgroundColor = Color.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
-			var lst3 = new ListView { ItemTemplate = new DataTemplate(typeof(DemoImageCell)), BackgroundColor = Color.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
+			var lst = new ListView { ItemTemplate = new DataTemplate(typeof(DemoEntryCell)), BackgroundColor = Colors.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
+			var lst1 = new ListView { ItemTemplate = new DataTemplate(typeof(DemoTextCell)), BackgroundColor = Colors.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
+			var lst2 = new ListView { ItemTemplate = new DataTemplate(typeof(DemoSwitchCell)), BackgroundColor = Colors.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
+			var lst3 = new ListView { ItemTemplate = new DataTemplate(typeof(DemoImageCell)), BackgroundColor = Colors.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
 
 			var bigbUtton = new Button { WidthRequest = 200, HeightRequest = 300, ImageSource = "bank.png" };
 
@@ -28,16 +29,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			var timePicker = new TimePicker { Format = "T", Time = TimeSpan.FromHours(2) };
 
-			var editor = new Editor { Text = "Edit this text on editor", HeightRequest = 100, TextColor = Color.Yellow, BackgroundColor = Color.Gray };
+			var editor = new Editor { Text = "Edit this text on editor", HeightRequest = 100, TextColor = Colors.Yellow, BackgroundColor = Colors.Gray };
 
-			var entry = new Entry { Placeholder = "Edit this text on entry", PlaceholderColor = Color.Pink, TextColor = Color.Yellow, BackgroundColor = Color.Green };
+			var entry = new Entry { Placeholder = "Edit this text on entry", PlaceholderColor = Colors.Pink, TextColor = Colors.Yellow, BackgroundColor = Colors.Green };
 
-			var frame = new Frame { HasShadow = true, BackgroundColor = Color.Maroon, BorderColor = Color.Lime, MinimumHeightRequest = 100 };
+			var frame = new Frame { HasShadow = true, BackgroundColor = Colors.Maroon, BorderColor = Colors.Lime, MinimumHeightRequest = 100 };
 
 
 			var image = new Image { HeightRequest = 100, Source = "crimson.jpg" };
 
-			var picker1 = new Picker { Title = "Select a team player", TextColor = Color.Pink, BackgroundColor = Color.Silver };
+			var picker1 = new Picker { Title = "Select a team player", TextColor = Colors.Pink, BackgroundColor = Colors.Silver };
 			picker1.Items.Add("Rui");
 			picker1.Items.Add("Jason");
 			picker1.Items.Add("Ez");
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			picker1.SelectedIndex = 1;
 
-			var progress = new ProgressBar { BackgroundColor = Color.Purple, Progress = 0.5, HeightRequest = 50 };
+			var progress = new ProgressBar { BackgroundColor = Colors.Purple, Progress = 0.5, HeightRequest = 50 };
 
 			picker1.SelectedIndexChanged += (sender, e) =>
 			{
@@ -56,22 +57,22 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				progress.Progress += 0.1;
 			};
 
-			var searchBar = new SearchBar { BackgroundColor = Color.Olive, TextColor = Color.Maroon, CancelButtonColor = Color.Pink };
+			var searchBar = new SearchBar { BackgroundColor = Colors.Olive, TextColor = Colors.Maroon, CancelButtonColor = Colors.Pink };
 			searchBar.Placeholder = "Please search";
-			searchBar.PlaceholderColor = Color.Orange;
+			searchBar.PlaceholderColor = Colors.Orange;
 			searchBar.SearchButtonPressed += (sender, e) =>
 			{
 				searchBar.Text = "Search was pressed";
 			};
 
-			var slider = new Slider { BackgroundColor = Color.Lime, Value = 0.5 };
+			var slider = new Slider { BackgroundColor = Colors.Lime, Value = 0.5 };
 
 			slider.ValueChanged += (sender, e) =>
 			{
 				editor.Text = $"Slider value changed {slider.Value}";
 			};
 
-			var stepper = new Stepper { BackgroundColor = Color.Yellow, Maximum = 100, Minimum = 0, Value = 10, Increment = 0.5 };
+			var stepper = new Stepper { BackgroundColor = Colors.Yellow, Maximum = 100, Minimum = 0, Value = 10, Increment = 0.5 };
 
 			stepper.ValueChanged += (sender, e) =>
 			{
@@ -79,12 +80,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			};
 
 			var labal = new Label { Text = "This is a Switch" };
-			var switchR = new Switch { BackgroundColor = Color.Fuchsia, IsToggled = true };
+			var switchR = new Switch { BackgroundColor = Colors.Fuchsia, IsToggled = true };
 			switchR.Toggled += (sender, e) =>
 			{
 				entry.Text = $"switchR is toggled {switchR.IsToggled}";
 			};
-			var layoutSwitch = new StackLayout { Orientation = StackOrientation.Horizontal, BackgroundColor = Color.Green };
+			var layoutSwitch = new StackLayout { Orientation = StackOrientation.Horizontal, BackgroundColor = Colors.Green };
 			layoutSwitch.Children.Add(labal);
 			layoutSwitch.Children.Add(switchR);
 
@@ -93,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var mainStck = new StackLayout
 			{
 				Spacing = 10,
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.Center,
 				Children =
@@ -117,8 +118,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 								picker,
 								timePicker,
 								bigbUtton,
-								new Button { Text = "Click Me", BackgroundColor = Color.Gray },
-								new Button { ImageSource = "bank.png", BackgroundColor = Color.Gray },
+								new Button { Text = "Click Me", BackgroundColor = Colors.Gray },
+								new Button { ImageSource = "bank.png", BackgroundColor = Colors.Gray },
 								CreateButton(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 10)),
 								CreateButton(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Top, 10)),
 								CreateButton(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Bottom, 10)),
@@ -126,12 +127,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 								mainDemoStack
 							}
 			};
-			var lbl = new Label { Text = "Second label", TextColor = Color.White, VerticalTextAlignment = TextAlignment.Start, HorizontalTextAlignment = TextAlignment.Center };
-			mainStck.Children.Add(new Label { Text = "HELLO XAMARIN FORMS MAC", TextColor = Color.White, HorizontalTextAlignment = TextAlignment.Center });
+			var lbl = new Label { Text = "Second label", TextColor = Colors.White, VerticalTextAlignment = TextAlignment.Start, HorizontalTextAlignment = TextAlignment.Center };
+			mainStck.Children.Add(new Label { Text = "HELLO XAMARIN FORMS MAC", TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center });
 			mainStck.Children.Add(lbl);
-			mainStck.Children.Add(new BoxView { Color = Color.Pink, HeightRequest = 200 });
+			mainStck.Children.Add(new BoxView { Color = Colors.Pink, HeightRequest = 200 });
 
-			var scroller = new ScrollView { BackgroundColor = Color.Yellow, HorizontalOptions = LayoutOptions.Center };
+			var scroller = new ScrollView { BackgroundColor = Colors.Yellow, HorizontalOptions = LayoutOptions.Center };
 
 			scroller.Scrolled += (sender, e) =>
 			{
@@ -140,13 +141,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			scroller.Content = mainStck;
 
-			var actv = new ActivityIndicator { BackgroundColor = Color.White, Color = Color.Fuchsia, IsRunning = true };
+			var actv = new ActivityIndicator { BackgroundColor = Colors.White, Color = Colors.Fuchsia, IsRunning = true };
 			mainStck.Children.Add(actv);
 
 			bigbUtton.Clicked += async (sender, e) =>
 			{
 				await scroller.ScrollToAsync(actv, ScrollToPosition.Center, true);
-				actv.Color = Color.Default;
+				actv.Color = null;
 			};
 
 			Content = scroller;
@@ -159,7 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		public static NavigationPage MacDemoNavigationPage()
 		{
-			var np = new NavigationPage(GetNewPage()) { BarTextColor = Color.Red, BarBackgroundColor = Color.Yellow };
+			var np = new NavigationPage(GetNewPage()) { BarTextColor = Colors.Red, BarBackgroundColor = Colors.Yellow };
 
 			np.Pushed += (sender, e) => System.Diagnostics.Debug.WriteLine("Pushed + " + np.CurrentPage.Title);
 
@@ -180,11 +181,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			lyout.Children.Add(btnGo);
 			//lyout.Children.Add(btnGo1);
 
-			var tp = new TabbedPage { BarTextColor = Color.Red, BarBackgroundColor = Color.Yellow };
+			var tp = new TabbedPage { BarTextColor = Colors.Red, BarBackgroundColor = Colors.Yellow };
 
-			var master = new ContentPage { IconImageSource = "bank.png", BackgroundColor = Color.Red, Title = "Flyout", Content = lyout };
+			var master = new ContentPage { IconImageSource = "bank.png", BackgroundColor = Colors.Red, Title = "Flyout", Content = lyout };
 
-			var detail = new ContentPage { IconImageSource = "bank.png", BackgroundColor = Color.Blue, Title = "Detail", Content = new Label { Text = "This is Detail Page" } };
+			var detail = new ContentPage { IconImageSource = "bank.png", BackgroundColor = Colors.Blue, Title = "Detail", Content = new Label { Text = "This is Detail Page" } };
 
 			tp.Children.Add(master);
 			tp.Children.Add(detail);
@@ -213,9 +214,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			var mdp = new FlyoutPage();
 
-			var master = new ContentPage { BackgroundColor = Color.Red, Title = "Flyout", Content = new Label { Text = "This is Flyout Page" } };
+			var master = new ContentPage { BackgroundColor = Colors.Red, Title = "Flyout", Content = new Label { Text = "This is Flyout Page" } };
 
-			var detail = new ContentPage { BackgroundColor = Color.Blue, Title = "Detail", Content = new Label { Text = "This is Detail Page" } };
+			var detail = new ContentPage { BackgroundColor = Colors.Blue, Title = "Detail", Content = new Label { Text = "This is Detail Page" } };
 
 			mdp.Flyout = master;
 			mdp.Detail = detail;
@@ -226,16 +227,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		public static CarouselPage MacDemoCarouselPage()
 		{
 
-			var carouselPage = new CarouselPage { BackgroundColor = Color.Yellow };
+			var carouselPage = new CarouselPage { BackgroundColor = Colors.Yellow };
 
 			var btnGo = new Button { Text = "Goto To Page 1 " };
 			var btnGo1 = new Button { Text = "Goto To Page 3 " };
 			var stck = new StackLayout();
 			stck.Children.Add(btnGo);
 			stck.Children.Add(btnGo1);
-			var page = new ContentPage { Title = "Page1", BackgroundColor = Color.Red, Content = new Label { Text = "Page 1 label", TextColor = Color.White, VerticalTextAlignment = TextAlignment.Start, HorizontalTextAlignment = TextAlignment.Center } };
-			var page2 = new ContentPage { Title = "Page2", BackgroundColor = Color.Blue, Content = stck };
-			var page3 = new ContentPage { Title = "Page3", BackgroundColor = Color.Green, Content = new Label { Text = "Page 3 label" } };
+			var page = new ContentPage { Title = "Page1", BackgroundColor = Colors.Red, Content = new Label { Text = "Page 1 label", TextColor = Colors.White, VerticalTextAlignment = TextAlignment.Start, HorizontalTextAlignment = TextAlignment.Center } };
+			var page2 = new ContentPage { Title = "Page2", BackgroundColor = Colors.Blue, Content = stck };
+			var page3 = new ContentPage { Title = "Page3", BackgroundColor = Colors.Green, Content = new Label { Text = "Page 3 label" } };
 
 			carouselPage.Children.Add(page);
 			carouselPage.Children.Add(page2);
@@ -262,7 +263,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		static int _pageID;
 
-		static StackLayout mainDemoStack = new StackLayout { BackgroundColor = Color.Blue };
+		static StackLayout mainDemoStack = new StackLayout { BackgroundColor = Colors.Blue };
 
 		static ContentPage GetNewPage()
 		{
@@ -288,13 +289,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			};
 
-			return new ContentPage { IconImageSource = "bank.png", BackgroundColor = _pageID % 2 == 0 ? Color.Blue : Color.Green, Title = label.Text, Content = lyout };
+			return new ContentPage { IconImageSource = "bank.png", BackgroundColor = _pageID % 2 == 0 ? Colors.Blue : Colors.Green, Title = label.Text, Content = lyout };
 		}
 
 		static StackLayout MakeNewStackLayout()
 		{
 			var count = 0;
-			var stacklayout = new StackLayout { BackgroundColor = Color.Red };
+			var stacklayout = new StackLayout { BackgroundColor = Colors.Red };
 
 			stacklayout.Children.Add(new Label { Text = $"HEllO {count}" });
 			stacklayout.Children.Add(new Button
@@ -326,8 +327,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				ImageSource = "bank.png",
 				Font = Font.OfSize("Helvetica", 14),
 				ContentLayout = layout,
-				BackgroundColor = Color.Black,
-				TextColor = Color.White
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White
 			};
 		}
 
@@ -365,7 +366,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				SetBinding(LabelProperty, new Binding("Reference"));
 				SetBinding(TextProperty, new Binding("ShowButton"));
-				LabelColor = Color.Red;
+				LabelColor = Colors.Red;
 				Placeholder = "This is a entry cell";
 			}
 		}
@@ -374,14 +375,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			public DemoViewCell()
 			{
-				var box = new Image { BackgroundColor = Color.Pink, WidthRequest = 100, HeightRequest = 40, Source = "bank.png" };
-				var label = new Label { TextColor = Color.White };
-				var labelDetail = new Label { TextColor = Color.White };
+				var box = new Image { BackgroundColor = Colors.Pink, WidthRequest = 100, HeightRequest = 40, Source = "bank.png" };
+				var label = new Label { TextColor = Colors.White };
+				var labelDetail = new Label { TextColor = Colors.White };
 
 				label.SetBinding(Label.TextProperty, new Binding("Reference"));
 				labelDetail.SetBinding(Label.TextProperty, new Binding("ShowButton"));
 
-				var grid = new Grid { BackgroundColor = Color.Black };
+				var grid = new Grid { BackgroundColor = Colors.Black };
 
 				grid.Children.Add(box, 0, 1, 0, 1);
 				grid.Children.Add(label, 1, 0);

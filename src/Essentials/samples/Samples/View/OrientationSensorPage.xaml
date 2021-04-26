@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:views="clr-namespace:Samples.View"
                 xmlns:viewmodels="clr-namespace:Samples.ViewModel"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"

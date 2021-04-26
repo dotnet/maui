@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			var box = new BoxView { BackgroundColor = Color.Blue, WidthRequest = 50, HeightRequest = 50, HorizontalOptions = LayoutOptions.Center };
+			var box = new BoxView { BackgroundColor = Colors.Blue, WidthRequest = 50, HeightRequest = 50, HorizontalOptions = LayoutOptions.Center };
 
 			var instructions = new Label { Text = "Click the 'Animate' button to run animation on the box. If the animations complete without crashing, this test has passed." };
 

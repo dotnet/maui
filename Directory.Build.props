@@ -1,11 +1,12 @@
 <Project>
-  <Import Project="eng\Version.props" />
+  <Import Project="eng\Versions.props" />
   <PropertyGroup>
     <BuildForWinUI Condition="'$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln'">true</BuildForWinUI>
     <BuildForNet6 Condition="'$(SolutionFileName)' == 'Microsoft.Maui-net6.sln' or '$(BuildForWinUI)' == 'true'">true</BuildForNet6>
     <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
-    <MauiPlatforms Condition="'$(Packing)' == 'true'">$(MauiPlatforms);net6.0-windows10.0.19041.0</MauiPlatforms>
-    <MauiPlatforms Condition="'$(BuildForWinUI)' == 'true'">net6.0-windows10.0.19041.0</MauiPlatforms>
+    <WindowsTargetFramework Condition="'$(WindowsTargetFramework)' == ''">net6.0-windows10.0.18362</WindowsTargetFramework>
+    <MauiPlatforms Condition="'$(Packing)' == 'true'">$(MauiPlatforms);$(WindowsTargetFramework)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(BuildForWinUI)' == 'true'">$(WindowsTargetFramework)</MauiPlatforms>
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -17,6 +18,7 @@
     <Company>Microsoft</Company>
     <Product>Microsoft MAUI</Product>
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
+    <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == '' and $(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>
@@ -33,13 +35,12 @@
     <PackageVersion>0.0.1-alpha1</PackageVersion>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
   </PropertyGroup>
-  <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
+  <!-- This target is replaced by GitInfo when restored. Allows Versions.targets to rely on it before restore. -->
   <Target Name="GitVersion" />
   <Target Name="GitInfo" />
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
-  
   <ItemGroup Condition="'$(MSBuildVersion)' != '' AND '$(MSBuildVersion)' &lt; '16.7.0'  ">
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="3.9.0" PrivateAssets="all" />
   </ItemGroup>
-  </Project>
+</Project>

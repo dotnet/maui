@@ -2,6 +2,7 @@
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest.iOS;
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "PushAsync to next page",
 				AutomationId = "btnNext",
 				BackgroundColor = Color.FromHex("#ecf0f1"),
-				TextColor = Color.Black
+				TextColor = Colors.Black
 			};
 			rootContentPageButton.Clicked += async (sender, args) =>
 			{
@@ -60,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "Pop Modal and Pop Root",
 				AutomationId = "btnPop",
 				BackgroundColor = Color.FromHex("#ecf0f1"),
-				TextColor = Color.Black
+				TextColor = Colors.Black
 			};
 			masterPageButton.Clicked += async (sender, args) =>
 			{
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Content = new Button
 				{
 					Text = "PopModal",
-					TextColor = Color.White,
+					TextColor = Colors.White,
 					Command = new Command(async () =>
 					{
 						await Navigation.PopModalAsync();
@@ -106,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "Push Modal To Flyout-Detail Page",
 				AutomationId = "btnPushModal",
 				BackgroundColor = Color.FromHex("#ecf0f1"),
-				TextColor = Color.Black
+				TextColor = Colors.Black
 			};
 			firstContentPageButton.Clicked += async (sender, args) =>
 			{

@@ -6,6 +6,7 @@ using System.Linq;
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			List = new ListView();
 			List.HorizontalOptions = LayoutOptions.FillAndExpand;
 			List.VerticalOptions = LayoutOptions.FillAndExpand;
-			List.BackgroundColor = Color.Yellow;
+			List.BackgroundColor = Colors.Yellow;
 			List.ItemTemplate = new DataTemplate(typeof(VCTest));
 			List.GroupHeaderTemplate = new DataTemplate(typeof(VCHeader));
 			List.IsGroupingEnabled = true;

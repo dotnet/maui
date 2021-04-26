@@ -2,6 +2,7 @@
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		protected override void Init()
 		{
-			var boxview = new BoxView { BackgroundColor = Color.Aqua, AutomationId = "Victory" };
+			var boxview = new BoxView { BackgroundColor = Colors.Aqua, AutomationId = "Victory" };
 
 			var contentView = new ContentView
 			{

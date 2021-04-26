@@ -1,0 +1,13 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.SingleProject.MainPage"
+             BackgroundColor="White">
+    <Grid Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Label Text="Hello, .NET MAUI Single Project!" TextColor="Black" FontSize="32" HorizontalOptions="CenterAndExpand" />
+        <WebView Grid.Row="1" Source="index.html" />
+    </Grid>
+</ContentPage>

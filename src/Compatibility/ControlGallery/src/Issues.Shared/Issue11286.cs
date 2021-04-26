@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -32,8 +33,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var instructions = new Label
 			{
 				Padding = 12,
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Swipe to the right and tap the SwipeItem. If the text below the SwipeView is updated, the test has passed."
 			};
 
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var swipeItem = new SwipeItem
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				Text = "Text"
 			};
 
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var swipeContent = new Grid
 			{
 				HeightRequest = 80,
-				BackgroundColor = Color.LightGray
+				BackgroundColor = Colors.LightGray
 			};
 
 			var label = new Label
@@ -77,7 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			swipeItem.Clicked += (sender, args) =>
 			{
-				result.TextColor = Color.Green;
+				result.TextColor = Colors.Green;
 				result.Text = "The test has passed";
 			};
 		}

@@ -3,10 +3,10 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageDownload Include="Microsoft.Android.Ref"            Version="[$(MicrosoftAndroidSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.Android.Sdk.Windows"    Version="[$(MicrosoftAndroidSdkPackageVersion)]" Condition="$([MSBuild]::IsOSPlatform('windows'))" />
-    <PackageDownload Include="Microsoft.Android.Sdk.Darwin"     Version="[$(MicrosoftAndroidSdkPackageVersion)]" Condition="$([MSBuild]::IsOSPlatform('osx'))" />
-    <PackageDownload Include="Microsoft.Android.Sdk.BundleTool" Version="[$(MicrosoftAndroidSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.Android.Ref"            Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
+    <PackageDownload Include="Microsoft.Android.Sdk.Windows"    Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" Condition="$([MSBuild]::IsOSPlatform('windows'))" />
+    <PackageDownload Include="Microsoft.Android.Sdk.Darwin"     Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" Condition="$([MSBuild]::IsOSPlatform('osx'))" />
+    <PackageDownload Include="Microsoft.Android.Sdk.BundleTool" Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
     <PackageDownload Include="Microsoft.MacCatalyst.Ref"        Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.MacCatalyst.Sdk"        Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.iOS.Ref"                Version="[$(MicrosoftiOSSdkPackageVersion)]" />

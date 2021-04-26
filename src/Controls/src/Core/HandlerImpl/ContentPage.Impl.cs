@@ -1,84 +1,79 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Controls.Internals;
+﻿using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.HotReload;
 
 namespace Microsoft.Maui.Controls
 {
-	// TODO: We don't currently have any concept of a page in Maui
-	// so this just treats it as a layout for now
-	public partial class ContentPage : Microsoft.Maui.ILayout
+	public partial class ContentPage : IPage, HotReload.IHotReloadableView
 	{
-		IReadOnlyList<Microsoft.Maui.IView> Microsoft.Maui.ILayout.Children =>
-			new List<IView>() { Content };
-
-		ILayoutHandler Maui.ILayout.LayoutHandler => Handler as ILayoutHandler;
-
-		Thickness Maui.IView.Margin => new Thickness();
-
+		// TODO ezhart That there's a layout alignment here tells us this hierarchy needs work :) 
 		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
 
-		void Maui.ILayout.Add(IView child)
-		{
-			Content = (View)child;
-		}
+		// TODO ezhart super sus
+		public Thickness Margin => Thickness.Zero;
 
-		void Maui.ILayout.Remove(IView child)
-		{
-			Content = null;
-		}
+		IView IPage.Content => Content;
 
-		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
-		{
-			IsArrangeValid = false;
-			base.InvalidateMeasureInternal(trigger);
-		}
+
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			var width = widthConstraint;
-			var height = heightConstraint;
-
-#if WINDOWS
-			if (double.IsInfinity(width))
+			if (Content is IFrameworkElement frameworkElement)
 			{
-				width = 800;
+				frameworkElement.Measure(widthConstraint, heightConstraint);
 			}
 
-			if (double.IsInfinity(height))
-			{
-				height = 800;
-			}
-#endif
-
-			IsMeasureValid = true;
-			return new Size(width, height);
+			return new Size(widthConstraint, heightConstraint);
 		}
 
-		protected override void ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			if (IsArrangeValid)
+			// Update the Bounds (Frame) for this page
+			Layout(bounds);
+
+			if (Content is IFrameworkElement element)
 			{
-				return;
+				element.Arrange(bounds);
+				element.Handler?.SetFrame(element.Frame);
 			}
 
-			IsArrangeValid = true;
-			IsMeasureValid = true;
-			Arrange(bounds);
-			Handler?.SetFrame(Frame);
-
-			if (Content is IFrameworkElement fe)
-			{
-				fe.InvalidateArrange();
-				fe.Measure(Frame.Width, Frame.Height);
-				fe.Arrange(Frame);
-			}
-
-			if (Content is Layout layout)
-				layout.ResolveLayoutChanges();
-
+			return Frame.Size;
 		}
 
+		protected override void InvalidateMeasureOverride()
+		{
+			base.InvalidateMeasureOverride();
+			if (Content is IFrameworkElement frameworkElement)
+			{
+				frameworkElement.InvalidateMeasure();
+			}
+		}
 
+		#region HotReload
+
+		IView IReplaceableView.ReplacedView => HotReload.MauiHotReloadHelper.GetReplacedView(this) ?? this;
+
+		HotReload.IReloadHandler HotReload.IHotReloadableView.ReloadHandler { get; set; }
+
+		void HotReload.IHotReloadableView.TransferState(IView newView)
+		{
+			//TODO: Let you hot reload the the ViewModel
+			//TODO: Lets do a real state transfer
+			if (newView is View v)
+				v.BindingContext = BindingContext;
+		}
+
+		void HotReload.IHotReloadableView.Reload()
+		{
+			Device.BeginInvokeOnMainThread(() =>
+			{
+				this.CheckHandlers();
+				var reloadHandler = ((IHotReloadableView)this).ReloadHandler;
+				reloadHandler?.Reload();
+				//TODO: if reload handler is null, Do a manual reload?
+			});
+		}
+		#endregion
 	}
 }

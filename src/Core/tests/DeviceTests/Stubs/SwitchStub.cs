@@ -1,14 +1,25 @@
 using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class SwitchStub : StubBase, ISwitch
 	{
-		public Action ToggledDelegate;
+		public Action IsOnDelegate;
 		Color _thumbColor;
 		Color _trackColor;
+		bool _isOn;
 
-		public bool IsToggled { get; set; }
+		public bool IsOn
+		{
+			get => _isOn;
+			set
+			{
+				SetProperty(ref _isOn, value);
+				IsOnDelegate?.Invoke();
+			}
+		}
+
 		public Color TrackColor
 		{
 			get => _trackColor;
@@ -20,7 +31,5 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			get => _thumbColor;
 			set => SetProperty(ref _thumbColor, value);
 		}
-
-		public void Toggled() => ToggledDelegate?.Invoke();
 	}
 }

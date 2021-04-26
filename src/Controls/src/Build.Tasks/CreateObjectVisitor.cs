@@ -151,10 +151,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				md.IsSpecialName &&
 				md.Name == "op_Implicit" && md.Parameters[0].ParameterType.FullName == "System.String");
 
-			if (!typedef.IsValueType && ctorInfo == null && factoryMethodInfo == null)
-				throw new BuildException(BuildExceptionCode.ConstructorDefaultMissing, node, null, typedef.FullName);
+			// The old Forms.Color was a struct, so the following BuildException wasn't thrown because IsValueType returned true.
+			// MGColor is a class, so IsValueType is false, but there's no parameterless constructor or factory; there's a 
+			// TypeConverter. So adding this bool as a check for this condition temporarily.
+			bool isColor = typedef.FullName == "Microsoft.Maui.Graphics.Color";
 
-			if (ctorinforef != null || factorymethodinforef != null || typedef.IsValueType)
+			if (!isColor && !typedef.IsValueType && ctorInfo == null && factoryMethodInfo == null)
+			{
+				throw new BuildException(BuildExceptionCode.ConstructorDefaultMissing, node, null, typedef.FullName);
+			}
+
+			if (isColor || ctorinforef != null || factorymethodinforef != null || typedef.IsValueType)
 			{
 				VariableDefinition vardef = new VariableDefinition(typeref);
 				Context.Variables[node] = vardef;
@@ -162,7 +169,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				ValueNode vnode = null;
 				if (node.CollectionItems.Count == 1 && (vnode = node.CollectionItems.First() as ValueNode) != null &&
-					vardef.VariableType.IsValueType)
+					(vardef.VariableType.IsValueType || isColor))
 				{
 					//<Color>Purple</Color>
 					Context.IL.Append(vnode.PushConvertedValue(Context, typeref, new ICustomAttributeProvider[] { typedef },

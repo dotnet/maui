@@ -1,3 +1,5 @@
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class LabelStub : StubBase, ILabel

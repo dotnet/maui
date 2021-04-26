@@ -1,9 +1,12 @@
-using System;
+﻿using System;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
+using Microsoft.Maui.Graphics;
 using static Android.Graphics.Drawables.GradientDrawable;
 using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
+using Paint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -116,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (brush is SolidColorBrush solidColorBrush)
 			{
 				Color bgColor = solidColorBrush.Color;
-				gradientDrawable.SetColor(bgColor.IsDefault ? Color.Default.ToAndroid() : bgColor.ToAndroid());
+				gradientDrawable.SetColor(bgColor?.ToAndroid() ?? Colors.Transparent.ToAndroid());
 			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)
@@ -194,11 +197,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Shape = new RectShape()
 			};
 
-			gradientStrokeDrawable.SetStroke(0, Color.Default.ToAndroid());
+			gradientStrokeDrawable.SetStroke(0, Colors.Transparent.ToAndroid());
 
 			if (brush is SolidColorBrush solidColorBrush)
 			{
-				var color = solidColorBrush.Color.IsDefault ? Color.Default.ToAndroid() : solidColorBrush.Color.ToAndroid();
+				var color = solidColorBrush.Color?.ToAndroid() ?? Colors.Transparent.ToAndroid();
 				gradientStrokeDrawable.SetColor(color);
 			}
 			else

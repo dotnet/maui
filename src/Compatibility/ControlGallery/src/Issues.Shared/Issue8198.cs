@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -29,8 +30,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var instructions = new Label
 			{
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Scroll the CollectionView to end, lift finger off screen, and then try to scroll up again. If the Refresh Indicator does not appear until it reaches the top, the test has passed."
 			};
 
@@ -102,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				var cell = new Label();
 				cell.SetBinding(Label.TextProperty, ".");
 				cell.FontSize = 20;
-				cell.BackgroundColor = Color.LightBlue;
+				cell.BackgroundColor = Colors.LightBlue;
 				grid.Children.Add(cell, 0, 0);
 
 				scroll.Content = grid;

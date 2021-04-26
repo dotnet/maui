@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Flyout = new ContentPage
 			{
 				Title = "Flyout",
-				BackgroundColor = Color.SkyBlue,
+				BackgroundColor = Colors.SkyBlue,
 				IconImageSource = "menuIcon",
 				Content = new StackLayout()
 				{

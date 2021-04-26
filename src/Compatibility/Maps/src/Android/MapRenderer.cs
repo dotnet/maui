@@ -16,6 +16,7 @@ using Java.Lang;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Graphics;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
@@ -656,7 +657,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 		{
 			var opts = new PolylineOptions();
 
-			opts.InvokeColor(polyline.StrokeColor.ToAndroid(Color.Black));
+			opts.InvokeColor(polyline.StrokeColor.ToAndroid(Colors.Black));
 			opts.InvokeWidth(polyline.StrokeWidth);
 
 			foreach (var position in polyline.Geopath)
@@ -715,7 +716,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 			if (e.PropertyName == MapElement.StrokeColorProperty.PropertyName)
 			{
-				nativePolyline.Color = formsPolyline.StrokeColor.ToAndroid(Color.Black);
+				nativePolyline.Color = formsPolyline.StrokeColor.ToAndroid(Colors.Black);
 			}
 			else if (e.PropertyName == MapElement.StrokeWidthProperty.PropertyName)
 			{
@@ -767,10 +768,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 		{
 			var opts = new PolygonOptions();
 
-			opts.InvokeStrokeColor(polygon.StrokeColor.ToAndroid(Color.Black));
+			opts.InvokeStrokeColor(polygon.StrokeColor.ToAndroid(Colors.Black));
 			opts.InvokeStrokeWidth(polygon.StrokeWidth);
 
-			if (!polygon.StrokeColor.IsDefault)
+			if (!polygon.StrokeColor.IsDefault())
 				opts.InvokeFillColor(polygon.FillColor.ToAndroid());
 
 			// Will throw an exception when added to the map if Points is empty
@@ -835,7 +836,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 			if (e.PropertyName == MapElement.StrokeColorProperty.PropertyName)
 			{
-				nativePolygon.StrokeColor = polygon.StrokeColor.ToAndroid(Color.Black);
+				nativePolygon.StrokeColor = polygon.StrokeColor.ToAndroid(Colors.Black);
 			}
 			else if (e.PropertyName == MapElement.StrokeWidthProperty.PropertyName)
 			{
@@ -894,10 +895,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 				.InvokeRadius(circle.Radius.Meters)
 				.InvokeStrokeWidth(circle.StrokeWidth);
 
-			if (!circle.StrokeColor.IsDefault)
+			if (!circle.StrokeColor.IsDefault())
 				opts.InvokeStrokeColor(circle.StrokeColor.ToAndroid());
 
-			if (!circle.FillColor.IsDefault)
+			if (!circle.FillColor.IsDefault())
 				opts.InvokeFillColor(circle.FillColor.ToAndroid());
 
 			return opts;

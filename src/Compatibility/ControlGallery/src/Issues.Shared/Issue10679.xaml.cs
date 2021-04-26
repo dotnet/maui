@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var leftItem = new SwipeItem
 			{
-				BackgroundColor = Color.Red
+				BackgroundColor = Colors.Red
 			};
 
 			var leftItems = new SwipeItems
@@ -78,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var rightItem = new SwipeItem
 			{
-				BackgroundColor = Color.Green
+				BackgroundColor = Colors.Green
 			};
 
 			var rightItems = new SwipeItems
@@ -91,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var content = new Grid
 			{
-				BackgroundColor = Color.White
+				BackgroundColor = Colors.White
 			};
 
 			var contentLabel = new Label

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries
 {
@@ -16,8 +17,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var instructions = new Label
 			{
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "RemainOpen is used as SwipeBehaviorOnInvoked, tapping on a SwipeItem will not close it."
 			};
 
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var swipeItem1 = new SwipeItem
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				IconImageSource = "calculator.png",
 				Text = "Test 1"
 			};
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var swipeItem2 = new SwipeItem
 			{
-				BackgroundColor = Color.Orange,
+				BackgroundColor = Colors.Orange,
 				IconImageSource = "coffee.png",
 				Text = "Test 2"
 			};
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var swipeContent = new Grid
 			{
-				BackgroundColor = Color.Gray
+				BackgroundColor = Colors.Gray
 			};
 
 			var fileSwipeLabel = new Label

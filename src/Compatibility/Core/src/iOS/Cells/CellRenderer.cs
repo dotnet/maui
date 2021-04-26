@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Internals;
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 			var defaultBgColor = cell.On<PlatformConfiguration.macOS>().DefaultBackgroundColor();
 #endif
-			if (defaultBgColor != Color.Default)
+			if (defaultBgColor != null)
 			{
 				uiBgColor = defaultBgColor.ToUIColor();
 			}
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				else
 				{
-					if (cell.RealParent is VisualElement element && element.BackgroundColor != Color.Default)
+					if (cell.RealParent is VisualElement element && element.BackgroundColor != null)
 						uiBgColor = element.BackgroundColor.ToUIColor();
 				}
 			}
