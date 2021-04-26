@@ -1,6 +1,7 @@
 <!-- "Single Project" support -->
 <Project>
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' ">
+
     <!-- Android -->
     <EnableDefaultAndroidItems>false</EnableDefaultAndroidItems>
     <AndroidProjectFolder Condition=" '$(AndroidProjectFolder)' == '' ">Android\</AndroidProjectFolder>
@@ -23,7 +24,6 @@
     <!-- WinUI3 -->
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <EnableDefaultPageItems>false</EnableDefaultPageItems>
-    <EnableDefaultEmbeddedResourceItems Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">false</EnableDefaultEmbeddedResourceItems>
     <WindowsProjectFolder Condition=" '$(WindowsProjectFolder)' == '' ">Windows\</WindowsProjectFolder>
     <_SingleProjectWindowsExcludes>$(WindowsProjectFolder)/**/.*/**</_SingleProjectWindowsExcludes>
     <OutputType Condition="'$(OutputType)' == 'Exe' And '$(MSBuildRuntime)' == 'Full' And $([MSBuild]::IsOSPlatform('windows'))">WinExe</OutputType>
@@ -31,6 +31,11 @@
 
   <!-- Removals -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
+
+    <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
+    <EmbeddedResource
+      Remove="$(WindowsProjectFolder)**/*.xaml" />
+
     <Compile
         Condition=" '$(TargetPlatformIdentifier)' != 'android' and '$(AndroidProjectFolder)' != '' "
         Remove="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)"
