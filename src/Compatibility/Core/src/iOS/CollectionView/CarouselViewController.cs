@@ -101,23 +101,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Carousel.ScrollTo(Carousel.Position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: false);
 		}
 
-#if MACCATALYST
-		[Foundation.Export("scrollViewWillBeginDragging:")]
-		public virtual void DraggingStarted(UIScrollView scrollView)
-#else
 		public override void DraggingStarted(UIScrollView scrollView)
-#endif
 		{
 			_isDragging = true;
 			Carousel.SetIsDragging(true);
 		}
 
-#if MACCATALYST
-		[Foundation.Export("scrollViewDidEndDragging:willDecelerate:")]
-		public virtual void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
-#else
 		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
-#endif
 		{
 			Carousel.SetIsDragging(false);
 			_isDragging = false;
