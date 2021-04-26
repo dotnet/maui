@@ -4,6 +4,7 @@
     <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
+    <!--<OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>-->
     <SingleProject>true</SingleProject>
     <ApplicationTitle>Single Project</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.singleproject</ApplicationId>
@@ -39,11 +40,15 @@
     <ProjectReference Include="..\..\..\BlazorWebView\src\core\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
     <PackageReference Include="Microsoft.ProjectReunion" Version="0.5.0" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.5.0" />
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="0.5.0" />
   </ItemGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <Platforms>x86;x64;arm64</Platforms>
+  </PropertyGroup>
   <ItemGroup>
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <MauiAsset Include="Resources\Raw\*" />
