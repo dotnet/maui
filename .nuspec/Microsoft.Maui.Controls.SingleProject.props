@@ -76,11 +76,32 @@
       Link="%(FileName)%(Extension)"
       Visible="true" />
 
+    <ApplicationDefinition
+      Condition="Exists('$(WindowsProjectFolder)/App.xaml')"
+      Include="$(WindowsProjectFolder)App.xaml"
+      Link="%(FileName)%(Extension)"
+      Visible="true">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </ApplicationDefinition>
+
+    <ApplicationDefinition
+      Condition="Exists('$(WindowsProjectFolder)/Application.xaml')"
+      Include="$(WindowsProjectFolder)Application.xaml"
+      Link="%(FileName)%(Extension)"
+      Visible="true">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </ApplicationDefinition>
+
     <Page
-        Include="$(WindowsProjectFolder)**/*.xaml"
-        Exclude="$(_SingleProjectWindowsExcludes)"
-        Link="%(RecursiveDir)%(FileName)%(Extension)"
-        Visible="true" />
+      Include="$(WindowsProjectFolder)**/*.xaml"
+      Exclude="$(_SingleProjectWindowsExcludes);@(ApplicationDefinition)"
+      Link="%(RecursiveDir)%(FileName)%(Extension)"
+      Visible="true">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
 
   </ItemGroup>
 </Project>
