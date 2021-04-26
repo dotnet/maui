@@ -913,12 +913,11 @@ Task("VS-WINUI")
     .IsDependentOn("Clean")
     .Does(() =>
     {
-        DotNetCoreBuild("./src/DotNet/Dotnet.csproj");
-        var ext = IsRunningOnWindows() ? ".exe" : "";
+    //    DotNetCoreBuild("./src/DotNet/Dotnet.csproj");
+    //    var ext = IsRunningOnWindows() ? ".exe" : "";
         
-        StartProcess("powershell", $"./eng/dogfood.ps1 -JustCreateGlobalJSON");
-        DotNetCoreBuild("./Microsoft.Maui.BuildTasks-net6.sln", new DotNetCoreBuildSettings { ToolPath = $"./bin/dotnet/dotnet{ext}" });
-        
+    //    StartProcess("powershell", $"./eng/dogfood.ps1 -JustCreateGlobalJSON"); 
+        DotNetCoreBuild("./Microsoft.Maui.BuildTasks-net6.sln", new DotNetCoreBuildSettings { });
 
         MSBuild("Microsoft.Maui.WinUI.sln",
                 GetMSBuildSettings(includePrerelease:true).
