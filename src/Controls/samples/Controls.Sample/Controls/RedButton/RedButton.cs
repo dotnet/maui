@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Controls
 			//var handlerProvider = nativeApp.Services.GetRequiredService<IMauiHandlersServiceProvider>();
 
 			// However, neither way is really good because accessing the
-			// services/handlers befire the AppHostBuilder has run will
+			// services/handlers before the AppHostBuilder has run will
 			// result in there being no handler provider and thus either
 			// the cctor will throw if it is not anticipated or the
 			// registration will not happen.
