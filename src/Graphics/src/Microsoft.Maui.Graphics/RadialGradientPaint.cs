@@ -4,6 +4,8 @@
 	{
 		public RadialGradientPaint()
 		{
+			Center = new Point(0.5, 0.5);
+			Radius = 0.5;
 		}
 
 		public RadialGradientPaint(Point center, double radius)
@@ -12,8 +14,8 @@
 			Radius = radius;
 		}
 
-		public Point Center { get; }
+		public Point Center { get; set; }
 
-		public double Radius { get; }
+		public double Radius { get; set; }
 	}
 }

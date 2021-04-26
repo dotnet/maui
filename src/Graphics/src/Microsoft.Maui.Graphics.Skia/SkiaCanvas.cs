@@ -280,12 +280,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			CurrentState.FontName = SkiaGraphicsService.Instance.BoldSystemFontName;
 		}
 
-		public override void SetFillPaint(
-			Paint paint,
-			float x1,
-			float y1,
-			float x2,
-			float y2)
+		public override void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
 			if (paint == null)
 				paint = Colors.White.AsPaint();
@@ -299,6 +294,12 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			if (paint is LinearGradientPaint linearGradientPaint)
 			{
+				float x1 = (float)(linearGradientPaint.StartPoint.X * rectangle.Width) + rectangle.X;
+				float y1 = (float)(linearGradientPaint.StartPoint.Y * rectangle.Height) + rectangle.Y;
+
+				float x2 = (float)(linearGradientPaint.EndPoint.X * rectangle.Width) + rectangle.X;
+				float y2 = (float)(linearGradientPaint.EndPoint.Y * rectangle.Height) + rectangle.Y;
+
 				var colors = new SKColor[linearGradientPaint.GradientStops.Length];
 				var stops = new float[colors.Length];
 
@@ -340,13 +341,19 @@ namespace Microsoft.Maui.Graphics.Skia
 					stops[i] = vStops[i].Offset;
 				}
 
-				var r = Geometry.GetDistance(x1, y1, x2, y2);
+				float centerX = (float)(radialGradientPaint.Center.X * rectangle.Width) + rectangle.X;
+				float centerY = (float)(radialGradientPaint.Center.Y * rectangle.Height) + rectangle.Y;
+				float radius = (float)radialGradientPaint.Radius * Math.Max(rectangle.Height, rectangle.Width);
+
+				if (radius == 0)
+					radius = Geometry.GetDistance(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+
 				try
 				{
 					CurrentState.FillColor = Colors.White;
 					_shader = SKShader.CreateRadialGradient(
-						new SKPoint(x1, y1),
-						r,
+						new SKPoint(centerX, centerY),
+						radius,
 						colors,
 						stops,
 						SKShaderTileMode.Clamp);

@@ -257,10 +257,10 @@ namespace Microsoft.Maui.Graphics.Native
 			CurrentState.FontName = NativeFontService.SystemBoldFont;
 		}
 
-		public override void SetFillPaint(Paint paint, float x1, float y1, float x2, float y2)
+		public override void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
 			if (paint == null)
-				paint = Microsoft.Maui.Graphics.Colors.White.AsPaint();
+				paint = Colors.White.AsPaint();
 
 			if (_shader != null)
 			{
@@ -285,6 +285,13 @@ namespace Microsoft.Maui.Graphics.Native
 				try
 				{
 					CurrentState.FillColor = Colors.White;
+
+					float x1 = (float)(linearGradientPaint.StartPoint.X * rectangle.Width) + rectangle.X;
+					float y1 = (float)(linearGradientPaint.StartPoint.Y * rectangle.Height) + rectangle.Y;
+
+					float x2 = (float)(linearGradientPaint.EndPoint.X * rectangle.Width) + rectangle.X;
+					float y2 = (float)(linearGradientPaint.EndPoint.Y * rectangle.Height) + rectangle.Y;
+
 					_shader = new LinearGradient(x1, y1, x2, y2, colors, stops, Shader.TileMode.Clamp);
 					CurrentState.SetFillPaintShader(_shader);
 				}
@@ -307,11 +314,17 @@ namespace Microsoft.Maui.Graphics.Native
 					stops[i] = vStops[i].Offset;
 				}
 
-				float r = Geometry.GetDistance(x1, y1, x2, y2);
+				float centerX = (float)(radialGradientPaint.Center.X * rectangle.Width) + rectangle.X;
+				float centerY = (float)(radialGradientPaint.Center.Y * rectangle.Height) + rectangle.Y;
+				float radius = (float)radialGradientPaint.Radius * Math.Max(rectangle.Height, rectangle.Width);
+
+				if (radius == 0)
+					radius = Geometry.GetDistance(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+
 				try
 				{
 					CurrentState.FillColor = Colors.White;
-					_shader = new RadialGradient(x1, y1, r, colors, stops, Shader.TileMode.Clamp);
+					_shader = new RadialGradient(centerX, centerY, radius, colors, stops, Shader.TileMode.Clamp);
 					CurrentState.SetFillPaintShader(_shader);
 				}
 				catch (Exception exc)

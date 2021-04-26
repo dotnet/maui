@@ -342,7 +342,7 @@ namespace Microsoft.Maui.Graphics
 				if (pattern != null)
 				{
 					var paint = pattern.AsPaint(foregroundColor);
-					target.SetFillPaint(paint, 0, 0, 0, 0);
+					target.SetFillPaint(paint, RectangleF.Zero);
 				}
 				else
 				{
@@ -363,22 +363,22 @@ namespace Microsoft.Maui.Graphics
 
 		public static void SetFillPaint(this ICanvas target, Paint paint, Point point1, Point point2)
 		{
-			target.SetFillPaint(paint, (float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
+			target.SetFillPaint(paint, new RectangleF((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y));
 		}
 
 		public static void SetFillPaint(this ICanvas target, Paint paint, PointF point1, PointF point2)
 		{
-			target.SetFillPaint(paint, point1.X, point1.Y, point2.X, point2.Y);
+			target.SetFillPaint(paint, new RectangleF(point1.X, point1.Y, point2.X, point2.Y));
 		}
 
 		public static void SetFillPaint(this ICanvas target, Paint paint, Rectangle rectangle)
 		{
-			target.SetFillPaint(paint, (float)rectangle.Left, (float)rectangle.Top, (float)rectangle.Bottom, (float)rectangle.Right);
+			target.SetFillPaint(paint, rectangle);
 		}
 
 		public static void SetFillPaint(this ICanvas target, Paint paint, RectangleF rectangle)
 		{
-			target.SetFillPaint(paint, rectangle.Left, rectangle.Top, rectangle.Bottom, rectangle.Right);
+			target.SetFillPaint(paint, rectangle);
 		}
 	}
 }

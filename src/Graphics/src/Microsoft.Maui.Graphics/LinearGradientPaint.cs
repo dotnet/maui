@@ -4,6 +4,8 @@
 	{
 		public LinearGradientPaint()
 		{
+			StartPoint = new Point(0, 0);
+			EndPoint = new Point(1, 1);
 		}
 
 		public LinearGradientPaint(Point startPoint, Point endPoint)
@@ -12,8 +14,8 @@
 			EndPoint = endPoint;
 		}
 
-		public Point StartPoint { get; }
+		public Point StartPoint { get; set; }
 
-		public Point EndPoint { get; }
+		public Point EndPoint { get; set; }
 	}
 }

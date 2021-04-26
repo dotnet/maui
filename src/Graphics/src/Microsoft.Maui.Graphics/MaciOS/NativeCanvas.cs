@@ -37,9 +37,7 @@ namespace Microsoft.Maui.Graphics.Native
 
 		private IImage _fillImage;
 
-		private CGPoint _gradientEnd = new CGPoint(0, 0);
-		private CGPoint _gradientStart = new CGPoint(0, 0);
-		private CGPoint _radialFocalPoint = new CGPoint(0, 0);
+		private RectangleF _gradientRectangle = RectangleF.Zero;
 		private Paint _paint;
 
 		// A local instance of a rectangle to avoid lots of object creation.
@@ -350,20 +348,10 @@ namespace Microsoft.Maui.Graphics.Native
 			FontName = _boldSystemFontName;
 		}
 
-		public override void SetFillPaint(
-			Paint paint,
-			float x1,
-			float y1,
-			float x2,
-			float y2)
+		public override void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
-			_gradientStart.X = x1;
-			_gradientStart.Y = y1;
-			_gradientEnd.X = x2;
-			_gradientEnd.Y = y2;
-			_radialFocalPoint.X = x1;
-			_radialFocalPoint.Y = y1;
-
+			_gradientRectangle = rectangle;
+	
 			if (paint == null)
 			{
 				paint = Colors.White.AsPaint();
@@ -631,14 +619,32 @@ namespace Microsoft.Maui.Graphics.Native
 
 		private void DrawGradient()
 		{
-			if (_paint is LinearGradientPaint)
+			if (_paint is LinearGradientPaint linearGradientPaint)
 			{
-				_context.DrawLinearGradient(_gradient, _gradientStart, _gradientEnd, CGGradientDrawingOptions.DrawsAfterEndLocation | CGGradientDrawingOptions.DrawsBeforeStartLocation);
+				float x1 = _gradientRectangle.Left + (float)linearGradientPaint.StartPoint.X * _gradientRectangle.Width;
+				float y1 = _gradientRectangle.Top + (float)linearGradientPaint.StartPoint.Y * _gradientRectangle.Height;
+
+				float x2 = _gradientRectangle.Left + (float)linearGradientPaint.EndPoint.X * _gradientRectangle.Width;
+				float y2 = _gradientRectangle.Top + (float)linearGradientPaint.EndPoint.Y * _gradientRectangle.Height;
+
+				_context.DrawLinearGradient(_gradient, new CGPoint(x1, y1), new CGPoint(x2, y2), CGGradientDrawingOptions.DrawsAfterEndLocation | CGGradientDrawingOptions.DrawsBeforeStartLocation);
 			}
-			else if (_paint is RadialGradientPaint)
+			else if (_paint is RadialGradientPaint radialGradientPaint)
 			{
-				float vDistance = GetDistance(_gradientStart, _gradientEnd);
-				_context.DrawRadialGradient(_gradient, _radialFocalPoint, 0, _gradientStart, vDistance,
+				float centerX = (float)radialGradientPaint.Center.X * _gradientRectangle.Width + _gradientRectangle.Left;
+				float centerY = (float)radialGradientPaint.Center.Y * _gradientRectangle.Height + _gradientRectangle.Top;
+				CGPoint center = new CGPoint(centerX, centerY);
+
+				float radius = (float)radialGradientPaint.Radius * Math.Max(_gradientRectangle.Height, _gradientRectangle.Width);
+
+				if (radius == 0)
+				{
+					CGPoint point1 = new CGPoint(_gradientRectangle.Left, _gradientRectangle.Top);
+					CGPoint point2 = new CGPoint(_gradientRectangle.Right, _gradientRectangle.Bottom);
+					radius = GetDistance(point1, point2);
+				}
+
+				_context.DrawRadialGradient(_gradient, center, 0, center, radius,
 					CGGradientDrawingOptions.DrawsBeforeStartLocation | CGGradientDrawingOptions.DrawsAfterEndLocation);
 			}
 

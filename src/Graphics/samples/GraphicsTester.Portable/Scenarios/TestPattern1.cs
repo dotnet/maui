@@ -164,15 +164,27 @@ namespace GraphicsTester.Scenarios
 				EndColor = Colors.Black
 			};
 
-			canvas.SetFillPaint(linearGradientPaint, 50, 700, 150, 750);
-			canvas.FillRectangle(50, 700, 100, 50);
+			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
+			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
 
-			canvas.SetFillPaint(linearGradientPaint, 200, 700, 300, 700);
-			canvas.FillEllipse(200, 700, 100, 50);
+			var linearRectangleRectangle = new RectangleF(50, 700, 100, 50);
+			canvas.SetFillPaint(linearGradientPaint, linearRectangleRectangle);
+			canvas.FillRectangle(linearRectangleRectangle);
+
+			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
+			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
+
+			var linearEllipseRectangle = new RectangleF(200, 700, 100, 50);
+			canvas.SetFillPaint(linearGradientPaint, linearEllipseRectangle);
+			canvas.FillEllipse(linearEllipseRectangle);
 
 			linearGradientPaint.AddOffset(.5f, Colors.IndianRed);
-			canvas.SetFillPaint(linearGradientPaint, 350, 700, 450, 700);
-			canvas.FillRoundedRectangle(350, 700, 100, 50, 25);
+			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
+			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
+
+			var linearRoundedRectangleRectangle = new RectangleF(350, 700, 100, 50);
+			canvas.SetFillPaint(linearGradientPaint, linearRoundedRectangleRectangle);
+			canvas.FillRoundedRectangle(linearRoundedRectangleRectangle, 25);
 
 			path = new PathF();
 			path.MoveTo(550, 700);
@@ -180,7 +192,11 @@ namespace GraphicsTester.Scenarios
 			path.LineTo(600, 750);
 			path.Close();
 
-			canvas.SetFillPaint(linearGradientPaint, 500, 700, 600, 700);
+			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
+			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
+
+			var linearPathRectangle = new RectangleF(500, 700, 200, 50);
+			canvas.SetFillPaint(linearGradientPaint, linearPathRectangle);
 			canvas.FillPath(path);
 
 			//
@@ -193,15 +209,27 @@ namespace GraphicsTester.Scenarios
 				EndColor = Colors.Black
 			};
 
-			canvas.SetFillPaint(radialGradientPaint, 100, 825, 150, 850);
-			canvas.FillRectangle(50, 800, 100, 50);
+			radialGradientPaint.Center = new Point(0.5, 0.5);
+			radialGradientPaint.Radius = 0.5;
 
-			canvas.SetFillPaint(radialGradientPaint, 250, 825, 300, 800);
-			canvas.FillEllipse(200, 800, 100, 50);
+			var radialRectangleRectangle = new RectangleF(50, 800, 100, 50);
+			canvas.SetFillPaint(radialGradientPaint, radialRectangleRectangle);
+			canvas.FillRectangle(radialRectangleRectangle);
+
+			radialGradientPaint.Center = new Point(0.5, 0.5);
+			radialGradientPaint.Radius = 0.5;
+
+			var radialEllipseRectangle = new RectangleF(200, 800, 100, 50);
+			canvas.SetFillPaint(radialGradientPaint, radialEllipseRectangle);
+			canvas.FillEllipse(radialEllipseRectangle);
 
 			radialGradientPaint.AddOffset(.5f, Colors.IndianRed);
-			canvas.SetFillPaint(radialGradientPaint, 400, 825, 450, 800);
-			canvas.FillRoundedRectangle(350, 800, 100, 50, 25);
+			radialGradientPaint.Center = new Point(0.5, 0.5);
+			radialGradientPaint.Radius = 0.5;
+
+			var radialRoundedRectangleRectangle = new RectangleF(350, 800, 100, 50);
+			canvas.SetFillPaint(radialGradientPaint, radialRoundedRectangleRectangle);
+			canvas.FillRoundedRectangle(radialRoundedRectangleRectangle, 25);
 
 			path = new PathF();
 			path.MoveTo(550, 800);
@@ -209,7 +237,11 @@ namespace GraphicsTester.Scenarios
 			path.LineTo(600, 850);
 			path.Close();
 
-			canvas.SetFillPaint(radialGradientPaint, 550, 825, 600, 800);
+			radialGradientPaint.Center = new Point(0.5, 0.5);
+			radialGradientPaint.Radius = 0.5;
+
+			var radialPathRectangle = new RectangleF(550, 800, 200, 50);
+			canvas.SetFillPaint(radialGradientPaint, radialPathRectangle);
 			canvas.FillPath(path);
 
 			//
@@ -386,8 +418,8 @@ namespace GraphicsTester.Scenarios
 
 					canvas.DrawRectangle(dx, dy, 190, 140);
 
-					var vHorizontalAlignment = (HorizontalAlignment) x;
-					var vVerticalAlignment = (VerticalAlignment) y;
+					var vHorizontalAlignment = (HorizontalAlignment)x;
+					var vVerticalAlignment = (VerticalAlignment)y;
 
 					canvas.FontName = "Arial";
 					canvas.FontSize = 12f;
@@ -407,8 +439,8 @@ namespace GraphicsTester.Scenarios
 
 					canvas.DrawRectangle(dx, dy, 190, 140);
 
-					var vHorizontalAlignment = (HorizontalAlignment) x;
-					var vVerticalAlignment = (VerticalAlignment) y;
+					var vHorizontalAlignment = (HorizontalAlignment)x;
+					var vVerticalAlignment = (VerticalAlignment)y;
 
 					canvas.FontName = "Arial";
 					canvas.FontSize = 12f;
@@ -426,7 +458,7 @@ namespace GraphicsTester.Scenarios
 				canvas.DrawRectangle(dx, dy, 190, 140);
 
 				const HorizontalAlignment vHorizontalAlignment = HorizontalAlignment.Left;
-				var vVerticalAlignment = (VerticalAlignment) y;
+				var vVerticalAlignment = (VerticalAlignment)y;
 
 				canvas.FontName = "Arial";
 				canvas.FontSize = 12f;
