@@ -45,6 +45,42 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(new[] { "LoadingStarted", "LoadingCompleted(True)" }, order);
 		}
 
+		[Theory]
+		[InlineData("animated_heart.gif", true)]
+		[InlineData("animated_heart.gif", false)]
+		public async Task AnimatedSourceInitializesCorrectly(string filename, bool isAnimating)
+		{
+			var image = new ImageStub
+			{
+				Source = new FileImageSourceStub(filename),
+				IsAnimationPlaying = isAnimating,
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(image);
+
+				await image.Wait();
+
+				Assert.Equal(isAnimating, GetNativeIsAnimationPlaying(handler));
+			});
+		}
+
+		[Theory]
+		[InlineData(Aspect.AspectFill)]
+		[InlineData(Aspect.AspectFit)]
+		[InlineData(Aspect.Center)]
+		[InlineData(Aspect.Fill)]
+		public async Task AspectInitializesCorrectly(Aspect aspect)
+		{
+			var image = new ImageStub()
+			{
+				Aspect = aspect
+			};
+
+			await ValidatePropertyInitValue(image, () => image.Aspect, GetNativeAspect, aspect);
+		}
+
 		[Fact]
 		public async Task InvalidSourceFailsToLoad()
 		{

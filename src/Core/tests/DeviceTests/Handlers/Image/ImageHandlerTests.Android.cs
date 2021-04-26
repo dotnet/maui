@@ -1,7 +1,10 @@
+using System;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -120,6 +123,27 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal("SetImageDrawable", events[2].Member);
 			var drawable = Assert.IsType<ColorDrawable>(events[2].Value);
 			drawable.Color.IsEquivalent(Colors.Red.ToNative());
+		}
+
+		ImageView GetNativeImageView(ImageHandler imageHandler) =>
+			(ImageView)imageHandler.NativeView;
+
+		bool GetNativeIsAnimationPlaying(ImageHandler imageHandler) =>
+			GetNativeImageView(imageHandler).Drawable is IAnimatable animatable && animatable.IsRunning;
+
+		Aspect GetNativeAspect(ImageHandler imageHandler)
+		{
+			var scaleType = GetNativeImageView(imageHandler).GetScaleType();
+			if (scaleType == ImageView.ScaleType.Center)
+				return Aspect.Center;
+			if (scaleType == ImageView.ScaleType.CenterCrop)
+				return Aspect.AspectFill;
+			if (scaleType == ImageView.ScaleType.FitCenter)
+				return Aspect.AspectFit;
+			if (scaleType == ImageView.ScaleType.FitXy)
+				return Aspect.Fill;
+
+			throw new ArgumentOutOfRangeException("Aspect");
 		}
 	}
 }
