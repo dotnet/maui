@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.UnitTests
@@ -38,11 +39,12 @@ namespace Microsoft.Maui.UnitTests
 
 		public Semantics Semantics { get; set; } = new Semantics();
 
-		public void Arrange(Rectangle bounds) { }
-
 		public void InvalidateArrange() { }
 
 		public void InvalidateMeasure() { }
+
+		public Size Arrange(Rectangle bounds) =>
+			Size.Zero;
 
 		public Size Measure(double widthConstraint, double heightConstraint) =>
 			Size.Zero;
