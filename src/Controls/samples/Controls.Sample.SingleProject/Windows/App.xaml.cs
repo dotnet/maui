@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui;
+﻿using Maui.Controls.Sample.SingleProject;
+using Microsoft.Maui;
 using Windows.ApplicationModel;
 
 // To learn more about WinUI, the WinUI project structure,
