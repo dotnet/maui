@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			typeof(Button),
 			typeof(ContentPage),
+			typeof(Frame),
 			typeof(Page),
 			typeof(Label),
 			typeof(CheckBox),
