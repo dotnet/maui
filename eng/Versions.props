@@ -1,8 +1,8 @@
 <Project>
   <!--Package versions-->
   <PropertyGroup>
-    <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-preview.4.21215.1</MicrosoftDotnetSdkInternalPackageVersion>
-    <MicrosoftAndroidSdkWindowsPackageVersion>11.0.200-ci.main.226</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-preview.4.21221.10</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>11.0.200-ci.main.234</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>14.5.100-ci.main.658</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>14.5.100-ci.main.658</MicrosoftiOSSdkPackageVersion>
   </PropertyGroup>
