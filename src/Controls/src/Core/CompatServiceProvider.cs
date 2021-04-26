@@ -10,17 +10,15 @@ namespace Microsoft.Maui.Controls
 	static class CompatServiceProvider
 	{
 		static IServiceProvider? _serviceProvider;
-
 		static IEmbeddedFontLoader? _embeddedFontLoader;
-		static IFontRegistrar? _fontRegistrar;
-		static IFontManager? _fontManager;
-		static ILoggerFactory? _loggerFactory;
 
-		public static IFontRegistrar FontRegistrar => _fontRegistrar ??= new FontRegistrar(_embeddedFontLoader);
+		public static IServiceProvider ServiceProvider => _serviceProvider ??= CreateCompatServiceProvider();
 
-		public static IFontManager FontManager => _fontManager ??= new FontManager(FontRegistrar);
+		public static IFontRegistrar FontRegistrar => ServiceProvider.GetRequiredService<IFontRegistrar>();
 
-		public static ILoggerFactory LoggerFactory => _loggerFactory ??= new FallbackLoggerFactory();
+		public static IFontManager FontManager => ServiceProvider.GetRequiredService<IFontManager>();
+
+		public static ILoggerFactory LoggerFactory => ServiceProvider.GetRequiredService<ILoggerFactory>();
 
 		public static void SetFontLoader(Type loaderType)
 		{
@@ -28,7 +26,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			_embeddedFontLoader = (IEmbeddedFontLoader)Activator.CreateInstance(loaderType)!;
-			if (_fontRegistrar is FontRegistrar fr)
+			if (FontRegistrar is FontRegistrar fr)
 				fr.SetFontLoader(_embeddedFontLoader);
 		}
 
@@ -38,22 +36,20 @@ namespace Microsoft.Maui.Controls
 				throw new InvalidOperationException("The service provider can only be set once.");
 
 			_serviceProvider = services;
-
-			Set(ref _embeddedFontLoader);
-			Set(ref _fontRegistrar);
-			Set(ref _fontManager);
-			Set(ref _loggerFactory);
+			_embeddedFontLoader = _serviceProvider.GetService<IEmbeddedFontLoader>();
 		}
 
-		static void Set<T>(ref T? field)
+		static IServiceProvider CreateCompatServiceProvider()
 		{
-			if (_serviceProvider == null)
-				throw new InvalidOperationException($"Service provider was not set.");
+			var collection = new MauiServiceCollection();
 
-			if (field != null)
-				throw new InvalidOperationException($"Service '{typeof(T).Name}' was already set.");
+			collection.AddSingleton<ILoggerFactory, FallbackLoggerFactory>();
+			collection.AddSingleton<IFontRegistrar>(svc => new FontRegistrar(_embeddedFontLoader, svc.CreateLogger<FontRegistrar>()));
+			collection.AddSingleton<IFontManager>(svc => new FontManager(svc.GetRequiredService<IFontRegistrar>(), svc.CreateLogger<FontManager>()));
 
-			field = _serviceProvider.GetService<T>();
+			var provider = new MauiServiceProvider(collection, false);
+
+			return provider;
 		}
 	}
 }

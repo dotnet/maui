@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 
@@ -9,6 +7,13 @@ namespace Microsoft.Maui.Handlers
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
 		protected override ImageView CreateNativeView() => new AppCompatImageView(Context);
+
+		protected override void DisconnectHandler(ImageView nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+
+			_sourceManager.CompleteLoad(null);
+		}
 
 		public static void MapAspect(ImageHandler handler, IImage image)
 		{

@@ -77,7 +77,7 @@ namespace Microsoft.Maui
 					var result = await service.GetDrawableAsync(imageSource, context, cancellationToken);
 					var drawable = result?.Value;
 
-					var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;
+					var applied = !cancellationToken.IsCancellationRequested && imageView.IsAlive() && imageSource == image.Source;
 
 					// only set the image if we are still on the same one
 					if (applied)

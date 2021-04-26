@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Handlers
 
 			if (NativeView is MauiImageView imageView)
 				imageView.WindowChanged -= OnWindowChanged;
+
+			_sourceManager.CompleteLoad(null);
 		}
 
 		public static void MapAspect(ImageHandler handler, IImage image)

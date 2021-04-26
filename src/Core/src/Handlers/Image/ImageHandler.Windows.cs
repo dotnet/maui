@@ -7,6 +7,13 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override Image CreateNativeView() => new Image();
 
+		protected override void DisconnectHandler(ImageView nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+
+			_sourceManager.CompleteLoad(null);
+		}
+
 		public static void MapAspect(ImageHandler handler, IImage image)
 		{
 			handler.NativeView?.UpdateAspect(image);
