@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
 
-namespace Microsoft.Maui.Handlers
+﻿namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextBox>
 	{
@@ -36,14 +36,20 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, IEntry entry) { }
 
-		[MissingMapper]
-		public static void MapMaxLength(IViewHandler handler, IEntry entry) { }
+		public static void MapMaxLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateMaxLength(entry);
+		}
 
-		[MissingMapper]
-		public static void MapPlaceholder(IViewHandler handler, IEntry entry) { }
+		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdatePlaceholder(entry);
+		}
 
-		[MissingMapper]
-		public static void MapIsReadOnly(IViewHandler handler, IEntry entry) { }
+		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateIsReadOnly(entry);
+		}
 
 		[MissingMapper]
 		public static void MapFont(IViewHandler handler, IEntry entry) { }
