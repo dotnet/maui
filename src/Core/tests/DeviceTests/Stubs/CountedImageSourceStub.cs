@@ -6,6 +6,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		bool Wait { get; }
 
+		bool IsResolutionDependent { get; }
+
 		Color Color { get; }
 	}
 
@@ -22,6 +24,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public bool Wait { get; set; } = false;
+
+		public bool IsResolutionDependent { get; set; } = false;
 
 		public Color Color { get; set; }
 	}

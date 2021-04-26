@@ -8,12 +8,20 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		Action _dispose;
 
 		public CustomImageSourceServiceResult(Drawable drawable, Action dispose)
+			: this(drawable, false, dispose)
+		{
+		}
+
+		public CustomImageSourceServiceResult(Drawable drawable, bool resolutionDependent, Action dispose)
 		{
 			Value = drawable;
+			IsResolutionDependent = resolutionDependent;
 			_dispose = dispose;
 		}
 
 		public Drawable Value { get; }
+
+		public bool IsResolutionDependent { get; }
 
 		public void Dispose()
 		{

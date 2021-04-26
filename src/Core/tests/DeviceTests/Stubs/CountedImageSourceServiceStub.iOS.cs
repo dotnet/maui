@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					return CreateImage(scale, color);
 				}).ConfigureAwait(false);
 
-				return new Result(image);
+				return new Result(image, imageSource.IsResolutionDependent);
 			}
 			finally
 			{
@@ -59,12 +59,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		class Result : IImageSourceServiceResult<UIImage>
 		{
-			public Result(UIImage drawable)
+			public Result(UIImage image, bool resolutionDependent)
 			{
-				Value = drawable;
+				Value = image;
+				IsResolutionDependent = resolutionDependent;
 			}
 
 			public UIImage Value { get; }
+
+			public bool IsResolutionDependent { get; }
 
 			public void Dispose()
 			{

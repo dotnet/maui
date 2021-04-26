@@ -63,6 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 		private IImageSourceServiceProvider CreateImageSourceServiceProvider(Action<IImageSourceServiceCollection> configure)
 		{
 			var host = new AppHostBuilder()
+				.UseMauiServiceProviderFactory(true)
 				.ConfigureImageSourceServices(configure)
 				.Build();
 

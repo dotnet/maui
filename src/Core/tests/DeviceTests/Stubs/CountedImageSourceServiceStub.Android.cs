@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					return new ColorDrawable(color);
 				}).ConfigureAwait(false);
 
-				return new Result(drawable);
+				return new Result(drawable, imageSource.IsResolutionDependent);
 			}
 			finally
 			{
@@ -42,12 +42,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		class Result : IImageSourceServiceResult<Drawable>
 		{
-			public Result(ColorDrawable drawable)
+			public Result(ColorDrawable drawable, bool resolutionDependent)
 			{
 				Value = drawable;
+				IsResolutionDependent = resolutionDependent;
 			}
 
 			public Drawable Value { get; }
+
+			public bool IsResolutionDependent { get; }
 
 			public void Dispose()
 			{
