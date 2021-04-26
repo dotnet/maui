@@ -26,9 +26,9 @@
                                     <VisualTransition From="Paused" To="Determinate">
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetName="ProgressBarIndicator"
-                                     Storyboard.TargetProperty="Opacity"
-                                     To="1"
-                                     Duration="0:0:0.25" />
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="1"
+                                                Duration="0:0:0.25" />
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="Indeterminate" To="Determinate">
