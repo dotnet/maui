@@ -11,16 +11,8 @@
     <ApplicationVersion>1.0</ApplicationVersion>
     <AndroidVersionCode>1</AndroidVersionCode>
     <IsPackable>false</IsPackable>
-    <EnableDefaultContentItems>false</EnableDefaultContentItems>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Remove="**\*.razor" />
-  </ItemGroup>
-  <ItemGroup>
-    <RazorComponent Include="**\*.razor" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Remove="wwwroot\css\app.css" />

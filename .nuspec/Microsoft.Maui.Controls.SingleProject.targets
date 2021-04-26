@@ -1,6 +1,7 @@
 <!-- "Single Project" support -->
 <Project>
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' ">
+    <EnableDefaultRazorComponentItems>False</EnableDefaultRazorComponentItems>
 
     <!-- Android -->
     <EnableDefaultAndroidItems>false</EnableDefaultAndroidItems>
